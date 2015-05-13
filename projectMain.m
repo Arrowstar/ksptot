@@ -27,3 +27,4 @@ mainGUIHandle = mainGUI(celBodyData, bodyNames, hS);
 close(hS);
 
 disp('test commit');
+disp('test commit2');

@@ -1,6 +1,0 @@
-EXPORTS
-mexFunction
-emlrtMexFcnProperties
-AngleZero2Pi
-AngleZero2Pi_initialize
-AngleZero2Pi_terminate
