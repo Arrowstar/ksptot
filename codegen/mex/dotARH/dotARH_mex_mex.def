@@ -1,0 +1,6 @@
+EXPORTS
+mexFunction
+emlrtMexFcnProperties
+dotARH
+dotARH_initialize
+dotARH_terminate

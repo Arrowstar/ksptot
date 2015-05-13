@@ -1,0 +1,44 @@
+<!-- saved from url=(0014)about:internet -->
+<pre class="code">
+<span class="srcline"><span class="lineno"><a href="1,1" id="srcline1"> 1</a></span><span class="line"><span class="keyword">function</span> <span class="var type0" id="S2T0U3">c</span> = <span class="message fatal" id="M1F1C">dot</span>(<span class="var type0" id="S3T0U6">a</span>,<span class="var type0" id="S4T0U7">b</span>,<span class="var type0" id="S5T0U8">dim</span>)</span></span>
+<span class="srcline"><span class="lineno"><a href="1,2" id="srcline2"> 2</a></span><span class="line"><span class="comment">%DOT  Vector dot product.</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,3" id="srcline3"> 3</a></span><span class="line"><span class="comment">%   C = DOT(A,B) returns the scalar product of the vectors A and B.</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,4" id="srcline4"> 4</a></span><span class="line"><span class="comment">%   A and B must be vectors of the same length.  When A and B are both</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,5" id="srcline5"> 5</a></span><span class="line"><span class="comment">%   column vectors, DOT(A,B) is the same as A'*B.</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,6" id="srcline6"> 6</a></span><span class="line"><span class="comment">%</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,7" id="srcline7"> 7</a></span><span class="line"><span class="comment">%   DOT(A,B), for N-D arrays A and B, returns the scalar product</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,8" id="srcline8"> 8</a></span><span class="line"><span class="comment">%   along the first non-singleton dimension of A and B. A and B must</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,9" id="srcline9"> 9</a></span><span class="line"><span class="comment">%   have the same size.</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,10" id="srcline10">10</a></span><span class="line"><span class="comment">%</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,11" id="srcline11">11</a></span><span class="line"><span class="comment">%   DOT(A,B,DIM) returns the scalar product of A and B in the</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,12" id="srcline12">12</a></span><span class="line"><span class="comment">%   dimension DIM.</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,13" id="srcline13">13</a></span><span class="line"><span class="comment">%</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,14" id="srcline14">14</a></span><span class="line"><span class="comment">%   Class support for inputs A,B:</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,15" id="srcline15">15</a></span><span class="line"><span class="comment">%      float: double, single</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,16" id="srcline16">16</a></span><span class="line"><span class="comment">%</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,17" id="srcline17">17</a></span><span class="line"><span class="comment">%   See also CROSS.</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,18" id="srcline18">18</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,19" id="srcline19">19</a></span><span class="line"><span class="comment">%   Copyright 1984-2011 The MathWorks, Inc. </span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,20" id="srcline20">20</a></span><span class="line"><span class="comment">%   $Revision: 5.13.4.5 $  $Date: 2011/07/05 19:03:46 $</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,21" id="srcline21">21</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,22" id="srcline22">22</a></span><span class="line"><span class="keyword">if</span> isinteger(<span class="var type0" id="S3T0U14">a</span>) || isinteger(<span class="var type0" id="S4T0U17">b</span>) </span></span>
+<span class="srcline"><span class="lineno"><a href="1,23" id="srcline23">23</a></span><span class="line">    error(message(<span class="string">'MATLAB:dot:integerClass'</span>));</span></span>
+<span class="srcline"><span class="lineno"><a href="1,24" id="srcline24">24</a></span><span class="line"><span class="keyword">end</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,25" id="srcline25">25</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,26" id="srcline26">26</a></span><span class="line"><span class="comment">% Special case: A and B are vectors and dim not supplied</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,27" id="srcline27">27</a></span><span class="line"><span class="keyword">if</span> ismatrix(<span class="var type0" id="S3T0U30">a</span>) &amp;&amp; ismatrix(<span class="var type0" id="S4T0U33">b</span>) &amp;&amp; nargin&lt;3</span></span>
+<span class="srcline"><span class="lineno"><a href="1,28" id="srcline28">28</a></span><span class="line">   <span class="keyword">if</span> min(size(<span class="var type0" id="S3T0U45">a</span>))==1, <span class="var type0" id="S3T0U49">a</span> = <span class="var type0" id="S3T0U51">a</span>(:); <span class="keyword">end</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,29" id="srcline29">29</a></span><span class="line">   <span class="keyword">if</span> min(size(<span class="var type0" id="S4T0U60">b</span>))==1, <span class="var type0" id="S4T0U64">b</span> = <span class="var type0" id="S4T0U66">b</span>(:); <span class="keyword">end</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,30" id="srcline30">30</a></span><span class="line"><span class="keyword">end</span>;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,31" id="srcline31">31</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,32" id="srcline32">32</a></span><span class="line"><span class="comment">% Check dimensions</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,33" id="srcline33">33</a></span><span class="line"><span class="keyword">if</span> any(size(<span class="var type0" id="S3T0U75">a</span>)~=size(<span class="var type0" id="S4T0U78">b</span>)),</span></span>
+<span class="srcline"><span class="lineno"><a href="1,34" id="srcline34">34</a></span><span class="line">   error(message(<span class="string">'MATLAB:dot:InputSizeMismatch'</span>));</span></span>
+<span class="srcline"><span class="lineno"><a href="1,35" id="srcline35">35</a></span><span class="line"><span class="keyword">end</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,36" id="srcline36">36</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,37" id="srcline37">37</a></span><span class="line"><span class="keyword">if</span> nargin==2,</span></span>
+<span class="srcline"><span class="lineno"><a href="1,38" id="srcline38">38</a></span><span class="line">  <span class="var type0" id="S2T0U93">c</span> = sum(conj(<span class="var type0" id="S3T0U99">a</span>).*<span class="var type0" id="S4T0U100">b</span>);</span></span>
+<span class="srcline"><span class="lineno"><a href="1,39" id="srcline39">39</a></span><span class="line"><span class="keyword">else</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,40" id="srcline40">40</a></span><span class="line">  <span class="var type0" id="S2T0U104">c</span> = sum(conj(<span class="var type0" id="S3T0U110">a</span>).*<span class="var type0" id="S4T0U111">b</span>,<span class="var type0" id="S5T0U112">dim</span>);</span></span>
+<span class="srcline"><span class="lineno"><a href="1,41" id="srcline41">41</a></span><span class="line"><span class="keyword"><span class="keyword">end</span></span></span></span>
+</pre>

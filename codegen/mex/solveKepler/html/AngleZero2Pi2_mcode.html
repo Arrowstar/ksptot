@@ -1,0 +1,22 @@
+<!-- saved from url=(0014)about:internet -->
+<pre class="code">
+<span class="srcline"><span class="lineno"><a href="2,1" id="srcline1"> 1</a></span><span class="line"><span class="keyword">function</span> <span class="var type1" id="S2T1U3">CorrectedAngle</span> = AngleZero2Pi(<span class="var type1" id="S3T1U6">Angle</span>)</span></span>
+<span class="srcline"><span class="lineno"><a href="2,2" id="srcline2"> 2</a></span><span class="line"><span class="comment">% Accepts a radian measure angle and returns that angle between 0 and 2*pi.</span></span></span>
+<span class="srcline"><span class="lineno"><a href="2,3" id="srcline3"> 3</a></span><span class="line"><span class="comment">% Angle is a scalar input, measured in radians.</span></span></span>
+<span class="srcline"><span class="lineno"><a href="2,4" id="srcline4"> 4</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="2,5" id="srcline5"> 5</a></span><span class="line"><span class="mxinfo " id="T1:U3"><span class="var type1" id="S2T1U9">CorrectedAngle</span> = <span class="mxinfo " id="T1:U5">abs(<span class="mxinfo " id="T1:U6">mod(real(<span class="var type1" id="S3T1U16">Angle</span>),<span class="mxinfo " id="T1:U8">2*pi</span>)</span>)</span></span>;</span></span>
+<span class="srcline"><span class="lineno"><a href="2,6" id="srcline6"> 6</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="2,7" id="srcline7"> 7</a></span><span class="line"><span class="comment">% if(any(Angle&lt;0))</span></span></span>
+<span class="srcline"><span class="lineno"><a href="2,8" id="srcline8"> 8</a></span><span class="line"><span class="comment">%     while(Angle&lt;0)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="2,9" id="srcline9"> 9</a></span><span class="line"><span class="comment">%         Angle=Angle+2*pi;</span></span></span>
+<span class="srcline"><span class="lineno"><a href="2,10" id="srcline10">10</a></span><span class="line"><span class="comment">%     end</span></span></span>
+<span class="srcline"><span class="lineno"><a href="2,11" id="srcline11">11</a></span><span class="line"><span class="comment">%     CorrectedAngle=Angle;</span></span></span>
+<span class="srcline"><span class="lineno"><a href="2,12" id="srcline12">12</a></span><span class="line"><span class="comment">% elseif(Angle&gt;=2*pi)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="2,13" id="srcline13">13</a></span><span class="line"><span class="comment">%     while(Angle&gt;=2*pi)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="2,14" id="srcline14">14</a></span><span class="line"><span class="comment">%         Angle=Angle-2*pi;</span></span></span>
+<span class="srcline"><span class="lineno"><a href="2,15" id="srcline15">15</a></span><span class="line"><span class="comment">%     end</span></span></span>
+<span class="srcline"><span class="lineno"><a href="2,16" id="srcline16">16</a></span><span class="line"><span class="comment">%     CorrectedAngle=Angle;</span></span></span>
+<span class="srcline"><span class="lineno"><a href="2,17" id="srcline17">17</a></span><span class="line"><span class="comment">% else</span></span></span>
+<span class="srcline"><span class="lineno"><a href="2,18" id="srcline18">18</a></span><span class="line"><span class="comment">%     CorrectedAngle=Angle;</span></span></span>
+<span class="srcline"><span class="lineno"><a href="2,19" id="srcline19">19</a></span><span class="line"><span class="comment">% end</span></span></span>
+</pre>
