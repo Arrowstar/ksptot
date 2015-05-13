@@ -25,6 +25,3 @@ end
 %Set up the GUI for use
 mainGUIHandle = mainGUI(celBodyData, bodyNames, hS);
 close(hS);
-
-disp('test commit');
-disp('test commit2');
