@@ -28,7 +28,7 @@ function soITrans = findSoITransitions(initialState, maxSearchUT, celBodyData)
     % toVy
     % toVz
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    global num_SoI_search_revs;
+    global num_SoI_search_revs strict_SoI_search;
     
     ut = initialState(1);
     
@@ -138,31 +138,26 @@ function soITrans = findSoITransitions(initialState, maxSearchUT, celBodyData)
         if(rPe > rApBody+soiRadius)
             continue;
         end
-        
-        hma_MainGUI = findobj('Tag','ma_MainGUI');
-        if(~isempty(hma_MainGUI))
-            maData = getappdata(hma_MainGUI,'ma_data');
-            
-            if(maData.settings.strictSoISearch)
-                sma1=sma;
-                ecc1=ecc;
-                inc1=inc;
-                raan1=raan;
-                arg1=arg;
+                   
+        if(strict_SoI_search)
+            sma1=sma;
+            ecc1=ecc;
+            inc1=inc;
+            raan1=raan;
+            arg1=arg;
 
-                sma2=childBodyInfo.sma;
-                ecc2=childBodyInfo.ecc;
-                inc2=deg2rad(childBodyInfo.inc);
-                raan2=deg2rad(childBodyInfo.raan);
-                arg2=deg2rad(childBodyInfo.arg);
+            sma2=childBodyInfo.sma;
+            ecc2=childBodyInfo.ecc;
+            inc2=deg2rad(childBodyInfo.inc);
+            raan2=deg2rad(childBodyInfo.raan);
+            arg2=deg2rad(childBodyInfo.arg);
 
-                [TF] = intersectCheck(sma1, ecc1, inc1, raan1, arg1,...
-                                      sma2, ecc2, inc2, raan2, arg2,...
-                                      gmu, soiRadius);
+            [TF] = intersectCheck(sma1, ecc1, inc1, raan1, arg1,...
+                                  sma2, ecc2, inc2, raan2, arg2,...
+                                  gmu, soiRadius);
 
-                if(TF == false)
-                    continue;
-                end
+            if(TF == false)
+                continue;
             end
         end
 
@@ -302,6 +297,8 @@ function soITrans = findSoITransitions(initialState, maxSearchUT, celBodyData)
         
 %         tArr = [initialState(1)+100, tArr(1)-100, tArr];
         
+        disp(childBodyInfo.name);
+
         findChildSoITransFunc = @(ut) isSoICrossing(ut, scBodyInfo, childBodyInfo, bodyInfo, soiRadius-2, true, celBodyData); %make this true again
         findChildSoITransFuncRealSoI = @(ut) isSoICrossing(ut, scBodyInfo, childBodyInfo, bodyInfo, soiRadius, false, celBodyData);
         
@@ -327,7 +324,7 @@ function soITrans = findSoITransitions(initialState, maxSearchUT, celBodyData)
             distT1 = norm(rVectSc1-rVectC1)/childBodyInfo.sma;
             distT2 = norm(rVectSc2-rVectC2)/childBodyInfo.sma;
             
-            if(maData.settings.strictSoISearch)
+            if(strict_SoI_search)
                 smaFrac = 0.5;
             else
                 smaFrac = 0.9;

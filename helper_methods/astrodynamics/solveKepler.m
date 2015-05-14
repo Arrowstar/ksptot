@@ -12,13 +12,13 @@ function [EccA] = solveKepler(mean, ecc)
             EccA = pi;
             return;
         else
-            if(mean < pi)
-                lb = 0;
-                ub = pi;
-            else
-                lb = pi;
-                ub = 2*pi;
-            end
+%             if(mean < pi)
+%                 lb = 0;
+%                 ub = pi;
+%             else
+%                 lb = pi;
+%                 ub = 2*pi;
+%             end
         end
 %         M=@(E) E - ecc*sin(E) - mean;
 %         EccA=fzero(M,[lb ub]);
@@ -28,15 +28,16 @@ function [EccA] = solveKepler(mean, ecc)
             EccA = 0;
             return
         else
-            if(mean > 0)
-                lb = 0;
-                ub = 10;
-            else
-                lb = -10;
-                ub = 0;
-            end
-            M = @(H) ecc*sinh(H) - H - mean;
-            EccA = fzero(M, [lb ub]); %need to do this to return correctly, even though it's misnamed
+%             if(mean > 0)
+%                 lb = 0;
+%                 ub = 10;
+%             else
+%                 lb = -10;
+%                 ub = 0;
+%             end
+%             M = @(H) ecc*sinh(H) - H - mean;
+%             EccA = fzero(M, [lb ub]); %need to do this to return correctly, even though it's misnamed
+            EccA = keplerEqHyp(mean,ecc,1E-10);
         end
     end
 end

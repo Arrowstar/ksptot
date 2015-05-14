@@ -111,7 +111,7 @@ function initializeOutputWindowText(handles, hOutputText)
 
 
 function maData = generateCleanMissionPlan(handles) 
-    global number_state_log_entries_per_coast num_SoI_search_revs;
+    global number_state_log_entries_per_coast num_SoI_search_revs strict_SoI_search;
     celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
     
     thrusters = {};
@@ -179,12 +179,13 @@ function maData = generateCleanMissionPlan(handles)
     maData.spacecraft.otherSC = oSC;
     maData.spacecraft.stations = stations;
     
-    maData.settings.strictSoISearch = false;
+    maData.settings.strictSoISearch = true;
     maData.settings.parallelScriptOptim = false;
     maData.settings.numStateLogPtsPerCoast = 1000;
     maData.settings.numSoISearchRevs = 3;
     number_state_log_entries_per_coast = maData.settings.numStateLogPtsPerCoast;
     num_SoI_search_revs = maData.settings.numSoISearchRevs;
+    strict_SoI_search = maData.settings.strictSoISearch;
     
     maData.stateLog = ma_executeScript(maData.script, handles, celBodyData, []);
     
@@ -524,7 +525,7 @@ function openMissionPlanMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to openMissionPlanMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-    global number_state_log_entries_per_coast num_SoI_search_revs;
+    global number_state_log_entries_per_coast num_SoI_search_revs strict_SoI_search;
 
     askToClear=true;
     if(askToClear)
@@ -574,6 +575,7 @@ function openMissionPlanMenu_Callback(hObject, eventdata, handles)
             setappdata(handles.ma_MainGUI,'current_save_location',filePath);
             number_state_log_entries_per_coast = maData.settings.numStateLogPtsPerCoast;
             num_SoI_search_revs = maData.settings.numSoISearchRevs;
+            strict_SoI_search = maData.settings.strictSoISearch;
             ma_processData(handles, maData, celBodyData);
         else
             write_to_output_func(['There was a problem loading the case file from disk: ',filePath,'.  Case not loaded.'],'append');
@@ -1290,6 +1292,8 @@ function useStrictSoISearchMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to useStrictSoISearchMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+    global strict_SoI_search;
+
     maData = getappdata(handles.ma_MainGUI,'ma_data');
     celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
     writeOutput = getappdata(handles.ma_MainGUI,'write_to_output_func');
@@ -1303,6 +1307,7 @@ function useStrictSoISearchMenu_Callback(hObject, eventdata, handles)
         maData.settings.strictSoISearch = true;
         writeOutput('Strict SoI search mode enabled.','append');
     end
+    strict_SoI_search = maData.settings.strictSoISearch;
     
     maData.stateLog = ma_executeScript(maData.script,handles,celBodyData,handles.scriptWorkingLbl);
     setappdata(handles.ma_MainGUI,'ma_data',maData);
