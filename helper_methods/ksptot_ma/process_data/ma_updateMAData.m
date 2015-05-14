@@ -37,5 +37,9 @@ function maData = ma_updateMAData(maData)
     if(~isfield(maData.settings,'numStateLogPtsPerCoast'))
         maData.settings.numStateLogPtsPerCoast = 1000;
     end
+    
+    if(~isfield(maData.settings,'numSoISearchRevs'))
+        maData.settings.numSoISearchRevs = 3;
+    end
 end
 

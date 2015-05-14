@@ -13,7 +13,7 @@ function hCBodySurf = ma_initOrbPlot(hFig, orbitDispAxes, bodyInfo)
         dRad = bodyInfo.radius;
         [X,Y,Z] = sphere(30);
         hold(orbitDispAxes,'on');
-        hCBodySurf = surf(orbitDispAxes, dRad*X,dRad*Y,dRad*Z,'BackFaceLighting','lit','FaceLighting','gouraud');
+        hCBodySurf = surf(orbitDispAxes, dRad*X,dRad*Y,dRad*Z,'BackFaceLighting','lit','FaceLighting','gouraud','LineWidth',0.1,'EdgeAlpha',1);
         hold(orbitDispAxes,'on');
         colormap(orbitDispAxes,bodyInfo.bodycolor);
     else

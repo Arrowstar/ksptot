@@ -22,7 +22,7 @@ function varargout = ma_MainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_MainGUI
 
-% Last Modified by GUIDE v2.5 01-May-2015 18:22:27
+% Last Modified by GUIDE v2.5 13-May-2015 18:28:59
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -111,7 +111,7 @@ function initializeOutputWindowText(handles, hOutputText)
 
 
 function maData = generateCleanMissionPlan(handles) 
-    global number_state_log_entries_per_coast;
+    global number_state_log_entries_per_coast num_SoI_search_revs;
     celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
     
     thrusters = {};
@@ -182,7 +182,9 @@ function maData = generateCleanMissionPlan(handles)
     maData.settings.strictSoISearch = false;
     maData.settings.parallelScriptOptim = false;
     maData.settings.numStateLogPtsPerCoast = 1000;
+    maData.settings.numSoISearchRevs = 3;
     number_state_log_entries_per_coast = maData.settings.numStateLogPtsPerCoast;
+    num_SoI_search_revs = maData.settings.numSoISearchRevs;
     
     maData.stateLog = ma_executeScript(maData.script, handles, celBodyData, []);
     
@@ -522,7 +524,7 @@ function openMissionPlanMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to openMissionPlanMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-    global number_state_log_entries_per_coast;
+    global number_state_log_entries_per_coast num_SoI_search_revs;
 
     askToClear=true;
     if(askToClear)
@@ -571,6 +573,7 @@ function openMissionPlanMenu_Callback(hObject, eventdata, handles)
             setappdata(handles.ma_MainGUI,'ma_data',maData);
             setappdata(handles.ma_MainGUI,'current_save_location',filePath);
             number_state_log_entries_per_coast = maData.settings.numStateLogPtsPerCoast;
+            num_SoI_search_revs = maData.settings.numSoISearchRevs;
             ma_processData(handles, maData, celBodyData);
         else
             write_to_output_func(['There was a problem loading the case file from disk: ',filePath,'.  Case not loaded.'],'append');
@@ -1464,7 +1467,7 @@ function deltaVBudgetMenu_Callback(hObject, eventdata, handles)
             else
                 dvEvent = 1000*norm(event.maneuverValue);
             end
-            dvBudget(end+1,:) = {i, event.name, dvEvent};
+            dvBudget(end+1,:) = {i, event.name, dvEvent}; %#ok<AGROW>
             dvBudgetSum = dvBudgetSum + dvEvent;
             hasEvents = true;
         end
@@ -1762,7 +1765,7 @@ function setNumStateLogEntriesPerEventMenu_Callback(hObject, eventdata, handles)
     input_str = sprintf(['Enter the desired number of state log entries per coast:\n',...
                          '(Minimum = 5, Maximum = 100,000)\n',...
                          '(This will influence script execution speed and SoI transition search.)']);
-    str = inputdlg(input_str, 'State Log Entries Per Event', [1 75], {num2str(maData.settings.numStateLogPtsPerCoast)});
+    str = inputdlg(input_str, 'State Log Entries Per Coast', [1 75], {num2str(maData.settings.numStateLogPtsPerCoast)});
     str = str{1};
     
     if(checkStrIsNumeric(str) && round(str2double(str)) >= 5 && round(str2double(str)) <= 100000)
@@ -1776,5 +1779,37 @@ function setNumStateLogEntriesPerEventMenu_Callback(hObject, eventdata, handles)
         setappdata(handles.ma_MainGUI,'ma_data',maData);
         ma_processData(handles);
     else
-        writeOutput(sprintf('Could not set number of state log entries per event.  "%s" is invalid.', str),'append');
+        writeOutput(sprintf('Could not set number of state log entries per event.  "%s" is an invalid entry.', str),'append');
+    end
+
+
+% --------------------------------------------------------------------
+function setNumSoISearchRevsMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to setNumSoISearchRevsMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    global num_SoI_search_revs;
+    
+    maData = getappdata(handles.ma_MainGUI,'ma_data');
+    celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
+    writeOutput = getappdata(handles.ma_MainGUI,'write_to_output_func');
+    
+    input_str = sprintf(['Enter the desired number of SoI search revolutions:\n',...
+                         '(Minimum = 1, Maximum = 100)\n',...
+                         '(This will influence script execution speed and SoI transition search.)']);
+    str = inputdlg(input_str, 'Number SoI Search Revs', [1 75], {num2str(maData.settings.numSoISearchRevs)});
+    str = str{1};
+    
+    if(checkStrIsNumeric(str) && round(str2double(str)) >= 1 && round(str2double(str)) <= 100)
+        writeOutput(sprintf('Setting number of SoI search revolutions to %s.', str),'append');
+        
+        num_SoI_search_revs = round(str2double(str));
+        maData.settings.numSoISearchRevs = num_SoI_search_revs;
+        
+        setappdata(handles.ma_MainGUI,'ma_data',maData);
+        maData.stateLog = ma_executeScript(maData.script,handles,celBodyData,handles.scriptWorkingLbl);
+        setappdata(handles.ma_MainGUI,'ma_data',maData);
+        ma_processData(handles);
+    else
+        writeOutput(sprintf('Could not set number of SoI search revolutions.  "%s" is an invalid entry.', str),'append');
     end

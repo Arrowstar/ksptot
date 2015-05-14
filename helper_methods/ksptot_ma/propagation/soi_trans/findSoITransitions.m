@@ -28,6 +28,8 @@ function soITrans = findSoITransitions(initialState, maxSearchUT, celBodyData)
     % toVy
     % toVz
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    global num_SoI_search_revs;
+    
     ut = initialState(1);
     
     if(isempty(maxSearchUT))
@@ -175,7 +177,7 @@ function soITrans = findSoITransitions(initialState, maxSearchUT, celBodyData)
                 sPeriod = 3*computePeriod(sma,gmu);
             end
             numPeriods = ceil(sPeriod/oPeriod);
-            numPeriods = 5;
+            numPeriods = num_SoI_search_revs;
             
             truMax1=real(computeTrueAFromRadiusEcc(maxSearchRadius, sma, ecc));
             truMin1=real(computeTrueAFromRadiusEcc(minSearchRadius, sma, ecc));
@@ -205,8 +207,18 @@ function soITrans = findSoITransitions(initialState, maxSearchUT, celBodyData)
             sPeriod = dMA/n1;
             tArr = [];
             for(i=1:numPeriods)
-                tArr(end+1) = minT + (i-1)*oPeriod;
-                tArr(end+1) = minT + (i-1)*oPeriod + sPeriod + 100;
+                t1 = minT + (i-1)*oPeriod;
+                t2 = minT + (i-1)*oPeriod + sPeriod + 100;
+                
+                if(t1 <= maxSearchUT && t2 <= maxSearchUT)
+                    tArr(end+1) = t1;
+                    tArr(end+1) = t2;
+                elseif(t1 <= maxSearchUT && t2 > maxSearchUT)
+                    tArr(end+1) = t1;
+                    tArr(end+1) = maxSearchUT; %we don't want to exceed maxSearchUT
+                else
+                    continue; %both t1 and t2 are greater than maxSearchUT, don't add them
+                end
             end  
             
             if(truINI >= truMin1 && truINI <= truMax1)
