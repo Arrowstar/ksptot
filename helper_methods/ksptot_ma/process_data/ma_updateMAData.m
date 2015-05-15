@@ -2,7 +2,11 @@ function maData = ma_updateMAData(maData)
 %ma_updateMAData Summary of this function goes here
 %   Detailed explanation goes here
 	if(not(isfield(maData,'settings') && isstruct(maData.settings) && isfield(maData.settings,'strictSoISearch')))
-        maData.settings.strictSoISearch = false;
+        maData.settings.strictSoISearch = true;
+    end
+    
+	if(not(isfield(maData,'settings') && isstruct(maData.settings) && isfield(maData.settings,'useSelectiveSoISearch')))
+        maData.settings.useSelectiveSoISearch = true;
 	end
     
 	if(not(isfield(maData,'settings') && isstruct(maData.settings) && isfield(maData.settings,'parallelScriptOptim')))
@@ -26,6 +30,10 @@ function maData = ma_updateMAData(maData)
                 end
                 if(event.thruster.id == thruster.id)
                     event.thruster = thruster;
+                end
+            elseif(strcmpi(event.type,'Coast'))
+                if(~isfield(event,'soiSkipIds'))
+                    event.soiSkipIds = [];
                 end
             end
             script{j} = event;

@@ -17,6 +17,8 @@ function eventLog = ma_executeCoast(coastEvent, initialState, eventNum, celBodyD
     
     [sma, ecc, ~, ~, ~, ~] = getKeplerFromState(rVect,vVect,gmu);
     
+    soiSkipIds = coastEvent.soiSkipIds;
+    
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Propagate through the n revs, if applicable
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -27,18 +29,18 @@ function eventLog = ma_executeCoast(coastEvent, initialState, eventNum, celBodyD
             period = computePeriod(sma, gmu);  
             
             maxUT = utINI+revs*period; 
-            soITrans = findSoITransitions(initialState, maxUT, celBodyData);
+            soITrans = findSoITransitions(initialState, maxUT, soiSkipIds, celBodyData);
             if(~isempty(soITrans) && min(soITrans(:,2)) < maxUT)
                 [~,ind] = ismember(refBodyID,soITrans(:,4));
                 
                 if(ind > 0)
                     SoITransUT = soITrans(ind,2);
                     advSoITrans = soITrans(soITrans(:,2)>=SoITransUT,:);
-                    SoITransEventLog1 = ma_executeCoast_goto_ut(SoITransUT, initialState, eventNum, true, celBodyData);
-                    SoITransEventLog2 = ma_executeCoast_goto_soi_trans(SoITransEventLog1(end,:), eventNum, 10, celBodyData, advSoITrans);
+                    SoITransEventLog1 = ma_executeCoast_goto_ut(SoITransUT, initialState, eventNum, true, soiSkipIds, celBodyData);
+                    SoITransEventLog2 = ma_executeCoast_goto_soi_trans(SoITransEventLog1(end,:), eventNum, 10, soiSkipIds, celBodyData, advSoITrans); %what is that 10 for?
                     SoITransEventLog = [SoITransEventLog1; SoITransEventLog2];
                 else
-                    SoITransEventLog = ma_executeCoast_goto_soi_trans(initialState, eventNum, maxUT, celBodyData, soITrans);
+                    SoITransEventLog = ma_executeCoast_goto_soi_trans(initialState, eventNum, maxUT, soiSkipIds, celBodyData, soITrans);
                 end
                 
                 execCoastEventLog = ma_executeCoast(coastEvent, SoITransEventLog(end,:), eventNum, celBodyData);
@@ -47,7 +49,7 @@ function eventLog = ma_executeCoast(coastEvent, initialState, eventNum, celBodyD
             end
             
             for(r=1:revs) %#ok<*NO4LP>
-                eventLog = vertcat(eventLog,ma_executeCoast_goto_dt(period, initialState, eventNum, true, celBodyData)); %#ok<AGROW>
+                eventLog = vertcat(eventLog,ma_executeCoast_goto_dt(period, initialState, eventNum, true, soiSkipIds, celBodyData)); %#ok<AGROW>
                 initialState = eventLog(end,:);
             end
             coastINIState = eventLog(end,:);
@@ -67,28 +69,28 @@ function eventLog = ma_executeCoast(coastEvent, initialState, eventNum, celBodyD
     value = coastEvent.coastToValue;
     switch type
         case 'goto_ut'
-            eventLogCoast = ma_executeCoast_goto_ut(value, coastINIState, eventNum, true, celBodyData);
+            eventLogCoast = ma_executeCoast_goto_ut(value, coastINIState, eventNum, true, soiSkipIds, celBodyData);
             
         case 'goto_dt'
-            eventLogCoast = ma_executeCoast_goto_dt(value, coastINIState, eventNum, true, celBodyData);
+            eventLogCoast = ma_executeCoast_goto_dt(value, coastINIState, eventNum, true, soiSkipIds, celBodyData);
             
         case 'goto_tru'
-            eventLogCoast = ma_executeCoast_goto_tru(value, coastINIState, eventNum, true, refBody, celBodyData);
+            eventLogCoast = ma_executeCoast_goto_tru(value, coastINIState, eventNum, true, soiSkipIds, refBody, celBodyData);
             
         case 'goto_apo'
-            eventLogCoast = ma_executeCoast_goto_tru(pi, coastINIState, eventNum, true, refBody, celBodyData);
+            eventLogCoast = ma_executeCoast_goto_tru(pi, coastINIState, eventNum, true, soiSkipIds, refBody, celBodyData);
             
         case 'goto_peri'
-            eventLogCoast = ma_executeCoast_goto_tru(0, coastINIState, eventNum, true, refBody, celBodyData);
+            eventLogCoast = ma_executeCoast_goto_tru(0, coastINIState, eventNum, true, soiSkipIds, refBody, celBodyData);
             
         case 'goto_asc_node'
-            eventLogCoast = ma_executeCoast_goto_node('asc', coastINIState, eventNum, true, refBody, celBodyData);
+            eventLogCoast = ma_executeCoast_goto_node('asc', coastINIState, eventNum, true, soiSkipIds, refBody, celBodyData);
             
         case 'goto_desc_node'
-            eventLogCoast = ma_executeCoast_goto_node('desc', coastINIState, eventNum, true, refBody, celBodyData);
+            eventLogCoast = ma_executeCoast_goto_node('desc', coastINIState, eventNum, true, soiSkipIds, refBody, celBodyData);
             
         case 'goto_soi_trans'
-            eventLogCoast = ma_executeCoast_goto_soi_trans(coastINIState, eventNum, [], celBodyData);
+            eventLogCoast = ma_executeCoast_goto_soi_trans(coastINIState, eventNum, [], soiSkipIds, celBodyData);
             
         otherwise
             error(['Did not recongize coast of type ', type]);

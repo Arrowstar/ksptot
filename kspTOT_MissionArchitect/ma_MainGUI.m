@@ -22,7 +22,7 @@ function varargout = ma_MainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_MainGUI
 
-% Last Modified by GUIDE v2.5 13-May-2015 18:28:59
+% Last Modified by GUIDE v2.5 14-May-2015 21:04:53
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -111,7 +111,7 @@ function initializeOutputWindowText(handles, hOutputText)
 
 
 function maData = generateCleanMissionPlan(handles) 
-    global number_state_log_entries_per_coast num_SoI_search_revs strict_SoI_search;
+    global number_state_log_entries_per_coast num_SoI_search_revs strict_SoI_search use_selective_soi_search;
     celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
     
     thrusters = {};
@@ -180,12 +180,14 @@ function maData = generateCleanMissionPlan(handles)
     maData.spacecraft.stations = stations;
     
     maData.settings.strictSoISearch = true;
+    maData.settings.useSelectiveSoISearch = true;
     maData.settings.parallelScriptOptim = false;
     maData.settings.numStateLogPtsPerCoast = 1000;
     maData.settings.numSoISearchRevs = 3;
     number_state_log_entries_per_coast = maData.settings.numStateLogPtsPerCoast;
     num_SoI_search_revs = maData.settings.numSoISearchRevs;
     strict_SoI_search = maData.settings.strictSoISearch;
+    use_selective_soi_search = maData.settings.useSelectiveSoISearch;
     
     maData.stateLog = ma_executeScript(maData.script, handles, celBodyData, []);
     
@@ -525,7 +527,7 @@ function openMissionPlanMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to openMissionPlanMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-    global number_state_log_entries_per_coast num_SoI_search_revs strict_SoI_search;
+    global number_state_log_entries_per_coast num_SoI_search_revs strict_SoI_search use_selective_soi_search;
 
     askToClear=true;
     if(askToClear)
@@ -576,6 +578,7 @@ function openMissionPlanMenu_Callback(hObject, eventdata, handles)
             number_state_log_entries_per_coast = maData.settings.numStateLogPtsPerCoast;
             num_SoI_search_revs = maData.settings.numSoISearchRevs;
             strict_SoI_search = maData.settings.strictSoISearch;
+            use_selective_soi_search = maData.settings.useSelectiveSoISearch;
             ma_processData(handles, maData, celBodyData);
         else
             write_to_output_func(['There was a problem loading the case file from disk: ',filePath,'.  Case not loaded.'],'append');
@@ -948,7 +951,7 @@ function splitCoastAtUTMenu_Callback(hObject, eventdata, handles)
             
             preList = script(1:eventNum-1);
             postList = script(eventNum:end);
-            newCoast = ma_createCoast('Split at UT', 'goto_ut', splitUT, 0, event.refBody, vars);
+            newCoast = ma_createCoast('Split at UT', 'goto_ut', splitUT, 0, event.refBody, vars, event.soiSkipIds);
             script = [preList, newCoast, postList];
             
             maData.script = script;
@@ -1279,6 +1282,13 @@ function scriptExecSettings_Callback(hObject, eventdata, handles)
         set(handles.useStrictSoISearchMenu, 'Checked', 'off');
     end
     
+    useSelectiveSoISearch = maData.settings.useSelectiveSoISearch;
+    if(useSelectiveSoISearch==true)
+        set(handles.useSelectiveSoISearchMenu, 'Checked', 'on');
+    else
+        set(handles.useSelectiveSoISearchMenu, 'Checked', 'off');
+    end
+    
     parallelOptim = maData.settings.parallelScriptOptim;
     if(parallelOptim==true)
         set(handles.parallelizeScriptOptimizationMenu, 'Checked', 'on');
@@ -1413,7 +1423,7 @@ function getManeuverNodesFromKSPActiveVessel_Callback(hObject, eventdata, handle
             
             preList = script(1:eventNum-1);
             postList = script(eventNum:end);
-            newCoast = ma_createCoast(['To Node ', num2str(i)], 'goto_ut', ut, 0.0, [], [0;ut;ut]);
+            newCoast = ma_createCoast(['To Node ', num2str(i)], 'goto_ut', ut, 0.0, [], [0;ut;ut], []);
             newDV = ma_createDVManeuver(['Node ', num2str(i)], 'dv_orbit', dvVect, dvThruster, dvVars);
             script = [preList, newCoast, newDV, postList];
 
@@ -1427,7 +1437,7 @@ function getManeuverNodesFromKSPActiveVessel_Callback(hObject, eventdata, handle
             script = maData.script;
             
         elseif(ut >= stateLog(end,1)) %after current mission
-            newCoast = ma_createCoast(['Coast To Node ', num2str(i)], 'goto_ut', ut, 0.0, [], [0;ut;ut]);
+            newCoast = ma_createCoast(['Coast To Node ', num2str(i)], 'goto_ut', ut, 0.0, [], [0;ut;ut], []);
             newDV = ma_createDVManeuver(['Node ', num2str(i)], 'dv_orbit', dvVect, dvThruster, dvVars);
             
             script{end+1} = newCoast; %#ok<AGROW>
@@ -1570,7 +1580,7 @@ function convertImpulseManeuverMenu_Callback(hObject, eventdata, handles)
                         
                         nameCoast = [prevEvent.name, ' (Converted)'];
                         coastVars = [0;coastDt;coastDt];
-                        newCoast = ma_createCoast(nameCoast, 'goto_dt', coastDt, 0, [], coastVars);
+                        newCoast = ma_createCoast(nameCoast, 'goto_dt', coastDt, 0, [], coastVars, []);
                         
                         preList = script(1:prevEventId-1);
                         if(eventNum==length(script))
@@ -1686,7 +1696,7 @@ function splitImpulseManeuverMenu_Callback(hObject, eventdata, handles)
                         if(i < size(burnValues,1))
                             
                             vars = [0; period; period];
-                            newCoast = ma_createCoast('Coast (From Split)', 'goto_dt', period, 0, [], vars);
+                            newCoast = ma_createCoast('Coast (From Split)', 'goto_dt', period, 0, [], vars, []);
                             newEvents{end+1} = newCoast; %#ok<AGROW>
                         end
                     else
@@ -1818,3 +1828,32 @@ function setNumSoISearchRevsMenu_Callback(hObject, eventdata, handles)
     else
         writeOutput(sprintf('Could not set number of SoI search revolutions.  "%s" is an invalid entry.', str),'append');
     end
+
+
+% --------------------------------------------------------------------
+function useSelectiveSoISearchMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to useSelectiveSoISearchMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    global use_selective_soi_search;
+
+    maData = getappdata(handles.ma_MainGUI,'ma_data');
+    celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
+    writeOutput = getappdata(handles.ma_MainGUI,'write_to_output_func');
+    
+    if strcmp(get(gcbo, 'Checked'),'on')
+        set(gcbo, 'Checked', 'off');
+        maData.settings.useSelectiveSoISearch = false;
+        writeOutput('Selective SoI search mode disabled.','append');
+    else
+        set(gcbo, 'Checked', 'on');
+        maData.settings.useSelectiveSoISearch = true;
+        writeOutput('Selective SoI search mode enabled.','append');
+    end
+    use_selective_soi_search = maData.settings.useSelectiveSoISearch;
+    
+    maData.stateLog = ma_executeScript(maData.script,handles,celBodyData,handles.scriptWorkingLbl);
+    setappdata(handles.ma_MainGUI,'ma_data',maData);
+    ma_processData(handles);
+    
+    setappdata(handles.ma_MainGUI,'ma_data',maData);

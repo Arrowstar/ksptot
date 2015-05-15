@@ -85,13 +85,14 @@ function executeOptimProblem(handles, problem)
     global maData;
     maData = getappdata(handles.ma_MainGUI,'ma_data');
     celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
-
+    writeOutput = getappdata(handles.ma_MainGUI,'write_to_output_func');
+    
     try
-%         profile clear;
-%         profile on;
+        writeOutput('Beginning mission script optimization...','append');
+        tt = tic;
         [x,~,exitflag,output] = fmincon(problem);
-%         profile off;
-%         profile viewer;
+        execTime = toc(tt);
+        writeOutput(sprintf('Mission script optimization finished in %0.3f sec with exit flag "%i".', execTime, exitflag),'append');
     catch ME
         errorStr = {};
         errorStr{end+1} = 'There was an error optimizing the mission script: ';
@@ -128,6 +129,7 @@ function executeOptimProblem(handles, problem)
     
     if(strcmpi(button,'Yes'))
         ma_UndoRedoAddState(handles, 'Optimize');
+        writeOutput(sprintf('Optimization results accepted: merging with mission script.'),'append');
         
         %%%%%%%
         % Update existing script, reprocess
@@ -136,6 +138,8 @@ function executeOptimProblem(handles, problem)
         maData.stateLog = ma_executeScript(maData.script,handles,celBodyData,findobj('Tag','scriptWorkingLbl'));
         
         setappdata(handles.ma_MainGUI,'ma_data',maData);
+    else
+        writeOutput(sprintf('Optimization results discarded: reverting to previous script.'),'append');
     end
 
 

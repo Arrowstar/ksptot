@@ -18,6 +18,8 @@ function stateLog = ma_executeScript(script,handles,celBodyData,varargin)
     % xenonMass in tons
     % eventNum is dimensionless
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   
+    writeOutput = getappdata(handles.ma_MainGUI,'write_to_output_func');
+    
     if(~isempty(varargin))
         hScriptWorkingLbl = varargin{1};
     else
@@ -33,7 +35,10 @@ function stateLog = ma_executeScript(script,handles,celBodyData,varargin)
     clearExecutionErrors();
     clearWarningErrorLabels();
 
+    tt = tic;
     [stateLog, errorStr, errorEventNum] = ma_produceStateLogFromScript(script,celBodyData);
+    execTime = toc(tt);
+    writeOutput(sprintf('Executed mission script in %0.3f seconds.',execTime),'append');
     
     if(~isempty(errorStr))
         addToExecutionErrors(errorStr, errorEventNum, -1, celBodyData);

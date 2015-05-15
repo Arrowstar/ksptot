@@ -1,4 +1,4 @@
-function coast = ma_createCoast(name, coastType, coastToValue, revs, refBody, vars)
+function coast = ma_createCoast(name, coastType, coastToValue, revs, refBody, vars, soiSkipIds)
 %ma_createCoast Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -23,5 +23,6 @@ function coast = ma_createCoast(name, coastType, coastToValue, revs, refBody, va
     coast.refBody      = refBody;
     coast.id           = rand(1);
     coast.vars         = vars;
+    coast.soiSkipIds   = soiSkipIds;
 end
 

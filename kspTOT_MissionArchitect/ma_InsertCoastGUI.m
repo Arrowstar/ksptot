@@ -22,7 +22,7 @@ function varargout = ma_InsertCoastGUI(varargin)
 
 % Edit the above text to modify the response to help ma_InsertCoastGUI
 
-% Last Modified by GUIDE v2.5 19-Jun-2014 19:43:51
+% Last Modified by GUIDE v2.5 14-May-2015 21:15:44
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -53,6 +53,8 @@ function ma_InsertCoastGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 % varargin   command line arguments to ma_InsertCoastGUI (see VARARGIN)
 
 % Choose default command line output for ma_InsertCoastGUI
+global use_selective_soi_search;
+
 handles.output = hObject;
 handles.ma_MainGUI = varargin{1};
 
@@ -67,9 +69,16 @@ if(length(varargin)>1)
     set(hObject,'UserData',event);
 else
     set(hObject,'UserData',[]);
+    setappdata(hObject,'soiSkipIds',[]);
 end
 coastTypeCombo_Callback(handles.coastTypeCombo, [], handles);
 optVar1ChkBox_Callback(handles.optVar1ChkBox, [], handles);
+
+if(use_selective_soi_search)
+    set(handles.selectiveSearchActiveLabel,'String','Active','ForegroundColor',[34,139,34]/255);
+else
+    set(handles.selectiveSearchActiveLabel,'String','Inactive','ForegroundColor',[0.847,0.161,0]);
+end
 
 % UIWAIT makes ma_InsertCoastGUI wait for user response (see UIRESUME)
 uiwait(handles.ma_InsertCoastGUI);
@@ -90,7 +99,7 @@ function populateGUIWithEvent(handles, event)
     set(handles.bodiesCombo, 'value', bodyValue);
     
     opt = event.vars;
-    
+       
     value = event.coastToValue;
     switch event.coastType
         case 'goto_ut'
@@ -139,6 +148,7 @@ function populateGUIWithEvent(handles, event)
     set(handles.coastTypeCombo,'value',typeValue);
     
     set(handles.coastValueText, 'String', fullAccNum2Str(value));
+    setappdata(handles.ma_InsertCoastGUI,'soiSkipIds',event.soiSkipIds);
 
 
 function populateBodiesCombo(handles, hBodiesCombo)
@@ -224,8 +234,9 @@ else
     else
         bodyInfo = celBodyData.(lower(selected));
     end
-
-    varargout{1} = ma_createCoast(name, coastType, value, revs, bodyInfo, vars);
+    
+    soiSkipIds = getappdata(hObject,'soiSkipIds');    
+    varargout{1} = ma_createCoast(name, coastType, value, revs, bodyInfo, vars, soiSkipIds);
     close(handles.ma_InsertCoastGUI);
 end
 
@@ -719,9 +730,9 @@ function coastValueText_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of coastValueText as text
 %        str2double(get(hObject,'String')) returns contents of coastValueText as a double
-newInput = get(hObject,'String');
-newInput = attemptStrEval(newInput);
-set(hObject,'String', newInput);
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
 
 % --- Executes during object creation, after setting all properties.
 function coastValueText_CreateFcn(hObject, eventdata, handles)
@@ -741,13 +752,13 @@ function saveCloseButton_Callback(hObject, eventdata, handles)
 % hObject    handle to saveCloseButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-errMsg = validateInputs(handles);
+    errMsg = validateInputs(handles);
 
-if(isempty(errMsg))
-    uiresume(handles.ma_InsertCoastGUI);
-else
-    msgbox(errMsg,'Errors were found while inserting a coast.','error');
-end  
+    if(isempty(errMsg))
+        uiresume(handles.ma_InsertCoastGUI);
+    else
+        msgbox(errMsg,'Errors were found while inserting a coast.','error');
+    end  
 
 
 % --- Executes on button press in cancelButton.
@@ -765,9 +776,9 @@ function numRevsText_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of numRevsText as text
 %        str2double(get(hObject,'String')) returns contents of numRevsText as a double
-newInput = get(hObject,'String');
-newInput = attemptStrEval(newInput);
-set(hObject,'String', newInput);
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
 
 % --- Executes during object creation, after setting all properties.
 function numRevsText_CreateFcn(hObject, eventdata, handles)
@@ -835,13 +846,13 @@ function optVar1ChkBox_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of optVar1ChkBox
-if(get(hObject,'Value'))
-    set(handles.optVar1LwrText,'Enable','on');
-    set(handles.optVar1UprText,'Enable','on');
-else
-    set(handles.optVar1LwrText,'Enable','off');
-    set(handles.optVar1UprText,'Enable','off');
-end
+    if(get(hObject,'Value'))
+        set(handles.optVar1LwrText,'Enable','on');
+        set(handles.optVar1UprText,'Enable','on');
+    else
+        set(handles.optVar1LwrText,'Enable','off');
+        set(handles.optVar1UprText,'Enable','off');
+    end
 
 
 function optVar1LwrText_Callback(hObject, eventdata, handles)
@@ -851,9 +862,9 @@ function optVar1LwrText_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of optVar1LwrText as text
 %        str2double(get(hObject,'String')) returns contents of optVar1LwrText as a double
-newInput = get(hObject,'String');
-newInput = attemptStrEval(newInput);
-set(hObject,'String', newInput);
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
 
 % --- Executes during object creation, after setting all properties.
 function optVar1LwrText_CreateFcn(hObject, eventdata, handles)
@@ -876,9 +887,9 @@ function optVar1UprText_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of optVar1UprText as text
 %        str2double(get(hObject,'String')) returns contents of optVar1UprText as a double
-newInput = get(hObject,'String');
-newInput = attemptStrEval(newInput);
-set(hObject,'String', newInput);
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
 
 % --- Executes during object creation, after setting all properties.
 function optVar1UprText_CreateFcn(hObject, eventdata, handles)
@@ -909,3 +920,44 @@ function ma_InsertCoastGUI_WindowKeyPressFcn(hObject, eventdata, handles)
         case 'escape'
             close(handles.ma_InsertCoastGUI);
     end
+
+
+% --- Executes on button press in selectiveSoISearchButton.
+function selectiveSoISearchButton_Callback(hObject, eventdata, handles)
+% hObject    handle to selectiveSoISearchButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
+    event = get(handles.ma_InsertCoastGUI,'UserData');
+    
+    if(~isempty(event))
+        soiSkipIds = getappdata(handles.ma_InsertCoastGUI,'soiSkipIds');
+    else
+        soiSkipIds = [];
+    end
+    
+    bodies = fields(celBodyData);
+    S = cell(length(bodies),1);
+    initValue = [];
+    bodyIds = [];
+    for(i=1:length(bodies))
+        S{i,1} = celBodyData.(bodies{i}).name;
+        
+        bodyId = celBodyData.(bodies{i}).id;
+        bodyIds(end+1) = bodyId; %#ok<AGROW>
+        if(~ismember(bodyId,soiSkipIds))
+            initValue(end+1) = i; %#ok<AGROW>
+        end
+    end
+   
+    promptStr = {'Select which bodies you would','like this coast to consider when','computing downward SoI','transitions.'};
+    
+    [select,ok] = listdlg('ListString',S,'Name','Selective SoI Search','PromptString',promptStr, 'InitialValue', initValue);
+    
+    bodyInds = 1:length(bodies);
+    if(ok == 1)
+        diff = setdiff(bodyInds,select);
+        newSoiSkipIds = bodyIds(diff);
+        setappdata(handles.ma_InsertCoastGUI,'soiSkipIds',newSoiSkipIds);
+    end
+   

@@ -1,4 +1,4 @@
-function eventLog = ma_executeCoast_goto_node(node, initialState, eventNum, considerSoITransitions, refBody, celBodyData)
+function eventLog = ma_executeCoast_goto_node(node, initialState, eventNum, considerSoITransitions, soiSkipIds, refBody, celBodyData)
 %ma_executeCoast_goto_asc_node Summary of this function goes here
 %   Detailed explanation goes here   
     bodyID = initialState(8);
@@ -54,18 +54,18 @@ function eventLog = ma_executeCoast_goto_node(node, initialState, eventNum, cons
             utTru = Inf;
         end
         
-        soITrans = findSoITransitions(initialState, utTru, celBodyData);
+        soITrans = findSoITransitions(initialState, utTru, soiSkipIds, celBodyData);
         SoITransEventLog = [];
         if(~isempty(soITrans) && min(soITrans(:,2)) < utTru)            
-            SoITransEventLog = ma_executeCoast_goto_soi_trans(initialState, eventNum, utTru, celBodyData, soITrans);
-            goToUTEventLog = ma_executeCoast_goto_node(node, SoITransEventLog(end,:), eventNum, true, refBody, celBodyData);
+            SoITransEventLog = ma_executeCoast_goto_soi_trans(initialState, eventNum, utTru, soiSkipIds, celBodyData, soITrans);
+            goToUTEventLog = ma_executeCoast_goto_node(node, SoITransEventLog(end,:), eventNum, true, soiSkipIds, refBody, celBodyData);
         else 
-            goToUTEventLog = ma_executeCoast_goto_node(node, initialState, eventNum, false, refBody, celBodyData);
+            goToUTEventLog = ma_executeCoast_goto_node(node, initialState, eventNum, false, soiSkipIds, refBody, celBodyData);
         end
         eventLog = [SoITransEventLog; goToUTEventLog];
         return;
     end
     
-    eventLog = ma_executeCoast_goto_tru(truOfN, initialState, eventNum, considerSoITransitions, refBody, celBodyData);
+    eventLog = ma_executeCoast_goto_tru(truOfN, initialState, eventNum, considerSoITransitions, soiSkipIds, refBody, celBodyData);
 end
 

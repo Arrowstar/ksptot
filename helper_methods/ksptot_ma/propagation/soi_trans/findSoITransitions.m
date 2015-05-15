@@ -1,4 +1,4 @@
-function soITrans = findSoITransitions(initialState, maxSearchUT, celBodyData)
+function soITrans = findSoITransitions(initialState, maxSearchUT, soiSkipIds, celBodyData)
 %findSoITransitions Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -28,7 +28,7 @@ function soITrans = findSoITransitions(initialState, maxSearchUT, celBodyData)
     % toVy
     % toVz
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    global num_SoI_search_revs strict_SoI_search;
+    global num_SoI_search_revs strict_SoI_search use_selective_soi_search;
     
     ut = initialState(1);
     
@@ -78,11 +78,11 @@ function soITrans = findSoITransitions(initialState, maxSearchUT, celBodyData)
                 tempEventLog = initialState;
             else
                 truSoI = computeTrueAFromRadiusEcc(soiRadius, sma, ecc);
-                tempEventLog = ma_executeCoast_goto_tru(truSoI, initialState, -1, false, [], celBodyData);
+                tempEventLog = ma_executeCoast_goto_tru(truSoI, initialState, -1, false, soiSkipIds, [], celBodyData);
             end
             
 %             truSoI = computeTrueAFromRadiusEcc(soiRadius, sma, ecc);
-%             tempEventLog = ma_executeCoast_goto_tru(truSoI, initialState, -1, false, [], celBodyData);
+%             tempEventLog = ma_executeCoast_goto_tru(truSoI, initialState, -1, false, soiSkipIds, [], celBodyData);
             upSoITransUT = tempEventLog(end,1);
             
             if(upSoITransUT <= maxSearchUT)
@@ -108,6 +108,11 @@ function soITrans = findSoITransitions(initialState, maxSearchUT, celBodyData)
     downSoITrans = [];
     for(child = childBodies)
         childBodyInfo = child{1};
+        
+        if(use_selective_soi_search && ismember(childBodyInfo.id,soiSkipIds))
+            continue;
+        end
+        
         soiRadius = getSOIRadius(childBodyInfo, bodyInfo);
         if(~isempty(parentBodyInfo))
             soiRadiusParent = getSOIRadius(bodyInfo, parentBodyInfo);
@@ -296,8 +301,6 @@ function soITrans = findSoITransitions(initialState, maxSearchUT, celBodyData)
         end
         
 %         tArr = [initialState(1)+100, tArr(1)-100, tArr];
-        
-        disp(childBodyInfo.name);
 
         findChildSoITransFunc = @(ut) isSoICrossing(ut, scBodyInfo, childBodyInfo, bodyInfo, soiRadius-2, true, celBodyData); %make this true again
         findChildSoITransFuncRealSoI = @(ut) isSoICrossing(ut, scBodyInfo, childBodyInfo, bodyInfo, soiRadius, false, celBodyData);
@@ -355,7 +358,7 @@ function soITrans = findSoITransitions(initialState, maxSearchUT, celBodyData)
                 continue;
             end
             
-            tempEventLog = ma_executeCoast_goto_ut(crossingUT, initialState, -1, false, celBodyData);
+            tempEventLog = ma_executeCoast_goto_ut(crossingUT, initialState, -1, false, soiSkipIds, celBodyData);
             
             [rVectDown, vVectDown] = convertRVVectOnDownwardsSoITransition(childBodyInfo, bodyInfo, crossingUT, tempEventLog(end,2:4), tempEventLog(end,5:7));
             if(dot(rVectDown, vVectDown) > 0) %we found the outgoing part of the SoI transition                
@@ -377,7 +380,7 @@ function soITrans = findSoITransitions(initialState, maxSearchUT, celBodyData)
                     end
                 end  
                 
-                tempEventLog = ma_executeCoast_goto_ut(crossingUT, initialState, -1, false, celBodyData);
+                tempEventLog = ma_executeCoast_goto_ut(crossingUT, initialState, -1, false, soiSkipIds, celBodyData);
                 [rVectDown, vVectDown] = convertRVVectOnDownwardsSoITransition(childBodyInfo, bodyInfo, crossingUT, tempEventLog(end,2:4), tempEventLog(end,5:7));
             end
             if(norm(rVectDown) - soiRadius > 1)

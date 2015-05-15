@@ -1,4 +1,4 @@
-function eventLog = ma_executeCoast_goto_tru(truTarget, initialState, eventNum, considerSoITransitions, refBody, celBodyData)
+function eventLog = ma_executeCoast_goto_tru(truTarget, initialState, eventNum, considerSoITransitions, soiSkipIds, refBody, celBodyData)
 %ma_executeCoast_goto_tru Summary of this function goes here
 %   Detailed explanation goes here    
     bodyID = initialState(8);
@@ -65,7 +65,7 @@ function eventLog = ma_executeCoast_goto_tru(truTarget, initialState, eventNum, 
         bool3 = (ecc >= 1.0 && truTarget<lbTA);
         
         if(bool1 || bool2 || bool3)
-            soITrans = findSoITransitions(initialState, Inf, celBodyData);
+            soITrans = findSoITransitions(initialState, Inf, soiSkipIds, celBodyData);
             if(~isempty(soITrans))
                 SoITransEventLog = ma_executeCoast_goto_soi_trans(initialState, eventNum, Inf, celBodyData, soITrans);
                 goToUTEventLog = ma_executeCoast_goto_tru(truTarget, SoITransEventLog(end,:), eventNum, true, refBody, celBodyData);
@@ -89,13 +89,13 @@ function eventLog = ma_executeCoast_goto_tru(truTarget, initialState, eventNum, 
             utTru = Inf;
         end
         
-        soITrans = findSoITransitions(initialState, utTru, celBodyData);
+        soITrans = findSoITransitions(initialState, utTru, soiSkipIds, celBodyData);
         SoITransEventLog = [];
         if(~isempty(soITrans) && min(soITrans(:,2)) < utTru)            
-            SoITransEventLog = ma_executeCoast_goto_soi_trans(initialState, eventNum, utTru, celBodyData, soITrans);
-            goToUTEventLog = ma_executeCoast_goto_tru(truTarget, SoITransEventLog(end,:), eventNum, true, refBody, celBodyData);
+            SoITransEventLog = ma_executeCoast_goto_soi_trans(initialState, eventNum, utTru, soiSkipIds, celBodyData, soITrans);
+            goToUTEventLog = ma_executeCoast_goto_tru(truTarget, SoITransEventLog(end,:), eventNum, true, soiSkipIds, refBody, celBodyData);
         else 
-            goToUTEventLog = ma_executeCoast_goto_tru(truTarget, initialState, eventNum, false, refBody, celBodyData);
+            goToUTEventLog = ma_executeCoast_goto_tru(truTarget, initialState, eventNum, false, soiSkipIds, refBody, celBodyData);
         end
         eventLog = [SoITransEventLog; goToUTEventLog];
         return;
@@ -117,9 +117,9 @@ function eventLog = ma_executeCoast_goto_tru(truTarget, initialState, eventNum, 
         dM = meanTarget-meanINI;
         dt = dM/meanMotion;
         
-        eventLog = ma_executeCoast_goto_dt(dt, initialState, eventNum, considerSoITransitions, celBodyData);
+        eventLog = ma_executeCoast_goto_dt(dt, initialState, eventNum, considerSoITransitions, soiSkipIds, celBodyData);
     else
-        eventLog1 = ma_executeCoast_goto_tru(2*pi, initialState, eventNum, considerSoITransitions, refBody, celBodyData);
+        eventLog1 = ma_executeCoast_goto_tru(2*pi, initialState, eventNum, considerSoITransitions, soiSkipIds, refBody, celBodyData);
 
         bodyID = eventLog1(end,8);
         bodyInfo = getBodyInfoByNumber(bodyID, celBodyData);
@@ -132,7 +132,7 @@ function eventLog = ma_executeCoast_goto_tru(truTarget, initialState, eventNum, 
             eventLog1(end,2:4) = reshape(rVect,1,3);
             eventLog1(end,5:7) = reshape(vVect,1,3);
             
-            eventLog2 = ma_executeCoast_goto_tru(truTarget, eventLog1(end,:), eventNum, considerSoITransitions, refBody, celBodyData); 
+            eventLog2 = ma_executeCoast_goto_tru(truTarget, eventLog1(end,:), eventNum, considerSoITransitions, soiSkipIds, refBody, celBodyData); 
         else
             eventLog2 = [];
         end

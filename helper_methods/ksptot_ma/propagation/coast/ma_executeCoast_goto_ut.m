@@ -1,4 +1,4 @@
-function eventLog = ma_executeCoast_goto_ut(ut, initialState, eventNum, considerSoITransitions, celBodyData)
+function eventLog = ma_executeCoast_goto_ut(ut, initialState, eventNum, considerSoITransitions, soiSkipIds, celBodyData)
 %ma_executeCoast_goto_ut Summary of this function goes here
 %   Detailed explanation goes here 
     global number_state_log_entries_per_coast;
@@ -18,13 +18,13 @@ function eventLog = ma_executeCoast_goto_ut(ut, initialState, eventNum, consider
     end
     
     if(considerSoITransitions)
-        soITrans = findSoITransitions(initialState, ut, celBodyData);
+        soITrans = findSoITransitions(initialState, ut, soiSkipIds, celBodyData);
         SoITransEventLog = [];
         if(~isempty(soITrans))
             SoITransEventLog = ma_executeCoast_goto_soi_trans(initialState, eventNum, ut, celBodyData, soITrans);
-            goToUTEventLog = ma_executeCoast_goto_ut(ut, SoITransEventLog(end,:), eventNum, true, celBodyData);
+            goToUTEventLog = ma_executeCoast_goto_ut(ut, SoITransEventLog(end,:), eventNum, true, soiSkipIds, celBodyData);
         else 
-            goToUTEventLog = ma_executeCoast_goto_ut(ut, initialState, eventNum, false, celBodyData);
+            goToUTEventLog = ma_executeCoast_goto_ut(ut, initialState, eventNum, false, soiSkipIds, celBodyData);
         end
         eventLog = [SoITransEventLog; goToUTEventLog];
         return;
