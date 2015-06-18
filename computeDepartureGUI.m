@@ -22,7 +22,7 @@ function varargout = computeDepartureGUI(varargin)
 
 % Edit the above text to modify the response to help computeDepartureGUI
 
-% Last Modified by GUIDE v2.5 07-Sep-2014 20:25:14
+% Last Modified by GUIDE v2.5 11-Jun-2015 21:04:59
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -839,3 +839,11 @@ function pasteOrbitFromClipboardMenu_Callback(hObject, eventdata, handles)
     pasteOrbitFromClipboard(handles.eEpoch, handles.eSMA, handles.eEcc, ...
                                  handles.eInc, handles.eRAAN, handles.eArg, ...
                                  handles.eMeanAnom, false);
+
+
+% --------------------------------------------------------------------
+function getOrbitFromKSPActiveVesselMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to getOrbitFromKSPActiveVesselMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    orbitPanelGetOrbitFromKSPTOTConnectActiveVesselCallBack(handles.eSMA, handles.eEcc, handles.eInc, handles.eRAAN, handles.eArg, handles.eMeanAnom, handles.eEpoch);

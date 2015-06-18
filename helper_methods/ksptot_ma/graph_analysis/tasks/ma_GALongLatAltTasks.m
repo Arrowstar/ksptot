@@ -1,5 +1,5 @@
 function datapt = ma_GALongLatAltTasks(stateLogEntry, subTask, celBodyData)
-%UNTITLED8 Summary of this function goes here
+%ma_GALongLatAltTasks Summary of this function goes here
 %   Detailed explanation goes here
 
     bodyID = stateLogEntry(8);

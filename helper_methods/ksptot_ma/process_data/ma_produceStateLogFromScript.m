@@ -1,5 +1,5 @@
 function [stateLog, errorStr, errorEventNum] = ma_produceStateLogFromScript(script, celBodyData, varargin)
-%UNTITLED4 Summary of this function goes here
+%ma_produceStateLogFromScript Summary of this function goes here
 %   Detailed explanation goes here
 
     if(isempty(varargin))

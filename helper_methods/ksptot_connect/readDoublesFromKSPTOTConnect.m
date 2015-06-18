@@ -8,6 +8,10 @@ function outDoubles = readDoublesFromKSPTOTConnect(dataType, paramStr, waitForDa
     dataType = paddStr(dataType(1:min(length(dataType),32)), 32);
     dataClass = 's';
     
+    if(isempty(paramStr))
+        dataClass = 'n';
+    end
+    
     try
         if(isempty(varargin))
             tcpipClient = createTcpIpClient();

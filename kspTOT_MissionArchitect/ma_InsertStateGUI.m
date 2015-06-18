@@ -22,7 +22,7 @@ function varargout = ma_InsertStateGUI(varargin)
 
 % Edit the above text to modify the response to help ma_InsertStateGUI
 
-% Last Modified by GUIDE v2.5 22-Apr-2015 16:49:28
+% Last Modified by GUIDE v2.5 11-Jun-2015 20:50:49
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -725,4 +725,21 @@ function ma_InsertStateGUI_WindowKeyReleaseFcn(hObject, eventdata, handles)
     switch(eventdata.Key)
         case 'escape'
             close(handles.ma_InsertStateGUI);
+    end
+
+
+% --------------------------------------------------------------------
+function getOrbitFromKSPActiveVesselMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to getOrbitFromKSPActiveVesselMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    refBodyID = orbitPanelGetOrbitFromKSPTOTConnectActiveVesselCallBack(handles.smaText, handles.eccText, handles.incText, handles.raanText, handles.argText, handles.truText, handles.epochText);
+    tru = computeTrueAnomFromMean(deg2rad(str2double(get(handles.truText,'String'))), str2double(get(handles.eccText,'String')));
+    set(handles.truText,'String',fullAccNum2Str(rad2deg(tru)));
+    
+    if(~isempty(refBodyID) && isnumeric(refBodyID))
+        celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
+        bodyInfo = getBodyInfoByNumber(refBodyID, celBodyData);
+        value = findValueFromComboBox(bodyInfo.name, handles.bodiesCombo);
+        set(handles.bodiesCombo,'Value',value);
     end

@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.ezdeploy" plugin-version="1.0">
-  <configuration build-checksum="1774904501" file="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\KSPTrajectoryOptimizationTool.prj" location="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool" name="KSPTrajectoryOptimizationTool" preferred-package-location="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\deploy\KSPTrajectoryOptimizationTool\for_redistribution" preferred-package-type="package.type.exe" target="target.ezdeploy.standalone" target-name="MATLAB Compiler for Standalone Applications">
+  <configuration build-checksum="4020030302" file="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\KSPTrajectoryOptimizationTool.prj" location="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool" name="KSPTrajectoryOptimizationTool" preferred-package-location="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\deploy\KSPTrajectoryOptimizationTool\for_redistribution" preferred-package-type="package.type.exe" target="target.ezdeploy.standalone" target-name="MATLAB Compiler for Standalone Applications">
     <param.appname>KSPTrajectoryOptimizationTool</param.appname>
     <param.icon />
     <param.icons />
@@ -143,6 +143,8 @@
       <file>${PROJECT_ROOT}\helper_methods\astrodynamics\getTAFromLineOfNodes.m</file>
       <file>${PROJECT_ROOT}\helper_methods\astrodynamics\getTAFromTimePastPeriapse.m</file>
       <file>${PROJECT_ROOT}\helper_methods\astrodynamics\getTimePastPeriapseFromTA.m</file>
+      <file>${PROJECT_ROOT}\helper_methods\astrodynamics\kepler_equations\keplerEq.m</file>
+      <file>${PROJECT_ROOT}\helper_methods\astrodynamics\kepler_equations\keplerEqHyp.m</file>
       <file>${PROJECT_ROOT}\helper_methods\astrodynamics\lambert.mexw64</file>
       <file>${PROJECT_ROOT}\helper_methods\astrodynamics\lambert_vector.m</file>
       <file>${PROJECT_ROOT}\helper_methods\astrodynamics\lambertBattinVector.m</file>
@@ -184,6 +186,7 @@
       <file>${PROJECT_ROOT}\helper_methods\gui_setup\findValueFromComboBox.m</file>
       <file>${PROJECT_ROOT}\helper_methods\gui_setup\genCBArriveDepartComboBoxStrs.m</file>
       <file>${PROJECT_ROOT}\helper_methods\gui_setup\generatePorkChopPlot.m</file>
+      <file>${PROJECT_ROOT}\helper_methods\gui_setup\getSingularOrbitFromKSPTOTConnect.m</file>
       <file>${PROJECT_ROOT}\helper_methods\gui_setup\orbitPanelGetOrbitFromKSPTOTConnectCallBack.m</file>
       <file>${PROJECT_ROOT}\helper_methods\gui_setup\orbitPanelGetOrbitFromSFSContextCallBack.m</file>
       <file>${PROJECT_ROOT}\helper_methods\gui_setup\plot\Cone.m</file>

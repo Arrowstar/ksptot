@@ -22,7 +22,7 @@ function varargout = multiFlyByManeuverSequencer(varargin)
 
 % Edit the above text to modify the response to help multiFlyByManeuverSequencer
 
-% Last Modified by GUIDE v2.5 16-Feb-2015 18:22:35
+% Last Modified by GUIDE v2.5 11-Jun-2015 21:12:04
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -930,3 +930,11 @@ function pasteOrbitFromClipboardMenu_Callback(hObject, eventdata, handles)
     pasteOrbitFromClipboard([], handles.eSMAText, handles.eEccText, ...
                                  handles.eIncText, handles.eRAANText, handles.eArgText, ...
                                  [], true);
+
+
+% --------------------------------------------------------------------
+function getOrbitFromKSPActiveVesselMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to getOrbitFromKSPActiveVesselMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    orbitPanelGetOrbitFromKSPTOTConnectActiveVesselCallBack(handles.eSMAText, handles.eEccText, handles.eIncText, handles.eRAANText, handles.eArgText);

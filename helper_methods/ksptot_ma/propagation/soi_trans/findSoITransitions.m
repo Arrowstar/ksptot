@@ -41,8 +41,8 @@ function soITrans = findSoITransitions(initialState, maxSearchUT, soiSkipIds, ce
     end
     
     bodyID = initialState(8);
-    
     bodyInfo = getBodyInfoByNumber(bodyID, celBodyData);
+
     gmu = bodyInfo.gm;
     rVect = initialState(2:4)';
     vVect = initialState(5:7)';

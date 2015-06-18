@@ -21,7 +21,7 @@ function eventLog = ma_executeCoast_goto_ut(ut, initialState, eventNum, consider
         soITrans = findSoITransitions(initialState, ut, soiSkipIds, celBodyData);
         SoITransEventLog = [];
         if(~isempty(soITrans))
-            SoITransEventLog = ma_executeCoast_goto_soi_trans(initialState, eventNum, ut, celBodyData, soITrans);
+            SoITransEventLog = ma_executeCoast_goto_soi_trans(initialState, eventNum, ut, soiSkipIds, celBodyData, soITrans);
             goToUTEventLog = ma_executeCoast_goto_ut(ut, SoITransEventLog(end,:), eventNum, true, soiSkipIds, celBodyData);
         else 
             goToUTEventLog = ma_executeCoast_goto_ut(ut, initialState, eventNum, false, soiSkipIds, celBodyData);

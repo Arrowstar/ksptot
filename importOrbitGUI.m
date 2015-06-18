@@ -78,23 +78,33 @@ if(dataSource == -1)
     end
     
     orbits = {};
-    for(i=1:length(guids))
+    for(i=1:length(guids)) %#ok<*NO4LP>
         guid = guids{i};
         
-        name = readStringFromKSPTOTConnect('GetVesselNameByGUID', guid, true);
-        status = readStringFromKSPTOTConnect('GetVesselStatusByGUID', guid, true);
-        orbitDbl = readDoublesFromKSPTOTConnect('GetVesselOrbitByGUID', guid, true);
-        
-        orbits{i,1} = name;
-        orbits{i,2} = status;
-        orbits{i,3} = orbitDbl(1);
-        orbits{i,4} = orbitDbl(2);
-        orbits{i,5} = orbitDbl(3);
-        orbits{i,6} = orbitDbl(4);
-        orbits{i,7} = orbitDbl(5);
-        orbits{i,8} = orbitDbl(8);
-        orbits{i,9} = orbitDbl(9);
-        orbits{i,10} = orbitDbl(13);
+        orbitRow = getSingularOrbitFromKSPTOTConnect(guid);
+        orbits(i,:) = orbitRow; %#ok<AGROW>
+%         name = readStringFromKSPTOTConnect('GetVesselNameByGUID', guid, true);
+%         status = readStringFromKSPTOTConnect('GetVesselStatusByGUID', guid, true);
+%         orbitDbl = readDoublesFromKSPTOTConnect('GetVesselOrbitByGUID', guid, true);
+%         
+%         orbits{i,1} = name;
+%         orbits{i,2} = status;
+%         orbits{i,3} = orbitDbl(1);
+%         orbits{i,4} = orbitDbl(2);
+%         orbits{i,5} = orbitDbl(3);
+%         orbits{i,6} = orbitDbl(4);
+%         orbits{i,7} = orbitDbl(5);
+%         orbits{i,8} = orbitDbl(8);
+%         orbits{i,9} = orbitDbl(9);
+%         orbits{i,10} = orbitDbl(13);
+%         
+%         if(orbits{i,6} < 0)
+%             orbits{i,6} = orbits{i,6} + 360;
+%         end
+%         
+%         if(orbits{i,7} < 0)
+%             orbits{i,7} = orbits{i,7} + 360;
+%         end
     end
     if(ishandle(hRetDataDlg))
         close(hRetDataDlg);

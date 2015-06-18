@@ -67,8 +67,8 @@ function eventLog = ma_executeCoast_goto_tru(truTarget, initialState, eventNum, 
         if(bool1 || bool2 || bool3)
             soITrans = findSoITransitions(initialState, Inf, soiSkipIds, celBodyData);
             if(~isempty(soITrans))
-                SoITransEventLog = ma_executeCoast_goto_soi_trans(initialState, eventNum, Inf, celBodyData, soITrans);
-                goToUTEventLog = ma_executeCoast_goto_tru(truTarget, SoITransEventLog(end,:), eventNum, true, refBody, celBodyData);
+                SoITransEventLog = ma_executeCoast_goto_soi_trans(initialState, eventNum, Inf, soiSkipIds, celBodyData, soITrans);
+                goToUTEventLog = ma_executeCoast_goto_tru(truTarget, SoITransEventLog(end,:), eventNum, true, soiSkipIds, refBody, celBodyData);
                 eventLog = [SoITransEventLog; goToUTEventLog];
                 return;
             else

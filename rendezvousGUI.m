@@ -22,7 +22,7 @@ function varargout = rendezvousGUI(varargin)
 
 % Edit the above text to modify the response to help rendezvousGUI
 
-% Last Modified by GUIDE v2.5 24-Jan-2015 14:32:29
+% Last Modified by GUIDE v2.5 11-Jun-2015 21:29:38
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1348,3 +1348,19 @@ function paramWgtSlider_CreateFcn(hObject, eventdata, handles)
 if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor',[.9 .9 .9]);
 end
+
+
+% --------------------------------------------------------------------
+function getOrbitFromKSPActiveVesselMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to getOrbitFromKSPActiveVesselMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    orbitPanelGetOrbitFromKSPTOTConnectActiveVesselCallBack(handles.iniOrbitSMAText, handles.iniOrbitECCText, handles.iniOrbitINCText, handles.iniOrbitRAANText, handles.iniOrbitARGText, handles.iniOrbitMEANText, handles.iniOrbitEPOCHText);
+
+
+% --------------------------------------------------------------------
+function getFinalOrbitFromKSPActiveVesselMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to getFinalOrbitFromKSPActiveVesselMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    orbitPanelGetOrbitFromKSPTOTConnectActiveVesselCallBack(handles.finOrbitSMAText, handles.finOrbitECCText, handles.finOrbitINCText, handles.finOrbitRAANText, handles.finOrbitARGText, handles.finOrbitMEANText, handles.finOrbitEPOCHText);

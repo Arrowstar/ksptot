@@ -22,7 +22,7 @@ function varargout = ma_OtherSpacecraftGUI(varargin)
 
 % Edit the above text to modify the response to help ma_OtherSpacecraftGUI
 
-% Last Modified by GUIDE v2.5 25-Apr-2015 21:31:41
+% Last Modified by GUIDE v2.5 11-Jun-2015 21:01:10
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -853,3 +853,20 @@ function otherSCLineStyle_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --------------------------------------------------------------------
+function getOrbitFromKSPActiveVesselMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to getOrbitFromKSPActiveVesselMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    refBodyID = orbitPanelGetOrbitFromKSPTOTConnectActiveVesselCallBack(handles.smaText, handles.eccText, handles.incText, handles.raanText, handles.argText, handles.truText, handles.epochText);
+    tru = computeTrueAnomFromMean(deg2rad(str2double(get(handles.truText,'String'))), str2double(get(handles.eccText,'String')));
+    set(handles.truText,'String',fullAccNum2Str(rad2deg(tru)));
+    
+    if(~isempty(refBodyID) && isnumeric(refBodyID))
+        celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
+        bodyInfo = getBodyInfoByNumber(refBodyID, celBodyData);
+        value = findValueFromComboBox(bodyInfo.name, handles.centralBodyCombo);
+        set(handles.centralBodyCombo,'Value',value);
+    end
