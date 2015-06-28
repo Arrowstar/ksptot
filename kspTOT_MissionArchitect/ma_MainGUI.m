@@ -558,8 +558,7 @@ function openMissionPlanMenu_Callback(hObject, eventdata, handles)
             setappdata(handles.ma_MainGUI,'undo_pointer',0);
             
             if(isfield(maData,'celBodyData') && ...
-               length(fields(celBodyData.sun)) == length(fields(maData.celBodyData.sun)) && ...
-               length(fields(celBodyData)) == length(fields(maData.celBodyData))) %#ok<NODEF>
+               length(fields(celBodyData.sun)) == length(fields(maData.celBodyData.sun))) %#ok<NODEF>
                 celBodyData = maData.celBodyData;
                 setappdata(handles.ma_MainGUI,'celBodyData',celBodyData);
             else
@@ -1495,9 +1494,9 @@ function deltaVBudgetMenu_Callback(hObject, eventdata, handles)
     for(i=1:size(dvBudget,1)-1)
         id = dvBudget{i,1};
         eventName = dvBudget{i,2};
-        if(length(eventName)>14)
-            eventName = eventName(1:14);
-        end
+%         if(length(eventName)>14)
+%             eventName = eventName(1:14);
+%         end
         eventName = strjust(sprintf('%32s',eventName),'center');
         idStr = strjust(sprintf('%8i',id),'center');
         dvBudgetStr = strjust(sprintf('%14.3f',dvBudget{i,3}),'center');

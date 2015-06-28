@@ -22,7 +22,7 @@ function varargout = ma_CelBodyCatalogGUI(varargin)
 
 % Edit the above text to modify the response to help ma_CelBodyCatalogGUI
 
-% Last Modified by GUIDE v2.5 22-Apr-2015 16:41:53
+% Last Modified by GUIDE v2.5 28-Jun-2015 14:21:02
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
