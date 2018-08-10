@@ -1,0 +1,27 @@
+function launchTraj = getDefaultMaDataLaunchStruct(kscStation)
+    launchTraj = struct();
+    launchTraj.lvDef = {1, 5, 30, 650, 450, 184, 1;
+                        2, 15, 6,  350, 320, 184, 1};
+    launchTraj.station = kscStation.id;
+    launchTraj.orbit.sma = 700;
+    launchTraj.orbit.ecc = 0.0;
+    launchTraj.orbit.inc = 0.0;
+    launchTraj.orbit.raan = 0.0;
+    launchTraj.orbit.arg = 0.0;
+    launchTraj.pitchProfile = {000, 90, 00, 90;
+                               047, 90, 00, 90;
+                               093, 75, 00, 90;
+                               140, 65, 00, 90;
+                               187, 20, -90, 90;
+                               233, 00, -90, 90;
+                               280, 00, -90, 90;
+                               327, 00, -90, 90;
+                               373, 00, -90, 90;
+                               420, 00, -90, 90};
+	launchTraj.pitchInterp = 'linearinterp';
+    launchTraj.liftoffUT = 0;
+    launchTraj.launchHeading = 90;
+    launchTraj.ascentDuration = 255;
+    launchTraj.maxCoast = 500;
+    launchTraj.results.T = [];
+    launchTraj.results.Y = [];

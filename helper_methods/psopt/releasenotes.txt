@@ -1,0 +1,114 @@
+Development Notes for psopt toolbox
+
+To do (in no particular order):
+* Automatically vectorize fitness functions supplied by user, if not already vectorized.
+* Detect and eliminate dependent (i.e. redundant) linear constraints.
+* An output function defined by options.OutputFcns that can save current swarm state in a file which can be reloaded later as a problem structure, in case of a system crash.
+* Ability to define neighborhoods of particles to determine non-local best positions (social parameter).
+  - Social stereotyping using clustering algorithm (Kennedy 2000)
+  - Von Neumann topology (Kennedy 2002)
+* Ability to solve problems with discrete parameters
+* New convergence criterion: isothermal equilibrium (Mikki 2008, Chapter 3).
+* Clerc's method: constriction factor chi to prevent explosive divergence of swarm.
+* Swarm coherence and collision-avoidance parameters?
+* Implement multiobjective optimization option; find Pareto front.
+
+ver 20130615:
+* Added parallel computing capability. Once the distributed computing worker pool has been appropriately set up using MATLABPOOL, run PSO with options.UseParallel set to 'always'. If both Vectorized and UseParallel options are set to 'on' and 'always', respectively, then the vectorized option will override the parallel option. If PSO is unable to find an installed version of the Parallel Computing Toolbox, then the problem will quietly switch to serial computation. Thanks to Michael Johnston and J. Oliver for their suggestions and contributions.
+* Most warning messages will now be suppressed unless options.Display is set 'diagnose'.
+* Changed exit flag for reaching total time limit from 5 to -5, to match exit flags for GA.
+* Implemented stall time limit option, with the algorithm terminating with exit flag -4 if there has been no improvement in global best fitness after a certain number of seconds. Default value is Inf.
+
+ver 20130515b:
+* Fixed namespace issues with duplicate copies of the psoiterate.m file, one of which was outdated.
+
+ver 20130515:
+* Merged back changes from version 20100818 which did not make it into ver 20130502
+* Fixed error with constraint enforcement method set to 'penalize' with an unconstrained problem.
+* Slight modification to penalty calculation method to prevent infeasible points from being selected over feasible points when selecting the global best.
+* Default constraint enforcement method is now 'penalize'. Since this is a relatively new feature, please double-check the feasibility of solutions to your constrained problems before accepting results for mission-critical applications.
+* Documentation updated in PSOOPTIMSET help file.
+* Plotting axes should no longer cause errors if options.PlotInterval > 1 (suggestion made by Ziqiang (Kevin) Chen, 13 Nov 2012)
+
+ver 20130502:
+* Added a new constraint handling method: 'penalize', described in Perez 2007. Both nonlinear inequality and equality constraints can now be handled gracefully by this toolbox. It also works well for handling linear and bounded constraints. If there are no problems reported after a certain amount of time "in the wild", this will become the default constraint handling method.
+
+ver 20100818:
+* Added a note in the documentation suggesting that social and cognitive attraction parameters should have a sum of less than 4, as demonstrated by Perez 2007. A warning message appears (but the optimization continues) if the user defines an unstable swarm.
+* A time limit (in seconds) can now be set using the 'TimeLimit' option in PSOOPTIMSET. The algorithm will attempt to estimate the average amount of time per iteration, and end the optimization, returning its best results so far, when the next iteration is predicted to exceed the time limit.
+* User can now define custom swarm acceleration function using the 'AccelerationFcn' option in PSOOPTIMSET; the default function is called PSOITERATE. Note that the order of the arguments being passed to the acceleration function has been changed from previous versions.
+* Bug fix: Setting an output function through options.OutputFcns now works properly
+* Minor performance and robustness improvements
+* Easter egg: if you have the original Starcraft installed in its default directory, try setting options.OutputFcns to @evolutioncomplete
+
+ver 20100503:
+* Added the ability to solve problems with bitstring (binary) populations. The field options.PopulationType should be set to 'bitstring', and the fitness function should be set up to accept binary vectors for input. It is not yet possible to solve problems with a combination of continuous and binary variables.
+* Verbosity will be set to 1 (corresponding to options.Display == 'final') by default (hardcoded). This prevents errors even if the user defines an invalid string for options.Display.
+* Added framework for 'iter' and 'diagnose' verbosities, in addition to 'off' and 'final'
+* If options.Display is set to 'off', a confirmation is no longer displayed by PSOCREATIONUNIFORM if initial particle positions or velocities are provided. These only appear if the display level is set to 'diagnose'.
+* Fixed a bug in PSOITERATE where negative velocities wouldn't conform to options.VelocityLimit.
+* Fixed a potential bug in PSOCREATIONUNIFORM where the number of particles to generate may be wrong if the user supplies a different number of initial particle velocities compared to initial positions.
+
+ver 20100414:
+* Added an option to turn off all output from PSO. This might be further extended in the future to enable more verbose output.
+* PSOPLOTBESTF now draws itself much faster, due to not drawing the legend until the final iteration. Apparently having the legend there while constantly updating the plot slows it down significantly.
+* Fixed an empty-matrix error that occured when defining a random initial population for a problem with nonlinear constraints but no linear inequality constraints.
+
+ver 20100125:
+* Fixed typo in output function code.
+* PSO should now return the correct fitness value when it terminates due to stall.
+
+ver 20100107:
+* Minor performance improvements when generating initial population with nonlinear inequality constraints.
+* Ability to pass options to hybrid function by defining 
+options.HybridFcn as a 1x2 cell: {@hybridfcn, optimset('Param1','Option1','Param2','option2',...)}.
+* Moved plotting functions out of private directory, to avoid path errors when calling PSO from another location.
+
+ver 20091230:
+* 'Absorb' style boundaries can now be used with nonlinear constraints. Performance may be slow.
+* Non-linear equality constraints can now be used. 'Absorb' boundary behavior only.
+* Initial population can now be defined through the InitialPopulation field of the options structure. The list of initial points can be partial, i.e. less than the population size. The pso swarm initialization function will automatically generate the additional points.
+* Maximum particle velocities can now be defined using options.VelocityLimit.
+* Initial particle velocities can now be defined using options.InitialVelocities (default zero).
+
+ver 20091215:
+* Nonlinear inequality constraints can now be used, with 'soft' boundaries only. Nonlinear equality constraints will be ignored for now, due to poor performance of 'soft' boundary checking.
+* Demo now has a 'fast' setting requiring less intensive 3d graphics.
+* The code which updates the swarm attraction parameters for each iteration has been separated from the main function.
+
+ver 20091210:
+* Bug fix: output functions should work now.
+* Bug fix: checkbounds should now work even if LB and UB are empty.
+* Renamed plotting functions: PSOPLOTBESTF now plots the best and mean scores. PSOPLOTSCOREDIVERSITY now plots the score histogram.
+* Implemented 'absorb' style of constraint boundary for problems with linear constraints. Should improve performance for problems with linear equality constraints.
+* Social and cognitive attraction parameters can now be adjusted through the options structure.
+
+ver 20091205b
+* Fixed bug involving nonlcon being undefined.
+* Minor visual improvements.
+* Moved surface overlaying code (for demonstration) from main function over to psoplotswarmsurf.
+
+ver 20091205
+* Major bug fix: particles should now comply with linear constraints.
+* Bug fix: Known-minimum flag on the demo surface plot no longer defaults to (1,1) if no known minimum is provided.
+* Bug fix: regexpr now written properly to check if the test function chosen during psodemo is actually an m-file.
+* More test functions included; some have been vectorized for faster demos.
+* Added a plotting function which shows the score histogram for the current generation. NOTE: psoplotscores has been reassigned to plot histograms. psoplotrange is now the function which plots the best and mean scores over all iterations.
+* Added template for writing custom test functions. NOTE: the algorithm can and should be run without the demonstration features for real problems, by calling PSO, not PSODEMO, with the appropriate input arguments. This significantly reduces computational overhead.
+* Add option to call hybrid function after swarming is complete.
+
+ver 20091202
+* Bug fix: calling pso using a problem structure should now work properly.
+* Closing the plot window in the middle of the simulation will now end the optimization run, returning the current best position and the appropriate exitflag value.
+* Ability to call options.OutputFcn -- not yet tested.
+* Known minimum, if provided (for plotting only, not aiding algorithm in any way), will now show a flag marking its location on the 3d surface plot.
+
+ver 20091130
+* Implemented bound checking. Start with initial population distribution (right after options parsing) then run a checking function for the actual swarming process.
+
+ver 20091119
+* Generalized the algorithm so that it can be called from independent functions.
+* Should be able to work with problems with any number of dimensions.
+* Convergence criterion should be some tolerance level.
+* Syntax matches that of GA Toolbox.
+* Plotting functions are separate from main function, using GA Toolbox as a model for organization.

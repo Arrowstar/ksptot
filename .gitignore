@@ -1,0 +1,39 @@
+
+# Created by https://www.gitignore.io/api/matlab
+
+### Matlab ###
+# Windows default autosave extension
+*.asv
+
+# OSX / *nix default autosave extension
+*.m~
+
+# Packaged app and toolbox files
+*.mlappinstall
+*.mltbx
+
+# Generated helpsearch folders
+helpsearch*/
+
+# Other directories to ignore
+background/
+deploy/
+KSPTrajectoryOptimizationTool/
+KSPTrajectoryOptimizationTool_resources/
+tutorials_raw/
+
+# Simulink code generation folders
+slprj/
+sccprj/
+
+# Matlab code generation folders
+codegen/
+
+# Simulink autosave extension
+*.autosave
+
+# Octave session info
+octave-workspace
+
+
+# End of https://www.gitignore.io/api/matlab
