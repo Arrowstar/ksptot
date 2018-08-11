@@ -179,6 +179,7 @@ function rewindButton_Callback(hObject, eventdata, handles)
         jumpToUT = stateLog(1,1);
     end
     
+    cla(handles.movieAxes);
     set(handles.movieFrameSlider,'Value',jumpToUT);
     movieFrameSlider_Callback(handles.movieFrameSlider, [], handles);
 
@@ -206,6 +207,7 @@ function fastForwardButton_Callback(hObject, eventdata, handles)
         jumpToUT = stateLog(end,1);
     end
     
+    cla(handles.movieAxes);
     set(handles.movieFrameSlider,'Value',jumpToUT);
     movieFrameSlider_Callback(handles.movieFrameSlider, [], handles);
     

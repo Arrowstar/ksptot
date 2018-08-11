@@ -9,6 +9,7 @@ function [bodyPlotted] = ma_plotFrame(hFig, mAxes, maData, stateLog, time, prevB
         usrScMarker = []; %#ok<NASGU>
     end
     
+    [orbitToPlot, stateLog] = ma_getOrbitToPlot(stateLog, time);
     stateLogRow = getStateLogRowAtTime(stateLog, time);
     
     if(isempty(preCbRotateAngle))
@@ -26,7 +27,7 @@ function [bodyPlotted] = ma_plotFrame(hFig, mAxes, maData, stateLog, time, prevB
     if(bodyPlotted ~= prevBody)
         unfreezeColors(mAxes);
         cla(mAxes,'reset');
-        [hCBodySurf, ~] = plotStateLog(stateLog, handles, false, false, false, false, orbitToPlot, [], maData, celBodyData, mAxes, hFig);
+        [hCBodySurf] = plotStateLog(stateLog, handles, false, false, false, false, orbitToPlot, [], maData, celBodyData, mAxes, hFig);
         freezeColors(mAxes);
         set(hCBodySurf,'AmbientStrength',0.1);
         preCbRotateAngle = 0;
@@ -75,8 +76,8 @@ function [bodyPlotted] = ma_plotFrame(hFig, mAxes, maData, stateLog, time, prevB
     
 	switch(get(handles.cameraTypeCombo,'UserData'))
         case 'Inertially Fixed'
-            azView = deg2rad(get(handles.azOffsetText,'UserData'));
-            elView = deg2rad(get(handles.elOffsetText,'UserData'));
+            azView = get(handles.azOffsetText,'UserData');
+            elView = get(handles.elOffsetText,'UserData');
             
             view(mAxes, [azView,elView]);
         case 'Spacecraft Fixed'
