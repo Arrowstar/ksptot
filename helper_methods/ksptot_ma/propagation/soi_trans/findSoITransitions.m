@@ -28,7 +28,7 @@ function soITrans = findSoITransitions(initialState, maxSearchUT, soiSkipIds, ma
     % toVy
     % toVz
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    global num_SoI_search_revs strict_SoI_search use_selective_soi_search soi_search_tol;
+    global num_SoI_search_revs strict_SoI_search use_selective_soi_search soi_search_tol num_soi_search_attempts_per_rev;
     
     ut = initialState(1);
     
@@ -379,8 +379,27 @@ function soITrans = findSoITransitions(initialState, maxSearchUT, soiSkipIds, ma
                     continue;
                 end
                 
-                [crossingUT, ~,~,~] = fminbnd(findChildSoITransFunc,minUT,maxUT, options);
-                minDistFromSOI2 = findChildSoITransFuncRealSoI(crossingUT);
+                if(num_soi_search_attempts_per_rev > 1)
+                    startPts = linspace(minUT,maxUT,num_soi_search_attempts_per_rev+1);
+                else
+                    startPts = [minUT,maxUT];
+                end
+                crossingUTs = NaN(length(startPts)-1,1);
+                minDistFromSOI2s = crossingUTs;
+                for(j=1:length(startPts)-1)
+                    minUT_Opt = startPts(j);
+                    maxUT_Opt = startPts(j+1);
+                    
+                    [crossingUTs(j), ~,~,~] = fminbnd(findChildSoITransFunc,minUT_Opt,maxUT_Opt, options);
+                    minDistFromSOI2s(j) = findChildSoITransFuncRealSoI(crossingUTs(j));
+                    
+                    if(minDistFromSOI2s(j) < 1)
+                        break; %we found SoI transition, no need to keep going
+                    end
+                end
+                
+                [minDistFromSOI2, minI] = min(minDistFromSOI2s);
+                crossingUT = crossingUTs(minI);
                 
                 if(minDistFromSOI2 > 100)    
                     continue;

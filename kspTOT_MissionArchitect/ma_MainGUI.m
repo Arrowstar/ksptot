@@ -22,7 +22,7 @@ function varargout = ma_MainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_MainGUI
 
-% Last Modified by GUIDE v2.5 13-Jun-2018 19:54:26
+% Last Modified by GUIDE v2.5 11-Aug-2018 13:51:28
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -111,7 +111,7 @@ function initializeOutputWindowText(handles, hOutputText)
 
 
 function maData = generateCleanMissionPlan(handles) 
-    global number_state_log_entries_per_coast num_SoI_search_revs strict_SoI_search use_selective_soi_search options_gravParamType soi_search_tol;
+    global number_state_log_entries_per_coast num_SoI_search_revs strict_SoI_search use_selective_soi_search options_gravParamType soi_search_tol num_soi_search_attempts_per_rev;
     celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
     
     thrusters = {};
@@ -184,12 +184,14 @@ function maData = generateCleanMissionPlan(handles)
     maData.settings.gravParamType = options_gravParamType; 
     maData.settings.optimAlg = 'interior-point';
     maData.settings.soiSearchTol = 1E-6;
+    maData.settings.numSoiSearchAttemptsPerRev = 2;
     number_state_log_entries_per_coast = maData.settings.numStateLogPtsPerCoast;
     num_SoI_search_revs = maData.settings.numSoISearchRevs;
     strict_SoI_search = maData.settings.strictSoISearch;
     use_selective_soi_search = maData.settings.useSelectiveSoISearch;
     soi_search_tol = maData.settings.soiSearchTol;
-    
+    num_soi_search_attempts_per_rev = maData.settings.numSoiSearchAttemptsPerRev;
+
     maData.stateLog = ma_executeScript(maData.script, handles, celBodyData, []);
     
 	maData.optimizer = struct();
@@ -579,7 +581,8 @@ function openMissionPlanMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to openMissionPlanMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-    global number_state_log_entries_per_coast num_SoI_search_revs strict_SoI_search use_selective_soi_search options_gravParamType soi_search_tol;
+    global number_state_log_entries_per_coast num_SoI_search_revs strict_SoI_search ...
+           use_selective_soi_search options_gravParamType soi_search_tol num_soi_search_attempts_per_rev;
 
     if(isMissionPlanSaved(handles))
         askToClear = false;
@@ -633,6 +636,7 @@ function openMissionPlanMenu_Callback(hObject, eventdata, handles)
             strict_SoI_search = maData.settings.strictSoISearch;
             use_selective_soi_search = maData.settings.useSelectiveSoISearch;
             soi_search_tol = maData.settings.soiSearchTol;
+            num_soi_search_attempts_per_rev = maData.settings.numSoiSearchAttemptsPerRev;
             
             setappdata(handles.ma_MainGUI,'ma_data',maData);
             maData.stateLog = ma_executeScript(maData.script, handles, celBodyData, handles.scriptWorkingLbl);
@@ -2345,6 +2349,8 @@ function optimAlgIntPtMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to optimAlgIntPtMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+    ma_UndoRedoAddState(handles, 'Set Optim. Alg. to Interior Point');
+    
     maData = getappdata(handles.ma_MainGUI,'ma_data');
     maData.settings.optimAlg = 'interior-point';
     setappdata(handles.ma_MainGUI,'ma_data',maData);
@@ -2357,6 +2363,8 @@ function optimAlgSqpMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to optimAlgSqpMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+    ma_UndoRedoAddState(handles, 'Set Optim. Alg. to SQP');
+
     maData = getappdata(handles.ma_MainGUI,'ma_data');
     maData.settings.optimAlg = 'sqp';
     setappdata(handles.ma_MainGUI,'ma_data',maData);
@@ -2369,6 +2377,8 @@ function optimAlgActiveSetMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to optimAlgActiveSetMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+    ma_UndoRedoAddState(handles, 'Set Optim. Alg. to Active Set');
+
     maData = getappdata(handles.ma_MainGUI,'ma_data');
     maData.settings.optimAlg = 'active-set';
     setappdata(handles.ma_MainGUI,'ma_data',maData);
@@ -2400,6 +2410,8 @@ function setSoISearchTolMenu_Callback(hObject, eventdata, handles)
     str = str{1};
     
     if(checkStrIsNumeric(str) && str2double(str) >= 1E-14 && str2double(str) <= 1E-2)
+        ma_UndoRedoAddState(handles, 'Update SoI Search Tolerance');
+        
         writeOutput(sprintf('Setting SoI search tolerance to %s.', str),'append');
         
         soi_search_tol = str2double(str);
@@ -2437,6 +2449,8 @@ function perturbOptimVarsMenu_Callback(hObject, eventdata, handles)
     str = str{1};
     
     if(checkStrIsNumeric(str) && str2double(str) >= 0 && str2double(str) <= 100)
+        ma_UndoRedoAddState(handles, 'Perturb Optim. Vars');
+        
         writeOutput(sprintf('Perturbing optimization variables by %s%%.', str),'append');
         pPct = str2double(str);
         
@@ -2485,3 +2499,44 @@ function perturbOptimVarsMenu_Callback(hObject, eventdata, handles)
         beep;
     end
     
+
+
+% --------------------------------------------------------------------
+function setNumSoITransSearchAttemptsMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to setNumSoITransSearchAttemptsMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    global num_soi_search_attempts_per_rev;
+    
+    maData = getappdata(handles.ma_MainGUI,'ma_data');
+    celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
+    writeOutput = getappdata(handles.ma_MainGUI,'write_to_output_func');
+    
+    input_str = sprintf(['Enter the number of SoI search attempts per search rev:\n',...
+                         '(Minimum = 1, Maximum = 100)\n',...
+                         '(The smaller the number, the faster the search but some SoI transitions may go missing.)\n',...
+                         '(This will influence script execution speed and SoI transition search.)']);
+    str = inputdlg(input_str, 'SoI Search Attempts', [1 75], {num2str(maData.settings.numSoiSearchAttemptsPerRev,'%i')});
+    if(isempty(str))
+        return;
+    end
+    
+    str = str{1};
+    
+    if(checkStrIsNumeric(str) && str2double(str) >= 1 && str2double(str) <= 100)
+        ma_UndoRedoAddState(handles, 'Update Num. of SoI Search Attempts');
+        
+		str = num2str(ceil(str2double(str)));
+        writeOutput(sprintf('Setting number of SoI search attempts per rev to %s.', str),'append');
+        
+        num_soi_search_attempts_per_rev = str2double(str);
+        maData.settings.numSoiSearchAttemptsPerRev = num_soi_search_attempts_per_rev;
+        
+        setappdata(handles.ma_MainGUI,'ma_data',maData);
+        maData.stateLog = ma_executeScript(maData.script,handles,celBodyData,handles.scriptWorkingLbl);
+        setappdata(handles.ma_MainGUI,'ma_data',maData);
+        ma_processData(handles);
+    else
+        writeOutput(sprintf('Could not set number of SoI search attempts per rev.  "%s" is an invalid entry.', str),'append');
+        beep;
+    end
