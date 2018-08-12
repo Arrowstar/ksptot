@@ -1,9 +1,9 @@
-function  refBody = orbitPanelGetOrbitFromKSPTOTConnectCallBack(hSMA, hECC, hINC, hRAAN, hARG, varargin)
+function [refBody,scName] = orbitPanelGetOrbitFromKSPTOTConnectCallBack(hSMA, hECC, hINC, hRAAN, hARG, varargin)
 %orbitPanelGetOrbitFromKSPConnectCallBack Summary of this function goes here
 %   Detailed explanation goes here
 
     refBody = [];
-    [orbit,~] = importOrbitGUI(-1, 'KSPTOTConnect');
+    [orbit,~,scName] = importOrbitGUI(-1, 'KSPTOTConnect');
     if(not(isempty(orbit)))
         set(hSMA, 'String', fullAccNum2Str(orbit{3}));
         set(hECC, 'String', fullAccNum2Str(orbit{4}));

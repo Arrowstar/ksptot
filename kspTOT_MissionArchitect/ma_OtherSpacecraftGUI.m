@@ -710,7 +710,7 @@ function getOrbitFromSFSFileContextMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to getOrbitFromSFSFileContextMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-    refBodyID = orbitPanelGetOrbitFromSFSContextCallBack(handles.ksptotMainGUI, handles.smaText, handles.eccText, handles.incText, handles.raanText, handles.argText, handles.truText, handles.epochText);
+    [refBodyID, scName] = orbitPanelGetOrbitFromSFSContextCallBack(handles.ksptotMainGUI, handles.smaText, handles.eccText, handles.incText, handles.raanText, handles.argText, handles.truText, handles.epochText);
     tru = computeTrueAnomFromMean(deg2rad(str2double(get(handles.truText,'String'))), str2double(get(handles.eccText,'String')));
     set(handles.truText,'String',num2str(rad2deg(tru)));
 
@@ -722,13 +722,17 @@ function getOrbitFromSFSFileContextMenu_Callback(hObject, eventdata, handles)
         
         updateSCButton_Callback([], [], handles);
     end
+    
+    if(~isempty(scName))
+        set(handles.scNameText,'String',scName);
+    end
 
 % --------------------------------------------------------------------
 function getOrbitFromKSPTOTConnectContextMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to getOrbitFromKSPTOTConnectContextMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-    refBodyID = orbitPanelGetOrbitFromKSPTOTConnectCallBack(handles.smaText, handles.eccText, handles.incText, handles.raanText, handles.argText, handles.truText, handles.epochText);
+    [refBodyID, scName] = orbitPanelGetOrbitFromKSPTOTConnectCallBack(handles.smaText, handles.eccText, handles.incText, handles.raanText, handles.argText, handles.truText, handles.epochText);
     tru = computeTrueAnomFromMean(deg2rad(str2double(get(handles.truText,'String'))), str2double(get(handles.eccText,'String')));
     set(handles.truText,'String',num2str(rad2deg(tru)));
     
@@ -739,6 +743,10 @@ function getOrbitFromKSPTOTConnectContextMenu_Callback(hObject, eventdata, handl
         set(handles.centralBodyCombo,'Value',value);
         
         updateSCButton_Callback([], [], handles);
+    end
+    
+    if(~isempty(scName))
+        set(handles.scNameText,'String',scName);
     end
 
 % --- Executes on selection change in otherSCColor.
@@ -832,7 +840,7 @@ function getOrbitFromKSPActiveVesselMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to getOrbitFromKSPActiveVesselMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-    refBodyID = orbitPanelGetOrbitFromKSPTOTConnectActiveVesselCallBack(handles.smaText, handles.eccText, handles.incText, handles.raanText, handles.argText, handles.truText, handles.epochText);
+    [refBodyID, scName] = orbitPanelGetOrbitFromKSPTOTConnectActiveVesselCallBack(handles.smaText, handles.eccText, handles.incText, handles.raanText, handles.argText, handles.truText, handles.epochText);
     tru = computeTrueAnomFromMean(deg2rad(str2double(get(handles.truText,'String'))), str2double(get(handles.eccText,'String')));
     set(handles.truText,'String',fullAccNum2Str(rad2deg(tru)));
     
@@ -843,6 +851,10 @@ function getOrbitFromKSPActiveVesselMenu_Callback(hObject, eventdata, handles)
         set(handles.centralBodyCombo,'Value',value);
         
         updateSCButton_Callback([], [], handles);
+    end
+    
+    if(~isempty(scName))
+        set(handles.scNameText,'String',scName);
     end
 
 

@@ -1,4 +1,4 @@
-function refBody = orbitPanelGetOrbitFromKSPTOTConnectActiveVesselCallBack(hSMA, hECC, hINC, hRAAN, hARG, varargin)
+function [refBody, scName] = orbitPanelGetOrbitFromKSPTOTConnectActiveVesselCallBack(hSMA, hECC, hINC, hRAAN, hARG, varargin)
 
     refBody = [];
     [orbit] = getSingularOrbitFromKSPTOTConnect([]);
@@ -9,7 +9,8 @@ function refBody = orbitPanelGetOrbitFromKSPTOTConnectActiveVesselCallBack(hSMA,
         set(hRAAN, 'String', fullAccNum2Str(orbit{6}));
         set(hARG, 'String', fullAccNum2Str(orbit{7}));
         refBody = orbit{10};
-        
+        scName = orbit{1};
+
         if(nargin == 7)
             hMA = varargin{1};
             hEpoch = varargin{2};

@@ -167,6 +167,12 @@ try
     else
         varargout{2} = [];
     end
+    
+    try
+        varargout{3} = listboxUserData{2}{1};
+    catch ME
+        varargout{3} = '';
+    end
     close(hObject);
 catch ME
     varargout{1} = [];
