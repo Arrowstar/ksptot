@@ -1,4 +1,4 @@
-function soITrans = findSoITransitions(initialState, maxSearchUT, soiSkipIds, massLoss, celBodyData)
+function soITrans = findSoITransitions(initialState, maxSearchUT, soiSkipIds, massLoss, orbitDecay, celBodyData)
 %findSoITransitions Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -77,7 +77,7 @@ function soITrans = findSoITransitions(initialState, maxSearchUT, soiSkipIds, ma
                 tempEventLog = initialState;
             else
                 truSoI = computeTrueAFromRadiusEcc(soiRadius, sma, ecc);
-                tempEventLog = ma_executeCoast_goto_tru(truSoI, initialState, -1, false, soiSkipIds, [], massLoss, celBodyData);
+                tempEventLog = ma_executeCoast_goto_tru(truSoI, initialState, -1, false, soiSkipIds, [], massLoss, orbitDecay, celBodyData);
             end
             
             upSoITransUT = tempEventLog(end,1);
@@ -437,7 +437,7 @@ function soITrans = findSoITransitions(initialState, maxSearchUT, soiSkipIds, ma
                 end
             end
             
-            tempEventLog = ma_executeCoast_goto_ut(crossingUT, initialState, -1, false, soiSkipIds, massLoss, celBodyData);
+            tempEventLog = ma_executeCoast_goto_ut(crossingUT, initialState, -1, false, soiSkipIds, massLoss,  orbitDecay, celBodyData);
             
             [rVectDown, vVectDown] = convertRVVectOnDownwardsSoITransition(childBodyInfo, celBodyData, crossingUT, tempEventLog(end,2:4), tempEventLog(end,5:7));
             if(dot(rVectDown, vVectDown) > 0) %we found the outgoing part of the SoI transition                
@@ -496,7 +496,7 @@ function soITrans = findSoITransitions(initialState, maxSearchUT, soiSkipIds, ma
                     end
                 end
                 
-                tempEventLog = ma_executeCoast_goto_ut(crossingUT, initialState, -1, false, soiSkipIds, massLoss, celBodyData);
+                tempEventLog = ma_executeCoast_goto_ut(crossingUT, initialState, -1, false, soiSkipIds, massLoss, orbitDecay, celBodyData);
                 [rVectDown, vVectDown] = convertRVVectOnDownwardsSoITransition(childBodyInfo, celBodyData, crossingUT, tempEventLog(end,2:4), tempEventLog(end,5:7));
             end
 %             if(abs(norm(rVectDown) - soiRadius) >= 0.01)

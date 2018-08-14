@@ -22,7 +22,7 @@ function varargout = ma_InsertCoastGUI(varargin)
 
 % Edit the above text to modify the response to help ma_InsertCoastGUI
 
-% Last Modified by GUIDE v2.5 17-Mar-2018 20:29:26
+% Last Modified by GUIDE v2.5 13-Aug-2018 19:43:29
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -83,6 +83,7 @@ else
     set(hObject,'UserData',[]);
     setappdata(hObject,'soiSkipIds',[]);
     setappdata(hObject,'lossConverts',getDefaultLossConvert(handles));
+    orbitDecayCheckbox_Callback(handles.orbitDecayCheckbox, [], handles);
 end
 coastTypeCombo_Callback(handles.coastTypeCombo, [], handles);
 optVar1ChkBox_Callback(handles.optVar1ChkBox, [], handles);
@@ -183,6 +184,12 @@ function populateGUIWithEvent(handles, event)
     
     set(handles.massLossCheckbox,'Value',event.massloss.use);
     massLossCheckbox_Callback(handles.massLossCheckbox, [], handles);
+    
+    set(handles.orbitDecayCheckbox, 'Value', event.orbitDecay.use);
+    set(handles.scAreaText, 'String', fullAccNum2Str(event.orbitDecay.scArea));
+    set(handles.solarFluxText, 'String', fullAccNum2Str(event.orbitDecay.solarFlux));
+    set(handles.geomagneticIndText, 'String', fullAccNum2Str(event.orbitDecay.geoMagInd));
+    orbitDecayCheckbox_Callback(handles.orbitDecayCheckbox, [], handles);
     
     set(handles.coastValueText, 'String', fullAccNum2Str(value));
     setappdata(handles.ma_InsertCoastGUI,'soiSkipIds',event.soiSkipIds);
@@ -335,6 +342,11 @@ else
     
     massloss = struct('use',logical(get(handles.massLossCheckbox,'Value')), 'lossConvert',getappdata(handles.ma_InsertCoastGUI,'lossConverts'));
     
+    orbitDecay = struct('use',logical(get(handles.orbitDecayCheckbox,'Value')), ...
+                        'scArea', str2double(get(handles.scAreaText,'String')), ...
+                        'solarFlux', str2double(get(handles.solarFluxText,'String')), ...
+                        'geoMagInd', str2double(get(handles.geomagneticIndText,'String')));
+    
     contents = cellstr(get(handles.customFuncFuncCombo,'String'));
     taskStr = contents{get(handles.customFuncFuncCombo,'Value')};
     
@@ -378,7 +390,7 @@ else
     funcHandle = @(stateLogRow, onlyReturnTaskStr, maData) ma_getDepVarValueUnit(1, stateLogRow, taskStr, 0, refBodyId, refOtherScId, refStationId, propNames, maData, celBodyData, onlyReturnTaskStr);
     maxPropTime = str2double(get(handles.customFuncMaxPropTimeText,'String'));
     
-    varargout{1} = ma_createCoast(name, coastType, value, revs, bodyInfo, vars, soiSkipIds, lineSpecColor, lineStyle, massloss, funcHandle, maxPropTime);
+    varargout{1} = ma_createCoast(name, coastType, value, revs, bodyInfo, vars, soiSkipIds, lineSpecColor, lineStyle, massloss, funcHandle, maxPropTime, orbitDecay);
     close(handles.ma_InsertCoastGUI);
 end
 
@@ -1445,6 +1457,98 @@ function coastLineStyleCombo_CreateFcn(hObject, eventdata, handles)
 % handles    empty - handles not created until after all CreateFcns called
 
 % Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in orbitDecayCheckbox.
+function orbitDecayCheckbox_Callback(hObject, eventdata, handles)
+% hObject    handle to orbitDecayCheckbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of orbitDecayCheckbox
+    if(get(hObject,'Value'))
+        set(handles.scAreaText,'Enable','on');
+        set(handles.solarFluxText,'Enable','on');
+        set(handles.geomagneticIndText,'Enable','on');
+    else
+        set(handles.scAreaText,'Enable','off');
+        set(handles.solarFluxText,'Enable','off');
+        set(handles.geomagneticIndText,'Enable','off');
+    end
+
+
+function scAreaText_Callback(hObject, eventdata, handles)
+% hObject    handle to scAreaText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of scAreaText as text
+%        str2double(get(hObject,'String')) returns contents of scAreaText as a double
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
+
+% --- Executes during object creation, after setting all properties.
+function scAreaText_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to scAreaText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function solarFluxText_Callback(hObject, eventdata, handles)
+% hObject    handle to solarFluxText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of solarFluxText as text
+%        str2double(get(hObject,'String')) returns contents of solarFluxText as a double
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
+
+% --- Executes during object creation, after setting all properties.
+function solarFluxText_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to solarFluxText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function geomagneticIndText_Callback(hObject, eventdata, handles)
+% hObject    handle to geomagneticIndText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of geomagneticIndText as text
+%        str2double(get(hObject,'String')) returns contents of geomagneticIndText as a double
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
+
+% --- Executes during object creation, after setting all properties.
+function geomagneticIndText_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to geomagneticIndText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
 %       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');

@@ -70,6 +70,10 @@ function maData = ma_updateMAData(maData, handles)
                 if(~isfield(event,'maxPropTime'))
                     event.maxPropTime = 0.0; 
                 end
+                
+                if(~isfield(event,'orbitDecay'))
+                    event.orbitDecay = getDefaultOrbitDecay();
+                end
             elseif(strcmpi(event.type,'DV_Maneuver'))
                 if(~isfield(event,'lineColor'))
                     event.lineColor = 'r';

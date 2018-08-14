@@ -76,7 +76,6 @@ function eventLog = ma_executeNBodyCoast(coastEvent, initialState, eventNum, cel
             eventLogCoast = ma_executeCoast_nBody_goto_node('desc', coastINIState, eventNum, forceModel, true, soiSkipIds, refBody, massLoss, maxPropTime, events, celBodyData);
             
         case 'goto_soi_trans'
-            %eventLogCoast = ma_executeCoast_goto_soi_trans(coastINIState, eventNum, [], soiSkipIds, massLoss, celBodyData);
             eventLogCoast = ma_executeCoast_nBody_goto_soi_trans(coastINIState, eventNum, forceModel, soiSkipIds, massLoss, maxPropTime, events, celBodyData);
             
         otherwise

@@ -1,4 +1,4 @@
-function eventLog = ma_executeCoast_goto_tru(truTarget, initialState, eventNum, considerSoITransitions, soiSkipIds, refBody, massLoss, celBodyData)
+function eventLog = ma_executeCoast_goto_tru(truTarget, initialState, eventNum, considerSoITransitions, soiSkipIds, refBody, massLoss, orbitDecay, celBodyData)
 %ma_executeCoast_goto_tru Summary of this function goes here
 %   Detailed explanation goes here    
     bodyID = initialState(8);
@@ -64,10 +64,10 @@ function eventLog = ma_executeCoast_goto_tru(truTarget, initialState, eventNum, 
         bool3 = (ecc >= 1.0 && truTarget<lbTA);
         
         if(bool1 || bool2 || bool3)
-            soITrans = findSoITransitions(initialState, Inf, soiSkipIds, massLoss, celBodyData);
+            soITrans = findSoITransitions(initialState, Inf, soiSkipIds, massLoss, orbitDecay, celBodyData);
             if(~isempty(soITrans))
-                SoITransEventLog = ma_executeCoast_goto_soi_trans(initialState, eventNum, Inf, soiSkipIds, massLoss, celBodyData, soITrans);
-                goToUTEventLog = ma_executeCoast_goto_tru(truTarget, SoITransEventLog(end,:), eventNum, true, soiSkipIds, refBody, massLoss, celBodyData);
+                SoITransEventLog = ma_executeCoast_goto_soi_trans(initialState, eventNum, Inf, soiSkipIds, massLoss, orbitDecay, celBodyData, soITrans);
+                goToUTEventLog = ma_executeCoast_goto_tru(truTarget, SoITransEventLog(end,:), eventNum, true, soiSkipIds, refBody, massLoss, orbitDecay, celBodyData);
                 eventLog = [SoITransEventLog; goToUTEventLog];
                 return;
             else
@@ -88,13 +88,13 @@ function eventLog = ma_executeCoast_goto_tru(truTarget, initialState, eventNum, 
             utTru = Inf;
         end
         
-        soITrans = findSoITransitions(initialState, utTru, soiSkipIds, massLoss, celBodyData);
+        soITrans = findSoITransitions(initialState, utTru, soiSkipIds, massLoss, orbitDecay, celBodyData);
         SoITransEventLog = [];
         if(~isempty(soITrans) && min(soITrans(:,2)) < utTru)            
-            SoITransEventLog = ma_executeCoast_goto_soi_trans(initialState, eventNum, utTru, soiSkipIds, massLoss, celBodyData, soITrans);
-            goToUTEventLog = ma_executeCoast_goto_tru(truTarget, SoITransEventLog(end,:), eventNum, true, soiSkipIds, refBody, massLoss, celBodyData);
+            SoITransEventLog = ma_executeCoast_goto_soi_trans(initialState, eventNum, utTru, soiSkipIds, massLoss, orbitDecay, celBodyData, soITrans);
+            goToUTEventLog = ma_executeCoast_goto_tru(truTarget, SoITransEventLog(end,:), eventNum, true, soiSkipIds, refBody, massLoss, orbitDecay, celBodyData);
         else 
-            goToUTEventLog = ma_executeCoast_goto_tru(truTarget, initialState, eventNum, false, soiSkipIds, refBody, massLoss, celBodyData);
+            goToUTEventLog = ma_executeCoast_goto_tru(truTarget, initialState, eventNum, false, soiSkipIds, refBody, massLoss, orbitDecay, celBodyData);
         end
         eventLog = [SoITransEventLog; goToUTEventLog];
         return;
@@ -116,9 +116,9 @@ function eventLog = ma_executeCoast_goto_tru(truTarget, initialState, eventNum, 
         dM = meanTarget-meanINI;
         dt = dM/meanMotion;
         
-        eventLog = ma_executeCoast_goto_dt(dt, initialState, eventNum, considerSoITransitions, soiSkipIds, massLoss, celBodyData);
+        eventLog = ma_executeCoast_goto_dt(dt, initialState, eventNum, considerSoITransitions, soiSkipIds, massLoss, orbitDecay, celBodyData);
     else
-        eventLog1 = ma_executeCoast_goto_tru(2*pi, initialState, eventNum, considerSoITransitions, soiSkipIds, refBody, massLoss, celBodyData);
+        eventLog1 = ma_executeCoast_goto_tru(2*pi, initialState, eventNum, considerSoITransitions, soiSkipIds, refBody, massLoss, orbitDecay, celBodyData);
 
         bodyID = eventLog1(end,8);
         bodyInfo = getBodyInfoByNumber(bodyID, celBodyData);
@@ -131,7 +131,7 @@ function eventLog = ma_executeCoast_goto_tru(truTarget, initialState, eventNum, 
             eventLog1(end,2:4) = reshape(rVect,1,3);
             eventLog1(end,5:7) = reshape(vVect,1,3);
             
-            eventLog2 = ma_executeCoast_goto_tru(truTarget, eventLog1(end,:), eventNum, considerSoITransitions, soiSkipIds, refBody, massLoss, celBodyData); 
+            eventLog2 = ma_executeCoast_goto_tru(truTarget, eventLog1(end,:), eventNum, considerSoITransitions, soiSkipIds, refBody, massLoss, orbitDecay, celBodyData); 
         else
             eventLog2 = [];
         end

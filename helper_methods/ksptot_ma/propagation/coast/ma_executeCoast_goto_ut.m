@@ -1,4 +1,4 @@
-function eventLog = ma_executeCoast_goto_ut(ut, initialState, eventNum, considerSoITransitions, soiSkipIds, massLoss, celBodyData)
+function eventLog = ma_executeCoast_goto_ut(ut, initialState, eventNum, considerSoITransitions, soiSkipIds, massLoss, orbitDecay, celBodyData)
 %ma_executeCoast_goto_ut Summary of this function goes here
 %   Detailed explanation goes here 
     global number_state_log_entries_per_coast;
@@ -20,13 +20,13 @@ function eventLog = ma_executeCoast_goto_ut(ut, initialState, eventNum, consider
     end
     
     if(considerSoITransitions)
-        soITrans = findSoITransitions(initialState, ut, soiSkipIds, massLoss, celBodyData);
+        soITrans = findSoITransitions(initialState, ut, soiSkipIds, massLoss, orbitDecay, celBodyData);
         SoITransEventLog = [];
         if(~isempty(soITrans))
-            SoITransEventLog = ma_executeCoast_goto_soi_trans(initialState, eventNum, ut, soiSkipIds, massLoss, celBodyData, soITrans);
-            goToUTEventLog = ma_executeCoast_goto_ut(ut, SoITransEventLog(end,:), eventNum, true, soiSkipIds, massLoss, celBodyData);
+            SoITransEventLog = ma_executeCoast_goto_soi_trans(initialState, eventNum, ut, soiSkipIds, massLoss, orbitDecay, celBodyData, soITrans);
+            goToUTEventLog = ma_executeCoast_goto_ut(ut, SoITransEventLog(end,:), eventNum, true, soiSkipIds, massLoss, orbitDecay, celBodyData);
         else 
-            goToUTEventLog = ma_executeCoast_goto_ut(ut, initialState, eventNum, false, soiSkipIds, massLoss, celBodyData);
+            goToUTEventLog = ma_executeCoast_goto_ut(ut, initialState, eventNum, false, soiSkipIds, massLoss, orbitDecay, celBodyData);
         end
         eventLog = [SoITransEventLog; goToUTEventLog];
         return;
@@ -67,9 +67,17 @@ function eventLog = ma_executeCoast_goto_ut(ut, initialState, eventNum, consider
 
     mean = meanINI + meanMotion.*dt;
     tru = computeTrueAnomFromMean(mean, ecc);
-
+    
+    if(orbitDecay.use)
+        vesselMass = sum(masses)*1000; %must be in kg
+        vesselArea = 1;
+        f107Flux = 120;
+        geomagneticIndex = 7;
+        [sma, ecc, tru] = computeAtmosphericDecay(ut(2:end), sma, ecc, tru, bodyInfo, vesselMass, vesselArea, f107Flux, geomagneticIndex);
+    end
+    
     [rVectUT,vVectUT]=vect_getStatefromKepler(sma, ecc, inc, raan, arg, tru, gmu);
-
+    
     if(massLoss.use == 1 && ~isempty(massLoss.lossConvert))
         resRates = ma_getResRates(massLoss);
                

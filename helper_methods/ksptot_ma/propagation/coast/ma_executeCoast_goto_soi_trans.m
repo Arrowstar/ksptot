@@ -1,4 +1,4 @@
-function eventLogCoast = ma_executeCoast_goto_soi_trans(coastINIState, eventNum, maxSearchUT, soiSkipIds, massLoss, celBodyData, varargin)
+function eventLogCoast = ma_executeCoast_goto_soi_trans(coastINIState, eventNum, maxSearchUT, soiSkipIds, massLoss, orbitDecay, celBodyData, varargin)
 %ma_executeCoast_goto_soi_trans Summary of this function goes here
 %   Detailed explanation goes here
     bodyID = coastINIState(8);
@@ -6,7 +6,7 @@ function eventLogCoast = ma_executeCoast_goto_soi_trans(coastINIState, eventNum,
     if(~isempty(varargin))
         soITrans = varargin{1};
     else
-        soITrans = findSoITransitions(coastINIState, maxSearchUT, soiSkipIds, massLoss, celBodyData);
+        soITrans = findSoITransitions(coastINIState, maxSearchUT, soiSkipIds, massLoss, orbitDecay, celBodyData);
     end
     
     if(isempty(soITrans))
@@ -20,7 +20,7 @@ function eventLogCoast = ma_executeCoast_goto_soi_trans(coastINIState, eventNum,
         if(size(firstSoITrans,1)>1)
             firstSoITrans = firstSoITrans(1,:);
         end
-        eventLogCoast = ma_executeCoast_goto_ut(firstSoITrans(2), coastINIState, eventNum, false, soiSkipIds, massLoss, celBodyData);
+        eventLogCoast = ma_executeCoast_goto_ut(firstSoITrans(2), coastINIState, eventNum, false, soiSkipIds, massLoss, orbitDecay, celBodyData);
         
         eventLogCoast(end+1,:) = [firstSoITrans(2), ...
                                   firstSoITrans(11:13), ...

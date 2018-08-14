@@ -1,5 +1,5 @@
 function coast = ma_createCoast(name, coastType, coastToValue, revs, refBody, vars, soiSkipIds, lineColor, lineStyle, massLoss, ...
-                                funcHandle, maxPropTime)
+                                funcHandle, maxPropTime, orbitDecay)
 %ma_createCoast Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -31,5 +31,6 @@ function coast = ma_createCoast(name, coastType, coastToValue, revs, refBody, va
     coast.massloss          = massLoss;
     coast.funcHandle        = funcHandle;
     coast.maxPropTime       = maxPropTime;
+    coast.orbitDecay        = orbitDecay;
 end
 
