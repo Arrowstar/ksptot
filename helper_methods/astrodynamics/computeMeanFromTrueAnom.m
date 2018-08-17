@@ -1,4 +1,4 @@
-function [mean] = computeMeanFromTrueAnom(tru, ecc)
+function [mean, ehAnom] = computeMeanFromTrueAnom(tru, ecc)
 %computeMeanFromTrueAnom Summary of this function goes here
 %   Detailed explanation goes here
     if(ecc<1.0)
@@ -8,9 +8,13 @@ function [mean] = computeMeanFromTrueAnom(tru, ecc)
         end
         mean = EA - ecc*sin(EA);
         mean = AngleZero2Pi(mean);
+        
+        ehAnom=EA;
     else
         HA = computeHyperAFromTrueAnom(tru, ecc);
         mean = ecc*sinh(HA)-HA;
+        
+        ehAnom = HA;
     end
 end
 

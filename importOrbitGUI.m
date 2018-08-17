@@ -169,7 +169,7 @@ try
     end
     
     try
-        varargout{3} = listboxUserData{2}{1};
+        varargout{3} = listboxUserData{2}{get(handles.orbitListBox, 'Value')};
     catch ME
         varargout{3} = '';
     end

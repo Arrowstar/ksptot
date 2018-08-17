@@ -433,7 +433,9 @@ function genPlotsButton_Callback(hObject, eventdata, handles)
             taskInd = taskInds(j);
             taskStr = contentsDep{taskInd};
             
-            waitbar(i/size(subLog,1), hWaitBar, sprintf('Computing Dependent Variables...\n[%u of %u]', i, size(subLog,1)));
+            if(isvalid(hWaitBar))
+                waitbar(i/size(subLog,1), hWaitBar, sprintf('Computing Dependent Variables...\n[%u of %u]', i, size(subLog,1)));
+            end
 
             [depVarValues(i,j), depVarUnits{j}, prevDistTraveled] = ma_getDepVarValueUnit(i, subLog, taskStr, prevDistTraveled, refBodyId, otherSCId, stationID, propNames, maData, celBodyData, false);
         end

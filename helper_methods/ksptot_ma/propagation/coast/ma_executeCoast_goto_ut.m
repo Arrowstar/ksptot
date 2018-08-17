@@ -66,15 +66,16 @@ function eventLog = ma_executeCoast_goto_ut(ut, initialState, eventNum, consider
     arg  = arg*ones(size(dt));
 
     mean = meanINI + meanMotion.*dt;
-    tru = computeTrueAnomFromMean(mean, ecc);
     
     if(orbitDecay.use)
-        vesselMass = sum(masses)*1000; %must be in kg
-        vesselArea = 1;
-        f107Flux = 120;
-        geomagneticIndex = 7;
-        [sma, ecc, tru] = computeAtmosphericDecay(ut(2:end), sma, ecc, tru, bodyInfo, vesselMass, vesselArea, f107Flux, geomagneticIndex);
+        vesselMass = sum(masses);
+        vesselArea = orbitDecay.scArea;
+        f107Flux = orbitDecay.solarFlux;
+        geomagneticIndex = orbitDecay.geoMagInd;
+        [sma, ecc, mean] = computeAtmosphericDecay(ut(2:end), sma, ecc, mean, bodyInfo, vesselMass, vesselArea, f107Flux, geomagneticIndex);
     end
+    
+    tru = computeTrueAnomFromMean(mean, ecc);
     
     [rVectUT,vVectUT]=vect_getStatefromKepler(sma, ecc, inc, raan, arg, tru, gmu);
     
