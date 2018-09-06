@@ -9,6 +9,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet
         centralBody(1,1) struct = struct()
         stageStates@LaunchVehicleStageState
         event(1,1)
+        attitude(1,1) LaunchVehicleAttitudeState 
     end
     
     methods
