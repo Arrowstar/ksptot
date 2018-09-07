@@ -1,0 +1,22 @@
+classdef (Abstract) AbstractForceModel < matlab.mixin.SetGet
+    %AbstractForceModel Summary of this class goes here
+    %   Detailed explanation goes here
+    
+    properties
+        
+    end
+    
+    methods
+        forceVect = getForce(obj, stateLogEntry);
+    end
+    
+    methods(Static)
+        function [ut, rVect, vVect, mass, bodyInfo] = getParamsFromStateLogEntry(stateLogEntry)
+            ut = stateLogEntry.time;
+            rVect = stateLogEntry.position;
+            vVect = stateLogEntry.velocity;
+            mass = stateLogEntry.getTotalVehicleMass();
+            bodyInfo = stateLogEntry.centralBody;
+        end
+    end
+end

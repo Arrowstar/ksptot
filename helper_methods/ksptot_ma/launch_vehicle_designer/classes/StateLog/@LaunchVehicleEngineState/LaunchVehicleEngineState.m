@@ -1,20 +1,16 @@
-classdef LaunchVehicleTankState < matlab.mixin.SetGet
+classdef LaunchVehicleEngineState < matlab.mixin.SetGet
     %LaunchVehicle Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
-        tank(1,1) LaunchVehicleTank
+        engine(1,1) LaunchVehicleEngine
         
-        tankMass(1,1) double = 0; %mT
+        active(1,1) logical = false;
     end
     
     methods
         function obj = LaunchVehicleTankState()
             
-        end
-        
-        function tankMass = getTankMass(obj)
-            tankMass = obj.tankMass;
         end
     end
 end

@@ -1,4 +1,4 @@
-function dragAccel = getDragAccel(bodyInfo, ut, rVectECI, vVectECI, dragCoeff, mass, dragModel)
+function [dragAccel, dragForce] = getDragAccel(bodyInfo, ut, rVectECI, vVectECI, dragCoeff, mass, dragModel)
 %getDragAccel Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -22,5 +22,6 @@ function dragAccel = getDragAccel(bodyInfo, ut, rVectECI, vVectECI, dragCoeff, m
     Fd = -(1/2) * density * (surfVelMag^2) * CdA; %kg/m^3 * (km^2/s^2) * m^2 = kg/m * km^2/s^2 = kg*(km/m)*km/s^2 = kg*(1000)*km/s^2
     dragAccelMag = Fd/mass; % (1000)*kg*km/s^2/kg/1000 = 1000*km/s^2/1000 = km/s^2
     dragAccel = dragAccelMag * normVector(vVectECI);
+    dragForce = Fd * normVector(vVectECI);
 end
 

@@ -5,8 +5,10 @@ classdef LaunchVehicleStageState < matlab.mixin.SetGet
     properties
         stage(1,1) LaunchVehicleStage
         
-        dryMass(1,1) double = 0; %mT
-        tankStates@LaunchVehicleTankState
+        active(1,1) logical = true;
+        
+        engineStates(1,:) LaunchVehicleEngineState
+        tankStates(1,:) LaunchVehicleTankState
     end
     
     methods
@@ -19,7 +21,7 @@ classdef LaunchVehicleStageState < matlab.mixin.SetGet
         end
         
         function stageMass = getStageTotalMass(obj)
-            stageMass = obj.dryMass + obj.getStageTotalTankMass();
+            stageMass = obj.stage.dryMass + obj.getStageTotalTankMass();
         end
     end
 end

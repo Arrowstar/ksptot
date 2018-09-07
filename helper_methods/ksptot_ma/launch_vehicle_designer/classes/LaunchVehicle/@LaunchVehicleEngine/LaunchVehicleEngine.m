@@ -3,10 +3,12 @@ classdef LaunchVehicleEngine < matlab.mixin.SetGet
     %   Detailed explanation goes here
     
     properties
-        vacThrust@double = 0     %kN
-        vacIsp@double =  0       %sec
-        seaLvlThrust@double = 0  %kN
-        seaLvlIsp@double = 0     %sec
+        vacThrust(1,1) double = 0     %kN
+        vacIsp(1,1) double =  0       %sec
+        seaLvlThrust(1,1) double = 0  %kN
+        seaLvlIsp(1,1) double = 0     %sec
+        
+        bodyFrameThrustVect(3,1) double = [1;0;0]; %ND
     end
     
     properties(Constant)
