@@ -1,22 +1,26 @@
 classdef ThrustForceModel < AbstractForceModel
-    %AbstractForceModel Summary of this class goes here
+    %ThrustForceModel Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
-        steeringModel(1,1)
-        throttleModel(1,1)
+        
     end
     
     methods
-        function obj = ThrustForceModel(steeringModel, throttleModel)
-            obj.steeringModel = steeringModel;
-            obj.throttleModel = throttleModel;
+        function obj = ThrustForceModel()
+            
         end
         
         function forceVect = getForce(obj, stateLogEntry)
-            [ut, rVect, vVect, mass, bodyInfo] = obj.getParamsFromStateLogEntry(stateLogEntry);
+            [ut, rVect, vVect, ~, bodyInfo, ~] = obj.getParamsFromStateLogEntry(stateLogEntry);
             
             bodyThrust = [0;0;0];
+            
+            altitude = norm(rVect) - bodyInfo.radius;
+            pressure = getPressureAtAltitude(bodyInfo, altitude);
+            
+            throttle = stateLogEntry.throttleModel.getThrottleAtTime(ut);
+            body2InertDcm = stateLogEntry.steeringModel.getBody2InertialDcmAtTime(obj, ut, rVect, vVect);
             
             tankStates = obj.stateLogEntry.getAllTankStates();
             stageStates = obj.stateLogEntry.stageStates;
@@ -48,16 +52,16 @@ classdef ThrustForceModel < AbstractForceModel
                             end
                             
                             if(propExistsInATank)
-                                bodyThrust = bodyThrust + engine.bodyFrameThrustVect;
+                                [thrust, ~] = engine.getThrustFlowRateForPressure(obj, pressure);
+                                adjustedThrottle = engine.adjustThrottleForMinMax(throttle);
+                                bodyThrust = bodyThrust + thrust * adjustedThrottle * engine.bodyFrameThrustVect;
                             end
                         end
                     end
                 end
             end
             
-            %TODO - have bodyThrust now, need to convert to correct
-            %inertial direction and throttle setting using steering and
-            %throttle models.
+            forceVect = body2InertDcm * bodyThrust;
         end
     end
 end

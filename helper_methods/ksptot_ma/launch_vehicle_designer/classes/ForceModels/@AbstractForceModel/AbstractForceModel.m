@@ -11,12 +11,13 @@ classdef (Abstract) AbstractForceModel < matlab.mixin.SetGet
     end
     
     methods(Static)
-        function [ut, rVect, vVect, mass, bodyInfo] = getParamsFromStateLogEntry(stateLogEntry)
+        function [ut, rVect, vVect, mass, bodyInfo, CdA] = getParamsFromStateLogEntry(stateLogEntry)
             ut = stateLogEntry.time;
             rVect = stateLogEntry.position;
             vVect = stateLogEntry.velocity;
             mass = stateLogEntry.getTotalVehicleMass();
             bodyInfo = stateLogEntry.centralBody;
+            CdA = stateLogEntry.aero.area * stateLogEntry.aero.Cd; 
         end
     end
 end

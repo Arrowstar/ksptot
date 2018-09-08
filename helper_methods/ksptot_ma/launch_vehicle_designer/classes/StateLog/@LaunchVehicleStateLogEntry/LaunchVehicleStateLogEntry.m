@@ -7,9 +7,14 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet
         position(3,1) double = [0;0;0];
         velocity(3,1) double = [0;0;0];
         centralBody(1,1) KSPTOT_BodyInfo
-        stageStates@LaunchVehicleStageState
+        stageStates(1,:) LaunchVehicleStageState
         event(1,1)
         attitude(1,1) LaunchVehicleAttitudeState 
+        throttle(1,1) double = 0;
+        aero(1,1) LaunchVehicleAeroState
+        
+        steeringModel(1,1) AbstractSteeringModel
+        throttleModel(1,1) AbstractThrottleModel
     end
     
     methods

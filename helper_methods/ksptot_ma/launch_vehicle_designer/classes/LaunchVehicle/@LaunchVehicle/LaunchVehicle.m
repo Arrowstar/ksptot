@@ -13,8 +13,8 @@ classdef LaunchVehicle < matlab.mixin.SetGet
         end
         
         function tanks = getTanksConnectedToEngine(obj, engine)
-            engineTankConns = obj.engineTankConns;
-            tanks = findobj(engineTankConns,'engine',engine); %connectedTanks
+            obj.engineTankConns = obj.engineTankConns;
+            tanks = findobj(obj.engineTankConns,'engine',engine); %connectedTanks
         end
     end
 end
