@@ -1,4 +1,4 @@
-classdef BankAngOfAttackSideSlipPolySteeringModel < AbstractSteeringModel
+classdef AeroAnglesPolySteeringModel < AbstractSteeringModel
     %RollPitchYawSteeringModel Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -15,6 +15,18 @@ classdef BankAngOfAttackSideSlipPolySteeringModel < AbstractSteeringModel
             angOfSideslip = obj.slipModel.getValueAtTime(ut);
             
             [~, ~, ~, dcm] = computeBodyAxesFromAeroAngles(rVect, vVect, angOfAttack, angOfSideslip, bankAng);
+        end
+        
+        function setT0(obj, newT0)
+            obj.bankModel.t0 = newT0;
+            obj.aoAModel.t0 = newT0;
+            obj.slipModel.t0 = newT0;
+        end
+        
+        function setConstTerms(obj, bankConst, aoaConst, slipConst)
+            obj.bankModel.constTerm = bankConst;
+            obj.aoAModel.constTerm = aoaConst;
+            obj.slipModel.constTerm = slipConst;
         end
     end
     

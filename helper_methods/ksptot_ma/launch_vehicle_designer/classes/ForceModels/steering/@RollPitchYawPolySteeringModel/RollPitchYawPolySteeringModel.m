@@ -16,6 +16,18 @@ classdef RollPitchYawPolySteeringModel < AbstractSteeringModel
             
             [~, ~, ~, dcm] = computeBodyAxesFromEuler(rVect, vVect, rollAng, pitchAng, yawAng);
         end
+        
+        function setT0(obj, newT0)
+            obj.rollModel.t0 = newT0;
+            obj.pitchModel.t0 = newT0;
+            obj.yawModel.t0 = newT0;
+        end
+        
+        function setConstTerms(obj, rollConst, pitchConst, yawConst)
+            obj.rollModel.constTerm = rollConst;
+            obj.pitchModel.constTerm = pitchConst;
+            obj.yawModel.constTerm = yawConst;
+        end
     end
     
     methods(Access=private)
