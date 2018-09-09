@@ -3,6 +3,8 @@ classdef LaunchVehicleEngine < matlab.mixin.SetGet
     %   Detailed explanation goes here
     
     properties
+        stage(1,1) LaunchVehicleStage = LaunchVehicleStage(LaunchVehicle());
+        
         vacThrust(1,1) double = 0     %kN
         vacIsp(1,1) double =  0       %sec
         seaLvlThrust(1,1) double = 0  %kN
@@ -12,6 +14,8 @@ classdef LaunchVehicleEngine < matlab.mixin.SetGet
         
         minThrottle(1,1) double = 0.0; %must be 0<=x<=1
         maxThrottle(1,1) double = 1.0; %must be 0<=x<=1
+        
+        id(1,1) double = 0;
     end
     
     properties(Constant)
@@ -20,8 +24,9 @@ classdef LaunchVehicleEngine < matlab.mixin.SetGet
     end
     
     methods
-        function obj = LaunchVehicleEngine()
-            
+        function obj = LaunchVehicleEngine(stage)
+            obj.stage = stage;
+            obj.id = rand();
         end
         
         function [thrust, isp] = getThrustIspForPressure(obj, presskPa)
@@ -52,6 +57,10 @@ classdef LaunchVehicleEngine < matlab.mixin.SetGet
             else
                 newThrottle = inputThrottle;
             end
+        end
+        
+        function tf = eq(A,B)
+            tf = [A.id] == [B.id];
         end
     end
 end

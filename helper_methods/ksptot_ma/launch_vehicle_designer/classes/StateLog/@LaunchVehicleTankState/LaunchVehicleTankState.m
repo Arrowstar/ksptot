@@ -3,18 +3,25 @@ classdef LaunchVehicleTankState < matlab.mixin.SetGet
     %   Detailed explanation goes here
     
     properties
-        tank(1,1) LaunchVehicleTank
-        
+        stageState(1,1) LaunchVehicleStageState = LaunchVehicleStageState(LaunchVehicleStage(LaunchVehicle()));
+        tank(1,1) LaunchVehicleTank = LaunchVehicleTank(LaunchVehicleStage(LaunchVehicle()))
         tankMass(1,1) double = 0; %mT
     end
     
     methods
-        function obj = LaunchVehicleTankState()
-            
+        function obj = LaunchVehicleTankState(stageState)
+            obj.stageState = stageState;
         end
         
         function tankMass = getTankMass(obj)
             tankMass = obj.tankMass;
+        end
+        
+        function newTankState = deepCopy(obj)
+            newTankState = LaunchVehicleTankState(obj.stageState);
+            
+            newTankState.tank = obj.tank;
+            newTankState.tankMass = obj.tankMass;
         end
     end
 end

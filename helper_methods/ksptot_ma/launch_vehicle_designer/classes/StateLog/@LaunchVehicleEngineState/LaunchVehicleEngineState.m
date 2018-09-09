@@ -3,14 +3,21 @@ classdef LaunchVehicleEngineState < matlab.mixin.SetGet
     %   Detailed explanation goes here
     
     properties
-        engine(1,1) LaunchVehicleEngine
-        
+        stageState(1,1) LaunchVehicleStageState = LaunchVehicleStageState(LaunchVehicleStage(LaunchVehicle()));
+        engine(1,1) LaunchVehicleEngine = LaunchVehicleEngine(LaunchVehicleStage(LaunchVehicle()))
         active(1,1) logical = false;
     end
     
     methods
-        function obj = LaunchVehicleTankState()
+        function obj = LaunchVehicleEngineState(stageState)
+            obj.stageState = stageState;
+        end
+        
+        function newEngineState = deepCopy(obj)
+            newEngineState = LaunchVehicleEngineState(obj.stageState);
             
+            newEngineState.engine = obj.engine;
+            newEngineState.active = obj.active;
         end
     end
 end

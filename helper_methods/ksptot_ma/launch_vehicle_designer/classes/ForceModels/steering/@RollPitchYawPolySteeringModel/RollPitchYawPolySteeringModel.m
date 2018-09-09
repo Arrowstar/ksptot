@@ -3,9 +3,9 @@ classdef RollPitchYawPolySteeringModel < AbstractSteeringModel
     %   Detailed explanation goes here
     
     properties
-        rollModel(1,1) PolynominalModel
-        pitchModel(1,1) PolynominalModel
-        yawModel(1,1) PolynominalModel
+        rollModel(1,1) PolynominalModel = PolynominalModel(0,0,0,0);
+        pitchModel(1,1) PolynominalModel = PolynominalModel(0,0,0,0);
+        yawModel(1,1) PolynominalModel = PolynominalModel(0,0,0,0);
     end
     
     methods       
@@ -29,7 +29,7 @@ classdef RollPitchYawPolySteeringModel < AbstractSteeringModel
     methods(Static)
         function model = getDefaultSteeringModel()
             rollModel = PolynominalModel(0,0,0,0);
-            pitchModel = PolynominalModel(0,0,0,0);
+            pitchModel = PolynominalModel(0,deg2rad(-90),deg2rad(0.99),0);
             yawModel = PolynominalModel(0,0,0,0);
             
             model = RollPitchYawPolySteeringModel(rollModel, pitchModel, yawModel);

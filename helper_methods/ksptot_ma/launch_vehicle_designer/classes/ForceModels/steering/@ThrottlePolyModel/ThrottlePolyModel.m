@@ -3,7 +3,7 @@ classdef ThrottlePolyModel < AbstractThrottleModel
     %   Detailed explanation goes here
     
     properties
-        throttleModel(1,1) PolynominalModel
+        throttleModel(1,1) PolynominalModel = PolynominalModel(0,0,0,0);
     end
     
     methods
@@ -22,5 +22,12 @@ classdef ThrottlePolyModel < AbstractThrottleModel
         function obj = ThrottlePolyModel(throttleModel)
             obj.throttleModel = throttleModel;
         end     
+    end
+    
+    methods(Static)
+        function model = getDefaultThrottleModel()
+            throttlePoly = PolynominalModel(0,1,0,0);
+            model = ThrottlePolyModel(throttlePoly);
+        end
     end
 end

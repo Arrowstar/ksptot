@@ -20,10 +20,10 @@ classdef ThrustForceModel < AbstractForceModel
             pressure = getPressureAtAltitude(bodyInfo, altitude);
             
             throttle = stateLogEntry.throttleModel.getThrottleAtTime(ut);
-            body2InertDcm = stateLogEntry.steeringModel.getBody2InertialDcmAtTime(obj, ut, rVect, vVect);
+            body2InertDcm = stateLogEntry.steeringModel.getBody2InertialDcmAtTime(ut, rVect, vVect);
             
-            tankStates = obj.stateLogEntry.getAllTankStates();
-            stageStates = obj.stateLogEntry.stageStates;
+            tankStates = stateLogEntry.getAllTankStates();
+            stageStates = stateLogEntry.stageStates;
             for(i=1:length(stageStates)) %#ok<*NO4LP>
                 stgState = stageStates(i);
                 
@@ -43,7 +43,7 @@ classdef ThrustForceModel < AbstractForceModel
                             propExistsInATank = false; 
                             for(k=1:length(tanks))
                                 tank = tanks(k);
-                                tankState = findobj(tankStates,'tank',tank);
+                                tankState = tankStates([tankStates.tank] == tank);
 
                                 if(tankState.tankMass > 0) %just check to make sure the engine is connected to fuel somewhere
                                     propExistsInATank = true; 
@@ -52,9 +52,9 @@ classdef ThrustForceModel < AbstractForceModel
                             end
                             
                             if(propExistsInATank)
-                                [thrust, ~] = engine.getThrustFlowRateForPressure(obj, pressure);
+                                [thrust, ~] = engine.getThrustFlowRateForPressure(pressure);
                                 adjustedThrottle = engine.adjustThrottleForMinMax(throttle);
-                                bodyThrust = bodyThrust + thrust * adjustedThrottle * engine.bodyFrameThrustVect;
+                                bodyThrust = bodyThrust + (thrust * adjustedThrottle * engine.bodyFrameThrustVect)/1000; %1/1000 to convert kN=mT*m/s^2 to mT*km/s^2 (see also ma_executeDVManeuver_finite_inertial()) 
                             end
                         end
                     end

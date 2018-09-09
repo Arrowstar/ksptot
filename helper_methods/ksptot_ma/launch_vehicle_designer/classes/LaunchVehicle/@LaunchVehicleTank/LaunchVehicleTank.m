@@ -3,12 +3,21 @@ classdef LaunchVehicleTank < matlab.mixin.SetGet
     %   Detailed explanation goes here
     
     properties
-        initialMass@double = 0; %mT
+        stage(1,1) LaunchVehicleStage = LaunchVehicleStage(LaunchVehicle());
+        
+        initialMass(1,1) double = 0; %mT
+        
+        id(1,1) double = 0;
     end
     
     methods
-        function obj = LaunchVehicleTank()
-            
+        function obj = LaunchVehicleTank(stage)
+            obj.stage = stage;
+            obj.id = rand();
+        end
+        
+        function tf = eq(A,B)
+            tf = [A.id] == [B.id];
         end
     end
 end

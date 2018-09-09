@@ -26,5 +26,10 @@ classdef LaunchVehicleAttitudeState < matlab.mixin.SetGet
             
             [bankAng,angOfAttack,angOfSideslip] = computeAeroAnglesFromBodyAxes(rVect, vVect, bodyX, bodyY, bodyZ);
         end
+        
+        function newAttState = deepCopy(obj)
+            newAttState = LaunchVehicleAttitudeState();
+            newAttState.dcm = obj.dcm;
+        end
     end
 end

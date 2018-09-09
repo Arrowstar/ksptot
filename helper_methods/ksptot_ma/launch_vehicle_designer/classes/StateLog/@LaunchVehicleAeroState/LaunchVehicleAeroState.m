@@ -11,5 +11,12 @@ classdef LaunchVehicleAeroState < matlab.mixin.SetGet
         function obj = LaunchVehicleAeroState()
             
         end
+        
+        function newAeroState = deepCopy(obj)
+            newAeroState = LaunchVehicleAeroState();
+            
+            newAeroState.area = obj.area;
+            newAeroState.Cd = obj.Cd;
+        end
     end
 end

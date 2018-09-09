@@ -9,17 +9,24 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet
         centralBody(1,1) KSPTOT_BodyInfo
         stageStates(1,:) LaunchVehicleStageState
         event(1,1)
-        attitude(1,1) LaunchVehicleAttitudeState 
-        throttle(1,1) double = 0;
         aero(1,1) LaunchVehicleAeroState
+        attitude(1,1) LaunchVehicleAttitudeState 
         
-        steeringModel(1,1) AbstractSteeringModel
-        throttleModel(1,1) AbstractThrottleModel
+        steeringModel(1,1) AbstractSteeringModel = RollPitchYawPolySteeringModel.getDefaultSteeringModel();
+        throttleModel(1,1) AbstractThrottleModel = ThrottlePolyModel.getDefaultThrottleModel();
+    end
+    
+    properties(Dependent)
+        throttle(1,1) double
     end
     
     methods
         function obj = LaunchVehicleStateLogEntry()
             
+        end
+        
+        function value = get.throttle(obj)
+            value = obj.throttleModel.getThrottleAtTime(obj.time);
         end
         
         function [t,y, tankStateInds] = getIntegratorStateRepresentation(obj)
@@ -62,53 +69,150 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet
                 end
             end
         end
+        
+        function updateTankStatesWithNewMasses(obj, newTankMasses)
+            tankStates = obj.getAllTankStates();
+            
+            for(i=1:length(tankStates))
+                tankStates(i).tankMass = newTankMasses(i);
+            end
+        end
+        
+        function tankMDots = getTankMassFlowRatesDueToEngines(obj, presskPa)
+            tankStates = obj.getAllTankStates();
+            tankMDots = zeros(size(tankStates));
+            
+            stgStates = obj.stageStates;
+            for(i=1:length(stgStates)) %#ok<*NO4LP>
+                stgState = stgStates(i);
+                
+                if(stgState.active)
+                    engineStates = stgState.engineStates;
+
+                    for(j=1:length(engineStates))
+                        engineState = engineStates(j);
+                        
+                        if(engineState.active)
+                            engine = engineState.engine;
+                            [~, mdot] = engine.getThrustFlowRateForPressure(presskPa); %total mass flow through engine
+                            adjustedThrottle = engine.adjustThrottleForMinMax(obj.throttle);
+                            mdot = adjustedThrottle * mdot;
+                            
+                            tanks = stgState.stage.launchVehicle.getTanksConnectedToEngine(engine);
+                            
+                            flowFromTankInds = zeros(size(tankStates));
+                            for(k=1:length(tanks))
+                                tank = tanks(k);
+                                tankState = tankStates([tankStates.tank] == tank);
+                                tankStageState = tankState.stageState;
+                                
+                                if(tankStageState.active && tankState.tankMass > 0)
+                                    flowFromTankInds(tankStates == tankState) = 1;
+                                end
+                            end
+                            
+                            numTanksToPullFrom = sum(flowFromTankInds);
+                            mDotPerTank = mdot/numTanksToPullFrom;
+                            
+                            flowFromTankInds = logical(flowFromTankInds);
+                            tankMDots(flowFromTankInds) = tankMDots(flowFromTankInds) + mDotPerTank;
+                        end
+                    end
+                end
+            end
+        end
+        
+        function newStateLogEntry = deepCopy(obj)
+            newStateLogEntry = LaunchVehicleStateLogEntry();
+            
+            newStateLogEntry.time = obj.time;
+            newStateLogEntry.position = obj.position;
+            newStateLogEntry.velocity = obj.velocity;
+            newStateLogEntry.centralBody = obj.centralBody;
+            newStateLogEntry.event = obj.event;
+            newStateLogEntry.steeringModel = obj.steeringModel;
+            newStateLogEntry.throttleModel = obj.throttleModel;
+            
+            for(i=1:length(obj.stageStates))
+                newStateLogEntry.stageStates(end+1) = obj.stageStates(i).deepCopy();
+            end
+            
+            newStateLogEntry.attitude = obj.attitude.deepCopy();
+            newStateLogEntry.aero = obj.aero.deepCopy();
+        end
     end
     
     methods(Static)
-        function stateLogEntry = createStateLogEntryFromIntegratorOutputRow(t,y, lv, centralBody, event)
-            stateLogEntry = LaunchVehicleStateLogEntry();
+        function stateLogEntry = createStateLogEntryFromIntegratorOutputRow(t,y, eventInitStateLogEntry)
+            stateLogEntry = eventInitStateLogEntry.deepCopy();
             
             stateLogEntry.time = t;
             stateLogEntry.position = y(1:3)';
             stateLogEntry.velocity = y(4:6)';
-            stateLogEntry.centralBody = centralBody;
-            stateLogEntry.event = event;
+            stateLogEntry.updateTankStatesWithNewMasses(y(7:end));
             
-            curTankYInd = 7;
+            dcm = eventInitStateLogEntry.steeringModel.getBody2InertialDcmAtTime(t, stateLogEntry.position, stateLogEntry.velocity);
+            stateLogEntry.attitude = LaunchVehicleAttitudeState();
+            stateLogEntry.attitude.dcm = dcm;
+        end
+        
+        function stateLogEntry = getDefaultStateLogEntryForLaunchVehicle(lv, bodyInfo)
+            stateLogEntry = LaunchVehicleStateLogEntry();
+            stateLogEntry.time = 0;
             
-            stages = lv.stages;
-            stateStates = LaunchVehicleStage.empty(0,1);
-            for(i=1:length(stages))
-                stage = stages(i);
-                tanks = stage.tanks;
-                engines = state.engines;
+            [rVectECI, vVectECI] = getInertialVectFromLatLongAlt(stateLogEntry.time, 0, 0, 0, bodyInfo, [0;0;0]);
+            stateLogEntry.position = rVectECI;
+            stateLogEntry.velocity = vVectECI;
+            
+            stateLogEntry.centralBody = bodyInfo;
+            
+            stageStates = LaunchVehicleStageState.empty(1,0);
+            for(i=1:length(lv.stages))
+                stage = lv.stages(i);
+                stgState = LaunchVehicleStageState(stage);
+                stgState.active = true;
                 
-                stageState = LaunchVehicleStageState();
-                stageState.stage = stage;
-                stageState.active = true; %TODO: Handle this appropriately, probably with something that tracks activeness for stages and engines through time
-                
-                stateStates(end+1) = stageState; %#ok<AGROW>
-                for(j=1:length(tanks))
-                    tank = tanks(j);
-                    tankState = LaunchVehicleTankState();
-                    
-                    tankState.tank = tank;
-                    tankState.tankMass = y(curTankYInd);
-                    curTankYInd = curTankYInd + 1;
-                    
-                    stageState.tankStates(end+1) = tankState;
-                end
-                
+                engines = stage.engines;
                 for(j=1:length(engines))
                     engine = engines(j);
-                    engineState = LaunchVehicleEngineState();
                     
+                    engineState = LaunchVehicleEngineState(stgState);
                     engineState.engine = engine;
-                    engineState.active = true; %TODO: Handle this appropriately, probably with something that tracks activeness for stages and engines through time
+                    engineState.active = true;
+                    
+                    stgState.engineStates(end+1) = engineState;
                 end
+                 
+                tanks = stage.tanks;
+                for(j=1:length(tanks))
+                    tank = tanks(j);
+                    
+                    tankState = LaunchVehicleTankState(stgState);
+                    tankState.tank = tank;
+                    tankState.tankMass = tank.initialMass;
+                    
+                    stgState.tankStates(end+1) = tankState;
+                end
+                
+                stageStates(end+1) = stgState; %#ok<AGROW>
             end
+            stateLogEntry.stageStates = stageStates;
             
-            stateLogEntry.stageStates = stateStates;
+            stateLogEntry.event = 1;
+            
+            aeroState = LaunchVehicleAeroState();
+            aeroState.area = 1;
+            aeroState.Cd = 2.2;
+            stateLogEntry.aero = aeroState;
+            
+            rpyModel = RollPitchYawPolySteeringModel.getDefaultSteeringModel();
+            stateLogEntry.steeringModel = rpyModel;
+            
+            throtModel = ThrottlePolyModel.getDefaultThrottleModel();
+            stateLogEntry.throttleModel = throtModel;
+            
+            attState = LaunchVehicleAttitudeState();
+            attState.dcm = stateLogEntry.steeringModel.getBody2InertialDcmAtTime(stateLogEntry.time, rVectECI, vVectECI);
         end
     end
 end

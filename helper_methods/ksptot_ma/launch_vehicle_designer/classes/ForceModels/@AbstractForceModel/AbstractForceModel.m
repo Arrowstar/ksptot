@@ -1,4 +1,4 @@
-classdef (Abstract) AbstractForceModel < matlab.mixin.SetGet
+classdef (Abstract) AbstractForceModel < matlab.mixin.SetGet & matlab.mixin.Heterogeneous
     %AbstractForceModel Summary of this class goes here
     %   Detailed explanation goes here
     
