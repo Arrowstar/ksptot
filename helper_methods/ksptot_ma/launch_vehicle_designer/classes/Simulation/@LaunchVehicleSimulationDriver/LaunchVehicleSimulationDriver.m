@@ -10,23 +10,27 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
         simT0(1,1) double = 0; %sec
         simMaxDur(1,1) double = 600; %sec
         minAltitude = -1; %km
+        
+        celBodyData(1,1) struct
     end
     
     methods
-        function obj = LaunchVehicleSimulationDriver(lv, simT0, simMaxDur, minAltitude)
+        function obj = LaunchVehicleSimulationDriver(lv, simT0, simMaxDur, minAltitude, celBodyData)
             obj.lv = lv;
             obj.simT0 = simT0;
             obj.simMaxDur = simMaxDur;
+            obj.minAltitude = minAltitude;
+            obj.celBodyData = celBodyData;
         end
         
-        function [t,y,newStateLogEntries] = integrateOneEvent(obj, eventInitStateLogEntry)
+        function [t,y,newStateLogEntries] = integrateOneEvent(obj, event, eventInitStateLogEntry)
             [t0,y0, tankStateInds] = eventInitStateLogEntry.getIntegratorStateRepresentation();
             
             maxT = obj.simT0+obj.simMaxDur;
             tspan = [t0, maxT];
             
             odefun = @(t,y) obj.odefun(t,y, obj, eventInitStateLogEntry);
-            odeEventsFun = @(t,y) obj.odeEvents(t,y, obj, eventInitStateLogEntry);
+            odeEventsFun = @(t,y) obj.odeEvents(t,y, obj, eventInitStateLogEntry, event.termCond.getEventTermCondFuncHandle());
             options = odeset('NonNegative',tankStateInds, 'Events',odeEventsFun);
             
             [t,y] = obj.integrator(odefun,tspan,y0,options);
@@ -63,7 +67,8 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
             dydt(7:end) = tempStateLogEntry.getTankMassFlowRatesDueToEngines(pressure);
         end
         
-        function [value,isterminal,direction] = odeEvents(t,y, obj, eventInitStateLogEntry)
+        function [value,isterminal,direction] = odeEvents(t,y, obj, eventInitStateLogEntry, evtTermCond)
+            celBodyData = obj.celBodyData;
             [ut, rVect, vVect, tankStates] = LaunchVehicleSimulationDriver.decomposeIntegratorTandY(t,y);
             bodyInfo = eventInitStateLogEntry.centralBody;
             
@@ -73,10 +78,22 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
             isterminal(1) = 1;
             direction(1) = 0;
             
+            %Max Radius (SoI Radius) Constraint
+            parentBodyInfo = getParentBodyInfo(bodyInfo, celBodyData);
+            rSOI = getSOIRadius(bodyInfo, parentBodyInfo);
+            radius = norm(rVect);
+            
+            value(2) = rSOI - radius;
+            isterminal(2) = 1;
+            direction(2) = 0;
+            
+            %Event Termination Condition
+            [value(3),isterminal(3),direction(3)] = evtTermCond(t,y);
+            
             %Temp Condition to see if all tanks are empty
-%             value(2) = sum(tankStates);
-%             isterminal(2) = 1;
-%             direction(2) = 0;
+%             value(3) = sum(tankStates);
+%             isterminal(3) = 1;
+%             direction(3) = 0;
         end
     end
 end

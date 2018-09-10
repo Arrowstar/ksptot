@@ -16,12 +16,16 @@ classdef LaunchVehicleStageState < matlab.mixin.SetGet
             obj.stage = stage;
         end
         
+        function dryMass = getStateDryMass(obj)
+            dryMass = obj.stage.dryMass;
+        end
+        
         function tankMass = getStageTotalTankMass(obj)
             tankMass = sum([obj.tankStates.tankMass]);
         end
         
         function stageMass = getStageTotalMass(obj)
-            stageMass = obj.stage.dryMass + obj.getStageTotalTankMass();
+            stageMass = obj.getStateDryMass() + obj.getStageTotalTankMass();
         end
         
         function newStageState = deepCopy(obj)

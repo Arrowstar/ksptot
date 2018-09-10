@@ -8,7 +8,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet
         velocity(3,1) double = [0;0;0];
         centralBody(1,1) KSPTOT_BodyInfo
         stageStates(1,:) LaunchVehicleStageState
-        event(1,1)
+        event(1,1) LaunchVehicleEvent = LaunchVehicleEvent(LaunchVehicleScript())
         aero(1,1) LaunchVehicleAeroState
         attitude(1,1) LaunchVehicleAttitudeState 
         
@@ -47,6 +47,20 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet
             end
         end
         
+        function stateLog = getMAFormattedStateLogMatrix(obj)
+            stateLog = zeros(1,13);
+            
+            stateLog(1) = obj.time;
+            stateLog(2:4) = obj.position';
+            stateLog(5:7) = obj.velocity';
+            stateLog(8) = obj.centralBody.id;
+            stateLog(9) = obj.getTotalVehicleDryMass();
+            stateLog(10) = obj.getTotalVehiclePropMass();
+            stateLog(11) = 0;
+            stateLog(12) = 0;
+            stateLog(13) = obj.event.getEventNum();
+        end
+        
         function tankStates = getAllTankStates(obj)
             tankStates = LaunchVehicleTankState.empty(0,1);
             
@@ -56,6 +70,26 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet
                 
                 if(stgState.active)
                     tankStates = horzcat(tankStates, stgState.tankStates); %#ok<AGROW>
+                end
+            end
+        end
+        
+        function dryMass = getTotalVehicleDryMass(obj)
+            dryMass = 0;
+            
+            for(i=1:length(obj.stageStates))
+                if(obj.stageStates(i).active)
+                    dryMass = dryMass + obj.stageStates(i).getStateDryMass();
+                end
+            end
+        end
+        
+        function propMass = getTotalVehiclePropMass(obj)
+            propMass = 0;
+            
+            for(i=1:length(obj.stageStates))
+                if(obj.stageStates(i).active)
+                    propMass = propMass + obj.stageStates(i).getStageTotalTankMass();
                 end
             end
         end
@@ -197,8 +231,6 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet
                 stageStates(end+1) = stgState; %#ok<AGROW>
             end
             stateLogEntry.stageStates = stageStates;
-            
-            stateLogEntry.event = 1;
             
             aeroState = LaunchVehicleAeroState();
             aeroState.area = 1;

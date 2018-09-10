@@ -24,8 +24,13 @@ classdef LaunchVehicle < matlab.mixin.SetGet
             newLv = LaunchVehicle();
             
             pyldStg = LaunchVehicleStage(newLv);
+            pyldStg.name = 'Payload';
+            
             uprStg = LaunchVehicleStage(newLv);
+            uprStg.name = 'Upper Stage';
+            
             firstStg = LaunchVehicleStage(newLv);
+            firstStg.name = 'First Stage';
             
             uprStgEngine = LaunchVehicleEngine(uprStg);
             uprStgEngine.vacThrust = 60;
@@ -44,10 +49,7 @@ classdef LaunchVehicle < matlab.mixin.SetGet
             
             firstStgTank = LaunchVehicleTank(firstStg);
             firstStgTank.initialMass = 4;
-            
-            firstStgTank2 = LaunchVehicleTank(firstStg);
-            firstStgTank2.initialMass = 4;
-            
+                        
             pyldStg.dryMass = 0.5; %mT;
             
             uprStg.dryMass = 0.5+0.125; %mT;
@@ -56,7 +58,6 @@ classdef LaunchVehicle < matlab.mixin.SetGet
             
             firstStg.dryMass = 1.5+0.5; %mT;
             firstStg.tanks(end+1) = firstStgTank;
-            firstStg.tanks(end+1) = firstStgTank2;
             firstStg.engines(end+1) = firstStgEngine;
             
             newLv.stages(end+1) = pyldStg;
@@ -65,7 +66,6 @@ classdef LaunchVehicle < matlab.mixin.SetGet
             
             newLv.engineTankConns(end+1) = EngineToTankConnection(uprStgTank, uprStgEngine);
             newLv.engineTankConns(end+1) = EngineToTankConnection(firstStgTank, firstStgEngine);
-            newLv.engineTankConns(end+1) = EngineToTankConnection(firstStgTank2, firstStgEngine);
         end
     end
 end
