@@ -3,9 +3,9 @@ classdef AeroAnglesPolySteeringModel < AbstractSteeringModel
     %   Detailed explanation goes here
     
     properties
-        bankModel(1,1) PolynominalModel
-        aoAModel(1,1) PolynominalModel
-        slipModel(1,1) PolynominalModel
+        bankModel(1,1) PolynominalModel = PolynominalModel(0,0,0,0);
+        aoAModel(1,1) PolynominalModel = PolynominalModel(0,0,0,0);
+        slipModel(1,1) PolynominalModel = PolynominalModel(0,0,0,0);
     end
     
     methods       
@@ -31,7 +31,7 @@ classdef AeroAnglesPolySteeringModel < AbstractSteeringModel
     end
     
     methods(Access=private)
-        function obj = BankAngOfAttackSideSlipPolySteeringModel(bankModel, aoAModel, slipModel)
+        function obj = AeroAnglesPolySteeringModel(bankModel, aoAModel, slipModel)
             obj.bankModel = bankModel;
             obj.aoAModel = aoAModel;
             obj.slipModel = slipModel;
@@ -44,7 +44,7 @@ classdef AeroAnglesPolySteeringModel < AbstractSteeringModel
             aoAModel = PolynominalModel(0,0,0,0);
             slipModel = PolynominalModel(0,0,0,0);
             
-            model = BankAngOfAttackSideSlipPolySteeringModel(bankModel, aoAModel, slipModel);
+            model = AeroAnglesPolySteeringModel(bankModel, aoAModel, slipModel);
         end
     end
 end

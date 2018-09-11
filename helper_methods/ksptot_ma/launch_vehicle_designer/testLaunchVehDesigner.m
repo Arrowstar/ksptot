@@ -35,6 +35,10 @@ evt2Action2Eng = lv.stages(2).engines(1);
 evt2Action2 = SetEngineActiveStateAction(evt2Action2Eng, true);
 evt2.addAction(evt2Action2);
 
+evt2ActionStrMdl = AeroAnglesPolySteeringModel.getDefaultSteeringModel();
+evt2Action3 = SetSteeringModelAction(evt2ActionStrMdl);
+evt2.addAction(evt2Action3);
+
 script.addEvent(evt2);
 
 %Event 3
@@ -85,5 +89,21 @@ plot(matStateLog(:,1),sum(matStateLog(:,9:12), 2))
 grid on;
 
 figure(125);
-plot(matStateLog(:,1),sum(matStateLog(:,9:12), 2))
+pos = matStateLog(:,2:4);
+radius = sqrt(sum(pos.^2,2));
+altitude = radius - bodyInfo.radius;
+plot(matStateLog(:,1),altitude);
+grid on;
+
+figure(126);
+pitchAngles = NaN(length(stateLog.entries),1);
+for(i=1:length(stateLog.entries)) %#ok<*NO4LP>
+    dcm = stateLog.entries(i).attitude.dcm;
+    rVect = stateLog.entries(i).position;
+    vVect = stateLog.entries(i).velocity;
+    [rollAngle, pitchAngle, yawAngle] = computeEulerAnglesFromInertialBodyAxes(rVect, vVect, dcm(:,1), dcm(:,2), dcm(:,3));
+    
+    pitchAngles(i) = rad2deg(pitchAngle);
+end
+plot(matStateLog(:,1),pitchAngles);
 grid on;
