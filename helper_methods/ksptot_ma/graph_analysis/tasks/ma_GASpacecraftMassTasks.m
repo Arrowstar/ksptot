@@ -1,5 +1,5 @@
 function datapt = ma_GASpacecraftMassTasks(stateLogEntry, subTask, celBodyData)
-%UNTITLED5 Summary of this function goes here
+%ma_GASpacecraftMassTasks Summary of this function goes here
 %   Detailed explanation goes here
     
     switch subTask
@@ -15,4 +15,3 @@ function datapt = ma_GASpacecraftMassTasks(stateLogEntry, subTask, celBodyData)
             datapt = sum(stateLogEntry(9:12));
     end
 end
-

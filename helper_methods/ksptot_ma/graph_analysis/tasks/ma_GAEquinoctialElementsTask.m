@@ -1,5 +1,5 @@
 function datapt = ma_GAEquinoctialElementsTask(stateLogEntry, subTask, celBodyData)
-%UNTITLED3 Summary of this function goes here
+%ma_GAEquinoctialElementsTask Summary of this function goes here
 %   Detailed explanation goes here
     bodyID = stateLogEntry(8);
 
