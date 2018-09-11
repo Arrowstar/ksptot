@@ -23,9 +23,5 @@ function [c, ceq, value, lb, ub, type, eventNum] = ma_optimConstrWrapper(x, scri
         type = horzcat(type, type1); %#ok<AGROW>
         eventNum = [eventNum, eventNum1]; %#ok<AGROW>
     end
-    
-    if(any(isnan(c)) || any(~isfinite(c)) || any(~isreal(c)))
-        a = 1;
-    end
 end
 

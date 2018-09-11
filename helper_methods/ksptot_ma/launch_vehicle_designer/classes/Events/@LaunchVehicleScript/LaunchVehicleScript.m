@@ -23,7 +23,7 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
             evtNum = find(obj.evts == evt);
         end
         
-        function executeScript(obj, initStateLogEntry, simDriver, stateLog)
+        function stateLog = executeScript(obj, initStateLogEntry, simDriver, stateLog)
             stateLog.clearStateLog();
             
             for(i=1:length(obj.evts)) %#ok<*NO4LP>
