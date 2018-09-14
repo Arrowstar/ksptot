@@ -8,7 +8,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet
         velocity(3,1) double = [0;0;0];
         centralBody(1,1) KSPTOT_BodyInfo
         stageStates(1,:) LaunchVehicleStageState
-        event(1,1) LaunchVehicleEvent = LaunchVehicleEvent(LaunchVehicleScript())
+        event(1,:) LaunchVehicleEvent
         aero(1,1) LaunchVehicleAeroState
         attitude(1,1) LaunchVehicleAttitudeState 
         
@@ -168,7 +168,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet
             newStateLogEntry.throttleModel = obj.throttleModel;
             
             for(i=1:length(obj.stageStates))
-                newStateLogEntry.stageStates(end+1) = obj.stageStates(i).deepCopy();
+                newStateLogEntry.stageStates(i) = obj.stageStates(i).deepCopy();
             end
             
             newStateLogEntry.attitude = obj.attitude.deepCopy();

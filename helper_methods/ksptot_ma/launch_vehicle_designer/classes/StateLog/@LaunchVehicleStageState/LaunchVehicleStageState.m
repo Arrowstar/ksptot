@@ -13,7 +13,9 @@ classdef LaunchVehicleStageState < matlab.mixin.SetGet
     
     methods
         function obj = LaunchVehicleStageState(stage)
-            obj.stage = stage;
+            if(nargin > 0)
+                obj.stage = stage;
+            end
         end
         
         function dryMass = getStateDryMass(obj)

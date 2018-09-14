@@ -4,11 +4,18 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
     
     properties
         evts(1,:) LaunchVehicleEvent
+        
+        lvdData LvdData
+    end
+    
+    properties(Access=private)
+        simDriver LaunchVehicleSimulationDriver
     end
     
     methods
-        function obj = LaunchVehicleScript()
-
+        function obj = LaunchVehicleScript(lvdData, simDriver)
+            obj.lvdData = lvdData;
+            obj.simDriver = simDriver;
         end
         
         function addEvent(obj, newEvt)
@@ -23,14 +30,17 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
             evtNum = find(obj.evts == evt);
         end
         
-        function stateLog = executeScript(obj, initStateLogEntry, simDriver, stateLog)
+        function stateLog = executeScript(obj)
+            initStateLogEntry = obj.lvdData.initialState;
+            stateLog = obj.lvdData.stateLog;
+            
             stateLog.clearStateLog();
             
             for(i=1:length(obj.evts)) %#ok<*NO4LP>
                 obj.evts(i).initEvent(initStateLogEntry);
                 initStateLogEntry.event = obj.evts(i);
                 
-                newStateLogEntries = obj.evts(i).executeEvent(initStateLogEntry, simDriver);
+                newStateLogEntries = obj.evts(i).executeEvent(initStateLogEntry, obj.simDriver);
                 stateLog.appendStateLogEntries(newStateLogEntries);
                 
                 initStateLogEntry = newStateLogEntries(end).deepCopy();

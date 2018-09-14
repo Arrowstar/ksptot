@@ -7,7 +7,7 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
         actions(1,:) AbstractEventAction
         
         name(1,:) char = 'Untitled Event';
-        script(1,1) LaunchVehicleScript = LaunchVehicleScript()
+        script(1,:) LaunchVehicleScript
     end
     
     methods

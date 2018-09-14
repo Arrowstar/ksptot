@@ -5,8 +5,8 @@ classdef SetRPYSteeringModelActionOptimVar < AbstractOptimizationVariable
     properties
         varObj(1,1) RollPitchYawPolySteeringModel = RollPitchYawPolySteeringModel.getDefaultSteeringModel()
         
-        lb(1,1) double = 0;
-        ub(1,1) double = 0;
+        lb(1,:) double
+        ub(1,:) double
         
         varRollConst = true;
         varRollLin   = true;

@@ -4,11 +4,19 @@ classdef ConstraintSet < matlab.mixin.SetGet
     
     properties
         consts(1,:) AbstractConstraint
+        
+        lvdOptim LvdOptimization
+        lvdData LvdData
     end
     
     methods
-        function obj = ConstraintSet()
+        function obj = ConstraintSet(lvdOptim, lvdData)
+            obj.consts = AbstractConstraint.empty(1,0);
             
+            if(nargin > 0)
+                obj.lvdOptim = lvdOptim;
+                obj.lvdData = lvdData;   
+            end
         end
         
         function addConstraint(obj, newConst)
@@ -19,10 +27,7 @@ classdef ConstraintSet < matlab.mixin.SetGet
             obj.consts(obj.consts == const) = [];
         end        
         
-        function [c, ceq, value, lb, ub, type, eventNum] = evalConstraints(x, optimVarSet,script,initStateLogEntry,simDriver,stateLog)
-            optimVarSet.updateObjsWithVarValues(x);
-            stateLog = script.executeScript(initStateLogEntry, simDriver, stateLog);
-            
+        function [c, ceq, value, lb, ub, type, eventNum] = evalConstraints(obj, x, maData) %optimVarSet,script,initStateLogEntry,stateLog,maData,celBodyData)
             c = [];
             ceq = [];
             value = [];
@@ -31,16 +36,23 @@ classdef ConstraintSet < matlab.mixin.SetGet
             type = {};
             eventNum = [];
             
-            for(i=1:length(obj.consts)) %#ok<*NO4LP>
-                [c1, ceq1, value1, lb1, ub1, type1, eventNum1] = obj.consts(i).evalConstraint(stateLog);
+            if(~isempty(obj.consts))
+                obj.lvdOptim.vars.updateObjsWithVarValues(x);
+                stateLog = obj.lvdData.script.executeScript();
+
+                for(i=1:length(obj.consts)) %#ok<*NO4LP>
+                    [c1, ceq1, value1, lb1, ub1, type1, eventNum1] = obj.consts(i).evalConstraint(stateLog, maData);
+
+                    c   = [c,c1]; %#ok<AGROW>
+                    ceq = [ceq, ceq1]; %#ok<AGROW>
+                    value = [value, value1]; %#ok<AGROW>
+                    lb = [lb, lb1]; %#ok<AGROW>
+                    ub = [ub, ub1]; %#ok<AGROW>
+                    type = horzcat(type, type1); %#ok<AGROW>
+                    eventNum = [eventNum, eventNum1]; %#ok<AGROW>
+                end
                 
-                c   = [c,c1]; %#ok<AGROW>
-                ceq = [ceq, ceq1]; %#ok<AGROW>
-                value = [value, value1]; %#ok<AGROW>
-                lb = [lb, lb1]; %#ok<AGROW>
-                ub = [ub, ub1]; %#ok<AGROW>
-                type = horzcat(type, type1); %#ok<AGROW>
-                eventNum = [eventNum, eventNum1]; %#ok<AGROW>
+%                 disp(max([max(c), max(ceq)]));
             end
         end
     end

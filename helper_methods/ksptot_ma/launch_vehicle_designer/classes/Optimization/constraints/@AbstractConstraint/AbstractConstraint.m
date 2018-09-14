@@ -7,6 +7,6 @@ classdef(Abstract) AbstractConstraint < matlab.mixin.SetGet & matlab.mixin.Heter
     end
     
     methods
-        [c, ceq, value, lb, ub, type, eventNum] = evalConstraint(stateLog);
+        [c, ceq, value, lb, ub, type, eventNum] = evalConstraint(obj, stateLog, maData);
     end
 end

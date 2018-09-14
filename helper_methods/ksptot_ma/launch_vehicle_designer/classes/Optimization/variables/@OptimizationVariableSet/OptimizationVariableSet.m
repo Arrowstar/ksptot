@@ -32,7 +32,7 @@ classdef OptimizationVariableSet < matlab.mixin.SetGet
             UprBnds = [];
             
             for(i=1:length(obj.vars)) %#ok<*NO4LP>
-                [lb, ub]= obj.vars(i).getXsForVariable();
+                [lb, ub]= obj.vars(i).getBndsForVariable();
                 LwrBnds = horzcat(LwrBnds, lb); %#ok<AGROW>
                 UprBnds = horzcat(UprBnds, ub); %#ok<AGROW>
             end
@@ -44,7 +44,7 @@ classdef OptimizationVariableSet < matlab.mixin.SetGet
             for(i=1:length(obj.vars))
                 numVars = obj.vars.getNumOfVars();
                 
-                inds = initInd:initInd+numVars;
+                inds = initInd:initInd+numVars-1;
                 subX = x(inds);
                 obj.vars.updateObjWithVarValue(subX);
                 

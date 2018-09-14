@@ -1,72 +1,19 @@
 clc; format long g; close all;
 
-%%Set Up Launch Vehicle and Sim Driver
-lv = LaunchVehicle.createDefaultLaunchVehicle();
-bodyInfo = celBodyData.kerbin;
-
-initStateLogEntry = LaunchVehicleStateLogEntry.getDefaultStateLogEntryForLaunchVehicle(lv, bodyInfo);
-initStateLogEntry.stageStates(3).engineStates(1).active = true; %Turn on the first stage engine
-initStateLogEntry.stageStates(2).engineStates(1).active = false; %Turn off the second stage engine
-
-simMaxDur = 20000;
-minAltitude = -1;
-simDriver = LaunchVehicleSimulationDriver(lv, initStateLogEntry.time, simMaxDur, minAltitude, celBodyData);
-
-%%Set Up Mission Script
-script = LaunchVehicleScript();
-
-%Event 1
-evt1 = LaunchVehicleEvent(script);
-evt1.name = 'Propagate 5 seconds';
-evt1.termCond = EventDurationTermCondition(5);
-script.addEvent(evt1);
-
-%Event 2
-evt2 = LaunchVehicleEvent(script);
-evt2.name = 'Propagate to Stage One Burnout';
-
-evt2TcTank = lv.stages(3).tanks(1);
-evt2.termCond = TankMassTermCondition(evt2TcTank,0);
-
-evt2Action1 = SetStageActiveStateAction(lv.stages(3), false);
-evt2.addAction(evt2Action1);
-
-evt2Action2Eng = lv.stages(2).engines(1);
-evt2Action2 = SetEngineActiveStateAction(evt2Action2Eng, true);
-evt2.addAction(evt2Action2);
-
-evt2ActionStrMdl = AeroAnglesPolySteeringModel.getDefaultSteeringModel();
-evt2Action3 = SetSteeringModelAction(evt2ActionStrMdl);
-evt2.addAction(evt2Action3);
-
-script.addEvent(evt2);
-
-%Event 3
-evt3 = LaunchVehicleEvent(script);
-evt3.name = 'Propagate to Stage Two Burnout';
-
-evt3TcTank = lv.stages(2).tanks(1);
-evt3.termCond = TankMassTermCondition(evt3TcTank,0);
-
-evt3Action1 = SetStageActiveStateAction(lv.stages(2), false);
-evt3.addAction(evt3Action1);
-
-script.addEvent(evt3);
-
-%Event 4
-evt4 = LaunchVehicleEvent(script);
-evt4.name = 'Propagate 1000 seconds';
-evt4.termCond = EventDurationTermCondition(1000);
-script.addEvent(evt4);
+%Set Up Data
+lvdData = LvdData.getDefaultLvdData(celBodyData);
 
 %Execute Script
-% profile on;
-stateLog = LaunchVehicleStateLog();
-script.executeScript(initStateLogEntry, simDriver, stateLog);
-matStateLog = stateLog.getMAFormattedStateLogMatrix();
+% profile on -history;
+tic;
+lvdData.script.executeScript();
+toc;
 % profile viewer;
 
 %%Plotting 
+bodyInfo = celBodyData.kerbin;
+matStateLog = lvdData.stateLog.getMAFormattedStateLogMatrix();
+
 hFig = figure(123);
 hAxes = axes(hFig);
 
@@ -96,11 +43,11 @@ plot(matStateLog(:,1),altitude);
 grid on;
 
 figure(126);
-pitchAngles = NaN(length(stateLog.entries),1);
-for(i=1:length(stateLog.entries)) %#ok<*NO4LP>
-    dcm = stateLog.entries(i).attitude.dcm;
-    rVect = stateLog.entries(i).position;
-    vVect = stateLog.entries(i).velocity;
+pitchAngles = NaN(length(lvdData.stateLog.entries),1);
+for(i=1:length(lvdData.stateLog.entries)) %#ok<*NO4LP>
+    dcm = lvdData.stateLog.entries(i).attitude.dcm;
+    rVect = lvdData.stateLog.entries(i).position;
+    vVect = lvdData.stateLog.entries(i).velocity;
     [rollAngle, pitchAngle, yawAngle] = computeEulerAnglesFromInertialBodyAxes(rVect, vVect, dcm(:,1), dcm(:,2), dcm(:,3));
     
     pitchAngles(i) = rad2deg(pitchAngle);
