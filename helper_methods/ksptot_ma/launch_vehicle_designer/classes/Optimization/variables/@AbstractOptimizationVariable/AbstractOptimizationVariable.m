@@ -13,8 +13,14 @@ classdef(Abstract) AbstractOptimizationVariable < matlab.mixin.SetGet & matlab.m
         
         setBndsForVariable(obj, lb, ub)
         
-        updateObjWithVarValue(obj, x)
+        useTf = getUseTfForVariable(obj)
         
+        setUseTfForVariable(obj, useTf)
+        
+        updateObjWithVarValue(obj, x)
+    end
+    
+    methods(Sealed)
         function numVars = getNumOfVars(obj)
             [lb,~] = obj.getBndsForVariable();
             numVars = numel(lb);

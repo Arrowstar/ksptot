@@ -3,7 +3,7 @@ classdef LaunchVehicleStageState < matlab.mixin.SetGet
     %   Detailed explanation goes here
     
     properties
-        stage(1,1) LaunchVehicleStage = LaunchVehicleStage(LaunchVehicle())
+        stage(1,1) LaunchVehicleStage = LaunchVehicleStage(LaunchVehicle(LvdData.getEmptyLvdData()))
         
         active(1,1) logical = true;
         

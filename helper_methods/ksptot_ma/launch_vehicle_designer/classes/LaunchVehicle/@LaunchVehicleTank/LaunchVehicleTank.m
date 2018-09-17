@@ -3,10 +3,11 @@ classdef LaunchVehicleTank < matlab.mixin.SetGet
     %   Detailed explanation goes here
     
     properties
-        stage(1,1) LaunchVehicleStage = LaunchVehicleStage(LaunchVehicle());
+        stage(1,1) LaunchVehicleStage = LaunchVehicleStage(LaunchVehicle(LvdData.getEmptyLvdData()));
         
         initialMass(1,1) double = 0; %mT
         
+        name(1,:) char = 'Untitled Tank';
         id(1,1) double = 0;
     end
     

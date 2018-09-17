@@ -35,8 +35,10 @@ function [hCBodySurf, childrenHGs] = plotStateLog(stateLog, handles, showSoI, sh
     bodyInfo = getBodyInfoByNumber(bodyID, celBodyData);
     hCBodySurf = ma_initOrbPlot(hFig, dAxes, bodyInfo);
     
-    setappdata(handles.dispAxes,'CurCentralBodyId',bodyID);
-
+    if(~isempty(handles))
+        setappdata(handles.dispAxes,'CurCentralBodyId',bodyID);
+    end
+    
     eventsList = unique(eventsList);
     minEventNum = min(eventsList);
     maxEventNum = max(eventsList);

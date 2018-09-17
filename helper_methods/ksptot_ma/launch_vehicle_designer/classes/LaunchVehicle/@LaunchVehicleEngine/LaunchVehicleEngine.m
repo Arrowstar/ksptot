@@ -3,7 +3,7 @@ classdef LaunchVehicleEngine < matlab.mixin.SetGet
     %   Detailed explanation goes here
     
     properties
-        stage(1,1) LaunchVehicleStage = LaunchVehicleStage(LaunchVehicle());
+        stage(1,1) LaunchVehicleStage = LaunchVehicleStage(LaunchVehicle(LvdData.getEmptyLvdData()));
         
         vacThrust(1,1) double = 0     %kN
         vacIsp(1,1) double =  0       %sec
@@ -15,6 +15,7 @@ classdef LaunchVehicleEngine < matlab.mixin.SetGet
         minThrottle(1,1) double = 0.0; %must be 0<=x<=1
         maxThrottle(1,1) double = 1.0; %must be 0<=x<=1
         
+        name(1,:) char = 'Untitled Engine';
         id(1,1) double = 0;
     end
     

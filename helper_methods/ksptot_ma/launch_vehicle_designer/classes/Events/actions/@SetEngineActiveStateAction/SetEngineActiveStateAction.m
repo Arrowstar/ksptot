@@ -3,14 +3,18 @@ classdef SetEngineActiveStateAction < AbstractEventAction
     %   Detailed explanation goes here
     
     properties
-        engine(1,1) LaunchVehicleEngine = LaunchVehicleEngine(LaunchVehicleStage(LaunchVehicle()));
+        engine(1,1) LaunchVehicleEngine = LaunchVehicleEngine(LaunchVehicleStage(LaunchVehicle(LvdData.getEmptyLvdData())));
         activeStateToSet(1,1) logical = false;
     end
     
     methods
         function obj = SetEngineActiveStateAction(engine, activeStateToSet)
-            obj.engine = engine;
-            obj.activeStateToSet = activeStateToSet;
+            if(nargin > 0)
+                obj.engine = engine;
+                obj.activeStateToSet = activeStateToSet;
+            end
+            
+            obj.id = rand();
         end
         
         function newStateLogEntry = exectuteAction(obj, stateLogEntry)
@@ -28,7 +32,19 @@ classdef SetEngineActiveStateAction < AbstractEventAction
         end
         
         function name = getName(obj)
-            name = 'Set Launch Vehicle Engine State';
+            if(obj.activeStateToSet)
+                tf = 'Active';
+            else
+                tf = 'Inactive';
+            end
+            
+            name = sprintf('Set Engine State (%s = %s)',obj.engine.name,tf);
+        end
+    end
+    
+    methods(Static)
+        function addActionTf = openEditActionUI(action, lv)
+            addActionTf = lvd_EditActionSetEngineStateGUI(action, lv);
         end
     end
 end

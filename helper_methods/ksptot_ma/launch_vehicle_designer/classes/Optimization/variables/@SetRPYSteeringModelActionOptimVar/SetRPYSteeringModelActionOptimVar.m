@@ -3,27 +3,28 @@ classdef SetRPYSteeringModelActionOptimVar < AbstractOptimizationVariable
     %   Detailed explanation goes here
     
     properties
-        varObj(1,1) RollPitchYawPolySteeringModel = RollPitchYawPolySteeringModel.getDefaultSteeringModel()
+        varObj = RollPitchYawPolySteeringModel.getDefaultSteeringModel()
         
-        lb(1,:) double
-        ub(1,:) double
+        lb(1,9) double
+        ub(1,9) double
         
-        varRollConst = true;
-        varRollLin   = true;
-        varRollAccel = true;
+        varRollConst(1,1) logical = false;
+        varRollLin(1,1) logical   = false;
+        varRollAccel(1,1) logical = false;
         
-        varPitchConst = true;
-        varPitchLin   = true;
-        varPitchAccel = true;
+        varPitchConst(1,1) logical = false;
+        varPitchLin(1,1) logical   = false;
+        varPitchAccel(1,1) logical = false;
         
-        varYawConst = true;
-        varYawLin   = true;
-        varYawAccel = true;
+        varYawConst(1,1) logical = false;
+        varYawLin(1,1) logical   = false;
+        varYawAccel(1,1) logical = false;
     end
     
     methods
         function obj = SetRPYSteeringModelActionOptimVar(varObj)
             obj.varObj = varObj;
+            obj.varObj.optVar = obj;
         end
         
         function x = getXsForVariable(obj)
@@ -62,14 +63,43 @@ classdef SetRPYSteeringModelActionOptimVar < AbstractOptimizationVariable
             x(isnan(x)) = [];
         end
         
-        function [lb, ub] = getBndsForVariable(obj)
-            lb = obj.lb;
-            ub = obj.ub;
+        function [lb, ub] = getBndsForVariable(obj)            
+            useTf = obj.getUseTfForVariable();
+
+            lb = obj.lb(useTf);
+            ub = obj.ub(useTf);
         end
         
         function setBndsForVariable(obj, lb, ub)
-            obj.lb = lb;
-            obj.ub = ub;
+            if(length(lb) == 9 && length(ub) == 9)
+                obj.lb = lb;
+                obj.ub = ub;
+            else
+                useTf = obj.getUseTfForVariable();
+
+                obj.lb(useTf) = lb;
+                obj.ub(useTf) = ub;
+            end
+        end
+        
+        function useTf = getUseTfForVariable(obj)
+            useTf = [obj.varRollConst obj.varRollLin obj.varRollAccel ...
+                     obj.varPitchConst obj.varPitchLin obj.varPitchAccel ...
+                     obj.varYawConst obj.varYawLin obj.varYawAccel];
+        end
+        
+        function setUseTfForVariable(obj, useTf)                 
+            obj.varRollConst = useTf(1);
+            obj.varRollLin = useTf(2);
+            obj.varRollAccel = useTf(3);
+            
+            obj.varPitchConst = useTf(4);
+            obj.varPitchLin = useTf(5);
+            obj.varPitchAccel = useTf(6);
+            
+            obj.varYawConst = useTf(7);
+            obj.varYawLin = useTf(8);
+            obj.varYawAccel = useTf(9);
         end
         
         function updateObjWithVarValue(obj, x)

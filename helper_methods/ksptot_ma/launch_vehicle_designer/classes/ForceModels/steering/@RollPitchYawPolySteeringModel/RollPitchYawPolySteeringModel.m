@@ -1,4 +1,4 @@
-classdef RollPitchYawPolySteeringModel < AbstractSteeringModel
+classdef RollPitchYawPolySteeringModel < AbstractAnglePolySteeringModel
     %RollPitchYawSteeringModel Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -6,6 +6,10 @@ classdef RollPitchYawPolySteeringModel < AbstractSteeringModel
         rollModel(1,1) PolynominalModel = PolynominalModel(0,0,0,0);
         pitchModel(1,1) PolynominalModel = PolynominalModel(0,0,0,0);
         yawModel(1,1) PolynominalModel = PolynominalModel(0,0,0,0);
+        
+        rollContinuity(1,1) logical = true;
+        pitchContinuity(1,1) logical = true;
+        yawContinuity(1,1) logical = true;
     end
     
     methods       
@@ -15,6 +19,22 @@ classdef RollPitchYawPolySteeringModel < AbstractSteeringModel
             yawAng = obj.yawModel.getValueAtTime(ut);
             
             [~, ~, ~, dcm] = computeBodyAxesFromEuler(rVect, vVect, rollAng, pitchAng, yawAng);
+        end
+
+        function [angleModel, continuity] = getAngleNModel(obj, n)
+            angleModel = PolynominalModel.empty(1,0);
+            
+            switch n
+                case 1
+                    angleModel = obj.rollModel;
+                    continuity = obj.rollContinuity;
+                case 2
+                    angleModel = obj.pitchModel;
+                    continuity = obj.pitchContinuity;
+                case 3
+                    angleModel = obj.yawModel;
+                    continuity = obj.yawContinuity;
+            end
         end
         
         function setT0(obj, newT0)
@@ -27,6 +47,50 @@ classdef RollPitchYawPolySteeringModel < AbstractSteeringModel
             obj.rollModel.constTerm = rollConst;
             obj.pitchModel.constTerm = pitchConst;
             obj.yawModel.constTerm = yawConst;
+        end
+        
+        function setLinearTerms(obj, roll, pitch, yaw)
+            obj.rollModel.linearTerm = roll;
+            obj.pitchModel.linearTerm = pitch;
+            obj.yawModel.linearTerm = yaw;
+        end
+        
+        function setAccelTerms(obj, roll, pitch, yaw)
+            obj.rollModel.accelTerm = roll;
+            obj.pitchModel.accelTerm = pitch;
+            obj.yawModel.accelTerm = yaw;
+        end
+        
+        function setConstsFromDcmAndContinuitySettings(obj, dcm, rVect, vVect)
+            if(obj.rollContinuity || obj.pitchContinuity || obj.yawContinuity)
+                [rollAngle, pitchAngle, yawAngle] = computeEulerAnglesFromInertialBodyAxes(rVect, vVect, dcm(:,1), dcm(:,2), dcm(:,3));
+                
+                if(obj.rollContinuity)
+                    obj.rollModel.constTerm = rollAngle;
+                end
+                
+                if(obj.pitchContinuity)
+                    obj.pitchModel.constTerm = pitchAngle;
+                end
+                
+                if(obj.yawContinuity)
+                    obj.yawModel.constTerm = yawAngle;
+                end
+            end
+        end
+        
+        function [angle1Name, angle2Name, angle3Name] = getAngleNames(~)
+            angle1Name = 'Roll';
+            angle2Name = 'Pitch';
+            angle3Name = 'Yaw';
+        end
+        
+        function optVar = getNewOptVar(obj)
+            optVar = SetRPYSteeringModelActionOptimVar(obj);
+        end
+        
+        function optVar = getExistingOptVar(obj)
+            optVar = obj.optVar;
         end
     end
     
@@ -45,6 +109,11 @@ classdef RollPitchYawPolySteeringModel < AbstractSteeringModel
             yawModel = PolynominalModel(0,0,0,0);
             
             model = RollPitchYawPolySteeringModel(rollModel, pitchModel, yawModel);
+        end
+        
+        function typeStr = getTypeNameStr()
+%             typeStr = 'Roll/Pitch/Yaw Steering';
+            typeStr = SteeringModelEnum.RollPitchYawPoly.nameStr;
         end
     end
 end

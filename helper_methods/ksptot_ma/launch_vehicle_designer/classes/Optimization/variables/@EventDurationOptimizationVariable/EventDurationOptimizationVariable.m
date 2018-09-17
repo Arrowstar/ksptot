@@ -7,11 +7,14 @@ classdef EventDurationOptimizationVariable < AbstractOptimizationVariable
         
         lb(1,1) double = 0;
         ub(1,1) double = 0;
+        
+        useTf(1,1) = true;
     end
     
     methods
         function obj = EventDurationOptimizationVariable(varObj)
             obj.varObj = varObj;
+            obj.varObj.optVar = obj;
         end
         
         function x = getXsForVariable(obj)
@@ -26,6 +29,14 @@ classdef EventDurationOptimizationVariable < AbstractOptimizationVariable
         function setBndsForVariable(obj, lb, ub)
             obj.lb = lb;
             obj.ub = ub;
+        end
+        
+        function useTf = getUseTfForVariable(obj)
+            useTf = obj.useTf;
+        end
+        
+        function setUseTfForVariable(obj, useTf)
+            obj.useTf = useTf;
         end
         
         function updateObjWithVarValue(obj, x)

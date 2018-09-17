@@ -42,11 +42,11 @@ classdef OptimizationVariableSet < matlab.mixin.SetGet
             initInd = 1;
             
             for(i=1:length(obj.vars))
-                numVars = obj.vars.getNumOfVars();
+                numVars = obj.vars(i).getNumOfVars();
                 
                 inds = initInd:initInd+numVars-1;
                 subX = x(inds);
-                obj.vars.updateObjWithVarValue(subX);
+                obj.vars(i).updateObjWithVarValue(subX);
                 
                 initInd = inds(end) + 1;
             end            

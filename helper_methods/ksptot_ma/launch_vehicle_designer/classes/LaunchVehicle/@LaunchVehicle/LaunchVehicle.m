@@ -5,11 +5,13 @@ classdef LaunchVehicle < matlab.mixin.SetGet
     properties
         stages(1,:) LaunchVehicleStage
         engineTankConns(1,:) EngineToTankConnection
+        
+        lvdData(1,:) LvdData
     end
     
     methods
-        function obj = LaunchVehicle()
-            
+        function obj = LaunchVehicle(lvdData)
+            obj.lvdData = lvdData;
         end
         
         function tanks = getTanksConnectedToEngine(obj, engine)
@@ -17,11 +19,85 @@ classdef LaunchVehicle < matlab.mixin.SetGet
             connections = obj.engineTankConns([obj.engineTankConns.engine] == engine); %connectedTanks
             tanks = [connections.tank];
         end
+        
+        function [stagesListStr, stages] = getStagesListBoxStr(obj)
+            stagesListStr = {};
+            stages = LaunchVehicleStage.empty(1,0);
+            
+            for(i=1:length(obj.stages)) %#ok<*NO4LP>
+                stagesListStr{end+1} = obj.stages(i).name; %#ok<AGROW>
+                stages(end+1) = obj.stages(i); %#ok<AGROW>
+            end
+            
+            if(isempty(stagesListStr))
+                stagesListStr{end+1} = '';
+            end
+        end
+        
+        function ind = getListBoxIndForStage(obj, stage)
+            ind = find(obj.stages == stage);
+        end
+                
+        function [tanksListStr, tanks] = getTanksListBoxStr(obj)
+            tanksListStr = {};
+            tanks = LaunchVehicleTank.empty(1,0);
+            
+            for(i=1:length(obj.stages)) %#ok<*NO4LP>
+                for(j=1:length(obj.stages(i).tanks))
+                    tanksListStr{end+1} = obj.stages(i).tanks(j).name; %#ok<AGROW>
+                    tanks(end+1) = obj.stages(i).tanks(j); %#ok<AGROW>
+                end
+            end
+            
+            if(isempty(tanksListStr))
+                tanksListStr{end+1} = '';
+            end
+        end
+        
+        function ind = getListBoxIndForTank(obj, tank)
+            ind = [];
+            
+            for(i=1:length(obj.stages)) %#ok<*NO4LP>
+                ind = find(obj.stages(i).tanks == tank);
+                
+                if(not(isempty(ind)))
+                    break;
+                end
+            end
+        end
+        
+        function [enginesListStr, engines] = getEnginesListBoxStr(obj)
+            enginesListStr = {};
+            engines = LaunchVehicleEngine.empty(1,0);
+            
+            for(i=1:length(obj.stages)) %#ok<*NO4LP>
+                for(j=1:length(obj.stages(i).engines))
+                    enginesListStr{end+1} = obj.stages(i).engines(j).name; %#ok<AGROW>
+                    engines(end+1) = obj.stages(i).engines(j); %#ok<AGROW>
+                end
+            end
+            
+            if(isempty(enginesListStr))
+                enginesListStr{end+1} = '';
+            end
+        end
+        
+        function ind = getListBoxIndForEngine(obj, engine)
+            ind = [];
+            
+            for(i=1:length(obj.stages)) %#ok<*NO4LP>
+                ind = find(obj.stages(i).engines == engine);
+                
+                if(not(isempty(ind)))
+                    break;
+                end
+            end
+        end
     end
     
     methods(Static)
-        function newLv = createDefaultLaunchVehicle()
-            newLv = LaunchVehicle();
+        function newLv = createDefaultLaunchVehicle(lvdData)
+            newLv = LaunchVehicle(lvdData);
             
             pyldStg = LaunchVehicleStage(newLv);
             pyldStg.name = 'Payload';
@@ -33,21 +109,25 @@ classdef LaunchVehicle < matlab.mixin.SetGet
             firstStg.name = 'First Stage';
             
             uprStgEngine = LaunchVehicleEngine(uprStg);
+            uprStgEngine.name = 'Upper Stage Engine';
             uprStgEngine.vacThrust = 60;
             uprStgEngine.vacIsp = 345;
             uprStgEngine.seaLvlThrust = 14.783;
             uprStgEngine.seaLvlIsp = 85;
             
             firstStgEngine = LaunchVehicleEngine(firstStg);
+            firstStgEngine.name = 'First Stage Engine';
             firstStgEngine.vacThrust = 215;
             firstStgEngine.vacIsp = 350;
             firstStgEngine.seaLvlThrust = 168;
             firstStgEngine.seaLvlIsp = 250;
             
             uprStgTank = LaunchVehicleTank(uprStg);
+            uprStgTank.name = 'Upper Stage Tank';
             uprStgTank.initialMass = 1;
             
             firstStgTank = LaunchVehicleTank(firstStg);
+            firstStgTank.name = 'First Stage Tank';
             firstStgTank.initialMass = 4;
                         
             pyldStg.dryMass = 0.5; %mT;

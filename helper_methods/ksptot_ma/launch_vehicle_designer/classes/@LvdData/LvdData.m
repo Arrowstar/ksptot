@@ -17,6 +17,10 @@ classdef LvdData < matlab.mixin.SetGet
     end
     
     methods(Static)
+        function lvdData = getEmptyLvdData()
+            lvdData = LvdData();
+        end
+        
         function lvdData = getDefaultLvdData(celBodyData)
             lvdData = LvdData();
             
@@ -25,7 +29,7 @@ classdef LvdData < matlab.mixin.SetGet
             simDriver = LaunchVehicleSimulationDriver(simMaxDur, minAltitude, celBodyData);
             
             %Set Up Initial Launch Vehicle
-            lv = LaunchVehicle.createDefaultLaunchVehicle();
+            lv = LaunchVehicle.createDefaultLaunchVehicle(lvdData);
             lvdData.launchVehicle = lv;
             
             %Set Up Initial State
@@ -42,44 +46,52 @@ classdef LvdData < matlab.mixin.SetGet
             evt1.name = 'Propagate 5 seconds';
             evt1.termCond = EventDurationTermCondition(5);
             script.addEvent(evt1);
-
+            
             %Event 2
             evt2 = LaunchVehicleEvent(script);
-            evt2.name = 'Propagate to Stage One Burnout';
-
-            evt2TcTank = lv.stages(3).tanks(1);
-            evt2.termCond = TankMassTermCondition(evt2TcTank,0);
-
-            evt2Action1 = SetStageActiveStateAction(lv.stages(3), false);
-            evt2.addAction(evt2Action1);
-
-            evt2Action2Eng = lv.stages(2).engines(1);
-            evt2Action2 = SetEngineActiveStateAction(evt2Action2Eng, true);
-            evt2.addAction(evt2Action2);
-
-%             evt2ActionStrMdl = AeroAnglesPolySteeringModel.getDefaultSteeringModel();
-%             evt2Action3 = SetSteeringModelAction(evt2ActionStrMdl);
-%             evt2.addAction(evt2Action3);
-
+            evt2.name = 'Propagate to AoA = 0';
+            evt2.termCond = AngleOfAttackTermCondition(0);
+            evt2ActionStrMdl = AeroAnglesPolySteeringModel.getDefaultSteeringModel();
+            evt2Action3 = SetSteeringModelAction(evt2ActionStrMdl);
+            evt2.addAction(evt2Action3);
             script.addEvent(evt2);
-
+            
             %Event 3
-            evt3 = LaunchVehicleEvent(script);
-            evt3.name = 'Propagate to Stage Two Burnout';
-
-            evt3TcTank = lv.stages(2).tanks(1);
-            evt3.termCond = TankMassTermCondition(evt3TcTank,0);
-
-            evt3Action1 = SetStageActiveStateAction(lv.stages(2), false);
-            evt3.addAction(evt3Action1);
-
-            script.addEvent(evt3);
-
+            %None
+            
             %Event 4
             evt4 = LaunchVehicleEvent(script);
-            evt4.name = 'Propagate 1000 seconds';
-            evt4.termCond = EventDurationTermCondition(1000);
+            evt4.name = 'Propagate to Stage One Burnout';
+
+            evt4TcTank = lv.stages(3).tanks(1);
+            evt4.termCond = TankMassTermCondition(evt4TcTank,0);
+
+            evt4Action1 = SetStageActiveStateAction(lv.stages(3), false);
+            evt4.addAction(evt4Action1);
+
+            evt4Action2Eng = lv.stages(2).engines(1);
+            evt4Action2 = SetEngineActiveStateAction(evt4Action2Eng, true);
+            evt4.addAction(evt4Action2);
+
             script.addEvent(evt4);
+
+            %Event 5
+            evt5 = LaunchVehicleEvent(script);
+            evt5.name = 'Propagate to Stage Two Burnout';
+
+            evt5TcTank = lv.stages(2).tanks(1);
+            evt5.termCond = TankMassTermCondition(evt5TcTank,0);
+
+            evt5Action1 = SetStageActiveStateAction(lv.stages(2), false);
+            evt5.addAction(evt5Action1);
+
+            script.addEvent(evt5);
+
+            %Event 6
+            evt6 = LaunchVehicleEvent(script);
+            evt6.name = 'Propagate 1000 seconds';
+            evt6.termCond = EventDurationTermCondition(1000);
+            script.addEvent(evt6);
             
             lvdData.script = script;
 
@@ -88,27 +100,29 @@ classdef LvdData < matlab.mixin.SetGet
                       
             %Optimization
             lvdOptim = LvdOptimization(lvdData);
-            lvdOptim.objFcn = LaunchVehicleMassObjectiveFcn(evt4, lvdOptim, lvdData);
             
+            %-Objective Function
+            lvdOptim.objFcn = MaximizeLaunchVehicleMassObjectiveFcn(evt6, lvdOptim, lvdData);
+            
+            %-Variables
             rpyVars = SetRPYSteeringModelActionOptimVar(initStateLogEntry.steeringModel);
-            rpyVars.varRollConst = false;
-            rpyVars.varPitchConst = false;
-            rpyVars.varYawConst = false;
-            rpyVars.varRollLin = false;
-            rpyVars.varRollAccel = false;
-            rpyVars.varYawLin = false;
-            rpyVars.varYawAccel = false;
-            rpyVars.lb = deg2rad(-5)*ones([1,2]);
-            rpyVars.ub = deg2rad(+5)*ones([1,2]);
+            rpyVars.varPitchLin = true;
+            rpyVars.varPitchAccel = true;
+
+            rpyVars.setBndsForVariable(deg2rad(-3)*ones([1,2]), deg2rad(+3)*ones([1,2]));
             lvdOptim.vars.addVariable(rpyVars);
             
-            const1 = GenericMAConstraint('Eccentricity', evt4, 0, 0, struct.empty(1,0), struct.empty(1,0), celBodyData.kerbin);
+            stage3DryMassVar = StageDryMassOptimizationVariable(lvdData.launchVehicle.stages(1));
+            stage3DryMassVar.setBndsForVariable(0.001,10);
+            lvdOptim.vars.addVariable(stage3DryMassVar);
+            
+            const1 = GenericMAConstraint('Eccentricity', evt6, 0, 0, struct.empty(1,0), struct.empty(1,0), celBodyData.kerbin);
             lvdOptim.constraints.addConstraint(const1);
             
-            const2 = GenericMAConstraint('Semi-major Axis', evt4, 700, 700, struct.empty(1,0), struct.empty(1,0), celBodyData.kerbin);
-            lvdOptim.constraints.addConstraint(const2);
+%             const2 = GenericMAConstraint('Semi-major Axis', evt6, 700, 700, struct.empty(1,0), struct.empty(1,0), celBodyData.kerbin);
+%             lvdOptim.constraints.addConstraint(const2);
             
-            const3 = GenericMAConstraint('Altitude', evt4, 75, realmax, struct.empty(1,0), struct.empty(1,0), celBodyData.kerbin);
+            const3 = GenericMAConstraint('Altitude', evt6, 75, realmax, struct.empty(1,0), struct.empty(1,0), celBodyData.kerbin);
             lvdOptim.constraints.addConstraint(const3);
             
             lvdData.optimizer = lvdOptim;

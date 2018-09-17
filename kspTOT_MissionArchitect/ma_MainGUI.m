@@ -22,7 +22,7 @@ function varargout = ma_MainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_MainGUI
 
-% Last Modified by GUIDE v2.5 11-Aug-2018 13:51:28
+% Last Modified by GUIDE v2.5 15-Sep-2018 15:49:16
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -2540,3 +2540,21 @@ function setNumSoITransSearchAttemptsMenu_Callback(hObject, eventdata, handles)
         writeOutput(sprintf('Could not set number of SoI search attempts per rev.  "%s" is an invalid entry.', str),'append');
         beep;
     end
+
+
+% --------------------------------------------------------------------
+function launchVehicleMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to launchVehicleMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function launchVehicleDesignerMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to launchVehicleDesignerMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    maData = getappdata(handles.ma_MainGUI,'ma_data');
+    celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
+
+    ma_LvdMainGUI(maData,celBodyData);

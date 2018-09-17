@@ -53,6 +53,10 @@ classdef ConstraintSet < matlab.mixin.SetGet
                 end
                 
 %                 disp(max([max(c), max(ceq)]));
+
+                if(any(isnan(c)) || any(isnan(ceq)))
+                    a = 1;
+                end
             end
         end
     end

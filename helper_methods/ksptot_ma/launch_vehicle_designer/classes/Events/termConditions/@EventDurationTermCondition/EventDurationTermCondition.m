@@ -21,7 +21,37 @@ classdef EventDurationTermCondition < AbstractEventTerminationCondition
         end
         
         function name = getName(obj)
-            name = 'Event Duration';
+            name = sprintf('Event Duration (%.3f sec)', obj.duration);
+        end
+        
+        function params = getTermCondUiStruct(obj)
+            params = struct();
+            
+            params.paramName = 'Event Duration';
+            params.paramUnit = 'sec';
+            params.useParam = 'on';
+            params.useStages = 'off';
+            params.useTanks = 'off';
+            params.useEngines = 'off';
+            
+            params.value = obj.duration;
+            params.refStage = LaunchVehicleStage.empty(1,0);
+            params.refTank = LaunchVehicleEngine.empty(1,0);
+            params.refEngine = LaunchVehicleEngine.empty(1,0);
+        end
+        
+        function optVar = getNewOptVar(obj)
+            optVar = EventDurationOptimizationVariable(obj);
+        end
+        
+        function optVar = getExistingOptVar(obj)
+            optVar = obj.optVar;
+        end
+    end
+    
+    methods(Static)
+        function termCond = getTermCondForParams(paramValue, stage, tank, engine)
+            termCond = EventDurationTermCondition(paramValue);
         end
     end
     

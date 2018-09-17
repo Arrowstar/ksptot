@@ -48,12 +48,12 @@ classdef GenericMAConstraint < AbstractConstraint
             value = ma_getDepVarValueUnit(1, stateLogEntry, type, 0, refBodyId, oscId, stnId, propNames, maData, celBodyData, false);
                        
             if(obj.lb == obj.ub)
-                c = [0 0];
+                c = [];
                 ceq(1) = value - obj.ub;
             else
                 c(1) = obj.lb - value;
                 c(2) = value - obj.ub;
-                ceq = [0]; %#ok<NBRAK>
+                ceq = [];
             end
             c = c/obj.normFact;
             ceq = ceq/obj.normFact;  

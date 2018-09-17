@@ -3,7 +3,7 @@ classdef(Abstract) AbstractEventTerminationCondition < matlab.mixin.SetGet
     %   Detailed explanation goes here
     
     properties
-        
+        optVar
     end
     
     methods
@@ -12,5 +12,15 @@ classdef(Abstract) AbstractEventTerminationCondition < matlab.mixin.SetGet
         initTermCondition(obj, initialStateLogEntry)
         
         name = getName(obj)
+        
+        params = getTermCondUiStruct(obj)
+        
+        optVar = getNewOptVar(obj)
+        
+        optVar = getExistingOptVar(obj)
+    end
+    
+    methods(Static)
+        termCond = getTermCondForParams(paramValue, stage, tank, engine)
     end
 end

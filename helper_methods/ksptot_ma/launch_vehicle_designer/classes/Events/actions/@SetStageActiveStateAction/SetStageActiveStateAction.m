@@ -3,14 +3,18 @@ classdef SetStageActiveStateAction < AbstractEventAction
     %   Detailed explanation goes here
     
     properties
-        stage(1,1) LaunchVehicleStage = LaunchVehicleStage(LaunchVehicle());
+        stage(1,1) LaunchVehicleStage = LaunchVehicleStage(LaunchVehicle(LvdData.getEmptyLvdData()));
         activeStateToSet(1,1) logical = false;
     end
     
     methods
         function obj = SetStageActiveStateAction(stage, activeStateToSet)
-            obj.stage = stage;
-            obj.activeStateToSet = activeStateToSet;
+            if(nargin > 0)
+                obj.stage = stage;
+                obj.activeStateToSet = activeStateToSet;
+            end
+            
+            obj.id = rand();
         end
         
         function newStateLogEntry = exectuteAction(obj, stateLogEntry)
@@ -25,7 +29,19 @@ classdef SetStageActiveStateAction < AbstractEventAction
         end
         
         function name = getName(obj)
-            name = 'Set Launch Vehicle Stage State';
+            if(obj.activeStateToSet)
+                tf = 'Active';
+            else
+                tf = 'Inactive';
+            end
+            
+            name = sprintf('Set Stage State (%s = %s)', obj.stage.name, tf);
+        end
+    end
+    
+    methods(Static)
+        function addActionTf = openEditActionUI(action, lv)
+            addActionTf = lvd_EditActionSetStageStateGUI(action, lv);
         end
     end
 end

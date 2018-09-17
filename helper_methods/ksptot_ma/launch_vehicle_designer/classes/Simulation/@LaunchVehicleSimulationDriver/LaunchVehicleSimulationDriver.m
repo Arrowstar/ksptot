@@ -4,7 +4,7 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
     
     properties
         forceModel(1,1) AbstractForceModel = TotalForceModel();
-        integrator(1,1) function_handle = @ode113;
+        integrator(1,1) function_handle = @ode45;
         
         simMaxDur(1,1) double = 600; %sec
         minAltitude = -1; %km
@@ -27,7 +27,8 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
             
             odefun = @(t,y) obj.odefun(t,y, obj, eventInitStateLogEntry);
             odeEventsFun = @(t,y) obj.odeEvents(t,y, obj, eventInitStateLogEntry, event.termCond.getEventTermCondFuncHandle());
-            options = odeset('RelTol',1E-10, 'AbsTol',1E-10,  'NonNegative',tankStateInds, 'Events',odeEventsFun, 'NormControl','on');
+            odeOutputFun = @(t,y,flag) obj.odeOutput(t,y,flag, now()*86400);
+            options = odeset('RelTol',1E-6, 'AbsTol',1E-6,  'NonNegative',tankStateInds, 'Events',odeEventsFun, 'NormControl','on', 'OutputFcn',odeOutputFun);
             
             [value,isterminal,~] = odeEventsFun(tspan(1), y0);
             if(any(abs(value)<=1E-6))
@@ -58,6 +59,9 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
         end
         
         function dydt = odefun(t,y, obj, eventInitStateLogEntry)
+            if(any(isnan(y)))
+                a = 1;
+            end
             [ut, rVect, vVect, tankStates] = LaunchVehicleSimulationDriver.decomposeIntegratorTandY(t,y);
             bodyInfo = eventInitStateLogEntry.centralBody;
                        
@@ -72,10 +76,20 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
             dydt(1:3) = vVect'; 
             dydt(4:6) = obj.forceModel.getForce(tempStateLogEntry)/totalMass;
             dydt(7:end) = tempStateLogEntry.getTankMassFlowRatesDueToEngines(pressure);
+            
+            if(any(isnan(dydt)))
+                a = 1;
+            end
         end
         
         function [value,isterminal,direction] = odeEvents(t,y, obj, eventInitStateLogEntry, evtTermCond)
             celBodyData = obj.celBodyData;
+            
+            sizeY = size(y);
+            if(sizeY(2) > sizeY(1))
+                y = y';
+            end
+            
             [ut, rVect, vVect, tankStates] = LaunchVehicleSimulationDriver.decomposeIntegratorTandY(t,y);
             bodyInfo = eventInitStateLogEntry.centralBody;
             
@@ -93,7 +107,7 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
             value(2) = rSOI - radius;
             isterminal(2) = 1;
             direction(2) = 1;
-            
+                        
             %Event Termination Condition
             [value(3),isterminal(3),direction(3)] = evtTermCond(t,y);
             
@@ -101,6 +115,18 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
 %             value(3) = sum(tankStates);
 %             isterminal(3) = 1;
 %             direction(3) = 0;
+        end
+        
+        function status = odeOutput(t,y,flag, intStartTime)
+            integrationDuration = now()*86400 - intStartTime;
+            maxIntegrationDuration = 5;
+            
+            status = 0; %TODO FIX ME!
+            if(integrationDuration > maxIntegrationDuration)
+                status = 1;
+            end
+
+            odeprint(t,y,flag);
         end
     end
 end

@@ -20,6 +20,10 @@ classdef TotalForceModel < AbstractForceModel
             for(i=1:length(obj.forceModels)) %#ok<*NO4LP>
                 forceVect = forceVect + obj.forceModels(i).getForce(stateLogEntry);
             end
+            
+            if(any(isnan(forceVect)))
+                a = 1;
+            end
         end
     end
 end

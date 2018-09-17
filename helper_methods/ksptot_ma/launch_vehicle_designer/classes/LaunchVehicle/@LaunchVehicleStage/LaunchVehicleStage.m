@@ -3,7 +3,7 @@ classdef LaunchVehicleStage < matlab.mixin.SetGet
     %   Detailed explanation goes here
     
     properties
-        launchVehicle(1,1) LaunchVehicle
+        launchVehicle(1,1) LaunchVehicle = LaunchVehicle(LvdData.getEmptyLvdData())
         
         name(1,:) char = 'Untitled Stage';
         engines(1,:) LaunchVehicleEngine

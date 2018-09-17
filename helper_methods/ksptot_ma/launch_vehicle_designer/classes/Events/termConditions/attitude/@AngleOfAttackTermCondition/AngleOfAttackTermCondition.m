@@ -21,15 +21,45 @@ classdef AngleOfAttackTermCondition < AbstractEventTerminationCondition
         end
         
         function name = getName(obj)
-            name = 'Angle of Attack';
+            name = sprintf('Angle of Attack (%.3f deg)', rad2deg(obj.targetAoA));
+        end
+        
+        function params = getTermCondUiStruct(obj)
+            params = struct();
+            
+            params.paramName = 'Target AoA';
+            params.paramUnit = 'deg';
+            params.useParam = 'on';
+            params.useStages = 'off';
+            params.useTanks = 'off';
+            params.useEngines = 'off';
+            
+            params.value = rad2deg(obj.targetAoA);
+            params.refStage = LaunchVehicleStage.empty(1,0);
+            params.refTank = LaunchVehicleEngine.empty(1,0);
+            params.refEngine = LaunchVehicleEngine.empty(1,0);
+        end
+        
+        function optVar = getNewOptVar(obj)
+            optVar = AoATermConditionOptimizationVariable(obj);
+        end
+        
+        function optVar = getExistingOptVar(obj)
+            optVar = obj.optVar;
+        end
+    end
+    
+    methods(Static)
+        function termCond = getTermCondForParams(paramValue, stage, tank, engine)
+            termCond = AngleOfAttackTermCondition(deg2rad(paramValue));
         end
     end
     
     methods(Static, Access=private)
         function [value,isterminal,direction] = eventTermCond(t,y, targetAoA, steeringModel)
             ut = t;
-            rVect = y(1:3)';
-            vVect = y(4:6)';
+            rVect = y(1:3);
+            vVect = y(4:6);
             
             dcm = steeringModel.getBody2InertialDcmAtTime(ut, rVect, vVect);
             [~,angOfAttack,~] = computeAeroAnglesFromBodyAxes(rVect, vVect, dcm(:,1), dcm(:,2), dcm(:,3));

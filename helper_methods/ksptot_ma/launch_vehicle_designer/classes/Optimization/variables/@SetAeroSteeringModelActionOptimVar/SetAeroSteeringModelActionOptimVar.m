@@ -3,27 +3,28 @@ classdef SetAeroSteeringModelActionOptimVar < AbstractOptimizationVariable
     %   Detailed explanation goes here
     
     properties
-        varObj(1,1) AeroAnglesPolySteeringModel = AeroAnglesPolySteeringModel.getDefaultSteeringModel()
+        varObj = AeroAnglesPolySteeringModel.getDefaultSteeringModel()
         
-        lb(1,1) double = 0;
-        ub(1,1) double = 0;
+        lb(1,9) double = zeros([1,9]);
+        ub(1,9) double = zeros([1,9]);
         
-        varBankConst = true;
-        varBankLin   = true;
-        varBankAccel = true;
+        varBankConst(1,1) logical = false;
+        varBankLin(1,1) logical   = false;
+        varBankAccel(1,1) logical = false;
         
-        varAoAConst = true;
-        varAoALin   = true;
-        varAoAAccel = true;
+        varAoAConst(1,1) logical = false;
+        varAoALin(1,1) logical   = false;
+        varAoAAccel(1,1) logical = false;
         
-        varSlipConst = true;
-        varSlipLin   = true;
-        varSlipAccel = true;
+        varSlipConst(1,1) logical = false;
+        varSlipLin(1,1) logical   = false;
+        varSlipAccel(1,1) logical = false;
     end
     
     methods
         function obj = SetAeroSteeringModelActionOptimVar(varObj)
             obj.varObj = varObj;
+            obj.varObj.optVar = obj;
         end
         
         function x = getXsForVariable(obj)
@@ -63,13 +64,43 @@ classdef SetAeroSteeringModelActionOptimVar < AbstractOptimizationVariable
         end
         
         function [lb, ub] = getBndsForVariable(obj)
-            lb = obj.lb;
-            ub = obj.ub;
+            useTf = obj.getUseTfForVariable();
+
+            lb = obj.lb(useTf);
+            ub = obj.ub(useTf);
         end
         
         function setBndsForVariable(obj, lb, ub)
-            obj.lb = lb;
-            obj.ub = ub;
+            if(length(lb) == 9 && length(ub) == 9)
+                obj.lb = lb;
+                obj.ub = ub;
+            else
+                useTf = obj.getUseTfForVariable();
+
+                obj.lb(useTf) = lb;
+                obj.ub(useTf) = ub;
+            end
+        end
+        
+        function useTf = getUseTfForVariable(obj)
+            useTf = [obj.varBankConst  obj.varBankLin    obj.varBankAccel ...
+                     obj.varAoAConst  obj.varAoALin    obj.varAoAAccel ...
+                     obj.varSlipConst  obj.varSlipLin    obj.varSlipAccel];
+            useTf = logical(useTf);
+        end
+        
+        function setUseTfForVariable(obj, useTf)                 
+            obj.varBankConst = useTf(1);
+            obj.varBankLin = useTf(2);
+            obj.varBankAccel = useTf(3);
+            
+            obj.varAoAConst = useTf(4);
+            obj.varAoALin = useTf(5);
+            obj.varAoAAccel = useTf(6);
+            
+            obj.varSlipConst = useTf(7);
+            obj.varSlipLin = useTf(8);
+            obj.varSlipAccel = useTf(9);
         end
         
         function updateObjWithVarValue(obj, x)

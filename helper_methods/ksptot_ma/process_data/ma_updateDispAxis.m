@@ -8,7 +8,6 @@ function ma_updateDispAxis(handles, stateLog, orbitNumToPlot)
     hShowOtherSpacecraftCheckBox = handles.showOtherSpacecraftCheckBox;
     hShowChildBodyMarker = handles.showChildBodyMarker;
     
-%     orbitNumToPlot = get(hDispAxes,'UserData');
     if(isempty(orbitNumToPlot))
         orbitNumToPlot = 1;
         set(hDispAxes,'UserData',orbitNumToPlot);
@@ -48,4 +47,3 @@ function ma_updateDispAxis(handles, stateLog, orbitNumToPlot)
     celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
     plotStateLog(stateLog, handles, showSoI, showChildBodies, showChildMarker, showOtherSC, orbitNumToPlot, hDispAxisTitleLabel, maData, celBodyData);
 end
-
