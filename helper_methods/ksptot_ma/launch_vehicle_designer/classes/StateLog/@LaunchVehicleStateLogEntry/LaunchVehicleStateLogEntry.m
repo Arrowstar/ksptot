@@ -7,6 +7,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet
         position(3,1) double = [0;0;0];
         velocity(3,1) double = [0;0;0];
         centralBody(1,1) KSPTOT_BodyInfo
+        lvState(1,:) LaunchVehicleState
         stageStates(1,:) LaunchVehicleStageState
         event(1,:) LaunchVehicleEvent
         aero(1,1) LaunchVehicleAeroState
@@ -132,7 +133,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet
                             adjustedThrottle = engine.adjustThrottleForMinMax(obj.throttle);
                             mdot = adjustedThrottle * mdot;
                             
-                            tanks = stgState.stage.launchVehicle.getTanksConnectedToEngine(engine);
+                            tanks = obj.lvState.getTanksConnectedToEngine(engine);
                             
                             flowFromTankInds = zeros(size(tankStates));
                             for(k=1:length(tanks))
@@ -167,6 +168,8 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet
             newStateLogEntry.steeringModel = obj.steeringModel;
             newStateLogEntry.throttleModel = obj.throttleModel;
             
+            newStateLogEntry.lvState = obj.lvState.deepCopy();
+            
             for(i=1:length(obj.stageStates))
                 newStateLogEntry.stageStates(i) = obj.stageStates(i).deepCopy();
             end
@@ -199,6 +202,15 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet
             stateLogEntry.velocity = vVectECI;
             
             stateLogEntry.centralBody = bodyInfo;
+            
+            lvsState = LaunchVehicleState(lv);
+            stateLogEntry.lvState = lvsState;
+            
+            for(i=1:length(lv.engineTankConns))
+                e2TConnState = EngineToTankConnState(lv.engineTankConns(i));
+                e2TConnState.active = true;
+                lvsState.e2TConns(end+1) = e2TConnState;
+            end
             
             stageStates = LaunchVehicleStageState.empty(1,0);
             for(i=1:length(lv.stages))

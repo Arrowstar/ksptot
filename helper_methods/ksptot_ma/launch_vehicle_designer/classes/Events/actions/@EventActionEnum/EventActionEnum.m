@@ -6,6 +6,7 @@ classdef EventActionEnum < matlab.mixin.SetGet
         SetEngineActiveState('Set Engine Active State','SetEngineActiveStateAction')
         SetStageActiveState('Set Stage Active State','SetStageActiveStateAction');
         SetSteeringModel('Set Steering Model','SetSteeringModelAction');
+        SetEngineToTankState('Set Engine To Tank Connection State','SetEngineTankConnActiveStateEventAction');
     end
     
     properties

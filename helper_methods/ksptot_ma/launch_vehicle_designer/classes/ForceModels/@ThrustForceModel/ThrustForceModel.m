@@ -38,7 +38,7 @@ classdef ThrustForceModel < AbstractForceModel
                         if(engState.active)
                             engine = engState.engine;
 
-                            tanks = lv.getTanksConnectedToEngine(engine); %connected tanks
+                            tanks = stateLogEntry.lvState.getTanksConnectedToEngine(engine); %connected tanks
 
                             propExistsInATank = false; 
                             for(k=1:length(tanks))

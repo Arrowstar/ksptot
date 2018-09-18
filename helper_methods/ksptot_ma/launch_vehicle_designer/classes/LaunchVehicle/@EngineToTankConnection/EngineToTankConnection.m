@@ -9,8 +9,14 @@ classdef EngineToTankConnection < matlab.mixin.SetGet
     
     methods
         function obj = EngineToTankConnection(tank, engine)
-            obj.tank = tank;
-            obj.engine = engine;
+            if(nargin > 0)
+                obj.tank = tank;
+                obj.engine = engine;
+            end
+        end
+        
+        function nameStr = getName(obj)
+            nameStr = sprintf('%s to %s', obj.engine.name, obj.tank.name);
         end
     end
 end

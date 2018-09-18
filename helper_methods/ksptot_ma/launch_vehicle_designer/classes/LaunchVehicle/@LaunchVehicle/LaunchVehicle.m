@@ -13,13 +13,7 @@ classdef LaunchVehicle < matlab.mixin.SetGet
         function obj = LaunchVehicle(lvdData)
             obj.lvdData = lvdData;
         end
-        
-        function tanks = getTanksConnectedToEngine(obj, engine)
-            obj.engineTankConns = obj.engineTankConns;
-            connections = obj.engineTankConns([obj.engineTankConns.engine] == engine); %connectedTanks
-            tanks = [connections.tank];
-        end
-        
+                
         function [stagesListStr, stages] = getStagesListBoxStr(obj)
             stagesListStr = {};
             stages = LaunchVehicleStage.empty(1,0);
@@ -91,6 +85,15 @@ classdef LaunchVehicle < matlab.mixin.SetGet
                 if(not(isempty(ind)))
                     break;
                 end
+            end
+        end
+        
+        function [e2TConnStr, e2TConns] = getEngineToTankConnectionsListBoxStr(obj)
+            e2TConnStr = {};
+            e2TConns = obj.engineTankConns;
+            
+            for(i=1:length(obj.engineTankConns)) %#ok<*NO4LP>
+                e2TConnStr{end+1} = obj.engineTankConns(i).getName(); %#ok<AGROW>
             end
         end
     end
