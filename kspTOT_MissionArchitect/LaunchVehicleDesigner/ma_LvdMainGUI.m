@@ -195,6 +195,8 @@ function deleteEvent_Callback(hObject, eventdata, handles)
         set(handles.scriptListbox,'Value',length(lvdData.script.evts));
     end
     
+    lvdData.script.executeScript();
+    
     lvd_processData(handles);
 
 % --- Executes on button press in moveEventUp.
