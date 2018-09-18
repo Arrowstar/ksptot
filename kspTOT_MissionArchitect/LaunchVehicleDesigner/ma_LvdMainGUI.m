@@ -128,6 +128,8 @@ function scriptListbox_Callback(hObject, eventdata, handles)
         event = lvdData.script.getEventForInd(eventNum);
         lvd_editEventGUI(event);
         
+        lvdData.script.executeScript();
+        
         lvd_processData(handles);
     end
 
@@ -156,6 +158,8 @@ function insertEventButton_Callback(hObject, eventdata, handles)
     event = LaunchVehicleEvent.getDefaultEvent(lvdData.script);
     lvdData.script.addEventAtInd(event,selEvtNum);
     lvd_editEventGUI(event);
+    
+    lvdData.script.executeScript();
     
     lvd_processData(handles);
 
