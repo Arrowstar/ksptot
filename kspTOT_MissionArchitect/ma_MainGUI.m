@@ -2557,4 +2557,4 @@ function launchVehicleDesignerMenu_Callback(hObject, eventdata, handles)
     maData = getappdata(handles.ma_MainGUI,'ma_data');
     celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
 
-    ma_LvdMainGUI(maData,celBodyData);
+    ma_LvdMainGUI(maData,celBodyData,handles.ma_MainGUI);

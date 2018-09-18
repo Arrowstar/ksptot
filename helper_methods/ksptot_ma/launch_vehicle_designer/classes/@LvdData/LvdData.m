@@ -69,12 +69,19 @@ classdef LvdData < matlab.mixin.SetGet
             evt4Action1 = SetStageActiveStateAction(lv.stages(3), false);
             evt4.addAction(evt4Action1);
 
-            evt4Action2Eng = lv.stages(2).engines(1);
-            evt4Action2 = SetEngineActiveStateAction(evt4Action2Eng, true);
-            evt4.addAction(evt4Action2);
-
             script.addEvent(evt4);
-
+            
+            %Event 4b
+            evt4b = LaunchVehicleEvent(script);
+            evt4b.name = 'Coast to Stage Two Ignition';
+            evt4b.termCond = EventDurationTermCondition(0);
+            
+            evt4bAction2Eng = lv.stages(2).engines(1);
+            evt4bAction2 = SetEngineActiveStateAction(evt4bAction2Eng, true);
+            evt4b.addAction(evt4bAction2);
+            
+            script.addEvent(evt4b);
+            
             %Event 5
             evt5 = LaunchVehicleEvent(script);
             evt5.name = 'Propagate to Stage Two Burnout';
@@ -108,13 +115,17 @@ classdef LvdData < matlab.mixin.SetGet
             rpyVars = SetRPYSteeringModelActionOptimVar(initStateLogEntry.steeringModel);
             rpyVars.varPitchLin = true;
             rpyVars.varPitchAccel = true;
-
             rpyVars.setBndsForVariable(deg2rad(-3)*ones([1,2]), deg2rad(+3)*ones([1,2]));
             lvdOptim.vars.addVariable(rpyVars);
             
             stage3DryMassVar = StageDryMassOptimizationVariable(lvdData.launchVehicle.stages(1));
             stage3DryMassVar.setBndsForVariable(0.001,10);
             lvdOptim.vars.addVariable(stage3DryMassVar);
+
+            coastDurVar = EventDurationOptimizationVariable(evt4b.termCond);
+            coastDurVar.setUseTfForVariable(true);
+            coastDurVar.setBndsForVariable(0, 60);
+            lvdOptim.vars.addVariable(coastDurVar);
             
             const1 = GenericMAConstraint('Eccentricity', evt6, 0, 0, struct.empty(1,0), struct.empty(1,0), celBodyData.kerbin);
             lvdOptim.constraints.addConstraint(const1);

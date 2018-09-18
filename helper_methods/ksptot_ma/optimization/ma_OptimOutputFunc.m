@@ -17,6 +17,11 @@ function stop = ma_OptimOutputFunc(x, optimValues, state, handles, problem, celB
     end
     
     [~, stateLog] = problem.objective(x);
+
+    if(isa(stateLog,'LaunchVehicleStateLog'))
+        stateLog = stateLog.getMAFormattedStateLogMatrix();
+    end
+    
     writeOptimStatus(handles, optimValues, state);
     writeFinalState(handles, stateLog, celBodyData);
     generatePlots(x, optimValues, state, handles, problem.lb, problem.ub);

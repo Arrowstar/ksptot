@@ -60,6 +60,8 @@ function ma_LvdMainGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 
     celBodyData = varargin{2};
     setappdata(hObject,'celBodyData',celBodyData);
+    
+    setappdata(hObject,'hMaMainGUI',varargin{3});
 
     if(~isfield(maData,'lvdData') || isempty(maData.lvdData))
         lvdData = LvdData.getDefaultLvdData(celBodyData);
@@ -279,7 +281,12 @@ function optimizeMissionMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to optimizeMissionMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
+    maData = getappdata(handles.ma_LvdMainGUI,'maData');
+    hMaMainGUI = getappdata(handles.ma_LvdMainGUI,'hMaMainGUI');
+    writeOutput = getappdata(handles.ma_LvdMainGUI,'write_to_output_func');
+    
+    lvdData = maData.lvdData;
+    lvdData.optimizer.optimize(hMaMainGUI, writeOutput);
 
 % --------------------------------------------------------------------
 function launchVehicleMenu_Callback(hObject, eventdata, handles)

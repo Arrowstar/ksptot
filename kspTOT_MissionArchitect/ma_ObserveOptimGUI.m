@@ -58,6 +58,16 @@ handles.output = hObject;
 handles.ma_MainGUI = varargin{1};
 problem = varargin{2};
 
+if(length(varargin) >= 3)
+    isLVD = varargin{3};
+else
+    isLVD = true;
+end
+
+if(length(varargin) >= 4)
+    writeOutput = varargin{4};    
+end
+
 % Update handles structure
 guidata(hObject, handles);
 
@@ -75,7 +85,12 @@ celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
 recorder = ma_OptimRecorder();
 outputFnc = @(x, optimValues, state) ma_OptimOutputFunc(x, optimValues, state, handles, problem, celBodyData, recorder);
 problem.options.OutputFcn = outputFnc;
-executeOptimProblem(handles, problem, recorder);
+
+if(not(isLVD))
+    executeOptimProblem(handles, problem, recorder);
+else
+    lvd_executeOptimProblem(celBodyData, writeOutput, problem, recorder);
+end
 
 close(handles.ma_ObserveOptimGUI);
 
