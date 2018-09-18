@@ -350,9 +350,162 @@ function errMsg = validateInputs(handles)
     isInt = false;
     errMsg = validateNumber(angle3Accel, numberName, lb, ub, isInt, errMsg, enteredStr);
     
+    %%%%%Bounds
+    %Angle 1 Const
+    angle1ConstLB = str2double(get(handles.angle1ConstLbText,'String'));
+    enteredStr = get(handles.angle1ConstLbText,'String');
+    numberName = sprintf('%s Angle Constant Term Lower Bound', angle1Name);
+    lb = -Inf;
+    ub = Inf;
+    isInt = false;
+    errMsg = validateNumber(angle1ConstLB, numberName, lb, ub, isInt, errMsg, enteredStr);
+    
+    angle1ConstUB = str2double(get(handles.angle1ConstUbText,'String'));
+    enteredStr = get(handles.angle1ConstUbText,'String');
+    numberName = sprintf('%s Angle Constant Term Upper Bound', angle1Name);
+    lb = angle1ConstLB;
+    ub = Inf;
+    isInt = false;
+    errMsg = validateNumber(angle1ConstUB, numberName, lb, ub, isInt, errMsg, enteredStr);
+    
+    %Angle 1 Linear
+    angle1LinearLB = str2double(get(handles.angle1LinLbText,'String'));
+    enteredStr = get(handles.angle1LinLbText,'String');
+    numberName = sprintf('%s Angle Linear Term Lower Bound', angle1Name);
+    lb = -Inf;
+    ub = Inf;
+    isInt = false;
+    errMsg = validateNumber(angle1LinearLB, numberName, lb, ub, isInt, errMsg, enteredStr);
+    
+    angle1LinearUB = str2double(get(handles.angle1LinUbText,'String'));
+    enteredStr = get(handles.angle1LinUbText,'String');
+    numberName = sprintf('%s Angle Linear Term Upper Bound', angle1Name);
+    lb = angle1LinearLB;
+    ub = Inf;
+    isInt = false;
+    errMsg = validateNumber(angle1LinearUB, numberName, lb, ub, isInt, errMsg, enteredStr);
+    
+    %Angle 1 Accel
+    angle1AccelLB = str2double(get(handles.angle1AccelLbText,'String'));
+    enteredStr = get(handles.angle1AccelLbText,'String');
+    numberName = sprintf('%s Angle Acceleration Term Lower Bound', angle1Name);
+    lb = -Inf;
+    ub = Inf;
+    isInt = false;
+    errMsg = validateNumber(angle1AccelLB, numberName, lb, ub, isInt, errMsg, enteredStr);
+
+    angle1AccelUB = str2double(get(handles.angle1AccelUbText,'String'));
+    enteredStr = get(handles.angle1AccelUbText,'String');
+    numberName = sprintf('%s Angle Acceleration Term Upper Bound', angle1Name);
+    lb = angle1AccelLB;
+    ub = Inf;
+    isInt = false;
+    errMsg = validateNumber(angle1AccelUB, numberName, lb, ub, isInt, errMsg, enteredStr);
+    
+    %Angle 2 Const
+    angle2ConstLB = str2double(get(handles.angle2ConstLbText,'String'));
+    enteredStr = get(handles.angle2ConstLbText,'String');
+    numberName = sprintf('%s Angle Constant Term Lower Bound', angle2Name);
+    lb = -Inf;
+    ub = Inf;
+    isInt = false;
+    errMsg = validateNumber(angle2ConstLB, numberName, lb, ub, isInt, errMsg, enteredStr);
+    
+    angle2ConstUB = str2double(get(handles.angle2ConstUbText,'String'));
+    enteredStr = get(handles.angle2ConstUbText,'String');
+    numberName = sprintf('%s Angle Constant Term Upper Bound', angle2Name);
+    lb = angle2ConstLB;
+    ub = Inf;
+    isInt = false;
+    errMsg = validateNumber(angle2ConstUB, numberName, lb, ub, isInt, errMsg, enteredStr);
+    
+    %Angle 2 Linear
+    angle2LinearLB = str2double(get(handles.angle2LinLbText,'String'));
+    enteredStr = get(handles.angle2LinLbText,'String');
+    numberName = sprintf('%s Angle Linear Term Lower Bound', angle2Name);
+    lb = -Inf;
+    ub = Inf;
+    isInt = false;
+    errMsg = validateNumber(angle2LinearLB, numberName, lb, ub, isInt, errMsg, enteredStr);
+    
+    angle2LinearUB = str2double(get(handles.angle2LinUbText,'String'));
+    enteredStr = get(handles.angle2LinUbText,'String');
+    numberName = sprintf('%s Angle Linear Term Upper Bound', angle2Name);
+    lb = angle2LinearLB;
+    ub = Inf;
+    isInt = false;
+    errMsg = validateNumber(angle2LinearUB, numberName, lb, ub, isInt, errMsg, enteredStr);
+    
+    %Angle 2 Accel
+    angle2AccelLB = str2double(get(handles.angle2AccelLbText,'String'));
+    enteredStr = get(handles.angle2AccelLbText,'String');
+    numberName = sprintf('%s Angle Acceleration Term Lower Bound', angle2Name);
+    lb = -Inf;
+    ub = Inf;
+    isInt = false;
+    errMsg = validateNumber(angle2AccelLB, numberName, lb, ub, isInt, errMsg, enteredStr);
+
+    angle2AccelUB = str2double(get(handles.angle1AccelUbText,'String'));
+    enteredStr = get(handles.angle1AccelUbText,'String');
+    numberName = sprintf('%s Angle Acceleration Term Upper Bound', angle1Name);
+    lb = angle2AccelLB;
+    ub = Inf;
+    isInt = false;
+    errMsg = validateNumber(angle2AccelUB, numberName, lb, ub, isInt, errMsg, enteredStr);
+    
+    %Angle 3 Const
+    angle3ConstLB = str2double(get(handles.angle3ConstLbText,'String'));
+    enteredStr = get(handles.angle3ConstLbText,'String');
+    numberName = sprintf('%s Angle Constant Term Lower Bound', angle3Name);
+    lb = -Inf;
+    ub = Inf;
+    isInt = false;
+    errMsg = validateNumber(angle3ConstLB, numberName, lb, ub, isInt, errMsg, enteredStr);
+    
+    angle3ConstUB = str2double(get(handles.angle3ConstUbText,'String'));
+    enteredStr = get(handles.angle3ConstUbText,'String');
+    numberName = sprintf('%s Angle Constant Term Upper Bound', angle3Name);
+    lb = angle3ConstLB;
+    ub = Inf;
+    isInt = false;
+    errMsg = validateNumber(angle3ConstUB, numberName, lb, ub, isInt, errMsg, enteredStr);
+    
+    %Angle 2 Linear
+    angle3LinearLB = str2double(get(handles.angle3LinLbText,'String'));
+    enteredStr = get(handles.angle3LinLbText,'String');
+    numberName = sprintf('%s Angle Linear Term Lower Bound', angle3Name);
+    lb = -Inf;
+    ub = Inf;
+    isInt = false;
+    errMsg = validateNumber(angle3LinearLB, numberName, lb, ub, isInt, errMsg, enteredStr);
+    
+    angle3LinearUB = str2double(get(handles.angle3LinUbText,'String'));
+    enteredStr = get(handles.angle3LinUbText,'String');
+    numberName = sprintf('%s Angle Linear Term Upper Bound', angle3Name);
+    lb = angle3LinearLB;
+    ub = Inf;
+    isInt = false;
+    errMsg = validateNumber(angle3LinearUB, numberName, lb, ub, isInt, errMsg, enteredStr);
+    
+    %Angle 2 Accel
+    angle3AccelLB = str2double(get(handles.angle3AccelLbText,'String'));
+    enteredStr = get(handles.angle3AccelLbText,'String');
+    numberName = sprintf('%s Angle Acceleration Term Lower Bound', angle3Name);
+    lb = -Inf;
+    ub = Inf;
+    isInt = false;
+    errMsg = validateNumber(angle3AccelLB, numberName, lb, ub, isInt, errMsg, enteredStr);
+
+    angle3AccelUB = str2double(get(handles.angle3AccelUbText,'String'));
+    enteredStr = get(handles.angle3AccelUbText,'String');
+    numberName = sprintf('%s Angle Acceleration Term Upper Bound', angle3Name);
+    lb = angle3AccelLB;
+    ub = Inf;
+    isInt = false;
+    errMsg = validateNumber(angle3AccelUB, numberName, lb, ub, isInt, errMsg, enteredStr);
     
     
-    
+
 function angle1ConstTermText_Callback(hObject, eventdata, handles)
 % hObject    handle to angle1ConstTermText (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -1167,7 +1320,15 @@ function saveAndCloseButton_Callback(hObject, eventdata, handles)
 % hObject    handle to saveAndCloseButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-    uiresume(handles.lvd_EditActionSetSteeringModelGUI);
+% handles    structure with handles and user data (see GUIDATA)
+    errMsg = validateInputs(handles);
+
+    if(isempty(errMsg))
+        uiresume(handles.lvd_EditActionSetSteeringModelGUI);
+    else
+        msgbox(errMsg,'Errors were found while editing the steering model.','error');
+    end
+    
 
 % --- Executes on button press in cancelButton.
 function cancelButton_Callback(hObject, eventdata, handles)
