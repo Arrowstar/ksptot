@@ -13,6 +13,29 @@ classdef LaunchVehicle < matlab.mixin.SetGet
         function obj = LaunchVehicle(lvdData)
             obj.lvdData = lvdData;
         end
+        
+        function lvSummStr = getLvSummaryStr(obj)
+            lvSummStr = {};
+            
+            %TODO
+            dryMass = 0;
+            propMass = 0;
+            totalMass = 0;
+            
+            for(i=1:length(obj.stages))
+                dryMass = dryMass + obj.stages(i).getStageDryMass();
+                propMass = propMass + obj.stages(i).getStageInitPropMass();
+                totalMass = totalMass + obj.stages(i).getStageInitTotalMass();
+            end
+            
+            lvSummStr{end+1} = 'Launch Vehicle Configuration Summary';
+            lvSummStr{end+1} = '----------------------';
+            lvSummStr{end+1} = sprintf('Launch Vehicle (Dry Mass = %.3f mT, Prop Mass = %.3f mT, Total = %.3f mT)', dryMass, propMass, totalMass);
+            
+            for(i=1:length(obj.stages))
+                lvSummStr = horzcat(lvSummStr, obj.stages(i).getStageSummaryStr());
+            end
+        end
                 
         function [stagesListStr, stages] = getStagesListBoxStr(obj)
             stagesListStr = {};

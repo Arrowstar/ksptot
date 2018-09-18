@@ -17,6 +17,16 @@ classdef LaunchVehicleTank < matlab.mixin.SetGet
             obj.id = rand();
         end
         
+        function tankSummStr = getTankSummaryStr(obj)
+            tankSummStr = {};
+            
+            tankSummStr{end+1} = sprintf('\t\t\t%s (Prop Mass = %.3f mT)', obj.name, obj.initialMass);
+        end
+        
+        function initialMass = getInitialMass(obj)
+            initialMass = obj.initialMass;
+        end
+        
         function tf = eq(A,B)
             tf = [A.id] == [B.id];
         end
