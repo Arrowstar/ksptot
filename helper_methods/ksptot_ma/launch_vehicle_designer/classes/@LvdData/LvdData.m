@@ -14,6 +14,22 @@ classdef LvdData < matlab.mixin.SetGet
         function obj = LvdData()
 
         end
+        
+        function tf = usesStage(obj, stage)
+            tf = obj.script.usesStage(stage);
+        end
+        
+        function tf = usesEngine(obj, engine)
+            tf = obj.script.usesEngine(engine);
+        end
+        
+        function tf = usesTank(obj, tank)
+            tf = obj.script.usesTank(tank);
+        end
+        
+        function tf = usesEngineToTankConn(obj, engineToTank)
+            tf = obj.script.usesEngineToTankConn(engineToTank);
+        end
     end
     
     methods(Static)

@@ -80,6 +80,38 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
                 stateLogEntry = newStateLogEntry;
             end
         end
+        
+        function tf = usesStage(obj, stage)
+            tf = obj.termCond.usesStage(stage);
+            
+            for(i=1:length(obj.actions))
+                tf = tf || obj.actions(i).usesStage(stage);
+            end
+        end
+        
+        function tf = usesEngine(obj, engine)
+            tf = obj.termCond.usesEngine(engine);
+            
+            for(i=1:length(obj.actions))
+                tf = tf || obj.actions(i).usesEngine(engine);
+            end
+        end
+        
+        function tf = usesTank(obj, tank)
+            tf = obj.termCond.usesTank(tank);
+            
+            for(i=1:length(obj.actions))
+                tf = tf || obj.actions(i).usesTank(tank);
+            end
+        end
+        
+        function tf = usesEngineToTankConn(obj, engineToTank)
+            tf = obj.termCond.usesEngineToTankConn(engineToTank);
+            
+            for(i=1:length(obj.actions))
+                tf = tf || obj.actions(i).usesEngineToTankConn(engineToTank);
+            end
+        end
     end
     
     methods(Static)

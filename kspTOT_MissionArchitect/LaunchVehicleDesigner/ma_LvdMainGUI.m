@@ -306,3 +306,7 @@ function editLaunchVehicleMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to editLaunchVehicleMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+    maData = getappdata(handles.ma_LvdMainGUI,'maData');
+    lvdData = maData.lvdData;
+    
+    lvd_editLaunchVehicle(lvdData);

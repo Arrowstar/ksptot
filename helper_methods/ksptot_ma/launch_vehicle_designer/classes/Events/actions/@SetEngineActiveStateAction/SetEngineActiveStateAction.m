@@ -40,6 +40,22 @@ classdef SetEngineActiveStateAction < AbstractEventAction
             
             name = sprintf('Set Engine State (%s = %s)',obj.engine.name,tf);
         end
+        
+        function tf = usesStage(obj, stage)
+            tf = false;
+        end
+        
+        function tf = usesEngine(obj, engine)
+            tf = ([obj.engine] == engine);
+        end
+        
+        function tf = usesTank(obj, tank)
+            tf = false;
+        end
+        
+        function tf = usesEngineToTankConn(obj, engineToTank)
+            tf = false;
+        end
     end
     
     methods(Static)

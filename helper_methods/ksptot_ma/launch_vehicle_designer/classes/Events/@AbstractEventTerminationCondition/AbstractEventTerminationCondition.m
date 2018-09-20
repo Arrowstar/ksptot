@@ -18,6 +18,14 @@ classdef(Abstract) AbstractEventTerminationCondition < matlab.mixin.SetGet
         optVar = getNewOptVar(obj)
         
         optVar = getExistingOptVar(obj)
+        
+        tf = usesStage(obj, stage)
+        
+        tf = usesEngine(obj, engine)
+        
+        tf = usesTank(obj, tank)
+        
+        tf = usesEngineToTankConn(obj, engineToTank)
     end
     
     methods(Static)

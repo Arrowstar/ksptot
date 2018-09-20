@@ -26,7 +26,7 @@ classdef LaunchVehicleStage < matlab.mixin.SetGet
             propMass = obj.getStageInitPropMass();
             totalMass = obj.getStageInitTotalMass();
             
-            stageSummStr{end+1} = sprintf('\t%s (Dry Mass = %0.3f mT, Prop Mass = %.3f mT, Total = %.3f mT', obj.name, obj.dryMass, propMass, totalMass);
+            stageSummStr{end+1} = sprintf('\t%s (Dry Mass = %0.3f mT, Prop Mass = %.3f mT, Total = %.3f mT)', obj.name, obj.dryMass, propMass, totalMass);
             
             stageSummStr{end+1} = sprintf('\t\tTanks');
             for(i=1:length(obj.tanks)) %#ok<*NO4LP>

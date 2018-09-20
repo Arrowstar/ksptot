@@ -37,6 +37,22 @@ classdef SetStageActiveStateAction < AbstractEventAction
             
             name = sprintf('Set Stage State (%s = %s)', obj.stage.name, tf);
         end
+        
+        function tf = usesStage(obj, stage)
+            tf = ([obj.stage] == stage);
+        end
+        
+        function tf = usesEngine(obj, engine)
+            tf = false;
+        end
+        
+        function tf = usesTank(obj, tank)
+            tf = false;
+        end
+        
+        function tf = usesEngineToTankConn(obj, engineToTank)
+            tf = false;
+        end
     end
     
     methods(Static)

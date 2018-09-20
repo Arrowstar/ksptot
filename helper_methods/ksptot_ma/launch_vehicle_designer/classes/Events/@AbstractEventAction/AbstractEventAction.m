@@ -12,6 +12,14 @@ classdef(Abstract) AbstractEventAction < matlab.mixin.SetGet & matlab.mixin.Hete
         initAction(obj, initialStateLogEntry)
         
         name = getName(obj)
+        
+        tf = usesStage(obj, stage)
+        
+        tf = usesEngine(obj, engine)
+        
+        tf = usesTank(obj, tank)
+        
+        tf = usesEngineToTankConn(obj, engineToTank)
     end
     
     methods(Sealed)

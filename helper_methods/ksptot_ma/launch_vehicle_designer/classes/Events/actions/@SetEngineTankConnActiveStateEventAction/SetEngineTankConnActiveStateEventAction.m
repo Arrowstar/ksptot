@@ -38,6 +38,22 @@ classdef SetEngineTankConnActiveStateEventAction < AbstractEventAction
             
             name = sprintf('Set Eng to Tank Conn. State (%s = %s)', obj.conn.getName(), tf);
         end
+        
+        function tf = usesStage(obj, stage)
+            tf = false;
+        end
+        
+        function tf = usesEngine(obj, engine)
+            tf = false;
+        end
+        
+        function tf = usesTank(obj, tank)
+            tf = false;
+        end
+        
+        function tf = usesEngineToTankConn(obj, engineToTank)
+            tf = ([obj.conn] == engineToTank);
+        end
     end
     
     methods(Static)

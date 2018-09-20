@@ -50,6 +50,22 @@ classdef TankMassTermCondition < AbstractEventTerminationCondition
         function optVar = getExistingOptVar(obj)
             optVar = obj.optVar;
         end
+        
+        function tf = usesStage(obj, stage)
+            tf = false;
+        end
+        
+        function tf = usesEngine(obj, engine)
+            tf = false;
+        end
+        
+        function tf = usesTank(obj, tank)
+            tf = ([obj.tank] == tank);
+        end
+        
+        function tf = usesEngineToTankConn(obj, engineToTank)
+            tf = false;
+        end
     end
     
     methods(Static)

@@ -33,6 +33,22 @@ classdef SetSteeringModelAction < AbstractEventAction
         function name = getName(obj)
             name = sprintf('Set Steering Model (%s)', obj.steeringModel.getTypeNameStr());
         end
+        
+        function tf = usesStage(obj, stage)
+            tf = false;
+        end
+        
+        function tf = usesEngine(obj, engine)
+            tf = false;
+        end
+        
+        function tf = usesTank(obj, tank)
+            tf = false;
+        end
+        
+        function tf = usesEngineToTankConn(obj, engineToTank)
+            tf = false;
+        end
     end
     
     methods(Static)

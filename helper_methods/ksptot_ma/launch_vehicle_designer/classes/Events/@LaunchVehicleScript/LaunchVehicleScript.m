@@ -72,6 +72,38 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
             end
         end
         
+        function tf = usesStage(obj, stage)
+            tf = false;
+            
+            for(i=1:length(obj.evts))
+                tf = tf || obj.evts(i).usesStage(stage);
+            end
+        end
+        
+        function tf = usesEngine(obj, engine)
+            tf = false;
+            
+            for(i=1:length(obj.evts))
+                tf = tf || obj.evts(i).usesEngine(engine);
+            end
+        end
+        
+        function tf = usesTank(obj, tank)
+            tf = false;
+            
+            for(i=1:length(obj.evts))
+                tf = tf || obj.evts(i).usesTank(tank);
+            end
+        end
+        
+        function tf = usesEngineToTankConn(obj, engineToTank)
+            tf = false;
+            
+            for(i=1:length(obj.evts))
+                tf = tf || obj.evts(i).usesEngineToTankConn(engineToTank);
+            end
+        end
+        
         function stateLog = executeScript(obj)
             initStateLogEntry = obj.lvdData.initialState;
             stateLog = obj.lvdData.stateLog;

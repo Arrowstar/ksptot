@@ -14,6 +14,46 @@ classdef LaunchVehicle < matlab.mixin.SetGet
             obj.lvdData = lvdData;
         end
         
+        function addStage(obj, stage)
+            obj.stages(end+1) = stage;
+        end
+        
+        function removeStage(obj, stage)
+            obj.stages([obj.stages] == stage) = [];
+        end
+        
+        function stage = getStageForInd(obj, ind)
+            stage = LaunchVehicleStage.empty(0,1);
+            
+            if(ind >= 1 && ind <= length(obj.stages))
+                stage = obj.stages(ind);
+            end
+        end
+        
+        function ind = getIndOfStage(obj, stage)
+            ind = find([obj.stages] == stage,1,'first');
+        end
+        
+        function numStages = getNumStages(obj)
+            numStages = length(obj.stages);
+        end
+        
+        function moveStageUp(obj, stage)
+            ind = obj.getIndOfStage(stage);
+            
+            if(ind > 1)
+                obj.stages([ind,ind-1]) = obj.stages([ind-1,ind]);
+            end
+        end
+        
+        function moveStageDown(obj, stage)
+            ind = obj.getIndOfStage(stage);
+            
+            if(ind < obj.getNumStages())
+                obj.stages([ind+1,ind]) = obj.stages([ind,ind+1]);
+            end
+        end
+        
         function lvSummStr = getLvSummaryStr(obj)
             lvSummStr = {};
             
@@ -29,7 +69,7 @@ classdef LaunchVehicle < matlab.mixin.SetGet
             end
             
             lvSummStr{end+1} = 'Launch Vehicle Configuration Summary';
-            lvSummStr{end+1} = '----------------------';
+            lvSummStr{end+1} = '----------------------------------------------------------------------------------------';
             lvSummStr{end+1} = sprintf('Launch Vehicle (Dry Mass = %.3f mT, Prop Mass = %.3f mT, Total = %.3f mT)', dryMass, propMass, totalMass);
             
             for(i=1:length(obj.stages))
