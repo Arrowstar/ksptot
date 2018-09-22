@@ -14,7 +14,7 @@ function lvd_processData(handles)
     set(handles.plotWorkingLbl,'Visible','on');
     drawnow;
     [az,el] = view(handles.dispAxes);
-    lvd_updateDispAxis(handles, maStateLog, get(handles.dispAxes,'UserData'));
+    lvd_updateDispAxis(handles, maStateLog, get(handles.dispAxes,'UserData'), lvdData);
     view(handles.dispAxes, [az,el]);
     set(handles.plotWorkingLbl,'Visible','off');
     drawnow;

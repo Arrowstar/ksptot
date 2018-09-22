@@ -6,29 +6,44 @@ classdef LvdData < matlab.mixin.SetGet
         script LaunchVehicleScript
         launchVehicle LaunchVehicle
         stateLog LaunchVehicleStateLog
-        initialState LaunchVehicleStateLogEntry
+        initStateModel InitialStateModel
         optimizer LvdOptimization
     end
+    
+    properties(Dependent)
+        initialState LaunchVehicleStateLogEntry
+    end
+    
     
     methods(Access = private)
         function obj = LvdData()
 
         end
+    end
+    
+    methods
+        function initialState = get.initialState(obj)
+            initialState = obj.initStateModel.getInitialStateLogEntry();
+        end
         
         function tf = usesStage(obj, stage)
             tf = obj.script.usesStage(stage);
+            tf = tf || obj.optimizer.usesStage(stage);
         end
         
         function tf = usesEngine(obj, engine)
             tf = obj.script.usesEngine(engine);
+            tf = tf || obj.optimizer.usesEngine(engine);
         end
         
         function tf = usesTank(obj, tank)
             tf = obj.script.usesTank(tank);
+            tf = tf || obj.optimizer.usesTank(tank);
         end
         
         function tf = usesEngineToTankConn(obj, engineToTank)
             tf = obj.script.usesEngineToTankConn(engineToTank);
+            tf = tf || obj.optimizer.usesEngineToTankConn(engineToTank);
         end
     end
     
@@ -49,10 +64,12 @@ classdef LvdData < matlab.mixin.SetGet
             lvdData.launchVehicle = lv;
             
             %Set Up Initial State
-            initStateLogEntry = LaunchVehicleStateLogEntry.getDefaultStateLogEntryForLaunchVehicle(lvdData.launchVehicle, celBodyData.kerbin);
-            initStateLogEntry.stageStates(3).engineStates(1).active = true; %Turn on the first stage engine
-            initStateLogEntry.stageStates(2).engineStates(1).active = false; %Turn off the second stage engine
-            lvdData.initialState = initStateLogEntry;
+            initStateModel = InitialStateModel.getDefaultInitialStateLogModelForLaunchVehicle(lvdData.launchVehicle, celBodyData.kerbin);
+            initStateModel.stageStates(3).engineStates(1).active = true; %Turn on the first stage engine
+            initStateModel.stageStates(2).engineStates(1).active = false; %Turn off the second stage engine
+            lvdData.initStateModel = initStateModel;
+            
+            initStateLogEntry = initStateModel.getInitialStateLogEntry();
             
             %Set Up Mission Script
             script = LaunchVehicleScript(lvdData, simDriver);

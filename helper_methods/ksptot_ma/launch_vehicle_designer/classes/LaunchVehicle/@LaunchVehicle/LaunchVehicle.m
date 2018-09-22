@@ -112,14 +112,16 @@ classdef LaunchVehicle < matlab.mixin.SetGet
         end
         
         function ind = getListBoxIndForTank(obj, tank)
-            ind = [];
-            
-            for(i=1:length(obj.stages)) %#ok<*NO4LP>
-                ind = find(obj.stages(i).tanks == tank);
-                
-                if(not(isempty(ind)))
-                    break;
-                end
+            [~, tanks] = obj.getTanksListBoxStr();
+            ind = find([tanks] == tank, 1, 'first'); %#ok<NBRAK>
+        end
+        
+        function tank = getTankForInd(obj, ind)
+            [~, tanks] = obj.getTanksListBoxStr();
+            tank = LaunchVehicleTank.empty(1,0);
+
+            if(ind >= 1 && ind <= length(tanks))
+                tank = tanks(ind);
             end
         end
         
@@ -139,16 +141,26 @@ classdef LaunchVehicle < matlab.mixin.SetGet
             end
         end
         
-        function ind = getListBoxIndForEngine(obj, engine)
-            ind = [];
-            
-            for(i=1:length(obj.stages)) %#ok<*NO4LP>
-                ind = find(obj.stages(i).engines == engine);
-                
-                if(not(isempty(ind)))
-                    break;
-                end
+        function engine = getEngineForInd(obj, ind)
+            [~, engines] = obj.getEnginesListBoxStr();
+            engine = LaunchVehicleEngine.empty(1,0);
+
+            if(ind >= 1 && ind <= length(engines))
+                engine = engines(ind);
             end
+        end
+        
+        function ind = getListBoxIndForEngine(obj, engine)
+            [~, engines] = obj.getEnginesListBoxStr();
+            ind = find([engines] == engine, 1, 'first'); %#ok<NBRAK>
+        end
+        
+        function addEngineToTankConnection(obj, e2TConn)
+            obj.engineTankConns(end+1) = e2TConn;
+        end
+        
+        function removeEngineToTankConnection(obj, e2TConn)
+            obj.engineTankConns([obj.engineTankConns] == e2TConn) = [];
         end
         
         function [e2TConnStr, e2TConns] = getEngineToTankConnectionsListBoxStr(obj)
@@ -158,6 +170,23 @@ classdef LaunchVehicle < matlab.mixin.SetGet
             for(i=1:length(obj.engineTankConns)) %#ok<*NO4LP>
                 e2TConnStr{end+1} = obj.engineTankConns(i).getName(); %#ok<AGROW>
             end
+        end
+
+        function e2TConn = getEngineToTankForInd(obj, ind)
+            [~, e2TConns] = obj.getEngineToTankConnectionsListBoxStr();
+            e2TConn = EngineToTankConnection.empty(1,0);
+
+            if(ind >= 1 && ind <= length(e2TConns))
+                e2TConn = e2TConns(ind);
+            end
+        end
+        
+        function removeAllEngineToTanksConnsWithEngine(obj, engine)
+            obj.engineTankConns([obj.engineTankConns.engine] == engine) = [];
+        end
+        
+        function removeAllEngineToTanksConnsWithTank(obj, tank)
+            obj.engineTankConns([obj.engineTankConns.tank] == tank) = [];
         end
     end
     

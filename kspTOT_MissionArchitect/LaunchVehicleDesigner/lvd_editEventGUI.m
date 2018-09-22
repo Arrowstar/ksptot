@@ -22,7 +22,7 @@ function varargout = lvd_editEventGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_editEventGUI
 
-% Last Modified by GUIDE v2.5 15-Sep-2018 19:46:44
+% Last Modified by GUIDE v2.5 21-Sep-2018 18:23:40
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -75,6 +75,14 @@ function populateGUI(handles, event)
     
     set(handles.actionsListbox,'String',event.getActionsListboxStr());
     set(handles.actionsListbox,'Value',1);
+    
+    handles.colorSpecCombo.String = ColorSpecEnum.getListboxStr();
+    [~,ind] = ColorSpecEnum.getEnumForListboxStr(event.colorLineSpec.color.name);
+    handles.colorSpecCombo.Value = ind;
+    
+    handles.lineSpecCombo.String = LineSpecEnum.getListboxStr();
+    [~,ind] = LineSpecEnum.getEnumForListboxStr(event.colorLineSpec.lineSpec.name);
+    handles.lineSpecCombo.Value = ind;
 
 % --- Outputs from this function are returned to the command line.
 function varargout = lvd_editEventGUI_OutputFcn(hObject, eventdata, handles) 
@@ -91,6 +99,14 @@ function varargout = lvd_editEventGUI_OutputFcn(hObject, eventdata, handles)
         
         evtName = get(handles.eventNameText,'String');
         event.name = evtName;
+        
+        nameStr = handles.colorSpecCombo.String(handles.colorSpecCombo.Value);
+        [enum,~] = ColorSpecEnum.getEnumForListboxStr(nameStr);
+        event.colorLineSpec.color = enum;
+    
+        nameStr = handles.lineSpecCombo.String(handles.lineSpecCombo.Value);
+        [enum,~] = LineSpecEnum.getEnumForListboxStr(nameStr);
+    	event.colorLineSpec.lineSpec = enum;
         
         close(handles.lvd_editEventGUI);
     end
@@ -233,3 +249,49 @@ function lvd_editEventGUI_CloseRequestFcn(hObject, eventdata, handles)
 
 % Hint: delete(hObject) closes the figure
     delete(hObject);
+
+
+% --- Executes on selection change in colorSpecCombo.
+function colorSpecCombo_Callback(hObject, eventdata, handles)
+% hObject    handle to colorSpecCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns colorSpecCombo contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from colorSpecCombo
+
+
+% --- Executes during object creation, after setting all properties.
+function colorSpecCombo_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to colorSpecCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in lineSpecCombo.
+function lineSpecCombo_Callback(hObject, eventdata, handles)
+% hObject    handle to lineSpecCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns lineSpecCombo contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from lineSpecCombo
+
+
+% --- Executes during object creation, after setting all properties.
+function lineSpecCombo_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to lineSpecCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

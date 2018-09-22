@@ -59,6 +59,38 @@ classdef ConstraintSet < matlab.mixin.SetGet
                 end
             end
         end
+        
+        function tf = usesStage(obj, stage)
+            tf = false;
+            
+            for(i=1:length(obj.consts))
+                tf = tf || obj.consts(i).usesStage(stage);
+            end
+        end
+        
+        function tf = usesEngine(obj, engine)
+            tf = false;
+            
+            for(i=1:length(obj.consts))
+                tf = tf || obj.consts(i).usesEngine(engine);
+            end
+        end
+        
+        function tf = usesTank(obj, tank)
+            tf = false;
+            
+            for(i=1:length(obj.consts))
+                tf = tf || obj.consts(i).usesTank(tank);
+            end
+        end
+        
+        function tf = usesEngineToTankConn(obj, engineToTank)
+            tf = false;
+            
+            for(i=1:length(obj.consts))
+                tf = tf || obj.consts(i).usesEngineToTankConn(engineToTank);
+            end
+        end
     end
 end
 

@@ -123,9 +123,7 @@ function editStagesButton_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
     lvdData = getappdata(handles.lvd_editLaunchVehicle, 'lvdData');
-    
     lvd_EditStagesGUI(lvdData);
-    
     setSummText(handles.lvSummaryText, lvdData.launchVehicle);
 
 % --- Executes on button press in editEnginesButton.
@@ -134,6 +132,7 @@ function editEnginesButton_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
     lvdData = getappdata(handles.lvd_editLaunchVehicle, 'lvdData');
+    lvd_EditEnginesGUI(lvdData);
     setSummText(handles.lvSummaryText, lvdData.launchVehicle);
 
 % --- Executes on button press in editTanksButton.
@@ -142,6 +141,7 @@ function editTanksButton_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
     lvdData = getappdata(handles.lvd_editLaunchVehicle, 'lvdData');
+    lvd_EditTanksGUI(lvdData);
     setSummText(handles.lvSummaryText, lvdData.launchVehicle);
 
 % --- Executes on button press in editEngineToTankConnsButton.
@@ -150,6 +150,7 @@ function editEngineToTankConnsButton_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
     lvdData = getappdata(handles.lvd_editLaunchVehicle, 'lvdData');
+    lvd_EditEngineToTanksConnsGUI(lvdData);
     setSummText(handles.lvSummaryText, lvdData.launchVehicle);
 
 % --- Executes on button press in closeButton.

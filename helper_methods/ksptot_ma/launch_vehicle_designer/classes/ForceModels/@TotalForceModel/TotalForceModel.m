@@ -17,8 +17,10 @@ classdef TotalForceModel < AbstractForceModel
         function forceVect = getForce(obj, stateLogEntry)
             forceVect = [0;0;0];
             
-            for(i=1:length(obj.forceModels)) %#ok<*NO4LP>
-                forceVect = forceVect + obj.forceModels(i).getForce(stateLogEntry);
+            if(stateLogEntry.getTotalVehicleMass() > 0)
+                for(i=1:length(obj.forceModels)) %#ok<*NO4LP>
+                    forceVect = forceVect + obj.forceModels(i).getForce(stateLogEntry);
+                end
             end
             
             if(any(isnan(forceVect)))

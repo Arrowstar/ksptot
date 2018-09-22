@@ -33,10 +33,30 @@ classdef LvdOptimization < matlab.mixin.SetGet
             
             %TODO           
             ma_ObserveOptimGUI(hMaMainGUI, problem, true, writeOutput);
+        end
+        
+        function tf = usesStage(obj, stage)
+            tf = obj.objFcn.usesStage(stage);
             
-
+            tf = tf || obj.constraints.usesStage(stage);
+        end
+        
+        function tf = usesEngine(obj, engine)
+            tf = obj.objFcn.usesEngine(engine);
             
+            tf = tf || obj.constraints.usesEngine(engine);
+        end
+        
+        function tf = usesTank(obj, tank)
+            tf = obj.objFcn.usesTank(tank);
             
+            tf = tf || obj.constraints.usesTank(tank);
+        end
+        
+        function tf = usesEngineToTankConn(obj, engineToTank)
+            tf = obj.objFcn.usesEngineToTankConn(engineToTank);
+            
+            tf = tf || obj.constraints.usesEngineToTankConn(engineToTank);
         end
     end
 end

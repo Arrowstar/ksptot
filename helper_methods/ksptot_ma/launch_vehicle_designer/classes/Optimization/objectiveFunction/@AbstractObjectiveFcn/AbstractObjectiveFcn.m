@@ -8,5 +8,13 @@ classdef(Abstract) AbstractObjectiveFcn < matlab.mixin.SetGet & matlab.mixin.Het
     
     methods
         [f, stateLog] = evalObjFcn(obj, x, maData);
+        
+        tf = usesStage(obj, stage)
+        
+        tf = usesEngine(obj, engine)
+        
+        tf = usesTank(obj, tank)
+        
+        tf = usesEngineToTankConn(obj, engineToTank)
     end
 end

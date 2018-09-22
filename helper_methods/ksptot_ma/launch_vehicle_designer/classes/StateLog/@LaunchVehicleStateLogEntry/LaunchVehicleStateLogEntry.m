@@ -11,13 +11,13 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet
         stageStates(1,:) LaunchVehicleStageState
         event(1,:) LaunchVehicleEvent
         aero(1,1) LaunchVehicleAeroState
-        attitude(1,1) LaunchVehicleAttitudeState 
         
         steeringModel(1,1) AbstractSteeringModel = RollPitchYawPolySteeringModel.getDefaultSteeringModel();
         throttleModel(1,1) AbstractThrottleModel = ThrottlePolyModel.getDefaultThrottleModel();
     end
     
     properties(Dependent)
+        attitude(1,1) LaunchVehicleAttitudeState
         throttle(1,1) double
     end
     
@@ -28,6 +28,11 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet
         
         function value = get.throttle(obj)
             value = obj.throttleModel.getThrottleAtTime(obj.time);
+        end
+        
+        function attState = get.attitude(obj)
+            attState = LaunchVehicleAttitudeState();
+            attState.dcm = obj.steeringModel.getBody2InertialDcmAtTime(obj.time, obj.position, obj.velocity);
         end
         
         function [t,y, tankStateInds] = getIntegratorStateRepresentation(obj)
@@ -174,7 +179,6 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet
                 newStateLogEntry.stageStates(i) = obj.stageStates(i).deepCopy();
             end
             
-            newStateLogEntry.attitude = obj.attitude.deepCopy();
             newStateLogEntry.aero = obj.aero.deepCopy();
         end
     end
@@ -187,76 +191,6 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet
             stateLogEntry.position = y(1:3)';
             stateLogEntry.velocity = y(4:6)';
             stateLogEntry.updateTankStatesWithNewMasses(y(7:end));
-            
-            dcm = eventInitStateLogEntry.steeringModel.getBody2InertialDcmAtTime(t, stateLogEntry.position, stateLogEntry.velocity);
-            stateLogEntry.attitude = LaunchVehicleAttitudeState();
-            stateLogEntry.attitude.dcm = dcm;
-        end
-        
-        function stateLogEntry = getDefaultStateLogEntryForLaunchVehicle(lv, bodyInfo)
-            stateLogEntry = LaunchVehicleStateLogEntry();
-            stateLogEntry.time = 0;
-            
-            [rVectECI, vVectECI] = getInertialVectFromLatLongAlt(stateLogEntry.time, 0, 0, 0, bodyInfo, [0;0;0]);
-            stateLogEntry.position = rVectECI;
-            stateLogEntry.velocity = vVectECI;
-            
-            stateLogEntry.centralBody = bodyInfo;
-            
-            lvsState = LaunchVehicleState(lv);
-            stateLogEntry.lvState = lvsState;
-            
-            for(i=1:length(lv.engineTankConns))
-                e2TConnState = EngineToTankConnState(lv.engineTankConns(i));
-                e2TConnState.active = true;
-                lvsState.e2TConns(end+1) = e2TConnState;
-            end
-            
-            stageStates = LaunchVehicleStageState.empty(1,0);
-            for(i=1:length(lv.stages))
-                stage = lv.stages(i);
-                stgState = LaunchVehicleStageState(stage);
-                stgState.active = true;
-                
-                engines = stage.engines;
-                for(j=1:length(engines))
-                    engine = engines(j);
-                    
-                    engineState = LaunchVehicleEngineState(stgState);
-                    engineState.engine = engine;
-                    engineState.active = true;
-                    
-                    stgState.engineStates(end+1) = engineState;
-                end
-                 
-                tanks = stage.tanks;
-                for(j=1:length(tanks))
-                    tank = tanks(j);
-                    
-                    tankState = LaunchVehicleTankState(stgState);
-                    tankState.tank = tank;
-                    tankState.tankMass = tank.initialMass;
-                    
-                    stgState.tankStates(end+1) = tankState;
-                end
-                
-                stageStates(end+1) = stgState; %#ok<AGROW>
-            end
-            stateLogEntry.stageStates = stageStates;
-            
-            aeroState = LaunchVehicleAeroState();
-            aeroState.area = 1;
-            aeroState.Cd = 2.2;
-            stateLogEntry.aero = aeroState;
-            
-            rpyModel = RollPitchYawPolySteeringModel.getDefaultSteeringModel();
-            stateLogEntry.steeringModel = rpyModel;
-            
-            throtModel = ThrottlePolyModel.getDefaultThrottleModel();
-            stateLogEntry.throttleModel = throtModel;
-            
-            attState = LaunchVehicleAttitudeState();
-            attState.dcm = stateLogEntry.steeringModel.getBody2InertialDcmAtTime(stateLogEntry.time, rVectECI, vVectECI);
         end
     end
 end

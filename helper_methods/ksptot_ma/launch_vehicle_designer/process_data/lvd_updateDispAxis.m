@@ -1,4 +1,4 @@
-function lvd_updateDispAxis(handles, maStateLog, orbitNumToPlot)
+function lvd_updateDispAxis(handles, maStateLog, orbitNumToPlot, lvdData)
 %lvd_updateDispAxis Summary of this function goes here
 %   Detailed explanation goes here    
     hDispAxes = handles.dispAxes;
@@ -45,5 +45,5 @@ function lvd_updateDispAxis(handles, maStateLog, orbitNumToPlot)
     cla(gca);
     maData = getappdata(handles.ma_LvdMainGUI,'maData');
     celBodyData = getappdata(handles.ma_LvdMainGUI,'celBodyData');
-    lvd_plotStateLog(maStateLog, [], showSoI, showChildBodies, showChildMarker, showOtherSC, orbitNumToPlot, hDispAxisTitleLabel, maData, celBodyData);
+    lvd_plotStateLog(maStateLog, [], showSoI, showChildBodies, showChildMarker, showOtherSC, orbitNumToPlot, hDispAxisTitleLabel, maData, lvdData, celBodyData);
 end

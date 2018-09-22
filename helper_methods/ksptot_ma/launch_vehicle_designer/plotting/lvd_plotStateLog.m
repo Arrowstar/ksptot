@@ -1,4 +1,4 @@
-function [hCBodySurf, childrenHGs] = lvd_plotStateLog(stateLog, handles, showSoI, showChildBodies, showChildMarker, showOtherSC, orbitNumToPlot, hDispAxisTitleLabel, maData, celBodyData, dAxes, hFig)
+function [hCBodySurf, childrenHGs] = lvd_plotStateLog(stateLog, handles, showSoI, showChildBodies, showChildMarker, showOtherSC, orbitNumToPlot, hDispAxisTitleLabel, maData, lvdData, celBodyData, dAxes, hFig)
 %plotStateLog Summary of this function goes here
 %   Detailed explanation goes here
     if(~exist('dAxes','var'))
@@ -27,7 +27,7 @@ function [hCBodySurf, childrenHGs] = lvd_plotStateLog(stateLog, handles, showSoI
         end
         
         if(size(subStateLogs{i},1)>1)
-            [childrenHGs] = plotSubStateLog(subStateLogs{i}, prevSubStateLog, showSoI, showChildBodies, showChildMarker, showOtherSC, otherSC, celBodyData, dAxes);
+            [childrenHGs] = plotSubStateLog(subStateLogs{i}, prevSubStateLog, showSoI, showChildBodies, showChildMarker, showOtherSC, otherSC, lvdData, celBodyData, dAxes);
         end
     end
     
@@ -69,7 +69,7 @@ function [hCBodySurf, childrenHGs] = lvd_plotStateLog(stateLog, handles, showSoI
     end
 end
 
-function [childrenHGs] = plotSubStateLog(subStateLog, prevSubStateLog, showSoI, showChildBodies, showChildMarker, showOtherSC, otherSCs, celBodyData, dAxes)    
+function [childrenHGs] = plotSubStateLog(subStateLog, prevSubStateLog, showSoI, showChildBodies, showChildMarker, showOtherSC, otherSCs, lvdData, celBodyData, dAxes)    
     if(isempty(subStateLog))
         childrenHGs = [];
         return;
@@ -78,23 +78,11 @@ function [childrenHGs] = plotSubStateLog(subStateLog, prevSubStateLog, showSoI, 
     bodyID = subStateLog(1,8);
     bodyInfo = getBodyInfoByNumber(bodyID, celBodyData);
 
-%     event = maData.script{subStateLog(1,13)};
-%     if(isfield(event,'lineColor'))
-%         plotLineColor = event.lineColor;
-%     elseif(isfield(event,'launch') && ~isempty(event.launch) && isfield(event.launch,'lineColor'))
-%         plotLineColor = event.launch.lineColor;
-%     else
-        plotLineColor = 'r';
-%     end
-    
-%     if(isfield(event,'lineStyle'))
-%         plotLineStyle = event.lineStyle;
-%     elseif(isfield(event,'launch') && ~isempty(event.launch) && isfield(event.launch,'lineStyle'))
-%         plotLineStyle = event.launch.lineStyle;
-%     else
-        plotLineStyle = '-';
-%     end
-    
+    eventNum = subStateLog(1,13);
+    event = lvdData.script.getEventForInd(eventNum);
+    plotLineColor = event.colorLineSpec.color.color;
+    plotLineStyle = event.colorLineSpec.lineSpec.linespec;
+
     hold(dAxes,'on');
 	plot3(dAxes, [prevSubStateLog(end,2);subStateLog(1:end,2)], [prevSubStateLog(end,3);subStateLog(1:end,3)], [prevSubStateLog(end,4);subStateLog(1:end,4)], 'Color', plotLineColor, 'LineStyle', plotLineStyle, 'LineWidth',1.5);    %  plotColors(subStateLog(1,13))
    

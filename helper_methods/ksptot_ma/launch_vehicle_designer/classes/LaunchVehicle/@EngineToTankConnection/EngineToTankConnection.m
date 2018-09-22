@@ -7,6 +7,10 @@ classdef EngineToTankConnection < matlab.mixin.SetGet
         engine(1,1) LaunchVehicleEngine = LaunchVehicleEngine(LaunchVehicleStage(LaunchVehicle(LvdData.getEmptyLvdData())))
     end
     
+    properties(Dependent)
+        lvdData
+    end
+    
     methods
         function obj = EngineToTankConnection(tank, engine)
             if(nargin > 0)
@@ -15,8 +19,16 @@ classdef EngineToTankConnection < matlab.mixin.SetGet
             end
         end
         
+        function lvdData = get.lvdData(obj)
+            lvdData = obj.engine.stage.launchVehicle.lvdData;
+        end
+        
         function nameStr = getName(obj)
             nameStr = sprintf('%s to %s', obj.engine.name, obj.tank.name);
         end
+        
+        function tf = isInUse(obj)
+            tf = obj.lvdData.usesEngineToTankConn(obj);
+        end        
     end
 end

@@ -19,6 +19,10 @@ classdef LaunchVehicleEngine < matlab.mixin.SetGet
         id(1,1) double = 0;
     end
     
+    properties(Dependent)
+        lvdData
+    end
+    
     properties(Constant)
         vacPress = 0;            %kPa
         seaLvlPress = 101.325;   %kPa
@@ -26,8 +30,31 @@ classdef LaunchVehicleEngine < matlab.mixin.SetGet
     
     methods
         function obj = LaunchVehicleEngine(stage)
-            obj.stage = stage;
+            if(nargin>0)
+                obj.stage = stage;
+            end
+            
             obj.id = rand();
+        end
+        
+        function lvdData = get.lvdData(obj)
+            lvdData = obj.stage.launchVehicle.lvdData;
+        end
+        
+        function val = getVacThrust(obj)
+            val = obj.vacThrust;
+        end
+        
+        function val = getVacIsp(obj)
+            val = obj.vacIsp;
+        end
+        
+        function val = getSeaLvlThrust(obj)
+            val = obj.seaLvlThrust;
+        end
+        
+        function val = getSeaLvlIsp(obj)
+            val = obj.seaLvlIsp;
         end
         
         function engineSummStr = getEngineSummaryStr(obj)
@@ -68,6 +95,10 @@ classdef LaunchVehicleEngine < matlab.mixin.SetGet
             else
                 newThrottle = inputThrottle;
             end
+        end
+        
+        function tf = isInUse(obj)
+            tf = obj.lvdData.usesEngine(obj);
         end
         
         function tf = eq(A,B)

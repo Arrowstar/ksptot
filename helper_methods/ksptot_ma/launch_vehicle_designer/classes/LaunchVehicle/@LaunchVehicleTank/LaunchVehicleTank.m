@@ -11,10 +11,20 @@ classdef LaunchVehicleTank < matlab.mixin.SetGet
         id(1,1) double = 0;
     end
     
+    properties(Dependent)
+        lvdData
+    end
+    
     methods
         function obj = LaunchVehicleTank(stage)
-            obj.stage = stage;
+            if(nargin>0)
+                obj.stage = stage;
+            end
             obj.id = rand();
+        end
+        
+        function lvdData = get.lvdData(obj)
+            lvdData = obj.stage.launchVehicle.lvdData;
         end
         
         function tankSummStr = getTankSummaryStr(obj)
@@ -25,6 +35,10 @@ classdef LaunchVehicleTank < matlab.mixin.SetGet
         
         function initialMass = getInitialMass(obj)
             initialMass = obj.initialMass;
+        end
+        
+        function tf = isInUse(obj)
+            tf = obj.lvdData.usesTank(obj);
         end
         
         function tf = eq(A,B)

@@ -8,11 +8,14 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
         
         name(1,:) char = 'Untitled Event';
         script(1,:) LaunchVehicleScript
+        
+        colorLineSpec(1,1) EventColorLineSpec 
     end
     
     methods
         function obj = LaunchVehicleEvent(script)
             obj.script = script;
+            obj.colorLineSpec = EventColorLineSpec();
         end
         
         function addAction(obj, newAction)

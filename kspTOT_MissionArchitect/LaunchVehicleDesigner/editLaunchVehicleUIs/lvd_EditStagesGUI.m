@@ -101,7 +101,16 @@ function stagesListbox_Callback(hObject, eventdata, handles)
 
 % Hints: contents = cellstr(get(hObject,'String')) returns stagesListbox contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from stagesListbox
+    if(strcmpi(get(handles.lvd_EditStagesGUI,'SelectionType'),'open'))
+        lvdData = getappdata(handles.lvd_EditStagesGUI,'lvdData');
+        lv = lvdData.launchVehicle;
 
+        selStage = get(handles.stagesListbox,'Value');
+        stage = lv.getStageForInd(selStage);
+        
+        lvd_EditStageGUI(stage);
+        set(handles.stagesListbox,'String',lvdData.launchVehicle.getStagesListBoxStr());
+    end
 
 % --- Executes during object creation, after setting all properties.
 function stagesListbox_CreateFcn(hObject, eventdata, handles)
@@ -123,15 +132,15 @@ function addStageButton_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
     lvdData = getappdata(handles.lvd_EditStagesGUI,'lvdData');
     lv = lvdData.launchVehicle;
-    
-    name = inputdlg('Enter the name of the new stage:','New Stage');
-    
+       
     stage = LaunchVehicleStage(lv);
-    stage.name = name;
-    lv.addStage(stage);
+    useStage = lvd_EditStageGUI(stage);
     
-    set(handles.stagesListbox,'String',lvdData.launchVehicle.getStagesListBoxStr());
-
+    if(useStage)
+        lv.addStage(stage);
+        set(handles.stagesListbox,'String',lvdData.launchVehicle.getStagesListBoxStr());
+    end
+    
 % --- Executes on button press in removeStageButton.
 function removeStageButton_Callback(hObject, eventdata, handles)
 % hObject    handle to removeStageButton (see GCBO)
@@ -143,17 +152,19 @@ function removeStageButton_Callback(hObject, eventdata, handles)
     selStage = get(handles.stagesListbox,'Value');
     stage = lv.getStageForInd(selStage);
     
-    %TODO CHECK to see if stage or associated engines and tanks are in use
-    %in any constraint, objective function, termination condition, or
-    %event action
+    tf = stage.isStageAndChildrenInUse();
     
-    lv.removeStage(stage);
-        
-    set(handles.stagesListbox,'String',lvdData.launchVehicle.getStagesListBoxStr());
-    
-    numStages = lv.getNumStages();
-    if(selStage > numStages)
-        set(handles.stagesListbox,'Value',numStages);
+    if(tf == false)
+        lv.removeStage(stage);
+
+        set(handles.stagesListbox,'String',lvdData.launchVehicle.getStagesListBoxStr());
+
+        numStages = lv.getNumStages();
+        if(selStage > numStages)
+            set(handles.stagesListbox,'Value',numStages);
+        end
+    else
+        warndlg(sprintf('Could not delete the stage "%s" because it (or an associated engine or tank) is in use as part of an event termination condition, event action, objective function, or constraint.  Remove all tanks and engines from the stage and remove the stage dependencies before attempting to delete the stage.', stage.name),'Cannot Delete Stage','modal');
     end
     
 % --- Executes on button press in moveStageUpButton.

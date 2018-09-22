@@ -22,7 +22,7 @@ function varargout = ma_LvdMainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_LvdMainGUI
 
-% Last Modified by GUIDE v2.5 15-Sep-2018 17:58:26
+% Last Modified by GUIDE v2.5 21-Sep-2018 20:56:40
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -100,6 +100,15 @@ function initializeOutputWindowText(handles, hOutputText)
         end
     end
 
+    
+function runScript(handles, lvdData)
+    handles.scriptWorkingLbl.Visible = 'on';
+    drawnow;
+    
+    lvdData.script.executeScript();
+    
+    handles.scriptWorkingLbl.Visible = 'off';
+    drawnow;
 
 % --- Outputs from this function are returned to the command line.
 function varargout = ma_LvdMainGUI_OutputFcn(hObject, eventdata, handles) 
@@ -128,7 +137,7 @@ function scriptListbox_Callback(hObject, eventdata, handles)
         event = lvdData.script.getEventForInd(eventNum);
         lvd_editEventGUI(event);
         
-        lvdData.script.executeScript();
+        runScript(handles, lvdData);
         
         lvd_processData(handles);
     end
@@ -159,8 +168,7 @@ function insertEventButton_Callback(hObject, eventdata, handles)
     lvdData.script.addEventAtInd(event,selEvtNum);
     lvd_editEventGUI(event);
     
-    lvdData.script.executeScript();
-    
+    runScript(handles, lvdData);
     lvd_processData(handles);
 
 % --- Executes on button press in moveEventDown.
@@ -178,6 +186,7 @@ function moveEventDown_Callback(hObject, eventdata, handles)
         set(handles.scriptListbox,'Value',eventNum+1);
     end
     
+    runScript(handles, lvdData);
     lvd_processData(handles);
     
 % --- Executes on button press in deleteEvent.
@@ -195,8 +204,7 @@ function deleteEvent_Callback(hObject, eventdata, handles)
         set(handles.scriptListbox,'Value',length(lvdData.script.evts));
     end
     
-    lvdData.script.executeScript();
-    
+    runScript(handles, lvdData);
     lvd_processData(handles);
 
 % --- Executes on button press in moveEventUp.
@@ -214,6 +222,7 @@ function moveEventUp_Callback(hObject, eventdata, handles)
         set(handles.scriptListbox,'Value',eventNum-1);
     end
     
+    runScript(handles, lvdData);
     lvd_processData(handles);
 
 
@@ -293,6 +302,8 @@ function optimizeMissionMenu_Callback(hObject, eventdata, handles)
     
     lvdData = maData.lvdData;
     lvdData.optimizer.optimize(hMaMainGUI, writeOutput);
+    
+    runScript(handles, lvdData);
 
 % --------------------------------------------------------------------
 function launchVehicleMenu_Callback(hObject, eventdata, handles)
@@ -310,3 +321,31 @@ function editLaunchVehicleMenu_Callback(hObject, eventdata, handles)
     lvdData = maData.lvdData;
     
     lvd_editLaunchVehicle(lvdData);
+    
+    runScript(handles, lvdData);
+    lvd_processData(handles);
+
+
+% --------------------------------------------------------------------
+function editObjFunctionMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to editObjFunctionMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    maData = getappdata(handles.ma_LvdMainGUI,'maData');
+    lvdData = maData.lvdData;
+
+% --------------------------------------------------------------------
+function editConstraintsMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to editConstraintsMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    maData = getappdata(handles.ma_LvdMainGUI,'maData');
+    lvdData = maData.lvdData;
+
+% --------------------------------------------------------------------
+function editInitialStateMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to editInitialStateMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    maData = getappdata(handles.ma_LvdMainGUI,'maData');
+    lvdData = maData.lvdData;

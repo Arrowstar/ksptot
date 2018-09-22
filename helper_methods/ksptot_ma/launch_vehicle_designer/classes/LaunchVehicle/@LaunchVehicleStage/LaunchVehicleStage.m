@@ -14,10 +14,34 @@ classdef LaunchVehicleStage < matlab.mixin.SetGet
         id(1,1) double = 0;
     end
     
+    properties(Dependent)
+        lvdData
+    end
+    
     methods
         function obj = LaunchVehicleStage(launchVehicle)
             obj.launchVehicle = launchVehicle;
             obj.id = rand();
+        end
+        
+        function lvdData = get.lvdData(obj)
+            lvdData = obj.launchVehicle.lvdData;
+        end
+        
+        function addEngine(obj, newEngine)
+            obj.engines(end+1) = newEngine;
+        end
+        
+        function removeEngine(obj, engine)
+            obj.engines([obj.engines] == engine) = [];
+        end
+        
+        function addTank(obj, newTank)
+            obj.tanks(end+1) = newTank;
+        end
+        
+        function removeTank(obj, tank)
+            obj.tanks([obj.tanks] == tank) = [];
         end
         
         function stageSummStr = getStageSummaryStr(obj)
@@ -52,6 +76,26 @@ classdef LaunchVehicleStage < matlab.mixin.SetGet
         
         function totalMass = getStageInitTotalMass(obj)
             totalMass = obj.dryMass + obj.getStageInitPropMass();
+        end
+        
+        function tf = isInUse(obj)
+            tf = obj.lvdData.usesStage(obj);
+        end
+        
+        function tf = isStageAndChildrenInUse(obj)
+            tf = obj.isInUse();
+            
+            if(tf == false)
+                for(i=1:length(obj.engines))
+                    tf = tf || obj.engines(i).isInUse();
+                end
+            end
+            
+            if(tf == false)
+                for(i=1:length(obj.tanks))
+                    tf = tf || obj.tanks(i).isInUse();
+                end
+            end
         end
         
         function tf = eq(A,B)
