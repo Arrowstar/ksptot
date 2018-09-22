@@ -16,5 +16,13 @@ classdef(Abstract) AbstractObjectiveFcn < matlab.mixin.SetGet & matlab.mixin.Het
         tf = usesTank(obj, tank)
         
         tf = usesEngineToTankConn(obj, engineToTank)
+        
+        event = getRefEvent(obj)        
+    end
+    
+    methods(Static)
+        objFcn = getDefaultObjFcn(event, lvdOptim, lvdData)
+        
+        params = getParams(obj)
     end
 end

@@ -22,7 +22,7 @@ function varargout = ma_LvdMainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_LvdMainGUI
 
-% Last Modified by GUIDE v2.5 21-Sep-2018 20:56:40
+% Last Modified by GUIDE v2.5 21-Sep-2018 21:15:21
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -333,6 +333,7 @@ function editObjFunctionMenu_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
     maData = getappdata(handles.ma_LvdMainGUI,'maData');
     lvdData = maData.lvdData;
+    lvd_EditObjectiveFunctionGUI(lvdData);
 
 % --------------------------------------------------------------------
 function editConstraintsMenu_Callback(hObject, eventdata, handles)

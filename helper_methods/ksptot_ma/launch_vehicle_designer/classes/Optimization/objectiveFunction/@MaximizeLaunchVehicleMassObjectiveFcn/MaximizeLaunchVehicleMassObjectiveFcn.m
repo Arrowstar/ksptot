@@ -47,5 +47,21 @@ classdef MaximizeLaunchVehicleMassObjectiveFcn < AbstractObjectiveFcn
         function tf = usesEngineToTankConn(obj, engineToTank)
             tf = false;
         end
+        
+        function event = getRefEvent(obj)
+            event = obj.event;
+        end
+    end
+    
+    methods(Static)
+        function objFcn = getDefaultObjFcn(event, lvdOptim, lvdData)
+            objFcn = MaximizeLaunchVehicleMassObjectiveFcn(event, lvdOptim, lvdData);
+        end
+        
+        function params = getParams()
+            params = struct();
+            
+            params.usesEvents = true;
+        end
     end
 end

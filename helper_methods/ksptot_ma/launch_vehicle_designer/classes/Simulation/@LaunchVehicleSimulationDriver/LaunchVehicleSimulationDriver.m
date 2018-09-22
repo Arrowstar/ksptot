@@ -73,8 +73,14 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
             
             dydt = zeros(length(y),1);
                        
+            if(totalMass > 0)
+                accelVect = obj.forceModel.getForce(tempStateLogEntry)/totalMass;
+            else
+                accelVect = zeros(3,1);
+            end
+            
             dydt(1:3) = vVect'; 
-            dydt(4:6) = obj.forceModel.getForce(tempStateLogEntry)/totalMass;
+            dydt(4:6) = accelVect;
             dydt(7:end) = tempStateLogEntry.getTankMassFlowRatesDueToEngines(pressure);
             
             if(any(isnan(dydt)))

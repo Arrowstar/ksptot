@@ -33,5 +33,21 @@ classdef NoOptimizationObjectiveFcn < AbstractObjectiveFcn
         function tf = usesEngineToTankConn(obj, engineToTank)
             tf = false;
         end
+        
+        function event = getRefEvent(obj)
+            event = LaunchVehicleEvent.empty(1,0);
+        end
+    end
+
+    methods(Static)
+        function objFcn = getDefaultObjFcn(event, lvdOptim, lvdData)
+            objFcn = NoOptimizationObjectiveFcn();
+        end
+        
+        function params = getParams()
+            params = struct();
+            
+            params.usesEvents = false;
+        end
     end
 end
