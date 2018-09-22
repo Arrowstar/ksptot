@@ -16,5 +16,13 @@ classdef(Abstract) AbstractConstraint < matlab.mixin.SetGet & matlab.mixin.Heter
         tf = usesTank(obj, tank)
         
         tf = usesEngineToTankConn(obj, engineToTank)
+        
+        name = getName(obj)
+        
+        addConstraintTf = openEditConstraintUI(obj, maData, lvdData, hMaMainGUI);
+    end
+    
+    methods(Static)
+        constraint = getDefaultConstraint(input1) 
     end
 end

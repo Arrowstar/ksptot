@@ -342,7 +342,9 @@ function editConstraintsMenu_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
     maData = getappdata(handles.ma_LvdMainGUI,'maData');
     lvdData = maData.lvdData;
-
+    hMaMainGUI = getappdata(handles.ma_LvdMainGUI,'hMaMainGUI');
+    lvd_EditConstraintsGUI(maData, lvdData, hMaMainGUI);
+    
 % --------------------------------------------------------------------
 function editInitialStateMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to editInitialStateMenu (see GCBO)

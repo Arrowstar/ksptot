@@ -41,7 +41,11 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
         end
         
         function evtNum = getNumOfEvent(obj, evt)
-            evtNum = find(obj.evts == evt);
+            evtNum = [];
+            
+            if(not(isempty(evt)))
+                evtNum = find(obj.evts == evt);
+            end
         end
         
         function evt = getEventForInd(obj, ind)
@@ -50,6 +54,10 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
             if(ind >= 1 && ind <= length(obj.evts))
                 evt = obj.evts(ind);
             end
+        end
+        
+        function numEvents = getTotalNumOfEvents(obj)
+            numEvents = length(obj.evts);
         end
         
         function moveEvtAtIndexDown(obj, ind)

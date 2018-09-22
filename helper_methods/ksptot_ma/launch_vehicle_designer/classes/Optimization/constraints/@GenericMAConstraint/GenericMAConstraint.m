@@ -26,6 +26,11 @@ classdef GenericMAConstraint < AbstractConstraint
             obj.refBodyInfo = refBodyInfo;         
         end
         
+        function [lb, ub] = getBounds(obj)
+            lb = obj.lb;
+            ub = obj.ub;
+        end
+        
         function [c, ceq, value, lwrBnd, uprBnd, type, eventNum] = evalConstraint(obj, stateLog, maData)
             celBodyData = maData.celBodyData;
             
@@ -78,6 +83,24 @@ classdef GenericMAConstraint < AbstractConstraint
         
         function tf = usesEngineToTankConn(obj, engineToTank)
             tf = false;
+        end
+        
+        function name = getName(obj)
+            name = sprintf('%s - Event %i', obj.constraintType, obj.event.getEventNum());
+        end
+        
+        function [unit, lbLim, ubLim, usesLbUb, usesCelBody, usesRefSc] = getConstraintStaticDetails(obj)
+            [unit, lbLim, ubLim, ~, ~, ~, ~, usesLbUb, usesCelBody, usesRefSc] = ma_getConstraintStaticDetails(obj.constraintType);           
+        end
+        
+        function addConstraintTf = openEditConstraintUI(obj, maData, lvdData, hMaMainGUI)
+            addConstraintTf = lvd_EditGenericMAConstraintGUI(obj, maData, lvdData, hMaMainGUI);
+        end
+    end
+    
+    methods(Static)
+        function constraint = getDefaultConstraint(constraintType)            
+            constraint = GenericMAConstraint(constraintType, LaunchVehicleEvent.empty(1,0), 0, 0, [], [], KSPTOT_BodyInfo.empty(1,0));
         end
     end
 end

@@ -25,7 +25,27 @@ classdef ConstraintSet < matlab.mixin.SetGet
         
         function removeConstraint(obj, const)
             obj.consts(obj.consts == const) = [];
-        end        
+        end      
+        
+        function constraint = getConstraintForInd(obj, ind)
+            constraint = AbstractConstraint.empty(1,0);
+            
+            if(ind >= 1 && ind <= length(obj.consts))
+                constraint = obj.consts(ind);
+            end
+        end
+        
+        function listBoxStr = getListboxStr(obj)
+            listBoxStr = {};
+            
+            for(i=1:length(obj.consts))
+                listBoxStr{end+1} = obj.consts(i).getName(); %#ok<AGROW>
+            end
+        end
+        
+        function num = getNumConstraints(obj)
+            num = length(obj.consts);
+        end
         
         function [c, ceq, value, lb, ub, type, eventNum] = evalConstraints(obj, x, maData) %optimVarSet,script,initStateLogEntry,stateLog,maData,celBodyData)
             c = [];

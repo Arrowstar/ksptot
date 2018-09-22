@@ -107,7 +107,7 @@ function initGUI(handles,type,unit,lbVal,ubVal,bodyID,otherSCID,eventID,lbActive
         otherSC = maData.spacecraft.otherSC;
         if(~isempty(otherSC))
             enableRefSC = true;
-            for(i=1:length(otherSC)) %#ok<NO4LP>
+            for(i=1:length(otherSC))
                 oSC = otherSC{i};
                 if(oSC.id == otherSCID)
                     value = findValueFromComboBox(oSC.name, handles.otherSCCombo);
