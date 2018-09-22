@@ -22,7 +22,7 @@ function varargout = ma_LvdMainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_LvdMainGUI
 
-% Last Modified by GUIDE v2.5 21-Sep-2018 21:15:21
+% Last Modified by GUIDE v2.5 21-Sep-2018 21:52:16
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -346,6 +346,56 @@ function editConstraintsMenu_Callback(hObject, eventdata, handles)
 % --------------------------------------------------------------------
 function editInitialStateMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to editInitialStateMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    maData = getappdata(handles.ma_LvdMainGUI,'maData');
+    lvdData = maData.lvdData;
+
+
+% --------------------------------------------------------------------
+function viewStateAfterSelectedEventMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to viewStateAfterSelectedEventMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    hMaMainGUI = getappdata(handles.ma_LvdMainGUI,'hMaMainGUI');
+    maData = getappdata(handles.ma_LvdMainGUI,'maData');
+    lvdData = maData.lvdData;
+    
+    eventNum = handles.scriptListbox.Value;
+    stateLog = lvdData.stateLog.getMAFormattedStateLogMatrix();
+    
+    state = stateLog(stateLog(:,13)==eventNum,:);
+    state = state(end,:);
+
+    viewSpacecraftStatePopupGUI(hMaMainGUI, state, eventNum);
+
+% --------------------------------------------------------------------
+function copyUtAtStartOfSelEventMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to copyUtAtStartOfSelEventMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    maData = getappdata(handles.ma_LvdMainGUI,'maData');
+    lvdData = maData.lvdData;
+
+% --------------------------------------------------------------------
+function copyUtAtEndOfSelEventMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to copyUtAtEndOfSelEventMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    maData = getappdata(handles.ma_LvdMainGUI,'maData');
+    lvdData = maData.lvdData;
+
+% --------------------------------------------------------------------
+function copyDurationOfSelEventMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to copyDurationOfSelEventMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    maData = getappdata(handles.ma_LvdMainGUI,'maData');
+    lvdData = maData.lvdData;
+
+% --------------------------------------------------------------------
+function copyOrbitAfterSelectedEventMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to copyOrbitAfterSelectedEventMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
     maData = getappdata(handles.ma_LvdMainGUI,'maData');
