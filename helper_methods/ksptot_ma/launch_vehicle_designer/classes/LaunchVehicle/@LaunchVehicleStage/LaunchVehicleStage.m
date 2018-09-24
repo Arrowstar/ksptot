@@ -12,6 +12,8 @@ classdef LaunchVehicleStage < matlab.mixin.SetGet
         dryMass(1,1) double = 0; %mT
         
         id(1,1) double = 0;
+        
+        optVar(1,:) StageDryMassOptimizationVariable
     end
     
     properties(Dependent)

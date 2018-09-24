@@ -15,6 +15,8 @@ classdef AoATermConditionOptimizationVariable < AbstractOptimizationVariable
         function obj = AoATermConditionOptimizationVariable(varObj)
             obj.varObj = varObj;
             obj.varObj.optVar = obj;
+            
+            obj.id = rand();
         end
         
         function x = getXsForVariable(obj)

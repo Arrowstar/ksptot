@@ -15,6 +15,8 @@ classdef TankMassOptimizationVariable < AbstractOptimizationVariable
         function obj = TankMassOptimizationVariable(varObj)
             obj.varObj = varObj;
             obj.varObj.optVar = obj;
+            
+            obj.id = rand();
         end
         
         function x = getXsForVariable(obj)

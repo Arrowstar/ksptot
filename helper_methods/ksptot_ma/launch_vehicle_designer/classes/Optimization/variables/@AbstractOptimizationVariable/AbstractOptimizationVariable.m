@@ -3,7 +3,7 @@ classdef(Abstract) AbstractOptimizationVariable < matlab.mixin.SetGet & matlab.m
     %   Detailed explanation goes here
     
     properties
-        
+        id(1,1) double
     end
     
     methods
@@ -25,5 +25,9 @@ classdef(Abstract) AbstractOptimizationVariable < matlab.mixin.SetGet & matlab.m
             [lb,~] = obj.getBndsForVariable();
             numVars = numel(lb);
         end
+        
+        function tf = eq(A,B)
+            tf = [A.id] == [B.id];
+        end  
     end
 end

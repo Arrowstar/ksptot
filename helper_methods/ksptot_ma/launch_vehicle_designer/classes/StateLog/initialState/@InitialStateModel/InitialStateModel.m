@@ -22,6 +22,27 @@ classdef InitialStateModel < matlab.mixin.SetGet
             
         end
         
+        function addStageState(obj, newStageState)
+            obj.stageStates(end+1) = newStageState;
+        end
+        
+        function removeStageStateForStage(obj, stage)
+            stageStateInd = find([obj.stageStates.stage] == stage,1,'first');
+%             stageState = obj.stageStates(stageStateInd);
+            
+%             stage = stageState.stage;
+            
+%             for(i=1:length(stage.engines))
+%                 stageState.removeEngineStateForEngine(stage.engines(i));
+%             end
+%             
+%             for(i=1:length(stage.tanks))
+%                 stageState.removeTankStateForTank(stage.tanks(i));
+%             end
+            
+            obj.stageStates(stageStateInd) = [];
+        end
+        
         function stateLogEntry = getInitialStateLogEntry(obj)
             stateLogEntry = LaunchVehicleStateLogEntry();
             
@@ -53,11 +74,6 @@ classdef InitialStateModel < matlab.mixin.SetGet
             
             ut = 0;
             stateLogModel.time = ut;
-            
-%             [rVectECI, vVectECI] = stateLogModel.orbitModel.getPositionAndVelocityVector(ut, bodyInfo);
-%             
-%             stateLogModel.position = rVectECI;
-%             stateLogModel.velocity = vVectECI;
             
             stateLogModel.centralBody = bodyInfo;
             

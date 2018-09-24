@@ -138,6 +138,15 @@ function addEngineButton_Callback(hObject, eventdata, handles)
     
     if(useEngine)
         engine.stage.addEngine(engine);
+        
+        stageStates = lvdData.initStateModel.stageStates;
+        stageStateInd = find([stageStates.stage] == initStage,1,'first');
+        stageState = stageStates(stageStateInd);
+        
+        newEngineState = LaunchVehicleEngineState(stageState);
+        newEngineState.engine = engine;
+        stageState.addEngineState(newEngineState);
+        
         set(handles.enginesListBox,'String',lvdData.launchVehicle.getEnginesListBoxStr());
     end
     
@@ -155,9 +164,17 @@ function removeEngineButton_Callback(hObject, eventdata, handles)
     tf = engine.isInUse();
     
     if(tf == false)
-        engine.stage.removeEngine(engine);
+        stage = engine.stage;
 
         lv.removeAllEngineToTanksConnsWithEngine(engine);
+        
+        stageStates = lvdData.initStateModel.stageStates;
+        stageStateInd = find([stageStates.stage] == stage,1,'first');
+        stageState = stageStates(stageStateInd);
+
+        stageState.removeEngineStateForEngine(engine);
+        
+        stage.removeEngine(engine);
         
         listBoxStr = lvdData.launchVehicle.getEnginesListBoxStr();
         set(handles.enginesListBox,'String',listBoxStr);

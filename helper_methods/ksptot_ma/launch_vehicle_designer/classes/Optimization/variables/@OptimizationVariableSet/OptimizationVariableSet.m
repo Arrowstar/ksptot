@@ -16,7 +16,7 @@ classdef OptimizationVariableSet < matlab.mixin.SetGet
         end
         
         function removeVariable(obj, var)
-            obj.vars(obj.vars == var) = [];
+            obj.vars([obj.vars] == var) = [];
         end
         
         function x = getTotalXVector(obj)

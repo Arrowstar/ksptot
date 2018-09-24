@@ -139,6 +139,11 @@ function addConnButton_Callback(hObject, eventdata, handles)
     
     if(useE2TConn)
         lvdData.launchVehicle.addEngineToTankConnection(e2TConn);
+        
+        %TODO
+        lvState = lvdData.initStateModel.lvState;
+        
+        
         set(handles.connsListBox,'String',lvdData.launchVehicle.getEngineToTankConnectionsListBoxStr());
     end
     

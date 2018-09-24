@@ -107,7 +107,7 @@ classdef LvdData < matlab.mixin.SetGet
             %Event 4b
             evt4b = LaunchVehicleEvent(script);
             evt4b.name = 'Coast to Stage Two Ignition';
-            evt4b.termCond = EventDurationTermCondition(0);
+            evt4b.termCond = EventDurationTermCondition(120);
             
             evt4bAction2Eng = lv.stages(2).engines(1);
             evt4bAction2 = SetEngineActiveStateAction(evt4bAction2Eng, true);
@@ -157,7 +157,7 @@ classdef LvdData < matlab.mixin.SetGet
 
             coastDurVar = EventDurationOptimizationVariable(evt4b.termCond);
             coastDurVar.setUseTfForVariable(true);
-            coastDurVar.setBndsForVariable(0, 60);
+            coastDurVar.setBndsForVariable(0, 130);
             lvdOptim.vars.addVariable(coastDurVar);
             
             const1 = GenericMAConstraint('Eccentricity', evt6, 0, 0, struct.empty(1,0), struct.empty(1,0), celBodyData.kerbin);

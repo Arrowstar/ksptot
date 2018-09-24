@@ -304,6 +304,7 @@ function optimizeMissionMenu_Callback(hObject, eventdata, handles)
     lvdData.optimizer.optimize(hMaMainGUI, writeOutput);
     
     runScript(handles, lvdData);
+    lvd_processData(handles);
 
 % --------------------------------------------------------------------
 function launchVehicleMenu_Callback(hObject, eventdata, handles)
@@ -322,8 +323,8 @@ function editLaunchVehicleMenu_Callback(hObject, eventdata, handles)
     
     lvd_editLaunchVehicle(lvdData);
     
-    runScript(handles, lvdData);
-    lvd_processData(handles);
+%     runScript(handles, lvdData);
+%     lvd_processData(handles);
 
 
 % --------------------------------------------------------------------
@@ -352,7 +353,11 @@ function editInitialStateMenu_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
     maData = getappdata(handles.ma_LvdMainGUI,'maData');
     lvdData = maData.lvdData;
-
+    hMaMainGUI = getappdata(handles.ma_LvdMainGUI,'hMaMainGUI');
+    lvd_EditInitialStateGUI(maData, lvdData, hMaMainGUI);
+    
+%     runScript(handles, lvdData);
+%     lvd_processData(handles);
 
 % --------------------------------------------------------------------
 function viewStateAfterSelectedEventMenu_Callback(hObject, eventdata, handles)

@@ -20,6 +20,10 @@ classdef(Abstract) AbstractSteeringModel < matlab.mixin.SetGet
         setConstsFromDcmAndContinuitySettings(obj, dcm, rVect, vVect)     
         
         optVar = getNewOptVar(obj)
+        
+        optVar = getExistingOptVar(obj)
+        
+        addActionTf = openEditSteeringModelUI(obj, lv)
     end
     
     methods(Static)

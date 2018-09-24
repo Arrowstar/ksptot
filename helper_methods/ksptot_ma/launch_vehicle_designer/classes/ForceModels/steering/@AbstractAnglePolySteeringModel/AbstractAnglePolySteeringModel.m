@@ -8,5 +8,12 @@ classdef(Abstract) AbstractAnglePolySteeringModel < AbstractSteeringModel
         angleModel = getAngleNModel(obj, n)
         
         [tf, lb, ub] = getAngleNModelOptVarParams(obj, n)
+        
+        function addActionTf = openEditSteeringModelUI(obj, lv)
+            fakeAction = struct();
+            fakeAction.steeringModel = obj;
+            
+            addActionTf = lvd_EditActionSetSteeringModelGUI(fakeAction, lv);
+        end
     end
 end

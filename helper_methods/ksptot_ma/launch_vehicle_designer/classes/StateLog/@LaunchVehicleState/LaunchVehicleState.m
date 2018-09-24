@@ -12,6 +12,24 @@ classdef LaunchVehicleState < matlab.mixin.SetGet
             obj.lv = lv;
         end
         
+        function addE2TConnState(obj, newConnState)
+            obj.e2TConns(end+1) = newConnState;
+        end
+        
+        function removeE2TConnStateForConn(obj, conn)
+            ind = [];
+            for(i=1:length(obj.e2TConns)) %#ok<*NO4LP>
+                if(obj.e2TConns(i).conn == conn)
+                    ind = i;
+                    break;
+                end
+            end
+            
+            if(not(isempty(ind)))
+                obj.e2TConns(ind) = [];
+            end
+        end
+        
         function tanks = getTanksConnectedToEngine(obj, engine)
             connStates = obj.e2TConns([obj.e2TConns.active] == true);
             connections = [connStates.conn];

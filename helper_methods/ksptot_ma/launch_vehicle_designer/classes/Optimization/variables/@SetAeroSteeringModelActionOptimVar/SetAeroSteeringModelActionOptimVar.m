@@ -25,6 +25,8 @@ classdef SetAeroSteeringModelActionOptimVar < AbstractOptimizationVariable
         function obj = SetAeroSteeringModelActionOptimVar(varObj)
             obj.varObj = varObj;
             obj.varObj.optVar = obj;
+            
+            obj.id = rand();
         end
         
         function x = getXsForVariable(obj)

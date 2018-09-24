@@ -16,6 +16,31 @@ classdef ThrottlePolyModel < AbstractThrottleModel
                 throttle = 1.0;
             end
         end
+        
+        function setT0(obj, newT0)
+            obj.throttleModel.t0 = newT0;
+        end
+        
+        function setPolyTerms(obj, const, linear, accel)
+            obj.throttleModel.constTerm = const;
+            obj.throttleModel.linearTerm = linear;
+            obj.throttleModel.accelTerm = accel;
+        end
+
+        function optVar = getNewOptVar(obj)
+            optVar = SetPolyThrottleModelActionOptimVar(obj);
+        end
+        
+        function optVar = getExistingOptVar(obj)
+            optVar = obj.optVar;
+        end
+        
+        function addActionTf = openEditThrottleModelUI(obj, lv)
+            fakeAction = struct();
+            fakeAction.throttleModel = obj;
+            
+            addActionTf = lvd_EditActionSetThrottleModelGUI(fakeAction, lv);
+        end
     end
     
     methods(Access=private)

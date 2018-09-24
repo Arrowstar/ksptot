@@ -138,6 +138,15 @@ function addTankButton_Callback(hObject, eventdata, handles)
     
     if(useTank)
         tank.stage.addTank(tank);
+
+        stageStates = lvdData.initStateModel.stageStates;
+        stageStateInd = find([stageStates.stage] == initStage,1,'first');
+        stageState = stageStates(stageStateInd);
+        
+        newEngineState = LaunchVehicleTankState(stageState);
+        newEngineState.tank = tank;
+        stageState.addTankState(newEngineState);
+        
         set(handles.tanksListBox,'String',lvdData.launchVehicle.getTanksListBoxStr());
     end
     
@@ -155,8 +164,16 @@ function removeTankButton_Callback(hObject, eventdata, handles)
     tf = tank.isInUse();
     
     if(tf == false)
-        tank.stage.removeTank(tank);
+        stage = tank.stage;
+        
+        stageStates = lvdData.initStateModel.stageStates;
+        stageStateInd = find([stageStates.stage] == stage,1,'first');
+        stageState = stageStates(stageStateInd);
 
+        stageState.removeTankStateForTank(tank);
+
+        stage.removeTank(tank);
+        
         lv.removeAllEngineToTanksConnsWithTank(tank);
         
         listBoxStr = lvdData.launchVehicle.getTanksListBoxStr();

@@ -138,6 +138,10 @@ function addStageButton_Callback(hObject, eventdata, handles)
     
     if(useStage)
         lv.addStage(stage);
+        
+        stageState = LaunchVehicleStageState(stage);
+        lvdData.initStateModel.addStageState(stageState);
+        
         set(handles.stagesListbox,'String',lvdData.launchVehicle.getStagesListBoxStr());
     end
     
@@ -155,6 +159,7 @@ function removeStageButton_Callback(hObject, eventdata, handles)
     tf = stage.isStageAndChildrenInUse();
     
     if(tf == false)
+        lvdData.initStateModel.removeStageStateForStage(stage);
         lv.removeStage(stage);
 
         set(handles.stagesListbox,'String',lvdData.launchVehicle.getStagesListBoxStr());
