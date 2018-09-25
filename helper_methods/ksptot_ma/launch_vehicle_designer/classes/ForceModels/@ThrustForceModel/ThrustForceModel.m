@@ -22,15 +22,13 @@ classdef ThrustForceModel < AbstractForceModel
             throttle = stateLogEntry.throttleModel.getThrottleAtTime(ut);
             body2InertDcm = stateLogEntry.steeringModel.getBody2InertialDcmAtTime(ut, rVect, vVect);
             
-            tankStates = stateLogEntry.getAllTankStates();
+            tankStates = stateLogEntry.getAllActiveTankStates();
             stageStates = stateLogEntry.stageStates;
             for(i=1:length(stageStates)) %#ok<*NO4LP>
                 stgState = stageStates(i);
                 
                 if(stgState.active)
                     engineStates = stgState.engineStates;
-
-                    lv = stgState.stage.launchVehicle;
                     
                     for(j=1:length(engineStates))
                         engState = engineStates(j);

@@ -128,6 +128,7 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
                 initStateLogEntry = newStateLogEntries(end).deepCopy();
                 obj.evts(i).cleanupEvent(initStateLogEntry);
             end
+            a = 1;
         end
     end
 end

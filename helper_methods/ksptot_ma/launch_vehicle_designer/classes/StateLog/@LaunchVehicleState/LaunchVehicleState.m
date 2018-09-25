@@ -1,10 +1,14 @@
-classdef LaunchVehicleState < matlab.mixin.SetGet
+classdef LaunchVehicleState < matlab.mixin.SetGet & matlab.mixin.Copyable
     %LaunchVehicleState Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
         lv(1,1) LaunchVehicle = LaunchVehicle(LvdData.getEmptyLvdData())
         e2TConns(1,:) EngineToTankConnState
+    end
+    
+    properties(Constant)
+        emptyTankArr = LaunchVehicleTank.empty(1,0);
     end
     
     methods
@@ -31,18 +35,25 @@ classdef LaunchVehicleState < matlab.mixin.SetGet
         end
         
         function tanks = getTanksConnectedToEngine(obj, engine)
+            tanks = obj.emptyTankArr;
+            
             connStates = obj.e2TConns([obj.e2TConns.active] == true);
             connections = [connStates.conn];
-            connections = connections([connections.engine] == engine);
             
-            tanks = [connections.tank];
+            if(not(isempty(connections)))
+                connections = connections([connections.engine] == engine);
+                tanks = [connections.tank];
+            end
         end
         
         function newLvState = deepCopy(obj)
-            newLvState = LaunchVehicleState(obj.lv);
+%             tic;
+%             newLvState = LaunchVehicleState(obj.lv);
+%             toc;
+            newLvState = obj.copy();
             
-            for(i=1:length(obj.e2TConns)) %#ok<NO4LP>
-                newLvState.e2TConns(end+1) = obj.e2TConns(i).deepCopy();
+            for(i=1:length(obj.e2TConns)) 
+                newLvState.e2TConns(i) = obj.e2TConns(i).deepCopy();
             end
         end
     end

@@ -5,12 +5,12 @@ load('MA_example_MunarFreeReturn.mat');
 lvdData = LvdData.getDefaultLvdData(celBodyData);
 
 %Execute Script
-% profile on -history;
+profile on -history;
 tic;
 lvdData.script.executeScript();
 % lvdData.optimizer.optimize(maData);
 toc;
-% profile viewer;
+profile viewer;
 
 %%Plotting 
 % bodyInfo = celBodyData.kerbin;

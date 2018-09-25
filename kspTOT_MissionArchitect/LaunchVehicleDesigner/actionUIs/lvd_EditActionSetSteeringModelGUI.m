@@ -22,7 +22,7 @@ function varargout = lvd_EditActionSetSteeringModelGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditActionSetSteeringModelGUI
 
-% Last Modified by GUIDE v2.5 16-Sep-2018 20:11:13
+% Last Modified by GUIDE v2.5 24-Sep-2018 17:36:47
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -97,6 +97,11 @@ function populateGUI(handles, action, lv)
     set(handles.angle3ConstTermText,'String',fullAccNum2Str(rad2deg(angleModel.constTerm)));
     set(handles.angle3LinTermText,'String',fullAccNum2Str(rad2deg(angleModel.linearTerm)));
     set(handles.angle3AccelTermText,'String',fullAccNum2Str(rad2deg(angleModel.accelTerm)));
+    
+    [contTf1,contTf2,contTf3] = steeringModel.getContinuityTerms();
+    contTf = any([contTf1,contTf2,contTf3]);
+    handles.angleContCheckbox.Value = double(contTf);
+    angleContCheckbox_Callback(handles.angleContCheckbox, [], handles);
     
     optVar = steeringModel.getExistingOptVar();
     if(isempty(optVar))
@@ -213,6 +218,9 @@ function varargout = lvd_EditActionSetSteeringModelGUI_OutputFcn(hObject, eventd
         steeringModel.setConstTerms(angle1Const, angle2Const, angle3Const);
         steeringModel.setLinearTerms(angle1Linear, angle2Linear, angle3Linear);
         steeringModel.setAccelTerms(angle1Accel, angle2Accel, angle3Accel);
+        
+        contTf = logical(handles.angleContCheckbox.Value);
+        steeringModel.setContinuityTerms(contTf,contTf,contTf);
         
         %Set Opt T/F
         useTf(1) = get(handles.angle1ConstOptCheckbox,'Value');
@@ -1367,3 +1375,42 @@ function steeringModelTypeCombo_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on button press in angleContCheckbox.
+function angleContCheckbox_Callback(hObject, eventdata, handles)
+% hObject    handle to angleContCheckbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of angleContCheckbox
+    if(get(hObject,'Value'))
+        handles.angle1ConstTermText.Enable = 'off';
+        handles.angle2ConstTermText.Enable = 'off';
+        handles.angle3ConstTermText.Enable = 'off';
+        
+        handles.angle1ConstOptCheckbox.Enable = 'off';
+        handles.angle2ConstOptCheckbox.Enable = 'off';
+        handles.angle3ConstOptCheckbox.Enable = 'off';
+        
+        handles.angle1ConstOptCheckbox.Value = 0;
+        handles.angle2ConstOptCheckbox.Value = 0;
+        handles.angle3ConstOptCheckbox.Value = 0;
+                
+        angle1ConstOptCheckbox_Callback(handles.angle1ConstOptCheckbox, [], handles);
+        angle2ConstOptCheckbox_Callback(handles.angle2ConstOptCheckbox, [], handles);
+        angle3ConstOptCheckbox_Callback(handles.angle3ConstOptCheckbox, [], handles);
+    else
+        handles.angle1ConstTermText.Enable = 'on';
+        handles.angle2ConstTermText.Enable = 'on';
+        handles.angle3ConstTermText.Enable = 'on';
+        
+        handles.angle1ConstOptCheckbox.Enable = 'on';
+        handles.angle2ConstOptCheckbox.Enable = 'on';
+        handles.angle3ConstOptCheckbox.Enable = 'on';
+
+        angle1ConstOptCheckbox_Callback(handles.angle1ConstOptCheckbox, [], handles);
+        angle2ConstOptCheckbox_Callback(handles.angle2ConstOptCheckbox, [], handles);
+        angle3ConstOptCheckbox_Callback(handles.angle3ConstOptCheckbox, [], handles);
+    end
+    

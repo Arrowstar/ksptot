@@ -106,8 +106,15 @@ function tanksListBox_Callback(hObject, eventdata, handles)
 
         selTank = get(handles.tanksListBox,'Value');
         tank = lv.getTankForInd(selTank);
-        
+                
         lvd_EditTankGUI(tank);
+        
+        stage = tank.stage;
+        stageStates = lvdData.initStateModel.stageStates;
+        stageStateInd = find([stageStates.stage] == stage,1,'first');
+        stageState = stageStates(stageStateInd);
+        stageState.updateTankStateMassForTank(tank);
+        
         set(handles.tanksListBox,'String',lvdData.launchVehicle.getTanksListBoxStr());
     end
 
@@ -145,6 +152,7 @@ function addTankButton_Callback(hObject, eventdata, handles)
         
         newEngineState = LaunchVehicleTankState(stageState);
         newEngineState.tank = tank;
+        newEngineState.tankMass = tank.initialMass;
         stageState.addTankState(newEngineState);
         
         set(handles.tanksListBox,'String',lvdData.launchVehicle.getTanksListBoxStr());

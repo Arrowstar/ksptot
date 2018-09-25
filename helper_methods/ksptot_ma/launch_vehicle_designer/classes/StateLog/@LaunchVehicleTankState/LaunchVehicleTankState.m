@@ -1,4 +1,4 @@
-classdef LaunchVehicleTankState < matlab.mixin.SetGet
+classdef LaunchVehicleTankState < matlab.mixin.SetGet & matlab.mixin.Copyable
     %LaunchVehicle Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -18,9 +18,10 @@ classdef LaunchVehicleTankState < matlab.mixin.SetGet
         end
         
         function newTankState = deepCopy(obj)
-            newTankState = LaunchVehicleTankState(obj.stageState);
+%             newTankState = LaunchVehicleTankState(obj.stageState);
+            newTankState = obj.copy();
             
-            newTankState.tank = obj.tank;
+%             newTankState.tank = obj.tank;
             newTankState.tankMass = obj.tankMass;
         end
     end

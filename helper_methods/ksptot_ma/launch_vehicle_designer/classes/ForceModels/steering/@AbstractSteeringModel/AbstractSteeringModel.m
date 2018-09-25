@@ -19,6 +19,10 @@ classdef(Abstract) AbstractSteeringModel < matlab.mixin.SetGet
         
         setConstsFromDcmAndContinuitySettings(obj, dcm, rVect, vVect)     
         
+        setContinuityTerms(obj, angle1Cont, angle2Cont, angle3Cont)
+        
+        [angle1Cont, angle2Cont, angle3Cont] = getContinuityTerms(obj)
+        
         optVar = getNewOptVar(obj)
         
         optVar = getExistingOptVar(obj)

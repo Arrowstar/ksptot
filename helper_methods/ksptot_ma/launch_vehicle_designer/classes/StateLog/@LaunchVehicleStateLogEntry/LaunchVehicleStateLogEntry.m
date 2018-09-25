@@ -21,6 +21,10 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet
         throttle(1,1) double
     end
     
+    properties(Constant)
+        emptyTankArr = LaunchVehicleTankState.empty(1,0);
+    end
+    
     methods
         function obj = LaunchVehicleStateLogEntry()
             
@@ -44,7 +48,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet
             
             tankStateInd = 7;
             tankStateInds = [];
-            tankStates = obj.getAllTankStates();
+            tankStates = obj.getAllActiveTankStates();
             for(i=1:length(tankStates))
                 tankStateInds(end+1) = tankStateInd; %#ok<AGROW>
                 y = [y,tankStates(i).getTankMass()]; %#ok<AGROW>
@@ -68,8 +72,20 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet
         end
         
         function tankStates = getAllTankStates(obj)
-            tankStates = LaunchVehicleTankState.empty(0,1);
+%             tankStates = LaunchVehicleTankState.empty(0,1);
+            tankStates = obj.emptyTankArr;
             
+            stgStates = obj.stageStates;
+            for(i=1:length(stgStates)) %#ok<*NO4LP>
+                stgState = stgStates(i);
+                tankStates = horzcat(tankStates, stgState.tankStates); %#ok<AGROW>
+            end
+        end
+        
+        function tankStates = getAllActiveTankStates(obj)
+%             tankStates = LaunchVehicleTankState.empty(1,0);
+            tankStates = obj.emptyTankArr;
+
             stgStates = obj.stageStates;
             for(i=1:length(stgStates)) %#ok<*NO4LP>
                 stgState = stgStates(i);
@@ -104,22 +120,21 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet
             mass = 0;
             
             for(i=1:length(obj.stageStates))
-                if(obj.stageStates(i).active)
-                    mass = mass + obj.stageStates(i).getStageTotalMass();
+                stageState = obj.stageStates(i);
+                if(stageState.active)
+                    mass = mass + stageState.getStageTotalMass();
                 end
             end
         end
         
         function updateTankStatesWithNewMasses(obj, newTankMasses)
-            tankStates = obj.getAllTankStates();
+            tankStates = obj.getAllActiveTankStates();
             
-            for(i=1:length(tankStates))
-                tankStates(i).tankMass = newTankMasses(i);
-            end
+            [tankStates.tankMass] = disperse(newTankMasses);
         end
         
         function tankMDots = getTankMassFlowRatesDueToEngines(obj, presskPa)
-            tankStates = obj.getAllTankStates();
+            tankStates = obj.getAllActiveTankStates();
             tankMDots = zeros(size(tankStates));
             
             stgStates = obj.stageStates;
@@ -184,13 +199,24 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet
     end
     
     methods(Static)
-        function stateLogEntry = createStateLogEntryFromIntegratorOutputRow(t,y, eventInitStateLogEntry)
-            stateLogEntry = eventInitStateLogEntry.deepCopy();
+        function stateLogEntries = createStateLogEntryFromIntegratorOutputRow(t,y, eventInitStateLogEntry)
+            y = reshape(y,length(t), numel(y)/length(t));
             
-            stateLogEntry.time = t;
-            stateLogEntry.position = y(1:3)';
-            stateLogEntry.velocity = y(4:6)';
-            stateLogEntry.updateTankStatesWithNewMasses(y(7:end));
+            stateLogEntries = LaunchVehicleStateLogEntry.empty(length(t),0);
+            for(i=1:length(t))
+                stateLogEntry = eventInitStateLogEntry.deepCopy();
+
+                try
+                stateLogEntry.time = t(i);
+                stateLogEntry.position = y(i,1:3)';
+                stateLogEntry.velocity = y(i,4:6)';
+                stateLogEntry.updateTankStatesWithNewMasses(y(i,7:end));
+                catch
+                    a = 1;
+                end
+                
+                stateLogEntries(i) = stateLogEntry;
+            end
         end
     end
 end

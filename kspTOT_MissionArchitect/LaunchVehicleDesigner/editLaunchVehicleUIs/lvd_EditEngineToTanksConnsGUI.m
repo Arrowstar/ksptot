@@ -140,9 +140,9 @@ function addConnButton_Callback(hObject, eventdata, handles)
     if(useE2TConn)
         lvdData.launchVehicle.addEngineToTankConnection(e2TConn);
         
-        %TODO
         lvState = lvdData.initStateModel.lvState;
-        
+        connState = EngineToTankConnState(e2TConn);
+        lvState.addE2TConnState(connState);
         
         set(handles.connsListBox,'String',lvdData.launchVehicle.getEngineToTankConnectionsListBoxStr());
     end
@@ -161,6 +161,9 @@ function removeConnButton_Callback(hObject, eventdata, handles)
     tf = conn.isInUse();
     
     if(tf == false)
+        lvState = lvdData.initStateModel.lvState;
+        lvState.removeE2TConnStateForConn(conn);
+        
         lv.removeEngineToTankConnection(conn);
         
         listBoxStr = lvdData.launchVehicle.getEngineToTankConnectionsListBoxStr();

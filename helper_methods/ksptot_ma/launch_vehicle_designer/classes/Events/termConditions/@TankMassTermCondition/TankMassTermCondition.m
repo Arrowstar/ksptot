@@ -19,8 +19,12 @@ classdef TankMassTermCondition < AbstractEventTerminationCondition
         end
         
         function initTermCondition(obj, initialStateLogEntry)
-            tankStates = initialStateLogEntry.getAllTankStates();
-            obj.tankStateInd = find([tankStates.tank] == obj.tank);
+            obj.tankStateInd = NaN;
+            
+            tankStates = initialStateLogEntry.getAllActiveTankStates();
+            if(not(isempty(tankStates)))
+                obj.tankStateInd = find([tankStates.tank] == obj.tank);
+            end
         end
         
         function name = getName(obj)
@@ -76,7 +80,11 @@ classdef TankMassTermCondition < AbstractEventTerminationCondition
     
     methods(Static, Access=private)
         function [value,isterminal,direction] = eventTermCond(t,y, tankStateInd, targetMass)
-            value = y(6+tankStateInd) - targetMass;
+            if(not(isnan(tankStateInd)))
+                value = y(6+tankStateInd) - targetMass;
+            else
+                value = -Inf;
+            end
             isterminal = 1;
             direction = 0;
         end

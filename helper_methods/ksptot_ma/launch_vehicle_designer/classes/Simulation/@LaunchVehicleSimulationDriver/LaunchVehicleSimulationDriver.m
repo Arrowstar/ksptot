@@ -28,7 +28,7 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
             odefun = @(t,y) obj.odefun(t,y, obj, eventInitStateLogEntry);
             odeEventsFun = @(t,y) obj.odeEvents(t,y, obj, eventInitStateLogEntry, event.termCond.getEventTermCondFuncHandle());
             odeOutputFun = @(t,y,flag) obj.odeOutput(t,y,flag, now()*86400);
-            options = odeset('RelTol',1E-6, 'AbsTol',1E-6,  'NonNegative',tankStateInds, 'Events',odeEventsFun, 'NormControl','on', 'OutputFcn',odeOutputFun);
+            options = odeset('RelTol',1E-4, 'AbsTol',1E-6,  'NonNegative',tankStateInds, 'Events',odeEventsFun, 'NormControl','on', 'OutputFcn',odeOutputFun);
             
             [value,isterminal,~] = odeEventsFun(tspan(1), y0);
             if(any(abs(value)<=1E-6))
@@ -43,10 +43,8 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
             
             [t,y] = obj.integrator(odefun,tspan,y0,options);
             
-            newStateLogEntries = LaunchVehicleStateLogEntry.empty(length(t),0);
-            for(i=1:length(t)) %#ok<*NO4LP>
-                newStateLogEntries(i) = eventInitStateLogEntry.createStateLogEntryFromIntegratorOutputRow(t(i), y(i,:), eventInitStateLogEntry);
-            end
+%             newStateLogEntries = LaunchVehicleStateLogEntry.empty(length(t),0);
+            newStateLogEntries = eventInitStateLogEntry.createStateLogEntryFromIntegratorOutputRow(t, y, eventInitStateLogEntry);
         end
     end
    
@@ -132,7 +130,7 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
                 status = 1;
             end
 
-            odeprint(t,y,flag);
+%             odeprint(t,y,flag);
         end
     end
 end

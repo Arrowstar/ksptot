@@ -1,4 +1,4 @@
-classdef LaunchVehicleStageState < matlab.mixin.SetGet
+classdef LaunchVehicleStageState < matlab.mixin.SetGet & matlab.mixin.Copyable
     %LaunchVehicleStageState Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -27,6 +27,7 @@ classdef LaunchVehicleStageState < matlab.mixin.SetGet
             for(i=1:length(obj.engineStates))
                 if(engine == obj.engineStates(i).engine)
                     ind = i;
+                    break;
                 end
             end
             
@@ -52,6 +53,18 @@ classdef LaunchVehicleStageState < matlab.mixin.SetGet
             end
         end
         
+        function updateTankStateMassForTank(obj, tank)
+            ind = [];
+            for(i=1:length(obj.tankStates))
+                if(tank == obj.tankStates(i).tank)
+                    ind = i;
+                    break;
+                end
+            end
+            
+            obj.tankStates(ind).tankMass = tank.initialMass;
+        end
+        
         function dryMass = getStateDryMass(obj)
             dryMass = obj.stage.dryMass;
         end
@@ -65,15 +78,20 @@ classdef LaunchVehicleStageState < matlab.mixin.SetGet
         end
         
         function newStageState = deepCopy(obj)
-            newStageState = LaunchVehicleStageState(obj.stage);
+%             newStageState = LaunchVehicleStageState(obj.stage);
+            newStageState = obj.copy();
             newStageState.active = obj.active;
             
             for(i=1:length(obj.engineStates)) %#ok<*NO4LP>
-                newStageState.engineStates(end+1) = obj.engineStates(i).deepCopy();
+                newEngineState = obj.engineStates(i).deepCopy();
+                newEngineState.stageState = newStageState;
+                newStageState.engineStates(i) = newEngineState;
             end
             
             for(i=1:length(obj.tankStates))
-                newStageState.tankStates(end+1) = obj.tankStates(i).deepCopy();
+                newTankState = obj.tankStates(i).deepCopy();
+                newTankState.stageState = newStageState;
+                newStageState.tankStates(i) = newTankState;
             end
         end
     end

@@ -61,6 +61,18 @@ classdef RollPitchYawPolySteeringModel < AbstractAnglePolySteeringModel
             obj.yawModel.accelTerm = yaw;
         end
         
+        function [angle1Cont, angle2Cont, angle3Cont] = getContinuityTerms(obj)
+            angle1Cont = obj.rollContinuity;
+            angle2Cont = obj.pitchContinuity;
+            angle3Cont = obj.yawContinuity;
+        end
+        
+        function setContinuityTerms(obj, angle1Cont, angle2Cont, angle3Cont)
+            obj.rollContinuity = angle1Cont;
+            obj.pitchContinuity = angle2Cont;
+            obj.yawContinuity = angle3Cont;
+        end
+        
         function setConstsFromDcmAndContinuitySettings(obj, dcm, rVect, vVect)
             if(obj.rollContinuity || obj.pitchContinuity || obj.yawContinuity)
                 [rollAngle, pitchAngle, yawAngle] = computeEulerAnglesFromInertialBodyAxes(rVect, vVect, dcm(:,1), dcm(:,2), dcm(:,3));

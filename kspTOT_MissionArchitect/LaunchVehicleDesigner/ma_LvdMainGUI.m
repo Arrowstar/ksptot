@@ -22,7 +22,7 @@ function varargout = ma_LvdMainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_LvdMainGUI
 
-% Last Modified by GUIDE v2.5 21-Sep-2018 21:52:16
+% Last Modified by GUIDE v2.5 24-Sep-2018 17:46:50
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -102,12 +102,19 @@ function initializeOutputWindowText(handles, hOutputText)
 
     
 function runScript(handles, lvdData)
+    writeOutput = getappdata(handles.ma_LvdMainGUI,'write_to_output_func');
+    
     handles.scriptWorkingLbl.Visible = 'on';
     drawnow;
     
+    t = tic;
     lvdData.script.executeScript();
+    execTime = toc(t);
     
     handles.scriptWorkingLbl.Visible = 'off';
+    
+    writeOutput(sprintf('Executed mission script in %.3f seconds.',execTime),'append');
+    
     drawnow;
 
 % --- Outputs from this function are returned to the command line.
@@ -383,6 +390,14 @@ function copyUtAtStartOfSelEventMenu_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
     maData = getappdata(handles.ma_LvdMainGUI,'maData');
     lvdData = maData.lvdData;
+    
+    eventNum = handles.scriptListbox.Value;
+    stateLog = lvdData.stateLog.getMAFormattedStateLogMatrix();
+    
+    state = stateLog(stateLog(:,13)==eventNum,:);
+    state = state(1,:);
+    
+    clipboard('copy', fullAccNum2Str(state(1,1)));
 
 % --------------------------------------------------------------------
 function copyUtAtEndOfSelEventMenu_Callback(hObject, eventdata, handles)
@@ -391,6 +406,14 @@ function copyUtAtEndOfSelEventMenu_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
     maData = getappdata(handles.ma_LvdMainGUI,'maData');
     lvdData = maData.lvdData;
+    
+    eventNum = handles.scriptListbox.Value;
+    stateLog = lvdData.stateLog.getMAFormattedStateLogMatrix();
+    
+    state = stateLog(stateLog(:,13)==eventNum,:);
+    state = state(end,:);
+    
+    clipboard('copy', fullAccNum2Str(state(1,1)));
 
 % --------------------------------------------------------------------
 function copyDurationOfSelEventMenu_Callback(hObject, eventdata, handles)
@@ -399,6 +422,14 @@ function copyDurationOfSelEventMenu_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
     maData = getappdata(handles.ma_LvdMainGUI,'maData');
     lvdData = maData.lvdData;
+    
+    eventNum = handles.scriptListbox.Value;
+    stateLog = lvdData.stateLog.getMAFormattedStateLogMatrix();
+    
+    eventLog = stateLog(stateLog(:,13)==eventNum,:);
+    duration = max(eventLog(:,1)) - min(eventLog(:,1));
+    
+    clipboard('copy', fullAccNum2Str(duration));
 
 % --------------------------------------------------------------------
 function copyOrbitAfterSelectedEventMenu_Callback(hObject, eventdata, handles)
@@ -406,4 +437,38 @@ function copyOrbitAfterSelectedEventMenu_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
     maData = getappdata(handles.ma_LvdMainGUI,'maData');
+    celBodyData = getappdata(handles.ma_LvdMainGUI,'celBodyData');
     lvdData = maData.lvdData;
+    
+    eventNum = handles.scriptListbox.Value;
+    stateLog = lvdData.stateLog.getMAFormattedStateLogMatrix();    
+    
+    state = stateLog(stateLog(:,13)==eventNum,:);
+    state = state(end,:);
+    
+    bodyID = state(8);
+    
+    bodyInfo = getBodyInfoByNumber(bodyID, celBodyData);
+    gmu = bodyInfo.gm;
+    utSec = state(1);
+    rVect = state(2:4)';
+    vVect = state(5:7)';
+ 
+    [sma, ecc, inc, raan, arg, tru] = getKeplerFromState(rVect,vVect,gmu);
+    clipboardData = [utSec, sma, ecc, inc, raan, arg, tru, bodyID];
+    set(handles.copyOrbitAfterSelectedEventMenu,'UserData',clipboardData);
+    copyOrbitToClipboardFromStateLog([],[],handles.copyOrbitAfterSelectedEventMenu);
+
+
+% --------------------------------------------------------------------
+function clearOutputMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to clearOutputMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    initializeOutputWindowText(handles, handles.outputText);
+
+% --------------------------------------------------------------------
+function outputContextMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to outputContextMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)

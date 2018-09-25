@@ -61,6 +61,18 @@ classdef AeroAnglesPolySteeringModel < AbstractAnglePolySteeringModel
             obj.slipModel.accelTerm = slip;
         end
         
+        function [angle1Cont, angle2Cont, angle3Cont] = getContinuityTerms(obj)
+            angle1Cont = obj.bankContinuity;
+            angle2Cont = obj.aoAContinuity;
+            angle3Cont = obj.slipContinuity;
+        end
+        
+        function setContinuityTerms(obj, angle1Cont, angle2Cont, angle3Cont)
+            obj.bankContinuity = angle1Cont;
+            obj.aoAContinuity = angle2Cont;
+            obj.slipContinuity = angle3Cont;
+        end
+        
         function setConstsFromDcmAndContinuitySettings(obj, dcm, rVect, vVect)
             if(obj.bankContinuity || obj.aoAContinuity || obj.slipContinuity)
                 [bankAng,angOfAttack,angOfSideslip] = computeAeroAnglesFromBodyAxes(rVect, vVect, dcm(:,1), dcm(:,2), dcm(:,3));
