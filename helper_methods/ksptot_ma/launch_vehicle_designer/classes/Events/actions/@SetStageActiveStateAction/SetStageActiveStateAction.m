@@ -53,6 +53,10 @@ classdef SetStageActiveStateAction < AbstractEventAction
         function tf = usesEngineToTankConn(obj, engineToTank)
             tf = false;
         end
+        
+        function tf = hasActiveOptimVar(obj)
+            tf = false;
+        end
     end
     
     methods(Static)

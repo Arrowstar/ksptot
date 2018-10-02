@@ -49,6 +49,15 @@ classdef SetSteeringModelAction < AbstractEventAction
         function tf = usesEngineToTankConn(obj, engineToTank)
             tf = false;
         end
+        
+        function tf = hasActiveOptimVar(obj)
+            tf = false;
+            
+            optVar = obj.steeringModel.getExistingOptVar();
+            if(not(isempty(optVar)))
+                tf = any(optVar.getUseTfForVariable());
+            end
+        end
     end
     
     methods(Static)

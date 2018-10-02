@@ -52,7 +52,7 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
                 optStr = '';
             end
             
-            listboxStr = sprintf('%s%i - %s', optStr, obj.getEventNum(), obj.name);
+            listboxStr = sprintf('%i - %s%s', obj.getEventNum(), optStr, obj.name);
         end
         
         function [aListboxStr, actions] = getActionsListboxStr(obj)
@@ -131,6 +131,10 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
             tcOptVar = obj.termCond.getExistingOptVar();
             if(not(isempty(tcOptVar)))
                 tf = any(tcOptVar.getUseTfForVariable());
+            end
+            
+            for(i=1:length(obj.actions))
+                tf = tf || obj.actions(i).hasActiveOptimVar();
             end
         end
     end

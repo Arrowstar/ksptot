@@ -74,9 +74,9 @@ function populateGUI(handles, action)
     throttleModel = action.throttleModel;
     
     polyModel = throttleModel.throttleModel;
-    set(handles.throttleConstTermText,'String',fullAccNum2Str(polyModel.constTerm));
-    set(handles.throttleLinTermText,'String',fullAccNum2Str(polyModel.linearTerm));
-    set(handles.throttleAccelTermText,'String',fullAccNum2Str(polyModel.accelTerm));
+    set(handles.throttleConstTermText,'String',fullAccNum2Str(100*polyModel.constTerm));
+    set(handles.throttleLinTermText,'String',fullAccNum2Str(100*polyModel.linearTerm));
+    set(handles.throttleAccelTermText,'String',fullAccNum2Str(100*polyModel.accelTerm));
     
     optVar = throttleModel.getExistingOptVar();
     if(isempty(optVar))
@@ -99,14 +99,14 @@ function populateGUI(handles, action)
     throttleAccelOptCheckbox_Callback(handles.throttleAccelOptCheckbox, [], handles);
     
     %LB
-    set(handles.throttleConstLbText,'String',fullAccNum2Str(lb(1)));
-    set(handles.throttleLinLbText,'String',fullAccNum2Str(lb(2)));
-    set(handles.throttleAccelLbText,'String',fullAccNum2Str(lb(3)));
+    set(handles.throttleConstLbText,'String',fullAccNum2Str(100*lb(1)));
+    set(handles.throttleLinLbText,'String',fullAccNum2Str(100*lb(2)));
+    set(handles.throttleAccelLbText,'String',fullAccNum2Str(100*lb(3)));
     
     %UB
-    set(handles.throttleConstUbText,'String',fullAccNum2Str(ub(1)));
-    set(handles.throttleLinUbText,'String',fullAccNum2Str(ub(2)));
-    set(handles.throttleAccelUbText,'String',fullAccNum2Str(ub(3)));
+    set(handles.throttleConstUbText,'String',fullAccNum2Str(100*ub(1)));
+    set(handles.throttleLinUbText,'String',fullAccNum2Str(100*ub(2)));
+    set(handles.throttleAccelUbText,'String',fullAccNum2Str(100*ub(3)));
     
     
 % --- Outputs from this function are returned to the command line.
@@ -132,9 +132,9 @@ function varargout = lvd_EditActionSetThrottleModelGUI_OutputFcn(hObject, eventd
         end
         
         %Set Throttle Terms
-        throttleConst = str2double(get(handles.throttleConstTermText,'String'));
-        throttleLinear = str2double(get(handles.throttleLinTermText,'String'));
-        throttleAccel = str2double(get(handles.throttleAccelTermText,'String'));
+        throttleConst = str2double(get(handles.throttleConstTermText,'String'))/100;
+        throttleLinear = str2double(get(handles.throttleLinTermText,'String'))/100;
+        throttleAccel = str2double(get(handles.throttleAccelTermText,'String'))/100;
         
         throttleModel.setPolyTerms(throttleConst, throttleLinear, throttleAccel);
         
@@ -150,13 +150,13 @@ function varargout = lvd_EditActionSetThrottleModelGUI_OutputFcn(hObject, eventd
         optVar.setUseTfForVariable(useTf);
         
         %UB
-        lb(1) = str2double(get(handles.throttleConstLbText,'String'));
-        lb(2) = str2double(get(handles.throttleLinLbText,'String'));
-        lb(3) = str2double(get(handles.throttleAccelLbText,'String'));
+        lb(1) = str2double(get(handles.throttleConstLbText,'String'))/100;
+        lb(2) = str2double(get(handles.throttleLinLbText,'String'))/100;
+        lb(3) = str2double(get(handles.throttleAccelLbText,'String'))/100;
         
-        ub(1) = str2double(get(handles.throttleConstUbText,'String'));
-        ub(2) = str2double(get(handles.throttleLinUbText,'String'));
-        ub(3) = str2double(get(handles.throttleAccelUbText,'String'));
+        ub(1) = str2double(get(handles.throttleConstUbText,'String'))/100;
+        ub(2) = str2double(get(handles.throttleLinUbText,'String'))/100;
+        ub(3) = str2double(get(handles.throttleAccelUbText,'String'))/100;
         
         optVar.setUseTfForVariable(true(size(lb))); %need this to get the full lb/set in there
         optVar.setBndsForVariable(lb, ub);
@@ -177,7 +177,7 @@ function errMsg = validateInputs(handles)
     enteredStr = get(handles.throttleConstTermText,'String');
     numberName = sprintf('Throttle Constant Term');
     lb = 0;
-    ub = 1;
+    ub = 100;
     isInt = false;
     errMsg = validateNumber(angle1Const, numberName, lb, ub, isInt, errMsg, enteredStr);
     
@@ -204,7 +204,7 @@ function errMsg = validateInputs(handles)
     enteredStr = get(handles.throttleConstLbText,'String');
     numberName = sprintf('Throttle Constant Term Lower Bound');
     lb = 0;
-    ub = 1;
+    ub = 100;
     isInt = false;
     errMsg = validateNumber(angle1ConstLB, numberName, lb, ub, isInt, errMsg, enteredStr);
     

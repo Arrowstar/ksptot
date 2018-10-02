@@ -14,5 +14,9 @@ classdef(Abstract) AbstractThrottleModel < matlab.mixin.SetGet
         setPolyTerms(obj, const, linear, accel)
         
         addActionTf = openEditThrottleModelUI(obj, lv)
+        
+        optVar = getNewOptVar(obj)
+        
+        optVar = getExistingOptVar(obj)
     end
 end

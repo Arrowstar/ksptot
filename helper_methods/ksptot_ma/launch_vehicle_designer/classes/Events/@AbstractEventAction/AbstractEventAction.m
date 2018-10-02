@@ -20,6 +20,8 @@ classdef(Abstract) AbstractEventAction < matlab.mixin.SetGet & matlab.mixin.Hete
         tf = usesTank(obj, tank)
         
         tf = usesEngineToTankConn(obj, engineToTank)
+        
+        tf = hasActiveOptimVar(obj)
     end
     
     methods(Sealed)
