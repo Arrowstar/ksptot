@@ -159,7 +159,7 @@ function varargout = lvd_editEvtTermCond_OutputFcn(hObject, eventdata, handles)
         paramValue = str2double(get(handles.numParamText,'String'));
         
         termCond = event.termCond;
-        params = termCond.getTermCondUiStruct();
+        params = getParamsForSelectedTermCondType(handles);
 
         optVar = termCond.getExistingOptVar();
         if(isempty(optVar))
@@ -183,13 +183,13 @@ function varargout = lvd_editEvtTermCond_OutputFcn(hObject, eventdata, handles)
         end
         
         if(not(isempty(tanks)))
-            tank = stages(get(handles.refTankCombo,'Value'));
+            tank = tanks(get(handles.refTankCombo,'Value'));
         else
             tank = tanks;
         end
         
         if(not(isempty(engines)))
-            engine = stages(get(handles.refEngineCombo,'Value'));
+            engine = engines(get(handles.refEngineCombo,'Value'));
         else
             engine = engines;
         end
@@ -268,8 +268,37 @@ function termCondTypeCombo_Callback(hObject, eventdata, handles)
 
 % Hints: contents = cellstr(get(hObject,'String')) returns termCondTypeCombo contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from termCondTypeCombo
+    params = getParamsForSelectedTermCondType(handles);
+    
+    set(handles.numParamLabel,'String',params.paramName);
+    set(handles.numParamUnitLabel,'String',params.paramUnit);
+    
+    set(handles.numParamLabel,'Enable',params.useParam);
+    set(handles.refStageCombo,'Enable',params.useStages);
+    set(handles.refTankCombo,'Enable',params.useTanks);
+    set(handles.refEngineCombo,'Enable',params.useEngines);
 
+    
+function params = getParamsForSelectedTermCondType(handles)
+	event = getappdata(handles.lvd_editEvtTermCond,'event');
+    lv = event.script.lvdData.launchVehicle;
+        
+    [~,stages] = lv.getStagesListBoxStr();
+    [~,tanks] = lv.getTanksListBoxStr();
+    [~,engines] = lv.getEnginesListBoxStr();
 
+    stage = stages(1);
+    tank = tanks(1);
+    engine = engines(1);
+
+    [m,~] = enumeration('TerminationConditionEnum');
+    contents = cellstr(get(handles.termCondTypeCombo,'String'));
+    termCondType = contents{get(handles.termCondTypeCombo,'Value')};
+    ind = strcmpi({m.nameStr},termCondType);
+    termCond = feval(sprintf('%s.getTermCondForParams',m(ind).classNameStr), 0, stage, tank, engine);
+    
+    params = termCond.getTermCondUiStruct();
+    
 % --- Executes during object creation, after setting all properties.
 function termCondTypeCombo_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to termCondTypeCombo (see GCBO)

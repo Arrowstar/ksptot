@@ -6,6 +6,7 @@ classdef TerminationConditionEnum < matlab.mixin.SetGet
         TankMass('TankMass','TankMassTermCondition')
         EventDuration('Event Duration','EventDurationTermCondition');
         AngleOfAttack('Angle of Attack','AngleOfAttackTermCondition');
+        TrueAnomaly('True Anomaly','TrueAnomalyTermCondition')
     end
     
     properties
