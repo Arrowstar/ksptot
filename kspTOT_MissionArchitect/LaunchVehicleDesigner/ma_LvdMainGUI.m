@@ -67,6 +67,8 @@ function ma_LvdMainGUI_OpeningFcn(hObject, eventdata, handles, varargin)
         lvdData = LvdData.getDefaultLvdData(celBodyData);
         maData.lvdData = lvdData;
         setappdata(handles.ma_LvdMainGUI,'maData',maData);
+    else
+        lvdData = maData.lvdData;
     end
 
     output_text_max_line_length = length(getMA_HR());
@@ -119,13 +121,13 @@ function runScript(handles, lvdData)
 
 % --- Outputs from this function are returned to the command line.
 function varargout = ma_LvdMainGUI_OutputFcn(hObject, eventdata, handles) 
-% varargout  cell array for returning output args (see VARARGOUT);
-% hObject    handle to figure
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
+    % varargout  cell array for returning output args (see VARARGOUT);
+    % hObject    handle to figure
+    % eventdata  reserved - to be defined in a future version of MATLAB
+    % handles    structure with handles and user data (see GUIDATA)
 
-% Get default command line output from handles structure
-varargout{1} = handles.output;
+    % Get default command line output from handles structure
+    varargout{1} = handles.output;
 
 
 % --- Executes on selection change in scriptListbox.
@@ -330,8 +332,8 @@ function editLaunchVehicleMenu_Callback(hObject, eventdata, handles)
     
     lvd_editLaunchVehicle(lvdData);
     
-%     runScript(handles, lvdData);
-%     lvd_processData(handles);
+    runScript(handles, lvdData);
+    lvd_processData(handles);
 
 
 % --------------------------------------------------------------------

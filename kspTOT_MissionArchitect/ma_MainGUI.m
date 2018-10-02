@@ -205,6 +205,8 @@ function maData = generateCleanMissionPlan(handles)
     maData.celBodyData = celBodyData;
     
     maData.ksptotVer = getKSPTOTVersionNumStr();
+    
+    maData.lvdData = LvdData.getDefaultLvdData(celBodyData);
 
 
 % --- Outputs from this function are returned to the command line.
@@ -2557,4 +2559,19 @@ function launchVehicleDesignerMenu_Callback(hObject, eventdata, handles)
     maData = getappdata(handles.ma_MainGUI,'ma_data');
     celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
 
-    ma_LvdMainGUI(maData,celBodyData,handles.ma_MainGUI);
+    lvd_hFig = findall(0,'Tag','ma_LvdMainGUI');
+    if(~isempty(lvd_hFig))
+        figure(lvd_hFig);
+    else
+        hMsg = helpdlg('Starting Launch Vehicle Designer.  Please wait...','Launch Vehicle Designer');
+        hFig = ma_LvdMainGUI(maData,celBodyData,handles.ma_MainGUI);
+
+        openToolWindows = getappdata(handles.ksptotMainGUI,'openToolWindows');
+        openToolWindows = cleanOpenToolWindowsArr(openToolWindows);
+        openToolWindows(end+1) = hFig;
+        setappdata(handles.ksptotMainGUI,'openToolWindows',openToolWindows);
+        
+        if(isvalid(hMsg))
+            close(hMsg);
+        end
+    end

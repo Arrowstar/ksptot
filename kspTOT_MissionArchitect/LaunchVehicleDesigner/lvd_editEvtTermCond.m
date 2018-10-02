@@ -161,6 +161,13 @@ function varargout = lvd_editEvtTermCond_OutputFcn(hObject, eventdata, handles)
         termCond = event.termCond;
         params = termCond.getTermCondUiStruct();
 
+        optVar = termCond.getExistingOptVar();
+        if(isempty(optVar))
+            optVar = termCond.getNewOptVar();
+        else
+            lv.lvdData.optimizer.vars.removeVariable(optVar);%need to remove existing var if it exists
+        end
+        
         if(strcmpi(params.paramUnit,'deg'))
             paramValue = deg2rad(paramValue);
         end
@@ -192,14 +199,7 @@ function varargout = lvd_editEvtTermCond_OutputFcn(hObject, eventdata, handles)
         termCondType = contents{get(handles.termCondTypeCombo,'Value')};
         ind = strcmpi({m.nameStr},termCondType);
         termCond = feval(sprintf('%s.getTermCondForParams',m(ind).classNameStr), paramValue, stage, tank, engine);
-        
-        optVar = termCond.getExistingOptVar();
-        if(isempty(optVar))
-            optVar = termCond.getNewOptVar();
-        else
-            lv.lvdData.optimizer.vars.removeVariable(optVar);%need to remove existing var if it exists
-        end
-        
+                
         lb = str2double(get(handles.paramLbText,'String'));
         ub = str2double(get(handles.paramUbText,'String'));
         
@@ -216,6 +216,7 @@ function varargout = lvd_editEvtTermCond_OutputFcn(hObject, eventdata, handles)
         
         event.termCond = termCond;
         lv.lvdData.optimizer.vars.addVariable(optVar);
+        termCond.optVar = optVar;
         
         close(handles.lvd_editEvtTermCond);
     end

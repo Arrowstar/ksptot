@@ -1,6 +1,9 @@
 function lvd_executeOptimProblem(celBodyData, writeOutput, problem, recorder)
     
     try
+        lvdData = problem.lvdData;
+        initX = lvdData.optimizer.vars.getTotalXVector();
+        
         writeOutput('Beginning mission script optimization...','append');
         tt = tic;
 %         profile on;
@@ -49,8 +52,11 @@ function lvd_executeOptimProblem(celBodyData, writeOutput, problem, recorder)
         %%%%%%%
         % Update existing script, reprocess
         %%%%%%%
-
+        
+        lvdData.optimizer.vars.updateObjsWithVarValues(x);
     else
         writeOutput(sprintf('Optimization results discarded: reverting to previous script.'),'append');
+        
+        lvdData.optimizer.vars.updateObjsWithVarValues(initX);
     end 
 end

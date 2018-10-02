@@ -45,7 +45,14 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
         end
         
         function listboxStr = getListboxStr(obj)
-            listboxStr = sprintf('%i - %s', obj.getEventNum(), obj.name);
+            hasOpt = obj.hasActiveOptVars();
+            if(hasOpt)
+                optStr = '*';
+            else
+                optStr = '';
+            end
+            
+            listboxStr = sprintf('%s%i - %s', optStr, obj.getEventNum(), obj.name);
         end
         
         function [aListboxStr, actions] = getActionsListboxStr(obj)
@@ -113,6 +120,17 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
             
             for(i=1:length(obj.actions))
                 tf = tf || obj.actions(i).usesEngineToTankConn(engineToTank);
+            end
+        end
+        
+        %TODO Finish this.  Opt Vars have a getUseTfForVariable() method
+        %that would be good for this
+        function tf = hasActiveOptVars(obj)
+            tf = false;
+            
+            tcOptVar = obj.termCond.getExistingOptVar();
+            if(not(isempty(tcOptVar)))
+                tf = any(tcOptVar.getUseTfForVariable());
             end
         end
     end

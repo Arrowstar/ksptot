@@ -28,8 +28,11 @@ classdef LvdOptimization < matlab.mixin.SetGet
             nonlcon = @(x) obj.constraints.evalConstraints(x, maData);
             
             optimAlg = maData.settings.optimAlg;
-            options = optimoptions('fmincon','Algorithm','sqp', 'Diagnostics','on', 'Display','iter-detailed','TolFun',1E-6,'TolX',1E-6,'TolCon',1E-6,'ScaleProblem','none','MaxIter',500,'UseParallel',false,'OutputFcn',[],'InitBarrierParam',1.0,'InitTrustRegionRadius',0.1,'HonorBounds',true,'MaxFunctionEvaluations',3000);
+            usePara = maData.settings.parallelScriptOptim;
+            options = optimoptions('fmincon','Algorithm','sqp', 'Diagnostics','on', 'Display','iter-detailed','TolFun',1E-6,'TolX',1E-6,'TolCon',1E-6,'ScaleProblem','none','MaxIter',500,'UseParallel',usePara,'OutputFcn',[],'InitBarrierParam',1.0,'InitTrustRegionRadius',0.1,'HonorBounds',true,'MaxFunctionEvaluations',3000);
             problem = createOptimProblem('fmincon', 'objective',objFuncWrapper, 'x0', x0All, 'lb', lbAll, 'ub', ubAll, 'nonlcon', nonlcon, 'options', options);
+            
+            problem.lvdData = obj.lvdData; %need to get lvdData in somehow
             
             %TODO           
             ma_ObserveOptimGUI(hMaMainGUI, problem, true, writeOutput);
