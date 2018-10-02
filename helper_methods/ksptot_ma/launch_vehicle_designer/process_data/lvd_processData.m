@@ -24,6 +24,13 @@ function lvd_processData(handles)
     %%%%%%%%%%    
     evtListboxStr = lvdData.script.getListboxStr();
     set(handles.scriptListbox,'String',evtListboxStr);
+    
+    scriptListVal = get(handles.scriptListbox,'Value');
+    if(scriptListVal <= 0)
+        set(handles.scriptListbox,'Value',1);
+    elseif(scriptListVal > length(get(handles.scriptListbox,'String')))
+        set(handles.scriptListbox,'Value',length(get(handles.scriptListbox,'String')));
+    end
     drawnow;
     
     %%%%%%%%%%

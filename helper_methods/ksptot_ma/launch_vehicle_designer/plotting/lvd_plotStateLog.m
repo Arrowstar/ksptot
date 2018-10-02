@@ -7,6 +7,10 @@ function [hCBodySurf, childrenHGs] = lvd_plotStateLog(stateLog, handles, showSoI
     if(~exist('hFig','var'))
         hFig = gcf;
     end
+    
+    if(isempty(stateLog))
+        return;
+    end
         
     chunkedStateLog = breakStateLogIntoSoIChunks(stateLog);
     if(orbitNumToPlot > size(chunkedStateLog,1))

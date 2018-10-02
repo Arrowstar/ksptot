@@ -68,6 +68,11 @@ function lvd_EditEnginesGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 
 function populateGUI(handles, lvdData)
     set(handles.enginesListBox,'String',lvdData.launchVehicle.getEnginesListBoxStr());
+    
+    numEngines = length(get(handles.enginesListBox,'String'));
+    if(numEngines <= 1)
+        handles.removeEngineButton.Enable = 'off';
+    end
 
     
 % --- Outputs from this function are returned to the command line.
@@ -148,6 +153,8 @@ function addEngineButton_Callback(hObject, eventdata, handles)
         stageState.addEngineState(newEngineState);
         
         set(handles.enginesListBox,'String',lvdData.launchVehicle.getEnginesListBoxStr());
+        
+        handles.removeEngineButton.Enable = 'on';
     end
     
 % --- Executes on button press in removeEngineButton.
@@ -182,6 +189,10 @@ function removeEngineButton_Callback(hObject, eventdata, handles)
         numEngines = length(listBoxStr);
         if(selEngine > numEngines)
             set(handles.enginesListBox,'Value',numEngines);
+        end
+        
+        if(numEngines <= 1)
+            handles.removeEngineButton.Enable = 'off';
         end
     else
         warndlg(sprintf('Could not delete the engine "%s" because it is in use as part of an event termination condition, event action, objective function, or constraint.  Remove the engine dependencies before attempting to delete the engine.', engine.name),'Cannot Delete Engine','modal');

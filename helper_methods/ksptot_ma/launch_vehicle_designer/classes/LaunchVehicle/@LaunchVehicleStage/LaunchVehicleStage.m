@@ -36,6 +36,8 @@ classdef LaunchVehicleStage < matlab.mixin.SetGet
         
         function removeEngine(obj, engine)
             obj.engines([obj.engines] == engine) = [];
+            
+            obj.launchVehicle.removeAllEngineToTanksConnsWithEngine(engine);
         end
         
         function addTank(obj, newTank)
@@ -44,6 +46,8 @@ classdef LaunchVehicleStage < matlab.mixin.SetGet
         
         function removeTank(obj, tank)
             obj.tanks([obj.tanks] == tank) = [];
+            
+            obj.launchVehicle.removeAllEngineToTanksConnsWithTank(tank);
         end
         
         function stageSummStr = getStageSummaryStr(obj)

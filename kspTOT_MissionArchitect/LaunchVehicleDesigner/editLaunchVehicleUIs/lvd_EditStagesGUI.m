@@ -70,6 +70,11 @@ function populateGUI(handles, lvdData)
     set(handles.moveStageUpButton,'String','<html>&uarr;');
     set(handles.moveStageDownButton,'String','<html>&darr;');
     set(handles.stagesListbox,'String',lvdData.launchVehicle.getStagesListBoxStr());
+    
+    numStages = length(get(handles.stagesListbox,'String'));
+    if(numStages <= 1)
+        handles.removeStageButton.Enable = 'off';
+    end
 
 % --- Outputs from this function are returned to the command line.
 function varargout = lvd_EditStagesGUI_OutputFcn(hObject, eventdata, handles) 
@@ -143,6 +148,8 @@ function addStageButton_Callback(hObject, eventdata, handles)
         lvdData.initStateModel.addStageState(stageState);
         
         set(handles.stagesListbox,'String',lvdData.launchVehicle.getStagesListBoxStr());
+        
+        handles.removeStageButton.Enable = 'on';
     end
     
 % --- Executes on button press in removeStageButton.
@@ -159,7 +166,7 @@ function removeStageButton_Callback(hObject, eventdata, handles)
     tf = stage.isStageAndChildrenInUse();
     
     if(tf == false)
-        lvdData.initStateModel.removeStageStateForStage(stage);
+        lvdData.initStateModel.removeStageStateForStage(stage);        
         lv.removeStage(stage);
 
         set(handles.stagesListbox,'String',lvdData.launchVehicle.getStagesListBoxStr());
@@ -167,6 +174,10 @@ function removeStageButton_Callback(hObject, eventdata, handles)
         numStages = lv.getNumStages();
         if(selStage > numStages)
             set(handles.stagesListbox,'Value',numStages);
+        end
+        
+        if(numStages <= 1)
+            handles.removeStageButton.Enable = 'off';
         end
     else
         warndlg(sprintf('Could not delete the stage "%s" because it (or an associated engine or tank) is in use as part of an event termination condition, event action, objective function, or constraint.  Remove all tanks and engines from the stage and remove the stage dependencies before attempting to delete the stage.', stage.name),'Cannot Delete Stage','modal');

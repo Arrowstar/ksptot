@@ -23,10 +23,14 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
         end
         
         function addEventAtInd(obj, newEvt, ind)
-            if(ind == length(obj.evts))
-                obj.evts(end+1) = newEvt;
+            if(not(isempty(obj.evts)))
+                if(ind == length(obj.evts))
+                    obj.evts(end+1) = newEvt;
+                else
+                    obj.evts = [obj.evts(1:ind), newEvt, obj.evts(ind+1:end)];
+                end
             else
-                obj.evts = [obj.evts(1:ind), newEvt, obj.evts(ind+1:end)];
+                obj.evts(end+1) = newEvt;
             end
         end
         
@@ -118,15 +122,19 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
             
             stateLog.clearStateLog();
             
-            for(i=1:length(obj.evts)) %#ok<*NO4LP>
-                obj.evts(i).initEvent(initStateLogEntry);
-                initStateLogEntry.event = obj.evts(i);
-                
-                newStateLogEntries = obj.evts(i).executeEvent(initStateLogEntry, obj.simDriver);
-                stateLog.appendStateLogEntries(newStateLogEntries);
-                
-                initStateLogEntry = newStateLogEntries(end).deepCopy();
-                obj.evts(i).cleanupEvent(initStateLogEntry);
+            if(~isempty(obj.evts))
+                for(i=1:length(obj.evts)) %#ok<*NO4LP>
+                    obj.evts(i).initEvent(initStateLogEntry);
+                    initStateLogEntry.event = obj.evts(i);
+
+                    newStateLogEntries = obj.evts(i).executeEvent(initStateLogEntry, obj.simDriver);
+                    stateLog.appendStateLogEntries(newStateLogEntries);
+
+                    initStateLogEntry = newStateLogEntries(end).deepCopy();
+                    obj.evts(i).cleanupEvent(initStateLogEntry);
+                end
+            else
+                stateLog.appendStateLogEntries(initStateLogEntry.deepCopy());
             end
             a = 1;
         end

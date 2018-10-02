@@ -60,6 +60,12 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet
         function stateLog = getMAFormattedStateLogMatrix(obj)
             stateLog = zeros(1,13);
             
+            if(isempty(obj.event))
+                eventNum = 1;
+            else
+                eventNum = obj.event.getEventNum();
+            end
+            
             stateLog(1) = obj.time;
             stateLog(2:4) = obj.position';
             stateLog(5:7) = obj.velocity';
@@ -68,7 +74,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet
             stateLog(10) = obj.getTotalVehiclePropMass();
             stateLog(11) = 0;
             stateLog(12) = 0;
-            stateLog(13) = obj.event.getEventNum();
+            stateLog(13) = eventNum;
         end
         
         function tankStates = getAllTankStates(obj)

@@ -68,6 +68,11 @@ function lvd_EditTanksGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 
 function populateGUI(handles, lvdData)
     set(handles.tanksListBox,'String',lvdData.launchVehicle.getTanksListBoxStr());
+    
+    numTanks = length(get(handles.tanksListBox,'String'));
+    if(numTanks <= 1)
+        handles.removeTankButton.Enable = 'off';
+    end
 
     
 % --- Outputs from this function are returned to the command line.
@@ -156,6 +161,8 @@ function addTankButton_Callback(hObject, eventdata, handles)
         stageState.addTankState(newEngineState);
         
         set(handles.tanksListBox,'String',lvdData.launchVehicle.getTanksListBoxStr());
+        
+        handles.removeTankButton.Enable = 'on';
     end
     
 % --- Executes on button press in removeTankButton.
@@ -190,6 +197,10 @@ function removeTankButton_Callback(hObject, eventdata, handles)
         numTanks = length(listBoxStr);
         if(selTank > numTanks)
             set(handles.tanksListBox,'Value',numTanks);
+        end
+        
+        if(numTanks <= 1)
+            handles.removeTankButton.Enable = 'off';
         end
     else
         warndlg(sprintf('Could not delete the tank "%s" because it is in use as part of an event termination condition, event action, objective function, or constraint.  Remove the tank dependencies before attempting to delete the engine.', tank.name),'Cannot Delete Tank','modal');

@@ -20,6 +20,14 @@ classdef LaunchVehicle < matlab.mixin.SetGet
         
         function removeStage(obj, stage)
             obj.stages([obj.stages] == stage) = [];
+            
+            for(i=1:length(stage.tanks))
+                obj.removeAllEngineToTanksConnsWithTank(stage.tanks(i));
+            end
+            
+            for(i=1:length(stage.engines))
+                obj.removeAllEngineToTanksConnsWithEngine(stage.engines(i));
+            end
         end
         
         function stage = getStageForInd(obj, ind)
