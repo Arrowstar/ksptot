@@ -3,6 +3,7 @@ classdef TerminationConditionEnum < matlab.mixin.SetGet
     %   Detailed explanation goes here
     
     enumeration
+        Altitude('Altitude','AltitudeTermCondition')
         TankMass('TankMass','TankMassTermCondition')
         EventDuration('Event Duration','EventDurationTermCondition');
         AngleOfAttack('Angle of Attack','AngleOfAttackTermCondition');
