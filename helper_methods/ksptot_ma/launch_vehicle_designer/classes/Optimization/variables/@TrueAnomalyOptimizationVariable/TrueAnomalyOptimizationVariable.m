@@ -8,7 +8,7 @@ classdef TrueAnomalyOptimizationVariable < AbstractOptimizationVariable
         lb(1,1) double = 0;
         ub(1,1) double = 0;
         
-        useTf(1,1) = true;
+        useTf(1,1) = false;
     end
     
     methods

@@ -1,36 +1,36 @@
-classdef EventDurationOptimizationVariable < AbstractOptimizationVariable
-    %EventDurationOptimizationVariable Summary of this class goes here
+classdef StageTankInitMassOptimVar < AbstractOptimizationVariable
+    %StageTankInitMassOptimVar Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
-        varObj(1,1) EventDurationTermCondition = EventDurationTermCondition(0);
+        tank(1,:) LaunchVehicleTank
         
-        lb(1,1) double = 0;
-        ub(1,1) double = 0;
+        lwrBnd(1,1) double = 0;
+        uprBnd(1,1) double = 0;
         
         useTf(1,1) = false;
     end
     
     methods
-        function obj = EventDurationOptimizationVariable(varObj)
-            obj.varObj = varObj;
-            obj.varObj.optVar = obj;
+        function obj = StageTankInitMassOptimVar(tank)
+            obj.tank = tank;
+            obj.tank.optVar = obj;
             
             obj.id = rand();
         end
         
         function x = getXsForVariable(obj)
-            x = obj.varObj.duration;
+            x = obj.tank.initialMass;
         end
         
         function [lb, ub] = getBndsForVariable(obj)
-            lb = obj.lb;
-            ub = obj.ub;
+            lb = obj.lwrBnd;
+            ub = obj.uprBnd;
         end
         
         function setBndsForVariable(obj, lb, ub)
-            obj.lb = lb;
-            obj.ub = ub;
+            obj.lwrBnd = lb;
+            obj.uprBnd = ub;
         end
         
         function useTf = getUseTfForVariable(obj)
@@ -42,7 +42,11 @@ classdef EventDurationOptimizationVariable < AbstractOptimizationVariable
         end
         
         function updateObjWithVarValue(obj, x)
-            obj.varObj.duration = x;
+            if(any(isnan(x)))
+                a = 1;
+            end
+            
+            obj.tank.initialMass = x;
         end
     end
 end

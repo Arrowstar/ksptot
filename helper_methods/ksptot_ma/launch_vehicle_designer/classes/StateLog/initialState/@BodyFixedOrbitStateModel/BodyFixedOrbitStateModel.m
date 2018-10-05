@@ -10,6 +10,8 @@ classdef BodyFixedOrbitStateModel < AbstractOrbitStateModel
         vVectECEF_x(1,1) double
         vVectECEF_y(1,1) double
         vVectECEF_z(1,1) double
+        
+        optVar BodyFixedOrbitVariable
     end
     
     methods
@@ -38,10 +40,16 @@ classdef BodyFixedOrbitStateModel < AbstractOrbitStateModel
             defaultOrbitState = BodyFixedOrbitStateModel(0, 0, 0, 0, 0, 0);
         end
         
-        function errMsg = validateInputOrbit(errMsg, hLat, hLong, hAlt, hBfVx, hBfVy, hBfVz, bodyInfo)
+        function errMsg = validateInputOrbit(errMsg, hLat, hLong, hAlt, hBfVx, hBfVy, hBfVz, bodyInfo, bndStr)
+            if(isempty(bndStr))
+                bndStr = '';
+            else
+                bndStr = sprintf(' (%s Bound)', bndStr);
+            end
+            
             lat = str2double(get(hLat,'String'));
             enteredStr = get(hLat,'String');
-            numberName = 'Latitude';
+            numberName = ['Latitude', bndStr];
             lb = -90;
             ub = 90;
             isInt = false;
@@ -49,7 +57,7 @@ classdef BodyFixedOrbitStateModel < AbstractOrbitStateModel
             
             long = str2double(get(hLong,'String'));
             enteredStr = get(hLong,'String');
-            numberName = 'Longitude';
+            numberName = ['Longitude', bndStr];
             lb = -360;
             ub = 360;
             isInt = false;
@@ -57,7 +65,7 @@ classdef BodyFixedOrbitStateModel < AbstractOrbitStateModel
             
             alt = str2double(get(hAlt,'String'));
             enteredStr = get(hAlt,'String');
-            numberName = 'Altitude';
+            numberName = ['Altitude', bndStr];
             lb = -bodyInfo.radius;
             ub = Inf;
             isInt = false;
@@ -65,7 +73,7 @@ classdef BodyFixedOrbitStateModel < AbstractOrbitStateModel
             
             bfVx = str2double(get(hBfVx,'String'));
             enteredStr = get(hBfVx,'String');
-            numberName = 'Body-Fixed Velocity (X)';
+            numberName = ['Body-Fixed Velocity (X)', bndStr];
             lb = -Inf;
             ub = Inf;
             isInt = false;
@@ -73,7 +81,7 @@ classdef BodyFixedOrbitStateModel < AbstractOrbitStateModel
             
             bfVy = str2double(get(hBfVy,'String'));
             enteredStr = get(hBfVy,'String');
-            numberName = 'Body-Fixed Velocity (Y)';
+            numberName = ['Body-Fixed Velocity (Y)', bndStr];
             lb = -Inf;
             ub = Inf;
             isInt = false;
@@ -81,7 +89,7 @@ classdef BodyFixedOrbitStateModel < AbstractOrbitStateModel
             
             bfVz = str2double(get(hBfVz,'String'));
             enteredStr = get(hBfVz,'String');
-            numberName = 'Body-Fixed Velocity (Z)';
+            numberName = ['Body-Fixed Velocity (Z)', bndStr];
             lb = -Inf;
             ub = Inf;
             isInt = false;

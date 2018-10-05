@@ -9,6 +9,8 @@ classdef LaunchVehicleTank < matlab.mixin.SetGet
         
         name(1,:) char = 'Untitled Tank';
         id(1,1) double = 0;
+        
+        optVar(1,:) StageTankInitMassOptimVar
     end
     
     properties(Dependent)
@@ -39,6 +41,14 @@ classdef LaunchVehicleTank < matlab.mixin.SetGet
         
         function tf = isInUse(obj)
             tf = obj.lvdData.usesTank(obj);
+        end
+        
+        function optVar = getNewOptVar(obj)
+            optVar = StageTankInitMassOptimVar(obj);
+        end
+        
+        function optVar = getExistingOptVar(obj)
+            optVar = obj.optVar;
         end
         
         function tf = eq(A,B)

@@ -1,5 +1,5 @@
 classdef StageDryMassOptimizationVariable < AbstractOptimizationVariable
-    %AbstractOptimizationVariable Summary of this class goes here
+    %StageDryMassOptimizationVariable Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
@@ -8,7 +8,7 @@ classdef StageDryMassOptimizationVariable < AbstractOptimizationVariable
         lwrBnd(1,1) double = 0;
         uprBnd(1,1) double = 0;
         
-        useTf(1,1) = true;
+        useTf(1,1) = false;
     end
     
     methods
@@ -34,7 +34,7 @@ classdef StageDryMassOptimizationVariable < AbstractOptimizationVariable
         end
         
         function useTf = getUseTfForVariable(obj)
-            useTf = true;
+            useTf = obj.useTf;
         end
         
         function setUseTfForVariable(obj, useTf)

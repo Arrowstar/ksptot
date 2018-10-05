@@ -104,6 +104,14 @@ classdef LaunchVehicleStage < matlab.mixin.SetGet
             end
         end
         
+        function optVar = getNewOptVar(obj)
+            optVar = StageDryMassOptimizationVariable(obj);
+        end
+        
+        function optVar = getExistingOptVar(obj)
+            optVar = obj.optVar;
+        end
+        
         function tf = eq(A,B)
             tf = [A.id] == [B.id];
         end

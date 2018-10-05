@@ -177,6 +177,8 @@ function insertEventButton_Callback(hObject, eventdata, handles)
     lvdData.script.addEventAtInd(event,selEvtNum);
     lvd_editEventGUI(event);
     
+	handles.deleteEvent.Enable = 'on';
+
     runScript(handles, lvdData);
     lvd_processData(handles);
 
@@ -206,11 +208,16 @@ function deleteEvent_Callback(hObject, eventdata, handles)
     maData = getappdata(handles.ma_LvdMainGUI,'maData');
     
     lvdData = maData.lvdData;
-    eventNum = get(handles.scriptListbox,'Value');
+    eventNum = get(handles.scriptListbox,'Value');   
     lvdData.script.removeEventFromIndex(eventNum);
     
     if(eventNum > length(lvdData.script.evts))
         set(handles.scriptListbox,'Value',length(lvdData.script.evts));
+    end
+    
+    numEventsRemaining = lvdData.script.getTotalNumOfEvents();
+    if(numEventsRemaining <= 1)
+        handles.deleteEvent.Enable = 'off';
     end
     
     runScript(handles, lvdData);
@@ -365,8 +372,8 @@ function editInitialStateMenu_Callback(hObject, eventdata, handles)
     hMaMainGUI = getappdata(handles.ma_LvdMainGUI,'hMaMainGUI');
     lvd_EditInitialStateGUI(maData, lvdData, hMaMainGUI);
     
-%     runScript(handles, lvdData);
-%     lvd_processData(handles);
+    runScript(handles, lvdData);
+    lvd_processData(handles);
 
 % --------------------------------------------------------------------
 function viewStateAfterSelectedEventMenu_Callback(hObject, eventdata, handles)

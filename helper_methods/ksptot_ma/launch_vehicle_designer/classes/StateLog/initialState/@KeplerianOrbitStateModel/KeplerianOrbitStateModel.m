@@ -9,6 +9,8 @@ classdef KeplerianOrbitStateModel < AbstractOrbitStateModel
         raan(1,1) double
         arg(1,1) double
         tru(1,1) double
+        
+        optVar KeplerianOrbitVariable
     end
     
     methods
@@ -35,10 +37,16 @@ classdef KeplerianOrbitStateModel < AbstractOrbitStateModel
             defaultOrbitState = KeplerianOrbitStateModel(700, 0, 0, 0, 0, 0);
         end
         
-        function errMsg = validateInputOrbit(errMsg, hSMA, hEcc, hInc, hRaan, hArg, hTru, bodyInfo)
+        function errMsg = validateInputOrbit(errMsg, hSMA, hEcc, hInc, hRaan, hArg, hTru, bodyInfo, bndStr)
+            if(isempty(bndStr))
+                bndStr = '';
+            else
+                bndStr = sprintf(' (%s Bound)', bndStr);
+            end
+            
             sma = str2double(get(hSMA,'String'));
             enteredStr = get(hSMA,'String');
-            numberName = 'Semi-major Axis';
+            numberName = ['Semi-major Axis', bndStr];
             lb = -Inf;
             ub = Inf;
             isInt = false;
@@ -46,7 +54,7 @@ classdef KeplerianOrbitStateModel < AbstractOrbitStateModel
             
             ecc = str2double(get(hEcc,'String'));
             enteredStr = get(hEcc,'String');
-            numberName = 'Eccentricity';
+            numberName = ['Eccentricity', bndStr];
             lb = 0;
             ub = Inf;
             isInt = false;
@@ -56,7 +64,7 @@ classdef KeplerianOrbitStateModel < AbstractOrbitStateModel
                 if(ecc < 1)
                     sma = str2double(get(hSMA,'String'));
                     enteredStr = get(hSMA,'String');
-                    numberName = 'Semi-major Axis';
+                    numberName = ['Semi-major Axis', bndStr];
                     lb = 1E-3;
                     ub = Inf;
                     isInt = false;
@@ -64,7 +72,7 @@ classdef KeplerianOrbitStateModel < AbstractOrbitStateModel
                 else
                     sma = str2double(get(hSMA,'String'));
                     enteredStr = get(hSMA,'String');
-                    numberName = 'Semi-major Axis';
+                    numberName = ['Semi-major Axis', bndStr];
                     lb = -Inf;
                     ub = -1E-3;
                     isInt = false;
@@ -74,7 +82,7 @@ classdef KeplerianOrbitStateModel < AbstractOrbitStateModel
             
             inc = str2double(get(hInc,'String'));
             enteredStr = get(hInc,'String');
-            numberName = 'Inclination';
+            numberName = ['Inclination', bndStr];
             lb = 0;
             ub = 180;
             isInt = false;
@@ -82,7 +90,7 @@ classdef KeplerianOrbitStateModel < AbstractOrbitStateModel
             
             raan = str2double(get(hRaan,'String'));
             enteredStr = get(hRaan,'String');
-            numberName = 'Right Asc. of the Asc. Node';
+            numberName = ['Right Asc. of the Asc. Node', bndStr];
             lb = 0;
             ub = 360;
             isInt = false;
@@ -90,7 +98,7 @@ classdef KeplerianOrbitStateModel < AbstractOrbitStateModel
             
             arg = str2double(get(hArg,'String'));
             enteredStr = get(hArg,'String');
-            numberName = 'Argument of Periapsis';
+            numberName = ['Argument of Periapsis', bndStr];
             lb = 0;
             ub = 360;
             isInt = false;
@@ -98,7 +106,7 @@ classdef KeplerianOrbitStateModel < AbstractOrbitStateModel
             
             tru = str2double(get(hTru,'String'));
             enteredStr = get(hTru,'String');
-            numberName = 'True Anomaly';
+            numberName = ['True Anomaly', bndStr];
             lb = -360;
             ub = 360;
             isInt = false;

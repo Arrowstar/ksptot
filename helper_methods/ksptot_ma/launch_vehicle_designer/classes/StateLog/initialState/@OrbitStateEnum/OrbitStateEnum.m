@@ -5,10 +5,12 @@ classdef OrbitStateEnum < matlab.mixin.SetGet
     enumeration
         KeplerianOrbit('Keplerian Orbit','KeplerianOrbitStateModel', ...
                        {'SMA','Eccentricity','Inclination','RAAN','Arg Peri','True Aomaly'}, ...
-                       {'km','','deg','deg','deg','deg'})
+                       {'km','','deg','deg','deg','deg'}, ...
+                       'KeplerianOrbitVariable')
         BodyFixed('Body Fixed Orbit','BodyFixedOrbitStateModel', ...
                   {'Latitude','Longitude','Altitude','Body Fixed Vx','Body Fixed Vy','Body Fixed Vz'}, ...
-                  {'deg','deg','km','km/s','km/s','km/s'})
+                  {'deg','deg','km','km/s','km/s','km/s'}, ...
+                  'BodyFixedOrbitVariable')
     end
     
     properties
@@ -16,14 +18,16 @@ classdef OrbitStateEnum < matlab.mixin.SetGet
         class(1,:) char = ''
         elemNames(6,1) cell
         unitNames(6,1) cell
+        varClass(1,:) char = '';
     end
     
     methods
-        function obj = OrbitStateEnum(name,class,elemNames,unitNames)
+        function obj = OrbitStateEnum(name,class,elemNames,unitNames,varClass)
             obj.name = name;
             obj.class = class;
             obj.elemNames = elemNames;
             obj.unitNames = unitNames;
+            obj.varClass = varClass;
         end
     end
     

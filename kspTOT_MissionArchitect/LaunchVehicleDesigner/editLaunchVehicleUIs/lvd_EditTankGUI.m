@@ -22,7 +22,7 @@ function varargout = lvd_EditTankGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditTankGUI
 
-% Last Modified by GUIDE v2.5 21-Sep-2018 17:20:54
+% Last Modified by GUIDE v2.5 04-Oct-2018 19:57:26
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -75,10 +75,23 @@ function populateGUI(handles, tank)
         ind = 1;
     end
     
-    set(handles.engineNameText,'String',tank.name);
+    set(handles.tankNameText,'String',tank.name);
     set(handles.stageCombo,'String',stagesListboxStr);
     set(handles.stageCombo,'Value',ind);
     set(handles.initPropMassText,'String',fullAccNum2Str(tank.getInitialMass()));
+    
+    optVar = tank.getExistingOptVar();
+	if(isempty(optVar))
+        optVar = tank.getNewOptVar();
+	end
+    
+    handles.optCheckbox.Value = double(optVar.getUseTfForVariable());
+    
+    [lb, ub] = optVar.getBndsForVariable();
+    handles.lbText.String = fullAccNum2Str(lb);
+    handles.ubText.String = fullAccNum2Str(ub);
+    
+    optCheckbox_Callback(handles.optCheckbox, [], handles);
 
 % --- Outputs from this function are returned to the command line.
 function varargout = lvd_EditTankGUI_OutputFcn(hObject, eventdata, handles) 
@@ -96,12 +109,26 @@ function varargout = lvd_EditTankGUI_OutputFcn(hObject, eventdata, handles)
         
         stage = lv.getStageForInd(handles.stageCombo.Value);
         
-        name = handles.engineNameText.String;
+        name = handles.tankNameText.String;
         initialMass = str2double(handles.initPropMassText.String);
         
         tank.name = name;
         tank.stage = stage;
         tank.initialMass = initialMass;
+        
+        optVar = tank.getExistingOptVar();
+        if(not(isempty(optVar)))
+            tank.stage.launchVehicle.lvdData.optimizer.vars.removeVariable(optVar);
+        end
+        optVar = tank.getNewOptVar();
+        tank.stage.launchVehicle.lvdData.optimizer.vars.addVariable(optVar);
+        
+        optInitMass = logical(handles.optCheckbox.Value);
+        lbInitMass = str2double(handles.lbText.String);
+        ubInitMass = str2double(handles.ubText.String);
+        
+        optVar.setUseTfForVariable(optInitMass);
+        optVar.setBndsForVariable(lbInitMass,ubInitMass);
         
         varargout{1} = true;
         close(handles.lvd_EditTankGUI);
@@ -133,6 +160,32 @@ function errMsg = validateInputs(handles)
     isInt = false;
     errMsg = validateNumber(val, numberName, lb, ub, isInt, errMsg, enteredStr);
     
+    lwrBnd = str2double(get(handles.lbText,'String'));
+    enteredStr = get(handles.lbText,'String');
+    numberName = 'Initial Propellant Mass (Lower Bound)';
+    lb = 0;
+    ub = Inf;
+    isInt = false;
+    errMsg = validateNumber(lwrBnd, numberName, lb, ub, isInt, errMsg, enteredStr);
+    
+    uprBnd = str2double(get(handles.ubText,'String'));
+    enteredStr = get(handles.ubText,'String');
+    numberName = 'Initial Propellant Mass (Upper Bound)';
+    lb = 0;
+    ub = Inf;
+    isInt = false;
+    errMsg = validateNumber(uprBnd, numberName, lb, ub, isInt, errMsg, enteredStr);
+    
+    if(isempty(errMsg))
+        uprBnd = str2double(get(handles.ubText,'String'));
+        enteredStr = get(handles.ubText,'String');
+        numberName = 'Initial Propellant Mass (Upper Bound)';
+        lb = lwrBnd;
+        ub = Inf;
+        isInt = false;
+        errMsg = validateNumber(uprBnd, numberName, lb, ub, isInt, errMsg, enteredStr);
+    end
+    
 
     
 % --- Executes on button press in cancelButton.
@@ -143,18 +196,18 @@ function cancelButton_Callback(hObject, eventdata, handles)
     close(handles.lvd_EditTankGUI);
 
 
-function engineNameText_Callback(hObject, eventdata, handles)
-% hObject    handle to engineNameText (see GCBO)
+function tankNameText_Callback(hObject, eventdata, handles)
+% hObject    handle to tankNameText (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of engineNameText as text
-%        str2double(get(hObject,'String')) returns contents of engineNameText as a double
+% Hints: get(hObject,'String') returns contents of tankNameText as text
+%        str2double(get(hObject,'String')) returns contents of tankNameText as a double
 
 
 % --- Executes during object creation, after setting all properties.
-function engineNameText_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to engineNameText see GCBO)
+function tankNameText_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to tankNameText see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -208,6 +261,71 @@ function stageCombo_CreateFcn(hObject, eventdata, handles)
 % handles    empty - handles not created until after all CreateFcns called
 
 % Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in optCheckbox.
+function optCheckbox_Callback(hObject, eventdata, handles)
+% hObject    handle to optCheckbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of optCheckbox
+    if(get(hObject,'Value'))
+        handles.lbText.Enable = 'on';
+        handles.ubText.Enable = 'on';
+    else
+        handles.lbText.Enable = 'off';
+        handles.ubText.Enable = 'off';
+    end
+
+
+function lbText_Callback(hObject, eventdata, handles)
+% hObject    handle to lbText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of lbText as text
+%        str2double(get(hObject,'String')) returns contents of lbText as a double
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
+
+% --- Executes during object creation, after setting all properties.
+function lbText_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to lbText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function ubText_Callback(hObject, eventdata, handles)
+% hObject    handle to ubText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of ubText as text
+%        str2double(get(hObject,'String')) returns contents of ubText as a double
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
+
+% --- Executes during object creation, after setting all properties.
+function ubText_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to ubText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
 %       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');

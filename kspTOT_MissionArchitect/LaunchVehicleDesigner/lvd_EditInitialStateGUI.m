@@ -99,6 +99,50 @@ function populateGUI(handles, maData, lvdData)
     handles.frontalAreaText.String = fullAccNum2Str(initStateModel.aero.area);
     handles.dragCoeffText.String = fullAccNum2Str(initStateModel.aero.Cd);
     
+    optVar = initStateModel.getExistingOptVar();
+    if(isempty(optVar))
+        optVar = initStateModel.getNewOptVar();
+    end
+    useTf = optVar.getUseTfForVariable();
+    
+    handles.optUtCheckbox.Value = double(useTf(1));
+    handles.optOrbit1Checkbox.Value = double(useTf(2));
+    handles.optOrbit2Checkbox.Value = double(useTf(3));
+    handles.optOrbit3Checkbox.Value = double(useTf(4));
+    handles.optOrbit4Checkbox.Value = double(useTf(5));
+    handles.optOrbit5Checkbox.Value = double(useTf(6));
+    handles.optOrbit6Checkbox.Value = double(useTf(7));
+    
+    optVar.setUseTfForVariable(true(size(useTf)));
+    [lb, ub] = optVar.getBndsForVariable();
+    optVar.setUseTfForVariable(useTf);
+    
+    handles.utLbText.String     = fullAccNum2Str(lb(1));
+    handles.orbit1LbText.String = fullAccNum2Str(lb(2));
+    handles.orbit2LbText.String = fullAccNum2Str(lb(3));
+    handles.orbit3LbText.String = fullAccNum2Str(lb(4));
+    handles.orbit4LbText.String = fullAccNum2Str(lb(5));
+    handles.orbit5LbText.String = fullAccNum2Str(lb(6));
+    handles.orbit6LbText.String = fullAccNum2Str(lb(7));
+    
+    handles.utUbText.String     = fullAccNum2Str(ub(1));
+    handles.orbit1UbText.String = fullAccNum2Str(ub(2));
+    handles.orbit2UbText.String = fullAccNum2Str(ub(3));
+    handles.orbit3UbText.String = fullAccNum2Str(ub(4));
+    handles.orbit4UbText.String = fullAccNum2Str(ub(5));
+    handles.orbit5UbText.String = fullAccNum2Str(ub(6));
+    handles.orbit6UbText.String = fullAccNum2Str(ub(7));
+    
+    optUtCheckbox_Callback(handles.optUtCheckbox, [], handles);
+    optOrbit1Checkbox_Callback(handles.optOrbit1Checkbox, [], handles);
+    optOrbit2Checkbox_Callback(handles.optOrbit2Checkbox, [], handles);
+    optOrbit3Checkbox_Callback(handles.optOrbit3Checkbox, [], handles);
+    optOrbit4Checkbox_Callback(handles.optOrbit4Checkbox, [], handles);
+    optOrbit5Checkbox_Callback(handles.optOrbit5Checkbox, [], handles);
+    optOrbit6Checkbox_Callback(handles.optOrbit6Checkbox, [], handles);
+
+    
+    
 % --- Outputs from this function are returned to the command line.
 function varargout = lvd_EditInitialStateGUI_OutputFcn(hObject, eventdata, handles) 
 % varargout  cell array for returning output args (see VARARGOUT);
@@ -137,6 +181,57 @@ function varargout = lvd_EditInitialStateGUI_OutputFcn(hObject, eventdata, handl
         initStateModel.aero.area = str2double(handles.frontalAreaText.String);
         initStateModel.aero.Cd = str2double(handles.dragCoeffText.String);
         
+        %Vars
+        optVar = initStateModel.getExistingOptVar();
+        
+        if(not(isempty(optVar)))
+            lvdData.optimizer.vars.removeVariable(optVar);
+        end
+        optVar = initStateModel.getNewOptVar();
+        lvdData.optimizer.vars.addVariable(optVar);
+        
+        optUt         = logical(handles.optUtCheckbox.Value);
+        optOrbit1Elem = logical(handles.optOrbit1Checkbox.Value);
+        optOrbit2Elem = logical(handles.optOrbit2Checkbox.Value);
+        optOrbit3Elem = logical(handles.optOrbit3Checkbox.Value);
+        optOrbit4Elem = logical(handles.optOrbit4Checkbox.Value);
+        optOrbit5Elem = logical(handles.optOrbit5Checkbox.Value);
+        optOrbit6Elem = logical(handles.optOrbit6Checkbox.Value);
+        
+        useTf = [optUt optOrbit1Elem optOrbit2Elem optOrbit3Elem optOrbit4Elem optOrbit5Elem optOrbit6Elem];
+        optVar.setUseTfForVariable(useTf);
+        
+        utLb = str2double(handles.utLbText.String);
+        orbit1ElemLb = str2double(handles.orbit1LbText.String);
+        orbit2ElemLb = str2double(handles.orbit2LbText.String);
+        orbit3ElemLb = str2double(handles.orbit3LbText.String);
+        orbit4ElemLb = str2double(handles.orbit4LbText.String);
+        orbit5ElemLb = str2double(handles.orbit5LbText.String);
+        orbit6ElemLb = str2double(handles.orbit6LbText.String);
+        
+        utUb = str2double(handles.utUbText.String);
+        orbit1ElemUb = str2double(handles.orbit1UbText.String);
+        orbit2ElemUb = str2double(handles.orbit2UbText.String);
+        orbit3ElemUb = str2double(handles.orbit3UbText.String);
+        orbit4ElemUb = str2double(handles.orbit4UbText.String);
+        orbit5ElemUb = str2double(handles.orbit5UbText.String);
+        orbit6ElemUb = str2double(handles.orbit6UbText.String);
+        
+        lb = [utLb orbit1ElemLb orbit2ElemLb orbit3ElemLb orbit4ElemLb orbit5ElemLb orbit6ElemLb];
+        ub = [utUb orbit1ElemUb orbit2ElemUb orbit3ElemUb orbit4ElemUb orbit5ElemUb orbit6ElemUb];
+        
+        for(i=1:length(lb)) %#ok<*NO4LP>
+            if(lb(i) > ub(i))
+                temp1 = lb(i);
+                temp2 = ub(i);
+                
+                lb(i) = temp2;
+                ub(i) = temp1;
+            end
+        end
+        
+        optVar.setBndsForVariable(lb, ub);
+        
         varargout{1} = true;
         close(handles.lvd_EditInitialStateGUI);
     end    
@@ -168,7 +263,9 @@ function errMsg = validateInputs(handles)
     [~,enum] = OrbitStateEnum.getIndForName(orbitType);
     orbitClass = enum.class;
     
-    errMsg = feval(sprintf('%s.validateInputOrbit',orbitClass),errMsg, handles.orbit1Text, handles.orbit2Text, handles.orbit3Text, handles.orbit4Text, handles.orbit5Text, handles.orbit6Text, bodyInfo);
+    errMsg = feval(sprintf('%s.validateInputOrbit',orbitClass),errMsg, handles.orbit1Text, handles.orbit2Text, handles.orbit3Text, handles.orbit4Text, handles.orbit5Text, handles.orbit6Text, bodyInfo, '');
+    errMsg = feval(sprintf('%s.validateInputOrbit',orbitClass),errMsg, handles.orbit1LbText, handles.orbit2LbText, handles.orbit3LbText, handles.orbit4LbText, handles.orbit5LbText, handles.orbit6LbText, bodyInfo, 'Lower');
+    errMsg = feval(sprintf('%s.validateInputOrbit',orbitClass),errMsg, handles.orbit1UbText, handles.orbit2UbText, handles.orbit3UbText, handles.orbit4UbText, handles.orbit5UbText, handles.orbit6UbText, bodyInfo, 'Upper');
     
     area = str2double(get(handles.frontalAreaText,'String'));
     enteredStr = get(handles.frontalAreaText,'String');
@@ -185,8 +282,6 @@ function errMsg = validateInputs(handles)
     ub = Inf;
     isInt = false;
     errMsg = validateNumber(cD, numberName, lb, ub, isInt, errMsg, enteredStr);    
-    
-    
     
     
 % --- Executes on selection change in orbitTypeCombo.
@@ -289,7 +384,13 @@ function optUtCheckbox_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of optUtCheckbox
-
+    if(get(hObject,'Value'))
+        handles.utLbText.Enable = 'on';
+        handles.utUbText.Enable = 'on';
+    else
+        handles.utLbText.Enable = 'off';
+        handles.utUbText.Enable = 'off';
+    end
 
 
 function utLbText_Callback(hObject, eventdata, handles)
@@ -373,7 +474,13 @@ function optOrbit1Checkbox_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of optOrbit1Checkbox
-
+    if(get(hObject,'Value'))
+        handles.orbit1LbText.Enable = 'on';
+        handles.orbit1UbText.Enable = 'on';
+    else
+        handles.orbit1LbText.Enable = 'off';
+        handles.orbit1UbText.Enable = 'off';
+    end
 
 
 function orbit1LbText_Callback(hObject, eventdata, handles)
@@ -457,7 +564,13 @@ function optOrbit2Checkbox_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of optOrbit2Checkbox
-
+    if(get(hObject,'Value'))
+        handles.orbit2LbText.Enable = 'on';
+        handles.orbit2UbText.Enable = 'on';
+    else
+        handles.orbit2LbText.Enable = 'off';
+        handles.orbit2UbText.Enable = 'off';
+    end
 
 
 function orbit2LbText_Callback(hObject, eventdata, handles)
@@ -541,7 +654,13 @@ function optOrbit3Checkbox_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of optOrbit3Checkbox
-
+    if(get(hObject,'Value'))
+        handles.orbit3LbText.Enable = 'on';
+        handles.orbit3UbText.Enable = 'on';
+    else
+        handles.orbit3LbText.Enable = 'off';
+        handles.orbit3UbText.Enable = 'off';
+    end
 
 
 function orbit3LbText_Callback(hObject, eventdata, handles)
@@ -625,7 +744,13 @@ function optOrbit4Checkbox_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of optOrbit4Checkbox
-
+    if(get(hObject,'Value'))
+        handles.orbit4LbText.Enable = 'on';
+        handles.orbit4UbText.Enable = 'on';
+    else
+        handles.orbit4LbText.Enable = 'off';
+        handles.orbit4UbText.Enable = 'off';
+    end
 
 
 function orbit4LbText_Callback(hObject, eventdata, handles)
@@ -709,7 +834,13 @@ function optOrbit5Checkbox_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of optOrbit5Checkbox
-
+    if(get(hObject,'Value'))
+        handles.orbit5LbText.Enable = 'on';
+        handles.orbit5UbText.Enable = 'on';
+    else
+        handles.orbit5LbText.Enable = 'off';
+        handles.orbit5UbText.Enable = 'off';
+    end
 
 
 function orbit5LbText_Callback(hObject, eventdata, handles)
@@ -793,7 +924,13 @@ function optOrbit6Checkbox_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of optOrbit6Checkbox
-
+    if(get(hObject,'Value'))
+        handles.orbit6LbText.Enable = 'on';
+        handles.orbit6UbText.Enable = 'on';
+    else
+        handles.orbit6LbText.Enable = 'off';
+        handles.orbit6UbText.Enable = 'off';
+    end
 
 
 function orbit6LbText_Callback(hObject, eventdata, handles)

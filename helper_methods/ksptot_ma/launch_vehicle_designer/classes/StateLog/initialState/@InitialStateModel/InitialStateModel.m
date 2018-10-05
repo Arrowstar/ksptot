@@ -15,6 +15,8 @@ classdef InitialStateModel < matlab.mixin.SetGet
         
         steeringModel(1,1) AbstractSteeringModel = RollPitchYawPolySteeringModel.getDefaultSteeringModel();
         throttleModel(1,1) AbstractThrottleModel = ThrottlePolyModel.getDefaultThrottleModel();
+        
+        optVar InitialStateVariable
     end
     
     methods
@@ -65,6 +67,14 @@ classdef InitialStateModel < matlab.mixin.SetGet
 
             stateLogEntry.steeringModel = obj.steeringModel;
             stateLogEntry.throttleModel = obj.throttleModel;
+        end
+        
+        function optVar = getNewOptVar(obj)
+            optVar = InitialStateVariable(obj);
+        end
+        
+        function optVar = getExistingOptVar(obj)
+            optVar = obj.optVar;
         end
     end
 
