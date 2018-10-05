@@ -192,11 +192,12 @@ function varargout = lvd_EditActionSetSteeringModelGUI_OutputFcn(hObject, eventd
         indFromCombo = get(handles.steeringModelTypeCombo,'Value');
         
         optVar = steeringModel.getExistingOptVar();
-        if(ind ~= indFromCombo)
-            if(not(isempty(optVar))) %need to remove existing var if it exists
-                lvdData.optimizer.vars.removeVariable(optVar);
-            end
-            
+        
+        if(not(isempty(optVar))) %need to remove existing var if it exists
+            lvdData.optimizer.vars.removeVariable(optVar);
+        end
+        
+        if(ind ~= indFromCombo)           
             [m,~] = enumeration('SteeringModelEnum');
             steeringModel = eval(sprintf('%s.getDefaultSteeringModel()', m(indFromCombo).classNameStr));
             action.steeringModel = steeringModel;
@@ -209,7 +210,7 @@ function varargout = lvd_EditActionSetSteeringModelGUI_OutputFcn(hObject, eventd
 
         angle2Const = deg2rad(str2double(get(handles.angle2ConstTermText,'String')));
         angle2Linear = deg2rad(str2double(get(handles.angle2LinTermText,'String')));
-        angle2Accel = deg2rad(strar2double(get(handles.angle2AccelTermText,'String')));
+        angle2Accel = deg2rad(str2double(get(handles.angle2AccelTermText,'String')));
         
         angle3Const = deg2rad(str2double(get(handles.angle3ConstTermText,'String')));
         angle3Linear = deg2rad(str2double(get(handles.angle3LinTermText,'String')));
