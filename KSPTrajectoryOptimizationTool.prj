@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.ezdeploy" plugin-version="1.0">
-  <configuration build-checksum="682817914" file="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\KSPTrajectoryOptimizationTool.prj" location="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool" name="KSPTrajectoryOptimizationTool" preferred-package-location="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\deploy\KSPTrajectoryOptimizationTool\for_redistribution" preferred-package-type="package.type.exe" target="target.ezdeploy.standalone" target-name="Application Compiler">
+  <configuration build-checksum="117379932" file="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\KSPTrajectoryOptimizationTool.prj" location="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool" name="KSPTrajectoryOptimizationTool" preferred-package-location="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\deploy\KSPTrajectoryOptimizationTool\for_redistribution" preferred-package-type="package.type.exe" target="target.ezdeploy.standalone" target-name="Application Compiler">
     <param.appname>KSPTrajectoryOptimizationTool</param.appname>
     <param.icon>${PROJECT_ROOT}\KSPTrajectoryOptimizationTool_resources\icon.ico</param.icon>
     <param.icons>
@@ -8,7 +8,7 @@
       <file>${PROJECT_ROOT}\KSPTrajectoryOptimizationTool_resources\icon_24.png</file>
       <file>${PROJECT_ROOT}\KSPTrajectoryOptimizationTool_resources\icon_16.png</file>
     </param.icons>
-    <param.version>1.511</param.version>
+    <param.version>1.60</param.version>
     <param.authnamewatermark>Arrowstar</param.authnamewatermark>
     <param.email />
     <param.company />
@@ -120,6 +120,7 @@
       <file>${MATLAB_ROOT}\toolbox\local\+matlab\+internal\+supportPackages\addInstalledSupportPackagesToPath.m</file>
       <file>${MATLAB_ROOT}\toolbox\local\initprefs.m</file>
       <file>${MATLAB_ROOT}\toolbox\local\matlabrc.m</file>
+      <file>${PROJECT_ROOT}\MA_example_MunarFreeReturn.mat</file>
       <file>C:\Users\Adam\Dropbox\Documents\MATLAB\uiinspect.m</file>
     </fileset.depfun>
     <build-deliverables>

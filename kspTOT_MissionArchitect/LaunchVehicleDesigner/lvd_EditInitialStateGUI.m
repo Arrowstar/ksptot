@@ -142,7 +142,6 @@ function populateGUI(handles, maData, lvdData)
     optOrbit6Checkbox_Callback(handles.optOrbit6Checkbox, [], handles);
 
     
-    
 % --- Outputs from this function are returned to the command line.
 function varargout = lvd_EditInitialStateGUI_OutputFcn(hObject, eventdata, handles) 
 % varargout  cell array for returning output args (see VARARGOUT);
