@@ -165,10 +165,13 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet
                             for(k=1:length(tanks))
                                 tank = tanks(k);
                                 tankState = tankStates([tankStates.tank] == tank);
-                                tankStageState = tankState.stageState;
                                 
-                                if(tankStageState.active && tankState.tankMass > 0)
-                                    flowFromTankInds(tankStates == tankState) = 1;
+                                if(not(isempty(tankState)))
+                                    tankStageState = tankState.stageState;
+
+                                    if(tankStageState.active && tankState.tankMass > 0)
+                                        flowFromTankInds(tankStates == tankState) = 1;
+                                    end
                                 end
                             end
                             

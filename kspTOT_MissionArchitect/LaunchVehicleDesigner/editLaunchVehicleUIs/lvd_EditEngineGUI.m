@@ -97,6 +97,8 @@ function varargout = lvd_EditEngineGUI_OutputFcn(hObject, eventdata, handles)
         engine = getappdata(hObject, 'engine');
         lv = engine.stage.launchVehicle;
         
+        engine.stage.removeEngine(engine);
+        
         stage = lv.getStageForInd(handles.stageCombo.Value);
         
         name = handles.engineNameText.String;
@@ -111,6 +113,8 @@ function varargout = lvd_EditEngineGUI_OutputFcn(hObject, eventdata, handles)
         engine.vacIsp = vacIsp;
         engine.seaLvlThrust = seaLvlThrust;
         engine.seaLvlIsp = seaLvlIsp;
+        
+        engine.stage.addEngine(engine);
         
         varargout{1} = true;
         close(handles.lvd_EditEngineGUI);

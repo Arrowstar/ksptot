@@ -73,22 +73,22 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
             obj.termCond.initTermCondition(initialStateLogEntry);
         end
         
-        function cleanupEvent(obj, finalStateLogEntry)
+        function newStateLogEntries = cleanupEvent(obj, finalStateLogEntry)
             for(i=1:length(obj.actions)) %#ok<*NO4LP>
                 obj.actions(i).initAction(finalStateLogEntry);
+            end
+            
+            newStateLogEntries = LaunchVehicleStateLogEntry.empty(1,0);
+            for(i=1:length(obj.actions))
+                newStateLogEntry = obj.actions(i).exectuteAction(finalStateLogEntry);
+                
+                newStateLogEntries(end+1) = newStateLogEntry; %#ok<AGROW>
+                finalStateLogEntry = newStateLogEntry;
             end
         end
         
         function newStateLogEntries = executeEvent(obj, initStateLogEntry, simDriver)
             [~,~,newStateLogEntries] = simDriver.integrateOneEvent(obj, initStateLogEntry);
-            
-            stateLogEntry = newStateLogEntries(end);
-            for(i=1:length(obj.actions))
-                newStateLogEntry = obj.actions(i).exectuteAction(stateLogEntry);
-                
-                newStateLogEntries(end+1) = newStateLogEntry; %#ok<AGROW>
-                stateLogEntry = newStateLogEntry;
-            end
         end
         
         function tf = usesStage(obj, stage)

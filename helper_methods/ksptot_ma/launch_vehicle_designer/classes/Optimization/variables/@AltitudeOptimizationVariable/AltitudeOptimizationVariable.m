@@ -20,12 +20,16 @@ classdef AltitudeOptimizationVariable < AbstractOptimizationVariable
         end
         
         function x = getXsForVariable(obj)
-            x = obj.varObj.altitude;
+            x = [];
+            
+            if(obj.useTf)
+                x = obj.varObj.altitude;
+            end
         end
         
         function [lb, ub] = getBndsForVariable(obj)
-            lb = obj.lb;
-            ub = obj.ub;
+            lb = obj.lwrBnd(obj.useTf);
+            ub = obj.uprBnd(obj.useTf);
         end
         
         function setBndsForVariable(obj, lb, ub)

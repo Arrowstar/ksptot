@@ -212,7 +212,7 @@ function errMsg = validateInputs(handles)
     enteredStr = get(handles.throttleConstUbText,'String');
     numberName = sprintf('Throttle Constant Term Upper Bound');
     lb = angle1ConstLB;
-    ub = 1;
+    ub = 100;
     isInt = false;
     errMsg = validateNumber(angle1ConstUB, numberName, lb, ub, isInt, errMsg, enteredStr);
     

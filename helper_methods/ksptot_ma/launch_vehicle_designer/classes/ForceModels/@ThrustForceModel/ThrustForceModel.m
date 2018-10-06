@@ -43,9 +43,13 @@ classdef ThrustForceModel < AbstractForceModel
                                 tank = tanks(k);
                                 tankState = tankStates([tankStates.tank] == tank);
 
+                                try
                                 if(tankState.tankMass > 0) %just check to make sure the engine is connected to fuel somewhere
                                     propExistsInATank = true; 
                                     break;
+                                end
+                                catch ME
+                                    a = 1;
                                 end
                             end
                             

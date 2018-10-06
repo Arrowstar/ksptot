@@ -10,6 +10,8 @@ classdef SetThrottleModelAction < AbstractEventAction
         function obj = SetThrottleModelAction(throttleModel)
             if(nargin > 0)
                 obj.throttleModel = throttleModel;
+            else
+                obj.throttleModel = ThrottlePolyModel.getDefaultThrottleModel();
             end
             
             obj.id = rand();

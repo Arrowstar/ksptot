@@ -51,6 +51,13 @@ classdef LaunchVehicleTank < matlab.mixin.SetGet
             optVar = obj.optVar;
         end
         
+        function newTank = copy(obj)
+            newTank = LaunchVehicleTank(obj.stage);
+        
+            newTank.initialMass = obj.initialMass;
+            newTank.name = sprintf('Copy of %s', obj.name);
+        end
+        
         function tf = eq(A,B)
             tf = [A.id] == [B.id];
         end

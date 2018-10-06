@@ -12,9 +12,9 @@ classdef PolynominalModel < matlab.mixin.SetGet
     methods
         function obj = PolynominalModel(t0, constTerm, linearTerm, accelTerm)
             obj.t0 = t0;
-            obj.constTerm = constTerm;
-            obj.linearTerm = linearTerm;
-            obj.accelTerm = accelTerm;
+            obj.constTerm = real(constTerm);
+            obj.linearTerm = real(linearTerm);
+            obj.accelTerm = real(accelTerm);
         end
         
         function value = getValueAtTime(obj,ut)

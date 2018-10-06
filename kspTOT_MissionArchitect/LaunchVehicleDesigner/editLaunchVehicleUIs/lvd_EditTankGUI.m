@@ -107,6 +107,8 @@ function varargout = lvd_EditTankGUI_OutputFcn(hObject, eventdata, handles)
         tank = getappdata(hObject, 'tank');
         lv = tank.stage.launchVehicle;
         
+        tank.stage.removeTank(tank);
+        
         stage = lv.getStageForInd(handles.stageCombo.Value);
         
         name = handles.tankNameText.String;
@@ -115,6 +117,8 @@ function varargout = lvd_EditTankGUI_OutputFcn(hObject, eventdata, handles)
         tank.name = name;
         tank.stage = stage;
         tank.initialMass = initialMass;
+        
+        tank.stage.addTank(tank);
         
         optVar = tank.getExistingOptVar();
         if(not(isempty(optVar)))

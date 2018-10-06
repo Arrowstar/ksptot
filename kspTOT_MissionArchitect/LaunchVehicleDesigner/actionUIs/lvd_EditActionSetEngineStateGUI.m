@@ -74,7 +74,11 @@ function populateGUI(handles, action, lv)
     [enginesListStr, engines] = lv.getEnginesListBoxStr();
     set(handles.refEngineCombo,'String',enginesListStr);
     
-    ind = find(engines == action.engine,1,'first');
+    if(not(isempty(action.engine)))
+        ind = find(engines == action.engine,1,'first');
+    else
+        ind = [];
+    end
     
     if(not(isempty(ind)))
         set(handles.refEngineCombo,'Value',ind);

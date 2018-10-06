@@ -6,4 +6,8 @@ function [bankAng,angOfAttack,angOfSideslip] = computeAeroAnglesFromBodyAxes(rVe
     Rtotal = horzcat(bodyX, bodyY, bodyZ);
     
     [bankAng,angOfAttack,angOfSideslip] = dcm2angle(RVel2Vvlh' * RVvlh2Inert' * Rtotal, 'xyz');
+    
+    bankAng = real(bankAng);
+    angOfAttack = real(angOfAttack);
+    angOfSideslip = real(angOfSideslip);
 end

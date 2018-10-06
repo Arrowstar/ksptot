@@ -20,12 +20,16 @@ classdef StageDryMassOptimizationVariable < AbstractOptimizationVariable
         end
         
         function x = getXsForVariable(obj)
-            x = obj.stage.dryMass;
+            x = [];
+            
+            if(obj.useTf)
+                x = obj.stage.dryMass;
+            end
         end
         
         function [lb, ub] = getBndsForVariable(obj)
-            lb = obj.lwrBnd;
-            ub = obj.uprBnd;
+            lb = obj.lwrBnd(obj.useTf);
+            ub = obj.uprBnd(obj.useTf);
         end
         
         function setBndsForVariable(obj, lb, ub)
@@ -41,11 +45,7 @@ classdef StageDryMassOptimizationVariable < AbstractOptimizationVariable
             obj.useTf = useTf;
         end
         
-        function updateObjWithVarValue(obj, x)
-            if(any(isnan(x)))
-                a = 1;
-            end
-            
+        function updateObjWithVarValue(obj, x)            
             obj.stage.dryMass = x;
         end
     end

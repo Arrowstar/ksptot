@@ -32,13 +32,17 @@ classdef InitialStateVariable < AbstractOptimizationVariable
         end
         
         function x = getXsForVariable(obj)
-            x(1) = obj.varObj.time;
+            x = [];
+            
+            if(obj.useTf)
+                x(end+1) = obj.varObj.time;
+            end
             x = horzcat(x, obj.orbitVar.getXsForVariable());
         end
         
         function [lb, ub] = getBndsForVariable(obj)
-            lb = obj.lb;
-            ub = obj.ub;
+            lb = obj.lb(obj.useTf);
+            ub = obj.ub(obj.useTf);
             
             [oLb, oUb] = obj.orbitVar.getBndsForVariable();
             lb = horzcat(lb, oLb);

@@ -3,7 +3,7 @@ classdef SetEngineActiveStateAction < AbstractEventAction
     %   Detailed explanation goes here
     
     properties
-        engine(1,1) LaunchVehicleEngine = LaunchVehicleEngine(LaunchVehicleStage(LaunchVehicle(LvdData.getEmptyLvdData())));
+        engine(1,:) LaunchVehicleEngine
         activeStateToSet(1,1) logical = false;
     end
     

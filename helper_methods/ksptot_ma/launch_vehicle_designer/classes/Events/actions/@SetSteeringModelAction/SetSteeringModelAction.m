@@ -10,6 +10,8 @@ classdef SetSteeringModelAction < AbstractEventAction
         function obj = SetSteeringModelAction(steeringModel)
             if(nargin > 0)
                 obj.steeringModel = steeringModel;
+            else
+                obj.steeringModel = RollPitchYawPolySteeringModel.getDefaultSteeringModel();
             end
             
             obj.id = rand();

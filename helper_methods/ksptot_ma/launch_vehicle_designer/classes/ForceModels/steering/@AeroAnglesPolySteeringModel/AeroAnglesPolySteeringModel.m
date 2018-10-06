@@ -18,6 +18,12 @@ classdef AeroAnglesPolySteeringModel < AbstractAnglePolySteeringModel
             angOfAttack = obj.aoAModel.getValueAtTime(ut);
             angOfSideslip = obj.slipModel.getValueAtTime(ut);
             
+%             if(angOfAttack < deg2rad(-90))
+%                 angOfAttack = deg2rad(-90);
+%             elseif(angOfAttack > deg2rad(90))
+%                 angOfAttack = deg2rad(90);
+%             end
+            
             [~, ~, ~, dcm] = computeBodyAxesFromAeroAngles(rVect, vVect, angOfAttack, angOfSideslip, bankAng);
         end
         

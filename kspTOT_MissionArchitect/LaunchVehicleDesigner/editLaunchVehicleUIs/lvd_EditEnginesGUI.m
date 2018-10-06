@@ -22,7 +22,7 @@ function varargout = lvd_EditEnginesGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditEnginesGUI
 
-% Last Modified by GUIDE v2.5 20-Sep-2018 17:21:35
+% Last Modified by GUIDE v2.5 05-Oct-2018 16:43:09
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -111,10 +111,24 @@ function enginesListBox_Callback(hObject, eventdata, handles)
 
         selEngine = get(handles.enginesListBox,'Value');
         engine = lv.getEngineForInd(selEngine);
+        stageState = getStageStateForEngine(engine, lvdData);
+        stageState.removeEngineStateForEngine(engine);
         
         lvd_EditEngineGUI(engine);
+
+        stageState = getStageStateForEngine(engine, lvdData);
+        newEngineState = LaunchVehicleEngineState(stageState);
+        newEngineState.engine = engine;
+        stageState.addEngineState(newEngineState);
+        
         set(handles.enginesListBox,'String',lvdData.launchVehicle.getEnginesListBoxStr());
     end
+    
+function stageState = getStageStateForEngine(engine, lvdData)
+        stage = engine.stage;
+        stageStates = lvdData.initStateModel.stageStates;
+        stageStateInd = find([stageStates.stage] == stage,1,'first');
+        stageState = stageStates(stageStateInd);
 
 % --- Executes during object creation, after setting all properties.
 function enginesListBox_CreateFcn(hObject, eventdata, handles)
@@ -197,3 +211,38 @@ function removeEngineButton_Callback(hObject, eventdata, handles)
     else
         warndlg(sprintf('Could not delete the engine "%s" because it is in use as part of an event termination condition, event action, objective function, or constraint.  Remove the engine dependencies before attempting to delete the engine.', engine.name),'Cannot Delete Engine','modal');
     end
+
+
+% --------------------------------------------------------------------
+function copyEngineMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to copyEngineMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.lvd_EditEnginesGUI,'lvdData');
+    lv = lvdData.launchVehicle;
+    
+    selEngine = get(handles.enginesListBox,'Value');
+    engine = lv.getEngineForInd(selEngine);
+    
+    newEngine = engine.copy();
+    initStage = newEngine.stage;
+    
+	newEngine.stage.addEngine(newEngine);
+        
+    stageStates = lvdData.initStateModel.stageStates;
+    stageStateInd = find([stageStates.stage] == initStage,1,'first');
+    stageState = stageStates(stageStateInd);
+
+    newEngineState = LaunchVehicleEngineState(stageState);
+    newEngineState.engine = newEngine;
+    stageState.addEngineState(newEngineState);
+
+    set(handles.enginesListBox,'String',lvdData.launchVehicle.getEnginesListBoxStr());
+
+    handles.removeEngineButton.Enable = 'on';
+
+% --------------------------------------------------------------------
+function enginesListboxContextMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to enginesListboxContextMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)

@@ -73,7 +73,11 @@ function populateGUI(handles, action, lv)
     [stagesListStr, stages] = lv.getStagesListBoxStr();
     set(handles.refStageCombo,'String',stagesListStr);
     
-    ind = find(stages == action.stage,1,'first');
+    if(not(isempty(action.stage)))
+        ind = find(stages == action.stage,1,'first');
+    else
+        ind = [];
+    end
     
     if(not(isempty(ind)))
         set(handles.refStageCombo,'Value',ind);

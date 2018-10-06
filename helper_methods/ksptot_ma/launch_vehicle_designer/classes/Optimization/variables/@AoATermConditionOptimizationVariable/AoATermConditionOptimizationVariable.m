@@ -21,6 +21,7 @@ classdef AoATermConditionOptimizationVariable < AbstractOptimizationVariable
         
         function x = getXsForVariable(obj)
             x = [];
+            
             if(obj.useTf)
                 x = obj.varObj.targetAoA;
             end

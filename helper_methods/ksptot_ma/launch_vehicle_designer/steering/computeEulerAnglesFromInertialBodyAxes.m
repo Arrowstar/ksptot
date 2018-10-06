@@ -3,4 +3,7 @@ function [rollAngle, pitchAngle, yawAngle] = computeEulerAnglesFromInertialBodyA
     R_total = horzcat(bodyX, bodyY, bodyZ);
     
     [rollAngle, pitchAngle, yawAngle]=dcm2angle(R_vvlh_2_inert' * R_total,'xyz');
+    rollAngle = real(rollAngle);
+    pitchAngle = real(pitchAngle);
+    yawAngle = real(yawAngle);
 end

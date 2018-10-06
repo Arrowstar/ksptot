@@ -74,7 +74,11 @@ function populateGUI(handles, action, lv)
     [e2TConnStr, e2TConns] = lv.getEngineToTankConnectionsListBoxStr();
     set(handles.refConnCombo,'String',e2TConnStr);
     
-    ind = find(e2TConns == action.conn,1,'first');
+    if(not(isempty(action.conn)))
+        ind = find(e2TConns == action.conn,1,'first');
+    else
+        ind = [];
+    end
     
     if(not(isempty(ind)))
         set(handles.refConnCombo,'Value',ind);

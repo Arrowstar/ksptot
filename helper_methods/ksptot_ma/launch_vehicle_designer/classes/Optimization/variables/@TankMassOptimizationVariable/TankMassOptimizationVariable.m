@@ -20,12 +20,16 @@ classdef TankMassOptimizationVariable < AbstractOptimizationVariable
         end
         
         function x = getXsForVariable(obj)
-            x = obj.varObj.targetMass;
+            x = [];
+            
+            if(obj.useTf)
+                x = obj.varObj.targetMass;
+            end
         end
         
         function [lb, ub] = getBndsForVariable(obj)
-            lb = obj.lb;
-            ub = obj.ub;
+            lb = obj.lb(obj.useTf);
+            ub = obj.ub(obj.useTf);
         end
         
         function setBndsForVariable(obj, lb, ub)

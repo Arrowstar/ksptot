@@ -22,7 +22,7 @@ function varargout = lvd_EditTanksGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditTanksGUI
 
-% Last Modified by GUIDE v2.5 21-Sep-2018 16:53:54
+% Last Modified by GUIDE v2.5 05-Oct-2018 17:23:52
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -111,18 +111,27 @@ function tanksListBox_Callback(hObject, eventdata, handles)
 
         selTank = get(handles.tanksListBox,'Value');
         tank = lv.getTankForInd(selTank);
-                
+        stageState = getStageStateForTank(tank, lvdData);
+        stageState.removeTankStateForTank(tank);
+        
         lvd_EditTankGUI(tank);
         
-        stage = tank.stage;
-        stageStates = lvdData.initStateModel.stageStates;
-        stageStateInd = find([stageStates.stage] == stage,1,'first');
-        stageState = stageStates(stageStateInd);
+        stageState = getStageStateForTank(tank, lvdData);
+        newTankState = LaunchVehicleTankState(stageState);
+        newTankState.tank = tank;
+        stageState.addTankState(newTankState);
         stageState.updateTankStateMassForTank(tank);
         
         set(handles.tanksListBox,'String',lvdData.launchVehicle.getTanksListBoxStr());
     end
 
+function stageState = getStageStateForTank(tank, lvdData)
+        stage = tank.stage;
+        stageStates = lvdData.initStateModel.stageStates;
+        stageStateInd = find([stageStates.stage] == stage,1,'first');
+        stageState = stageStates(stageStateInd);
+    
+    
 % --- Executes during object creation, after setting all properties.
 function tanksListBox_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to tanksListBox (see GCBO)
@@ -155,10 +164,10 @@ function addTankButton_Callback(hObject, eventdata, handles)
         stageStateInd = find([stageStates.stage] == initStage,1,'first');
         stageState = stageStates(stageStateInd);
         
-        newEngineState = LaunchVehicleTankState(stageState);
-        newEngineState.tank = tank;
-        newEngineState.tankMass = tank.initialMass;
-        stageState.addTankState(newEngineState);
+        newTankState = LaunchVehicleTankState(stageState);
+        newTankState.tank = tank;
+        newTankState.tankMass = tank.initialMass;
+        stageState.addTankState(newTankState);
         
         set(handles.tanksListBox,'String',lvdData.launchVehicle.getTanksListBoxStr());
         
@@ -205,3 +214,40 @@ function removeTankButton_Callback(hObject, eventdata, handles)
     else
         warndlg(sprintf('Could not delete the tank "%s" because it is in use as part of an event termination condition, event action, objective function, or constraint.  Remove the tank dependencies before attempting to delete the engine.', tank.name),'Cannot Delete Tank','modal');
     end
+
+
+% --------------------------------------------------------------------
+function copyTankContextMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to copyTankContextMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.lvd_EditTanksGUI,'lvdData');
+    lv = lvdData.launchVehicle;
+    
+    selTank = get(handles.tanksListBox,'Value');
+    tank = lv.getTankForInd(selTank);   
+    
+    newTank = tank.copy();
+    initStage = newTank.stage;
+    
+    newTank.stage.addTank(newTank);
+
+    stageStates = lvdData.initStateModel.stageStates;
+    stageStateInd = find([stageStates.stage] == initStage,1,'first');
+    stageState = stageStates(stageStateInd);
+
+    newTankState = LaunchVehicleTankState(stageState);
+    newTankState.tank = newTank;
+    newTankState.tankMass = newTank.initialMass;
+    stageState.addTankState(newTankState);
+
+    set(handles.tanksListBox,'String',lvdData.launchVehicle.getTanksListBoxStr());
+
+    handles.removeTankButton.Enable = 'on';
+
+% --------------------------------------------------------------------
+function tankListboxContextMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to tankListboxContextMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+

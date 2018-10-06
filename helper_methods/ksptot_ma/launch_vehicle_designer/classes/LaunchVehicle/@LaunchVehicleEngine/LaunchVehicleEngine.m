@@ -101,6 +101,22 @@ classdef LaunchVehicleEngine < matlab.mixin.SetGet
             tf = obj.lvdData.usesEngine(obj);
         end
         
+        function newEngine = copy(obj)
+            newEngine = LaunchVehicleEngine(obj.stage);
+            
+            newEngine.vacThrust = obj.vacThrust;
+            newEngine.vacIsp = obj.vacIsp;
+            newEngine.seaLvlThrust = obj.seaLvlThrust;
+            newEngine.seaLvlIsp = obj.seaLvlIsp;
+            
+            newEngine.bodyFrameThrustVect = obj.bodyFrameThrustVect;
+            
+            newEngine.minThrottle = obj.minThrottle;
+            newEngine.maxThrottle = obj.maxThrottle;
+            
+            newEngine.name = sprintf('Copy of %s', obj.name);
+        end
+        
         function tf = eq(A,B)
             tf = [A.id] == [B.id];
         end

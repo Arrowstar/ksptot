@@ -152,6 +152,7 @@ classdef LvdData < matlab.mixin.SetGet
             lvdOptim.vars.addVariable(rpyVars);
             
             stage3DryMassVar = StageDryMassOptimizationVariable(lvdData.launchVehicle.stages(1));
+            stage3DryMassVar.setUseTfForVariable(true);
             stage3DryMassVar.setBndsForVariable(0.001,10);
             lvdOptim.vars.addVariable(stage3DryMassVar);
 

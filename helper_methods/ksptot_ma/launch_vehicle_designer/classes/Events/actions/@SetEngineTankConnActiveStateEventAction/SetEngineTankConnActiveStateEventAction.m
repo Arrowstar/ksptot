@@ -3,7 +3,7 @@ classdef SetEngineTankConnActiveStateEventAction < AbstractEventAction
     %   Detailed explanation goes here
         
     properties(Abstract=false)
-        conn(1,1) EngineToTankConnection
+        conn(1,:) EngineToTankConnection
         activeStateToSet(1,1) logical = true;
     end
     

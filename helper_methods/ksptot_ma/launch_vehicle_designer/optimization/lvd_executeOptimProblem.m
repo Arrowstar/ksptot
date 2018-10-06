@@ -1,4 +1,5 @@
 function lvd_executeOptimProblem(celBodyData, writeOutput, problem, recorder)
+    initX = [];
     
     try
         lvdData = problem.lvdData;
@@ -35,6 +36,10 @@ function lvd_executeOptimProblem(celBodyData, writeOutput, problem, recorder)
             disp(['Name: ',ME.stack(i).name]);
             disp(['Line: ',num2str(ME.stack(i).line)]);
             disp('####################');
+        end
+        
+        if(not(isempty(initX)))
+            lvdData.optimizer.vars.updateObjsWithVarValues(initX); %basically revert to the initial x vector if we run into problems
         end
         
         return;
