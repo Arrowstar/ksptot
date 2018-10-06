@@ -62,6 +62,8 @@ function ma_LvdMainGUI_OpeningFcn(hObject, eventdata, handles, varargin)
     setappdata(hObject,'celBodyData',celBodyData);
     
     setappdata(hObject,'hMaMainGUI',varargin{3});
+    
+    setappdata(hObject,'ksptotMainGUI',varargin{4});
 
     if(~isfield(maData,'lvdData') || isempty(maData.lvdData))
         lvdData = LvdData.getDefaultLvdData(celBodyData);
@@ -370,7 +372,8 @@ function editInitialStateMenu_Callback(hObject, eventdata, handles)
     maData = getappdata(handles.ma_LvdMainGUI,'maData');
     lvdData = maData.lvdData;
     hMaMainGUI = getappdata(handles.ma_LvdMainGUI,'hMaMainGUI');
-    lvd_EditInitialStateGUI(maData, lvdData, hMaMainGUI);
+    hKsptotMainGUI = getappdata(handles.ma_LvdMainGUI,'ksptotMainGUI');
+    lvd_EditInitialStateGUI(maData, lvdData, hMaMainGUI, hKsptotMainGUI);
     
     runScript(handles, lvdData);
     lvd_processData(handles);

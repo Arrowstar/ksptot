@@ -2564,7 +2564,7 @@ function launchVehicleDesignerMenu_Callback(hObject, eventdata, handles)
         figure(lvd_hFig);
     else
         hMsg = helpdlg('Starting Launch Vehicle Designer.  Please wait...','Launch Vehicle Designer');
-        hFig = ma_LvdMainGUI(maData,celBodyData,handles.ma_MainGUI);
+        hFig = ma_LvdMainGUI(maData,celBodyData,handles.ma_MainGUI,handles.ksptotMainGUI);
 
         openToolWindows = getappdata(handles.ksptotMainGUI,'openToolWindows');
         openToolWindows = cleanOpenToolWindowsArr(openToolWindows);

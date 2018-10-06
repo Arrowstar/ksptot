@@ -22,7 +22,7 @@ function varargout = lvd_EditInitialStateGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditInitialStateGUI
 
-% Last Modified by GUIDE v2.5 23-Sep-2018 17:40:00
+% Last Modified by GUIDE v2.5 06-Oct-2018 13:41:10
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -62,6 +62,8 @@ function lvd_EditInitialStateGUI_OpeningFcn(hObject, eventdata, handles, varargi
     setappdata(hObject,'lvdDta',lvdData);
     
     handles.ma_MainGUI = varargin{3};
+    
+    handles.ksptotMainGUI = varargin{4};
     
     populateGUI(handles, maData, lvdData)
 
@@ -1083,3 +1085,141 @@ function cancelButton_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
     close(handles.lvd_EditInitialStateGUI);
+
+
+% --------------------------------------------------------------------
+function getOrbitFromSFSFileContextMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to getOrbitFromSFSFileContextMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    enum = OrbitStateEnum.KeplerianOrbit;
+    ind = OrbitStateEnum.getIndForName(enum.name);
+    handles.orbitTypeCombo.Value = ind;
+    orbitTypeCombo_Callback(handles.orbitTypeCombo, [], handles);
+    
+    refBodyID = orbitPanelGetOrbitFromSFSContextCallBack(handles.ksptotMainGUI, handles.orbit1Text, handles.orbit2Text, handles.orbit3Text, handles.orbit4Text, handles.orbit5Text, handles.orbit6Text, handles.utText);
+    tru = computeTrueAnomFromMean(deg2rad(str2double(get(handles.orbit6Text,'String'))), str2double(get(handles.orbit2Text,'String')));
+    set(handles.orbit6Text,'String',fullAccNum2Str(rad2deg(tru)));
+
+    if(~isempty(refBodyID) && isnumeric(refBodyID))
+        celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
+        bodyInfo = getBodyInfoByNumber(refBodyID, celBodyData);
+        value = findValueFromComboBox(bodyInfo.name, handles.centralBodyCombo);
+        set(handles.centralBodyCombo,'Value',value);
+    end
+
+% --------------------------------------------------------------------
+function getOrbitFromKSPTOTConnectContextMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to getOrbitFromKSPTOTConnectContextMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    enum = OrbitStateEnum.KeplerianOrbit;
+    ind = OrbitStateEnum.getIndForName(enum.name);
+    handles.orbitTypeCombo.Value = ind;
+    orbitTypeCombo_Callback(handles.orbitTypeCombo, [], handles);
+    
+    refBodyID = orbitPanelGetOrbitFromKSPTOTConnectCallBack(handles.orbit1Text, handles.orbit2Text, handles.orbit3Text, handles.orbit4Text, handles.orbit5Text, handles.orbit6Text, handles.utText);
+    tru = computeTrueAnomFromMean(deg2rad(str2double(get(handles.orbit6Text,'String'))), str2double(get(handles.orbit2Text,'String')));
+    set(handles.orbit6Text,'String',fullAccNum2Str(rad2deg(tru)));
+    
+    if(~isempty(refBodyID) && isnumeric(refBodyID))
+        celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
+        bodyInfo = getBodyInfoByNumber(refBodyID, celBodyData);
+        value = findValueFromComboBox(bodyInfo.name, handles.centralBodyCombo);
+        set(handles.centralBodyCombo,'Value',value);
+    end
+
+
+
+% --------------------------------------------------------------------
+function getOrbitFromKSPActiveVesselMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to getOrbitFromKSPActiveVesselMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    enum = OrbitStateEnum.KeplerianOrbit;
+    ind = OrbitStateEnum.getIndForName(enum.name);
+    handles.orbitTypeCombo.Value = ind;
+    orbitTypeCombo_Callback(handles.orbitTypeCombo, [], handles);
+
+    refBodyID = orbitPanelGetOrbitFromKSPTOTConnectActiveVesselCallBack(handles.orbit1Text, handles.orbit2Text, handles.orbit3Text, handles.orbit4Text, handles.orbit5Text, handles.orbit6Text, handles.utText);
+    tru = computeTrueAnomFromMean(deg2rad(str2double(get(handles.orbit6Text,'String'))), str2double(get(handles.orbit2Text,'String')));
+    set(handles.orbit6Text,'String',fullAccNum2Str(rad2deg(tru)));
+    
+    if(~isempty(refBodyID) && isnumeric(refBodyID))
+        celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
+        bodyInfo = getBodyInfoByNumber(refBodyID, celBodyData);
+        value = findValueFromComboBox(bodyInfo.name, handles.centralBodyCombo);
+        set(handles.centralBodyCombo,'Value',value);
+    end
+
+% --------------------------------------------------------------------
+function copyOrbitToClipboardMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to copyOrbitToClipboardMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+	maData = getappdata(handles.lvd_EditInitialStateGUI,'maData');
+    celBodyData = maData.celBodyData;
+    
+    contents = cellstr(get(handles.centralBodyCombo,'String'));
+    selected = strtrim(contents{get(handles.centralBodyCombo,'Value')});
+    bodyInfo = celBodyData.(lower(selected));
+    
+    contents = cellstr(get(handles.orbitTypeCombo,'String'));
+    selOrbitType = contents{get(handles.orbitTypeCombo,'Value')};
+
+    [~,enum] = OrbitStateEnum.getIndForName(selOrbitType);    
+
+    copyOrbitToClipboardFromText(handles.utText, handles.orbit1Text, handles.orbit2Text, ...
+                                 handles.orbit3Text, handles.orbit4Text, handles.orbit5Text, ...
+                                 handles.orbit6Text, true, bodyInfo.id);
+
+% --------------------------------------------------------------------
+function pasteOrbitFromClipboardMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to pasteOrbitFromClipboardMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    enum = OrbitStateEnum.KeplerianOrbit;
+    ind = OrbitStateEnum.getIndForName(enum.name);
+    handles.orbitTypeCombo.Value = ind;
+    orbitTypeCombo_Callback(handles.orbitTypeCombo, [], handles);
+
+	maData = getappdata(handles.lvd_EditInitialStateGUI,'maData');
+    celBodyData = maData.celBodyData;
+
+    pasteOrbitFromClipboard(handles.utText, handles.orbit1Text, handles.orbit2Text, ...
+                                 handles.orbit3Text, handles.orbit4Text, handles.orbit5Text, ...
+                                 handles.orbit6Text, true, handles.centralBodyCombo, celBodyData);
+
+% --------------------------------------------------------------------
+function orbitPanelContextMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to orbitPanelContextMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    contents = cellstr(get(handles.orbitTypeCombo,'String'));
+    selOrbitType = contents{get(handles.orbitTypeCombo,'Value')};
+
+    [~,enum] = OrbitStateEnum.getIndForName(selOrbitType);   
+    
+    if(enum == OrbitStateEnum.KeplerianOrbit)
+        handles.copyOrbitToClipboardMenu.Enable = 'on';
+    else
+        handles.copyOrbitToClipboardMenu.Enable = 'off';
+    end
+
+% --------------------------------------------------------------------
+function enterUTAsDateTimeContextMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to enterUTAsDateTimeContextMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+secUT = enterUTAsDateTimeGUI(str2double(get(gco, 'String')));
+if(secUT >= 0)
+    set(gco, 'String', fullAccNum2Str(secUT));
+     utText_Callback(handles.utText, eventdata, handles);
+end
+
+
+% --------------------------------------------------------------------
+function epochContextMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to epochContextMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)

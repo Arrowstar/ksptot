@@ -666,7 +666,7 @@ function missionArchitectMenu_Callback(hObject, eventdata, handles)
     if(~isempty(ma_hFig))
         figure(ma_hFig);
     else
-        hMsg = helpdlg('Starting Mission Architect.  Please wait...','Launch Vehicle Designer');
+        hMsg = helpdlg('Starting Mission Architect.  Please wait...','Mission Architect');
         
         hFig = ma_MainGUI(handles.mainGUIFigure, celBodyData);
         openToolWindows = getappdata(handles.mainGUIFigure,'openToolWindows');
