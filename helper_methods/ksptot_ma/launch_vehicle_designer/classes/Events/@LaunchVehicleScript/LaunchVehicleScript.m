@@ -160,26 +160,26 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
 %                 yawActual(end+1) = rad2deg(yawAngle); %#ok<AGROW>
 %                 
 %                 fprint     vVect = stateLog.entries(i).velocity;
-                
-                [rollAngle, pitchAngle, yawAngle] = stateLog.entries(i).attitude.getEulerAngles(rVect, vVect);
-                rollActual(end+1) = rad2deg(rollAngle); %#ok<AGROW>
-                pitchActual(end+1) = rad2deg(pitchAngle); %#ok<AGROW>
-                yawActual(end+1) = rad2deg(yawAngle); %#ok<AGROW>
-                
-                fprintf('%f - %f - %u - %u\n',rad2deg(pitchAngle),stateLog.entries(i).time,stateLog.entries(i).event.getEventNum(), i);
-                
-                throttleActual(end+1) = 100*stateLog.entries(i).throttle;
-            end
-            
-            figure(123);
-            subplot(3,1,1)
-            plot(time,totalMass);
-            
-            subplot(3,1,2)
-            plot(time,pitchActual);
-            
-            subplot(3,1,3)
-            plot(time,yawActual);f('%f - %f - %u - %u\n',rad2deg(pitchAngle),stateLog.entries(i).time,stateLog.entries(i).event.getEventNum(), i);
+%                 
+%                 [rollAngle, pitchAngle, yawAngle] = stateLog.entries(i).attitude.getEulerAngles(rVect, vVect);
+%                 rollActual(end+1) = rad2deg(rollAngle); %#ok<AGROW>
+%                 pitchActual(end+1) = rad2deg(pitchAngle); %#ok<AGROW>
+%                 yawActual(end+1) = rad2deg(yawAngle); %#ok<AGROW>
+%                 
+%                 fprintf('%f - %f - %u - %u\n',rad2deg(pitchAngle),stateLog.entries(i).time,stateLog.entries(i).event.getEventNum(), i);
+%                 
+%                 throttleActual(end+1) = 100*stateLog.entries(i).throttle;
+%             end
+%             
+%             figure(123);
+%             subplot(3,1,1)
+%             plot(time,totalMass);
+%             
+%             subplot(3,1,2)
+%             plot(time,pitchActual);
+%             
+%             subplot(3,1,3)
+%             plot(time,yawActual);f('%f - %f - %u - %u\n',rad2deg(pitchAngle),stateLog.entries(i).time,stateLog.entries(i).event.getEventNum(), i);
 %                 
 %                 throttleActual(end+1) = 100*stateLog.entries(i).throttle;
 %             end
