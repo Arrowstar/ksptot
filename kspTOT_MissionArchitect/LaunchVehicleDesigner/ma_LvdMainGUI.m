@@ -22,7 +22,7 @@ function varargout = ma_LvdMainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_LvdMainGUI
 
-% Last Modified by GUIDE v2.5 08-Oct-2018 13:26:49
+% Last Modified by GUIDE v2.5 08-Oct-2018 14:27:31
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -62,8 +62,7 @@ function ma_LvdMainGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 
     setappdata(hObject,'current_save_location','');
     setappdata(hObject,'application_title','KSP TOT Launch Vehicle Designer');
-%     setappdata(hObject,'undo_states',{});
-%     setappdata(hObject,'undo_pointer',0);
+    setappdata(hObject,'undoRedo',LVD_UndoRedoStateSet());
     
     lvdData = LvdData.getDefaultLvdData(celBodyData);
 	setappdata(handles.ma_LvdMainGUI,'lvdData',lvdData);
@@ -133,6 +132,12 @@ function varargout = ma_LvdMainGUI_OutputFcn(hObject, eventdata, handles)
     % Get default command line output from handles structure
     varargout{1} = handles.output;
 
+    
+function addUndoState(handles,actionName)
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    undoRedo = getappdata(handles.ma_LvdMainGUI,'undoRedo');
+    
+    undoRedo.addState(handles.ma_LvdMainGUI, lvdData, actionName)
 
 % --- Executes on selection change in scriptListbox.
 function scriptListbox_Callback(hObject, eventdata, handles)
@@ -143,6 +148,8 @@ function scriptListbox_Callback(hObject, eventdata, handles)
 % Hints: contents = cellstr(get(hObject,'String')) returns scriptListbox contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from scriptListbox
     if(strcmpi(get(handles.ma_LvdMainGUI,'SelectionType'),'open'))
+        addUndoState(handles,'Edit Event');
+        
         eventNum = get(hObject,'Value');
         lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
         
@@ -174,6 +181,8 @@ function insertEventButton_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
     lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
 
+    addUndoState(handles,'Insert Event');
+    
     selEvtNum = get(handles.scriptListbox,'Value');
     event = LaunchVehicleEvent.getDefaultEvent(lvdData.script);
     lvdData.script.addEventAtInd(event,selEvtNum);
@@ -191,6 +200,8 @@ function moveEventDown_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
     lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
 
+    addUndoState(handles,'Move Event Down');
+    
     eventNum = get(handles.scriptListbox,'Value');
     lvdData.script.moveEvtAtIndexDown(eventNum);
     
@@ -207,6 +218,8 @@ function deleteEvent_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
     lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    
+    addUndoState(handles,'Delete Event');
     
     eventNum = get(handles.scriptListbox,'Value');   
     lvdData.script.removeEventFromIndex(eventNum);
@@ -229,6 +242,8 @@ function moveEventUp_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
     lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    
+    addUndoState(handles,'Move Event Up');
     
     eventNum = get(handles.scriptListbox,'Value');
     lvdData.script.moveEvtAtIndexUp(eventNum);
@@ -323,6 +338,8 @@ function optimizeMissionMenu_Callback(hObject, eventdata, handles)
     lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
     writeOutput = getappdata(handles.ma_LvdMainGUI,'write_to_output_func');
     
+    addUndoState(handles,'Optimize Mission');
+    
     lvdData.optimizer.optimize(writeOutput);
     
     runScript(handles, lvdData);
@@ -341,6 +358,8 @@ function editLaunchVehicleMenu_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
     lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    
+    addUndoState(handles,'Edit Launch Vehicle');
     
     lvd_editLaunchVehicle(lvdData);
     
@@ -362,6 +381,9 @@ function editConstraintsMenu_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
     lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    
+    addUndoState(handles,'Edit Constraints');
+    
     lvd_EditConstraintsGUI(lvdData);
     
     runScript(handles, lvdData);
@@ -374,6 +396,8 @@ function editInitialStateMenu_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
     lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
     hKsptotMainGUI = getappdata(handles.ma_LvdMainGUI,'ksptotMainGUI');
+    
+    addUndoState(handles,'Edit Initial State');
     
     lvd_EditInitialStateGUI(lvdData, hKsptotMainGUI);
     
@@ -522,8 +546,7 @@ function newMissionPlanMenu_Callback(hObject, eventdata, handles, varargin)
         return;
     end
     
-% 	setappdata(handles.ma_MainGUI,'undo_states',{});
-% 	setappdata(handles.ma_MainGUI,'undo_pointer',0);
+    setappdata(handles.ma_LvdMainGUI,'undoRedo',LVD_UndoRedoStateSet());
 
     celBodyData = getappdata(handles.ma_LvdMainGUI,'celBodyData');
     write_to_output_func = getappdata(handles.ma_LvdMainGUI,'write_to_output_func');
@@ -584,8 +607,7 @@ function openMissionPlanMenu_Callback(hObject, eventdata, handles)
         
         load(filePath);
         if(exist('lvdData','var'))
-%             setappdata(handles.ma_MainGUI,'undo_states',{});
-%             setappdata(handles.ma_MainGUI,'undo_pointer',0);
+            setappdata(handles.ma_LvdMainGUI,'undoRedo',LVD_UndoRedoStateSet());
 
             if(isfield(lvdData,'celBodyData') && ...
                length(fields(celBodyData.sun)) == length(fields(lvdData.celBodyData.sun))) %#ok<NODEF>
@@ -731,3 +753,114 @@ function saveMissionPlanToolbar_ClickedCallback(hObject, eventdata, handles)
     set(handles.newMissionPlanToolbar,'Enable','on');
     set(handles.openMissionPlanToolbar,'Enable','on');
     set(handles.saveMissionPlanToolbar,'Enable','on');
+
+
+% --------------------------------------------------------------------
+function editMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to editMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    undoRedo = getappdata(handles.ma_LvdMainGUI,'undoRedo');
+    [undoTf, undoActionName] = undoRedo.shouldUndoMenuBeEnabled();
+    [redoTf, redoActionName] = undoRedo.shouldRedoMenuBeEnabled();
+    
+    if(undoTf)
+        set(handles.undoMenu,'Enable','on');
+    else
+        set(handles.undoMenu,'Enable','off');
+    end
+    set(handles.undoMenu,'Label',['Undo ',undoActionName]);
+    
+    if(redoTf)
+        set(handles.redoMenu,'Enable','on');
+    else
+        set(handles.redoMenu,'Enable','off');
+    end
+    set(handles.redoMenu,'Label',['Redo ',redoActionName]);
+
+% --------------------------------------------------------------------
+function undoMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to undoMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    undoRedo = getappdata(handles.ma_LvdMainGUI,'undoRedo');
+    lvdData = undoRedo.undo(lvdData);
+    
+    setappdata(handles.ma_LvdMainGUI,'lvdData',lvdData);
+    
+    runScript(handles, lvdData);
+    lvd_processData(handles);
+    
+    curName = get(handles.ma_LvdMainGUI,'Name');
+    if(~strcmpi(curName(end),'*'))
+        set(handles.ma_MainGUI,'Name',[curName,'*']);
+    end
+    
+    editMenu_Callback([], [], handles);
+    
+% --------------------------------------------------------------------
+function redoMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to redoMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    undoRedo = getappdata(handles.ma_LvdMainGUI,'undoRedo');
+    lvdData = undoRedo.redo();
+    
+    if(not(isempty(lvdData)))
+        setappdata(handles.ma_LvdMainGUI,'lvdData',lvdData);
+
+        runScript(handles, lvdData);
+        lvd_processData(handles);
+    end
+    
+    curName = get(handles.ma_LvdMainGUI,'Name');
+    if(~strcmpi(curName(end),'*'))
+        set(handles.ma_MainGUI,'Name',[curName,'*']);
+    end
+    
+    editMenu_Callback([], [], handles);
+
+
+% --- Executes when user attempts to close ma_LvdMainGUI.
+function ma_LvdMainGUI_CloseRequestFcn(hObject, eventdata, handles)
+% hObject    handle to ma_LvdMainGUI (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: delete(hObject) closes the figure
+    if(strcmpi(handles.scriptWorkingLbl.Visible,'on') || ...
+       strcmpi(handles.plotWorkingLbl.Visible,'on'))
+        askToQuit = true;
+    else
+        askToQuit = false;
+    end
+    
+    yesStr = 'Yes';
+    if(askToQuit)
+        response = questdlg(['KSPTOT is still processing.  Any in-work data will be lost upon closing.  Continue?'],'Close Mission Architect?',yesStr,'No','No');
+    else
+        response = yesStr;
+    end
+    
+    if(~strcmpi(response,yesStr))
+        return;
+    else
+        if(isMissionPlanSaved(handles))
+            askToClear = false;
+        else
+            askToClear = true;
+        end
+
+        if(askToClear)
+            response = questdlg(['All unsaved work will be lost.  Continue?'],'Close Launch Vehicle Designer?',yesStr,'No','No');
+        else
+            response = yesStr;
+        end
+
+        if(~strcmpi(response,yesStr))
+            return;
+        end
+
+        delete(hObject);
+    end
