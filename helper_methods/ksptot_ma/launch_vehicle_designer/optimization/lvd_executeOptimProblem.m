@@ -8,7 +8,7 @@ function lvd_executeOptimProblem(celBodyData, writeOutput, problem, recorder)
         writeOutput('Beginning mission script optimization...','append');
         tt = tic;
 %         profile on;
-        [x,~,exitflag,~] = fmincon(problem);
+        [x,fval,exitflag,output,lambda,grad,hessian] = fmincon(problem);
 %         profile viewer;
         
         execTime = toc(tt);

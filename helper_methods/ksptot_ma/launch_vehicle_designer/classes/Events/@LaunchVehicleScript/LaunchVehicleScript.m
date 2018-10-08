@@ -149,7 +149,7 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
 %             rollActual = [];
 %             pitchActual = [];
 %             angOfAttackActual = [];
-%             throttleActual = [];
+%             angOfSideslipActual = [];
 %             for(i=1:size(maStateLog,1))
 %                 rVect = stateLog.entries(i).position;
 %                 vVect = stateLog.entries(i).velocity;
@@ -162,7 +162,7 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
 %                 
 %                 fprintf('%f - %f - %u - %u\n',rad2deg(pitchAngle),stateLog.entries(i).time,stateLog.entries(i).event.getEventNum(), i);
 %                 
-%                 throttleActual(end+1) = 100*stateLog.entries(i).throttle;
+%                 angOfSideslipActual(end+1) = rad2deg(bankAng);
 %             end
 %                         
 %             figure(123);
@@ -170,10 +170,10 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
 %             plot(time,totalMass);
 %             
 %             subplot(3,1,2)
-%             plot(time,pitchActual);
+%             plot(time,angOfAttackActual);
 %             
 %             subplot(3,1,3)
-%             plot(time,angOfAttackActual);
+%             plot(time,angOfSideslipActual);
         end
     end
 end

@@ -80,8 +80,15 @@ classdef InitialStateModel < matlab.mixin.SetGet
         function vars = getAllOptVars(obj)
             vars = obj.getExistingOptVar();
             
-            vars(end+1) = obj.steeringModel.getExistingOptVar();
-            vars(end+1) = obj.throttleModel.getExistingOptVar();
+            steeringVar = obj.steeringModel.getExistingOptVar();
+            if(not(isempty(steeringVar)))
+                vars(end+1) = obj.steeringModel.getExistingOptVar();
+            end
+            
+            throttleVar = obj.throttleModel.getExistingOptVar();
+            if(not(isempty(throttleVar)))
+                vars(end+1) = throttleVar;
+            end
         end
     end
 

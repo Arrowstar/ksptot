@@ -68,7 +68,11 @@ classdef OptimizationVariablesNearBoundsValidator < AbstractLaunchVehicleDataVal
                 [tf, eVars] = event.hasActiveOptVars();
                 
                 if(tf)
-                    inds = find(ismember(vars,eVars));
+                    inds = zeros(size(vars));
+                    for(j=1:length(eVars))
+                        inds = inds | ismember(vars,eVars(j));
+                    end
+
                     if(not(isempty(inds)))
                         if(ismember(inds,warnInd))
                             eventNums(end+1) = i; %#ok<AGROW>

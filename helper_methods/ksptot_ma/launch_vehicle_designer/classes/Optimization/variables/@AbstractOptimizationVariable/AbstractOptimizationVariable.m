@@ -30,6 +30,10 @@ classdef(Abstract) AbstractOptimizationVariable < matlab.mixin.SetGet & matlab.m
         
         function tf = eq(A,B)
             tf = [A.id] == [B.id];
-        end  
+        end 
+        
+        function tf = ne(A,B)
+            tf = [A.id] ~= [B.id];
+        end 
     end
 end
