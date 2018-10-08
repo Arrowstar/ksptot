@@ -55,7 +55,7 @@ function ma_ObserveOptimGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 % Choose default command line output for ma_ObserveOptimGUI
 handles.output = hObject;
 
-handles.ma_MainGUI = varargin{1};
+celBodyData = varargin{1};
 problem = varargin{2};
 
 if(length(varargin) >= 3)
@@ -66,6 +66,13 @@ end
 
 if(length(varargin) >= 4)
     writeOutput = varargin{4};    
+end
+
+propNames = {'Fuel/Ox', 'Monoprop', 'Xenon'};
+if(length(varargin) >= 5)
+    handles.ma_MainGUI = varargin{5};  
+    maData = getappdata(handles.ma_MainGUI,'ma_data');
+    propNames = maData.spacecraft.propellant.names;
 end
 
 % Update handles structure
@@ -81,9 +88,9 @@ set(handles.dispAxes,'ZTickLabel',[]);
 set(handles.dispAxes,'Visible','off');
 drawnow;
 
-celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
+% celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
 recorder = ma_OptimRecorder();
-outputFnc = @(x, optimValues, state) ma_OptimOutputFunc(x, optimValues, state, handles, problem, celBodyData, recorder);
+outputFnc = @(x, optimValues, state) ma_OptimOutputFunc(x, optimValues, state, handles, problem, celBodyData, recorder, propNames);
 problem.options.OutputFcn = outputFnc;
 
 if(not(isLVD))

@@ -73,7 +73,7 @@ function ma_MissionOptimizerGUI_OpeningFcn(hObject, eventdata, handles, varargin
     optVarListbox_Callback(handles.optVarListbox, [], handles);
 
     setOptVarListbox(handles.eventObjFuncCombo, maData);
-    populateBodiesCombo(handles, handles.bodyObjFuncCombo);
+    populateBodiesCombo(getappdata(handles.ma_MainGUI,'celBodyData'), handles.bodyObjFuncCombo);
     bodyObjFuncCombo_Callback(handles.objFuncCombo, [], handles);
 
     populateGUIFromOptSettings(handles, maData);
@@ -101,24 +101,6 @@ function setOptVarListbox(hListbox, maData)
     
     set(hListbox,'String',listboxStr);
     
-   
-% function populateBodiesCombo(handles, hBodiesCombo)
-%     celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
-%     bodies = fields(celBodyData);
-%     
-%     bodiesStr = cell(length(bodies),1);
-%     for(i = 1:length(bodies)) %#ok<*NO4LP>
-%         body = bodies{i};
-%         bodiesStr{i} = celBodyData.(body).name;
-%     end
-%     
-%     set(hBodiesCombo, 'String', bodiesStr);
-%     if(length(bodiesStr) >= 1)
-%         set(hBodiesCombo, 'value', 1);
-%     elseif(length(bodiesStr) >= 1)
-%         set(hBodiesCombo, 'value', 1);
-%     end
-
     
 function populateGUIFromOptSettings(handles, maData)
     script = maData.script;
@@ -579,7 +561,7 @@ function optimizeMissionButton_Callback(hObject, eventdata, handles)
     waitbar(1,hWaitbar);
     close(hWaitbar);
     
-    ma_ObserveOptimGUI(handles.ma_MainGUI, problem, false);
+    ma_ObserveOptimGUI(celBodyData, problem, false, [], handles.ma_MainGUI);
 
     uiresume(handles.ma_MissionOptimizerGUI);
     close(handles.ma_MissionOptimizerGUI); 

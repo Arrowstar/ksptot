@@ -62,8 +62,8 @@ guidata(hObject, handles);
 
 %GUI setup
 setResourceLabelStrings(handles);
-populateBodiesCombo(handles, handles.bodiesCombo);
-populateBodiesCombo(handles, handles.launchBodiesCombo);
+populateBodiesCombo(getappdata(handles.ma_MainGUI,'celBodyData'), handles.bodiesCombo);
+populateBodiesCombo(getappdata(handles.ma_MainGUI,'celBodyData'), handles.launchBodiesCombo);
 initStateTypeBtnGrp_SelectionChangedFcn(handles.setStateRadioBtn, [], handles);
 
 if(length(varargin) > 2) 

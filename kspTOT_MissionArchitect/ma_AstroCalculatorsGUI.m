@@ -66,7 +66,7 @@ setUpGui(handles);
 % uiwait(handles.ma_AstroCalulatorGUI);
 
 function setUpGui(handles)
-    populateBodiesCombo(handles, handles.centralBodyCombo);
+    populateBodiesCombo(getappdata(handles.ma_MainGUI,'celBodyData'), handles.centralBodyCombo);
 
 
 

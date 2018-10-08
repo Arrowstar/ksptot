@@ -58,17 +58,10 @@ function lvd_EditGenericMAConstraintGUI_OpeningFcn(hObject, eventdata, handles, 
     constraint = varargin{1};
     setappdata(hObject, 'constraint', constraint);
     
-    maData = varargin{2};
-    setappdata(hObject,'maData',maData);
-    
-    lvdData = varargin{3};
+    lvdData = varargin{2};
     setappdata(hObject,'lvdData',lvdData);
     
-    hMaMainGUI = varargin{4};
-    handles.ma_MainGUI = hMaMainGUI;
-    setappdata(hObject,'hMaMainGUI',hMaMainGUI);
-    
-	populateGUI(handles, constraint, maData, lvdData);
+	populateGUI(handles, constraint, lvdData);
     
     % Update handles structure
     guidata(hObject, handles);
@@ -76,7 +69,7 @@ function lvd_EditGenericMAConstraintGUI_OpeningFcn(hObject, eventdata, handles, 
     % UIWAIT makes lvd_EditGenericMAConstraintGUI wait for user response (see UIRESUME)
     uiwait(handles.lvd_EditGenericMAConstraintGUI);
 
-function populateGUI(handles, constraint, maData, lvdData)
+function populateGUI(handles, constraint, lvdData)
     handles.constraintTypeLabel.String = constraint.constraintType;
     [unit, ~, ~, usesLbUb, usesCelBody, usesRefSc] = constraint.getConstraintStaticDetails();
     
@@ -95,7 +88,7 @@ function populateGUI(handles, constraint, maData, lvdData)
     handles.lbUnitLabel.String = unit;
     
     if(usesCelBody)
-        populateBodiesCombo(handles, handles.celBodyCombo, true);
+        populateBodiesCombo(lvdData.celBodyData, handles.celBodyCombo, true);
         if(not(isempty(constraint.refBodyInfo)))
             value = findValueFromComboBox(constraint.refBodyInfo.name, handles.celBodyCombo);
             handles.celBodyCombo.Value = value;
@@ -115,21 +108,19 @@ function populateGUI(handles, constraint, maData, lvdData)
         end
 
         populateOtherSCCombo(handles, handles.refSpacecraftCombo);
-        if(isfield(maData.spacecraft,'otherSC'))
-            otherSC = maData.spacecraft.otherSC;
-            if(~isempty(otherSC))
-                enableRefSC = true;
-                for(i=1:length(otherSC)) %#ok<*NO4LP>
-                    oSC = otherSC{i};
-                    if(oSC.id == otherSCID)
-                        value = findValueFromComboBox(oSC.name, handles.refSpacecraftCombo);
-                        set(handles.refSpacecraftCombo,'value',value);
-                        break;
-                    end
+        otherSC = {};
+        if(~isempty(otherSC))
+            enableRefSC = true;
+            for(i=1:length(otherSC)) %#ok<*NO4LP>
+                oSC = otherSC{i};
+                if(oSC.id == otherSCID)
+                    value = findValueFromComboBox(oSC.name, handles.refSpacecraftCombo);
+                    set(handles.refSpacecraftCombo,'value',value);
+                    break;
                 end
-            else
-                enableRefSC = false;
             end
+        else
+            enableRefSC = false;
         end
 
         if(enableRefSC)
@@ -161,9 +152,8 @@ function varargout = lvd_EditGenericMAConstraintGUI_OutputFcn(hObject, eventdata
         varargout{1} = false;
     else
         constraint = getappdata(hObject, 'constraint');
-        maData = getappdata(hObject,'maData');
         lvdData = getappdata(hObject,'lvdData');
-        celBodyData = maData.celBodyData;
+        celBodyData = lvdData.celBodyData;
         
         constraint.lb = str2double(handles.lbText.String);
         constraint.ub = str2double(handles.ubText.String);
@@ -177,7 +167,7 @@ function varargout = lvd_EditGenericMAConstraintGUI_OutputFcn(hObject, eventdata
             constraint.refBodyInfo = KSPTOT_BodyInfo.empty(1,0);
         end
         
-        otherSC = maData.spacecraft.otherSC;
+        otherSC = {};
         if(length(otherSC) > 1)
             selOSC = handles.refSpacecraftCombo.Value;
             constraint.refOtherSC = otherSC(selOSC);

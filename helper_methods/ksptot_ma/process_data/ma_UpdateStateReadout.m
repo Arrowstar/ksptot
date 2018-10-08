@@ -1,4 +1,4 @@
-function ma_UpdateStateReadout(hStateReadoutLabel, whichState, maData, stateLog, celBodyData)
+function ma_UpdateStateReadout(hStateReadoutLabel, whichState, propNames, stateLog, celBodyData)
 %ma_UpdateStateReadout Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -13,7 +13,7 @@ function ma_UpdateStateReadout(hStateReadoutLabel, whichState, maData, stateLog,
     else
         error(['Unknown state type "', whichState,'" when generating state readouts.']);
     end
-    [stateStr, stateTooltipStr] = generateStateReadoutStr(state, maData.spacecraft.propellant.names, celBodyData);
+    [stateStr, stateTooltipStr] = generateStateReadoutStr(state, propNames, celBodyData);
     set(hStateReadoutLabel,'String',stateStr);
     set(hStateReadoutLabel, 'TooltipString', stateTooltipStr);
     

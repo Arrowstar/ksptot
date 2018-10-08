@@ -167,7 +167,7 @@ function sliderUTTextUpdtFunction(ut, hStateLabel, hSlider, hUTSelectText, handl
     set(hUTSelectText, 'String', num2str(ut));
 	set(hSlider, 'Value', utInd);
   
-	ma_UpdateStateReadout(hStateLabel, 'initial', maData, stateLogLatest, celBodyData);
+	ma_UpdateStateReadout(hStateLabel, 'initial', maData.spacecraft.propellant.names, stateLogLatest, celBodyData);
     
     
 function errMsg = validateInputs(hUTSelectText, minUT, maxUT)

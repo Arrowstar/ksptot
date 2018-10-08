@@ -57,7 +57,7 @@ handles.output = hObject;
 handles.ma_MainGUI = varargin{1};
 handles.ksptotMainGUI = varargin{2};
 
-populateBodiesCombo(handles, handles.centralBodyCombo);
+populateBodiesCombo(getappdata(handles.ma_MainGUI,'celBodyData'), handles.centralBodyCombo);
 bodyComboValue = findValueFromComboBox('Kerbin', handles.centralBodyCombo);
 if(isempty(bodyComboValue))
     bodyComboValue = 1;
@@ -171,7 +171,7 @@ function otherSCListbox_Callback(hObject, eventdata, handles)
             vZ = vVect(3);
             
             state = [UT, rX, rY, rZ, vX, vY, vZ, oSC.parentID, 0 0 0 0 1];
-            viewSpacecraftStatePopupGUI(handles.ma_MainGUI, state, 1);
+            viewSpacecraftStatePopupGUI(maData.spacecraft.propellant.names, state, 1, celBodyData);
         end
     end
 

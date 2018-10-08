@@ -56,7 +56,7 @@ function ma_GroundStationsGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 handles.output = hObject;
 handles.ma_MainGUI = varargin{1};
 
-populateBodiesCombo(handles, handles.centralBodyCombo);
+populateBodiesCombo(getappdata(handles.ma_MainGUI,'celBodyData'), handles.centralBodyCombo);
 bodyComboValue = findValueFromComboBox('Kerbin', handles.centralBodyCombo);
 if(isempty(bodyComboValue))
     bodyComboValue = 1;

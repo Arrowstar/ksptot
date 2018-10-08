@@ -476,7 +476,7 @@ function updateFinalStateLabel(handles, bodyInfo)
     
     stateLog = [ut, Y(end,1:3), Y(end,4:6), bodyInfo.id, dryMass, fuelMass, 0.0, 0.0, 1];
 
-    ma_UpdateStateReadout(handles.finalStateLabel, 'final', maData, stateLog, celBodyData);
+    ma_UpdateStateReadout(handles.finalStateLabel, 'final', maData.spacecraft.propellant.names, stateLog, celBodyData);
     
 function postInputUpdate(handles)
     maData = getappdata(handles.ma_MainGUI,'ma_data');

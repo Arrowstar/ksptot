@@ -11,7 +11,7 @@ classdef NoOptimizationObjectiveFcn < AbstractObjectiveFcn
             
         end
         
-        function [f, stateLog] = evalObjFcn(obj, x, ~)
+        function [f, stateLog] = evalObjFcn(obj, x)
             obj.lvdOptim.vars.updateObjsWithVarValues(x);
             stateLog = obj.lvdData.script.executeScript();
             

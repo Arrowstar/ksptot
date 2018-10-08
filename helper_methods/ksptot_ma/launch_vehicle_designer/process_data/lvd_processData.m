@@ -1,10 +1,8 @@
 function lvd_processData(handles)
     %lvd_processData Summary of this function goes here
     %   Detailed explanation goes here
-    maData = getappdata(handles.ma_LvdMainGUI,'maData');
-    celBodyData = getappdata(handles.ma_LvdMainGUI,'celBodyData');
-       
-    lvdData = maData.lvdData;
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    celBodyData = lvdData.celBodyData;
     
     maStateLog = lvdData.stateLog.getMAFormattedStateLogMatrix();
     
@@ -36,8 +34,9 @@ function lvd_processData(handles)
     %%%%%%%%%%
     % Update State Readouts
     %%%%%%%%%%
-    ma_UpdateStateReadout(handles.initialStateReadoutLabel, 'initial', maData, maStateLog, celBodyData);
-    ma_UpdateStateReadout(handles.finalStateReadoutLabel, 'final', maData, maStateLog, celBodyData);
+    propNames = {'Fuel/Ox', 'Monoprop', 'Xenon'};
+    ma_UpdateStateReadout(handles.initialStateReadoutLabel, 'initial', propNames, maStateLog, celBodyData);
+    ma_UpdateStateReadout(handles.finalStateReadoutLabel, 'final', propNames, maStateLog, celBodyData);
     drawnow;
 end
 

@@ -66,7 +66,7 @@ substituteDefaultPropNamesWithCustomNamesInDepVarListbox(handles.depVarListbox, 
 useSubplotCheckbox_Callback(handles.useSubplotCheckbox, eventdata, handles);
 set(handles.startTimeText,'String',fullAccNum2Str(maData.stateLog(1,1)));
 set(handles.endTimeText,'String',fullAccNum2Str(maData.stateLog(end,1)));
-populateBodiesCombo(handles, handles.refBodyCombo);
+populateBodiesCombo(getappdata(handles.ma_MainGUI,'celBodyData'), handles.refBodyCombo);
 populateOtherSCCombo(handles, handles.refSpacecraftCombo);
 populateStationsCombo(handles, handles.refStationCombo);
 indepVarCombo_Callback(handles.indepVarCombo, [], handles);

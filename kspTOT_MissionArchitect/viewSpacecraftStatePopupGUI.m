@@ -58,13 +58,14 @@ handles.output = hObject;
 % Update handles structure
 guidata(hObject, handles);
 
-handles.ma_MainGUI = varargin{1};
+propNames = varargin{1};
 stateLog = varargin{2};
 eventNum = varargin{3};
-maData = getappdata(handles.ma_MainGUI,'ma_data');
-celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
+celBodyData = varargin{4};
+% maData = getappdata(handles.ma_MainGUI,'ma_data');
+% celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
 set(hObject, 'Name', ['Spacecraft State After Event ', num2str(eventNum)]);
-ma_UpdateStateReadout(handles.stateLabel, 'initial', maData, stateLog, celBodyData);
+ma_UpdateStateReadout(handles.stateLabel, 'initial', propNames, stateLog, celBodyData);
 
 % UIWAIT makes viewSpacecraftStatePopupGUI wait for user response (see UIRESUME)
 % uiwait(handles.viewSpacecraftStatePopupGUI);

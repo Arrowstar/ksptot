@@ -63,8 +63,8 @@ handles.ma_MainGUI = varargin{1};
 guidata(hObject, handles);
 
 % Setup GUI
-populateBodiesCombo(handles, handles.bodiesCombo, true);
-populateBodiesCombo(handles, handles.customFuncRefCelBodyCombo, false);
+populateBodiesCombo(getappdata(handles.ma_MainGUI,'celBodyData'), handles.bodiesCombo, true);
+populateBodiesCombo(getappdata(handles.ma_MainGUI,'celBodyData'), handles.customFuncRefCelBodyCombo, false);
 populateOtherSCCombo(handles, handles.customFuncRefSpacecraftCombo);
 populateStationsCombo(handles, handles.customFuncRefGrdStnCombo);
 

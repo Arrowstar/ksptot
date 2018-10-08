@@ -30,8 +30,8 @@ function ma_processData(handles, varargin)
     %%%%%%%%%%
     % Update State Readouts
     %%%%%%%%%%
-    ma_UpdateStateReadout(handles.initialStateReadoutLabel, 'initial', maData, maData.stateLog, celBodyData);
-    ma_UpdateStateReadout(handles.finalStateReadoutLabel, 'final', maData, maData.stateLog, celBodyData);
+    ma_UpdateStateReadout(handles.initialStateReadoutLabel, 'initial', maData.spacecraft.propellant.names, maData.stateLog, celBodyData);
+    ma_UpdateStateReadout(handles.finalStateReadoutLabel, 'final', maData.spacecraft.propellant.names, maData.stateLog, celBodyData);
     drawnow;
 end
 

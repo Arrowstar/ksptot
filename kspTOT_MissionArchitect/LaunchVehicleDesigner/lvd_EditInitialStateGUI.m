@@ -54,18 +54,13 @@ function lvd_EditInitialStateGUI_OpeningFcn(hObject, eventdata, handles, varargi
 
     % Choose default command line output for lvd_EditInitialStateGUI
     handles.output = hObject;
-
-    maData = varargin{1};
-    setappdata(hObject,'maData',maData);
-    
-    lvdData = varargin{2};
+   
+    lvdData = varargin{1};
     setappdata(hObject,'lvdDta',lvdData);
+       
+    handles.ksptotMainGUI = varargin{2};
     
-    handles.ma_MainGUI = varargin{3};
-    
-    handles.ksptotMainGUI = varargin{4};
-    
-    populateGUI(handles, maData, lvdData)
+    populateGUI(handles, lvdData)
 
     % Update handles structure
     guidata(hObject, handles);
@@ -74,11 +69,11 @@ function lvd_EditInitialStateGUI_OpeningFcn(hObject, eventdata, handles, varargi
     uiwait(handles.lvd_EditInitialStateGUI);
 
     
-function populateGUI(handles, maData, lvdData)
+function populateGUI(handles, lvdData)
     initStateModel = lvdData.initStateModel;
     
     bodyInfo = initStateModel.centralBody;
-    populateBodiesCombo(handles, handles.centralBodyCombo, false);
+    populateBodiesCombo(lvdData.celBodyData, handles.centralBodyCombo, false);
     value = findValueFromComboBox(bodyInfo.name, handles.centralBodyCombo);
 	handles.centralBodyCombo.Value = value;
     
@@ -239,8 +234,8 @@ function varargout = lvd_EditInitialStateGUI_OutputFcn(hObject, eventdata, handl
 
 
 function bodyInfo = getSelectedBodyInfo(handles)
-	maData = getappdata(handles.lvd_EditInitialStateGUI,'maData');
-    celBodyData = maData.celBodyData;
+	lvdDta = getappdata(handles.lvd_EditInitialStateGUI,'lvdDta');
+    celBodyData = lvdDta.celBodyData;
     
     bodyStr = handles.centralBodyCombo.String;
     bodyName = lower(strtrim(bodyStr{handles.centralBodyCombo.Value}));
@@ -1157,8 +1152,8 @@ function copyOrbitToClipboardMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to copyOrbitToClipboardMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-	maData = getappdata(handles.lvd_EditInitialStateGUI,'maData');
-    celBodyData = maData.celBodyData;
+	lvdDta = getappdata(handles.lvd_EditInitialStateGUI,'lvdDta');
+    celBodyData = lvdDta.celBodyData;
     
     contents = cellstr(get(handles.centralBodyCombo,'String'));
     selected = strtrim(contents{get(handles.centralBodyCombo,'Value')});
@@ -1183,8 +1178,8 @@ function pasteOrbitFromClipboardMenu_Callback(hObject, eventdata, handles)
     handles.orbitTypeCombo.Value = ind;
     orbitTypeCombo_Callback(handles.orbitTypeCombo, [], handles);
 
-	maData = getappdata(handles.lvd_EditInitialStateGUI,'maData');
-    celBodyData = maData.celBodyData;
+	lvdDta = getappdata(handles.lvd_EditInitialStateGUI,'lvdDta');
+    celBodyData = lvdDta.celBodyData;
 
     pasteOrbitFromClipboard(handles.utText, handles.orbit1Text, handles.orbit2Text, ...
                                  handles.orbit3Text, handles.orbit4Text, handles.orbit5Text, ...

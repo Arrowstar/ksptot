@@ -54,15 +54,9 @@ function lvd_EditConstraintsGUI_OpeningFcn(hObject, eventdata, handles, varargin
 
     % Choose default command line output for lvd_EditConstraintsGUI
     handles.output = hObject;
-
-    maData = varargin{1};
-    setappdata(hObject,'maData',maData);
     
-    lvdData = varargin{2};
+    lvdData = varargin{1};
     setappdata(hObject,'lvdData',lvdData);
-    
-    hMaMainGUI = varargin{3};
-    setappdata(hObject,'hMaMainGUI',hMaMainGUI);
     
     populateGUI(handles, lvdData);
     
@@ -108,15 +102,13 @@ function constraintsListBox_Callback(hObject, eventdata, handles)
 % Hints: contents = cellstr(get(hObject,'String')) returns constraintsListBox contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from constraintsListBox
     if(strcmpi(get(handles.lvd_EditConstraintsGUI,'SelectionType'),'open'))
-        maData = getappdata(handles.lvd_EditConstraintsGUI,'maData');
         lvdData = getappdata(handles.lvd_EditConstraintsGUI,'lvdData');
-        hMaMainGUI = getappdata(handles.lvd_EditConstraintsGUI,'hMaMainGUI');
 
         constraintSet = lvdData.optimizer.constraints;
         selConstraint = get(handles.constraintsListBox,'Value');
         constraint = constraintSet.getConstraintForInd(selConstraint);
         
-        constraint.openEditConstraintUI(maData, lvdData, hMaMainGUI);
+        constraint.openEditConstraintUI(lvdData);
 
         listBoxStr = constraintSet.getListboxStr();
         set(handles.constraintsListBox,'String',listBoxStr);
@@ -142,7 +134,6 @@ function addConstraintButton_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)    
     maData = getappdata(handles.lvd_EditConstraintsGUI,'maData');
     lvdData = getappdata(handles.lvd_EditConstraintsGUI,'lvdData');
-    hMaMainGUI = getappdata(handles.lvd_EditConstraintsGUI,'hMaMainGUI');
     
     listBoxStr = ConstraintEnum.getListBoxStr();
     
@@ -158,7 +149,7 @@ function addConstraintButton_Callback(hObject, eventdata, handles)
         
         newConstraint = eval(sprintf('%s.getDefaultConstraint(%s)', constClass, 'input1'));
         
-        addConstraintTf = newConstraint.openEditConstraintUI(maData, lvdData, hMaMainGUI);
+        addConstraintTf = newConstraint.openEditConstraintUI(maData, lvdData);
         
         if(addConstraintTf)
             constraintSet = lvdData.optimizer.constraints;  

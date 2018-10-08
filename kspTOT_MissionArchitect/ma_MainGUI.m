@@ -1100,7 +1100,7 @@ function reoptimizeMission_Callback(hObject, eventdata, handles)
             waitbar(1,hWaitbar);
             close(hWaitbar);
 
-            ma_ObserveOptimGUI(handles.ma_MainGUI, problem, false);
+            ma_ObserveOptimGUI(celBodyData, problem, false, [], handles.ma_MainGUI);
             ma_processData(handles);
         end
     end
@@ -1118,7 +1118,7 @@ function viewStateAfterSelectedEventMenu_Callback(hObject, eventdata, handles)
     state = stateLog(stateLog(:,13)==eventNum,:);
     state = state(end,:);
 
-    viewSpacecraftStatePopupGUI(handles.ma_MainGUI, state, eventNum);
+    viewSpacecraftStatePopupGUI(maData.spacecraft.propellant.names, state, eventNum, maData.celBodyData);
 
 
 % --- Executes on slider movement.
@@ -2557,21 +2557,4 @@ function launchVehicleDesignerMenu_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
     maData = getappdata(handles.ma_MainGUI,'ma_data');
-    celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
 
-    lvd_hFig = findall(0,'Tag','ma_LvdMainGUI');
-    if(~isempty(lvd_hFig))
-        figure(lvd_hFig);
-    else
-        hMsg = helpdlg('Starting Launch Vehicle Designer.  Please wait...','Launch Vehicle Designer');
-        hFig = ma_LvdMainGUI(maData,celBodyData,handles.ma_MainGUI,handles.ksptotMainGUI);
-
-        openToolWindows = getappdata(handles.ksptotMainGUI,'openToolWindows');
-        openToolWindows = cleanOpenToolWindowsArr(openToolWindows);
-        openToolWindows(end+1) = hFig;
-        setappdata(handles.ksptotMainGUI,'openToolWindows',openToolWindows);
-        
-        if(isvalid(hMsg))
-            close(hMsg);
-        end
-    end

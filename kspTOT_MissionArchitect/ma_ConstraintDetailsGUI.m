@@ -74,7 +74,7 @@ guidata(hObject, handles);
 
 set(hObject, 'UserData', [lbLim, ubLim, eventNum, eventID]);
 
-populateBodiesCombo(handles, handles.celBodyCombo, true);
+populateBodiesCombo(getappdata(handles.ma_MainGUI,'celBodyData'), handles.celBodyCombo, true);
 populateOtherSCCombo(handles, handles.otherSCCombo);
 populateEventCombo(handles.eventCombo, handles);
 initGUI(handles,type,unit,lbVal,ubVal,bodyID,otherSCID,eventID,lbActive,ubActive);

@@ -61,7 +61,7 @@ handles.ma_MainGUI = varargin{1};
 guidata(hObject, handles);
 
 %GUI setup
-populateBodiesCombo(handles, handles.centralBodyCombo);
+populateBodiesCombo(getappdata(handles.ma_MainGUI,'celBodyData'), handles.centralBodyCombo);
 value = findValueFromComboBox('Kerbin', handles.centralBodyCombo);
 if(~isempty(value))
     set(handles.centralBodyCombo,'Value',value);

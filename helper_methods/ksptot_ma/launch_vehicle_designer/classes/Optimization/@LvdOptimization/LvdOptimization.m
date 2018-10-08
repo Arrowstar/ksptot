@@ -19,23 +19,21 @@ classdef LvdOptimization < matlab.mixin.SetGet
             obj.constraints = ConstraintSet(obj, lvdData);
         end
         
-        function optimize(obj, hMaMainGUI, writeOutput)  
-            maData = getappdata(hMaMainGUI,'ma_data');
-            
-            objFuncWrapper = @(x) obj.objFcn.evalObjFcn(x, maData);
+        function optimize(obj, writeOutput)            
+            objFuncWrapper = @(x) obj.objFcn.evalObjFcn(x);
             x0All = obj.vars.getTotalXVector();
             [lbAll, ubAll] = obj.vars.getTotalBndsVector();
-            nonlcon = @(x) obj.constraints.evalConstraints(x, maData);
+            nonlcon = @(x) obj.constraints.evalConstraints(x);
             
-            optimAlg = maData.settings.optimAlg;
-            usePara = maData.settings.parallelScriptOptim;
-            options = optimoptions('fmincon','Algorithm','sqp', 'Diagnostics','on', 'Display','iter-detailed','TolFun',1E-10,'TolX',1E-10,'TolCon',1E-10,'ScaleProblem','none','MaxIter',500,'UseParallel',usePara,'OutputFcn',[],'InitBarrierParam',1.0,'InitTrustRegionRadius',0.1,'HonorBounds',true,'MaxFunctionEvaluations',3000);
+            optimAlg = 'sqp';
+            usePara = true;
+            options = optimoptions('fmincon','Algorithm',optimAlg, 'Diagnostics','on', 'Display','iter-detailed','TolFun',1E-10,'TolX',1E-10,'TolCon',1E-10,'ScaleProblem','none','MaxIter',500,'UseParallel',usePara,'OutputFcn',[],'InitBarrierParam',1.0,'InitTrustRegionRadius',0.1,'HonorBounds',true,'MaxFunctionEvaluations',3000);
             problem = createOptimProblem('fmincon', 'objective',objFuncWrapper, 'x0', x0All, 'lb', lbAll, 'ub', ubAll, 'nonlcon', nonlcon, 'options', options);
             
             problem.lvdData = obj.lvdData; %need to get lvdData in somehow
             
             %TODO           
-            ma_ObserveOptimGUI(hMaMainGUI, problem, true, writeOutput);
+            ma_ObserveOptimGUI(obj.lvdData.celBodyData, problem, true, writeOutput);
         end
         
         function tf = usesStage(obj, stage)

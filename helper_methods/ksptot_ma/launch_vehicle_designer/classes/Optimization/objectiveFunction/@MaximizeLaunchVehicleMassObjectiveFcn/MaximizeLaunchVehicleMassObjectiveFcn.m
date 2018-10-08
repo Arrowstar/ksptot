@@ -16,20 +16,12 @@ classdef MaximizeLaunchVehicleMassObjectiveFcn < AbstractObjectiveFcn
             obj.lvdData = lvdData;
         end
         
-        function [f, stateLog] = evalObjFcn(obj, x, ~,~)
-            if(any(isnan(x)))
-                a = 1;
-            end
-            
+        function [f, stateLog] = evalObjFcn(obj, x)            
             obj.lvdOptim.vars.updateObjsWithVarValues(x);
             stateLog = obj.lvdData.script.executeScript();
             
             subStateLog = stateLog.getLastStateLogForEvent(obj.event);
             f = -1*subStateLog.getTotalVehicleMass();
-            
-            if(any(isnan(f)))
-                a = 1;
-            end
         end
         
         function tf = usesStage(obj, stage)

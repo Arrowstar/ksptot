@@ -1,4 +1,4 @@
-function stop = ma_OptimOutputFunc(x, optimValues, state, handles, problem, celBodyData, recorder)
+function stop = ma_OptimOutputFunc(x, optimValues, state, handles, problem, celBodyData, recorder, propNames)
     stop = false;
     switch state
         case 'iter'
@@ -23,7 +23,7 @@ function stop = ma_OptimOutputFunc(x, optimValues, state, handles, problem, celB
     end
     
     writeOptimStatus(handles, optimValues, state);
-    writeFinalState(handles, stateLog, celBodyData);
+    writeFinalState(handles, stateLog, celBodyData, propNames);
     generatePlots(x, optimValues, state, handles, problem.lb, problem.ub);
     drawnow;
 end
@@ -58,11 +58,10 @@ function writeOptimStatus(handles, optimValues, state)
     set(handles.optimStatusLabel, 'String', outStr);
 end
 
-function writeFinalState(handles, stateLog, celBodyData)
+function writeFinalState(handles, stateLog, celBodyData, propNames)
     whichState = 'final';
     hStateReadoutLabel = handles.finalStateOptimLabel;
-    maData = getappdata(handles.ma_MainGUI,'ma_data');
-    ma_UpdateStateReadout(hStateReadoutLabel, whichState, maData, stateLog, celBodyData);
+    ma_UpdateStateReadout(hStateReadoutLabel, whichState, propNames, stateLog, celBodyData);
 end
     
 function generatePlots(x, optimValues, state, handles, lb, ub)

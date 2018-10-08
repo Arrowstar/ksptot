@@ -19,7 +19,7 @@ classdef(Abstract) AbstractConstraint < matlab.mixin.SetGet & matlab.mixin.Heter
         
         name = getName(obj)
         
-        addConstraintTf = openEditConstraintUI(obj, maData, lvdData, hMaMainGUI);
+        addConstraintTf = openEditConstraintUI(obj, lvdData);
     end
     
     methods(Static)

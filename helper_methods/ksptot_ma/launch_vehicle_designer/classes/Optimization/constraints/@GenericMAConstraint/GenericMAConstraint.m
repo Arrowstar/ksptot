@@ -96,8 +96,8 @@ classdef GenericMAConstraint < AbstractConstraint
             [unit, lbLim, ubLim, ~, ~, ~, ~, usesLbUb, usesCelBody, usesRefSc] = ma_getConstraintStaticDetails(obj.constraintType);           
         end
         
-        function addConstraintTf = openEditConstraintUI(obj, maData, lvdData, hMaMainGUI)
-            addConstraintTf = lvd_EditGenericMAConstraintGUI(obj, maData, lvdData, hMaMainGUI);
+        function addConstraintTf = openEditConstraintUI(obj, lvdData)
+            addConstraintTf = lvd_EditGenericMAConstraintGUI(obj, lvdData);
         end
     end
     
@@ -107,37 +107,3 @@ classdef GenericMAConstraint < AbstractConstraint
         end
     end
 end
-
-
-
-
-
-
-%             switch type
-%                 case {'ut'}
-%                     value = ma_TimeTask(stateLogEntry, type, celBodyData);
-%                 case {'rX','rY','rZ','vX','vY','vZ','rNorm','vNorm'}
-%                     value = ma_GAVectorElementsTask(stateLogEntry, type, celBodyData);
-%                 case {'sma','ecc','inc','raan','arg','tru','mean','period','sunRX','sunRY','sunRZ','rPe','rAp','altPe','altAp','betaAngle'}
-%                     value = ma_GAKeplerElementsTask(stateLogEntry, type, celBodyData);
-%                 case {'Elevation'}
-%                     value = ma_GAAzElRangeTasks(stateLogEntry, type, obj.refStation, celBodyData);
-%                 case {'CB_ID'}
-%                     value = ma_GACentralBodyTasks(stateLogEntry, type, celBodyData);
-%                 case {'distToCelBody'}
-%                     value = ma_GADistToCelBodyTask(stateLogEntry, type, obj.refBodyInfo, celBodyData);
-%                 case {'distToRefSC','relVelToCelBody','relPositionInTrack','relPositionCrossTrack','relPositionRadial','relPositionInTrackOScCentered','relPositionCrossTrackOScCentered','relPositionRadialOScCentered','relSma','relEcc','relInc','relRaan','relArg'}
-%                     value = ma_GADistToRefSCTask(stateLogEntry, type, obj.refOtherSC, celBodyData);
-%                 case {'distToRefStn'}
-%                     value = ma_GADistToRefStationTask(stateLogEntry, type, obj.refStation, celBodyData);
-%                 case {'Eclipse','OtherSC_LOS','Station_LOS'}
-%                     value = ma_GAEclipseTask(stateLogEntry, type, obj.refOtherSC, obj.refStation, celBodyData);
-%                 case {'H1','K1','H2','K2'}
-%                     value = ma_GAEquinoctialElementsTask(stateLogEntry, type, celBodyData);
-%                 case {'long','lat','driftRate','horzVel','vertVel'}
-%                     value = ma_GALongLatAltTasks(stateLogEntry, type, celBodyData);
-%                 case {'fuelOx','monoprop','xenon','dry','total'}
-%                     value = ma_GASpacecraftMassTasks(stateLogEntry, type, celBodyData);
-%                 case {'X','Y','Z','mag','RA','Dec'}
-%                     value = ma_OutboundHyperVelVectTask(stateLogEntry, type, celBodyData);
-%             end

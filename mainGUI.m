@@ -22,7 +22,7 @@ function varargout = mainGUI(varargin)
 
 % Edit the above text to modify the response to help mainGUI
 
-% Last Modified by GUIDE v2.5 24-May-2017 19:07:51
+% Last Modified by GUIDE v2.5 08-Oct-2018 11:25:24
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -871,3 +871,29 @@ function useRssLikeGmMenu_Callback(hObject, eventdata, handles)
     
     options_gravParamType = 'rssLike';
     updateAppOptions(hObject, 'ksptot', 'gravParamType', 'rssLike');
+
+
+% --------------------------------------------------------------------
+function launchVehicleDesignerMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to launchVehicleDesignerMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    mainGUIUserData = get(handles.mainGUIFigure, 'UserData');
+    celBodyData = mainGUIUserData{1,1};
+
+    lvd_hFig = findall(0,'Tag','ma_LvdMainGUI');
+    if(~isempty(lvd_hFig))
+        figure(lvd_hFig);
+    else
+        hMsg = helpdlg('Starting Launch Vehicle Designer.  Please wait...','Launch Vehicle Designer');
+        hFig = ma_LvdMainGUI(celBodyData,handles.mainGUIFigure);
+
+        openToolWindows = getappdata(handles.mainGUIFigure,'openToolWindows');
+        openToolWindows = cleanOpenToolWindowsArr(openToolWindows);
+        openToolWindows(end+1) = hFig;
+        setappdata(handles.mainGUIFigure,'openToolWindows',openToolWindows);
+        
+        if(isvalid(hMsg))
+            close(hMsg);
+        end
+    end

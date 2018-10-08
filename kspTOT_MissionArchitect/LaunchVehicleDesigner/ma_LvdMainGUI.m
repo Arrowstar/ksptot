@@ -55,23 +55,13 @@ function ma_LvdMainGUI_OpeningFcn(hObject, eventdata, handles, varargin)
     % Choose default command line output for ma_LvdMainGUI
     handles.output = hObject;
 
-    maData = varargin{1};
-    setappdata(hObject,'maData',maData);
-
-    celBodyData = varargin{2};
+    celBodyData = varargin{1};
     setappdata(hObject,'celBodyData',celBodyData);
     
-    setappdata(hObject,'hMaMainGUI',varargin{3});
-    
-    setappdata(hObject,'ksptotMainGUI',varargin{4});
+    setappdata(hObject,'ksptotMainGUI',varargin{2});
 
-    if(~isfield(maData,'lvdData') || isempty(maData.lvdData))
-        lvdData = LvdData.getDefaultLvdData(celBodyData);
-        maData.lvdData = lvdData;
-        setappdata(handles.ma_LvdMainGUI,'maData',maData);
-    else
-        lvdData = maData.lvdData;
-    end
+    lvdData = LvdData.getDefaultLvdData(celBodyData);
+	setappdata(handles.ma_LvdMainGUI,'lvdData',lvdData);
 
     output_text_max_line_length = length(getMA_HR());
     setappdata(hObject,'output_text_max_line_length',output_text_max_line_length);
@@ -149,8 +139,7 @@ function scriptListbox_Callback(hObject, eventdata, handles)
 %        contents{get(hObject,'Value')} returns selected item from scriptListbox
     if(strcmpi(get(handles.ma_LvdMainGUI,'SelectionType'),'open'))
         eventNum = get(hObject,'Value');
-        maData = getappdata(handles.ma_LvdMainGUI,'maData');
-        lvdData = maData.lvdData;
+        lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
         
         event = lvdData.script.getEventForInd(eventNum);
         lvd_editEventGUI(event);
@@ -178,8 +167,7 @@ function insertEventButton_Callback(hObject, eventdata, handles)
 % hObject    handle to insertEventButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-    maData = getappdata(handles.ma_LvdMainGUI,'maData');
-    lvdData = maData.lvdData;
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
 
     selEvtNum = get(handles.scriptListbox,'Value');
     event = LaunchVehicleEvent.getDefaultEvent(lvdData.script);
@@ -196,9 +184,8 @@ function moveEventDown_Callback(hObject, eventdata, handles)
 % hObject    handle to moveEventDown (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-    maData = getappdata(handles.ma_LvdMainGUI,'maData');
-    
-    lvdData = maData.lvdData;
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+
     eventNum = get(handles.scriptListbox,'Value');
     lvdData.script.moveEvtAtIndexDown(eventNum);
     
@@ -214,9 +201,8 @@ function deleteEvent_Callback(hObject, eventdata, handles)
 % hObject    handle to deleteEvent (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-    maData = getappdata(handles.ma_LvdMainGUI,'maData');
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
     
-    lvdData = maData.lvdData;
     eventNum = get(handles.scriptListbox,'Value');   
     lvdData.script.removeEventFromIndex(eventNum);
     
@@ -237,9 +223,8 @@ function moveEventUp_Callback(hObject, eventdata, handles)
 % hObject    handle to moveEventUp (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-    maData = getappdata(handles.ma_LvdMainGUI,'maData');
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
     
-    lvdData = maData.lvdData;
     eventNum = get(handles.scriptListbox,'Value');
     lvdData.script.moveEvtAtIndexUp(eventNum);
     
@@ -298,8 +283,7 @@ function warnAlertsSlider_Callback(hObject, eventdata, handles)
     updateWarnErrorLabels(handles, false);
 
 function updateWarnErrorLabels(handles, updateSlider)
-    maData = getappdata(handles.ma_LvdMainGUI,'maData');    
-    lvdData = maData.lvdData;
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');    
 
     hLabels = [handles.warning1Lbl, handles.warning2Lbl, handles.warning3Lbl, ...
               handles.warning4Lbl, handles.warning5Lbl, handles.warning6Lbl];
@@ -331,12 +315,10 @@ function optimizeMissionMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to optimizeMissionMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-    maData = getappdata(handles.ma_LvdMainGUI,'maData');
-    hMaMainGUI = getappdata(handles.ma_LvdMainGUI,'hMaMainGUI');
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
     writeOutput = getappdata(handles.ma_LvdMainGUI,'write_to_output_func');
     
-    lvdData = maData.lvdData;
-    lvdData.optimizer.optimize(hMaMainGUI, writeOutput);
+    lvdData.optimizer.optimize(writeOutput);
     
     runScript(handles, lvdData);
     lvd_processData(handles);
@@ -353,8 +335,7 @@ function editLaunchVehicleMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to editLaunchVehicleMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-    maData = getappdata(handles.ma_LvdMainGUI,'maData');
-    lvdData = maData.lvdData;
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
     
     lvd_editLaunchVehicle(lvdData);
     
@@ -367,8 +348,7 @@ function editObjFunctionMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to editObjFunctionMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-    maData = getappdata(handles.ma_LvdMainGUI,'maData');
-    lvdData = maData.lvdData;
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
     lvd_EditObjectiveFunctionGUI(lvdData);
 
 % --------------------------------------------------------------------
@@ -376,10 +356,8 @@ function editConstraintsMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to editConstraintsMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-    maData = getappdata(handles.ma_LvdMainGUI,'maData');
-    lvdData = maData.lvdData;
-    hMaMainGUI = getappdata(handles.ma_LvdMainGUI,'hMaMainGUI');
-    lvd_EditConstraintsGUI(maData, lvdData, hMaMainGUI);
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    lvd_EditConstraintsGUI(lvdData);
     
     runScript(handles, lvdData);
     lvd_processData(handles);
@@ -389,11 +367,10 @@ function editInitialStateMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to editInitialStateMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-    maData = getappdata(handles.ma_LvdMainGUI,'maData');
-    lvdData = maData.lvdData;
-    hMaMainGUI = getappdata(handles.ma_LvdMainGUI,'hMaMainGUI');
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
     hKsptotMainGUI = getappdata(handles.ma_LvdMainGUI,'ksptotMainGUI');
-    lvd_EditInitialStateGUI(maData, lvdData, hMaMainGUI, hKsptotMainGUI);
+    
+    lvd_EditInitialStateGUI(lvdData, hKsptotMainGUI);
     
     runScript(handles, lvdData);
     lvd_processData(handles);
@@ -403,9 +380,7 @@ function viewStateAfterSelectedEventMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to viewStateAfterSelectedEventMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-    hMaMainGUI = getappdata(handles.ma_LvdMainGUI,'hMaMainGUI');
-    maData = getappdata(handles.ma_LvdMainGUI,'maData');
-    lvdData = maData.lvdData;
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
     
     eventNum = handles.scriptListbox.Value;
     stateLog = lvdData.stateLog.getMAFormattedStateLogMatrix();
@@ -413,15 +388,15 @@ function viewStateAfterSelectedEventMenu_Callback(hObject, eventdata, handles)
     state = stateLog(stateLog(:,13)==eventNum,:);
     state = state(end,:);
 
-    viewSpacecraftStatePopupGUI(hMaMainGUI, state, eventNum);
+    propNames = {'Fuel/Ox', 'Monoprop', 'Xenon'};
+    viewSpacecraftStatePopupGUI(propNames, state, eventNum, lvdData.celBodyData);
 
 % --------------------------------------------------------------------
 function copyUtAtStartOfSelEventMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to copyUtAtStartOfSelEventMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-    maData = getappdata(handles.ma_LvdMainGUI,'maData');
-    lvdData = maData.lvdData;
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
     
     eventNum = handles.scriptListbox.Value;
     stateLog = lvdData.stateLog.getMAFormattedStateLogMatrix();
@@ -436,8 +411,7 @@ function copyUtAtEndOfSelEventMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to copyUtAtEndOfSelEventMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-    maData = getappdata(handles.ma_LvdMainGUI,'maData');
-    lvdData = maData.lvdData;
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
     
     eventNum = handles.scriptListbox.Value;
     stateLog = lvdData.stateLog.getMAFormattedStateLogMatrix();
@@ -452,8 +426,7 @@ function copyDurationOfSelEventMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to copyDurationOfSelEventMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-    maData = getappdata(handles.ma_LvdMainGUI,'maData');
-    lvdData = maData.lvdData;
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
     
     eventNum = handles.scriptListbox.Value;
     stateLog = lvdData.stateLog.getMAFormattedStateLogMatrix();
@@ -468,9 +441,8 @@ function copyOrbitAfterSelectedEventMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to copyOrbitAfterSelectedEventMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-    maData = getappdata(handles.ma_LvdMainGUI,'maData');
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
     celBodyData = getappdata(handles.ma_LvdMainGUI,'celBodyData');
-    lvdData = maData.lvdData;
     
     eventNum = handles.scriptListbox.Value;
     stateLog = lvdData.stateLog.getMAFormattedStateLogMatrix();    

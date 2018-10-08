@@ -63,7 +63,7 @@ guidata(hObject, handles);
 
 % Setup GUI
 % substituteDefaultPropNamesWithCustomNamesListbox(handles);
-populateBodiesCombo(handles, handles.bodiesCombo, true);
+populateBodiesCombo(getappdata(handles.ma_MainGUI,'celBodyData'), handles.bodiesCombo, true);
 if(length(varargin)>1) 
     event = varargin{2};
     setappdata(hObject,'lossConverts',event.massloss.lossConvert);

@@ -1,4 +1,4 @@
-function [hCBodySurf, childrenHGs] = lvd_plotStateLog(stateLog, handles, showSoI, showChildBodies, showChildMarker, showOtherSC, orbitNumToPlot, hDispAxisTitleLabel, maData, lvdData, celBodyData, dAxes, hFig)
+function [hCBodySurf, childrenHGs] = lvd_plotStateLog(stateLog, handles, showSoI, showChildBodies, showChildMarker, showOtherSC, orbitNumToPlot, hDispAxisTitleLabel, lvdData, celBodyData, dAxes, hFig)
 %plotStateLog Summary of this function goes here
 %   Detailed explanation goes here
     if(~exist('dAxes','var'))
@@ -19,7 +19,8 @@ function [hCBodySurf, childrenHGs] = lvd_plotStateLog(stateLog, handles, showSoI
     end
     subStateLogs = chunkedStateLog(orbitNumToPlot,:);
     eventsList = [];
-    otherSC = maData.spacecraft.otherSC;
+%     otherSC = maData.spacecraft.otherSC;
+    otherSC = {};
     for(i=1:length(subStateLogs))
         if(~isempty(subStateLogs{i}))
             eventsList = [eventsList;unique(subStateLogs{i}(:,13))]; %#ok<AGROW>

@@ -57,7 +57,7 @@ handles.output = hObject;
 handles.ma_MainGUI = varargin{1};
 
 %GUI setup
-populateBodiesCombo(handles, handles.bodiesCombo);
+populateBodiesCombo(getappdata(handles.ma_MainGUI,'celBodyData'), handles.bodiesCombo);
 dragModelCombo_Callback(handles.dragModelCombo, [], handles);
 
 % Update handles structure
@@ -65,26 +65,6 @@ guidata(hObject, handles);
 
 % UIWAIT makes ma_AerobrakingCdCalcGUI wait for user response (see UIRESUME)
 % uiwait(handles.ma_AerobrakingCdCalcGUI);
-
-
-% function populateBodiesCombo(handles, hBodiesCombo)
-%     celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
-%     bodies = fields(celBodyData);
-%     
-%     bodiesStr = {};
-%     for(i = 1:length(bodies)) %#ok<*NO4LP>
-%         body = bodies{i};
-%         if(celBodyData.(body).atmohgt > 0)
-%             bodiesStr{end+1} = celBodyData.(body).name;
-%         end
-%     end
-%     
-%     set(hBodiesCombo, 'String', bodiesStr);
-%     if(length(bodiesStr) >= 3)
-%         set(hBodiesCombo, 'value', 3);
-%     elseif(length(bodiesStr) >= 1)
-%         set(hBodiesCombo, 'value', 1);
-%     end
 
 
 % --- Outputs from this function are returned to the command line.
