@@ -11,6 +11,7 @@ classdef LvdData < matlab.mixin.SetGet
         validation LaunchVehicleDataValidation
         
         celBodyData struct
+        ksptotVer(1,:) char
     end
     
     properties(Dependent)
@@ -52,6 +53,7 @@ classdef LvdData < matlab.mixin.SetGet
     methods(Static)
         function lvdData = getEmptyLvdData()
             lvdData = LvdData();
+            lvdData.ksptotVer = getKSPTOTVersionNumStr();
         end
         
         function lvdData = getDefaultLvdData(celBodyData)

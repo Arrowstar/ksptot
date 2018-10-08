@@ -22,7 +22,7 @@ function varargout = ma_LvdMainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_LvdMainGUI
 
-% Last Modified by GUIDE v2.5 24-Sep-2018 17:46:50
+% Last Modified by GUIDE v2.5 08-Oct-2018 13:26:49
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -60,6 +60,11 @@ function ma_LvdMainGUI_OpeningFcn(hObject, eventdata, handles, varargin)
     
     setappdata(hObject,'ksptotMainGUI',varargin{2});
 
+    setappdata(hObject,'current_save_location','');
+    setappdata(hObject,'application_title','KSP TOT Launch Vehicle Designer');
+%     setappdata(hObject,'undo_states',{});
+%     setappdata(hObject,'undo_pointer',0);
+    
     lvdData = LvdData.getDefaultLvdData(celBodyData);
 	setappdata(handles.ma_LvdMainGUI,'lvdData',lvdData);
 
@@ -67,7 +72,7 @@ function ma_LvdMainGUI_OpeningFcn(hObject, eventdata, handles, varargin)
     setappdata(hObject,'output_text_max_line_length',output_text_max_line_length);
     writeOutput = @(str,type) writeToMAOutput(handles.outputText, str, type, output_text_max_line_length);
     setappdata(hObject,'write_to_output_func',writeOutput);
-
+    
     initializeOutputWindowText(handles, handles.outputText);
     view(handles.dispAxes,3);
     
@@ -476,3 +481,253 @@ function outputContextMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to outputContextMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function fileMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to fileMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+function saved = isMissionPlanSaved(handles)
+    application_title = get(handles.ma_LvdMainGUI,'Name');
+    if(application_title(end) == '*')
+        saved = false;
+    else
+        saved = true;
+    end
+
+% --------------------------------------------------------------------
+function newMissionPlanMenu_Callback(hObject, eventdata, handles, varargin)
+% hObject    handle to newMissionPlanMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    if(~isempty(varargin))
+        askToClear = varargin{1};
+    else
+        if(isMissionPlanSaved(handles))
+            askToClear = false;
+        else
+            askToClear = true;
+        end
+    end
+    if(askToClear)
+        response = questdlg(['All unsaved work will be lost.  Continue?'],'Create new mission plan?','Yes','No','No');
+    else
+        response = 'Yes';
+    end
+    
+    if(~strcmpi(response,'Yes'))
+        return;
+    end
+    
+% 	setappdata(handles.ma_MainGUI,'undo_states',{});
+% 	setappdata(handles.ma_MainGUI,'undo_pointer',0);
+
+    celBodyData = getappdata(handles.ma_LvdMainGUI,'celBodyData');
+    write_to_output_func = getappdata(handles.ma_LvdMainGUI,'write_to_output_func');
+    application_title = getappdata(handles.ma_LvdMainGUI,'application_title');
+    if(askToClear)
+        write_to_output_func('Creating new mission plan... ','append');
+    end
+    
+    lvdData = LvdData.getDefaultLvdData(celBodyData);
+    setappdata(handles.ma_LvdMainGUI,'lvdData',lvdData);
+    setappdata(handles.ma_LvdMainGUI,'current_save_location','');
+    
+    runScript(handles, lvdData);
+    lvd_processData(handles);
+    
+    set(handles.ma_LvdMainGUI,'Name', application_title);
+    
+    if(askToClear)
+        write_to_output_func(['Done.'],'appendSameLine'); %#ok<*NBRAK>
+    end
+    
+    set(handles.newMissionPlanToolbar,'Enable','on');
+    set(handles.openMissionPlanToolbar,'Enable','on');
+    set(handles.saveMissionPlanToolbar,'Enable','on');
+
+% --------------------------------------------------------------------
+function openMissionPlanMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to openMissionPlanMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    if(isMissionPlanSaved(handles))
+        askToClear = false;
+    else
+        askToClear = true;
+    end
+    
+    if(askToClear)
+        response = questdlg(['All unsaved work will be lost.  Continue?'],'Open mission plan?','Yes','No','No');
+    else
+        response = 'Yes';
+    end
+    
+    if(~strcmpi(response,'Yes'))
+        return;
+    end
+    
+    celBodyData = getappdata(handles.ma_LvdMainGUI,'celBodyData');
+    write_to_output_func = getappdata(handles.ma_LvdMainGUI,'write_to_output_func');
+    application_title = getappdata(handles.ma_LvdMainGUI,'application_title');
+    
+    [FileName,PathName] = uigetfile({'*.mat','KSP TOT Launch Vehicle Designer Case File (*.mat)'},...
+                                                'Open Launch Vehicle Designer Case',...
+                                                'mission.mat');
+	filePath = [PathName,FileName];
+    
+    if(ischar(filePath))
+        write_to_output_func(['Loading mission case from "', filePath,'"... '],'append');
+        
+        load(filePath);
+        if(exist('lvdData','var'))
+%             setappdata(handles.ma_MainGUI,'undo_states',{});
+%             setappdata(handles.ma_MainGUI,'undo_pointer',0);
+
+            if(isfield(lvdData,'celBodyData') && ...
+               length(fields(celBodyData.sun)) == length(fields(lvdData.celBodyData.sun))) %#ok<NODEF>
+                celBodyData = lvdData.celBodyData;
+                setappdata(handles.ma_LvdMainGUI,'celBodyData',celBodyData);
+            else
+                lvdData.celBodyData = celBodyData;
+            end
+            
+            set(handles.ma_LvdMainGUI,'Name',[application_title, ' - ', filePath]);
+            write_to_output_func(['Done.'],'appendSameLine');
+            
+            setappdata(handles.ma_LvdMainGUI,'lvdData',lvdData);
+            setappdata(handles.ma_LvdMainGUI,'current_save_location',filePath);
+            
+            runScript(handles, lvdData);
+            lvd_processData(handles);
+            
+%             if(~strcmpi(maData.settings.gravParamType,options_gravParamType))
+%                 warndlg(sprintf(['Warning!  It appears this mission plan file was created with a different Gravitational Paramter mode than is currently in use in KSPTOT.  This may cause your misson to fail to propagate properly.\n\n', ...
+%                                  'The expected GM type is "%s". \n\n', ...
+%                                  'The GM type actually in use now is "%s".\n\n', ...
+%                                  'Switch your GM type back to "%s" on the main KSPTOT UI if needed (Edit -> Gravitational Parameter).'], ...
+%                                  maData.settings.gravParamType, ...
+%                                  options_gravParamType, ...
+%                                  maData.settings.gravParamType),'GM Type Warning','modal');
+%             end
+        else
+            write_to_output_func(['There was a problem loading the case file from disk: ',filePath,'.  Case not loaded.'],'append');           
+        end
+    end
+    
+    set(handles.newMissionPlanToolbar,'Enable','on');
+    set(handles.openMissionPlanToolbar,'Enable','on');
+    set(handles.saveMissionPlanToolbar,'Enable','on');
+
+% --------------------------------------------------------------------
+function saveMissionPlanMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to saveMissionPlanMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    current_save_location = getappdata(handles.ma_LvdMainGUI,'current_save_location');
+    if(isempty(current_save_location))
+        saveMissionAs(handles);
+    else
+        saveMission(handles,current_save_location);
+    end
+    
+    set(handles.newMissionPlanToolbar,'Enable','on');
+    set(handles.openMissionPlanToolbar,'Enable','on');
+    set(handles.saveMissionPlanToolbar,'Enable','on');
+
+% --------------------------------------------------------------------
+function saveAsMissionPlanMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to saveAsMissionPlanMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    saveMissionAs(handles);
+
+    set(handles.newMissionPlanToolbar,'Enable','on');
+    set(handles.openMissionPlanToolbar,'Enable','on');
+    set(handles.saveMissionPlanToolbar,'Enable','on');
+    
+function saveMission(handles, varargin)
+    if(length(varargin) == 1)
+        filePath = varargin{1};
+    else
+        [FileName,PathName] = uiputfile({'*.mat','KSP TOT Launch Vehicle Designer Case File (*.mat)'},...
+                                                    'Save Launch Vehicle Designer Case',...
+                                                    'mission.mat');
+        if(ischar(FileName) && ischar(PathName))
+            filePath = [PathName,FileName];
+        else
+            return;
+        end
+    end
+    
+    write_to_output_func = getappdata(handles.ma_LvdMainGUI,'write_to_output_func');
+    write_to_output_func(['Saving mission case as "', filePath,'"... '],'append');
+    
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    lvdData.ksptotVer = getKSPTOTVersionNumStr();
+    
+    save(filePath,'lvdData');
+    application_title = getappdata(handles.ma_LvdMainGUI,'application_title');
+    
+    set(handles.ma_LvdMainGUI,'Name',[application_title, ' - ', filePath]);
+    setappdata(handles.ma_LvdMainGUI,'current_save_location',filePath);
+    
+    write_to_output_func(['Done.'],'appendSameLine');
+    
+function saveMissionAs(handles)
+    [FileName,PathName] = uiputfile({'*.mat','KSP TOT Launch Vehicle Designer Case File (*.mat)'},...
+                                                'Save Launch Vehicle Designer Case',...
+                                                'mission.mat');
+    if(ischar(FileName) && ischar(PathName))
+        saveMission(handles, [PathName,FileName]);
+    end
+
+% --------------------------------------------------------------------
+function exitMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to exitMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    close(handles.ma_LvdMainGUI);
+
+
+% --------------------------------------------------------------------
+function newMissionPlanToolbar_ClickedCallback(hObject, eventdata, handles)
+% hObject    handle to newMissionPlanToolbar (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    set(hObject,'Enable','off');
+    drawnow;
+    newMissionPlanMenu_Callback(handles.newMissionPlanMenu, [], handles);
+    
+    set(handles.newMissionPlanToolbar,'Enable','on');
+    set(handles.openMissionPlanToolbar,'Enable','on');
+    set(handles.saveMissionPlanToolbar,'Enable','on');
+
+% --------------------------------------------------------------------
+function openMissionPlanToolbar_ClickedCallback(hObject, eventdata, handles)
+% hObject    handle to openMissionPlanToolbar (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    set(hObject,'Enable','off');
+    drawnow;
+    openMissionPlanMenu_Callback(handles.openMissionPlanMenu, [], handles);
+    
+    set(handles.newMissionPlanToolbar,'Enable','on');
+    set(handles.openMissionPlanToolbar,'Enable','on');
+    set(handles.saveMissionPlanToolbar,'Enable','on');
+
+% --------------------------------------------------------------------
+function saveMissionPlanToolbar_ClickedCallback(hObject, eventdata, handles)
+% hObject    handle to saveMissionPlanToolbar (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    set(hObject,'Enable','off');
+    drawnow;
+    saveMissionPlanMenu_Callback(handles.saveMissionPlanMenu, [], handles);
+    
+    set(handles.newMissionPlanToolbar,'Enable','on');
+    set(handles.openMissionPlanToolbar,'Enable','on');
+    set(handles.saveMissionPlanToolbar,'Enable','on');
