@@ -52,12 +52,14 @@ classdef SetSteeringModelAction < AbstractEventAction
             tf = false;
         end
         
-        function tf = hasActiveOptimVar(obj)
+        function [tf, vars] = hasActiveOptimVar(obj)
             tf = false;
+            vars = AbstractOptimizationVariable.empty(0,1);
             
             optVar = obj.steeringModel.getExistingOptVar();
             if(not(isempty(optVar)))
                 tf = any(optVar.getUseTfForVariable());
+                vars(end+1) = optVar;
             end
         end
     end

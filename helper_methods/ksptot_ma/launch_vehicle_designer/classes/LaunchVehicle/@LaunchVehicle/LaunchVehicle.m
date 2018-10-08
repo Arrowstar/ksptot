@@ -189,12 +189,45 @@ classdef LaunchVehicle < matlab.mixin.SetGet
             end
         end
         
+        function conns = getEngineToTankConnsForEngine(obj, engine)
+            conns = obj.engineTankConns([obj.engineTankConns.engine] == engine);
+        end
+        
+        function conns = getEngineToTankConnsForTank(obj, tank)
+            conns = obj.engineTankConns([obj.engineTankConns.tank] == tank);
+        end
+        
         function removeAllEngineToTanksConnsWithEngine(obj, engine)
             obj.engineTankConns([obj.engineTankConns.engine] == engine) = [];
         end
         
         function removeAllEngineToTanksConnsWithTank(obj, tank)
             obj.engineTankConns([obj.engineTankConns.tank] == tank) = [];
+        end
+        
+        function [vars, descStrs] = getActiveOptVars(obj)
+            vars = AbstractOptimizationVariable.empty(0,1);
+            descStrs = {};
+            
+            for(i=1:length(obj.stages))
+                stage = obj.stages(i);
+                stageVar = stage.getExistingOptVar();
+
+                if(not(isempty(stageVar)) && stageVar.getUseTfForVariable())
+                    vars(end+1) = stageVar; %#ok<AGROW>
+                    descStrs{end+1} = sprintf('Stage "%s"',stage.name); %#ok<AGROW>
+                end
+                
+                for(j=1:length(stage.tanks))
+                    tank = stage.tanks(j);
+                    
+                    tVar = tank.getExistingOptVar();
+                    if(not(isempty(tVar)) && tVar.getUseTfForVariable())
+                        vars(end+1) = tVar; %#ok<AGROW>
+                        descStrs{end+1} = sprintf('Tank "%s"',tank.name);
+                    end
+                end
+            end
         end
     end
     

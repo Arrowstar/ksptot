@@ -8,16 +8,18 @@ classdef LvdData < matlab.mixin.SetGet
         stateLog LaunchVehicleStateLog
         initStateModel InitialStateModel
         optimizer LvdOptimization
+        validation LaunchVehicleDataValidation
+        
+        celBodyData struct
     end
     
     properties(Dependent)
         initialState LaunchVehicleStateLogEntry
     end
     
-    
     methods(Access = private)
         function obj = LvdData()
-
+            obj.validation = LaunchVehicleDataValidation(obj);
         end
     end
     
@@ -54,6 +56,8 @@ classdef LvdData < matlab.mixin.SetGet
         
         function lvdData = getDefaultLvdData(celBodyData)
             lvdData = LvdData();
+            
+            lvdData.celBodyData = celBodyData;
             
             simMaxDur = 20000;
             minAltitude = -1;

@@ -47,7 +47,7 @@ classdef ConstraintSet < matlab.mixin.SetGet
             num = length(obj.consts);
         end
         
-        function [c, ceq, value, lb, ub, type, eventNum] = evalConstraints(obj, x, maData) %optimVarSet,script,initStateLogEntry,stateLog,maData,celBodyData)
+        function [c, ceq, value, lb, ub, type, eventNum, cEventInds, ceqEventInds] = evalConstraints(obj, x)
             c = [];
             ceq = [];
             value = [];
@@ -55,14 +55,26 @@ classdef ConstraintSet < matlab.mixin.SetGet
             ub = [];
             type = {};
             eventNum = [];
+            cEventInds = [];
+            ceqEventInds = [];
+            
+            celBodyData = obj.lvdData.celBodyData;
             
             if(~isempty(obj.consts))
                 obj.lvdOptim.vars.updateObjsWithVarValues(x);
                 stateLog = obj.lvdData.script.executeScript();
 
                 for(i=1:length(obj.consts)) %#ok<*NO4LP>
-                    [c1, ceq1, value1, lb1, ub1, type1, eventNum1] = obj.consts(i).evalConstraint(stateLog, maData);
+                    [c1, ceq1, value1, lb1, ub1, type1, eventNum1] = obj.consts(i).evalConstraint(stateLog, celBodyData);
 
+                    for(j=1:length(c1))
+                        cEventInds(end+1) = eventNum1; %#ok<AGROW>
+                    end
+                    
+                    for(j=1:length(ceq1))
+                        ceqEventInds(end+1) = eventNum1; %#ok<AGROW>
+                    end
+                    
                     c   = [c,c1]; %#ok<AGROW>
                     ceq = [ceq, ceq1]; %#ok<AGROW>
                     value = [value, value1]; %#ok<AGROW>
@@ -70,12 +82,6 @@ classdef ConstraintSet < matlab.mixin.SetGet
                     ub = [ub, ub1]; %#ok<AGROW>
                     type = horzcat(type, type1); %#ok<AGROW>
                     eventNum = [eventNum, eventNum1]; %#ok<AGROW>
-                end
-                
-%                 disp(max([max(c), max(ceq)]));
-
-                if(any(isnan(c)) || any(isnan(ceq)))
-                    a = 1;
                 end
             end
         end

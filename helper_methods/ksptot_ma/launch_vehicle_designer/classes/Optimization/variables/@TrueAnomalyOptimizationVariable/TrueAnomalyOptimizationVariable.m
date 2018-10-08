@@ -32,6 +32,11 @@ classdef TrueAnomalyOptimizationVariable < AbstractOptimizationVariable
             ub = obj.ub(obj.useTf);
         end
         
+        function [lb, ub] = getAllBndsForVariable(obj)
+            lb = obj.lb;
+            ub = obj.ub;
+        end
+        
         function setBndsForVariable(obj, lb, ub)
             obj.lb = lb;
             obj.ub = ub;

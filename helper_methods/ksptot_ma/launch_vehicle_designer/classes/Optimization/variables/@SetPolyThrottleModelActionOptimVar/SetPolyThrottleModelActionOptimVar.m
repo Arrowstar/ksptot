@@ -44,6 +44,11 @@ classdef SetPolyThrottleModelActionOptimVar < AbstractOptimizationVariable
             ub = obj.ub(useTf);
         end
         
+        function [lb, ub] = getAllBndsForVariable(obj)
+            lb = obj.lb;
+            ub = obj.lb;
+        end
+        
         function setBndsForVariable(obj, lb, ub)
             if(length(lb) == 3 && length(ub) == 3)
                 obj.lb = lb;

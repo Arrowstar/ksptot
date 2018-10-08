@@ -7,7 +7,7 @@ classdef(Abstract) AbstractConstraint < matlab.mixin.SetGet & matlab.mixin.Heter
     end
     
     methods
-        [c, ceq, value, lb, ub, type, eventNum] = evalConstraint(obj, stateLog, maData);
+        [c, ceq, value, lb, ub, type, eventNum] = evalConstraint(obj, stateLog, celBodyData);
         
         tf = usesStage(obj, stage)
         

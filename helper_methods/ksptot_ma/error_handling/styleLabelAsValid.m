@@ -1,5 +1,5 @@
 function styleLabelAsValid(hLabel,validStr)
-%UNTITLED6 Summary of this function goes here
+%styleLabelAsValid Summary of this function goes here
 %   Detailed explanation goes here
     strMax = min(52,length(validStr));
     

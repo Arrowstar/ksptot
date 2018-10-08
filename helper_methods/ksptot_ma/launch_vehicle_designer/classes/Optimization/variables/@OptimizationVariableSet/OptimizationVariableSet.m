@@ -19,11 +19,17 @@ classdef OptimizationVariableSet < matlab.mixin.SetGet
             obj.vars([obj.vars] == var) = [];
         end
         
-        function x = getTotalXVector(obj)
+        function [x, vars] = getTotalXVector(obj)
             x = [];
+            vars = AbstractOptimizationVariable.empty(0,1);
             
             for(i=1:length(obj.vars)) %#ok<*NO4LP>
-                x = horzcat(x, obj.vars(i).getXsForVariable()); %#ok<AGROW>
+                vX = obj.vars(i).getXsForVariable();
+                x = horzcat(x, vX); %#ok<AGROW>
+                
+                for(j=1:length(vX))
+                    vars(end+1) = obj.vars(i); %#ok<AGROW>
+                end
             end
         end
         

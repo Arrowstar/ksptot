@@ -182,7 +182,7 @@ function varargout = lvd_EditGenericMAConstraintGUI_OutputFcn(hObject, eventdata
             selOSC = handles.refSpacecraftCombo.Value;
             constraint.refOtherSC = otherSC(selOSC);
         else
-            constraint.refOtherSC = struct();
+            constraint.refOtherSC = struct.empty(1,0);
         end
         
         numEvents = lvdData.script.getTotalNumOfEvents();

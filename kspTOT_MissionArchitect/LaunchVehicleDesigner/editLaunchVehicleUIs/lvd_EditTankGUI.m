@@ -87,7 +87,7 @@ function populateGUI(handles, tank)
     
     handles.optCheckbox.Value = double(optVar.getUseTfForVariable());
     
-    [lb, ub] = optVar.getBndsForVariable();
+    [lb, ub] = optVar.getAllBndsForVariable();
     handles.lbText.String = fullAccNum2Str(lb);
     handles.ubText.String = fullAccNum2Str(ub);
     
@@ -107,6 +107,8 @@ function varargout = lvd_EditTankGUI_OutputFcn(hObject, eventdata, handles)
         tank = getappdata(hObject, 'tank');
         lv = tank.stage.launchVehicle;
         
+        conns = lv.getEngineToTankConnsForTank(tank);
+        
         tank.stage.removeTank(tank);
         
         stage = lv.getStageForInd(handles.stageCombo.Value);
@@ -119,6 +121,11 @@ function varargout = lvd_EditTankGUI_OutputFcn(hObject, eventdata, handles)
         tank.initialMass = initialMass;
         
         tank.stage.addTank(tank);
+        
+        for(i=1:length(conns)) %#ok<NO4LP>
+            conns(i).tank = tank;
+            lv.addEngineToTankConnection(conns(i));
+        end
         
         optVar = tank.getExistingOptVar();
         if(not(isempty(optVar)))

@@ -32,6 +32,11 @@ classdef AltitudeOptimizationVariable < AbstractOptimizationVariable
             ub = obj.uprBnd(obj.useTf);
         end
         
+        function [lb, ub] = getAllBndsForVariable(obj)
+            lb = obj.lwrBnd;
+            ub = obj.uprBnd;
+        end
+        
         function setBndsForVariable(obj, lb, ub)
             obj.lb = lb;
             obj.ub = ub;

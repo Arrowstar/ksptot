@@ -81,7 +81,7 @@ function ma_LvdMainGUI_OpeningFcn(hObject, eventdata, handles, varargin)
     initializeOutputWindowText(handles, handles.outputText);
     view(handles.dispAxes,3);
     
-    lvdData.script.executeScript();
+    runScript(handles, lvdData);
     lvd_processData(handles);
 
     % Update handles structure
@@ -111,14 +111,21 @@ function runScript(handles, lvdData)
     handles.scriptWorkingLbl.Visible = 'on';
     drawnow;
     
+%     profile('on','-detail','builtin', '-remove_overhead','on');
+    
     t = tic;
     lvdData.script.executeScript();
     execTime = toc(t);
     
+%     profile viewer;
+    
     handles.scriptWorkingLbl.Visible = 'off';
+    handles.warnAlertsSlider.Value = 0;    
+    
+    lvdData.validation.validate();
+    updateWarnErrorLabels(handles, true);
     
     writeOutput(sprintf('Executed mission script in %.3f seconds.',execTime),'append');
-    
     drawnow;
 
 % --- Outputs from this function are returned to the command line.
@@ -288,8 +295,18 @@ function warnAlertsSlider_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'Value') returns position of slider
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+    updateWarnErrorLabels(handles, false);
 
+function updateWarnErrorLabels(handles, updateSlider)
+    maData = getappdata(handles.ma_LvdMainGUI,'maData');    
+    lvdData = maData.lvdData;
 
+    hLabels = [handles.warning1Lbl, handles.warning2Lbl, handles.warning3Lbl, ...
+              handles.warning4Lbl, handles.warning5Lbl, handles.warning6Lbl];
+    
+    lvdData.validation.writeOutputsToUI(handles.warnAlertsSlider, hLabels, updateSlider);
+    
+    
 % --- Executes during object creation, after setting all properties.
 function warnAlertsSlider_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to warnAlertsSlider (see GCBO)
@@ -363,6 +380,9 @@ function editConstraintsMenu_Callback(hObject, eventdata, handles)
     lvdData = maData.lvdData;
     hMaMainGUI = getappdata(handles.ma_LvdMainGUI,'hMaMainGUI');
     lvd_EditConstraintsGUI(maData, lvdData, hMaMainGUI);
+    
+    runScript(handles, lvdData);
+    lvd_processData(handles);
     
 % --------------------------------------------------------------------
 function editInitialStateMenu_Callback(hObject, eventdata, handles)

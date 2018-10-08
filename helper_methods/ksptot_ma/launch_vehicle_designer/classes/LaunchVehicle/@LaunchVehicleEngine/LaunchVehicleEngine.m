@@ -57,6 +57,14 @@ classdef LaunchVehicleEngine < matlab.mixin.SetGet
             val = obj.seaLvlIsp;
         end
         
+        function val = getMinThrottle(obj)
+            val = obj.minThrottle;
+        end
+        
+        function val = getMaxThrottle(obj)
+            val = obj.maxThrottle;
+        end
+        
         function engineSummStr = getEngineSummaryStr(obj)
             engineSummStr = {};
             

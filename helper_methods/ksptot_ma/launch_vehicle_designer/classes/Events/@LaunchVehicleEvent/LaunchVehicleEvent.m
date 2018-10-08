@@ -123,18 +123,22 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
             end
         end
         
-        %TODO Finish this.  Opt Vars have a getUseTfForVariable() method
-        %that would be good for this
-        function tf = hasActiveOptVars(obj)
+        function [tf, vars] = hasActiveOptVars(obj)
             tf = false;
+            
+            vars = AbstractOptimizationVariable.empty(0,1);
             
             tcOptVar = obj.termCond.getExistingOptVar();
             if(not(isempty(tcOptVar)))
                 tf = any(tcOptVar.getUseTfForVariable());
+                
+                vars(end+1) = tcOptVar;
             end
             
             for(i=1:length(obj.actions))
-                tf = tf || obj.actions(i).hasActiveOptimVar();
+                [aTf, aVars] = obj.actions(i).hasActiveOptimVar();
+                tf = tf || aTf;
+                vars = horzcat(vars, aVars); %#ok<AGROW>
             end
         end
     end

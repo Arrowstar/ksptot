@@ -138,54 +138,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet
             
             [tankStates.tankMass] = disperse(newTankMasses);
         end
-        
-        function tankMDots = getTankMassFlowRatesDueToEngines(obj, presskPa)
-            tankStates = obj.getAllActiveTankStates();
-            tankMDots = zeros(size(tankStates));
-            
-            stgStates = obj.stageStates;
-            for(i=1:length(stgStates)) %#ok<*NO4LP>
-                stgState = stgStates(i);
-                
-                if(stgState.active)
-                    engineStates = stgState.engineStates;
-
-                    for(j=1:length(engineStates))
-                        engineState = engineStates(j);
-                        
-                        if(engineState.active)
-                            engine = engineState.engine;
-                            [~, mdot] = engine.getThrustFlowRateForPressure(presskPa); %total mass flow through engine
-                            adjustedThrottle = engine.adjustThrottleForMinMax(obj.throttle);
-                            mdot = adjustedThrottle * mdot;
-                            
-                            tanks = obj.lvState.getTanksConnectedToEngine(engine);
-                            
-                            flowFromTankInds = zeros(size(tankStates));
-                            for(k=1:length(tanks))
-                                tank = tanks(k);
-                                tankState = tankStates([tankStates.tank] == tank);
-                                
-                                if(not(isempty(tankState)))
-                                    tankStageState = tankState.stageState;
-
-                                    if(tankStageState.active && tankState.tankMass > 0)
-                                        flowFromTankInds(tankStates == tankState) = 1;
-                                    end
-                                end
-                            end
-                            
-                            numTanksToPullFrom = sum(flowFromTankInds);
-                            mDotPerTank = mdot/numTanksToPullFrom;
-                            
-                            flowFromTankInds = logical(flowFromTankInds);
-                            tankMDots(flowFromTankInds) = tankMDots(flowFromTankInds) + mDotPerTank;
-                        end
-                    end
-                end
-            end
-        end
-        
+               
         function newStateLogEntry = deepCopy(obj)
             newStateLogEntry = LaunchVehicleStateLogEntry();
             
@@ -225,6 +178,53 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet
                 end
                 
                 stateLogEntries(i) = stateLogEntry;
+            end
+        end
+        
+        function tankMDots = getTankMassFlowRatesDueToEngines(tankStates, stgStates, throttle, lvState, presskPa)
+%             tankStates = obj.getAllActiveTankStates();
+            tankMDots = zeros(size(tankStates));
+            
+%             stgStates = obj.stageStates;
+            for(i=1:length(stgStates)) %#ok<*NO4LP>
+                stgState = stgStates(i);
+                
+                if(stgState.active)
+                    engineStates = stgState.engineStates;
+
+                    for(j=1:length(engineStates))
+                        engineState = engineStates(j);
+                        
+                        if(engineState.active)
+                            engine = engineState.engine;
+                            [~, mdot] = engine.getThrustFlowRateForPressure(presskPa); %total mass flow through engine
+                            adjustedThrottle = engine.adjustThrottleForMinMax(throttle);
+                            mdot = adjustedThrottle * mdot;
+                            
+                            tanks = lvState.getTanksConnectedToEngine(engine);
+                            
+                            flowFromTankInds = zeros(size(tankStates));
+                            for(k=1:length(tanks))
+                                tank = tanks(k);
+                                tankState = tankStates([tankStates.tank] == tank);
+                                
+                                if(not(isempty(tankState)))
+                                    tankStageState = tankState.stageState;
+
+                                    if(tankStageState.active && tankState.tankMass > 0)
+                                        flowFromTankInds(tankStates == tankState) = 1;
+                                    end
+                                end
+                            end
+                            
+                            numTanksToPullFrom = sum(flowFromTankInds);
+                            mDotPerTank = mdot/numTanksToPullFrom;
+                            
+                            flowFromTankInds = logical(flowFromTankInds);
+                            tankMDots(flowFromTankInds) = tankMDots(flowFromTankInds) + mDotPerTank;
+                        end
+                    end
+                end
             end
         end
     end

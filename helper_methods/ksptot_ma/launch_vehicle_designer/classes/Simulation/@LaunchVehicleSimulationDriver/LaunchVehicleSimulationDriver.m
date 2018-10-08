@@ -25,10 +25,12 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
             maxT = t0+obj.simMaxDur;
             tspan = [t0, maxT];
             
-            odefun = @(t,y) obj.odefun(t,y, obj, eventInitStateLogEntry);
+            dryMass = eventInitStateLogEntry.getTotalVehicleDryMass();
+            
+            odefun = @(t,y) obj.odefun(t,y, obj, eventInitStateLogEntry, dryMass);
             odeEventsFun = @(t,y) obj.odeEvents(t,y, obj, eventInitStateLogEntry, event.termCond.getEventTermCondFuncHandle());
             odeOutputFun = @(t,y,flag) obj.odeOutput(t,y,flag, now()*86400);
-            options = odeset('RelTol',1E-4, 'AbsTol',1E-6,  'NonNegative',tankStateInds, 'Events',odeEventsFun, 'NormControl','on', 'OutputFcn',odeOutputFun);
+            options = odeset('RelTol',1E-3, 'AbsTol',1E-6,  'NonNegative',tankStateInds, 'Events',odeEventsFun, 'NormControl','on', 'OutputFcn',odeOutputFun);
             
             [value,isterminal,~] = odeEventsFun(tspan(1), y0);
             if(any(abs(value)<=1E-6))
@@ -56,34 +58,40 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
             tankStates = y(7:end);
         end
         
-        function dydt = odefun(t,y, obj, eventInitStateLogEntry)
-            if(any(isnan(y)))
-                a = 1;
-            end
-            [ut, rVect, vVect, tankStates] = LaunchVehicleSimulationDriver.decomposeIntegratorTandY(t,y);
+        function dydt = odefun(t,y, obj, eventInitStateLogEntry, dryMass)
+            [ut, rVect, vVect, tankStatesMasses] = LaunchVehicleSimulationDriver.decomposeIntegratorTandY(t,y);
             bodyInfo = eventInitStateLogEntry.centralBody;
-                       
-            tempStateLogEntry = eventInitStateLogEntry.createStateLogEntryFromIntegratorOutputRow(t,y, eventInitStateLogEntry);
-            totalMass = tempStateLogEntry.getTotalVehicleMass();
+            CdA = eventInitStateLogEntry.aero.area * eventInitStateLogEntry.aero.Cd;            
+            
+%             tempStateLogEntry = eventInitStateLogEntry.createStateLogEntryFromIntegratorOutputRow(t,y, eventInitStateLogEntry);
+            totalMass = dryMass + sum(tankStatesMasses);
             
             altitude = norm(rVect) - bodyInfo.radius;
             pressure = getPressureAtAltitude(bodyInfo, altitude);
             
+            throttleModel = eventInitStateLogEntry.throttleModel;
+            steeringModel = eventInitStateLogEntry.steeringModel;
+            tankStates = eventInitStateLogEntry.getAllActiveTankStates();
+            stageStates = eventInitStateLogEntry.stageStates;
+            lvState = eventInitStateLogEntry.lvState;
+            throttle = eventInitStateLogEntry.throttleModel.getThrottleAtTime(ut);
+            
+            for(i=1:length(tankStates)) %#ok<*NO4LP>
+                tankStates(i) = tankStates(i).deepCopy();
+                tankStates(i).setTankMass(tankStatesMasses(i));
+            end
+            
             dydt = zeros(length(y),1);
                        
             if(totalMass > 0)
-                accelVect = obj.forceModel.getForce(tempStateLogEntry)/totalMass;
+                accelVect = obj.forceModel.getForce(ut, rVect, vVect, totalMass, bodyInfo, CdA, throttleModel, steeringModel, tankStates, stageStates, lvState)/totalMass;
             else
                 accelVect = zeros(3,1);
             end
             
             dydt(1:3) = vVect'; 
             dydt(4:6) = accelVect;
-            dydt(7:end) = tempStateLogEntry.getTankMassFlowRatesDueToEngines(pressure);
-            
-            if(any(isnan(dydt)))
-                a = 1;
-            end
+            dydt(7:end) = eventInitStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, stageStates, throttle, lvState, pressure);
         end
         
         function [value,isterminal,direction] = odeEvents(t,y, obj, eventInitStateLogEntry, evtTermCond)

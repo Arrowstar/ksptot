@@ -22,7 +22,7 @@ function varargout = lvd_EditEngineGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditEngineGUI
 
-% Last Modified by GUIDE v2.5 20-Sep-2018 17:48:22
+% Last Modified by GUIDE v2.5 06-Oct-2018 14:59:40
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -82,6 +82,8 @@ function populateGUI(handles, engine)
     set(handles.vacIspText,'String',fullAccNum2Str(engine.getVacIsp()));
     set(handles.seaLevelThrustText,'String',fullAccNum2Str(engine.getSeaLvlThrust()));
     set(handles.seaLevelIspText,'String',fullAccNum2Str(engine.getSeaLvlIsp()));
+    set(handles.minThrottleText,'String',fullAccNum2Str(100*engine.getMinThrottle()));
+    set(handles.maxThrottleText,'String',fullAccNum2Str(100*engine.getMaxThrottle()));
 
 % --- Outputs from this function are returned to the command line.
 function varargout = lvd_EditEngineGUI_OutputFcn(hObject, eventdata, handles) 
@@ -97,6 +99,8 @@ function varargout = lvd_EditEngineGUI_OutputFcn(hObject, eventdata, handles)
         engine = getappdata(hObject, 'engine');
         lv = engine.stage.launchVehicle;
         
+        conns = lv.getEngineToTankConnsForEngine(engine);
+        
         engine.stage.removeEngine(engine);
         
         stage = lv.getStageForInd(handles.stageCombo.Value);
@@ -106,6 +110,8 @@ function varargout = lvd_EditEngineGUI_OutputFcn(hObject, eventdata, handles)
         vacIsp = str2double(handles.vacIspText.String);
         seaLvlThrust = str2double(handles.seaLevelThrustText.String);
         seaLvlIsp = str2double(handles.seaLevelIspText.String);
+        minThrottle = str2double(handles.minThrottleText.String)/100;
+        maxThrottle = str2double(handles.maxThrottleText.String)/100;
         
         engine.name = name;
         engine.stage = stage;
@@ -113,8 +119,15 @@ function varargout = lvd_EditEngineGUI_OutputFcn(hObject, eventdata, handles)
         engine.vacIsp = vacIsp;
         engine.seaLvlThrust = seaLvlThrust;
         engine.seaLvlIsp = seaLvlIsp;
+        engine.minThrottle = minThrottle;
+        engine.maxThrottle = maxThrottle;
         
         engine.stage.addEngine(engine);
+        
+        for(i=1:length(conns)) %#ok<NO4LP>
+            conns(i).engine = engine;
+            lv.addEngineToTankConnection(conns(i));
+        end
         
         varargout{1} = true;
         close(handles.lvd_EditEngineGUI);
@@ -169,6 +182,32 @@ function errMsg = validateInputs(handles)
     ub = Inf;
     isInt = false;
     errMsg = validateNumber(val, numberName, lb, ub, isInt, errMsg, enteredStr);
+    
+    minThrottle = str2double(get(handles.minThrottleText,'String'));
+    enteredStr = get(handles.minThrottleText,'String');
+    numberName = 'Minimum Throttle Setting';
+    lb = 0;
+    ub = 100;
+    isInt = false;
+    errMsg = validateNumber(minThrottle, numberName, lb, ub, isInt, errMsg, enteredStr);
+    
+    maxThrottle = str2double(get(handles.maxThrottleText,'String'));
+    enteredStr = get(handles.maxThrottleText,'String');
+    numberName = 'Maximum Throttle Setting';
+    lb = 0;
+    ub = 100;
+    isInt = false;
+    errMsg = validateNumber(maxThrottle, numberName, lb, ub, isInt, errMsg, enteredStr);
+    
+    if(isempty(errMsg))
+        maxThrottle = str2double(get(handles.maxThrottleText,'String'));
+        enteredStr = get(handles.maxThrottleText,'String');
+        numberName = 'Maximum Throttle Setting';
+        lb = minThrottle;
+        ub = 100;
+        isInt = false;
+        errMsg = validateNumber(maxThrottle, numberName, lb, ub, isInt, errMsg, enteredStr);
+    end
     
 % --- Executes on button press in cancelButton.
 function cancelButton_Callback(hObject, eventdata, handles)
@@ -317,6 +356,56 @@ function stageCombo_CreateFcn(hObject, eventdata, handles)
 % handles    empty - handles not created until after all CreateFcns called
 
 % Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function minThrottleText_Callback(hObject, eventdata, handles)
+% hObject    handle to minThrottleText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of minThrottleText as text
+%        str2double(get(hObject,'String')) returns contents of minThrottleText as a double
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
+
+% --- Executes during object creation, after setting all properties.
+function minThrottleText_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to minThrottleText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function maxThrottleText_Callback(hObject, eventdata, handles)
+% hObject    handle to maxThrottleText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of maxThrottleText as text
+%        str2double(get(hObject,'String')) returns contents of maxThrottleText as a double
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
+
+% --- Executes during object creation, after setting all properties.
+function maxThrottleText_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to maxThrottleText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
 %       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');

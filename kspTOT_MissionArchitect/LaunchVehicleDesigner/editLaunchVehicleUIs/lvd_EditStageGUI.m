@@ -77,7 +77,7 @@ function populateGUI(handles, stage)
     
     handles.optCheckbox.Value = double(optVar.getUseTfForVariable());
     
-    [lb, ub] = optVar.getBndsForVariable();
+    [lb, ub] = optVar.getAllBndsForVariable();
     handles.lbText.String = fullAccNum2Str(lb);
     handles.ubText.String = fullAccNum2Str(ub);
     

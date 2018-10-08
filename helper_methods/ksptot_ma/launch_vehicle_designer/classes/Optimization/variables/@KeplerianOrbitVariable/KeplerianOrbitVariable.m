@@ -59,6 +59,11 @@ classdef KeplerianOrbitVariable < AbstractOrbitModelVariable
             ub = obj.ub(useTf);
         end
         
+        function [lb, ub] = getAllBndsForVariable(obj)
+            lb = obj.lb;
+            ub = obj.lb;
+        end
+        
         function setBndsForVariable(obj, lb, ub)
             if(length(lb) == 6 && length(ub) == 6)
                 obj.lb = lb;

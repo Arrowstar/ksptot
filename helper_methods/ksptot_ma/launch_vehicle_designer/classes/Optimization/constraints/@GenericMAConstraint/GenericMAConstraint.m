@@ -31,13 +31,15 @@ classdef GenericMAConstraint < AbstractConstraint
             ub = obj.ub;
         end
         
-        function [c, ceq, value, lwrBnd, uprBnd, type, eventNum] = evalConstraint(obj, stateLog, maData)
-            celBodyData = maData.celBodyData;
-            
+        function [c, ceq, value, lwrBnd, uprBnd, type, eventNum] = evalConstraint(obj, stateLog, celBodyData)           
             stateLogEntry = stateLog.getLastStateLogForEvent(obj.event).getMAFormattedStateLogMatrix();
             type = obj.constraintType;
             
-            refBodyId = obj.refBodyInfo.id;
+            if(not(isempty(obj.refBodyInfo)))
+                refBodyId = obj.refBodyInfo.id;
+            else
+                refBodyId = [];
+            end
             
             oscId = -1;
             if(not(isempty(obj.refOtherSC)))
@@ -49,7 +51,8 @@ classdef GenericMAConstraint < AbstractConstraint
                 stnId = obj.refStation.id;
             end
             
-            propNames = maData.spacecraft.propellant.names;
+            maData.spacecraft = struct();
+            propNames = {'Fuel/Ox', 'Monoprop', 'Xenon'}; %placeholder only
             value = ma_getDepVarValueUnit(1, stateLogEntry, type, 0, refBodyId, oscId, stnId, propNames, maData, celBodyData, false);
                        
             if(obj.lb == obj.ub)

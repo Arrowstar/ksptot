@@ -1,5 +1,5 @@
 function styleLabelAsWarn(hLabel,warnStr)
-%UNTITLED6 Summary of this function goes here
+%styleLabelAsWarn Summary of this function goes here
 %   Detailed explanation goes here
     strMax = min(52,length(warnStr));
     

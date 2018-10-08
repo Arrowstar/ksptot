@@ -11,6 +11,8 @@ classdef(Abstract) AbstractOptimizationVariable < matlab.mixin.SetGet & matlab.m
         
         [lb, ub] = getBndsForVariable(obj)
         
+        [lb, ub] = getAllBndsForVariable(obj)
+        
         setBndsForVariable(obj, lb, ub)
         
         useTf = getUseTfForVariable(obj)

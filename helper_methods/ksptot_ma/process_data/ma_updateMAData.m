@@ -173,7 +173,7 @@ function maData = ma_updateMAData(maData, handles)
     end
     
     if(~isfield(maData,'lvdData'))
-        lvdData = LvdData.getDefaultLvdData(celBodyData);
+        lvdData = LvdData.getDefaultLvdData(maData.celBodyData);
         maData.lvdData = lvdData;
     end
     

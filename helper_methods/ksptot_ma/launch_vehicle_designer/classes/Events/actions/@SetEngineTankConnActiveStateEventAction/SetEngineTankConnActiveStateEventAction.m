@@ -55,8 +55,9 @@ classdef SetEngineTankConnActiveStateEventAction < AbstractEventAction
             tf = ([obj.conn] == engineToTank);
         end
         
-        function tf = hasActiveOptimVar(obj)
+        function [tf, vars] = hasActiveOptimVar(obj)
             tf = false;
+            vars = AbstractOptimizationVariable.empty(0,1);
         end
     end
     

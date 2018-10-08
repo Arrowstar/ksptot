@@ -11,19 +11,19 @@ classdef ThrustForceModel < AbstractForceModel
             
         end
         
-        function forceVect = getForce(obj, stateLogEntry)
-            [ut, rVect, vVect, ~, bodyInfo, ~] = obj.getParamsFromStateLogEntry(stateLogEntry);
+        function forceVect = getForce(obj, ut, rVect, vVect, ~, bodyInfo, ~, throttleModel, steeringModel, tankStates, stageStates, lvState)
+%             [ut, rVect, vVect, ~, bodyInfo, ~] = obj.getParamsFromStateLogEntry(stateLogEntry);
             
             bodyThrust = [0;0;0];
             
             altitude = norm(rVect) - bodyInfo.radius;
             pressure = getPressureAtAltitude(bodyInfo, altitude);
             
-            throttle = stateLogEntry.throttleModel.getThrottleAtTime(ut);
-            body2InertDcm = stateLogEntry.steeringModel.getBody2InertialDcmAtTime(ut, rVect, vVect);
+            throttle = throttleModel.getThrottleAtTime(ut);
+            body2InertDcm = steeringModel.getBody2InertialDcmAtTime(ut, rVect, vVect);
             
-            tankStates = stateLogEntry.getAllActiveTankStates();
-            stageStates = stateLogEntry.stageStates;
+%             tankStates = stateLogEntry.getAllActiveTankStates();
+%             stageStates = stateLogEntry.stageStates;
             for(i=1:length(stageStates)) %#ok<*NO4LP>
                 stgState = stageStates(i);
                 
@@ -36,7 +36,7 @@ classdef ThrustForceModel < AbstractForceModel
                         if(engState.active)
                             engine = engState.engine;
 
-                            tanks = stateLogEntry.lvState.getTanksConnectedToEngine(engine); %connected tanks
+                            tanks = lvState.getTanksConnectedToEngine(engine); %connected tanks
 
                             propExistsInATank = false; 
                             for(k=1:length(tanks))

@@ -579,7 +579,7 @@ function optimizeMissionButton_Callback(hObject, eventdata, handles)
     waitbar(1,hWaitbar);
     close(hWaitbar);
     
-    ma_ObserveOptimGUI(handles.ma_MainGUI, problem);
+    ma_ObserveOptimGUI(handles.ma_MainGUI, problem, false);
 
     uiresume(handles.ma_MissionOptimizerGUI);
     close(handles.ma_MissionOptimizerGUI); 

@@ -72,6 +72,11 @@ classdef SetRPYSteeringModelActionOptimVar < AbstractOptimizationVariable
             ub = obj.ub(useTf);
         end
         
+        function [lb, ub] = getAllBndsForVariable(obj)
+            lb = obj.lb;
+            ub = obj.lb;
+        end
+        
         function setBndsForVariable(obj, lb, ub)
             if(length(lb) == 9 && length(ub) == 9)
                 obj.lb = lb;

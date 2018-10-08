@@ -49,6 +49,15 @@ classdef InitialStateVariable < AbstractOptimizationVariable
             ub = horzcat(ub, oUb);
         end
         
+        function [lb, ub] = getAllBndsForVariable(obj)
+            lb = obj.lb;
+            ub = obj.lb;
+            
+            [oLb, oUb] = obj.orbitVar.getAllBndsForVariable();
+            lb = horzcat(lb, oLb);
+            ub = horzcat(ub, oUb);
+        end
+        
         function setBndsForVariable(obj, lb, ub)
             if(length(lb) == 7 && length(ub) == 7)
                 obj.lb = lb(1);
