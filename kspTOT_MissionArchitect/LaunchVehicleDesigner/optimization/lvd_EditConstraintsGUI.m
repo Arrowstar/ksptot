@@ -132,7 +132,6 @@ function addConstraintButton_Callback(hObject, eventdata, handles)
 % hObject    handle to addConstraintButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)    
-    maData = getappdata(handles.lvd_EditConstraintsGUI,'maData');
     lvdData = getappdata(handles.lvd_EditConstraintsGUI,'lvdData');
     
     listBoxStr = ConstraintEnum.getListBoxStr();
@@ -149,7 +148,7 @@ function addConstraintButton_Callback(hObject, eventdata, handles)
         
         newConstraint = eval(sprintf('%s.getDefaultConstraint(%s)', constClass, 'input1'));
         
-        addConstraintTf = newConstraint.openEditConstraintUI(maData, lvdData);
+        addConstraintTf = newConstraint.openEditConstraintUI(lvdData);
         
         if(addConstraintTf)
             constraintSet = lvdData.optimizer.constraints;  

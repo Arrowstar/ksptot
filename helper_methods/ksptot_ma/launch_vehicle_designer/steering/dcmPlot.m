@@ -23,9 +23,9 @@ vVect = [-7.20051264852469309E-16;	-1.60783689892893555E+00;	 0.0000000000000000
 % vVect = [-5.87966477643837404E+00;	 4.27182787750943938E+00;	 0.00000000000000000E+00];
 
 %%Test Roll/Pitch/Yaw
-rollAng = deg2rad(5);
-pitchAng = deg2rad(-30);
-yawAng = deg2rad(10);
+rollAng = deg2rad(30);
+pitchAng = deg2rad(-10);
+yawAng = deg2rad(0);
 
 [bodyEulerX, bodyEulerY, bodyEulerZ] = computeBodyAxesFromEuler(rVect, vVect, rollAng, pitchAng, yawAng);
 [bankAngE,angOfAttackE,angOfSideslipE] = computeAeroAnglesFromBodyAxes(rVect, vVect, bodyEulerX, bodyEulerY, bodyEulerZ);
@@ -54,19 +54,22 @@ plot3([0,vHat(1)],[0,vHat(2)],[0,vHat(3)],'c');
 
 plot3([0,bodyEulerX(1)],[0,bodyEulerX(2)],[0,bodyEulerX(3)],'r');
 plot3([0,bodyEulerY(1)],[0,bodyEulerY(2)],[0,bodyEulerY(3)],'r--');
-plot3([0,bodyEulerZ(1)],[0,bodyEulerZ(2)],[0,bodyEulerZ(3)],'r--');
+plot3([0,bodyEulerZ(1)],[0,bodyEulerZ(2)],[0,bodyEulerZ(3)],'r-.');
 
-plot3([0,bodyAeroX(1)],[0,bodyAeroX(2)],[0,bodyAeroX(3)],'b');
-plot3([0,bodyAeroY(1)],[0,bodyAeroY(2)],[0,bodyAeroY(3)],'b--');
-plot3([0,bodyAeroZ(1)],[0,bodyAeroZ(2)],[0,bodyAeroZ(3)],'b--');
+% plot3([0,bodyAeroX(1)],[0,bodyAeroX(2)],[0,bodyAeroX(3)],'b');
+% plot3([0,bodyAeroY(1)],[0,bodyAeroY(2)],[0,bodyAeroY(3)],'b--');
+% plot3([0,bodyAeroZ(1)],[0,bodyAeroZ(2)],[0,bodyAeroZ(3)],'b--');
 
-[~, vvlh_x, vvlh_y, ~] = computeVvlhFrame(rVect,vVect);
-patch('XData', [vvlh_x(1) vvlh_y(1) -vvlh_x(1) -vvlh_y(1)], ...
-      'YData', [vvlh_x(2) vvlh_y(2) -vvlh_x(2) -vvlh_y(2)], ...
-      'ZData', [vvlh_x(3) vvlh_y(3) -vvlh_x(3) -vvlh_y(3)], ...
-      'FaceColor', 'g', 'FaceAlpha', 0.2);
+% [~, vvlh_x, vvlh_y, ~] = computeVvlhFrame(rVect,vVect);
+% patch('XData', [vvlh_x(1) vvlh_y(1) -vvlh_x(1) -vvlh_y(1)], ...
+%       'YData', [vvlh_x(2) vvlh_y(2) -vvlh_x(2) -vvlh_y(2)], ...
+%       'ZData', [vvlh_x(3) vvlh_y(3) -vvlh_x(3) -vvlh_y(3)], ...
+%       'FaceColor', 'g', 'FaceAlpha', 0.2);
 
 view(3);
 grid on;
 axis equal;
 hold off;
+xlabel('x');
+ylabel('y');
+zlabel('z');
