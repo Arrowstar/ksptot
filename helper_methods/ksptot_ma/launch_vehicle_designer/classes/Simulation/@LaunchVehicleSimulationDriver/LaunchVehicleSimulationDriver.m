@@ -71,6 +71,7 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
             
             holdDownEnabled = eventInitStateLogEntry.isHoldDownEnabled();
             
+            dydt = zeros(length(y),1);
             if(holdDownEnabled)
                 %launch clamp is enabled, only motion is circular motion
                 %(fixed to body)
@@ -78,8 +79,8 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
                 spinVect = [0;0;bodySpinRate];
                 rotAccel = crossARH(spinVect,crossARH(spinVect,rVect));
                 
-                dydt(1:3,1) = reshape(vVect,[3,1]); 
-                dydt(4:6,1) = rotAccel;
+                dydt(1:3) = vVect'; 
+                dydt(4:6) = rotAccel;
             else
                 %launch clamp disabled, propagate like normal
                 CdA = eventInitStateLogEntry.aero.area * eventInitStateLogEntry.aero.Cd;            
@@ -94,19 +95,17 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
                     tankStates(i).setTankMass(tankStatesMasses(i));
                 end
 
-                dydt = zeros(length(y),1);
-
                 if(totalMass > 0)
                     accelVect = obj.forceModel.getForce(ut, rVect, vVect, totalMass, bodyInfo, CdA, throttleModel, steeringModel, tankStates, stageStates, lvState)/totalMass;
                 else
                     accelVect = zeros(3,1);
                 end
 
-                dydt(1:3,1) = reshape(vVect,[3,1]); 
-                dydt(4:6,1) = accelVect;
+                dydt(1:3) = vVect'; 
+                dydt(4:6) = accelVect;
             end
             
-            dydt = vertcat(dydt,eventInitStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, stageStates, throttle, lvState, pressure));
+            dydt(7:end) = eventInitStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, stageStates, throttle, lvState, pressure);
         end
         
         function [value,isterminal,direction] = odeEvents(t,y, obj, eventInitStateLogEntry, evtTermCond)

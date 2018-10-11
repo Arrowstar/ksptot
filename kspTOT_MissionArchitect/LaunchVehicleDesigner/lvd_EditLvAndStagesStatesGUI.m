@@ -22,7 +22,7 @@ function varargout = lvd_EditLvAndStagesStatesGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditLvAndStagesStatesGUI
 
-% Last Modified by GUIDE v2.5 23-Sep-2018 20:02:19
+% Last Modified by GUIDE v2.5 11-Oct-2018 17:55:30
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -78,6 +78,9 @@ function populateGUI(handles, lvdData)
     handles.connListbox.String = lv.getEngineToTankConnectionsListBoxStr();
     connListbox_Callback(handles.connListbox, [], handles);
 
+    initStateModel = lvdData.initStateModel;
+    handles.holdDownClampsEnabledCheckbox.Value = double(initStateModel.lvState.holdDownEnabled);
+
 % --- Outputs from this function are returned to the command line.
 function varargout = lvd_EditLvAndStagesStatesGUI_OutputFcn(hObject, eventdata, handles) 
 % varargout  cell array for returning output args (see VARARGOUT);
@@ -92,9 +95,6 @@ function varargout = lvd_EditLvAndStagesStatesGUI_OutputFcn(hObject, eventdata, 
         varargout{1} = true;
         close(handles.lvd_EditLvAndStagesStatesGUI);
     end
-
-
-    
 
 
 % --- Executes on selection change in engineListbox.
@@ -250,3 +250,15 @@ function connCheckbox_Callback(hObject, eventdata, handles)
 % Hint: get(hObject,'Value') returns toggle state of connCheckbox
     state = getSelectedConnState(handles);
     state.active = logical(get(hObject,'Value'));
+
+
+% --- Executes on button press in holdDownClampsEnabledCheckbox.
+function holdDownClampsEnabledCheckbox_Callback(hObject, eventdata, handles)
+% hObject    handle to holdDownClampsEnabledCheckbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of holdDownClampsEnabledCheckbox
+    lvdData = getappdata(handles.lvd_EditLvAndStagesStatesGUI, 'lvdData');
+    initStateModel = lvdData.initStateModel;
+    initStateModel.lvState.holdDownEnabled = get(hObject,'Value');
