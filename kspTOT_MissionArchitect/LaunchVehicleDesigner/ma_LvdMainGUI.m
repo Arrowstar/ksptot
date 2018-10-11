@@ -838,7 +838,7 @@ function ma_LvdMainGUI_CloseRequestFcn(hObject, eventdata, handles)
     
     yesStr = 'Yes';
     if(askToQuit)
-        response = questdlg(['KSPTOT is still processing.  Any in-work data will be lost upon closing.  Continue?'],'Close Mission Architect?',yesStr,'No','No');
+        response = questdlg(['KSPTOT is still processing.  Any in-work data will be lost upon closing.  Continue?'],'Close Launch Vehicle Designer?',yesStr,'No','No');
     else
         response = yesStr;
     end

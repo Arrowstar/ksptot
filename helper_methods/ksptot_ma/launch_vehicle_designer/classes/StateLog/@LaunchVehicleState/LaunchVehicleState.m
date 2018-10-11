@@ -4,7 +4,9 @@ classdef LaunchVehicleState < matlab.mixin.SetGet & matlab.mixin.Copyable
     
     properties
         lv(1,1) LaunchVehicle = LaunchVehicle(LvdData.getEmptyLvdData())
+        
         e2TConns(1,:) EngineToTankConnState
+        holdDownEnabled(1,1) logical = false
     end
     
     properties(Constant)

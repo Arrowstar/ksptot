@@ -59,39 +59,54 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
         end
         
         function dydt = odefun(t,y, obj, eventInitStateLogEntry, dryMass)
-            [ut, rVect, vVect, tankStatesMasses] = LaunchVehicleSimulationDriver.decomposeIntegratorTandY(t,y);
             bodyInfo = eventInitStateLogEntry.centralBody;
-            CdA = eventInitStateLogEntry.aero.area * eventInitStateLogEntry.aero.Cd;            
-            
-%             tempStateLogEntry = eventInitStateLogEntry.createStateLogEntryFromIntegratorOutputRow(t,y, eventInitStateLogEntry);
-            totalMass = dryMass + sum(tankStatesMasses);
-            
-            altitude = norm(rVect) - bodyInfo.radius;
-            pressure = getPressureAtAltitude(bodyInfo, altitude);
-            
-            throttleModel = eventInitStateLogEntry.throttleModel;
-            steeringModel = eventInitStateLogEntry.steeringModel;
+            [ut, rVect, vVect, tankStatesMasses] = LaunchVehicleSimulationDriver.decomposeIntegratorTandY(t,y);
             tankStates = eventInitStateLogEntry.getAllActiveTankStates();
             stageStates = eventInitStateLogEntry.stageStates;
-            lvState = eventInitStateLogEntry.lvState;
             throttle = eventInitStateLogEntry.throttleModel.getThrottleAtTime(ut);
+            lvState = eventInitStateLogEntry.lvState;
             
-            for(i=1:length(tankStates)) %#ok<*NO4LP>
-                tankStates(i) = tankStates(i).deepCopy();
-                tankStates(i).setTankMass(tankStatesMasses(i));
-            end
+            altitude = norm(rVect) - bodyInfo.radius;
+            pressure = getPressureAtAltitude(bodyInfo, altitude);            
             
-            dydt = zeros(length(y),1);
-                       
-            if(totalMass > 0)
-                accelVect = obj.forceModel.getForce(ut, rVect, vVect, totalMass, bodyInfo, CdA, throttleModel, steeringModel, tankStates, stageStates, lvState)/totalMass;
+            holdDownEnabled = eventInitStateLogEntry.isHoldDownEnabled();
+            
+            if(holdDownEnabled)
+                %launch clamp is enabled, only motion is circular motion
+                %(fixed to body)
+                bodySpinRate = 2*pi/bodyInfo.rotperiod; %rad/sec
+                spinVect = [0;0;bodySpinRate];
+                rotAccel = crossARH(spinVect,crossARH(spinVect,rVect));
+                
+                dydt(1:3,1) = reshape(vVect,[3,1]); 
+                dydt(4:6,1) = rotAccel;
             else
-                accelVect = zeros(3,1);
+                %launch clamp disabled, propagate like normal
+                CdA = eventInitStateLogEntry.aero.area * eventInitStateLogEntry.aero.Cd;            
+
+                totalMass = dryMass + sum(tankStatesMasses);
+
+                throttleModel = eventInitStateLogEntry.throttleModel;
+                steeringModel = eventInitStateLogEntry.steeringModel;
+                
+                for(i=1:length(tankStates)) %#ok<*NO4LP>
+                    tankStates(i) = tankStates(i).deepCopy();
+                    tankStates(i).setTankMass(tankStatesMasses(i));
+                end
+
+                dydt = zeros(length(y),1);
+
+                if(totalMass > 0)
+                    accelVect = obj.forceModel.getForce(ut, rVect, vVect, totalMass, bodyInfo, CdA, throttleModel, steeringModel, tankStates, stageStates, lvState)/totalMass;
+                else
+                    accelVect = zeros(3,1);
+                end
+
+                dydt(1:3,1) = reshape(vVect,[3,1]); 
+                dydt(4:6,1) = accelVect;
             end
             
-            dydt(1:3) = vVect'; 
-            dydt(4:6) = accelVect;
-            dydt(7:end) = eventInitStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, stageStates, throttle, lvState, pressure);
+            dydt = vertcat(dydt,eventInitStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, stageStates, throttle, lvState, pressure));
         end
         
         function [value,isterminal,direction] = odeEvents(t,y, obj, eventInitStateLogEntry, evtTermCond)

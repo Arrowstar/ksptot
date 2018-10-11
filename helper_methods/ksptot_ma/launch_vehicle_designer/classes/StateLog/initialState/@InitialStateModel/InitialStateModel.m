@@ -103,6 +103,7 @@ classdef InitialStateModel < matlab.mixin.SetGet
             
             lvsState = LaunchVehicleState(lv);
             stateLogModel.lvState = lvsState;
+            lvsState.holdDownEnabled = false;
             
             for(i=1:length(lv.engineTankConns)) %#ok<*NO4LP>
                 e2TConnState = EngineToTankConnState(lv.engineTankConns(i));

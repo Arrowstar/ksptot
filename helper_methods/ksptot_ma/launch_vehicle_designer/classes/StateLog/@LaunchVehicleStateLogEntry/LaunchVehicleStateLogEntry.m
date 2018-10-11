@@ -133,6 +133,10 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet
             end
         end
         
+        function tf = isHoldDownEnabled(obj)
+            tf = obj.lvState.holdDownEnabled;
+        end
+        
         function updateTankStatesWithNewMasses(obj, newTankMasses)
             tankStates = obj.getAllActiveTankStates();
             
@@ -168,14 +172,10 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet
             for(i=1:length(t))
                 stateLogEntry = eventInitStateLogEntry.deepCopy();
 
-                try
                 stateLogEntry.time = t(i);
                 stateLogEntry.position = y(i,1:3)';
                 stateLogEntry.velocity = y(i,4:6)';
                 stateLogEntry.updateTankStatesWithNewMasses(y(i,7:end));
-                catch
-                    a = 1;
-                end
                 
                 stateLogEntries(i) = stateLogEntry;
             end
@@ -184,6 +184,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet
         function tankMDots = getTankMassFlowRatesDueToEngines(tankStates, stgStates, throttle, lvState, presskPa)
 %             tankStates = obj.getAllActiveTankStates();
             tankMDots = zeros(size(tankStates));
+            tankMDots = tankMDots(:);
             
 %             stgStates = obj.stageStates;
             for(i=1:length(stgStates)) %#ok<*NO4LP>
