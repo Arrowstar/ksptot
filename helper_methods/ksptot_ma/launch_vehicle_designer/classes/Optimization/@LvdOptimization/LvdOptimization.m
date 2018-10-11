@@ -27,7 +27,7 @@ classdef LvdOptimization < matlab.mixin.SetGet
             
             optimAlg = 'interior-point';
             usePara = true;
-            options = optimoptions('fmincon','Algorithm',optimAlg, 'Diagnostics','on', 'Display','iter-detailed','TolFun',1E-10,'TolX',1E-10,'TolCon',1E-10,'ScaleProblem','obj-and-constr','MaxIter',500,'UseParallel',usePara,'OutputFcn',[],'InitBarrierParam',1.0,'InitTrustRegionRadius',0.1,'HonorBounds',true,'MaxFunctionEvaluations',3000);
+            options = optimoptions('fmincon','Algorithm',optimAlg, 'Diagnostics','on', 'Display','iter-detailed','TolFun',1E-10,'TolX',1E-10,'TolCon',1E-10,'ScaleProblem','none','MaxIter',500,'UseParallel',usePara,'OutputFcn',[],'HonorBounds',true,'MaxFunctionEvaluations',3000, 'FunValCheck','on');
             problem = createOptimProblem('fmincon', 'objective',objFuncWrapper, 'x0', x0All, 'lb', lbAll, 'ub', ubAll, 'nonlcon', nonlcon, 'options', options);
             
             problem.lvdData = obj.lvdData; %need to get lvdData in somehow

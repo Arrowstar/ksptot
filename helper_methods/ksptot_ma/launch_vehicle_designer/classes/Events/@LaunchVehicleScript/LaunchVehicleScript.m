@@ -151,10 +151,12 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
 %             angOfAttackActual = [];
 %             angOfSideslipActual = [];
 %             for(i=1:size(maStateLog,1))
+%                 ut = stateLog.entries(i).time;
 %                 rVect = stateLog.entries(i).position;
 %                 vVect = stateLog.entries(i).velocity;
+%                 bodyInfo = stateLog.entries(i).centralBody;
 %                 
-%                 [rollAngle, pitchAngle, yawAngle] = stateLog.entries(i).attitude.getEulerAngles(rVect, vVect);
+%                 [rollAngle, pitchAngle, yawAngle] = stateLog.entries(i).attitude.getEulerAngles(ut, rVect, vVect, bodyInfo);
 %                 [bankAng,angOfAttack,angOfSideslip] = stateLog.entries(i).attitude.getAeroAngles(rVect, vVect); 
 %                 rollActual(end+1) = rad2deg(rollAngle); %#ok<AGROW>
 %                 pitchActual(end+1) = rad2deg(pitchAngle); %#ok<AGROW>
@@ -170,10 +172,10 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
 %             plot(time,totalMass);
 %             
 %             subplot(3,1,2)
-%             plot(time,angOfAttackActual);
+%             plot(time,pitchActual);
 %             
 %             subplot(3,1,3)
-%             plot(time,angOfSideslipActual);
+%             plot(time,angOfAttackActual);
         end
     end
 end

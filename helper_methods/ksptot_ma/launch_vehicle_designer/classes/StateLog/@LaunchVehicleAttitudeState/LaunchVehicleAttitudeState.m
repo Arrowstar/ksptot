@@ -11,12 +11,12 @@ classdef LaunchVehicleAttitudeState < matlab.mixin.SetGet
             
         end
         
-        function [rollAngle, pitchAngle, yawAngle] = getEulerAngles(obj, rVect, vVect)
+        function [rollAngle, pitchAngle, yawAngle] = getEulerAngles(obj, ut, rVect, vVect, bodyInfo)
             bodyX = obj.dcm(:,1);
             bodyY = obj.dcm(:,2);
             bodyZ = obj.dcm(:,3);
             
-            [rollAngle, pitchAngle, yawAngle] = computeEulerAnglesFromInertialBodyAxes(rVect, vVect, bodyX, bodyY, bodyZ);
+            [rollAngle, pitchAngle, yawAngle] = computeEulerAnglesFromInertialBodyAxes(ut, rVect, vVect, bodyInfo, bodyX, bodyY, bodyZ);
         end
         
         function [bankAng,angOfAttack,angOfSideslip] = getAeroAngles(obj, rVect, vVect)

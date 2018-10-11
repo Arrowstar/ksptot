@@ -36,7 +36,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet
         
         function attState = get.attitude(obj)
             attState = LaunchVehicleAttitudeState();
-            attState.dcm = obj.steeringModel.getBody2InertialDcmAtTime(obj.time, obj.position, obj.velocity);
+            attState.dcm = obj.steeringModel.getBody2InertialDcmAtTime(obj.time, obj.position, obj.velocity, obj.centralBody);
         end
         
         function [t,y, tankStateInds] = getIntegratorStateRepresentation(obj)

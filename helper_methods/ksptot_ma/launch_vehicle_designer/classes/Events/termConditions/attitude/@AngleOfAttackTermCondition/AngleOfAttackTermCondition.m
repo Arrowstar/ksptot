@@ -5,6 +5,7 @@ classdef AngleOfAttackTermCondition < AbstractEventTerminationCondition
     properties
         steeringModel(1,1) AbstractSteeringModel = RollPitchYawPolySteeringModel.getDefaultSteeringModel();
         targetAoA(1,1) double = 0;
+        bodyInfo KSPTOT_BodyInfo
     end
     
     methods
@@ -13,11 +14,12 @@ classdef AngleOfAttackTermCondition < AbstractEventTerminationCondition
         end
         
         function evtTermCondFcnHndl = getEventTermCondFuncHandle(obj)
-            evtTermCondFcnHndl = @(t,y) obj.eventTermCond(t,y, obj.targetAoA, obj.steeringModel);
+            evtTermCondFcnHndl = @(t,y) obj.eventTermCond(t,y, obj.targetAoA, obj.steeringModel, obj.bodyInfo);
         end
         
         function initTermCondition(obj, initialStateLogEntry)
             obj.steeringModel = initialStateLogEntry.steeringModel;
+            obj.bodyInfo = initialStateLogEntry.centralBody;
         end
         
         function name = getName(obj)
@@ -72,12 +74,12 @@ classdef AngleOfAttackTermCondition < AbstractEventTerminationCondition
     end
     
     methods(Static, Access=private)
-        function [value,isterminal,direction] = eventTermCond(t,y, targetAoA, steeringModel)
+        function [value,isterminal,direction] = eventTermCond(t,y, targetAoA, steeringModel, bodyInfo)
             ut = t;
             rVect = y(1:3);
             vVect = y(4:6);
             
-            dcm = steeringModel.getBody2InertialDcmAtTime(ut, rVect, vVect);
+            dcm = steeringModel.getBody2InertialDcmAtTime(ut, rVect, vVect, bodyInfo);
             [~,angOfAttack,~] = computeAeroAnglesFromBodyAxes(rVect, vVect, dcm(:,1), dcm(:,2), dcm(:,3));
             
             value = angOfAttack - targetAoA;

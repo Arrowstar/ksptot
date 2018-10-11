@@ -7,7 +7,7 @@ classdef(Abstract) AbstractSteeringModel < matlab.mixin.SetGet
     end
     
     methods
-        dcm = getBody2InertialDcmAtTime(obj, ut, rVect, vVect)
+        dcm = getBody2InertialDcmAtTime(obj, ut, rVect, vVect, bodyInfo)
         
         setT0(obj, newT0)
         
@@ -17,7 +17,7 @@ classdef(Abstract) AbstractSteeringModel < matlab.mixin.SetGet
         
         setAccelTerms(obj, angle1, angle2, angle3)
         
-        setConstsFromDcmAndContinuitySettings(obj, dcm, rVect, vVect)     
+        setConstsFromDcmAndContinuitySettings(obj, dcm, ut, rVect, vVect, bodyInfo)     
         
         setContinuityTerms(obj, angle1Cont, angle2Cont, angle3Cont)
         

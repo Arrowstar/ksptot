@@ -1,4 +1,4 @@
-function [rVectECEF, vVectECEF] = getFixedFrameVectFromInertialVect(ut, rVectECI, bodyInfo, varargin)
+function [rVectECEF, vVectECEF, REci2Ecef] = getFixedFrameVectFromInertialVect(ut, rVectECI, bodyInfo, varargin)
 %getFixedFrameVectFromInertialVect Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -15,12 +15,13 @@ function [rVectECEF, vVectECEF] = getFixedFrameVectFromInertialVect(ut, rVectECI
          0 0 1];
     rVectECI = reshape(rVectECI,3,1);
     
-    rVectECEF = R' * rVectECI;
+    REci2Ecef = R';
+    rVectECEF = REci2Ecef * rVectECI;
     
     if(~any(isnan(vVectECI)))
         rotRateRadSec = 2*pi/bodyInfo.rotperiod;
         omegaRI = [0;0;rotRateRadSec];
-        vVectECEF = R'*(vVectECI - crossARH(omegaRI, rVectECI));
+        vVectECEF = REci2Ecef*(vVectECI - crossARH(omegaRI, rVectECI));
     else
         vVectECEF = [NaN;NaN;NaN];
     end

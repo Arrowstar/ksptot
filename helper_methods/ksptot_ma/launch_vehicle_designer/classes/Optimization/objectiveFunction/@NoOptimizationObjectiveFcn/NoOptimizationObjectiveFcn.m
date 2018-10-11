@@ -3,12 +3,16 @@ classdef NoOptimizationObjectiveFcn < AbstractObjectiveFcn
     %   Detailed explanation goes here
     
     properties
-        
+        lvdOptim LvdOptimization
+        lvdData LvdData
     end
     
     methods
-        function obj = NoOptimizationObjectiveFcn()
-            
+        function obj = NoOptimizationObjectiveFcn(lvdOptim, lvdData)
+            if(nargin > 0)
+                obj.lvdOptim = lvdOptim;
+                obj.lvdData = lvdData;
+            end
         end
         
         function [f, stateLog] = evalObjFcn(obj, x)
@@ -41,7 +45,7 @@ classdef NoOptimizationObjectiveFcn < AbstractObjectiveFcn
 
     methods(Static)
         function objFcn = getDefaultObjFcn(event, lvdOptim, lvdData)
-            objFcn = NoOptimizationObjectiveFcn();
+            objFcn = NoOptimizationObjectiveFcn(lvdOptim, lvdData);
         end
         
         function params = getParams()

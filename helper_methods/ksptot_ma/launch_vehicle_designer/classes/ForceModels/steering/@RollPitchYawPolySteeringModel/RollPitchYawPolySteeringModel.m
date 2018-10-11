@@ -13,18 +13,12 @@ classdef RollPitchYawPolySteeringModel < AbstractAnglePolySteeringModel
     end
     
     methods       
-        function dcm = getBody2InertialDcmAtTime(obj, ut, rVect, vVect)
+        function dcm = getBody2InertialDcmAtTime(obj, ut, rVect, vVect, bodyInfo)
             rollAng = obj.rollModel.getValueAtTime(ut);
             pitchAng = obj.pitchModel.getValueAtTime(ut);
             yawAng = obj.yawModel.getValueAtTime(ut);
             
-%             if(pitchAng < deg2rad(-90))
-%                 pitchAng = deg2rad(-90);
-%             elseif(pitchAng > deg2rad(90))
-%                 pitchAng = deg2rad(90);
-%             end
-            
-            [~, ~, ~, dcm] = computeBodyAxesFromEuler(rVect, vVect, rollAng, pitchAng, yawAng);
+            [~, ~, ~, dcm] = computeBodyAxesFromEuler(ut, rVect, vVect, bodyInfo, rollAng, pitchAng, yawAng);
         end
 
         function [angleModel, continuity] = getAngleNModel(obj, n)
@@ -79,9 +73,9 @@ classdef RollPitchYawPolySteeringModel < AbstractAnglePolySteeringModel
             obj.yawContinuity = angle3Cont;
         end
         
-        function setConstsFromDcmAndContinuitySettings(obj, dcm, rVect, vVect)
+        function setConstsFromDcmAndContinuitySettings(obj, dcm, ut, rVect, vVect, bodyInfo)
             if(obj.rollContinuity || obj.pitchContinuity || obj.yawContinuity)
-                [rollAngle, pitchAngle, yawAngle] = computeEulerAnglesFromInertialBodyAxes(rVect, vVect, dcm(:,1), dcm(:,2), dcm(:,3));
+                [rollAngle, pitchAngle, yawAngle] = computeEulerAnglesFromInertialBodyAxes(ut, rVect, vVect, bodyInfo, dcm(:,1), dcm(:,2), dcm(:,3));
                 
                 if(obj.rollContinuity)
                     obj.rollModel.constTerm = rollAngle;
@@ -122,8 +116,8 @@ classdef RollPitchYawPolySteeringModel < AbstractAnglePolySteeringModel
     
     methods(Static)
         function model = getDefaultSteeringModel()
-            rollModel = PolynominalModel(0,0,0,0);
-            pitchModel = PolynominalModel(0,deg2rad(-90),deg2rad(1.15),0);
+            rollModel = PolynominalModel(0,deg2rad(90),0,0);
+            pitchModel = PolynominalModel(0,deg2rad(-90),deg2rad(-1.15),0);
             yawModel = PolynominalModel(0,0,0,0);
             
             model = RollPitchYawPolySteeringModel(rollModel, pitchModel, yawModel);

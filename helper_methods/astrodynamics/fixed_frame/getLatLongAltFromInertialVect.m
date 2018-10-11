@@ -1,4 +1,4 @@
-function [lat, long, alt, vectSez, horzVel, vertVel] = getLatLongAltFromInertialVect(ut, rVectECI, bodyInfo, varargin)
+function [lat, long, alt, vVectSez, horzVel, vertVel] = getLatLongAltFromInertialVect(ut, rVectECI, bodyInfo, varargin)
 %getLatLongAltFromInertialVect Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -16,20 +16,20 @@ function [lat, long, alt, vectSez, horzVel, vertVel] = getLatLongAltFromInertial
     alt = rNorm - bodyInfo.radius;
     
     if(~any(isnan(vVectECI)))
-        vectSez = rotVectToSEZCoords(rVectECEF, vVectECEF);
-        horzVel = sqrt(vectSez(1)^2 + vectSez(2)^2);
-        vertVel = vectSez(3);
+        vVectSez = rotVectToSEZCoords(rVectECEF, vVectECEF);
+        horzVel = sqrt(vVectSez(1)^2 + vVectSez(2)^2);
+        vertVel = vVectSez(3);
     else
-        vectSez = [NaN;NaN;NaN];
+        vVectSez = [NaN;NaN;NaN];
         horzVel = NaN;
         vertVel = NaN;
     end
 end
 
-function vectSez = rotVectToSEZCoords(rVector, vector)
+function vectSez = rotVectToSEZCoords(rVectorECEF, vector)
 
     kHat = [0;0;1];
-    zHat = normVector(rVector);
+    zHat = normVector(rVectorECEF);
     eHat = normVector(cross(kHat, zHat));
     sHat = normVector(cross(eHat, zHat));
     

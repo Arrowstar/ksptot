@@ -29,7 +29,8 @@ classdef SetSteeringModelAction < AbstractEventAction
             dcm = initialStateLogEntry.attitude.dcm;
             rVect = initialStateLogEntry.position;
             vVect = initialStateLogEntry.velocity;
-            obj.steeringModel.setConstsFromDcmAndContinuitySettings(dcm, rVect, vVect);
+            bodyInfo = initialStateLogEntry.centralBody;
+            obj.steeringModel.setConstsFromDcmAndContinuitySettings(dcm, t0, rVect, vVect, bodyInfo);
         end
         
         function name = getName(obj)

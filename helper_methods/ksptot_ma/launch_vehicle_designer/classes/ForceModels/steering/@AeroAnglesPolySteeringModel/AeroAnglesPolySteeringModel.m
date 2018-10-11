@@ -13,16 +13,10 @@ classdef AeroAnglesPolySteeringModel < AbstractAnglePolySteeringModel
     end
     
     methods       
-        function dcm = getBody2InertialDcmAtTime(obj, ut, rVect, vVect)
+        function dcm = getBody2InertialDcmAtTime(obj, ut, rVect, vVect, ~)
             bankAng = obj.bankModel.getValueAtTime(ut);
             angOfAttack = obj.aoAModel.getValueAtTime(ut);
             angOfSideslip = obj.slipModel.getValueAtTime(ut);
-            
-%             if(angOfAttack < deg2rad(-90))
-%                 angOfAttack = deg2rad(-90);
-%             elseif(angOfAttack > deg2rad(90))
-%                 angOfAttack = deg2rad(90);
-%             end
             
             [~, ~, ~, dcm] = computeBodyAxesFromAeroAngles(rVect, vVect, angOfAttack, angOfSideslip, bankAng);
         end
@@ -79,7 +73,7 @@ classdef AeroAnglesPolySteeringModel < AbstractAnglePolySteeringModel
             obj.slipContinuity = angle3Cont;
         end
         
-        function setConstsFromDcmAndContinuitySettings(obj, dcm, rVect, vVect)
+        function setConstsFromDcmAndContinuitySettings(obj, dcm, ~, rVect, vVect, ~)
             if(obj.bankContinuity || obj.aoAContinuity || obj.slipContinuity)
                 [bankAng,angOfAttack,angOfSideslip] = computeAeroAnglesFromBodyAxes(rVect, vVect, dcm(:,1), dcm(:,2), dcm(:,3));
                 
