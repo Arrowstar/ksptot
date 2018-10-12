@@ -79,8 +79,12 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
                 spinVect = [0;0;bodySpinRate];
                 rotAccel = crossARH(spinVect,crossARH(spinVect,rVect));
                 
-                dydt(1:3) = vVect'; 
-                dydt(4:6) = rotAccel;
+                [rVectECEF] = getFixedFrameVectFromInertialVect(ut, rVect, bodyInfo);
+                vVectECEF = [0;0;0];
+                [~, vVectECI] = getInertialVectFromFixedFrameVect(ut, rVectECEF, bodyInfo, vVectECEF);
+                
+                dydt(1:3) = vVectECI(:); 
+                dydt(4:6) = rotAccel(:);
             else
                 %launch clamp disabled, propagate like normal
                 CdA = eventInitStateLogEntry.aero.area * eventInitStateLogEntry.aero.Cd;            
