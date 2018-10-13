@@ -38,6 +38,10 @@ classdef NoOptimizationObjectiveFcn < AbstractObjectiveFcn
             tf = false;
         end
         
+        function tf = usesEvent(obj, event)
+            tf = false;
+        end
+        
         function event = getRefEvent(obj)
             event = LaunchVehicleEvent.empty(1,0);
         end

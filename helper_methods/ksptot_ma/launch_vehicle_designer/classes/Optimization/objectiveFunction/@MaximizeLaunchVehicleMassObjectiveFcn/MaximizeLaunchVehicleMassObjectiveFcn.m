@@ -40,6 +40,10 @@ classdef MaximizeLaunchVehicleMassObjectiveFcn < AbstractObjectiveFcn
             tf = false;
         end
         
+        function tf = usesEvent(obj, event)
+            tf = obj.event == event;
+        end
+        
         function event = getRefEvent(obj)
             event = obj.event;
         end

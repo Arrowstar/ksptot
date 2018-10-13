@@ -44,6 +44,24 @@ classdef OptimizationVariableSet < matlab.mixin.SetGet
             end
         end
         
+        function typicalX = getTypicalXVector(obj)
+            [LwrBnds, UprBnds] = obj.getTotalBndsVector();
+            
+            typicalX = zeros(size(LwrBnds));
+            for(i=1:length(LwrBnds))
+                lbO = floor(log10(LwrBnds(i)));
+                ubO = floor(log10(UprBnds(i)));
+                
+                if(lbO > ubO)
+                    typicalX(i) = LwrBnds(i);
+                else
+                    typicalX(i) = UprBnds(i);
+                end
+            end
+            
+            typicalX(typicalX<eps) = 1;
+        end
+        
         function updateObjsWithVarValues(obj, x)
             initInd = 1;
             

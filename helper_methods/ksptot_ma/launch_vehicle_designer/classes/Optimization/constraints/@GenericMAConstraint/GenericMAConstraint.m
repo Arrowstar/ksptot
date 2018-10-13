@@ -88,6 +88,10 @@ classdef GenericMAConstraint < AbstractConstraint
             tf = false;
         end
         
+        function tf = usesEvent(obj, event)
+            tf = obj.event == event;
+        end
+        
         function name = getName(obj)
             name = sprintf('%s - Event %i', obj.constraintType, obj.event.getEventNum());
         end

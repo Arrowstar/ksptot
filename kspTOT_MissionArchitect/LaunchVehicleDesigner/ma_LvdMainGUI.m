@@ -221,7 +221,17 @@ function deleteEvent_Callback(hObject, eventdata, handles)
     
     addUndoState(handles,'Delete Event');
     
-    eventNum = get(handles.scriptListbox,'Value');   
+    eventNum = get(handles.scriptListbox,'Value');
+    evt = lvdData.script.getEventForInd(eventNum);
+    
+    lvdData.optimizer.constraints.removeConstraintsThatUseEvent(evt);
+    
+    if(lvdData.optimizer.objFcn.usesEvent(evt))
+        lvdData.optimizer.objFcn = NoOptimizationObjectiveFcn(lvdData.optimizer, lvdData);
+        
+        warndlg(sprintf('The existing objective function referenced the deleted event.  The objective function has been replaced with a "%s" objective function.',ObjectiveFunctionEnum.NoObjectiveFunction.name),'Objective Function Reset','modal');
+    end
+    
     lvdData.script.removeEventFromIndex(eventNum);
     
     if(eventNum > length(lvdData.script.evts))

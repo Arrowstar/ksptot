@@ -1,9 +1,9 @@
-classdef TankMassOptimizationVariable < AbstractOptimizationVariable
-    %EventDurationOptimizationVariable Summary of this class goes here
+classdef BankAngleTermCondOptimizationVariable < AbstractOptimizationVariable
+    %AoATermConditionOptimizationVariable Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
-        varObj(1,:) TankMassTermCondition
+        varObj(1,1) BankAngleTermCondition = BankAngleTermCondition(0);
         
         lb(1,1) double = 0;
         ub(1,1) double = 0;
@@ -12,7 +12,7 @@ classdef TankMassOptimizationVariable < AbstractOptimizationVariable
     end
     
     methods
-        function obj = TankMassOptimizationVariable(varObj)
+        function obj = BankAngleTermCondOptimizationVariable(varObj)
             obj.varObj = varObj;
             obj.varObj.optVar = obj;
             
@@ -23,7 +23,7 @@ classdef TankMassOptimizationVariable < AbstractOptimizationVariable
             x = [];
             
             if(obj.useTf)
-                x = obj.varObj.targetMass;
+                x = obj.varObj.targetBankAngle;
             end
         end
         
@@ -43,7 +43,7 @@ classdef TankMassOptimizationVariable < AbstractOptimizationVariable
         end
         
         function useTf = getUseTfForVariable(obj)
-            useTf = true;
+            useTf = obj.useTf;
         end
         
         function setUseTfForVariable(obj, useTf)
@@ -51,7 +51,7 @@ classdef TankMassOptimizationVariable < AbstractOptimizationVariable
         end
         
         function updateObjWithVarValue(obj, x)
-            obj.varObj.targetMass = x;
+            obj.varObj.targetBankAngle = x;
         end
     end
 end

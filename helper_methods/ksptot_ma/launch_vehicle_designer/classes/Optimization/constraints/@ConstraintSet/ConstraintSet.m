@@ -117,6 +117,22 @@ classdef ConstraintSet < matlab.mixin.SetGet
                 tf = tf || obj.consts(i).usesEngineToTankConn(engineToTank);
             end
         end
+        
+        function removeConstraintsThatUseEvent(obj, event)
+            indsToRemove = [];
+            for(i=1:length(obj.consts))
+                c = obj.consts(i);
+                
+                if(c.usesEvent(event))
+                    indsToRemove(end+1) = i;
+                end
+            end
+            
+            for(i=length(indsToRemove):-1:1)
+                indToRemove = indsToRemove(i);
+                c = obj.consts(indToRemove);
+                obj.removeConstraint(c);
+            end
+        end
     end
 end
-

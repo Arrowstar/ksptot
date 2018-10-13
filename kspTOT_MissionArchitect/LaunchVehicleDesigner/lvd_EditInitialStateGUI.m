@@ -1046,7 +1046,8 @@ function editSteeringButton_Callback(hObject, eventdata, handles)
     initStateModel = lvdData.initStateModel;
     lv = lvdData.launchVehicle;
     
-    initStateModel.steeringModel.openEditSteeringModelUI(lv);
+    [~,steeringModel] = initStateModel.steeringModel.openEditSteeringModelUI(lv);
+    initStateModel.steeringModel = steeringModel;
 
 % --- Executes on button press in editThrottleButton.
 function editThrottleButton_Callback(hObject, eventdata, handles)

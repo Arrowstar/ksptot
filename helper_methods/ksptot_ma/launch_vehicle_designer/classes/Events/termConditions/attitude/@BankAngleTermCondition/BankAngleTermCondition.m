@@ -1,20 +1,20 @@
-classdef AngleOfAttackTermCondition < AbstractEventTerminationCondition
-    %AngleOfAttackTermCondition Summary of this class goes here
+classdef BankAngleTermCondition < AbstractEventTerminationCondition
+    %BankAngleTermCondition Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
         steeringModel(1,1) AbstractSteeringModel = RollPitchYawPolySteeringModel.getDefaultSteeringModel();
-        targetAoA(1,1) double = 0;
+        targetBankAngle(1,1) double = 0;
         bodyInfo KSPTOT_BodyInfo
     end
     
     methods
-        function obj = AngleOfAttackTermCondition(targetAoA)
-            obj.targetAoA = targetAoA;
+        function obj = BankAngleTermCondition(targetBankAngle)
+            obj.targetBankAngle = targetBankAngle;
         end
         
         function evtTermCondFcnHndl = getEventTermCondFuncHandle(obj)
-            evtTermCondFcnHndl = @(t,y) obj.eventTermCond(t,y, obj.targetAoA, obj.steeringModel, obj.bodyInfo);
+            evtTermCondFcnHndl = @(t,y) obj.eventTermCond(t,y, obj.targetBankAngle, obj.steeringModel, obj.bodyInfo);
         end
         
         function initTermCondition(obj, initialStateLogEntry)
@@ -23,27 +23,27 @@ classdef AngleOfAttackTermCondition < AbstractEventTerminationCondition
         end
         
         function name = getName(obj)
-            name = sprintf('Angle of Attack (%.3f deg)', rad2deg(obj.targetAoA));
+            name = sprintf('Bank Angle (%.3f deg)', rad2deg(obj.targetBankAngle));
         end
         
         function params = getTermCondUiStruct(obj)
             params = struct();
             
-            params.paramName = 'Target AoA';
+            params.paramName = 'Target Bank Angle';
             params.paramUnit = 'deg';
             params.useParam = 'on';
             params.useStages = 'off';
             params.useTanks = 'off';
             params.useEngines = 'off';
             
-            params.value = rad2deg(obj.targetAoA);
+            params.value = rad2deg(obj.targetBankAngle);
             params.refStage = LaunchVehicleStage.empty(1,0);
             params.refTank = LaunchVehicleEngine.empty(1,0);
             params.refEngine = LaunchVehicleEngine.empty(1,0);
         end
         
         function optVar = getNewOptVar(obj)
-            optVar = AoATermConditionOptimizationVariable(obj);
+            optVar = BankAngleTermCondOptimizationVariable(obj);
         end
         
         function optVar = getExistingOptVar(obj)
@@ -69,20 +69,20 @@ classdef AngleOfAttackTermCondition < AbstractEventTerminationCondition
     
     methods(Static)
         function termCond = getTermCondForParams(paramValue, stage, tank, engine)
-            termCond = AngleOfAttackTermCondition((paramValue));
+            termCond = BankAngleTermCondition((paramValue));
         end
     end
     
     methods(Static, Access=private)
-        function [value,isterminal,direction] = eventTermCond(t,y, targetAoA, steeringModel, bodyInfo)
+        function [value,isterminal,direction] = eventTermCond(t,y, targetBankAngle, steeringModel, bodyInfo)
             ut = t;
             rVect = y(1:3);
             vVect = y(4:6);
             
             dcm = steeringModel.getBody2InertialDcmAtTime(ut, rVect, vVect, bodyInfo);
-            [~,angOfAttack,~] = computeAeroAnglesFromBodyAxes(rVect, vVect, dcm(:,1), dcm(:,2), dcm(:,3));
+            [bankAng,~,~] = computeAeroAnglesFromBodyAxes(rVect, vVect, dcm(:,1), dcm(:,2), dcm(:,3));
             
-            value = angOfAttack - targetAoA;
+            value = bankAng - targetBankAngle;
             isterminal = 1;
             direction = 0;
         end

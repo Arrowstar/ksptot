@@ -35,10 +35,12 @@ classdef OptimizationVariablesNearBoundsValidator < AbstractLaunchVehicleDataVal
             lv = obj.lvdData.launchVehicle;
             [lvVars,~] = lv.getActiveOptVars();
             useLv = false;
-            inds = find(ismember(vars,lvVars));
-            if(not(isempty(inds)))
-                if(ismember(inds,warnInd))
-                    useLv = true;
+            if(not(isempty(lvVars)))
+                inds = find(ismember(vars,lvVars));
+                if(not(isempty(inds)))
+                    if(ismember(inds,warnInd))
+                        useLv = true;
+                    end
                 end
             end
             
@@ -72,7 +74,8 @@ classdef OptimizationVariablesNearBoundsValidator < AbstractLaunchVehicleDataVal
                     for(j=1:length(eVars))
                         inds = inds | ismember(vars,eVars(j));
                     end
-
+                    
+                    inds = find(inds);
                     if(not(isempty(inds)))
                         if(ismember(inds,warnInd))
                             eventNums(end+1) = i; %#ok<AGROW>

@@ -78,9 +78,9 @@ function populateGUI(handles, event)
     params = termCond.getTermCondUiStruct();
     
     value = params.value;
-    if(strcmpi(params.paramUnit,'deg'))
-        value = rad2deg(value);
-    end
+%     if(strcmpi(params.paramUnit,'deg'))
+%         value = rad2deg(value);
+%     end
     
     set(handles.numParamText,'String',fullAccNum2Str(value));
     
@@ -160,11 +160,9 @@ function varargout = lvd_editEvtTermCond_OutputFcn(hObject, eventdata, handles)
         
         termCond = event.termCond;
         params = getParamsForSelectedTermCondType(handles);
-
+       
         optVar = termCond.getExistingOptVar();
-        if(isempty(optVar))
-            optVar = termCond.getNewOptVar();
-        else
+        if(not(isempty(optVar)))
             lv.lvdData.optimizer.vars.removeVariable(optVar);%need to remove existing var if it exists
         end
         
@@ -208,6 +206,8 @@ function varargout = lvd_editEvtTermCond_OutputFcn(hObject, eventdata, handles)
             ub = deg2rad(ub);
         end
         
+        optVar = termCond.getNewOptVar();
+        
         optVar.setUseTfForVariable(true); 
         optVar.setBndsForVariable(lb, ub);
         
@@ -217,6 +217,7 @@ function varargout = lvd_editEvtTermCond_OutputFcn(hObject, eventdata, handles)
         event.termCond = termCond;
         lv.lvdData.optimizer.vars.addVariable(optVar);
         termCond.optVar = optVar;
+        optVar.varObj = termCond;
         
         close(handles.lvd_editEvtTermCond);
     end

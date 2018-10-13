@@ -192,7 +192,6 @@ function varargout = lvd_EditActionSetSteeringModelGUI_OutputFcn(hObject, eventd
         indFromCombo = get(handles.steeringModelTypeCombo,'Value');
         
         optVar = steeringModel.getExistingOptVar();
-        
         if(not(isempty(optVar))) %need to remove existing var if it exists
             lvdData.optimizer.vars.removeVariable(optVar);
         end
@@ -236,9 +235,7 @@ function varargout = lvd_EditActionSetSteeringModelGUI_OutputFcn(hObject, eventd
         useTf(8) = get(handles.angle3LinOptCheckbox,'Value');
         useTf(9) = get(handles.angle3AccelOptCheckbox,'Value');
         
-        if(isempty(optVar))
-            optVar = steeringModel.getNewOptVar();
-        end
+        optVar = steeringModel.getNewOptVar();
         
         optVar.setUseTfForVariable(useTf);
         

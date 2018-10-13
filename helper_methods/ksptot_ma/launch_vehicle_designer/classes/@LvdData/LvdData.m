@@ -167,13 +167,13 @@ classdef LvdData < matlab.mixin.SetGet
             coastDurVar.setBndsForVariable(0, 130);
             lvdOptim.vars.addVariable(coastDurVar);
             
-            const1 = GenericMAConstraint('Eccentricity', evt6, 0, 0, struct.empty(1,0), struct.empty(1,0), celBodyData.kerbin);
+            const1 = GenericMAConstraint('Eccentricity', evt5, 0, 0, struct.empty(1,0), struct.empty(1,0), celBodyData.kerbin);
             lvdOptim.constraints.addConstraint(const1);
             
 %             const2 = GenericMAConstraint('Semi-major Axis', evt6, 700, 700, struct.empty(1,0), struct.empty(1,0), celBodyData.kerbin);
 %             lvdOptim.constraints.addConstraint(const2);
             
-            const3 = GenericMAConstraint('Altitude', evt6, 75, realmax, struct.empty(1,0), struct.empty(1,0), celBodyData.kerbin);
+            const3 = GenericMAConstraint('Altitude', evt5, 75, 10000, struct.empty(1,0), struct.empty(1,0), celBodyData.kerbin);
             lvdOptim.constraints.addConstraint(const3);
             
             lvdData.optimizer = lvdOptim;

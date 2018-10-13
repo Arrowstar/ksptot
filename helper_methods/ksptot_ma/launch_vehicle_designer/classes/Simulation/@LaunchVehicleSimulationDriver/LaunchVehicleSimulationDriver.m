@@ -71,6 +71,9 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
             
             holdDownEnabled = eventInitStateLogEntry.isHoldDownEnabled();
             
+            tankMassDots = eventInitStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, stageStates, throttle, lvState, pressure);
+            
+            
             dydt = zeros(length(y),1);
             if(holdDownEnabled)
                 %launch clamp is enabled, only motion is circular motion
@@ -99,8 +102,11 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
                     tankStates(i).setTankMass(tankStatesMasses(i));
                 end
 
+                totalMDot = sum(tankMassDots);
+                
                 if(totalMass > 0)
-                    accelVect = obj.forceModel.getForce(ut, rVect, vVect, totalMass, bodyInfo, CdA, throttleModel, steeringModel, tankStates, stageStates, lvState)/totalMass;
+                    forceSum = obj.forceModel.getForce(ut, rVect, vVect, totalMass, bodyInfo, CdA, throttleModel, steeringModel, tankStates, stageStates, lvState);
+                    accelVect = (forceSum - vVect*totalMDot)/totalMass; %F = dp/dt = d(mv)/dt = m*dv/dt + v*dm/dt
                 else
                     accelVect = zeros(3,1);
                 end
@@ -109,7 +115,7 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
                 dydt(4:6) = accelVect;
             end
             
-            dydt(7:end) = eventInitStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, stageStates, throttle, lvState, pressure);
+            dydt(7:end) = tankMassDots;
         end
         
         function [value,isterminal,direction] = odeEvents(t,y, obj, eventInitStateLogEntry, evtTermCond)

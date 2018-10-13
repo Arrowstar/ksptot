@@ -326,7 +326,9 @@ function ubText_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of ubText as text
 %        str2double(get(hObject,'String')) returns contents of ubText as a double
-
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
 
 % --- Executes during object creation, after setting all properties.
 function ubText_CreateFcn(hObject, eventdata, handles)
