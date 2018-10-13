@@ -1,9 +1,9 @@
-classdef BankAngleTermCondOptimizationVariable < AbstractOptimizationVariable
-    %BankAngleTermCondOptimizationVariable Summary of this class goes here
+classdef YawAngleTermCondOptimVar < AbstractOptimizationVariable
+    %YawAngleTermCondOptimVar Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
-        varObj(1,1) BankAngleTermCondition = BankAngleTermCondition(0);
+        varObj(1,1) YawTermCondition = YawTermCondition(0);
         
         lb(1,1) double = 0;
         ub(1,1) double = 0;
@@ -12,7 +12,7 @@ classdef BankAngleTermCondOptimizationVariable < AbstractOptimizationVariable
     end
     
     methods
-        function obj = BankAngleTermCondOptimizationVariable(varObj)
+        function obj = YawAngleTermCondOptimVar(varObj)
             obj.varObj = varObj;
             obj.varObj.optVar = obj;
             
@@ -23,7 +23,7 @@ classdef BankAngleTermCondOptimizationVariable < AbstractOptimizationVariable
             x = [];
             
             if(obj.useTf)
-                x = obj.varObj.targetBankAngle;
+                x = obj.varObj.targetYawAngle;
             end
         end
         
@@ -51,7 +51,7 @@ classdef BankAngleTermCondOptimizationVariable < AbstractOptimizationVariable
         end
         
         function updateObjWithVarValue(obj, x)
-            obj.varObj.targetBankAngle = x;
+            obj.varObj.targetYawAngle = x;
         end
     end
 end

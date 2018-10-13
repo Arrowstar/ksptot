@@ -30,7 +30,7 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
             odefun = @(t,y) obj.odefun(t,y, obj, eventInitStateLogEntry, dryMass);
             odeEventsFun = @(t,y) obj.odeEvents(t,y, obj, eventInitStateLogEntry, event.termCond.getEventTermCondFuncHandle());
             odeOutputFun = @(t,y,flag) obj.odeOutput(t,y,flag, now()*86400);
-            options = odeset('RelTol',1E-4, 'AbsTol',1E-6,  'NonNegative',tankStateInds, 'Events',odeEventsFun, 'NormControl','on', 'OutputFcn',odeOutputFun);
+            options = odeset('RelTol',1E-6, 'AbsTol',1E-6,  'NonNegative',tankStateInds, 'Events',odeEventsFun, 'NormControl','on', 'OutputFcn',odeOutputFun);
             
             [value,isterminal,~] = odeEventsFun(tspan(1), y0);
             if(any(abs(value)<=1E-6))

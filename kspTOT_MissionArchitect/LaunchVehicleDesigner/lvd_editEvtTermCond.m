@@ -78,9 +78,6 @@ function populateGUI(handles, event)
     params = termCond.getTermCondUiStruct();
     
     value = params.value;
-%     if(strcmpi(params.paramUnit,'deg'))
-%         value = rad2deg(value);
-%     end
     
     set(handles.numParamText,'String',fullAccNum2Str(value));
     
@@ -130,6 +127,9 @@ function populateGUI(handles, event)
     if(strcmpi(params.paramUnit,'deg'))
         lb = rad2deg(lb);
         ub = rad2deg(ub);
+    elseif(strcmpi(params.paramUnit,'%'))
+        lb = lb*100;
+        ub = ub*100;
     end
     
     lbStr = fullAccNum2Str(lb);
@@ -168,6 +168,8 @@ function varargout = lvd_editEvtTermCond_OutputFcn(hObject, eventdata, handles)
         
         if(strcmpi(params.paramUnit,'deg'))
             paramValue = deg2rad(paramValue);
+        elseif(strcmpi(params.paramUnit,'%'))
+            paramValue = paramValue/100;
         end
         
         [~,stages] = lv.getStagesListBoxStr();
@@ -204,6 +206,9 @@ function varargout = lvd_editEvtTermCond_OutputFcn(hObject, eventdata, handles)
         if(strcmpi(params.paramUnit,'deg'))
             lb = deg2rad(lb);
             ub = deg2rad(ub);
+        elseif(strcmpi(params.paramUnit,'%'))
+            lb = lb/100;
+            ub = ub/100;
         end
         
         optVar = termCond.getNewOptVar();

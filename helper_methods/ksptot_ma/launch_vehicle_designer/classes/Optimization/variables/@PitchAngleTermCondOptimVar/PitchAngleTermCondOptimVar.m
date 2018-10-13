@@ -1,9 +1,9 @@
-classdef BankAngleTermCondOptimizationVariable < AbstractOptimizationVariable
-    %BankAngleTermCondOptimizationVariable Summary of this class goes here
+classdef PitchAngleTermCondOptimVar < AbstractOptimizationVariable
+    %PitchAngleTermCondOptimVar Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
-        varObj(1,1) BankAngleTermCondition = BankAngleTermCondition(0);
+        varObj(1,1) PitchTermCondition = PitchTermCondition(0);
         
         lb(1,1) double = 0;
         ub(1,1) double = 0;
@@ -12,7 +12,7 @@ classdef BankAngleTermCondOptimizationVariable < AbstractOptimizationVariable
     end
     
     methods
-        function obj = BankAngleTermCondOptimizationVariable(varObj)
+        function obj = PitchAngleTermCondOptimVar(varObj)
             obj.varObj = varObj;
             obj.varObj.optVar = obj;
             
@@ -23,7 +23,7 @@ classdef BankAngleTermCondOptimizationVariable < AbstractOptimizationVariable
             x = [];
             
             if(obj.useTf)
-                x = obj.varObj.targetBankAngle;
+                x = obj.varObj.targetPitchAngle;
             end
         end
         
@@ -51,7 +51,7 @@ classdef BankAngleTermCondOptimizationVariable < AbstractOptimizationVariable
         end
         
         function updateObjWithVarValue(obj, x)
-            obj.varObj.targetBankAngle = x;
+            obj.varObj.targetPitchAngle = x;
         end
     end
 end
