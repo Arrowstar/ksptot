@@ -1,9 +1,10 @@
-classdef TankMassOptimizationVariable < AbstractOptimizationVariable
-    %EventDurationOptimizationVariable Summary of this class goes here
+classdef Thr2WghtTermCondOptimVar < AbstractOptimizationVariable
+    %Thr2WghtTermCondOptimVar Thrust to weight ratio termination condition
+    %variable
     %   Detailed explanation goes here
     
     properties
-        varObj(1,:) TankMassTermCondition
+        varObj(1,1) SeaLevelThrustToWeightTermCondition = SeaLevelThrustToWeightTermCondition(1);
         
         lb(1,1) double = 0;
         ub(1,1) double = 0;
@@ -12,7 +13,7 @@ classdef TankMassOptimizationVariable < AbstractOptimizationVariable
     end
     
     methods
-        function obj = TankMassOptimizationVariable(varObj)
+        function obj = Thr2WghtTermCondOptimVar(varObj)
             obj.varObj = varObj;
             obj.varObj.optVar = obj;
             
@@ -23,7 +24,7 @@ classdef TankMassOptimizationVariable < AbstractOptimizationVariable
             x = [];
             
             if(obj.useTf)
-                x = obj.varObj.targetMass;
+                x = obj.varObj.targetTtW;
             end
         end
         
@@ -51,7 +52,7 @@ classdef TankMassOptimizationVariable < AbstractOptimizationVariable
         end
         
         function updateObjWithVarValue(obj, x)
-            obj.varObj.targetMass = x;
+            obj.varObj.targetTtW = x;
         end
     end
 end

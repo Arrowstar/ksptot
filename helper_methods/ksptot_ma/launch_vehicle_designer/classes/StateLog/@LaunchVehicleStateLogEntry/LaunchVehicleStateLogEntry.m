@@ -181,10 +181,11 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet
             end
         end
         
-        function tankMDots = getTankMassFlowRatesDueToEngines(tankStates, stgStates, throttle, lvState, presskPa)
+        function [tankMDots, totalThrust]= getTankMassFlowRatesDueToEngines(tankStates, stgStates, throttle, lvState, presskPa)
 %             tankStates = obj.getAllActiveTankStates();
             tankMDots = zeros(size(tankStates));
             tankMDots = tankMDots(:);
+            totalThrust = 0;
             
 %             stgStates = obj.stageStates;
             for(i=1:length(stgStates)) %#ok<*NO4LP>
@@ -198,9 +199,10 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet
                         
                         if(engineState.active)
                             engine = engineState.engine;
-                            [~, mdot] = engine.getThrustFlowRateForPressure(presskPa); %total mass flow through engine
+                            [thrust, mdot] = engine.getThrustFlowRateForPressure(presskPa); %total mass flow through engine
                             adjustedThrottle = engine.adjustThrottleForMinMax(throttle);
                             mdot = adjustedThrottle * mdot;
+                            totalThrust = totalThrust + adjustedThrottle*thrust;
                             
                             tanks = lvState.getTanksConnectedToEngine(engine);
                             

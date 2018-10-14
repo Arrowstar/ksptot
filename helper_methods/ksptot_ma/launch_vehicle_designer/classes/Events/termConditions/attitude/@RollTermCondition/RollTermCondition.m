@@ -82,6 +82,8 @@ classdef RollTermCondition < AbstractEventTerminationCondition
             dcm = steeringModel.getBody2InertialDcmAtTime(ut, rVect, vVect, bodyInfo);
             [rollAngle,~,~] = computeEulerAnglesFromInertialBodyAxes(ut, rVect, vVect, bodyInfo, dcm(:,1), dcm(:,2), dcm(:,3));
             
+            rollAngle = AngleZero2Pi(rollAngle);
+            
             value = rollAngle - targetRollAngle;
             isterminal = 1;
             direction = 0;

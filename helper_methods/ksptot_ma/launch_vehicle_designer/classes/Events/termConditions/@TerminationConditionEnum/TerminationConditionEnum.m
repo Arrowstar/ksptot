@@ -12,6 +12,7 @@ classdef TerminationConditionEnum < matlab.mixin.SetGet
         SideSlipAngle('Side Slip Angle','SideSlipAngleTermCondition');
         TankMass('Tank Mass','TankMassTermCondition');
         ThrottleSetting('Throttle Setting','ThrottleTermCondition');
+        ThrustToWeightRatio('Thrust to Weight Ratio (Sea Level)','SeaLevelThrustToWeightTermCondition');
         TrueAnomaly('True Anomaly','TrueAnomalyTermCondition');
         YawAngle('Yaw Angle','YawTermCondition');
     end

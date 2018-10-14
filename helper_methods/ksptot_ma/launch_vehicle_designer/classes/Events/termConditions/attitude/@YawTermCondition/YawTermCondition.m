@@ -82,6 +82,8 @@ classdef YawTermCondition < AbstractEventTerminationCondition
             dcm = steeringModel.getBody2InertialDcmAtTime(ut, rVect, vVect, bodyInfo);
             [~,~,yawAngle] = computeEulerAnglesFromInertialBodyAxes(ut, rVect, vVect, bodyInfo, dcm(:,1), dcm(:,2), dcm(:,3));
             
+            yawAngle = AngleZero2Pi(yawAngle);
+            
             value = yawAngle - targetYawAngle;
             isterminal = 1;
             direction = 0;

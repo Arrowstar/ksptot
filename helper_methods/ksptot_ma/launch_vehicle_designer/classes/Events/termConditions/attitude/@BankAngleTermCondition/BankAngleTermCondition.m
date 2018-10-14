@@ -82,6 +82,8 @@ classdef BankAngleTermCondition < AbstractEventTerminationCondition
             dcm = steeringModel.getBody2InertialDcmAtTime(ut, rVect, vVect, bodyInfo);
             [bankAng,~,~] = computeAeroAnglesFromBodyAxes(rVect, vVect, dcm(:,1), dcm(:,2), dcm(:,3));
             
+            bankAng = AngleZero2Pi(bankAng);
+            
             value = bankAng - targetBankAngle;
             isterminal = 1;
             direction = 0;
