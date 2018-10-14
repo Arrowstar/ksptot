@@ -22,7 +22,7 @@ function varargout = ma_LvdMainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_LvdMainGUI
 
-% Last Modified by GUIDE v2.5 08-Oct-2018 14:27:31
+% Last Modified by GUIDE v2.5 14-Oct-2018 14:43:52
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -874,3 +874,52 @@ function ma_LvdMainGUI_CloseRequestFcn(hObject, eventdata, handles)
 
         delete(hObject);
     end
+
+
+% --------------------------------------------------------------------
+function settingsMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to settingsMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function integrationSettingsMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to integrationSettingsMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function optimSettingsMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to optimSettingsMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function optAlgorithmMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to optAlgorithmMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function optUseParaMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to optUseParaMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function integrationAbsTolMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to integrationAbsTolMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function integrationRelTolMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to integrationRelTolMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)

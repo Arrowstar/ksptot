@@ -32,56 +32,16 @@ classdef OptimizationVariablesNearBoundsValidator < AbstractLaunchVehicleDataVal
                 return;
             end
             
-            lv = obj.lvdData.launchVehicle;
-            [lvVars,~] = lv.getActiveOptVars();
-            useLv = false;
-            if(not(isempty(lvVars)))
-                inds = find(ismember(vars,lvVars));
-                if(not(isempty(inds)))
-                    if(ismember(inds,warnInd))
-                        useLv = true;
-                    end
-                end
-            end
-            
-            
-            initStateModel = obj.lvdData.initStateModel;
-            initStateModelOptVars = initStateModel.getAllOptVars();
-            useInitState = false;
-            if(not(isempty(initStateModelOptVars)))
-                inds = zeros(size(vars));
-                for(i=1:length(initStateModelOptVars))
-                    inds = inds | ismember(vars,initStateModelOptVars(i));
-                end
-                
-                inds = find(inds);
-                if(not(isempty(inds)))
-                    if(any(ismember(inds,warnInd)))
-                        useInitState = true;
-                    end
-                end
-            end
-            
             eventNums = [];
-            
-            numEvents = obj.lvdData.script.getTotalNumOfEvents();
-            for(i=1:numEvents)
-                event = obj.lvdData.script.getEventForInd(i);
-                [tf, eVars] = event.hasActiveOptVars();
+            useLv = false;
+            useIs = false;
+            for(i=1:length(warnInd))
+                var = vars(warnInd(i));
                 
-                if(tf)
-                    inds = zeros(size(vars));
-                    for(j=1:length(eVars))
-                        inds = inds | ismember(vars,eVars(j));
-                    end
-                    
-                    inds = find(inds);
-                    if(not(isempty(inds)))
-                        if(ismember(inds,warnInd))
-                            eventNums(end+1) = i; %#ok<AGROW>
-                        end
-                    end
-                end
+                evtNum = getEventNumberForVar(var, obj.lvdData);
+                useLv = useLv | isVarInLaunchVehicle(var, obj.lvdData);
+                useIs = useIs | isVarInInitialState(var, obj.lvdData);
+                eventNums = horzcat(eventNums,evtNum); %#ok<AGROW>
             end
             
             if(not(isempty(eventNums)))
@@ -91,21 +51,80 @@ classdef OptimizationVariablesNearBoundsValidator < AbstractLaunchVehicleDataVal
             end
             
             combStrCell = {};
+           
             if(useLv)
                 combStrCell{end+1} = 'Launch Vehicle';
             end
             
-            if(useInitState)
+            if(useIs)
                 combStrCell{end+1} = 'Initial State';
+            end
+            
+            if(not(isempty(eventStr)))
+                combStrCell{end+1} = eventStr;
             end
             
             combStr = strjoin(combStrCell,', ');
             if(not(isempty(combStr)))
-                combStr = sprintf('%s, ',combStr);
+                combStr = sprintf('%s',combStr);
             end
 
-            str = sprintf('Variables are near optimization bounds on some events (Events: %s%s)', combStr, eventStr);
+            str = sprintf('Variables are near optimization bounds on some events (Events: %s)', combStr);
             warnings(end+1) = LaunchVehicleDataValidationWarning(str);
+        end
+    end
+end
+
+function evtNum = getEventNumberForVar(var, lvdData)
+    evtNum = [];
+    
+    numEvents = lvdData.script.getTotalNumOfEvents();
+    for(i=1:numEvents)
+        event = lvdData.script.getEventForInd(i);
+        
+        [~, eVars] = event.hasActiveOptVars();
+        
+        for(j=1:length(eVars))
+            eVar = eVars(j);
+            
+            if(strcmpi(class(var), class(eVar)) && var == eVar)
+                evtNum = i;
+                break;
+            end
+        end
+        
+        if(not(isempty(evtNum)))
+            break;
+        end
+    end
+end
+
+function tf = isVarInLaunchVehicle(var, lvdData)
+    lv = lvdData.launchVehicle;
+    [lvVars,~] = lv.getActiveOptVars();
+    
+    tf = false;
+    for(i=1:length(lvVars))
+        lvVar = lvVars(i);
+        
+        if(var == lvVar)
+            tf = true;
+            break;
+        end
+    end
+end
+
+function tf = isVarInInitialState(var, lvdData)
+    initStateModel = lvdData.initStateModel;
+    initStateModelOptVars = initStateModel.getAllOptVars();
+    
+    tf = false;
+    for(i=1:length(initStateModelOptVars))
+        isVar = initStateModelOptVars(i);
+
+        if(var == isVar)
+            tf = true;
+            break;
         end
     end
 end
