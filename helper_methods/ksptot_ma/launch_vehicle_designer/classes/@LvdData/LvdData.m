@@ -9,6 +9,7 @@ classdef LvdData < matlab.mixin.SetGet
         initStateModel InitialStateModel
         optimizer LvdOptimization
         validation LaunchVehicleDataValidation
+        settings LvdSettings
         
         celBodyData struct
         ksptotVer(1,:) char
@@ -21,6 +22,7 @@ classdef LvdData < matlab.mixin.SetGet
     methods(Access = private)
         function obj = LvdData()
             obj.validation = LaunchVehicleDataValidation(obj);
+            obj.settings = LvdSettings();
         end
     end
     
@@ -63,7 +65,7 @@ classdef LvdData < matlab.mixin.SetGet
             
             simMaxDur = 20000;
             minAltitude = -1;
-            simDriver = LaunchVehicleSimulationDriver(simMaxDur, minAltitude, celBodyData);
+            simDriver = LaunchVehicleSimulationDriver(lvdData);
             
             %Set Up Initial Launch Vehicle
             lv = LaunchVehicle.createDefaultLaunchVehicle(lvdData);

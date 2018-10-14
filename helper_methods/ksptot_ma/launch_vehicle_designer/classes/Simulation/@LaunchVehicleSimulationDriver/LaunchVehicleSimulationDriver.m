@@ -1,22 +1,45 @@
 classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
-    %LaunchVehicleSimulationDrive Summary of this class goes here
+    %LaunchVehicleSimulationDriver Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
         forceModel(1,1) AbstractForceModel = TotalForceModel();
         integrator(1,1) function_handle = @ode45;
         
-        simMaxDur(1,1) double = 600; %sec
-        minAltitude = -1; %km
-        
+        lvdData LvdData
+    end
+    
+    properties(Dependent)
+        relTol(1,1) double
+        absTol(1,1) double
+        simMaxDur(1,1) double
+        minAltitude(1,1) double
         celBodyData(1,1) struct
     end
     
     methods
-        function obj = LaunchVehicleSimulationDriver(simMaxDur, minAltitude, celBodyData)
-            obj.simMaxDur = simMaxDur;
-            obj.minAltitude = minAltitude;
-            obj.celBodyData = celBodyData;
+        function obj = LaunchVehicleSimulationDriver(lvdData)
+            obj.lvdData = lvdData;
+        end
+        
+        function value = get.relTol(obj)
+            value = obj.lvdData.settings.intRelTol;
+        end
+        
+        function value = get.absTol(obj)
+            value = obj.lvdData.settings.intAbsTol;
+        end
+        
+        function value = get.simMaxDur(obj)
+            value = obj.lvdData.settings.simMaxDur;
+        end
+        
+        function value = get.minAltitude(obj)
+            value = obj.lvdData.settings.minAltitude;
+        end
+        
+        function value = get.celBodyData(obj)
+            value = obj.lvdData.celBodyData;
         end
         
         function [t,y,newStateLogEntries] = integrateOneEvent(obj, event, eventInitStateLogEntry)
@@ -30,7 +53,7 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
             odefun = @(t,y) obj.odefun(t,y, obj, eventInitStateLogEntry, dryMass);
             odeEventsFun = @(t,y) obj.odeEvents(t,y, obj, eventInitStateLogEntry, event.termCond.getEventTermCondFuncHandle());
             odeOutputFun = @(t,y,flag) obj.odeOutput(t,y,flag, now()*86400);
-            options = odeset('RelTol',1E-6, 'AbsTol',1E-6,  'NonNegative',tankStateInds, 'Events',odeEventsFun, 'NormControl','on', 'OutputFcn',odeOutputFun);
+            options = odeset('RelTol',obj.relTol, 'AbsTol',obj.absTol,  'NonNegative',tankStateInds, 'Events',odeEventsFun, 'NormControl','on', 'OutputFcn',odeOutputFun);
             
             [value,isterminal,~] = odeEventsFun(tspan(1), y0);
             if(any(abs(value)<=1E-6))

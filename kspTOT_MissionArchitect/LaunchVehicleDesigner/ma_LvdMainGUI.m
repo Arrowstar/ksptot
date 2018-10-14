@@ -22,7 +22,7 @@ function varargout = ma_LvdMainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_LvdMainGUI
 
-% Last Modified by GUIDE v2.5 14-Oct-2018 14:43:52
+% Last Modified by GUIDE v2.5 14-Oct-2018 15:17:09
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -895,31 +895,227 @@ function optimSettingsMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to optimSettingsMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
 
+    parallelOptim = lvdData.settings.optUsePara;
+    if(parallelOptim==true)
+        set(handles.optUseParaMenu, 'Checked', 'on');
+    else
+        set(handles.optUseParaMenu, 'Checked', 'off');
+    end
 
 % --------------------------------------------------------------------
 function optAlgorithmMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to optAlgorithmMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
 
+    optAlgo = lvdData.settings.optAlgo;
+    switch optAlgo
+        case LvdOptimAlgorithmEnum.InteriorPoint
+            set(handles.optInteriorPointAlgoMenu, 'Checked', 'on');
+            set(handles.optSqpAlgoMenu, 'Checked', 'off');
+            set(handles.optActiveSetAlgoMenu, 'Checked', 'off');
+        case LvdOptimAlgorithmEnum.SQP
+            set(handles.optInteriorPointAlgoMenu, 'Checked', 'off');
+            set(handles.optSqpAlgoMenu, 'Checked', 'on');
+            set(handles.optActiveSetAlgoMenu, 'Checked', 'off');
+        case LvdOptimAlgorithmEnum.ActiveSet
+            set(handles.optInteriorPointAlgoMenu, 'Checked', 'off');
+            set(handles.optSqpAlgoMenu, 'Checked', 'off');
+            set(handles.optActiveSetAlgoMenu, 'Checked', 'on');
+        otherwise
+            error('Unknown optimization algorithm when setting menu checkmark.');
+    end
 
 % --------------------------------------------------------------------
 function optUseParaMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to optUseParaMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    writeOutput = getappdata(handles.ma_LvdMainGUI,'write_to_output_func');
+    
+    if strcmp(get(gcbo, 'Checked'),'on')
+        set(gcbo, 'Checked', 'off');
+        lvdData.settings.optUsePara = false;
+        writeOutput('Parallel optimization mode disabled.','append');
+    else
+        set(gcbo, 'Checked', 'on');
+        lvdData.settings.optUsePara = true;
+        
+        drawnow;
+        p = gcp('nocreate');
+        if(isempty(p))
+            try
+                h = msgbox('Attempting to start parallel computing workers.  Please wait...');
+                pp=parpool('local',feature('numCores'));
+                pp.IdleTimeout = 99999; %we don't want the pool to shutdown
+                if(isvalid(h))
+                    close(h);
+                end
+                writeOutput('Parallel optimization mode enabled.','append');
+            catch ME %#ok<NASGU>
+                if(ishandle(h))
+                    close(h);
+                end
+                msgbox('Parallel mode start failed.  Optimization will run in serial.');
+            end
+        else
+            writeOutput('Parallel optimization mode enabled.','append');
+        end
+    end
 
 % --------------------------------------------------------------------
 function integrationAbsTolMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to integrationAbsTolMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    writeOutput = getappdata(handles.ma_LvdMainGUI,'write_to_output_func');
+    
+    input_str = sprintf(['Enter the desired integration absolute error tolerance:\n',...
+                         '(Minimum = 1E-14, Maximum = 1E-2)\n',...
+                         '(This will influence script execution speed.)']);
+    str = inputdlg(input_str, 'Absolute Error Tolerance', [1 75], {num2str(lvdData.settings.intAbsTol,'%6.6E')});
+    if(isempty(str))
+        return;
+    end
+    
+    str = str{1};
+    
+    if(checkStrIsNumeric(str) && str2double(str) >= 1E-14 && str2double(str) <= 1E-2)
+        writeOutput(sprintf('Setting integration absolute error tolerance to %s.', str),'append');
+        
+        lvdData.settings.intAbsTol = str2double(str);       
+        
+        runScript(handles, lvdData);
+        lvd_processData(handles);
+    else
+        writeOutput(sprintf('Could not set the desired integration absolute error tolerance.  "%s" is an invalid entry.', str),'append');
+        beep;
+    end
 
 % --------------------------------------------------------------------
 function integrationRelTolMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to integrationRelTolMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    writeOutput = getappdata(handles.ma_LvdMainGUI,'write_to_output_func');
+    
+    input_str = sprintf(['Enter the desired integration relative error tolerance:\n',...
+                         '(Minimum = 1E-14, Maximum = 1E-2)\n',...
+                         '(This will influence script execution speed.)']);
+    str = inputdlg(input_str, 'Relative Error Tolerance', [1 75], {num2str(lvdData.settings.intRelTol,'%6.6E')});
+    if(isempty(str))
+        return;
+    end
+    
+    str = str{1};
+    
+    if(checkStrIsNumeric(str) && str2double(str) >= 1E-14 && str2double(str) <= 1E-2)
+        writeOutput(sprintf('Setting integration relative error tolerance to %s.', str),'append');
+        
+        lvdData.settings.intRelTol = str2double(str);       
+        
+        runScript(handles, lvdData);
+        lvd_processData(handles);
+    else
+        writeOutput(sprintf('Could not set the desired integration relative error tolerance.  "%s" is an invalid entry.', str),'append');
+        beep;
+    end
+
+% --------------------------------------------------------------------
+function intMinAltitudeMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to intMinAltitudeMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    writeOutput = getappdata(handles.ma_LvdMainGUI,'write_to_output_func');
+    
+    input_str = sprintf(['Enter the desired minimum integration altitude (km):\n',...
+                         '(Minimum = -Inf km, Maximum = 0 km)\n', ...
+                         '(Script execution stops if the vehicle reaches this altitude.)']);
+    str = inputdlg(input_str, 'Minimum Integration Altitude', [1 75], {fullAccNum2Str(lvdData.settings.minAltitude)});
+    if(isempty(str))
+        return;
+    end
+    
+    str = str{1};
+    
+    if(checkStrIsNumeric(str) && str2double(str) >= -Inf && str2double(str) <= 0.0)
+        writeOutput(sprintf('Setting minimum integration altitude to %s km.', str),'append');
+        
+        lvdData.settings.minAltitude = str2double(str);       
+        
+        runScript(handles, lvdData);
+        lvd_processData(handles);
+    else
+        writeOutput(sprintf('Could not set the desired minimum integration altitude.  "%s" is an invalid entry.', str),'append');
+        beep;
+    end
+
+% --------------------------------------------------------------------
+function intMaxSimTimeMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to intMaxSimTimeMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    writeOutput = getappdata(handles.ma_LvdMainGUI,'write_to_output_func');
+    
+    input_str = sprintf(['Enter the desired maximum simulation time (sec):\n',...
+                         '(Minimum = 0.0 sec, Maximum = Inf sec)\n', ...
+                         '(Script execution stops if the duration of the mission exceeds this value.)']);
+    str = inputdlg(input_str, 'Maximum Simulation Time', [1 75], {fullAccNum2Str(lvdData.settings.simMaxDur)});
+    if(isempty(str))
+        return;
+    end
+    
+    str = str{1};
+    
+    if(checkStrIsNumeric(str) && str2double(str) >= 0 && str2double(str) <= Inf)
+        writeOutput(sprintf('Setting maximum simulation time to %s sec.', str),'append');
+        
+        lvdData.settings.simMaxDur = str2double(str);       
+        
+        runScript(handles, lvdData);
+        lvd_processData(handles);
+    else
+        writeOutput(sprintf('Could not set the desired maximum simulation time.  "%s" is an invalid entry.', str),'append');
+        beep;
+    end
+
+% --------------------------------------------------------------------
+function optInteriorPointAlgoMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to optInteriorPointAlgoMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    writeOutput = getappdata(handles.ma_LvdMainGUI,'write_to_output_func');
+    
+    lvdData.settings.optAlgo = LvdOptimAlgorithmEnum.InteriorPoint;
+    writeOutput('Optimization algorithm changed to interior point.','append');
+
+% --------------------------------------------------------------------
+function optSqpAlgoMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to optSqpAlgoMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    writeOutput = getappdata(handles.ma_LvdMainGUI,'write_to_output_func');
+    
+    lvdData.settings.optAlgo = LvdOptimAlgorithmEnum.SQP;
+    writeOutput('Optimization algorithm changed to SQP.','append');
+
+% --------------------------------------------------------------------
+function optActiveSetAlgoMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to optActiveSetAlgoMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    writeOutput = getappdata(handles.ma_LvdMainGUI,'write_to_output_func');
+    
+    lvdData.settings.optAlgo = LvdOptimAlgorithmEnum.ActiveSet;
+    writeOutput('Optimization algorithm changed to active set.','append');

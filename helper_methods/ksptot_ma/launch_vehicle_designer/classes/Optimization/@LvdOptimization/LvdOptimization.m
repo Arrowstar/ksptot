@@ -26,8 +26,8 @@ classdef LvdOptimization < matlab.mixin.SetGet
             typicalX = obj.vars.getTypicalXVector();
             nonlcon = @(x) obj.constraints.evalConstraints(x);
             
-            optimAlg = 'interior-point';
-            usePara = true;
+            optimAlg = obj.lvdData.settings.optAlgo.algoName;
+            usePara = obj.lvdData.settings.optUsePara;
             options = optimoptions('fmincon','Algorithm',optimAlg, 'Diagnostics','on', 'Display','iter-detailed','TolFun',1E-10,'TolX',1E-10,'TolCon',1E-10,'ScaleProblem','obj-and-constr','TypicalX',typicalX,'MaxIter',500,'UseParallel',usePara,'OutputFcn',[],'HonorBounds',true,'MaxFunctionEvaluations',3000, 'FunValCheck','on');
             problem = createOptimProblem('fmincon', 'objective',objFuncWrapper, 'x0', x0All, 'lb', lbAll, 'ub', ubAll, 'nonlcon', nonlcon, 'options', options);
             
