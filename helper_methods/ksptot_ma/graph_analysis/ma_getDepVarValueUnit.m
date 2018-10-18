@@ -238,4 +238,3 @@ function [depVarValue, depVarUnit, prevDistTraveled, taskStr, refBodyInfo, other
             depVarUnit = 'km/s';
     end
 end
-

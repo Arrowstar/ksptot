@@ -17,6 +17,8 @@ classdef LaunchVehicleAttitudeState < matlab.mixin.SetGet
             bodyZ = obj.dcm(:,3);
             
             [rollAngle, pitchAngle, yawAngle] = computeEulerAnglesFromInertialBodyAxes(ut, rVect, vVect, bodyInfo, bodyX, bodyY, bodyZ);
+            rollAngle = AngleZero2Pi(rollAngle);
+            yawAngle = AngleZero2Pi(yawAngle);
         end
         
         function [bankAng,angOfAttack,angOfSideslip] = getAeroAngles(obj, rVect, vVect)
@@ -25,6 +27,8 @@ classdef LaunchVehicleAttitudeState < matlab.mixin.SetGet
             bodyZ = obj.dcm(:,3);
             
             [bankAng,angOfAttack,angOfSideslip] = computeAeroAnglesFromBodyAxes(rVect, vVect, bodyX, bodyY, bodyZ);
+            bankAng = AngleZero2Pi(bankAng);
+            angOfSideslip = AngleZero2Pi(angOfSideslip);
         end
         
         function newAttState = deepCopy(obj)

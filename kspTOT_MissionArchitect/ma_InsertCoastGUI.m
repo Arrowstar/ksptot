@@ -72,7 +72,7 @@ taskList = ma_getGraphAnalysisTaskList({'Distance Traveled'});
 set(handles.customFuncFuncCombo, 'String', taskList);
 
 maData = getappdata(handles.ma_MainGUI,'ma_data');
-substituteDefaultPropNamesWithCustomNamesInDepVarListbox(handles.customFuncFuncCombo, maData);
+substituteDefaultPropNamesWithCustomNamesInDepVarListbox(handles.customFuncFuncCombo, maData.spacecraft.propellant.names);
 
 if(length(varargin)>1) 
     event = varargin{2};

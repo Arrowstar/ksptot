@@ -1,35 +1,35 @@
-function varargout = ma_GraphicalAnalysisGUI(varargin)
-% MA_GRAPHICALANALYSISGUI MATLAB code for ma_GraphicalAnalysisGUI.fig
-%      MA_GRAPHICALANALYSISGUI, by itself, creates a new MA_GRAPHICALANALYSISGUI or raises the existing
+function varargout = lvd_GraphicalAnalysisGUI(varargin)
+% LVD_GRAPHICALANALYSISGUI MATLAB code for lvd_GraphicalAnalysisGUI.fig
+%      LVD_GRAPHICALANALYSISGUI, by itself, creates a new LVD_GRAPHICALANALYSISGUI or raises the existing
 %      singleton*.
 %
-%      H = MA_GRAPHICALANALYSISGUI returns the handle to a new MA_GRAPHICALANALYSISGUI or the handle to
+%      H = LVD_GRAPHICALANALYSISGUI returns the handle to a new LVD_GRAPHICALANALYSISGUI or the handle to
 %      the existing singleton*.
 %
-%      MA_GRAPHICALANALYSISGUI('CALLBACK',hObject,eventData,handles,...) calls the local
-%      function named CALLBACK in MA_GRAPHICALANALYSISGUI.M with the given input arguments.
+%      LVD_GRAPHICALANALYSISGUI('CALLBACK',hObject,eventData,handles,...) calls the local
+%      function named CALLBACK in LVD_GRAPHICALANALYSISGUI.M with the given input arguments.
 %
-%      MA_GRAPHICALANALYSISGUI('Property','Value',...) creates a new MA_GRAPHICALANALYSISGUI or raises the
+%      LVD_GRAPHICALANALYSISGUI('Property','Value',...) creates a new LVD_GRAPHICALANALYSISGUI or raises the
 %      existing singleton*.  Starting from the left, property value pairs are
-%      applied to the GUI before ma_GraphicalAnalysisGUI_OpeningFcn gets called.  An
+%      applied to the GUI before lvd_GraphicalAnalysisGUI_OpeningFcn gets called.  An
 %      unrecognized property name or invalid value makes property application
-%      stop.  All inputs are passed to ma_GraphicalAnalysisGUI_OpeningFcn via varargin.
+%      stop.  All inputs are passed to lvd_GraphicalAnalysisGUI_OpeningFcn via varargin.
 %
 %      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
 %      instance to run (singleton)".
 %
 % See also: GUIDE, GUIDATA, GUIHANDLES
 
-% Edit the above text to modify the response to help ma_GraphicalAnalysisGUI
+% Edit the above text to modify the response to help lvd_GraphicalAnalysisGUI
 
-% Last Modified by GUIDE v2.5 15-Oct-2017 13:05:39
+% Last Modified by GUIDE v2.5 18-Oct-2018 17:17:36
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
                    'gui_Singleton',  gui_Singleton, ...
-                   'gui_OpeningFcn', @ma_GraphicalAnalysisGUI_OpeningFcn, ...
-                   'gui_OutputFcn',  @ma_GraphicalAnalysisGUI_OutputFcn, ...
+                   'gui_OpeningFcn', @lvd_GraphicalAnalysisGUI_OpeningFcn, ...
+                   'gui_OutputFcn',  @lvd_GraphicalAnalysisGUI_OutputFcn, ...
                    'gui_LayoutFcn',  [] , ...
                    'gui_Callback',   []);
 if nargin && ischar(varargin{1})
@@ -44,53 +44,75 @@ end
 % End initialization code - DO NOT EDIT
 
 
-% --- Executes just before ma_GraphicalAnalysisGUI is made visible.
-function ma_GraphicalAnalysisGUI_OpeningFcn(hObject, eventdata, handles, varargin)
+% --- Executes just before lvd_GraphicalAnalysisGUI is made visible.
+function lvd_GraphicalAnalysisGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 % This function has no output args, see OutputFcn.
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-% varargin   command line arguments to ma_GraphicalAnalysisGUI (see VARARGIN)
+% varargin   command line arguments to lvd_GraphicalAnalysisGUI (see VARARGIN)
 
-% Choose default command line output for ma_GraphicalAnalysisGUI
-handles.output = hObject;
-handles.ma_MainGUI = varargin{1};
+    % Choose default command line output for lvd_GraphicalAnalysisGUI
+    handles.output = hObject;
 
-% Set up GUI
-maData = getappdata(handles.ma_MainGUI,'ma_data');
+    % Set up GUI
+    lvdData = varargin{1};
+    setappdata(hObject,'lvdData',lvdData);
 
-taskList = ma_getGraphAnalysisTaskList({});
-set(handles.depVarListbox,'String',taskList);
+    exclude = {};
+    exclude{end+1} = 'Distance to Ref. Spacecraft';
+    exclude{end+1} = 'Distance to Ref. Station';
+    exclude{end+1} = 'Relative Vel. to Ref. Spacecraft';
+    exclude{end+1} = 'Relative Pos. of Ref. Spacecraft (In-Track)';
+    exclude{end+1} = 'Relative Pos. of Ref. Spacecraft (Cross-Track)';
+    exclude{end+1} = 'Relative Pos. of Ref. Spacecraft (Radial)';
+    exclude{end+1} = 'Relative Pos. of Ref. Spacecraft (In-Track; Ref. SC-centered)';
+    exclude{end+1} = 'Relative Pos. of Ref. Spacecraft (Cross-Track; Ref. SC-centered)';
+    exclude{end+1} = 'Relative Pos. of Ref. Spacecraft (Radial; Ref. SC-centered)';
+    exclude{end+1} = 'Relative SMA of Ref. Spacecraft';
+    exclude{end+1} = 'Relative Eccentricity of Ref. Spacecraft';
+    exclude{end+1} = 'Relative Inclination of Ref. Spacecraft';
+    exclude{end+1} = 'Relative RAAN of Ref. Spacecraft';
+    exclude{end+1} = 'Relative Argument of Periapsis of Ref. Spacecraft';
+    exclude{end+1} = 'Elevation Angle w.r.t. Ref. Station';
+    exclude{end+1} = 'Line of Sight to Ref. Spacecraft';
+    exclude{end+1} = 'Line of Sight to Ref. Station';
 
-substituteDefaultPropNamesWithCustomNamesInDepVarListbox(handles.depVarListbox, maData.spacecraft.propellant.names);
-useSubplotCheckbox_Callback(handles.useSubplotCheckbox, eventdata, handles);
-set(handles.startTimeText,'String',fullAccNum2Str(maData.stateLog(1,1)));
-set(handles.endTimeText,'String',fullAccNum2Str(maData.stateLog(end,1)));
-populateBodiesCombo(getappdata(handles.ma_MainGUI,'celBodyData'), handles.refBodyCombo);
-populateOtherSCCombo(handles, handles.refSpacecraftCombo);
-populateStationsCombo(handles, handles.refStationCombo);
-indepVarCombo_Callback(handles.indepVarCombo, [], handles);
+    taskList = lvd_getGraphAnalysisTaskList(exclude);
+    set(handles.depVarListbox,'String',taskList);
 
-setappdata(hObject,'xLineValue',[]);
-setappdata(hObject,'yLineValue',[]);
+    maStateLog = lvdData.stateLog.getMAFormattedStateLogMatrix();
 
-% Update handles structure
-guidata(hObject, handles);
+    propNames = {'Fuel/Ox', 'Monoprop', 'Xenon'};
+    substituteDefaultPropNamesWithCustomNamesInDepVarListbox(handles.depVarListbox, propNames);
+    useSubplotCheckbox_Callback(handles.useSubplotCheckbox, [], handles);
+    set(handles.startTimeText,'String',fullAccNum2Str(maStateLog(1,1)));
+    set(handles.endTimeText,'String',fullAccNum2Str(maStateLog(end,1)));
+    populateBodiesCombo(lvdData.celBodyData, handles.refBodyCombo);
+    % populateOtherSCCombo(handles, handles.refSpacecraftCombo);
+    % populateStationsCombo(handles, handles.refStationCombo);
+    indepVarCombo_Callback(handles.indepVarCombo, [], handles);
 
-% UIWAIT makes ma_GraphicalAnalysisGUI wait for user response (see UIRESUME)
-% uiwait(handles.ma_GraphicalAnalysisGUI);
+    setappdata(hObject,'xLineValue',[]);
+    setappdata(hObject,'yLineValue',[]);
+
+    % Update handles structure
+    guidata(hObject, handles);
+
+    % UIWAIT makes lvd_GraphicalAnalysisGUI wait for user response (see UIRESUME)
+    % uiwait(handles.lvd_GraphicalAnalysisGUI);
 
 
     
 % --- Outputs from this function are returned to the command line.
-function varargout = ma_GraphicalAnalysisGUI_OutputFcn(hObject, eventdata, handles) 
+function varargout = lvd_GraphicalAnalysisGUI_OutputFcn(hObject, eventdata, handles) 
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
 % Get default command line output from handles structure
-varargout{1} = handles.output;
+    varargout{1} = handles.output;
 
 
 % --- Executes on selection change in indepVarCombo.
@@ -295,8 +317,9 @@ function genPlotsButton_Callback(hObject, eventdata, handles)
         return;
     end
 
-    maData = getappdata(handles.ma_MainGUI,'ma_data');
-    celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
+    lvdData = getappdata(handles.lvd_GraphicalAnalysisGUI,'lvdData');
+    celBodyData = lvdData.celBodyData;
+    maStateLog = lvdData.stateLog.getMAFormattedStateLogMatrix();
 
     taskInds = get(handles.depVarListbox,'Value');
     if(isempty(taskInds))
@@ -331,19 +354,17 @@ function genPlotsButton_Callback(hObject, eventdata, handles)
         otherwise
             lineType = '-';
     end
-    
-%     lineSpec = [lineColor,lineType];
 
-    propNames = maData.spacecraft.propellant.names;
-    for(i=1:length(propNames))
-        propNames{i} = sprintf('%s Mass',propNames{i});
-    end
+    propNames = {'Fuel/Ox', 'Monoprop', 'Xenon'};
+%     for(i=1:length(propNames))
+%         propNames{i} = sprintf('%s Mass',propNames{i});
+%     end
     
-    stateLog = maData.stateLog;
-    subLog = stateLog(stateLog(:,1) >= startTimeUT & stateLog(:,1) <= endTimeUT,:);
+    lvdSubLog = lvdData.stateLog.getStateLogEntriesBetweenTimes(startTimeUT, endTimeUT);
+    maSubLog = maStateLog(maStateLog(:,1) >= startTimeUT & maStateLog(:,1) <= endTimeUT,:);
     
     contentsIndep = cellstr(get(handles.indepVarCombo,'String'));
-    indepVarValues = zeros(size(subLog,1), 2);
+    indepVarValues = zeros(size(maSubLog,1), 2);
     indepVarStr = deblank(contentsIndep{get(handles.indepVarCombo,'Value')});
     
     contentsIndepUnit = cellstr(get(handles.indepVarTimeUnit,'String'));
@@ -370,28 +391,28 @@ function genPlotsButton_Callback(hObject, eventdata, handles)
     
     switch indepVarStr
         case 'Time'
-            indepVarValues = indepTimeUnitMult*[subLog(:,1), subLog(:,1)];
+            indepVarValues = indepTimeUnitMult*[maSubLog(:,1), maSubLog(:,1)];
             indepVarUnits = indepTimeUnit;
             
         case 'Mission Elapsed Time'
-            indepVarValues = indepTimeUnitMult*[subLog(:,1) - stateLog(1,1), subLog(:,1)];
+            indepVarValues = indepTimeUnitMult*[maSubLog(:,1) - maStateLog(1,1), maSubLog(:,1)];
             indepVarUnits = indepTimeUnit;
             
         case 'True Anomaly'
-            for(i=1:size(subLog,1))
-                indepVarValues(i,:) = [ma_GAKeplerElementsTask(subLog(i,:), 'tru', celBodyData), subLog(i,1)];
+            for(i=1:size(maSubLog,1))
+                indepVarValues(i,:) = [ma_GAKeplerElementsTask(maSubLog(i,:), 'tru', celBodyData), maSubLog(i,1)];
             end
             indepVarUnits = 'deg';
             
         case 'Longitude'
-            for(i=1:size(subLog,1))
-                indepVarValues(i,:) = [ma_GALongLatAltTasks(subLog(i,:), 'long', celBodyData), subLog(i,1)];
+            for(i=1:size(maSubLog,1))
+                indepVarValues(i,:) = [ma_GALongLatAltTasks(maSubLog(i,:), 'long', celBodyData), maSubLog(i,1)];
             end
             indepVarUnits = 'degE';
     end
     
     hWaitBar = waitbar(0,'Computing Dependent Variables...','WindowStyle','modal');
-    depVarValues = zeros(size(subLog,1), length(taskInds));
+    depVarValues = zeros(size(maSubLog,1), length(taskInds));
     depVarUnits = cell(1,length(taskInds));
     contentsDep = strtrim(cellstr(get(handles.depVarListbox,'String')));
     prevDistTraveled = 0;
@@ -428,16 +449,21 @@ function genPlotsButton_Callback(hObject, eventdata, handles)
         end
     end
 
-    for(i=1:size(subLog,1))
+    maTaskList = ma_getGraphAnalysisTaskList({});
+    for(i=1:size(maSubLog,1))
         for(j=1:length(taskInds))
             taskInd = taskInds(j);
             taskStr = contentsDep{taskInd};
             
             if(isvalid(hWaitBar))
-                waitbar(i/size(subLog,1), hWaitBar, sprintf('Computing Dependent Variables...\n[%u of %u]', i, size(subLog,1)));
+                waitbar(i/size(maSubLog,1), hWaitBar, sprintf('Computing Dependent Variables...\n[%u of %u]', i, size(maSubLog,1)));
             end
 
-            [depVarValues(i,j), depVarUnits{j}, prevDistTraveled] = ma_getDepVarValueUnit(i, subLog, taskStr, prevDistTraveled, refBodyId, otherSCId, stationID, propNames, maData, celBodyData, false);
+            if(ismember(taskStr,maTaskList))
+                [depVarValues(i,j), depVarUnits{j}, prevDistTraveled] = ma_getDepVarValueUnit(i, maSubLog, taskStr, prevDistTraveled, refBodyId, otherSCId, stationID, propNames, [], celBodyData, false);
+            else
+                [depVarValues(i,j), depVarUnits{j}] = lvd_getDepVarValueUnit(i, lvdSubLog, taskStr, refBodyId, celBodyData, false);
+            end
         end
     end
     close(hWaitBar);
@@ -464,7 +490,7 @@ function genPlotsButton_Callback(hObject, eventdata, handles)
             taskStr = contentsDep{taskInd};
 
             subplot(subPlotMaxX,subPlotMaxY,plotNum);
-            plotData(hFig, indepVarValues, data, lineColor, lineType, lineWidth, indepVarStr, taskStr, bgColor, indepVarUnits, indepTimeUnitMult, depVarUnits{i}, maData, startTimeUT, endTimeUT, celBodyData, handles.ma_GraphicalAnalysisGUI);
+            plotData(hFig, indepVarValues, data, lineColor, lineType, lineWidth, indepVarStr, taskStr, bgColor, indepVarUnits, indepTimeUnitMult, depVarUnits{i}, maStateLog, startTimeUT, endTimeUT, celBodyData, handles.lvd_GraphicalAnalysisGUI);
         end
     else
         for(i = 1:size(depVarValues,2)) %#ok<*NO4LP>
@@ -475,7 +501,7 @@ function genPlotsButton_Callback(hObject, eventdata, handles)
 
             hFig = figure(figNum+i);
             whitebg(hFig, bgColor);
-            plotData(hFig, indepVarValues, data, lineColor, lineType, lineWidth, indepVarStr, taskStr, bgColor, indepVarUnits, indepTimeUnitMult, depVarUnits{i}, maData, startTimeUT, endTimeUT, celBodyData, handles.ma_GraphicalAnalysisGUI);
+            plotData(hFig, indepVarValues, data, lineColor, lineType, lineWidth, indepVarStr, taskStr, bgColor, indepVarUnits, indepTimeUnitMult, depVarUnits{i}, maStateLog, startTimeUT, endTimeUT, celBodyData, handles.lvd_GraphicalAnalysisGUI);
         end
     end
     
@@ -524,7 +550,7 @@ function genPlotsButton_Callback(hObject, eventdata, handles)
         end
     end
     
-function plotData(hFig, indepVarValues, data, lineColor, lineType, lineWidth, indepVarStr, taskStr, bgColor, indepVarUnitStr, indepTimeUnitMult, depVarUnitStr, maData, startTimeUT, endTimeUT, celBodyData, hGAFig)
+function plotData(hFig, indepVarValues, data, lineColor, lineType, lineWidth, indepVarStr, taskStr, bgColor, indepVarUnitStr, indepTimeUnitMult, depVarUnitStr, maStateLog, startTimeUT, endTimeUT, celBodyData, hGAFig)
     xLineValue = getappdata(hGAFig,'xLineValue');
     yLineValue = getappdata(hGAFig,'yLineValue');
 
@@ -562,78 +588,77 @@ function plotData(hFig, indepVarValues, data, lineColor, lineType, lineWidth, in
         end
     end
     
-    stateLog = maData.stateLog;
-    subLog = stateLog(stateLog(:,1) >= startTimeUT & stateLog(:,1) <= endTimeUT,:);
+    subLog = maStateLog(maStateLog(:,1) >= startTimeUT & maStateLog(:,1) <= endTimeUT,:);
     
-    hShowMan = findobj('Tag','showManeuversCheckbox');
-    if(get(hShowMan,'Value') && strcmpi(get(hShowMan,'Enable'), 'on'))
-        if(strcmpi(bgColor,'r'))
-            manLineColor = 'w';
-        else
-            manLineColor = 'r';
-        end
-        
-        script = maData.script;
-        for(i=1:length(script))
-            event = script{i};
-            if(strcmpi(event.type,'DV_Maneuver'))
-                eventNum = i;
-                eventLog = subLog(subLog(:,13)==eventNum,:);
-                if(~isempty(eventLog))
-                    eventTime = eventLog(end,1)*indepTimeUnitMult;
-                    indepVarEventLoc = indepVarValues(indepVarValues(:,2)==eventTime,1);
-                    indepVarEventLoc = indepVarEventLoc(1);
-                    
-                    minData = min(data);
-                    maxData = max(data);
-                    if(minData == maxData)
-                        minData = minData - 0.75;
-                        maxData = maxData + 0.75;
-                    end
-
-                    plot([indepVarEventLoc indepVarEventLoc], [minData, maxData],manLineColor,'LineWidth',1.5);
-                    text(indepVarEventLoc,minData+2*onePercData,[' ',event.name],'Color',manLineColor);
-                end
-            end
-        end
-    end
+%     hShowMan = findobj('Tag','showManeuversCheckbox');
+%     if(get(hShowMan,'Value') && strcmpi(get(hShowMan,'Enable'), 'on'))
+%         if(strcmpi(bgColor,'r'))
+%             manLineColor = 'w';
+%         else
+%             manLineColor = 'r';
+%         end
+%         
+%         script = maData.script;
+%         for(i=1:length(script))
+%             event = script{i};
+%             if(strcmpi(event.type,'DV_Maneuver'))
+%                 eventNum = i;
+%                 eventLog = subLog(subLog(:,13)==eventNum,:);
+%                 if(~isempty(eventLog))
+%                     eventTime = eventLog(end,1)*indepTimeUnitMult;
+%                     indepVarEventLoc = indepVarValues(indepVarValues(:,2)==eventTime,1);
+%                     indepVarEventLoc = indepVarEventLoc(1);
+%                     
+%                     minData = min(data);
+%                     maxData = max(data);
+%                     if(minData == maxData)
+%                         minData = minData - 0.75;
+%                         maxData = maxData + 0.75;
+%                     end
+% 
+%                     plot([indepVarEventLoc indepVarEventLoc], [minData, maxData],manLineColor,'LineWidth',1.5);
+%                     text(indepVarEventLoc,minData+2*onePercData,[' ',event.name],'Color',manLineColor);
+%                 end
+%             end
+%         end
+%     end
     
-    hShowSoI = findobj('Tag','showSoITransCheckbox');
-    if(get(hShowSoI,'Value') && strcmpi(get(hShowSoI,'Enable'), 'on'))
-        if(strcmpi(bgColor,'m'))
-            soiLineColor = 'w';
-        else
-            soiLineColor = 'm';
-        end
-        
-        allBodyIDs = subLog(:,8);
-        x = diff(allBodyIDs)~=0;
-        inds = find(x);
-        for(i=1:length(inds))
-            ind = inds(i)+1;
-            
-            bodyLog = subLog(ind,:);
-            bodyID = bodyLog(1,8);
-            bodyInfo = getBodyInfoByNumber(bodyID, celBodyData);
-
-            if(bodyLog(1,1) == startTimeUT)
-                continue;
-            end
-            eventTime = bodyLog(1,1)*indepTimeUnitMult;
-            indepVarEventLoc = indepVarValues(indepVarValues(:,2)==eventTime,1);
-            indepVarEventLoc = indepVarEventLoc(1);
-
-            minData = min(data);
-            maxData = max(data);
-            if(minData == maxData)
-                minData = minData - 0.75;
-                maxData = maxData + 0.75;
-            end
-
-            plot([indepVarEventLoc indepVarEventLoc], [minData, maxData],soiLineColor,'LineWidth',0.25);
-            text(indepVarEventLoc,maxData-2*onePercData,[' To ',bodyInfo.name],'Color',soiLineColor);
-        end
-    end
+%     hShowSoI = findobj('Tag','showSoITransCheckbox');
+%     if(get(hShowSoI,'Value') && strcmpi(get(hShowSoI,'Enable'), 'on'))
+%         if(strcmpi(bgColor,'m'))
+%             soiLineColor = 'w';
+%         else
+%             soiLineColor = 'm';
+%         end
+%         
+%         allBodyIDs = subLog(:,8);
+%         x = diff(allBodyIDs)~=0;
+%         inds = find(x);
+%         for(i=1:length(inds))
+%             ind = inds(i)+1;
+%             
+%             bodyLog = subLog(ind,:);
+%             bodyID = bodyLog(1,8);
+%             bodyInfo = getBodyInfoByNumber(bodyID, celBodyData);
+% 
+%             if(bodyLog(1,1) == startTimeUT)
+%                 continue;
+%             end
+%             eventTime = bodyLog(1,1)*indepTimeUnitMult;
+%             indepVarEventLoc = indepVarValues(indepVarValues(:,2)==eventTime,1);
+%             indepVarEventLoc = indepVarEventLoc(1);
+% 
+%             minData = min(data);
+%             maxData = max(data);
+%             if(minData == maxData)
+%                 minData = minData - 0.75;
+%                 maxData = maxData + 0.75;
+%             end
+% 
+%             plot([indepVarEventLoc indepVarEventLoc], [minData, maxData],soiLineColor,'LineWidth',0.25);
+%             text(indepVarEventLoc,maxData-2*onePercData,[' To ',bodyInfo.name],'Color',soiLineColor);
+%         end
+%     end
     
     hShowPeri = findobj('Tag','showPeriCheckbox');
     if(get(hShowPeri,'Value') && strcmpi(get(hShowPeri,'Enable'), 'on'))
@@ -759,13 +784,16 @@ function plotData(hFig, indepVarValues, data, lineColor, lineType, lineWidth, in
         
     
 function errMsg = validateInputs(handles)    
-    maData = getappdata(handles.ma_MainGUI,'ma_data');
-    celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
+%     maData = getappdata(handles.ma_MainGUI,'ma_data');
+%     celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
+    lvdData = getappdata(handles.lvd_GraphicalAnalysisGUI,'lvdData');
+    celBodyData = lvdData.celBodyData;
+    stateLog = lvdData.stateLog.getMAFormattedStateLogMatrix();
     
     errMsg = {};
     
-    stateLogMinUT = floor(maData.stateLog(1,1)*10000)/10000;
-    stateLogMaxUT = ceil(maData.stateLog(end,1)*10000)/10000;
+    stateLogMinUT = floor(stateLog(1,1)*10000)/10000;
+    stateLogMaxUT = ceil(stateLog(end,1)*10000)/10000;
     
     value = str2double(get(handles.startTimeText,'String'));
     enteredStr = get(handles.startTimeText,'String');
@@ -855,9 +883,9 @@ function startTimeText_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of startTimeText as text
 %        str2double(get(hObject,'String')) returns contents of startTimeText as a double
-newInput = get(hObject,'String');
-newInput = attemptStrEval(newInput);
-set(hObject,'String', newInput);
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
 
 % --- Executes during object creation, after setting all properties.
 function startTimeText_CreateFcn(hObject, eventdata, handles)
@@ -880,9 +908,9 @@ function endTimeText_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of endTimeText as text
 %        str2double(get(hObject,'String')) returns contents of endTimeText as a double
-newInput = get(hObject,'String');
-newInput = attemptStrEval(newInput);
-set(hObject,'String', newInput);
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
 
 % --- Executes during object creation, after setting all properties.
 function endTimeText_CreateFcn(hObject, eventdata, handles)
@@ -902,10 +930,10 @@ function enterUTAsDateTime_Callback(hObject, eventdata, handles)
 % hObject    handle to enterUTAsDateTime (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-secUT = enterUTAsDateTimeGUI(str2double(get(gco, 'String')));
-if(secUT >= 0)
-    set(gco, 'String', num2str(secUT));
-end
+    secUT = enterUTAsDateTimeGUI(str2double(get(gco, 'String')));
+    if(secUT >= 0)
+        set(gco, 'String', num2str(secUT));
+    end
 
 
 % --- Executes on selection change in refBodyCombo.
@@ -1050,8 +1078,8 @@ function markerLinesButton_Callback(hObject, eventdata, handles)
 % hObject    handle to markerLinesButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-    xLineValue = getappdata(handles.ma_GraphicalAnalysisGUI,'xLineValue');
-    yLineValue = getappdata(handles.ma_GraphicalAnalysisGUI,'yLineValue');
+    xLineValue = getappdata(handles.lvd_GraphicalAnalysisGUI,'xLineValue');
+    yLineValue = getappdata(handles.lvd_GraphicalAnalysisGUI,'yLineValue');
 
     defAns = cell(1,2);
     if(~isempty(xLineValue))
@@ -1089,13 +1117,13 @@ function markerLinesButton_Callback(hObject, eventdata, handles)
         newYStr = newY;
     end
     
-    setappdata(handles.ma_GraphicalAnalysisGUI,'xLineValue',newXStr);
-    setappdata(handles.ma_GraphicalAnalysisGUI,'yLineValue',newYStr);
+    setappdata(handles.lvd_GraphicalAnalysisGUI,'xLineValue',newXStr);
+    setappdata(handles.lvd_GraphicalAnalysisGUI,'yLineValue',newYStr);
 
 
-% --- Executes on key press with focus on ma_GraphicalAnalysisGUI or any of its controls.
-function ma_GraphicalAnalysisGUI_WindowKeyPressFcn(hObject, eventdata, handles)
-% hObject    handle to ma_GraphicalAnalysisGUI (see GCBO)
+% --- Executes on key press with focus on lvd_GraphicalAnalysisGUI or any of its controls.
+function lvd_GraphicalAnalysisGUI_WindowKeyPressFcn(hObject, eventdata, handles)
+% hObject    handle to lvd_GraphicalAnalysisGUI (see GCBO)
 % eventdata  structure with the following fields (see MATLAB.UI.FIGURE)
 %	Key: name of the key that was pressed, in lower case
 %	Character: character interpretation of the key(s) that was pressed
@@ -1103,7 +1131,7 @@ function ma_GraphicalAnalysisGUI_WindowKeyPressFcn(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
     switch(eventdata.Key)
         case 'escape'
-            close(handles.ma_GraphicalAnalysisGUI);
+            close(handles.lvd_GraphicalAnalysisGUI);
     end
 
 
@@ -1135,8 +1163,8 @@ function setTimeFromScriptMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to setTimeFromScriptMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-    maData = getappdata(handles.ma_MainGUI,'ma_data');
-    stateLog = maData.stateLog;
+    lvdData = getappdata(handles.lvd_GraphicalAnalysisGUI,'lvdData');
+    stateLog = lvdData.stateLog.getMAFormattedStateLogMatrix();
     
     h = gco;
     if(strcmpi(h.Tag,'startTimeText'))

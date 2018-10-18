@@ -1,5 +1,5 @@
 function [stationInfo] = getStationInfoByID(maData, stationID)
-%getOtherSCInfoByID Summary of this function goes here
+%getStationInfoByID Summary of this function goes here
 %   Detailed explanation goes here
 
     stationInfo = [];

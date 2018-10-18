@@ -26,7 +26,7 @@ classdef LvdData < matlab.mixin.SetGet
         end
     end
     
-    methods
+    methods        
         function initialState = get.initialState(obj)
             initialState = obj.initStateModel.getInitialStateLogEntry();
         end
@@ -52,7 +52,7 @@ classdef LvdData < matlab.mixin.SetGet
         end
     end
     
-    methods(Static)
+    methods(Static)        
         function lvdData = getEmptyLvdData()
             lvdData = LvdData();
             lvdData.ksptotVer = getKSPTOTVersionNumStr();

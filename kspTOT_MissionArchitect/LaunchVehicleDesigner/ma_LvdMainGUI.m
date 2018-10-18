@@ -22,7 +22,7 @@ function varargout = ma_LvdMainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_LvdMainGUI
 
-% Last Modified by GUIDE v2.5 14-Oct-2018 15:17:09
+% Last Modified by GUIDE v2.5 18-Oct-2018 17:27:06
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1119,3 +1119,19 @@ function optActiveSetAlgoMenu_Callback(hObject, eventdata, handles)
     
     lvdData.settings.optAlgo = LvdOptimAlgorithmEnum.ActiveSet;
     writeOutput('Optimization algorithm changed to active set.','append');
+
+
+% --------------------------------------------------------------------
+function toolsMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to toolsMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function graphicalAnalysisMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to graphicalAnalysisMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    lvd_GraphicalAnalysisGUI(lvdData);

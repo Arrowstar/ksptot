@@ -1,5 +1,5 @@
 function datapt = ma_TimeTask(stateLogEntry, subTask, celBodyData)
-%ma_GAVectorElementsTask Summary of this function goes here
+%ma_TimeTask Summary of this function goes here
 %   Detailed explanation goes here
 
     switch subTask

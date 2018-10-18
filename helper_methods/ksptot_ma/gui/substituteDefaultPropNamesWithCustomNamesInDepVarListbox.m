@@ -1,6 +1,6 @@
-function substituteDefaultPropNamesWithCustomNamesInDepVarListbox(hDepVarListbox, maData)
+function substituteDefaultPropNamesWithCustomNamesInDepVarListbox(hDepVarListbox, propNames)
     vars = get(hDepVarListbox,'String');
-    propNames = maData.spacecraft.propellant.names;
+%     propNames = maData.spacecraft.propellant.names;
     defaultNames = {'Liquid Fuel/Ox Mass','Monopropellant Mass','Xenon Mass'};
     
     for(i=1:length(vars)) %#ok<*NO4LP>

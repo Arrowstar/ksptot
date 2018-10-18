@@ -73,4 +73,3 @@ function [taskList] = ma_getGraphAnalysisTaskList(excludeList)
     
     taskList = setdiff(taskList,excludeList);
 end
-

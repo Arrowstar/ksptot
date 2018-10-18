@@ -8,7 +8,7 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
         lvdData LvdData
     end
     
-    properties(Access=private)
+    properties%(Access=private)
         simDriver LaunchVehicleSimulationDriver
     end
     
@@ -170,12 +170,15 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
 %             figure(123);
 %             subplot(3,1,1)
 %             plot(time,totalMass);
+%             grid on;
 %             
 %             subplot(3,1,2)
 %             plot(time,pitchActual);
+%             grid on;
 %             
 %             subplot(3,1,3)
 %             plot(time,angOfAttackActual);
+%             grid on;
         end
     end
 end
