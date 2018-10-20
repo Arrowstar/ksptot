@@ -4,7 +4,8 @@ classdef SteeringModelEnum < matlab.mixin.SetGet
     
     enumeration
         RollPitchYawPoly('Roll/Pitch/Yaw Steering','RollPitchYawPolySteeringModel')
-        AeroAnglesPoly('Aero Angles Steering','AeroAnglesPolySteeringModel')
+        AeroAnglesPoly('Body Fixed Aero Angles Steering','AeroAnglesPolySteeringModel')
+        InertialAeroAnglesPoly('Inertial Aero Angles Steering','InertialAeroAnglesPolySteeringModel')
     end
     
     properties

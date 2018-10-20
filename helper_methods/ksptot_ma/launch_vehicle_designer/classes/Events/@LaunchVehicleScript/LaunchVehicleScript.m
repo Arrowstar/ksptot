@@ -117,6 +117,7 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
         end
         
         function stateLog = executeScript(obj)
+%             tt = tic;
             initStateLogEntry = obj.lvdData.initialState;
             stateLog = obj.lvdData.stateLog;
             
@@ -141,44 +142,7 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
             else
                 stateLog.appendStateLogEntries(initStateLogEntry.deepCopy());
             end
-            
-%             maStateLog = stateLog.getMAFormattedStateLogMatrix();
-%             time = maStateLog(:,1);
-%             totalMass = sum(maStateLog(:,9:12),2);
-%             
-%             rollActual = [];
-%             pitchActual = [];
-%             angOfAttackActual = [];
-%             angOfSideslipActual = [];
-%             for(i=1:size(maStateLog,1))
-%                 ut = stateLog.entries(i).time;
-%                 rVect = stateLog.entries(i).position;
-%                 vVect = stateLog.entries(i).velocity;
-%                 bodyInfo = stateLog.entries(i).centralBody;
-%                 
-%                 [rollAngle, pitchAngle, yawAngle] = stateLog.entries(i).attitude.getEulerAngles(ut, rVect, vVect, bodyInfo);
-%                 [bankAng,angOfAttack,angOfSideslip] = stateLog.entries(i).attitude.getAeroAngles(rVect, vVect); 
-%                 rollActual(end+1) = rad2deg(rollAngle); %#ok<AGROW>
-%                 pitchActual(end+1) = rad2deg(pitchAngle); %#ok<AGROW>
-%                 angOfAttackActual(end+1) = rad2deg(angOfAttack); %#ok<AGROW>
-%                 
-%                 fprintf('%f - %f - %u - %u\n',rad2deg(pitchAngle),stateLog.entries(i).time,stateLog.entries(i).event.getEventNum(), i);
-%                 
-%                 angOfSideslipActual(end+1) = rad2deg(bankAng);
-%             end
-%                         
-%             figure(123);
-%             subplot(3,1,1)
-%             plot(time,totalMass);
-%             grid on;
-%             
-%             subplot(3,1,2)
-%             plot(time,pitchActual);
-%             grid on;
-%             
-%             subplot(3,1,3)
-%             plot(time,angOfAttackActual);
-%             grid on;
+%             disp(toc(tt));
         end
     end
 end

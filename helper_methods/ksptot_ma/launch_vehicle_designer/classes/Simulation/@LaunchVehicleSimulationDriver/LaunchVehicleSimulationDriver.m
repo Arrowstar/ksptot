@@ -169,16 +169,12 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
                         
             %Event Termination Condition
             [value(3),isterminal(3),direction(3)] = evtTermCond(t,y);
-            
-            %Temp Condition to see if all tanks are empty
-%             value(3) = sum(tankStates);
-%             isterminal(3) = 1;
-%             direction(3) = 0;
         end
         
         function status = odeOutput(t,y,flag, intStartTime)
             integrationDuration = now()*86400 - intStartTime;
             maxIntegrationDuration = 5;
+%             disp(integrationDuration);
             
             status = 0; %TODO FIX ME!
             if(integrationDuration > maxIntegrationDuration)

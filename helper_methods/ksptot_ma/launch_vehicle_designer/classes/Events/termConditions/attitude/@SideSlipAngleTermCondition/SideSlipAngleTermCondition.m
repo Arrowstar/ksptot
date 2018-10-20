@@ -80,7 +80,7 @@ classdef SideSlipAngleTermCondition < AbstractEventTerminationCondition
             vVect = y(4:6);
             
             dcm = steeringModel.getBody2InertialDcmAtTime(ut, rVect, vVect, bodyInfo);
-            [~,~,angOfSideslip] = computeAeroAnglesFromBodyAxes(rVect, vVect, dcm(:,1), dcm(:,2), dcm(:,3));
+            [~,~,angOfSideslip] = computeAeroAnglesFromBodyAxes(ut, rVect, vVect, bodyInfo, dcm(:,1), dcm(:,2), dcm(:,3));
             
             angOfSideslip = AngleZero2Pi(angOfSideslip);
             

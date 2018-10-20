@@ -235,21 +235,21 @@ classdef LaunchVehicle < matlab.mixin.SetGet
         function newLv = createDefaultLaunchVehicle(lvdData)
             newLv = LaunchVehicle(lvdData);
             
-            pyldStg = LaunchVehicleStage(newLv);
-            pyldStg.name = 'Payload';
+%             pyldStg = LaunchVehicleStage(newLv);
+%             pyldStg.name = 'Payload';
             
-            uprStg = LaunchVehicleStage(newLv);
-            uprStg.name = 'Upper Stage';
+%             uprStg = LaunchVehicleStage(newLv);
+%             uprStg.name = 'Upper Stage';
             
             firstStg = LaunchVehicleStage(newLv);
             firstStg.name = 'First Stage';
             
-            uprStgEngine = LaunchVehicleEngine(uprStg);
-            uprStgEngine.name = 'Upper Stage Engine';
-            uprStgEngine.vacThrust = 60;
-            uprStgEngine.vacIsp = 345;
-            uprStgEngine.seaLvlThrust = 14.783;
-            uprStgEngine.seaLvlIsp = 85;
+%             uprStgEngine = LaunchVehicleEngine(uprStg);
+%             uprStgEngine.name = 'Upper Stage Engine';
+%             uprStgEngine.vacThrust = 60;
+%             uprStgEngine.vacIsp = 345;
+%             uprStgEngine.seaLvlThrust = 14.783;
+%             uprStgEngine.seaLvlIsp = 85;
             
             firstStgEngine = LaunchVehicleEngine(firstStg);
             firstStgEngine.name = 'First Stage Engine';
@@ -258,29 +258,29 @@ classdef LaunchVehicle < matlab.mixin.SetGet
             firstStgEngine.seaLvlThrust = 168;
             firstStgEngine.seaLvlIsp = 250;
             
-            uprStgTank = LaunchVehicleTank(uprStg);
-            uprStgTank.name = 'Upper Stage Tank';
-            uprStgTank.initialMass = 1;
-            
+%             uprStgTank = LaunchVehicleTank(uprStg);
+%             uprStgTank.name = 'Upper Stage Tank';
+%             uprStgTank.initialMass = 1;
+%             
             firstStgTank = LaunchVehicleTank(firstStg);
             firstStgTank.name = 'First Stage Tank';
             firstStgTank.initialMass = 4;
                         
-            pyldStg.dryMass = 0.5; %mT;
+%             pyldStg.dryMass = 1.0; %mT;
             
-            uprStg.dryMass = 0.5+0.125; %mT;
-            uprStg.tanks(end+1) = uprStgTank;
-            uprStg.engines(end+1) = uprStgEngine;
+%             uprStg.dryMass = 0.5+0.125; %mT;
+%             uprStg.tanks(end+1) = uprStgTank;
+%             uprStg.engines(end+1) = uprStgEngine;
             
             firstStg.dryMass = 1.5+0.5; %mT;
             firstStg.tanks(end+1) = firstStgTank;
             firstStg.engines(end+1) = firstStgEngine;
             
-            newLv.stages(end+1) = pyldStg;
-            newLv.stages(end+1) = uprStg;
+%             newLv.stages(end+1) = pyldStg;
+%             newLv.stages(end+1) = uprStg;
             newLv.stages(end+1) = firstStg;
             
-            newLv.engineTankConns(end+1) = EngineToTankConnection(uprStgTank, uprStgEngine);
+%             newLv.engineTankConns(end+1) = EngineToTankConnection(uprStgTank, uprStgEngine);
             newLv.engineTankConns(end+1) = EngineToTankConnection(firstStgTank, firstStgEngine);
         end
     end

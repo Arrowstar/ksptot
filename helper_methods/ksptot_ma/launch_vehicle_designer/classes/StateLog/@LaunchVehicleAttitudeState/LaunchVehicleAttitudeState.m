@@ -21,12 +21,12 @@ classdef LaunchVehicleAttitudeState < matlab.mixin.SetGet
             yawAngle = AngleZero2Pi(yawAngle);
         end
         
-        function [bankAng,angOfAttack,angOfSideslip] = getAeroAngles(obj, rVect, vVect)
+        function [bankAng,angOfAttack,angOfSideslip] = getAeroAngles(obj, ut, rVect, vVect, bodyInfo)
             bodyX = obj.dcm(:,1);
             bodyY = obj.dcm(:,2);
             bodyZ = obj.dcm(:,3);
             
-            [bankAng,angOfAttack,angOfSideslip] = computeAeroAnglesFromBodyAxes(rVect, vVect, bodyX, bodyY, bodyZ);
+            [bankAng,angOfAttack,angOfSideslip] = computeAeroAnglesFromBodyAxes(ut, rVect, vVect, bodyInfo, bodyX, bodyY, bodyZ);
             bankAng = AngleZero2Pi(bankAng);
             angOfSideslip = AngleZero2Pi(angOfSideslip);
         end

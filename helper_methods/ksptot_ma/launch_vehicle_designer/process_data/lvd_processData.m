@@ -24,7 +24,7 @@ function lvd_processData(handles)
     set(handles.scriptListbox,'String',evtListboxStr);
     
     scriptListVal = get(handles.scriptListbox,'Value');
-    if(scriptListVal <= 0)
+    if(isempty(scriptListVal) || scriptListVal <= 0)
         set(handles.scriptListbox,'Value',1);
     elseif(scriptListVal > length(get(handles.scriptListbox,'String')))
         set(handles.scriptListbox,'Value',length(get(handles.scriptListbox,'String')));

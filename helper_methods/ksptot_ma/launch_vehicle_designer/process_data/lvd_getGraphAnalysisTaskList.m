@@ -9,6 +9,7 @@ function [taskList] = lvd_getGraphAnalysisTaskList(excludeList)
     taskList{end+1} = 'Bank Angle';
     taskList{end+1} = 'Angle of Attack';
     taskList{end+1} = 'SideSlip Angle';
+    taskList{end+1} = 'Throttle';
     
     taskList = setdiff(taskList,excludeList);
 end

@@ -58,6 +58,8 @@ function lvd_GraphicalAnalysisGUI_OpeningFcn(hObject, eventdata, handles, vararg
     % Set up GUI
     lvdData = varargin{1};
     setappdata(hObject,'lvdData',lvdData);
+    
+    handles.ma_LvdMainGUI = varargin{2};
 
     exclude = {};
     exclude{end+1} = 'Distance to Ref. Spacecraft';
@@ -83,7 +85,8 @@ function lvd_GraphicalAnalysisGUI_OpeningFcn(hObject, eventdata, handles, vararg
 
     maStateLog = lvdData.stateLog.getMAFormattedStateLogMatrix();
 
-    propNames = {'Fuel/Ox', 'Monoprop', 'Xenon'};
+%     propNames = {'Fuel/Ox', 'Monoprop', 'Xenon'};
+    propNames = {'Liquid Fuel/Ox','Monopropellant','Xenon'};
     substituteDefaultPropNamesWithCustomNamesInDepVarListbox(handles.depVarListbox, propNames);
     useSubplotCheckbox_Callback(handles.useSubplotCheckbox, [], handles);
     set(handles.startTimeText,'String',fullAccNum2Str(maStateLog(1,1)));
@@ -355,7 +358,7 @@ function genPlotsButton_Callback(hObject, eventdata, handles)
             lineType = '-';
     end
 
-    propNames = {'Fuel/Ox', 'Monoprop', 'Xenon'};
+    propNames = {'Liquid Fuel/Ox','Monopropellant','Xenon'};
 %     for(i=1:length(propNames))
 %         propNames{i} = sprintf('%s Mass',propNames{i});
 %     end
@@ -460,9 +463,17 @@ function genPlotsButton_Callback(hObject, eventdata, handles)
             end
 
             if(ismember(taskStr,maTaskList))
+                try
                 [depVarValues(i,j), depVarUnits{j}, prevDistTraveled] = ma_getDepVarValueUnit(i, maSubLog, taskStr, prevDistTraveled, refBodyId, otherSCId, stationID, propNames, [], celBodyData, false);
+                catch ME
+                    a = 1;
+                end
             else
+                try
                 [depVarValues(i,j), depVarUnits{j}] = lvd_getDepVarValueUnit(i, lvdSubLog, taskStr, refBodyId, celBodyData, false);
+                catch ME
+                    a = 1;
+                end 
             end
         end
     end
@@ -506,7 +517,7 @@ function genPlotsButton_Callback(hObject, eventdata, handles)
     end
     
     if(get(handles.generateTextOutputCheckbox,'Value'))
-        matSave = getappdata(handles.ma_MainGUI,'current_save_location');
+        matSave = getappdata(handles.ma_LvdMainGUI,'current_save_location');
         [pathstr,name,~] = fileparts(matSave);
         if(isempty(pathstr))
             pathstr = uigetdir(pwd,'Select folder to save tabular text output');

@@ -1,5 +1,5 @@
-classdef AeroAnglesPolySteeringModel < AbstractAnglePolySteeringModel
-    %AeroAnglesPolySteeringModel Summary of this class goes here
+classdef InertialAeroAnglesPolySteeringModel < AbstractAnglePolySteeringModel
+    %InertialAeroAnglesPolySteeringModel Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
@@ -18,7 +18,7 @@ classdef AeroAnglesPolySteeringModel < AbstractAnglePolySteeringModel
             angOfAttack = obj.aoAModel.getValueAtTime(ut);
             angOfSideslip = obj.slipModel.getValueAtTime(ut);
             
-            [~, ~, ~, dcm] = computeBodyAxesFromAeroAngles(ut, rVect, vVect, bodyInfo, angOfAttack, angOfSideslip, bankAng);
+            [~, ~, ~, dcm] = computeBodyAxesFromInertialAeroAngles(ut, rVect, vVect, bodyInfo, angOfAttack, angOfSideslip, bankAng);
         end
         
         function [angleModel, continuity] = getAngleNModel(obj, n)
@@ -75,7 +75,7 @@ classdef AeroAnglesPolySteeringModel < AbstractAnglePolySteeringModel
         
         function setConstsFromDcmAndContinuitySettings(obj, dcm, ut, rVect, vVect, bodyInfo)
             if(obj.bankContinuity || obj.aoAContinuity || obj.slipContinuity)
-                [bankAng,angOfAttack,angOfSideslip] = computeAeroAnglesFromBodyAxes(ut, rVect, vVect, bodyInfo, dcm(:,1), dcm(:,2), dcm(:,3));
+                [bankAng,angOfAttack,angOfSideslip] = computeInertialAeroAnglesFromBodyAxes(ut, rVect, vVect, bodyInfo, dcm(:,1), dcm(:,2), dcm(:,3));
                 
                 if(obj.bankContinuity)
                     obj.bankModel.constTerm = bankAng;
@@ -107,7 +107,7 @@ classdef AeroAnglesPolySteeringModel < AbstractAnglePolySteeringModel
     end
     
     methods(Access=private)
-        function obj = AeroAnglesPolySteeringModel(bankModel, aoAModel, slipModel)
+        function obj = InertialAeroAnglesPolySteeringModel(bankModel, aoAModel, slipModel)
             obj.bankModel = bankModel;
             obj.aoAModel = aoAModel;
             obj.slipModel = slipModel;
@@ -120,11 +120,11 @@ classdef AeroAnglesPolySteeringModel < AbstractAnglePolySteeringModel
             aoAModel = PolynominalModel(0,0,0,0);
             slipModel = PolynominalModel(0,0,0,0);
             
-            model = AeroAnglesPolySteeringModel(bankModel, aoAModel, slipModel);
+            model = InertialAeroAnglesPolySteeringModel(bankModel, aoAModel, slipModel);
         end
         
         function typeStr = getTypeNameStr()
-            typeStr = SteeringModelEnum.AeroAnglesPoly.nameStr;
+            typeStr = SteeringModelEnum.InertialAeroAnglesPoly.nameStr;
         end
     end
 end

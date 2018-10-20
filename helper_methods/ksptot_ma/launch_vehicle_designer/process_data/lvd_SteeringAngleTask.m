@@ -8,7 +8,7 @@ function datapt = lvd_SteeringAngleTask(stateLogEntry, subTask)
     bodyInfo = stateLogEntry.centralBody;
 
     [rollAngle, pitchAngle, yawAngle] =  stateLogEntry.attitude.getEulerAngles(ut, rVect, vVect, bodyInfo);
-    [bankAng,angOfAttack,angOfSideslip] =  stateLogEntry.attitude.getAeroAngles(rVect, vVect);
+    [bankAng,angOfAttack,angOfSideslip] =  stateLogEntry.attitude.getAeroAngles(ut, rVect, vVect, bodyInfo);
 
     switch subTask
         case 'roll'
@@ -23,6 +23,5 @@ function datapt = lvd_SteeringAngleTask(stateLogEntry, subTask)
             datapt = rad2deg(angOfAttack);
         case 'sideslip'
             datapt = rad2deg(angOfSideslip);
-            
     end
 end

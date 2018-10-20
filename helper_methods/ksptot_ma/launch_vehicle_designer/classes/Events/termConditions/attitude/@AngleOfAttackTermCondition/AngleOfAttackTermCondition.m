@@ -80,7 +80,7 @@ classdef AngleOfAttackTermCondition < AbstractEventTerminationCondition
             vVect = y(4:6);
             
             dcm = steeringModel.getBody2InertialDcmAtTime(ut, rVect, vVect, bodyInfo);
-            [~,angOfAttack,~] = computeAeroAnglesFromBodyAxes(rVect, vVect, dcm(:,1), dcm(:,2), dcm(:,3));
+            [~,angOfAttack,~] = computeAeroAnglesFromBodyAxes(ut, rVect, vVect, bodyInfo, dcm(:,1), dcm(:,2), dcm(:,3));
             
             value = angOfAttack - targetAoA;
             isterminal = 1;

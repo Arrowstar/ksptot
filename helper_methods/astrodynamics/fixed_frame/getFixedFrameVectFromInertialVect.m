@@ -25,6 +25,4 @@ function [rVectECEF, vVectECEF, REci2Ecef] = getFixedFrameVectFromInertialVect(u
     else
         vVectECEF = [NaN;NaN;NaN];
     end
-    
 end
-
