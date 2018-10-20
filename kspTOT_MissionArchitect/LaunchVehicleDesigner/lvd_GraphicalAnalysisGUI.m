@@ -130,13 +130,13 @@ function indepVarCombo_Callback(hObject, eventdata, handles)
     selected = deblank(contents{get(hObject,'Value')});
     
     if(strcmpi(selected,'Time') || strcmpi(selected,'Mission Elapsed Time'))
-        set(handles.showManeuversCheckbox,'Enable','on');
-        set(handles.showSoITransCheckbox,'Enable','on');
+%         set(handles.showManeuversCheckbox,'Enable','on');
+%         set(handles.showSoITransCheckbox,'Enable','on');
         set(handles.showPeriCheckbox,'Enable','on');
         set(handles.showApoCheckbox,'Enable','on');
     else
-        set(handles.showManeuversCheckbox,'Enable','off');
-        set(handles.showSoITransCheckbox,'Enable','off');
+%         set(handles.showManeuversCheckbox,'Enable','off');
+%         set(handles.showSoITransCheckbox,'Enable','off');
         set(handles.showPeriCheckbox,'Enable','off');
         set(handles.showApoCheckbox,'Enable','off');
     end
