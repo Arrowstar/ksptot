@@ -1,5 +1,5 @@
 function [hCBodySurf, childrenHGs] = lvd_plotStateLog(stateLog, handles, showSoI, showChildBodies, showChildMarker, showOtherSC, orbitNumToPlot, hDispAxisTitleLabel, lvdData, celBodyData, dAxes, hFig)
-%plotStateLog Summary of this function goes here
+%lvd_plotStateLog Summary of this function goes here
 %   Detailed explanation goes here
     if(~exist('dAxes','var'))
         dAxes = gca;

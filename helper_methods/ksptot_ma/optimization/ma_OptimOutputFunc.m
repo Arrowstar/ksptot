@@ -94,7 +94,11 @@ function generatePlots(x, optimValues, state, handles, lb, ub)
     else
         set(h,'yscale','linear');
     end
+    grid on;
+    grid minor;
     
     subplot(3,1,3);
     optimplotconstrviolation(x, optimValues, state);
+    grid on;
+    grid minor;
 end

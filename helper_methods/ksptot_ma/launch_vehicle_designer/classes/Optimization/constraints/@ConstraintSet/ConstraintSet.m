@@ -75,7 +75,7 @@ classdef ConstraintSet < matlab.mixin.SetGet
                         ceqEventInds(end+1) = eventNum1; %#ok<AGROW>
                     end
                     
-                    c   = [c,c1]; %#ok<AGROW>
+                    c   = [c, c1]; %#ok<AGROW>
                     ceq = [ceq, ceq1]; %#ok<AGROW>
                     value = [value, value1]; %#ok<AGROW>
                     lb = [lb, lb1]; %#ok<AGROW>

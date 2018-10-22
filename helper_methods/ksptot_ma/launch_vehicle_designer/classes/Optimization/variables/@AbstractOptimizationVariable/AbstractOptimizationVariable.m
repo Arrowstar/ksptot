@@ -20,6 +20,37 @@ classdef(Abstract) AbstractOptimizationVariable < matlab.mixin.SetGet & matlab.m
         setUseTfForVariable(obj, useTf)
         
         updateObjWithVarValue(obj, x)
+        
+        function perturbVar(obj, pPct)
+            x = obj.getXsForVariable();
+            [lb, ub] = obj.getBndsForVariable();
+            
+            if(isempty(x))
+                return;
+            end
+            
+            for(i=1:length(x)) %#ok<*NO4LP>
+                xi = x(i);
+                lbi = lb(i);
+                ubi = ub(i);
+
+                fact = xi;
+                if(abs(fact) < 1E-10)
+                    fact = 1;
+                end
+
+                p1 = xi - (pPct/100)*fact;
+                p2 = xi + (pPct/100)*fact;
+
+                lbRnd = max(min(p1,p2),lbi);
+                ubRnd = min(max(p1,p2),ubi);
+
+                xRnd = lbRnd + (ubRnd - lbRnd)*rand();
+                x(i) = xRnd;
+            end
+            
+            obj.updateObjWithVarValue(x);
+        end
     end
     
     methods(Sealed)

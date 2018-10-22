@@ -22,7 +22,7 @@ function varargout = ma_LvdMainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_LvdMainGUI
 
-% Last Modified by GUIDE v2.5 18-Oct-2018 17:27:06
+% Last Modified by GUIDE v2.5 20-Oct-2018 19:37:06
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1135,3 +1135,38 @@ function graphicalAnalysisMenu_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
     lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
     lvd_GraphicalAnalysisGUI(lvdData, handles.ma_LvdMainGUI);
+
+
+% --------------------------------------------------------------------
+function perturbOptVarsMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to perturbOptVarsMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    writeOutput = getappdata(handles.ma_LvdMainGUI,'write_to_output_func');
+    
+    %questdlg
+    input_str = sprintf(['Enter the percentage amount to perturb the current solution by:\n',...
+                         '(Minimum = 0%%, Maximum = 100%%)\n',...
+                         '(Values greater than 5%%-10%% will likely cause the solution to become hard to recover with the optimizer.)']);
+    str = inputdlg(input_str, 'Perturb Optimization Variables', [1 75], {num2str(0.01,'%4.2f')});
+    if(isempty(str))
+        return;
+    end
+    
+    str = str{1};
+    
+    if(checkStrIsNumeric(str) && str2double(str) >= 0 && str2double(str) <= 100)
+        addUndoState(handles,'Perturb Optim Vars');
+        
+        writeOutput(sprintf('Perturbing optimization variables by %s%%.', str),'append');
+        pPct = str2double(str);
+
+        lvdData.optimizer.vars.perturbVarsAndUpdate(pPct);
+        
+        runScript(handles, lvdData);
+        lvd_processData(handles);        
+    else
+        writeOutput(sprintf('Could not perturb optimization variables.  "%s" is an invalid entry.', str),'append');
+        beep;
+    end

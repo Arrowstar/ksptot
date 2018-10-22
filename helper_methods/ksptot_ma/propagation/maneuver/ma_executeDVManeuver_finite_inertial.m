@@ -66,13 +66,9 @@ function xdot = propBurnRHS(~, x, gmu, massFlowRate, dVVectECI, thrust)
     dvNorm = normVector(dVVectECI);
     tForce = (thrust * dvNorm)/1000; %kN = tons * m/s^2/1000 = km/s^2
     
-    try
     xdot(1:3) = vVect;
-    xdot(4:6) = gAccel + tForce/m;
+    xdot(4:6) = gAccel + tForce/m; %TODO: I think this needs the v*dm/dt term
     xdot(7) = -massFlowRate;
-    catch ME
-        a =1;
-    end
     
     xdot = xdot';
 end

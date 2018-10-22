@@ -77,5 +77,11 @@ classdef OptimizationVariableSet < matlab.mixin.SetGet
                 end
             end            
         end
+        
+        function perturbVarsAndUpdate(obj, pPct)
+            for(i=1:length(obj.vars))
+                obj.vars(i).perturbVar(pPct);
+            end
+        end
     end
 end
