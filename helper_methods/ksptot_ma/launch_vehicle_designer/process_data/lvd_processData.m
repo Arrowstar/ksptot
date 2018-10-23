@@ -14,7 +14,7 @@ function lvd_processData(handles)
     [az,el] = view(handles.dispAxes);
     lvd_updateDispAxis(handles, maStateLog, get(handles.dispAxes,'UserData'), lvdData);
     
-    entry = lvdData.stateLog.entries(1);
+    entry = lvdData.stateLog.getLastStateLogForEvent(lvdData.script.getEventForInd(3));
     rVect = entry.position;
     dcm = entry.attitude.dcm;
     hold on;
