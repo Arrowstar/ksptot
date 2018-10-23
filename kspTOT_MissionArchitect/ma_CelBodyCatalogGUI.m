@@ -55,7 +55,9 @@ function ma_CelBodyCatalogGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 % Choose default command line output for ma_CelBodyCatalogGUI
 handles.output = hObject;
 handles.ma_MainGUI = varargin{1};
-celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
+% celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
+celBodyData = varargin{1};
+setappdata(hObject,'celBodyData',celBodyData);
 
 pos = get(handles.dispAxes,'Position');
 set(handles.displayAtmoRadio,'UserData',pos);
@@ -110,7 +112,7 @@ function catalogListbox_Callback(hObject, eventdata, handles)
     contents = cellstr(get(hObject,'String'));
     selected = contents{get(hObject,'Value')};
     
-    celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
+    celBodyData = getappdata(handles.ma_CelBodyCatalogGUI,'celBodyData');
     bodyInfo = celBodyData.(strtrim(lower(selected)));
     parentInfo = getParentBodyInfo(bodyInfo, celBodyData);
     bodyInfoStr = generateBodyInfoStr(bodyInfo, celBodyData);

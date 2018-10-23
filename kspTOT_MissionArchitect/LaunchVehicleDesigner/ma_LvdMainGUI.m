@@ -22,7 +22,7 @@ function varargout = ma_LvdMainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_LvdMainGUI
 
-% Last Modified by GUIDE v2.5 20-Oct-2018 19:37:06
+% Last Modified by GUIDE v2.5 23-Oct-2018 17:36:59
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1170,3 +1170,12 @@ function perturbOptVarsMenu_Callback(hObject, eventdata, handles)
         writeOutput(sprintf('Could not perturb optimization variables.  "%s" is an invalid entry.', str),'append');
         beep;
     end
+
+
+% --------------------------------------------------------------------
+function celBodyCatalogMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to celBodyCatalogMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    ma_CelBodyCatalogGUI(lvdData.celBodyData);

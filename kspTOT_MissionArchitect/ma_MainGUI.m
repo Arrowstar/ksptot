@@ -1247,7 +1247,8 @@ function celBodyCatalogMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to celBodyCatalogMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-    ma_CelBodyCatalogGUI(handles.ma_MainGUI);
+    celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
+    ma_CelBodyCatalogGUI(celBodyData);
     
 
 % --------------------------------------------------------------------
