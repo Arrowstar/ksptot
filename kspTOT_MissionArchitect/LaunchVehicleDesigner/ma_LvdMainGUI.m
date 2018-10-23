@@ -75,6 +75,8 @@ function ma_LvdMainGUI_OpeningFcn(hObject, eventdata, handles, varargin)
     initializeOutputWindowText(handles, handles.outputText);
     view(handles.dispAxes,3);
     
+    setDeleteButtonEnable(lvdData, handles);
+    
     runScript(handles, lvdData);
     lvd_processData(handles);
 
@@ -188,7 +190,7 @@ function insertEventButton_Callback(hObject, eventdata, handles)
     lvdData.script.addEventAtInd(event,selEvtNum);
     lvd_editEventGUI(event);
     
-	handles.deleteEvent.Enable = 'on';
+	setDeleteButtonEnable(lvdData, handles);
 
     runScript(handles, lvdData);
     lvd_processData(handles);
@@ -238,13 +240,18 @@ function deleteEvent_Callback(hObject, eventdata, handles)
         set(handles.scriptListbox,'Value',length(lvdData.script.evts));
     end
     
-    numEventsRemaining = lvdData.script.getTotalNumOfEvents();
-    if(numEventsRemaining <= 1)
-        handles.deleteEvent.Enable = 'off';
-    end
+    setDeleteButtonEnable(lvdData, handles);
     
     runScript(handles, lvdData);
     lvd_processData(handles);
+    
+function setDeleteButtonEnable(lvdData, handles)
+    numEvents = lvdData.script.getTotalNumOfEvents();
+    if(numEvents <= 1)
+        handles.deleteEvent.Enable = 'off';
+    else
+        handles.deleteEvent.Enable = 'on';
+    end
 
 % --- Executes on button press in moveEventUp.
 function moveEventUp_Callback(hObject, eventdata, handles)
@@ -569,6 +576,8 @@ function newMissionPlanMenu_Callback(hObject, eventdata, handles, varargin)
     setappdata(handles.ma_LvdMainGUI,'lvdData',lvdData);
     setappdata(handles.ma_LvdMainGUI,'current_save_location','');
     
+    setDeleteButtonEnable(lvdData, handles);
+    
     runScript(handles, lvdData);
     lvd_processData(handles);
     
@@ -632,6 +641,8 @@ function openMissionPlanMenu_Callback(hObject, eventdata, handles)
             
             setappdata(handles.ma_LvdMainGUI,'lvdData',lvdData);
             setappdata(handles.ma_LvdMainGUI,'current_save_location',filePath);
+            
+            setDeleteButtonEnable(lvdData, handles);
             
             runScript(handles, lvdData);
             lvd_processData(handles);
