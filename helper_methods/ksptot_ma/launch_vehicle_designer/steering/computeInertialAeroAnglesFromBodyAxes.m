@@ -4,8 +4,12 @@ function [bankAng,angOfAttack,angOfSideslip] = computeInertialAeroAnglesFromBody
     [R_wind_2_inert, ~, ~, ~] = computeWindFrame(rVect,vVect);
     Rtotal = horzcat(bodyX, bodyY, bodyZ);
     
-    [bankAng,angOfAttack,angOfSideslip] = dcm2angle(R_wind_2_inert' * Rtotal, 'xyz');
+    angles = rotm2eul(R_wind_2_inert' * Rtotal, 'xyz');
 
+    bankAng = angles(1);
+	angOfAttack = angles(2);
+	angOfSideslip = angles(3);
+     
     bankAng = real(bankAng);
     angOfAttack = real(angOfAttack);
     angOfSideslip = real(angOfSideslip);

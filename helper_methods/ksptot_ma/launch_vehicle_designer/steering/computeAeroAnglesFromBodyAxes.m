@@ -7,13 +7,17 @@ function [bankAng,angOfAttack,angOfSideslip] = computeAeroAnglesFromBodyAxes(ut,
 %     
 %     [bankAng,angOfAttack,angOfSideslip] = dcm2angle(RVel2Vvlh' * RVvlh2Inert' * Rtotal, 'xyz');
     
-    [rVectECEF, vVectECEF] = getFixedFrameVectFromInertialVect(ut, rVect, bodyInfo, vVect);
+    [rVectECEF, vVectECEF, REci2Ecef] = getFixedFrameVectFromInertialVect(ut, rVect, bodyInfo, vVect);
 
     [R_wind_2_inert, ~, ~, ~] = computeWindFrame(rVectECEF,vVectECEF);
     Rtotal = horzcat(bodyX, bodyY, bodyZ);
     
-    [bankAng,angOfAttack,angOfSideslip] = dcm2angle(R_wind_2_inert' * Rtotal, 'xyz');
+    angles = rotm2eul((REci2Ecef' * R_wind_2_inert)' * Rtotal, 'xyz');
 
+    bankAng = angles(1);
+	angOfAttack = angles(2);
+	angOfSideslip = angles(3);
+    
     bankAng = real(bankAng);
     angOfAttack = real(angOfAttack);
     angOfSideslip = real(angOfSideslip);

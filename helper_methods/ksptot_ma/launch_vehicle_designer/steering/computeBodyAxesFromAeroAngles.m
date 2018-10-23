@@ -7,11 +7,11 @@ function [bodyX, bodyY, bodyZ, Rtotal] = computeBodyAxesFromAeroAngles(ut, rVect
 %        
 %     Rtotal = RVvlh2Inert*RVel2Vvlh*RBody2Vel;
 
-    [rVectECEF, vVectECEF] = getFixedFrameVectFromInertialVect(ut, rVect, bodyInfo, vVect);
+    [rVectECEF, vVectECEF, REci2Ecef] = getFixedFrameVectFromInertialVect(ut, rVect, bodyInfo, vVect);
 
     [R_wind_2_inert, ~, ~, ~] = computeWindFrame(rVectECEF,vVectECEF);
-    RBody2Wind = angle2dcm(bankAng,angOfAttack,angOfSideslip,'xyz');
-    Rtotal = R_wind_2_inert*RBody2Wind;
+    RBody2Wind = eul2rotm([bankAng,angOfAttack,angOfSideslip],'xyz');
+    Rtotal = REci2Ecef' * R_wind_2_inert * RBody2Wind;
     
     bodyX = Rtotal(:,1);
     bodyY = Rtotal(:,2);
