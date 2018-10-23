@@ -14,15 +14,15 @@ function lvd_processData(handles)
     [az,el] = view(handles.dispAxes);
     lvd_updateDispAxis(handles, maStateLog, get(handles.dispAxes,'UserData'), lvdData);
     
-    entry = lvdData.stateLog.getLastStateLogForEvent(lvdData.script.getEventForInd(3));
-    rVect = entry.position;
-    dcm = entry.attitude.dcm;
-    hold on;
-    f = 300;
-    plot3([rVect(1), rVect(1) + f*dcm(1,1)], [rVect(2), rVect(2) + f*dcm(2,1)], [rVect(3), rVect(3) + f*dcm(3,1)],'r-');
-    plot3([rVect(1), rVect(1) + f*dcm(1,2)], [rVect(2), rVect(2) + f*dcm(2,2)], [rVect(3), rVect(3) + f*dcm(3,2)],'g-');
-    plot3([rVect(1), rVect(1) + f*dcm(1,3)], [rVect(2), rVect(2) + f*dcm(2,3)], [rVect(3), rVect(3) + f*dcm(3,3)],'b-');
-    hold off;
+%     entry = lvdData.stateLog.getLastStateLogForEvent(lvdData.script.getEventForInd(3));
+%     rVect = entry.position;
+%     dcm = entry.attitude.dcm;
+%     hold on;
+%     f = 300;
+%     plot3([rVect(1), rVect(1) + f*dcm(1,1)], [rVect(2), rVect(2) + f*dcm(2,1)], [rVect(3), rVect(3) + f*dcm(3,1)],'r-');
+%     plot3([rVect(1), rVect(1) + f*dcm(1,2)], [rVect(2), rVect(2) + f*dcm(2,2)], [rVect(3), rVect(3) + f*dcm(3,2)],'g-');
+%     plot3([rVect(1), rVect(1) + f*dcm(1,3)], [rVect(2), rVect(2) + f*dcm(2,3)], [rVect(3), rVect(3) + f*dcm(3,3)],'b-');
+%     hold off;
     
     view(handles.dispAxes, [az,el]);
     set(handles.plotWorkingLbl,'Visible','off');
