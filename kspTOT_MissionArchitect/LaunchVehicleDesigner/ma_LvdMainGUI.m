@@ -22,7 +22,7 @@ function varargout = ma_LvdMainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_LvdMainGUI
 
-% Last Modified by GUIDE v2.5 23-Oct-2018 17:36:59
+% Last Modified by GUIDE v2.5 24-Oct-2018 20:11:47
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1190,3 +1190,12 @@ function celBodyCatalogMenu_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
     lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
     ma_CelBodyCatalogGUI(lvdData.celBodyData);
+
+
+% --------------------------------------------------------------------
+function astroCalculatorsMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to astroCalculatorsMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    ma_AstroCalculatorsGUI(lvdData.celBodyData);

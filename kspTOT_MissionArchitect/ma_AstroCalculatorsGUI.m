@@ -1,26 +1,26 @@
 function varargout = ma_AstroCalculatorsGUI(varargin)
-% MA_ASTROCALCULATORSGUI MATLAB code for ma_AstroCalculatorsGUI.fig
-%      MA_ASTROCALCULATORSGUI, by itself, creates a new MA_ASTROCALCULATORSGUI or raises the existing
+% ma_AstroCalulatorGUI MATLAB code for ma_AstroCalulatorGUI.fig
+%      ma_AstroCalulatorGUI, by itself, creates a new ma_AstroCalulatorGUI or raises the existing
 %      singleton*.
 %
-%      H = MA_ASTROCALCULATORSGUI returns the handle to a new MA_ASTROCALCULATORSGUI or the handle to
+%      H = ma_AstroCalulatorGUI returns the handle to a new ma_AstroCalulatorGUI or the handle to
 %      the existing singleton*.
 %
-%      MA_ASTROCALCULATORSGUI('CALLBACK',hObject,eventData,handles,...) calls the local
-%      function named CALLBACK in MA_ASTROCALCULATORSGUI.M with the given input arguments.
+%      ma_AstroCalulatorGUI('CALLBACK',hObject,eventData,handles,...) calls the local
+%      function named CALLBACK in ma_AstroCalulatorGUI.M with the given input arguments.
 %
-%      MA_ASTROCALCULATORSGUI('Property','Value',...) creates a new MA_ASTROCALCULATORSGUI or raises the
+%      ma_AstroCalulatorGUI('Property','Value',...) creates a new ma_AstroCalulatorGUI or raises the
 %      existing singleton*.  Starting from the left, property value pairs are
-%      applied to the GUI before ma_AstroCalculatorsGUI_OpeningFcn gets called.  An
+%      applied to the GUI before ma_AstroCalulatorGUI_OpeningFcn gets called.  An
 %      unrecognized property name or invalid value makes property application
-%      stop.  All inputs are passed to ma_AstroCalculatorsGUI_OpeningFcn via varargin.
+%      stop.  All inputs are passed to ma_AstroCalulatorGUI_OpeningFcn via varargin.
 %
 %      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
 %      instance to run (singleton)".
 %
 % See also: GUIDE, GUIDATA, GUIHANDLES
 
-% Edit the above text to modify the response to help ma_AstroCalculatorsGUI
+% Edit the above text to modify the response to help ma_AstroCalulatorGUI
 
 % Last Modified by GUIDE v2.5 06-Jul-2015 18:15:46
 
@@ -28,8 +28,8 @@ function varargout = ma_AstroCalculatorsGUI(varargin)
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
                    'gui_Singleton',  gui_Singleton, ...
-                   'gui_OpeningFcn', @ma_AstroCalculatorsGUI_OpeningFcn, ...
-                   'gui_OutputFcn',  @ma_AstroCalculatorsGUI_OutputFcn, ...
+                   'gui_OpeningFcn', @ma_AstroCalulatorGUI_OpeningFcn, ...
+                   'gui_OutputFcn',  @ma_AstroCalulatorGUI_OutputFcn, ...
                    'gui_LayoutFcn',  [] , ...
                    'gui_Callback',   []);
 if nargin && ischar(varargin{1})
@@ -44,34 +44,38 @@ end
 % End initialization code - DO NOT EDIT
 
 
-% --- Executes just before ma_AstroCalculatorsGUI is made visible.
-function ma_AstroCalculatorsGUI_OpeningFcn(hObject, eventdata, handles, varargin)
+% --- Executes just before ma_AstroCalulatorGUI is made visible.
+function ma_AstroCalulatorGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 % This function has no output args, see OutputFcn.
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-% varargin   command line arguments to ma_AstroCalculatorsGUI (see VARARGIN)
+% varargin   command line arguments to ma_AstroCalulatorGUI (see VARARGIN)
 
-% Choose default command line output for ma_AstroCalculatorsGUI
+% Choose default command line output for ma_AstroCalulatorGUI
 handles.output = hObject;
 
 % Update handles structure
 guidata(hObject, handles);
-handles.ma_MainGUI = varargin{1};
+
+celBodyData = varargin{1};
+setappdata(hObject,'celBodyData',celBodyData);
+
 guidata(hObject, handles);
 
 setUpGui(handles);
 
-% UIWAIT makes ma_AstroCalculatorsGUI wait for user response (see UIRESUME)
+% UIWAIT makes ma_AstroCalulatorGUI wait for user response (see UIRESUME)
 % uiwait(handles.ma_AstroCalulatorGUI);
 
 function setUpGui(handles)
-    populateBodiesCombo(getappdata(handles.ma_MainGUI,'celBodyData'), handles.centralBodyCombo);
+    celBodyData = getappdata(handles.ma_AstroCalulatorGUI,'celBodyData');
+    populateBodiesCombo(celBodyData, handles.centralBodyCombo);
 
 
 
 % --- Outputs from this function are returned to the command line.
-function varargout = ma_AstroCalculatorsGUI_OutputFcn(hObject, eventdata, handles) 
+function varargout = ma_AstroCalulatorGUI_OutputFcn(hObject, eventdata, handles) 
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -323,7 +327,7 @@ function computeSmaFromPeriodButton_Callback(hObject, eventdata, handles)
     errMsg = validateNumber(value, numberName, lb, ub, isInt, errMsg, enteredStr);
     
     if(isempty(errMsg))
-        celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
+        celBodyData = getappdata(handles.ma_AstroCalulatorGUI,'celBodyData');
         contents = cellstr(get(handles.centralBodyCombo,'String'));
         sel = strtrim(lower(contents{get(handles.centralBodyCombo,'Value')}));
         bodyInfo = celBodyData.(sel);
@@ -353,7 +357,7 @@ function computePeriodFromSmaButton_Callback(hObject, eventdata, handles)
     errMsg = validateNumber(value, numberName, lb, ub, isInt, errMsg, enteredStr);
     
     if(isempty(errMsg))
-        celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
+        celBodyData = getappdata(handles.ma_AstroCalulatorGUI,'celBodyData');
         contents = cellstr(get(handles.centralBodyCombo,'String'));
         sel = strtrim(lower(contents{get(handles.centralBodyCombo,'Value')}));
         bodyInfo = celBodyData.(sel);
@@ -416,7 +420,7 @@ function computeTrueAnomalyFromLongButton_Callback(hObject, eventdata, handles)
     errMsg = validateNumber(value, numberName, lb, ub, isInt, errMsg, enteredStr);
     
     if(isempty(errMsg))
-        celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
+        celBodyData = getappdata(handles.ma_AstroCalulatorGUI,'celBodyData');
         contents = cellstr(get(handles.centralBodyCombo,'String'));
         sel = strtrim(lower(contents{get(handles.centralBodyCombo,'Value')}));
         bodyInfo = celBodyData.(sel);
@@ -460,7 +464,7 @@ function computeLongFromTrueAnomButton_Callback(hObject, eventdata, handles)
     errMsg = validateNumber(value, numberName, lb, ub, isInt, errMsg, enteredStr);
 
     if(isempty(errMsg))
-        celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
+        celBodyData = getappdata(handles.ma_AstroCalulatorGUI,'celBodyData');
         contents = cellstr(get(handles.centralBodyCombo,'String'));
         sel = strtrim(lower(contents{get(handles.centralBodyCombo,'Value')}));
         bodyInfo = celBodyData.(sel);
