@@ -78,7 +78,6 @@ classdef LaunchVehicleStageState < matlab.mixin.SetGet & matlab.mixin.Copyable
         end
         
         function newStageState = deepCopy(obj)
-%             newStageState = LaunchVehicleStageState(obj.stage);
             newStageState = obj.copy();
             newStageState.active = obj.active;
             

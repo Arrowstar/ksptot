@@ -33,6 +33,20 @@ classdef OptimizationVariableSet < matlab.mixin.SetGet
             end
         end
         
+        function [x, vars] = getTotalScaledXVector(obj)
+            x = [];
+            vars = AbstractOptimizationVariable.empty(0,1);
+            
+            for(i=1:length(obj.vars)) %#ok<*NO4LP>
+                vX = obj.vars(i).getScaledXsForVariable();
+                x = horzcat(x, vX); %#ok<AGROW>
+                
+                for(j=1:length(vX))
+                    vars(end+1) = obj.vars(i); %#ok<AGROW>
+                end
+            end
+        end
+        
         function [LwrBnds, UprBnds] = getTotalBndsVector(obj)
             LwrBnds = [];
             UprBnds = [];
@@ -44,8 +58,37 @@ classdef OptimizationVariableSet < matlab.mixin.SetGet
             end
         end
         
+        function [LwrBnds, UprBnds] = getTotalScaledBndsVector(obj)
+            LwrBnds = [];
+            UprBnds = [];
+            
+            for(i=1:length(obj.vars)) %#ok<*NO4LP>
+                [~, lb, ub]= obj.vars(i).getScaledXsForVariable();
+                LwrBnds = horzcat(LwrBnds, lb); %#ok<AGROW>
+                UprBnds = horzcat(UprBnds, ub); %#ok<AGROW>
+            end
+        end
+        
         function typicalX = getTypicalXVector(obj)
             [LwrBnds, UprBnds] = obj.getTotalBndsVector();
+            
+            typicalX = zeros(size(LwrBnds));
+            for(i=1:length(LwrBnds))
+                lbO = floor(log10(LwrBnds(i)));
+                ubO = floor(log10(UprBnds(i)));
+                
+                if(lbO > ubO)
+                    typicalX(i) = LwrBnds(i);
+                else
+                    typicalX(i) = UprBnds(i);
+                end
+            end
+            
+            typicalX(typicalX<eps) = 1;
+        end
+        
+        function typicalX = getTypicalScaledXVector(obj)
+            [LwrBnds, UprBnds] = obj.getTotalScaledBndsVector();
             
             typicalX = zeros(size(LwrBnds));
             for(i=1:length(LwrBnds))
@@ -73,6 +116,22 @@ classdef OptimizationVariableSet < matlab.mixin.SetGet
                 
                 if(not(isempty(subX)))
                     obj.vars(i).updateObjWithVarValue(subX);
+                    initInd = inds(end) + 1;
+                end
+            end            
+        end
+        
+        function updateObjsWithScaledVarValues(obj, x)
+            initInd = 1;
+            
+            for(i=1:length(obj.vars))
+                numVars = obj.vars(i).getNumOfVars();
+                
+                inds = initInd:initInd+numVars-1;
+                subX = x(inds);
+                
+                if(not(isempty(subX)))
+                    obj.vars(i).updateObjWithScaledVarValue(subX);
                     initInd = inds(end) + 1;
                 end
             end            

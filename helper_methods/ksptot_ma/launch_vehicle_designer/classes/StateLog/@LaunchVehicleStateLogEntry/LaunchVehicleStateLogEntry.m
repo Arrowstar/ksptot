@@ -154,7 +154,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet
             newStateLogEntry.steeringModel = obj.steeringModel;
             newStateLogEntry.throttleModel = obj.throttleModel;
             
-            newStateLogEntry.lvState = obj.lvState.deepCopy();
+            newStateLogEntry.lvState = obj.lvState;
             
             for(i=1:length(obj.stageStates))
                 newStateLogEntry.stageStates(i) = obj.stageStates(i).deepCopy();

@@ -117,7 +117,7 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
         end
         
         function stateLog = executeScript(obj)
-%             tt = tic;
+%             profile on;
             initStateLogEntry = obj.lvdData.initialState;
             stateLog = obj.lvdData.stateLog;
             
@@ -142,7 +142,7 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
             else
                 stateLog.appendStateLogEntries(initStateLogEntry.deepCopy());
             end
-%             disp(toc(tt));
+%             profile viewer;
         end
     end
 end

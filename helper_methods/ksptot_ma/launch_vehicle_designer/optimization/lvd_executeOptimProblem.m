@@ -3,12 +3,14 @@ function lvd_executeOptimProblem(celBodyData, writeOutput, problem, recorder)
     
     try
         lvdData = problem.lvdData;
-        initX = lvdData.optimizer.vars.getTotalXVector();
+        initX = lvdData.optimizer.vars.getTotalScaledXVector();
         
         writeOutput('Beginning mission script optimization...','append');
         tt = tic;
 %         profile on;
         [x,fval,exitflag,output,lambda,grad,hessian] = fmincon(problem);
+%         gs = GlobalSearch('NumTrialPoints',201, 'StartPointsToRun','bounds');
+%         [x,fval,exitflag,output,solutions] = run(gs,problem);
 %         profile viewer;
         
         execTime = toc(tt);
@@ -39,7 +41,7 @@ function lvd_executeOptimProblem(celBodyData, writeOutput, problem, recorder)
         end
         
         if(not(isempty(initX)))
-            lvdData.optimizer.vars.updateObjsWithVarValues(initX); %basically revert to the initial x vector if we run into problems
+            lvdData.optimizer.vars.updateObjsWithScaledVarValues(initX); %basically revert to the initial x vector if we run into problems
         end
         
         return;
@@ -58,10 +60,10 @@ function lvd_executeOptimProblem(celBodyData, writeOutput, problem, recorder)
         % Update existing script, reprocess
         %%%%%%%
         
-        lvdData.optimizer.vars.updateObjsWithVarValues(x);
+        lvdData.optimizer.vars.updateObjsWithScaledVarValues(x);
     else
         writeOutput(sprintf('Optimization results discarded: reverting to previous script.'),'append');
         
-        lvdData.optimizer.vars.updateObjsWithVarValues(initX);
+        lvdData.optimizer.vars.updateObjsWithScaledVarValues(initX);
     end 
 end

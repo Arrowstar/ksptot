@@ -21,6 +21,48 @@ classdef(Abstract) AbstractOptimizationVariable < matlab.mixin.SetGet & matlab.m
         
         updateObjWithVarValue(obj, x)
         
+        function [xS, lbS, ubS] = getScaledXsForVariable(obj)
+            x = obj.getXsForVariable();
+            [lb, ub] = obj.getBndsForVariable();
+            
+            xS = x;
+            lbS = lb;
+            ubS = ub;
+            for(i=1:length(x))
+                xi = x(i);
+                lbi = lb(i);
+                ubi = ub(i);
+                
+                bndDiff = ubi - lbi;
+                bndCenter = (lbi + ubi)/2;
+                if(bndDiff > 1E-10)
+                    xS(i) = (xi - bndCenter)/(bndDiff/2);
+                    lbS(i) = -1;
+                    ubS(i) = 1; 
+                end
+            end
+        end
+        
+        function updateObjWithScaledVarValue(obj, xS)
+            [lb, ub] = obj.getBndsForVariable();
+            
+            x = xS;
+            for(i=1:length(xS))
+                xSi = xS(i);
+                lbi = lb(i);
+                ubi = ub(i);
+                
+                bndDiff = ubi - lbi;
+                bndCenter = (lbi + ubi)/2;
+                
+                if(bndDiff > 1E-10)
+                    x(i) = xSi * (bndDiff/2) + bndCenter;
+                end
+            end
+            
+            obj.updateObjWithVarValue(x);
+        end
+        
         function perturbVar(obj, pPct)
             x = obj.getXsForVariable();
             [lb, ub] = obj.getBndsForVariable();

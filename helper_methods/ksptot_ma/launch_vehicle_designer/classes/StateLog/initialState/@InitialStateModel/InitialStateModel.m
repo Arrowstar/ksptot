@@ -65,6 +65,9 @@ classdef InitialStateModel < matlab.mixin.SetGet
             stateLogEntry.event = LaunchVehicleEvent.empty(0,1);
             stateLogEntry.aero = obj.aero.deepCopy();
 
+            obj.steeringModel.setT0(obj.time);
+            obj.throttleModel.setT0(obj.time);
+            
             stateLogEntry.steeringModel = obj.steeringModel;
             stateLogEntry.throttleModel = obj.throttleModel;
         end

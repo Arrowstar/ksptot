@@ -61,7 +61,7 @@ classdef ConstraintSet < matlab.mixin.SetGet
             celBodyData = obj.lvdData.celBodyData;
             
             if(~isempty(obj.consts))
-                obj.lvdOptim.vars.updateObjsWithVarValues(x);
+                obj.lvdOptim.vars.updateObjsWithScaledVarValues(x);
                 stateLog = obj.lvdData.script.executeScript();
 
                 for(i=1:length(obj.consts)) %#ok<*NO4LP>

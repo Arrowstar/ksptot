@@ -49,9 +49,6 @@ classdef LaunchVehicleState < matlab.mixin.SetGet & matlab.mixin.Copyable
         end
         
         function newLvState = deepCopy(obj)
-%             tic;
-%             newLvState = LaunchVehicleState(obj.lv);
-%             toc;
             newLvState = obj.copy();
             
             for(i=1:length(obj.e2TConns)) 
