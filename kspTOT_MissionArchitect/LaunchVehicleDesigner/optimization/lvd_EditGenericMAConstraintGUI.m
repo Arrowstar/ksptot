@@ -22,7 +22,7 @@ function varargout = lvd_EditGenericMAConstraintGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditGenericMAConstraintGUI
 
-% Last Modified by GUIDE v2.5 22-Sep-2018 14:56:43
+% Last Modified by GUIDE v2.5 02-Nov-2018 17:10:22
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -83,6 +83,8 @@ function populateGUI(handles, constraint, lvdData)
         handles.lbText.Enable = 'off';
         handles.ubText.Enable = 'off';
     end
+    
+    handles.scaleFactorText.String = fullAccNum2Str(constraint.getScaleFactor());
     
     handles.ubUnitLabel.String = unit;
     handles.lbUnitLabel.String = unit;
@@ -158,6 +160,8 @@ function varargout = lvd_EditGenericMAConstraintGUI_OutputFcn(hObject, eventdata
         constraint.lb = str2double(handles.lbText.String);
         constraint.ub = str2double(handles.ubText.String);
         
+        constraint.setScaleFactor(str2double(handles.scaleFactorText.String));
+        
         if(handles.celBodyCombo.Value > 1)
             bodyNameCell = handles.celBodyCombo.String(handles.celBodyCombo.Value);
             bodyName = lower(strtrim(bodyNameCell{1}));
@@ -230,6 +234,14 @@ function errMsg = validateInputs(handles)
         isInt = false;
         errMsg = validateNumber(uprBnd, numberName, lb, ub, isInt, errMsg, enteredStr);
     end
+    
+    sf = str2double(get(handles.scaleFactorText,'String'));
+    enteredStr = get(handles.scaleFactorText,'String');
+    numberName = 'Scale Factor';
+    lb = 1E-12;
+    ub = Inf;
+    isInt = false;
+    errMsg = validateNumber(sf, numberName, lb, ub, isInt, errMsg, enteredStr);
 
     
 % --- Executes on button press in cancelButton.
@@ -406,6 +418,31 @@ function eventCombo_CreateFcn(hObject, eventdata, handles)
 % handles    empty - handles not created until after all CreateFcns called
 
 % Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function scaleFactorText_Callback(hObject, eventdata, handles)
+% hObject    handle to scaleFactorText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of scaleFactorText as text
+%        str2double(get(hObject,'String')) returns contents of scaleFactorText as a double
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
+
+% --- Executes during object creation, after setting all properties.
+function scaleFactorText_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to scaleFactorText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
 %       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');

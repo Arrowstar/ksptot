@@ -72,6 +72,14 @@ classdef GenericMAConstraint < AbstractConstraint
             eventNum = obj.event.getEventNum();
         end
         
+        function sF = getScaleFactor(obj)
+            sF = obj.normFact;
+        end
+        
+        function setScaleFactor(obj, sF)
+            obj.normFact = sF;
+        end
+        
         function tf = usesStage(obj, stage)
             tf = false;
         end

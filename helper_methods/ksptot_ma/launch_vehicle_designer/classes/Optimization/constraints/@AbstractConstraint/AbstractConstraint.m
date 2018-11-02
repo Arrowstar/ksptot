@@ -9,6 +9,10 @@ classdef(Abstract) AbstractConstraint < matlab.mixin.SetGet & matlab.mixin.Heter
     methods
         [c, ceq, value, lb, ub, type, eventNum] = evalConstraint(obj, stateLog, celBodyData);
         
+        sF = getScaleFactor(obj);
+        
+        setScaleFactor(obj, sF);
+        
         tf = usesStage(obj, stage)
         
         tf = usesEngine(obj, engine)
