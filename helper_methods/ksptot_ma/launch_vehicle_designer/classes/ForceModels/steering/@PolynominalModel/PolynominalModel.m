@@ -22,5 +22,9 @@ classdef PolynominalModel < matlab.mixin.SetGet
             
             value = obj.constTerm + dt*obj.linearTerm + (1/2)*obj.accelTerm*dt^2;
         end
+        
+        function newPolyModel = deepCopy(obj)
+            newPolyModel = PolynominalModel(obj.t0, obj.constTerm, obj.linearTerm, obj.accelTerm);
+        end
     end
 end

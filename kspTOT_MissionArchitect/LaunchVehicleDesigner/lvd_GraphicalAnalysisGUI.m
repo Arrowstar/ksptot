@@ -463,17 +463,9 @@ function genPlotsButton_Callback(hObject, eventdata, handles)
             end
 
             if(ismember(taskStr,maTaskList))
-                try
                 [depVarValues(i,j), depVarUnits{j}, prevDistTraveled] = ma_getDepVarValueUnit(i, maSubLog, taskStr, prevDistTraveled, refBodyId, otherSCId, stationID, propNames, [], celBodyData, false);
-                catch ME
-                    a = 1;
-                end
             else
-                try
                 [depVarValues(i,j), depVarUnits{j}] = lvd_getDepVarValueUnit(i, lvdSubLog, taskStr, refBodyId, celBodyData, false);
-                catch ME
-                    a = 1;
-                end 
             end
         end
     end

@@ -97,6 +97,13 @@ classdef AeroAnglesPolySteeringModel < AbstractAnglePolySteeringModel
             angle3Name = 'Side Slip';
         end
         
+        function newSteeringModel = deepCopy(obj)
+            newSteeringModel = AeroAnglesPolySteeringModel(obj.bankModel.deepCopy(), obj.aoAModel.deepCopy(), obj.slipModel.deepCopy());
+            newSteeringModel.bankContinuity = obj.bankContinuity;
+            newSteeringModel.aoAContinuity = obj.aoAContinuity;
+            newSteeringModel.slipContinuity = obj.slipContinuity;
+        end
+        
         function optVar = getNewOptVar(obj)
             optVar = SetAeroSteeringModelActionOptimVar(obj);
         end

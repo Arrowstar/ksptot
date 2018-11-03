@@ -7,9 +7,9 @@ classdef RollPitchYawPolySteeringModel < AbstractAnglePolySteeringModel
         pitchModel(1,1) PolynominalModel = PolynominalModel(0,0,0,0);
         yawModel(1,1) PolynominalModel = PolynominalModel(0,0,0,0);
         
-        rollContinuity(1,1) logical = true;
-        pitchContinuity(1,1) logical = true;
-        yawContinuity(1,1) logical = true;
+        rollContinuity(1,1) logical = false;
+        pitchContinuity(1,1) logical = false;
+        yawContinuity(1,1) logical = false;
     end
     
     methods       
@@ -95,6 +95,13 @@ classdef RollPitchYawPolySteeringModel < AbstractAnglePolySteeringModel
             angle1Name = 'Roll';
             angle2Name = 'Pitch';
             angle3Name = 'Yaw';
+        end
+        
+        function newSteeringModel = deepCopy(obj)
+            newSteeringModel = RollPitchYawPolySteeringModel(obj.rollModel.deepCopy(), obj.pitchModel.deepCopy(), obj.yawModel.deepCopy());
+            newSteeringModel.rollContinuity = obj.rollContinuity;
+            newSteeringModel.pitchContinuity = obj.pitchContinuity;
+            newSteeringModel.yawContinuity = obj.yawContinuity;
         end
         
         function optVar = getNewOptVar(obj)

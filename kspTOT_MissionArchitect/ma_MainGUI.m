@@ -762,7 +762,6 @@ function incrOrbitToPlotNum_Callback(hObject, eventdata, handles)
 % hObject    handle to incrOrbitToPlotNum (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
     maData = getappdata(handles.ma_MainGUI,'ma_data');
     celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
     orbitNumToPlot = get(handles.dispAxes,'UserData');

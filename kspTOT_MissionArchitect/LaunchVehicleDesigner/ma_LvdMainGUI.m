@@ -300,14 +300,40 @@ function decrOrbitToPlotNum_Callback(hObject, eventdata, handles)
 % hObject    handle to decrOrbitToPlotNum (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
+    orbitNumToPlot = get(handles.dispAxes,'UserData');
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    
+    if(orbitNumToPlot > 1)
+        orbitNumToPlot = orbitNumToPlot - 1;
+        set(handles.dispAxes,'UserData',orbitNumToPlot);
+        lvd_processData(handles);
+    elseif(orbitNumToPlot == 1)
+        maStateLog = lvdData.stateLog.getMAFormattedStateLogMatrix();
+        chunkedStateLog = breakStateLogIntoSoIChunks(maStateLog);
+        orbitNumToPlot = size(chunkedStateLog,1);
+        set(handles.dispAxes,'UserData',orbitNumToPlot);
+        lvd_processData(handles);
+    end
 
 % --- Executes on button press in incrOrbitToPlotNum.
 function incrOrbitToPlotNum_Callback(hObject, eventdata, handles)
 % hObject    handle to incrOrbitToPlotNum (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+    orbitNumToPlot = get(handles.dispAxes,'UserData');
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    maStateLog = lvdData.stateLog.getMAFormattedStateLogMatrix();
+    chunkedStateLog = breakStateLogIntoSoIChunks(maStateLog);
 
+    if(orbitNumToPlot < size(chunkedStateLog,1))
+        orbitNumToPlot = orbitNumToPlot + 1;
+        set(handles.dispAxes,'UserData',orbitNumToPlot);
+        lvd_processData(handles);
+    elseif(orbitNumToPlot == size(chunkedStateLog,1))
+        orbitNumToPlot = 1;
+        set(handles.dispAxes,'UserData',orbitNumToPlot);
+        lvd_processData(handles);
+    end
 
 % --- Executes on slider movement.
 function warnAlertsSlider_Callback(hObject, eventdata, handles)

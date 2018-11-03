@@ -55,21 +55,48 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
             odeOutputFun = @(t,y,flag) obj.odeOutput(t,y,flag, now()*86400);
             options = odeset('RelTol',obj.relTol, 'AbsTol',obj.absTol,  'NonNegative',tankStateInds, 'Events',odeEventsFun, 'NormControl','on', 'OutputFcn',odeOutputFun);
             
-            [value,isterminal,~] = odeEventsFun(tspan(1), y0);
+            [value,isterminal,~,causes] = odeEventsFun(tspan(1), y0);
             if(any(abs(value)<=1E-6))
                 if(any(isterminal(abs(value)<1E-6)) == 1)
-                    t = tspan(1);
-                    y = y0;
-                    newStateLogEntries = eventInitStateLogEntry.createStateLogEntryFromIntegratorOutputRow(t, y, eventInitStateLogEntry);
+                    ie = find(abs(value)<1E-6);
                     
-                    return;
+                    stopIntegration = false;
+                    for(i=1:length(ie))
+                        if(causes(ie(i)).shouldRestartIntegration() == false)
+                            stopIntegration = true;
+                        end
+                    end
+                    
+                    if(stopIntegration)
+                        t = tspan(1);
+                        y = y0;
+                        newStateLogEntries = eventInitStateLogEntry.createStateLogEntryFromIntegratorOutputRow(t, y, eventInitStateLogEntry);
+
+                        return;
+                    end
                 end
             end
             
-            [t,y] = obj.integrator(odefun,tspan,y0,options);
-            
-%             newStateLogEntries = LaunchVehicleStateLogEntry.empty(length(t),0);
+            [t,y,~,~,ie] = obj.integrator(odefun,tspan,y0,options);
             newStateLogEntries = eventInitStateLogEntry.createStateLogEntryFromIntegratorOutputRow(t, y, eventInitStateLogEntry);
+            
+            if(not(isempty(ie)))
+                finalStateLogEntry = newStateLogEntries(end);
+                [tF,yF, ~] = finalStateLogEntry.getIntegratorStateRepresentation();
+                [~,~,~,causes] = odeEventsFun(tF, yF);
+
+                cause = causes(ie(1));
+                
+                if(cause.shouldRestartIntegration())
+                    newFinalStateLogEntry = cause.getRestartInitialState(finalStateLogEntry);
+                    
+                    [tRestart,yRestart,newStateLogEntriesRestart] = obj.integrateOneEvent(event, newFinalStateLogEntry);
+                    
+                    t = vertcat(t,tRestart);
+                    y = vertcat(y,yRestart);
+                    newStateLogEntries = horzcat(newStateLogEntries,newStateLogEntriesRestart);
+                end
+            end
         end
     end
    
@@ -140,8 +167,9 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
             dydt(7:end) = tankMassDots;
         end
         
-        function [value,isterminal,direction] = odeEvents(t,y, obj, eventInitStateLogEntry, evtTermCond)
+        function [value,isterminal,direction, causes] = odeEvents(t,y, obj, eventInitStateLogEntry, evtTermCond)
             celBodyData = obj.celBodyData;
+            causes = AbstractIntegrationTerminationCause.empty(0,1);
             
             sizeY = size(y);
             if(sizeY(2) > sizeY(1))
@@ -157,16 +185,22 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
             value(1) = altitude - obj.minAltitude;
             isterminal(1) = 1;
             direction(1) = -1;
+            causes(1) = MinAltitudeIntTermCause();
             
-            %Max Radius (SoI Radius) Constraint
+            %Max Radius (SoI Radius) Constraint (Leave SOI Upwards)
             parentBodyInfo = getParentBodyInfo(bodyInfo, celBodyData);
             rSOI = getSOIRadius(bodyInfo, parentBodyInfo);
             radius = norm(rVect);
             
+            if(isempty(parentBodyInfo))
+                parentBodyInfo = KSPTOT_BodyInfo.empty(0,1);
+            end
+            
             value(2) = rSOI - radius;
             isterminal(2) = 1;
-            direction(2) = 1;
-                        
+            direction(2) = -1;
+            causes(2) = SoITransitionUpIntTermCause(bodyInfo, parentBodyInfo, celBodyData);    
+            
             %Leave SoI Downwards
             children = getChildrenOfParentInfo(celBodyData, bodyInfo.name);
             for(i=1:length(children))
@@ -180,10 +214,12 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
                 value(end+1) = distToChild - rSOI; %#ok<AGROW>
                 isterminal(end+1) = 1; %#ok<AGROW>
                 direction(end+1) = -1; %#ok<AGROW>
+                causes(end+1) = SoITransitionDownIntTermCause(bodyInfo, childBodyInfo, celBodyData); %#ok<AGROW>
             end
             
             %Event Termination Condition
             [value(end+1),isterminal(end+1),direction(end+1)] = evtTermCond(t,y);
+            causes(end+1) = EventTermCondIntTermCause();
         end
         
         function status = odeOutput(t,y,flag, intStartTime)

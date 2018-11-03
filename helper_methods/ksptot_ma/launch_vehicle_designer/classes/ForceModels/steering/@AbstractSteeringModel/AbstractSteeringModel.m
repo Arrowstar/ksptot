@@ -23,6 +23,8 @@ classdef(Abstract) AbstractSteeringModel < matlab.mixin.SetGet
         
         [angle1Cont, angle2Cont, angle3Cont] = getContinuityTerms(obj)
         
+        newSteeringModel = deepCopy(obj)
+        
         optVar = getNewOptVar(obj)
         
         optVar = getExistingOptVar(obj)
