@@ -96,7 +96,6 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
             
             tankMassDots = eventInitStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, stageStates, throttle, lvState, pressure);
             
-            
             dydt = zeros(length(y),1);
             if(holdDownEnabled)
                 %launch clamp is enabled, only motion is circular motion
@@ -153,7 +152,8 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
             bodyInfo = eventInitStateLogEntry.centralBody;
             
             %Min Altitude Constraint
-            altitude = norm(rVect) - bodyInfo.radius;
+            rMag = norm(rVect);
+            altitude = rMag - bodyInfo.radius;
             value(1) = altitude - obj.minAltitude;
             isterminal(1) = 1;
             direction(1) = -1;
@@ -167,8 +167,23 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
             isterminal(2) = 1;
             direction(2) = 1;
                         
+            %Leave SoI Downwards
+            children = getChildrenOfParentInfo(celBodyData, bodyInfo.name);
+            for(i=1:length(children))
+                childBodyInfo = children{i};
+                
+                dVect = getAbsPositBetweenSpacecraftAndBody(ut, rVect, bodyInfo, childBodyInfo, celBodyData);
+                distToChild = norm(dVect);
+                
+                rSOI = getSOIRadius(childBodyInfo, bodyInfo);
+                
+                value(end+1) = distToChild - rSOI; %#ok<AGROW>
+                isterminal(end+1) = 1; %#ok<AGROW>
+                direction(end+1) = -1; %#ok<AGROW>
+            end
+            
             %Event Termination Condition
-            [value(3),isterminal(3),direction(3)] = evtTermCond(t,y);
+            [value(end+1),isterminal(end+1),direction(end+1)] = evtTermCond(t,y);
         end
         
         function status = odeOutput(t,y,flag, intStartTime)
