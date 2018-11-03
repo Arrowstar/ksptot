@@ -71,6 +71,7 @@ function lvd_EditGenericMAConstraintGUI_OpeningFcn(hObject, eventdata, handles, 
 
 function populateGUI(handles, constraint, lvdData)
     handles.constraintTypeLabel.String = constraint.constraintType;
+    handles.constraintTypeLabel.TooltipString = constraint.constraintType;
     [unit, ~, ~, usesLbUb, usesCelBody, usesRefSc] = constraint.getConstraintStaticDetails();
     
     if(usesLbUb)

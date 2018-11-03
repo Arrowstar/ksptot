@@ -35,19 +35,6 @@ classdef ConstraintEnum < matlab.mixin.SetGet
         VerticalVel('Vertical Velocity','GenericMAConstraint','Vertical Velocity')
         SolarBetaAngle('Solar Beta Angle','GenericMAConstraint','Solar Beta Angle')
         DistToRefCelBody('Distance to Ref. Celestial Body','GenericMAConstraint','Distance to Ref. Celestial Body')
-        DistToRefSc('Distance to Ref. Spacecraft','GenericMAConstraint','Distance to Ref. Spacecraft')
-        RelVelToRefSc('Relative Vel. to Ref. Spacecraft','GenericMAConstraint','Relative Vel. to Ref. Spacecraft')
-        RelPosInTrack('Relative Pos. of Ref. Spacecraft (In-Track)','GenericMAConstraint','Relative Pos. of Ref. Spacecraft (In-Track)')
-        RelPosCrossTrack('Relative Pos. of Ref. Spacecraft (Cross-Track)','GenericMAConstraint','Relative Pos. of Ref. Spacecraft (Cross-Track)')
-        RelPosRadial('Relative Pos. of Ref. Spacecraft (Radial)','GenericMAConstraint','Relative Pos. of Ref. Spacecraft (Radial)')
-        RelPosInTractScCentered('Relative Pos. of Ref. Spacecraft (In-Track Ref. SC-centered)','GenericMAConstraint','Relative Pos. of Ref. Spacecraft (In-Track Ref. SC-centered)')
-        RelPosCrossTrackScCentered('Relative Pos. of Ref. Spacecraft (Cross-Track Ref. SC-centered)','GenericMAConstraint','Relative Pos. of Ref. Spacecraft (Cross-Track Ref. SC-centered)')
-        RelPosRadialScCentered('Relative Pos. of Ref. Spacecraft (Radial Ref. SC-centered)','GenericMAConstraint','Relative Pos. of Ref. Spacecraft (Radial Ref. SC-centered)')
-        RelSma('Relative SMA of Ref. Spacecraft','GenericMAConstraint','Relative SMA of Ref. Spacecraft')
-        RelEcc('Relative Eccentricity of Ref. Spacecraft','GenericMAConstraint','Relative Eccentricity of Ref. Spacecraft')
-        RelInc('Relative Inclination of Ref. Spacecraft','GenericMAConstraint','Relative Inclination of Ref. Spacecraft')
-        RelRAAN('Relative RAAN of Ref. Spacecraft','GenericMAConstraint','Relative RAAN of Ref. Spacecraft')
-        RelArgPeri('Relative Argument of Periapsis of Ref. Spacecraft','GenericMAConstraint','Relative Argument of Periapsis of Ref. Spacecraft')
         H1('Equinoctial H1','GenericMAConstraint','Equinoctial H1')
         K1('Equinoctial K1','GenericMAConstraint','Equinoctial K1')
         H2('Equinoctial H2','GenericMAConstraint','Equinoctial H2')
@@ -82,11 +69,14 @@ classdef ConstraintEnum < matlab.mixin.SetGet
     methods(Static)
         function listBoxStr = getListBoxStr()
             m = enumeration('ConstraintEnum');
-            listBoxStr = {m.name};
+            [~,I] = sort({m.name});
+            listBoxStr = {m(I).name};
         end
         
         function [ind, enum] = getIndForName(name)
             m = enumeration('ConstraintEnum');
+            [~,I] = sort({m.name});
+            m = m(I);
             ind = find(ismember({m.name},name),1,'first');
             enum = m(ind);
         end
