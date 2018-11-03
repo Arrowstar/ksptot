@@ -806,6 +806,11 @@ function undoMenu_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
     lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
     undoRedo = getappdata(handles.ma_LvdMainGUI,'undoRedo');
+    writeOutput = getappdata(handles.ma_LvdMainGUI,'write_to_output_func');
+    
+    [~, undoActionName] = undoRedo.shouldUndoMenuBeEnabled();
+    
+    writeOutput(sprintf('Undoing %s...',undoActionName),'append');
     lvdData = undoRedo.undo(lvdData);
     
     setappdata(handles.ma_LvdMainGUI,'lvdData',lvdData);
@@ -815,7 +820,7 @@ function undoMenu_Callback(hObject, eventdata, handles)
     
     curName = get(handles.ma_LvdMainGUI,'Name');
     if(~strcmpi(curName(end),'*'))
-        set(handles.ma_MainGUI,'Name',[curName,'*']);
+        set(handles.ma_LvdMainGUI,'Name',[curName,'*']);
     end
     
     editMenu_Callback([], [], handles);
@@ -826,6 +831,11 @@ function redoMenu_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
     undoRedo = getappdata(handles.ma_LvdMainGUI,'undoRedo');
+    writeOutput = getappdata(handles.ma_LvdMainGUI,'write_to_output_func');
+    
+    [~, undoActionName] = undoRedo.shouldUndoMenuBeEnabled();
+    
+    writeOutput(sprintf('Redoing %s...',undoActionName),'append');    
     lvdData = undoRedo.redo();
     
     if(not(isempty(lvdData)))
@@ -837,7 +847,7 @@ function redoMenu_Callback(hObject, eventdata, handles)
     
     curName = get(handles.ma_LvdMainGUI,'Name');
     if(~strcmpi(curName(end),'*'))
-        set(handles.ma_MainGUI,'Name',[curName,'*']);
+        set(handles.ma_LvdMainGUI,'Name',[curName,'*']);
     end
     
     editMenu_Callback([], [], handles);
