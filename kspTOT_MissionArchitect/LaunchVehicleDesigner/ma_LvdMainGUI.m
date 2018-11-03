@@ -833,7 +833,7 @@ function redoMenu_Callback(hObject, eventdata, handles)
     undoRedo = getappdata(handles.ma_LvdMainGUI,'undoRedo');
     writeOutput = getappdata(handles.ma_LvdMainGUI,'write_to_output_func');
     
-    [~, undoActionName] = undoRedo.shouldUndoMenuBeEnabled();
+    [~, undoActionName] = undoRedo.shouldRedoMenuBeEnabled();
     
     writeOutput(sprintf('Redoing %s...',undoActionName),'append');    
     lvdData = undoRedo.redo();
