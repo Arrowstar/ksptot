@@ -90,7 +90,7 @@ drawnow;
 
 % celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
 recorder = ma_OptimRecorder();
-outputFnc = @(x, optimValues, state) ma_OptimOutputFunc(x, optimValues, state, handles, problem, celBodyData, recorder, propNames);
+outputFnc = @(x, optimValues, state) ma_OptimOutputFunc(x, optimValues, state, handles, problem, celBodyData, recorder, propNames, writeOutput);
 problem.options.OutputFcn = outputFnc;
 
 if(not(isLVD))

@@ -1,4 +1,4 @@
-function stop = ma_OptimOutputFunc(x, optimValues, state, handles, problem, celBodyData, recorder, propNames)
+function stop = ma_OptimOutputFunc(x, optimValues, state, handles, problem, celBodyData, recorder, propNames, writeOutput)
     stop = false;
     switch state
         case 'iter'
@@ -22,14 +22,14 @@ function stop = ma_OptimOutputFunc(x, optimValues, state, handles, problem, celB
         stateLog = stateLog.getMAFormattedStateLogMatrix();
     end
     
-    writeOptimStatus(handles, optimValues, state);
+    writeOptimStatus(handles, optimValues, state, writeOutput);
     writeFinalState(handles, stateLog, celBodyData, propNames);
     generatePlots(x, optimValues, state, handles, problem.lb, problem.ub);
     drawnow;
 end
 
 
-function writeOptimStatus(handles, optimValues, state)
+function writeOptimStatus(handles, optimValues, state, writeOutput)
     persistent timer;
     
     elapTime = 0;
@@ -41,6 +41,9 @@ function writeOptimStatus(handles, optimValues, state)
         case 'init'
             timer = tic;
             elapTime = 0;
+            
+            hdrStr = sprintf('%- 13s%- 13s%- 13s%- 13s%- 13s%- 13s', 'Iteration','Fcn-Count','f(x)-Value', 'Feasibility', 'Optimality', 'Norm. Step');
+            writeOutput(hdrStr,'append');
     end
     
     outStr = {};
@@ -52,8 +55,22 @@ function writeOptimStatus(handles, optimValues, state)
     outStr{end+1} = ['Constraint Violation = ', num2str(optimValues.constrviolation)];
     outStr{end+1} = ['Optimality           = ', num2str(optimValues.firstorderopt,5)];
     outStr{end+1} = ['Step Size            = ', num2str(optimValues.stepsize)];
-    outStr{end+1} = ['                       ' ];
+    outStr{end+1} = ['                       '];
     outStr{end+1} = ['Elapsed Time         = ', num2str(elapTime), ' sec'];
+    
+    if(strcmpi(state,'iter'))
+        formatstr = ' %- 12.1i %- 12.0i %- 12.6g %- 12.3g %- 12.3g %- 12.3g';
+
+        iter = optimValues.iteration;
+        fcnt = optimValues.funccount;
+        val  = optimValues.fval;
+        feas = optimValues.constrviolation;
+        optm = optimValues.firstorderopt;
+        step = optimValues.stepsize;
+
+        hRow = sprintf(formatstr,iter,fcnt,val,feas,optm,step);
+        writeOutput(hRow,'append');
+    end
     
     set(handles.optimStatusLabel, 'String', outStr);
 end

@@ -525,6 +525,7 @@ function optimizeMissionButton_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
     maData = getappdata(handles.ma_MainGUI,'ma_data');
     celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
+    writeOutput = getappdata(handles.ma_MainGUI,'write_to_output_func');
 
     contents = cellstr(get(handles.objFuncCombo,'String'));
     selectedObjFunc = deblank(contents{get(handles.objFuncCombo,'Value')});
@@ -561,7 +562,7 @@ function optimizeMissionButton_Callback(hObject, eventdata, handles)
     waitbar(1,hWaitbar);
     close(hWaitbar);
     
-    ma_ObserveOptimGUI(celBodyData, problem, false, [], handles.ma_MainGUI);
+    ma_ObserveOptimGUI(celBodyData, problem, false, writeOutput, handles.ma_MainGUI);
 
     uiresume(handles.ma_MissionOptimizerGUI);
     close(handles.ma_MissionOptimizerGUI); 
