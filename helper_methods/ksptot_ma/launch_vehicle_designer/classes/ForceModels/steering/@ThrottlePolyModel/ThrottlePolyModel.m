@@ -51,7 +51,7 @@ classdef ThrottlePolyModel < AbstractThrottleModel
     
     methods(Static)
         function model = getDefaultThrottleModel()
-            throttlePoly = PolynominalModel(0,1,0,0);
+            throttlePoly = PolynominalModel(0,0,0,0);
             model = ThrottlePolyModel(throttlePoly);
         end
     end
