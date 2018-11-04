@@ -1547,9 +1547,13 @@ function getManeuverNodesFromKSPActiveVessel_Callback(hObject, eventdata, handle
             lastUTStateLog = stateLog(lastUTInd,:);
             eventNum = lastUTStateLog(13);  
             
+            lossConvert = getDefaultLossConvert(handles);
+            newMassLoss.use = false;
+            newMassLoss.lossConvert = lossConvert;
+            
             preList = script(1:eventNum-1);
             postList = script(eventNum:end);
-            newCoast = ma_createCoast(['To Node ', num2str(i)], 'goto_ut', ut, 0.0, [], [0;ut;ut], [], 'k', '-', getDefaultLossConvert(handles), [], 0.0, getDefaultOrbitDecay());
+            newCoast = ma_createCoast(['To Node ', num2str(i)], 'goto_ut', ut, 0.0, [], [0;ut;ut], [], 'k', '-', newMassLoss, [], 0.0, getDefaultOrbitDecay());
             newDV = ma_createDVManeuver(['Node ', num2str(i)], 'dv_orbit', dvVect, dvThruster, dvVars, 'r', '-');
             script = [preList, newCoast, newDV, postList];
 
