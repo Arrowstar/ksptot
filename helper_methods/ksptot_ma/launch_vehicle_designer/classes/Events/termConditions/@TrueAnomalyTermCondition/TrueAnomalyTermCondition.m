@@ -30,6 +30,10 @@ classdef TrueAnomalyTermCondition < AbstractEventTerminationCondition
             name = sprintf('True Anomaly (%.3f deg)', rad2deg(obj.tru));
         end
         
+        function tf = shouldBeReinitOnRestart(obj)
+            tf = true;
+        end
+        
         function params = getTermCondUiStruct(obj)
             params = struct();
             

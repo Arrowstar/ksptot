@@ -13,6 +13,8 @@ classdef(Abstract) AbstractEventTerminationCondition < matlab.mixin.SetGet
         
         name = getName(obj)
         
+        tf = shouldBeReinitOnRestart(obj);
+        
         params = getTermCondUiStruct(obj)
         
         optVar = getNewOptVar(obj)

@@ -63,14 +63,16 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
                 aListboxStr{end+1} = obj.actions(i).getName(); %#ok<AGROW>
                 actions(end+1) = obj.actions(i); %#ok<AGROW>
             end
-            
-%             if(isempty(aListboxStr))
-%                 aListboxStr{1} = '';
-%             end
         end
         
         function initEvent(obj, initialStateLogEntry)
             obj.termCond.initTermCondition(initialStateLogEntry);
+        end
+        
+        function initEventOnRestart(obj, initialStateLogEntry)
+            if(obj.termCond.shouldBeReinitOnRestart())
+                obj.initEvent(initialStateLogEntry);
+            end
         end
         
         function newStateLogEntries = cleanupEvent(obj, finalStateLogEntry)

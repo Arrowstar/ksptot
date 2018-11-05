@@ -32,6 +32,10 @@ classdef SeaLevelThrustToWeightTermCondition < AbstractEventTerminationCondition
             obj.throttleModel = initialStateLogEntry.throttleModel;
         end
         
+        function tf = shouldBeReinitOnRestart(obj)
+            tf = true;
+        end
+        
         function name = getName(obj)
             name = sprintf('Thrust to Weight Ratio (Sea Level) (%.3f)', obj.targetTtW);
         end

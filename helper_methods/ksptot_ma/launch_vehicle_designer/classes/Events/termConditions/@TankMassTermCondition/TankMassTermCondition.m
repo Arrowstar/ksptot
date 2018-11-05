@@ -31,6 +31,10 @@ classdef TankMassTermCondition < AbstractEventTerminationCondition
             name = sprintf('Tank Mass (%s = %0.3f mT)', obj.tank.name, obj.targetMass);
         end
         
+        function tf = shouldBeReinitOnRestart(obj)
+            tf = false;
+        end
+        
         function params = getTermCondUiStruct(obj)
             params = struct();
             

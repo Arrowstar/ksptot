@@ -19,6 +19,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet
     properties(Dependent)
         attitude(1,1) LaunchVehicleAttitudeState
         throttle(1,1) double
+        celBodyData struct
     end
     
     properties(Constant)
@@ -37,6 +38,10 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet
         function attState = get.attitude(obj)
             attState = LaunchVehicleAttitudeState();
             attState.dcm = obj.steeringModel.getBody2InertialDcmAtTime(obj.time, obj.position, obj.velocity, obj.centralBody);
+        end
+        
+        function celBodyData = get.celBodyData(obj)
+            celBodyData = obj.lvState.lv.lvdData.celBodyData;
         end
         
         function [t,y, tankStateInds] = getIntegratorStateRepresentation(obj)

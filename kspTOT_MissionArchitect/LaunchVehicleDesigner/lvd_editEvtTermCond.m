@@ -78,6 +78,9 @@ function populateGUI(handles, event)
     params = termCond.getTermCondUiStruct();
     
     value = params.value;
+    if(isempty(value))
+        value = 0.0;
+    end
     
     set(handles.numParamText,'String',fullAccNum2Str(value));
     
@@ -94,7 +97,11 @@ function populateGUI(handles, event)
     
     set(handles.numParamLabel,'String',params.paramName);
     set(handles.numParamUnitLabel,'String',params.paramUnit);
-    set(handles.numParamLabel,'Enable',params.useParam);
+    
+    set(handles.numParamText,'Enable',params.useParam);
+    set(handles.optParamCheckbox,'Enable',params.useParam);
+    set(handles.paramLbText,'Enable',params.useParam);
+    set(handles.paramUbText,'Enable',params.useParam);
     
     set(handles.refStageCombo,'Enable',params.useStages);
     set(handles.refTankCombo,'Enable',params.useTanks);
@@ -213,16 +220,19 @@ function varargout = lvd_editEvtTermCond_OutputFcn(hObject, eventdata, handles)
         
         optVar = termCond.getNewOptVar();
         
-        optVar.setUseTfForVariable(true); 
-        optVar.setBndsForVariable(lb, ub);
-        
-        useTf = logical(get(handles.optParamCheckbox,'Value'));
-        optVar.setUseTfForVariable(useTf);       
+        if(not(isempty(optVar)))
+            optVar.setUseTfForVariable(true); 
+            optVar.setBndsForVariable(lb, ub);
+
+            useTf = logical(get(handles.optParamCheckbox,'Value'));
+            optVar.setUseTfForVariable(useTf);       
+
+            lv.lvdData.optimizer.vars.addVariable(optVar);
+            termCond.optVar = optVar;
+            optVar.varObj = termCond;
+        end
         
         event.termCond = termCond;
-        lv.lvdData.optimizer.vars.addVariable(optVar);
-        termCond.optVar = optVar;
-        optVar.varObj = termCond;
         
         close(handles.lvd_editEvtTermCond);
     end
@@ -279,7 +289,15 @@ function termCondTypeCombo_Callback(hObject, eventdata, handles)
     set(handles.numParamLabel,'String',params.paramName);
     set(handles.numParamUnitLabel,'String',params.paramUnit);
     
-    set(handles.numParamLabel,'Enable',params.useParam);
+    set(handles.numParamText,'Enable',params.useParam);
+    set(handles.optParamCheckbox,'Enable',params.useParam);
+    set(handles.paramLbText,'Enable',params.useParam);
+    set(handles.paramUbText,'Enable',params.useParam);
+    
+    if(params.useParam == false)
+        set(handles.optParamCheckbox,'Value',0);
+    end
+    
     set(handles.refStageCombo,'Enable',params.useStages);
     set(handles.refTankCombo,'Enable',params.useTanks);
     set(handles.refEngineCombo,'Enable',params.useEngines);

@@ -1,5 +1,5 @@
 classdef AltitudeTermCondition < AbstractEventTerminationCondition
-    %TrueAnomalyTermCondition Summary of this class goes here
+    %AltitudeTermCondition Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
@@ -22,6 +22,10 @@ classdef AltitudeTermCondition < AbstractEventTerminationCondition
         
         function name = getName(obj)
             name = sprintf('Altitude (%.3f km)', obj.altitude);
+        end
+        
+        function tf = shouldBeReinitOnRestart(obj)
+            tf = true;
         end
         
         function params = getTermCondUiStruct(obj)

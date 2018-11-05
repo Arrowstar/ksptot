@@ -24,6 +24,10 @@ classdef ThrottleTermCondition < AbstractEventTerminationCondition
             name = sprintf('Throttle Setting (%.3f %%)', 100*obj.targetThrottle);
         end
         
+        function tf = shouldBeReinitOnRestart(obj)
+            tf = false;
+        end
+        
         function params = getTermCondUiStruct(obj)
             params = struct();
             

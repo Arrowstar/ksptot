@@ -24,6 +24,10 @@ classdef EventDurationTermCondition < AbstractEventTerminationCondition
             name = sprintf('Event Duration (%.3f sec)', obj.duration);
         end
         
+        function tf = shouldBeReinitOnRestart(obj)
+            tf = false;
+        end
+        
         function params = getTermCondUiStruct(obj)
             params = struct();
             
