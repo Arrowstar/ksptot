@@ -34,5 +34,10 @@ classdef LaunchVehicleStateLog < matlab.mixin.SetGet
         function subLog = getStateLogEntriesBetweenTimes(obj, t1, t2)
             subLog = obj.entries([obj.entries.time] >= t1 & [obj.entries.time] <= t2);
         end
+        
+        function [tStart, tEnd] = getStartAndEndTimes(obj)
+            tStart = min([obj.entries.time]);
+            tEnd = max([obj.entries.time]);
+        end
     end
 end
