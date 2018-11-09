@@ -19,11 +19,13 @@ classdef(Abstract) AbstractObjectiveFcn < matlab.mixin.SetGet & matlab.mixin.Het
         
         tf = usesEvent(obj, event)
         
-        event = getRefEvent(obj)        
+        event = getRefEvent(obj)     
+        
+        bodyInfo = getRefBody(obj)
     end
     
     methods(Static)
-        objFcn = getDefaultObjFcn(event, lvdOptim, lvdData)
+        objFcn = getDefaultObjFcn(event, refBodyInfo, lvdOptim, lvdData)
         
         params = getParams(obj)
     end

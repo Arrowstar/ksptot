@@ -1,5 +1,13 @@
 function lvd_executeOptimProblem(celBodyData, writeOutput, problem, recorder)
+    global options_gravParamType;
     initX = [];
+    
+    if(problem.options.UseParallel)
+        pp=gcp('nocreate');
+        fnc3 = @() setGravParamTypeForWorker(options_gravParamType);
+
+        pp.parfevalOnAll(fnc3, 0);
+    end
     
     try
         lvdData = problem.lvdData;

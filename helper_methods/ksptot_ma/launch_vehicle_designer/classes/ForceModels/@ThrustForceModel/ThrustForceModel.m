@@ -49,7 +49,7 @@ classdef ThrustForceModel < AbstractForceModel
                                 end
                             end
                             
-                            if(propExistsInATank)
+                            if(propExistsInATank)                                
                                 [thrust, ~] = engine.getThrustFlowRateForPressure(pressure);
                                 adjustedThrottle = engine.adjustThrottleForMinMax(throttle);
                                 bodyThrust = bodyThrust + (thrust * adjustedThrottle * engine.bodyFrameThrustVect)/1000; %1/1000 to convert kN=mT*m/s^2 to mT*km/s^2 (see also ma_executeDVManeuver_finite_inertial()) 

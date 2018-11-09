@@ -22,7 +22,7 @@ function varargout = ma_LvdMainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_LvdMainGUI
 
-% Last Modified by GUIDE v2.5 24-Oct-2018 20:11:47
+% Last Modified by GUIDE v2.5 08-Nov-2018 17:22:59
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1235,3 +1235,34 @@ function astroCalculatorsMenu_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
     lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
     ma_AstroCalculatorsGUI(lvdData.celBodyData);
+
+
+% --------------------------------------------------------------------
+function maxScriptPropTimeMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to maxScriptPropTimeMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    writeOutput = getappdata(handles.ma_LvdMainGUI,'write_to_output_func');
+    
+    input_str = sprintf(['Enter the desired maximum script propagation time (sec):\n',...
+                         '(Minimum = 0.001 sec, Maximum = 3600 sec)\n', ...
+                         '(Script execution stops if the amount of time required to propagate the script exceeds this.)']);
+    str = inputdlg(input_str, 'Maximum Script Execution Time', [1 75], {fullAccNum2Str(lvdData.settings.maxScriptPropTime)});
+    if(isempty(str))
+        return;
+    end
+    
+    str = str{1};
+    
+    if(checkStrIsNumeric(str) && str2double(str) >= 0.001 && str2double(str) <= 3600)
+        writeOutput(sprintf('Setting maximum script execution time to %s sec.', str),'append');
+        
+        lvdData.settings.maxScriptPropTime = str2double(str);       
+        
+        runScript(handles, lvdData);
+        lvd_processData(handles);
+    else
+        writeOutput(sprintf('Could not set the desired maximum script execution time.  "%s" is an invalid entry.', str),'append');
+        beep;
+    end

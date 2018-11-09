@@ -14,6 +14,7 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
         absTol(1,1) double
         simMaxDur(1,1) double
         minAltitude(1,1) double
+        maxPropTime(1,1) double
         celBodyData(1,1) struct
     end
     
@@ -38,21 +39,30 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
             value = obj.lvdData.settings.minAltitude;
         end
         
+        function value = get.maxPropTime(obj)
+            value = obj.lvdData.settings.maxScriptPropTime;
+        end
+        
         function value = get.celBodyData(obj)
             value = obj.lvdData.celBodyData;
         end
         
-        function [t,y,newStateLogEntries] = integrateOneEvent(obj, event, eventInitStateLogEntry)
+        function [t,y,newStateLogEntries] = integrateOneEvent(obj, event, eventInitStateLogEntry, tStartPropTime, tStartSimTime)
             [t0,y0, tankStateInds] = eventInitStateLogEntry.getIntegratorStateRepresentation();
             
-            maxT = t0+obj.simMaxDur;
+            maxT = tStartSimTime+obj.simMaxDur;
+            
+            if(t0 > maxT)
+                maxT = t0;
+            end
+            
             tspan = [t0, maxT];
             
             dryMass = eventInitStateLogEntry.getTotalVehicleDryMass();
             
             odefun = @(t,y) obj.odefun(t,y, obj, eventInitStateLogEntry, dryMass);
-            odeEventsFun = @(t,y) obj.odeEvents(t,y, obj, eventInitStateLogEntry, event.termCond.getEventTermCondFuncHandle());
-            odeOutputFun = @(t,y,flag) obj.odeOutput(t,y,flag, now()*86400);
+            odeEventsFun = @(t,y) obj.odeEvents(t,y, obj, eventInitStateLogEntry, event.termCond.getEventTermCondFuncHandle(), maxT);
+            odeOutputFun = @(t,y,flag) obj.odeOutput(t,y,flag, tStartPropTime, obj.maxPropTime);
             options = odeset('RelTol',obj.relTol, 'AbsTol',obj.absTol,  'NonNegative',tankStateInds, 'Events',odeEventsFun, 'NormControl','on', 'OutputFcn',odeOutputFun);
             
             [value,isterminal,~,causes] = odeEventsFun(tspan(1), y0);
@@ -80,6 +90,10 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
             [t,y,~,~,ie] = obj.integrator(odefun,tspan,y0,options);
             newStateLogEntries = eventInitStateLogEntry.createStateLogEntryFromIntegratorOutputRow(t, y, eventInitStateLogEntry);
             
+            if(t(1) > 7558894.63632281)
+                a = 1;
+            end
+            
             if(not(isempty(ie)))
                 finalStateLogEntry = newStateLogEntries(end);
                 [tF,yF, ~] = finalStateLogEntry.getIntegratorStateRepresentation();
@@ -92,7 +106,7 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
                     
                     event.initEventOnRestart(newFinalStateLogEntry);
                     
-                    [tRestart,yRestart,newStateLogEntriesRestart] = obj.integrateOneEvent(event, newFinalStateLogEntry);
+                    [tRestart,yRestart,newStateLogEntriesRestart] = obj.integrateOneEvent(event, newFinalStateLogEntry, tStartPropTime, tStartSimTime);
                     
                     t = vertcat(t,tRestart);
                     y = vertcat(y,yRestart);
@@ -123,8 +137,12 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
             
             holdDownEnabled = eventInitStateLogEntry.isHoldDownEnabled();
             
-            tankMassDots = eventInitStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, stageStates, throttle, lvState, pressure);
+            if(ut >= 7558910.70478394)
+                a = 1;
+            end
             
+            tankMassDots = eventInitStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, stageStates, throttle, lvState, pressure);
+                                   
             dydt = zeros(length(y),1);
             if(holdDownEnabled)
                 %launch clamp is enabled, only motion is circular motion
@@ -139,12 +157,13 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
                 
                 dydt(1:3) = vVectECI(:); 
                 dydt(4:6) = rotAccel(:);
+                dydt(7:end) = tankMassDots;
             else
                 %launch clamp disabled, propagate like normal
                 CdA = eventInitStateLogEntry.aero.area * eventInitStateLogEntry.aero.Cd;            
 
                 totalMass = dryMass + sum(tankStatesMasses);
-
+                
                 throttleModel = eventInitStateLogEntry.throttleModel;
                 steeringModel = eventInitStateLogEntry.steeringModel;
                 
@@ -158,18 +177,18 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
                 if(totalMass > 0)
                     forceSum = obj.forceModel.getForce(ut, rVect, vVect, totalMass, bodyInfo, CdA, throttleModel, steeringModel, tankStates, stageStates, lvState);
                     accelVect = (forceSum - vVect*totalMDot)/totalMass; %F = dp/dt = d(mv)/dt = m*dv/dt + v*dm/dt
+                    dydt(7:end) = tankMassDots;
                 else
                     accelVect = zeros(3,1);
+                    dydt(7:end) = zeros(size(tankMassDots));
                 end
-
+                
                 dydt(1:3) = vVect'; 
                 dydt(4:6) = accelVect;
             end
-            
-            dydt(7:end) = tankMassDots;
         end
         
-        function [value,isterminal,direction, causes] = odeEvents(t,y, obj, eventInitStateLogEntry, evtTermCond)
+        function [value,isterminal,direction, causes] = odeEvents(t,y, obj, eventInitStateLogEntry, evtTermCond, maxSimTime)
             celBodyData = obj.celBodyData;
             causes = AbstractIntegrationTerminationCause.empty(0,1);
             
@@ -181,13 +200,21 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
             [ut, rVect, ~, ~] = LaunchVehicleSimulationDriver.decomposeIntegratorTandY(t,y);
             bodyInfo = eventInitStateLogEntry.centralBody;
             
+            %Max Sim Time Constraint
+            simTimeRemaining = maxSimTime - ut;
+            value(1) = simTimeRemaining;
+            isterminal(1) = 1;
+            direction(1) = 0;
+            causes(1) = MaxEventSimTimeIntTermCause();
+            
+            
             %Min Altitude Constraint
             rMag = norm(rVect);
             altitude = rMag - bodyInfo.radius;
-            value(1) = altitude - obj.minAltitude;
-            isterminal(1) = 1;
-            direction(1) = -1;
-            causes(1) = MinAltitudeIntTermCause();
+            value(end+1) = altitude - obj.minAltitude;
+            isterminal(end+1) = 1;
+            direction(end+1) = -1;
+            causes(end+1) = MinAltitudeIntTermCause();
             
             %SoI transitions
             [soivalue, soiisterminal, soidirection, soicauses] = getSoITransitionOdeEvents(ut, rVect, bodyInfo, celBodyData);
@@ -202,13 +229,13 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
             causes(end+1) = EventTermCondIntTermCause();
         end
         
-        function status = odeOutput(t,y,flag, intStartTime)
-            integrationDuration = now()*86400 - intStartTime;
-            maxIntegrationDuration = 5;
+        function status = odeOutput(t,y,flag, intStartTime, maxIntegrationDuration)
+            integrationDuration = toc(intStartTime);
             
             status = 0; %TODO FIX ME!
             if(integrationDuration > maxIntegrationDuration)
                 status = 1;
+                disp('STOP!');
             end
         end
     end

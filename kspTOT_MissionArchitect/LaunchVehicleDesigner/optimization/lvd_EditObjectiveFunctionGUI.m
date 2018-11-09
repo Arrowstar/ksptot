@@ -22,7 +22,7 @@ function varargout = lvd_EditObjectiveFunctionGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditObjectiveFunctionGUI
 
-% Last Modified by GUIDE v2.5 21-Sep-2018 21:18:31
+% Last Modified by GUIDE v2.5 07-Nov-2018 19:57:03
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -75,6 +75,10 @@ function populateGUI(handles, lvdData)
     handles.objFcnCombo.Value = ObjectiveFunctionEnum.getIndForClass(objFcn);
     
     handles.eventCombo.String = lvdData.script.getListboxStr();
+    if(isempty(handles.eventCombo.String))
+        handles.eventCombo.String = ' ';
+    end
+        
     if(params.usesEvents)
         eventNum = lvdData.script.getNumOfEvent(objFcn.getRefEvent());
         
@@ -88,12 +92,23 @@ function populateGUI(handles, lvdData)
         handles.eventCombo.Value = 1;
         handles.eventCombo.Enable = 'off';
     end
+    
+    populateBodiesCombo(lvdData.celBodyData, handles.refCelBodyCombo, false);
+    if(params.usesBodies)
+        bodyInfo = objFcn.getRefBody();
+        value = findValueFromComboBox(bodyInfo.name, handles.refCelBodyCombo);
+        handles.refCelBodyCombo.Value = value;
+    else
+        handles.refCelBodyCombo.Value = 1;
+        handles.refCelBodyCombo.Enable = 'off';
+    end
+    
 
 % --- Outputs from this function are returned to the command line.
 function varargout = lvd_EditObjectiveFunctionGUI_OutputFcn(hObject, eventdata, handles) 
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
-% eventdata  reserved - to be defined in a future version of MATLAB
+% eventdata  reserved - to be definepopulateBodiesCombod in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
 % Get default command line output from handles structure
@@ -114,7 +129,16 @@ function varargout = lvd_EditObjectiveFunctionGUI_OutputFcn(hObject, eventdata, 
             event = LaunchVehicleEvent.empty(0,1);
         end
         
-        newObjFcn = eval(sprintf('%s.getDefaultObjFcn(event, lvdOptim, lvdData)', enum.class));
+        if(params.usesBodies)
+            celBodyData = lvdData.celBodyData;
+            contents = cellstr(get(handles.refCelBodyCombo,'String'));
+            selected = contents{get(handles.refCelBodyCombo,'Value')};
+            refBodyInfo = celBodyData.(lower(strtrim(selected)));
+        else
+            refBodyInfo = KSPTOT_BodyInfo.empty(0,1);
+        end
+        
+        newObjFcn = eval(sprintf('%s.getDefaultObjFcn(event, refBodyInfo, lvdOptim, lvdData)', enum.class));
         
         lvdData.optimizer.objFcn = newObjFcn;
         
@@ -146,15 +170,21 @@ function objFcnCombo_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of objFcnCombo as text
 %        str2double(get(hObject,'String')) returns contents of objFcnCombo as a double
-        m = enumeration('ObjectiveFunctionEnum');
-        enum = m(handles.objFcnCombo.Value);
-        params = eval(sprintf('%s.getParams()',enum.class));
-        
-        if(params.usesEvents)
-            handles.eventCombo.Enable = 'on';
-        else
-            handles.eventCombo.Enable = 'off';
-        end
+    m = enumeration('ObjectiveFunctionEnum');
+    enum = m(handles.objFcnCombo.Value);
+    params = eval(sprintf('%s.getParams()',enum.class));
+
+    if(params.usesEvents)
+        handles.eventCombo.Enable = 'on';
+    else
+        handles.eventCombo.Enable = 'off';
+    end
+    
+    if(params.usesBodies)
+        handles.refCelBodyCombo.Enable = 'on';
+    else
+        handles.refCelBodyCombo.Enable = 'off';
+    end
 
 % --- Executes during object creation, after setting all properties.
 function objFcnCombo_CreateFcn(hObject, eventdata, handles)
@@ -182,6 +212,29 @@ function eventCombo_Callback(hObject, eventdata, handles)
 % --- Executes during object creation, after setting all properties.
 function eventCombo_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to eventCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in refCelBodyCombo.
+function refCelBodyCombo_Callback(hObject, eventdata, handles)
+% hObject    handle to refCelBodyCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns refCelBodyCombo contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from refCelBodyCombo
+
+
+% --- Executes during object creation, after setting all properties.
+function refCelBodyCombo_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to refCelBodyCombo (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 

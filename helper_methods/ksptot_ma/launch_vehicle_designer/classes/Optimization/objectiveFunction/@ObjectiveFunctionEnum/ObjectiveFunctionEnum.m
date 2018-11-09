@@ -4,6 +4,7 @@ classdef ObjectiveFunctionEnum < matlab.mixin.SetGet
     
     enumeration
         NoObjectiveFunction('Satisfy Constraints Only','NoOptimizationObjectiveFcn')
+        MinDistToBody('Minimize Distance to Body','MinDistanceToBodyObjectiveFcn')
         MaximizeVehicleMass('Maximize Vehicle Mass','MaximizeLaunchVehicleMassObjectiveFcn')
     end
     

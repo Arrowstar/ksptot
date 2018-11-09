@@ -47,10 +47,14 @@ classdef MaximizeLaunchVehicleMassObjectiveFcn < AbstractObjectiveFcn
         function event = getRefEvent(obj)
             event = obj.event;
         end
+        
+        function bodyInfo = getRefBody(obj)
+            bodyInfo = KSPTOT_BodyInfo.empty(0,1);
+        end
     end
     
     methods(Static)
-        function objFcn = getDefaultObjFcn(event, lvdOptim, lvdData)
+        function objFcn = getDefaultObjFcn(event, refBodyInfo, lvdOptim, lvdData)
             objFcn = MaximizeLaunchVehicleMassObjectiveFcn(event, lvdOptim, lvdData);
         end
         
@@ -58,6 +62,7 @@ classdef MaximizeLaunchVehicleMassObjectiveFcn < AbstractObjectiveFcn
             params = struct();
             
             params.usesEvents = true;
+            params.usesBodies = false;
         end
     end
 end

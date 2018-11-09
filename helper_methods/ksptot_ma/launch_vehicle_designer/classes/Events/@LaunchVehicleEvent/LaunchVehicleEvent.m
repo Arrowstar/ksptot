@@ -89,8 +89,8 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
             end
         end
         
-        function newStateLogEntries = executeEvent(obj, initStateLogEntry, simDriver)
-            [~,~,newStateLogEntries] = simDriver.integrateOneEvent(obj, initStateLogEntry);
+        function newStateLogEntries = executeEvent(obj, initStateLogEntry, simDriver, tStartPropTime, tStartSimTime)
+            [~,~,newStateLogEntries] = simDriver.integrateOneEvent(obj, initStateLogEntry, tStartPropTime, tStartSimTime);
         end
         
         function tf = usesStage(obj, stage)

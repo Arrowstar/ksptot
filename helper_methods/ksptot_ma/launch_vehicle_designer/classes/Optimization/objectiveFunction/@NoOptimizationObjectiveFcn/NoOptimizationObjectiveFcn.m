@@ -45,10 +45,14 @@ classdef NoOptimizationObjectiveFcn < AbstractObjectiveFcn
         function event = getRefEvent(obj)
             event = LaunchVehicleEvent.empty(1,0);
         end
+
+        function bodyInfo = getRefBody(obj)
+            bodyInfo = KSPTOT_BodyInfo.empty(0,1);
+        end
     end
 
     methods(Static)
-        function objFcn = getDefaultObjFcn(event, lvdOptim, lvdData)
+        function objFcn = getDefaultObjFcn(event, refBodyInfo, lvdOptim, lvdData)
             objFcn = NoOptimizationObjectiveFcn(lvdOptim, lvdData);
         end
         
@@ -56,6 +60,7 @@ classdef NoOptimizationObjectiveFcn < AbstractObjectiveFcn
             params = struct();
             
             params.usesEvents = false;
+            params.usesBodies = false;
         end
     end
 end

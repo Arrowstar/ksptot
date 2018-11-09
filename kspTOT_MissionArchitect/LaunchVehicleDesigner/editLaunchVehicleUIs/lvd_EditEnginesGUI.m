@@ -156,7 +156,7 @@ function addEngineButton_Callback(hObject, eventdata, handles)
     useEngine = lvd_EditEngineGUI(engine);
     
     if(useEngine)
-        engine.stage.addEngine(engine);
+%         engine.stage.addEngine(engine);
         
         stageStates = lvdData.initStateModel.stageStates;
         stageStateInd = find([stageStates.stage] == initStage,1,'first');

@@ -124,11 +124,14 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
             stateLog.clearStateLog();
             
             if(~isempty(obj.evts))
+                
+                tStartSimTime = initStateLogEntry.time;
+                tStartPropTime = tic();
                 for(i=1:length(obj.evts)) %#ok<*NO4LP>
                     obj.evts(i).initEvent(initStateLogEntry);
                     initStateLogEntry.event = obj.evts(i);
 
-                    newStateLogEntries = obj.evts(i).executeEvent(initStateLogEntry, obj.simDriver);
+                    newStateLogEntries = obj.evts(i).executeEvent(initStateLogEntry, obj.simDriver, tStartPropTime, tStartSimTime);
                     stateLog.appendStateLogEntries(newStateLogEntries);
 
                     initStateLogEntry = newStateLogEntries(end).deepCopy();
@@ -142,6 +145,7 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
             else
                 stateLog.appendStateLogEntries(initStateLogEntry.deepCopy());
             end
+            
 %             profile viewer;
         end
     end

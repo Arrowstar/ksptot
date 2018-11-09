@@ -158,7 +158,7 @@ function addTankButton_Callback(hObject, eventdata, handles)
     useTank = lvd_EditTankGUI(tank);
     
     if(useTank)
-        tank.stage.addTank(tank);
+%         tank.stage.addTank(tank);
 
         stageStates = lvdData.initStateModel.stageStates;
         stageStateInd = find([stageStates.stage] == initStage,1,'first');
