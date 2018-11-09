@@ -7,6 +7,7 @@ classdef TerminationConditionEnum < matlab.mixin.SetGet
         AngleOfAttack('Angle of Attack','AngleOfAttackTermCondition');
         BankAngle('Bank Angle','BankAngleTermCondition');
         EventDuration('Event Duration','EventDurationTermCondition');
+        Latitude('Latitude','LatitudeTermCondition');
         PitchAngle('Pitch Angle','PitchTermCondition');
         RollAngle('Roll Angle','RollTermCondition');
         SideSlipAngle('Side Slip Angle','SideSlipAngleTermCondition');
