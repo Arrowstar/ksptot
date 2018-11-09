@@ -5,7 +5,9 @@ classdef TerminationConditionEnum < matlab.mixin.SetGet
     enumeration
         Altitude('Altitude','AltitudeTermCondition');
         AngleOfAttack('Angle of Attack','AngleOfAttackTermCondition');
+        AscNode('Ascending Node','AscendingNodeTermCondition');
         BankAngle('Bank Angle','BankAngleTermCondition');
+        DescNode('Descending Node','DescendingNodeTermCondition');
         EventDuration('Event Duration','EventDurationTermCondition');
         Latitude('Latitude','LatitudeTermCondition');
         PitchAngle('Pitch Angle','PitchTermCondition');

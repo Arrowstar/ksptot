@@ -5,6 +5,7 @@ classdef LatitudeTermCondition < AbstractEventTerminationCondition
     properties
         lat(1,1) double = 0; %rad
         bodyInfo(1,:) KSPTOT_BodyInfo
+        direction(1,1) double = 0;
     end
     
     methods
@@ -13,7 +14,7 @@ classdef LatitudeTermCondition < AbstractEventTerminationCondition
         end
         
         function evtTermCondFcnHndl = getEventTermCondFuncHandle(obj)            
-            evtTermCondFcnHndl = @(t,y) obj.eventTermCond(t,y, obj.lat, obj.bodyInfo);
+            evtTermCondFcnHndl = @(t,y) obj.eventTermCond(t,y, obj.lat, obj.bodyInfo, obj.direction);
         end
         
         function initTermCondition(obj, initialStateLogEntry)
@@ -75,8 +76,8 @@ classdef LatitudeTermCondition < AbstractEventTerminationCondition
         end
     end
     
-    methods(Static, Access=private)
-        function [value,isterminal,direction] = eventTermCond(t,y, targetLat, bodyInfo)
+    methods(Static, Access=protected)
+        function [value,isterminal,direction] = eventTermCond(t,y, targetLat, bodyInfo, inputDirection)
             ut = t;
             rVect = y(1:3);
             
@@ -84,7 +85,7 @@ classdef LatitudeTermCondition < AbstractEventTerminationCondition
             
             value = targetLat - lat;
             isterminal = 1;
-            direction = 0;
+            direction = inputDirection;
         end
     end
 end
