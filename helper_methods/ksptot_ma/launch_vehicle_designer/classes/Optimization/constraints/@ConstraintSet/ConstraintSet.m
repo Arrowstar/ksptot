@@ -7,11 +7,14 @@ classdef ConstraintSet < matlab.mixin.SetGet
         
         lvdOptim LvdOptimization
         lvdData LvdData
+        
+        lastRunValues ConstraintValues
     end
     
     methods
         function obj = ConstraintSet(lvdOptim, lvdData)
             obj.consts = AbstractConstraint.empty(1,0);
+            obj.lastRunValues = ConstraintValues();
             
             if(nargin > 0)
                 obj.lvdOptim = lvdOptim;
