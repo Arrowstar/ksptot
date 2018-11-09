@@ -97,7 +97,7 @@ classdef SeaLevelThrustToWeightTermCondition < AbstractEventTerminationCondition
             altitude = norm(rVect) - bodyInfo.radius;
             presskPa = getPressureAtAltitude(bodyInfo, altitude); 
             
-            [~, totalThrust]= LaunchVehicleStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, stgStates, throttle, lvState, presskPa);
+            [~, totalThrust]= LaunchVehicleStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, tankMasses, stgStates, throttle, lvState, presskPa);
             
             totalMass = (dryMass + sum(tankMasses))*1000; %kg
             gSlAccel = (bodyInfo.gm / ((bodyInfo.radius)^2))*1000; %m/s^2

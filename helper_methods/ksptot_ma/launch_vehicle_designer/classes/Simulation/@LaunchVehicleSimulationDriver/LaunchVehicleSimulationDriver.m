@@ -90,10 +90,6 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
             [t,y,~,~,ie] = obj.integrator(odefun,tspan,y0,options);
             newStateLogEntries = eventInitStateLogEntry.createStateLogEntryFromIntegratorOutputRow(t, y, eventInitStateLogEntry);
             
-            if(t(1) > 7558894.63632281)
-                a = 1;
-            end
-            
             if(not(isempty(ie)))
                 finalStateLogEntry = newStateLogEntries(end);
                 [tF,yF, ~] = finalStateLogEntry.getIntegratorStateRepresentation();
@@ -137,11 +133,7 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
             
             holdDownEnabled = eventInitStateLogEntry.isHoldDownEnabled();
             
-            if(ut >= 7558910.70478394)
-                a = 1;
-            end
-            
-            tankMassDots = eventInitStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, stageStates, throttle, lvState, pressure);
+            tankMassDots = eventInitStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, tankStatesMasses, stageStates, throttle, lvState, pressure);
                                    
             dydt = zeros(length(y),1);
             if(holdDownEnabled)

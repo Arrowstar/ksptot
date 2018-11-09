@@ -4,8 +4,8 @@ classdef LvdSettings < matlab.mixin.SetGet
     
     properties
         %integration
-        intAbsTol(1,1) double = 1E-6;
-        intRelTol(1,1) double = 1E-6;
+        intAbsTol(1,1) double = 1E-8;
+        intRelTol(1,1) double = 1E-8;
         minAltitude(1,1) double = -1;  %km
         simMaxDur(1,1) double = 20000; %sec
         maxScriptPropTime(1,1) double = 5; %sec
