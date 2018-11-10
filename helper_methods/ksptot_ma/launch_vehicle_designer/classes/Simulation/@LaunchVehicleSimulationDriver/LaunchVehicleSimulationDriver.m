@@ -201,7 +201,6 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
             direction(1) = 0;
             causes(1) = MaxEventSimTimeIntTermCause();
             
-            
             %Min Altitude Constraint
             rMag = norm(rVect);
             altitude = rMag - bodyInfo.radius;
@@ -226,7 +225,7 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
         function status = odeOutput(t,y,flag, intStartTime, maxIntegrationDuration)
             integrationDuration = toc(intStartTime);
             
-            status = 0; %TODO FIX ME!
+            status = 0;
             if(integrationDuration > maxIntegrationDuration)
                 status = 1;
                 disp('STOP!');
