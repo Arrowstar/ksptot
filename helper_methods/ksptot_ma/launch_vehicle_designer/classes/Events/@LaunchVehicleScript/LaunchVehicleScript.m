@@ -115,7 +115,7 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
         end
         
         function stateLog = executeScript(obj)
-            profile on;
+%             profile on;
             initStateLogEntry = obj.lvdData.initialState;
             stateLog = obj.lvdData.stateLog;
             
@@ -158,7 +158,7 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
             
             obj.lvdData.optimizer.constraints.lastRunValues.updateValues(c, ceq, values, lb, ub, type, eventNum, cEventInds, ceqEventInds);
             
-            profile viewer;
+%             profile viewer;
         end
     end
 end

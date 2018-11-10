@@ -650,7 +650,14 @@ function openMissionPlanMenu_Callback(hObject, eventdata, handles)
     if(ischar(filePath))
         write_to_output_func(['Loading mission case from "', filePath,'"... '],'append');
         
-        load(filePath);
+        hMsg = helpdlg('Loading LVD Case File.  Please wait...','Launch Vehicle Designer');
+        
+        load(filePath); %#ok<LOAD>
+        
+        if(isvalid(hMsg))
+            close(hMsg);
+        end
+        
         if(exist('lvdData','var'))
             setappdata(handles.ma_LvdMainGUI,'undoRedo',LVD_UndoRedoStateSet());
 
