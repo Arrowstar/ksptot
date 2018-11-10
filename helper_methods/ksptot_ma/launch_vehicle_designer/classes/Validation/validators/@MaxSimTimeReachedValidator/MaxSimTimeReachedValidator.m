@@ -19,7 +19,7 @@ classdef MaxSimTimeReachedValidator < AbstractLaunchVehicleDataValidator
             [tStart, tEnd] = obj.lvdData.stateLog.getStartAndEndTimes();
             
             if(tEnd - tStart >= maxSimTime)
-                str = sprintf('Maximum simulation time of %.3f sec reached or exceeded.  Propagation terminated.', maxSimTime);
+                str = sprintf('Maximum simulation time of %.3f sec reached or exceeded.  Propagation terminated.  Consider increasing the maximum simulation time.', maxSimTime);
                 warnings(end+1) = LaunchVehicleDataValidationWarning(str);
             end
         end

@@ -19,7 +19,7 @@ classdef MaxPropTimeReachedValidator < AbstractLaunchVehicleDataValidator
             lastRunExecTime = obj.lvdData.script.lastRunExecTime;
             
             if(lastRunExecTime >= maxPropTime)
-                str = sprintf('Maximum propagation time of %.3f sec reached or exceeded.  Propagation terminated.', maxPropTime);
+                str = sprintf('Maximum script propagation time of %.3f sec reached or exceeded.  Propagation terminated.  Consider increasing the maximum script propagation time.', maxPropTime);
                 warnings(end+1) = LaunchVehicleDataValidationWarning(str);
             end
         end
