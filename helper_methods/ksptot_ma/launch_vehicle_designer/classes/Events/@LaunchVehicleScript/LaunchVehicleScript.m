@@ -4,12 +4,10 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
     
     properties
         evts(1,:) LaunchVehicleEvent
+        simDriver LaunchVehicleSimulationDriver
+        lastRunExecTime(1,1) double = 0;
         
         lvdData LvdData
-    end
-    
-    properties%(Access=private)
-        simDriver LaunchVehicleSimulationDriver
     end
     
     methods
@@ -123,6 +121,7 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
             
             stateLog.clearStateLog();
             
+            tPropTime = 0;
             if(~isempty(obj.evts))
                 
                 tStartSimTime = initStateLogEntry.time;
@@ -142,9 +141,13 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
                         initStateLogEntry = actionStateLogEntries(end).deepCopy();
                     end
                 end
+                
+                tPropTime = toc(tStartPropTime);
             else
                 stateLog.appendStateLogEntries(initStateLogEntry.deepCopy());
             end
+            
+            obj.lastRunExecTime = tPropTime;
             
             x=obj.lvdData.optimizer.vars.getTotalScaledXVector();
             [c, ceq, values, lb, ub, type, eventNum, cEventInds, ceqEventInds] = obj.lvdData.optimizer.constraints.evalConstraints(x, false);
