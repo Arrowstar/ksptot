@@ -14,9 +14,6 @@ classdef ConstraintValidator < AbstractLaunchVehicleDataValidator
         function [errors, warnings] = validate(obj)
             errors = LaunchVehicleDataValidationError.empty(0,1);
             warnings = LaunchVehicleDataValidationWarning.empty(0,1);
-            
-%             x=obj.lvdData.optimizer.vars.getTotalScaledXVector();
-%             [c, ceq, values, lb, ub, type, eventNum, cEventInds, ceqEventInds] = obj.lvdData.optimizer.constraints.evalConstraints(x);
 
             [c, ceq, values, lb, ub, type, eventNum, cEventInds, ceqEventInds] = obj.lvdData.optimizer.constraints.lastRunValues.getValues();
             

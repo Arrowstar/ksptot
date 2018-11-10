@@ -147,7 +147,7 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
             end
             
             x=obj.lvdData.optimizer.vars.getTotalScaledXVector();
-            [c, ceq, values, lb, ub, type, eventNum, cEventInds, ceqEventInds] = obj.lvdData.optimizer.constraints.evalConstraints(x);
+            [c, ceq, values, lb, ub, type, eventNum, cEventInds, ceqEventInds] = obj.lvdData.optimizer.constraints.evalConstraints(x, false);
             
             if(isempty(obj.lvdData.optimizer.constraints.lastRunValues))
                 obj.lvdData.optimizer.constraints.lastRunValues = ConstraintValues();

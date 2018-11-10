@@ -30,7 +30,7 @@ classdef LvdOptimization < matlab.mixin.SetGet
             [lbAll, ubAll] = obj.vars.getTotalScaledBndsVector();
             typicalX = obj.vars.getTypicalScaledXVector();
             
-            nonlcon = @(x) obj.constraints.evalConstraints(x);
+            nonlcon = @(x) obj.constraints.evalConstraints(x, true);
             
             optimAlg = obj.lvdData.settings.optAlgo.algoName;
             usePara = obj.lvdData.settings.optUsePara;

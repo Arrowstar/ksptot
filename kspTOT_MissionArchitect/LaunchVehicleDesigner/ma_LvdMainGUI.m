@@ -670,6 +670,10 @@ function openMissionPlanMenu_Callback(hObject, eventdata, handles)
             
             setDeleteButtonEnable(lvdData, handles);
             
+            if(lvdData.settings.optUsePara)
+                startParallelPool(write_to_output_func);
+            end
+            
             runScript(handles, lvdData);
             lvd_processData(handles);
             
@@ -993,27 +997,31 @@ function optUseParaMenu_Callback(hObject, eventdata, handles)
         lvdData.settings.optUsePara = true;
         
         drawnow;
-        p = gcp('nocreate');
-        if(isempty(p))
-            try
-                h = msgbox('Attempting to start parallel computing workers.  Please wait...');
-                pp=parpool('local',feature('numCores'));
-                pp.IdleTimeout = 99999; %we don't want the pool to shutdown
-                if(isvalid(h))
-                    close(h);
-                end
-                writeOutput('Parallel optimization mode enabled.','append');
-            catch ME %#ok<NASGU>
-                if(ishandle(h))
-                    close(h);
-                end
-                msgbox('Parallel mode start failed.  Optimization will run in serial.');
-            end
-        else
-            writeOutput('Parallel optimization mode enabled.','append');
-        end
+        startParallelPool(writeOutput);
     end
 
+function startParallelPool(writeOutput)
+    p = gcp('nocreate');
+    if(isempty(p))
+        try
+            h = msgbox('Attempting to start parallel computing workers.  Please wait...');
+            pp=parpool('local',feature('numCores'));
+            pp.IdleTimeout = 99999; %we don't want the pool to shutdown
+            if(isvalid(h))
+                close(h);
+            end
+            writeOutput('Parallel optimization mode enabled.','append');
+        catch ME 
+            if(ishandle(h))
+                close(h);
+            end
+            msgbox('Parallel mode start failed.  Optimization will run in serial.');
+        end
+    else
+        writeOutput('Parallel optimization mode enabled.','append');
+    end 
+
+    
 % --------------------------------------------------------------------
 function integrationAbsTolMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to integrationAbsTolMenu (see GCBO)
