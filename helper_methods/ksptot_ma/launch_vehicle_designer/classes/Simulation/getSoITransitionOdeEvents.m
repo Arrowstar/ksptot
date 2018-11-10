@@ -20,6 +20,7 @@ function [value, isterminal, direction, causes] = getSoITransitionOdeEvents(ut, 
 
         %Leave SoI Downwards
         children = getChildrenOfParentInfo(celBodyData, bodyInfo.name);
+        soiDownCauses(length(children)) = SoITransitionDownIntTermCause(bodyInfo, children{end}, celBodyData);
         for(i=1:length(children)) %#ok<*NO4LP>
             childBodyInfo = children{i};
 
@@ -31,6 +32,7 @@ function [value, isterminal, direction, causes] = getSoITransitionOdeEvents(ut, 
             value(end+1) = distToChild - rSOI; %#ok<AGROW>
             isterminal(end+1) = 1; %#ok<AGROW>
             direction(end+1) = -1; %#ok<AGROW>
-            causes(end+1) = SoITransitionDownIntTermCause(bodyInfo, childBodyInfo, celBodyData); %#ok<AGROW>
+            soiDownCauses(i) = SoITransitionDownIntTermCause(bodyInfo, childBodyInfo, celBodyData);
         end    
+        causes = [causes, soiDownCauses];
 end

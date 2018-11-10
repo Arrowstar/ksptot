@@ -11,4 +11,10 @@ classdef(Abstract) AbstractIntegrationTerminationCause < matlab.mixin.SetGet & m
         
         newStateLogEntry = getRestartInitialState(obj, stateLogEntry)
     end
+    
+    methods(Static, Access=protected)
+        function defaultObject = getDefaultScalarElement()
+            defaultObject = SoITransitionDownIntTermCause();
+        end
+    end
 end

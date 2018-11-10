@@ -20,5 +20,9 @@ classdef LaunchVehicleEngineState < matlab.mixin.SetGet & matlab.mixin.Copyable
 %             newEngineState.engine = obj.engine;
             newEngineState.active = obj.active;
         end
+        
+        function obj = createCopiesOfCopyableInternals(obj)
+%             obj.active = obj.active;
+        end
     end
 end

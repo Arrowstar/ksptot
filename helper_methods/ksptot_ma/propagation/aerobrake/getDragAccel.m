@@ -8,15 +8,20 @@ function [dragAccel, dragForce] = getDragAccel(bodyInfo, ut, rVectECI, vVectECI,
     [lat, ~, altitude] = getLatLongAltFromInertialVect(ut, rVectECI, bodyInfo, vVectECI);
     density = getAtmoDensityAtAltitude(bodyInfo, altitude, lat); 
     
-    surfVel = getSurfaceVelocity(bodyInfo, ut, rVectECI, vVectECI);
-    surfVelMag = norm(surfVel);
-    
-    if(strcmpi(dragModel,'Stock'))
-        CdA = dragCoeff; %m^2
-    elseif(strcmpi(dragModel,'FAR') || strcmpi(dragModel,'NEAR'))
-        CdA = dragCoeff; %m^2
+    if(density > 0)
+        surfVel = getSurfaceVelocity(bodyInfo, ut, rVectECI, vVectECI);
+        surfVelMag = norm(surfVel);
+
+        if(strcmpi(dragModel,'Stock'))
+            CdA = dragCoeff; %m^2
+        elseif(strcmpi(dragModel,'FAR') || strcmpi(dragModel,'NEAR'))
+            CdA = dragCoeff; %m^2
+        else
+            error(['Invalid drag model in aerobraking calculations: ', dragModel]);
+        end
     else
-        error(['Invalid drag model in aerobraking calculations: ', dragModel]);
+        surfVelMag = 0;
+        CdA = 0;
     end
     
     Fd = -(1/2) * density * (surfVelMag^2) * CdA; %kg/m^3 * (km^2/s^2) * m^2 = kg/m * km^2/s^2 = kg*(km/m)*km/s^2 = kg*(1000)*km/s^2

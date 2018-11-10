@@ -1,4 +1,4 @@
-classdef LaunchVehicleAeroState < matlab.mixin.SetGet
+classdef LaunchVehicleAeroState < matlab.mixin.SetGet & matlab.mixin.Copyable
     %LaunchVehicle Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -13,10 +13,11 @@ classdef LaunchVehicleAeroState < matlab.mixin.SetGet
         end
         
         function newAeroState = deepCopy(obj)
-            newAeroState = LaunchVehicleAeroState();
-            
-            newAeroState.area = obj.area;
-            newAeroState.Cd = obj.Cd;
+%             newAeroState = LaunchVehicleAeroState();
+%             
+%             newAeroState.area = obj.area;
+%             newAeroState.Cd = obj.Cd;
+            newAeroState = obj.copy();
         end
     end
 end

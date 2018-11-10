@@ -3,16 +3,18 @@ classdef SoITransitionDownIntTermCause < AbstractIntegrationTerminationCause
     %   Detailed explanation goes here
     
     properties
-        fromBody(1,1) KSPTOT_BodyInfo
-        toBody(1,1) KSPTOT_BodyInfo
+        fromBody KSPTOT_BodyInfo
+        toBody KSPTOT_BodyInfo
         celBodyData struct
     end
     
     methods
         function obj = SoITransitionDownIntTermCause(fromBody, toBody, celBodyData)
-            obj.fromBody = fromBody;
-            obj.toBody = toBody;
-            obj.celBodyData = celBodyData;
+            if(nargin > 0)
+                obj.fromBody = fromBody;
+                obj.toBody = toBody;
+                obj.celBodyData = celBodyData;
+            end
         end
         
         function tf = shouldRestartIntegration(obj)

@@ -20,7 +20,6 @@ classdef ThrustForceModel < AbstractForceModel
             pressure = getPressureAtAltitude(bodyInfo, altitude);
             
             throttle = throttleModel.getThrottleAtTime(ut);
-            body2InertDcm = steeringModel.getBody2InertialDcmAtTime(ut, rVect, vVect, bodyInfo);
             
 %             tankStates = stateLogEntry.getAllActiveTankStates();
 %             stageStates = stateLogEntry.stageStates;
@@ -59,7 +58,12 @@ classdef ThrustForceModel < AbstractForceModel
                 end
             end
             
-            forceVect = body2InertDcm * bodyThrust;
+            if(norm(bodyThrust) > 0)
+                body2InertDcm = steeringModel.getBody2InertialDcmAtTime(ut, rVect, vVect, bodyInfo);
+                forceVect = body2InertDcm * bodyThrust;
+            else
+                forceVect = [0;0;0];
+            end
         end
     end
 end

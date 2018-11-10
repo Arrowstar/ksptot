@@ -26,7 +26,7 @@ classdef LaunchVehicleTankState < matlab.mixin.SetGet & matlab.mixin.Copyable
             newTankState = obj.copy();
             
 %             newTankState.tank = obj.tank;
-            newTankState.tankMass = obj.tankMass;
+%             newTankState.tankMass = obj.tankMass;
         end
     end
 end

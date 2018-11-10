@@ -1,4 +1,4 @@
-classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet
+classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyable
     %LaunchVehicleStateLogEntry Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -151,6 +151,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet
         function newStateLogEntry = deepCopy(obj)
             newStateLogEntry = LaunchVehicleStateLogEntry();
             
+            %stuff that does not change
             newStateLogEntry.time = obj.time;
             newStateLogEntry.position = obj.position;
             newStateLogEntry.velocity = obj.velocity;
@@ -158,14 +159,23 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet
             newStateLogEntry.event = obj.event;
             newStateLogEntry.steeringModel = obj.steeringModel;
             newStateLogEntry.throttleModel = obj.throttleModel;
-            
             newStateLogEntry.lvState = obj.lvState;
             
+            %stuff that requires it's own copy
             for(i=1:length(obj.stageStates))
                 newStateLogEntry.stageStates(i) = obj.stageStates(i).deepCopy();
             end
             
             newStateLogEntry.aero = obj.aero.deepCopy();
+        end
+        
+        function obj = createCopiesOfCopyableInternals(obj)
+            %stuff that requires it's own copy
+            for(i=1:length(obj.stageStates))
+                obj.stageStates(i) = obj.stageStates(i).deepCopy();
+            end
+            
+            obj.aero = obj.aero.copy();
         end
     end
     
@@ -173,9 +183,11 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet
         function stateLogEntries = createStateLogEntryFromIntegratorOutputRow(t,y, eventInitStateLogEntry)
             y = reshape(y,length(t), numel(y)/length(t));
             
-            stateLogEntries = LaunchVehicleStateLogEntry.empty(length(t),0);
+            stateLogEntries = repmat(eventInitStateLogEntry,1,length(t));
+            stateLogEntries = stateLogEntries.copy();
+%             stateLogEntries = LaunchVehicleStateLogEntry.empty(length(t),0);
             for(i=1:length(t))
-                stateLogEntry = eventInitStateLogEntry.deepCopy();
+                stateLogEntry = stateLogEntries(i).createCopiesOfCopyableInternals();
 
                 stateLogEntry.time = t(i);
                 stateLogEntry.position = y(i,1:3)';

@@ -159,10 +159,12 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
                 throttleModel = eventInitStateLogEntry.throttleModel;
                 steeringModel = eventInitStateLogEntry.steeringModel;
                 
-                for(i=1:length(tankStates)) %#ok<*NO4LP>
-                    tankStates(i) = tankStates(i).deepCopy();
-                    tankStates(i).setTankMass(tankStatesMasses(i));
-                end
+                tankStates = tankStates.copy();
+                tmCellArr = num2cell(tankStatesMasses);
+                [tankStates.tankMass] = tmCellArr{:};
+%                 for(i=1:length(tankStates)) %#ok<*NO4LP>
+%                     tankStates(i).setTankMass(tankStatesMasses(i));
+%                 end
 
                 totalMDot = sum(tankMassDots);
                 
