@@ -10,6 +10,8 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
         script(1,:) LaunchVehicleScript
         
         colorLineSpec(1,1) EventColorLineSpec 
+        
+        checkForSoITrans(1,1) logical = true;
     end
     
     methods
@@ -82,15 +84,15 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
             
             newStateLogEntries = LaunchVehicleStateLogEntry.empty(1,0);
             for(i=1:length(obj.actions))
-                newStateLogEntry = obj.actions(i).exectuteAction(finalStateLogEntry);
+                newStateLogEntry = obj.actions(i).executeAction(finalStateLogEntry);
                 
                 newStateLogEntries(end+1) = newStateLogEntry; %#ok<AGROW>
                 finalStateLogEntry = newStateLogEntry;
             end
         end
         
-        function newStateLogEntries = executeEvent(obj, initStateLogEntry, simDriver, tStartPropTime, tStartSimTime)
-            [~,~,newStateLogEntries] = simDriver.integrateOneEvent(obj, initStateLogEntry, tStartPropTime, tStartSimTime);
+        function newStateLogEntries = executeEvent(obj, initStateLogEntry, simDriver, tStartPropTime, tStartSimTime, isSparseOutput)
+            [newStateLogEntries] = simDriver.integrateOneEvent(obj, initStateLogEntry, tStartPropTime, tStartSimTime, isSparseOutput, obj.checkForSoITrans);
         end
         
         function tf = usesStage(obj, stage)

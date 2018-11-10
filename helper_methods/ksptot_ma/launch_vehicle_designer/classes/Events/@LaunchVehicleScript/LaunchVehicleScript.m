@@ -114,7 +114,7 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
             end
         end
         
-        function stateLog = executeScript(obj)
+        function stateLog = executeScript(obj, isSparseOutput)
 %             profile on;
             initStateLogEntry = obj.lvdData.initialState;
             stateLog = obj.lvdData.stateLog;
@@ -130,7 +130,7 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
                     obj.evts(i).initEvent(initStateLogEntry);
                     initStateLogEntry.event = obj.evts(i);
 
-                    newStateLogEntries = obj.evts(i).executeEvent(initStateLogEntry, obj.simDriver, tStartPropTime, tStartSimTime);
+                    newStateLogEntries = obj.evts(i).executeEvent(initStateLogEntry, obj.simDriver, tStartPropTime, tStartSimTime, isSparseOutput);
                     stateLog.appendStateLogEntries(newStateLogEntries);
 
                     initStateLogEntry = newStateLogEntries(end).deepCopy();

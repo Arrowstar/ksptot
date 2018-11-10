@@ -24,7 +24,7 @@ classdef LaunchVehicleStageState < matlab.mixin.SetGet & matlab.mixin.Copyable
         
         function removeEngineStateForEngine(obj, engine)
             ind = [];
-            for(i=1:length(obj.engineStates))
+            for(i=1:length(obj.engineStates)) %#ok<*NO4LP>
                 if(engine == obj.engineStates(i).engine)
                     ind = i;
                     break;
@@ -34,6 +34,18 @@ classdef LaunchVehicleStageState < matlab.mixin.SetGet & matlab.mixin.Copyable
             if(not(isempty(ind)))
                 obj.engineStates(ind) = [];
             end
+        end
+        
+        function engineState = getStateForEngine(obj, engine)
+            ind = [];
+            for(i=1:length(obj.engineStates)) %#ok<*NO4LP>
+                if(engine == obj.engineStates(i).engine)
+                    ind = i;
+                    break;
+                end
+            end
+            
+            engineState = obj.engineStates(ind);
         end
         
         function addTankState(obj, newTankState)

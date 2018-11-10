@@ -22,7 +22,7 @@ function varargout = ma_LvdMainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_LvdMainGUI
 
-% Last Modified by GUIDE v2.5 08-Nov-2018 17:22:59
+% Last Modified by GUIDE v2.5 10-Nov-2018 13:13:22
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -109,8 +109,10 @@ function runScript(handles, lvdData)
     
 %     profile('on','-detail','builtin', '-remove_overhead','on');
     
+    isSparseOutput = lvdData.settings.isSparseOutput;
+
     t = tic;
-    lvdData.script.executeScript();
+    lvdData.script.executeScript(isSparseOutput);
     execTime = toc(t);
     
 %     profile viewer;
@@ -946,7 +948,14 @@ function integrationSettingsMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to integrationSettingsMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
 
+	isSparseOutput = lvdData.settings.isSparseOutput;
+    if(isSparseOutput==true)
+        set(handles.sparseIntegratorOutputMenu, 'Checked', 'on');
+    else
+        set(handles.sparseIntegratorOutputMenu, 'Checked', 'off');
+    end
 
 % --------------------------------------------------------------------
 function optimSettingsMenu_Callback(hObject, eventdata, handles)
@@ -1281,3 +1290,25 @@ function maxScriptPropTimeMenu_Callback(hObject, eventdata, handles)
         writeOutput(sprintf('Could not set the desired maximum script execution time.  "%s" is an invalid entry.', str),'append');
         beep;
     end
+
+
+% --------------------------------------------------------------------
+function sparseIntegratorOutputMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to sparseIntegratorOutputMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    writeOutput = getappdata(handles.ma_LvdMainGUI,'write_to_output_func');
+    
+    if strcmp(get(gcbo, 'Checked'),'on')
+        set(gcbo, 'Checked', 'off');
+        lvdData.settings.isSparseOutput = false;
+        writeOutput('Sparse output mode disabled.  Full integrator output will be provided and plotted.','append');
+    else
+        set(gcbo, 'Checked', 'on');
+        lvdData.settings.isSparseOutput = true;
+        writeOutput('Sparse output mode enabled.  Only first and last states from each event will be provided and plotted.','append');
+    end
+    
+    runScript(handles, lvdData);
+    lvd_processData(handles);

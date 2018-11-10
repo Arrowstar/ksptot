@@ -17,7 +17,7 @@ classdef SetThrottleModelAction < AbstractEventAction
             obj.id = rand();
         end
         
-        function newStateLogEntry = exectuteAction(obj, stateLogEntry)
+        function newStateLogEntry = executeAction(obj, stateLogEntry)
             newStateLogEntry = stateLogEntry.deepCopy();
             newStateLogEntry.throttleModel = obj.throttleModel;
         end

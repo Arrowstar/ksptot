@@ -7,7 +7,7 @@ classdef(Abstract) AbstractEventAction < matlab.mixin.SetGet & matlab.mixin.Hete
     end
     
     methods
-        newStateLogEntry = exectuteAction(obj, stateLogEntry)
+        newStateLogEntry = executeAction(obj, stateLogEntry)
         
         initAction(obj, initialStateLogEntry)
         

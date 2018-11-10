@@ -22,7 +22,7 @@ function varargout = lvd_editEventGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_editEventGUI
 
-% Last Modified by GUIDE v2.5 21-Sep-2018 18:23:40
+% Last Modified by GUIDE v2.5 10-Nov-2018 13:33:51
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -83,6 +83,8 @@ function populateGUI(handles, event)
     handles.lineSpecCombo.String = LineSpecEnum.getListboxStr();
     [~,ind] = LineSpecEnum.getEnumForListboxStr(event.colorLineSpec.lineSpec.name);
     handles.lineSpecCombo.Value = ind;
+    
+    handles.checkSoITransCheckbox.Value = double(event.checkForSoITrans);
 
 % --- Outputs from this function are returned to the command line.
 function varargout = lvd_editEventGUI_OutputFcn(hObject, eventdata, handles) 
@@ -107,6 +109,8 @@ function varargout = lvd_editEventGUI_OutputFcn(hObject, eventdata, handles)
         nameStr = handles.lineSpecCombo.String(handles.lineSpecCombo.Value);
         [enum,~] = LineSpecEnum.getEnumForListboxStr(nameStr);
     	event.colorLineSpec.lineSpec = enum;
+        
+        event.checkForSoITrans = logical(handles.checkSoITransCheckbox.Value);
         
         close(handles.lvd_editEventGUI);
     end
@@ -295,3 +299,12 @@ function lineSpecCombo_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on button press in checkSoITransCheckbox.
+function checkSoITransCheckbox_Callback(hObject, eventdata, handles)
+% hObject    handle to checkSoITransCheckbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of checkSoITransCheckbox

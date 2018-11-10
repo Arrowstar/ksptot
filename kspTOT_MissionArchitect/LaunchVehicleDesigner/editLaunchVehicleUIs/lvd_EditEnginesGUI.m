@@ -112,6 +112,7 @@ function enginesListBox_Callback(hObject, eventdata, handles)
         selEngine = get(handles.enginesListBox,'Value');
         engine = lv.getEngineForInd(selEngine);
         stageState = getStageStateForEngine(engine, lvdData);
+        oldEngineState = stageState.getStateForEngine(engine);
         stageState.removeEngineStateForEngine(engine);
         
         lvd_EditEngineGUI(engine);
@@ -119,6 +120,10 @@ function enginesListBox_Callback(hObject, eventdata, handles)
         stageState = getStageStateForEngine(engine, lvdData);
         newEngineState = LaunchVehicleEngineState(stageState);
         newEngineState.engine = engine;
+        
+        if(not(isempty(oldEngineState)))
+            newEngineState.active = oldEngineState.active;
+        end
         stageState.addEngineState(newEngineState);
         
         set(handles.enginesListBox,'String',lvdData.launchVehicle.getEnginesListBoxStr());

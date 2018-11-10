@@ -9,6 +9,7 @@ classdef LvdSettings < matlab.mixin.SetGet
         minAltitude(1,1) double = -1;  %km
         simMaxDur(1,1) double = 20000; %sec
         maxScriptPropTime(1,1) double = 5; %sec
+        isSparseOutput(1,1) logical = false;
         
         %optimization
         optUsePara(1,1) logical = false;

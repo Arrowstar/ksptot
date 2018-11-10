@@ -22,7 +22,7 @@ classdef MinDistanceToBodyObjectiveFcn < AbstractObjectiveFcn
         
         function [f, stateLog] = evalObjFcn(obj, x)
             obj.lvdOptim.vars.updateObjsWithScaledVarValues(x);
-            stateLog = obj.lvdData.script.executeScript();
+            stateLog = obj.lvdData.script.executeScript(true);
             subStateLog = stateLog.getLastStateLogForEvent(obj.event);
             
             ut = subStateLog.time;

@@ -17,7 +17,7 @@ classdef SetStageActiveStateAction < AbstractEventAction
             obj.id = rand();
         end
         
-        function newStateLogEntry = exectuteAction(obj, stateLogEntry)
+        function newStateLogEntry = executeAction(obj, stateLogEntry)
             newStateLogEntry = stateLogEntry.deepCopy();
             
             stgState = newStateLogEntry.stageStates([newStateLogEntry.stageStates.stage] == obj.stage);

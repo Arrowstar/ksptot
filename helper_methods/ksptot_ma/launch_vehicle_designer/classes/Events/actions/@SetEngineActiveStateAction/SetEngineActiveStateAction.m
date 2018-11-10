@@ -17,7 +17,7 @@ classdef SetEngineActiveStateAction < AbstractEventAction
             obj.id = rand();
         end
         
-        function newStateLogEntry = exectuteAction(obj, stateLogEntry)
+        function newStateLogEntry = executeAction(obj, stateLogEntry)
             newStateLogEntry = stateLogEntry.deepCopy();
             stage = obj.engine.stage;
             
