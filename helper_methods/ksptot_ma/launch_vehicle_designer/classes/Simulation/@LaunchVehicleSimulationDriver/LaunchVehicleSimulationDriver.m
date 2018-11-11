@@ -108,10 +108,8 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
                     
                     event.initEventOnRestart(newFinalStateLogEntry);
                     
-                    [tRestart,yRestart,newStateLogEntriesRestart] = obj.integrateOneEvent(event, newFinalStateLogEntry, tStartPropTime, tStartSimTime);
+                    [newStateLogEntriesRestart] = obj.integrateOneEvent(event, newFinalStateLogEntry, tStartPropTime, tStartSimTime, isSparseOutput, checkForSoITrans);
                     
-                    t = vertcat(t,tRestart);
-                    y = vertcat(y,yRestart);
                     newStateLogEntries = horzcat(newStateLogEntries,newStateLogEntriesRestart);
                 end
             end

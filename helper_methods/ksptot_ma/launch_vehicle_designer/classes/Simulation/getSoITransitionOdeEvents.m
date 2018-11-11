@@ -20,19 +20,21 @@ function [value, isterminal, direction, causes] = getSoITransitionOdeEvents(ut, 
 
         %Leave SoI Downwards
         children = getChildrenOfParentInfo(celBodyData, bodyInfo.name);
-        soiDownCauses(length(children)) = SoITransitionDownIntTermCause(bodyInfo, children{end}, celBodyData);
-        for(i=1:length(children)) %#ok<*NO4LP>
-            childBodyInfo = children{i};
+        if(~isempty(children))
+            soiDownCauses(length(children)) = SoITransitionDownIntTermCause(bodyInfo, children{end}, celBodyData);
+            for(i=1:length(children)) %#ok<*NO4LP>
+                childBodyInfo = children{i};
 
-            dVect = getAbsPositBetweenSpacecraftAndBody(ut, rVect, bodyInfo, childBodyInfo, celBodyData);
-            distToChild = norm(dVect);
+                dVect = getAbsPositBetweenSpacecraftAndBody(ut, rVect, bodyInfo, childBodyInfo, celBodyData);
+                distToChild = norm(dVect);
 
-            rSOI = getSOIRadius(childBodyInfo, bodyInfo);
+                rSOI = getSOIRadius(childBodyInfo, bodyInfo);
 
-            value(end+1) = distToChild - rSOI; %#ok<AGROW>
-            isterminal(end+1) = 1; %#ok<AGROW>
-            direction(end+1) = -1; %#ok<AGROW>
-            soiDownCauses(i) = SoITransitionDownIntTermCause(bodyInfo, childBodyInfo, celBodyData);
-        end    
-        causes = [causes, soiDownCauses];
+                value(end+1) = distToChild - rSOI; %#ok<AGROW>
+                isterminal(end+1) = 1; %#ok<AGROW>
+                direction(end+1) = -1; %#ok<AGROW>
+                soiDownCauses(i) = SoITransitionDownIntTermCause(bodyInfo, childBodyInfo, celBodyData);
+            end    
+            causes = [causes, soiDownCauses];
+        end
 end
