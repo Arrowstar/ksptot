@@ -12,8 +12,6 @@ classdef DragForceModel < AbstractForceModel
         end
         
         function forceVect = getForce(obj, ut, rVect, vVect, mass, bodyInfo, CdA, ~, ~, ~, ~, ~)
-%             [ut, rVect, vVect, mass, bodyInfo, CdA] = obj.getParamsFromStateLogEntry(stateLogEntry);
-
             [~, forceVect] = getDragAccel(bodyInfo, ut, rVect, vVect, CdA, mass, 'Stock');
         end
     end
