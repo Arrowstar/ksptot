@@ -22,7 +22,7 @@ function varargout = lvd_editEventGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_editEventGUI
 
-% Last Modified by GUIDE v2.5 10-Nov-2018 13:33:51
+% Last Modified by GUIDE v2.5 13-Nov-2018 17:03:35
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -84,6 +84,11 @@ function populateGUI(handles, event)
     [~,ind] = LineSpecEnum.getEnumForListboxStr(event.colorLineSpec.lineSpec.name);
     handles.lineSpecCombo.Value = ind;
     
+    handles.integratorCombo.String = IntegratorEnum.getListBoxStrs();
+    ind = IntegratorEnum.getIndOfListboxStr(event.integrator.nameStr);
+    handles.integratorCombo.Value = ind;
+    integratorCombo_Callback(handles.integratorCombo, [], handles);
+    
     handles.checkSoITransCheckbox.Value = double(event.checkForSoITrans);
 
 % --- Outputs from this function are returned to the command line.
@@ -109,6 +114,11 @@ function varargout = lvd_editEventGUI_OutputFcn(hObject, eventdata, handles)
         nameStr = handles.lineSpecCombo.String(handles.lineSpecCombo.Value);
         [enum,~] = LineSpecEnum.getEnumForListboxStr(nameStr);
     	event.colorLineSpec.lineSpec = enum;
+        
+        contents = cellstr(get(handles.integratorCombo,'String'));
+        nameStr = contents{get(handles.integratorCombo,'Value')};
+        [~,m] = IntegratorEnum.getIndOfListboxStr(nameStr);
+        event.integrator = m;
         
         event.checkForSoITrans = logical(handles.checkSoITransCheckbox.Value);
         
@@ -308,3 +318,35 @@ function checkSoITransCheckbox_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of checkSoITransCheckbox
+
+
+% --- Executes on selection change in integratorCombo.
+function integratorCombo_Callback(hObject, eventdata, handles)
+% hObject    handle to integratorCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns integratorCombo contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from integratorCombo
+    contents = cellstr(get(hObject,'String'));
+    
+    if(get(hObject,'Value') < 1 || get(hObject,'Value') > length(contents))
+        nameStr = contents{1};
+    else
+        nameStr = contents{get(hObject,'Value')};
+    end
+
+    [~,m] = IntegratorEnum.getIndOfListboxStr(nameStr);
+    handles.integratorDetailLabel.String = m.descStr;
+
+% --- Executes during object creation, after setting all properties.
+function integratorCombo_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to integratorCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

@@ -47,7 +47,7 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
             value = obj.lvdData.celBodyData;
         end
         
-        function [newStateLogEntries] = integrateOneEvent(obj, event, eventInitStateLogEntry, tStartPropTime, tStartSimTime, isSparseOutput, checkForSoITrans)
+        function [newStateLogEntries] = integrateOneEvent(obj, event, eventInitStateLogEntry, integratorFH, tStartPropTime, tStartSimTime, isSparseOutput, checkForSoITrans)
             [t0,y0, tankStateInds] = eventInitStateLogEntry.getIntegratorStateRepresentation();
             
             maxT = tStartSimTime+obj.simMaxDur;
@@ -71,7 +71,7 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
                     ie = find(abs(value)<1E-6);
                     
                     stopIntegration = false;
-                    for(i=1:length(ie))
+                    for(i=1:length(ie)) %#ok<*NO4LP>
                         if(causes(ie(i)).shouldRestartIntegration() == false)
                             stopIntegration = true;
                         end
@@ -87,7 +87,7 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
                 end
             end
             
-            [t,y,~,~,ie] = obj.integrator(odefun,tspan,y0,options);
+            [t,y,~,~,ie] = integratorFH(odefun,tspan,y0,options); %obj.integrator
             
             if(isSparseOutput)
                 t = [t(1); t(end)];
@@ -108,7 +108,7 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
                     
                     event.initEventOnRestart(newFinalStateLogEntry);
                     
-                    [newStateLogEntriesRestart] = obj.integrateOneEvent(event, newFinalStateLogEntry, tStartPropTime, tStartSimTime, isSparseOutput, checkForSoITrans);
+                    [newStateLogEntriesRestart] = obj.integrateOneEvent(event, newFinalStateLogEntry, integratorFH, tStartPropTime, tStartSimTime, isSparseOutput, checkForSoITrans);
                     
                     newStateLogEntries = horzcat(newStateLogEntries,newStateLogEntriesRestart);
                 end
