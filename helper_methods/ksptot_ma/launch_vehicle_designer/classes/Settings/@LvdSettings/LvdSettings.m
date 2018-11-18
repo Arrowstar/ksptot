@@ -14,11 +14,20 @@ classdef LvdSettings < matlab.mixin.SetGet
         %optimization
         optUsePara(1,1) logical = false;
         optAlgo LvdOptimAlgorithmEnum = LvdOptimAlgorithmEnum.InteriorPoint
+        optScaleProp(1,1) logical = true;
     end
     
     methods
         function obj = LvdSettings()
 
+        end
+        
+        function str = getScaleProbStr(obj)
+            if(obj.optScaleProp)
+                str = 'obj-and-constr';
+            else
+                str = 'none';
+            end
         end
     end
 end

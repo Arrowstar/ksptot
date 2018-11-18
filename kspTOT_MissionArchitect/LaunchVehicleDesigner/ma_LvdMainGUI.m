@@ -22,7 +22,7 @@ function varargout = ma_LvdMainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_LvdMainGUI
 
-% Last Modified by GUIDE v2.5 17-Nov-2018 14:46:50
+% Last Modified by GUIDE v2.5 17-Nov-2018 21:14:28
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1327,4 +1327,23 @@ function ma_LvdMainGUI_WindowKeyPressFcn(hObject, eventdata, handles)
         
         runScript(handles, lvdData);
         lvd_processData(handles);
+    end
+
+
+% --------------------------------------------------------------------
+function optScaleProblemMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to optScaleProblemMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    writeOutput = getappdata(handles.ma_LvdMainGUI,'write_to_output_func');
+    
+    if strcmp(get(gcbo, 'Checked'),'on')
+        set(gcbo, 'Checked', 'off');
+        lvdData.settings.optScaleProp = false;
+        writeOutput('Optimizer will not normalize the constraints and objective function.','append');
+    else
+        set(gcbo, 'Checked', 'on');
+        lvdData.settings.optScaleProp = true;
+        writeOutput('Optimizer will normalize all constraints and the objective function.','append');
     end
