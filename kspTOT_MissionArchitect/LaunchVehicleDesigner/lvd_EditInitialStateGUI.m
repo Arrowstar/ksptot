@@ -22,7 +22,7 @@ function varargout = lvd_EditInitialStateGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditInitialStateGUI
 
-% Last Modified by GUIDE v2.5 06-Oct-2018 13:41:10
+% Last Modified by GUIDE v2.5 17-Nov-2018 15:32:51
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -56,7 +56,7 @@ function lvd_EditInitialStateGUI_OpeningFcn(hObject, eventdata, handles, varargi
     handles.output = hObject;
    
     lvdData = varargin{1};
-    setappdata(hObject,'lvdDta',lvdData);
+    setappdata(hObject,'lvdData',lvdData);
        
     handles.ksptotMainGUI = varargin{2};
     
@@ -92,9 +92,6 @@ function populateGUI(handles, lvdData)
     handles.orbit4Text.String = fullAccNum2Str(elemVector(4));
     handles.orbit5Text.String = fullAccNum2Str(elemVector(5));
     handles.orbit6Text.String = fullAccNum2Str(elemVector(6));
-    
-    handles.frontalAreaText.String = fullAccNum2Str(initStateModel.aero.area);
-    handles.dragCoeffText.String = fullAccNum2Str(initStateModel.aero.Cd);
     
     optVar = initStateModel.getExistingOptVar();
     if(isempty(optVar))
@@ -150,7 +147,7 @@ function varargout = lvd_EditInitialStateGUI_OutputFcn(hObject, eventdata, handl
     if(isempty(handles))
         varargout{1} = false;
     else  
-        lvdData = getappdata(handles.lvd_EditInitialStateGUI,'lvdDta');
+        lvdData = getappdata(handles.lvd_EditInitialStateGUI,'lvdData');
         initStateModel = lvdData.initStateModel;
         
         bodyInfo = getSelectedBodyInfo(handles);
@@ -173,10 +170,7 @@ function varargout = lvd_EditInitialStateGUI_OutputFcn(hObject, eventdata, handl
         initStateModel.orbitModel = orbitModel;
         
         initStateModel.time = str2double(handles.utText.String);
-        
-        initStateModel.aero.area = str2double(handles.frontalAreaText.String);
-        initStateModel.aero.Cd = str2double(handles.dragCoeffText.String);
-        
+                
         %Vars
         optVar = initStateModel.getExistingOptVar();
         
@@ -234,8 +228,8 @@ function varargout = lvd_EditInitialStateGUI_OutputFcn(hObject, eventdata, handl
 
 
 function bodyInfo = getSelectedBodyInfo(handles)
-	lvdDta = getappdata(handles.lvd_EditInitialStateGUI,'lvdDta');
-    celBodyData = lvdDta.celBodyData;
+	lvdData = getappdata(handles.lvd_EditInitialStateGUI,'lvdData');
+    celBodyData = lvdData.celBodyData;
     
     bodyStr = handles.centralBodyCombo.String;
     bodyName = lower(strtrim(bodyStr{handles.centralBodyCombo.Value}));
@@ -262,23 +256,7 @@ function errMsg = validateInputs(handles)
     errMsg = feval(sprintf('%s.validateInputOrbit',orbitClass),errMsg, handles.orbit1Text, handles.orbit2Text, handles.orbit3Text, handles.orbit4Text, handles.orbit5Text, handles.orbit6Text, bodyInfo, '');
     errMsg = feval(sprintf('%s.validateInputOrbit',orbitClass),errMsg, handles.orbit1LbText, handles.orbit2LbText, handles.orbit3LbText, handles.orbit4LbText, handles.orbit5LbText, handles.orbit6LbText, bodyInfo, 'Lower');
     errMsg = feval(sprintf('%s.validateInputOrbit',orbitClass),errMsg, handles.orbit1UbText, handles.orbit2UbText, handles.orbit3UbText, handles.orbit4UbText, handles.orbit5UbText, handles.orbit6UbText, bodyInfo, 'Upper');
-    
-    area = str2double(get(handles.frontalAreaText,'String'));
-    enteredStr = get(handles.frontalAreaText,'String');
-    numberName = 'Frontal Area';
-    lb = 0;
-    ub = Inf;
-    isInt = false;
-    errMsg = validateNumber(area, numberName, lb, ub, isInt, errMsg, enteredStr);
-
-    cD = str2double(get(handles.dragCoeffText,'String'));
-    enteredStr = get(handles.dragCoeffText,'String');
-    numberName = 'Drag Coefficient';
-    lb = 0;
-    ub = Inf;
-    isInt = false;
-    errMsg = validateNumber(cD, numberName, lb, ub, isInt, errMsg, enteredStr);    
-    
+        
     
 % --- Executes on selection change in orbitTypeCombo.
 function orbitTypeCombo_Callback(hObject, eventdata, handles)
@@ -983,7 +961,7 @@ function editLvAndStageStatesButton_Callback(hObject, eventdata, handles)
 % hObject    handle to editLvAndStageStatesButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-    lvdData = getappdata(handles.lvd_EditInitialStateGUI,'lvdDta');
+    lvdData = getappdata(handles.lvd_EditInitialStateGUI,'lvdData');
     lvd_EditLvAndStagesStatesGUI(lvdData);
 
     
@@ -1042,7 +1020,7 @@ function editSteeringButton_Callback(hObject, eventdata, handles)
 % hObject    handle to editSteeringButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-    lvdData = getappdata(handles.lvd_EditInitialStateGUI,'lvdDta');
+    lvdData = getappdata(handles.lvd_EditInitialStateGUI,'lvdData');
     initStateModel = lvdData.initStateModel;
     lv = lvdData.launchVehicle;
     
@@ -1054,7 +1032,7 @@ function editThrottleButton_Callback(hObject, eventdata, handles)
 % hObject    handle to editThrottleButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-    lvdData = getappdata(handles.lvd_EditInitialStateGUI,'lvdDta');
+    lvdData = getappdata(handles.lvd_EditInitialStateGUI,'lvdData');
     initStateModel = lvdData.initStateModel;
     lv = lvdData.launchVehicle;
 
@@ -1153,8 +1131,8 @@ function copyOrbitToClipboardMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to copyOrbitToClipboardMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-	lvdDta = getappdata(handles.lvd_EditInitialStateGUI,'lvdDta');
-    celBodyData = lvdDta.celBodyData;
+	lvdData = getappdata(handles.lvd_EditInitialStateGUI,'lvdData');
+    celBodyData = lvdData.celBodyData;
     
     contents = cellstr(get(handles.centralBodyCombo,'String'));
     selected = strtrim(contents{get(handles.centralBodyCombo,'Value')});
@@ -1179,8 +1157,8 @@ function pasteOrbitFromClipboardMenu_Callback(hObject, eventdata, handles)
     handles.orbitTypeCombo.Value = ind;
     orbitTypeCombo_Callback(handles.orbitTypeCombo, [], handles);
 
-	lvdDta = getappdata(handles.lvd_EditInitialStateGUI,'lvdDta');
-    celBodyData = lvdDta.celBodyData;
+	lvdData = getappdata(handles.lvd_EditInitialStateGUI,'lvdData');
+    celBodyData = lvdData.celBodyData;
 
     pasteOrbitFromClipboard(handles.utText, handles.orbit1Text, handles.orbit2Text, ...
                                  handles.orbit3Text, handles.orbit4Text, handles.orbit5Text, ...
@@ -1219,3 +1197,21 @@ function epochContextMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to epochContextMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on button press in editDragPropsButton.
+function editDragPropsButton_Callback(hObject, eventdata, handles)
+% hObject    handle to editDragPropsButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.lvd_EditInitialStateGUI,'lvdData');
+    lvd_EditDragPropertiesGUI(lvdData);
+
+
+% --- Executes on button press in editLiftPropsButton.
+function editLiftPropsButton_Callback(hObject, eventdata, handles)
+% hObject    handle to editLiftPropsButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.lvd_EditInitialStateGUI,'lvdData');
+    lvd_EditLiftPropertiesGUI(lvdData);

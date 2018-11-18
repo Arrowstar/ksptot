@@ -3,8 +3,15 @@ classdef LaunchVehicleAeroState < matlab.mixin.SetGet & matlab.mixin.Copyable
     %   Detailed explanation goes here
     
     properties
+        %drag
         area(1,1) double = 1; %m^2
         Cd(1,1) double = 2.2;
+        
+        %lift
+        useLift(1,1) logical = false;
+        areaLift(1,1) double = 16.2; 
+        Cl_0(1,1) double = 0.731;  
+        bodyLiftVect(3,1) double = [0;0;-1];
     end
     
     methods
@@ -13,10 +20,6 @@ classdef LaunchVehicleAeroState < matlab.mixin.SetGet & matlab.mixin.Copyable
         end
         
         function newAeroState = deepCopy(obj)
-%             newAeroState = LaunchVehicleAeroState();
-%             
-%             newAeroState.area = obj.area;
-%             newAeroState.Cd = obj.Cd;
             newAeroState = obj.copy();
         end
     end

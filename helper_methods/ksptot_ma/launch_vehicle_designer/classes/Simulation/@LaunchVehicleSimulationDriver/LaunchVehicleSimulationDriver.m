@@ -156,7 +156,8 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
                 dydt(7:end) = tankMassDots;
             else
                 %launch clamp disabled, propagate like normal
-                CdA = eventInitStateLogEntry.aero.area * eventInitStateLogEntry.aero.Cd;            
+%                 CdA = eventInitStateLogEntry.aero.area * eventInitStateLogEntry.aero.Cd;  
+                aero = eventInitStateLogEntry.aero;
 
                 totalMass = dryMass + sum(tankStatesMasses);
                 
@@ -168,7 +169,7 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
                 [tankStates.tankMass] = tmCellArr{:};
                 
                 if(totalMass > 0)
-                    forceSum = obj.forceModel.getForce(ut, rVect, vVect, totalMass, bodyInfo, CdA, throttleModel, steeringModel, tankStates, stageStates, lvState);
+                    forceSum = obj.forceModel.getForce(ut, rVect, vVect, totalMass, bodyInfo, aero, throttleModel, steeringModel, tankStates, stageStates, lvState);
                     accelVect = forceSum/totalMass; %F = dp/dt = d(mv)/dt = m*dv/dt + v*dm/dt, but since the thrust force causes us to shed mass, we actually account for the v*dm/dt term there and therefore don't need it!  See: https://en.wikipedia.org/wiki/Variable-mass_system         
                     dydt(7:end) = tankMassDots;
                 else

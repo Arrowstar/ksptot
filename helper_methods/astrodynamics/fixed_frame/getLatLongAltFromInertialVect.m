@@ -1,4 +1,4 @@
-function [lat, long, alt, vVectSez, horzVel, vertVel] = getLatLongAltFromInertialVect(ut, rVectECI, bodyInfo, varargin)
+function [lat, long, alt, vVectSez, horzVel, vertVel, rVectECEF, vVectECEF] = getLatLongAltFromInertialVect(ut, rVectECI, bodyInfo, varargin)
 %getLatLongAltFromInertialVect Summary of this function goes here
 %   Detailed explanation goes here
 

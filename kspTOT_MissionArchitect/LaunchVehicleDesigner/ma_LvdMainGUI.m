@@ -22,7 +22,7 @@ function varargout = ma_LvdMainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_LvdMainGUI
 
-% Last Modified by GUIDE v2.5 10-Nov-2018 13:13:22
+% Last Modified by GUIDE v2.5 17-Nov-2018 14:46:50
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1312,3 +1312,19 @@ function sparseIntegratorOutputMenu_Callback(hObject, eventdata, handles)
     
     runScript(handles, lvdData);
     lvd_processData(handles);
+
+
+% --- Executes on key press with focus on ma_LvdMainGUI or any of its controls.
+function ma_LvdMainGUI_WindowKeyPressFcn(hObject, eventdata, handles)
+% hObject    handle to ma_LvdMainGUI (see GCBO)
+% eventdata  structure with the following fields (see MATLAB.UI.FIGURE)
+%	Key: name of the key that was pressed, in lower case
+%	Character: character interpretation of the key(s) that was pressed
+%	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
+% handles    structure with handles and user data (see GUIDATA)
+    if(not(isdeployed()) && strcmpi(eventdata.Modifier,'control') && strcmpi(eventdata.Key,'p'))
+        lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+        
+        runScript(handles, lvdData);
+        lvd_processData(handles);
+    end

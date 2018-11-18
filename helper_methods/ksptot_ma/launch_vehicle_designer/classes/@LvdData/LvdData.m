@@ -92,6 +92,14 @@ classdef LvdData < matlab.mixin.SetGet
         
         function obj = loadobj(obj)
             obj.validation = LaunchVehicleDataValidation(obj);
+            
+            if(isempty(obj.stateLog))
+                obj.stateLog = LaunchVehicleStateLog();
+            end
+        end
+        
+        function obj = saveobj(obj)
+            obj.stateLog.clearStateLog();
         end
     end
 end

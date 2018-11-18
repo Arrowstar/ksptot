@@ -26,7 +26,7 @@ classdef LvdOptimization < matlab.mixin.SetGet
 %             [lbAll, ubAll] = obj.vars.getTotalBndsVector();
 %             typicalX = obj.vars.getTypicalXVector();
 
-            x0All = obj.vars.getTotalScaledXVector();
+            [x0All] = obj.vars.getTotalScaledXVector();
             [lbAll, ubAll] = obj.vars.getTotalScaledBndsVector();
             typicalX = obj.vars.getTypicalScaledXVector();
             
