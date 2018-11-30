@@ -70,7 +70,14 @@ classdef LvdData < matlab.mixin.SetGet
             lvdData.launchVehicle = lv;
             
             %Set Up Initial State
-            initStateModel = InitialStateModel.getDefaultInitialStateLogModelForLaunchVehicle(lvdData.launchVehicle, celBodyData.kerbin);
+            if(isfield(celBodyData,'kerbin'))
+                initBody = celBodyData.kerbin;
+            else
+                fields = fieldnames(celBodyData);
+                initBody = celBodyData.(fields{1});
+            end
+            
+            initStateModel = InitialStateModel.getDefaultInitialStateLogModelForLaunchVehicle(lvdData.launchVehicle, initBody);
             lvdData.initStateModel = initStateModel;
                         
             %Set Up Mission Script

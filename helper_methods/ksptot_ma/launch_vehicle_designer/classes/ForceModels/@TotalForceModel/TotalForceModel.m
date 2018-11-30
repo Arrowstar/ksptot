@@ -35,7 +35,7 @@ classdef TotalForceModel < AbstractForceModel
         forceModels(end+1) = GravityForceModel();
         forceModels(end+1) = DragForceModel();
         forceModels(end+1) = ThrustForceModel();
-        forceModels(end+1) = NormalForceModel();
+%         forceModels(end+1) = NormalForceModel();
         forceModels(end+1) = LiftForceModel();
       end
    end

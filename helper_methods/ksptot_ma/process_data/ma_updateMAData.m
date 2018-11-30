@@ -172,11 +172,6 @@ function maData = ma_updateMAData(maData, handles)
         maData.notes = '';
     end
     
-    if(~isfield(maData,'lvdData'))
-        lvdData = LvdData.getDefaultLvdData(maData.celBodyData);
-        maData.lvdData = lvdData;
-    end
-    
     if(isfield(maData,'optimizer'))
         if(isfield(maData.optimizer,'constraints') && iscell(maData.optimizer.constraints) && ~isempty(maData.optimizer.constraints))
             taskList = ma_getGraphAnalysisTaskList({});
