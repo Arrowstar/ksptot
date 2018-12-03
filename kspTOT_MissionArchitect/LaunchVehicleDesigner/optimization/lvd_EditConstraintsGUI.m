@@ -22,7 +22,7 @@ function varargout = lvd_EditConstraintsGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditConstraintsGUI
 
-% Last Modified by GUIDE v2.5 22-Sep-2018 13:54:11
+% Last Modified by GUIDE v2.5 03-Dec-2018 17:19:14
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -178,4 +178,22 @@ function removeConstraintButton_Callback(hObject, eventdata, handles)
 	numConstraints = length(listBoxStr);
     if(selConstraint > numConstraints)
         set(handles.constraintsListBox,'Value',numConstraints);
+    end
+
+
+% --- Executes on key press with focus on lvd_EditConstraintsGUI or any of its controls.
+function lvd_EditConstraintsGUI_WindowKeyPressFcn(hObject, eventdata, handles)
+% hObject    handle to lvd_EditConstraintsGUI (see GCBO)
+% eventdata  structure with the following fields (see MATLAB.UI.FIGURE)
+%	Key: name of the key that was pressed, in lower case
+%	Character: character interpretation of the key(s) that was pressed
+%	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
+% handles    structure with handles and user data (see GUIDATA)
+    switch(eventdata.Key)
+        case 'return'
+            uiresume(handles.lvd_EditConstraintsGUI);
+        case 'enter'
+            uiresume(handles.lvd_EditConstraintsGUI);
+        case 'escape'
+            uiresume(handles.lvd_EditConstraintsGUI);
     end

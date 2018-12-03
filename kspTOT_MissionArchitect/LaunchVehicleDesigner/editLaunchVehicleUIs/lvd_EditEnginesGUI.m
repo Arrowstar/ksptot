@@ -22,7 +22,7 @@ function varargout = lvd_EditEnginesGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditEnginesGUI
 
-% Last Modified by GUIDE v2.5 05-Oct-2018 16:43:09
+% Last Modified by GUIDE v2.5 03-Dec-2018 17:11:04
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -251,3 +251,21 @@ function enginesListboxContextMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to enginesListboxContextMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on key press with focus on lvd_EditEnginesGUI or any of its controls.
+function lvd_EditEnginesGUI_WindowKeyPressFcn(hObject, eventdata, handles)
+% hObject    handle to lvd_EditEnginesGUI (see GCBO)
+% eventdata  structure with the following fields (see MATLAB.UI.FIGURE)
+%	Key: name of the key that was pressed, in lower case
+%	Character: character interpretation of the key(s) that was pressed
+%	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
+% handles    structure with handles and user data (see GUIDATA)
+    switch(eventdata.Key)
+        case 'return'
+            uiresume(handles.lvd_EditEnginesGUI);
+        case 'enter'
+            uiresume(handles.lvd_EditEnginesGUI);
+        case 'escape'
+            uiresume(handles.lvd_EditEnginesGUI);
+    end

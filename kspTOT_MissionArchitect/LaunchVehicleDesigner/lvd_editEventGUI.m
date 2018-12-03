@@ -22,7 +22,7 @@ function varargout = lvd_editEventGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_editEventGUI
 
-% Last Modified by GUIDE v2.5 13-Nov-2018 17:03:35
+% Last Modified by GUIDE v2.5 03-Dec-2018 16:51:59
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -174,12 +174,21 @@ function actionsListbox_Callback(hObject, eventdata, handles)
         event = getappdata(handles.lvd_editEventGUI,'event');
         lv = event.script.lvdData.launchVehicle;
         
-        selActionInd = get(handles.actionsListbox,'Value');
-        action = event.getActionForInd(selActionInd);
-        
-        action.openEditActionUI(action, lv);
-        
-        set(handles.actionsListbox,'String',event.getActionsListboxStr());
+        if(not(isempty(event.getActionsListboxStr())))
+            selActionInd = get(handles.actionsListbox,'Value');
+            action = event.getActionForInd(selActionInd);
+
+            action.openEditActionUI(action, lv);
+
+            actionsListBoxStr = event.getActionsListboxStr();
+
+            if(not(isempty(actionsListBoxStr)))
+                set(handles.actionsListbox,'String',actionsListBoxStr);
+            else
+                set(handles.actionsListbox,'String','');
+                set(handles.actionsListbox,'Value',1);
+            end
+        end
     end
 
 
@@ -350,3 +359,21 @@ function integratorCombo_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on key press with focus on lvd_editEventGUI or any of its controls.
+function lvd_editEventGUI_WindowKeyPressFcn(hObject, eventdata, handles)
+% hObject    handle to lvd_editEventGUI (see GCBO)
+% eventdata  structure with the following fields (see MATLAB.UI.FIGURE)
+%	Key: name of the key that was pressed, in lower case
+%	Character: character interpretation of the key(s) that was pressed
+%	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
+% handles    structure with handles and user data (see GUIDATA)
+    switch(eventdata.Key)
+        case 'return'
+            saveAndCloseButton_Callback(handles.saveAndCloseButton, [], handles);
+        case 'enter'
+            saveAndCloseButton_Callback(handles.saveAndCloseButton, [], handles);
+        case 'escape'
+            close(handles.lvd_editEventGUI);
+    end

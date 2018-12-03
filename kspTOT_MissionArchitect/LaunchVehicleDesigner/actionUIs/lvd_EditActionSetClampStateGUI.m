@@ -22,7 +22,7 @@ function varargout = lvd_EditActionSetClampStateGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditActionSetClampStateGUI
 
-% Last Modified by GUIDE v2.5 11-Oct-2018 18:13:45
+% Last Modified by GUIDE v2.5 03-Dec-2018 16:58:14
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -143,3 +143,21 @@ function stateCombo_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on key press with focus on lvd_EditActionSetClampStateGUI or any of its controls.
+function lvd_EditActionSetClampStateGUI_WindowKeyPressFcn(hObject, eventdata, handles)
+% hObject    handle to lvd_EditActionSetClampStateGUI (see GCBO)
+% eventdata  structure with the following fields (see MATLAB.UI.FIGURE)
+%	Key: name of the key that was pressed, in lower case
+%	Character: character interpretation of the key(s) that was pressed
+%	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
+% handles    structure with handles and user data (see GUIDATA)
+    switch(eventdata.Key)
+        case 'return'
+            saveAndCloseButton_Callback(handles.saveAndCloseButton, [], handles);
+        case 'enter'
+            saveAndCloseButton_Callback(handles.saveAndCloseButton, [], handles);
+        case 'escape'
+            close(handles.lvd_EditActionSetClampStateGUI);
+    end

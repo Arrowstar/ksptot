@@ -22,7 +22,7 @@ function varargout = lvd_EditInitialStateGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditInitialStateGUI
 
-% Last Modified by GUIDE v2.5 17-Nov-2018 15:32:51
+% Last Modified by GUIDE v2.5 03-Dec-2018 16:53:29
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1215,3 +1215,21 @@ function editLiftPropsButton_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
     lvdData = getappdata(handles.lvd_EditInitialStateGUI,'lvdData');
     lvd_EditLiftPropertiesGUI(lvdData);
+
+
+% --- Executes on key press with focus on lvd_EditInitialStateGUI or any of its controls.
+function lvd_EditInitialStateGUI_WindowKeyPressFcn(hObject, eventdata, handles)
+% hObject    handle to lvd_EditInitialStateGUI (see GCBO)
+% eventdata  structure with the following fields (see MATLAB.UI.FIGURE)
+%	Key: name of the key that was pressed, in lower case
+%	Character: character interpretation of the key(s) that was pressed
+%	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
+% handles    structure with handles and user data (see GUIDATA)
+    switch(eventdata.Key)
+        case 'return'
+            saveAndCloseButton_Callback(handles.saveAndCloseButton, [], handles);
+        case 'enter'
+            saveAndCloseButton_Callback(handles.saveAndCloseButton, [], handles);
+        case 'escape'
+            close(handles.lvd_EditInitialStateGUI);
+    end

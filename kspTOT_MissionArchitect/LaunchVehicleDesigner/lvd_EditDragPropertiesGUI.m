@@ -22,7 +22,7 @@ function varargout = lvd_EditDragPropertiesGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditDragPropertiesGUI
 
-% Last Modified by GUIDE v2.5 17-Nov-2018 14:34:38
+% Last Modified by GUIDE v2.5 03-Dec-2018 16:46:33
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -189,3 +189,21 @@ function dragCoeffText_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on key press with focus on lvd_EditDragPropertiesGUI or any of its controls.
+function lvd_EditDragPropertiesGUI_WindowKeyPressFcn(hObject, eventdata, handles)
+% hObject    handle to lvd_EditDragPropertiesGUI (see GCBO)
+% eventdata  structure with the following fields (see MATLAB.UI.FIGURE)
+%	Key: name of the key that was pressed, in lower case
+%	Character: character interpretation of the key(s) that was pressed
+%	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
+% handles    structure with handles and user data (see GUIDATA)
+    switch(eventdata.Key)
+        case 'return'
+            saveCloseButton_Callback(handles.saveCloseButton, [], handles);
+        case 'enter'
+            saveCloseButton_Callback(handles.saveCloseButton, [], handles);
+        case 'escape'
+            close(handles.lvd_EditDragPropertiesGUI);
+    end

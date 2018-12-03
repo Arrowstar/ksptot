@@ -22,7 +22,7 @@ function varargout = lvd_EditEngineToTanksConnsGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditEngineToTanksConnsGUI
 
-% Last Modified by GUIDE v2.5 21-Sep-2018 17:37:39
+% Last Modified by GUIDE v2.5 03-Dec-2018 17:13:50
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -175,4 +175,22 @@ function removeConnButton_Callback(hObject, eventdata, handles)
         end
     else
         warndlg(sprintf('Could not delete the "%s" connection because it is in use as part of an event termination condition, event action, objective function, or constraint.  Remove the dependencies before attempting to delete the connection.', conn.name),'Cannot Delete Connection','modal');
+    end
+
+
+% --- Executes on key press with focus on lvd_EditEngineToTanksConnsGUI or any of its controls.
+function lvd_EditEngineToTanksConnsGUI_WindowKeyPressFcn(hObject, eventdata, handles)
+% hObject    handle to lvd_EditEngineToTanksConnsGUI (see GCBO)
+% eventdata  structure with the following fields (see MATLAB.UI.FIGURE)
+%	Key: name of the key that was pressed, in lower case
+%	Character: character interpretation of the key(s) that was pressed
+%	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
+% handles    structure with handles and user data (see GUIDATA)
+    switch(eventdata.Key)
+        case 'return'
+            uiresume(handles.lvd_EditEngineToTanksConnsGUI);
+        case 'enter'
+            uiresume(handles.lvd_EditEngineToTanksConnsGUI);
+        case 'escape'
+            uiresume(handles.lvd_EditEngineToTanksConnsGUI);
     end

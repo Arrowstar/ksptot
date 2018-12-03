@@ -22,7 +22,7 @@ function varargout = lvd_EditTanksGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditTanksGUI
 
-% Last Modified by GUIDE v2.5 06-Oct-2018 01:00:26
+% Last Modified by GUIDE v2.5 03-Dec-2018 17:18:34
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -250,3 +250,21 @@ function tankListboxContextMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to tankListboxContextMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on key press with focus on lvd_EditTanksGUI or any of its controls.
+function lvd_EditTanksGUI_WindowKeyPressFcn(hObject, eventdata, handles)
+% hObject    handle to lvd_EditTanksGUI (see GCBO)
+% eventdata  structure with the following fields (see MATLAB.UI.FIGURE)
+%	Key: name of the key that was pressed, in lower case
+%	Character: character interpretation of the key(s) that was pressed
+%	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
+% handles    structure with handles and user data (see GUIDATA)
+    switch(eventdata.Key)
+        case 'return'
+            uiresume(handles.lvd_EditTanksGUI);
+        case 'enter'
+            uiresume(handles.lvd_EditTanksGUI);
+        case 'escape'
+            uiresume(handles.lvd_EditTanksGUI);
+    end

@@ -22,7 +22,7 @@ function varargout = lvd_EditActionSetSteeringModelGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditActionSetSteeringModelGUI
 
-% Last Modified by GUIDE v2.5 24-Sep-2018 17:36:47
+% Last Modified by GUIDE v2.5 03-Dec-2018 17:04:26
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1412,3 +1412,21 @@ function angleContCheckbox_Callback(hObject, eventdata, handles)
         angle3ConstOptCheckbox_Callback(handles.angle3ConstOptCheckbox, [], handles);
     end
     
+
+
+% --- Executes on key press with focus on lvd_EditActionSetSteeringModelGUI or any of its controls.
+function lvd_EditActionSetSteeringModelGUI_WindowKeyPressFcn(hObject, eventdata, handles)
+% hObject    handle to lvd_EditActionSetSteeringModelGUI (see GCBO)
+% eventdata  structure with the following fields (see MATLAB.UI.FIGURE)
+%	Key: name of the key that was pressed, in lower case
+%	Character: character interpretation of the key(s) that was pressed
+%	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
+% handles    structure with handles and user data (see GUIDATA)
+    switch(eventdata.Key)
+        case 'return'
+            saveAndCloseButton_Callback(handles.saveAndCloseButton, [], handles);
+        case 'enter'
+            saveAndCloseButton_Callback(handles.saveAndCloseButton, [], handles);
+        case 'escape'
+            close(handles.lvd_EditActionSetSteeringModelGUI);
+    end

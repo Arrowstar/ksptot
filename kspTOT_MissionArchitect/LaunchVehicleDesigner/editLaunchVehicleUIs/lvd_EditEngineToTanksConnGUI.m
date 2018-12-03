@@ -22,7 +22,7 @@ function varargout = lvd_EditEngineToTanksConnGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditEngineToTanksConnGUI
 
-% Last Modified by GUIDE v2.5 21-Sep-2018 17:46:55
+% Last Modified by GUIDE v2.5 03-Dec-2018 17:12:48
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -170,3 +170,21 @@ function tankCombo_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on key press with focus on lvd_EditEngineToTanksConnGUI or any of its controls.
+function lvd_EditEngineToTanksConnGUI_WindowKeyPressFcn(hObject, eventdata, handles)
+% hObject    handle to lvd_EditEngineToTanksConnGUI (see GCBO)
+% eventdata  structure with the following fields (see MATLAB.UI.FIGURE)
+%	Key: name of the key that was pressed, in lower case
+%	Character: character interpretation of the key(s) that was pressed
+%	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
+% handles    structure with handles and user data (see GUIDATA)
+    switch(eventdata.Key)
+        case 'return'
+            saveAndCloseButton_Callback(handles.saveAndCloseButton, [], handles);
+        case 'enter'
+            saveAndCloseButton_Callback(handles.saveAndCloseButton, [], handles);
+        case 'escape'
+            close(handles.lvd_EditEngineToTanksConnGUI);
+    end

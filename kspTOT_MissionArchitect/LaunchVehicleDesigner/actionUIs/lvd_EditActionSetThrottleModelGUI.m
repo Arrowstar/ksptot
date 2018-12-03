@@ -22,7 +22,7 @@ function varargout = lvd_EditActionSetThrottleModelGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditActionSetThrottleModelGUI
 
-% Last Modified by GUIDE v2.5 22-Sep-2018 19:58:40
+% Last Modified by GUIDE v2.5 03-Dec-2018 17:06:18
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -541,3 +541,21 @@ function cancelButton_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
     close(handles.lvd_EditActionSetThrottleModelGUI);
+
+
+% --- Executes on key press with focus on lvd_EditActionSetThrottleModelGUI or any of its controls.
+function lvd_EditActionSetThrottleModelGUI_WindowKeyPressFcn(hObject, eventdata, handles)
+% hObject    handle to lvd_EditActionSetThrottleModelGUI (see GCBO)
+% eventdata  structure with the following fields (see MATLAB.UI.FIGURE)
+%	Key: name of the key that was pressed, in lower case
+%	Character: character interpretation of the key(s) that was pressed
+%	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
+% handles    structure with handles and user data (see GUIDATA)
+    switch(eventdata.Key)
+        case 'return'
+            saveAndCloseButton_Callback(handles.saveAndCloseButton, [], handles);
+        case 'enter'
+            saveAndCloseButton_Callback(handles.saveAndCloseButton, [], handles);
+        case 'escape'
+            close(handles.lvd_EditActionSetThrottleModelGUI);
+    end

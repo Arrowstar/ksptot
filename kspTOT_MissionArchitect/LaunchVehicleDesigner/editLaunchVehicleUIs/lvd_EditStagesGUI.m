@@ -22,7 +22,7 @@ function varargout = lvd_EditStagesGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditStagesGUI
 
-% Last Modified by GUIDE v2.5 19-Sep-2018 20:45:43
+% Last Modified by GUIDE v2.5 03-Dec-2018 17:16:34
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -221,3 +221,21 @@ function moveStageDownButton_Callback(hObject, eventdata, handles)
     end
     
     set(handles.stagesListbox,'String',lvdData.launchVehicle.getStagesListBoxStr());
+
+
+% --- Executes on key press with focus on lvd_EditStagesGUI or any of its controls.
+function lvd_EditStagesGUI_WindowKeyPressFcn(hObject, eventdata, handles)
+% hObject    handle to lvd_EditStagesGUI (see GCBO)
+% eventdata  structure with the following fields (see MATLAB.UI.FIGURE)
+%	Key: name of the key that was pressed, in lower case
+%	Character: character interpretation of the key(s) that was pressed
+%	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
+% handles    structure with handles and user data (see GUIDATA)
+    switch(eventdata.Key)
+        case 'return'
+            uiresume(handles.lvd_EditStagesGUI);
+        case 'enter'
+            uiresume(handles.lvd_EditStagesGUI);
+        case 'escape'
+            uiresume(handles.lvd_EditStagesGUI);
+    end
