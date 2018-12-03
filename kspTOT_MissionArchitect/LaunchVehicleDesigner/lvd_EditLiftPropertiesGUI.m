@@ -90,6 +90,10 @@ function varargout = lvd_EditLiftPropertiesGUI_OutputFcn(hObject, eventdata, han
 % Get default command line output from handles structure
     if(isempty(handles))
         varargout{1} = false;
+        varargout{2} = false;
+        varargout{3} = false;
+        varargout{4} = false;
+        varargout{5} = false;
     else  
         lvdData = getappdata(handles.lvd_EditLiftPropertiesGUI,'lvdData');
         initStateModel = lvdData.initStateModel;
@@ -97,12 +101,15 @@ function varargout = lvd_EditLiftPropertiesGUI_OutputFcn(hObject, eventdata, han
         initStateModel.aero.useLift = logical(handles.useLiftForceCheckbox.Value);
         initStateModel.aero.areaLift = str2double(handles.areaText.String);
         initStateModel.aero.Cl_0 = str2double(handles.liftCoeffText.String);
-        initStateModel.aero.areaLift = str2double(handles.areaText.String);
         initStateModel.aero.bodyLiftVect(1) = str2double(handles.liftVectXText.String);
         initStateModel.aero.bodyLiftVect(2) = str2double(handles.liftVectYText.String);
         initStateModel.aero.bodyLiftVect(3) = str2double(handles.liftVectZText.String);
         
         varargout{1} = true;
+        varargout{2} = initStateModel.aero.useLift;
+        varargout{3} = initStateModel.aero.areaLift;
+        varargout{4} = initStateModel.aero.Cl_0;
+        varargout{5} = initStateModel.aero.bodyLiftVect;
         close(handles.lvd_EditLiftPropertiesGUI);
     end
 

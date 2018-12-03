@@ -9,7 +9,8 @@ classdef EventActionEnum < matlab.mixin.SetGet
         SetThrottleModel('Set Throttle Model','SetThrottleModelAction');
         SetEngineToTankState('Set Engine To Tank Connection State','SetEngineTankConnActiveStateEventAction');
         SetHoldDownClampState('Set Hold Down Clamp State','SetHoldDownClampActiveStateAction');
-        SetAeroDragProps('Set Drag Aero Properties','SetDragAeroPropertiesAction')
+        SetAeroDragProps('Set Drag Aero Properties','SetDragAeroPropertiesAction');
+        SetAeroLiftProps('Set Lift Aero Properties','SetLiftAeroPropertiesAction');
     end
     
     properties

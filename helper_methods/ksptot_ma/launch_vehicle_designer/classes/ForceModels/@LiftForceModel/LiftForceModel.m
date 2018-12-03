@@ -34,7 +34,7 @@ classdef LiftForceModel < AbstractForceModel
             if(density > 0)               
                 Cl_level = aero.Cl_0;
                 A = aero.areaLift;        
-                bodyLiftVect = aero.bodyLiftVect;
+                bodyLiftVect = normVector(aero.bodyLiftVect);
                 
                 vVectEcefMag = norm(vVectECEF);
                 
