@@ -83,14 +83,21 @@ function varargout = lvd_EditDragPropertiesGUI_OutputFcn(hObject, eventdata, han
 % Get default command line output from handles structure
     if(isempty(handles))
         varargout{1} = false;
+        varargout{2} = false;
+        varargout{3} = false;
     else  
         lvdData = getappdata(handles.lvd_EditDragPropertiesGUI,'lvdData');
         initStateModel = lvdData.initStateModel;
         
-        initStateModel.aero.area = str2double(handles.dragAreaText.String);
-        initStateModel.aero.Cd = str2double(handles.dragCoeffText.String);
+        uiArea = str2double(handles.dragAreaText.String);
+        uiCd = str2double(handles.dragCoeffText.String);
+        
+        initStateModel.aero.area = uiArea;
+        initStateModel.aero.Cd = uiCd;
         
         varargout{1} = true;
+        varargout{2} = uiCd;
+        varargout{3} = uiArea;
         close(handles.lvd_EditDragPropertiesGUI);
     end
 
