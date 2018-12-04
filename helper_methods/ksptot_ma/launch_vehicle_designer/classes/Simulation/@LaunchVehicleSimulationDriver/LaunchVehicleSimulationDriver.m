@@ -56,7 +56,13 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
                 maxT = t0;
             end
             
-            tspan = [t0, maxT];
+            integrationStep = event.integrationStep;
+            
+            if(integrationStep <= 0)
+                tspan = [t0, maxT];
+            else
+                tspan = [t0:integrationStep:maxT]; %#ok<NBRAK>
+            end
             
             dryMass = eventInitStateLogEntry.getTotalVehicleDryMass();
             

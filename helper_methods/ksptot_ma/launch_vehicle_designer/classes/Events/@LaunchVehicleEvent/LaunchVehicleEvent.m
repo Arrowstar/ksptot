@@ -12,6 +12,7 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
         colorLineSpec(1,1) EventColorLineSpec 
         
         integrator(1,1) IntegratorEnum = IntegratorEnum.ODE45;
+        integrationStep(1,1) double = -1;
         checkForSoITrans(1,1) logical = true;
     end
     

@@ -22,7 +22,7 @@ function varargout = lvd_editEventGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_editEventGUI
 
-% Last Modified by GUIDE v2.5 03-Dec-2018 16:51:59
+% Last Modified by GUIDE v2.5 04-Dec-2018 16:40:39
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -90,6 +90,8 @@ function populateGUI(handles, event)
     integratorCombo_Callback(handles.integratorCombo, [], handles);
     
     handles.checkSoITransCheckbox.Value = double(event.checkForSoITrans);
+    
+    handles.intStepSizeText.String = fullAccNum2Str(event.integrationStep);
 
 % --- Outputs from this function are returned to the command line.
 function varargout = lvd_editEventGUI_OutputFcn(hObject, eventdata, handles) 
@@ -122,6 +124,8 @@ function varargout = lvd_editEventGUI_OutputFcn(hObject, eventdata, handles)
         
         event.checkForSoITrans = logical(handles.checkSoITransCheckbox.Value);
         
+        event.integrationStep = str2double(get(handles.intStepSizeText,'String'));
+        
         close(handles.lvd_editEventGUI);
     end
 
@@ -130,7 +134,26 @@ function saveAndCloseButton_Callback(hObject, eventdata, handles)
 % hObject    handle to saveAndCloseButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-    uiresume(handles.lvd_editEventGUI);
+    errMsg = validateInputs(handles);
+
+    if(isempty(errMsg))
+       uiresume(handles.lvd_editEventGUI);
+    else
+        msgbox(errMsg,'Errors were found while editing the event.','error');
+    end  
+    
+    
+function errMsg = validateInputs(handles)
+    errMsg = {};
+    
+    value = str2double(get(handles.intStepSizeText,'String'));
+    enteredStr = get(handles.intStepSizeText,'String');
+    numberName = 'Integrator Output Step Size';
+    lb = -Inf;
+    ub = Inf;
+    isInt = false;
+    errMsg = validateNumber(value, numberName, lb, ub, isInt, errMsg, enteredStr);
+
 
 % --- Executes on button press in cancelButton.
 function cancelButton_Callback(hObject, eventdata, handles)
@@ -377,3 +400,27 @@ function lvd_editEventGUI_WindowKeyPressFcn(hObject, eventdata, handles)
         case 'escape'
             close(handles.lvd_editEventGUI);
     end
+
+
+function intStepSizeText_Callback(hObject, eventdata, handles)
+% hObject    handle to intStepSizeText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of intStepSizeText as text
+%        str2double(get(hObject,'String')) returns contents of intStepSizeText as a double
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
+
+% --- Executes during object creation, after setting all properties.
+function intStepSizeText_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to intStepSizeText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
