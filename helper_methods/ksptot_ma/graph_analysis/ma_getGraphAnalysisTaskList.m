@@ -34,6 +34,7 @@ function [taskList] = ma_getGraphAnalysisTaskList(excludeList)
     taskList{end+1} = 'Surface Velocity';
     taskList{end+1} = 'Vertical Velocity';
     taskList{end+1} = 'Solar Beta Angle';
+    taskList{end+1} = 'Dynamic Pressure';
     taskList{end+1} = 'Distance to Ref. Celestial Body';
     taskList{end+1} = 'Distance to Ref. Spacecraft';
     taskList{end+1} = 'Distance to Ref. Station';

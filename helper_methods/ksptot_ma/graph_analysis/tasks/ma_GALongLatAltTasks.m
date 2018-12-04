@@ -27,4 +27,3 @@ function datapt = ma_GALongLatAltTasks(stateLogEntry, subTask, celBodyData)
             datapt = vertVel;
     end
 end
-

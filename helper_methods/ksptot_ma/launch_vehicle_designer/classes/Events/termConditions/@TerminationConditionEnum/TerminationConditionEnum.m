@@ -8,6 +8,7 @@ classdef TerminationConditionEnum < matlab.mixin.SetGet
         AscNode('Ascending Node','AscendingNodeTermCondition');
         BankAngle('Bank Angle','BankAngleTermCondition');
         DescNode('Descending Node','DescendingNodeTermCondition');
+        DynP('Dynamic Pressure','DynamicPressureTermCondition');
         EventDuration('Event Duration','EventDurationTermCondition');
         Latitude('Latitude','LatitudeTermCondition');
         PitchAngle('Pitch Angle','PitchTermCondition');

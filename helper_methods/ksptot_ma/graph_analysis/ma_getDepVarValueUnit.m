@@ -122,6 +122,9 @@ function [depVarValue, depVarUnit, prevDistTraveled, taskStr, refBodyInfo, other
         case 'Solar Beta Angle'
             depVarValue = ma_GAKeplerElementsTask(subLog(i,:), 'betaAngle', celBodyData);
             depVarUnit = 'deg';
+        case 'Dynamic Pressure'
+            depVarValue = ma_GAAeroTasks(subLog(i,:), 'dynPress', celBodyData);
+            depVarUnit = 'kPa';
         case 'Distance to Ref. Celestial Body'
             depVarValue = ma_GADistToCelBodyTask(subLog(i,:), 'distToCelBody', refBodyInfo, celBodyData);
             depVarUnit = 'km';
