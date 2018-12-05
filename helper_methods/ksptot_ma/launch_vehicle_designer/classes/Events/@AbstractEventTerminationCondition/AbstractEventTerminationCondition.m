@@ -1,4 +1,4 @@
-classdef(Abstract) AbstractEventTerminationCondition < matlab.mixin.SetGet
+classdef(Abstract) AbstractEventTerminationCondition < matlab.mixin.SetGet & matlab.mixin.Heterogeneous
     %AbstractEventTerminationCondition Summary of this class goes here
     %   Detailed explanation goes here
     

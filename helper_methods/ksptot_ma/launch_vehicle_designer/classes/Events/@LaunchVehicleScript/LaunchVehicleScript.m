@@ -8,12 +8,15 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
         lastRunExecTime(1,1) double = 0;
         
         lvdData LvdData
+        
+        nonSeqEvts LaunchVehicleNonSeqEvents 
     end
     
     methods
         function obj = LaunchVehicleScript(lvdData, simDriver)
             obj.lvdData = lvdData;
             obj.simDriver = simDriver;
+            obj.nonSeqEvts = LaunchVehicleNonSeqEvents(lvdData);
         end
         
         function addEvent(obj, newEvt)
@@ -132,21 +135,35 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
                 initStateLogEntry = stateLog.getFinalStateLogEntry().deepCopy();
             end
             
+            obj.nonSeqEvts.resetAllNumExecsRemaining();
+            
             tPropTime = 0;
             if(~isempty(obj.evts))
                 
                 tStartSimTime = initStateLogEntry.time;
                 tStartPropTime = tic();
                 for(i=evtStartNum:length(obj.evts)) %#ok<*NO4LP>
-                    obj.evts(i).initEvent(initStateLogEntry);
-                    initStateLogEntry.event = obj.evts(i);
+                    evt = obj.evts(i);
+                    
+                    %Init Event
+                    evt.initEvent(initStateLogEntry);
+                    initStateLogEntry.event = evt;
 
-                    newStateLogEntries = obj.evts(i).executeEvent(initStateLogEntry, obj.simDriver, tStartPropTime, tStartSimTime, isSparseOutput);
+                    %Get applicable non sequential events and initialize
+                    activeNonSeqEvts = obj.nonSeqEvts.getNonSeqEventsForScriptEvent(evt);
+                    for(j=1:length(activeNonSeqEvts))
+                        activeNonSeqEvts(j).initEvent(initStateLogEntry);
+                    end
+                    
+                    %Execute Event
+                    newStateLogEntries = evt.executeEvent(initStateLogEntry, obj.simDriver, tStartPropTime, tStartSimTime, isSparseOutput, activeNonSeqEvts);
                     stateLog.appendStateLogEntries(newStateLogEntries);
 
+                    %Clean Up Event
                     initStateLogEntry = newStateLogEntries(end).deepCopy();
-                    actionStateLogEntries = obj.evts(i).cleanupEvent(initStateLogEntry);
+                    actionStateLogEntries = evt.cleanupEvent(initStateLogEntry);
                     
+                    %Add state log entries to state log
                     if(not(isempty(actionStateLogEntries)))
                         stateLog.appendStateLogEntries(actionStateLogEntries);
                         initStateLogEntry = actionStateLogEntries(end).deepCopy();
@@ -170,4 +187,12 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
             obj.lvdData.optimizer.constraints.lastRunValues.updateValues(c, ceq, values, lb, ub, type, eventNum, cEventInds, ceqEventInds);
         end
     end
+    
+   methods (Static)
+      function s = loadobj(s)
+         if(isempty(s.nonSeqEvts))
+             s.nonSeqEvts = LaunchVehicleNonSeqEvents(s.lvdData);
+         end
+      end
+   end
 end

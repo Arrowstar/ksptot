@@ -22,7 +22,7 @@ function varargout = ma_LvdMainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_LvdMainGUI
 
-% Last Modified by GUIDE v2.5 17-Nov-2018 21:14:28
+% Last Modified by GUIDE v2.5 05-Dec-2018 13:45:05
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -76,6 +76,7 @@ function ma_LvdMainGUI_OpeningFcn(hObject, eventdata, handles, varargin)
     view(handles.dispAxes,3);
     
     setDeleteButtonEnable(lvdData, handles);
+    setNonSeqDeleteButtonEnable(lvdData, handles);
     
     runScript(handles, lvdData);
     lvd_processData(handles);
@@ -162,7 +163,6 @@ function scriptListbox_Callback(hObject, eventdata, handles)
         lvd_editEventGUI(event);
         
         runScript(handles, lvdData);
-        
         lvd_processData(handles);
     end
 
@@ -254,6 +254,15 @@ function setDeleteButtonEnable(lvdData, handles)
         handles.deleteEvent.Enable = 'off';
     else
         handles.deleteEvent.Enable = 'on';
+    end
+    
+    
+function setNonSeqDeleteButtonEnable(lvdData, handles)
+    numEvents = lvdData.script.nonSeqEvts.getTotalNumOfEvents();
+    if(numEvents <= 0)
+        handles.deleteNonSeqEventButton.Enable = 'off';
+    else
+        handles.deleteNonSeqEventButton.Enable = 'on';
     end
 
 % --- Executes on button press in moveEventUp.
@@ -1348,3 +1357,90 @@ function optScaleProblemMenu_Callback(hObject, eventdata, handles)
         lvdData.settings.optScaleProp = true;
         writeOutput('Optimizer will normalize all constraints and the objective function.','append');
     end
+
+
+% --- Executes on selection change in nonSeqEventsListbox.
+function nonSeqEventsListbox_Callback(hObject, eventdata, handles)
+% hObject    handle to nonSeqEventsListbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns nonSeqEventsListbox contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from nonSeqEventsListbox
+    if(strcmpi(get(handles.ma_LvdMainGUI,'SelectionType'),'open'))
+        addUndoState(handles,'Edit Non-Sequential Event');
+        
+        eventNum = get(hObject,'Value');
+        lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+        
+        nonSeqEvt = lvdData.script.nonSeqEvts.getEventForInd(eventNum);
+        lvd_editNonSeqEventGUI(nonSeqEvt, lvdData);
+        
+        runScript(handles, lvdData);
+        lvd_processData(handles);
+    end
+
+% --- Executes during object creation, after setting all properties.
+function nonSeqEventsListbox_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to nonSeqEventsListbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: listbox controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in insertNonSeqEventButton.
+function insertNonSeqEventButton_Callback(hObject, eventdata, handles)
+% hObject    handle to insertNonSeqEventButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+
+    addUndoState(handles,'Insert Non-Sequential Event');
+    
+    selEvtNum = get(handles.nonSeqEventsListbox,'Value');
+    event = LaunchVehicleEvent.getDefaultEvent(lvdData.script);
+    nonSeqEvt = LaunchVehicleNonSeqEvent(event);
+    lvdData.script.nonSeqEvts.addEventAtInd(nonSeqEvt,selEvtNum);
+    lvd_editNonSeqEventGUI(nonSeqEvt, lvdData);
+    
+	setNonSeqDeleteButtonEnable(lvdData, handles)
+
+    runScript(handles, lvdData);
+    lvd_processData(handles);
+
+% --- Executes on button press in deleteNonSeqEventButton.
+function deleteNonSeqEventButton_Callback(hObject, eventdata, handles)
+% hObject    handle to deleteNonSeqEventButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    
+    addUndoState(handles,'Delete Non-Sequential Event');
+    
+    eventNum = get(handles.nonSeqEventsListbox,'Value');
+%     evt = lvdData.script.nonSeqEvts.getEventForInd(eventNum);
+    
+%     lvdData.optimizer.constraints.removeConstraintsThatUseEvent(evt);
+%     
+%     if(lvdData.optimizer.objFcn.usesEvent(evt))
+%         lvdData.optimizer.objFcn = NoOptimizationObjectiveFcn(lvdData.optimizer, lvdData);
+%         
+%         warndlg(sprintf('The existing objective function referenced the deleted event.  The objective function has been replaced with a "%s" objective function.',ObjectiveFunctionEnum.NoObjectiveFunction.name),'Objective Function Reset','modal');
+%     end
+    
+    lvdData.script.nonSeqEvts.removeEventFromIndex(eventNum);
+    
+    totNumNonSeqEvents = lvdData.script.nonSeqEvts.getTotalNumOfEvents();
+    if(eventNum > totNumNonSeqEvents)
+        set(handles.scriptListbox,'Value',totNumNonSeqEvents);
+    end
+    
+    setNonSeqDeleteButtonEnable(lvdData, handles)
+    
+    runScript(handles, lvdData);
+    lvd_processData(handles);

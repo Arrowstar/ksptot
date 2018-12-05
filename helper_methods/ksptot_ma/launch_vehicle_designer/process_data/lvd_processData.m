@@ -43,6 +43,25 @@ function lvd_processData(handles)
     drawnow;
     
     %%%%%%%%%%
+    % Update Non-Sequential Events listbox
+    %%%%%%%%%%   
+    nonSeqEvtsListboxStr = lvdData.script.nonSeqEvts.getListboxStr();
+    
+    if(isempty(nonSeqEvtsListboxStr))
+        set(handles.nonSeqEventsListbox,'String','');
+    else
+        set(handles.nonSeqEventsListbox,'String',nonSeqEvtsListboxStr);
+    end
+    
+    scriptListVal = get(handles.nonSeqEventsListbox,'Value');
+    if(isempty(scriptListVal) || scriptListVal <= 0)
+        set(handles.nonSeqEventsListbox,'Value',1);
+    elseif(scriptListVal > length(get(handles.nonSeqEventsListbox,'String')))
+        set(handles.nonSeqEventsListbox,'Value',length(get(handles.nonSeqEventsListbox,'String')));
+    end
+    drawnow;
+    
+    %%%%%%%%%%
     % Update State Readouts
     %%%%%%%%%%
     propNames = {'Fuel/Ox', 'Monoprop', 'Xenon'};

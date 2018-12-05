@@ -47,15 +47,16 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
             value = obj.lvdData.celBodyData;
         end
         
-        function [newStateLogEntries] = integrateOneEvent(obj, event, eventInitStateLogEntry, integratorFH, tStartPropTime, tStartSimTime, isSparseOutput, checkForSoITrans)
+        function [newStateLogEntries] = integrateOneEvent(obj, event, eventInitStateLogEntry, integratorFH, tStartPropTime, tStartSimTime, isSparseOutput, checkForSoITrans, activeNonSeqEvts)
             [t0,y0, tankStateInds] = eventInitStateLogEntry.getIntegratorStateRepresentation();
             
+            %set max integration time
             maxT = tStartSimTime+obj.simMaxDur;
-            
             if(t0 > maxT)
                 maxT = t0;
             end
             
+            %set integration output step size
             integrationStep = event.integrationStep;
             
             if(integrationStep <= 0)
@@ -64,10 +65,23 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
                 tspan = [t0:integrationStep:maxT]; %#ok<NBRAK>
             end
             
+            %Set up non-seq event term conditions
+            nonSeqTermConds = {};
+            nonSeqTermCauses = NonSeqEventTermCondIntTermCause.empty(1,0);
+            for(i=1:length(activeNonSeqEvts))
+                activeNonSeqEvt = activeNonSeqEvts(i);
+                
+                if(activeNonSeqEvt.numExecsRemaining > 0)
+                    nonSeqTermConds{end+1} = activeNonSeqEvt.getTerminationCondition(); %#ok<AGROW>
+                    nonSeqTermCauses(end+1) = NonSeqEventTermCondIntTermCause(activeNonSeqEvt); %#ok<AGROW>
+                end
+            end
+            
+            %Set up integrator functions
             dryMass = eventInitStateLogEntry.getTotalVehicleDryMass();
             
             odefun = @(t,y) obj.odefun(t,y, obj, eventInitStateLogEntry, dryMass);
-            odeEventsFun = @(t,y) obj.odeEvents(t,y, obj, eventInitStateLogEntry, event.termCond.getEventTermCondFuncHandle(), maxT, checkForSoITrans);
+            odeEventsFun = @(t,y) obj.odeEvents(t,y, obj, eventInitStateLogEntry, event.termCond.getEventTermCondFuncHandle(), maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses);
             odeOutputFun = @(t,y,flag) obj.odeOutput(t,y,flag, tStartPropTime, obj.maxPropTime);
             options = odeset('RelTol',obj.relTol, 'AbsTol',obj.absTol,  'NonNegative',tankStateInds, 'Events',odeEventsFun, 'NormControl','on', 'OutputFcn',odeOutputFun);
             
@@ -114,7 +128,7 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
                     
                     event.initEventOnRestart(newFinalStateLogEntry);
                     
-                    [newStateLogEntriesRestart] = obj.integrateOneEvent(event, newFinalStateLogEntry, integratorFH, tStartPropTime, tStartSimTime, isSparseOutput, checkForSoITrans);
+                    [newStateLogEntriesRestart] = obj.integrateOneEvent(event, newFinalStateLogEntry, integratorFH, tStartPropTime, tStartSimTime, isSparseOutput, checkForSoITrans, activeNonSeqEvts);
                     
                     newStateLogEntries = horzcat(newStateLogEntries,newStateLogEntriesRestart);
                 end
@@ -188,7 +202,7 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
             end
         end
         
-        function [value,isterminal,direction, causes] = odeEvents(t,y, obj, eventInitStateLogEntry, evtTermCond, maxSimTime, checkForSoITrans)
+        function [value,isterminal,direction, causes] = odeEvents(t,y, obj, eventInitStateLogEntry, evtTermCond, maxSimTime, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses)
             celBodyData = obj.celBodyData;
             causes = AbstractIntegrationTerminationCause.empty(0,1);
             
@@ -214,6 +228,14 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
             isterminal(end+1) = 1;
             direction(end+1) = -1;
             causes(end+1) = MinAltitudeIntTermCause();
+            
+            %Non-Sequence Events
+            for(i=1:length(nonSeqTermConds))
+                nonSeqTermCond = nonSeqTermConds{i};
+                
+                [value(end+1),isterminal(end+1),direction(end+1)] = nonSeqTermCond(t,y); %#ok<AGROW>
+                causes(end+1) = nonSeqTermCauses(i); %#ok<AGROW>
+            end
             
             if(checkForSoITrans)
             %SoI transitions
