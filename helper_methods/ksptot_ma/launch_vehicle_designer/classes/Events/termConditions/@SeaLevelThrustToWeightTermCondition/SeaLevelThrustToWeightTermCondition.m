@@ -99,13 +99,10 @@ classdef SeaLevelThrustToWeightTermCondition < AbstractEventTerminationCondition
             
             [~, totalThrust]= LaunchVehicleStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, tankMasses, stgStates, throttle, lvState, presskPa);
             
-            totalMass = (dryMass + sum(tankMasses))*1000; %kg
-            gSlAccel = (bodyInfo.gm / ((bodyInfo.radius)^2))*1000; %m/s^2
-            totalSlWeight = totalMass*gSlAccel; %kg*m/s^2 = N
-          
+            totalMass = (dryMass + sum(tankMasses))*1000; %kg          
             totalThrust = totalThrust * 1000; % N
             
-            twRatio = totalThrust/totalSlWeight;
+            twRatio = computeSLThrustToWeight(bodyInfo, totalThrust, totalMass);
             
             value = twRatio - targetTtW;
             isterminal = 1;
@@ -113,4 +110,3 @@ classdef SeaLevelThrustToWeightTermCondition < AbstractEventTerminationCondition
         end
     end
 end
-
