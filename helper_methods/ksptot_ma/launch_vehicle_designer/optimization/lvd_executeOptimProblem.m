@@ -33,7 +33,7 @@ function lvd_executeOptimProblem(celBodyData, writeOutput, problem, recorder)
         errordlg(char(errorStr),'Optimizer Error','modal');
         
         disp('############################################################');
-        disp(['MA fmincon Error: ', datestr(now(),'yyyy-mm-dd HH:MM:SS')]);
+        disp(['LVD fmincon Error: ', datestr(now(),'yyyy-mm-dd HH:MM:SS')]);
         disp('############################################################');
         disp(ME.message);
         disp('############################################################');

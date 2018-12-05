@@ -114,19 +114,30 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
             end
         end
         
-        function stateLog = executeScript(obj, isSparseOutput)
-%             profile on;
-            initStateLogEntry = obj.lvdData.initialState;
+        function stateLog = executeScript(obj, isSparseOutput, evtToStartScriptExecAt)
             stateLog = obj.lvdData.stateLog;
             
-            stateLog.clearStateLog();
+            if(not(isempty(evtToStartScriptExecAt)))
+                evtStartNum = evtToStartScriptExecAt.getEventNum();
+            else
+                evtStartNum = 1;
+            end
+            
+            if(isempty(evtStartNum) || evtStartNum <= 1)
+                evtStartNum = 1;
+                stateLog.clearStateLog();
+                initStateLogEntry = obj.lvdData.initialState;
+            else
+                stateLog.clearStateLogAtOrAfterEvent(evtToStartScriptExecAt);
+                initStateLogEntry = stateLog.getFinalStateLogEntry().deepCopy();
+            end
             
             tPropTime = 0;
             if(~isempty(obj.evts))
                 
                 tStartSimTime = initStateLogEntry.time;
                 tStartPropTime = tic();
-                for(i=1:length(obj.evts)) %#ok<*NO4LP>
+                for(i=evtStartNum:length(obj.evts)) %#ok<*NO4LP>
                     obj.evts(i).initEvent(initStateLogEntry);
                     initStateLogEntry.event = obj.evts(i);
 
@@ -150,15 +161,13 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
             obj.lastRunExecTime = tPropTime;
             
             x=obj.lvdData.optimizer.vars.getTotalScaledXVector();
-            [c, ceq, values, lb, ub, type, eventNum, cEventInds, ceqEventInds] = obj.lvdData.optimizer.constraints.evalConstraints(x, false);
+            [c, ceq, values, lb, ub, type, eventNum, cEventInds, ceqEventInds] = obj.lvdData.optimizer.constraints.evalConstraints(x, false, evtToStartScriptExecAt);
             
             if(isempty(obj.lvdData.optimizer.constraints.lastRunValues))
                 obj.lvdData.optimizer.constraints.lastRunValues = ConstraintValues();
             end
             
             obj.lvdData.optimizer.constraints.lastRunValues.updateValues(c, ceq, values, lb, ub, type, eventNum, cEventInds, ceqEventInds);
-            
-%             profile viewer;
         end
     end
 end

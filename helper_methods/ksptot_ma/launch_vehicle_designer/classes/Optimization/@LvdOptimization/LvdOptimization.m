@@ -19,18 +19,42 @@ classdef LvdOptimization < matlab.mixin.SetGet
             obj.constraints = ConstraintSet(obj, lvdData);
         end
         
-        function optimize(obj, writeOutput)            
-            objFuncWrapper = @(x) obj.objFcn.evalObjFcn(x);
-            
+        function optimize(obj, writeOutput)                        
 %             x0All = obj.vars.getTotalXVector();
 %             [lbAll, ubAll] = obj.vars.getTotalBndsVector();
 %             typicalX = obj.vars.getTypicalXVector();
 
-            [x0All] = obj.vars.getTotalScaledXVector();
+            [x0All, actVars] = obj.vars.getTotalScaledXVector();
             [lbAll, ubAll] = obj.vars.getTotalScaledBndsVector();
             typicalX = obj.vars.getTypicalScaledXVector();
             
-            nonlcon = @(x) obj.constraints.evalConstraints(x, true);
+            evtNumToStartScriptExecAt = obj.lvdData.script.getTotalNumOfEvents();
+            for(i=1:length(actVars)) %#ok<*NO4LP>
+                var = actVars(i);
+                
+                if(isVarInLaunchVehicle(var, obj.lvdData) || isVarInLaunchVehicle(var, obj.lvdData))
+                    varEvtNum = 1;
+                else
+                    varEvtNum = getEventNumberForVar(var, obj.lvdData);
+                    
+                    if(isempty(varEvtNum))
+                        varEvtNum = 1;
+                    end
+                end
+                
+                if(varEvtNum < evtNumToStartScriptExecAt)
+                    evtNumToStartScriptExecAt = varEvtNum;
+                end
+                
+                if(evtNumToStartScriptExecAt == 1)
+                    break; %it can't go lower than 1, so we're executing the whole thing.  No reason to keep going.
+                end
+            end
+            
+            evtToStartScriptExecAt = obj.lvdData.script.getEventForInd(evtNumToStartScriptExecAt);
+            
+            objFuncWrapper = @(x) obj.objFcn.evalObjFcn(x, evtToStartScriptExecAt);
+            nonlcon = @(x) obj.constraints.evalConstraints(x, true, evtToStartScriptExecAt);
             
             optimAlg = obj.lvdData.settings.optAlgo.algoName;
             usePara = obj.lvdData.settings.optUsePara;

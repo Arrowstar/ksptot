@@ -50,7 +50,7 @@ classdef ConstraintSet < matlab.mixin.SetGet
             num = length(obj.consts);
         end
         
-        function [c, ceq, value, lb, ub, type, eventNum, cEventInds, ceqEventInds] = evalConstraints(obj, x, tfRunScript)
+        function [c, ceq, value, lb, ub, type, eventNum, cEventInds, ceqEventInds] = evalConstraints(obj, x, tfRunScript, evtToStartScriptExecAt)
             c = [];
             ceq = [];
             value = [];
@@ -64,9 +64,9 @@ classdef ConstraintSet < matlab.mixin.SetGet
             celBodyData = obj.lvdData.celBodyData;
             
             if(~isempty(obj.consts))
-                if(tfRunScript == true)
+                if(tfRunScript == true)                   
                     obj.lvdOptim.vars.updateObjsWithScaledVarValues(x);
-                    stateLog = obj.lvdData.script.executeScript(true);
+                    stateLog = obj.lvdData.script.executeScript(true, evtToStartScriptExecAt);
                 else
                     stateLog = obj.lvdData.stateLog;
                 end

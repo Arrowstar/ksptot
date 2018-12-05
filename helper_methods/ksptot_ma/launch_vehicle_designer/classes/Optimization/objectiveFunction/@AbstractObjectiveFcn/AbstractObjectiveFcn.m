@@ -7,7 +7,7 @@ classdef(Abstract) AbstractObjectiveFcn < matlab.mixin.SetGet & matlab.mixin.Het
     end
     
     methods
-        [f, stateLog] = evalObjFcn(obj, x);
+        [f, stateLog] = evalObjFcn(obj, x, evtToStartScriptExecAt);
         
         tf = usesStage(obj, stage)
         
