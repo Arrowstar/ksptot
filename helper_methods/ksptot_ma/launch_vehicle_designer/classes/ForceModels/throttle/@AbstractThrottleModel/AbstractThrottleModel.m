@@ -7,12 +7,10 @@ classdef(Abstract) AbstractThrottleModel < matlab.mixin.SetGet
     end
     
     methods
-        throttle = getThrottleAtTime(obj,ut)
+        initThrottleModel(obj, ut)
         
-        setT0(obj, newT0)
-        
-        setPolyTerms(obj, const, linear, accel)
-        
+        throttle = getThrottleAtTime(obj, ut, rVect, tankMasses, dryMass, stgStates, lvState, tankStates, bodyInfo)
+                
         addActionTf = openEditThrottleModelUI(obj, lv)
         
         optVar = getNewOptVar(obj)

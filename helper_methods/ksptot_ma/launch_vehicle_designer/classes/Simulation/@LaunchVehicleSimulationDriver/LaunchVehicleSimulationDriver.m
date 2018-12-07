@@ -149,8 +149,9 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
             [ut, rVect, vVect, tankStatesMasses] = LaunchVehicleSimulationDriver.decomposeIntegratorTandY(t,y);
             tankStates = eventInitStateLogEntry.getAllActiveTankStates();
             stageStates = eventInitStateLogEntry.stageStates;
-            throttle = eventInitStateLogEntry.throttleModel.getThrottleAtTime(ut);
             lvState = eventInitStateLogEntry.lvState;
+            
+            throttle = eventInitStateLogEntry.throttleModel.getThrottleAtTime(ut, rVect, tankStatesMasses, dryMass, stageStates, lvState, tankStates, bodyInfo);
             
             altitude = norm(rVect) - bodyInfo.radius;
             pressure = getPressureAtAltitude(bodyInfo, altitude);            
@@ -189,7 +190,7 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
                 [tankStates.tankMass] = tmCellArr{:};
                 
                 if(totalMass > 0)
-                    forceSum = obj.forceModel.getForce(ut, rVect, vVect, totalMass, bodyInfo, aero, throttleModel, steeringModel, tankStates, stageStates, lvState);
+                    forceSum = obj.forceModel.getForce(ut, rVect, vVect, totalMass, bodyInfo, aero, throttleModel, steeringModel, tankStates, stageStates, lvState, dryMass, tankStatesMasses);
                     accelVect = forceSum/totalMass; %F = dp/dt = d(mv)/dt = m*dv/dt + v*dm/dt, but since the thrust force causes us to shed mass, we actually account for the v*dm/dt term there and therefore don't need it!  See: https://en.wikipedia.org/wiki/Variable-mass_system         
                     dydt(7:end) = tankMassDots;
                 else

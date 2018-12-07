@@ -11,7 +11,7 @@ classdef DragForceModel < AbstractForceModel
 
         end
         
-        function forceVect = getForce(obj, ut, rVect, vVect, mass, bodyInfo, aero, ~, ~, ~, ~, ~)
+        function forceVect = getForce(obj, ut, rVect, vVect, mass, bodyInfo, aero, ~, ~, ~, ~, ~, ~, ~)
             CdA = aero.area * aero.Cd; 
             [~, forceVect] = getDragAccel(bodyInfo, ut, rVect, vVect, CdA, mass, 'Stock');
         end

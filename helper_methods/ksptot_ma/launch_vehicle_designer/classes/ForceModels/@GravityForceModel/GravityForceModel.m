@@ -11,7 +11,7 @@ classdef GravityForceModel < AbstractForceModel
             
         end
         
-        function forceVect = getForce(obj, ~, rVect, ~, mass, bodyInfo, ~, ~, ~, ~, ~, ~)
+        function forceVect = getForce(obj, ~, rVect, ~, mass, bodyInfo, ~, ~, ~, ~, ~, ~, ~, ~)
 %             [~, rVect, ~, mass, bodyInfo, ~] = obj.getParamsFromStateLogEntry(stateLogEntry);
             
             r = norm(rVect);

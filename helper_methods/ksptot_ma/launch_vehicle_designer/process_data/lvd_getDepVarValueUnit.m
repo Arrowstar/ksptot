@@ -49,5 +49,8 @@ function [depVarValue, depVarUnit, taskStr, refBodyInfo] = lvd_getDepVarValueUni
         case 'Throttle'
             depVarValue = lvd_ThrottleTask(subLog(i), 'throttle');
             depVarUnit = 'Percent';
+        case 'Thrust to Weight Ratio'
+            depVarValue = lvd_ThrottleTask(subLog(i), 't2w');
+            depVarUnit = ' ';
     end
 end

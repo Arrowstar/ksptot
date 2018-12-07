@@ -10,6 +10,7 @@ function [taskList] = lvd_getGraphAnalysisTaskList(excludeList)
     taskList{end+1} = 'Angle of Attack';
     taskList{end+1} = 'SideSlip Angle';
     taskList{end+1} = 'Throttle';
+    taskList{end+1} = 'Thrust to Weight Ratio';
     
     taskList = setdiff(taskList,excludeList);
 end

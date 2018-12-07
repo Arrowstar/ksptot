@@ -5,6 +5,12 @@ classdef ThrottleTermCondition < AbstractEventTerminationCondition
     properties
         throttleModel(1,1) AbstractThrottleModel = ThrottlePolyModel.getDefaultThrottleModel();
         targetThrottle(1,1) double = 0;
+        
+        dryMass(1,1) double = 0;
+        stgStates(1,:) LaunchVehicleStageState
+        lvState(1,:) LaunchVehicleState
+        tankStates(1,:) LaunchVehicleTankState
+        bodyInfo(1,:) KSPTOT_BodyInfo
     end
     
     methods
@@ -13,11 +19,17 @@ classdef ThrottleTermCondition < AbstractEventTerminationCondition
         end
         
         function evtTermCondFcnHndl = getEventTermCondFuncHandle(obj)
-            evtTermCondFcnHndl = @(t,y) obj.eventTermCond(t,y, obj.targetThrottle, obj.throttleModel);
+            evtTermCondFcnHndl = @(t,y) obj.eventTermCond(t,y, obj.targetThrottle, obj.throttleModel, obj.dryMass, obj.stgStates, obj.lvState, obj.tankStates, obj.bodyInfo);
         end
         
         function initTermCondition(obj, initialStateLogEntry)
             obj.throttleModel = initialStateLogEntry.throttleModel;
+            
+            obj.dryMass = initialStateLogEntry.getTotalVehicleDryMass();
+            obj.stgStates = initialStateLogEntry.stageStates;
+            obj.lvState = initialStateLogEntry.lvState;
+            obj.tankStates = initialStateLogEntry.getAllActiveTankStates();
+            obj.bodyInfo = initialStateLogEntry.centralBody;
         end
         
         function name = getName(obj)
@@ -76,10 +88,12 @@ classdef ThrottleTermCondition < AbstractEventTerminationCondition
     end
     
     methods(Static, Access=private)
-        function [value,isterminal,direction] = eventTermCond(t,y, targetThrottle, throttleModel)
+        function [value,isterminal,direction] = eventTermCond(t,y, targetThrottle, throttleModel, dryMass, stgStates, lvState, tankStates, bodyInfo)
             ut = t;
+            rVect = y(1:3);
+            tankMasses = y(7:end);            
             
-            throttle = throttleModel.getThrottleAtTime(ut);
+            throttle = throttleModel.getThrottleAtTime(ut, rVect, tankMasses, dryMass, stgStates, lvState, tankStates, bodyInfo);
             
             value = throttle - targetThrottle;
             isterminal = 1;

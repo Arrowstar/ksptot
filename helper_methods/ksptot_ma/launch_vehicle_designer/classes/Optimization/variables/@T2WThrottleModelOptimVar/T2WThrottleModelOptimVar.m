@@ -1,9 +1,9 @@
-classdef PitchAngleTermCondOptimVar < AbstractOptimizationVariable
-    %PitchAngleTermCondOptimVar Summary of this class goes here
+classdef T2WThrottleModelOptimVar < AbstractOptimizationVariable
+    %T2WThrottleModelOptimVar Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
-        varObj(1,1) PitchTermCondition = PitchTermCondition(0);
+        varObj = T2WThrottleModel.getDefaultThrottleModel()
         
         lb(1,1) double = 0;
         ub(1,1) double = 0;
@@ -12,7 +12,7 @@ classdef PitchAngleTermCondOptimVar < AbstractOptimizationVariable
     end
     
     methods
-        function obj = PitchAngleTermCondOptimVar(varObj)
+        function obj = T2WThrottleModelOptimVar(varObj)
             obj.varObj = varObj;
             obj.varObj.optVar = obj;
             
@@ -23,18 +23,18 @@ classdef PitchAngleTermCondOptimVar < AbstractOptimizationVariable
             x = [];
             
             if(obj.useTf)
-                x = obj.varObj.targetPitchAngle;
+                x = obj.varObj.targetT2W;
             end
         end
         
-        function [lb, ub] = getBndsForVariable(obj)
-            lb = obj.lb(obj.useTf);
-            ub = obj.ub(obj.useTf);
+        function [lb, ub] = getBndsForVariable(obj)            
+            lb = obj.lb(logical(obj.useTf));
+            ub = obj.ub(logical(obj.useTf));
         end
         
         function [lb, ub] = getAllBndsForVariable(obj)
             lb = obj.lb;
-            ub = obj.ub;
+            ub = obj.lb;
         end
         
         function setBndsForVariable(obj, lb, ub)
@@ -43,15 +43,15 @@ classdef PitchAngleTermCondOptimVar < AbstractOptimizationVariable
         end
         
         function useTf = getUseTfForVariable(obj)
-            useTf = obj.useTf;
+            useTf = logical(obj.useTf);
         end
         
-        function setUseTfForVariable(obj, useTf)
-            obj.useTf = useTf;
+        function setUseTfForVariable(obj, useTf)                 
+            obj.useTf = logical(useTf);
         end
         
         function updateObjWithVarValue(obj, x)
-            obj.varObj.targetPitchAngle = x;
+            obj.varObj.targetT2W = x;
         end
     end
 end

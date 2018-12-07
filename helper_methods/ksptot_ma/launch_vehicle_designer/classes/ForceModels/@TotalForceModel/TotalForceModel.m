@@ -12,13 +12,13 @@ classdef TotalForceModel < AbstractForceModel
             obj.forceModels = TotalForceModel.getForceModels();
         end
         
-        function forceVect = getForce(obj, ut, rVect, vVect, mass, bodyInfo, aero, throttleModel, steeringModel, tankStates, stageStates, lvState)
+        function forceVect = getForce(obj, ut, rVect, vVect, mass, bodyInfo, aero, throttleModel, steeringModel, tankStates, stageStates, lvState, dryMass, tankStatesMasses)
             forceVect = [0;0;0];
             
             if(mass > 0)
                 forceModelsVar = obj.forceModels;
                 for(i=1:length(obj.forceModels)) %#ok<*NO4LP>
-                    forceVect = forceVect + forceModelsVar(i).getForce(ut, rVect, vVect, mass, bodyInfo, aero, throttleModel, steeringModel, tankStates, stageStates, lvState);
+                    forceVect = forceVect + forceModelsVar(i).getForce(ut, rVect, vVect, mass, bodyInfo, aero, throttleModel, steeringModel, tankStates, stageStates, lvState, dryMass, tankStatesMasses);
                 end
             end
         end

@@ -11,7 +11,19 @@ classdef SetThrottleModelAction < AbstractEventAction
             if(nargin > 0)
                 obj.throttleModel = throttleModel;
             else
-                obj.throttleModel = ThrottlePolyModel.getDefaultThrottleModel();
+%                 obj.throttleModel = ThrottlePolyModel.getDefaultThrottleModel();
+                [throttleModelNameStrs, enums] = ThrottleModelEnum.getThrottleModelTypeNameStrs();
+                [dialogInd,tf] = listdlg('ListString',throttleModelNameStrs, ...
+                                         'Name','Select Throttle Model', ...
+                                         'PromptString',{'Select throttle model type:'}, ...
+                                         'SelectionMode','single', ...
+                                         'ListSize',[300 300]);
+                if(tf)
+                    m = enums(dialogInd);
+                    obj.throttleModel = eval(sprintf('%s.%s',m.classNameStr,'getDefaultThrottleModel()'));
+                else
+                    obj.throttleModel = ThrottlePolyModel.getDefaultThrottleModel();
+                end
             end
             
             obj.id = rand();
@@ -24,7 +36,7 @@ classdef SetThrottleModelAction < AbstractEventAction
         
         function initAction(obj, initialStateLogEntry)
             t0 = initialStateLogEntry.time;
-            obj.throttleModel.setT0(t0);
+            obj.throttleModel.initThrottleModel(t0);
         end
         
         function name = getName(obj)
@@ -61,7 +73,14 @@ classdef SetThrottleModelAction < AbstractEventAction
     
     methods(Static)
         function addActionTf = openEditActionUI(action, lv)
-            addActionTf = lvd_EditActionSetThrottleModelGUI(action, lv);
+            switch class(action.throttleModel)
+                case ThrottleModelEnum.PolyModel.classNameStr
+                    addActionTf = lvd_EditActionSetThrottleModelGUI(action, lv);
+                case ThrottleModelEnum.T2WModel.classNameStr
+                    addActionTf = lvd_EditT2WThrottleModelGUI(action, lv);
+                otherwise
+                    error('Unknown throttle model class type: %s', class(action.throttleModel));
+            end
         end
     end
 end

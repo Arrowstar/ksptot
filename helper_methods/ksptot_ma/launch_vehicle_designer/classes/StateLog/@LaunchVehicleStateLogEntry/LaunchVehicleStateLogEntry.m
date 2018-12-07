@@ -32,7 +32,15 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
         end
         
         function value = get.throttle(obj)
-            value = obj.throttleModel.getThrottleAtTime(obj.time);
+            tankStates = obj.getAllActiveTankStates();
+            
+            tankMasses = zeros(size(tankStates));
+            for(i=1:length(tankStates))
+                tankMasses(i) = tankStates(i).tankMass;
+            end
+            
+            value = obj.throttleModel.getThrottleAtTime(obj.time, obj.position, tankMasses, obj.getTotalVehicleDryMass(), ...
+                                                        obj.stageStates, obj.lvState, tankStates, obj.centralBody);
         end
         
         function attState = get.attitude(obj)
@@ -117,7 +125,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             end
         end
         
-        function propMass = getTotalVehiclePropMass(obj)
+        function [propMass, tankMasses] = getTotalVehiclePropMass(obj)
             propMass = 0;
             
             for(i=1:length(obj.stageStates))

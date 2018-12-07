@@ -257,6 +257,12 @@ function addActionButton_Callback(hObject, eventdata, handles)
         end
         
         set(handles.actionsListbox,'String',event.getActionsListboxStr());
+        
+        if(handles.actionsListbox.Value <= 0)
+            handles.actionsListbox.Value = 1;
+        elseif(handles.actionsListbox.Value > length(handles.actionsListbox.String))
+            handles.actionsListbox.Value = length(handles.actionsListbox.String);
+        end
     end
     
 % --- Executes on button press in removeActionButton.

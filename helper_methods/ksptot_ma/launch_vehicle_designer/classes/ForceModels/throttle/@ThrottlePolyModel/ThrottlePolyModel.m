@@ -7,7 +7,7 @@ classdef ThrottlePolyModel < AbstractThrottleModel
     end
     
     methods
-        function throttle = getThrottleAtTime(obj,ut)
+        function throttle = getThrottleAtTime(obj, ut, ~, ~, ~, ~, ~, ~, ~)
             throttle = obj.throttleModel.getValueAtTime(ut);
             
             if(throttle < 0)
@@ -15,6 +15,10 @@ classdef ThrottlePolyModel < AbstractThrottleModel
             elseif(throttle > 1)
                 throttle = 1.0;
             end
+        end
+        
+        function initThrottleModel(obj, ut)
+            obj.setT0(ut)
         end
         
         function setT0(obj, newT0)
