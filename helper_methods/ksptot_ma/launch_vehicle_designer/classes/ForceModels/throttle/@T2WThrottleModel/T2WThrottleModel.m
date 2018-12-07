@@ -17,7 +17,9 @@ classdef T2WThrottleModel < AbstractThrottleModel
                 if(fullThrottleTW < obj.targetT2W)
                     throttle = 1.0;
                 else
-                    [x, ~, ~] = bisection(twRatioFH, 0.0 , 1.0, obj.targetT2W, 1E-5);
+%                     [x, ~, ~] = bisection(twRatioFH, 0.0 , 1.0, obj.targetT2W, 1E-5);
+                    x = fzero(@(x) twRatioFH(x) - obj.targetT2W, 0.5, optimset('TolX',1E-8));
+
                     throttle = x;
                 end
             end
