@@ -44,7 +44,7 @@ classdef TrueAnomalyTermCondition < AbstractEventTerminationCondition
             params.useTanks = 'off';
             params.useEngines = 'off';
             
-            params.value = obj.tru;
+            params.value = rad2deg(obj.tru);
             params.refStage = LaunchVehicleStage.empty(1,0);
             params.refTank = LaunchVehicleEngine.empty(1,0);
             params.refEngine = LaunchVehicleEngine.empty(1,0);
