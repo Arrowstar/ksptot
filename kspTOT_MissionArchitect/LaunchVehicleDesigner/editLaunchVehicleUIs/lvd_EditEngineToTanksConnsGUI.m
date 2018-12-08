@@ -174,7 +174,7 @@ function removeConnButton_Callback(hObject, eventdata, handles)
             set(handles.connsListBox,'Value',numConns);
         end
     else
-        warndlg(sprintf('Could not delete the "%s" connection because it is in use as part of an event termination condition, event action, objective function, or constraint.  Remove the dependencies before attempting to delete the connection.', conn.name),'Cannot Delete Connection','modal');
+        warndlg(sprintf('Could not delete the "%s" connection because it is in use as part of an event termination condition, event action, objective function, or constraint.  Remove the dependencies before attempting to delete the connection.', conn.getName()),'Cannot Delete Connection','modal');
     end
 
 
