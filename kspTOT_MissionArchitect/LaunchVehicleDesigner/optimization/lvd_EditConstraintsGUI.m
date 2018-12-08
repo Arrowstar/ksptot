@@ -156,6 +156,12 @@ function addConstraintButton_Callback(hObject, eventdata, handles)
             
             listBoxStr = constraintSet.getListboxStr();
             set(handles.constraintsListBox,'String',listBoxStr);
+            
+            if(handles.constraintsListBox.Value <= 0)
+                handles.constraintsListBox.Value = 1;
+            elseif(handles.constraintsListBox.Value > length(listBoxStr))
+                handles.constraintsListBox.Value = length(listBoxStr);
+            end
         end
     end
     

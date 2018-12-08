@@ -50,6 +50,19 @@ classdef ConstraintEnum < matlab.mixin.SetGet
         HyperVelRA('Hyperbolic Velocity Vector Right Ascension','GenericMAConstraint','Hyperbolic Velocity Vector Right Ascension')
         HyperVelDec('Hyperbolic Velocity Vector Declination','GenericMAConstraint','Hyperbolic Velocity Vector Declination')
         HyperVelMag('Hyperbolic Velocity Magnitude','GenericMAConstraint','Hyperbolic Velocity Magnitude')
+        
+        PitchAngle('Pitch Angle','PitchAngleConstraint',[]);
+        RollAngle('Roll Angle','RollAngleConstraint',[]);
+        YawAngle('Yaw Angle','YawAngleConstraint',[]);
+        Throttle('Throttle','ThrottleConstraint',[]);
+        
+        BankAngle('Bank Angle','BankAngleConstraint',[]);
+        AngleOfAttack('Angle of Attack','AngleOfAttackConstraint',[]);
+        SideSlipAngle('Side Slip Angle','SideSlipAngleConstraint',[]);
+        
+        InertialAngleOfAttack('Inertial Angle of Attack','InertialAngleOfAttackConstraint',[]);
+        InertialBankAngle('Inertial Bank Angle','InertialBankAngleConstraint',[]);
+        InertialSideSlipAngle('Inertial Side Slip Angle','InertialSideSlipAngleConstraint',[]);
     end
     
     properties

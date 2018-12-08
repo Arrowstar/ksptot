@@ -1,9 +1,8 @@
-classdef GenericMAConstraint < AbstractConstraint
-    %GenericMAConstraint Summary of this class goes here
+classdef AngleOfAttackConstraint < AbstractConstraint
+    %AngleOfAttackConstraint Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
-        constraintType(1,:) char = '';
         normFact = 1;
         event(1,:) LaunchVehicleEvent
         
@@ -12,16 +11,12 @@ classdef GenericMAConstraint < AbstractConstraint
     end
     
     methods
-        function obj = GenericMAConstraint(constraintType, event, lb, ub, refStation, refOtherSC, refBodyInfo)
-            obj.constraintType = constraintType;
+        function obj = AngleOfAttackConstraint(event, lb, ub)
             obj.event = event;
             obj.lb = lb;
-            obj.ub = ub;
-            obj.refStation = refStation;
-            obj.refOtherSC = refOtherSC;
-            obj.refBodyInfo = refBodyInfo; 
+            obj.ub = ub;    
             
-             obj.id = rand();
+            obj.id = rand();
         end
         
         function [lb, ub] = getBounds(obj)
@@ -30,28 +25,17 @@ classdef GenericMAConstraint < AbstractConstraint
         end
         
         function [c, ceq, value, lwrBnd, uprBnd, type, eventNum] = evalConstraint(obj, stateLog, celBodyData)           
-            stateLogEntry = stateLog.getLastStateLogForEvent(obj.event).getMAFormattedStateLogMatrix();
-            type = obj.constraintType;
+            type = obj.getConstraintType();
+            stateLogEntry = stateLog.getLastStateLogForEvent(obj.event);
             
-            if(not(isempty(obj.refBodyInfo)))
-                refBodyId = obj.refBodyInfo.id;
-            else
-                refBodyId = [];
-            end
+            ut = stateLogEntry.time;
+            rVect = stateLogEntry.position;
+            vVect = stateLogEntry.velocity;
+            bodyInfo = stateLogEntry.centralBody;
             
-            oscId = -1;
-            if(not(isempty(obj.refOtherSC)))
-                oscId = obj.refOtherSC.id;
-            end
+            [bankAng,angOfAttack,angOfSideslip] = stateLogEntry.attitude.getAeroAngles(ut, rVect, vVect, bodyInfo);
             
-            stnId = -1;
-            if(not(isempty(obj.refStation)))
-                stnId = obj.refStation.id;
-            end
-            
-            maData.spacecraft = struct();
-            propNames = {'Fuel/Ox', 'Monoprop', 'Xenon'}; %placeholder only
-            value = ma_getDepVarValueUnit(1, stateLogEntry, type, 0, refBodyId, oscId, stnId, propNames, maData, celBodyData, false);
+            value = rad2deg(angOfAttack);
                        
             if(obj.lb == obj.ub)
                 c = [];
@@ -99,15 +83,20 @@ classdef GenericMAConstraint < AbstractConstraint
         end
         
         function type = getConstraintType(obj)
-            type = obj.constraintType;
+            type = 'Angle of Attack';
         end
-                
+        
         function name = getName(obj)
             name = sprintf('%s - Event %i', obj.getConstraintType(), obj.event.getEventNum());
         end
         
         function [unit, lbLim, ubLim, usesLbUb, usesCelBody, usesRefSc] = getConstraintStaticDetails(obj)
-            [unit, lbLim, ubLim, ~, ~, ~, ~, usesLbUb, usesCelBody, usesRefSc] = ma_getConstraintStaticDetails(obj.constraintType);           
+            unit = 'deg';
+            lbLim = -90;
+            ubLim = 90;
+            usesLbUb = true;
+            usesCelBody = false;
+            usesRefSc = false;
         end
         
         function addConstraintTf = openEditConstraintUI(obj, lvdData)
@@ -116,8 +105,8 @@ classdef GenericMAConstraint < AbstractConstraint
     end
     
     methods(Static)
-        function constraint = getDefaultConstraint(constraintType)            
-            constraint = GenericMAConstraint(constraintType, LaunchVehicleEvent.empty(1,0), 0, 0, [], [], KSPTOT_BodyInfo.empty(1,0));
+        function constraint = getDefaultConstraint(~)            
+            constraint = AngleOfAttackConstraint(LaunchVehicleEvent.empty(1,0),0,0);
         end
     end
 end

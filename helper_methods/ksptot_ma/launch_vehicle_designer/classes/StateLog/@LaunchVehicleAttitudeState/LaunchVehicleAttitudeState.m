@@ -31,6 +31,16 @@ classdef LaunchVehicleAttitudeState < matlab.mixin.SetGet
             angOfSideslip = AngleZero2Pi(angOfSideslip);
         end
         
+        function [inertBankAng,inertAngOfAttack,insertAngOfSideslip] = getInertialAeroAngles(obj, ut, rVect, vVect, bodyInfo)
+            bodyX = obj.dcm(:,1);
+            bodyY = obj.dcm(:,2);
+            bodyZ = obj.dcm(:,3);
+            
+            [inertBankAng,inertAngOfAttack,insertAngOfSideslip] = computeInertialAeroAnglesFromBodyAxes(ut, rVect, vVect, bodyInfo, bodyX, bodyY, bodyZ);
+            inertBankAng = AngleZero2Pi(inertBankAng);
+            insertAngOfSideslip = AngleZero2Pi(insertAngOfSideslip);
+        end
+        
         function newAttState = deepCopy(obj)
             newAttState = LaunchVehicleAttitudeState();
             newAttState.dcm = obj.dcm;

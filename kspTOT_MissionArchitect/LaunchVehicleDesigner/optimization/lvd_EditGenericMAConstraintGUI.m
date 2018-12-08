@@ -70,8 +70,8 @@ function lvd_EditGenericMAConstraintGUI_OpeningFcn(hObject, eventdata, handles, 
     uiwait(handles.lvd_EditGenericMAConstraintGUI);
 
 function populateGUI(handles, constraint, lvdData)
-    handles.constraintTypeLabel.String = constraint.constraintType;
-    handles.constraintTypeLabel.TooltipString = constraint.constraintType;
+    handles.constraintTypeLabel.String = constraint.getConstraintType();
+    handles.constraintTypeLabel.TooltipString = constraint.getConstraintType();
     [unit, ~, ~, usesLbUb, usesCelBody, usesRefSc] = constraint.getConstraintStaticDetails();
     
     if(usesLbUb)
@@ -210,30 +210,35 @@ function saveAndCloseButton_Callback(hObject, eventdata, handles)
 function errMsg = validateInputs(handles)
     errMsg = {};
     
-    lwrBnd = str2double(get(handles.lbText,'String'));
-    enteredStr = get(handles.lbText,'String');
-    numberName = 'Lower Bound';
-    lb = -Inf;
-    ub = Inf;
-    isInt = false;
-    errMsg = validateNumber(lwrBnd, numberName, lb, ub, isInt, errMsg, enteredStr);
+    constraint = getappdata(handles.lvd_EditGenericMAConstraintGUI, 'constraint');
+    [~, lbLim, ubLim, usesLbUb, ~, ~] = constraint.getConstraintStaticDetails();
     
-    uprBnd = str2double(get(handles.ubText,'String'));
-    enteredStr = get(handles.ubText,'String');
-    numberName = 'Upper Bound';
-    lb = -Inf;
-    ub = Inf;
-    isInt = false;
-    errMsg = validateNumber(uprBnd, numberName, lb, ub, isInt, errMsg, enteredStr);
-    
-    if(isempty(errMsg))
+    if(usesLbUb)
+        lwrBnd = str2double(get(handles.lbText,'String'));
+        enteredStr = get(handles.lbText,'String');
+        numberName = 'Lower Bound';
+        lb = lbLim;
+        ub = Inf;
+        isInt = false;
+        errMsg = validateNumber(lwrBnd, numberName, lb, ub, isInt, errMsg, enteredStr);
+
         uprBnd = str2double(get(handles.ubText,'String'));
         enteredStr = get(handles.ubText,'String');
         numberName = 'Upper Bound';
-        lb = lwrBnd;
-        ub = Inf;
+        lb = -Inf;
+        ub = ubLim;
         isInt = false;
         errMsg = validateNumber(uprBnd, numberName, lb, ub, isInt, errMsg, enteredStr);
+
+        if(isempty(errMsg))
+            uprBnd = str2double(get(handles.ubText,'String'));
+            enteredStr = get(handles.ubText,'String');
+            numberName = 'Upper Bound';
+            lb = lwrBnd;
+            ub = ubLim;
+            isInt = false;
+            errMsg = validateNumber(uprBnd, numberName, lb, ub, isInt, errMsg, enteredStr);
+        end
     end
     
     sf = str2double(get(handles.scaleFactorText,'String'));
