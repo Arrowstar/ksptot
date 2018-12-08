@@ -82,7 +82,8 @@ classdef LvdData < matlab.mixin.SetGet
                         
             %Set Up Mission Script
             script = LaunchVehicleScript(lvdData, simDriver);
-           
+            script.addEvent(LaunchVehicleEvent.getDefaultEvent(script));
+            
             lvdData.script = script;
 
             %State Log
