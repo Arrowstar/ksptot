@@ -82,6 +82,10 @@ function populateGUI(handles, event)
         value = 0.0;
     end
     
+    if(strcmpi(params.paramUnit,'deg'))
+        value = rad2deg(value);
+    end
+    
     set(handles.numParamText,'String',fullAccNum2Str(value));
     
     lv = event.script.lvdData.launchVehicle;
