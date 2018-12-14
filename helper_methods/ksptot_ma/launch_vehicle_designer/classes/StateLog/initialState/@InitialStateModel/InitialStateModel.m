@@ -93,6 +93,25 @@ classdef InitialStateModel < matlab.mixin.SetGet
                 vars(end+1) = throttleVar;
             end
         end
+        
+        function clearAllTankStatesAndRegenerate(obj)
+            for(i=1:length(obj.stageStates))
+                stgState = obj.stageStates(i);
+                
+                stgState.tankStates = LaunchVehicleTankState.empty(1,0);
+                
+                stage = stgState.stage;
+                for(j=1:length(stage.tanks))
+                    tank = stage.tanks(j);
+                    
+                    newTankState = LaunchVehicleTankState(stgState);
+                    newTankState.tank = tank;
+                    newTankState.tankMass = tank.initialMass;
+                    
+                    stgState.addTankState(newTankState);
+                end
+            end
+        end
     end
 
     methods(Static)

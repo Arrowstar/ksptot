@@ -90,6 +90,9 @@ function varargout = lvd_editLaunchVehicle_OutputFcn(hObject, eventdata, handles
     if(isempty(handles))
         varargout{1} = [];
     else
+        lvdData = getappdata(handles.lvd_editLaunchVehicle, 'lvdData');
+        lvdData.initStateModel.clearAllTankStatesAndRegenerate();
+        
         close(handles.lvd_editLaunchVehicle);
     end
 
