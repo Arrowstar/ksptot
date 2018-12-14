@@ -26,6 +26,10 @@ classdef SideSlipAngleTermCondition < AbstractEventTerminationCondition
             name = sprintf('Side Slip Angle (%.3f deg)', rad2deg(obj.targetSlipAngle));
         end
         
+        function tf = shouldBeReinitOnRestart(obj)
+            tf = false;
+        end
+        
         function params = getTermCondUiStruct(obj)
             params = struct();
             

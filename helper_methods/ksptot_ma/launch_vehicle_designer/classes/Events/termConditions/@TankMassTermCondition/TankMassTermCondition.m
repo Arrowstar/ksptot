@@ -23,7 +23,10 @@ classdef TankMassTermCondition < AbstractEventTerminationCondition
             
             tankStates = initialStateLogEntry.getAllActiveTankStates();
             if(not(isempty(tankStates)))
-                obj.tankStateInd = find([tankStates.tank] == obj.tank);
+                tankStateIndex = find([tankStates.tank] == obj.tank); %#ok<EFIND>
+                if(not(isempty(tankStateIndex)))
+                    obj.tankStateInd = find([tankStates.tank] == obj.tank);
+                end
             end
         end
         
@@ -32,7 +35,7 @@ classdef TankMassTermCondition < AbstractEventTerminationCondition
         end
         
         function tf = shouldBeReinitOnRestart(obj)
-            tf = false;
+            tf = true;
         end
         
         function params = getTermCondUiStruct(obj)

@@ -145,7 +145,12 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
             for(i=1:length(obj.actions))
                 [aTf, aVars] = obj.actions(i).hasActiveOptimVar();
                 tf = tf || aTf;
-                vars = horzcat(vars, aVars); %#ok<AGROW>
+                
+                if(isempty(vars))
+                    vars = aVars;
+                else
+                    vars = horzcat(vars, aVars); %#ok<AGROW>
+                end
             end
         end
     end

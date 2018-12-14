@@ -26,6 +26,10 @@ classdef PitchTermCondition < AbstractEventTerminationCondition
             name = sprintf('Pitch Angle (%.3f deg)', rad2deg(obj.targetPitchAngle));
         end
         
+        function tf = shouldBeReinitOnRestart(obj)
+            tf = false;
+        end
+        
         function params = getTermCondUiStruct(obj)
             params = struct();
             

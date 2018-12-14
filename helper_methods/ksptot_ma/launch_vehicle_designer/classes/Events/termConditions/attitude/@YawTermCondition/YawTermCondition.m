@@ -26,6 +26,10 @@ classdef YawTermCondition < AbstractEventTerminationCondition
             name = sprintf('Yaw Angle (%.3f deg)', rad2deg(obj.targetYawAngle));
         end
         
+        function tf = shouldBeReinitOnRestart(obj)
+            tf = false;
+        end
+        
         function params = getTermCondUiStruct(obj)
             params = struct();
             

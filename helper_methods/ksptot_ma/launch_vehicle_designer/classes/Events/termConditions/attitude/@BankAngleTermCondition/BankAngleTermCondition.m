@@ -26,6 +26,10 @@ classdef BankAngleTermCondition < AbstractEventTerminationCondition
             name = sprintf('Bank Angle (%.3f deg)', rad2deg(obj.targetBankAngle));
         end
         
+        function tf = shouldBeReinitOnRestart(obj)
+            tf = false;
+        end
+        
         function params = getTermCondUiStruct(obj)
             params = struct();
             

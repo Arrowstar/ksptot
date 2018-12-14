@@ -26,6 +26,10 @@ classdef AngleOfAttackTermCondition < AbstractEventTerminationCondition
             name = sprintf('Angle of Attack (%.3f deg)', rad2deg(obj.targetAoA));
         end
         
+        function tf = shouldBeReinitOnRestart(obj)
+            tf = false;
+        end
+        
         function params = getTermCondUiStruct(obj)
             params = struct();
             

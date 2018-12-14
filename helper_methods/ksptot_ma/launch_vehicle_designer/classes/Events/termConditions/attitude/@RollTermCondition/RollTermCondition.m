@@ -26,6 +26,10 @@ classdef RollTermCondition < AbstractEventTerminationCondition
             name = sprintf('Roll Angle (%.3f deg)', rad2deg(obj.targetRollAngle));
         end
         
+        function tf = shouldBeReinitOnRestart(obj)
+            tf = false;
+        end
+        
         function params = getTermCondUiStruct(obj)
             params = struct();
             
