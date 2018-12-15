@@ -22,7 +22,7 @@ function varargout = lvd_EditLvAndStagesStatesGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditLvAndStagesStatesGUI
 
-% Last Modified by GUIDE v2.5 03-Dec-2018 16:55:03
+% Last Modified by GUIDE v2.5 15-Dec-2018 14:39:14
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -108,6 +108,11 @@ function engineListbox_Callback(hObject, eventdata, handles)
     state = getSelectedEngineState(handles);
     handles.engineActiveCheckbox.Value = double(state.active);
 
+    if(strcmpi(get(handles.lvd_EditLvAndStagesStatesGUI,'SelectionType'),'open'))
+        handles.engineActiveCheckbox.Value = double(not(logical(handles.engineActiveCheckbox.Value)));
+    end
+    engineActiveCheckbox_Callback(handles.engineActiveCheckbox, [], handles);
+
 function state = getSelectedEngineState(handles)
     lvdData = getappdata(handles.lvd_EditLvAndStagesStatesGUI, 'lvdData');
     lv = lvdData.launchVehicle;
@@ -159,6 +164,11 @@ function stageListbox_Callback(hObject, eventdata, handles)
 %        contents{get(hObject,'Value')} returns selected item from stageListbox
     state = getSelectedStageState(handles);
     handles.stageActiveCheckbox.Value = double(state.active);
+    
+    if(strcmpi(get(handles.lvd_EditLvAndStagesStatesGUI,'SelectionType'),'open'))
+        handles.stageActiveCheckbox.Value = double(not(logical(handles.stageActiveCheckbox.Value)));
+    end
+    stageActiveCheckbox_Callback(handles.stageActiveCheckbox, [], handles);
     
 function state = getSelectedStageState(handles)
     lvdData = getappdata(handles.lvd_EditLvAndStagesStatesGUI, 'lvdData');
@@ -213,6 +223,11 @@ function connListbox_Callback(hObject, eventdata, handles)
 %        contents{get(hObject,'Value')} returns selected item from connListbox
     state = getSelectedConnState(handles);
     handles.connCheckbox.Value = double(state.active);
+    
+    if(strcmpi(get(handles.lvd_EditLvAndStagesStatesGUI,'SelectionType'),'open'))
+        handles.connCheckbox.Value = double(not(logical(handles.connCheckbox.Value)));
+    end
+    connCheckbox_Callback(handles.connCheckbox, [], handles);
 
 function state = getSelectedConnState(handles)
     lvdData = getappdata(handles.lvd_EditLvAndStagesStatesGUI, 'lvdData');

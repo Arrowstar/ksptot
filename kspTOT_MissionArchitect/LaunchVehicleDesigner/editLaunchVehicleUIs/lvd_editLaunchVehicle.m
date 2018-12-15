@@ -72,6 +72,7 @@ function populateGUI(handles, lvdData)
     jEditbox = jViewPort.getComponent(0);
     jEditbox.setWrapping(false);
     jScrollPane.setHorizontalScrollBarPolicy(32);
+    jEditbox.setEditable(false);
     jEditbox.revalidate();
     setSummText(handles.lvSummaryText, lvdData.launchVehicle);
     
