@@ -20,10 +20,12 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
         attitude(1,1) LaunchVehicleAttitudeState
         throttle(1,1) double
         celBodyData struct
+        launchVehicle LaunchVehicle
     end
     
     properties(Constant)
         emptyTankArr = LaunchVehicleTankState.empty(1,0);
+        emptyEngineArr = LaunchVehicleEngineState.empty(1,0);
     end
     
     methods
@@ -50,6 +52,10 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
         
         function celBodyData = get.celBodyData(obj)
             celBodyData = obj.lvState.lv.lvdData.celBodyData;
+        end
+        
+        function launchVehicle = get.launchVehicle(obj)
+            launchVehicle = obj.lvState.lv;
         end
         
         function [t,y, tankStateInds] = getIntegratorStateRepresentation(obj)
@@ -91,7 +97,6 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
         end
         
         function tankStates = getAllTankStates(obj)
-%             tankStates = LaunchVehicleTankState.empty(0,1);
             tankStates = obj.emptyTankArr;
             
             stgStates = obj.stageStates;
@@ -102,7 +107,6 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
         end
         
         function tankStates = getAllActiveTankStates(obj)
-%             tankStates = LaunchVehicleTankState.empty(1,0);
             tankStates = obj.emptyTankArr;
 
             stgStates = obj.stageStates;
@@ -112,6 +116,16 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                 if(stgState.active)
                     tankStates = horzcat(tankStates, stgState.tankStates); %#ok<AGROW>
                 end
+            end
+        end
+        
+        function engineStates = getAllEngineStates(obj)
+            engineStates = obj.emptyEngineArr;
+            
+            stgStates = obj.stageStates;
+            for(i=1:length(stgStates)) %#ok<*NO4LP>
+                stgState = stgStates(i);
+                engineStates = horzcat(engineStates, stgState.engineStates); %#ok<AGROW>
             end
         end
         

@@ -99,6 +99,18 @@ classdef LaunchVehicle < matlab.mixin.SetGet
             end
         end
         
+        function [stagesGAStr, stages] = getStagesGraphAnalysisTaskStrs(obj)
+            [~, stages] = obj.getStagesListBoxStr();
+            
+            stagesGAStr = cell(1,2*length(stages));
+            A = length(stages);
+            formSpec = sprintf('%%0%uu',floor(log10(abs(A)+1)) + 1);
+            for(i=1:length(stages))
+                stagesGAStr{1+(i-1)*2} = sprintf(sprintf('Stage %s Dry Mass - "%s"',formSpec, stages(i).name), i);
+                stagesGAStr{2*i} = sprintf(sprintf('Stage %s Active State - "%s"',formSpec, stages(i).name), i);
+            end
+        end
+        
         function ind = getListBoxIndForStage(obj, stage)
             ind = find(obj.stages == stage);
         end
@@ -116,6 +128,17 @@ classdef LaunchVehicle < matlab.mixin.SetGet
             
             if(isempty(tanksListStr))
                 tanksListStr{end+1} = '';
+            end
+        end
+        
+        function [tanksGAStr, tanks] = getTanksGraphAnalysisTaskStrs(obj)
+            [~, tanks] = obj.getTanksListBoxStr();
+            
+            tanksGAStr = cell(size(tanks));
+            A = length(tanks);
+            formSpec = sprintf('%%0%uu',floor(log10(abs(A)+1)) + 1);
+            for(i=1:length(tanks))
+                tanksGAStr{i} = sprintf(sprintf('Tank %s Mass - "%s"',formSpec, tanks(i).name), i);
             end
         end
         
@@ -146,6 +169,17 @@ classdef LaunchVehicle < matlab.mixin.SetGet
             
             if(isempty(enginesListStr))
                 enginesListStr{end+1} = '';
+            end
+        end
+        
+        function [engineGAStr, engines] = getEnginesGraphAnalysisTaskStrs(obj)
+            [~, engines] = obj.getEnginesListBoxStr();
+            
+            engineGAStr = cell(1,length(engines));
+            A = length(engines);
+            formSpec = sprintf('%%0%uu',floor(log10(abs(A)+1)) + 1);
+            for(i=1:length(engines))
+                engineGAStr{i} = sprintf(sprintf('Engine %s Active State - "%s"',formSpec, engines(i).name), i);
             end
         end
         

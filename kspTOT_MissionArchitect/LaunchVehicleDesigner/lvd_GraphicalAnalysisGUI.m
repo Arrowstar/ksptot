@@ -80,7 +80,7 @@ function lvd_GraphicalAnalysisGUI_OpeningFcn(hObject, eventdata, handles, vararg
     exclude{end+1} = 'Line of Sight to Ref. Spacecraft';
     exclude{end+1} = 'Line of Sight to Ref. Station';
 
-    taskList = lvd_getGraphAnalysisTaskList(exclude);
+    taskList = lvd_getGraphAnalysisTaskList(lvdData, exclude);
     set(handles.depVarListbox,'String',taskList);
 
     maStateLog = lvdData.stateLog.getMAFormattedStateLogMatrix();

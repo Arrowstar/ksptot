@@ -112,6 +112,33 @@ classdef InitialStateModel < matlab.mixin.SetGet
                 end
             end
         end
+        
+        function clearDuplicateEngineStates(obj)
+            for(i=1:length(obj.stageStates))
+                stgState = obj.stageStates(i);
+                
+                stage = stgState.stage;
+                for(j=1:length(stage.engines))
+                    engine = stage.engines(j);
+                    engineStates = stgState.engineStates;
+                    
+                    thisEngineStates = engineStates([engineStates.engine] == engine);
+                    if(length(thisEngineStates) > 1)
+                        thisEngineStateToSave = thisEngineStates(1);
+                        
+                        engineStates(engineStates == engine) = LaunchVehicleEngineState.empty(1,0);
+                        engineStates(end+1) = thisEngineStateToSave; %#ok<AGROW>
+                    end
+                    
+                    notThisEngineStates = engineStates([engineStates.engine] ~= engine);
+                    if(not(isempty(notThisEngineStates)))
+                        engineStates = setdiff(engineStates, notThisEngineStates);
+                    end
+                    
+                    stgState.engineStates = engineStates;
+                end
+            end
+        end
     end
 
     methods(Static)
