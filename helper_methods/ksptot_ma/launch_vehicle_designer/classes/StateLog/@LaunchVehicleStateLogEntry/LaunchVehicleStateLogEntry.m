@@ -241,7 +241,6 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                     for(j=1:length(stateLogEntry.stopwatchStates))
                         if(initSwRunning(j) == true)
                             stateLogEntry.stopwatchStates(j).value = initSwValues(j) + deltaT;
-                            disp(stateLogEntry.stopwatchStates(j).value);
                         end
                     end
                 end
