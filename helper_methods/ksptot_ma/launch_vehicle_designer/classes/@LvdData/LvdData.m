@@ -50,6 +50,10 @@ classdef LvdData < matlab.mixin.SetGet
             tf = obj.script.usesEngineToTankConn(engineToTank);
             tf = tf || obj.optimizer.usesEngineToTankConn(engineToTank);
         end
+        
+        function tf = usesStopwatch(obj, stopwatch)
+            tf = obj.script.usesStopwatch(stopwatch);
+        end
     end
     
     methods(Static)        

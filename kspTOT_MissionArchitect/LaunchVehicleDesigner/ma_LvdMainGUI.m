@@ -22,7 +22,7 @@ function varargout = ma_LvdMainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_LvdMainGUI
 
-% Last Modified by GUIDE v2.5 05-Dec-2018 13:45:05
+% Last Modified by GUIDE v2.5 15-Dec-2018 19:21:08
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1441,6 +1441,21 @@ function deleteNonSeqEventButton_Callback(hObject, eventdata, handles)
     end
     
     setNonSeqDeleteButtonEnable(lvdData, handles)
+    
+    runScript(handles, lvdData);
+    lvd_processData(handles);
+
+
+% --------------------------------------------------------------------
+function editStopwatchesMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to editStopwatchesMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    
+    addUndoState(handles,'Edit Launch Vehicle');
+    
+    lvd_EditStopwatchesGUI(lvdData);
     
     runScript(handles, lvdData);
     lvd_processData(handles);

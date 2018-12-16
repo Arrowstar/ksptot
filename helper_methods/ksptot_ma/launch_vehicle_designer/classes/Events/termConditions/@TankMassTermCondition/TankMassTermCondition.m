@@ -47,11 +47,13 @@ classdef TankMassTermCondition < AbstractEventTerminationCondition
             params.useStages = 'off';
             params.useTanks = 'on';
             params.useEngines = 'off';
+            params.useStopwatches = 'off';
             
             params.value = obj.targetMass;
             params.refStage = LaunchVehicleStage.empty(1,0);
             params.refTank = obj.tank;
             params.refEngine = LaunchVehicleEngine.empty(1,0);
+            params.refStopwatch = LaunchVehicleStopwatch.empty(1,0);
         end
         
         function optVar = getNewOptVar(obj)
@@ -77,10 +79,14 @@ classdef TankMassTermCondition < AbstractEventTerminationCondition
         function tf = usesEngineToTankConn(obj, engineToTank)
             tf = false;
         end
+        
+        function tf = usesStopwatch(obj, stopwatch)
+            tf = false;
+        end
     end
     
     methods(Static)
-        function termCond = getTermCondForParams(paramValue, stage, tank, engine)
+        function termCond = getTermCondForParams(paramValue, stage, tank, engine, stopwatch)
             termCond = TankMassTermCondition(tank,paramValue);
         end
     end

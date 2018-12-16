@@ -59,6 +59,10 @@ classdef SetThrottleModelAction < AbstractEventAction
             tf = false;
         end
         
+        function tf = usesStopwatch(obj, stopwatch)
+            tf = false;
+        end
+        
         function [tf, vars] = hasActiveOptimVar(obj)
             tf = false;
             vars = AbstractOptimizationVariable.empty(0,1);

@@ -15,6 +15,7 @@ classdef TerminationConditionEnum < matlab.mixin.SetGet
         RollAngle('Roll Angle','RollTermCondition');
         SideSlipAngle('Side Slip Angle','SideSlipAngleTermCondition');
         SoITrans('Next SoI Transition','SoITransitionTermCondition');
+        Stopwatch('Stopwatch Value','StopwatchValueTermCondition');
         TankMass('Tank Mass','TankMassTermCondition');
         ThrottleSetting('Throttle Setting','ThrottleTermCondition');
         ThrustToWeightRatio('Thrust to Weight Ratio (Sea Level)','SeaLevelThrustToWeightTermCondition');

@@ -21,6 +21,8 @@ classdef(Abstract) AbstractEventAction < matlab.mixin.SetGet & matlab.mixin.Hete
         
         tf = usesEngineToTankConn(obj, engineToTank)
         
+        tf = usesStopwatch(obj, stopwatch)
+        
         [tf,vars] = hasActiveOptimVar(obj)
     end
     

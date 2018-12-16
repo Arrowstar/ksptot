@@ -21,5 +21,8 @@ function [taskList] = lvd_getGraphAnalysisTaskList(lvdData, excludeList)
     [engineGAStr, ~] = lvdData.launchVehicle.getEnginesGraphAnalysisTaskStrs();
     taskList = horzcat(taskList, engineGAStr);
     
+    [stopwatchGAStr, ~] = lvdData.launchVehicle.getStopwatchGraphAnalysisTaskStrs();
+    taskList = horzcat(taskList, stopwatchGAStr);
+    
     taskList = setdiff(taskList,excludeList);
 end

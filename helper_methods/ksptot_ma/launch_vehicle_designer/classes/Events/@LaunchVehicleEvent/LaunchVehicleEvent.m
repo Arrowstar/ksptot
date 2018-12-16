@@ -130,6 +130,14 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
             end
         end
         
+        function tf = usesStopwatch(obj, stopwatch)
+            tf = obj.termCond.usesStopwatch(stopwatch);
+            
+            for(i=1:length(obj.actions))
+                tf = tf || obj.actions(i).usesStopwatch(stopwatch);
+            end
+        end
+        
         function [tf, vars] = hasActiveOptVars(obj)
             tf = false;
             

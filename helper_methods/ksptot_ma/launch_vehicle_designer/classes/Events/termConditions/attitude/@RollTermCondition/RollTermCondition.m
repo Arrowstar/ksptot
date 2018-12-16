@@ -39,11 +39,13 @@ classdef RollTermCondition < AbstractEventTerminationCondition
             params.useStages = 'off';
             params.useTanks = 'off';
             params.useEngines = 'off';
+            params.useStopwatches = 'off';
             
             params.value = rad2deg(obj.targetRollAngle);
             params.refStage = LaunchVehicleStage.empty(1,0);
             params.refTank = LaunchVehicleEngine.empty(1,0);
             params.refEngine = LaunchVehicleEngine.empty(1,0);
+            params.refStopwatch = LaunchVehicleStopwatch.empty(1,0);
         end
         
         function optVar = getNewOptVar(obj)
@@ -69,10 +71,14 @@ classdef RollTermCondition < AbstractEventTerminationCondition
         function tf = usesEngineToTankConn(obj, engineToTank)
             tf = false;
         end
+        
+        function tf = usesStopwatch(obj, stopwatch)
+            tf = false;
+        end
     end
     
     methods(Static)
-        function termCond = getTermCondForParams(paramValue, stage, tank, engine)
+        function termCond = getTermCondForParams(paramValue, stage, tank, engine, stopwatch)
             termCond = RollTermCondition((paramValue));
         end
     end

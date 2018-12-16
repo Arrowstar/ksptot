@@ -138,6 +138,14 @@ classdef LaunchVehicleNonSeqEvents < matlab.mixin.SetGet
                 tf = tf || obj.evts(i).usesEngineToTankConn(engineToTank);
             end
         end
+
+        function tf = usesStopwatch(obj, stopwatch)
+            tf = false;
+            
+            for(i=1:length(obj.evts))
+                tf = tf || obj.evts(i).usesStopwatch(stopwatch);
+            end
+        end
         
         function resetAllNumExecsRemaining(obj)
             for(i=1:length(obj.nonSeqEvts))

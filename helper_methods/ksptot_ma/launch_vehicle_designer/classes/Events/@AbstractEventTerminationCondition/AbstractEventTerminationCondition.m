@@ -28,6 +28,8 @@ classdef(Abstract) AbstractEventTerminationCondition < matlab.mixin.SetGet & mat
         tf = usesTank(obj, tank)
         
         tf = usesEngineToTankConn(obj, engineToTank)
+        
+        tf = usesStopwatch(obj, stopwatch)
     end
     
     methods(Static)

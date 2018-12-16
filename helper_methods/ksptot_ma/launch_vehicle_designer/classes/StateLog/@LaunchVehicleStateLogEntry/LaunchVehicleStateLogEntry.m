@@ -12,6 +12,8 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
         event(1,:) LaunchVehicleEvent
         aero(1,1) LaunchVehicleAeroState
         
+        stopwatchStates(1,:) LaunchVehicleStopwatchState
+        
         steeringModel(1,1) AbstractSteeringModel = RollPitchYawPolySteeringModel.getDefaultSteeringModel();
         throttleModel(1,1) AbstractThrottleModel = ThrottlePolyModel.getDefaultThrottleModel();
     end
@@ -129,6 +131,10 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             end
         end
         
+        function stopwatchStates = getAllStopwatchStates(obj)
+            stopwatchStates = obj.stopwatchStates;
+        end
+        
         function dryMass = getTotalVehicleDryMass(obj)
             dryMass = 0;
             
@@ -183,9 +189,14 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             newStateLogEntry.throttleModel = obj.throttleModel;
             newStateLogEntry.lvState = obj.lvState;
             
+            
             %stuff that requires it's own copy
             for(i=1:length(obj.stageStates))
                 newStateLogEntry.stageStates(i) = obj.stageStates(i).deepCopy();
+            end
+            
+            for(i=1:length(obj.stopwatchStates))
+                newStateLogEntry.stopwatchStates(i) = obj.stopwatchStates(i).deepCopy();
             end
             
             newStateLogEntry.aero = obj.aero.deepCopy();
@@ -195,6 +206,10 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             %stuff that requires it's own copy
             for(i=1:length(obj.stageStates))
                 obj.stageStates(i) = obj.stageStates(i).deepCopy();
+            end
+            
+            for(i=1:length(obj.stopwatchStates))
+                obj.stopwatchStates(i) = obj.stopwatchStates(i).deepCopy();
             end
             
             obj.aero = obj.aero.copy();
@@ -207,7 +222,12 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             
             stateLogEntries = repmat(eventInitStateLogEntry,1,length(t));
             stateLogEntries = stateLogEntries.copy();
-%             stateLogEntries = LaunchVehicleStateLogEntry.empty(length(t),0);
+            
+            stopwatchStates = eventInitStateLogEntry.stopwatchStates;
+            initSwValues = [stopwatchStates.value];
+            initSwRunning = [stopwatchStates.running];
+            t0 = eventInitStateLogEntry.time;
+            
             for(i=1:length(t))
                 stateLogEntry = stateLogEntries(i).createCopiesOfCopyableInternals();
 
@@ -215,6 +235,16 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                 stateLogEntry.position = y(i,1:3)';
                 stateLogEntry.velocity = y(i,4:6)';
                 stateLogEntry.updateTankStatesWithNewMasses(y(i,7:end));
+                
+                if(any(initSwRunning))
+                    deltaT = t(i)-t0;
+                    for(j=1:length(stateLogEntry.stopwatchStates))
+                        if(initSwRunning(j) == true)
+                            stateLogEntry.stopwatchStates(j).value = initSwValues(j) + deltaT;
+                            disp(stateLogEntry.stopwatchStates(j).value);
+                        end
+                    end
+                end
                 
                 stateLogEntries(i) = stateLogEntry;
             end

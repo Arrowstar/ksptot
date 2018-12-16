@@ -22,7 +22,7 @@ function varargout = lvd_editEvtTermCond(varargin)
 
 % Edit the above text to modify the response to help lvd_editEvtTermCond
 
-% Last Modified by GUIDE v2.5 03-Dec-2018 16:52:01
+% Last Modified by GUIDE v2.5 15-Dec-2018 19:37:18
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -95,6 +95,13 @@ function populateGUI(handles, event)
     enginesListStr = lv.getEnginesListBoxStr();
     set(handles.refEngineCombo,'String',enginesListStr);
     
+    swListStr = lv.getStopwatchesListBoxStr();
+    set(handles.refStopwatchCombo,'String',swListStr);
+    if(isempty(swListStr))
+        set(handles.refStopwatchCombo,'String','<No Stopwatch Yet Created>');
+        set(handles.refStopwatchCombo,'Value',1);
+    end
+    
     set(handles.numParamLabel,'String',params.paramName);
     set(handles.numParamUnitLabel,'String',params.paramUnit);
     
@@ -106,6 +113,7 @@ function populateGUI(handles, event)
     set(handles.refStageCombo,'Enable',params.useStages);
     set(handles.refTankCombo,'Enable',params.useTanks);
     set(handles.refEngineCombo,'Enable',params.useEngines);
+    set(handles.refStopwatchCombo,'Enable',params.useStopwatches);
     
     if(not(isempty(params.refStage)))
         set(handles.refStageCombo,'Value',lv.getListBoxIndForStage(params.refStage));
@@ -117,6 +125,10 @@ function populateGUI(handles, event)
     
     if(not(isempty(params.refEngine)))
         set(handles.refEngineCombo,'Value',lv.getListBoxIndForEngine(params.refEngine));
+    end
+    
+    if(not(isempty(params.refStopwatch)))
+        set(handles.refStopwatchCombo,'Value',lv.getListBoxIndForStopwatch(params.refStopwatch));
     end
     
     optVar = termCond.getExistingOptVar();
@@ -182,6 +194,7 @@ function varargout = lvd_editEvtTermCond_OutputFcn(hObject, eventdata, handles)
         [~,stages] = lv.getStagesListBoxStr();
         [~,tanks] = lv.getTanksListBoxStr();
         [~,engines] = lv.getEnginesListBoxStr();
+        [~,stopwatches] = lv.getStopwatchesListBoxStr();
         
         if(not(isempty(stages)))
             stage = stages(get(handles.refStageCombo,'Value'));
@@ -201,11 +214,17 @@ function varargout = lvd_editEvtTermCond_OutputFcn(hObject, eventdata, handles)
             engine = engines;
         end
         
+        if(not(isempty(stopwatches)))
+            stopwatch = stopwatches(get(handles.refStopwatchCombo,'Value'));
+        else
+            stopwatch = stopwatches;
+        end
+        
         [m,~] = enumeration('TerminationConditionEnum');
         contents = cellstr(get(handles.termCondTypeCombo,'String'));
         termCondType = contents{get(handles.termCondTypeCombo,'Value')};
         ind = strcmpi({m.nameStr},termCondType);
-        termCond = feval(sprintf('%s.getTermCondForParams',m(ind).classNameStr), paramValue, stage, tank, engine);
+        termCond = feval(sprintf('%s.getTermCondForParams',m(ind).classNameStr), paramValue, stage, tank, engine, stopwatch);
                 
         lb = str2double(get(handles.paramLbText,'String'));
         ub = str2double(get(handles.paramUbText,'String'));
@@ -301,6 +320,7 @@ function termCondTypeCombo_Callback(hObject, eventdata, handles)
     set(handles.refStageCombo,'Enable',params.useStages);
     set(handles.refTankCombo,'Enable',params.useTanks);
     set(handles.refEngineCombo,'Enable',params.useEngines);
+    set(handles.refStopwatchCombo,'Enable',params.useStopwatches);
 
     
 function params = getParamsForSelectedTermCondType(handles)
@@ -310,16 +330,23 @@ function params = getParamsForSelectedTermCondType(handles)
     [~,stages] = lv.getStagesListBoxStr();
     [~,tanks] = lv.getTanksListBoxStr();
     [~,engines] = lv.getEnginesListBoxStr();
+    [~, stopwatches] = lv.getStopwatchesListBoxStr();
 
     stage = stages(1);
     tank = tanks(1);
     engine = engines(1);
+    
+    if(not(isempty(stopwatches)))
+        stopwatch = stopwatches(1);
+    else
+        stopwatch = LaunchVehicleStopwatch.empty(1,0);
+    end
 
     [m,~] = enumeration('TerminationConditionEnum');
     contents = cellstr(get(handles.termCondTypeCombo,'String'));
     termCondType = contents{get(handles.termCondTypeCombo,'Value')};
     ind = strcmpi({m.nameStr},termCondType);
-    termCond = feval(sprintf('%s.getTermCondForParams',m(ind).classNameStr), 0, stage, tank, engine);
+    termCond = feval(sprintf('%s.getTermCondForParams',m(ind).classNameStr), 0, stage, tank, engine, stopwatch);
     
     params = termCond.getTermCondUiStruct();
     
@@ -534,3 +561,26 @@ function lvd_editEvtTermCond_WindowKeyReleaseFcn(hObject, eventdata, handles)
         case 'escape'
             close(handles.lvd_editEvtTermCond);
     end
+
+
+% --- Executes on selection change in refStopwatchCombo.
+function refStopwatchCombo_Callback(hObject, eventdata, handles)
+% hObject    handle to refStopwatchCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns refStopwatchCombo contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from refStopwatchCombo
+
+
+% --- Executes during object creation, after setting all properties.
+function refStopwatchCombo_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to refStopwatchCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

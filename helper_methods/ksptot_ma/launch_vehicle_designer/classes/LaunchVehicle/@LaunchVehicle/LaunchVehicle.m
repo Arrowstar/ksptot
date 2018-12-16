@@ -5,6 +5,7 @@ classdef LaunchVehicle < matlab.mixin.SetGet
     properties
         stages(1,:) LaunchVehicleStage
         engineTankConns(1,:) EngineToTankConnection
+        stopwatches LaunchVehicleStopwatch
         
         lvdData(1,:) LvdData
     end
@@ -28,6 +29,14 @@ classdef LaunchVehicle < matlab.mixin.SetGet
             for(i=1:length(stage.engines))
                 obj.removeAllEngineToTanksConnsWithEngine(stage.engines(i));
             end
+        end
+        
+        function addStopwatch(obj, sw)
+            obj.stopwatches(end+1) = sw;
+        end
+        
+        function removeStopwatch(obj, sw)
+            obj.stopwatches([obj.stopwatches] == sw) = [];
         end
         
         function stage = getStageForInd(obj, ind)
@@ -65,7 +74,6 @@ classdef LaunchVehicle < matlab.mixin.SetGet
         function lvSummStr = getLvSummaryStr(obj)
             lvSummStr = {};
             
-            %TODO
             dryMass = 0;
             propMass = 0;
             totalMass = 0;
@@ -81,7 +89,7 @@ classdef LaunchVehicle < matlab.mixin.SetGet
             lvSummStr{end+1} = sprintf('Launch Vehicle (Dry Mass = %.3f mT, Prop Mass = %.3f mT, Total = %.3f mT)', dryMass, propMass, totalMass);
             
             for(i=1:length(obj.stages))
-                lvSummStr = horzcat(lvSummStr, obj.stages(i).getStageSummaryStr());
+                lvSummStr = horzcat(lvSummStr, obj.stages(i).getStageSummaryStr()); %#ok<AGROW>
             end
         end
                 
@@ -171,7 +179,7 @@ classdef LaunchVehicle < matlab.mixin.SetGet
                 enginesListStr{end+1} = '';
             end
         end
-        
+    
         function [engineGAStr, engines] = getEnginesGraphAnalysisTaskStrs(obj)
             [~, engines] = obj.getEnginesListBoxStr();
             
@@ -195,6 +203,40 @@ classdef LaunchVehicle < matlab.mixin.SetGet
         function ind = getListBoxIndForEngine(obj, engine)
             [~, engines] = obj.getEnginesListBoxStr();
             ind = find([engines] == engine, 1, 'first'); %#ok<NBRAK>
+        end
+        
+        function [swListStr, stopwatches] = getStopwatchesListBoxStr(obj)
+            stopwatches = obj.stopwatches;
+            swListStr = cell(size(obj.stopwatches));
+            
+            for(i=1:length(obj.stopwatches))
+                swListStr{i} = obj.stopwatches(i).name;
+            end
+        end
+        
+        function ind = getListBoxIndForStopwatch(obj, stopwatch)
+            [~, sws] = obj.getStopwatchesListBoxStr();
+            ind = find(sws == stopwatch, 1, 'first'); 
+        end
+        
+        function stopwatch = getStopwatchForInd(obj, ind)
+            [~, sws] = obj.getStopwatchesListBoxStr();
+            stopwatch = LaunchVehicleStopwatch.empty(1,0);
+
+            if(ind >= 1 && ind <= length(sws))
+                stopwatch = sws(ind);
+            end
+        end
+        
+        function [stopwatchGAStr, stopwatches] = getStopwatchGraphAnalysisTaskStrs(obj)
+            [~, stopwatches] = obj.getStopwatchesListBoxStr();
+            
+            stopwatchGAStr = cell(1,length(stopwatches));
+            A = length(stopwatches);
+            formSpec = sprintf('%%0%uu',floor(log10(abs(A)+1)) + 1);
+            for(i=1:length(stopwatches))
+                stopwatchGAStr{i} = sprintf(sprintf('Stopwatch %s Value - "%s"',formSpec, stopwatches(i).name), i);
+            end
         end
         
         function addEngineToTankConnection(obj, e2TConn)
@@ -258,7 +300,7 @@ classdef LaunchVehicle < matlab.mixin.SetGet
                     tVar = tank.getExistingOptVar();
                     if(not(isempty(tVar)) && tVar.getUseTfForVariable())
                         vars(end+1) = tVar; %#ok<AGROW>
-                        descStrs{end+1} = sprintf('Tank "%s"',tank.name);
+                        descStrs{end+1} = sprintf('Tank "%s"',tank.name); %#ok<AGROW>
                     end
                 end
             end
@@ -269,52 +311,26 @@ classdef LaunchVehicle < matlab.mixin.SetGet
         function newLv = createDefaultLaunchVehicle(lvdData)
             newLv = LaunchVehicle(lvdData);
             
-%             pyldStg = LaunchVehicleStage(newLv);
-%             pyldStg.name = 'Payload';
-            
-%             uprStg = LaunchVehicleStage(newLv);
-%             uprStg.name = 'Upper Stage';
-            
             firstStg = LaunchVehicleStage(newLv);
             firstStg.name = 'First Stage';
-            
-%             uprStgEngine = LaunchVehicleEngine(uprStg);
-%             uprStgEngine.name = 'Upper Stage Engine';
-%             uprStgEngine.vacThrust = 60;
-%             uprStgEngine.vacIsp = 345;
-%             uprStgEngine.seaLvlThrust = 14.783;
-%             uprStgEngine.seaLvlIsp = 85;
-            
+                       
             firstStgEngine = LaunchVehicleEngine(firstStg);
             firstStgEngine.name = 'First Stage Engine';
             firstStgEngine.vacThrust = 215;
             firstStgEngine.vacIsp = 350;
             firstStgEngine.seaLvlThrust = 168;
             firstStgEngine.seaLvlIsp = 250;
-            
-%             uprStgTank = LaunchVehicleTank(uprStg);
-%             uprStgTank.name = 'Upper Stage Tank';
-%             uprStgTank.initialMass = 1;
-%             
+             
             firstStgTank = LaunchVehicleTank(firstStg);
             firstStgTank.name = 'First Stage Tank';
             firstStgTank.initialMass = 4;
-                        
-%             pyldStg.dryMass = 1.0; %mT;
-            
-%             uprStg.dryMass = 0.5+0.125; %mT;
-%             uprStg.tanks(end+1) = uprStgTank;
-%             uprStg.engines(end+1) = uprStgEngine;
-            
+                                    
             firstStg.dryMass = 1.5+0.5; %mT;
             firstStg.tanks(end+1) = firstStgTank;
             firstStg.engines(end+1) = firstStgEngine;
             
-%             newLv.stages(end+1) = pyldStg;
-%             newLv.stages(end+1) = uprStg;
             newLv.stages(end+1) = firstStg;
             
-%             newLv.engineTankConns(end+1) = EngineToTankConnection(uprStgTank, uprStgEngine);
             newLv.engineTankConns(end+1) = EngineToTankConnection(firstStgTank, firstStgEngine);
         end
     end

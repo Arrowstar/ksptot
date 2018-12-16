@@ -51,6 +51,10 @@ classdef SetEngineTankConnActiveStateEventAction < AbstractEventAction
             tf = false;
         end
         
+        function tf = usesStopwatch(obj, stopwatch)
+            tf = false;
+        end
+        
         function tf = usesEngineToTankConn(obj, engineToTank)
             tf = ([obj.conn] == engineToTank);
         end

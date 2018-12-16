@@ -57,6 +57,7 @@ function [depVarValue, depVarUnit, taskStr, refBodyInfo] = lvd_getDepVarValueUni
             stageDryMassPattern = 'Stage (\d+?) Dry Mass - ".*"';
             stageActivePattern = 'Stage (\d+?) Active State - ".*"';
             engineActivePattern = 'Engine (\d+?) Active State - ".*"';
+            stopwatchValuePattern = 'Stopwatch (\d+?) Value - ".*"';
             
             if(not(isempty(regexpi(taskStr, tankMassPattern))))
                 tokens = regexpi(taskStr, tankMassPattern, 'tokens');
@@ -105,6 +106,18 @@ function [depVarValue, depVarUnit, taskStr, refBodyInfo] = lvd_getDepVarValueUni
                 
                 depVarValue = lvd_EngineTasks(subLog(i), 'active', engine);
                 depVarUnit = '';
+                
+            elseif(not(isempty(regexpi(taskStr, stopwatchValuePattern))))
+                tokens = regexpi(taskStr, stopwatchValuePattern, 'tokens');
+                tokens = tokens{1};
+                tokens = tokens{1};
+                stopwatchInd = str2double(tokens);
+                
+                [~,stopwatches] = subLog(i).launchVehicle.getStopwatchGraphAnalysisTaskStrs();
+                stopwatch = stopwatches(stopwatchInd);
+                
+                depVarValue = lvd_StopwatchMassTasks(subLog(i), 'swValue', stopwatch);
+                depVarUnit = 'sec';
                 
             end
     end
