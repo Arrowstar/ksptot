@@ -229,6 +229,7 @@ function deleteEvent_Callback(hObject, eventdata, handles)
     eventNum = get(handles.scriptListbox,'Value');
     evt = lvdData.script.getEventForInd(eventNum);
     
+    lvdData.optimizer.vars.removeVariablesThatUseEvent(evt, lvdData);
     lvdData.optimizer.constraints.removeConstraintsThatUseEvent(evt);
     
     if(lvdData.optimizer.objFcn.usesEvent(evt))
@@ -472,7 +473,7 @@ function viewStateAfterSelectedEventMenu_Callback(hObject, eventdata, handles)
     state = stateLog(stateLog(:,13)==eventNum,:);
     state = state(end,:);
 
-    propNames = {'Fuel/Ox', 'Monoprop', 'Xenon'};
+    propNames = {'Liquid Fuel/Ox','Monopropellant','Xenon'};
     viewSpacecraftStatePopupGUI(propNames, state, eventNum, lvdData.celBodyData);
 
 % --------------------------------------------------------------------

@@ -68,7 +68,7 @@ if(length(varargin) >= 4)
     writeOutput = varargin{4};    
 end
 
-propNames = {'Fuel/Ox', 'Monoprop', 'Xenon'};
+propNames = {'Liquid Fuel/Ox','Monopropellant','Xenon'};
 if(length(varargin) >= 5)
     handles.ma_MainGUI = varargin{5};  
     maData = getappdata(handles.ma_MainGUI,'ma_data');

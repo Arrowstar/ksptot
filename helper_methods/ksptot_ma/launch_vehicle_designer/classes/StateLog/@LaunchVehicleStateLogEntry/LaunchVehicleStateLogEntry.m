@@ -225,7 +225,12 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             
             stopwatchStates = eventInitStateLogEntry.stopwatchStates;
             initSwValues = [stopwatchStates.value];
-            initSwRunning = [stopwatchStates.running];
+            initSwRunningEnums = [stopwatchStates.running];
+            initSwRunning = false(size(initSwRunningEnums));
+            for(i=1:length(initSwRunningEnums))
+                initSwRunning(i) = initSwRunningEnums(i).value;
+            end          
+            
             t0 = eventInitStateLogEntry.time;
             
             for(i=1:length(t))

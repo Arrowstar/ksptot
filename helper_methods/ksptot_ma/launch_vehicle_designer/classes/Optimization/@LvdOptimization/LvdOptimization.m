@@ -28,6 +28,10 @@ classdef LvdOptimization < matlab.mixin.SetGet
             [lbAll, ubAll] = obj.vars.getTotalScaledBndsVector();
             typicalX = obj.vars.getTypicalScaledXVector();
             
+            if(isempty(x0All) && isempty(actVars))
+                return;
+            end
+            
             evtNumToStartScriptExecAt = obj.lvdData.script.getTotalNumOfEvents();
             for(i=1:length(actVars)) %#ok<*NO4LP>
                 var = actVars(i);

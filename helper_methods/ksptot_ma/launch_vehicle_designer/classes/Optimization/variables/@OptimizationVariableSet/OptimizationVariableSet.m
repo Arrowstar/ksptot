@@ -142,5 +142,23 @@ classdef OptimizationVariableSet < matlab.mixin.SetGet
                 obj.vars(i).perturbVar(pPct);
             end
         end
+        
+        function removeVariablesThatUseEvent(obj, evt, lvdData)
+            
+            for(i=1:length(obj.vars))
+                var = obj.vars(i);
+                
+                evtNum = getEventNumberForVar(var, lvdData);
+                
+                if(not(isempty(evtNum)))
+                    inputEvtNum = evt.getEventNum();
+                    
+                    if(evtNum == inputEvtNum)
+                        obj.removeVariable(var);
+                    end
+                end
+            end
+            
+        end
     end
 end

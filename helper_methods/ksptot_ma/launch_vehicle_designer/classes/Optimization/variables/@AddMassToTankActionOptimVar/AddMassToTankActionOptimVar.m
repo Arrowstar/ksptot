@@ -1,9 +1,9 @@
-classdef AltitudeOptimizationVariable < AbstractOptimizationVariable
-    %AltitudeOptimizationVariable Summary of this class goes here
+classdef AddMassToTankActionOptimVar < AbstractOptimizationVariable
+    %AddMassToTankActionOptimVar Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
-        varObj(1,1) AltitudeTermCondition = AltitudeTermCondition(0);
+        varObj(1,1) AddMassToTankAction = AddMassToTankAction();
         
         lb(1,1) double = 0;
         ub(1,1) double = 0;
@@ -12,7 +12,7 @@ classdef AltitudeOptimizationVariable < AbstractOptimizationVariable
     end
     
     methods
-        function obj = AltitudeOptimizationVariable(varObj)
+        function obj = AddMassToTankActionOptimVar(varObj)
             obj.varObj = varObj;
             obj.varObj.optVar = obj;
             
@@ -23,18 +23,18 @@ classdef AltitudeOptimizationVariable < AbstractOptimizationVariable
             x = [];
             
             if(obj.useTf)
-                x = obj.varObj.altitude;
+                x = obj.varObj.massToAdd;
             end
         end
         
         function [lb, ub] = getBndsForVariable(obj)
-            lb = obj.lb(obj.useTf);
-            ub = obj.ub(obj.useTf);
+            lb = obj.lb(logical(obj.useTf));
+            ub = obj.ub(logical(obj.useTf));
         end
         
         function [lb, ub] = getAllBndsForVariable(obj)
-            lb = obj.lwrBnd;
-            ub = obj.uprBnd;
+            lb = obj.lb;
+            ub = obj.ub;
         end
         
         function setBndsForVariable(obj, lb, ub)
@@ -43,15 +43,15 @@ classdef AltitudeOptimizationVariable < AbstractOptimizationVariable
         end
         
         function useTf = getUseTfForVariable(obj)
-            useTf = obj.useTf;
+            useTf = logical(obj.useTf);
         end
         
         function setUseTfForVariable(obj, useTf)
-            obj.useTf = useTf;
+            obj.useTf = logical(useTf);
         end
         
         function updateObjWithVarValue(obj, x)
-            obj.varObj.altitude = x;
+            obj.varObj.massToAdd = x;
         end
     end
 end

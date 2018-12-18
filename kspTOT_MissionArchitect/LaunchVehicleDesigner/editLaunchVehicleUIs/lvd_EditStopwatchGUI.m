@@ -67,14 +67,13 @@ function lvd_EditStopwatchGUI_OpeningFcn(hObject, eventdata, handles, varargin)
     uiwait(handles.lvd_EditStopwatchGUI);
 
 function populateGUI(handles, stopwatch)
-    if(stopwatch.startOn == true)
-        ind = 2;
-    else
-        ind = 1;
-    end
+    runningStateStrs = StopwatchRunningEnum.getNameStrs();
+    set(handles.startRunningCombo,'String',runningStateStrs);
+    
+    ind = StopwatchRunningEnum.getIndOfListboxStrs(stopwatch.startOn);
+    set(handles.startRunningCombo,'Value',ind);
     
     set(handles.stopwatchNameText,'String',stopwatch.name);
-    set(handles.startRunningCombo,'Value',ind);
     set(handles.initialValueText,'String',fullAccNum2Str(stopwatch.startValue));
 
 % --- Outputs from this function are returned to the command line.
@@ -92,16 +91,9 @@ function varargout = lvd_EditStopwatchGUI_OutputFcn(hObject, eventdata, handles)
                 
         name = handles.stopwatchNameText.String;
         initialValue = str2double(handles.initialValueText.String);
-        
-        contents = cellstr(get(handles.startRunningCombo,'String'));
-        runningStr = contents{get(handles.startRunningCombo,'Value')};
-        if(strcmpi(runningStr,'True'))
-            startOn = true;
-        elseif(strcmpi(runningStr,'False'))
-            startOn = false;
-        else
-            error('Unknown string "%s"', runningStr);
-        end
+
+        [~, m] = StopwatchRunningEnum.getNameStrs();
+        startOn = m(get(handles.startRunningCombo,'Value'));
         
         stopwatch.name = name;
         stopwatch.startValue = initialValue;

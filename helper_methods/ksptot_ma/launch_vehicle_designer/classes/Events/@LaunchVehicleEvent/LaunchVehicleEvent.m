@@ -14,6 +14,8 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
         integrator(1,1) IntegratorEnum = IntegratorEnum.ODE45;
         integrationStep(1,1) double = -1;
         checkForSoITrans(1,1) logical = true;
+        
+        disableOptim(1,1) logical = false;
     end
     
     methods

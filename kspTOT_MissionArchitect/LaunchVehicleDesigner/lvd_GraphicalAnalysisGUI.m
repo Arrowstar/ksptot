@@ -85,7 +85,6 @@ function lvd_GraphicalAnalysisGUI_OpeningFcn(hObject, eventdata, handles, vararg
 
     maStateLog = lvdData.stateLog.getMAFormattedStateLogMatrix();
 
-%     propNames = {'Fuel/Ox', 'Monoprop', 'Xenon'};
     propNames = {'Liquid Fuel/Ox','Monopropellant','Xenon'};
     substituteDefaultPropNamesWithCustomNamesInDepVarListbox(handles.depVarListbox, propNames);
     useSubplotCheckbox_Callback(handles.useSubplotCheckbox, [], handles);

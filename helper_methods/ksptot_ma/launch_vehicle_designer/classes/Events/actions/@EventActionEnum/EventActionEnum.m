@@ -1,8 +1,9 @@
 classdef EventActionEnum < matlab.mixin.SetGet
-    %TerminationConditionEnum Summary of this class goes here
+    %EventActionEnum Summary of this class goes here
     %   Detailed explanation goes here
     
     enumeration
+        AddMassToTank('Add Mass To Tank','AddMassToTankAction')
         SetEngineActiveState('Set Engine Active State','SetEngineActiveStateAction')
         SetStageActiveState('Set Stage Active State','SetStageActiveStateAction');
         SetSteeringModel('Set Steering Model','SetSteeringModelAction');
@@ -11,6 +12,7 @@ classdef EventActionEnum < matlab.mixin.SetGet
         SetHoldDownClampState('Set Hold Down Clamp State','SetHoldDownClampActiveStateAction');
         SetAeroDragProps('Set Drag Aero Properties','SetDragAeroPropertiesAction');
         SetAeroLiftProps('Set Lift Aero Properties','SetLiftAeroPropertiesAction');
+        SetStopwatchRunningState('Set Stopwatch Running State','SetStopwatchRunningStateAction');
     end
     
     properties

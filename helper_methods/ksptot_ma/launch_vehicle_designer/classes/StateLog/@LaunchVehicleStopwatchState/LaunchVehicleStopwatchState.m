@@ -3,9 +3,9 @@ classdef LaunchVehicleStopwatchState < matlab.mixin.SetGet & matlab.mixin.Copyab
     %   Detailed explanation goes here
     
     properties
-        stopwatch(1,1) LaunchVehicleStopwatch
+        stopwatch LaunchVehicleStopwatch
         value(1,1) double = 0;
-        running(1,1) logical = false;
+        running(1,1) StopwatchRunningEnum = StopwatchRunningEnum.NotRunning;
     end
     
     methods

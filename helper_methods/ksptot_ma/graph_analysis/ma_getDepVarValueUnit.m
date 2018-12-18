@@ -239,5 +239,7 @@ function [depVarValue, depVarUnit, prevDistTraveled, taskStr, refBodyInfo, other
         case 'Hyperbolic Velocity Magnitude'
             depVarValue = ma_OutboundHyperVelVectTask(subLog(i,:), 'mag', celBodyData);
             depVarUnit = 'km/s';
+        otherwise
+            a = 1;
     end
 end
