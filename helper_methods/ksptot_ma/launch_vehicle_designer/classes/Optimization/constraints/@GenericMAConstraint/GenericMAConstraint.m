@@ -98,6 +98,10 @@ classdef GenericMAConstraint < AbstractConstraint
             tf = obj.event == event;
         end
         
+        function event = getConstraintEvent(obj)
+            event = obj.event;
+        end
+        
         function type = getConstraintType(obj)
             type = obj.constraintType;
         end

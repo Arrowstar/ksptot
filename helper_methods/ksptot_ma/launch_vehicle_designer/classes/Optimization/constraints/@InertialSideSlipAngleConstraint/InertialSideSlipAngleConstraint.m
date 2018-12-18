@@ -82,6 +82,10 @@ classdef InertialSideSlipAngleConstraint < AbstractConstraint
             tf = obj.event == event;
         end
         
+        function event = getConstraintEvent(obj)
+            event = obj.event;
+        end
+        
         function type = getConstraintType(obj)
             type = 'Inertial Side Slip Angle';
         end

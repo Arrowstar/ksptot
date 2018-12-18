@@ -53,8 +53,10 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
         
         function listboxStr = getListboxStr(obj)
             hasOpt = obj.hasActiveOptVars();
-            if(hasOpt)
+            if(hasOpt && obj.disableOptim == false)
                 optStr = '*';
+            elseif(hasOpt && obj.disableOptim == true)
+                optStr = '**';
             else
                 optStr = '';
             end
@@ -138,6 +140,10 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
             for(i=1:length(obj.actions))
                 tf = tf || obj.actions(i).usesStopwatch(stopwatch);
             end
+        end
+        
+        function toggleOptimDisable(obj)
+            obj.disableOptim = not(obj.disableOptim);
         end
         
         function [tf, vars] = hasActiveOptVars(obj)

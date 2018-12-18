@@ -5,7 +5,7 @@ classdef LvdOptimization < matlab.mixin.SetGet
     properties
         lvdData LvdData
         
-        vars(1,1) OptimizationVariableSet = OptimizationVariableSet()
+        vars OptimizationVariableSet
         objFcn(1,1) AbstractObjectiveFcn = NoOptimizationObjectiveFcn()
         constraints(1,1) ConstraintSet =  ConstraintSet()
     end
@@ -14,16 +14,12 @@ classdef LvdOptimization < matlab.mixin.SetGet
         function obj = LvdOptimization(lvdData)
             obj.lvdData = lvdData;
             
-            obj.vars = OptimizationVariableSet();
+            obj.vars = OptimizationVariableSet(obj.lvdData);
             obj.objFcn = NoOptimizationObjectiveFcn();
             obj.constraints = ConstraintSet(obj, lvdData);
         end
         
         function optimize(obj, writeOutput)                        
-%             x0All = obj.vars.getTotalXVector();
-%             [lbAll, ubAll] = obj.vars.getTotalBndsVector();
-%             typicalX = obj.vars.getTypicalXVector();
-
             [x0All, actVars] = obj.vars.getTotalScaledXVector();
             [lbAll, ubAll] = obj.vars.getTotalScaledBndsVector();
             typicalX = obj.vars.getTypicalScaledXVector();
@@ -94,5 +90,13 @@ classdef LvdOptimization < matlab.mixin.SetGet
             
             tf = tf || obj.constraints.usesEngineToTankConn(engineToTank);
         end
+    end
+    
+    methods(Static)
+        function obj = loadobj(obj)
+            if(isempty(obj.vars.lvdData))
+                obj.vars.lvdData = obj.lvdData;
+            end
+        end        
     end
 end

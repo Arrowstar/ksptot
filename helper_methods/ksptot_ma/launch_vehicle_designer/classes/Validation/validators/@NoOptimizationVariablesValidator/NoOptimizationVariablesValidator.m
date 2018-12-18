@@ -16,7 +16,7 @@ classdef NoOptimizationVariablesValidator < AbstractLaunchVehicleDataValidator
             warnings = LaunchVehicleDataValidationWarning.empty(0,1);
             
             varSet = obj.lvdData.optimizer.vars;
-            numVars = length(varSet.getTotalXVector());
+            numVars = length(varSet.getTotalScaledXVector());
             if(numVars == 0)
                 str = sprintf('No optimization variables enabled on script.');
                 warnings(end+1) = LaunchVehicleDataValidationWarning(str);

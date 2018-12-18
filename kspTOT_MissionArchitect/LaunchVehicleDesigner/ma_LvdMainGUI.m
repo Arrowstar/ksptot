@@ -22,7 +22,7 @@ function varargout = ma_LvdMainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_LvdMainGUI
 
-% Last Modified by GUIDE v2.5 15-Dec-2018 19:21:08
+% Last Modified by GUIDE v2.5 17-Dec-2018 19:36:43
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1460,3 +1460,21 @@ function editStopwatchesMenu_Callback(hObject, eventdata, handles)
     
     runScript(handles, lvdData);
     lvd_processData(handles);
+
+
+% --------------------------------------------------------------------
+function toggleOptimForSelEventMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to toggleOptimForSelEventMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    eventNum = get(handles.scriptListbox,'Value');        
+    event = lvdData.script.getEventForInd(eventNum);
+
+    if(not(isempty(event)))
+        addUndoState(handles,sprintf('Toggle Optimization on Event %u'));
+        event.toggleOptimDisable();
+        
+%         runScript(handles, lvdData);
+        lvd_processData(handles);
+    end

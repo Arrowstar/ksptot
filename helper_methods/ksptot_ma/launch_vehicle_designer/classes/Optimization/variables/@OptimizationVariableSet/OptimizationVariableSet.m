@@ -3,12 +3,13 @@ classdef OptimizationVariableSet < matlab.mixin.SetGet
     %   Detailed explanation goes here
     
     properties
+        lvdData LvdData
         vars(1,:) AbstractOptimizationVariable
     end
     
     methods
-        function obj = OptimizationVariableSet()
-
+        function obj = OptimizationVariableSet(lvdData)
+            obj.lvdData = lvdData;
         end
         
         function addVariable(obj, newVar)
@@ -19,25 +20,17 @@ classdef OptimizationVariableSet < matlab.mixin.SetGet
             obj.vars([obj.vars] == var) = [];
         end
         
-        function [x, vars] = getTotalXVector(obj)
-            x = [];
-            vars = AbstractOptimizationVariable.empty(0,1);
-            
-            for(i=1:length(obj.vars)) %#ok<*NO4LP>
-                vX = obj.vars(i).getXsForVariable();
-                x = horzcat(x, vX); %#ok<AGROW>
-                
-                for(j=1:length(vX))
-                    vars(end+1) = obj.vars(i); %#ok<AGROW>
-                end
-            end
-        end
-        
         function [x, vars] = getTotalScaledXVector(obj)
             x = [];
             vars = AbstractOptimizationVariable.empty(0,1);
             
             for(i=1:length(obj.vars)) %#ok<*NO4LP>
+                var = obj.vars(i);
+                
+                if(obj.isVarEventOptimDisabled(var))
+                    continue;
+                end
+                
                 vX = obj.vars(i).getScaledXsForVariable();
                 x = horzcat(x, vX); %#ok<AGROW>
                 
@@ -46,45 +39,22 @@ classdef OptimizationVariableSet < matlab.mixin.SetGet
                 end
             end
         end
-        
-        function [LwrBnds, UprBnds] = getTotalBndsVector(obj)
-            LwrBnds = [];
-            UprBnds = [];
-            
-            for(i=1:length(obj.vars)) %#ok<*NO4LP>
-                [lb, ub]= obj.vars(i).getBndsForVariable();
-                LwrBnds = horzcat(LwrBnds, lb); %#ok<AGROW>
-                UprBnds = horzcat(UprBnds, ub); %#ok<AGROW>
-            end
-        end
-        
+               
         function [LwrBnds, UprBnds] = getTotalScaledBndsVector(obj)
             LwrBnds = [];
             UprBnds = [];
             
             for(i=1:length(obj.vars)) %#ok<*NO4LP>
-                [~, lb, ub]= obj.vars(i).getScaledXsForVariable();
+                var = obj.vars(i);
+                
+                if(obj.isVarEventOptimDisabled(var))
+                    continue;
+                end
+                
+                [~, lb, ub]= var.getScaledXsForVariable();
                 LwrBnds = horzcat(LwrBnds, lb); %#ok<AGROW>
                 UprBnds = horzcat(UprBnds, ub); %#ok<AGROW>
             end
-        end
-        
-        function typicalX = getTypicalXVector(obj)
-            [LwrBnds, UprBnds] = obj.getTotalBndsVector();
-            
-            typicalX = zeros(size(LwrBnds));
-            for(i=1:length(LwrBnds))
-                lbO = floor(log10(LwrBnds(i)));
-                ubO = floor(log10(UprBnds(i)));
-                
-                if(lbO > ubO)
-                    typicalX(i) = LwrBnds(i);
-                else
-                    typicalX(i) = UprBnds(i);
-                end
-            end
-            
-            typicalX(typicalX<eps) = 1;
         end
         
         function typicalX = getTypicalScaledXVector(obj)
@@ -105,46 +75,41 @@ classdef OptimizationVariableSet < matlab.mixin.SetGet
             typicalX(typicalX<eps) = 1;
         end
         
-        function updateObjsWithVarValues(obj, x)
-            initInd = 1;
-            
-            for(i=1:length(obj.vars))
-                numVars = obj.vars(i).getNumOfVars();
-                
-                inds = initInd:initInd+numVars-1;
-                subX = x(inds);
-                
-                if(not(isempty(subX)))
-                    obj.vars(i).updateObjWithVarValue(subX);
-                    initInd = inds(end) + 1;
-                end
-            end            
-        end
-        
         function updateObjsWithScaledVarValues(obj, x)
             initInd = 1;
             
             for(i=1:length(obj.vars))
-                numVars = obj.vars(i).getNumOfVars();
+                var = obj.vars(i);
+                
+                if(obj.isVarEventOptimDisabled(var))
+                    continue;
+                end
+                
+                numVars = var.getNumOfVars();
                 
                 inds = initInd:initInd+numVars-1;
                 subX = x(inds);
                 
                 if(not(isempty(subX)))
-                    obj.vars(i).updateObjWithScaledVarValue(subX);
+                    var.updateObjWithScaledVarValue(subX);
                     initInd = inds(end) + 1;
                 end
-            end            
+            end  
         end
         
         function perturbVarsAndUpdate(obj, pPct)
             for(i=1:length(obj.vars))
-                obj.vars(i).perturbVar(pPct);
+                var = obj.vars(i);
+                
+                if(obj.isVarEventOptimDisabled(var))
+                    continue;
+                end
+                
+                var.perturbVar(pPct);
             end
         end
         
         function removeVariablesThatUseEvent(obj, evt, lvdData)
-            
             for(i=1:length(obj.vars))
                 var = obj.vars(i);
                 
@@ -159,6 +124,21 @@ classdef OptimizationVariableSet < matlab.mixin.SetGet
                 end
             end
             
+        end
+    end
+    
+    methods(Access=private)
+        function tf = isVarEventOptimDisabled(obj, var)
+            tf = false;
+            
+            evtNum = getEventNumberForVar(var, obj.lvdData);
+            if(not(isempty(evtNum)))
+                evt = obj.lvdData.script.getEventForInd(evtNum);
+
+                if(not(isempty(evt)) && evt.disableOptim == true)
+                    tf = true;
+                end
+            end
         end
     end
 end

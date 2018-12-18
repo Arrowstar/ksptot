@@ -72,7 +72,13 @@ classdef ConstraintSet < matlab.mixin.SetGet
                 end
 
                 for(i=1:length(obj.consts)) %#ok<*NO4LP>
-                    [c1, ceq1, value1, lb1, ub1, type1, eventNum1] = obj.consts(i).evalConstraint(stateLog, celBodyData);
+                    constraint = obj.consts(i);
+                    
+                    if(obj.isEventOptimDisabled(constraint))
+                        continue;
+                    end
+                    
+                    [c1, ceq1, value1, lb1, ub1, type1, eventNum1] = constraint.evalConstraint(stateLog, celBodyData);
 
                     for(j=1:length(c1))
                         cEventInds(end+1) = eventNum1; %#ok<AGROW>
@@ -131,7 +137,7 @@ classdef ConstraintSet < matlab.mixin.SetGet
                 c = obj.consts(i);
                 
                 if(c.usesEvent(event))
-                    indsToRemove(end+1) = i;
+                    indsToRemove(end+1) = i; %#ok<AGROW>
                 end
             end
             
@@ -139,6 +145,19 @@ classdef ConstraintSet < matlab.mixin.SetGet
                 indToRemove = indsToRemove(i);
                 c = obj.consts(indToRemove);
                 obj.removeConstraint(c);
+            end
+        end
+    end
+    
+    methods(Access=private)
+        function tf = isEventOptimDisabled(obj, constraint)
+            tf = false;
+            
+            event = constraint.getConstraintEvent();
+            if(not(isempty(event)))
+                if(not(isempty(event)) && event.disableOptim == true)
+                    tf = true;
+                end
             end
         end
     end
