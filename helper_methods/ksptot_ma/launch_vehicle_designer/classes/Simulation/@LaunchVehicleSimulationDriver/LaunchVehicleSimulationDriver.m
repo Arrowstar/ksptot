@@ -84,6 +84,7 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
             odeEventsFun = @(t,y) obj.odeEvents(t,y, obj, eventInitStateLogEntry, event.termCond.getEventTermCondFuncHandle(), maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses);
             odeOutputFun = @(t,y,flag) obj.odeOutput(t,y,flag, tStartPropTime, obj.maxPropTime);
             options = odeset('RelTol',obj.relTol, 'AbsTol',obj.absTol,  'NonNegative',tankStateInds, 'Events',odeEventsFun, 'NormControl','on', 'OutputFcn',odeOutputFun);
+            options.EventsFcn = odeEventsFun;
             
             [value,isterminal,~,causes] = odeEventsFun(tspan(1), y0);
             if(any(abs(value)<=1E-6))
@@ -148,114 +149,9 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
             tankStates = y(7:end);
         end
         
-        function dydt = odefun(t,y, obj, eventInitStateLogEntry, dryMass)
-            bodyInfo = eventInitStateLogEntry.centralBody;
-            [ut, rVect, vVect, tankStatesMasses] = LaunchVehicleSimulationDriver.decomposeIntegratorTandY(t,y);
-            tankStates = eventInitStateLogEntry.getAllActiveTankStates();
-            stageStates = eventInitStateLogEntry.stageStates;
-            lvState = eventInitStateLogEntry.lvState;
-            
-            throttle = eventInitStateLogEntry.throttleModel.getThrottleAtTime(ut, rVect, tankStatesMasses, dryMass, stageStates, lvState, tankStates, bodyInfo);
-            
-            altitude = norm(rVect) - bodyInfo.radius;
-            pressure = getPressureAtAltitude(bodyInfo, altitude);            
-            
-            holdDownEnabled = eventInitStateLogEntry.isHoldDownEnabled();
-            
-            tankMassDots = eventInitStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, tankStatesMasses, stageStates, throttle, lvState, pressure);
-                                   
-            dydt = zeros(length(y),1);
-            if(holdDownEnabled)
-                %launch clamp is enabled, only motion is circular motion
-                %(fixed to body)
-                bodySpinRate = 2*pi/bodyInfo.rotperiod; %rad/sec
-                spinVect = [0;0;bodySpinRate];
-                rotAccel = crossARH(spinVect,crossARH(spinVect,rVect));
-                
-                [rVectECEF] = getFixedFrameVectFromInertialVect(ut, rVect, bodyInfo);
-                vVectECEF = [0;0;0];
-                [~, vVectECI] = getInertialVectFromFixedFrameVect(ut, rVectECEF, bodyInfo, vVectECEF);
-                
-                dydt(1:3) = vVectECI(:); 
-                dydt(4:6) = rotAccel(:);
-                dydt(7:end) = tankMassDots;
-            else
-                %launch clamp disabled, propagate like normal
-%                 CdA = eventInitStateLogEntry.aero.area * eventInitStateLogEntry.aero.Cd;  
-                aero = eventInitStateLogEntry.aero;
-
-                totalMass = dryMass + sum(tankStatesMasses);
-                
-                throttleModel = eventInitStateLogEntry.throttleModel;
-                steeringModel = eventInitStateLogEntry.steeringModel;
-                
-                tankStates = tankStates.copy();
-                tmCellArr = num2cell(tankStatesMasses);
-                [tankStates.tankMass] = tmCellArr{:};
-                
-                if(totalMass > 0)
-                    forceSum = obj.forceModel.getForce(ut, rVect, vVect, totalMass, bodyInfo, aero, throttleModel, steeringModel, tankStates, stageStates, lvState, dryMass, tankStatesMasses);
-                    accelVect = forceSum/totalMass; %F = dp/dt = d(mv)/dt = m*dv/dt + v*dm/dt, but since the thrust force causes us to shed mass, we actually account for the v*dm/dt term there and therefore don't need it!  See: https://en.wikipedia.org/wiki/Variable-mass_system         
-                    dydt(7:end) = tankMassDots;
-                else
-                    accelVect = zeros(3,1);
-                    dydt(7:end) = zeros(size(tankMassDots));
-                end
-                
-                dydt(1:3) = vVect'; 
-                dydt(4:6) = accelVect;
-            end
-        end
-        
-        function [value,isterminal,direction, causes] = odeEvents(t,y, obj, eventInitStateLogEntry, evtTermCond, maxSimTime, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses)
-            celBodyData = obj.celBodyData;
-            causes = AbstractIntegrationTerminationCause.empty(0,1);
-            
-            sizeY = size(y);
-            if(sizeY(2) > sizeY(1))
-                y = y';
-            end
-            
-            [ut, rVect, ~, ~] = LaunchVehicleSimulationDriver.decomposeIntegratorTandY(t,y);
-            bodyInfo = eventInitStateLogEntry.centralBody;
-            
-            %Max Sim Time Constraint
-            simTimeRemaining = maxSimTime - ut;
-            value(1) = simTimeRemaining;
-            isterminal(1) = 1;
-            direction(1) = 0;
-            causes(1) = MaxEventSimTimeIntTermCause();
-            
-            %Min Altitude Constraint
-            rMag = norm(rVect);
-            altitude = rMag - bodyInfo.radius;
-            value(end+1) = altitude - obj.minAltitude;
-            isterminal(end+1) = 1;
-            direction(end+1) = -1;
-            causes(end+1) = MinAltitudeIntTermCause();
-            
-            %Non-Sequence Events
-            for(i=1:length(nonSeqTermConds))
-                nonSeqTermCond = nonSeqTermConds{i};
-                
-                [value(end+1),isterminal(end+1),direction(end+1)] = nonSeqTermCond(t,y); %#ok<AGROW>
-                causes(end+1) = nonSeqTermCauses(i); %#ok<AGROW>
-            end
-            
-            if(checkForSoITrans)
-            %SoI transitions
-                [soivalue, soiisterminal, soidirection, soicauses] = getSoITransitionOdeEvents(ut, rVect, bodyInfo, celBodyData);
-
-                value = horzcat(value, soivalue);
-                isterminal = horzcat(isterminal, soiisterminal);
-                direction = horzcat(direction, soidirection);
-                causes = horzcat(causes, soicauses);
-            end
-            
-            %Event Termination Condition
-            [value(end+1),isterminal(end+1),direction(end+1)] = evtTermCond(t,y);
-            causes(end+1) = EventTermCondIntTermCause();
-        end
+        dydt = odefun(t,y, obj, eventInitStateLogEntry, dryMass);
+             
+        [value,isterminal,direction, causes] = odeEvents(t,y, obj, eventInitStateLogEntry, evtTermCond, maxSimTime, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses);
         
         function status = odeOutput(t,y,flag, intStartTime, maxIntegrationDuration)
             integrationDuration = toc(intStartTime);
