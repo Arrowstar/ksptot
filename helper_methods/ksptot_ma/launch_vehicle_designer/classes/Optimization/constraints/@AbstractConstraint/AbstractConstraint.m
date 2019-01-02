@@ -27,6 +27,8 @@ classdef(Abstract) AbstractConstraint < matlab.mixin.SetGet & matlab.mixin.Heter
         
         tf = usesEvent(obj, event);
         
+        tf = usesStopwatch(obj, stopwatch);
+        
         event = getConstraintEvent(obj);
         
         type = getConstraintType(obj);

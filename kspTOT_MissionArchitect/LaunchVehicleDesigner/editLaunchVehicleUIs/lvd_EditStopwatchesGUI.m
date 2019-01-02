@@ -180,7 +180,7 @@ function removeStopwatchButton_Callback(hObject, eventdata, handles)
             handles.removeStopwatchButton.Enable = 'off';
         end
     else
-        warndlg(sprintf('Could not delete the stopwatch "%s" because it is in use as part of an event termination condition, event action, objective function, or constraint.  Remove the engine dependencies before attempting to delete the engine.', stopwatch.name),'Cannot Delete Engine','modal');
+        warndlg(sprintf('Could not delete the stopwatch "%s" because it is in use as part of an event termination condition, event action, objective function, or constraint.  Remove these stopwatch dependencies before attempting to delete the stopwatch.', stopwatch.name),'Cannot Delete Stopwatch','modal');
     end
 
 

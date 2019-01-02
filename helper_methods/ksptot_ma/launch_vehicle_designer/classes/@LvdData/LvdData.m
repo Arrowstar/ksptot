@@ -53,6 +53,7 @@ classdef LvdData < matlab.mixin.SetGet
         
         function tf = usesStopwatch(obj, stopwatch)
             tf = obj.script.usesStopwatch(stopwatch);
+            tf = tf || obj.optimizer.constraints.usesStopwatch(stopwatch);
         end
     end
     

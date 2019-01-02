@@ -63,6 +63,8 @@ classdef ConstraintEnum < matlab.mixin.SetGet
         InertialAngleOfAttack('Inertial Angle of Attack','InertialAngleOfAttackConstraint',[]);
         InertialBankAngle('Inertial Bank Angle','InertialBankAngleConstraint',[]);
         InertialSideSlipAngle('Inertial Side Slip Angle','InertialSideSlipAngleConstraint',[]);
+        
+        StopwatchValue('Stopwatch Value','StopwatchValueConstraint',[]);
     end
     
     properties

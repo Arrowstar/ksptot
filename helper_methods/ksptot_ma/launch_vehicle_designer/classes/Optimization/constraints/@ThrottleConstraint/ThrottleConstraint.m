@@ -75,6 +75,10 @@ classdef ThrottleConstraint < AbstractConstraint
             tf = obj.event == event;
         end
         
+        function tf = usesStopwatch(obj, stopwatch)
+            tf = false;
+        end
+        
         function event = getConstraintEvent(obj)
             event = obj.event;
         end

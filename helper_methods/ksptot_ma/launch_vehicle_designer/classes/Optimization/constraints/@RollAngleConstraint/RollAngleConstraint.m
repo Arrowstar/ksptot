@@ -78,6 +78,10 @@ classdef RollAngleConstraint < AbstractConstraint
             tf = false;
         end
         
+        function tf = usesStopwatch(obj, stopwatch)
+            tf = false;
+        end
+        
         function tf = usesEvent(obj, event)
             tf = obj.event == event;
         end
