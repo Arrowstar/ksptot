@@ -114,7 +114,7 @@ function runScript(handles, lvdData)
 
     t = tic;
     evt = lvdData.script.getEventForInd(1);
-    lvdData.script.executeScript(isSparseOutput, evt);
+    lvdData.script.executeScript(isSparseOutput, evt, true);
     execTime = toc(t);
     
 %     profile viewer;

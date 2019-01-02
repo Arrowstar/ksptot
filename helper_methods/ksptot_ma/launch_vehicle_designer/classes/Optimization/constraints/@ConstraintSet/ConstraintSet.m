@@ -66,7 +66,7 @@ classdef ConstraintSet < matlab.mixin.SetGet
             if(~isempty(obj.consts))
                 if(tfRunScript == true)                   
                     obj.lvdOptim.vars.updateObjsWithScaledVarValues(x);
-                    stateLog = obj.lvdData.script.executeScript(true, evtToStartScriptExecAt);
+                    stateLog = obj.lvdData.script.executeScript(true, evtToStartScriptExecAt, false);
                 else
                     stateLog = obj.lvdData.stateLog;
                 end

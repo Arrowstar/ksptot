@@ -135,7 +135,7 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
             tf = tf || obj.nonSeqEvts.usesStopwatch(stopwatch);
         end
         
-        function stateLog = executeScript(obj, isSparseOutput, evtToStartScriptExecAt)
+        function stateLog = executeScript(obj, isSparseOutput, evtToStartScriptExecAt, evalConstraints)
             stateLog = obj.lvdData.stateLog;
             
             if(not(isempty(evtToStartScriptExecAt)))
@@ -195,14 +195,16 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
             
             obj.lastRunExecTime = tPropTime;
             
-            x=obj.lvdData.optimizer.vars.getTotalScaledXVector();
-            [c, ceq, values, lb, ub, type, eventNum, cEventInds, ceqEventInds] = obj.lvdData.optimizer.constraints.evalConstraints(x, false, evtToStartScriptExecAt);
-            
-            if(isempty(obj.lvdData.optimizer.constraints.lastRunValues))
-                obj.lvdData.optimizer.constraints.lastRunValues = ConstraintValues();
+            if(evalConstraints)
+                x=obj.lvdData.optimizer.vars.getTotalScaledXVector();
+                [c, ceq, values, lb, ub, type, eventNum, cEventInds, ceqEventInds] = obj.lvdData.optimizer.constraints.evalConstraints(x, false, evtToStartScriptExecAt);
+
+                if(isempty(obj.lvdData.optimizer.constraints.lastRunValues))
+                    obj.lvdData.optimizer.constraints.lastRunValues = ConstraintValues();
+                end
+
+                obj.lvdData.optimizer.constraints.lastRunValues.updateValues(c, ceq, values, lb, ub, type, eventNum, cEventInds, ceqEventInds);
             end
-            
-            obj.lvdData.optimizer.constraints.lastRunValues.updateValues(c, ceq, values, lb, ub, type, eventNum, cEventInds, ceqEventInds);
         end
     end
     
