@@ -591,7 +591,7 @@ if(isempty(errMsg))
         usePara = 'always';
         if(matlabpool('size')==0)
             try
-                h = msgbox('Attempting to start parallel computing workers...');
+                h = msgbox('Attempting to start parallel computing workers...','modal');
                 usePara = 'always';
                 matlabpool('local',feature('numCores'));
                 if(ishandle(h))
