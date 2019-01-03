@@ -32,9 +32,11 @@ switch state
             xlabelText = {xlabelText,getString(message('MATLAB:optimfun:funfun:optimplots:LabelShowingOnlyFirst100Variables'))};
         end
         
+        x = (x-lb)./(ub-lb);
         if optimValues.iteration == 0
             % The 'iter' case is  called during the zeroth iteration,
             % but it now has values that were empty during the 'init' case
+            
             plotx = bar(x);
             title(getString(message('MATLAB:optimfun:funfun:optimplots:TitleCurrentPoint')),'interp','none');
             ylabel(getString(message('MATLAB:optimfun:funfun:optimplots:LabelCurrentPoint')),'interp','none');
@@ -48,7 +50,6 @@ switch state
             yticks(gca,[0 1]);
         else
             plotx = findobj(get(gca,'Children'),'Tag','optimplotxksptot');
-            x = (x-lb)./(ub-lb);
             set(plotx,'Ydata',x);
 
             ylim(gca,[0, 1]);
@@ -56,4 +57,3 @@ switch state
             yticks(gca,[0 1]);
         end
 end
-

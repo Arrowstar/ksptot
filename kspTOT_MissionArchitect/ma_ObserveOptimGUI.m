@@ -22,7 +22,7 @@ function varargout = ma_ObserveOptimGUI(varargin)
 
 % Edit the above text to modify the response to help ma_ObserveOptimGUI
 
-% Last Modified by GUIDE v2.5 06-Feb-2014 18:19:01
+% Last Modified by GUIDE v2.5 02-Jan-2019 21:49:18
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -132,3 +132,10 @@ function cancelButton_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
     set(handles.cancelButton,'UserData',true);
+
+
+% --- Executes on mouse motion over figure - except title and menu.
+function ma_ObserveOptimGUI_WindowButtonMotionFcn(hObject, eventdata, handles)
+% hObject    handle to ma_ObserveOptimGUI (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
