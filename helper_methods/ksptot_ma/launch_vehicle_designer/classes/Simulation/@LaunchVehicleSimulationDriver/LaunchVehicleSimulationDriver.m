@@ -111,8 +111,8 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
             [t,y,~,~,ie] = integratorFH(odefun,tspan,y0,options); %obj.integrator
             
             if(isSparseOutput)
-                t = [t(1); t(end)];
-                y = [y(1,:);y(end,:)];
+                t = [t(end)];
+                y = [y(end,:)];
             end
             
             newStateLogEntries = eventInitStateLogEntry.createStateLogEntryFromIntegratorOutputRow(t, y, eventInitStateLogEntry);
