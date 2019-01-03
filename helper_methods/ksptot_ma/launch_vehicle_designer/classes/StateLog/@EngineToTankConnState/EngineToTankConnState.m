@@ -7,9 +7,17 @@ classdef EngineToTankConnState < matlab.mixin.SetGet & matlab.mixin.Copyable
         active(1,1) logical = true;
     end
     
+    properties(Dependent)
+        engine(1,1) LaunchVehicleEngine
+    end
+    
     methods
         function obj = EngineToTankConnState(conn)
             obj.conn = conn;
+        end
+        
+        function value = get.engine(obj)
+            value = obj.conn.engine;
         end
         
         function newE2TState = deepCopy(obj)

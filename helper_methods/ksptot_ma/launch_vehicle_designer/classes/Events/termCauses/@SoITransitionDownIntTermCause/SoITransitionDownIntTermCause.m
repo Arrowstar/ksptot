@@ -40,6 +40,8 @@ classdef SoITransitionDownIntTermCause < AbstractIntegrationTerminationCause
             newStateLogEntry.steeringModel.setContinuityTerms(true, true, true);
             newStateLogEntry.steeringModel.setConstsFromDcmAndContinuitySettings(dcm, ut, rVectDown, vVectDown, obj.toBody);
             newStateLogEntry.steeringModel.setT0(ut);
+            
+            newStateLogEntry.lvState.clearCachedConnEnginesTanks();
         end
     end
 end

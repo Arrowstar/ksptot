@@ -78,7 +78,7 @@ function ma_LvdMainGUI_OpeningFcn(hObject, eventdata, handles, varargin)
     setDeleteButtonEnable(lvdData, handles);
     setNonSeqDeleteButtonEnable(lvdData, handles);
     
-    runScript(handles, lvdData);
+    runScript(handles, lvdData, 1);
     lvd_processData(handles);
 
     % Update handles structure
@@ -102,22 +102,26 @@ function initializeOutputWindowText(handles, hOutputText)
     end
 
     
-function runScript(handles, lvdData)
+function runScript(handles, lvdData, evtStartNum)
     writeOutput = getappdata(handles.ma_LvdMainGUI,'write_to_output_func');
     
     handles.scriptWorkingLbl.Visible = 'on';
     drawnow;
     
-%     profile('on','-detail','builtin', '-remove_overhead','on');
+    if(not(isdeployed))
+        profile('on','-detail','builtin', '-remove_overhead','on');
+    end
     
     isSparseOutput = lvdData.settings.isSparseOutput;
 
     t = tic;
-    evt = lvdData.script.getEventForInd(1);
+    evt = lvdData.script.getEventForInd(evtStartNum);
     lvdData.script.executeScript(isSparseOutput, evt, true);
     execTime = toc(t);
     
-%     profile viewer;
+    if(not(isdeployed))
+        profile viewer;
+    end
     
     handles.scriptWorkingLbl.Visible = 'off';
     handles.warnAlertsSlider.Value = 0;    
@@ -162,7 +166,7 @@ function scriptListbox_Callback(hObject, eventdata, handles)
         event = lvdData.script.getEventForInd(eventNum);
         lvd_editEventGUI(event);
         
-        runScript(handles, lvdData);
+        runScript(handles, lvdData, event.getEventNum());
         lvd_processData(handles);
     end
 
@@ -195,7 +199,7 @@ function insertEventButton_Callback(hObject, eventdata, handles)
     
 	setDeleteButtonEnable(lvdData, handles);
 
-    runScript(handles, lvdData);
+    runScript(handles, lvdData, selEvtNum-1);
     lvd_processData(handles);
 
 % --- Executes on button press in moveEventDown.
@@ -214,7 +218,7 @@ function moveEventDown_Callback(hObject, eventdata, handles)
         set(handles.scriptListbox,'Value',eventNum+1);
     end
     
-    runScript(handles, lvdData);
+    runScript(handles, lvdData, eventNum-1);
     lvd_processData(handles);
     
 % --- Executes on button press in deleteEvent.
@@ -246,7 +250,7 @@ function deleteEvent_Callback(hObject, eventdata, handles)
     
     setDeleteButtonEnable(lvdData, handles);
     
-    runScript(handles, lvdData);
+    runScript(handles, lvdData, eventNum-1);
     lvd_processData(handles);
     
 function setDeleteButtonEnable(lvdData, handles)
@@ -282,7 +286,7 @@ function moveEventUp_Callback(hObject, eventdata, handles)
         set(handles.scriptListbox,'Value',eventNum-1);
     end
     
-    runScript(handles, lvdData);
+    runScript(handles, lvdData, eventNum-1);
     lvd_processData(handles);
 
 
@@ -398,7 +402,7 @@ function optimizeMissionMenu_Callback(hObject, eventdata, handles)
     
     lvdData.optimizer.optimize(writeOutput);
     
-    runScript(handles, lvdData);
+    runScript(handles, lvdData, 1);
     lvd_processData(handles);
 
 % --------------------------------------------------------------------
@@ -419,7 +423,7 @@ function editLaunchVehicleMenu_Callback(hObject, eventdata, handles)
     
     lvd_editLaunchVehicle(lvdData);
     
-    runScript(handles, lvdData);
+    runScript(handles, lvdData, 1);
     lvd_processData(handles);
 
 
@@ -442,7 +446,7 @@ function editConstraintsMenu_Callback(hObject, eventdata, handles)
     
     lvd_EditConstraintsGUI(lvdData);
     
-    runScript(handles, lvdData);
+    runScript(handles, lvdData, 1);
     lvd_processData(handles);
     
 % --------------------------------------------------------------------
@@ -457,7 +461,7 @@ function editInitialStateMenu_Callback(hObject, eventdata, handles)
     
     lvd_EditInitialStateGUI(lvdData, hKsptotMainGUI);
     
-    runScript(handles, lvdData);
+    runScript(handles, lvdData, 1);
     lvd_processData(handles);
 
 % --------------------------------------------------------------------
@@ -617,7 +621,7 @@ function newMissionPlanMenu_Callback(hObject, eventdata, handles, varargin)
     
     setDeleteButtonEnable(lvdData, handles);
     
-    runScript(handles, lvdData);
+    runScript(handles, lvdData, 1);
     lvd_processData(handles);
     
     set(handles.ma_LvdMainGUI,'Name', application_title);
@@ -694,7 +698,7 @@ function openMissionPlanMenu_Callback(hObject, eventdata, handles)
                 startParallelPool(write_to_output_func);
             end
             
-            runScript(handles, lvdData);
+            runScript(handles, lvdData, 1);
             lvd_processData(handles);
             
 %             if(~strcmpi(maData.settings.gravParamType,options_gravParamType))
@@ -865,7 +869,7 @@ function undoMenu_Callback(hObject, eventdata, handles)
     
     setappdata(handles.ma_LvdMainGUI,'lvdData',lvdData);
     
-    runScript(handles, lvdData);
+    runScript(handles, lvdData, 1);
     lvd_processData(handles);
     
     curName = get(handles.ma_LvdMainGUI,'Name');
@@ -891,7 +895,7 @@ function redoMenu_Callback(hObject, eventdata, handles)
     if(not(isempty(lvdData)))
         setappdata(handles.ma_LvdMainGUI,'lvdData',lvdData);
 
-        runScript(handles, lvdData);
+        runScript(handles, lvdData, 1);
         lvd_processData(handles);
     end
     
@@ -1072,7 +1076,7 @@ function integrationAbsTolMenu_Callback(hObject, eventdata, handles)
         
         lvdData.settings.intAbsTol = str2double(str);       
         
-        runScript(handles, lvdData);
+        runScript(handles, lvdData, 1);
         lvd_processData(handles);
     else
         writeOutput(sprintf('Could not set the desired integration absolute error tolerance.  "%s" is an invalid entry.', str),'append');
@@ -1102,7 +1106,7 @@ function integrationRelTolMenu_Callback(hObject, eventdata, handles)
         
         lvdData.settings.intRelTol = str2double(str);       
         
-        runScript(handles, lvdData);
+        runScript(handles, lvdData, 1);
         lvd_processData(handles);
     else
         writeOutput(sprintf('Could not set the desired integration relative error tolerance.  "%s" is an invalid entry.', str),'append');
@@ -1132,7 +1136,7 @@ function intMinAltitudeMenu_Callback(hObject, eventdata, handles)
         
         lvdData.settings.minAltitude = str2double(str);       
         
-        runScript(handles, lvdData);
+        runScript(handles, lvdData, 1);
         lvd_processData(handles);
     else
         writeOutput(sprintf('Could not set the desired minimum integration altitude.  "%s" is an invalid entry.', str),'append');
@@ -1162,7 +1166,7 @@ function intMaxSimTimeMenu_Callback(hObject, eventdata, handles)
         
         lvdData.settings.simMaxDur = str2double(str);       
         
-        runScript(handles, lvdData);
+        runScript(handles, lvdData, 1);
         lvd_processData(handles);
     else
         writeOutput(sprintf('Could not set the desired maximum simulation time.  "%s" is an invalid entry.', str),'append');
@@ -1246,7 +1250,7 @@ function perturbOptVarsMenu_Callback(hObject, eventdata, handles)
 
         lvdData.optimizer.vars.perturbVarsAndUpdate(pPct);
         
-        runScript(handles, lvdData);
+        runScript(handles, lvdData, 1);
         lvd_processData(handles);        
     else
         writeOutput(sprintf('Could not perturb optimization variables.  "%s" is an invalid entry.', str),'append');
@@ -1295,7 +1299,7 @@ function maxScriptPropTimeMenu_Callback(hObject, eventdata, handles)
         
         lvdData.settings.maxScriptPropTime = str2double(str);       
         
-        runScript(handles, lvdData);
+        runScript(handles, lvdData, 1);
         lvd_processData(handles);
     else
         writeOutput(sprintf('Could not set the desired maximum script execution time.  "%s" is an invalid entry.', str),'append');
@@ -1321,7 +1325,7 @@ function sparseIntegratorOutputMenu_Callback(hObject, eventdata, handles)
         writeOutput('Sparse output mode enabled.  Only first and last states from each event will be provided and plotted.','append');
     end
     
-    runScript(handles, lvdData);
+    runScript(handles, lvdData, 1);
     lvd_processData(handles);
 
 
@@ -1336,7 +1340,7 @@ function ma_LvdMainGUI_WindowKeyPressFcn(hObject, eventdata, handles)
     if(not(isdeployed()) && strcmpi(eventdata.Modifier,'control') && strcmpi(eventdata.Key,'p'))
         lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
         
-        runScript(handles, lvdData);
+        runScript(handles, lvdData, 1);
         lvd_processData(handles);
     end
 
@@ -1377,7 +1381,7 @@ function nonSeqEventsListbox_Callback(hObject, eventdata, handles)
         nonSeqEvt = lvdData.script.nonSeqEvts.getEventForInd(eventNum);
         lvd_editNonSeqEventGUI(nonSeqEvt, lvdData);
         
-        runScript(handles, lvdData);
+        runScript(handles, lvdData, 1);
         lvd_processData(handles);
     end
 
@@ -1411,7 +1415,7 @@ function insertNonSeqEventButton_Callback(hObject, eventdata, handles)
     
 	setNonSeqDeleteButtonEnable(lvdData, handles)
 
-    runScript(handles, lvdData);
+    runScript(handles, lvdData, 1);
     lvd_processData(handles);
 
 % --- Executes on button press in deleteNonSeqEventButton.
@@ -1443,7 +1447,7 @@ function deleteNonSeqEventButton_Callback(hObject, eventdata, handles)
     
     setNonSeqDeleteButtonEnable(lvdData, handles)
     
-    runScript(handles, lvdData);
+    runScript(handles, lvdData, 1);
     lvd_processData(handles);
 
 
@@ -1458,7 +1462,7 @@ function editStopwatchesMenu_Callback(hObject, eventdata, handles)
     
     lvd_EditStopwatchesGUI(lvdData);
     
-    runScript(handles, lvdData);
+    runScript(handles, lvdData, 1);
     lvd_processData(handles);
 
 
@@ -1473,7 +1477,7 @@ function toggleOptimForSelEventMenu_Callback(hObject, eventdata, handles)
 
     if(not(isempty(event)))
         addUndoState(handles,sprintf('Toggle Optimization on Event %u'));
-        event.toggleOptimDisable();
+        event.toggleOptimDisable(lvdData);
         
 %         runScript(handles, lvdData);
         lvd_processData(handles);

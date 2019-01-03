@@ -24,6 +24,7 @@ classdef NonSeqEventTermCondIntTermCause < AbstractIntegrationTerminationCause
                 newStateLogEntry = actionStateLogEntries(end).deepCopy();
             end
             
+            newStateLogEntry.lvState.clearCachedConnEnginesTanks();
             obj.nonSeqEvt.decrementNumExecsRemaining();
         end
     end

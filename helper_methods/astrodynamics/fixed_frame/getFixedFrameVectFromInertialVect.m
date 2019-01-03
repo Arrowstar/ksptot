@@ -10,8 +10,10 @@ function [rVectECEF, vVectECEF, REci2Ecef] = getFixedFrameVectFromInertialVect(u
 
     spinAngle = getBodySpinAngle(bodyInfo, ut);
     
-    R = [cos(spinAngle) -sin(spinAngle) 0;
-         sin(spinAngle) cos(spinAngle) 0;
+    cSpin = cos(spinAngle);
+    sSpin = sin(spinAngle);
+    R = [cSpin -sSpin 0;
+         sSpin cSpin 0;
          0 0 1];
     rVectECI = reshape(rVectECI,3,1);
     

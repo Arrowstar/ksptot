@@ -7,6 +7,11 @@ classdef OptimizationVariableSet < matlab.mixin.SetGet
         vars(1,:) AbstractOptimizationVariable
     end
     
+    properties(Transient)
+        cachedVars(1,:) AbstractOptimizationVariable
+        cachedVarEventDis(1,:) logical
+    end
+    
     methods
         function obj = OptimizationVariableSet(lvdData)
             obj.lvdData = lvdData;
@@ -14,10 +19,14 @@ classdef OptimizationVariableSet < matlab.mixin.SetGet
         
         function addVariable(obj, newVar)
             obj.vars(end+1) = newVar;
+            
+            obj.clearCachedVarEvtDisabledStatus();
         end
         
         function removeVariable(obj, var)
             obj.vars([obj.vars] == var) = [];
+            
+            obj.clearCachedVarEvtDisabledStatus();
         end
         
         function [x, vars] = getTotalScaledXVector(obj)
@@ -124,20 +133,34 @@ classdef OptimizationVariableSet < matlab.mixin.SetGet
                 end
             end
             
+            obj.clearCachedVarEvtDisabledStatus();
+        end
+        
+        function clearCachedVarEvtDisabledStatus(obj)
+            obj.cachedVars = AbstractOptimizationVariable.empty(1,0);
+            obj.cachedVarEventDis = logical([]);
         end
     end
     
     methods(Access=private)
         function tf = isVarEventOptimDisabled(obj, var)
-            tf = false;
-            
-            evtNum = getEventNumberForVar(var, obj.lvdData);
-            if(not(isempty(evtNum)))
-                evt = obj.lvdData.script.getEventForInd(evtNum);
+            bool = obj.cachedVars == var;
+            if(any(bool))
+                tf = obj.cachedVarEventDis(bool);
+            else
+                tf = false;
 
-                if(not(isempty(evt)) && evt.disableOptim == true)
-                    tf = true;
+                evtNum = getEventNumberForVar(var, obj.lvdData);
+                if(not(isempty(evtNum)))
+                    evt = obj.lvdData.script.getEventForInd(evtNum);
+
+                    if(not(isempty(evt)) && evt.disableOptim == true)
+                        tf = true;
+                    end
                 end
+                
+                obj.cachedVars(end+1) = var;
+                obj.cachedVarEventDis(end+1) = tf;
             end
         end
     end

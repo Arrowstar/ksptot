@@ -9,6 +9,11 @@ classdef LaunchVehicleState < matlab.mixin.SetGet & matlab.mixin.Copyable
         holdDownEnabled(1,1) logical = false
     end
     
+    properties(Transient)
+        cachedEngines(1,:) LaunchVehicleEngine
+        cachedConnTanks(1,:) cell
+    end
+    
     properties(Constant)
         emptyTankArr = LaunchVehicleTank.empty(1,0);
     end
@@ -16,10 +21,13 @@ classdef LaunchVehicleState < matlab.mixin.SetGet & matlab.mixin.Copyable
     methods
         function obj = LaunchVehicleState(lv)
             obj.lv = lv;
+            obj.clearCachedConnEnginesTanks();
         end
         
         function addE2TConnState(obj, newConnState)
             obj.e2TConns(end+1) = newConnState;
+            
+            obj.clearCachedConnEnginesTanks();
         end
         
         function removeE2TConnStateForConn(obj, conn)
@@ -34,18 +42,38 @@ classdef LaunchVehicleState < matlab.mixin.SetGet & matlab.mixin.Copyable
             if(not(isempty(ind)))
                 obj.e2TConns(ind) = [];
             end
+            
+            obj.clearCachedConnEnginesTanks();
         end
         
         function tanks = getTanksConnectedToEngine(obj, engine)
-            tanks = obj.emptyTankArr;
-            
-            connStates = obj.e2TConns([obj.e2TConns.active] == true);
-            connections = [connStates.conn];
-            
-            if(not(isempty(connections)))
-                connections = connections([connections.engine] == engine);
-                tanks = [connections.tank];
+            bool = obj.cachedEngines == engine;
+            if(any(bool))
+                tanks = obj.cachedConnTanks{bool};
+            else
+                tanks = obj.emptyTankArr;
+
+                connStates = obj.e2TConns([obj.e2TConns.active] == true);
+                connections = [connStates.conn];
+
+                if(not(isempty(connections)))
+                    connections = connections([connections.engine] == engine);
+                    tanks = [connections.tank];
+                end
+                
+                obj.cachedEngines(end+1) = engine;
+                obj.cachedConnTanks(end+1) = {tanks};
             end
+
+%                 tanks = obj.emptyTankArr;
+% 
+%                 connStates = obj.e2TConns([obj.e2TConns.active] == true);
+%                 connections = [connStates.conn];
+% 
+%                 if(not(isempty(connections)))
+%                     connections = connections([connections.engine] == engine);
+%                     tanks = [connections.tank];
+%                 end
         end
         
         function newLvState = deepCopy(obj)
@@ -54,6 +82,13 @@ classdef LaunchVehicleState < matlab.mixin.SetGet & matlab.mixin.Copyable
             for(i=1:length(obj.e2TConns)) 
                 newLvState.e2TConns(i) = obj.e2TConns(i).deepCopy();
             end
+            
+            newLvState.clearCachedConnEnginesTanks();
+        end
+        
+        function clearCachedConnEnginesTanks(obj)
+            obj.cachedEngines = LaunchVehicleEngine.empty(1,0);
+            obj.cachedConnTanks = {};
         end
     end
 end

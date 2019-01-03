@@ -142,8 +142,10 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
             end
         end
         
-        function toggleOptimDisable(obj)
+        function toggleOptimDisable(obj, lvdData)
             obj.disableOptim = not(obj.disableOptim);
+            
+            lvdData.optimizer.vars.clearCachedVarEvtDisabledStatus();
         end
         
         function [tf, vars] = hasActiveOptVars(obj)
