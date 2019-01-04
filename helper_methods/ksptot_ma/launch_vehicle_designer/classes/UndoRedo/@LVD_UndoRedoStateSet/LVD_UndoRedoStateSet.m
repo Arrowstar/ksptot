@@ -12,7 +12,7 @@ classdef LVD_UndoRedoStateSet < matlab.mixin.SetGet
             obj.undo_states = LVD_UndoRedoState.empty(1,0);
         end
         
-        function obj = addState(obj, hLvdFig, lvdData, actionName)
+        function addState(obj, hLvdFig, lvdData, actionName)
             if(obj.undo_pointer > length(obj.undo_states))
                 error('Undo/redo states and the pointer are out of sync.');
             end
