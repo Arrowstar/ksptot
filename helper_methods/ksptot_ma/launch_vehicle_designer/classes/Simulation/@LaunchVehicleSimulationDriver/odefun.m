@@ -5,9 +5,15 @@ function dydt = odefun(t,y, obj, eventInitStateLogEntry, dryMass, fmEnums)
     stageStates = eventInitStateLogEntry.stageStates;
     lvState = eventInitStateLogEntry.lvState;
 
+    altitude = norm(rVect) - bodyInfo.radius;
+    if(altitude <= 0 && any(fmEnums == ForceModelsEnum.Normal))
+        rswVVect = rotateVectorFromEciToRsw(vVect, rVect, vVect);
+        rswVVect(1) = 0; %kill vertical velocity because we don't want to go throught the surface of the planet
+        vVect = rotateVectorFromRsw2Eci(rswVVect, rVect, vVect);
+    end
+    
     throttle = eventInitStateLogEntry.throttleModel.getThrottleAtTime(ut, rVect, tankStatesMasses, dryMass, stageStates, lvState, tankStates, bodyInfo);
 
-    altitude = norm(rVect) - bodyInfo.radius;
     pressure = getPressureAtAltitude(bodyInfo, altitude);            
 
     holdDownEnabled = eventInitStateLogEntry.isHoldDownEnabled();
