@@ -19,6 +19,7 @@ classdef LaunchVehicleDataValidation < matlab.mixin.SetGet
             obj.validators(end+1) = MaxSimTimeReachedValidator(obj.lvdData);
             obj.validators(end+1) = MaxPropTimeReachedValidator(obj.lvdData);
             obj.validators(end+1) = ThrottleWithNoThrustModelValidator(obj.lvdData);
+            obj.validators(end+1) = AtmoWithNoDragModelValidator(obj.lvdData);
         end
 
         function validate(obj)
