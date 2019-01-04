@@ -15,6 +15,8 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
         integrationStep(1,1) double = -1;
         checkForSoITrans(1,1) logical = true;
         
+        forceModels(1,:) ForceModelsEnum = ForceModelsEnum.getDefaultArrayOfForceModelEnums();
+        
         disableOptim(1,1) logical = false;
     end
     
@@ -99,7 +101,7 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
         end
         
         function newStateLogEntries = executeEvent(obj, initStateLogEntry, simDriver, tStartPropTime, tStartSimTime, isSparseOutput, activeNonSeqEvts)
-            [newStateLogEntries] = simDriver.integrateOneEvent(obj, initStateLogEntry, obj.integrator.functionHandle, tStartPropTime, tStartSimTime, isSparseOutput, obj.checkForSoITrans, activeNonSeqEvts);
+            [newStateLogEntries] = simDriver.integrateOneEvent(obj, initStateLogEntry, obj.integrator.functionHandle, tStartPropTime, tStartSimTime, isSparseOutput, obj.checkForSoITrans, activeNonSeqEvts, obj.forceModels);
         end
         
         function tf = usesStage(obj, stage)

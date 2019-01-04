@@ -22,7 +22,7 @@ function varargout = lvd_editEventGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_editEventGUI
 
-% Last Modified by GUIDE v2.5 04-Dec-2018 16:40:39
+% Last Modified by GUIDE v2.5 04-Jan-2019 09:15:56
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -430,3 +430,31 @@ function intStepSizeText_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on button press in editForceModelsButton.
+function editForceModelsButton_Callback(hObject, eventdata, handles)
+% hObject    handle to editForceModelsButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    event = getappdata(handles.lvd_editEventGUI,'event');
+    
+    fms = event.forceModels;
+    initSelInds = [];
+    for(i=1:length(fms))
+        if(fms(i).canBeDisabled)
+            initSelInds(end+1) = ForceModelsEnum.getIndOfDisablableListboxStrsForModel(fms(i).model); %#ok<AGROW>
+        end
+    end
+    
+    [Selection,ok] = listdlgARH('ListString',ForceModelsEnum.getListBoxStrsOfDisablableModels(), ...
+                                'SelectionMode', 'multiple', ...
+                                'ListSize', [300, 300], ...
+                                'Name', 'Select Force Models', ...
+                                'PromptString', {'Select the Force Models you wish to have enabled during this','event.  Gravity is always enabled.  Disabling Thrust during','periods of coasting may improve performance considerably.'}, ...
+                                'InitialValue', initSelInds);
+
+	if(ok == 1)
+        m = ForceModelsEnum.getEnumsOfDisablableForceModels();
+        event.forceModels = [ForceModelsEnum.getAllForceModelsThatCannotBeDisabled(), m(Selection)'];
+	end

@@ -9,10 +9,13 @@ classdef LVD_UndoRedoState < matlab.mixin.SetGet
     
     methods
         function obj = LVD_UndoRedoState(lvdData, actionName)
+            entries = lvdData.stateLog.entries;
             lvdData.stateLog.clearStateLog();
             
             obj.serialLvdData = getByteStreamFromArray(lvdData);
             obj.actionName = actionName;
+            
+            lvdData.stateLog.entries = entries;
         end
         
         function [lvdData, actionName] = getUndoData(obj)

@@ -1,4 +1,4 @@
-function dydt = odefun(t,y, obj, eventInitStateLogEntry, dryMass)
+function dydt = odefun(t,y, obj, eventInitStateLogEntry, dryMass, fmEnums)
     bodyInfo = eventInitStateLogEntry.centralBody;
     [ut, rVect, vVect, tankStatesMasses] = LaunchVehicleSimulationDriver.decomposeIntegratorTandY(t,y);
     tankStates = eventInitStateLogEntry.getAllActiveTankStates();
@@ -44,7 +44,7 @@ function dydt = odefun(t,y, obj, eventInitStateLogEntry, dryMass)
         [tankStates.tankMass] = tmCellArr{:};
 
         if(totalMass > 0)
-            forceSum = obj.forceModel.getForce(ut, rVect, vVect, totalMass, bodyInfo, aero, throttleModel, steeringModel, tankStates, stageStates, lvState, dryMass, tankStatesMasses);
+            forceSum = obj.forceModel.getForce(fmEnums, ut, rVect, vVect, totalMass, bodyInfo, aero, throttleModel, steeringModel, tankStates, stageStates, lvState, dryMass, tankStatesMasses);
             accelVect = forceSum/totalMass; %F = dp/dt = d(mv)/dt = m*dv/dt + v*dm/dt, but since the thrust force causes us to shed mass, we actually account for the v*dm/dt term there and therefore don't need it!  See: https://en.wikipedia.org/wiki/Variable-mass_system         
             dydt(7:end) = tankMassDots;
         else
