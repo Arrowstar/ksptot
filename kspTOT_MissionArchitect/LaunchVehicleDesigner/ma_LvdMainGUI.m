@@ -147,7 +147,8 @@ function addUndoState(handles,actionName)
     lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
     undoRedo = getappdata(handles.ma_LvdMainGUI,'undoRedo');
     
-    undoRedo.addState(handles.ma_LvdMainGUI, lvdData, actionName)
+    undoRedo.addState(handles.ma_LvdMainGUI, lvdData, actionName);
+ 
 
 % --- Executes on selection change in scriptListbox.
 function scriptListbox_Callback(hObject, eventdata, handles)
@@ -164,8 +165,8 @@ function scriptListbox_Callback(hObject, eventdata, handles)
         lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
         
         event = lvdData.script.getEventForInd(eventNum);
-        lvd_editEventGUI(event);
-        
+        lvd_editEventGUI(event);   
+
         runScript(handles, lvdData, event.getEventNum());
         lvd_processData(handles);
     end
