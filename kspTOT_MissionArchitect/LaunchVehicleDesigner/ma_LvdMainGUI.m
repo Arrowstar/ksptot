@@ -22,7 +22,7 @@ function varargout = ma_LvdMainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_LvdMainGUI
 
-% Last Modified by GUIDE v2.5 17-Dec-2018 19:36:43
+% Last Modified by GUIDE v2.5 03-Jan-2019 18:46:04
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1337,12 +1337,6 @@ function ma_LvdMainGUI_WindowKeyPressFcn(hObject, eventdata, handles)
 %	Character: character interpretation of the key(s) that was pressed
 %	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
 % handles    structure with handles and user data (see GUIDATA)
-    if(not(isdeployed()) && strcmpi(eventdata.Modifier,'control') && strcmpi(eventdata.Key,'p'))
-        lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
-        
-        runScript(handles, lvdData, 1);
-        lvd_processData(handles);
-    end
 
 
 % --------------------------------------------------------------------
@@ -1482,3 +1476,21 @@ function toggleOptimForSelEventMenu_Callback(hObject, eventdata, handles)
 %         runScript(handles, lvdData);
         lvd_processData(handles);
     end
+
+
+% --------------------------------------------------------------------
+function simulationMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to simulationMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function runScriptMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to runScriptMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+
+    runScript(handles, lvdData, 1);
+    lvd_processData(handles);
