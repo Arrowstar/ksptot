@@ -7,7 +7,7 @@ classdef ThrottlePolyModel < AbstractThrottleModel
     end
     
     methods
-        function throttle = getThrottleAtTime(obj, ut, ~, ~, ~, ~, ~, ~, ~)
+        function throttle = getThrottleAtTime(obj, ut, ~, ~, ~, ~, ~, ~, ~, ~)
             throttle = obj.throttleModel.getValueAtTime(ut);
             
             if(throttle < 0)

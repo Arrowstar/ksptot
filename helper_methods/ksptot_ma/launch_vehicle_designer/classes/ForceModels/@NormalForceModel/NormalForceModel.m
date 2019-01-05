@@ -11,7 +11,7 @@ classdef NormalForceModel < AbstractForceModel
             
         end
         
-        function forceVect = getForce(obj, ~, rVect, vVect, mass, bodyInfo, ~, ~, ~, ~, ~, ~, ~, ~)  
+        function [forceVect ,tankMdots] = getForce(obj, ~, rVect, vVect, mass, bodyInfo, ~, ~, ~, ~, ~, ~, ~, ~)  
             r = norm(rVect);
             alt = r - bodyInfo.radius;
             
@@ -26,6 +26,8 @@ classdef NormalForceModel < AbstractForceModel
             else
                 forceVect = [0;0;0];
             end
+            
+            tankMdots = [];
         end
     end
 end

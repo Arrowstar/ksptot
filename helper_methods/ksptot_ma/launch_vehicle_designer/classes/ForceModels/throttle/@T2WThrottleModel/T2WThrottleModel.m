@@ -7,11 +7,11 @@ classdef T2WThrottleModel < AbstractThrottleModel
     end
     
     methods
-        function throttle = getThrottleAtTime(obj, ~, rVect, tankMasses, dryMass, stgStates, lvState, tankStates, bodyInfo)
+        function throttle = getThrottleAtTime(obj, ut, rVect, vVect, tankMasses, dryMass, stgStates, lvState, tankStates, bodyInfo)
             if(obj.targetT2W <= 0)
                 throttle = 0;
             else
-                twRatioFH = @(throttle) T2WThrottleModel.computeTWRatio(throttle, rVect, tankMasses, dryMass, stgStates, lvState, tankStates, bodyInfo);
+                twRatioFH = @(throttle) computeTWRatio(throttle, ut, rVect, vVect, tankMasses, dryMass, stgStates, lvState, tankStates, bodyInfo);
                 
                 fullThrottleTW = twRatioFH(1.0);
                 if(fullThrottleTW < obj.targetT2W)
@@ -60,18 +60,6 @@ classdef T2WThrottleModel < AbstractThrottleModel
     methods(Static)
         function model = getDefaultThrottleModel()
             model = T2WThrottleModel(0);
-        end
-        
-        function twRatio = computeTWRatio(throttle, rVect, tankMasses, dryMass, stgStates, lvState, tankStates, bodyInfo)
-            altitude = norm(rVect) - bodyInfo.radius;
-            presskPa = getPressureAtAltitude(bodyInfo, altitude); 
-            
-            [~, totalThrust]= LaunchVehicleStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, tankMasses, stgStates, throttle, lvState, presskPa);
-            
-            totalMass = (dryMass + sum(tankMasses))*1000; %kg          
-            totalThrust = totalThrust * 1000; % N
-            
-            twRatio = computeSLThrustToWeight(bodyInfo, totalThrust, totalMass);
         end
     end
 end

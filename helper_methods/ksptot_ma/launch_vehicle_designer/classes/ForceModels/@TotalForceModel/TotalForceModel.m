@@ -1,4 +1,4 @@
-classdef TotalForceModel < AbstractForceModel
+classdef TotalForceModel < matlab.mixin.SetGet
     %TotalForceModel Generates the total force on the vehicle using sub
     %models
     %   Detailed explanation goes here
@@ -12,13 +12,19 @@ classdef TotalForceModel < AbstractForceModel
 %             obj.forceModels = TotalForceModel.getForceModels();
         end
         
-        function forceVect = getForce(obj, fmEnums, ut, rVect, vVect, mass, bodyInfo, aero, throttleModel, steeringModel, tankStates, stageStates, lvState, dryMass, tankStatesMasses)
+        function [forceVect, tankMdots] = getForce(obj, fmEnums, ut, rVect, vVect, mass, bodyInfo, aero, throttleModel, steeringModel, tankStates, stageStates, lvState, dryMass, tankStatesMasses)
             forceVect = [0;0;0];
+            tankMdots = zeros(length(tankStates),1);
             
             if(mass > 0)
 %                 forceModelsVar = obj.forceModels;
                 for(i=1:length(fmEnums)) %#ok<*NO4LP>
-                    forceVect = forceVect + fmEnums(i).model.getForce(ut, rVect, vVect, mass, bodyInfo, aero, throttleModel, steeringModel, tankStates, stageStates, lvState, dryMass, tankStatesMasses);
+                    [fv, mdots] = fmEnums(i).model.getForce(ut, rVect, vVect, mass, bodyInfo, aero, throttleModel, steeringModel, tankStates, stageStates, lvState, dryMass, tankStatesMasses);
+                    forceVect = forceVect + fv;
+                    
+                    if(not(isempty(mdots)))
+                        tankMdots = tankMdots + mdots;
+                    end
                 end
             end
         end

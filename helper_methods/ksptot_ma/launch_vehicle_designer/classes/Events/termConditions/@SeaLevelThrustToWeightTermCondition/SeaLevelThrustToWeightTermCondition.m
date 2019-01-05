@@ -97,13 +97,14 @@ classdef SeaLevelThrustToWeightTermCondition < AbstractEventTerminationCondition
         function [value,isterminal,direction] = eventTermCond(t,y, targetTtW, dryMass, stgStates, lvState, throttleModel, tankStates, bodyInfo)
             ut = t;
             rVect = y(1:3);
+            vVect = y(4:6);
             tankMasses = y(7:end);
             throttle = throttleModel.getThrottleAtTime(ut, rVect, tankMasses, dryMass, stgStates, lvState, tankStates, bodyInfo);
             
             altitude = norm(rVect) - bodyInfo.radius;
             presskPa = getPressureAtAltitude(bodyInfo, altitude); 
             
-            [~, totalThrust]= LaunchVehicleStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, tankMasses, stgStates, throttle, lvState, presskPa);
+            [~, totalThrust]= LaunchVehicleStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, tankMasses, stgStates, throttle, lvState, presskPa, ut, rVect, vVect, bodyInfo, []);
             
             totalMass = (dryMass + sum(tankMasses))*1000; %kg          
             totalThrust = totalThrust * 1000; % N

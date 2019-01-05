@@ -15,19 +15,7 @@ function datapt = lvd_ThrottleTask(stateLogEntry, subTask)
                 tankMasses(i) = tankStates(i).tankMass;
             end
             
-            datapt = computeTWRatio(throttle, stateLogEntry.position, tankMasses, stateLogEntry.getTotalVehicleDryMass(), ...
+            datapt = computeTWRatio(throttle, stateLogEntry.time, stateLogEntry.position, stateLogEntry.velocity, tankMasses, stateLogEntry.getTotalVehicleDryMass(), ...
                                     stateLogEntry.stageStates, stateLogEntry.lvState, tankStates, stateLogEntry.centralBody);
     end
-end
-
-function twRatio = computeTWRatio(throttle, rVect, tankMasses, dryMass, stgStates, lvState, tankStates, bodyInfo)
-    altitude = norm(rVect) - bodyInfo.radius;
-    presskPa = getPressureAtAltitude(bodyInfo, altitude); 
-
-    [~, totalThrust]= LaunchVehicleStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, tankMasses, stgStates, throttle, lvState, presskPa);
-
-    totalMass = (dryMass + sum(tankMasses))*1000; %kg          
-    totalThrust = totalThrust * 1000; % N
-
-    twRatio = computeSLThrustToWeight(bodyInfo, totalThrust, totalMass);
 end

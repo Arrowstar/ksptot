@@ -113,10 +113,10 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
 
             stgStates = obj.stageStates;
             for(i=1:length(stgStates)) %#ok<*NO4LP>
-                stgState = stgStates(i);
+%                 stgState = stgStates(i);
                 
-                if(stgState.active)
-                    tankStates = horzcat(tankStates, stgState.tankStates); %#ok<AGROW>
+                if(stgStates(i).active)
+                    tankStates = [tankStates, stgStates(i).tankStates]; %#ok<AGROW>
                 end
             end
         end
@@ -254,54 +254,72 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             end
         end
         
-        function [tankMDots, totalThrust]= getTankMassFlowRatesDueToEngines(tankStates, tankStatesMasses, stgStates, throttle, lvState, presskPa)
+        function [tankMDots, totalThrust, forceVect]= getTankMassFlowRatesDueToEngines(tankStates, tankStatesMasses, stgStates, throttle, lvState, presskPa, ut, rVect, vVect, bodyInfo, steeringModel)
             tankMDots = zeros(size(tankStates));
             tankMDots = tankMDots(:);
             totalThrust = 0;
+            bodyThrust = [0;0;0];
             
             for(i=1:length(stgStates)) %#ok<*NO4LP>
-                stgState = stgStates(i);
+%                 stgState = stgStates(i);
                 
-                if(stgState.active)
-                    engineStates = stgState.engineStates;
+                if(stgStates(i).active)
+                    engineStates = stgStates(i).engineStates;
 
                     for(j=1:length(engineStates))
                         engineState = engineStates(j);
                         
                         if(engineState.active)
                             engine = engineState.engine;
-                            [thrust, mdot] = engine.getThrustFlowRateForPressure(presskPa); %total mass flow through engine
                             adjustedThrottle = engine.adjustThrottleForMinMax(throttle);
-                            mdot = adjustedThrottle * mdot;
-                            totalThrust = totalThrust + adjustedThrottle*thrust;
-                            
-                            flowFromTankInds = zeros(size(tankStates));
-                            if(mdot < 0)
-                                tanks = lvState.getTanksConnectedToEngine(engine);
+                            if(adjustedThrottle > 0)
+                                [thrust, mdot] = engine.getThrustFlowRateForPressure(presskPa); %total mass flow through engine
+                                mdot = adjustedThrottle * mdot;
+                                totalThrust = totalThrust + adjustedThrottle*thrust;
 
-                                for(k=1:length(tanks))
-                                    tank = tanks(k);
-                                    tankState = tankStates([tankStates.tank] == tank);
-                                    tankMass = tankStatesMasses([tankStates.tank] == tank);
+                                flowFromTankInds = zeros(size(tankStates));
+                                if(mdot < 0)
+                                    tanks = lvState.getTanksConnectedToEngine(engine);
 
-                                    if(not(isempty(tankState)))
-                                        tankStageState = tankState.stageState;
+                                    for(k=1:length(tanks))
+                                        tank = tanks(k);
+                                        tankState = tankStates([tankStates.tank] == tank);
+                                        tankMass = tankStatesMasses([tankStates.tank] == tank);
 
-                                        if(tankStageState.active && tankMass > 0)
-                                            flowFromTankInds(tankStates == tankState) = 1;
+                                        if(not(isempty(tankState)))
+                                            tankStageState = tankState.stageState;
+
+                                            if(tankStageState.active && tankMass > 0)
+                                                flowFromTankInds(tankStates == tankState) = 1;
+                                            end
                                         end
                                     end
+
+                                    numTanksToPullFrom = sum(flowFromTankInds);
+                                    mDotPerTank = mdot/numTanksToPullFrom;
+
+                                    flowFromTankInds = logical(flowFromTankInds);
+                                    tankMDots(flowFromTankInds) = tankMDots(flowFromTankInds) + mDotPerTank;    
+                                    
+                                    if(numTanksToPullFrom > 0)
+                                        bodyThrust = bodyThrust + (thrust * adjustedThrottle * engine.bodyFrameThrustVect)/1000; %1/1000 to convert kN=mT*m/s^2 to mT*km/s^2 (see also ma_executeDVManeuver_finite_inertial()) 
+                                    end
                                 end
-
-                                numTanksToPullFrom = sum(flowFromTankInds);
-                                mDotPerTank = mdot/numTanksToPullFrom;
-
-                                flowFromTankInds = logical(flowFromTankInds);
-                                tankMDots(flowFromTankInds) = tankMDots(flowFromTankInds) + mDotPerTank;     
                             end
                         end
                     end
                 end
+            end
+            
+            if(not(isempty(steeringModel)))
+                if(norm(bodyThrust) > 0)
+                    body2InertDcm = steeringModel.getBody2InertialDcmAtTime(ut, rVect, vVect, bodyInfo);
+                    forceVect = body2InertDcm * bodyThrust;
+                else
+                    forceVect = [0;0;0];
+                end
+            else
+                forceVect = [NaN;NaN;NaN];
             end
         end
     end
