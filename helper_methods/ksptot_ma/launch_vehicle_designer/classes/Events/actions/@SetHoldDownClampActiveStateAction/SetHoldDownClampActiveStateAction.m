@@ -16,7 +16,7 @@ classdef SetHoldDownClampActiveStateAction < AbstractEventAction
         end
         
         function newStateLogEntry = executeAction(obj, stateLogEntry)
-            newStateLogEntry = stateLogEntry.deepCopy();
+            newStateLogEntry = stateLogEntry;
             newStateLogEntry.lvState.holdDownEnabled = obj.activeStateToSet;
         end
         

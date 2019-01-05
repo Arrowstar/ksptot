@@ -20,7 +20,7 @@ classdef AddMassToTankAction < AbstractEventAction
         end
         
         function newStateLogEntry = executeAction(obj, stateLogEntry)
-            newStateLogEntry = stateLogEntry.deepCopy();
+            newStateLogEntry = stateLogEntry;
             
             tankStates = newStateLogEntry.getAllTankStates();
             tankState = tankStates([tankStates.tank] == obj.tank);

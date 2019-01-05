@@ -18,7 +18,7 @@ classdef SetEngineTankConnActiveStateEventAction < AbstractEventAction
         end
         
         function newStateLogEntry = executeAction(obj, stateLogEntry)
-            newStateLogEntry = stateLogEntry.deepCopy();
+            newStateLogEntry = stateLogEntry;
             lvState = newStateLogEntry.lvState;
             connState = lvState.e2TConns([lvState.e2TConns.conn] == obj.conn);
             

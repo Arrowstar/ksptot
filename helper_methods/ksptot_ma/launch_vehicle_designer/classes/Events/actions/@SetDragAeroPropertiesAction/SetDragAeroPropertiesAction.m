@@ -18,7 +18,7 @@ classdef SetDragAeroPropertiesAction < AbstractEventAction
         end
         
         function newStateLogEntry = executeAction(obj, stateLogEntry)
-            newStateLogEntry = stateLogEntry.deepCopy();
+            newStateLogEntry = stateLogEntry;
             
             newStateLogEntry.aero.Cd = obj.CdToSet;
             newStateLogEntry.aero.area = obj.areaToSet;

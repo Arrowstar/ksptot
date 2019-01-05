@@ -22,7 +22,7 @@ classdef SetLiftAeroPropertiesAction < AbstractEventAction
         end
         
         function newStateLogEntry = executeAction(obj, stateLogEntry)
-            newStateLogEntry = stateLogEntry.deepCopy();
+            newStateLogEntry = stateLogEntry;
             
             newStateLogEntry.aero.useLift = obj.useLift;
             newStateLogEntry.aero.areaLift = obj.areaLift;

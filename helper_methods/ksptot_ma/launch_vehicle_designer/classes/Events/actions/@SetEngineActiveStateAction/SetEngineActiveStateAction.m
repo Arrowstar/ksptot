@@ -18,7 +18,7 @@ classdef SetEngineActiveStateAction < AbstractEventAction
         end
         
         function newStateLogEntry = executeAction(obj, stateLogEntry)
-            newStateLogEntry = stateLogEntry.deepCopy();
+            newStateLogEntry = stateLogEntry;
             stage = obj.engine.stage;
             
             stgState = newStateLogEntry.stageStates([newStateLogEntry.stageStates.stage] == stage);

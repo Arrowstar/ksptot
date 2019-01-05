@@ -18,7 +18,7 @@ classdef SetSteeringModelAction < AbstractEventAction
         end
         
         function newStateLogEntry = executeAction(obj, stateLogEntry)
-            newStateLogEntry = stateLogEntry.deepCopy();
+            newStateLogEntry = stateLogEntry;
             newStateLogEntry.steeringModel = obj.steeringModel;
         end
         

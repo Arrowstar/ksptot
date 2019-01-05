@@ -18,7 +18,7 @@ classdef SetStopwatchRunningStateAction < AbstractEventAction
         end
         
         function newStateLogEntry = executeAction(obj, stateLogEntry)
-            newStateLogEntry = stateLogEntry.deepCopy();
+            newStateLogEntry = stateLogEntry;
             
             if(not(isempty(obj.stopwatch)))
                 stopwatchState = newStateLogEntry.stopwatchStates([newStateLogEntry.stopwatchStates.stopwatch] == obj.stopwatch);
