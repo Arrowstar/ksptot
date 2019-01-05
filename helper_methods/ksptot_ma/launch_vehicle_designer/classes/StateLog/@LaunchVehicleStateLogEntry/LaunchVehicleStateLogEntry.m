@@ -282,15 +282,17 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                                     tanks = lvState.getTanksConnectedToEngine(engine);
 
                                     for(k=1:length(tanks))
-                                        tank = tanks(k);
-                                        tankState = tankStates([tankStates.tank] == tank);
-                                        tankMass = tankStatesMasses([tankStates.tank] == tank);
+                                        if(not(isempty(tankStates)))
+                                            tank = tanks(k);
+                                            tankState = tankStates([tankStates.tank] == tank);
+                                            tankMass = tankStatesMasses([tankStates.tank] == tank);
 
-                                        if(not(isempty(tankState)))
-                                            tankStageState = tankState.stageState;
+                                            if(not(isempty(tankState)))
+                                                tankStageState = tankState.stageState;
 
-                                            if(tankStageState.active && tankMass > 0)
-                                                flowFromTankInds(tankStates == tankState) = 1;
+                                                if(tankStageState.active && tankMass > 0)
+                                                    flowFromTankInds(tankStates == tankState) = 1;
+                                                end
                                             end
                                         end
                                     end

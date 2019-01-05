@@ -94,11 +94,11 @@ classdef LaunchVehicleStageState < matlab.mixin.SetGet & matlab.mixin.Copyable
             newStageState.active = obj.active;
             
             newEngineStates = obj.engineStates.copy();
-            [newEngineStates.stageState] = newStageState;
+            [newEngineStates.stageState] = deal(newStageState);
             newStageState.engineStates = newEngineStates;
             
             newTankStates = obj.tankStates.copy();
-            [newTankStates.stageState] = newStageState;
+            [newTankStates.stageState] = deal(newStageState);
             newStageState.tankStates = newTankStates;
         end
     end

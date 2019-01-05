@@ -91,6 +91,7 @@ classdef LaunchVehicle < matlab.mixin.SetGet
             for(i=1:length(obj.stages))
                 lvSummStr = horzcat(lvSummStr, obj.stages(i).getStageSummaryStr()); %#ok<AGROW>
             end
+            lvSummStr = horzcat(lvSummStr,newline);
         end
                 
         function [stagesListStr, stages] = getStagesListBoxStr(obj)

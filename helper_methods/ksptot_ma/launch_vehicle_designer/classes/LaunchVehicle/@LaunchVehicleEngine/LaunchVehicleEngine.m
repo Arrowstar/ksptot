@@ -73,6 +73,7 @@ classdef LaunchVehicleEngine < matlab.mixin.SetGet
             engineSummStr{end+1} = sprintf('\t\t\t\tVacuum Isp = %.3f sec', obj.vacIsp);
             engineSummStr{end+1} = sprintf('\t\t\t\tSea Level Thrust = %.3f kN', obj.seaLvlThrust);
             engineSummStr{end+1} = sprintf('\t\t\t\tSea Level Isp = %.3f sec', obj.seaLvlIsp);
+            engineSummStr{end+1} = sprintf('\t\t\t\tThrottle Range: %.3f%% -> %.3f%%', 100*obj.minThrottle, 100*obj.maxThrottle);
         end
         
         function [thrust, isp] = getThrustIspForPressure(obj, presskPa)

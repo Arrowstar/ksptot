@@ -44,15 +44,15 @@ end
 % End initialization code - DO NOT EDIT
 
 
-    % --- Executes just before lvd_editLaunchVehicle is made visible.
-    function lvd_editLaunchVehicle_OpeningFcn(hObject, eventdata, handles, varargin)
-    % This function has no output args, see OutputFcn.
-    % hObject    handle to figure
-    % eventdata  reserved - to be defined in a future version of MATLAB
-    % handles    structure with handles and user data (see GUIDATA)
-    % varargin   command line arguments to lvd_editLaunchVehicle (see VARARGIN)
+% --- Executes just before lvd_editLaunchVehicle is made visible.
+function lvd_editLaunchVehicle_OpeningFcn(hObject, eventdata, handles, varargin)
+% This function has no output args, see OutputFcn.
+% hObject    handle to figure
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+% varargin   command line arguments to lvd_editLaunchVehicle (see VARARGIN)
 
-    % Choose default command line output for lvd_editLaunchVehicle
+% Choose default command line output for lvd_editLaunchVehicle
     handles.output = hObject;
 
     lvdData = varargin{1};

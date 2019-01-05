@@ -135,10 +135,10 @@ classdef InitialStateModel < matlab.mixin.SetGet
                         engineStates(end+1) = thisEngineStateToSave; %#ok<AGROW>
                     end
                     
-                    notThisEngineStates = engineStates([engineStates.engine] ~= engine);
-                    if(not(isempty(notThisEngineStates)))
-                        engineStates = setdiff(engineStates, notThisEngineStates);
-                    end
+%                     notThisEngineStates = engineStates([engineStates.engine] ~= engine);
+%                     if(not(isempty(notThisEngineStates)))
+%                         engineStates = setdiff(engineStates, notThisEngineStates);
+%                     end
                     
                     stgState.engineStates = engineStates;
                 end
