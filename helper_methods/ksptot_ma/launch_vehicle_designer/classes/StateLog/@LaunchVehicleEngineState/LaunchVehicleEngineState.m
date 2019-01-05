@@ -3,8 +3,8 @@ classdef LaunchVehicleEngineState < matlab.mixin.SetGet & matlab.mixin.Copyable
     %   Detailed explanation goes here
     
     properties
-        stageState(1,1) LaunchVehicleStageState = LaunchVehicleStageState(LaunchVehicleStage(LaunchVehicle(LvdData.getEmptyLvdData())));
-        engine(1,1) LaunchVehicleEngine = LaunchVehicleEngine(LaunchVehicleStage(LaunchVehicle(LvdData.getEmptyLvdData())))
+        stageState(1,:) LaunchVehicleStageState
+        engine(1,:) LaunchVehicleEngine
         active(1,1) logical = false;
     end
     

@@ -3,7 +3,7 @@ classdef TankMassTermCondition < AbstractEventTerminationCondition
     %   Detailed explanation goes here
     
     properties
-        tank(1,1) LaunchVehicleTank = LaunchVehicleTank(LaunchVehicleStage(LaunchVehicle(LvdData.getEmptyLvdData())));
+        tank(1,:) LaunchVehicleTank
         targetMass(1,1) double = 0;
         tankStateInd(1,1) double = 1;
     end

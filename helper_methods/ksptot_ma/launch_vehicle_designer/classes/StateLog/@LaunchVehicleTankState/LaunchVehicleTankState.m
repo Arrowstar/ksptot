@@ -3,8 +3,8 @@ classdef LaunchVehicleTankState < matlab.mixin.SetGet & matlab.mixin.Copyable
     %   Detailed explanation goes here
     
     properties
-        stageState(1,1) LaunchVehicleStageState = LaunchVehicleStageState(LaunchVehicleStage(LaunchVehicle(LvdData.getEmptyLvdData())));
-        tank(1,1) LaunchVehicleTank = LaunchVehicleTank(LaunchVehicleStage(LaunchVehicle(LvdData.getEmptyLvdData())))
+        stageState(1,:) LaunchVehicleStageState
+        tank(1,:) LaunchVehicleTank
         tankMass(1,1) double = 0; %mT
     end
     
