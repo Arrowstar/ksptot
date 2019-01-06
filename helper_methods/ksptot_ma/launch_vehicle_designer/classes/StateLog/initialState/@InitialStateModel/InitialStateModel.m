@@ -133,6 +133,10 @@ classdef InitialStateModel < matlab.mixin.SetGet
                         
                         engineStates(engineStates == engine) = LaunchVehicleEngineState.empty(1,0);
                         engineStates(end+1) = thisEngineStateToSave; %#ok<AGROW>
+                    elseif(isempty(thisEngineStates))
+                        newEngineState = LaunchVehicleEngineState(stgState);
+                        newEngineState.engine = engine;
+                        engineStates(end+1) = newEngineState; %#ok<AGROW>
                     end
                     
 %                     notThisEngineStates = engineStates([engineStates.engine] ~= engine);

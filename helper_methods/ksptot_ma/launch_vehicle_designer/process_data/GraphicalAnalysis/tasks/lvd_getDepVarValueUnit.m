@@ -52,6 +52,9 @@ function [depVarValue, depVarUnit, taskStr, refBodyInfo] = lvd_getDepVarValueUni
         case 'Thrust to Weight Ratio'
             depVarValue = lvd_ThrottleTask(subLog(i), 't2w');
             depVarUnit = ' ';
+        case 'Total Thrust'
+            depVarValue = lvd_ThrottleTask(subLog(i), 'totalthrust');
+            depVarUnit = 'kN';
         otherwise %is a programmatically generated string that we'll handle here
             tankMassPattern = 'Tank (\d+?) Mass - ".*"';
             stageDryMassPattern = 'Stage (\d+?) Dry Mass - ".*"';
