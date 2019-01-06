@@ -233,7 +233,7 @@ function [unit, lbLim, ubLim, lbVal, ubVal, body, othersc, usesLbUb, usesCelBody
             usesRefSc = false;
         case 'Altitude of Apoapsis'
             unit = 'km';
-            lbLim = 0;
+            lbLim = -Inf;
             ubLim = Inf;
             lbVal = 0;
             ubVal = 0;
@@ -245,7 +245,7 @@ function [unit, lbLim, ubLim, lbVal, ubVal, body, othersc, usesLbUb, usesCelBody
             usesRefSc = false;
         case 'Altitude of Periapsis'
             unit = 'km';
-            lbLim = 0;
+            lbLim = -Inf;
             ubLim = Inf;
             lbVal = 0;
             ubVal = 0;
@@ -553,7 +553,7 @@ function [unit, lbLim, ubLim, lbVal, ubVal, body, othersc, usesLbUb, usesCelBody
             usesRefSc = false;
         case 'Altitude'
             unit = 'km';
-            lbLim = 0;
+            lbLim = -Inf;
             ubLim = Inf;
             lbVal = 0;
             ubVal = 0;
