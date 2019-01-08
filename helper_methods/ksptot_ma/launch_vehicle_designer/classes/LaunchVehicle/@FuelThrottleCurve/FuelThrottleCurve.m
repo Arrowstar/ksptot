@@ -52,12 +52,7 @@ classdef FuelThrottleCurve < matlab.mixin.SetGet & matlab.mixin.Copyable
         
         function yq = evalCurve(obj, xq)
 %             yq = obj.curve(xq);
-            yq = zeros(size(xq));
-            try
             yq = ppval(obj.curve,xq);
-            catch
-                
-            end
         end
         
         function [listBoxStr, elemArr] = getListboxStr(obj)
