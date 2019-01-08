@@ -87,7 +87,7 @@ function plotProfile(handles)
     xlabel(handles.profileAxes,'Fuel Remaining [%]');
     ylabel(handles.profileAxes,'Throttle Modifier');
     xlim(handles.profileAxes,[0,100]);
-    ylim(handles.profileAxes,[0,1]);
+    ylim(handles.profileAxes,[0,1.1]);
     hold(handles.profileAxes,'off');
     
     dcmObj = datacursormode;

@@ -4,7 +4,7 @@ classdef FuelThrottleCurve < matlab.mixin.SetGet & matlab.mixin.Copyable
     
     properties
         elems(1,:) FuelThrottleCurveElement
-        curve
+        curve struct
     end
     
     methods(Access=private)
@@ -34,7 +34,7 @@ classdef FuelThrottleCurve < matlab.mixin.SetGet & matlab.mixin.Copyable
         end
         
         function generateCurve(obj)
-            if(length(obj.elems) >= 2)
+            if(length(obj.elems) > 2)
                 x = [obj.elems.fuelRemainPct];
                 y = [obj.elems.throttleModifier];
 
@@ -45,6 +45,11 @@ classdef FuelThrottleCurve < matlab.mixin.SetGet & matlab.mixin.Copyable
                 obj.curve = splinefit(x,y,x,con);
                 
 %                 obj.curve = @(xq) spline(x,y,xq);
+            elseif(length(obj.elems) == 2)
+                x = [obj.elems.fuelRemainPct];
+                y = [obj.elems.throttleModifier];
+
+                obj.curve = splinefit(x,y,1,2);
             else
                 error('Cannot generate fuel throttle curve: the number of elements in the curve must be greater than or equal to 2.');
             end
