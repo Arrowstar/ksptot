@@ -15,6 +15,8 @@ classdef LaunchVehicleEngine < matlab.mixin.SetGet
         minThrottle(1,1) double = 0.0; %must be 0<=x<=1
         maxThrottle(1,1) double = 1.0; %must be 0<=x<=1
         
+        fuelThrottleCurve(1,1) FuelThrottleCurve = FuelThrottleCurve.getDefaultFuelThrottleCurve();
+        
         name(1,:) char = 'Untitled Engine';
         id(1,1) double = 0;
     end
@@ -96,13 +98,17 @@ classdef LaunchVehicleEngine < matlab.mixin.SetGet
             mdot = -(thrust/(getG0() * isp)); %kN/(m/s/s * s) = kN/(m/s) = (1/1000) N / (m/s) = (1/1000) kg*m/s/s /(m/s) = (1/1000) kg/s = mT/s
         end
         
-        function newThrottle = adjustThrottleForMinMax(obj, inputThrottle)
+        function newThrottle = adjustThrottleForMinMaxFuelRemaining(obj, inputThrottle, fuelRemainingPct)
             if(inputThrottle < obj.minThrottle)
                 newThrottle = obj.minThrottle;
             elseif(inputThrottle > obj.maxThrottle)
                 newThrottle = obj.maxThrottle;
             else
                 newThrottle = inputThrottle;
+            end
+            
+            if(not(isempty(fuelRemainingPct)))
+                newThrottle = newThrottle * obj.fuelThrottleCurve.evalCurve(fuelRemainingPct);
             end
         end
         
@@ -122,6 +128,8 @@ classdef LaunchVehicleEngine < matlab.mixin.SetGet
             
             newEngine.minThrottle = obj.minThrottle;
             newEngine.maxThrottle = obj.maxThrottle;
+            
+            newEngine.fuelThrottleCurve = obj.fuelThrottleCurve.copy();
             
             newEngine.name = sprintf('Copy of %s', obj.name);
         end

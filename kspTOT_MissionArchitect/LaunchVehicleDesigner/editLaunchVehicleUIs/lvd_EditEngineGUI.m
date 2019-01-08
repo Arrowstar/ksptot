@@ -22,7 +22,7 @@ function varargout = lvd_EditEngineGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditEngineGUI
 
-% Last Modified by GUIDE v2.5 06-Dec-2018 17:09:05
+% Last Modified by GUIDE v2.5 07-Jan-2019 17:53:49
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -428,3 +428,12 @@ function lvd_EditEngineGUI_WindowKeyPressFcn(hObject, eventdata, handles)
         case 'escape'
             close(handles.lvd_EditEngineGUI);
     end
+
+
+% --- Executes on button press in editThrottleModifierProfileButton.
+function editThrottleModifierProfileButton_Callback(hObject, eventdata, handles)
+% hObject    handle to editThrottleModifierProfileButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    engine = getappdata(handles.lvd_EditEngineGUI, 'engine');
+    editThrottleModifierProfileGUI(engine.fuelThrottleCurve);
