@@ -15,7 +15,7 @@ classdef LaunchVehicleEngine < matlab.mixin.SetGet
         minThrottle(1,1) double = 0.0; %must be 0<=x<=1
         maxThrottle(1,1) double = 1.0; %must be 0<=x<=1
         
-        fuelThrottleCurve(1,1) FuelThrottleCurve = FuelThrottleCurve.getDefaultFuelThrottleCurve();
+        fuelThrottleCurve(1,:) FuelThrottleCurve
         
         name(1,:) char = 'Untitled Engine';
         id(1,1) double = 0;
@@ -34,6 +34,7 @@ classdef LaunchVehicleEngine < matlab.mixin.SetGet
         function obj = LaunchVehicleEngine(stage)
             if(nargin>0)
                 obj.stage = stage;
+                obj.fuelThrottleCurve = FuelThrottleCurve.getDefaultFuelThrottleCurve();
             end
             
             obj.id = rand();

@@ -621,6 +621,7 @@ function newMissionPlanMenu_Callback(hObject, eventdata, handles, varargin)
     setappdata(handles.ma_LvdMainGUI,'current_save_location','');
     
     setDeleteButtonEnable(lvdData, handles);
+    setNonSeqDeleteButtonEnable(lvdData, handles)
     
     runScript(handles, lvdData, 1);
     lvd_processData(handles);
@@ -694,6 +695,7 @@ function openMissionPlanMenu_Callback(hObject, eventdata, handles)
             setappdata(handles.ma_LvdMainGUI,'current_save_location',filePath);
             
             setDeleteButtonEnable(lvdData, handles);
+            setNonSeqDeleteButtonEnable(lvdData, handles)
             
             if(lvdData.settings.optUsePara)
                 startParallelPool(write_to_output_func);

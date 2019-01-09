@@ -84,6 +84,18 @@ classdef FuelThrottleCurve < matlab.mixin.SetGet & matlab.mixin.Copyable
         end
     end
     
+    methods(Access = protected)
+        function newObj = copyElement(obj)
+            newObj = FuelThrottleCurve;
+            
+            for(i=1:length(obj.elems))
+                newObj.elems(i) = obj.elems(i).copy();
+            end
+            
+            newObj.generateCurve();
+        end
+    end
+    
     methods(Static)
         function defaultCurve = getDefaultFuelThrottleCurve()
             defaultCurve = FuelThrottleCurve();

@@ -22,7 +22,7 @@ function varargout = editThrottleModifierProfileGUI(varargin)
 
 % Edit the above text to modify the response to help editThrottleModifierProfileGUI
 
-% Last Modified by GUIDE v2.5 07-Jan-2019 18:53:35
+% Last Modified by GUIDE v2.5 08-Jan-2019 21:37:27
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -92,6 +92,14 @@ function plotProfile(handles)
     
     dcmObj = datacursormode;
     set(dcmObj,'UpdateFcn',@dataTipFormatFunc,'Enable','on');
+    
+    hManager = uigetmodemanager(handles.editThrottleModifierProfileGUI);
+    try
+        set(hManager.WindowListenerHandles, 'Enable', 'off');  % HG1
+    catch
+        [hManager.WindowListenerHandles.Enabled] = deal(false);  % HG2
+    end
+    set(handles.editThrottleModifierProfileGUI, 'WindowKeyPressFcn', @(hObject, eventdata) editThrottleModifierProfileGUI_WindowKeyPressFcn(hObject, eventdata, guidata(handles.editThrottleModifierProfileGUI)));
     
 function output_txt = dataTipFormatFunc(obj,event_obj)
 % Display the position of the data cursor
@@ -220,3 +228,21 @@ function elem = getSelectedElem(handles)
     
     ind = get(handles.elementsListbox,'Value');
     elem = elemArr(ind);    
+
+
+% --- Executes on key press with focus on editThrottleModifierProfileGUI or any of its controls.
+function editThrottleModifierProfileGUI_WindowKeyPressFcn(hObject, eventdata, handles)
+% hObject    handle to editThrottleModifierProfileGUI (see GCBO)
+% eventdata  structure with the following fields (see MATLAB.UI.FIGURE)
+%	Key: name of the key that was pressed, in lower case
+%	Character: character interpretation of the key(s) that was pressed
+%	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
+% handles    structure with handles and user data (see GUIDATA)
+    switch(eventdata.Key)
+        case 'return'
+            saveAndCloseButton_Callback(handles.saveAndCloseButton, [], handles);
+        case 'enter'
+            saveAndCloseButton_Callback(handles.saveAndCloseButton, [], handles);
+        case 'escape'
+            close(handles.editThrottleModifierProfileGUI);
+    end
