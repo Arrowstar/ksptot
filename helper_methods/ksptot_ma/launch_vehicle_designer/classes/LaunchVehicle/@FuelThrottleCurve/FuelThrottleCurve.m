@@ -1,16 +1,11 @@
-classdef FuelThrottleCurve < matlab.mixin.SetGet & matlab.mixin.Copyable
+classdef FuelThrottleCurve < AbstractThrottleCurve
     %FuelThrottleCurve Summary of this class goes here
     %   Detailed explanation goes here
-    
-    properties
-        elems(1,:) FuelThrottleCurveElement
-        curve struct
-    end
-    
+       
     methods(Access=private)
         function obj = FuelThrottleCurve()
             element0 = FuelThrottleCurveElement(0,1);
-            element1 = FuelThrottleCurveElement(1,1);
+            element1 = FuelThrottleCurveElement(100,1);
             
             obj.elems(end+1) = element0;
             obj.elems(end+1) = element1;
@@ -20,71 +15,44 @@ classdef FuelThrottleCurve < matlab.mixin.SetGet & matlab.mixin.Copyable
         end
     end
     
-    methods        
-        function addElement(obj, newElement)
-            obj.elems(end+1) = newElement;
-            obj.sortElems();
-            obj.generateCurve();
-        end
-        
-        function removeElement(obj, element)
-            obj.elems(obj.elems == element) = [];
-            obj.sortElems();
-            obj.generateCurve();
-        end
-        
-        function generateCurve(obj)
-            if(length(obj.elems) > 2)
-                x = [obj.elems.fuelRemainPct];
-                y = [obj.elems.throttleModifier];
-
-                xc = [max(x)];
-                yc = [0];
-                cc = [0;1];
-                con = struct('xc',xc,'cc',cc,'yc',yc);
-                obj.curve = splinefit(x,y,x,con);
-                
-%                 obj.curve = @(xq) spline(x,y,xq);
-            elseif(length(obj.elems) == 2)
-                x = [obj.elems.fuelRemainPct];
-                y = [obj.elems.throttleModifier];
-
-                obj.curve = splinefit(x,y,1,2);
-            else
-                error('Cannot generate fuel throttle curve: the number of elements in the curve must be greater than or equal to 2.');
-            end
-        end
-        
-        function yq = evalCurve(obj, xq)
-%             yq = obj.curve(xq);
-            if(isempty(obj.curve))
-                obj.generateCurve();
-            end
-            
-            yq = ppval(obj.curve,xq);
-        end
-        
+    methods                        
         function [listBoxStr, elemArr] = getListboxStr(obj)
             obj.sortElems();
             
             listBoxStr = cell(length(obj.elems),1);
             for(i=1:length(obj.elems))
-                listBoxStr{i} = sprintf('Fuel = %.3f%%, Thr = %.3f', 100*obj.elems(i).fuelRemainPct, obj.elems(i).throttleModifier);
+                listBoxStr{i} = sprintf('Fuel = %.3f%%, Thr = %.3f', obj.elems(i).indepVar, obj.elems(i).depVar);
             end
             
             elemArr = obj.elems;
         end
         
-        function sortElems(obj)
-            [~,I] = sort([obj.elems.fuelRemainPct], 'descend');
-            obj.elems = obj.elems(I);
+        function curveName = getCurveName(obj)
+            curveName = 'Fuel Remaining Throttle Curve';
         end
         
-        function [x, y] = getPlotablePoints(obj)
-            obj.sortElems();
-            
-            x = 100*[obj.elems.fuelRemainPct];
-            y = [obj.elems.throttleModifier];
+        function indepVarName = getIndepVarName(obj)
+            indepVarName = 'Fuel Remaining';
+        end
+        
+        function indepVarUnit = getIndepVarUnit(obj)
+            indepVarUnit = '%';
+        end
+        
+        function depVarName = getDepVarName(obj)
+            depVarName = 'Throttle Modifier';
+        end
+        
+        function depVarUnit = getDepVarUnit(obj)
+            depVarUnit = '';
+        end
+        
+        function newElem = createNewElement(obj)
+            newElem = FuelThrottleCurveElement(50,1);
+        end
+        
+        function listBoxTooltipStr = getListboxTooltipStr(obj)
+            listBoxTooltipStr = 'Elements of the throttle modifer profile.  There must be a point at 0% and 100% fuel remaining, and those elements cannot have their fuel remaining value edited.';
         end
     end
     

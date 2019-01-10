@@ -304,7 +304,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                                     end
                                     
                                     if(totalConnTankCapacity > 0)
-                                        fuelRemainPct = totalConnTankMass / totalConnTankCapacity;
+                                        fuelRemainPct = 100 * totalConnTankMass / totalConnTankCapacity; %it's a percent
                                     else
                                         fuelRemainPct = 0;
                                     end

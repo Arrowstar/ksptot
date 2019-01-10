@@ -1,16 +1,35 @@
-classdef FuelThrottleCurveElement < matlab.mixin.SetGet & matlab.mixin.Copyable
+classdef FuelThrottleCurveElement < AbstractCurveElement
     %FuelThrottleCurveElement Summary of this class goes here
     %   Detailed explanation goes here
     
-    properties
-        fuelRemainPct(1,1) double
-        throttleModifier(1,1) double
+    properties(Constant)
+        minIndepValue = 0;
+        maxIndepValue = 100;
+        
+        minDepValue = 0;
+        maxDepValue = 1;
     end
     
     methods
         function obj = FuelThrottleCurveElement(fuelRemainPct, throttleModifier)
-            obj.fuelRemainPct = fuelRemainPct;
-            obj.throttleModifier = throttleModifier;
+            obj.indepVar = fuelRemainPct;
+            obj.depVar = throttleModifier;
+        end
+        
+        function indepVarName = getIndepVarName(obj)
+            indepVarName = 'Fuel Remaining';
+        end
+        
+        function indepVarUnit = getIndepVarUnit(obj)
+            indepVarUnit = '%';
+        end
+        
+        function depVarName = getDepVarName(obj)
+            depVarName = 'Throttle Modifier';
+        end
+        
+        function depVarUnit = getDepVarUnit(obj)
+            depVarUnit = '';
         end
     end
 end

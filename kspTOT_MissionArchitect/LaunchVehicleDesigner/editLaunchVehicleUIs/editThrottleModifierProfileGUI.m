@@ -55,43 +55,52 @@ function editThrottleModifierProfileGUI_OpeningFcn(hObject, eventdata, handles, 
 % Choose default command line output for editThrottleModifierProfileGUI
     handles.output = hObject;
 
-    fuelThrottleCurve = varargin{1};
-    setappdata(hObject,'fuelThrottleCurve',fuelThrottleCurve);
+    throttleCurve = varargin{1};
+    setappdata(hObject,'throttleCurve',throttleCurve);
 
     % Update handles structure
     guidata(hObject, handles);
 
-    populateUI(fuelThrottleCurve, handles);
+    populateUI(throttleCurve, handles);
     
     % UIWAIT makes editThrottleModifierProfileGUI wait for user response (see UIRESUME)
     uiwait(handles.editThrottleModifierProfileGUI);
 
     
-function populateUI(fuelThrottleCurve, handles)
-    handles.elementsListbox.String = fuelThrottleCurve.getListboxStr();
+function populateUI(throttleCurve, handles)
+    handles.elementsListbox.String = throttleCurve.getListboxStr();
 	plotProfile(handles);
     
 function plotProfile(handles)
-    fuelThrottleCurve = getappdata(handles.editThrottleModifierProfileGUI,'fuelThrottleCurve');
-    [x, y] = fuelThrottleCurve.getPlotablePoints();
-    xq = linspace(0,1,1000);
-    yq = fuelThrottleCurve.evalCurve(xq);
+    throttleCurve = getappdata(handles.editThrottleModifierProfileGUI,'throttleCurve');
+    [x, y] = throttleCurve.getPlotablePoints();
+    
+    indMin = throttleCurve.elems(1).minIndepValue;
+    indMax = throttleCurve.elems(1).maxIndepValue;
+    
+    depMin = throttleCurve.elems(1).minDepValue;
+    depMax = throttleCurve.elems(1).maxDepValue;
+    
+    xq = linspace(indMin,indMax,1000);
+    yq = throttleCurve.evalCurve(xq);
     
     cla(handles.profileAxes,'reset');
     
     hold(handles.profileAxes,'on');
     axes(handles.profileAxes);
     plot(handles.profileAxes,x,y,'ro');
-    plot(handles.profileAxes,100*xq,yq,'b-');
+    plot(handles.profileAxes,xq,yq,'b-');
     grid(handles.profileAxes,'minor');
-    xlabel(handles.profileAxes,'Fuel Remaining [%]');
-    ylabel(handles.profileAxes,'Throttle Modifier');
-    xlim(handles.profileAxes,[0,100]);
-    ylim(handles.profileAxes,[0,1.1]);
+    xlabel(handles.profileAxes,sprintf('%s [%s]', throttleCurve.getIndepVarName(), throttleCurve.getIndepVarUnit()));
+    ylabel(handles.profileAxes,sprintf('%s [%s]', throttleCurve.getDepVarName(), throttleCurve.getDepVarUnit()));
+    xlim(handles.profileAxes,[indMin,indMax]);
+    ylim(handles.profileAxes,[depMin,1.1*depMax]);
     hold(handles.profileAxes,'off');
     
     dcmObj = datacursormode;
     set(dcmObj,'UpdateFcn',@dataTipFormatFunc,'Enable','on');
+    
+    handles.elementsListbox.TooltipString = throttleCurve.getListboxTooltipStr();
     
     hManager = uigetmodemanager(handles.editThrottleModifierProfileGUI);
     try
@@ -176,14 +185,16 @@ function addElementButton_Callback(hObject, eventdata, handles)
 % hObject    handle to addElementButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-    elem = FuelThrottleCurveElement(1,1);
+    throttleCurve = getappdata(handles.editThrottleModifierProfileGUI,'throttleCurve');
+
+    elem = throttleCurve.createNewElement();
     useTf = lvd_editThrottleModifierProfileElementGUI(elem, true);
     
     if(useTf)
-        fuelThrottleCurve = getappdata(handles.editThrottleModifierProfileGUI,'fuelThrottleCurve');
-        fuelThrottleCurve.addElement(elem);
+        throttleCurve = getappdata(handles.editThrottleModifierProfileGUI,'throttleCurve');
+        throttleCurve.addElement(elem);
         
-        populateUI(fuelThrottleCurve, handles);
+        populateUI(throttleCurve, handles);
     end
 
 % --- Executes on button press in editElementButton.
@@ -193,18 +204,18 @@ function editElementButton_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
     elem = getSelectedElem(handles);
     
-    if(elem.fuelRemainPct == 0 || elem.fuelRemainPct == 1)
-        allowFuPctEdit = false;
+    if(elem.indepVar == elem.minIndepValue || elem.indepVar == elem.maxIndepValue)
+        allowIndVarEdit = false;
     else
-        allowFuPctEdit = true;
+        allowIndVarEdit = true;
     end
     
-    useTf = lvd_editThrottleModifierProfileElementGUI(elem, allowFuPctEdit);
+    useTf = lvd_editThrottleModifierProfileElementGUI(elem, allowIndVarEdit);
     
     if(useTf)
-        fuelThrottleCurve = getappdata(handles.editThrottleModifierProfileGUI,'fuelThrottleCurve');
-        fuelThrottleCurve.generateCurve();
-        populateUI(fuelThrottleCurve, handles);
+        throttleCurve = getappdata(handles.editThrottleModifierProfileGUI,'throttleCurve');
+        throttleCurve.generateCurve();
+        populateUI(throttleCurve, handles);
     end
 
 % --- Executes on button press in deleteElementButton.
@@ -213,18 +224,18 @@ function deleteElementButton_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
     elem = getSelectedElem(handles);
-    fuelThrottleCurve = getappdata(handles.editThrottleModifierProfileGUI,'fuelThrottleCurve');
+    throttleCurve = getappdata(handles.editThrottleModifierProfileGUI,'throttleCurve');
     
-    if(elem.fuelRemainPct == 0 || elem.fuelRemainPct == 1)
-        errordlg('Cannot delete the endpoint elements at 0% or 100% fuel remaining.  The profile must have points at these two locations.');
+    if(elem.indepVar == elem.minIndepValue || elem.indepVar == elem.maxIndepValue)
+        errordlg(sprintf('Cannot delete the endpoint elements at %.1f or %.1f.  The profile must have points at these two locations.',elem.minIndepValue,elem.maxIndepValue));
     else
-        fuelThrottleCurve.removeElement(elem);
-        populateUI(fuelThrottleCurve, handles);
+        throttleCurve.removeElement(elem);
+        populateUI(throttleCurve, handles);
     end
 
 function elem = getSelectedElem(handles)
-    fuelThrottleCurve = getappdata(handles.editThrottleModifierProfileGUI,'fuelThrottleCurve');
-    [~, elemArr] = fuelThrottleCurve.getListboxStr();
+    throttleCurve = getappdata(handles.editThrottleModifierProfileGUI,'throttleCurve');
+    [~, elemArr] = throttleCurve.getListboxStr();
     
     ind = get(handles.elementsListbox,'Value');
     elem = elemArr(ind);    

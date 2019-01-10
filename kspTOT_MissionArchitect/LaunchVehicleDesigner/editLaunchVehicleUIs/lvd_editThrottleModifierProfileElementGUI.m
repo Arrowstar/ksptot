@@ -71,8 +71,8 @@ function lvd_editThrottleModifierProfileElementGUI_OpeningFcn(hObject, eventdata
 
     
 function populateUI(elem, allowFuPctEdit, handles)
-    handles.fuRemainPctText.String = fullAccNum2Str(100*elem.fuelRemainPct); %percent
-    handles.throtModifierText.String = fullAccNum2Str(elem.throttleModifier);
+    handles.fuRemainPctText.String = fullAccNum2Str(elem.indepVar); %percent
+    handles.throtModifierText.String = fullAccNum2Str(elem.depVar);
     
     if(allowFuPctEdit == false)
         handles.fuRemainPctText.Enable = 'off';
@@ -91,8 +91,8 @@ function varargout = lvd_editThrottleModifierProfileElementGUI_OutputFcn(hObject
         varargout{1} = false;
     else
         elem = getappdata(hObject,'elem');
-        elem.fuelRemainPct = str2double(handles.fuRemainPctText.String)/100;
-        elem.throttleModifier = str2double(handles.throtModifierText.String);
+        elem.indepVar = str2double(handles.fuRemainPctText.String);
+        elem.depVar = str2double(handles.throtModifierText.String);
         
         varargout{1} = true;
         close(handles.lvd_editThrottleModifierProfileElementGUI);
@@ -116,27 +116,27 @@ function saveAndCloseButton_Callback(hObject, eventdata, handles)
 function errMsg = validateInputs(handles)
     errMsg = {};
     
+    elem = getappdata(handles.lvd_editThrottleModifierProfileElementGUI,'elem');
+    
     val = str2double(get(handles.fuRemainPctText,'String'));
     enteredStr = get(handles.fuRemainPctText,'String');
-    numberName = 'Fuel Remaining';
-    lb = 0;
-    ub = 100;
+    numberName = elem.getIndepVarName();
+    lb = elem.minIndepValue;
+    ub = elem.maxIndepValue;
     isInt = false;
     errMsg = validateNumber(val, numberName, lb, ub, isInt, errMsg, enteredStr);
     
-    if(isempty(errMsg))
-        elem = getappdata(handles.lvd_editThrottleModifierProfileElementGUI,'elem');
-        
-        if((val == 0 || val == 100) && 100*elem.fuelRemainPct ~= val)
-            errMsg = {'Cannot add points at 0% or 100%.  Edit these points from the existing list if necessary.'};
+    if(isempty(errMsg))        
+        if((val == elem.minIndepValue || val == elem.maxIndepValue) && elem.indepVar ~= val)
+            errMsg = {sprintf('Cannot add points at %.1f %s or %.1f %s.  Edit these points from the existing list if necessary.', elem.minIndepValue, elem.maxIndepValue, elem.getIndepVarUnit(), elem.getDepVarUnit())};
         end
     end
     
     val = str2double(get(handles.throtModifierText,'String'));
     enteredStr = get(handles.throtModifierText,'String');
-    numberName = 'Throttle Modifier';
-    lb = 0;
-    ub = 1;
+    numberName = elem.getDepVarName();
+    lb = elem.minDepValue;
+    ub = elem.maxDepValue;
     isInt = false;
     errMsg = validateNumber(val, numberName, lb, ub, isInt, errMsg, enteredStr);
 
