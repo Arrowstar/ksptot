@@ -14,7 +14,17 @@ end
 
 %set look and feel if deployed
 if(isdeployed)
-    javax.swing.UIManager.setLookAndFeel(com.sun.java.swing.plaf.windows.WindowsLookAndFeel);
+    if(ispc)
+        javax.swing.UIManager.setLookAndFeel(com.sun.java.swing.plaf.windows.WindowsLookAndFeel);
+    elseif(isunix)
+        try
+            javax.swing.UIManager.setLookAndFeel(com.sun.java.swing.plaf.gtk.GTKLookAndFeel);
+        catch
+            javax.swing.UIManager.setLookAndFeel(com.jgoodies.looks.plastic.Plastic3DLookAndFeel);
+        end
+    elseif(ismac)
+        javax.swing.UIManager.setLookAndFeel(com.apple.laf.AquaLookAndFeel);
+    end
 end
 
 %display splashscreen
