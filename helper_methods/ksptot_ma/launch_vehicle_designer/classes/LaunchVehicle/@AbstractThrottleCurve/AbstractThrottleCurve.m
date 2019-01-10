@@ -36,7 +36,7 @@ classdef(Abstract) AbstractThrottleCurve < matlab.mixin.SetGet & matlab.mixin.Co
 
                 obj.curve = splinefit(x,y,1,2);
             else
-                error('Cannot generate fuel throttle curve: the number of elements in the curve must be greater than or equal to 2.');
+                error('Cannot generate throttle curve: the number of elements in the curve must be greater than or equal to 2.');
             end
         end
         
