@@ -1,0 +1,190 @@
+<deployment-project plugin="plugin.ezdeploy" plugin-version="1.0">
+  <configuration build-checksum="2164147967" file="/home/adam/ksptot/ksptot/KSPTrajectoryOptimizationTool_Linux.prj" location="/home/adam/ksptot/ksptot" name="KSPTrajectoryOptimizationTool_Linux" preferred-package-location="/home/adam/ksptot/ksptot/deploy/KSPTrajectoryOptimizationTool/for_redistribution" preferred-package-type="package.type.install" target="target.ezdeploy.standalone" target-name="Application Compiler">
+    <param.appname>KSPTrajectoryOptimizationTool</param.appname>
+    <param.icon>${PROJECT_ROOT}/KSPTrajectoryOptimizationTool_resources/icon.ico</param.icon>
+    <param.icons>
+      <file>${PROJECT_ROOT}/KSPTrajectoryOptimizationTool_resources/icon_48.png</file>
+      <file>${PROJECT_ROOT}/KSPTrajectoryOptimizationTool_resources/icon_32.png</file>
+      <file>${PROJECT_ROOT}/KSPTrajectoryOptimizationTool_resources/icon_24.png</file>
+      <file>${PROJECT_ROOT}/KSPTrajectoryOptimizationTool_resources/icon_16.png</file>
+    </param.icons>
+    <param.version>1.61</param.version>
+    <param.authnamewatermark>Arrowstar</param.authnamewatermark>
+    <param.email />
+    <param.company />
+    <param.summary>An advanced mission planning and maneuver planning software for Kerbal Space Program.</param.summary>
+    <param.description />
+    <param.screenshot>${PROJECT_ROOT}/images/logo500px.jpg</param.screenshot>
+    <param.guid />
+    <param.installpath.string>/KSPTrajectoryOptimizationTool/</param.installpath.string>
+    <param.installpath.combo>option.installpath.user</param.installpath.combo>
+    <param.logo />
+    <param.install.notes />
+    <param.target.install.notes />
+    <param.intermediate>${PROJECT_ROOT}/deploy/KSPTrajectoryOptimizationTool/for_testing</param.intermediate>
+    <param.files.only>${PROJECT_ROOT}/KSPTrajectoryOptimizationTool/deploy/for_redistribution_files_only</param.files.only>
+    <param.output>${PROJECT_ROOT}/deploy/KSPTrajectoryOptimizationTool/for_redistribution</param.output>
+    <param.logdir>${PROJECT_ROOT}/KSPTrajectoryOptimizationTool_Linux</param.logdir>
+    <param.enable.clean.build>false</param.enable.clean.build>
+    <param.user.defined.mcr.options>-g</param.user.defined.mcr.options>
+    <param.target.type>subtarget.standalone</param.target.type>
+    <param.support.packages />
+    <param.web.mcr>true</param.web.mcr>
+    <param.package.mcr>false</param.package.mcr>
+    <param.no.mcr>false</param.no.mcr>
+    <param.web.mcr.name>KSPTOTInstaller_web</param.web.mcr.name>
+    <param.package.mcr.name>MyAppInstaller_mcr</param.package.mcr.name>
+    <param.no.mcr.name>MyAppInstaller_app</param.no.mcr.name>
+    <param.windows.command.prompt>false</param.windows.command.prompt>
+    <param.create.log>true</param.create.log>
+    <param.log.file>ksptot.log</param.log.file>
+    <param.native.matlab>false</param.native.matlab>
+    <param.checkbox>false</param.checkbox>
+    <param.example />
+    <param.help.text />
+    <unset>
+      <param.email />
+      <param.company />
+      <param.description />
+      <param.guid />
+      <param.installpath.string />
+      <param.installpath.combo />
+      <param.logo />
+      <param.target.install.notes />
+      <param.logdir />
+      <param.enable.clean.build />
+      <param.target.type />
+      <param.support.packages />
+      <param.web.mcr />
+      <param.package.mcr />
+      <param.no.mcr />
+      <param.package.mcr.name />
+      <param.no.mcr.name />
+      <param.windows.command.prompt />
+      <param.native.matlab />
+      <param.checkbox />
+      <param.example />
+      <param.help.text />
+    </unset>
+    <fileset.main>
+      <file>${PROJECT_ROOT}/projectMain.m</file>
+    </fileset.main>
+    <fileset.resources>
+      <file>${PROJECT_ROOT}/OptimalTwoBurnOrbitChange.fig</file>
+      <file>${PROJECT_ROOT}/OptimalTwoBurnOrbitChange.m</file>
+      <file>${PROJECT_ROOT}/appOptions.ini</file>
+      <file>${PROJECT_ROOT}/bodies.ini</file>
+      <file>${PROJECT_ROOT}/bodiesSolarSystem.ini</file>
+      <file>${PROJECT_ROOT}/computeDepartureGUI.fig</file>
+      <file>${PROJECT_ROOT}/computeDepartureGUI.m</file>
+      <file>${PROJECT_ROOT}/computeSysLvlParams.fig</file>
+      <file>${PROJECT_ROOT}/computeSysLvlParams.m</file>
+      <file>${PROJECT_ROOT}/departDisplayGUI.fig</file>
+      <file>${PROJECT_ROOT}/departDisplayGUI.m</file>
+      <file>${PROJECT_ROOT}/enterUTAsDateTimeGUI.fig</file>
+      <file>${PROJECT_ROOT}/enterUTAsDateTimeGUI.m</file>
+      <file>${PROJECT_ROOT}/flyByPorkchopPlotterGUI.fig</file>
+      <file>${PROJECT_ROOT}/flyByPorkchopPlotterGUI.m</file>
+      <file>${PROJECT_ROOT}/formsGUIs</file>
+      <file>${PROJECT_ROOT}/helpAboutGUI.fig</file>
+      <file>${PROJECT_ROOT}/helpAboutGUI.m</file>
+      <file>${PROJECT_ROOT}/helper_methods</file>
+      <file>${PROJECT_ROOT}/images</file>
+      <file>${PROJECT_ROOT}/importOrbitGUI.fig</file>
+      <file>${PROJECT_ROOT}/importOrbitGUI.m</file>
+      <file>${PROJECT_ROOT}/kspTOT_MissionArchitect</file>
+      <file>${PROJECT_ROOT}/kspTOT_RTS</file>
+      <file>${PROJECT_ROOT}/lambert_mex.mexw64</file>
+      <file>${PROJECT_ROOT}/mainGUI.fig</file>
+      <file>${PROJECT_ROOT}/mainGUI.m</file>
+      <file>${PROJECT_ROOT}/manExeAssistGUI.fig</file>
+      <file>${PROJECT_ROOT}/manExeAssistGUI.m</file>
+      <file>${PROJECT_ROOT}/maxDeltaVInputGUI.fig</file>
+      <file>${PROJECT_ROOT}/maxDeltaVInputGUI.m</file>
+      <file>${PROJECT_ROOT}/multiFlyByManeuverSequencer.fig</file>
+      <file>${PROJECT_ROOT}/multiFlyByManeuverSequencer.m</file>
+      <file>${PROJECT_ROOT}/optionsGUI.fig</file>
+      <file>${PROJECT_ROOT}/optionsGUI.m</file>
+      <file>${PROJECT_ROOT}/projectMain.m</file>
+      <file>${PROJECT_ROOT}/rendezvousGUI.fig</file>
+      <file>${PROJECT_ROOT}/rendezvousGUI.m</file>
+      <file>${PROJECT_ROOT}/splashScreenGUI.fig</file>
+      <file>${PROJECT_ROOT}/splashScreenGUI.m</file>
+      <file>${PROJECT_ROOT}/uploadManeuverToKSP.fig</file>
+      <file>${PROJECT_ROOT}/uploadManeuverToKSP.m</file>
+      <file>${PROJECT_ROOT}/zArchive</file>
+    </fileset.resources>
+    <fileset.package />
+    <fileset.depfun>
+      <file>${MATLAB_ROOT}/toolbox/local/+matlab/+internal/+addons/addEnabledAddonsToPath.m</file>
+      <file>${MATLAB_ROOT}/toolbox/local/+matlab/+internal/+addons/addFoldersToPathFrom.m</file>
+      <file>${MATLAB_ROOT}/toolbox/local/+matlab/+internal/+addons/private/addFilesFrom.m</file>
+      <file>${MATLAB_ROOT}/toolbox/local/+matlab/+internal/+supportPackages/addInstalledSupportPackagesToPath.m</file>
+      <file>${MATLAB_ROOT}/toolbox/local/initprefs.m</file>
+      <file>${MATLAB_ROOT}/toolbox/local/matlabrc.m</file>
+    </fileset.depfun>
+    <build-deliverables>
+      <file location="${PROJECT_ROOT}/deploy/KSPTrajectoryOptimizationTool/for_testing" name="splash.png" optional="false">/home/adam/ksptot/ksptot/deploy/KSPTrajectoryOptimizationTool/for_testing/splash.png</file>
+      <file location="${PROJECT_ROOT}/deploy/KSPTrajectoryOptimizationTool/for_testing" name="readme.txt" optional="true">/home/adam/ksptot/ksptot/deploy/KSPTrajectoryOptimizationTool/for_testing/readme.txt</file>
+      <file location="${PROJECT_ROOT}/deploy/KSPTrajectoryOptimizationTool/for_testing" name="run_KSPTrajectoryOptimizationTool.sh" optional="false">/home/adam/ksptot/ksptot/deploy/KSPTrajectoryOptimizationTool/for_testing/run_KSPTrajectoryOptimizationTool.sh</file>
+      <file location="${PROJECT_ROOT}/deploy/KSPTrajectoryOptimizationTool/for_testing" name="KSPTrajectoryOptimizationTool" optional="false">/home/adam/ksptot/ksptot/deploy/KSPTrajectoryOptimizationTool/for_testing/KSPTrajectoryOptimizationTool</file>
+    </build-deliverables>
+    <workflow />
+    <matlab>
+      <root>/usr/local/MATLAB/R2017b</root>
+      <toolboxes>
+        <toolbox name="fixedpoint" />
+        <toolbox name="matlabcoder" />
+        <toolbox name="matlabhdlcoder" />
+        <toolbox name="embeddedcoder" />
+        <toolbox name="gpucoder" />
+        <toolbox name="polyspacebugfinder" />
+      </toolboxes>
+      <toolbox>
+        <fixedpoint>
+          <enabled>true</enabled>
+        </fixedpoint>
+      </toolbox>
+      <toolbox>
+        <matlabcoder>
+          <enabled>true</enabled>
+        </matlabcoder>
+      </toolbox>
+      <toolbox>
+        <matlabhdlcoder>
+          <enabled>true</enabled>
+        </matlabhdlcoder>
+      </toolbox>
+      <toolbox>
+        <embeddedcoder>
+          <enabled>true</enabled>
+        </embeddedcoder>
+      </toolbox>
+      <toolbox>
+        <gpucoder>
+          <enabled>true</enabled>
+        </gpucoder>
+      </toolbox>
+      <toolbox>
+        <polyspacebugfinder>
+          <enabled>true</enabled>
+        </polyspacebugfinder>
+      </toolbox>
+    </matlab>
+    <platform>
+      <unix>true</unix>
+      <mac>false</mac>
+      <windows>false</windows>
+      <win2k>false</win2k>
+      <winxp>false</winxp>
+      <vista>false</vista>
+      <linux>true</linux>
+      <solaris>false</solaris>
+      <osver>4.15.0-29-generic</osver>
+      <os32>false</os32>
+      <os64>true</os64>
+      <arch>glnxa64</arch>
+      <matlab>true</matlab>
+    </platform>
+  </configuration>
+</deployment-project>
