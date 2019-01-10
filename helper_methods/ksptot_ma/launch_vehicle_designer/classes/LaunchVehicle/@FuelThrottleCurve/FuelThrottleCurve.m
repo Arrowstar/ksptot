@@ -57,6 +57,10 @@ classdef FuelThrottleCurve < matlab.mixin.SetGet & matlab.mixin.Copyable
         
         function yq = evalCurve(obj, xq)
 %             yq = obj.curve(xq);
+            if(isempty(obj.curve))
+                obj.generateCurve();
+            end
+            
             yq = ppval(obj.curve,xq);
         end
         

@@ -164,7 +164,7 @@ function addEngineButton_Callback(hObject, eventdata, handles)
 %         engine.stage.addEngine(engine);
         
         stageStates = lvdData.initStateModel.stageStates;
-        stageStateInd = find([stageStates.stage] == initStage,1,'first');
+        stageStateInd = find([stageStates.stage] == engine.stage,1,'first');
         stageState = stageStates(stageStateInd);
         
         newEngineState = LaunchVehicleEngineState(stageState);

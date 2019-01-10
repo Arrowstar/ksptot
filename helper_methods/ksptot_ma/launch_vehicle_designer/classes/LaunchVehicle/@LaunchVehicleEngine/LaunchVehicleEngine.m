@@ -37,6 +37,10 @@ classdef LaunchVehicleEngine < matlab.mixin.SetGet
                 obj.fuelThrottleCurve = FuelThrottleCurve.getDefaultFuelThrottleCurve();
             end
             
+            if(isempty(obj.fuelThrottleCurve))
+                obj.fuelThrottleCurve = FuelThrottleCurve.getDefaultFuelThrottleCurve();
+            end
+            
             obj.id = rand();
         end
         
@@ -137,6 +141,14 @@ classdef LaunchVehicleEngine < matlab.mixin.SetGet
         
         function tf = eq(A,B)
             tf = [A.id] == [B.id];
+        end
+    end
+    
+    methods(Static) 
+        function obj = loadobj(obj)
+            if(isempty(obj.fuelThrottleCurve))
+                obj.fuelThrottleCurve = FuelThrottleCurve.getDefaultFuelThrottleCurve();
+            end
         end
     end
 end

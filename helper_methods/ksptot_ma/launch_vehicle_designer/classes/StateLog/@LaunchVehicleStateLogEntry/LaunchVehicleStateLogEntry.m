@@ -273,8 +273,8 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                             engine = engineState.engine;
                             adjustedThrottle = engine.adjustThrottleForMinMaxFuelRemaining(throttle, []);
                             if(adjustedThrottle > 0)
-                                [~, mdot] = engine.getThrustFlowRateForPressure(presskPa); %total mass flow through engine
-                                mdot = adjustedThrottle * mdot;
+                                [baseThrust, baseMdot] = engine.getThrustFlowRateForPressure(presskPa); %total mass flow through engine
+                                mdot = adjustedThrottle * baseMdot;
 
                                 flowFromTankInds = zeros(size(tankStates));
                                 if(mdot < 0) %negative because we're flowing out
@@ -313,13 +313,13 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                                     %flow rate, this time incorporating the
                                     %fuel remaining in all connected tanks
                                     adjustedThrottle = engine.adjustThrottleForMinMaxFuelRemaining(throttle, fuelRemainPct);
-                                    [thrust, mdot] = engine.getThrustFlowRateForPressure(presskPa); %total mass flow through engine
-                                    mdot = adjustedThrottle * mdot;
-                                    totalThrust = totalThrust + adjustedThrottle*thrust;
+%                                     [thrust, mdot] = engine.getThrustFlowRateForPressure(presskPa); %total mass flow through engine
+                                    mdot = adjustedThrottle * baseMdot;
+                                    totalThrust = totalThrust + adjustedThrottle*baseThrust;
                                     
                                     numTanksToPullFrom = sum(flowFromTankInds);
                                     if(numTanksToPullFrom > 0)
-                                        bodyThrust = bodyThrust + (thrust * adjustedThrottle * engine.bodyFrameThrustVect)/1000; %1/1000 to convert kN=mT*m/s^2 to mT*km/s^2 (see also ma_executeDVManeuver_finite_inertial()) 
+                                        bodyThrust = bodyThrust + (baseThrust * adjustedThrottle * engine.bodyFrameThrustVect)/1000; %1/1000 to convert kN=mT*m/s^2 to mT*km/s^2 (see also ma_executeDVManeuver_finite_inertial()) 
                                     end
                                     
                                     mDotPerTank = mdot/numTanksToPullFrom;

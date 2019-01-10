@@ -701,11 +701,7 @@ function openMissionPlanMenu_Callback(hObject, eventdata, handles)
                 startParallelPool(write_to_output_func);
             end
             
-            try
-                runScript(handles, lvdData, 1);
-            catch
-                
-            end
+            runScript(handles, lvdData, 1);
             lvd_processData(handles);
             
 %             if(~strcmpi(maData.settings.gravParamType,options_gravParamType))
