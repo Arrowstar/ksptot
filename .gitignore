@@ -21,6 +21,7 @@ deploy/
 KSPTrajectoryOptimizationTool/
 KSPTrajectoryOptimizationTool_resources/
 tutorials_raw/
+KSPTrajectoryOptimizationTool_Linux/
 
 # Simulink code generation folders
 slprj/
