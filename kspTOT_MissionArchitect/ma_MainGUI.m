@@ -991,7 +991,7 @@ function advanceScriptToEventMenu_Callback(hObject, eventdata, handles)
     xenonMass  = state(12);
     
     
-    if(strcmpi(script{eventNum}.type,'Set_State'));
+    if(strcmpi(script{eventNum}.type,'Set_State'))
         script = script(eventNum:end);
     else
         setState = ma_createSetState(name, epoch, sma, ecc, inc, raan, arg, tru, bodyInfo, dryMass, fuelOxMass, monoMass, xenonMass, 'setState', [], zeros(3,7));
@@ -1099,7 +1099,8 @@ function reoptimizeMission_Callback(hObject, eventdata, handles)
             waitbar(1,hWaitbar);
             close(hWaitbar);
 
-            ma_ObserveOptimGUI(celBodyData, problem, false, [], handles.ma_MainGUI);
+            writeOutput = getappdata(handles.ma_MainGUI,'write_to_output_func');
+            ma_ObserveOptimGUI(celBodyData, problem, false, writeOutput, handles.ma_MainGUI);
             ma_processData(handles);
         end
     end
