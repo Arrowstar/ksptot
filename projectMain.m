@@ -9,7 +9,7 @@ if(~isdeployed)
     addpath(genpath('formsGUIs'));
     addpath(genpath('kspTOT_RTS'));
     addpath(genpath('kspTOT_MissionArchitect'));
-    addpath('zArchive');
+%     addpath('zArchive');
 end
 
 %set look and feel if deployed
