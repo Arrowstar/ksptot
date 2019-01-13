@@ -223,11 +223,17 @@ function performNetworkAnalysisButton_Callback(hObject, eventdata, handles)
         return;
     end
     
-    [FileName,PathName,~] = uiputfile('*.csv','Select Output File','commAnalysis.csv');
-    if(ischar(FileName))
-        outputFilePath = [PathName,FileName];
+    matSave = getappdata(handles.ma_MainGUI,'current_save_location');
+    if(not(isempty(matSave)))
+        [pathstr,name,~] = fileparts(matSave);
+        outputFilePath = [pathstr,'\',name,'_CommNetworkAnalysis_',datestr(now,'yyyymmdd_HHMMSS'),'.csv'];
     else
-        outputFilePath = '';
+        [FileName,PathName,~] = uiputfile('*.csv','Select Output File','commAnalysis.csv');
+        if(ischar(FileName))
+            outputFilePath = [PathName,FileName];
+        else
+            outputFilePath = '';
+        end
     end
 
 	maData = getappdata(handles.ma_MainGUI,'ma_data');
@@ -477,6 +483,8 @@ function performNetworkAnalysisButton_Callback(hObject, eventdata, handles)
         T = cell2table(resultsArr(:,1:7));
         T.Properties.VariableNames = colNames;
         writetable(T,outputFilePath);
+        
+        msgbox(sprintf('Comm network analysis output written to file: \n%s',outputFilePath), 'Comm Analysis Output', 'help');
     end
     
 function [pathStr, pathDist, pathDistOfMax] = getHopsStrDists(path, G, nodes, rangeModelStr, rangeMulti)
