@@ -508,7 +508,7 @@ function [pathStr, pathDist, pathDistOfMax] = getHopsStrDists(path, G, nodes, ra
 
     
 function [bool, maxRange] = isValidPath(dist, node1MaxRng, node2MaxRng, rangeModelStr, rangeMulti)
-    switch rangeModelStr
+    switch strip(rangeModelStr)
         case 'Standard'    
             maxRange = min(node1MaxRng, node2MaxRng);
         case 'Additive/Root'
