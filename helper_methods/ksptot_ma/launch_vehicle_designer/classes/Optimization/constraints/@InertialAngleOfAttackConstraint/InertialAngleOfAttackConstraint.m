@@ -86,6 +86,14 @@ classdef InertialAngleOfAttackConstraint < AbstractConstraint
             tf = false;
         end
         
+        function tf = usesExtremum(obj, extremum)
+            tf = false;
+        end
+        
+        function tf = canUseSparseOutput(obj)
+            tf = true;
+        end
+        
         function event = getConstraintEvent(obj)
             event = obj.event;
         end

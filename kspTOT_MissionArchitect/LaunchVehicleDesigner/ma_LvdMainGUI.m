@@ -22,7 +22,7 @@ function varargout = ma_LvdMainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_LvdMainGUI
 
-% Last Modified by GUIDE v2.5 05-Jan-2019 14:08:54
+% Last Modified by GUIDE v2.5 14-Jan-2019 12:15:35
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1455,7 +1455,7 @@ function editStopwatchesMenu_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
     lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
     
-    addUndoState(handles,'Edit Launch Vehicle');
+    addUndoState(handles,'Edit Stopwatches');
     
     lvd_EditStopwatchesGUI(lvdData);
     
@@ -1497,3 +1497,17 @@ function runScriptMenu_Callback(hObject, eventdata, handles)
 
     runScript(handles, lvdData, 1);
     lvd_processData(handles);
+
+
+% --------------------------------------------------------------------
+function editExtremaMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to editExtremaMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+
+    addUndoState(handles,'Edit Extrema');
+    lvd_EditExtremasGUI(lvdData);
+    
+    runScript(handles, lvdData, 1);
+    lvd_processData(handles); 

@@ -50,6 +50,14 @@ classdef ConstraintSet < matlab.mixin.SetGet
             num = length(obj.consts);
         end
         
+        function tf = canUseSparseOutput(obj)
+            tf = true;
+            
+            for(i=1:length(obj.consts))
+                tf = tf && obj.consts(i).canUseSparseOutput();
+            end
+        end
+        
         function [c, ceq, value, lb, ub, type, eventNum, cEventInds, ceqEventInds] = evalConstraints(obj, x, tfRunScript, evtToStartScriptExecAt)
             c = [];
             ceq = [];
@@ -66,7 +74,9 @@ classdef ConstraintSet < matlab.mixin.SetGet
             if(~isempty(obj.consts))
                 if(tfRunScript == true)                   
                     obj.lvdOptim.vars.updateObjsWithScaledVarValues(x);
-                    stateLog = obj.lvdData.script.executeScript(true, evtToStartScriptExecAt, false);
+                    useSparse = obj.canUseSparseOutput();
+                    disp(useSparse);
+                    stateLog = obj.lvdData.script.executeScript(useSparse, evtToStartScriptExecAt, false);
                 else
                     stateLog = obj.lvdData.stateLog;
                 end
@@ -136,6 +146,14 @@ classdef ConstraintSet < matlab.mixin.SetGet
             
             for(i=1:length(obj.consts))
                 tf = tf || obj.consts(i).usesStopwatch(stopwatch);
+            end
+        end
+        
+        function tf = usesExtremum(obj, extremum)
+            tf = false;
+            
+            for(i=1:length(obj.consts))
+                tf = tf || obj.consts(i).usesExtremum(extremum);
             end
         end
         

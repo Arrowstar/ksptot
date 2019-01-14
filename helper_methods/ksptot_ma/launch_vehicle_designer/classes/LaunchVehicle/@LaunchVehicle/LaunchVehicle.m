@@ -6,6 +6,7 @@ classdef LaunchVehicle < matlab.mixin.SetGet
         stages(1,:) LaunchVehicleStage
         engineTankConns(1,:) EngineToTankConnection
         stopwatches LaunchVehicleStopwatch
+        extrema LaunchVehicleExtrema
         
         lvdData(1,:) LvdData
     end
@@ -37,6 +38,14 @@ classdef LaunchVehicle < matlab.mixin.SetGet
         
         function removeStopwatch(obj, sw)
             obj.stopwatches([obj.stopwatches] == sw) = [];
+        end
+        
+        function addExtremum(obj, ex)
+            obj.extrema(end+1) = ex;
+        end
+        
+        function removeExtremum(obj, ex)
+            obj.extrema([obj.extrema] == ex) = [];
         end
         
         function stage = getStageForInd(obj, ind)
@@ -239,6 +248,42 @@ classdef LaunchVehicle < matlab.mixin.SetGet
                 stopwatchGAStr{i} = sprintf(sprintf('Stopwatch %s Value - "%s"',formSpec, stopwatches(i).name), i);
             end
         end
+        
+        
+        function [exListStr, extrema] = getExtremaListBoxStr(obj)
+            extrema = obj.extrema;
+            exListStr = cell(size(obj.extrema));
+            
+            for(i=1:length(obj.extrema))
+                exListStr{i} = obj.extrema(i).getNameStr();
+            end
+        end
+        
+        function ind = getListBoxIndForExtremum(obj, extremum)
+            [~, exa] = obj.getExtremaListBoxStr();
+            ind = find(exa == extremum, 1, 'first'); 
+        end
+        
+        function extremum = getExtremaForInd(obj, ind)
+            [~, exa] = obj.getExtremaListBoxStr();
+            extremum = LaunchVehicleExtrema.empty(0,1);
+
+            if(ind >= 1 && ind <= length(exa))
+                extremum = exa(ind);
+            end
+        end
+        
+        function [extremaGAStr, extrema] = getExtremaGraphAnalysisTaskStrs(obj)
+            [~, extrema] = obj.getExtremaListBoxStr();
+            
+            extremaGAStr = cell(1,length(extrema));
+            A = length(extrema);
+            formSpec = sprintf('%%0%uu',floor(log10(abs(A)+1)) + 1);
+            for(i=1:length(extrema))
+                extremaGAStr{i} = sprintf(sprintf('Extrema %s Value - "%s"',formSpec, extrema(i).getNameStr()), i);
+            end
+        end
+        
         
         function addEngineToTankConnection(obj, e2TConn)
             obj.engineTankConns(end+1) = e2TConn;

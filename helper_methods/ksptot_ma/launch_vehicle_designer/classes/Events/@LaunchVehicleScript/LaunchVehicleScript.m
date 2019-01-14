@@ -135,6 +135,16 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
             tf = tf || obj.nonSeqEvts.usesStopwatch(stopwatch);
         end
         
+        function tf = usesExtremum(obj, extremum)
+            tf = false;
+            
+            for(i=1:length(obj.evts))
+                tf = tf || obj.evts(i).usesExtremum(extremum);
+            end
+            
+            tf = tf || obj.nonSeqEvts.usesExtremum(extremum);
+        end
+        
         function stateLog = executeScript(obj, isSparseOutput, evtToStartScriptExecAt, evalConstraints)
             stateLog = obj.lvdData.stateLog;
             

@@ -147,6 +147,14 @@ classdef LaunchVehicleNonSeqEvents < matlab.mixin.SetGet
             end
         end
         
+        function tf = usesExtremum(obj, extremum)
+            tf = false;
+            
+            for(i=1:length(obj.evts))
+                tf = tf || obj.evts(i).usesExtremum(extremum);
+            end
+        end
+        
         function resetAllNumExecsRemaining(obj)
             for(i=1:length(obj.nonSeqEvts))
                 obj.nonSeqEvts(i).resetNumExecsRemaining();

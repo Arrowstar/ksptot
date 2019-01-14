@@ -61,6 +61,7 @@ function [depVarValue, depVarUnit, taskStr, refBodyInfo] = lvd_getDepVarValueUni
             stageActivePattern = 'Stage (\d+?) Active State - ".*"';
             engineActivePattern = 'Engine (\d+?) Active State - ".*"';
             stopwatchValuePattern = 'Stopwatch (\d+?) Value - ".*"';
+            extremaValuePattern = 'Extrema (\d+?) Value - ".*"';
             
             if(not(isempty(regexpi(taskStr, tankMassPattern))))
                 tokens = regexpi(taskStr, tankMassPattern, 'tokens');
@@ -122,6 +123,16 @@ function [depVarValue, depVarUnit, taskStr, refBodyInfo] = lvd_getDepVarValueUni
                 depVarValue = lvd_StopwatchMassTasks(subLog(i), 'swValue', stopwatch);
                 depVarUnit = 'sec';
                 
+            elseif(not(isempty(regexpi(taskStr, extremaValuePattern))))
+                tokens = regexpi(taskStr, extremaValuePattern, 'tokens');
+                tokens = tokens{1};
+                tokens = tokens{1};
+                extremaInd = str2double(tokens);
+                
+                [~,extrema] = subLog(i).launchVehicle.getExtremaGraphAnalysisTaskStrs();
+                extremum = extrema(extremaInd);
+                
+                [depVarValue, depVarUnit] = lvd_ExtremaTasks(subLog(i), 'extremumValue', extremum);
             end
     end
 end

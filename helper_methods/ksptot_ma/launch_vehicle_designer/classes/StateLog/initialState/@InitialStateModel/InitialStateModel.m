@@ -70,6 +70,11 @@ classdef InitialStateModel < matlab.mixin.SetGet
                 stateLogEntry.stopwatchStates(end+1) = stopwatches(i).createInitialState();
             end
             
+            extrema = stateLogEntry.launchVehicle.extrema;
+            for(i=1:length(extrema))
+                stateLogEntry.extremaStates(end+1) = extrema(i).createInitialState();
+            end
+            
             obj.steeringModel.setT0(obj.time);
             obj.throttleModel.setT0(obj.time);
             

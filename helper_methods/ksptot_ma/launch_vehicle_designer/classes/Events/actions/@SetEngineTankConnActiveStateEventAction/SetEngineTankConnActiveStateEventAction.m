@@ -55,6 +55,10 @@ classdef SetEngineTankConnActiveStateEventAction < AbstractEventAction
             tf = false;
         end
         
+        function tf = usesExtremum(obj, extremum)
+            tf = false;
+        end
+        
         function tf = usesEngineToTankConn(obj, engineToTank)
             tf = ([obj.conn] == engineToTank);
         end

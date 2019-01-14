@@ -67,6 +67,7 @@ classdef ConstraintEnum < matlab.mixin.SetGet
         TotalThrust('Total Thrust','TotalThrustConstraint',[]);
         
         StopwatchValue('Stopwatch Value','StopwatchValueConstraint',[]);
+        ExtremumValue('Extremum Value','ExtremumValueConstraint',[]);
     end
     
     properties

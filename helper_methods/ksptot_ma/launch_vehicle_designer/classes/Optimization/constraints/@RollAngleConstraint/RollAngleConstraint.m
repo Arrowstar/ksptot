@@ -82,6 +82,14 @@ classdef RollAngleConstraint < AbstractConstraint
             tf = false;
         end
         
+        function tf = usesExtremum(obj, extremum)
+            tf = false;
+        end
+        
+        function tf = canUseSparseOutput(obj)
+            tf = true;
+        end
+        
         function tf = usesEvent(obj, event)
             tf = obj.event == event;
         end

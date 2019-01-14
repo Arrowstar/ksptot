@@ -23,6 +23,8 @@ classdef(Abstract) AbstractEventAction < matlab.mixin.SetGet & matlab.mixin.Hete
         
         tf = usesStopwatch(obj, stopwatch)
         
+        tf = usesExtremum(obj, extremum)
+        
         [tf,vars] = hasActiveOptimVar(obj)
     end
     

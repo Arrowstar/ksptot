@@ -1,22 +1,23 @@
-classdef PitchAngleConstraint < AbstractConstraint
-    %PitchAngleConstraint Summary of this class goes here
+classdef ExtremumValueConstraint < AbstractConstraint
+    %ExtremumValueConstraint Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
         normFact = 1;
         event(1,:) LaunchVehicleEvent
+        extremum(1,:) LaunchVehicleExtrema
         
         lb(1,1) double = 0;
         ub(1,1) double = 0;
     end
     
     methods
-        function obj = PitchAngleConstraint(event, lb, ub)
+        function obj = ExtremumValueConstraint(event, lb, ub)
             obj.event = event;
             obj.lb = lb;
-            obj.ub = ub;  
+            obj.ub = ub;   
             
-             obj.id = rand();
+            obj.id = rand();
         end
         
         function [lb, ub] = getBounds(obj)
@@ -27,15 +28,10 @@ classdef PitchAngleConstraint < AbstractConstraint
         function [c, ceq, value, lwrBnd, uprBnd, type, eventNum] = evalConstraint(obj, stateLog, celBodyData)           
             type = obj.getConstraintType();
             stateLogEntry = stateLog.getLastStateLogForEvent(obj.event);
+            extremaStates = stateLogEntry.getAllExtremaStates();
+            extremaState = extremaStates(extremaStates.extrema == obj.extremum);
             
-            ut = stateLogEntry.time;
-            rVect = stateLogEntry.position;
-            vVect = stateLogEntry.velocity;
-            bodyInfo = stateLogEntry.centralBody;
-            
-            [rollAngle, pitchAngle, yawAngle] = stateLogEntry.attitude.getEulerAngles(ut, rVect, vVect, bodyInfo);
-            
-            value = rad2deg(pitchAngle);
+            value = extremaState.value;
                        
             if(obj.lb == obj.ub)
                 c = [];
@@ -87,11 +83,11 @@ classdef PitchAngleConstraint < AbstractConstraint
         end
         
         function tf = usesExtremum(obj, extremum)
-            tf = false;
+            tf = [obj.extremum] == extremum;
         end
         
         function tf = canUseSparseOutput(obj)
-            tf = true;
+            tf = false;
         end
         
         function event = getConstraintEvent(obj)
@@ -99,7 +95,7 @@ classdef PitchAngleConstraint < AbstractConstraint
         end
         
         function type = getConstraintType(obj)
-            type = 'Pitch Angle';
+            type = 'Extremum Value';
         end
         
         function name = getName(obj)
@@ -107,22 +103,42 @@ classdef PitchAngleConstraint < AbstractConstraint
         end
         
         function [unit, lbLim, ubLim, usesLbUb, usesCelBody, usesRefSc] = getConstraintStaticDetails(obj)
-            unit = 'deg';
-            lbLim = -90;
-            ubLim = 90;
+            unit = obj.extremum.unitStr;
+            lbLim = 0;
+            ubLim = 100;
             usesLbUb = true;
             usesCelBody = false;
             usesRefSc = false;
         end
         
         function addConstraintTf = openEditConstraintUI(obj, lvdData)
-            addConstraintTf = lvd_EditGenericMAConstraintGUI(obj, lvdData);
+            [listBoxStr, extrema] = lvdData.launchVehicle.getExtremaListBoxStr();
+
+            if(isempty(extrema))
+                addConstraintTf = false;
+                
+                warndlg('Cannot create extrema value constraint: no extrema have been created.  Create an extremum first.','Extremum Value Constraint','modal');
+            else
+                [Selection,ok] = listdlg('PromptString',{'Select the extremum','to constraint:'},...
+                                'SelectionMode','single',...
+                                'Name','Extremum',...
+                                'ListString',listBoxStr);
+                            
+                if(ok == 0)
+                    addConstraintTf = false;
+                else
+                    ex = extrema(Selection);
+                    obj.extremum = ex;
+                    
+                    addConstraintTf = lvd_EditGenericMAConstraintGUI(obj, lvdData);
+                end
+            end
         end
     end
     
     methods(Static)
         function constraint = getDefaultConstraint(~)            
-            constraint = PitchAngleConstraint(LaunchVehicleEvent.empty(1,0),0,0);
+            constraint = ExtremumValueConstraint(LaunchVehicleEvent.empty(1,0),0,0);
         end
     end
 end

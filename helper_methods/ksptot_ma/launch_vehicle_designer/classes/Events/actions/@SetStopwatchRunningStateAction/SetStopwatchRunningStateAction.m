@@ -60,6 +60,10 @@ classdef SetStopwatchRunningStateAction < AbstractEventAction
             tf = [obj.stopwatch] == stopwatch;
         end
         
+        function tf = usesExtremum(obj, extremum)
+            tf = false;
+        end
+        
         function [tf, vars] = hasActiveOptimVar(obj)
             tf = false;
             vars = AbstractOptimizationVariable.empty(0,1);

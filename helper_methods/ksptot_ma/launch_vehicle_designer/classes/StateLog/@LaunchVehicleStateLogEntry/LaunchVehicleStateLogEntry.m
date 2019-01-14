@@ -13,6 +13,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
         aero(1,1) LaunchVehicleAeroState
         
         stopwatchStates(1,:) LaunchVehicleStopwatchState
+        extremaStates(1,:) LaunchVehicleExtremaState
         
         steeringModel(1,1) AbstractSteeringModel = RollPitchYawPolySteeringModel.getDefaultSteeringModel();
         throttleModel(1,1) AbstractThrottleModel = ThrottlePolyModel.getDefaultThrottleModel();
@@ -140,6 +141,10 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             stopwatchStates = obj.stopwatchStates;
         end
         
+        function extremaStates = getAllExtremaStates(obj)
+            extremaStates = obj.extremaStates;
+        end
+        
         function dryMass = getTotalVehicleDryMass(obj)
             dryMass = 0;
             
@@ -204,6 +209,10 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                 newStateLogEntry.stopwatchStates(i) = obj.stopwatchStates(i).deepCopy();
             end
             
+            for(i=1:length(obj.extremaStates))
+                newStateLogEntry.extremaStates(i) = obj.extremaStates(i).deepCopy();
+            end
+            
             newStateLogEntry.aero = obj.aero.deepCopy();
         end
         
@@ -215,6 +224,10 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             
             for(i=1:length(obj.stopwatchStates))
                 obj.stopwatchStates(i) = obj.stopwatchStates(i).deepCopy();
+            end
+            
+            for(i=1:length(obj.extremaStates))
+                obj.extremaStates(i) = obj.extremaStates(i).deepCopy();
             end
             
             obj.aero = obj.aero.copy();
@@ -253,6 +266,14 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                             stateLogEntry.stopwatchStates(j).value = initSwValues(j) + deltaT;
                         end
                     end
+                end
+                                
+                for(j=1:length(stateLogEntry.extremaStates))
+                    if(i == 1)
+                        newValue = stateLogEntry.extremaStates(j).value;
+                    end
+                    
+                    [newValue] = stateLogEntry.extremaStates(j).updateExtremaStateWithStateLogEntry(stateLogEntry, newValue);
                 end
                 
                 stateLogEntries(i) = stateLogEntry;

@@ -55,6 +55,11 @@ classdef LvdData < matlab.mixin.SetGet
             tf = obj.script.usesStopwatch(stopwatch);
             tf = tf || obj.optimizer.constraints.usesStopwatch(stopwatch);
         end
+        
+        function tf = usesExtremum(obj, extremum)
+            tf = obj.script.usesExtremum(extremum);
+            tf = tf || obj.optimizer.constraints.usesExtremum(extremum);
+        end
     end
     
     methods(Static)        

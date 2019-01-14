@@ -1,17 +1,17 @@
-classdef SetEngineActiveStateAction < AbstractEventAction
-    %AbstractEventAction Summary of this class goes here
+classdef SetExtremumRecordingStateAction < AbstractEventAction
+    %SetExtremumRecordingStateAction Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
-        engine(1,:) LaunchVehicleEngine
-        activeStateToSet(1,1) logical = false;
+        extremum(1,:) LaunchVehicleExtrema
+        runningStateToSet(1,1) LaunchVehicleExtremaRecordingEnum = LaunchVehicleExtremaRecordingEnum.NotRecording
     end
     
     methods
-        function obj = SetEngineActiveStateAction(engine, activeStateToSet)
+        function obj = SetExtremumRecordingStateAction(extremum, runningStateToSet)
             if(nargin > 0)
-                obj.engine = engine;
-                obj.activeStateToSet = activeStateToSet;
+                obj.stopwatch = extremum;
+                obj.runningStateToSet = runningStateToSet;
             end
             
             obj.id = rand();
@@ -19,26 +19,25 @@ classdef SetEngineActiveStateAction < AbstractEventAction
         
         function newStateLogEntry = executeAction(obj, stateLogEntry)
             newStateLogEntry = stateLogEntry;
-            stage = obj.engine.stage;
             
-            stgState = newStateLogEntry.stageStates([newStateLogEntry.stageStates.stage] == stage);
-            
-            engineState = stgState.engineStates([stgState.engineStates.engine] == obj.engine);
-            engineState.active = obj.activeStateToSet;
+            if(not(isempty(obj.extremum)))
+                extremaState = newStateLogEntry.extremaStates([newStateLogEntry.extremaStates.extrema] == obj.extremum);
+                extremaState.active = obj.runningStateToSet;
+            end
         end
         
         function initAction(obj, initialStateLogEntry)
             %nothing
         end
         
-        function name = getName(obj)
-            if(obj.activeStateToSet)
-                tf = 'Active';
+        function name = getName(obj)            
+            if(not(isempty(obj.extremum)))
+                nameStr = obj.extremum.getNameStr();
             else
-                tf = 'Inactive';
+                nameStr = '<No Extremum Selected>';
             end
             
-            name = sprintf('Set Engine State (%s = %s)',obj.engine.name,tf);
+            name = sprintf('Set Extremum State (%s = %s)', nameStr, obj.runningStateToSet.nameStr);
         end
         
         function tf = usesStage(obj, stage)
@@ -46,7 +45,7 @@ classdef SetEngineActiveStateAction < AbstractEventAction
         end
         
         function tf = usesEngine(obj, engine)
-            tf = ([obj.engine] == engine);
+            tf = false;
         end
         
         function tf = usesTank(obj, tank)
@@ -56,13 +55,13 @@ classdef SetEngineActiveStateAction < AbstractEventAction
         function tf = usesEngineToTankConn(obj, engineToTank)
             tf = false;
         end
-
+        
         function tf = usesStopwatch(obj, stopwatch)
             tf = false;
         end
         
         function tf = usesExtremum(obj, extremum)
-            tf = false;
+            tf = [obj.extremum] == extremum;
         end
         
         function [tf, vars] = hasActiveOptimVar(obj)
@@ -73,7 +72,7 @@ classdef SetEngineActiveStateAction < AbstractEventAction
     
     methods(Static)
         function addActionTf = openEditActionUI(action, lv)
-            addActionTf = lvd_EditActionSetEngineStateGUI(action, lv);
+            addActionTf = lvd_EditActionSetExtremumRecordingStateGUI(action, lv);
         end
     end
 end
