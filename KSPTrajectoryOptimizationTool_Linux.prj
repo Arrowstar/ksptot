@@ -8,7 +8,7 @@
       <file>${PROJECT_ROOT}/KSPTrajectoryOptimizationTool_resources/icon_24.png</file>
       <file>${PROJECT_ROOT}/KSPTrajectoryOptimizationTool_resources/icon_16.png</file>
     </param.icons>
-    <param.version>1.61</param.version>
+    <param.version>1.62</param.version>
     <param.authnamewatermark>Arrowstar</param.authnamewatermark>
     <param.email />
     <param.company />
@@ -112,7 +112,6 @@
       <file>${PROJECT_ROOT}/splashScreenGUI.m</file>
       <file>${PROJECT_ROOT}/uploadManeuverToKSP.fig</file>
       <file>${PROJECT_ROOT}/uploadManeuverToKSP.m</file>
-      <file>${PROJECT_ROOT}/zArchive</file>
     </fileset.resources>
     <fileset.package />
     <fileset.depfun>

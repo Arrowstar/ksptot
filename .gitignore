@@ -4,6 +4,7 @@
 ### Matlab ###
 # Windows default autosave extension
 *.asv
+appOptions.ini
 
 # OSX / *nix default autosave extension
 *.m~
