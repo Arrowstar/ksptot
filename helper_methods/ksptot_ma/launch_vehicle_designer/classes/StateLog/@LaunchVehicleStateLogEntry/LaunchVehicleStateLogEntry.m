@@ -19,6 +19,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
     end
     
     properties(Dependent)
+        altitude(1,1) double
         attitude(1,1) LaunchVehicleAttitudeState
         throttle(1,1) double
         celBodyData struct
@@ -45,6 +46,10 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             
             value = obj.throttleModel.getThrottleAtTime(obj.time, obj.position, tankMasses, obj.getTotalVehicleDryMass(), ...
                                                         obj.stageStates, obj.lvState, tankStates, obj.centralBody);
+        end
+        
+        function alt = get.altitude(obj)
+            alt = norm(obj.position) - obj.centralBody.radius;
         end
         
         function attState = get.attitude(obj)
