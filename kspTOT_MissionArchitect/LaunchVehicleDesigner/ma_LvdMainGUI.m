@@ -22,7 +22,7 @@ function varargout = ma_LvdMainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_LvdMainGUI
 
-% Last Modified by GUIDE v2.5 14-Jan-2019 12:15:35
+% Last Modified by GUIDE v2.5 15-Jan-2019 09:00:14
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1510,4 +1510,32 @@ function editExtremaMenu_Callback(hObject, eventdata, handles)
     lvd_EditExtremasGUI(lvdData);
     
     runScript(handles, lvdData, 1);
+    lvd_processData(handles); 
+
+
+% --- Executes on button press in showSoICheckBox.
+function showSoICheckBox_Callback(hObject, eventdata, handles)
+% hObject    handle to showSoICheckBox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of showSoICheckBox
+    lvd_processData(handles); 
+
+% --- Executes on button press in showChildrenCheckBox.
+function showChildrenCheckBox_Callback(hObject, eventdata, handles)
+% hObject    handle to showChildrenCheckBox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of showChildrenCheckBox
+    lvd_processData(handles); 
+
+% --- Executes on button press in showChildBodyMarker.
+function showChildBodyMarker_Callback(hObject, eventdata, handles)
+% hObject    handle to showChildBodyMarker (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of showChildBodyMarker
     lvd_processData(handles); 

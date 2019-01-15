@@ -5,30 +5,30 @@ function lvd_updateDispAxis(handles, maStateLog, orbitNumToPlot, lvdData)
     celBodyData = lvdData.celBodyData;
 
     hDispAxes = handles.dispAxes;
-%     hShowSoICheckBox = handles.showSoICheckBox;
-%     hShowChildrenCheckBox = handles.showChildrenCheckBox;
+    hShowSoICheckBox = handles.showSoICheckBox;
+    hShowChildrenCheckBox = handles.showChildrenCheckBox;
     hDispAxisTitleLabel = handles.dispAxisTitleLabel;
 %     hShowOtherSpacecraftCheckBox = handles.showOtherSpacecraftCheckBox;
-%     hShowChildBodyMarker = handles.showChildBodyMarker;
+    hShowChildBodyMarker = handles.showChildBodyMarker;
     
     if(isempty(orbitNumToPlot))
         orbitNumToPlot = 1;
         set(hDispAxes,'UserData',orbitNumToPlot);
     end
 
-%     showSoICheckBoxINT = get(hShowSoICheckBox,'value');
-%     if(showSoICheckBoxINT == 1)
-%         showSoI = true;
-%     else
+    showSoICheckBoxINT = get(hShowSoICheckBox,'value');
+    if(showSoICheckBoxINT == 1)
+        showSoI = true;
+    else
         showSoI = false;
-%     end
+    end
     
-%     hShowChildrenCheckBoxINT = get(hShowChildrenCheckBox,'value');
-%     if(hShowChildrenCheckBoxINT == 1)
-%         showChildBodies = true;
-%     else
+    hShowChildrenCheckBoxINT = get(hShowChildrenCheckBox,'value');
+    if(hShowChildrenCheckBoxINT == 1)
+        showChildBodies = true;
+    else
         showChildBodies = false;
-%     end
+    end
     
 %     hShowOtherSpacecraftCheckBoxINT = get(hShowOtherSpacecraftCheckBox,'value');
 %     if(hShowOtherSpacecraftCheckBoxINT == 1)
@@ -37,12 +37,12 @@ function lvd_updateDispAxis(handles, maStateLog, orbitNumToPlot, lvdData)
         showOtherSC = false;
 %     end
     
-%     showChildBodyMarkerINT = get(hShowChildBodyMarker,'value');
-%     if(showChildBodyMarkerINT == 1)
-%         showChildMarker = true;
-%     else
+    showChildBodyMarkerINT = get(hShowChildBodyMarker,'value');
+    if(showChildBodyMarkerINT == 1)
+        showChildMarker = true;
+    else
         showChildMarker = false;
-%     end
+    end
     
     axes(hDispAxes);
     cla(gca);
