@@ -139,9 +139,9 @@ classdef LaunchVehicleEngine < matlab.mixin.SetGet
             newEngine.name = sprintf('Copy of %s', obj.name);
         end
         
-        function tf = eq(A,B)
-            tf = [A.id] == [B.id];
-        end
+%         function tf = eq(A,B)
+%             tf = [A.id] == [B.id];
+%         end
     end
     
     methods(Static) 

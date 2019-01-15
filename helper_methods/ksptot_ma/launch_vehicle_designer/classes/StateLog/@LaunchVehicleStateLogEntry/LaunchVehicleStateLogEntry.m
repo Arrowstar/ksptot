@@ -115,15 +115,11 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
         end
         
         function tankStates = getAllActiveTankStates(obj)
-            tankStates = obj.emptyTankArr;
-
             stgStates = obj.stageStates;
-            for(i=1:length(stgStates)) %#ok<*NO4LP>
-%                 stgState = stgStates(i);
-                
-                if(stgStates(i).active)
-                    tankStates = [tankStates, stgStates(i).tankStates]; %#ok<AGROW>
-                end
+            tankStates = [stgStates([stgStates.active]).tankStates];
+            
+            if(isempty(tankStates))
+                tankStates = obj.emptyTankArr;
             end
         end
         
@@ -218,6 +214,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
         
         function obj = createCopiesOfCopyableInternals(obj)
             %stuff that requires it's own copy
+%             obj.stageStates = obj.stageStates.copy();
             for(i=1:length(obj.stageStates))
                 obj.stageStates(i) = obj.stageStates(i).deepCopy();
             end
@@ -231,6 +228,13 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             end
             
             obj.aero = obj.aero.copy();
+        end
+    end
+    
+    methods(Access=protected)
+        function cpObj = copyElement(obj)
+            cpObj = copyElement@matlab.mixin.Copyable(obj);
+            cpObj = cpObj.createCopiesOfCopyableInternals();
         end
     end
     
@@ -252,7 +256,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             t0 = eventInitStateLogEntry.time;
             
             for(i=1:length(t))
-                stateLogEntry = stateLogEntries(i).createCopiesOfCopyableInternals();
+                stateLogEntry = stateLogEntries(i);
 
                 stateLogEntry.time = t(i);
                 stateLogEntry.position = y(i,1:3)';
@@ -359,7 +363,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                 end
             end
             
-            if(not(isempty(steeringModel)))
+            if(nargout >= 3 && not(isempty(steeringModel)))
                 if(norm(bodyThrust) > 0)
                     body2InertDcm = steeringModel.getBody2InertialDcmAtTime(ut, rVect, vVect, bodyInfo);
                     forceVect = body2InertDcm * bodyThrust;

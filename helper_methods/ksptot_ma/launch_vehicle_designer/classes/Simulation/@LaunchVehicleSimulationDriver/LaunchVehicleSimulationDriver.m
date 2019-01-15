@@ -114,8 +114,8 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
                 t = [t(end)];
                 y = [y(end,:)];
             end
-            
-            newStateLogEntries = eventInitStateLogEntry.createStateLogEntryFromIntegratorOutputRow(t, y, eventInitStateLogEntry);
+                        
+            newStateLogEntries = LaunchVehicleStateLogEntry.createStateLogEntryFromIntegratorOutputRow(t, y, eventInitStateLogEntry);
             
             if(not(isempty(ie)))
                 finalStateLogEntry = newStateLogEntries(end);

@@ -1,8 +1,8 @@
 function [R_ned_2_inert, ned_x, ned_y, ned_z] = computeNedFrame(ut, rVectECI, bodyInfo)
     %Source: https://en.wikipedia.org/wiki/North_east_down
     
-    [~, ~, REci2Ecef] = getFixedFrameVectFromInertialVect(ut, rVectECI, bodyInfo);
-    [phi, lambda] = getLatLongAltFromInertialVect(ut, rVectECI, bodyInfo);
+%     [~, ~, REci2Ecef] = getFixedFrameVectFromInertialVect(ut, rVectECI, bodyInfo);
+    [phi, lambda, ~, ~, ~, ~, ~, ~, REci2Ecef] = getLatLongAltFromInertialVect(ut, rVectECI, bodyInfo);
    
     REcef2Ned = [-sin(phi)*cos(lambda), -sin(lambda), -cos(phi)*cos(lambda);
                  -sin(phi)*sin(lambda),  cos(lambda), -cos(phi)*sin(lambda);

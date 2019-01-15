@@ -10,7 +10,7 @@ classdef LaunchVehicleStageState < matlab.mixin.SetGet & matlab.mixin.Copyable
         engineStates(1,:) LaunchVehicleEngineState
         tankStates(1,:) LaunchVehicleTankState
     end
-    
+
     methods
         function obj = LaunchVehicleStageState(stage)
             if(nargin > 0)
@@ -91,7 +91,8 @@ classdef LaunchVehicleStageState < matlab.mixin.SetGet & matlab.mixin.Copyable
         
         function newStageState = deepCopy(obj)
             newStageState = obj.copy();
-            newStageState.active = obj.active;
+%             newStageState.active = obj.active; %don't think I need to
+%             copy this beacuse it's a logical and should just come with it
             
             newEngineStates = obj.engineStates.copy();
             [newEngineStates.stageState] = deal(newStageState);

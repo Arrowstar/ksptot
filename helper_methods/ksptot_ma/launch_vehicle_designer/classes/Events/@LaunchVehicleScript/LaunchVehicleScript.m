@@ -188,13 +188,14 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
                     stateLog.appendStateLogEntries(newStateLogEntries);
 
                     %Clean Up Event
-                    initStateLogEntry = newStateLogEntries(end).deepCopy();
+                    initStateLogEntry = newStateLogEntries(end).deepCopy(); %this state log entry must be copied or the answers will change
                     actionStateLogEntries = evt.cleanupEvent(initStateLogEntry);
                     
                     %Add state log entries to state log
                     if(not(isempty(actionStateLogEntries)))
                         stateLog.appendStateLogEntries(actionStateLogEntries);
-                        initStateLogEntry = actionStateLogEntries(end).deepCopy();
+%                         initStateLogEntry = actionStateLogEntries(end).deepCopy();
+                        initStateLogEntry = actionStateLogEntries(end);
                     end
                 end
                 

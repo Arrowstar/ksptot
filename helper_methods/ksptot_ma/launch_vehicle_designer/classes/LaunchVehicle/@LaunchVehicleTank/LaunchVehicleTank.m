@@ -58,8 +58,8 @@ classdef LaunchVehicleTank < matlab.mixin.SetGet
             newTank.name = sprintf('Copy of %s', obj.name);
         end
         
-        function tf = eq(A,B)
-            tf = [A.id] == [B.id];
-        end
+%         function tf = eq(A,B)
+%             tf = [A.id] == [B.id];
+%         end
     end
 end

@@ -5,6 +5,8 @@ classdef(Abstract) AbstractThrottleCurve < matlab.mixin.SetGet & matlab.mixin.Co
     properties
         elems(1,:) AbstractCurveElement
         curve
+        
+        constValue(1,1) double = NaN
     end
           
     methods        
@@ -30,11 +32,19 @@ classdef(Abstract) AbstractThrottleCurve < matlab.mixin.SetGet & matlab.mixin.Co
                 cc = [0;1];
                 con = struct('xc',xc,'cc',cc,'yc',yc);
                 obj.curve = splinefit(x,y,x,con);
+                
+                obj.constValue = NaN;
             elseif(length(obj.elems) == 2)
                 x = [obj.elems.indepVar];
                 y = [obj.elems.depVar];
 
                 obj.curve = splinefit(x,y,1,2);
+                
+                if(y(1) == y(2))
+                    obj.constValue = y(1);
+                else
+                    obj.constValue = NaN;
+                end
             else
                 error('Cannot generate throttle curve: the number of elements in the curve must be greater than or equal to 2.');
             end
@@ -45,7 +55,11 @@ classdef(Abstract) AbstractThrottleCurve < matlab.mixin.SetGet & matlab.mixin.Co
                 obj.generateCurve();
             end
             
-            yq = ppval(obj.curve,xq);
+            if(isnan(obj.constValue))
+                yq = ppval(obj.curve,xq);
+            else
+                yq = ones(size(xq)) * obj.constValue;
+            end
         end
         
         function sortElems(obj)

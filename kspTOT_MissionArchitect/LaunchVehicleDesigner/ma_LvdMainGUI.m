@@ -1473,7 +1473,7 @@ function toggleOptimForSelEventMenu_Callback(hObject, eventdata, handles)
     event = lvdData.script.getEventForInd(eventNum);
 
     if(not(isempty(event)))
-        addUndoState(handles,sprintf('Toggle Optimization on Event %u'));
+        addUndoState(handles,sprintf('Toggle Optimization on Event %u', eventNum));
         event.toggleOptimDisable(lvdData);
         
 %         runScript(handles, lvdData);

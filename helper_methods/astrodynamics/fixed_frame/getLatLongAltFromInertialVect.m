@@ -1,4 +1,4 @@
-function [lat, long, alt, vVectSez, horzVel, vertVel, rVectECEF, vVectECEF] = getLatLongAltFromInertialVect(ut, rVectECI, bodyInfo, varargin)
+function [lat, long, alt, vVectSez, horzVel, vertVel, rVectECEF, vVectECEF, REci2Ecef] = getLatLongAltFromInertialVect(ut, rVectECI, bodyInfo, varargin)
 %getLatLongAltFromInertialVect Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -8,7 +8,7 @@ function [lat, long, alt, vVectSez, horzVel, vertVel, rVectECEF, vVectECEF] = ge
         vVectECI = [NaN;NaN;NaN];
     end
 
-    [rVectECEF, vVectECEF] = getFixedFrameVectFromInertialVect(ut, rVectECI, bodyInfo, vVectECI);
+    [rVectECEF, vVectECEF, REci2Ecef] = getFixedFrameVectFromInertialVect(ut, rVectECI, bodyInfo, vVectECI);
     
     rNorm = norm(rVectECEF);
     long = AngleZero2Pi(atan2(rVectECEF(2),rVectECEF(1)));

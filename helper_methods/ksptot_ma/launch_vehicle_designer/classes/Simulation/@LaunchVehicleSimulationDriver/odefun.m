@@ -40,14 +40,9 @@ function dydt = odefun(t,y, obj, eventInitStateLogEntry, dryMass, fmEnums)
         dydt(7:end) = tankMassDots;
     else
         %launch clamp disabled, propagate like normal
-%                 CdA = eventInitStateLogEntry.aero.area * eventInitStateLogEntry.aero.Cd;  
         aero = eventInitStateLogEntry.aero;
 
         totalMass = dryMass + sum(tankStatesMasses);
-
-        tankStates = tankStates.copy();
-        tmCellArr = num2cell(tankStatesMasses);
-        [tankStates.tankMass] = tmCellArr{:};
 
         if(totalMass > 0)
             [forceSum, tankMassDots] = obj.forceModel.getForce(fmEnums, ut, rVect, vVect, totalMass, bodyInfo, aero, throttleModel, steeringModel, tankStates, stageStates, lvState, dryMass, tankStatesMasses);
