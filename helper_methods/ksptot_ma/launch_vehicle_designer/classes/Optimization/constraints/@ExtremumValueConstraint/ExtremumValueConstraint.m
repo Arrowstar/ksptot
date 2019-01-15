@@ -4,8 +4,8 @@ classdef ExtremumValueConstraint < AbstractConstraint
     
     properties
         normFact = 1;
-        event(1,:) LaunchVehicleEvent
-        extremum(1,:) LaunchVehicleExtrema
+        event LaunchVehicleEvent
+        extremum LaunchVehicleExtrema
         
         lb(1,1) double = 0;
         ub(1,1) double = 0;

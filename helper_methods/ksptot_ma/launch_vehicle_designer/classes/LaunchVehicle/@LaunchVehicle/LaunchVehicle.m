@@ -3,12 +3,12 @@ classdef LaunchVehicle < matlab.mixin.SetGet
     %   Detailed explanation goes here
     
     properties
-        stages(1,:) LaunchVehicleStage
-        engineTankConns(1,:) EngineToTankConnection
+        stages LaunchVehicleStage
+        engineTankConns EngineToTankConnection
         stopwatches LaunchVehicleStopwatch
         extrema LaunchVehicleExtrema
         
-        lvdData(1,:) LvdData
+        lvdData LvdData
     end
     
     methods

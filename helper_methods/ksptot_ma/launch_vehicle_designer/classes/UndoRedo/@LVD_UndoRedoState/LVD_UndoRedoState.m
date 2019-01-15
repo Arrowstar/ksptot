@@ -4,7 +4,7 @@ classdef LVD_UndoRedoState < matlab.mixin.SetGet
     
     properties
         serialLvdData uint8
-        actionName(1,:) char
+        actionName char
     end
     
     methods

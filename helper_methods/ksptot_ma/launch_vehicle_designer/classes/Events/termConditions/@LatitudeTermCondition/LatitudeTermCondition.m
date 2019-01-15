@@ -4,7 +4,7 @@ classdef LatitudeTermCondition < AbstractEventTerminationCondition
     
     properties
         lat(1,1) double = 0; %rad
-        bodyInfo(1,:) KSPTOT_BodyInfo
+        bodyInfo KSPTOT_BodyInfo
         direction(1,1) double = 0;
     end
     

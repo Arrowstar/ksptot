@@ -3,9 +3,9 @@ classdef(Abstract) AbstractConstraint < matlab.mixin.SetGet & matlab.mixin.Heter
     %   Detailed explanation goes here
     
     properties
-        refStation(1,:) struct
-        refOtherSC(1,:) struct
-        refBodyInfo(1,:) KSPTOT_BodyInfo
+        refStation struct
+        refOtherSC struct
+        refBodyInfo KSPTOT_BodyInfo
         
         id(1,1) double = 0;
     end

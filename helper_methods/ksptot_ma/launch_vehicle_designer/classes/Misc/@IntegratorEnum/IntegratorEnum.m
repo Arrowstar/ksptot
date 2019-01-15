@@ -12,8 +12,8 @@ classdef IntegratorEnum < matlab.mixin.SetGet
     end
     
     properties
-        nameStr(1,:) char = '';
-        descStr(1,:) char = '';
+        nameStr char = '';
+        descStr char = '';
         functionHandle(1,1)
     end
     

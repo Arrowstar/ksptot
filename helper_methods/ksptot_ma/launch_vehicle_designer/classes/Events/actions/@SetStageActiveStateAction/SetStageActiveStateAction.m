@@ -3,7 +3,7 @@ classdef SetStageActiveStateAction < AbstractEventAction
     %   Detailed explanation goes here
     
     properties
-        stage(1,:) LaunchVehicleStage
+        stage LaunchVehicleStage
         activeStateToSet(1,1) logical = false;
     end
     

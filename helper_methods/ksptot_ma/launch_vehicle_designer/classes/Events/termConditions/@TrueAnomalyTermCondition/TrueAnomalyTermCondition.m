@@ -4,7 +4,7 @@ classdef TrueAnomalyTermCondition < AbstractEventTerminationCondition
     
     properties
         tru(1,1) double = 0; %rad
-        bodyInfo(1,:) KSPTOT_BodyInfo
+        bodyInfo KSPTOT_BodyInfo
     end
     
     methods

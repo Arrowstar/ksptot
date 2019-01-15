@@ -3,7 +3,7 @@ classdef LaunchVehicleEngine < matlab.mixin.SetGet
     %   Detailed explanation goes here
     
     properties
-        stage(1,:) LaunchVehicleStage
+        stage LaunchVehicleStage
         
         vacThrust(1,1) double = 0     %kN
         vacIsp(1,1) double =  0       %sec
@@ -15,9 +15,9 @@ classdef LaunchVehicleEngine < matlab.mixin.SetGet
         minThrottle(1,1) double = 0.0; %must be 0<=x<=1
         maxThrottle(1,1) double = 1.0; %must be 0<=x<=1
         
-        fuelThrottleCurve(1,:) FuelThrottleCurve
+        fuelThrottleCurve FuelThrottleCurve
         
-        name(1,:) char = 'Untitled Engine';
+        name char = 'Untitled Engine';
         id(1,1) double = 0;
     end
     

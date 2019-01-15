@@ -3,7 +3,7 @@ classdef SetStopwatchRunningStateAction < AbstractEventAction
     %   Detailed explanation goes here
     
     properties
-        stopwatch(1,:) LaunchVehicleStopwatch
+        stopwatch LaunchVehicleStopwatch
         runningStateToSet(1,1) StopwatchRunningEnum = StopwatchRunningEnum.NotRunning;
     end
     

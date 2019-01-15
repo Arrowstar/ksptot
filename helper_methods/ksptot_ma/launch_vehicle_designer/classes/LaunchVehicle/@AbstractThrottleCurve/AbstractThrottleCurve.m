@@ -3,7 +3,7 @@ classdef(Abstract) AbstractThrottleCurve < matlab.mixin.SetGet & matlab.mixin.Co
     %   Detailed explanation goes here
     
     properties
-        elems(1,:) AbstractCurveElement
+        elems AbstractCurveElement
         curve
         
         constValue(1,1) double = NaN

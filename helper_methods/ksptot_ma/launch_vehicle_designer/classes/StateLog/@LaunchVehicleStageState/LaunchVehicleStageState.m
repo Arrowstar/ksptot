@@ -4,12 +4,12 @@ classdef LaunchVehicleStageState < matlab.mixin.SetGet & matlab.mixin.Copyable
     
     properties
         %validators commented out to improve performance
-        stage = LaunchVehicleStage.empty(1,0)%(1,:) LaunchVehicleStage
+        stage = LaunchVehicleStage.empty(1,0)% LaunchVehicleStage
         
         active = true%(1,1) logical = true;
         
-        engineStates = LaunchVehicleEngineState.empty(1,0)%(1,:) LaunchVehicleEngineState
-        tankStates = LaunchVehicleTankState.empty(1,0);%(1,:) LaunchVehicleTankState
+        engineStates = LaunchVehicleEngineState.empty(1,0)% LaunchVehicleEngineState
+        tankStates = LaunchVehicleTankState.empty(1,0);% LaunchVehicleTankState
     end
 
     methods

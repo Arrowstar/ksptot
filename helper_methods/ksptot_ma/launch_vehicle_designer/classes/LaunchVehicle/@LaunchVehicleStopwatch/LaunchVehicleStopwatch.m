@@ -5,7 +5,7 @@ classdef LaunchVehicleStopwatch < matlab.mixin.SetGet
     properties
         lvdData LvdData
         
-        name(1,:) char = 'Untitled Stopwatch';
+        name char = 'Untitled Stopwatch';
         startOn(1,1) StopwatchRunningEnum = StopwatchRunningEnum.NotRunning;
         startValue(1,1) double = 0;
         

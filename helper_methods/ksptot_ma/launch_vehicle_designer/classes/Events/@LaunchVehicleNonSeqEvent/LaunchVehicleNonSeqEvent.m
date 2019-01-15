@@ -5,8 +5,8 @@ classdef LaunchVehicleNonSeqEvent <  matlab.mixin.SetGet
     properties
         evt LaunchVehicleEvent
         
-        lwrBndEvt(1,:) LaunchVehicleEvent
-        uprBndEvt(1,:) LaunchVehicleEvent
+        lwrBndEvt LaunchVehicleEvent
+        uprBndEvt LaunchVehicleEvent
         
         maxNumExecs(1,1) double = 1;
         numExecsRemaining(1,1) double = 1;

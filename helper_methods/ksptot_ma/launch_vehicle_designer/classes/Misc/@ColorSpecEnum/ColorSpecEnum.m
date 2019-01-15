@@ -17,7 +17,7 @@ classdef ColorSpecEnum < matlab.mixin.SetGet
     end
     
     properties
-        name(1,:) char = '';
+        name char = '';
         color(1,3) double;
     end
     

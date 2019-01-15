@@ -5,12 +5,12 @@ classdef LaunchVehicleExtrema < matlab.mixin.SetGet
     properties
         lvdData LvdData
         
-        quantStr(1,:) char 
+        quantStr char 
         type(1,1) LaunchVehicleExtremaTypeEnum = LaunchVehicleExtremaTypeEnum.Maximum;
         refBody KSPTOT_BodyInfo
         startingState(1,1) LaunchVehicleExtremaRecordingEnum = LaunchVehicleExtremaRecordingEnum.Recording;
         
-        unitStr(1,:) char
+        unitStr char
         
         id(1,1) double = 0;
     end

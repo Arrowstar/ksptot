@@ -5,8 +5,8 @@ classdef LaunchVehicleDataValidation < matlab.mixin.SetGet
     properties
         lvdData LvdData
         
-        validators(1,:) AbstractLaunchVehicleDataValidator
-        outputs(1,:) AbstractLaunchVehicleValidatorOutput
+        validators AbstractLaunchVehicleDataValidator
+        outputs AbstractLaunchVehicleValidatorOutput
     end
     
     methods

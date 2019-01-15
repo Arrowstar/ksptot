@@ -3,7 +3,7 @@ classdef StageDryMassOptimizationVariable < AbstractOptimizationVariable
     %   Detailed explanation goes here
     
     properties
-        stage(1,:) LaunchVehicleStage
+        stage LaunchVehicleStage
         
         lwrBnd(1,1) double = 0;
         uprBnd(1,1) double = 0;

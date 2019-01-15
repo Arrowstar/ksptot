@@ -3,7 +3,7 @@ classdef LaunchVehicleDataValidationOK < AbstractLaunchVehicleValidatorOutput
     %   Detailed explanation goes here
     
     properties(Constant)
-        str(1,:) char = 'No errors or warnings found.'
+        str char = 'No errors or warnings found.'
     end
     
     methods

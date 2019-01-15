@@ -6,9 +6,9 @@ classdef SeaLevelThrustToWeightTermCondition < AbstractEventTerminationCondition
         targetTtW(1,1) double = 0;
         
         dryMass(1,1) double = 0;
-        tankStates(1,:) LaunchVehicleTankState
-        stgStates(1,:) LaunchVehicleStageState
-        lvState(1,:) LaunchVehicleState
+        tankStates LaunchVehicleTankState
+        stgStates LaunchVehicleStageState
+        lvState LaunchVehicleState
         throttleModel AbstractThrottleModel = ThrottlePolyModel.getDefaultThrottleModel();
         bodyInfo KSPTOT_BodyInfo
     end

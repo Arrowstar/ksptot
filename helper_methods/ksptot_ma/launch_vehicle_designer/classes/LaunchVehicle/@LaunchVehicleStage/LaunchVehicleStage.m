@@ -3,17 +3,17 @@ classdef LaunchVehicleStage < matlab.mixin.SetGet
     %   Detailed explanation goes here
     
     properties
-        launchVehicle(1,:) LaunchVehicle
+        launchVehicle LaunchVehicle
         
-        name(1,:) char = 'Untitled Stage';
-        engines(1,:) LaunchVehicleEngine
-        tanks(1,:) LaunchVehicleTank
+        name char = 'Untitled Stage';
+        engines LaunchVehicleEngine
+        tanks LaunchVehicleTank
         
         dryMass(1,1) double = 0; %mT
         
         id(1,1) double = 0;
         
-        optVar(1,:) StageDryMassOptimizationVariable
+        optVar StageDryMassOptimizationVariable
     end
     
     properties(Dependent)

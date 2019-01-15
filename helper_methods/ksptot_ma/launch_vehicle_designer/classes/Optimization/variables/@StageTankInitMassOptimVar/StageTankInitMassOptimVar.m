@@ -3,7 +3,7 @@ classdef StageTankInitMassOptimVar < AbstractOptimizationVariable
     %   Detailed explanation goes here
     
     properties
-        tank(1,:) LaunchVehicleTank
+        tank LaunchVehicleTank
         
         lwrBnd(1,1) double = 0;
         uprBnd(1,1) double = 0;

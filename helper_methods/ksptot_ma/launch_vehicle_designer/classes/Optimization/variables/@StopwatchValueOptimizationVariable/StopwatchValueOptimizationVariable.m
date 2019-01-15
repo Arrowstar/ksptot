@@ -3,7 +3,7 @@ classdef StopwatchValueOptimizationVariable < AbstractOptimizationVariable
     %   Detailed explanation goes here
     
     properties
-        varObj(1,:) StopwatchValueTermCondition 
+        varObj StopwatchValueTermCondition 
         
         lb(1,1) double = 0;
         ub(1,1) double = 0;

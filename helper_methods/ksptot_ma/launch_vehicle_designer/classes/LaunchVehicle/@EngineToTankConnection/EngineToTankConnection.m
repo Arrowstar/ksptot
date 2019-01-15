@@ -3,8 +3,8 @@ classdef EngineToTankConnection < matlab.mixin.SetGet
     %   Detailed explanation goes here
     
     properties
-        tank(1,:) LaunchVehicleTank 
-        engine(1,:) LaunchVehicleEngine
+        tank LaunchVehicleTank 
+        engine LaunchVehicleEngine
     end
     
     properties(Dependent)

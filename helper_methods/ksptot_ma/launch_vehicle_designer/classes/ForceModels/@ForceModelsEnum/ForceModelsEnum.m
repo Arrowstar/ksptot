@@ -11,7 +11,7 @@ classdef ForceModelsEnum < matlab.mixin.SetGet & matlab.mixin.Heterogeneous
     end
     
     properties
-        name(1,:) char
+        name char
         model AbstractForceModel
         canBeDisabled(1,1) logical = false;
     end

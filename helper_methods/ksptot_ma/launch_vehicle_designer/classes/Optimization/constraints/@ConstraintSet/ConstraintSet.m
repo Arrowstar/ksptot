@@ -3,7 +3,7 @@ classdef ConstraintSet < matlab.mixin.SetGet
     %   Detailed explanation goes here
     
     properties
-        consts(1,:) AbstractConstraint
+        consts AbstractConstraint
         
         lvdOptim LvdOptimization
         lvdData LvdData

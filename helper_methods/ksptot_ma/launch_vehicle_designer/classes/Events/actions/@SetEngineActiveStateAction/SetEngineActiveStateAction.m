@@ -3,7 +3,7 @@ classdef SetEngineActiveStateAction < AbstractEventAction
     %   Detailed explanation goes here
     
     properties
-        engine(1,:) LaunchVehicleEngine
+        engine LaunchVehicleEngine
         activeStateToSet(1,1) logical = false;
     end
     

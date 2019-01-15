@@ -3,9 +3,9 @@ classdef GenericMAConstraint < AbstractConstraint
     %   Detailed explanation goes here
     
     properties
-        constraintType(1,:) char = '';
+        constraintType char = '';
         normFact = 1;
-        event(1,:) LaunchVehicleEvent
+        event LaunchVehicleEvent
         
         lb(1,1) double = 0;
         ub(1,1) double = 0;

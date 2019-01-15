@@ -8,7 +8,7 @@ classdef LaunchVehicleExtremaRecordingEnum < matlab.mixin.SetGet
     end
     
     properties
-        nameStr(1,:) char = '';
+        nameStr char = '';
         value(1,1) logical = false;
     end
     

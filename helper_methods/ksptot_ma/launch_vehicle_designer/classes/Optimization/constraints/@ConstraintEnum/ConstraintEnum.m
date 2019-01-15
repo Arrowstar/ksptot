@@ -75,8 +75,8 @@ classdef ConstraintEnum < matlab.mixin.SetGet
     end
     
     properties
-        name(1,:) char = '';
-        class(1,:) char = '';
+        name char = '';
+        class char = '';
         constructorInput1
     end
     

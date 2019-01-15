@@ -9,7 +9,7 @@ classdef LvdOptimAlgorithmEnum < matlab.mixin.SetGet
     end
     
     properties
-        algoName(1,:) char
+        algoName char
     end
     
     methods

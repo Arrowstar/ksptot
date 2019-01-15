@@ -3,7 +3,7 @@ classdef LaunchVehicleDataValidationError < AbstractLaunchVehicleValidatorOutput
     %   Detailed explanation goes here
     
     properties
-        str (1,:) char = ''
+        str  char = ''
     end
     
     methods

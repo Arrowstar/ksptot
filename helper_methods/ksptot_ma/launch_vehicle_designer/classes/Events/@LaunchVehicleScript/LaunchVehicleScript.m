@@ -3,7 +3,7 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
     %   Detailed explanation goes here
     
     properties
-        evts(1,:) LaunchVehicleEvent
+        evts LaunchVehicleEvent
         simDriver LaunchVehicleSimulationDriver
         lastRunExecTime(1,1) double = 0;
         

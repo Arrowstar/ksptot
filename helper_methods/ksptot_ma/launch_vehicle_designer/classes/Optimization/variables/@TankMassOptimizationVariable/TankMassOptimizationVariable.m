@@ -3,7 +3,7 @@ classdef TankMassOptimizationVariable < AbstractOptimizationVariable
     %   Detailed explanation goes here
     
     properties
-        varObj(1,:) TankMassTermCondition
+        varObj TankMassTermCondition
         
         lb(1,1) double = 0;
         ub(1,1) double = 0;

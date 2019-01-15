@@ -4,7 +4,7 @@ classdef AltitudeTermCondition < AbstractEventTerminationCondition
     
     properties
         altitude(1,1) double = 0; %km
-        bodyInfo(1,:) KSPTOT_BodyInfo
+        bodyInfo KSPTOT_BodyInfo
     end
     
     methods

@@ -3,7 +3,7 @@ classdef MinDistanceToBodyObjectiveFcn < AbstractObjectiveFcn
     %   Detailed explanation goes here
     
     properties
-        event(1,:) LaunchVehicleEvent
+        event LaunchVehicleEvent
         targetBodyInfo KSPTOT_BodyInfo
         
         lvdOptim LvdOptimization

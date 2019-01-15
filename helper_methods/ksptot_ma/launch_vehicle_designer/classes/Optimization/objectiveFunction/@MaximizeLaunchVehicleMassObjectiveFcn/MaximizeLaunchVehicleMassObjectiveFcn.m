@@ -3,7 +3,7 @@ classdef MaximizeLaunchVehicleMassObjectiveFcn < AbstractObjectiveFcn
     %   Detailed explanation goes here
     
     properties
-        event(1,:) LaunchVehicleEvent 
+        event LaunchVehicleEvent 
         
         lvdOptim LvdOptimization
         lvdData LvdData

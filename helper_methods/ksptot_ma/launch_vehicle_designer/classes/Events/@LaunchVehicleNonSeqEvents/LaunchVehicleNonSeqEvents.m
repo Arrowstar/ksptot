@@ -3,13 +3,13 @@ classdef LaunchVehicleNonSeqEvents < matlab.mixin.SetGet
     %   Detailed explanation goes here
     
     properties
-        nonSeqEvts(1,:) LaunchVehicleNonSeqEvent
+        nonSeqEvts LaunchVehicleNonSeqEvent
         
         lvdData LvdData
     end
     
     properties(Dependent)
-        evts(1,:) LaunchVehicleEvent
+        evts LaunchVehicleEvent
     end
     
     methods

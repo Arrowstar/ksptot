@@ -4,10 +4,10 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
     
     properties
         termCond(1,1) AbstractEventTerminationCondition = EventDurationTermCondition(0);
-        actions(1,:) AbstractEventAction
+        actions AbstractEventAction
         
-        name(1,:) char = 'Untitled Event';
-        script(1,:) LaunchVehicleScript
+        name char = 'Untitled Event';
+        script LaunchVehicleScript
         
         colorLineSpec(1,1) EventColorLineSpec 
         
@@ -15,7 +15,7 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
         integrationStep(1,1) double = -1;
         checkForSoITrans(1,1) logical = true;
         
-        forceModels(1,:) ForceModelsEnum = ForceModelsEnum.getDefaultArrayOfForceModelEnums();
+        forceModels ForceModelsEnum = ForceModelsEnum.getDefaultArrayOfForceModelEnums();
         
         disableOptim(1,1) logical = false;
     end

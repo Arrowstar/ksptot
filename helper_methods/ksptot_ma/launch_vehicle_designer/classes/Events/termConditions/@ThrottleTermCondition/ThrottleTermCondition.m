@@ -7,10 +7,10 @@ classdef ThrottleTermCondition < AbstractEventTerminationCondition
         targetThrottle(1,1) double = 0;
         
         dryMass(1,1) double = 0;
-        stgStates(1,:) LaunchVehicleStageState
-        lvState(1,:) LaunchVehicleState
-        tankStates(1,:) LaunchVehicleTankState
-        bodyInfo(1,:) KSPTOT_BodyInfo
+        stgStates LaunchVehicleStageState
+        lvState LaunchVehicleState
+        tankStates LaunchVehicleTankState
+        bodyInfo KSPTOT_BodyInfo
     end
     
     methods

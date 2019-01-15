@@ -8,8 +8,8 @@ classdef InitialStateModel < matlab.mixin.SetGet
         
         orbitModel(1,1) AbstractOrbitStateModel = BodyFixedOrbitStateModel.getDefaultOrbitState()
         
-        lvState(1,:) LaunchVehicleState
-        stageStates(1,:) LaunchVehicleStageState
+        lvState LaunchVehicleState
+        stageStates LaunchVehicleStageState
         
         aero(1,1) LaunchVehicleAeroState
         

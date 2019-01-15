@@ -3,7 +3,7 @@ classdef SoITransitionTermCondition < AbstractEventTerminationCondition
     %   Detailed explanation goes here
     
     properties
-        bodyInfo(1,:) KSPTOT_BodyInfo
+        bodyInfo KSPTOT_BodyInfo
         celBodyData struct
     end
     

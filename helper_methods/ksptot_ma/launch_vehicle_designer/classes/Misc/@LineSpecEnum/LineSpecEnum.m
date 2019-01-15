@@ -10,8 +10,8 @@ classdef LineSpecEnum < matlab.mixin.SetGet
     end
     
     properties
-        name(1,:) char = '';
-        linespec(1,:) char = '';
+        name char = '';
+        linespec char = '';
     end
     
     methods

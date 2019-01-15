@@ -3,7 +3,7 @@ classdef LaunchVehicleStateLog < matlab.mixin.SetGet
     %   Detailed explanation goes here
     
     properties
-        entries(1,:) LaunchVehicleStateLogEntry
+        entries LaunchVehicleStateLogEntry
     end
     
     methods

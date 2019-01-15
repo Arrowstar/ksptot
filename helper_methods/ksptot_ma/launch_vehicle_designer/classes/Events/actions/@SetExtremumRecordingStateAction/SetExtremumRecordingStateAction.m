@@ -3,7 +3,7 @@ classdef SetExtremumRecordingStateAction < AbstractEventAction
     %   Detailed explanation goes here
     
     properties
-        extremum(1,:) LaunchVehicleExtrema
+        extremum LaunchVehicleExtrema
         runningStateToSet(1,1) LaunchVehicleExtremaRecordingEnum = LaunchVehicleExtremaRecordingEnum.NotRecording
     end
     

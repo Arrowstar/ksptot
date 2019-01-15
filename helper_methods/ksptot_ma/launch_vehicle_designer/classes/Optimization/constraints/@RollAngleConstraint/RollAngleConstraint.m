@@ -4,7 +4,7 @@ classdef RollAngleConstraint < AbstractConstraint
     
     properties
         normFact = 1;
-        event(1,:) LaunchVehicleEvent
+        event LaunchVehicleEvent
         
         lb(1,1) double = 0;
         ub(1,1) double = 0;

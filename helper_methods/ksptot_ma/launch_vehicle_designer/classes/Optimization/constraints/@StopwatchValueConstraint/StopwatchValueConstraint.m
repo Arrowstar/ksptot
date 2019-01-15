@@ -4,8 +4,8 @@ classdef StopwatchValueConstraint < AbstractConstraint
     
     properties
         normFact = 1;
-        event(1,:) LaunchVehicleEvent
-        stopwatch(1,:) LaunchVehicleStopwatch
+        event LaunchVehicleEvent
+        stopwatch LaunchVehicleStopwatch
         
         lb(1,1) double = 0;
         ub(1,1) double = 0;

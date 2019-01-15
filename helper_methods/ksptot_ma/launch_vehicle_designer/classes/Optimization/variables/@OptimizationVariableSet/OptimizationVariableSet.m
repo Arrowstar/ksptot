@@ -4,12 +4,12 @@ classdef OptimizationVariableSet < matlab.mixin.SetGet
     
     properties
         lvdData LvdData
-        vars(1,:) AbstractOptimizationVariable
+        vars AbstractOptimizationVariable
     end
     
     properties(Transient)
-        cachedVars(1,:) AbstractOptimizationVariable
-        cachedVarEventDis(1,:) logical
+        cachedVars AbstractOptimizationVariable
+        cachedVarEventDis logical
     end
     
     methods

@@ -14,11 +14,11 @@ classdef OrbitStateEnum < matlab.mixin.SetGet
     end
     
     properties
-        name(1,:) char = ''
-        class(1,:) char = ''
+        name char = ''
+        class char = ''
         elemNames(6,1) cell
         unitNames(6,1) cell
-        varClass(1,:) char = '';
+        varClass char = '';
     end
     
     methods

@@ -9,8 +9,8 @@ classdef SteeringModelEnum < matlab.mixin.SetGet
     end
     
     properties
-        nameStr(1,:) char = '';
-        classNameStr(1,:) char = '';
+        nameStr char = '';
+        classNameStr char = '';
     end
     
     methods

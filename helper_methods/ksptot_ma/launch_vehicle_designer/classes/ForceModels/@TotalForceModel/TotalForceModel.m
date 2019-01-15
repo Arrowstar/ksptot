@@ -4,7 +4,7 @@ classdef TotalForceModel < matlab.mixin.SetGet
     %   Detailed explanation goes here
     
     properties(Transient)
-%         forceModels(1,:) AbstractForceModel
+%         forceModels AbstractForceModel
     end
     
     methods

@@ -3,15 +3,15 @@ classdef LaunchVehicleState < matlab.mixin.SetGet & matlab.mixin.Copyable
     %   Detailed explanation goes here
     
     properties
-        lv(1,:) LaunchVehicle 
+        lv LaunchVehicle 
         
-        e2TConns(1,:) EngineToTankConnState
+        e2TConns EngineToTankConnState
         holdDownEnabled(1,1) logical = false
     end
     
     properties(Transient)
-        cachedEngines(1,:) LaunchVehicleEngine
-        cachedConnTanks(1,:) cell
+        cachedEngines LaunchVehicleEngine
+        cachedConnTanks cell
     end
     
     properties(Constant)
