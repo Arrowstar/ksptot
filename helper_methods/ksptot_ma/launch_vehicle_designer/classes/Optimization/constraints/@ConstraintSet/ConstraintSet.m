@@ -75,7 +75,6 @@ classdef ConstraintSet < matlab.mixin.SetGet
                 if(tfRunScript == true)                   
                     obj.lvdOptim.vars.updateObjsWithScaledVarValues(x);
                     useSparse = obj.canUseSparseOutput();
-                    disp(useSparse);
                     stateLog = obj.lvdData.script.executeScript(useSparse, evtToStartScriptExecAt, false);
                 else
                     stateLog = obj.lvdData.stateLog;

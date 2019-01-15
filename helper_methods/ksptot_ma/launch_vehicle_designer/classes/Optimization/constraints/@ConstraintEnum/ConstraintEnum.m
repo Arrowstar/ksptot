@@ -68,6 +68,10 @@ classdef ConstraintEnum < matlab.mixin.SetGet
         
         StopwatchValue('Stopwatch Value','StopwatchValueConstraint',[]);
         ExtremumValue('Extremum Value','ExtremumValueConstraint',[]);
+        
+        TwoBodyImpactTime('Two-Body Time To Impact','TwoBodyImpactPointTime',[]);
+        TwoBodyImpactLong('Two-Body Impact Longitude','TwoBodyImpactPointLongitude',[]);
+        TwoBodyImpactLat('Two-Body Impact Latitude','TwoBodyImpactPointLatitude',[]);
     end
     
     properties

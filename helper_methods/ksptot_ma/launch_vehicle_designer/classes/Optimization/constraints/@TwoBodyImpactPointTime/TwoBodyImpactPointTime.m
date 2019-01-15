@@ -1,23 +1,22 @@
-classdef StopwatchValueConstraint < AbstractConstraint
-    %StopwatchValueConstraint Summary of this class goes here
+classdef TwoBodyImpactPointTime < AbstractConstraint
+    %TwoBodyImpactPointTime Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
         normFact = 1;
         event(1,:) LaunchVehicleEvent
-        stopwatch(1,:) LaunchVehicleStopwatch
         
         lb(1,1) double = 0;
         ub(1,1) double = 0;
     end
     
     methods
-        function obj = StopwatchValueConstraint(event, lb, ub)
+        function obj = TwoBodyImpactPointTime(event, lb, ub)
             obj.event = event;
             obj.lb = lb;
             obj.ub = ub;   
             
-             obj.id = rand();
+            obj.id = rand();
         end
         
         function [lb, ub] = getBounds(obj)
@@ -28,10 +27,8 @@ classdef StopwatchValueConstraint < AbstractConstraint
         function [c, ceq, value, lwrBnd, uprBnd, type, eventNum] = evalConstraint(obj, stateLog, celBodyData)           
             type = obj.getConstraintType();
             stateLogEntry = stateLog.getLastStateLogForEvent(obj.event);
-            stopWatchStates = stateLogEntry.getAllStopwatchStates();
-            stopWatchState = stopWatchStates(stopWatchStates.stopwatch == obj.stopwatch);
-            
-            value = stopWatchState.value;
+
+            value = lvd_TwoBodyImpactPointTasks(stateLogEntry, 'timeToImpact');
                        
             if(obj.lb == obj.ub)
                 c = [];
@@ -79,7 +76,7 @@ classdef StopwatchValueConstraint < AbstractConstraint
         end
         
         function tf = usesStopwatch(obj, stopwatch)
-            tf = obj.stopwatch == stopwatch;
+            tf = false;
         end
         
         function tf = usesExtremum(obj, extremum)
@@ -95,7 +92,7 @@ classdef StopwatchValueConstraint < AbstractConstraint
         end
         
         function type = getConstraintType(obj)
-            type = 'Stopwatch Value';
+            type = 'Two-Body Time To Impact';
         end
         
         function name = getName(obj)
@@ -112,33 +109,13 @@ classdef StopwatchValueConstraint < AbstractConstraint
         end
         
         function addConstraintTf = openEditConstraintUI(obj, lvdData)
-            [listBoxStr, stopwatches] = lvdData.launchVehicle.getStopwatchesListBoxStr();
-
-            if(isempty(stopwatches))
-                addConstraintTf = false;
-                
-                warndlg('Cannot create stopwatch value constraint: no stopwatches have been created.  Create a stopwatch first.','Stopwatch Value Constraint','modal');
-            else
-                [Selection,ok] = listdlg('PromptString',{'Select the stopwatch','to constraint:'},...
-                                'SelectionMode','single',...
-                                'Name','Stopwatch',...
-                                'ListString',listBoxStr);
-                            
-                if(ok == 0)
-                    addConstraintTf = false;
-                else
-                    sw = stopwatches(Selection);
-                    obj.stopwatch = sw;
-                    
-                    addConstraintTf = lvd_EditGenericMAConstraintGUI(obj, lvdData);
-                end
-            end
+            addConstraintTf = lvd_EditGenericMAConstraintGUI(obj, lvdData);
         end
     end
     
     methods(Static)
         function constraint = getDefaultConstraint(~)            
-            constraint = StopwatchValueConstraint(LaunchVehicleEvent.empty(1,0),0,0);
+            constraint = TwoBodyImpactPointTime(LaunchVehicleEvent.empty(1,0),0,0);
         end
     end
 end

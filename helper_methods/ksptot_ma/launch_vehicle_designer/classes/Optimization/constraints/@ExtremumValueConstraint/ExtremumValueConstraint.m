@@ -104,8 +104,8 @@ classdef ExtremumValueConstraint < AbstractConstraint
         
         function [unit, lbLim, ubLim, usesLbUb, usesCelBody, usesRefSc] = getConstraintStaticDetails(obj)
             unit = obj.extremum.unitStr;
-            lbLim = 0;
-            ubLim = 100;
+            lbLim = -Inf;
+            ubLim = Inf;
             usesLbUb = true;
             usesCelBody = false;
             usesRefSc = false;

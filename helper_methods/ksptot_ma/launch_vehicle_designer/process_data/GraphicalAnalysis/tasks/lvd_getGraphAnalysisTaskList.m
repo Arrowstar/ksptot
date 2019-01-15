@@ -12,6 +12,9 @@ function [taskList] = lvd_getGraphAnalysisTaskList(lvdData, excludeList)
     taskList{end+1} = 'Throttle';
     taskList{end+1} = 'Thrust to Weight Ratio';
     taskList{end+1} = 'Total Thrust';
+    taskList{end+1} = 'Two-Body Time To Impact';
+    taskList{end+1} = 'Two-Body Impact Latitude';
+    taskList{end+1} = 'Two-Body Impact Longitude';
     
     [tanksGAStr, ~] = lvdData.launchVehicle.getTanksGraphAnalysisTaskStrs();
     taskList = horzcat(taskList, tanksGAStr);

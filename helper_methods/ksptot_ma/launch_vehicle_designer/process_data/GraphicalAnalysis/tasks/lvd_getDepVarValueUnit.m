@@ -55,6 +55,16 @@ function [depVarValue, depVarUnit, taskStr, refBodyInfo] = lvd_getDepVarValueUni
         case 'Total Thrust'
             depVarValue = lvd_ThrottleTask(subLog(i), 'totalthrust');
             depVarUnit = 'kN';
+        case 'Two-Body Time To Impact'
+            depVarValue = lvd_TwoBodyImpactPointTasks(subLog(i), 'timeToImpact');
+            depVarUnit = 'sec';
+        case 'Two-Body Impact Latitude'
+            depVarValue = lvd_TwoBodyImpactPointTasks(subLog(i), 'latitude');
+            depVarUnit = 'degN';
+        case 'Two-Body Impact Longitude'
+            depVarValue = lvd_TwoBodyImpactPointTasks(subLog(i), 'longitude');
+            depVarUnit = 'degE';
+            
         otherwise %is a programmatically generated string that we'll handle here
             tankMassPattern = 'Tank (\d+?) Mass - ".*"';
             stageDryMassPattern = 'Stage (\d+?) Dry Mass - ".*"';
