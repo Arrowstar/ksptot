@@ -3,12 +3,13 @@ classdef LaunchVehicleStageState < matlab.mixin.SetGet & matlab.mixin.Copyable
     %   Detailed explanation goes here
     
     properties
-        stage(1,:) LaunchVehicleStage
+        %validators commented out to improve performance
+        stage = LaunchVehicleStage.empty(1,0)%(1,:) LaunchVehicleStage
         
-        active(1,1) logical = true;
+        active = true%(1,1) logical = true;
         
-        engineStates(1,:) LaunchVehicleEngineState
-        tankStates(1,:) LaunchVehicleTankState
+        engineStates = LaunchVehicleEngineState.empty(1,0)%(1,:) LaunchVehicleEngineState
+        tankStates = LaunchVehicleTankState.empty(1,0);%(1,:) LaunchVehicleTankState
     end
 
     methods
@@ -91,8 +92,6 @@ classdef LaunchVehicleStageState < matlab.mixin.SetGet & matlab.mixin.Copyable
         
         function newStageState = deepCopy(obj)
             newStageState = obj.copy();
-%             newStageState.active = obj.active; %don't think I need to
-%             copy this beacuse it's a logical and should just come with it
             
             newEngineStates = obj.engineStates.copy();
             [newEngineStates.stageState] = deal(newStageState);

@@ -3,26 +3,28 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
     %   Detailed explanation goes here
     
     properties
-        time(1,1) double = 0;
-        position(3,1) double = [0;0;0];
-        velocity(3,1) double = [0;0;0];
-        centralBody(1,1) KSPTOT_BodyInfo
-        lvState(1,:) LaunchVehicleState
-        stageStates(1,:) LaunchVehicleStageState
-        event(1,:) LaunchVehicleEvent
-        aero(1,1) LaunchVehicleAeroState
+        %validators commented out to improve performance
         
-        stopwatchStates(1,:) LaunchVehicleStopwatchState
-        extremaStates(1,:) LaunchVehicleExtremaState
+        time double = 0;
+        position double = [0;0;0];
+        velocity double = [0;0;0];
+        centralBody KSPTOT_BodyInfo
+        lvState LaunchVehicleState
+        stageStates = LaunchVehicleStageState.empty(1,0); %LaunchVehicleStageState 
+        event LaunchVehicleEvent
+        aero LaunchVehicleAeroState
         
-        steeringModel(1,1) AbstractSteeringModel = RollPitchYawPolySteeringModel.getDefaultSteeringModel();
-        throttleModel(1,1) AbstractThrottleModel = ThrottlePolyModel.getDefaultThrottleModel();
+        stopwatchStates LaunchVehicleStopwatchState
+        extremaStates LaunchVehicleExtremaState
+        
+        steeringModel AbstractSteeringModel = RollPitchYawPolySteeringModel.getDefaultSteeringModel();
+        throttleModel AbstractThrottleModel = ThrottlePolyModel.getDefaultThrottleModel();
     end
     
     properties(Dependent)
-        altitude(1,1) double
-        attitude(1,1) LaunchVehicleAttitudeState
-        throttle(1,1) double
+        altitude double
+        attitude LaunchVehicleAttitudeState
+        throttle double
         celBodyData struct
         launchVehicle LaunchVehicle
     end
