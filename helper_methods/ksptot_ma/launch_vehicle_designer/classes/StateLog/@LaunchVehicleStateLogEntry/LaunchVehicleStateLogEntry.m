@@ -203,13 +203,9 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                 newStateLogEntry.stageStates(i) = obj.stageStates(i).deepCopy();
             end
             
-            for(i=1:length(obj.stopwatchStates))
-                newStateLogEntry.stopwatchStates(i) = obj.stopwatchStates(i).deepCopy();
-            end
+            newStateLogEntry.stopwatchStates = obj.stopwatchStates.copy();
             
-            for(i=1:length(obj.extremaStates))
-                newStateLogEntry.extremaStates(i) = obj.extremaStates(i).deepCopy();
-            end
+            newStateLogEntry.extremaStates = obj.extremaStates.copy();
             
             newStateLogEntry.aero = obj.aero.deepCopy();
         end
@@ -221,13 +217,9 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                 obj.stageStates(i) = obj.stageStates(i).deepCopy();
             end
             
-            for(i=1:length(obj.stopwatchStates))
-                obj.stopwatchStates(i) = obj.stopwatchStates(i).deepCopy();
-            end
+            obj.stopwatchStates = obj.stopwatchStates.copy();
             
-            for(i=1:length(obj.extremaStates))
-                obj.extremaStates(i) = obj.extremaStates(i).deepCopy();
-            end
+            obj.extremaStates = obj.extremaStates.copy();
             
             obj.aero = obj.aero.copy();
         end
@@ -317,13 +309,15 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                                     for(k=1:length(tanks))
                                         if(not(isempty(tankStates)))
                                             tank = tanks(k);
-                                            tankState = tankStates([tankStates.tank] == tank);
-                                            tankMass = tankStatesMasses([tankStates.tank] == tank);
-
+                                            tankBool = [tankStates.tank] == tank;
+                                            tankState = tankStates(tankBool);
+                                            
                                             if(not(isempty(tankState)))
                                                 tankStageState = tankState.stageState;
 
                                                 if(tankStageState.active)
+                                                    tankMass = tankStatesMasses(tankBool);
+                                                    
                                                     totalConnTankCapacity = totalConnTankCapacity + tank.initialMass;
                                                     totalConnTankMass = totalConnTankMass + tankMass;
                                                     

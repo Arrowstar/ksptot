@@ -719,13 +719,13 @@ function getOrbitFromSFSFileContextMenu_Callback(hObject, eventdata, handles)
         bodyInfo = getBodyInfoByNumber(refBodyID, celBodyData);
         value = findValueFromComboBox(bodyInfo.name, handles.centralBodyCombo);
         set(handles.centralBodyCombo,'Value',value);
-        
-        updateSCButton_Callback([], [], handles);
     end
     
     if(~isempty(scName))
         set(handles.scNameText,'String',scName);
     end
+    
+    updateSCButton_Callback([], [], handles);
 
 % --------------------------------------------------------------------
 function getOrbitFromKSPTOTConnectContextMenu_Callback(hObject, eventdata, handles)
@@ -741,13 +741,13 @@ function getOrbitFromKSPTOTConnectContextMenu_Callback(hObject, eventdata, handl
         bodyInfo = getBodyInfoByNumber(refBodyID, celBodyData);
         value = findValueFromComboBox(bodyInfo.name, handles.centralBodyCombo);
         set(handles.centralBodyCombo,'Value',value);
-        
-        updateSCButton_Callback([], [], handles);
     end
     
     if(~isempty(scName))
         set(handles.scNameText,'String',scName);
     end
+    
+    updateSCButton_Callback([], [], handles);
 
 % --- Executes on selection change in otherSCColor.
 function otherSCColor_Callback(hObject, eventdata, handles)
@@ -849,13 +849,13 @@ function getOrbitFromKSPActiveVesselMenu_Callback(hObject, eventdata, handles)
         bodyInfo = getBodyInfoByNumber(refBodyID, celBodyData);
         value = findValueFromComboBox(bodyInfo.name, handles.centralBodyCombo);
         set(handles.centralBodyCombo,'Value',value);
-        
-        updateSCButton_Callback([], [], handles);
     end
     
     if(~isempty(scName))
         set(handles.scNameText,'String',scName);
     end
+    
+    updateSCButton_Callback([], [], handles);
 
 
 

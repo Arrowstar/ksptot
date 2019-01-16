@@ -6,26 +6,17 @@ classdef LaunchVehicleExtremaState < matlab.mixin.SetGet & matlab.mixin.Copyable
         extrema LaunchVehicleExtrema
         value(1,1) double = NaN;
         active(1,1) LaunchVehicleExtremaRecordingEnum = LaunchVehicleExtremaRecordingEnum.Recording;
-        
-        id(1,1) double = 0;
     end
     
     methods
         function obj = LaunchVehicleExtremaState(extrema)
             obj.extrema = extrema;
-            
-            obj.id = rand();
         end
         
         function val = getValue(obj)
             val = obj.value;
         end
-        
-        function newState = deepCopy(obj)
-            newState = obj.copy();
-            newState.id = rand();
-        end
-        
+                
         function [newValue] = updateExtremaStateWithStateLogEntry(obj, stateLogEntry, prevValue)    
             if(obj.active == LaunchVehicleExtremaRecordingEnum.Recording) %if it's not recording, then we can just return the exState as it is b/c it won't change                
                 i = 1;
@@ -70,6 +61,12 @@ classdef LaunchVehicleExtremaState < matlab.mixin.SetGet & matlab.mixin.Copyable
             else
                 newValue = obj.value;
             end
+        end
+    end
+    
+    methods(Access=protected)
+        function copyObj = copyElement(obj)
+            copyObj = copyElement@matlab.mixin.Copyable(obj);
         end
     end
 end

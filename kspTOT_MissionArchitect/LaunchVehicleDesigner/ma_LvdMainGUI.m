@@ -167,7 +167,7 @@ function scriptListbox_Callback(hObject, eventdata, handles)
         event = lvdData.script.getEventForInd(eventNum);
         lvd_editEventGUI(event);   
 
-        runScript(handles, lvdData, event.getEventNum());
+        runScript(handles, lvdData, 1);
         lvd_processData(handles);
     end
 
