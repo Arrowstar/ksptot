@@ -14,7 +14,8 @@ classdef FirstOrderODE < AbstractODE
     
     methods(Static)
         function odeFH = getOdeFunctionHandle(simDriver, eventInitStateLogEntry, dryMass, forceModels)
-            odeFH = @(t,y) FirstOrderODE.odefun(t,y, simDriver, eventInitStateLogEntry, dryMass, forceModels);
+            tankStates = eventInitStateLogEntry.getAllActiveTankStates();
+            odeFH = @(t,y) FirstOrderODE.odefun(t,y, simDriver, eventInitStateLogEntry, tankStates, dryMass, forceModels);
         end
         
         function odeEventsFH = getOdeEventsFunctionHandle(simDriver, eventInitStateLogEntry, eventTermCondFuncHandle, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses)
@@ -27,7 +28,7 @@ classdef FirstOrderODE < AbstractODE
     end
     
     methods(Static, Access=private)
-        dydt = odefun(t,y, obj, eventInitStateLogEntry, dryMass, forceModels);
+        dydt = odefun(t,y, obj, eventInitStateLogEntry, tankStates, dryMass, forceModels);
         
         [value,isterminal,direction, causes] = odeEvents(t,y, obj, eventInitStateLogEntry, evtTermCond, maxSimTime, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses);
         

@@ -1,4 +1,4 @@
-function ypp = odefun(~,y, ~, eventInitStateLogEntry, totalMass, gravForceModel)
+function ypp = odefun(~,y, ~, eventInitStateLogEntry, ~, totalMass, gravForceModel)
     bodyInfo = eventInitStateLogEntry.centralBody;
     
     rVect = reshape(y,[3,1]);

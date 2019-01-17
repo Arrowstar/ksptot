@@ -17,7 +17,7 @@ classdef SecondOrderODE < AbstractODE
             totalMass = eventInitStateLogEntry.getTotalVehicleMass();
             gravityForceModel = GravityForceModel();
             
-            odeFH = @(t,y) SecondOrderODE.odefun(t,y, simDriver, eventInitStateLogEntry, totalMass, gravityForceModel);
+            odeFH = @(t,y) SecondOrderODE.odefun(t,y, simDriver, eventInitStateLogEntry, [], totalMass, gravityForceModel);
         end
         
         function odeEventsFH = getOdeEventsFunctionHandle(simDriver, eventInitStateLogEntry, eventTermCondFuncHandle, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses)
@@ -32,7 +32,7 @@ classdef SecondOrderODE < AbstractODE
     end
     
     methods(Static, Access=private)
-        ypp = odefun(t,y, obj, eventInitStateLogEntry, dryMass, forceModels);
+        ypp = odefun(t,y, obj, eventInitStateLogEntry, tankStates, dryMass, forceModels);
         
         [value,isterminal,direction, causes] = odeEvents(t,y,yp, obj, eventInitStateLogEntry, evtTermCond, maxSimTime, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses,numTankStatesToAppend);
         

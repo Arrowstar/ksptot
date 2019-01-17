@@ -1,7 +1,7 @@
-function dydt = odefun(t,y, simDriver, eventInitStateLogEntry, dryMass, fmEnums)
+function dydt = odefun(t,y, simDriver, eventInitStateLogEntry, tankStates, dryMass, fmEnums)
     bodyInfo = eventInitStateLogEntry.centralBody;
     [ut, rVect, vVect, tankStatesMasses] = AbstractODE.decomposeIntegratorTandY(t,y);
-    tankStates = eventInitStateLogEntry.getAllActiveTankStates();
+%     tankStates = eventInitStateLogEntry.getAllActiveTankStates();
     stageStates = eventInitStateLogEntry.stageStates;
     lvState = eventInitStateLogEntry.lvState;
 
