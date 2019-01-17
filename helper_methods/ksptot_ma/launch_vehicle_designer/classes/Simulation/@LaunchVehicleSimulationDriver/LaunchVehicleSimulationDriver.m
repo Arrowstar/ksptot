@@ -47,7 +47,7 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
             value = obj.lvdData.celBodyData;
         end
         
-        function [newStateLogEntries] = integrateOneEvent(obj, event, eventInitStateLogEntry, integratorFH, tStartPropTime, tStartSimTime, isSparseOutput, checkForSoITrans, activeNonSeqEvts, forceModels)
+        function [newStateLogEntries] = integrateOneEvent(obj, event, eventInitStateLogEntry, integrator, tStartPropTime, tStartSimTime, isSparseOutput, checkForSoITrans, activeNonSeqEvts, forceModels)
             [t0,y0, tankStateInds] = eventInitStateLogEntry.getIntegratorStateRepresentation();
             
             %set max integration time
@@ -80,9 +80,9 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
             %Set up integrator functions
             dryMass = eventInitStateLogEntry.getTotalVehicleDryMass();
             
-            odefun = @(t,y) LaunchVehicleSimulationDriver.odefun(t,y, obj, eventInitStateLogEntry, dryMass, forceModels);
-            odeEventsFun = @(t,y) LaunchVehicleSimulationDriver.odeEvents(t,y, obj, eventInitStateLogEntry, event.termCond.getEventTermCondFuncHandle(), maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses);
-            odeOutputFun = @(t,y,flag) LaunchVehicleSimulationDriver.odeOutput(t,y,flag, tStartPropTime, obj.maxPropTime);
+            odefun = integrator.getOdeFunctionHandle(obj, eventInitStateLogEntry, dryMass, forceModels);
+            odeEventsFun = integrator.getOdeEventsFunctionHandle(obj, eventInitStateLogEntry, event.termCond.getEventTermCondFuncHandle(), maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses);
+            odeOutputFun = integrator.getOdeOutputFunctionHandle(tStartPropTime, obj.maxPropTime);
             options = odeset('RelTol',obj.relTol, 'AbsTol',obj.absTol,   'Events',odeEventsFun, 'NormControl','on', 'OutputFcn',odeOutputFun, 'InitialStep', 10, 'Refine', 1);
             options.EventsFcn = odeEventsFun;
             
@@ -108,6 +108,7 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
                 end
             end
             
+            integratorFH = integrator.functionHandle;
             [t,y,~,~,ie] = integratorFH(odefun,tspan,y0,options); %obj.integrator
             
             if(isSparseOutput)
@@ -133,26 +134,11 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
                         activeNonSeqEvts(j).initEvent(newFinalStateLogEntry);
                     end
                     
-                    [newStateLogEntriesRestart] = obj.integrateOneEvent(event, newFinalStateLogEntry, integratorFH, tStartPropTime, tStartSimTime, isSparseOutput, checkForSoITrans, activeNonSeqEvts, forceModels);
+                    [newStateLogEntriesRestart] = obj.integrateOneEvent(event, newFinalStateLogEntry, integrator, tStartPropTime, tStartSimTime, isSparseOutput, checkForSoITrans, activeNonSeqEvts, forceModels);
                     
                     newStateLogEntries = horzcat(newStateLogEntries,newStateLogEntriesRestart);
                 end
             end
         end
-    end
-   
-    methods(Static, Access=private)
-        function [ut, rVect, vVect, tankStates] = decomposeIntegratorTandY(t,y)
-            ut = t;
-            rVect = y(1:3);
-            vVect = y(4:6);
-            tankStates = y(7:end);
-        end
-        
-        dydt = odefun(t,y, obj, eventInitStateLogEntry, dryMass, forceModels);
-             
-        [value,isterminal,direction, causes] = odeEvents(t,y, obj, eventInitStateLogEntry, evtTermCond, maxSimTime, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses);
-        
-        status = odeOutput(t,y,flag, intStartTime, maxIntegrationDuration)
     end
 end

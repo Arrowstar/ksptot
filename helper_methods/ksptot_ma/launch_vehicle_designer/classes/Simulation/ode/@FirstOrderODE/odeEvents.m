@@ -7,7 +7,7 @@ function [value,isterminal,direction, causes] = odeEvents(t,y, obj, eventInitSta
         y = y';
     end
 
-    [ut, rVect, ~, ~] = LaunchVehicleSimulationDriver.decomposeIntegratorTandY(t,y);
+    [ut, rVect, ~, ~] = AbstractODE.decomposeIntegratorTandY(t,y);
     bodyInfo = eventInitStateLogEntry.centralBody;
 
     %Max Sim Time Constraint

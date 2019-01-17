@@ -101,7 +101,10 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
         end
         
         function newStateLogEntries = executeEvent(obj, initStateLogEntry, simDriver, tStartPropTime, tStartSimTime, isSparseOutput, activeNonSeqEvts)
-            [newStateLogEntries] = simDriver.integrateOneEvent(obj, initStateLogEntry, obj.integrator.functionHandle, tStartPropTime, tStartSimTime, isSparseOutput, obj.checkForSoITrans, activeNonSeqEvts, obj.forceModels);
+            if(isempty(obj.integrator))
+                obj.integrator = IntegratorEnum.ODE45;
+            end
+            [newStateLogEntries] = simDriver.integrateOneEvent(obj, initStateLogEntry, obj.integrator, tStartPropTime, tStartSimTime, isSparseOutput, obj.checkForSoITrans, activeNonSeqEvts, obj.forceModels);
         end
         
         function tf = usesStage(obj, stage)
