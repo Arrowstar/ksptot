@@ -302,7 +302,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                         
                         if(engineState.active)
                             engine = engineState.engine;
-                            adjustedThrottle = engine.adjustThrottleForMinMaxFuelRemaining(throttle, []);
+                            adjustedThrottle = engine.adjustThrottle(throttle, []);
                             if(adjustedThrottle > 0)
                                 [baseThrust, baseMdot] = engine.getThrustFlowRateForPressure(presskPa); %total mass flow through engine
                                 mdot = adjustedThrottle * baseMdot;
@@ -345,7 +345,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                                     %rerun the calculations for thrust and
                                     %flow rate, this time incorporating the
                                     %fuel remaining in all connected tanks
-                                    adjustedThrottle = engine.adjustThrottleForMinMaxFuelRemaining(throttle, fuelRemainPct);
+                                    adjustedThrottle = engine.adjustThrottle(throttle, fuelRemainPct);
 %                                     [thrust, mdot] = engine.getThrustFlowRateForPressure(presskPa); %total mass flow through engine
                                     mdot = adjustedThrottle * baseMdot;
                                     totalThrust = totalThrust + adjustedThrottle*baseThrust;

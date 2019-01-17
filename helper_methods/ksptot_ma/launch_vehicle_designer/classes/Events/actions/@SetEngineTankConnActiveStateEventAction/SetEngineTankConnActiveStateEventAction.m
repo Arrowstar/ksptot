@@ -23,6 +23,7 @@ classdef SetEngineTankConnActiveStateEventAction < AbstractEventAction
             connState = lvState.e2TConns([lvState.e2TConns.conn] == obj.conn);
             
             connState.active = obj.activeStateToSet;
+            lvState.clearCachedConnEnginesTanks();
         end
         
         function initAction(obj, initialStateLogEntry)

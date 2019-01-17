@@ -103,7 +103,7 @@ classdef LaunchVehicleEngine < matlab.mixin.SetGet
             mdot = -(thrust/(getG0() * isp)); %kN/(m/s/s * s) = kN/(m/s) = (1/1000) N / (m/s) = (1/1000) kg*m/s/s /(m/s) = (1/1000) kg/s = mT/s
         end
         
-        function newThrottle = adjustThrottleForMinMaxFuelRemaining(obj, inputThrottle, fuelRemainingPct)
+        function newThrottle = adjustThrottle(obj, inputThrottle, fuelRemainingPct)
             if(inputThrottle < obj.minThrottle)
                 newThrottle = obj.minThrottle;
             elseif(inputThrottle > obj.maxThrottle)
