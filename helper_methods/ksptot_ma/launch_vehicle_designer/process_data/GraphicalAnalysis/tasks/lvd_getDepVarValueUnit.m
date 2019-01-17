@@ -27,7 +27,7 @@ function [depVarValue, depVarUnit, taskStr, refBodyInfo] = lvd_getDepVarValueUni
         return;
     end
     
-    switch taskStr
+	switch taskStr
         case 'Yaw Angle'
             depVarValue = lvd_SteeringAngleTask(subLog(i), 'yaw');
             depVarUnit = 'deg';
@@ -67,6 +67,7 @@ function [depVarValue, depVarUnit, taskStr, refBodyInfo] = lvd_getDepVarValueUni
             
         otherwise %is a programmatically generated string that we'll handle here
             tankMassPattern = 'Tank (\d+?) Mass - ".*"';
+            tankMassDotPattern = 'Tank (\d+?) Mass Flow Rate - ".*"';
             stageDryMassPattern = 'Stage (\d+?) Dry Mass - ".*"';
             stageActivePattern = 'Stage (\d+?) Active State - ".*"';
             engineActivePattern = 'Engine (\d+?) Active State - ".*"';
@@ -84,6 +85,18 @@ function [depVarValue, depVarUnit, taskStr, refBodyInfo] = lvd_getDepVarValueUni
                 
                 depVarValue = lvd_TankMassTasks(subLog(i), 'tankMass', tank);
                 depVarUnit = 'mT';
+                
+            elseif(not(isempty(regexpi(taskStr, tankMassDotPattern))))
+                tokens = regexpi(taskStr, tankMassDotPattern, 'tokens');
+                tokens = tokens{1};
+                tokens = tokens{1};
+                tankInd = str2double(tokens);
+                
+                [~,tanks] = subLog(i).launchVehicle.getTanksGraphAnalysisTaskStrs();
+                tank = tanks(tankInd);
+                
+                depVarValue = lvd_TankMassTasks(subLog(i), 'tankMDot', tank);
+                depVarUnit = 'mT/s';
                 
             elseif(not(isempty(regexpi(taskStr, stageDryMassPattern))))
                 tokens = regexpi(taskStr, stageDryMassPattern, 'tokens');

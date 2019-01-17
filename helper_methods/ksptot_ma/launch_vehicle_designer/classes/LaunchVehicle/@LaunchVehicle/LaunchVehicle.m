@@ -152,11 +152,17 @@ classdef LaunchVehicle < matlab.mixin.SetGet
         function [tanksGAStr, tanks] = getTanksGraphAnalysisTaskStrs(obj)
             [~, tanks] = obj.getTanksListBoxStr();
             
-            tanksGAStr = cell(size(tanks));
+            tanksGAStr = cell(1,2*length(tanks));
             A = length(tanks);
             formSpec = sprintf('%%0%uu',floor(log10(abs(A)+1)) + 1);
             for(i=1:length(tanks))
                 tanksGAStr{i} = sprintf(sprintf('Tank %s Mass - "%s"',formSpec, tanks(i).name), i);
+            end
+            
+            tI = 1;
+            for(i=length(tanks)+1:2*length(tanks))
+                tanksGAStr{i} = sprintf(sprintf('Tank %s Mass Flow Rate - "%s"',formSpec, tanks(tI).name), tI);
+                tI = tI + 1;
             end
         end
         
