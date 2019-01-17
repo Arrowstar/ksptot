@@ -20,11 +20,19 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
         disableOptim(1,1) logical = false;
     end
     
+    properties(Dependent)
+        lvdData LvdData
+    end
+    
     methods
         function obj = LaunchVehicleEvent(script)
             obj.script = script;
             obj.colorLineSpec = EventColorLineSpec();
             obj.integrator = IntegratorEnum.ODE45;
+        end
+        
+        function lvdData = get.lvdData(obj)
+            lvdData = obj.script.lvdData;
         end
         
         function addAction(obj, newAction)

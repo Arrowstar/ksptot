@@ -22,7 +22,7 @@ function varargout = lvd_editEventGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_editEventGUI
 
-% Last Modified by GUIDE v2.5 04-Jan-2019 09:15:56
+% Last Modified by GUIDE v2.5 17-Jan-2019 12:23:42
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -458,3 +458,87 @@ function editForceModelsButton_Callback(hObject, eventdata, handles)
         m = ForceModelsEnum.getEnumsOfDisablableForceModels();
         event.forceModels = [ForceModelsEnum.getAllForceModelsThatCannotBeDisabled(), m(Selection)'];
 	end
+
+
+% --------------------------------------------------------------------
+function determineFastestIntegratorMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to determineFastestIntegratorMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    event = getappdata(handles.lvd_editEventGUI,'event');
+    lvdData = event.lvdData;
+    script = lvdData.script;
+    
+    simDriver = script.simDriver;
+    tStartSimTime = 0;
+    isSparseOutput = false;
+    
+    initStateLogEntry = lvdData.stateLog.getFirstStateLogForEvent(event);
+    
+    activeNonSeqEvts = script.nonSeqEvts.getNonSeqEventsForScriptEvent(event);
+    for(j=1:length(activeNonSeqEvts))
+        activeNonSeqEvts(j).initEvent(initStateLogEntry);
+    end
+    
+    oldIntegrator = event.integrator;
+    
+    hWaitBar = waitbar(0, '');
+    
+    try
+        [m,~] = enumeration('IntegratorEnum');
+        results = cell(length(m),2);
+        for(i=1:length(m))
+            newIntegrator = m(i);
+            
+            waitbar(((i-1)/length(m)), hWaitBar, sprintf('Running event with integrator "%s"...',newIntegrator.nameStr));
+            
+            tStartPropTime = tic();
+            
+            event.integrator = newIntegrator;
+
+            tt = tic;
+            event.executeEvent(initStateLogEntry, simDriver, tStartPropTime, tStartSimTime, isSparseOutput, activeNonSeqEvts);
+            elapsedTime = toc(tt);
+
+            results(i,:) = {newIntegrator, elapsedTime};
+        end      
+    catch ME
+        event.integrator = oldIntegrator;
+        throw(ME);
+    end
+    
+    if(isvalid(hWaitBar))
+        close(hWaitBar);
+    end
+    
+    msg = {'Results of integrator speed test:', ''};
+    for(i=1:size(results,1))
+        integrator = results{i,1};
+        time = results{i,2};
+        
+        msg = horzcat(msg, sprintf('%s:     %.3f sec', integrator.nameStr, time)); %#ok<AGROW>
+    end
+    
+    [~,I] = min([results{:,2}]);
+    fastestIntegrator = m(I);
+    
+    msg = horzcat(msg,{'',sprintf('Apply fastest integrator (%s) for this event?',fastestIntegrator.nameStr)});
+    
+    button = questdlg(msg,'Speed Test Results','Yes','No','Yes');
+    
+    if(strcmpi(button,'Yes'))
+        event.integrator = fastestIntegrator;
+        
+        ind = IntegratorEnum.getIndOfListboxStr(event.integrator.nameStr);
+        handles.integratorCombo.Value = ind;
+        integratorCombo_Callback(handles.integratorCombo, [], handles);
+    else
+        event.integrator = oldIntegrator;
+    end
+
+% --------------------------------------------------------------------
+function integratorContextMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to integratorContextMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
