@@ -68,7 +68,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             launchVehicle = obj.lvState.lv;
         end
         
-        function [t,y, tankStateInds] = getIntegratorStateRepresentation(obj)
+        function [t,y, tankStateInds] = getFirstOrderIntegratorStateRepresentation(obj)
             t = obj.time;
             
             y = [];
@@ -84,6 +84,13 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                 
                 tankStateInd = tankStateInd + 1;
             end
+        end
+        
+        function [t,y,yp] = getSecondOrderIntegratorStateRepresentation(obj)
+            t = obj.time;
+            
+            y = obj.position;
+            yp = obj.velocity;
         end
         
         function stateLog = getMAFormattedStateLogMatrix(obj)

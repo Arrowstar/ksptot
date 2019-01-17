@@ -324,13 +324,10 @@ fprintf(1, 'Number of function evaluations: %d\n', ...
         % Initialize TE (event times), YE (event solutions) YPE (event
         % derivs) and IE (indices to corresponding event function). Check
         % user-provided event functions at the same time
-        input.previous_event_values = zeros(numel(opts.Events),1);
+        input.previous_event_values = [];
         for k = 1:numel(opts.Events)
             try
-                input.previous_event_values(k) = opts.Events{k}(...
-                    tspan(1),...
-                    y0,...
-                    yp0);
+                input.previous_event_values = horzcat(input.previous_event_values, opts.Events{k}(tspan(1), y0, yp0));
 
             catch ME
                 ME2 = MException([mfilename ':cannot_evaluate_eventFcn'],...
@@ -803,7 +800,8 @@ function varargout = rkn1210_sparse_output(input)
 
             % evaluate event-funtions
             if ~isempty(opts.Events)
-
+                eVI = 1;
+                
                 % Evaluate all functions
                 terminate = false;
                 for fk = 1:numel(opts.Events)
@@ -819,41 +817,45 @@ function varargout = rkn1210_sparse_output(input)
                          isterminal,...
                          zerodirection] = opts.Events{fk}(t, y, dy);
 
-                        % look for sign change
-                        if (input.previous_event_values(fk)*value < 0)
+                        for(vI=1:length(value))
+                            % look for sign change
+                            if (input.previous_event_values(eVI)*value(vI) < 0)
 
-                            % ZERODIRECTION:
-                            %  0: detect all zeros (default
-                            % +1: detect only INcreasing zeros
-                            % -1: detect only DEcreasing zeros
-                            if (zerodirection == 0) ||...
-                               (sign(value) == sign(zerodirection))
+                                % ZERODIRECTION:
+                                %  0: detect all zeros (default
+                                % +1: detect only INcreasing zeros
+                                % -1: detect only DEcreasing zeros
+                                if (zerodirection(vI) == 0) ||...
+                                   (sign(value(vI)) == sign(zerodirection(vI)))
 
-                                % terminate?
-                                terminate = terminate || isterminal;
+                                    % terminate?
+                                    terminate = terminate || isterminal(vI);
 
-                                % Detect the precise location of the zero
-                                % NOTE: try-catch is necessary to prevent things like
-                                % discontinuous event-functions from resulting in
-                                % unintelligible error messages
-                                if nargout ~= 0
-                                    try
-                                        output = detect_Event(...
-                                            input, output, fk, value);
+                                    % Detect the precise location of the zero
+                                    % NOTE: try-catch is necessary to prevent things like
+                                    % discontinuous event-functions from resulting in
+                                    % unintelligible error messages
+                                    if nargout ~= 0
+                                        try
+                                            output = detect_Event(...
+                                                input, output, fk, vI, eVI, value(vI));
 
-                                    catch ME
-                                        ME2 = MException([mfilename ':eventFcn_failure_zero'],...
-                                                         'Failed to locate a zero for event function #%1d.',...
-                                                         fk);
-                                        throw(addCause(ME2,ME));
+                                        catch ME
+                                            ME2 = MException([mfilename ':eventFcn_failure_zero'],...
+                                                             'Failed to locate a zero for event function #%1d.',...
+                                                             eVI);
+                                            throw(addCause(ME2,ME));
 
+                                        end
                                     end
                                 end
                             end
+                            
+                            eVI = eVI+1;
                         end
 
                         % save new value
-                        input.previous_event_values(fk) = value;
+                        input.previous_event_values = horzcat(input.previous_event_values, value);
 
                     catch ME
                         ME2 = MException([mfilename ':eventFcn_failure_integration'],...
@@ -956,7 +958,7 @@ end % rkn1210_sparse_output
 
 % Detect zero passages of event functions
 % using false-position method (derivative-free)
-function output = detect_Event(input, output,which_event, value)
+function output = detect_Event(input, output, fk, vI, which_event, value)
 
     % initialize
     y0  = output.yout (output.index-1,:);    side          = 0;
@@ -1010,7 +1012,8 @@ function output = detect_Event(input, output,which_event, value)
         dy0 = Zdyout(end,:).';
 
         % NOW evaluate event-function with these values
-        fval = input.options.Events{which_event}(tt, y0, dy0);
+        fval = input.options.Events{fk}(tt, y0, dy0);
+        fval = fval(vI);
 
         % keep track of number of stats
         output.info.fevals = output.info.fevals + Zoutput.fevals;

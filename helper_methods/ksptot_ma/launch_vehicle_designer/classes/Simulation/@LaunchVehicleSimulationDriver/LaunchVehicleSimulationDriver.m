@@ -48,7 +48,7 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
         end
         
         function [newStateLogEntries] = integrateOneEvent(obj, event, eventInitStateLogEntry, integrator, tStartPropTime, tStartSimTime, isSparseOutput, checkForSoITrans, activeNonSeqEvts, forceModels)
-            [t0,y0, tankStateInds] = eventInitStateLogEntry.getIntegratorStateRepresentation();
+            [t0,y0, ~] = eventInitStateLogEntry.getFirstOrderIntegratorStateRepresentation();
             
             %set max integration time
             maxT = tStartSimTime+obj.simMaxDur;
@@ -86,7 +86,7 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
             options = odeset('RelTol',obj.relTol, 'AbsTol',obj.absTol,   'Events',odeEventsFun, 'NormControl','on', 'OutputFcn',odeOutputFun, 'InitialStep', 10, 'Refine', 1);
             options.EventsFcn = odeEventsFun;
             
-            [value,isterminal,~,causes] = odeEventsFun(tspan(1), y0);
+            [value,isterminal,~,causes] = integrator.callEventsFcn(odeEventsFun, eventInitStateLogEntry);
             if(any(abs(value)<=1E-6))
                 if(any(isterminal(abs(value)<1E-6)) == 1)
                     ie = find(abs(value)<1E-6);
@@ -108,8 +108,7 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
                 end
             end
             
-            integratorFH = integrator.functionHandle;
-            [t,y,~,~,ie] = integratorFH(odefun,tspan,y0,options); %obj.integrator
+            [t,y,~,~,ie] = integrator.callIntegrator(odefun,tspan,options,eventInitStateLogEntry); %obj.integrator
             
             if(isSparseOutput)
                 t = [t(end)];
@@ -120,8 +119,7 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
             
             if(not(isempty(ie)))
                 finalStateLogEntry = newStateLogEntries(end);
-                [tF,yF, ~] = finalStateLogEntry.getIntegratorStateRepresentation();
-                [~,~,~,causes] = odeEventsFun(tF, yF);
+                [~,~,~,causes] = integrator.callEventsFcn(odeEventsFun, finalStateLogEntry);
 
                 cause = causes(ie(1));
                 
