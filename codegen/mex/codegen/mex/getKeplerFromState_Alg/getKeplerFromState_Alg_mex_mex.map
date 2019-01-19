@@ -1,0 +1,12 @@
+MEX {
+	global:
+		mexFunction;
+		mexfilerequiredapiversion;
+		emlrtMexFcnProperties;
+		getKeplerFromState_Alg;
+		getKeplerFromState_Alg_initialize;
+		getKeplerFromState_Alg_terminate;
+		getKeplerFromState_Alg_atexit;
+	local:
+		*;
+};

@@ -1,0 +1,55 @@
+<!-- saved from url=(0014)about:internet -->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>RTW Report - lambert_data.c</title>
+<script language="JavaScript" type="text/javascript" src="rtwreport_utils.js"></script>
+<script src="resources/eml_report_loadable_data.js"></script>
+</head>
+<body bgcolor="#eeeeee" onload="try {if (top) { if (top.rtwFileOnLoad) top.rtwFileOnLoad(window.document); else local_onload();}} catch(err) {};">
+<p>
+<table border="0" cellspacing="0" cellpadding="6" width="100%%" height="100%%"><tr><td width="100%%" valign="top" bgcolor="#ffffff">
+<h4>File: <a href="../lambert_data.c" target="rtwreport_document_frame" id="linkToText_plain">lambert_data.c</a></h4>
+<pre id="RTWcode">
+<a name="1"><font color="#888888 "><i>    1   </i></font></a><font color="#117755"><i>/*</i></font>
+<a name="2"><font color="#888888 "><i>    2   </i></font></a><font color="#117755"><I> * lambert_data.c</i></font>
+<a name="3"><font color="#888888 "><i>    3   </i></font></a><font color="#117755"><I> *</i></font>
+<a name="4"><font color="#888888 "><i>    4   </i></font></a><font color="#117755"><I> * Code generation for function 'lambert_data'</i></font>
+<a name="5"><font color="#888888 "><i>    5   </i></font></a><font color="#117755"><I> *</i></font>
+<a name="6"><font color="#888888 "><i>    6   </i></font></a><font color="#117755"><I> */</i></font>
+<a name="7"><font color="#888888 "><i>    7   </i></font></a>
+<a name="8"><font color="#888888 "><i>    8   </i></font></a><font color="#117755"><i>/* Include files */</i></font>
+<a name="9"><font color="#888888 "><i>    9   </i></font></a><font color="#992211">#</font><font color="#992211"><b>include</b></font> <font color="#992211">&quot;rt_nonfinite.h&quot;</font>
+<a name="10"><font color="#888888 "><i>   10   </i></font></a><font color="#992211">#</font><font color="#992211"><b>include</b></font> <font color="#992211">&quot;lambert.h&quot;</font>
+<a name="11"><font color="#888888 "><i>   11   </i></font></a><font color="#992211">#</font><font color="#992211"><b>include</b></font> <font color="#992211">&quot;lambert_data.h&quot;</font>
+<a name="12"><font color="#888888 "><i>   12   </i></font></a>
+<a name="13"><font color="#888888 "><i>   13   </i></font></a><font color="#117755"><i>/* Variable Definitions */</i></font>
+<a name="14"><font color="#888888 "><i>   14   </i></font></a>emlrtCTX <a name="var_emlrtRootTLSGlobal">emlrtRootTLSGlobal</a> = NULL;
+<a name="15"><font color="#888888 "><i>   15   </i></font></a><font color="#112266"><b>const</b></font> <font color="#112266"><b>volatile</b></font> char_T *<a name="var_emlrtBreakCheckR2012bFlagVar">emlrtBreakCheckR2012bFlagVar</a> = NULL;
+<a name="16"><font color="#888888 "><i>   16   </i></font></a>emlrtContext <a name="var_emlrtContextGlobal">emlrtContextGlobal</a> = <b>{</b> true,<font color="#117755"><i>/* bFirstTime */</i></font>
+<a name="17"><font color="#888888 "><i>   17   </i></font></a>  false,                               <font color="#117755"><i>/* bInitialized */</i></font>
+<a name="18"><font color="#888888 "><i>   18   </i></font></a>  131451U,                             <font color="#117755"><i>/* fVersionInfo */</i></font>
+<a name="19"><font color="#888888 "><i>   19   </i></font></a>  NULL,                                <font color="#117755"><i>/* fErrorFunction */</i></font>
+<a name="20"><font color="#888888 "><i>   20   </i></font></a>  <font color="#1122ff">&quot;lambert&quot;</font>,                           <font color="#117755"><i>/* fFunctionName */</i></font>
+<a name="21"><font color="#888888 "><i>   21   </i></font></a>  NULL,                                <font color="#117755"><i>/* fRTCallStack */</i></font>
+<a name="22"><font color="#888888 "><i>   22   </i></font></a>  false,                               <font color="#117755"><i>/* bDebugMode */</i></font>
+<a name="23"><font color="#888888 "><i>   23   </i></font></a>  <b>{</b> 2045744189U, 2170104910U, 2743257031U, 4284093946U <b>}</b>,<font color="#117755"><i>/* fSigWrd */</i></font>
+<a name="24"><font color="#888888 "><i>   24   </i></font></a>  NULL                                 <font color="#117755"><i>/* fSigMem */</i></font>
+<a name="25"><font color="#888888 "><i>   25   </i></font></a><b>}</b>;
+<a name="26"><font color="#888888 "><i>   26   </i></font></a>
+<a name="27"><font color="#888888 "><i>   27   </i></font></a>emlrtRSInfo <a name="var_lb_emlrtRSI">lb_emlrtRSI</a> = <b>{</b> 12,        <font color="#117755"><i>/* lineNo */</i></font>
+<a name="28"><font color="#888888 "><i>   28   </i></font></a>  <font color="#1122ff">&quot;sqrt&quot;</font>,                              <font color="#117755"><i>/* fcnName */</i></font>
+<a name="29"><font color="#888888 "><i>   29   </i></font></a>  <font color="#1122ff">&quot;C:\\Program Files\\MATLAB\\R2017b\\toolbox\\eml\\lib\\matlab\\elfun\\sqrt.m&quot;</font><font color="#117755"><i>/* pathName */</i></font>
+<a name="30"><font color="#888888 "><i>   30   </i></font></a><b>}</b>;
+<a name="31"><font color="#888888 "><i>   31   </i></font></a>
+<a name="32"><font color="#888888 "><i>   32   </i></font></a>emlrtRSInfo <a name="var_yd_emlrtRSI">yd_emlrtRSI</a> = <b>{</b> 719,       <font color="#117755"><i>/* lineNo */</i></font>
+<a name="33"><font color="#888888 "><i>   33   </i></font></a>  <font color="#1122ff">&quot;lambert&quot;</font>,                           <font color="#117755"><i>/* fcnName */</i></font>
+<a name="34"><font color="#888888 "><i>   34   </i></font></a>  <font color="#1122ff">&quot;C:\\Users\\Adam\\Dropbox\\Documents\\homework\\Personal Projects\\KSP Trajectory Optimization Tool\\codegen\\mex\\lambert\\lambert.m&quot;</font><font color="#117755"><i>/* pathName */</i></font>
+<a name="35"><font color="#888888 "><i>   35   </i></font></a><b>}</b>;
+<a name="36"><font color="#888888 "><i>   36   </i></font></a>
+<a name="37"><font color="#888888 "><i>   37   </i></font></a><font color="#117755"><i>/* End of code generation (lambert_data.c) */</i></font>
+<a name="38"><font color="#888888 "><i>   38   </i></font></a></pre>
+</td></tr></table>
+</p>
+</body>
+</html>

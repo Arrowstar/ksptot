@@ -1,0 +1,822 @@
+<!-- saved from url=(0014)about:internet -->
+<html>
+<body>
+<script src="resources/eml_report_loadable_data.js"></script>
+<div class="dead">
+<pre class="code">
+<span class="srcline"><span class="lineno"><a href="1,1" id="srcline1">  1</a></span><span class="line"><span class="comment">% LAMBERT            Lambert-targeter for ballistic flights</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,2" id="srcline2">  2</a></span><span class="line"><span class="comment">%                    (Izzo, and Lancaster, Blanchard &amp; Gooding)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,3" id="srcline3">  3</a></span><span class="line"><span class="comment">%</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,4" id="srcline4">  4</a></span><span class="line"><span class="comment">% Usage:</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,5" id="srcline5">  5</a></span><span class="line"><span class="comment">%    [V1, V2, extremal_distances, exitflag] = lambert(r1, r2, tf, m, GM_central)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,6" id="srcline6">  6</a></span><span class="line"><span class="comment">%</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,7" id="srcline7">  7</a></span><span class="line"><span class="comment">% Dimensions:</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,8" id="srcline8">  8</a></span><span class="line"><span class="comment">%             r1, r2 -&gt;  [1x3]</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,9" id="srcline9">  9</a></span><span class="line"><span class="comment">%             V1, V2 -&gt;  [1x3]</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,10" id="srcline10"> 10</a></span><span class="line"><span class="comment">% extremal_distances -&gt;  [1x2]</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,11" id="srcline11"> 11</a></span><span class="line"><span class="comment">%              tf, m -&gt;  [1x1]</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,12" id="srcline12"> 12</a></span><span class="line"><span class="comment">%         GM_central -&gt;  [1x1]</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,13" id="srcline13"> 13</a></span><span class="line"><span class="comment">%</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,14" id="srcline14"> 14</a></span><span class="line"><span class="comment">% This function solves any Lambert problem *robustly*. It uses two separate</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,15" id="srcline15"> 15</a></span><span class="line"><span class="comment">% solvers; the first one tried is a new and unpublished algorithm developed</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,16" id="srcline16"> 16</a></span><span class="line"><span class="comment">% by Dr. D. Izzo from the European Space Agency [1]. This version is extremely</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,17" id="srcline17"> 17</a></span><span class="line"><span class="comment">% fast, but especially for larger [m] it still fails quite frequently. In such</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,18" id="srcline18"> 18</a></span><span class="line"><span class="comment">% cases, a MUCH more robust algorithm is started (the one by Lancaster &amp;</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,19" id="srcline19"> 19</a></span><span class="line"><span class="comment">% Blancard [2], with modifcations, initial values and other improvements by</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,20" id="srcline20"> 20</a></span><span class="line"><span class="comment">% R.Gooding [3]), which is a lot slower partly because of its robustness.</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,21" id="srcline21"> 21</a></span><span class="line"><span class="comment">%</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,22" id="srcline22"> 22</a></span><span class="line"><span class="comment">% INPUT ARGUMENTS:</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,23" id="srcline23"> 23</a></span><span class="line"><span class="comment">% ======================================================================</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,24" id="srcline24"> 24</a></span><span class="line"><span class="comment">%    name        units    description</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,25" id="srcline25"> 25</a></span><span class="line"><span class="comment">% ======================================================================</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,26" id="srcline26"> 26</a></span><span class="line"><span class="comment">%   r1, r1       [km]     position vectors of the two terminal points.</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,27" id="srcline27"> 27</a></span><span class="line"><span class="comment">%     tf        [days]    time of flight to solve for</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,28" id="srcline28"> 28</a></span><span class="line"><span class="comment">%      m          [-]     specifies the number of complete orbits to complete</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,29" id="srcline29"> 29</a></span><span class="line"><span class="comment">%                         (should be an integer)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,30" id="srcline30"> 30</a></span><span class="line"><span class="comment">% GM_central   [km3/s2]   std. grav. parameter (Gï¿½M = mu) of the central body</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,31" id="srcline31"> 31</a></span><span class="line"><span class="comment">%</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,32" id="srcline32"> 32</a></span><span class="line"><span class="comment">% OUTPUT ARGUMENTS:</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,33" id="srcline33"> 33</a></span><span class="line"><span class="comment">% ======================================================================</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,34" id="srcline34"> 34</a></span><span class="line"><span class="comment">%   name             units   description</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,35" id="srcline35"> 35</a></span><span class="line"><span class="comment">% ======================================================================</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,36" id="srcline36"> 36</a></span><span class="line"><span class="comment">%  V1, V2             [km/s]  terminal velocities at the end-points</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,37" id="srcline37"> 37</a></span><span class="line"><span class="comment">%  extremal_distances  [km]   minimum(1) and maximum(2) distance of the</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,38" id="srcline38"> 38</a></span><span class="line"><span class="comment">%                             spacecraft to the central body.</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,39" id="srcline39"> 39</a></span><span class="line"><span class="comment">%  exitflag             [-]   Integer containing information on why the</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,40" id="srcline40"> 40</a></span><span class="line"><span class="comment">%                             routine terminated. A value of +1 indicates</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,41" id="srcline41"> 41</a></span><span class="line"><span class="comment">%                             success; a normal exit. A value of -1</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,42" id="srcline42"> 42</a></span><span class="line"><span class="comment">%                             indicates that the given problem has no</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,43" id="srcline43"> 43</a></span><span class="line"><span class="comment">%                             solution and cannot be solved. A value of -2</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,44" id="srcline44"> 44</a></span><span class="line"><span class="comment">%                             indicates that both algorithms failed to find</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,45" id="srcline45"> 45</a></span><span class="line"><span class="comment">%                             a solution. This should never occur since</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,46" id="srcline46"> 46</a></span><span class="line"><span class="comment">%                             these problems are well-defined, and at the</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,47" id="srcline47"> 47</a></span><span class="line"><span class="comment">%                             very least it can be determined that the</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,48" id="srcline48"> 48</a></span><span class="line"><span class="comment">%                             problem has no solution. Nevertheless, it</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,49" id="srcline49"> 49</a></span><span class="line"><span class="comment">%                             still occurs sometimes for accidental</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,50" id="srcline50"> 50</a></span><span class="line"><span class="comment">%                             erroneous input, so it provides a basic</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,51" id="srcline51"> 51</a></span><span class="line"><span class="comment">%                             mechanism to check any application using this</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,52" id="srcline52"> 52</a></span><span class="line"><span class="comment">%                             algorithm.</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,53" id="srcline53"> 53</a></span><span class="line"><span class="comment">%</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,54" id="srcline54"> 54</a></span><span class="line"><span class="comment">% This routine can be compiled to increase its speed by a factor of about</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,55" id="srcline55"> 55</a></span><span class="line"><span class="comment">% 10-15, which is certainly advisable when the complete application requires</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,56" id="srcline56"> 56</a></span><span class="line"><span class="comment">% a great number of Lambert problems to be solved. The entire routine is</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,57" id="srcline57"> 57</a></span><span class="line"><span class="comment">% written in embedded MATLAB, so it can be compiled with the emlmex()</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,58" id="srcline58"> 58</a></span><span class="line"><span class="comment">% function (older MATLAB) or codegen() function (MATLAB 2011a and later).</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,59" id="srcline59"> 59</a></span><span class="line"><span class="comment">%</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,60" id="srcline60"> 60</a></span><span class="line"><span class="comment">% To do this using emlmex(), make sure MATLAB's current directory is equal</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,61" id="srcline61"> 61</a></span><span class="line"><span class="comment">% to where this file is located. Then, copy-paste and execute the following</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,62" id="srcline62"> 62</a></span><span class="line"><span class="comment">% commands to the command window:</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,63" id="srcline63"> 63</a></span><span class="line"><span class="comment">%</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,64" id="srcline64"> 64</a></span><span class="line"><span class="comment">%    example_input = {...</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,65" id="srcline65"> 65</a></span><span class="line"><span class="comment">%         [0.0, 0.0, 0.0], ...<span class="comment">% r1vec</span></span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,66" id="srcline66"> 66</a></span><span class="line"><span class="comment">%         [0.0, 0.0, 0.0], ...<span class="comment">% r2vec</span></span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,67" id="srcline67"> 67</a></span><span class="line"><span class="comment">%          0.0, ...<span class="comment">           % tf</span></span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,68" id="srcline68"> 68</a></span><span class="line"><span class="comment">%          0.0, ...<span class="comment">           % m</span></span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,69" id="srcline69"> 69</a></span><span class="line"><span class="comment">%          0.0};              % muC</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,70" id="srcline70"> 70</a></span><span class="line"><span class="comment">%    emlmex -eg example_input lambert.m</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,71" id="srcline71"> 71</a></span><span class="line"><span class="comment">%</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,72" id="srcline72"> 72</a></span><span class="line"><span class="comment">% This is of course assuming your compiler is configured correctly. See the</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,73" id="srcline73"> 73</a></span><span class="line"><span class="comment">% documentation of emlmex() on how to do that.</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,74" id="srcline74"> 74</a></span><span class="line"><span class="comment">%</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,75" id="srcline75"> 75</a></span><span class="line"><span class="comment">% Using codegen(), the syntax is as follows:</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,76" id="srcline76"> 76</a></span><span class="line"><span class="comment">%</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,77" id="srcline77"> 77</a></span><span class="line"><span class="comment">%    example_input = {...</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,78" id="srcline78"> 78</a></span><span class="line"><span class="comment">%         [0.0, 0.0, 0.0], ...<span class="comment">% r1vec</span></span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,79" id="srcline79"> 79</a></span><span class="line"><span class="comment">%         [0.0, 0.0, 0.0], ...<span class="comment">% r2vec</span></span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,80" id="srcline80"> 80</a></span><span class="line"><span class="comment">%          0.0, ...<span class="comment">           % tf</span></span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,81" id="srcline81"> 81</a></span><span class="line"><span class="comment">%          0.0, ...<span class="comment">           % m</span></span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,82" id="srcline82"> 82</a></span><span class="line"><span class="comment">%          0.0};              % muC</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,83" id="srcline83"> 83</a></span><span class="line"><span class="comment">%    codegen lambert.m -args example_input</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,84" id="srcline84"> 84</a></span><span class="line"><span class="comment">%</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,85" id="srcline85"> 85</a></span><span class="line"><span class="comment">% Note that in newer MATLAB versions, the code analyzer will complain about</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,86" id="srcline86"> 86</a></span><span class="line"><span class="comment">% the pragma "%#eml" after the main function's name, and possibly, issue</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,87" id="srcline87"> 87</a></span><span class="line"><span class="comment">% subsequent warnings related to this issue. To get rid of this problem, simply</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,88" id="srcline88"> 88</a></span><span class="line"><span class="comment">% replace the "%#eml" directive with "%#codegen".</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,89" id="srcline89"> 89</a></span><span class="line"><span class="comment">%</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,90" id="srcline90"> 90</a></span><span class="line"><span class="comment">%</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,91" id="srcline91"> 91</a></span><span class="line"><span class="comment">%</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,92" id="srcline92"> 92</a></span><span class="line"><span class="comment">% References:</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,93" id="srcline93"> 93</a></span><span class="line"><span class="comment">%</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,94" id="srcline94"> 94</a></span><span class="line"><span class="comment">% [1] Izzo, D. ESA Advanced Concepts team. Code used available in MGA.M, on</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,95" id="srcline95"> 95</a></span><span class="line"><span class="comment">%     http://www.esa.int/gsp/ACT/inf/op/globopt.htm. Last retreived Nov, 2009.</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,96" id="srcline96"> 96</a></span><span class="line"><span class="comment">% [2] Lancaster, E.R. and Blanchard, R.C. "A unified form of Lambert's theorem."</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,97" id="srcline97"> 97</a></span><span class="line"><span class="comment">%     NASA technical note TN D-5368,1969.</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,98" id="srcline98"> 98</a></span><span class="line"><span class="comment">% [3] Gooding, R.H. "A procedure for the solution of Lambert's orbital boundary-value</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,99" id="srcline99"> 99</a></span><span class="line"><span class="comment">%     problem. Celestial Mechanics and Dynamical Astronomy, 48:145ï¿½165,1990.</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,100" id="srcline100">100</a></span><span class="line"><span class="comment">%</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,101" id="srcline101">101</a></span><span class="line"><span class="comment">% See also lambert_low_ExpoSins.</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,102" id="srcline102">102</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,103" id="srcline103">103</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,104" id="srcline104">104</a></span><span class="line"><span class="comment">% Please report bugs and inquiries to:</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,105" id="srcline105">105</a></span><span class="line"><span class="comment">%</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,106" id="srcline106">106</a></span><span class="line"><span class="comment">% Name       : Rody P.S. Oldenhuis</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,107" id="srcline107">107</a></span><span class="line"><span class="comment">% E-mail     : oldenhuis@gmail.com</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,108" id="srcline108">108</a></span><span class="line"><span class="comment">% Licence    : 2-clause BSD (see License.txt)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,109" id="srcline109">109</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,110" id="srcline110">110</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,111" id="srcline111">111</a></span><span class="line"><span class="comment">% If you find this work useful, please consider a donation:</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,112" id="srcline112">112</a></span><span class="line"><span class="comment">% https://www.paypal.me/RodyO/3.5</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,113" id="srcline113">113</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,114" id="srcline114">114</a></span><span class="line"><span class="comment">% If you want to cite this work in an academic paper, please use</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,115" id="srcline115">115</a></span><span class="line"><span class="comment">% the following template:</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,116" id="srcline116">116</a></span><span class="line"><span class="comment">%</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,117" id="srcline117">117</a></span><span class="line"><span class="comment">% Rody Oldenhuis, orcid.org/0000-0002-3162-3660. "Lambert" &lt;version&gt;,</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,118" id="srcline118">118</a></span><span class="line"><span class="comment">% &lt;date you last used it&gt;. MATLAB Robust solver for Lambert's</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,119" id="srcline119">119</a></span><span class="line"><span class="comment">% orbital-boundary value problem.</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,120" id="srcline120">120</a></span><span class="line"><span class="comment">% https://nl.mathworks.com/matlabcentral/fileexchange/26348</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,121" id="srcline121">121</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,122" id="srcline122">122</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,123" id="srcline123">123</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,124" id="srcline124">124</a></span><span class="line"><span class="comment">% -----------------------------------------------------------------</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,125" id="srcline125">125</a></span><span class="line"><span class="comment">% Izzo's version:</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,126" id="srcline126">126</a></span><span class="line"><span class="comment">% Very fast, but not very robust for more complicated cases</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,127" id="srcline127">127</a></span><span class="line"><span class="comment">% -----------------------------------------------------------------</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,128" id="srcline128">128</a></span><span class="line">function [V1,...</span></span>
+<span class="srcline"><span class="lineno"><a href="1,129" id="srcline129">129</a></span><span class="line">          V2, ...</span></span>
+<span class="srcline"><span class="lineno"><a href="1,130" id="srcline130">130</a></span><span class="line">          extremal_distances,...</span></span>
+<span class="srcline"><span class="lineno"><a href="1,131" id="srcline131">131</a></span><span class="line">          exitflag] = lambert(r1vec,...</span></span>
+<span class="srcline"><span class="lineno"><a href="1,132" id="srcline132">132</a></span><span class="line">                              r2vec,...</span></span>
+<span class="srcline"><span class="lineno"><a href="1,133" id="srcline133">133</a></span><span class="line">                              tf,...</span></span>
+<span class="srcline"><span class="lineno"><a href="1,134" id="srcline134">134</a></span><span class="line">                              m,...</span></span>
+<span class="srcline"><span class="lineno"><a href="1,135" id="srcline135">135</a></span><span class="line">                              muC) <span class="comment">%#coder</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,136" id="srcline136">136</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,137" id="srcline137">137</a></span><span class="line"><span class="comment">% original documentation:</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,138" id="srcline138">138</a></span><span class="line"><span class="comment"><span class="comment">%{</span></span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,139" id="srcline139">139</a></span><span class="line"><span class="comment"> This routine implements a new algorithm that solves Lambert's problem. The</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,140" id="srcline140">140</a></span><span class="line"><span class="comment"> algorithm has two major characteristics that makes it favorable to other</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,141" id="srcline141">141</a></span><span class="line"><span class="comment"> existing ones.</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,142" id="srcline142">142</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,143" id="srcline143">143</a></span><span class="line"><span class="comment"> 1) It describes the generic orbit solution of the boundary condition</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,144" id="srcline144">144</a></span><span class="line"><span class="comment"> problem through the variable X=log(1+cos(alpha/2)). By doing so the</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,145" id="srcline145">145</a></span><span class="line"><span class="comment"> graph of the time of flight become defined in the entire real axis and</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,146" id="srcline146">146</a></span><span class="line"><span class="comment"> resembles a straight line. Convergence is granted within few iterations</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,147" id="srcline147">147</a></span><span class="line"><span class="comment"> for all the possible geometries (except, of course, when the transfer</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,148" id="srcline148">148</a></span><span class="line"><span class="comment"> angle is zero). When multiple revolutions are considered the variable is</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,149" id="srcline149">149</a></span><span class="line"><span class="comment"> X=tan(cos(alpha/2)*pi/2).</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,150" id="srcline150">150</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,151" id="srcline151">151</a></span><span class="line"><span class="comment"> 2) Once the orbit has been determined in the plane, this routine</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,152" id="srcline152">152</a></span><span class="line"><span class="comment"> evaluates the velocity vectors at the two points in a way that is not</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,153" id="srcline153">153</a></span><span class="line"><span class="comment"> singular for the transfer angle approaching to pi (Lagrange coefficient</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,154" id="srcline154">154</a></span><span class="line"><span class="comment"> based methods are numerically not well suited for this purpose).</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,155" id="srcline155">155</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,156" id="srcline156">156</a></span><span class="line"><span class="comment"> As a result Lambert's problem is solved (with multiple revolutions</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,157" id="srcline157">157</a></span><span class="line"><span class="comment"> being accounted for) with the same computational effort for all</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,158" id="srcline158">158</a></span><span class="line"><span class="comment"> possible geometries. The case of near 180 transfers is also solved</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,159" id="srcline159">159</a></span><span class="line"><span class="comment"> efficiently.</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,160" id="srcline160">160</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,161" id="srcline161">161</a></span><span class="line"><span class="comment">  We note here that even when the transfer angle is exactly equal to pi</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,162" id="srcline162">162</a></span><span class="line"><span class="comment"> the algorithm does solve the problem in the plane (it finds X), but it</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,163" id="srcline163">163</a></span><span class="line"><span class="comment"> is not able to evaluate the plane in which the orbit lies. A solution</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,164" id="srcline164">164</a></span><span class="line"><span class="comment"> to this would be to provide the direction of the plane containing the</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,165" id="srcline165">165</a></span><span class="line"><span class="comment"> transfer orbit from outside. This has not been implemented in this</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,166" id="srcline166">166</a></span><span class="line"><span class="comment"> routine since such a direction would depend on which application the</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,167" id="srcline167">167</a></span><span class="line"><span class="comment"> transfer is going to be used in.</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,168" id="srcline168">168</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,169" id="srcline169">169</a></span><span class="line"><span class="comment"> please report bugs to dario.izzo@esa.int</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,170" id="srcline170">170</a></span><span class="line"><span class="comment"><span class="comment">%}</span></span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,171" id="srcline171">171</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,172" id="srcline172">172</a></span><span class="line"><span class="comment">% adjusted documentation:</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,173" id="srcline173">173</a></span><span class="line"><span class="comment"><span class="comment">%{</span></span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,174" id="srcline174">174</a></span><span class="line"><span class="comment"> By default, the short-way solution is computed. The long way solution</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,175" id="srcline175">175</a></span><span class="line"><span class="comment"> may be requested by giving a negative value to the corresponding</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,176" id="srcline176">176</a></span><span class="line"><span class="comment"> time-of-flight [tf].</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,177" id="srcline177">177</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,178" id="srcline178">178</a></span><span class="line"><span class="comment"> For problems with |m| &gt; 0, there are generally two solutions. By</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,179" id="srcline179">179</a></span><span class="line"><span class="comment"> default, the right branch solution will be returned. The left branch</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,180" id="srcline180">180</a></span><span class="line"><span class="comment"> may be requested by giving a negative value to the corresponding</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,181" id="srcline181">181</a></span><span class="line"><span class="comment"> number of complete revolutions [m].</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,182" id="srcline182">182</a></span><span class="line"><span class="comment"><span class="comment">%}</span></span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,183" id="srcline183">183</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,184" id="srcline184">184</a></span><span class="line"><span class="comment">% Authors</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,185" id="srcline185">185</a></span><span class="line"><span class="comment">% .-`-.-`-.-`-.-`-.-`-.-`-.-`-.-`-.-`-.-`-.-`-.-`-.-`-.-`-.-`-.</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,186" id="srcline186">186</a></span><span class="line"><span class="comment">% Name       : Dr. Dario Izzo</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,187" id="srcline187">187</a></span><span class="line"><span class="comment">% E-mail     : dario.izzo@esa.int</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,188" id="srcline188">188</a></span><span class="line"><span class="comment">% Affiliation: ESA / Advanced Concepts Team (ACT)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,189" id="srcline189">189</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,190" id="srcline190">190</a></span><span class="line"><span class="comment">% Made more readible and optimized for speed by Rody P.S. Oldenhuis</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,191" id="srcline191">191</a></span><span class="line"><span class="comment">% Code available in MGA.M on   http://www.esa.int/gsp/ACT/inf/op/globopt.htm</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,192" id="srcline192">192</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,193" id="srcline193">193</a></span><span class="line"><span class="comment">% last edited 12/Dec/2009</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,194" id="srcline194">194</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,195" id="srcline195">195</a></span><span class="line"><span class="comment">% ADJUSTED FOR EML-COMPILATION 24/Dec/2009</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,196" id="srcline196">196</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,197" id="srcline197">197</a></span><span class="line">    <span class="comment">% initial values</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,198" id="srcline198">198</a></span><span class="line">    tol = 1e-14;    bad = false;     days = 86400;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,199" id="srcline199">199</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,200" id="srcline200">200</a></span><span class="line">    <span class="comment">% work with non-dimensional units</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,201" id="srcline201">201</a></span><span class="line">    r1 = sqrt(r1vec*r1vec.');  r1vec = r1vec/r1;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,202" id="srcline202">202</a></span><span class="line">    V = sqrt(muC/r1);          r2vec = r2vec/r1;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,203" id="srcline203">203</a></span><span class="line">    T = r1/V;                  tf    = tf*days/T; <span class="comment">% also transform to seconds</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,204" id="srcline204">204</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,205" id="srcline205">205</a></span><span class="line">    <span class="comment">% relevant geometry parameters (non dimensional)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,206" id="srcline206">206</a></span><span class="line">    mr2vec = sqrt(r2vec*r2vec.');</span></span>
+<span class="srcline"><span class="lineno"><a href="1,207" id="srcline207">207</a></span><span class="line">    <span class="comment">% make 100% sure it's in (-1 &lt;= dth &lt;= +1)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,208" id="srcline208">208</a></span><span class="line">    dth = acos( max(-1, min(1, (r1vec*r2vec.')/mr2vec)) );</span></span>
+<span class="srcline"><span class="lineno"><a href="1,209" id="srcline209">209</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,210" id="srcline210">210</a></span><span class="line">    <span class="comment">% decide whether to use the left or right branch (for multi-revolution</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,211" id="srcline211">211</a></span><span class="line">    <span class="comment">% problems), and the long- or short way</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,212" id="srcline212">212</a></span><span class="line">    leftbranch = sign(m);   longway = sign(tf);</span></span>
+<span class="srcline"><span class="lineno"><a href="1,213" id="srcline213">213</a></span><span class="line">    m = abs(m);             tf = abs(tf);</span></span>
+<span class="srcline"><span class="lineno"><a href="1,214" id="srcline214">214</a></span><span class="line">    if (longway &lt; 0), dth = 2*pi - dth; end</span></span>
+<span class="srcline"><span class="lineno"><a href="1,215" id="srcline215">215</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,216" id="srcline216">216</a></span><span class="line">    <span class="comment">% derived quantities</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,217" id="srcline217">217</a></span><span class="line">    c      = sqrt(1 + mr2vec^2 - 2*mr2vec*cos(dth)); <span class="comment">% non-dimensional chord</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,218" id="srcline218">218</a></span><span class="line">    s      = (1 + mr2vec + c)/2;                     <span class="comment">% non-dimensional semi-perimeter</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,219" id="srcline219">219</a></span><span class="line">    a_min  = s/2;                                    <span class="comment">% minimum energy ellipse semi major axis</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,220" id="srcline220">220</a></span><span class="line">    Lambda = sqrt(mr2vec)*cos(dth/2)/s;              <span class="comment">% lambda parameter (from BATTIN's book)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,221" id="srcline221">221</a></span><span class="line">    crossprd = [r1vec(2)*r2vec(3) - r1vec(3)*r2vec(2),...</span></span>
+<span class="srcline"><span class="lineno"><a href="1,222" id="srcline222">222</a></span><span class="line">                r1vec(3)*r2vec(1) - r1vec(1)*r2vec(3),...<span class="comment"><span class="comment">% non-dimensional normal vectors</span></span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,223" id="srcline223">223</a></span><span class="line">                r1vec(1)*r2vec(2) - r1vec(2)*r2vec(1)];</span></span>
+<span class="srcline"><span class="lineno"><a href="1,224" id="srcline224">224</a></span><span class="line">    mcr       = sqrt(crossprd*crossprd.');           <span class="comment">% magnitues thereof</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,225" id="srcline225">225</a></span><span class="line">    nrmunit   = crossprd/mcr;                        <span class="comment">% unit vector thereof</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,226" id="srcline226">226</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,227" id="srcline227">227</a></span><span class="line">    <span class="comment">% Initial values</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,228" id="srcline228">228</a></span><span class="line">    <span class="comment">% ---------------------------------------------------------</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,229" id="srcline229">229</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,230" id="srcline230">230</a></span><span class="line">    <span class="comment">% ELMEX requires this variable to be declared OUTSIDE the IF-statement</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,231" id="srcline231">231</a></span><span class="line">    logt = log(tf); <span class="comment">% avoid re-computing the same value</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,232" id="srcline232">232</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,233" id="srcline233">233</a></span><span class="line">    <span class="comment">% single revolution (1 solution)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,234" id="srcline234">234</a></span><span class="line">    if (m == 0)</span></span>
+<span class="srcline"><span class="lineno"><a href="1,235" id="srcline235">235</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,236" id="srcline236">236</a></span><span class="line">        <span class="comment">% initial values</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,237" id="srcline237">237</a></span><span class="line">        inn1 = -0.5233;      <span class="comment">% first initial guess</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,238" id="srcline238">238</a></span><span class="line">        inn2 = +0.5233;      <span class="comment">% second initial guess</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,239" id="srcline239">239</a></span><span class="line">        x1   = log(1 + inn1);<span class="comment">% transformed first initial guess</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,240" id="srcline240">240</a></span><span class="line">        x2   = log(1 + inn2);<span class="comment">% transformed first second guess</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,241" id="srcline241">241</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,242" id="srcline242">242</a></span><span class="line">        <span class="comment">% multiple revolutions (0, 1 or 2 solutions)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,243" id="srcline243">243</a></span><span class="line">        <span class="comment">% the returned soltuion depends on the sign of [m]</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,244" id="srcline244">244</a></span><span class="line">    else</span></span>
+<span class="srcline"><span class="lineno"><a href="1,245" id="srcline245">245</a></span><span class="line">        <span class="comment">% select initial values</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,246" id="srcline246">246</a></span><span class="line">        if (leftbranch &lt; 0)</span></span>
+<span class="srcline"><span class="lineno"><a href="1,247" id="srcline247">247</a></span><span class="line">            inn1 = -0.5234; <span class="comment">% first initial guess, left branch</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,248" id="srcline248">248</a></span><span class="line">            inn2 = -0.2234; <span class="comment">% second initial guess, left branch</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,249" id="srcline249">249</a></span><span class="line">        else</span></span>
+<span class="srcline"><span class="lineno"><a href="1,250" id="srcline250">250</a></span><span class="line">            inn1 = +0.7234; <span class="comment">% first initial guess, right branch</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,251" id="srcline251">251</a></span><span class="line">            inn2 = +0.5234; <span class="comment">% second initial guess, right branch</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,252" id="srcline252">252</a></span><span class="line">        end</span></span>
+<span class="srcline"><span class="lineno"><a href="1,253" id="srcline253">253</a></span><span class="line">        x1 = tan(inn1*pi/2);<span class="comment">% transformed first initial guess</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,254" id="srcline254">254</a></span><span class="line">        x2 = tan(inn2*pi/2);<span class="comment">% transformed first second guess</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,255" id="srcline255">255</a></span><span class="line">    end</span></span>
+<span class="srcline"><span class="lineno"><a href="1,256" id="srcline256">256</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,257" id="srcline257">257</a></span><span class="line">    <span class="comment">% since (inn1, inn2) &lt; 0, initial estimate is always ellipse</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,258" id="srcline258">258</a></span><span class="line">    xx   = [inn1, inn2];  aa = a_min./(1 - xx.^2);</span></span>
+<span class="srcline"><span class="lineno"><a href="1,259" id="srcline259">259</a></span><span class="line">    bbeta = longway * 2*asin(sqrt((s-c)/2./aa));</span></span>
+<span class="srcline"><span class="lineno"><a href="1,260" id="srcline260">260</a></span><span class="line">    <span class="comment">% make 100.4% sure it's in (-1 &lt;= xx &lt;= +1)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,261" id="srcline261">261</a></span><span class="line">    aalfa = 2*acos(  max(-1, min(1, xx)) );</span></span>
+<span class="srcline"><span class="lineno"><a href="1,262" id="srcline262">262</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,263" id="srcline263">263</a></span><span class="line">    <span class="comment">% evaluate the time of flight via Lagrange expression</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,264" id="srcline264">264</a></span><span class="line">    y12  = aa.*sqrt(aa).*((aalfa - sin(aalfa)) - (bbeta-sin(bbeta)) + 2*pi*m);</span></span>
+<span class="srcline"><span class="lineno"><a href="1,265" id="srcline265">265</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,266" id="srcline266">266</a></span><span class="line">    <span class="comment">% initial estimates for y</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,267" id="srcline267">267</a></span><span class="line">    if m == 0</span></span>
+<span class="srcline"><span class="lineno"><a href="1,268" id="srcline268">268</a></span><span class="line">        y1 = log(y12(1)) - logt;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,269" id="srcline269">269</a></span><span class="line">        y2 = log(y12(2)) - logt;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,270" id="srcline270">270</a></span><span class="line">    else</span></span>
+<span class="srcline"><span class="lineno"><a href="1,271" id="srcline271">271</a></span><span class="line">        y1 = y12(1) - tf;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,272" id="srcline272">272</a></span><span class="line">        y2 = y12(2) - tf;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,273" id="srcline273">273</a></span><span class="line">    end</span></span>
+<span class="srcline"><span class="lineno"><a href="1,274" id="srcline274">274</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,275" id="srcline275">275</a></span><span class="line">    <span class="comment">% Solve for x</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,276" id="srcline276">276</a></span><span class="line">    <span class="comment">% ---------------------------------------------------------</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,277" id="srcline277">277</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,278" id="srcline278">278</a></span><span class="line">    <span class="comment">% Newton-Raphson iterations</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,279" id="srcline279">279</a></span><span class="line">    <span class="comment">% NOTE - the number of iterations will go to infinity in case</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,280" id="srcline280">280</a></span><span class="line">    <span class="comment">% m &gt; 0  and there is no solution. Start the other routine in</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,281" id="srcline281">281</a></span><span class="line">    <span class="comment">% that case</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,282" id="srcline282">282</a></span><span class="line">    err = inf;  iterations = 0; xnew = 0;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,283" id="srcline283">283</a></span><span class="line">    while (err &gt; tol)</span></span>
+<span class="srcline"><span class="lineno"><a href="1,284" id="srcline284">284</a></span><span class="line">        <span class="comment">% increment number of iterations</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,285" id="srcline285">285</a></span><span class="line">        iterations = iterations + 1;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,286" id="srcline286">286</a></span><span class="line">        <span class="comment">% new x</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,287" id="srcline287">287</a></span><span class="line">        xnew = (x1*y2 - y1*x2) / (y2-y1);</span></span>
+<span class="srcline"><span class="lineno"><a href="1,288" id="srcline288">288</a></span><span class="line">        <span class="comment">% copy-pasted code (for performance)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,289" id="srcline289">289</a></span><span class="line">        if m == 0, x = exp(xnew) - 1; else x = atan(xnew)*2/pi; end</span></span>
+<span class="srcline"><span class="lineno"><a href="1,290" id="srcline290">290</a></span><span class="line">        a = a_min/(1 - x^2);</span></span>
+<span class="srcline"><span class="lineno"><a href="1,291" id="srcline291">291</a></span><span class="line">        if (x &lt; 1) <span class="comment">% ellipse</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,292" id="srcline292">292</a></span><span class="line">            beta = longway * 2*asin(sqrt((s-c)/2/a));</span></span>
+<span class="srcline"><span class="lineno"><a href="1,293" id="srcline293">293</a></span><span class="line">            <span class="comment">% make 100.4% sure it's in (-1 &lt;= xx &lt;= +1)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,294" id="srcline294">294</a></span><span class="line">            alfa = 2*acos( max(-1, min(1, x)) );</span></span>
+<span class="srcline"><span class="lineno"><a href="1,295" id="srcline295">295</a></span><span class="line">        else <span class="comment">% hyperbola</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,296" id="srcline296">296</a></span><span class="line">            alfa = 2*acosh(x);</span></span>
+<span class="srcline"><span class="lineno"><a href="1,297" id="srcline297">297</a></span><span class="line">            beta = longway * 2*asinh(sqrt((s-c)/(-2*a)));</span></span>
+<span class="srcline"><span class="lineno"><a href="1,298" id="srcline298">298</a></span><span class="line">        end</span></span>
+<span class="srcline"><span class="lineno"><a href="1,299" id="srcline299">299</a></span><span class="line">        <span class="comment">% evaluate the time of flight via Lagrange expression</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,300" id="srcline300">300</a></span><span class="line">        if (a &gt; 0)</span></span>
+<span class="srcline"><span class="lineno"><a href="1,301" id="srcline301">301</a></span><span class="line">            tof = a*sqrt(a)*((alfa - sin(alfa)) - (beta-sin(beta)) + 2*pi*m);</span></span>
+<span class="srcline"><span class="lineno"><a href="1,302" id="srcline302">302</a></span><span class="line">        else</span></span>
+<span class="srcline"><span class="lineno"><a href="1,303" id="srcline303">303</a></span><span class="line">            tof = -a*sqrt(-a)*((sinh(alfa) - alfa) - (sinh(beta) - beta));</span></span>
+<span class="srcline"><span class="lineno"><a href="1,304" id="srcline304">304</a></span><span class="line">        end</span></span>
+<span class="srcline"><span class="lineno"><a href="1,305" id="srcline305">305</a></span><span class="line">        <span class="comment">% new value of y</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,306" id="srcline306">306</a></span><span class="line">        if m ==0, ynew = log(tof) - logt; else ynew = tof - tf; end</span></span>
+<span class="srcline"><span class="lineno"><a href="1,307" id="srcline307">307</a></span><span class="line">        <span class="comment">% save previous and current values for the next iterarion</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,308" id="srcline308">308</a></span><span class="line">        <span class="comment">% (prevents getting stuck between two values)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,309" id="srcline309">309</a></span><span class="line">        x1 = x2;  x2 = xnew;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,310" id="srcline310">310</a></span><span class="line">        y1 = y2;  y2 = ynew;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,311" id="srcline311">311</a></span><span class="line">        <span class="comment">% update error</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,312" id="srcline312">312</a></span><span class="line">        err = abs(x1 - xnew);</span></span>
+<span class="srcline"><span class="lineno"><a href="1,313" id="srcline313">313</a></span><span class="line">        <span class="comment">% escape clause</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,314" id="srcline314">314</a></span><span class="line">        if (iterations &gt; 15), bad = true; break; end</span></span>
+<span class="srcline"><span class="lineno"><a href="1,315" id="srcline315">315</a></span><span class="line">    end</span></span>
+<span class="srcline"><span class="lineno"><a href="1,316" id="srcline316">316</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,317" id="srcline317">317</a></span><span class="line">    <span class="comment">% If the Newton-Raphson scheme failed, try to solve the problem</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,318" id="srcline318">318</a></span><span class="line">    <span class="comment">% with the other Lambert targeter.</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,319" id="srcline319">319</a></span><span class="line">    if bad</span></span>
+<span class="srcline"><span class="lineno"><a href="1,320" id="srcline320">320</a></span><span class="line">        <span class="comment">% NOTE: use the original, UN-normalized quantities</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,321" id="srcline321">321</a></span><span class="line">        [V1, V2, extremal_distances, exitflag] = ...</span></span>
+<span class="srcline"><span class="lineno"><a href="1,322" id="srcline322">322</a></span><span class="line">            lambert_LancasterBlanchard(r1vec*r1, r2vec*r1, longway*tf*T, leftbranch*m, muC);</span></span>
+<span class="srcline"><span class="lineno"><a href="1,323" id="srcline323">323</a></span><span class="line">        return</span></span>
+<span class="srcline"><span class="lineno"><a href="1,324" id="srcline324">324</a></span><span class="line">    end</span></span>
+<span class="srcline"><span class="lineno"><a href="1,325" id="srcline325">325</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,326" id="srcline326">326</a></span><span class="line">    <span class="comment">% convert converged value of x</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,327" id="srcline327">327</a></span><span class="line">    if m==0, x = exp(xnew) - 1; else x = atan(xnew)*2/pi; end</span></span>
+<span class="srcline"><span class="lineno"><a href="1,328" id="srcline328">328</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,329" id="srcline329">329</a></span><span class="line"><span class="comment">    <span class="comment">%{</span></span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,330" id="srcline330">330</a></span><span class="line"><span class="comment">      The solution has been evaluated in terms of log(x+1) or tan(x*pi/2), we</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,331" id="srcline331">331</a></span><span class="line"><span class="comment">      now need the conic. As for transfer angles near to pi the Lagrange-</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,332" id="srcline332">332</a></span><span class="line"><span class="comment">      coefficients technique goes singular (dg approaches a zero/zero that is</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,333" id="srcline333">333</a></span><span class="line"><span class="comment">      numerically bad) we here use a different technique for those cases. When</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,334" id="srcline334">334</a></span><span class="line"><span class="comment">      the transfer angle is exactly equal to pi, then the ih unit vector is not</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,335" id="srcline335">335</a></span><span class="line"><span class="comment">      determined. The remaining equations, though, are still valid.</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,336" id="srcline336">336</a></span><span class="line"><span class="comment">    <span class="comment">%}</span></span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,337" id="srcline337">337</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,338" id="srcline338">338</a></span><span class="line">    <span class="comment">% Solution for the semi-major axis</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,339" id="srcline339">339</a></span><span class="line">    a = a_min/(1-x^2);</span></span>
+<span class="srcline"><span class="lineno"><a href="1,340" id="srcline340">340</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,341" id="srcline341">341</a></span><span class="line">    <span class="comment">% Calculate psi</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,342" id="srcline342">342</a></span><span class="line">    if (x &lt; 1) <span class="comment">% ellipse</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,343" id="srcline343">343</a></span><span class="line">        beta = longway * 2*asin(sqrt((s-c)/2/a));</span></span>
+<span class="srcline"><span class="lineno"><a href="1,344" id="srcline344">344</a></span><span class="line">        <span class="comment">% make 100.4% sure it's in (-1 &lt;= xx &lt;= +1)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,345" id="srcline345">345</a></span><span class="line">        alfa = 2*acos( max(-1, min(1, x)) );</span></span>
+<span class="srcline"><span class="lineno"><a href="1,346" id="srcline346">346</a></span><span class="line">        psi  = (alfa-beta)/2;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,347" id="srcline347">347</a></span><span class="line">        eta2 = 2*a*sin(psi)^2/s;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,348" id="srcline348">348</a></span><span class="line">        eta  = sqrt(eta2);</span></span>
+<span class="srcline"><span class="lineno"><a href="1,349" id="srcline349">349</a></span><span class="line">    else       <span class="comment">% hyperbola</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,350" id="srcline350">350</a></span><span class="line">        beta = longway * 2*asinh(sqrt((c-s)/2/a));</span></span>
+<span class="srcline"><span class="lineno"><a href="1,351" id="srcline351">351</a></span><span class="line">        alfa = 2*acosh(x);</span></span>
+<span class="srcline"><span class="lineno"><a href="1,352" id="srcline352">352</a></span><span class="line">        psi  = (alfa-beta)/2;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,353" id="srcline353">353</a></span><span class="line">        eta2 = -2*a*sinh(psi)^2/s;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,354" id="srcline354">354</a></span><span class="line">        eta  = sqrt(eta2);</span></span>
+<span class="srcline"><span class="lineno"><a href="1,355" id="srcline355">355</a></span><span class="line">    end</span></span>
+<span class="srcline"><span class="lineno"><a href="1,356" id="srcline356">356</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,357" id="srcline357">357</a></span><span class="line">    <span class="comment">% unit of the normalized normal vector</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,358" id="srcline358">358</a></span><span class="line">    ih = longway * nrmunit;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,359" id="srcline359">359</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,360" id="srcline360">360</a></span><span class="line">    <span class="comment">% unit vector for normalized [r2vec]</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,361" id="srcline361">361</a></span><span class="line">    r2n = r2vec/mr2vec;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,362" id="srcline362">362</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,363" id="srcline363">363</a></span><span class="line">    <span class="comment">% cross-products</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,364" id="srcline364">364</a></span><span class="line">    <span class="comment">% don't use cross() (emlmex() would try to compile it, and this way it</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,365" id="srcline365">365</a></span><span class="line">    <span class="comment">% also does not create any additional overhead)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,366" id="srcline366">366</a></span><span class="line">    crsprd1 = [ih(2)*r1vec(3)-ih(3)*r1vec(2),...</span></span>
+<span class="srcline"><span class="lineno"><a href="1,367" id="srcline367">367</a></span><span class="line">               ih(3)*r1vec(1)-ih(1)*r1vec(3),...</span></span>
+<span class="srcline"><span class="lineno"><a href="1,368" id="srcline368">368</a></span><span class="line">               ih(1)*r1vec(2)-ih(2)*r1vec(1)];</span></span>
+<span class="srcline"><span class="lineno"><a href="1,369" id="srcline369">369</a></span><span class="line">    crsprd2 = [ih(2)*r2n(3)-ih(3)*r2n(2),...</span></span>
+<span class="srcline"><span class="lineno"><a href="1,370" id="srcline370">370</a></span><span class="line">               ih(3)*r2n(1)-ih(1)*r2n(3),...</span></span>
+<span class="srcline"><span class="lineno"><a href="1,371" id="srcline371">371</a></span><span class="line">               ih(1)*r2n(2)-ih(2)*r2n(1)];</span></span>
+<span class="srcline"><span class="lineno"><a href="1,372" id="srcline372">372</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,373" id="srcline373">373</a></span><span class="line">    <span class="comment">% radial and tangential directions for departure velocity</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,374" id="srcline374">374</a></span><span class="line">    Vr1 = 1/eta/sqrt(a_min) * (2*Lambda*a_min - Lambda - x*eta);</span></span>
+<span class="srcline"><span class="lineno"><a href="1,375" id="srcline375">375</a></span><span class="line">    Vt1 = sqrt(mr2vec/a_min/eta2 * sin(dth/2)^2);</span></span>
+<span class="srcline"><span class="lineno"><a href="1,376" id="srcline376">376</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,377" id="srcline377">377</a></span><span class="line">    <span class="comment">% radial and tangential directions for arrival velocity</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,378" id="srcline378">378</a></span><span class="line">    Vt2 = Vt1/mr2vec;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,379" id="srcline379">379</a></span><span class="line">    Vr2 = (Vt1 - Vt2)/tan(dth/2) - Vr1;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,380" id="srcline380">380</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,381" id="srcline381">381</a></span><span class="line">    <span class="comment">% terminal velocities</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,382" id="srcline382">382</a></span><span class="line">    V1 = (Vr1*r1vec + Vt1*crsprd1)*V;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,383" id="srcline383">383</a></span><span class="line">    V2 = (Vr2*r2n + Vt2*crsprd2)*V;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,384" id="srcline384">384</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,385" id="srcline385">385</a></span><span class="line">    <span class="comment">% exitflag</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,386" id="srcline386">386</a></span><span class="line">    exitflag = 1; <span class="comment">% (success)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,387" id="srcline387">387</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,388" id="srcline388">388</a></span><span class="line">    <span class="comment">% also compute minimum distance to central body</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,389" id="srcline389">389</a></span><span class="line">    <span class="comment">% NOTE: use un-transformed vectors again!</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,390" id="srcline390">390</a></span><span class="line">    extremal_distances = ...</span></span>
+<span class="srcline"><span class="lineno"><a href="1,391" id="srcline391">391</a></span><span class="line">        minmax_distances(r1vec*r1, r1, r2vec*r1, mr2vec*r1, dth, a*r1, V1, V2, m, muC);</span></span>
+<span class="srcline"><span class="lineno"><a href="1,392" id="srcline392">392</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,393" id="srcline393">393</a></span><span class="line">end</span></span>
+<span class="srcline"><span class="lineno"><a href="1,394" id="srcline394">394</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,395" id="srcline395">395</a></span><span class="line"><span class="comment">% -----------------------------------------------------------------</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,396" id="srcline396">396</a></span><span class="line"><span class="comment">% Lancaster &amp; Blanchard version, with improvements by Gooding</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,397" id="srcline397">397</a></span><span class="line"><span class="comment">% Very reliable, moderately fast for both simple and complicated cases</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,398" id="srcline398">398</a></span><span class="line"><span class="comment">% -----------------------------------------------------------------</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,399" id="srcline399">399</a></span><span class="line">function [V1,...</span></span>
+<span class="srcline"><span class="lineno"><a href="1,400" id="srcline400">400</a></span><span class="line">          V2,...</span></span>
+<span class="srcline"><span class="lineno"><a href="1,401" id="srcline401">401</a></span><span class="line">          extremal_distances,...</span></span>
+<span class="srcline"><span class="lineno"><a href="1,402" id="srcline402">402</a></span><span class="line">          exitflag] = lambert_LancasterBlanchard(r1vec,...</span></span>
+<span class="srcline"><span class="lineno"><a href="1,403" id="srcline403">403</a></span><span class="line">                                                 r2vec,...</span></span>
+<span class="srcline"><span class="lineno"><a href="1,404" id="srcline404">404</a></span><span class="line">                                                 tf,...</span></span>
+<span class="srcline"><span class="lineno"><a href="1,405" id="srcline405">405</a></span><span class="line">                                                 m,...</span></span>
+<span class="srcline"><span class="lineno"><a href="1,406" id="srcline406">406</a></span><span class="line">                                                 muC) <span class="comment">%#coder</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,407" id="srcline407">407</a></span><span class="line"><span class="comment"><span class="comment">%{</span></span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,408" id="srcline408">408</a></span><span class="line"><span class="comment">LAMBERT_LANCASTERBLANCHARD       High-Thrust Lambert-targeter</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,409" id="srcline409">409</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,410" id="srcline410">410</a></span><span class="line"><span class="comment">lambert_LancasterBlanchard() uses the method developed by</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,411" id="srcline411">411</a></span><span class="line"><span class="comment">Lancaster &amp; Blancard, as described in their 1969 paper. Initial values,</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,412" id="srcline412">412</a></span><span class="line"><span class="comment">and several details of the procedure, are provided by R.H. Gooding,</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,413" id="srcline413">413</a></span><span class="line"><span class="comment">as described in his 1990 paper.</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,414" id="srcline414">414</a></span><span class="line"><span class="comment"><span class="comment">%}</span></span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,415" id="srcline415">415</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,416" id="srcline416">416</a></span><span class="line"><span class="comment">% Please report bugs and inquiries to:</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,417" id="srcline417">417</a></span><span class="line"><span class="comment">%</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,418" id="srcline418">418</a></span><span class="line"><span class="comment">% Name       : Rody P.S. Oldenhuis</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,419" id="srcline419">419</a></span><span class="line"><span class="comment">% E-mail     : oldenhuis@gmail.com</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,420" id="srcline420">420</a></span><span class="line"><span class="comment">% Licence    : 2-clause BSD (see License.txt)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,421" id="srcline421">421</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,422" id="srcline422">422</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,423" id="srcline423">423</a></span><span class="line"><span class="comment">% If you find this work useful, please consider a donation:</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,424" id="srcline424">424</a></span><span class="line"><span class="comment">% https://www.paypal.me/RodyO/3.5</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,425" id="srcline425">425</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,426" id="srcline426">426</a></span><span class="line">    <span class="comment">% ADJUSTED FOR EML-COMPILATION 29/Sep/2009</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,427" id="srcline427">427</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,428" id="srcline428">428</a></span><span class="line">    <span class="comment">% manipulate input</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,429" id="srcline429">429</a></span><span class="line">    tol     = 1e-12;                            <span class="comment">% optimum for numerical noise v.s. actual precision</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,430" id="srcline430">430</a></span><span class="line">    r1      = sqrt(r1vec*r1vec.');              <span class="comment">% magnitude of r1vec</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,431" id="srcline431">431</a></span><span class="line">    r2      = sqrt(r2vec*r2vec.');              <span class="comment">% magnitude of r2vec</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,432" id="srcline432">432</a></span><span class="line">    r1unit  = r1vec/r1;                         <span class="comment">% unit vector of r1vec</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,433" id="srcline433">433</a></span><span class="line">    r2unit  = r2vec/r2;                         <span class="comment">% unit vector of r2vec</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,434" id="srcline434">434</a></span><span class="line">    crsprod = cross(r1vec, r2vec, 2);           <span class="comment">% cross product of r1vec and r2vec</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,435" id="srcline435">435</a></span><span class="line">    mcrsprd = sqrt(crsprod*crsprod.');          <span class="comment">% magnitude of that cross product</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,436" id="srcline436">436</a></span><span class="line">    th1unit = cross(crsprod/mcrsprd, r1unit);   <span class="comment">% unit vectors in the tangential-directions</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,437" id="srcline437">437</a></span><span class="line">    th2unit = cross(crsprod/mcrsprd, r2unit);</span></span>
+<span class="srcline"><span class="lineno"><a href="1,438" id="srcline438">438</a></span><span class="line">    <span class="comment">% make 100.4% sure it's in (-1 &lt;= x &lt;= +1)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,439" id="srcline439">439</a></span><span class="line">    dth = acos( max(-1, min(1, (r1vec*r2vec.')/r1/r2)) ); <span class="comment">% turn angle</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,440" id="srcline440">440</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,441" id="srcline441">441</a></span><span class="line">    <span class="comment">% if the long way was selected, the turn-angle must be negative</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,442" id="srcline442">442</a></span><span class="line">    <span class="comment">% to take care of the direction of final velocity</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,443" id="srcline443">443</a></span><span class="line">    longway = sign(tf); tf = abs(tf);</span></span>
+<span class="srcline"><span class="lineno"><a href="1,444" id="srcline444">444</a></span><span class="line">    if (longway &lt; 0), dth = dth-2*pi; end</span></span>
+<span class="srcline"><span class="lineno"><a href="1,445" id="srcline445">445</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,446" id="srcline446">446</a></span><span class="line">    <span class="comment">% left-branch</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,447" id="srcline447">447</a></span><span class="line">    leftbranch = sign(m); m = abs(m);</span></span>
+<span class="srcline"><span class="lineno"><a href="1,448" id="srcline448">448</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,449" id="srcline449">449</a></span><span class="line">    <span class="comment">% define constants</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,450" id="srcline450">450</a></span><span class="line">    c  = sqrt(r1^2 + r2^2 - 2*r1*r2*cos(dth));</span></span>
+<span class="srcline"><span class="lineno"><a href="1,451" id="srcline451">451</a></span><span class="line">    s  = (r1 + r2 + c) / 2;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,452" id="srcline452">452</a></span><span class="line">    T  = sqrt(8*muC/s^3) * tf;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,453" id="srcline453">453</a></span><span class="line">    q  = sqrt(r1*r2)/s * cos(dth/2);</span></span>
+<span class="srcline"><span class="lineno"><a href="1,454" id="srcline454">454</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,455" id="srcline455">455</a></span><span class="line">    <span class="comment">% general formulae for the initial values (Gooding)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,456" id="srcline456">456</a></span><span class="line">    <span class="comment">% -------------------------------------------------</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,457" id="srcline457">457</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,458" id="srcline458">458</a></span><span class="line">    <span class="comment">% some initial values</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,459" id="srcline459">459</a></span><span class="line">    T0  = LancasterBlanchard(0, q, m);</span></span>
+<span class="srcline"><span class="lineno"><a href="1,460" id="srcline460">460</a></span><span class="line">    Td  = T0 - T;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,461" id="srcline461">461</a></span><span class="line">    phr = mod(2*atan2(1 - q^2, 2*q), 2*pi);</span></span>
+<span class="srcline"><span class="lineno"><a href="1,462" id="srcline462">462</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,463" id="srcline463">463</a></span><span class="line">    <span class="comment">% initial output is pessimistic</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,464" id="srcline464">464</a></span><span class="line">    V1 = NaN(1,3);    V2 = V1;    extremal_distances = [NaN, NaN];</span></span>
+<span class="srcline"><span class="lineno"><a href="1,465" id="srcline465">465</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,466" id="srcline466">466</a></span><span class="line">    <span class="comment">% single-revolution case</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,467" id="srcline467">467</a></span><span class="line">    if (m == 0)</span></span>
+<span class="srcline"><span class="lineno"><a href="1,468" id="srcline468">468</a></span><span class="line">        x01 = T0*Td/4/T;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,469" id="srcline469">469</a></span><span class="line">        if (Td &gt; 0)</span></span>
+<span class="srcline"><span class="lineno"><a href="1,470" id="srcline470">470</a></span><span class="line">            x0 = x01;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,471" id="srcline471">471</a></span><span class="line">        else</span></span>
+<span class="srcline"><span class="lineno"><a href="1,472" id="srcline472">472</a></span><span class="line">            x01 = Td/(4 - Td);</span></span>
+<span class="srcline"><span class="lineno"><a href="1,473" id="srcline473">473</a></span><span class="line">            x02 = -sqrt( -Td/(T+T0/2) );</span></span>
+<span class="srcline"><span class="lineno"><a href="1,474" id="srcline474">474</a></span><span class="line">            W   = x01 + 1.7*sqrt(2 - phr/pi);</span></span>
+<span class="srcline"><span class="lineno"><a href="1,475" id="srcline475">475</a></span><span class="line">            if (W &gt;= 0)</span></span>
+<span class="srcline"><span class="lineno"><a href="1,476" id="srcline476">476</a></span><span class="line">                x03 = x01;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,477" id="srcline477">477</a></span><span class="line">            else</span></span>
+<span class="srcline"><span class="lineno"><a href="1,478" id="srcline478">478</a></span><span class="line">                x03 = x01 + (-W).^(1/16).*(x02 - x01);</span></span>
+<span class="srcline"><span class="lineno"><a href="1,479" id="srcline479">479</a></span><span class="line">            end</span></span>
+<span class="srcline"><span class="lineno"><a href="1,480" id="srcline480">480</a></span><span class="line">            lambda = 1 + x03*(1 + x01)/2 - 0.03*x03^2*sqrt(1 + x01);</span></span>
+<span class="srcline"><span class="lineno"><a href="1,481" id="srcline481">481</a></span><span class="line">            x0 = lambda*x03;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,482" id="srcline482">482</a></span><span class="line">        end</span></span>
+<span class="srcline"><span class="lineno"><a href="1,483" id="srcline483">483</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,484" id="srcline484">484</a></span><span class="line">        <span class="comment">% this estimate might not give a solution</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,485" id="srcline485">485</a></span><span class="line">        if (x0 &lt; -1), exitflag = -1; return; end</span></span>
+<span class="srcline"><span class="lineno"><a href="1,486" id="srcline486">486</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,487" id="srcline487">487</a></span><span class="line">    <span class="comment">% multi-revolution case</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,488" id="srcline488">488</a></span><span class="line">    else</span></span>
+<span class="srcline"><span class="lineno"><a href="1,489" id="srcline489">489</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,490" id="srcline490">490</a></span><span class="line">        <span class="comment">% determine minimum Tp(x)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,491" id="srcline491">491</a></span><span class="line">        xMpi = 4/(3*pi*(2*m + 1));</span></span>
+<span class="srcline"><span class="lineno"><a href="1,492" id="srcline492">492</a></span><span class="line">        if (phr &lt; pi)</span></span>
+<span class="srcline"><span class="lineno"><a href="1,493" id="srcline493">493</a></span><span class="line">            xM0 = xMpi*(phr/pi)^(1/8);</span></span>
+<span class="srcline"><span class="lineno"><a href="1,494" id="srcline494">494</a></span><span class="line">        elseif (phr &gt; pi)</span></span>
+<span class="srcline"><span class="lineno"><a href="1,495" id="srcline495">495</a></span><span class="line">            xM0 = xMpi*(2 - (2 - phr/pi)^(1/8));</span></span>
+<span class="srcline"><span class="lineno"><a href="1,496" id="srcline496">496</a></span><span class="line">        <span class="comment">% EMLMEX requires this one</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,497" id="srcline497">497</a></span><span class="line">        else</span></span>
+<span class="srcline"><span class="lineno"><a href="1,498" id="srcline498">498</a></span><span class="line">            xM0 = 0;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,499" id="srcline499">499</a></span><span class="line">        end</span></span>
+<span class="srcline"><span class="lineno"><a href="1,500" id="srcline500">500</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,501" id="srcline501">501</a></span><span class="line">        <span class="comment">% use Halley's method</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,502" id="srcline502">502</a></span><span class="line">        xM = xM0;  Tp = inf;  iterations = 0;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,503" id="srcline503">503</a></span><span class="line">        while abs(Tp) &gt; tol</span></span>
+<span class="srcline"><span class="lineno"><a href="1,504" id="srcline504">504</a></span><span class="line">            <span class="comment">% iterations</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,505" id="srcline505">505</a></span><span class="line">            iterations = iterations + 1;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,506" id="srcline506">506</a></span><span class="line">            <span class="comment">% compute first three derivatives</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,507" id="srcline507">507</a></span><span class="line">            [dummy, Tp, Tpp, Tppp] = LancasterBlanchard(xM, q, m);<span class="comment">%#ok</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,508" id="srcline508">508</a></span><span class="line">            <span class="comment">% new value of xM</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,509" id="srcline509">509</a></span><span class="line">            xMp = xM;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,510" id="srcline510">510</a></span><span class="line">            xM  = xM - 2*Tp.*Tpp ./ (2*Tpp.^2 - Tp.*Tppp);</span></span>
+<span class="srcline"><span class="lineno"><a href="1,511" id="srcline511">511</a></span><span class="line">            <span class="comment">% escape clause</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,512" id="srcline512">512</a></span><span class="line">            if mod(iterations, 7), xM = (xMp+xM)/2; end</span></span>
+<span class="srcline"><span class="lineno"><a href="1,513" id="srcline513">513</a></span><span class="line">            <span class="comment">% the method might fail. Exit in that case</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,514" id="srcline514">514</a></span><span class="line">            if (iterations &gt; 25), exitflag = -2; return; end</span></span>
+<span class="srcline"><span class="lineno"><a href="1,515" id="srcline515">515</a></span><span class="line">        end</span></span>
+<span class="srcline"><span class="lineno"><a href="1,516" id="srcline516">516</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,517" id="srcline517">517</a></span><span class="line">        <span class="comment">% xM should be elliptic (-1 &lt; x &lt; 1)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,518" id="srcline518">518</a></span><span class="line">        <span class="comment">% (this should be impossible to go wrong)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,519" id="srcline519">519</a></span><span class="line">        if (xM &lt; -1) || (xM &gt; 1), exitflag = -1; return; end</span></span>
+<span class="srcline"><span class="lineno"><a href="1,520" id="srcline520">520</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,521" id="srcline521">521</a></span><span class="line">        <span class="comment">% corresponding time</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,522" id="srcline522">522</a></span><span class="line">        TM = LancasterBlanchard(xM, q, m);</span></span>
+<span class="srcline"><span class="lineno"><a href="1,523" id="srcline523">523</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,524" id="srcline524">524</a></span><span class="line">        <span class="comment">% T should lie above the minimum T</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,525" id="srcline525">525</a></span><span class="line">        if (TM &gt; T), exitflag = -1; return; end</span></span>
+<span class="srcline"><span class="lineno"><a href="1,526" id="srcline526">526</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,527" id="srcline527">527</a></span><span class="line">        <span class="comment">% find two initial values for second solution (again with lambda-type patch)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,528" id="srcline528">528</a></span><span class="line">        <span class="comment">% --------------------------------------------------------------------------</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,529" id="srcline529">529</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,530" id="srcline530">530</a></span><span class="line">        <span class="comment">% some initial values</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,531" id="srcline531">531</a></span><span class="line">        TmTM  = T - TM;   T0mTM = T0 - TM;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,532" id="srcline532">532</a></span><span class="line">        [dummy, Tp, Tpp] = LancasterBlanchard(xM, q, m);<span class="comment">%#ok</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,533" id="srcline533">533</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,534" id="srcline534">534</a></span><span class="line">        <span class="comment">% first estimate (only if m &gt; 0)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,535" id="srcline535">535</a></span><span class="line">        if leftbranch &gt; 0</span></span>
+<span class="srcline"><span class="lineno"><a href="1,536" id="srcline536">536</a></span><span class="line">            x   = sqrt( TmTM / (Tpp/2 + TmTM/(1-xM)^2) );</span></span>
+<span class="srcline"><span class="lineno"><a href="1,537" id="srcline537">537</a></span><span class="line">            W   = xM + x;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,538" id="srcline538">538</a></span><span class="line">            W   = 4*W/(4 + TmTM) + (1 - W)^2;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,539" id="srcline539">539</a></span><span class="line">            x0  = x*(1 - (1 + m + (dth - 1/2)) / ...</span></span>
+<span class="srcline"><span class="lineno"><a href="1,540" id="srcline540">540</a></span><span class="line">                (1 + 0.15*m)*x*(W/2 + 0.03*x*sqrt(W))) + xM;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,541" id="srcline541">541</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,542" id="srcline542">542</a></span><span class="line">            <span class="comment">% first estimate might not be able to yield possible solution</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,543" id="srcline543">543</a></span><span class="line">            if (x0 &gt; 1), exitflag = -1; return; end</span></span>
+<span class="srcline"><span class="lineno"><a href="1,544" id="srcline544">544</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,545" id="srcline545">545</a></span><span class="line">        <span class="comment">% second estimate (only if m &gt; 0)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,546" id="srcline546">546</a></span><span class="line">        else</span></span>
+<span class="srcline"><span class="lineno"><a href="1,547" id="srcline547">547</a></span><span class="line">            if (Td &gt; 0)</span></span>
+<span class="srcline"><span class="lineno"><a href="1,548" id="srcline548">548</a></span><span class="line">                x0 = xM - sqrt(TM/(Tpp/2 - TmTM*(Tpp/2/T0mTM - 1/xM^2)));</span></span>
+<span class="srcline"><span class="lineno"><a href="1,549" id="srcline549">549</a></span><span class="line">            else</span></span>
+<span class="srcline"><span class="lineno"><a href="1,550" id="srcline550">550</a></span><span class="line">                x00 = Td / (4 - Td);</span></span>
+<span class="srcline"><span class="lineno"><a href="1,551" id="srcline551">551</a></span><span class="line">                W = x00 + 1.7*sqrt(2*(1 - phr));</span></span>
+<span class="srcline"><span class="lineno"><a href="1,552" id="srcline552">552</a></span><span class="line">                if (W &gt;= 0)</span></span>
+<span class="srcline"><span class="lineno"><a href="1,553" id="srcline553">553</a></span><span class="line">                    x03 = x00;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,554" id="srcline554">554</a></span><span class="line">                else</span></span>
+<span class="srcline"><span class="lineno"><a href="1,555" id="srcline555">555</a></span><span class="line">                    x03 = x00 - sqrt((-W)^(1/8))*(x00 + sqrt(-Td/(1.5*T0 - Td)));</span></span>
+<span class="srcline"><span class="lineno"><a href="1,556" id="srcline556">556</a></span><span class="line">                end</span></span>
+<span class="srcline"><span class="lineno"><a href="1,557" id="srcline557">557</a></span><span class="line">                W      = 4/(4 - Td);</span></span>
+<span class="srcline"><span class="lineno"><a href="1,558" id="srcline558">558</a></span><span class="line">                lambda = (1 + (1 + m + 0.24*(dth - 1/2)) / ...</span></span>
+<span class="srcline"><span class="lineno"><a href="1,559" id="srcline559">559</a></span><span class="line">                    (1 + 0.15*m)*x03*(W/2 - 0.03*x03*sqrt(W)));</span></span>
+<span class="srcline"><span class="lineno"><a href="1,560" id="srcline560">560</a></span><span class="line">                x0     = x03*lambda;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,561" id="srcline561">561</a></span><span class="line">            end</span></span>
+<span class="srcline"><span class="lineno"><a href="1,562" id="srcline562">562</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,563" id="srcline563">563</a></span><span class="line">            <span class="comment">% estimate might not give solutions</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,564" id="srcline564">564</a></span><span class="line">            if (x0 &lt; -1), exitflag = -1; return; end</span></span>
+<span class="srcline"><span class="lineno"><a href="1,565" id="srcline565">565</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,566" id="srcline566">566</a></span><span class="line">        end</span></span>
+<span class="srcline"><span class="lineno"><a href="1,567" id="srcline567">567</a></span><span class="line">    end</span></span>
+<span class="srcline"><span class="lineno"><a href="1,568" id="srcline568">568</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,569" id="srcline569">569</a></span><span class="line">    <span class="comment">% find root of Lancaster &amp; Blancard's function</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,570" id="srcline570">570</a></span><span class="line">    <span class="comment">% --------------------------------------------</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,571" id="srcline571">571</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,572" id="srcline572">572</a></span><span class="line">    <span class="comment">% (Halley's method)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,573" id="srcline573">573</a></span><span class="line">    x = x0; Tx = inf; iterations = 0;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,574" id="srcline574">574</a></span><span class="line">    while abs(Tx) &gt; tol</span></span>
+<span class="srcline"><span class="lineno"><a href="1,575" id="srcline575">575</a></span><span class="line">        <span class="comment">% iterations</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,576" id="srcline576">576</a></span><span class="line">        iterations = iterations + 1;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,577" id="srcline577">577</a></span><span class="line">        <span class="comment">% compute function value, and first two derivatives</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,578" id="srcline578">578</a></span><span class="line">        [Tx, Tp, Tpp] = LancasterBlanchard(x, q, m);</span></span>
+<span class="srcline"><span class="lineno"><a href="1,579" id="srcline579">579</a></span><span class="line">        <span class="comment">% find the root of the *difference* between the</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,580" id="srcline580">580</a></span><span class="line">        <span class="comment">% function value [T_x] and the required time [T]</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,581" id="srcline581">581</a></span><span class="line">        Tx = Tx - T;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,582" id="srcline582">582</a></span><span class="line">        <span class="comment">% new value of x</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,583" id="srcline583">583</a></span><span class="line">        xp = x;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,584" id="srcline584">584</a></span><span class="line">        x  = x - 2*Tx*Tp ./ (2*Tp^2 - Tx*Tpp);</span></span>
+<span class="srcline"><span class="lineno"><a href="1,585" id="srcline585">585</a></span><span class="line">        <span class="comment">% escape clause</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,586" id="srcline586">586</a></span><span class="line">        if mod(iterations, 7), x = (xp+x)/2; end</span></span>
+<span class="srcline"><span class="lineno"><a href="1,587" id="srcline587">587</a></span><span class="line">        <span class="comment">% Halley's method might fail</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,588" id="srcline588">588</a></span><span class="line">        if iterations &gt; 25, exitflag = -2; return; end</span></span>
+<span class="srcline"><span class="lineno"><a href="1,589" id="srcline589">589</a></span><span class="line">    end</span></span>
+<span class="srcline"><span class="lineno"><a href="1,590" id="srcline590">590</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,591" id="srcline591">591</a></span><span class="line">    <span class="comment">% calculate terminal velocities</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,592" id="srcline592">592</a></span><span class="line">    <span class="comment">% -----------------------------</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,593" id="srcline593">593</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,594" id="srcline594">594</a></span><span class="line">    <span class="comment">% constants required for this calculation</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,595" id="srcline595">595</a></span><span class="line">    gamma = sqrt(muC*s/2);</span></span>
+<span class="srcline"><span class="lineno"><a href="1,596" id="srcline596">596</a></span><span class="line">    if (c == 0)</span></span>
+<span class="srcline"><span class="lineno"><a href="1,597" id="srcline597">597</a></span><span class="line">        sigma = 1;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,598" id="srcline598">598</a></span><span class="line">        rho   = 0;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,599" id="srcline599">599</a></span><span class="line">        z     = abs(x);</span></span>
+<span class="srcline"><span class="lineno"><a href="1,600" id="srcline600">600</a></span><span class="line">    else</span></span>
+<span class="srcline"><span class="lineno"><a href="1,601" id="srcline601">601</a></span><span class="line">        sigma = 2*sqrt(r1*r2/(c^2)) * sin(dth/2);</span></span>
+<span class="srcline"><span class="lineno"><a href="1,602" id="srcline602">602</a></span><span class="line">        rho   = (r1 - r2)/c;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,603" id="srcline603">603</a></span><span class="line">        z     = sqrt(1 + q^2*(x^2 - 1));</span></span>
+<span class="srcline"><span class="lineno"><a href="1,604" id="srcline604">604</a></span><span class="line">    end</span></span>
+<span class="srcline"><span class="lineno"><a href="1,605" id="srcline605">605</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,606" id="srcline606">606</a></span><span class="line">    <span class="comment">% radial component</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,607" id="srcline607">607</a></span><span class="line">    Vr1    = +gamma*((q*z - x) - rho*(q*z + x)) / r1;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,608" id="srcline608">608</a></span><span class="line">    Vr1vec = Vr1*r1unit;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,609" id="srcline609">609</a></span><span class="line">    Vr2    = -gamma*((q*z - x) + rho*(q*z + x)) / r2;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,610" id="srcline610">610</a></span><span class="line">    Vr2vec = Vr2*r2unit;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,611" id="srcline611">611</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,612" id="srcline612">612</a></span><span class="line">    <span class="comment">% tangential component</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,613" id="srcline613">613</a></span><span class="line">    Vtan1    = sigma * gamma * (z + q*x) / r1;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,614" id="srcline614">614</a></span><span class="line">    Vtan1vec = Vtan1 * th1unit;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,615" id="srcline615">615</a></span><span class="line">    Vtan2    = sigma * gamma * (z + q*x) / r2;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,616" id="srcline616">616</a></span><span class="line">    Vtan2vec = Vtan2 * th2unit;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,617" id="srcline617">617</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,618" id="srcline618">618</a></span><span class="line">    <span class="comment">% Cartesian velocity</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,619" id="srcline619">619</a></span><span class="line">    V1 = Vtan1vec + Vr1vec;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,620" id="srcline620">620</a></span><span class="line">    V2 = Vtan2vec + Vr2vec;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,621" id="srcline621">621</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,622" id="srcline622">622</a></span><span class="line">    <span class="comment">% exitflag</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,623" id="srcline623">623</a></span><span class="line">    exitflag = 1; <span class="comment">% (success)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,624" id="srcline624">624</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,625" id="srcline625">625</a></span><span class="line">    <span class="comment">% also determine minimum/maximum distance</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,626" id="srcline626">626</a></span><span class="line">    a = s/2/(1 - x^2); <span class="comment">% semi-major axis</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,627" id="srcline627">627</a></span><span class="line">    extremal_distances = minmax_distances(r1vec, r1, r1vec, r2, dth, a, V1, V2, m, muC);</span></span>
+<span class="srcline"><span class="lineno"><a href="1,628" id="srcline628">628</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,629" id="srcline629">629</a></span><span class="line">end</span></span>
+<span class="srcline"><span class="lineno"><a href="1,630" id="srcline630">630</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,631" id="srcline631">631</a></span><span class="line"><span class="comment">% Lancaster &amp; Blanchard's function, and three derivatives thereof</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,632" id="srcline632">632</a></span><span class="line">function [T, Tp, Tpp, Tppp] = LancasterBlanchard(x, q, m)</span></span>
+<span class="srcline"><span class="lineno"><a href="1,633" id="srcline633">633</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,634" id="srcline634">634</a></span><span class="line">    <span class="comment">% protection against idiotic input</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,635" id="srcline635">635</a></span><span class="line">    if (x &lt; -1) <span class="comment">% impossible; negative eccentricity</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,636" id="srcline636">636</a></span><span class="line">        x = abs(x) - 2;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,637" id="srcline637">637</a></span><span class="line">    elseif (x == -1) <span class="comment">% impossible; offset x slightly</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,638" id="srcline638">638</a></span><span class="line">        x = x + eps;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,639" id="srcline639">639</a></span><span class="line">    end</span></span>
+<span class="srcline"><span class="lineno"><a href="1,640" id="srcline640">640</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,641" id="srcline641">641</a></span><span class="line">    <span class="comment">% compute parameter E</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,642" id="srcline642">642</a></span><span class="line">    E  = x*x - 1;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,643" id="srcline643">643</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,644" id="srcline644">644</a></span><span class="line">    <span class="comment">% T(x), T'(x), T''(x)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,645" id="srcline645">645</a></span><span class="line">    if x == 1 <span class="comment">% exactly parabolic; solutions known exactly</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,646" id="srcline646">646</a></span><span class="line">        <span class="comment">% T(x)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,647" id="srcline647">647</a></span><span class="line">        T = 4/3*(1-q^3);</span></span>
+<span class="srcline"><span class="lineno"><a href="1,648" id="srcline648">648</a></span><span class="line">        <span class="comment">% T'(x)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,649" id="srcline649">649</a></span><span class="line">        Tp = 4/5*(q^5 - 1);</span></span>
+<span class="srcline"><span class="lineno"><a href="1,650" id="srcline650">650</a></span><span class="line">        <span class="comment">% T''(x)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,651" id="srcline651">651</a></span><span class="line">        Tpp = Tp + 120/70*(1 - q^7);</span></span>
+<span class="srcline"><span class="lineno"><a href="1,652" id="srcline652">652</a></span><span class="line">        <span class="comment">% T'''(x)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,653" id="srcline653">653</a></span><span class="line">        Tppp = 3*(Tpp - Tp) + 2400/1080*(q^9 - 1);</span></span>
+<span class="srcline"><span class="lineno"><a href="1,654" id="srcline654">654</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,655" id="srcline655">655</a></span><span class="line">    elseif abs(x-1) &lt; 1e-2 <span class="comment">% near-parabolic; compute with series</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,656" id="srcline656">656</a></span><span class="line">        <span class="comment">% evaluate sigma</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,657" id="srcline657">657</a></span><span class="line">        [sig1, dsigdx1, d2sigdx21, d3sigdx31] = sigmax(-E);</span></span>
+<span class="srcline"><span class="lineno"><a href="1,658" id="srcline658">658</a></span><span class="line">        [sig2, dsigdx2, d2sigdx22, d3sigdx32] = sigmax(-E*q*q);</span></span>
+<span class="srcline"><span class="lineno"><a href="1,659" id="srcline659">659</a></span><span class="line">        <span class="comment">% T(x)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,660" id="srcline660">660</a></span><span class="line">        T = sig1 - q^3*sig2;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,661" id="srcline661">661</a></span><span class="line">        <span class="comment">% T'(x)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,662" id="srcline662">662</a></span><span class="line">        Tp = 2*x*(q^5*dsigdx2 - dsigdx1);</span></span>
+<span class="srcline"><span class="lineno"><a href="1,663" id="srcline663">663</a></span><span class="line">        <span class="comment">% T''(x)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,664" id="srcline664">664</a></span><span class="line">        Tpp = Tp/x + 4*x^2*(d2sigdx21 - q^7*d2sigdx22);</span></span>
+<span class="srcline"><span class="lineno"><a href="1,665" id="srcline665">665</a></span><span class="line">        <span class="comment">% T'''(x)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,666" id="srcline666">666</a></span><span class="line">        Tppp = 3*(Tpp-Tp/x)/x + 8*x*x*(q^9*d3sigdx32 - d3sigdx31);</span></span>
+<span class="srcline"><span class="lineno"><a href="1,667" id="srcline667">667</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,668" id="srcline668">668</a></span><span class="line">    else <span class="comment">% all other cases</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,669" id="srcline669">669</a></span><span class="line">        <span class="comment">% compute all substitution functions</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,670" id="srcline670">670</a></span><span class="line">        y  = sqrt(abs(E));</span></span>
+<span class="srcline"><span class="lineno"><a href="1,671" id="srcline671">671</a></span><span class="line">        z  = sqrt(1 + q^2*E);</span></span>
+<span class="srcline"><span class="lineno"><a href="1,672" id="srcline672">672</a></span><span class="line">        f  = y*(z - q*x);</span></span>
+<span class="srcline"><span class="lineno"><a href="1,673" id="srcline673">673</a></span><span class="line">        g  = x*z - q*E;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,674" id="srcline674">674</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,675" id="srcline675">675</a></span><span class="line">        <span class="comment">% BUGFIX: (Simon Tardivel) this line is incorrect for E==0 and f+g==0</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,676" id="srcline676">676</a></span><span class="line">        <span class="comment">% d  = (E &lt; 0)*(atan2(f, g) + pi*m) + (E &gt; 0)*log( max(0, f + g) );</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,677" id="srcline677">677</a></span><span class="line">        <span class="comment">% it should be written out like so:</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,678" id="srcline678">678</a></span><span class="line">        if (E&lt;0)</span></span>
+<span class="srcline"><span class="lineno"><a href="1,679" id="srcline679">679</a></span><span class="line">            d = atan2(f, g) + pi*m;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,680" id="srcline680">680</a></span><span class="line">        elseif (E==0)</span></span>
+<span class="srcline"><span class="lineno"><a href="1,681" id="srcline681">681</a></span><span class="line">            d = 0;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,682" id="srcline682">682</a></span><span class="line">        else</span></span>
+<span class="srcline"><span class="lineno"><a href="1,683" id="srcline683">683</a></span><span class="line">            d = log(max(0, f+g));</span></span>
+<span class="srcline"><span class="lineno"><a href="1,684" id="srcline684">684</a></span><span class="line">        end</span></span>
+<span class="srcline"><span class="lineno"><a href="1,685" id="srcline685">685</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,686" id="srcline686">686</a></span><span class="line">        <span class="comment">% T(x)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,687" id="srcline687">687</a></span><span class="line">        T = 2*(x - q*z - d/y)/E;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,688" id="srcline688">688</a></span><span class="line">        <span class="comment">%  T'(x)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,689" id="srcline689">689</a></span><span class="line">        Tp = (4 - 4*q^3*x/z - 3*x*T)/E;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,690" id="srcline690">690</a></span><span class="line">        <span class="comment">% T''(x)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,691" id="srcline691">691</a></span><span class="line">        Tpp = (-4*q^3/z * (1 - q^2*x^2/z^2) - 3*T - 3*x*Tp)/E;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,692" id="srcline692">692</a></span><span class="line">        <span class="comment">% T'''(x)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,693" id="srcline693">693</a></span><span class="line">        Tppp = (4*q^3/z^2*((1 - q^2*x^2/z^2) + 2*q^2*x/z^2*(z - x)) - 8*Tp - 7*x*Tpp)/E;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,694" id="srcline694">694</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,695" id="srcline695">695</a></span><span class="line">    end</span></span>
+<span class="srcline"><span class="lineno"><a href="1,696" id="srcline696">696</a></span><span class="line">end</span></span>
+</pre>
+</div>
+<pre class="code">
+<span class="srcline"><span class="lineno"><a href="1,697" id="srcline697">697</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,698" id="srcline698">698</a></span><span class="line"><span class="comment">% series approximation to T(x) and its derivatives</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,699" id="srcline699">699</a></span><span class="line"><span class="comment">% (used for near-parabolic cases)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,700" id="srcline700">700</a></span><span class="line"><span class="keyword">function</span> [<span class="var type1" id="S193T3U2797">sig</span>, <span class="var type1" id="S194T3U2798">dsigdx</span>, <span class="var type1" id="S195T3U2799">d2sigdx2</span>, <span class="var type1" id="S196T3U2800">d3sigdx3</span>] = sigmax(<span class="var type1" id="S197T3U2803">y</span>)</span></span>
+<span class="srcline"><span class="lineno"><a href="1,701" id="srcline701">701</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,702" id="srcline702">702</a></span><span class="line">    <span class="comment">% preload the factors [an]</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,703" id="srcline703">703</a></span><span class="line">    <span class="comment">% (25 factors is more than enough for 16-digit accuracy)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,704" id="srcline704">704</a></span><span class="line">    <span class="keyword">persistent</span> <span class="var type1" id="S198T46U2805">an</span>;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,705" id="srcline705">705</a></span><span class="line">    <span class="keyword">if</span> <span class="mxinfo " id="T4:U7">isempty(<span class="var type0" id="S198T0U2810">an</span>)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,706" id="srcline706">706</a></span><span class="line">        <span class="mxinfo " id="T46:U8"><span class="var type1" id="S198T46U2813">an</span> = <span class="mxinfo " id="T46:U10">[</span></span>
+<span class="srcline"><span class="lineno"><a href="1,707" id="srcline707">707</a></span><span class="line">            <span class="mxinfo " id="T3:U11">4.000000000000000e-001</span>;     <span class="mxinfo " id="T3:U12">2.142857142857143e-001</span>;     <span class="mxinfo " id="T3:U13">4.629629629629630e-002</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,708" id="srcline708">708</a></span><span class="line">            <span class="mxinfo " id="T3:U14">6.628787878787879e-003</span>;     <span class="mxinfo " id="T3:U15">7.211538461538461e-004</span>;     <span class="mxinfo " id="T3:U16">6.365740740740740e-005</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,709" id="srcline709">709</a></span><span class="line">            <span class="mxinfo " id="T3:U17">4.741479925303455e-006</span>;     <span class="mxinfo " id="T3:U18">3.059406328320802e-007</span>;     <span class="mxinfo " id="T3:U19">1.742836409255060e-008</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,710" id="srcline710">710</a></span><span class="line">            <span class="mxinfo " id="T3:U20">8.892477331109578e-010</span>;     <span class="mxinfo " id="T3:U21">4.110111531986532e-011</span>;     <span class="mxinfo " id="T3:U22">1.736709384841458e-012</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,711" id="srcline711">711</a></span><span class="line">            <span class="mxinfo " id="T3:U23">6.759767240041426e-014</span>;     <span class="mxinfo " id="T3:U24">2.439123386614026e-015</span>;     <span class="mxinfo " id="T3:U25">8.203411614538007e-017</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,712" id="srcline712">712</a></span><span class="line">            <span class="mxinfo " id="T3:U26">2.583771576869575e-018</span>;     <span class="mxinfo " id="T3:U27">7.652331327976716e-020</span>;     <span class="mxinfo " id="T3:U28">2.138860629743989e-021</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,713" id="srcline713">713</a></span><span class="line">            <span class="mxinfo " id="T3:U29">5.659959451165552e-023</span>;     <span class="mxinfo " id="T3:U30">1.422104833817366e-024</span>;     <span class="mxinfo " id="T3:U31">3.401398483272306e-026</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,714" id="srcline714">714</a></span><span class="line">            <span class="mxinfo " id="T3:U32">7.762544304774155e-028</span>;     <span class="mxinfo " id="T3:U33">1.693916882090479e-029</span>;     <span class="mxinfo " id="T3:U34">3.541295006766860e-031</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,715" id="srcline715">715</a></span><span class="line">            <span class="mxinfo " id="T3:U35">7.105336187804402e-033</span>]</span></span>;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,716" id="srcline716">716</a></span><span class="line">    <span class="keyword">end</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,717" id="srcline717">717</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,718" id="srcline718">718</a></span><span class="line">    <span class="comment">% powers of y</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,719" id="srcline719">719</a></span><span class="line">    <span class="mxinfo " id="T44:U36"><span class="var type1" id="S200T44U2867">powers</span> = <span class="mxinfo " id="T44:U38"><span class="var type1" id="S197T3U2869">y</span>.^(1:25)</span></span>;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,720" id="srcline720">720</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,721" id="srcline721">721</a></span><span class="line">    <span class="comment">% sigma itself</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,722" id="srcline722">722</a></span><span class="line">    <span class="mxinfo " id="T3:U40"><span class="var type1" id="S193T3U2876">sig</span> = <span class="mxinfo " id="T3:U42"><span class="mxinfo " id="T3:U43"><span class="mxinfo " id="T3:U44">4</span>/<span class="mxinfo " id="T3:U45">3</span></span> + <span class="mxinfo " id="T3:U46"><span class="var type1" id="S200T44U2882">powers</span>*<span class="var type1" id="S198T46U2883">an</span></span></span></span>;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,723" id="srcline723">723</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,724" id="srcline724">724</a></span><span class="line">    <span class="comment">% dsigma / dx (derivative)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,725" id="srcline725">725</a></span><span class="line">    <span class="mxinfo " id="T3:U49"><span class="var type1" id="S194T3U2886">dsigdx</span> = <span class="mxinfo " id="T3:U51">( <span class="mxinfo " id="T44:U52">(<span class="mxinfo " id="T44:U53">1:25</span>).*<span class="mxinfo " id="T44:U54">[<span class="mxinfo " id="T3:U55">1</span>, <span class="mxinfo " id="T47:U56"><span class="var type1" id="S200T44U2898">powers</span>(<span class="mxinfo " id="T48:U58">1:24</span>)</span>]</span></span> ) * <span class="var type1" id="S198T46U2902">an</span></span></span>;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,726" id="srcline726">726</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,727" id="srcline727">727</a></span><span class="line">    <span class="comment">% d2sigma / dx2 (second derivative)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,728" id="srcline728">728</a></span><span class="line">    <span class="mxinfo " id="T3:U60"><span class="var type1" id="S195T3U2905">d2sigdx2</span> = <span class="mxinfo " id="T3:U62">( <span class="mxinfo " id="T44:U63"><span class="mxinfo " id="T44:U64">(<span class="mxinfo " id="T44:U65">1:25</span>).*(<span class="mxinfo " id="T44:U66">0:24</span>)</span>.*<span class="mxinfo " id="T44:U67">[<span class="mxinfo " id="T3:U68"><span class="mxinfo " id="T3:U69">1</span>/<span class="var type1" id="S197T3U2922">y</span></span>, <span class="mxinfo " id="T3:U71">1</span>, <span class="mxinfo " id="T49:U72"><span class="var type1" id="S200T44U2925">powers</span>(<span class="mxinfo " id="T50:U74">1:23</span>)</span>]</span></span> ) * <span class="var type1" id="S198T46U2929">an</span></span></span>;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,729" id="srcline729">729</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,730" id="srcline730">730</a></span><span class="line">    <span class="comment">% d3sigma / dx3 (third derivative)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,731" id="srcline731">731</a></span><span class="line">    <span class="mxinfo " id="T3:U76"><span class="var type1" id="S196T3U2932">d3sigdx3</span> = <span class="mxinfo " id="T3:U78">( <span class="mxinfo " id="T44:U79"><span class="mxinfo " id="T44:U80"><span class="mxinfo " id="T44:U81">(<span class="mxinfo " id="T44:U82">1:25</span>).*(<span class="mxinfo " id="T44:U83">0:24</span>)</span>.*(<span class="mxinfo " id="T44:U84">-1:23</span>)</span>.*<span class="mxinfo " id="T44:U85">[<span class="mxinfo " id="T3:U86"><span class="mxinfo " id="T3:U87"><span class="mxinfo " id="T3:U88">1</span>/<span class="var type1" id="S197T3U2956">y</span></span>/<span class="var type1" id="S197T3U2957">y</span></span>, <span class="mxinfo " id="T3:U91"><span class="mxinfo " id="T3:U92">1</span>/<span class="var type1" id="S197T3U2960">y</span></span>, <span class="mxinfo " id="T3:U94">1</span>, <span class="mxinfo " id="T51:U95"><span class="var type1" id="S200T44U2963">powers</span>(<span class="mxinfo " id="T52:U97">1:22</span>)</span>]</span></span> ) * <span class="var type1" id="S198T46U2967">an</span></span></span>;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,732" id="srcline732">732</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,733" id="srcline733">733</a></span><span class="line"><span class="keyword">end</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,734" id="srcline734">734</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,735" id="srcline735">735</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,736" id="srcline736">736</a></span><span class="line"><span class="comment">% -----------------------------------------------------------------</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,737" id="srcline737">737</a></span><span class="line"><span class="comment">% Helper functions</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,738" id="srcline738">738</a></span><span class="line"><span class="comment">% -----------------------------------------------------------------</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,739" id="srcline739">739</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,740" id="srcline740">740</a></span><span class="line"><span class="comment">% compute minimum and maximum distances to the central body</span></span></span>
+</pre>
+<div class="dead">
+<pre class="code">
+<span class="srcline"><span class="lineno"><a href="1,741" id="srcline741">741</a></span><span class="line">function extremal_distances = minmax_distances(r1vec, r1,...</span></span>
+<span class="srcline"><span class="lineno"><a href="1,742" id="srcline742">742</a></span><span class="line">                                               r2vec, r2,...</span></span>
+<span class="srcline"><span class="lineno"><a href="1,743" id="srcline743">743</a></span><span class="line">                                               dth,...</span></span>
+<span class="srcline"><span class="lineno"><a href="1,744" id="srcline744">744</a></span><span class="line">                                               a,...</span></span>
+<span class="srcline"><span class="lineno"><a href="1,745" id="srcline745">745</a></span><span class="line">                                               V1, V2,...</span></span>
+<span class="srcline"><span class="lineno"><a href="1,746" id="srcline746">746</a></span><span class="line">                                               m,...</span></span>
+<span class="srcline"><span class="lineno"><a href="1,747" id="srcline747">747</a></span><span class="line">                                               muC)</span></span>
+<span class="srcline"><span class="lineno"><a href="1,748" id="srcline748">748</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,749" id="srcline749">749</a></span><span class="line">    <span class="comment">% default - minimum/maximum of r1,r2</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,750" id="srcline750">750</a></span><span class="line">    minimum_distance = min(r1,r2);</span></span>
+<span class="srcline"><span class="lineno"><a href="1,751" id="srcline751">751</a></span><span class="line">    maximum_distance = max(r1,r2);</span></span>
+<span class="srcline"><span class="lineno"><a href="1,752" id="srcline752">752</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,753" id="srcline753">753</a></span><span class="line">    <span class="comment">% was the longway used or not?</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,754" id="srcline754">754</a></span><span class="line">    longway = abs(dth) &gt; pi;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,755" id="srcline755">755</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,756" id="srcline756">756</a></span><span class="line">    <span class="comment">% eccentricity vector (use triple product identity)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,757" id="srcline757">757</a></span><span class="line">    evec = ((V1*V1.')*r1vec - (V1*r1vec.')*V1)/muC - r1vec/r1;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,758" id="srcline758">758</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,759" id="srcline759">759</a></span><span class="line">    <span class="comment">% eccentricity</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,760" id="srcline760">760</a></span><span class="line">    e = sqrt(evec*evec.');</span></span>
+<span class="srcline"><span class="lineno"><a href="1,761" id="srcline761">761</a></span><span class="line">    <span class="comment">% apses</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,762" id="srcline762">762</a></span><span class="line">    pericenter = a*(1-e);</span></span>
+<span class="srcline"><span class="lineno"><a href="1,763" id="srcline763">763</a></span><span class="line">    apocenter  = inf;                    <span class="comment">% parabolic/hyperbolic case</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,764" id="srcline764">764</a></span><span class="line">    if (e &lt; 1), apocenter = a*(1+e); end <span class="comment">% elliptic case</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,765" id="srcline765">765</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,766" id="srcline766">766</a></span><span class="line">    <span class="comment">% since we have the eccentricity vector, we know exactly where the</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,767" id="srcline767">767</a></span><span class="line">    <span class="comment">% pericenter lies. Use this fact, and the given value of [dth], to</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,768" id="srcline768">768</a></span><span class="line">    <span class="comment">% cross-check if the trajectory goes past it</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,769" id="srcline769">769</a></span><span class="line">    if (m &gt; 0) <span class="comment">% obvious case (always elliptical and both apses are traversed)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,770" id="srcline770">770</a></span><span class="line">        minimum_distance = pericenter;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,771" id="srcline771">771</a></span><span class="line">        maximum_distance = apocenter;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,772" id="srcline772">772</a></span><span class="line">    else <span class="comment">% less obvious case</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,773" id="srcline773">773</a></span><span class="line">        <span class="comment">% compute theta1&amp;2 ( use (AxB)-(CxD) = (CÂ·B)(DÂ·A) - (CÂ·A)(BÂ·D) ))</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,774" id="srcline774">774</a></span><span class="line">        pm1 = sign( r1*r1*(evec*V1.') - (r1vec*evec.')*(r1vec*V1.') );</span></span>
+<span class="srcline"><span class="lineno"><a href="1,775" id="srcline775">775</a></span><span class="line">        pm2 = sign( r2*r2*(evec*V2.') - (r2vec*evec.')*(r2vec*V2.') );</span></span>
+<span class="srcline"><span class="lineno"><a href="1,776" id="srcline776">776</a></span><span class="line">        <span class="comment">% make 100.4% sure it's in (-1 &lt;= theta12 &lt;= +1)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,777" id="srcline777">777</a></span><span class="line">        theta1 = pm1*acos( max(-1, min(1, (r1vec/r1)*(evec/e).')) );</span></span>
+<span class="srcline"><span class="lineno"><a href="1,778" id="srcline778">778</a></span><span class="line">        theta2 = pm2*acos( max(-1, min(1, (r2vec/r2)*(evec/e).')) );</span></span>
+<span class="srcline"><span class="lineno"><a href="1,779" id="srcline779">779</a></span><span class="line">        <span class="comment">% points 1&amp;2 are on opposite sides of the symmetry axis -- minimum</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,780" id="srcline780">780</a></span><span class="line">        <span class="comment">% and maximum distance depends both on the value of [dth], and both</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,781" id="srcline781">781</a></span><span class="line">        <span class="comment">% [theta1] and [theta2]</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,782" id="srcline782">782</a></span><span class="line">        if (theta1*theta2 &lt; 0)</span></span>
+<span class="srcline"><span class="lineno"><a href="1,783" id="srcline783">783</a></span><span class="line">            <span class="comment">% if |th1| + |th2| = turnangle, we know that the pericenter was</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,784" id="srcline784">784</a></span><span class="line">            <span class="comment">% passed</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,785" id="srcline785">785</a></span><span class="line">            if abs(abs(theta1) + abs(theta2) - dth) &lt; 5*eps(dth)</span></span>
+<span class="srcline"><span class="lineno"><a href="1,786" id="srcline786">786</a></span><span class="line">                minimum_distance = pericenter;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,787" id="srcline787">787</a></span><span class="line">            <span class="comment">% this condition can only be false for elliptic cases, and</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,788" id="srcline788">788</a></span><span class="line">            <span class="comment">% when it is indeed false, we know that the orbit passed</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,789" id="srcline789">789</a></span><span class="line">            <span class="comment">% apocenter</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,790" id="srcline790">790</a></span><span class="line">            else</span></span>
+<span class="srcline"><span class="lineno"><a href="1,791" id="srcline791">791</a></span><span class="line">                maximum_distance = apocenter;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,792" id="srcline792">792</a></span><span class="line">            end</span></span>
+<span class="srcline"><span class="lineno"><a href="1,793" id="srcline793">793</a></span><span class="line">        <span class="comment">% points 1&amp;2 are on the same side of the symmetry axis. Only if the</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,794" id="srcline794">794</a></span><span class="line">        <span class="comment">% long-way was used are the min. and max. distances different from</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,795" id="srcline795">795</a></span><span class="line">        <span class="comment">% the min. and max. values of the radii (namely, equal to the apses)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,796" id="srcline796">796</a></span><span class="line">        elseif longway</span></span>
+<span class="srcline"><span class="lineno"><a href="1,797" id="srcline797">797</a></span><span class="line">            minimum_distance = pericenter;</span></span>
+<span class="srcline"><span class="lineno"><a href="1,798" id="srcline798">798</a></span><span class="line">            if (e &lt; 1), maximum_distance = apocenter; end</span></span>
+<span class="srcline"><span class="lineno"><a href="1,799" id="srcline799">799</a></span><span class="line">        end</span></span>
+<span class="srcline"><span class="lineno"><a href="1,800" id="srcline800">800</a></span><span class="line">    end</span></span>
+<span class="srcline"><span class="lineno"><a href="1,801" id="srcline801">801</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,802" id="srcline802">802</a></span><span class="line">    <span class="comment">% output argument</span></span></span>
+<span class="srcline"><span class="lineno"><a href="1,803" id="srcline803">803</a></span><span class="line">    extremal_distances = [minimum_distance, maximum_distance];</span></span>
+<span class="srcline"><span class="lineno"><a href="1,804" id="srcline804">804</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="1,805" id="srcline805">805</a></span><span class="line">end</span></span>
+<span class="srcline"><span class="lineno"><a href="1,806" id="srcline806">806</a></span><span class="line"> </span></span>
+</pre>
+</div>
+</body>
+</html>

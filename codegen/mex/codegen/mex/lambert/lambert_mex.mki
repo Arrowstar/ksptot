@@ -1,0 +1,16 @@
+# Make settings for lambert 
+CC=C:\ProgramData\MATLAB\SupportPackages\R2017b\3P.instrset\mingw_w64.instrset\bin\gcc
+CXX=C:\ProgramData\MATLAB\SupportPackages\R2017b\3P.instrset\mingw_w64.instrset\bin\g++
+CFLAGS=-c -fexceptions -fno-omit-frame-pointer -m64 -DMATLAB_MEX_FILE  -DMATLAB_MEX_FILE 
+CXXFLAGS=-c -fexceptions -fno-omit-frame-pointer -std=c++11 -m64 -DMATLAB_MEX_FILE  -DMATLAB_MEX_FILE 
+OPTIMFLAGS=-O -DNDEBUG
+DEBUGFLAGS=-g
+LINKER=C:\ProgramData\MATLAB\SupportPackages\R2017b\3P.instrset\mingw_w64.instrset\bin\gcc
+LINKFLAGS=-m64 -Wl,--no-undefined -shared -static -L"C:\Program Files\MATLAB\R2017b\extern\lib\win64\mingw64" -llibmx -llibmex -llibmat -lm -llibmwlapack -llibmwblas 
+LINKOPTIMFLAGS=
+LINKDEBUGFLAGS=-g
+MATLAB_ARCH=win64
+OMPFLAGS= 
+OMPLINKFLAGS= 
+EMC_COMPILER=mingw64
+EMC_CONFIG=optim

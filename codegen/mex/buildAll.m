@@ -14,27 +14,27 @@ example_input = {...
 codegen lambert.m -args example_input
 clear example_input
 
-%build AngleZero2Pi
-example_input = {0.0};
-codegen AngleZero2Pi.m -args example_input
-clear example_input
-
-%build angleNegPiToPi
-example_input = {0.0};
-codegen angleNegPiToPi.m -args example_input
-clear example_input
-
-%build crossARH
-example_input = {[0;0;0], ...
-                 [0;0;0]};
-codegen crossARH.m -args example_input
-clear example_input
-
-%build dotARH
-example_input = {[0;0;0], ...
-                 [0;0;0]};
-codegen dotARH.m -args example_input
-clear example_input
+% %build AngleZero2Pi
+% example_input = {0.0};
+% codegen AngleZero2Pi.m -args example_input
+% clear example_input
+% 
+% %build angleNegPiToPi
+% example_input = {0.0};
+% codegen angleNegPiToPi.m -args example_input
+% clear example_input
+% 
+% %build crossARH
+% example_input = {[0;0;0], ...
+%                  [0;0;0]};
+% codegen crossARH.m -args example_input
+% clear example_input
+% 
+% %build dotARH
+% example_input = {[0;0;0], ...
+%                  [0;0;0]};
+% codegen dotARH.m -args example_input
+% clear example_input
 
 %build getKeplerFromState_Alg
 example_input = {[0;0;0], ...
