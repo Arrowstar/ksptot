@@ -26,24 +26,22 @@ emlrtContext emlrtContextGlobal = { true,/* bFirstTime */
 
 emlrtRSInfo emlrtRSI = { 13,           /* lineNo */
   "getKeplerFromState_Alg",            /* fcnName */
-  "C:\\Users\\Adam\\Dropbox\\Documents\\homework\\Personal Projects\\KSP Trajectory Optimization Tool\\codegen\\mex\\getKeplerFromState_Alg\\g"
-  "etKeplerFromState_Alg.m"            /* pathName */
+  "/home/adam/ksptot/ksptot/codegen/mex/getKeplerFromState_Alg/getKeplerFromState_Alg.m"/* pathName */
 };
 
 emlrtRSInfo b_emlrtRSI = { 16,         /* lineNo */
   "getKeplerFromState_Alg",            /* fcnName */
-  "C:\\Users\\Adam\\Dropbox\\Documents\\homework\\Personal Projects\\KSP Trajectory Optimization Tool\\codegen\\mex\\getKeplerFromState_Alg\\g"
-  "etKeplerFromState_Alg.m"            /* pathName */
+  "/home/adam/ksptot/ksptot/codegen/mex/getKeplerFromState_Alg/getKeplerFromState_Alg.m"/* pathName */
 };
 
 emlrtRSInfo c_emlrtRSI = { 40,         /* lineNo */
   "mpower",                            /* fcnName */
-  "C:\\Program Files\\MATLAB\\R2017b\\toolbox\\eml\\lib\\matlab\\ops\\mpower.m"/* pathName */
+  "/usr/local/MATLAB/R2017b/toolbox/eml/lib/matlab/ops/mpower.m"/* pathName */
 };
 
 emlrtRSInfo d_emlrtRSI = { 49,         /* lineNo */
   "power",                             /* fcnName */
-  "C:\\Program Files\\MATLAB\\R2017b\\toolbox\\eml\\lib\\matlab\\ops\\power.m"/* pathName */
+  "/usr/local/MATLAB/R2017b/toolbox/eml/lib/matlab/ops/power.m"/* pathName */
 };
 
 /* End of code generation (getKeplerFromState_Alg_data.c) */

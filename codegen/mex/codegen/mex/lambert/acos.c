@@ -14,7 +14,7 @@
 /* Variable Definitions */
 static emlrtRSInfo mb_emlrtRSI = { 13, /* lineNo */
   "acos",                              /* fcnName */
-  "C:\\Program Files\\MATLAB\\R2017b\\toolbox\\eml\\lib\\matlab\\elfun\\acos.m"/* pathName */
+  "/usr/local/MATLAB/R2017b/toolbox/eml/lib/matlab/elfun/acos.m"/* pathName */
 };
 
 /* Function Definitions */

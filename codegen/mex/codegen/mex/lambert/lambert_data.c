@@ -26,12 +26,12 @@ emlrtContext emlrtContextGlobal = { true,/* bFirstTime */
 
 emlrtRSInfo lb_emlrtRSI = { 12,        /* lineNo */
   "sqrt",                              /* fcnName */
-  "C:\\Program Files\\MATLAB\\R2017b\\toolbox\\eml\\lib\\matlab\\elfun\\sqrt.m"/* pathName */
+  "/usr/local/MATLAB/R2017b/toolbox/eml/lib/matlab/elfun/sqrt.m"/* pathName */
 };
 
 emlrtRSInfo yd_emlrtRSI = { 719,       /* lineNo */
   "lambert",                           /* fcnName */
-  "C:\\Users\\Adam\\Dropbox\\Documents\\homework\\Personal Projects\\KSP Trajectory Optimization Tool\\codegen\\mex\\lambert\\lambert.m"/* pathName */
+  "/home/adam/ksptot/ksptot/codegen/mex/lambert/lambert.m"/* pathName */
 };
 
 /* End of code generation (lambert_data.c) */

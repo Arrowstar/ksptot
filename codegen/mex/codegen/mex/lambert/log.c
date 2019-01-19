@@ -14,7 +14,7 @@
 /* Variable Definitions */
 static emlrtRSInfo qb_emlrtRSI = { 13, /* lineNo */
   "log",                               /* fcnName */
-  "C:\\Program Files\\MATLAB\\R2017b\\toolbox\\eml\\lib\\matlab\\elfun\\log.m"/* pathName */
+  "/usr/local/MATLAB/R2017b/toolbox/eml/lib/matlab/elfun/log.m"/* pathName */
 };
 
 /* Function Definitions */
