@@ -1,4 +1,4 @@
-function maneuver = ma_createDVManeuver(name, maneuverType, maneuverValue, thruster, vars, lineColor, lineStyle)
+function maneuver = ma_createDVManeuver(name, maneuverType, maneuverValue, thruster, vars, lineColor, lineStyle, lineWidth)
 %ma_createDVManeuver Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -26,5 +26,6 @@ function maneuver = ma_createDVManeuver(name, maneuverType, maneuverValue, thrus
     maneuver.vars          = vars;
     maneuver.lineColor     = lineColor;
     maneuver.lineStyle     = lineStyle;
+    maneuver.lineWidth     = lineWidth;
 end
 

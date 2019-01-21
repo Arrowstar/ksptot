@@ -1,4 +1,4 @@
-function coast = ma_createNBodyCoast(name, coastType, coastToValue, revs, refBody, vars, soiSkipIds, lineColor, lineStyle, massLoss, forceModel, maxPropTime)
+function coast = ma_createNBodyCoast(name, coastType, coastToValue, revs, refBody, vars, soiSkipIds, lineColor, lineStyle, lineWidth, massLoss, forceModel, maxPropTime)
 %ma_createNBodyCoast Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -27,6 +27,7 @@ function coast = ma_createNBodyCoast(name, coastType, coastToValue, revs, refBod
     coast.forceModel    = forceModel;
     coast.lineColor     = lineColor;
     coast.lineStyle     = lineStyle;
+    coast.lineWidth     = lineWidth;
     coast.massloss      = massLoss;
     coast.maxPropTime   = maxPropTime;
 end

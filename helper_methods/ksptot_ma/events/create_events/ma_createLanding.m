@@ -1,4 +1,4 @@
-function landing = ma_createLanding(name, landingDuration, lineColor, lineStyle, massLoss)
+function landing = ma_createLanding(name, landingDuration, lineColor, lineStyle, lineWidth, massLoss)
 %ma_createDocking Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -10,6 +10,7 @@ function landing = ma_createLanding(name, landingDuration, lineColor, lineStyle,
     landing.landingDuration	= landingDuration;
     landing.lineColor       = lineColor;
     landing.lineStyle       = lineStyle;
+    landing.lineWidth       = lineWidth;
     landing.massloss        = massLoss;
 end
 

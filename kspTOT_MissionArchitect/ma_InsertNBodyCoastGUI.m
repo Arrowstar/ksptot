@@ -22,7 +22,7 @@ function varargout = ma_InsertNBodyCoastGUI(varargin)
 
 % Edit the above text to modify the response to help ma_InsertNBodyCoastGUI
 
-% Last Modified by GUIDE v2.5 19-Mar-2018 14:59:50
+% Last Modified by GUIDE v2.5 20-Jan-2019 16:39:14
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -173,6 +173,11 @@ function populateGUIWithEvent(handles, event)
     styleValue = findValueFromComboBox(styleStr, handles.nBodyCoastLineStyleCombo);
  	set(handles.nBodyCoastLineStyleCombo,'Value',styleValue);
     
+    contents = handles.lineWidthCombo.String;
+    contentsDouble = str2double(contents);
+    ind = find(contentsDouble == event.lineWidth);
+    set(handles.lineWidthCombo,'Value',ind);
+    
     set(handles.massLossCheckbox,'Value',event.massloss.use);
     massLossCheckbox_Callback(handles.massLossCheckbox, [], handles);
     
@@ -253,6 +258,11 @@ else
     lineStyleStr = contents{get(handles.nBodyCoastLineStyleCombo,'Value')};
     lineStyle = getLineStyleStrFromText(lineStyleStr);
     
+    contents = handles.lineWidthCombo.String;
+    contentsDouble = str2double(contents);
+    contensInd = get(handles.lineWidthCombo,'Value');
+    lineWidth = contentsDouble(contensInd);
+    
     soiSkipIds = getappdata(hObject,'soiSkipIds');    
     
     massloss = struct('use',logical(get(handles.massLossCheckbox,'Value')), 'lossConvert',getappdata(handles.ma_InsertNBodyCoastGUI,'lossConverts'));
@@ -262,7 +272,7 @@ else
     
     maxPropTime = str2double(get(handles.maxPropTimeText,'string'));
     
-    varargout{1} = ma_createNBodyCoast(name, coastType, value, revs, bodyInfo, vars, soiSkipIds, lineSpecColor, lineStyle, massloss, forceModel, maxPropTime);
+    varargout{1} = ma_createNBodyCoast(name, coastType, value, revs, bodyInfo, vars, soiSkipIds, lineSpecColor, lineStyle, lineWidth, massloss, forceModel, maxPropTime);
     close(handles.ma_InsertNBodyCoastGUI);
 end
 
@@ -1175,6 +1185,29 @@ function nBodyCoastLineStyleCombo_Callback(hObject, eventdata, handles)
 % --- Executes during object creation, after setting all properties.
 function nBodyCoastLineStyleCombo_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to nBodyCoastLineStyleCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in lineWidthCombo.
+function lineWidthCombo_Callback(hObject, eventdata, handles)
+% hObject    handle to lineWidthCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns lineWidthCombo contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from lineWidthCombo
+
+
+% --- Executes during object creation, after setting all properties.
+function lineWidthCombo_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to lineWidthCombo (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 

@@ -22,7 +22,7 @@ function varargout = ma_InsertCoastGUI(varargin)
 
 % Edit the above text to modify the response to help ma_InsertCoastGUI
 
-% Last Modified by GUIDE v2.5 13-Aug-2018 19:43:29
+% Last Modified by GUIDE v2.5 20-Jan-2019 15:57:57
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -182,6 +182,11 @@ function populateGUIWithEvent(handles, event)
     styleValue = findValueFromComboBox(styleStr, handles.coastLineStyleCombo);
  	set(handles.coastLineStyleCombo,'Value',styleValue);
     
+    contents = handles.lineWidthCombo.String;
+    contentsDouble = str2double(contents);
+    ind = find(contentsDouble == event.lineWidth);
+    set(handles.lineWidthCombo,'Value',ind);
+    
     set(handles.massLossCheckbox,'Value',event.massloss.use);
     massLossCheckbox_Callback(handles.massLossCheckbox, [], handles);
     
@@ -338,6 +343,11 @@ else
     lineStyleStr = contents{get(handles.coastLineStyleCombo,'Value')};
     lineStyle = getLineStyleStrFromText(lineStyleStr);
     
+    contents = handles.lineWidthCombo.String;
+    contentsDouble = str2double(contents);
+    contensInd = get(handles.lineWidthCombo,'Value');
+    lineWidth = contentsDouble(contensInd);
+    
     soiSkipIds = getappdata(hObject,'soiSkipIds');    
     
     massloss = struct('use',logical(get(handles.massLossCheckbox,'Value')), 'lossConvert',getappdata(handles.ma_InsertCoastGUI,'lossConverts'));
@@ -390,7 +400,7 @@ else
     funcHandle = @(stateLogRow, onlyReturnTaskStr, maData) ma_getDepVarValueUnit(1, stateLogRow, taskStr, 0, refBodyId, refOtherScId, refStationId, propNames, maData, celBodyData, onlyReturnTaskStr);
     maxPropTime = str2double(get(handles.customFuncMaxPropTimeText,'String'));
     
-    varargout{1} = ma_createCoast(name, coastType, value, revs, bodyInfo, vars, soiSkipIds, lineSpecColor, lineStyle, massloss, funcHandle, maxPropTime, orbitDecay);
+    varargout{1} = ma_createCoast(name, coastType, value, revs, bodyInfo, vars, soiSkipIds, lineSpecColor, lineStyle, lineWidth, massloss, funcHandle, maxPropTime, orbitDecay);
     close(handles.ma_InsertCoastGUI);
 end
 
@@ -1549,6 +1559,29 @@ function geomagneticIndText_CreateFcn(hObject, eventdata, handles)
 % handles    empty - handles not created until after all CreateFcns called
 
 % Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in lineWidthCombo.
+function lineWidthCombo_Callback(hObject, eventdata, handles)
+% hObject    handle to lineWidthCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns lineWidthCombo contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from lineWidthCombo
+
+
+% --- Executes during object creation, after setting all properties.
+function lineWidthCombo_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to lineWidthCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
 %       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');

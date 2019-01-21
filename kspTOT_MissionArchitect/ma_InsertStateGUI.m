@@ -22,7 +22,7 @@ function varargout = ma_InsertStateGUI(varargin)
 
 % Edit the above text to modify the response to help ma_InsertStateGUI
 
-% Last Modified by GUIDE v2.5 19-Mar-2018 15:06:25
+% Last Modified by GUIDE v2.5 20-Jan-2019 16:44:14
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -141,6 +141,11 @@ function populateGUIWithEvent(handles, event)
         styleStr = getLineStyleFromString(event.launch.lineStyle);
         styleValue = findValueFromComboBox(styleStr, handles.stateLineStyleCombo);
         set(handles.stateLineStyleCombo,'Value',styleValue);
+        
+        contents = handles.lineWidthCombo.String;
+        contentsDouble = str2double(contents);
+        ind = find(contentsDouble == event.launch.lineWidth);
+        set(handles.lineWidthCombo,'Value',ind);
                
         set(handles.launchEpochText, 'String', fullAccNum2Str(event.launch.launchValue(1)));
         set(handles.launchLatText, 'String', fullAccNum2Str(rad2deg(event.launch.launchValue(2))));
@@ -426,9 +431,14 @@ function [launch, vars] = createLaunchEvent(handles, name)
     lineStyleStr = contents{get(handles.stateLineStyleCombo,'Value')};
     lineStyle = getLineStyleStrFromText(lineStyleStr);
     
+    contents = handles.lineWidthCombo.String;
+    contentsDouble = str2double(contents);
+    contensInd = get(handles.lineWidthCombo,'Value');
+    lineWidth = contentsDouble(contensInd);
+    
     launch = ma_createLaunch(name, launchEpoch, launchLat, launchLong, launchAlt, ...
                                     launchToF, burnoutLat, burnoutLong, burnoutAlt, ...
-                                    lineColor, lineStyle, bodyInfo.id);
+                                    lineColor, lineStyle, lineWidth, bodyInfo.id);
 
                                 
 function [errMsg, basicLaunchCheckPassed] = validateInputs(handles)
@@ -1581,6 +1591,8 @@ function initStateTypeBtnGrp_SelectionChangedFcn(hObject, eventdata, handles)
         handles.launchBurnoutAltLwrBndText.Enable = 'off';
         handles.launchBurnoutAltUprBndText.Enable = 'off';
         
+        handles.lineWidthCombo.Enable = 'off';
+        
         epochOptCheckbox_Callback(handles.epochOptCheckbox, [], handles);
         smaOptCheckbox_Callback(handles.smaOptCheckbox, [], handles);
         eccOptCheckbox_Callback(handles.eccOptCheckbox, [], handles);
@@ -1690,6 +1702,8 @@ function initStateTypeBtnGrp_SelectionChangedFcn(hObject, eventdata, handles)
         handles.launchBurnoutAltOptCheckbox.Enable = 'on';
         handles.launchBurnoutAltLwrBndText.Enable = 'on';
         handles.launchBurnoutAltUprBndText.Enable = 'on';
+        
+        handles.lineWidthCombo.Enable = 'on';
         
         launchEpochOptCheckbox_Callback(handles.launchEpochOptCheckbox, [], handles);
         launchLatOptCheckbox_Callback(handles.launchLatOptCheckbox, [], handles);
@@ -3016,6 +3030,29 @@ function stateLineStyleCombo_Callback(hObject, eventdata, handles)
 % --- Executes during object creation, after setting all properties.
 function stateLineStyleCombo_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to stateLineStyleCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in lineWidthCombo.
+function lineWidthCombo_Callback(hObject, eventdata, handles)
+% hObject    handle to lineWidthCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns lineWidthCombo contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from lineWidthCombo
+
+
+% --- Executes during object creation, after setting all properties.
+function lineWidthCombo_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to lineWidthCombo (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 

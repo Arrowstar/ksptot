@@ -74,6 +74,10 @@ function maData = ma_updateMAData(maData, handles)
                 if(~isfield(event,'orbitDecay'))
                     event.orbitDecay = getDefaultOrbitDecay();
                 end
+                
+                if(~isfield(event,'lineWidth'))
+                    event.lineWidth = 1.5;
+                end
             elseif(strcmpi(event.type,'DV_Maneuver'))
                 if(~isfield(event,'lineColor'))
                     event.lineColor = 'r';
@@ -81,6 +85,10 @@ function maData = ma_updateMAData(maData, handles)
                 
                 if(~isfield(event,'lineStyle'))
                     event.lineStyle = '-';
+                end
+                
+                if(~isfield(event,'lineWidth'))
+                    event.lineWidth = 1.5;
                 end
                 
             elseif(strcmpi(event.type,'Set_State'))
@@ -95,8 +103,15 @@ function maData = ma_updateMAData(maData, handles)
                 end
                 
                 if(~isempty(event.launch))
-                    event.launch.lineStyle = '-';
+                    if(~isfield(event.launch,'lineStyle'))
+                        event.launch.lineStyle = '-';
+                    end
+                    
+                    if(~isfield(event.launch,'lineWidth'))
+                        event.launch.lineWidth = 1.5;
+                    end
                 end
+                                
             elseif(strcmpi(event.type,'Aerobrake'))
                 if(~isfield(event,'lineColor'))
                     event.lineColor = 'r';
@@ -106,9 +121,17 @@ function maData = ma_updateMAData(maData, handles)
                     event.lineStyle = '-';
                 end
                 
+                if(~isfield(event,'lineWidth'))
+                    event.lineWidth = 1.5;
+                end
+                
             elseif(strcmpi(event.type,'Docking'))
                 if(~isfield(event,'lineStyle'))
                     event.lineStyle = '-';
+                end
+                
+                if(~isfield(event,'lineWidth'))
+                    event.lineWidth = 1.5;
                 end
                 
             elseif(strcmpi(event.type,'Landing'))
@@ -116,9 +139,17 @@ function maData = ma_updateMAData(maData, handles)
                     event.lineStyle = '-';
                 end
                 
+                if(~isfield(event,'lineWidth'))
+                    event.lineWidth = 1.5;
+                end
+                
             elseif(strcmpi(event.type,'NBodyCoast'))
                 if(~isfield(event,'lineStyle'))
                     event.lineStyle = '-';
+                end
+                
+                if(~isfield(event,'lineWidth'))
+                    event.lineWidth = 1.5;
                 end
             end
             script{j} = event;

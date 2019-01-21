@@ -5,6 +5,7 @@ classdef EventColorLineSpec < matlab.mixin.SetGet
     properties
         color(1,1) ColorSpecEnum = ColorSpecEnum.Red
         lineSpec(1,1) LineSpecEnum = LineSpecEnum.SolidLine
+        lineWidth(1,1) double = 1.5;
     end
     
     methods

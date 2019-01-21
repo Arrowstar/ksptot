@@ -334,7 +334,7 @@ function computeDragCoefficient(handles)
 function dEnergy = aerobrakeFunc(dragCoeff, initialState, dragModel, postSMADesired, gmu, celBodyData)
     dragCoeff = abs(dragCoeff);
     
-    aerobrake = ma_createAerobrake('NA', dragCoeff, dragModel, 'r', '-');
+    aerobrake = ma_createAerobrake('NA', dragCoeff, dragModel, 'r', '-', 1.5);
     eventLog = ma_executeAerobrake(initialState, -1, aerobrake, celBodyData);
     
     newRVect = eventLog(end,2:4);

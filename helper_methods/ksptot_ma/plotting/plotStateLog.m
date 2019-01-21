@@ -101,8 +101,16 @@ function [childrenHGs] = plotSubStateLog(subStateLog, prevSubStateLog, showSoI, 
         plotLineStyle = '-';
     end
     
+    if(isfield(event,'lineWidth'))
+        plotLineWidth = event.lineWidth;
+    elseif(isfield(event,'launch') && ~isempty(event.launch) && isfield(event.launch,'lineWidth'))
+        plotLineWidth = event.launch.lineWidth;
+    else
+        plotLineWidth = 1.5;
+    end
+    
     hold(dAxes,'on');
-	plot3(dAxes, [prevSubStateLog(end,2);subStateLog(1:end,2)], [prevSubStateLog(end,3);subStateLog(1:end,3)], [prevSubStateLog(end,4);subStateLog(1:end,4)], 'Color', plotLineColor, 'LineStyle', plotLineStyle, 'LineWidth',1.5);    %  plotColors(subStateLog(1,13))
+	plot3(dAxes, [prevSubStateLog(end,2);subStateLog(1:end,2)], [prevSubStateLog(end,3);subStateLog(1:end,3)], [prevSubStateLog(end,4);subStateLog(1:end,4)], 'Color', plotLineColor, 'LineStyle', plotLineStyle, 'LineWidth',plotLineWidth);    %  plotColors(subStateLog(1,13))
 
     %DELETE THIS PARAGRAPH
 %     equatHVect = [0,0,1];

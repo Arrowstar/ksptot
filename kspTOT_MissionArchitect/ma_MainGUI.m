@@ -1031,7 +1031,7 @@ function splitCoastAtUTMenu_Callback(hObject, eventdata, handles)
             
             preList = script(1:eventNum-1);
             postList = script(eventNum:end);
-            newCoast = ma_createCoast('Split at UT', 'goto_ut', splitUT, 0, event.refBody, vars, event.soiSkipIds, event.lineColor, event.lineStyle, event.massloss, event.funcHandle, event.maxPropTime, event.orbitDecay);
+            newCoast = ma_createCoast('Split at UT', 'goto_ut', splitUT, 0, event.refBody, vars, event.soiSkipIds, event.lineColor, event.lineStyle, event.lineWidth, event.massloss, event.funcHandle, event.maxPropTime, event.orbitDecay);
             script = [preList, newCoast, postList];
             
             maData.script = script;
@@ -1554,8 +1554,8 @@ function getManeuverNodesFromKSPActiveVessel_Callback(hObject, eventdata, handle
             
             preList = script(1:eventNum-1);
             postList = script(eventNum:end);
-            newCoast = ma_createCoast(['To Node ', num2str(i)], 'goto_ut', ut, 0.0, [], [0;ut;ut], [], 'k', '-', newMassLoss, [], 0.0, getDefaultOrbitDecay());
-            newDV = ma_createDVManeuver(['Node ', num2str(i)], 'dv_orbit', dvVect, dvThruster, dvVars, 'r', '-');
+            newCoast = ma_createCoast(['To Node ', num2str(i)], 'goto_ut', ut, 0.0, [], [0;ut;ut], [], 'k', '-', 1.5, newMassLoss, [], 0.0, getDefaultOrbitDecay());
+            newDV = ma_createDVManeuver(['Node ', num2str(i)], 'dv_orbit', dvVect, dvThruster, dvVars, 'r', '-', 1.5);
             script = [preList, newCoast, newDV, postList];
 
             maData.script = script;
@@ -1571,8 +1571,8 @@ function getManeuverNodesFromKSPActiveVessel_Callback(hObject, eventdata, handle
             lossConvert = getDefaultLossConvert(handles);
             massLoss.use = false;
             massLoss.lossConvert = lossConvert;
-            newCoast = ma_createCoast(['Coast To Node ', num2str(i)], 'goto_ut', ut, 0.0, [], [0;ut;ut], [], 'k', '-', massLoss, [], 0.0, getDefaultOrbitDecay());
-            newDV = ma_createDVManeuver(['Node ', num2str(i)], 'dv_orbit', dvVect, dvThruster, dvVars, 'r', '-');
+            newCoast = ma_createCoast(['Coast To Node ', num2str(i)], 'goto_ut', ut, 0.0, [], [0;ut;ut], [], 'k', '-', 1.5, massLoss, [], 0.0, getDefaultOrbitDecay());
+            newDV = ma_createDVManeuver(['Node ', num2str(i)], 'dv_orbit', dvVect, dvThruster, dvVars, 'r', '-', 1.5);
             
             script{end+1} = newCoast; %#ok<AGROW>
             script{end+1} = newDV; %#ok<AGROW>
@@ -1710,11 +1710,11 @@ function convertImpulseManeuverMenu_Callback(hObject, eventdata, handles)
                         end
                         
                         nameManeuver = [event.name, ' (Converted)'];
-                        newManeuver = ma_createDVManeuver(nameManeuver, type, dvVect, thruster, vars, 'r', '-');
+                        newManeuver = ma_createDVManeuver(nameManeuver, type, dvVect, thruster, vars, 'r', '-', 1.5);
                         
                         nameCoast = [prevEvent.name, ' (Converted)'];
                         coastVars = [0;coastDt;coastDt];
-                        newCoast = ma_createCoast(nameCoast, 'goto_dt', coastDt, 0, [], coastVars, [], prevEvent.lineColor, prevEvent.lineStyle, prevEvent.massloss, prevEvent.funcHandle, prevEvent.maxPropTime, prevEvent.orbitDecay);
+                        newCoast = ma_createCoast(nameCoast, 'goto_dt', coastDt, 0, [], coastVars, [], prevEvent.lineColor, prevEvent.lineStyle, prevEvent.lineWidth, prevEvent.massloss, prevEvent.funcHandle, prevEvent.maxPropTime, prevEvent.orbitDecay);
                         
                         preList = script(1:prevEventId-1);
                         if(eventNum==length(script))
@@ -1851,7 +1851,7 @@ function splitImpulseManeuverMenu_Callback(hObject, eventdata, handles)
                             lossConvert = getDefaultLossConvert(handles);
                             massLoss.use = false;
                             massLoss.lossConvert = lossConvert;
-                            newCoast = ma_createCoast('Coast (From Split)', 'goto_dt', period, 0, [], vars, [], 'k', '-', massLoss, [], 0.0, getDefaultOrbitDecay());
+                            newCoast = ma_createCoast('Coast (From Split)', 'goto_dt', period, 0, [], vars, [], 'k', '-', 1.5, massLoss, [], 0.0, getDefaultOrbitDecay());
                             newEvents{end+1} = newCoast; %#ok<AGROW>
                         end
                     else

@@ -22,7 +22,7 @@ function varargout = ma_InsertDVManeuverGUI(varargin)
 
 % Edit the above text to modify the response to help ma_InsertDVManeuverGUI
 
-% Last Modified by GUIDE v2.5 17-Mar-2018 21:22:31
+% Last Modified by GUIDE v2.5 20-Jan-2019 16:32:02
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -234,6 +234,11 @@ function populateGUIWithEvent(handles, event)
     styleValue = findValueFromComboBox(styleStr, handles.mnvrLineStyleCombo);
  	set(handles.mnvrLineStyleCombo,'Value',styleValue);
     
+    contents = handles.lineWidthCombo.String;
+    contentsDouble = str2double(contents);
+    ind = find(contentsDouble == event.lineWidth);
+    set(handles.lineWidthCombo,'Value',ind);
+    
 
 % --- Outputs from this function are returned to the command line.
 function varargout = ma_InsertDVManeuverGUI_OutputFcn(hObject, eventdata, handles) 
@@ -425,7 +430,12 @@ else
     lineStyleStr = contents{get(handles.mnvrLineStyleCombo,'Value')};
     lineStyle = getLineStyleStrFromText(lineStyleStr);
     
-    varargout{1} = ma_createDVManeuver(name, maneuverType, vector, thruster, vars, lineSpecColor, lineStyle);
+    contents = handles.lineWidthCombo.String;
+    contentsDouble = str2double(contents);
+    contensInd = get(handles.lineWidthCombo,'Value');
+    lineWidth = contentsDouble(contensInd);
+    
+    varargout{1} = ma_createDVManeuver(name, maneuverType, vector, thruster, vars, lineSpecColor, lineStyle, lineWidth);
     close(handles.ma_InsertDVManeuverGUI);
 end
 
@@ -2205,6 +2215,29 @@ function mnvrLineStyleCombo_Callback(hObject, eventdata, handles)
 % --- Executes during object creation, after setting all properties.
 function mnvrLineStyleCombo_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to mnvrLineStyleCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in lineWidthCombo.
+function lineWidthCombo_Callback(hObject, eventdata, handles)
+% hObject    handle to lineWidthCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns lineWidthCombo contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from lineWidthCombo
+
+
+% --- Executes during object creation, after setting all properties.
+function lineWidthCombo_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to lineWidthCombo (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 

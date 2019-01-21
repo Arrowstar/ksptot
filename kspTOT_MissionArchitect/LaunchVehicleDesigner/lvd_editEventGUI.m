@@ -22,7 +22,7 @@ function varargout = lvd_editEventGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_editEventGUI
 
-% Last Modified by GUIDE v2.5 17-Jan-2019 12:23:42
+% Last Modified by GUIDE v2.5 20-Jan-2019 16:52:01
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -84,6 +84,11 @@ function populateGUI(handles, event)
     [~,ind] = LineSpecEnum.getEnumForListboxStr(event.colorLineSpec.lineSpec.name);
     handles.lineSpecCombo.Value = ind;
     
+    contents = handles.lineWidthCombo.String;
+    contentsDouble = str2double(contents);
+    ind = find(contentsDouble == event.colorLineSpec.lineWidth);
+    set(handles.lineWidthCombo,'Value',ind);
+    
     handles.integratorCombo.String = IntegratorEnum.getListBoxStrs();
     ind = IntegratorEnum.getIndOfListboxStr(event.integrator.nameStr);
     handles.integratorCombo.Value = ind;
@@ -116,6 +121,12 @@ function varargout = lvd_editEventGUI_OutputFcn(hObject, eventdata, handles)
         nameStr = handles.lineSpecCombo.String(handles.lineSpecCombo.Value);
         [enum,~] = LineSpecEnum.getEnumForListboxStr(nameStr);
     	event.colorLineSpec.lineSpec = enum;
+        
+        contents = handles.lineWidthCombo.String;
+        contentsDouble = str2double(contents);
+        contensInd = get(handles.lineWidthCombo,'Value');
+        lineWidth = contentsDouble(contensInd);
+        event.colorLineSpec.lineWidth = lineWidth;
         
         contents = cellstr(get(handles.integratorCombo,'String'));
         nameStr = contents{get(handles.integratorCombo,'Value')};
@@ -542,3 +553,26 @@ function integratorContextMenu_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+
+
+% --- Executes on selection change in lineWidthCombo.
+function lineWidthCombo_Callback(hObject, eventdata, handles)
+% hObject    handle to lineWidthCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns lineWidthCombo contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from lineWidthCombo
+
+
+% --- Executes during object creation, after setting all properties.
+function lineWidthCombo_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to lineWidthCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

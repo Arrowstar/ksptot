@@ -22,7 +22,7 @@ function varargout = ma_InsertLandingGUI(varargin)
 
 % Edit the above text to modify the response to help ma_InsertLandingGUI
 
-% Last Modified by GUIDE v2.5 19-Mar-2018 14:53:09
+% Last Modified by GUIDE v2.5 20-Jan-2019 16:36:11
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -84,6 +84,11 @@ function populateGUIWithEvent(handles, event)
     styleStr = getLineStyleFromString(event.lineStyle);
     styleValue = findValueFromComboBox(styleStr, handles.landingLineStyleCombo);
  	set(handles.landingLineStyleCombo,'Value',styleValue);
+    
+    contents = handles.lineWidthCombo.String;
+    contentsDouble = str2double(contents);
+    ind = find(contentsDouble == event.lineWidth);
+    set(handles.lineWidthCombo,'Value',ind);
 
     landingDuration = event.landingDuration;
     set(handles.landedDurationText, 'String', fullAccNum2Str(landingDuration));
@@ -112,11 +117,16 @@ function varargout = ma_InsertLandingGUI_OutputFcn(hObject, eventdata, handles)
         lineStyleStr = contents{get(handles.landingLineStyleCombo,'Value')};
         lineStyle = getLineStyleStrFromText(lineStyleStr);
                
+        contents = handles.lineWidthCombo.String;
+        contentsDouble = str2double(contents);
+        contensInd = get(handles.lineWidthCombo,'Value');
+        lineWidth = contentsDouble(contensInd);
+        
         landingDuration = str2double(get(handles.landedDurationText,'String'));
         
         massLoss = struct('use',logical(get(handles.massLossCheckbox,'Value')), 'lossConvert',getappdata(handles.ma_InsertLanding,'lossConverts'));
         
-        varargout{1} = ma_createLanding(name, landingDuration, lineSpecColor, lineStyle, massLoss);
+        varargout{1} = ma_createLanding(name, landingDuration, lineSpecColor, lineStyle, lineWidth, massLoss);
         close(handles.ma_InsertLanding);
     end
     
@@ -310,6 +320,29 @@ function landingLineStyleCombo_Callback(hObject, eventdata, handles)
 % --- Executes during object creation, after setting all properties.
 function landingLineStyleCombo_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to landingLineStyleCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in lineWidthCombo.
+function lineWidthCombo_Callback(hObject, eventdata, handles)
+% hObject    handle to lineWidthCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns lineWidthCombo contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from lineWidthCombo
+
+
+% --- Executes during object creation, after setting all properties.
+function lineWidthCombo_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to lineWidthCombo (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 

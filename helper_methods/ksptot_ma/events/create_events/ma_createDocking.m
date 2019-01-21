@@ -1,4 +1,4 @@
-function docking = ma_createDocking(name, oScId, undockTime, lineColor, lineStyle, massLoss)
+function docking = ma_createDocking(name, oScId, undockTime, lineColor, lineStyle, lineWidth, massLoss)
 %ma_createDocking Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -11,6 +11,7 @@ function docking = ma_createDocking(name, oScId, undockTime, lineColor, lineStyl
     docking.undockTime	= undockTime;
     docking.lineColor   = lineColor;
     docking.lineStyle   = lineStyle;
+    docking.lineWidth   = lineWidth;
     docking.massloss	= massLoss;
 end
 

@@ -1,4 +1,4 @@
-function coast = ma_createCoast(name, coastType, coastToValue, revs, refBody, vars, soiSkipIds, lineColor, lineStyle, massLoss, ...
+function coast = ma_createCoast(name, coastType, coastToValue, revs, refBody, vars, soiSkipIds, lineColor, lineStyle, lineWidth, massLoss, ...
                                 funcHandle, maxPropTime, orbitDecay)
 %ma_createCoast Summary of this function goes here
 %   Detailed explanation goes here
@@ -28,6 +28,7 @@ function coast = ma_createCoast(name, coastType, coastToValue, revs, refBody, va
     coast.soiSkipIds        = soiSkipIds;
     coast.lineColor         = lineColor;
     coast.lineStyle         = lineStyle;
+    coast.lineWidth         = lineWidth;
     coast.massloss          = massLoss;
     coast.funcHandle        = funcHandle;
     coast.maxPropTime       = maxPropTime;

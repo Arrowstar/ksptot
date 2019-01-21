@@ -87,9 +87,10 @@ function [childrenHGs] = plotSubStateLog(subStateLog, prevSubStateLog, showSoI, 
     event = lvdData.script.getEventForInd(eventNum);
     plotLineColor = event.colorLineSpec.color.color;
     plotLineStyle = event.colorLineSpec.lineSpec.linespec;
+    plotLineWidth = event.colorLineSpec.lineWidth;
 
     hold(dAxes,'on');
-	plot3(dAxes, [prevSubStateLog(end,2);subStateLog(1:end,2)], [prevSubStateLog(end,3);subStateLog(1:end,3)], [prevSubStateLog(end,4);subStateLog(1:end,4)], 'Color', plotLineColor, 'LineStyle', plotLineStyle, 'LineWidth',1.5);    %  plotColors(subStateLog(1,13))
+	plot3(dAxes, [prevSubStateLog(end,2);subStateLog(1:end,2)], [prevSubStateLog(end,3);subStateLog(1:end,3)], [prevSubStateLog(end,4);subStateLog(1:end,4)], 'Color', plotLineColor, 'LineStyle', plotLineStyle, 'LineWidth',plotLineWidth);    %  plotColors(subStateLog(1,13))
    
     if(showSoI && ~isempty(getParentBodyInfo(bodyInfo, celBodyData)))
         r = getSOIRadius(bodyInfo, getParentBodyInfo(bodyInfo, celBodyData));

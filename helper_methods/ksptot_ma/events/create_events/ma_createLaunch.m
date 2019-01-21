@@ -1,6 +1,6 @@
 function launch = ma_createLaunch(name, launchEpoch, launchLat, launchLong, launchAlt, ...
                                         launchToF, burnoutLat, burnoutLong, burnoutAlt, ...
-                                        lineColor, lineStyle, bodyId)
+                                        lineColor, lineStyle, lineWidth, bodyId)
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % vars = [bool bool bool bool bool bool bool bool; 
@@ -15,5 +15,6 @@ function launch = ma_createLaunch(name, launchEpoch, launchLat, launchLong, laun
     launch.launchValue = [launchEpoch, launchLat, launchLong, launchAlt, launchToF, burnoutLat, burnoutLong, burnoutAlt];
     launch.lineColor = lineColor;
     launch.lineStyle = lineStyle;
+    launch.lineWidth = lineWidth;
     launch.id = rand(1);
 end

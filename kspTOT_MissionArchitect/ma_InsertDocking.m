@@ -22,7 +22,7 @@ function varargout = ma_InsertDocking(varargin)
 
 % Edit the above text to modify the response to help ma_InsertDocking
 
-% Last Modified by GUIDE v2.5 19-Mar-2018 14:34:51
+% Last Modified by GUIDE v2.5 20-Jan-2019 16:28:47
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -93,6 +93,11 @@ function populateGUIWithEvent(handles, event)
     styleStr = getLineStyleFromString(event.lineStyle);
     styleValue = findValueFromComboBox(styleStr, handles.dockingLineStyleCombo);
  	set(handles.dockingLineStyleCombo,'Value',styleValue);
+    
+    contents = handles.lineWidthCombo.String;
+    contentsDouble = str2double(contents);
+    ind = find(contentsDouble == event.lineWidth);
+    set(handles.lineWidthCombo,'Value',ind);
 
     undockTime = event.undockTime;
     set(handles.undockAfterText, 'String', fullAccNum2Str(undockTime));
@@ -123,6 +128,11 @@ function varargout = ma_InsertDocking_OutputFcn(hObject, eventdata, handles)
         lineStyleStr = contents{get(handles.dockingLineStyleCombo,'Value')};
         lineStyle = getLineStyleStrFromText(lineStyleStr);
         
+        contents = handles.lineWidthCombo.String;
+        contentsDouble = str2double(contents);
+        contensInd = get(handles.lineWidthCombo,'Value');
+        lineWidth = contentsDouble(contensInd);
+        
         oScIndex = get(handles.dockingOtherScCombo,'Value');
         otherSC = maData.spacecraft.otherSC{oScIndex};
         oScId = otherSC.id;
@@ -131,7 +141,7 @@ function varargout = ma_InsertDocking_OutputFcn(hObject, eventdata, handles)
         
         massLoss = struct('use',logical(get(handles.massLossCheckbox,'Value')), 'lossConvert',getappdata(handles.dockingOtherScCombo,'lossConverts'));
         
-        varargout{1} = ma_createDocking(name, oScId, undockTime, lineSpecColor, lineStyle, massLoss);
+        varargout{1} = ma_createDocking(name, oScId, undockTime, lineSpecColor, lineStyle, lineWidth, massLoss);
         close(handles.ma_InsertDocking);
     end
     
@@ -348,6 +358,29 @@ function dockingLineStyleCombo_Callback(hObject, eventdata, handles)
 % --- Executes during object creation, after setting all properties.
 function dockingLineStyleCombo_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to dockingLineStyleCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in lineWidthCombo.
+function lineWidthCombo_Callback(hObject, eventdata, handles)
+% hObject    handle to lineWidthCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns lineWidthCombo contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from lineWidthCombo
+
+
+% --- Executes during object creation, after setting all properties.
+function lineWidthCombo_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to lineWidthCombo (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
