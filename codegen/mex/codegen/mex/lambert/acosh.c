@@ -15,27 +15,27 @@
 /* Variable Definitions */
 static emlrtRSInfo sb_emlrtRSI = { 12, /* lineNo */
   "acosh",                             /* fcnName */
-  "C:\\Program Files\\MATLAB\\R2017b\\toolbox\\eml\\lib\\matlab\\elfun\\acosh.m"/* pathName */
+  "/usr/local/MATLAB/R2017b/toolbox/eml/lib/matlab/elfun/acosh.m"/* pathName */
 };
 
 static emlrtRSInfo tb_emlrtRSI = { 15, /* lineNo */
   "acosh",                             /* fcnName */
-  "C:\\Program Files\\MATLAB\\R2017b\\toolbox\\eml\\lib\\matlab\\elfun\\acosh.m"/* pathName */
+  "/usr/local/MATLAB/R2017b/toolbox/eml/lib/matlab/elfun/acosh.m"/* pathName */
 };
 
 static emlrtRSInfo ub_emlrtRSI = { 15, /* lineNo */
   "applyScalarFunctionInPlace",        /* fcnName */
-  "C:\\Program Files\\MATLAB\\R2017b\\toolbox\\eml\\eml\\+coder\\+internal\\applyScalarFunctionInPlace.m"/* pathName */
+  "/usr/local/MATLAB/R2017b/toolbox/eml/eml/+coder/+internal/applyScalarFunctionInPlace.m"/* pathName */
 };
 
 static emlrtRSInfo vb_emlrtRSI = { 8,  /* lineNo */
   "acosh",                             /* fcnName */
-  "C:\\Program Files\\MATLAB\\R2017b\\toolbox\\eml\\eml\\+coder\\+internal\\+scalar\\acosh.m"/* pathName */
+  "/usr/local/MATLAB/R2017b/toolbox/eml/eml/+coder/+internal/+scalar/acosh.m"/* pathName */
 };
 
 static emlrtRSInfo wb_emlrtRSI = { 35, /* lineNo */
   "acosh",                             /* fcnName */
-  "C:\\Program Files\\MATLAB\\R2017b\\toolbox\\eml\\eml\\+coder\\+internal\\+scalar\\acosh.m"/* pathName */
+  "/usr/local/MATLAB/R2017b/toolbox/eml/eml/+coder/+internal/+scalar/acosh.m"/* pathName */
 };
 
 /* Function Definitions */

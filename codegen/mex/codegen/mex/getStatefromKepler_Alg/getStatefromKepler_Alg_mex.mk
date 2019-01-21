@@ -1,6 +1,6 @@
-START_DIR = C:\Users\Adam\Dropbox\DOCUME~1\homework\PERSON~1\KSPTRA~1\codegen\mex
+START_DIR = /home/adam/ksptot/ksptot/codegen/mex
 
-MATLAB_ROOT = C:\PROGRA~1\MATLAB\R2017b
+MATLAB_ROOT = /usr/local/MATLAB/R2017b
 MAKEFILE = getStatefromKepler_Alg_mex.mk
 
 include getStatefromKepler_Alg_mex.mki
@@ -18,7 +18,7 @@ SRC_FILES =  \
 	c_mexapi_version.c
 
 MEX_FILE_NAME_WO_EXT = getStatefromKepler_Alg_mex
-MEX_FILE_NAME = $(MEX_FILE_NAME_WO_EXT).mexw64
+MEX_FILE_NAME = $(MEX_FILE_NAME_WO_EXT).mexa64
 TARGET = $(MEX_FILE_NAME)
 
 SYS_LIBS = 
@@ -26,13 +26,11 @@ SYS_LIBS =
 
 #
 #====================================================================
-# gmake makefile fragment for building MEX functions using MinGW
-# Copyright 2015-2017 The MathWorks, Inc.
+# gmake makefile fragment for building MEX functions using Unix
+# Copyright 2007-2016 The MathWorks, Inc.
 #====================================================================
 #
 
-SHELL = cmd
-LD = $(LINKER)
 OBJEXT = o
 .SUFFIXES: .$(OBJEXT)
 
@@ -48,30 +46,50 @@ SYS_INCLUDE = $(ML_INCLUDES)
 
 # Additional includes
 
-SYS_INCLUDE += -I "$(START_DIR)\codegen\mex\getStatefromKepler_Alg"
+SYS_INCLUDE += -I "$(START_DIR)/codegen/mex/getStatefromKepler_Alg"
 SYS_INCLUDE += -I "$(START_DIR)"
-SYS_INCLUDE += -I ".\interface"
-SYS_INCLUDE += -I "$(MATLAB_ROOT)\extern\include"
+SYS_INCLUDE += -I "./interface"
+SYS_INCLUDE += -I "$(MATLAB_ROOT)/extern/include"
 SYS_INCLUDE += -I "."
 
-EML_LIBS = -llibemlrt -llibcovrt -llibut -llibmwmathutil 
+EML_LIBS = -lemlrt -lcovrt -lut -lmwmathutil 
 SYS_LIBS += $(CLIBS) $(EML_LIBS)
 
+
 EXPORTFILE = $(MEX_FILE_NAME_WO_EXT)_mex.map
-EXPORTOPT = -Wl,--version-script,$(EXPORTFILE)
-LINK_FLAGS = $(filter-out /export:mexFunction, $(LINKFLAGS))
-COMP_FLAGS = $(CFLAGS) $(OMPFLAGS)
-CXX_FLAGS = $(CXXFLAGS) $(OMPFLAGS)
-LINK_FLAGS = $(LINKFLAGS) 
-LINK_FLAGS += $(OMPLINKFLAGS)
-ifeq ($(EMC_CONFIG),optim)
-  COMP_FLAGS += $(OPTIMFLAGS)
-  CXX_FLAGS += $(OPTIMFLAGS)
-  LINK_FLAGS += $(LINKOPTIMFLAGS)
+ifeq ($(Arch),maci)
+  EXPORTOPT = -Wl,-exported_symbols_list,$(EXPORTFILE)
+  COMP_FLAGS = -c $(CFLAGS)
+  CXX_FLAGS = -c $(CXXFLAGS)
+  LINK_FLAGS = $(filter-out %mexFunction.map, $(LDFLAGS))
+else ifeq ($(Arch),maci64)
+  EXPORTOPT = -Wl,-exported_symbols_list,$(EXPORTFILE)
+  COMP_FLAGS = -c $(CFLAGS)
+  CXX_FLAGS = -c $(CXXFLAGS)
+  LINK_FLAGS = $(filter-out %mexFunction.map, $(LDFLAGS)) -Wl,-rpath,@loader_path
 else
-  COMP_FLAGS += $(DEBUGFLAGS)
-  CXX_FLAGS += $(DEBUGFLAGS)
-  LINK_FLAGS += $(LINKDEBUGFLAGS)
+  EXPORTOPT = -Wl,--version-script,$(EXPORTFILE)
+  COMP_FLAGS = -c $(CFLAGS) $(OMPFLAGS)
+  CXX_FLAGS = -c $(CXXFLAGS) $(OMPFLAGS)
+  LINK_FLAGS = $(filter-out %mexFunction.map, $(LDFLAGS)) 
+endif
+LINK_FLAGS += $(OMPLINKFLAGS)
+ifeq ($(Arch),maci)
+  LINK_FLAGS += -L$(MATLAB_ROOT)/sys/os/maci
+endif
+ifeq ($(EMC_CONFIG),optim)
+  ifeq ($(Arch),mac)
+    COMP_FLAGS += $(CDEBUGFLAGS)
+    CXX_FLAGS += $(CXXDEBUGFLAGS)
+  else
+    COMP_FLAGS += $(COPTIMFLAGS)
+    CXX_FLAGS += $(CXXOPTIMFLAGS)
+  endif
+  LINK_FLAGS += $(LDOPTIMFLAGS)
+else
+  COMP_FLAGS += $(CDEBUGFLAGS)
+  CXX_FLAGS += $(CXXDEBUGFLAGS)
+  LINK_FLAGS += $(LDDEBUGFLAGS)
 endif
 LINK_FLAGS += -o $(TARGET)
 LINK_FLAGS += 
@@ -90,7 +108,7 @@ CPPFLAGS = $(CXX_FLAGS) -std=c++11   $(USER_INCLUDE) $(SYS_INCLUDE)
 %.$(OBJEXT) : $(START_DIR)/%.c
 	$(CC) $(CCFLAGS) "$<"
 
-%.$(OBJEXT) : $(START_DIR)\codegen\mex\getStatefromKepler_Alg/%.c
+%.$(OBJEXT) : $(START_DIR)/codegen/mex/getStatefromKepler_Alg/%.c
 	$(CC) $(CCFLAGS) "$<"
 
 %.$(OBJEXT) : interface/%.c
@@ -101,7 +119,7 @@ CPPFLAGS = $(CXX_FLAGS) -std=c++11   $(USER_INCLUDE) $(SYS_INCLUDE)
 %.$(OBJEXT) : $(START_DIR)/%.cpp
 	$(CXX) $(CPPFLAGS) "$<"
 
-%.$(OBJEXT) : $(START_DIR)\codegen\mex\getStatefromKepler_Alg/%.cpp
+%.$(OBJEXT) : $(START_DIR)/codegen/mex/getStatefromKepler_Alg/%.cpp
 	$(CXX) $(CPPFLAGS) "$<"
 
 %.$(OBJEXT) : interface/%.cpp
@@ -112,7 +130,7 @@ CPPFLAGS = $(CXX_FLAGS) -std=c++11   $(USER_INCLUDE) $(SYS_INCLUDE)
 %.$(OBJEXT) : $(START_DIR)/%.cu
 	$(CC) $(CCFLAGS) "$<"
 
-%.$(OBJEXT) : $(START_DIR)\codegen\mex\getStatefromKepler_Alg/%.cu
+%.$(OBJEXT) : $(START_DIR)/codegen/mex/getStatefromKepler_Alg/%.cu
 	$(CC) $(CCFLAGS) "$<"
 
 %.$(OBJEXT) : interface/%.cu
@@ -123,7 +141,6 @@ CPPFLAGS = $(CXX_FLAGS) -std=c++11   $(USER_INCLUDE) $(SYS_INCLUDE)
 
 $(TARGET): $(OBJLIST) $(MAKEFILE)
 	$(LD) $(EXPORTOPT) $(OBJLIST) $(LINK_FLAGS) $(SYS_LIBS)
-	@cmd /C "echo Build completed using compiler $(EMC_COMPILER)"
 
 #====================================================================
 

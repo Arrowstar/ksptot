@@ -26,7 +26,7 @@ emlrtContext emlrtContextGlobal = { true,/* bFirstTime */
 
 emlrtRSInfo e_emlrtRSI = { 49,         /* lineNo */
   "power",                             /* fcnName */
-  "C:\\Program Files\\MATLAB\\R2017b\\toolbox\\eml\\lib\\matlab\\ops\\power.m"/* pathName */
+  "/usr/local/MATLAB/R2017b/toolbox/eml/lib/matlab/ops/power.m"/* pathName */
 };
 
 /* End of code generation (getStatefromKepler_Alg_data.c) */

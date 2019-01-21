@@ -112,6 +112,7 @@
       <file>${PROJECT_ROOT}/splashScreenGUI.m</file>
       <file>${PROJECT_ROOT}/uploadManeuverToKSP.fig</file>
       <file>${PROJECT_ROOT}/uploadManeuverToKSP.m</file>
+      <file>${MATLAB_ROOT}/bin/glnxa64/libmwblas.so</file>
     </fileset.resources>
     <fileset.package />
     <fileset.depfun>

@@ -13,30 +13,27 @@
 /* Variable Definitions */
 static emlrtRSInfo emlrtRSI = { 31,    /* lineNo */
   "getStatefromKepler_Alg",            /* fcnName */
-  "C:\\Users\\Adam\\Dropbox\\Documents\\homework\\Personal Projects\\KSP Trajectory Optimization Tool\\codegen\\mex\\getStatefromKepler_Alg\\g"
-  "etStatefromKepler_Alg.m"            /* pathName */
+  "/home/adam/ksptot/ksptot/codegen/mex/getStatefromKepler_Alg/getStatefromKepler_Alg.m"/* pathName */
 };
 
 static emlrtRSInfo b_emlrtRSI = { 36,  /* lineNo */
   "getStatefromKepler_Alg",            /* fcnName */
-  "C:\\Users\\Adam\\Dropbox\\Documents\\homework\\Personal Projects\\KSP Trajectory Optimization Tool\\codegen\\mex\\getStatefromKepler_Alg\\g"
-  "etStatefromKepler_Alg.m"            /* pathName */
+  "/home/adam/ksptot/ksptot/codegen/mex/getStatefromKepler_Alg/getStatefromKepler_Alg.m"/* pathName */
 };
 
 static emlrtRSInfo c_emlrtRSI = { 37,  /* lineNo */
   "getStatefromKepler_Alg",            /* fcnName */
-  "C:\\Users\\Adam\\Dropbox\\Documents\\homework\\Personal Projects\\KSP Trajectory Optimization Tool\\codegen\\mex\\getStatefromKepler_Alg\\g"
-  "etStatefromKepler_Alg.m"            /* pathName */
+  "/home/adam/ksptot/ksptot/codegen/mex/getStatefromKepler_Alg/getStatefromKepler_Alg.m"/* pathName */
 };
 
 static emlrtRSInfo d_emlrtRSI = { 40,  /* lineNo */
   "mpower",                            /* fcnName */
-  "C:\\Program Files\\MATLAB\\R2017b\\toolbox\\eml\\lib\\matlab\\ops\\mpower.m"/* pathName */
+  "/usr/local/MATLAB/R2017b/toolbox/eml/lib/matlab/ops/mpower.m"/* pathName */
 };
 
 static emlrtRSInfo f_emlrtRSI = { 12,  /* lineNo */
   "sqrt",                              /* fcnName */
-  "C:\\Program Files\\MATLAB\\R2017b\\toolbox\\eml\\lib\\matlab\\elfun\\sqrt.m"/* pathName */
+  "/usr/local/MATLAB/R2017b/toolbox/eml/lib/matlab/elfun/sqrt.m"/* pathName */
 };
 
 /* Function Definitions */

@@ -14,7 +14,7 @@
 /* Variable Definitions */
 static emlrtRSInfo rb_emlrtRSI = { 13, /* lineNo */
   "asin",                              /* fcnName */
-  "C:\\Program Files\\MATLAB\\R2017b\\toolbox\\eml\\lib\\matlab\\elfun\\asin.m"/* pathName */
+  "/usr/local/MATLAB/R2017b/toolbox/eml/lib/matlab/elfun/asin.m"/* pathName */
 };
 
 /* Function Definitions */

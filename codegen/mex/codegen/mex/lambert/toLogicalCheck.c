@@ -14,7 +14,7 @@
 /* Variable Definitions */
 static emlrtRSInfo ae_emlrtRSI = { 12, /* lineNo */
   "toLogicalCheck",                    /* fcnName */
-  "C:\\Program Files\\MATLAB\\R2017b\\toolbox\\eml\\eml\\+coder\\+internal\\toLogicalCheck.m"/* pathName */
+  "/usr/local/MATLAB/R2017b/toolbox/eml/eml/+coder/+internal/toLogicalCheck.m"/* pathName */
 };
 
 /* Function Definitions */
