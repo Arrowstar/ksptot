@@ -65,6 +65,10 @@ classdef SetEngineActiveStateAction < AbstractEventAction
             tf = false;
         end
         
+        function tf = usesTankToTankConn(obj, tankToTank)
+            tf = false;
+        end
+        
         function [tf, vars] = hasActiveOptimVar(obj)
             tf = false;
             vars = AbstractOptimizationVariable.empty(0,1);

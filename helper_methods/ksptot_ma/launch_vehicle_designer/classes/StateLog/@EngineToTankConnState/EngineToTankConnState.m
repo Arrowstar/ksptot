@@ -1,5 +1,5 @@
 classdef EngineToTankConnState < matlab.mixin.SetGet & matlab.mixin.Copyable
-    %LaunchVehicleState Summary of this class goes here
+    %EngineToTankConnState Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
@@ -21,9 +21,7 @@ classdef EngineToTankConnState < matlab.mixin.SetGet & matlab.mixin.Copyable
         end
         
         function newE2TState = deepCopy(obj)
-%             newE2TState = EngineToTankConnState(obj.conn);
             newE2TState = obj.copy();
-            newE2TState.active = logical(obj.active);
         end
     end
 end

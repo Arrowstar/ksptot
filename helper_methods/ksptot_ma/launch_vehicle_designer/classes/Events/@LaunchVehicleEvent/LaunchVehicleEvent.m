@@ -163,6 +163,14 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
             end
         end
         
+        function tf = usesTankToTankConn(obj, tankToTank)
+            tf = false;
+            
+            for(i=1:length(obj.actions))
+                tf = tf || obj.actions(i).usesTankToTankConn(tankToTank);
+            end
+        end
+        
         function toggleOptimDisable(obj, lvdData)
             obj.disableOptim = not(obj.disableOptim);
             

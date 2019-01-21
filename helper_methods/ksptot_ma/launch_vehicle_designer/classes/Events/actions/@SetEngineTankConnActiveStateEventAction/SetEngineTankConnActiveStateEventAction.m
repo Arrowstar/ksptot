@@ -1,5 +1,5 @@
 classdef SetEngineTankConnActiveStateEventAction < AbstractEventAction
-    %AbstractEventAction Summary of this class goes here
+    %SetEngineTankConnActiveStateEventAction Summary of this class goes here
     %   Detailed explanation goes here
         
     properties(Abstract=false)
@@ -62,6 +62,10 @@ classdef SetEngineTankConnActiveStateEventAction < AbstractEventAction
         
         function tf = usesEngineToTankConn(obj, engineToTank)
             tf = ([obj.conn] == engineToTank);
+        end
+        
+        function tf = usesTankToTankConn(obj, tankToTank)
+            tf = false;
         end
         
         function [tf, vars] = hasActiveOptimVar(obj)

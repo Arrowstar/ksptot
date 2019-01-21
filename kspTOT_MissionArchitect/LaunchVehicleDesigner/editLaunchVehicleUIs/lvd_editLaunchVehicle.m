@@ -22,7 +22,7 @@ function varargout = lvd_editLaunchVehicle(varargin)
 
 % Edit the above text to modify the response to help lvd_editLaunchVehicle
 
-% Last Modified by GUIDE v2.5 03-Dec-2018 17:15:38
+% Last Modified by GUIDE v2.5 21-Jan-2019 13:17:47
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -182,3 +182,14 @@ function lvd_editLaunchVehicle_WindowKeyPressFcn(hObject, eventdata, handles)
         case 'escape'
             uiresume(handles.lvd_editLaunchVehicle);
     end
+
+
+% --- Executes on button press in editTankToTankConnsButton.
+function editTankToTankConnsButton_Callback(hObject, eventdata, handles)
+% hObject    handle to editTankToTankConnsButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.lvd_editLaunchVehicle, 'lvdData');
+    lvd_EditTankToTankConnsGUI(lvdData);
+    setSummText(handles.lvSummaryText, lvdData.launchVehicle);
+    

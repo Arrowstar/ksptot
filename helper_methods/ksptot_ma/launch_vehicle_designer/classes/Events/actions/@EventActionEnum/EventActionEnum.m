@@ -9,6 +9,8 @@ classdef EventActionEnum < matlab.mixin.SetGet
         SetSteeringModel('Set Steering Model','SetSteeringModelAction');
         SetThrottleModel('Set Throttle Model','SetThrottleModelAction');
         SetEngineToTankState('Set Engine To Tank Connection State','SetEngineTankConnActiveStateEventAction');
+        SetTankToTankState('Set Tank To Tank Connection State','SetTankTankConnActiveStateEventAction');
+        SetTankToTankFlowRate('Set Tank To Tank Connection Flow Rate','SetTankTankConnFlowRateEventAction');
         SetHoldDownClampState('Set Hold Down Clamp State','SetHoldDownClampActiveStateAction');
         SetAeroDragProps('Set Drag Aero Properties','SetDragAeroPropertiesAction');
         SetAeroLiftProps('Set Lift Aero Properties','SetLiftAeroPropertiesAction');

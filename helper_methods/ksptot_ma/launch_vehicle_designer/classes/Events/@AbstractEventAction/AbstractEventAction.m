@@ -25,6 +25,8 @@ classdef(Abstract) AbstractEventAction < matlab.mixin.SetGet & matlab.mixin.Hete
         
         tf = usesExtremum(obj, extremum)
         
+        tf = usesTankToTankConn(obj, tankToTank)
+        
         [tf,vars] = hasActiveOptimVar(obj)
     end
     

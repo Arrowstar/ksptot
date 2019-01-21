@@ -27,7 +27,8 @@ function datapt = lvd_TankMassTasks(stateLogEntry, subTask, tank)
             tankStates = stateLogEntry.getAllActiveTankStates();
             stageStates = stateLogEntry.stageStates;
             lvState = stateLogEntry.lvState;
-
+            t2tConnStates = lvState.t2TConns;
+            
             altitude = norm(rVect) - bodyInfo.radius;
 
             throttleModel = stateLogEntry.throttleModel;
@@ -38,7 +39,10 @@ function datapt = lvd_TankMassTasks(stateLogEntry, subTask, tank)
             throttle = throttleModel.getThrottleAtTime(ut, rVect, vVect, tankStatesMasses, dryMass, stageStates, lvState, tankStates, bodyInfo);
             presskPa = getPressureAtAltitude(bodyInfo, altitude); 
             
-            [tankMDots] = LaunchVehicleStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, tankStatesMasses, stageStates, throttle, lvState, presskPa, ut, rVect, vVect, bodyInfo, steeringModel);
+            [tankMDotsEngines] = LaunchVehicleStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, tankStatesMasses, stageStates, throttle, lvState, presskPa, ut, rVect, vVect, bodyInfo, steeringModel);
+            tankMassDotsT2TConns = TankToTankConnection.getTankMassFlowRatesFromTankToTankConnections(tankStates, tankStatesMasses, t2tConnStates);
+            
+            tankMDots = tankMDotsEngines + tankMassDotsT2TConns;
             
             bool = [tankStates.tank] == tank;
             if(any(bool))

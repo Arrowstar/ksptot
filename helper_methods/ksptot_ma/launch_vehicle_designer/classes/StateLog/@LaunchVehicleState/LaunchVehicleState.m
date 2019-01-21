@@ -6,6 +6,7 @@ classdef LaunchVehicleState < matlab.mixin.SetGet & matlab.mixin.Copyable
         lv LaunchVehicle 
         
         e2TConns EngineToTankConnState
+        t2TConns TankToTankConnState
         holdDownEnabled(1,1) logical = false
     end
     
@@ -24,6 +25,7 @@ classdef LaunchVehicleState < matlab.mixin.SetGet & matlab.mixin.Copyable
             obj.clearCachedConnEnginesTanks();
         end
         
+        %Engine to Tank Connections
         function addE2TConnState(obj, newConnState)
             obj.e2TConns(end+1) = newConnState;
             
@@ -64,23 +66,51 @@ classdef LaunchVehicleState < matlab.mixin.SetGet & matlab.mixin.Copyable
                 obj.cachedEngines(end+1) = engine;
                 obj.cachedConnTanks(end+1) = {tanks};
             end
-
-%                 tanks = obj.emptyTankArr;
-% 
-%                 connStates = obj.e2TConns([obj.e2TConns.active] == true);
-%                 connections = [connStates.conn];
-% 
-%                 if(not(isempty(connections)))
-%                     connections = connections([connections.engine] == engine);
-%                     tanks = [connections.tank];
-%                 end
         end
         
+        %Tank To Tank Connections
+        function addT2TConnState(obj, newConnState)
+            obj.t2TConns(end+1) = newConnState;
+        end
+        
+        function removeT2TConnStateForConn(obj, conn)
+            ind = [];
+            for(i=1:length(obj.t2TConns)) %#ok<*NO4LP>
+                if(obj.t2TConns(i).conn == conn)
+                    ind = i;
+                    break;
+                end
+            end
+            
+            if(not(isempty(ind)))
+                obj.t2TConns(ind) = [];
+            end
+        end
+        
+        function t2TConnState = getTank2TankConnStateForConn(obj, conn)
+            ind = [];
+            for(i=1:length(obj.t2TConns)) %#ok<*NO4LP>
+                if(obj.t2TConns(i).conn == conn)
+                    ind = i;
+                    break;
+                end
+            end
+            
+            if(not(isempty(ind)))
+                t2TConnState = obj.t2TConns(ind);
+            end
+        end
+        
+        %Misc
         function newLvState = deepCopy(obj)
             newLvState = obj.copy();
             
             for(i=1:length(obj.e2TConns)) 
                 newLvState.e2TConns(i) = obj.e2TConns(i).deepCopy();
+            end
+            
+            for(i=1:length(obj.t2TConns)) 
+                newLvState.t2TConns(i) = obj.t2TConns(i).deepCopy();
             end
             
             newLvState.clearCachedConnEnginesTanks();

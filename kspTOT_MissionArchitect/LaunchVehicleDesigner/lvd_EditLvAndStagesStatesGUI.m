@@ -22,7 +22,7 @@ function varargout = lvd_EditLvAndStagesStatesGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditLvAndStagesStatesGUI
 
-% Last Modified by GUIDE v2.5 15-Dec-2018 14:39:14
+% Last Modified by GUIDE v2.5 21-Jan-2019 13:17:35
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -77,6 +77,9 @@ function populateGUI(handles, lvdData)
     
     handles.connListbox.String = lv.getEngineToTankConnectionsListBoxStr();
     connListbox_Callback(handles.connListbox, [], handles);
+    
+    handles.t2tConnListbox.String = lv.getTankToTankConnectionsListBoxStr();
+    t2tConnListbox_Callback(handles.t2tConnListbox, [], handles);
 
     initStateModel = lvdData.initStateModel;
     handles.holdDownClampsEnabledCheckbox.Value = double(initStateModel.lvState.holdDownEnabled);
@@ -295,3 +298,57 @@ function lvd_EditLvAndStagesStatesGUI_WindowKeyPressFcn(hObject, eventdata, hand
         case 'escape'
             uiresume(handles.lvd_EditLvAndStagesStatesGUI);
     end
+
+
+% --- Executes on selection change in t2tConnListbox.
+function t2tConnListbox_Callback(hObject, eventdata, handles)
+% hObject    handle to t2tConnListbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns t2tConnListbox contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from t2tConnListbox
+    state = getSelectedT2TConnState(handles);
+    handles.t2tConnCheckbox.Value = double(state.active);
+    
+    if(strcmpi(get(handles.lvd_EditLvAndStagesStatesGUI,'SelectionType'),'open'))
+        handles.t2tConnCheckbox.Value = double(not(logical(handles.t2tConnCheckbox.Value)));
+    end
+    t2tConnCheckbox_Callback(handles.t2tConnCheckbox, [], handles);
+
+function state = getSelectedT2TConnState(handles)
+    lvdData = getappdata(handles.lvd_EditLvAndStagesStatesGUI, 'lvdData');
+    lv = lvdData.launchVehicle;
+    initStateModel = lvdData.initStateModel;
+    lvState = initStateModel.lvState;
+    
+    selConn = get(handles.t2tConnListbox,'Value');
+    conn = lv.getTankToTankForInd(selConn);
+
+    t2TConnStates = lvState.t2TConns;
+    connInd = find([t2TConnStates.conn] == conn,1,'first');
+    
+    state = t2TConnStates(connInd);
+
+% --- Executes during object creation, after setting all properties.
+function t2tConnListbox_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to t2tConnListbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: listbox controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in t2tConnCheckbox.
+function t2tConnCheckbox_Callback(hObject, eventdata, handles)
+% hObject    handle to t2tConnCheckbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of t2tConnCheckbox
+    state = getSelectedT2TConnState(handles);
+    state.active = logical(get(hObject,'Value'));

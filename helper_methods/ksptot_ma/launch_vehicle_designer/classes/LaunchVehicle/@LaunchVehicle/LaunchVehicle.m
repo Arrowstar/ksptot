@@ -5,6 +5,7 @@ classdef LaunchVehicle < matlab.mixin.SetGet
     properties
         stages LaunchVehicleStage
         engineTankConns EngineToTankConnection
+        tankToTankConns TankToTankConnection
         stopwatches LaunchVehicleStopwatch
         extrema LaunchVehicleExtrema
         
@@ -15,7 +16,33 @@ classdef LaunchVehicle < matlab.mixin.SetGet
         function obj = LaunchVehicle(lvdData)
             obj.lvdData = lvdData;
         end
-        
+                                
+        function lvSummStr = getLvSummaryStr(obj)
+            lvSummStr = {};
+            
+            dryMass = 0;
+            propMass = 0;
+            totalMass = 0;
+            
+            for(i=1:length(obj.stages))
+                dryMass = dryMass + obj.stages(i).getStageDryMass();
+                propMass = propMass + obj.stages(i).getStageInitPropMass();
+                totalMass = totalMass + obj.stages(i).getStageInitTotalMass();
+            end
+            
+            lvSummStr{end+1} = 'Launch Vehicle Configuration Summary';
+            lvSummStr{end+1} = '----------------------------------------------------------------------------------------';
+            lvSummStr{end+1} = sprintf('Launch Vehicle (Dry Mass = %.3f mT, Prop Mass = %.3f mT, Total = %.3f mT)', dryMass, propMass, totalMass);
+            
+            for(i=1:length(obj.stages))
+                lvSummStr = horzcat(lvSummStr, obj.stages(i).getStageSummaryStr()); %#ok<AGROW>
+            end
+            lvSummStr = horzcat(lvSummStr,newline);
+        end
+
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % Stages
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         function addStage(obj, stage)
             obj.stages(end+1) = stage;
         end
@@ -30,22 +57,6 @@ classdef LaunchVehicle < matlab.mixin.SetGet
             for(i=1:length(stage.engines))
                 obj.removeAllEngineToTanksConnsWithEngine(stage.engines(i));
             end
-        end
-        
-        function addStopwatch(obj, sw)
-            obj.stopwatches(end+1) = sw;
-        end
-        
-        function removeStopwatch(obj, sw)
-            obj.stopwatches([obj.stopwatches] == sw) = [];
-        end
-        
-        function addExtremum(obj, ex)
-            obj.extrema(end+1) = ex;
-        end
-        
-        function removeExtremum(obj, ex)
-            obj.extrema([obj.extrema] == ex) = [];
         end
         
         function stage = getStageForInd(obj, ind)
@@ -80,29 +91,6 @@ classdef LaunchVehicle < matlab.mixin.SetGet
             end
         end
         
-        function lvSummStr = getLvSummaryStr(obj)
-            lvSummStr = {};
-            
-            dryMass = 0;
-            propMass = 0;
-            totalMass = 0;
-            
-            for(i=1:length(obj.stages))
-                dryMass = dryMass + obj.stages(i).getStageDryMass();
-                propMass = propMass + obj.stages(i).getStageInitPropMass();
-                totalMass = totalMass + obj.stages(i).getStageInitTotalMass();
-            end
-            
-            lvSummStr{end+1} = 'Launch Vehicle Configuration Summary';
-            lvSummStr{end+1} = '----------------------------------------------------------------------------------------';
-            lvSummStr{end+1} = sprintf('Launch Vehicle (Dry Mass = %.3f mT, Prop Mass = %.3f mT, Total = %.3f mT)', dryMass, propMass, totalMass);
-            
-            for(i=1:length(obj.stages))
-                lvSummStr = horzcat(lvSummStr, obj.stages(i).getStageSummaryStr()); %#ok<AGROW>
-            end
-            lvSummStr = horzcat(lvSummStr,newline);
-        end
-                
         function [stagesListStr, stages] = getStagesListBoxStr(obj)
             stagesListStr = {};
             stages = LaunchVehicleStage.empty(1,0);
@@ -132,7 +120,10 @@ classdef LaunchVehicle < matlab.mixin.SetGet
         function ind = getListBoxIndForStage(obj, stage)
             ind = find(obj.stages == stage);
         end
-                
+        
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % Tanks
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%                
         function [tanksListStr, tanks] = getTanksListBoxStr(obj)
             tanksListStr = {};
             tanks = LaunchVehicleTank.empty(1,0);
@@ -180,6 +171,9 @@ classdef LaunchVehicle < matlab.mixin.SetGet
             end
         end
         
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % Engines
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%        
         function [enginesListStr, engines] = getEnginesListBoxStr(obj)
             enginesListStr = {};
             engines = LaunchVehicleEngine.empty(1,0);
@@ -221,6 +215,17 @@ classdef LaunchVehicle < matlab.mixin.SetGet
             ind = find([engines] == engine, 1, 'first'); %#ok<NBRAK>
         end
         
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % Stopwatches
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        function addStopwatch(obj, sw)
+            obj.stopwatches(end+1) = sw;
+        end
+        
+        function removeStopwatch(obj, sw)
+            obj.stopwatches([obj.stopwatches] == sw) = [];
+        end
+        
         function [swListStr, stopwatches] = getStopwatchesListBoxStr(obj)
             stopwatches = obj.stopwatches;
             swListStr = cell(size(obj.stopwatches));
@@ -255,6 +260,16 @@ classdef LaunchVehicle < matlab.mixin.SetGet
             end
         end
         
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % Extrema
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        function addExtremum(obj, ex)
+            obj.extrema(end+1) = ex;
+        end
+        
+        function removeExtremum(obj, ex)
+            obj.extrema([obj.extrema] == ex) = [];
+        end
         
         function [exListStr, extrema] = getExtremaListBoxStr(obj)
             extrema = obj.extrema;
@@ -290,7 +305,9 @@ classdef LaunchVehicle < matlab.mixin.SetGet
             end
         end
         
-        
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % Engine to Tank Connections
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         function addEngineToTankConnection(obj, e2TConn)
             obj.engineTankConns(end+1) = e2TConn;
         end
@@ -333,6 +350,54 @@ classdef LaunchVehicle < matlab.mixin.SetGet
             obj.engineTankConns([obj.engineTankConns.tank] == tank) = [];
         end
         
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % Tank to Tank Connections
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        function addTankToTankConnection(obj, t2TConn)
+            obj.tankToTankConns(end+1) = t2TConn;
+        end
+        
+        function removeTankToTankConnection(obj, t2TConn)
+            obj.tankToTankConns([obj.tankToTankConns] == t2TConn) = [];
+        end
+        
+        function [t2TConnStr, t2TConns] = getTankToTankConnectionsListBoxStr(obj)
+            t2TConnStr = {};
+            t2TConns = obj.tankToTankConns;
+            
+            for(i=1:length(obj.tankToTankConns)) %#ok<*NO4LP>
+                t2TConnStr{end+1} = obj.tankToTankConns(i).getName(); %#ok<AGROW>
+            end
+        end
+
+        function t2TConn = getTankToTankForInd(obj, ind)
+            [~, t2TConns] = obj.getTankToTankConnectionsListBoxStr();
+            t2TConn = TankToTankConnection.empty(1,0);
+
+            if(ind >= 1 && ind <= length(t2TConns))
+                t2TConn = t2TConns(ind);
+            end
+        end
+        
+        function conns = getTankToTankConnsForSrcTank(obj, srcTank)
+            conns = obj.tankToTankConns([obj.tankToTankConns.srcTank] == srcTank);
+        end
+        
+        function conns = getTankToTankConnsForTgtTank(obj, tgtTank)
+            conns = obj.tankToTankConns([obj.tankToTankConns.tgtTank] == tgtTank);
+        end
+        
+        function removeAllTankToTanksConnsWithSrcTank(obj, srcTank)
+            obj.tankToTankConns([obj.tankToTankConns.srcTank] == srcTank) = [];
+        end
+        
+        function removeAllTankToTanksConnsWithTgtTank(obj, tgtTank)
+            obj.tankToTankConns([obj.tankToTankConns.tgtTank] == tgtTank) = [];
+        end
+        
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % Other/Misc.
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         function [vars, descStrs] = getActiveOptVars(obj)
             vars = AbstractOptimizationVariable.empty(0,1);
             descStrs = {};

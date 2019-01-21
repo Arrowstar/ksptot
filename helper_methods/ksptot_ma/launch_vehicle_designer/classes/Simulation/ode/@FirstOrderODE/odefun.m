@@ -4,7 +4,8 @@ function dydt = odefun(t,y, simDriver, eventInitStateLogEntry, tankStates, dryMa
 %     tankStates = eventInitStateLogEntry.getAllActiveTankStates();
     stageStates = eventInitStateLogEntry.stageStates;
     lvState = eventInitStateLogEntry.lvState;
-
+    t2tConnStates = lvState.t2TConns;
+    
     altitude = norm(rVect) - bodyInfo.radius;
     if(altitude <= 0 && any(fmEnums == ForceModelsEnum.Normal))
         rswVVect = rotateVectorFromEciToRsw(vVect, rVect, vVect);
@@ -21,11 +22,15 @@ function dydt = odefun(t,y, simDriver, eventInitStateLogEntry, tankStates, dryMa
 
     holdDownEnabled = eventInitStateLogEntry.isHoldDownEnabled();
 
+    tankMassDotsT2TConns = TankToTankConnection.getTankMassFlowRatesFromTankToTankConnections(tankStates, tankStatesMasses, t2tConnStates);
+    
     dydt = zeros(length(y),1);
     if(holdDownEnabled)
         %launch clamp is enabled, only motion is circular motion
         %(fixed to body)
-        tankMassDots = eventInitStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, tankStatesMasses, stageStates, throttle, lvState, pressure, ut, rVect, vVect, bodyInfo, steeringModel);
+        tankMassDotsEngines = eventInitStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, tankStatesMasses, stageStates, throttle, lvState, pressure, ut, rVect, vVect, bodyInfo, steeringModel);
+        
+        tankMassDots = tankMassDotsEngines + tankMassDotsT2TConns;
         
         bodySpinRate = 2*pi/bodyInfo.rotperiod; %rad/sec
         spinVect = [0;0;bodySpinRate];
@@ -45,8 +50,11 @@ function dydt = odefun(t,y, simDriver, eventInitStateLogEntry, tankStates, dryMa
         totalMass = dryMass + sum(tankStatesMasses);
 
         if(totalMass > 0)
-            [forceSum, tankMassDots] = simDriver.forceModel.getForce(fmEnums, ut, rVect, vVect, totalMass, bodyInfo, aero, throttleModel, steeringModel, tankStates, stageStates, lvState, dryMass, tankStatesMasses);
+            [forceSum, tankMassDotsForceModels] = simDriver.forceModel.getForce(fmEnums, ut, rVect, vVect, totalMass, bodyInfo, aero, throttleModel, steeringModel, tankStates, stageStates, lvState, dryMass, tankStatesMasses);
             accelVect = forceSum/totalMass; %F = dp/dt = d(mv)/dt = m*dv/dt + v*dm/dt, but since the thrust force causes us to shed mass, we actually account for the v*dm/dt term there and therefore don't need it!  See: https://en.wikipedia.org/wiki/Variable-mass_system         
+            
+            tankMassDots = tankMassDotsForceModels + tankMassDotsT2TConns;
+            
             dydt(7:end) = tankMassDots;
         else
             accelVect = zeros(3,1);
