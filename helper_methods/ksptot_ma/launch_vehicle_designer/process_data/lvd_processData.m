@@ -64,7 +64,8 @@ function lvd_processData(handles)
     %%%%%%%%%%
     % Update State Readouts
     %%%%%%%%%%
-    propNames = {'Liquid Fuel/Ox','Monopropellant','Xenon'};
+%     propNames = {'Liquid Fuel/Ox','Monopropellant','Xenon'};
+    propNames = lvdData.launchVehicle.tankTypes.getFirstThreeTypesCellArr();
     ma_UpdateStateReadout(handles.initialStateReadoutLabel, 'initial', propNames, maStateLog, celBodyData);
     ma_UpdateStateReadout(handles.finalStateReadoutLabel, 'final', propNames, maStateLog, celBodyData);
     drawnow;

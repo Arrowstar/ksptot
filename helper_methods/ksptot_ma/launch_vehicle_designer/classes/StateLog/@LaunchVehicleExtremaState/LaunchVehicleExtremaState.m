@@ -26,7 +26,8 @@ classdef LaunchVehicleExtremaState < matlab.mixin.SetGet & matlab.mixin.Copyable
                 refBodyId = obj.extrema.refBody.id;
                 otherSCId = [];
                 stationID = [];
-                propNames = {'Liquid Fuel/Ox','Monopropellant','Xenon'};
+                propNames = obj.extrema.lvdData.launchVehicle.tankTypes.getFirstThreeTypesCellArr();
+%                 propNames = {'Liquid Fuel/Ox','Monopropellant','Xenon'};
                 celBodyData = obj.extrema.lvdData.celBodyData;
 
                 [depVarValue, depVarUnit, ~] = ma_getDepVarValueUnit(i, maSubLog, taskStr, prevDistTraveled, refBodyId, otherSCId, stationID, propNames, [], celBodyData, false);

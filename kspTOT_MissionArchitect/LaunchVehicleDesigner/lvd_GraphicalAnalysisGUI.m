@@ -68,7 +68,8 @@ function lvd_GraphicalAnalysisGUI_OpeningFcn(hObject, eventdata, handles, vararg
 
     maStateLog = lvdData.stateLog.getMAFormattedStateLogMatrix();
 
-    propNames = {'Liquid Fuel/Ox','Monopropellant','Xenon'};
+%     propNames = {'Liquid Fuel/Ox','Monopropellant','Xenon'};
+    propNames = lvdData.launchVehicle.tankTypes.getFirstThreeTypesCellArr();
     substituteDefaultPropNamesWithCustomNamesInDepVarListbox(handles.depVarListbox, propNames);
     useSubplotCheckbox_Callback(handles.useSubplotCheckbox, [], handles);
     set(handles.startTimeText,'String',fullAccNum2Str(maStateLog(1,1)));
@@ -339,8 +340,9 @@ function genPlotsButton_Callback(hObject, eventdata, handles)
         otherwise
             lineType = '-';
     end
-
-    propNames = {'Liquid Fuel/Ox','Monopropellant','Xenon'};
+    
+%     propNames = {'Liquid Fuel/Ox','Monopropellant','Xenon'};
+    propNames = lvdData.launchVehicle.tankTypes.getFirstThreeTypesCellArr();
 %     for(i=1:length(propNames))
 %         propNames{i} = sprintf('%s Mass',propNames{i});
 %     end

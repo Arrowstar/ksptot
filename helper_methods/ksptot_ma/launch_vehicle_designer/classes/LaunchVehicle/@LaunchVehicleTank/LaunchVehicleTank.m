@@ -4,12 +4,11 @@ classdef LaunchVehicleTank < matlab.mixin.SetGet
     
     properties
         stage LaunchVehicleStage
-        
         initialMass(1,1) double = 0; %mT
-        
         name char = 'Untitled Tank';
-        id(1,1) double = 0;
+        tankType TankFluidType = TankFluidType.empty(1,0);
         
+        id(1,1) double = 0;
         optVar StageTankInitMassOptimVar
     end
     
@@ -29,10 +28,20 @@ classdef LaunchVehicleTank < matlab.mixin.SetGet
             lvdData = obj.stage.launchVehicle.lvdData;
         end
         
+        function tankType = get.tankType(obj)
+            if(not(isempty(obj.tankType)))
+                tankType = obj.tankType;
+            else
+                tankType = obj.lvdData.launchVehicle.tankTypes.getTypeForInd(1);
+                obj.tankType = tankType;
+            end
+        end
+        
         function tankSummStr = getTankSummaryStr(obj)
             tankSummStr = {};
             
             tankSummStr{end+1} = sprintf('\t\t\t%s (Prop Mass = %.3f mT)', obj.name, obj.initialMass);
+            tankSummStr{end+1} = sprintf('\t\t\t\tFluid Type: %s', obj.tankType.name);
         end
         
         function initialMass = getInitialMass(obj)

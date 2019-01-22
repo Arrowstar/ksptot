@@ -50,7 +50,8 @@ classdef GenericMAConstraint < AbstractConstraint
             end
             
             maData.spacecraft = struct();
-            propNames = {'Liquid Fuel/Ox','Monopropellant','Xenon'}; %placeholder only
+            propNames = obj.event.lvdData.launchVehicle.tankTypes.getFirstThreeTypesCellArr();
+%             propNames = {'Liquid Fuel/Ox','Monopropellant','Xenon'}; %placeholder only
             value = ma_getDepVarValueUnit(1, stateLogEntry, type, 0, refBodyId, oscId, stnId, propNames, maData, celBodyData, false);
                        
             if(obj.lb == obj.ub)

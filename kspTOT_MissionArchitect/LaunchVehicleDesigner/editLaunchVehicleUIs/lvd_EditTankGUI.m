@@ -22,7 +22,7 @@ function varargout = lvd_EditTankGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditTankGUI
 
-% Last Modified by GUIDE v2.5 03-Dec-2018 17:17:43
+% Last Modified by GUIDE v2.5 22-Jan-2019 13:29:59
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -80,6 +80,10 @@ function populateGUI(handles, tank)
     set(handles.stageCombo,'Value',ind);
     set(handles.initPropMassText,'String',fullAccNum2Str(tank.getInitialMass()));
     
+    typeListboxStr = lv.tankTypes.getListboxStr();
+    handles.fluidTypeCombo.String = typeListboxStr;
+    handles.fluidTypeCombo.Value = lv.tankTypes.getIndForType(tank.tankType);
+    
     optVar = tank.getExistingOptVar();
 	if(isempty(optVar))
         optVar = tank.getNewOptVar();
@@ -126,6 +130,8 @@ function varargout = lvd_EditTankGUI_OutputFcn(hObject, eventdata, handles)
             conns(i).tank = tank;
             lv.addEngineToTankConnection(conns(i));
         end
+        
+        tank.tankType = lv.tankTypes.getTypeForInd(handles.fluidTypeCombo.Value);
         
         optVar = tank.getExistingOptVar();
         if(not(isempty(optVar)))
@@ -359,3 +365,26 @@ function lvd_EditTankGUI_WindowKeyPressFcn(hObject, eventdata, handles)
         case 'escape'
             close(handles.lvd_EditTankGUI);
     end
+
+
+% --- Executes on selection change in fluidTypeCombo.
+function fluidTypeCombo_Callback(hObject, eventdata, handles)
+% hObject    handle to fluidTypeCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns fluidTypeCombo contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from fluidTypeCombo
+
+
+% --- Executes during object creation, after setting all properties.
+function fluidTypeCombo_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to fluidTypeCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

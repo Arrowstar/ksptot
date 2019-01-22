@@ -9,12 +9,17 @@ classdef LaunchVehicle < matlab.mixin.SetGet
         stopwatches LaunchVehicleStopwatch
         extrema LaunchVehicleExtrema
         
+        tankTypes TankFluidTypeSet
+        
         lvdData LvdData
     end
     
     methods
         function obj = LaunchVehicle(lvdData)
             obj.lvdData = lvdData;
+            if(isempty(obj.tankTypes))
+                obj.tankTypes = TankFluidTypeSet.getDefaultFluidTypeSet().copy();
+            end
         end
                                 
         function lvSummStr = getLvSummaryStr(obj)

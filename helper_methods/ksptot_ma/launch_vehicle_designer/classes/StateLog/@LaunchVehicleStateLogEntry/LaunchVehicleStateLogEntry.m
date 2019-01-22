@@ -102,14 +102,21 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                 eventNum = obj.event.getEventNum();
             end
             
+            massesByType = obj.getTotalVehiclePropMassesByFluidType();
+            if(length(massesByType) > 3)
+                otherMass = sum(massesByType(4:end));
+            else
+                otherMass = 0;
+            end
+            
             stateLog(1) = obj.time;
             stateLog(2:4) = obj.position';
             stateLog(5:7) = obj.velocity';
             stateLog(8) = obj.centralBody.id;
-            stateLog(9) = obj.getTotalVehicleDryMass();
-            stateLog(10) = obj.getTotalVehiclePropMass();
-            stateLog(11) = 0;
-            stateLog(12) = 0;
+            stateLog(9) = obj.getTotalVehicleDryMass() + otherMass;
+            stateLog(10) = massesByType(1);
+            stateLog(11) = massesByType(2);
+            stateLog(12) = massesByType(3);
             stateLog(13) = eventNum;
         end
         
@@ -160,7 +167,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             end
         end
         
-        function [propMass, tankMasses] = getTotalVehiclePropMass(obj)
+        function [propMass] = getTotalVehiclePropMass(obj)
             propMass = 0;
             
             for(i=1:length(obj.stageStates))
@@ -177,6 +184,16 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                 stageState = obj.stageStates(i);
                 if(stageState.active)
                     mass = mass + stageState.getStageTotalMass();
+                end
+            end
+        end
+        
+        function massesByType = getTotalVehiclePropMassesByFluidType(obj)
+            massesByType = zeros(1,length(obj.launchVehicle.tankTypes.types));
+            
+            for(i=1:length(obj.stageStates))
+                if(obj.stageStates(i).active)
+                    massesByType = massesByType + obj.stageStates(i).getTotalStagePropMassesByFluidType();
                 end
             end
         end

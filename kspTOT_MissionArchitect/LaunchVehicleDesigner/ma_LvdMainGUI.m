@@ -478,7 +478,8 @@ function viewStateAfterSelectedEventMenu_Callback(hObject, eventdata, handles)
     state = stateLog(stateLog(:,13)==eventNum,:);
     state = state(end,:);
 
-    propNames = {'Liquid Fuel/Ox','Monopropellant','Xenon'};
+%     propNames = {'Liquid Fuel/Ox','Monopropellant','Xenon'};
+    propNames = lvdData.launchVehicle.tankTypes.getFirstThreeTypesCellArr();
     viewSpacecraftStatePopupGUI(propNames, state, eventNum, lvdData.celBodyData);
 
 % --------------------------------------------------------------------
