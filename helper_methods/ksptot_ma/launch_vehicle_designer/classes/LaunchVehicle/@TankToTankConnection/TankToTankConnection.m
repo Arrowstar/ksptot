@@ -63,9 +63,14 @@ classdef TankToTankConnection < matlab.mixin.SetGet
                 srcTank = t2tConnState.conn.srcTank;
                 if(not(isempty(srcTank)))
                     srcBool = tanks == srcTank;
-                    srcTankState = tankStates(srcBool);
-                    srcStageState = srcTankState.stageState.active;
-                    srcIsTank = true;
+                    if(any(srcBool))
+                        srcTankState = tankStates(srcBool);
+                        srcStageState = srcTankState.stageState.active;
+                        srcIsTank = true;
+                    else
+                        srcIsTank = true;
+                        srcStageState = false;
+                    end
                 else
                     srcStageState = true;
                     srcIsTank = false;
@@ -74,9 +79,14 @@ classdef TankToTankConnection < matlab.mixin.SetGet
                 tgtTank = t2tConnState.conn.tgtTank;
                 if(not(isempty(tgtTank)))
                     tgtBool = tanks == tgtTank;
-                    tgtTankState = tankStates(tgtBool);
-                    tgtStageState = tgtTankState.stageState.active;
-                    tgtIsTank = true;
+                    if(any(tgtBool))
+                        tgtTankState = tankStates(tgtBool);
+                        tgtStageState = tgtTankState.stageState.active;
+                        tgtIsTank = true;
+                    else
+                        tgtStageState = false;
+                        tgtIsTank = true;
+                    end
                 else
                     tgtStageState = true;
                     tgtIsTank = false;
