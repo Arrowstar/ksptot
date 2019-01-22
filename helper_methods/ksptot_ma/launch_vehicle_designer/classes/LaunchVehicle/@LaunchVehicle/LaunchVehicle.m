@@ -17,9 +17,7 @@ classdef LaunchVehicle < matlab.mixin.SetGet
     methods
         function obj = LaunchVehicle(lvdData)
             obj.lvdData = lvdData;
-            if(isempty(obj.tankTypes))
-                obj.tankTypes = TankFluidTypeSet.getDefaultFluidTypeSet().copy();
-            end
+            obj.tankTypes = TankFluidTypeSet.getDefaultFluidTypeSet().copy();
         end
                                 
         function lvSummStr = getLvSummaryStr(obj)
@@ -454,6 +452,12 @@ classdef LaunchVehicle < matlab.mixin.SetGet
             newLv.stages(end+1) = firstStg;
             
             newLv.engineTankConns(end+1) = EngineToTankConnection(firstStgTank, firstStgEngine);
+        end
+        
+        function obj = loadobj(obj)
+            if(isempty(obj.tankTypes))
+                obj.tankTypes = TankFluidTypeSet.getDefaultFluidTypeSet().copy();
+            end
         end
     end
 end

@@ -87,16 +87,19 @@ classdef LaunchVehicleStageState < matlab.mixin.SetGet & matlab.mixin.Copyable
         end
         
         function [massesByType, tankTypes] = getTotalStagePropMassesByFluidType(obj)
-            indivTankMasses = [obj.tankStates.tankMass];
-            
-            tanks = [obj.tankStates.tank];
-            
             tankTypes = obj.stage.launchVehicle.tankTypes.types;
             massesByType = zeros(1, length(tankTypes));
-            for(i=1:length(tankTypes))
-                type = tankTypes(i);
-                tankBool = [tanks.tankType] == type;
-                massesByType(i) = sum(indivTankMasses(tankBool));
+            
+            if(~isempty(obj.tankStates))
+                indivTankMasses = [obj.tankStates.tankMass];
+                tanks = [obj.tankStates.tank];
+
+
+                for(i=1:length(tankTypes))
+                    type = tankTypes(i);
+                    tankBool = [tanks.tankType] == type;
+                    massesByType(i) = sum(indivTankMasses(tankBool));
+                end
             end
         end
         
