@@ -608,42 +608,42 @@ function plotData(hFig, indepVarValues, data, lineColor, lineType, lineWidth, in
 %         end
 %     end
     
-%     hShowSoI = findobj('Tag','showSoITransCheckbox');
-%     if(get(hShowSoI,'Value') && strcmpi(get(hShowSoI,'Enable'), 'on'))
-%         if(strcmpi(bgColor,'m'))
-%             soiLineColor = 'w';
-%         else
-%             soiLineColor = 'm';
-%         end
-%         
-%         allBodyIDs = subLog(:,8);
-%         x = diff(allBodyIDs)~=0;
-%         inds = find(x);
-%         for(i=1:length(inds))
-%             ind = inds(i)+1;
-%             
-%             bodyLog = subLog(ind,:);
-%             bodyID = bodyLog(1,8);
-%             bodyInfo = getBodyInfoByNumber(bodyID, celBodyData);
-% 
-%             if(bodyLog(1,1) == startTimeUT)
-%                 continue;
-%             end
-%             eventTime = bodyLog(1,1)*indepTimeUnitMult;
-%             indepVarEventLoc = indepVarValues(indepVarValues(:,2)==eventTime,1);
-%             indepVarEventLoc = indepVarEventLoc(1);
-% 
-%             minData = min(data);
-%             maxData = max(data);
-%             if(minData == maxData)
-%                 minData = minData - 0.75;
-%                 maxData = maxData + 0.75;
-%             end
-% 
-%             plot([indepVarEventLoc indepVarEventLoc], [minData, maxData],soiLineColor,'LineWidth',0.25);
-%             text(indepVarEventLoc,maxData-2*onePercData,[' To ',bodyInfo.name],'Color',soiLineColor);
-%         end
-%     end
+    hShowSoI = findobj('Tag','showSoITransCheckbox');
+    if(get(hShowSoI,'Value') && strcmpi(get(hShowSoI,'Enable'), 'on'))
+        if(strcmpi(bgColor,'m'))
+            soiLineColor = 'w';
+        else
+            soiLineColor = 'm';
+        end
+        
+        allBodyIDs = subLog(:,8);
+        x = diff(allBodyIDs)~=0;
+        inds = find(x);
+        for(i=1:length(inds))
+            ind = inds(i)+1;
+            
+            bodyLog = subLog(ind,:);
+            bodyID = bodyLog(1,8);
+            bodyInfo = getBodyInfoByNumber(bodyID, celBodyData);
+
+            if(bodyLog(1,1) == startTimeUT)
+                continue;
+            end
+            eventTime = bodyLog(1,1)*indepTimeUnitMult;
+            indepVarEventLoc = indepVarValues(indepVarValues(:,2)==eventTime,1);
+            indepVarEventLoc = indepVarEventLoc(1);
+
+            minData = min(data);
+            maxData = max(data);
+            if(minData == maxData)
+                minData = minData - 0.75;
+                maxData = maxData + 0.75;
+            end
+
+            plot([indepVarEventLoc indepVarEventLoc], [minData, maxData],soiLineColor,'LineWidth',0.25);
+            text(indepVarEventLoc,maxData-2*onePercData,[' To ',bodyInfo.name],'Color',soiLineColor);
+        end
+    end
     
     hShowPeri = findobj('Tag','showPeriCheckbox');
     if(get(hShowPeri,'Value') && strcmpi(get(hShowPeri,'Enable'), 'on'))
