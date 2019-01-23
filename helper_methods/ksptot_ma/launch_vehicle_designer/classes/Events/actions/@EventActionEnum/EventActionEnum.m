@@ -16,6 +16,7 @@ classdef EventActionEnum < matlab.mixin.SetGet
         SetAeroLiftProps('Set Lift Aero Properties','SetLiftAeroPropertiesAction');
         SetStopwatchRunningState('Set Stopwatch Running State','SetStopwatchRunningStateAction');
         SetExtremumRecordingState('Set Extremum Recording State','SetExtremumRecordingStateAction');
+        ResetExtremumValueAction('Reset Extremum Value','ResetExtremumValueAction');
     end
     
     properties

@@ -1,17 +1,15 @@
-classdef SetExtremumRecordingStateAction < AbstractEventAction
-    %SetExtremumRecordingStateAction Summary of this class goes here
+classdef ResetExtremumValueAction < AbstractEventAction
+    %ResetExtremumValueAction Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
         extremum LaunchVehicleExtrema
-        runningStateToSet(1,1) LaunchVehicleExtremaRecordingEnum = LaunchVehicleExtremaRecordingEnum.NotRecording
     end
     
     methods
-        function obj = SetExtremumRecordingStateAction(extremum, runningStateToSet)
+        function obj = ResetExtremumValueAction(extremum)
             if(nargin > 0)
                 obj.extremum = extremum;
-                obj.runningStateToSet = runningStateToSet;
             end
             
             obj.id = rand();
@@ -22,7 +20,7 @@ classdef SetExtremumRecordingStateAction < AbstractEventAction
             
             if(not(isempty(obj.extremum)))
                 extremaState = newStateLogEntry.extremaStates([newStateLogEntry.extremaStates.extrema] == obj.extremum);
-                extremaState.active = obj.runningStateToSet;
+                extremaState.value = NaN;
             end
         end
         
@@ -37,7 +35,7 @@ classdef SetExtremumRecordingStateAction < AbstractEventAction
                 nameStr = '<No Extremum Selected>';
             end
             
-            name = sprintf('Set Extremum State (%s = %s)', nameStr, obj.runningStateToSet.nameStr);
+            name = sprintf('Reset Extremum Value (%s)', nameStr);
         end
         
         function tf = usesStage(obj, stage)
@@ -76,7 +74,7 @@ classdef SetExtremumRecordingStateAction < AbstractEventAction
     
     methods(Static)
         function addActionTf = openEditActionUI(action, lv)
-            addActionTf = lvd_EditActionSetExtremumRecordingStateGUI(action, lv);
+            addActionTf = lvd_EditActionResetExtremumValueGUI(action, lv);
         end
     end
 end
