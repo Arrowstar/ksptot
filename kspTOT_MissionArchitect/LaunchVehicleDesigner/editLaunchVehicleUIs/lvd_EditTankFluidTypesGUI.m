@@ -170,8 +170,7 @@ function removeRemoveTypeButton_Callback(hObject, eventdata, handles)
     selType = get(handles.typesListbox,'Value');
     type = lv.tankTypes.getTypeForInd(selType);
     
-    tf = false;
-%     tf = stage.isStageAndChildrenInUse();
+    tf = type.isInUse(lvdData);
     
     if(tf == false) 
         lv.tankTypes.removeType(type);
@@ -188,7 +187,7 @@ function removeRemoveTypeButton_Callback(hObject, eventdata, handles)
             handles.removeRemoveTypeButton.Enable = 'off';
         end
     else
-%         warndlg(sprintf('Could not delete the stage "%s" because it (or an associated engine or tank) is in use as part of an event termination condition, event action, objective function, or constraint.  Remove all tanks and engines from the stage and remove the stage dependencies before attempting to delete the stage.', stage.name),'Cannot Delete Stage','modal');
+        warndlg(sprintf('Could not delete the fluid type "%s" because it is in use on an existing tank.  Set any tanks that use this fluid type to a different fluid type before deleting.', type.name),'Cannot Delete Fluid Type','modal');
     end
     
 % --- Executes on button press in moveTypeUpButton.

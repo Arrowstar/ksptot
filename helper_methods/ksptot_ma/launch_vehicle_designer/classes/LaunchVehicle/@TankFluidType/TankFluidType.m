@@ -10,5 +10,17 @@ classdef TankFluidType < matlab.mixin.SetGet
         function obj = TankFluidType(name)
             obj.name = name;
         end
+        
+        function tf = isInUse(obj, lvdData)
+            [~, tanks] = lvdData.launchVehicle.getTanksListBoxStr();
+            
+            tf = false;
+            for(i=1:length(tanks))
+                if(tanks(i).tankType == obj)
+                    tf = true;
+                    break;
+                end
+            end
+        end
     end
 end
