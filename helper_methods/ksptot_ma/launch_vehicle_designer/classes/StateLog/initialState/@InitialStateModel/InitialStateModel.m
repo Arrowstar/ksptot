@@ -12,6 +12,7 @@ classdef InitialStateModel < matlab.mixin.SetGet
         stageStates LaunchVehicleStageState
         
         aero(1,1) LaunchVehicleAeroState
+        thirdBodyGravity(1,1) LaunchVehicle3BodyGravState
         
         steeringModel(1,1) AbstractSteeringModel = RollPitchYawPolySteeringModel.getDefaultSteeringModel();
         throttleModel(1,1) AbstractThrottleModel = ThrottlePolyModel.getDefaultThrottleModel();
@@ -30,17 +31,6 @@ classdef InitialStateModel < matlab.mixin.SetGet
         
         function removeStageStateForStage(obj, stage)
             stageStateInd = find([obj.stageStates.stage] == stage,1,'first');
-%             stageState = obj.stageStates(stageStateInd);
-            
-%             stage = stageState.stage;
-            
-%             for(i=1:length(stage.engines))
-%                 stageState.removeEngineStateForEngine(stage.engines(i));
-%             end
-%             
-%             for(i=1:length(stage.tanks))
-%                 stageState.removeTankStateForTank(stage.tanks(i));
-%             end
             
             obj.stageStates(stageStateInd) = [];
         end
@@ -64,7 +54,8 @@ classdef InitialStateModel < matlab.mixin.SetGet
             
             stateLogEntry.event = LaunchVehicleEvent.empty(0,1);
             stateLogEntry.aero = obj.aero.deepCopy();
-
+            stateLogEntry.thirdBodyGravity = obj.thirdBodyGravity.copy();
+            
             stopwatches = stateLogEntry.launchVehicle.stopwatches;
             for(i=1:length(stopwatches))
                 stateLogEntry.stopwatchStates(end+1) = stopwatches(i).createInitialState();
@@ -157,6 +148,7 @@ classdef InitialStateModel < matlab.mixin.SetGet
 
     methods(Static)
         function stateLogModel = getDefaultInitialStateLogModelForLaunchVehicle(lv, bodyInfo)
+            celBodyData = lv.lvdData.celBodyData;
             stateLogModel = InitialStateModel();
             
             ut = 0;
@@ -210,6 +202,14 @@ classdef InitialStateModel < matlab.mixin.SetGet
             aeroState.area = 1;
             aeroState.Cd = 2.2;
             stateLogModel.aero = aeroState;
+            
+            grav3Body = LaunchVehicle3BodyGravState();
+            bNames = fieldnames(celBodyData);
+            for(i=1:length(bNames))
+                grav3Body.bodies(end+1) = celBodyData.(bNames{i});
+            end
+            grav3Body.celBodyData = celBodyData;
+            stateLogModel.thirdBodyGravity = grav3Body;
             
             rpyModel = RollPitchYawPolySteeringModel.getDefaultSteeringModel();
             stateLogModel.steeringModel = rpyModel;

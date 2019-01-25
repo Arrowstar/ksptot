@@ -68,6 +68,8 @@ function lvd_EditLvAndStagesStatesGUI_OpeningFcn(hObject, eventdata, handles, va
 
 function populateGUI(handles, lvdData)
     lv = lvdData.launchVehicle;
+    initStateModel = lvdData.initStateModel;
+    lvState = initStateModel.lvState;
     
     handles.stageListbox.String = lv.getStagesListBoxStr();
     stageListbox_Callback(handles.stageListbox,[],handles);
@@ -76,10 +78,22 @@ function populateGUI(handles, lvdData)
     engineListbox_Callback(handles.engineListbox, [], handles);
     
     handles.connListbox.String = lv.getEngineToTankConnectionsListBoxStr();
-    connListbox_Callback(handles.connListbox, [], handles);
+    e2TConnStates = lvState.e2TConns;
+    if(not(isempty(e2TConnStates)))
+        connListbox_Callback(handles.connListbox, [], handles);
+    else
+        handles.connListbox.Enable = 'off';
+        handles.connCheckbox.Enable = 'off';
+    end
     
     handles.t2tConnListbox.String = lv.getTankToTankConnectionsListBoxStr();
-    t2tConnListbox_Callback(handles.t2tConnListbox, [], handles);
+    t2TConnStates = lvState.t2TConns;
+    if(not(isempty(t2TConnStates)))
+        t2tConnListbox_Callback(handles.t2tConnListbox, [], handles);
+    else
+        handles.t2tConnListbox.Enable = 'off';
+        handles.t2tConnCheckbox.Enable = 'off';
+    end
 
     initStateModel = lvdData.initStateModel;
     handles.holdDownClampsEnabledCheckbox.Value = double(initStateModel.lvState.holdDownEnabled);
@@ -322,12 +336,13 @@ function state = getSelectedT2TConnState(handles)
     initStateModel = lvdData.initStateModel;
     lvState = initStateModel.lvState;
     
+    t2TConnStates = lvState.t2TConns;
+    
     selConn = get(handles.t2tConnListbox,'Value');
     conn = lv.getTankToTankForInd(selConn);
 
-    t2TConnStates = lvState.t2TConns;
     connInd = find([t2TConnStates.conn] == conn,1,'first');
-    
+
     state = t2TConnStates(connInd);
 
 % --- Executes during object creation, after setting all properties.

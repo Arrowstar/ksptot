@@ -8,6 +8,7 @@ classdef ForceModelsEnum < matlab.mixin.SetGet & matlab.mixin.Heterogeneous
         Thrust('Thrust',ThrustForceModel(),true);
         Normal('Normal Force',NormalForceModel(),true);
         Lift('Lift Force',LiftForceModel(),true);
+        Gravity3rdBody('3rd Body Gravity',Gravity3rdBodyForceModel(),true);
     end
     
     properties

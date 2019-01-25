@@ -22,7 +22,7 @@ function varargout = lvd_EditInitialStateGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditInitialStateGUI
 
-% Last Modified by GUIDE v2.5 03-Dec-2018 16:53:29
+% Last Modified by GUIDE v2.5 25-Jan-2019 09:52:03
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1352,3 +1352,33 @@ function lvd_EditInitialStateGUI_WindowKeyPressFcn(hObject, eventdata, handles)
         case 'escape'
             close(handles.lvd_EditInitialStateGUI);
     end
+
+
+% --- Executes on button press in edit3BodyGravPropertiesButton.
+function edit3BodyGravPropertiesButton_Callback(hObject, eventdata, handles)
+% hObject    handle to edit3BodyGravPropertiesButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.lvd_EditInitialStateGUI,'lvdData');
+    celBodyData = lvdData.celBodyData;
+    
+    [bodiesStr, sortedBodyInfo] = ma_getSortedBodyNames(celBodyData);
+    promptStr = {'Select the bodies you wish to use as third body gravity sources.  The central body of your orbit is always included as a gravity source regardless of your selection here.'};
+    
+    sortedBodyInfoArr = KSPTOT_BodyInfo.empty(1,0);
+    for(i=1:length(sortedBodyInfo))
+        sortedBodyInfoArr(end+1) = sortedBodyInfo{i}; %#ok<AGROW>
+    end
+
+    curSelBodies = lvdData.initStateModel.thirdBodyGravity.bodies;
+    [~,inds,~] = intersect(sortedBodyInfoArr,curSelBodies);
+    
+    [Selection,ok] = listdlg('ListString',bodiesStr,...
+                             'InitialValue', inds, ...
+                             'Name','3rd Body Gravity Sources', ...
+                             'PromptString',promptStr);
+
+	if(ok == 1)
+        lvdData.initStateModel.thirdBodyGravity.bodies = sortedBodyInfoArr(Selection);
+	end
+    

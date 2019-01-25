@@ -11,7 +11,7 @@ classdef ThrustForceModel < AbstractForceModel
             
         end
         
-        function [forceVect, tankMdots] = getForce(obj, ut, rVect, vVect, ~, bodyInfo, ~, throttleModel, steeringModel, tankStates, stageStates, lvState, dryMass, tankStatesMasses)    
+        function [forceVect, tankMdots] = getForce(obj, ut, rVect, vVect, ~, bodyInfo, ~, throttleModel, steeringModel, tankStates, stageStates, lvState, dryMass, tankStatesMasses, ~)    
             altitude = norm(rVect) - bodyInfo.radius;
             pressure = getPressureAtAltitude(bodyInfo, altitude);
             throttle = throttleModel.getThrottleAtTime(ut, rVect, vVect, tankStatesMasses, dryMass, stageStates, lvState, tankStates, bodyInfo);

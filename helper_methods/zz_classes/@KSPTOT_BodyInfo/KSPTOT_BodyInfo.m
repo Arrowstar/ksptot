@@ -1,4 +1,4 @@
-classdef KSPTOT_BodyInfo
+classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
     %KSPTOT_BodyInfo Summary of this class goes here
     %   Detailed explanation goes here
     

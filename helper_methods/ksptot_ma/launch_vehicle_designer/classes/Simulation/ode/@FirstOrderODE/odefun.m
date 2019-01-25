@@ -46,11 +46,12 @@ function dydt = odefun(t,y, simDriver, eventInitStateLogEntry, tankStates, dryMa
     else
         %launch clamp disabled, propagate like normal
         aero = eventInitStateLogEntry.aero;
-
+        thirdBodyGravity = eventInitStateLogEntry.thirdBodyGravity;
+        
         totalMass = dryMass + sum(tankStatesMasses);
 
         if(totalMass > 0)
-            [forceSum, tankMassDotsForceModels] = simDriver.forceModel.getForce(fmEnums, ut, rVect, vVect, totalMass, bodyInfo, aero, throttleModel, steeringModel, tankStates, stageStates, lvState, dryMass, tankStatesMasses);
+            [forceSum, tankMassDotsForceModels] = simDriver.forceModel.getForce(fmEnums, ut, rVect, vVect, totalMass, bodyInfo, aero, throttleModel, steeringModel, tankStates, stageStates, lvState, dryMass, tankStatesMasses, thirdBodyGravity);
             accelVect = forceSum/totalMass; %F = dp/dt = d(mv)/dt = m*dv/dt + v*dm/dt, but since the thrust force causes us to shed mass, we actually account for the v*dm/dt term there and therefore don't need it!  See: https://en.wikipedia.org/wiki/Variable-mass_system         
             
             tankMassDots = tankMassDotsForceModels + tankMassDotsT2TConns;

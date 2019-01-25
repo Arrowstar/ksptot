@@ -12,7 +12,9 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
         lvState LaunchVehicleState
         stageStates = LaunchVehicleStageState.empty(1,0); %LaunchVehicleStageState 
         event LaunchVehicleEvent
+        
         aero LaunchVehicleAeroState
+        thirdBodyGravity LaunchVehicle3BodyGravState
         
         stopwatchStates LaunchVehicleStopwatchState
         extremaStates LaunchVehicleExtremaState
