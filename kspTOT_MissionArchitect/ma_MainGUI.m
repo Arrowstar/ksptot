@@ -205,8 +205,6 @@ function maData = generateCleanMissionPlan(handles)
     maData.celBodyData = celBodyData;
     
     maData.ksptotVer = getKSPTOTVersionNumStr();
-    
-    maData.lvdData = LvdData.getDefaultLvdData(celBodyData);
 
 
 % --- Outputs from this function are returned to the command line.
