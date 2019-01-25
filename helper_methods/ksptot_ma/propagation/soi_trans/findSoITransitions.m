@@ -62,7 +62,7 @@ function soITrans = findSoITransitions(initialState, maxSearchUT, soiSkipIds, ma
     %This segment looks for SoI transitions upwards.
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     upSoITrans = [];
-    parentBodyInfo = getParentBodyInfo(bodyInfo, celBodyData);
+    parentBodyInfo = bodyInfo.getParBodyInfo(celBodyData);
     if(~isempty(parentBodyInfo))
         soiRadius = getSOIRadius(bodyInfo, parentBodyInfo);
         if(ecc < 1)
@@ -100,7 +100,7 @@ function soITrans = findSoITransitions(initialState, maxSearchUT, soiSkipIds, ma
     %This segment looks for SoI transitions downwards.  This is the
     % trickier of the two algorithms.
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    parentBodyInfo = getParentBodyInfo(bodyInfo, celBodyData);
+    parentBodyInfo = bodyInfo.getParBodyInfo(celBodyData);
     [childBodies] = getChildrenOfParentInfo(celBodyData, lower(bodyInfo.name));
     downSoITrans = [];
     for(child = childBodies)

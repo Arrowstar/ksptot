@@ -13,12 +13,12 @@ function [rVect, vVect] = getStateGMm(bodyInfo, time, celBodyData)
 %     deltaT = time - bodyInfo.epoch;
 %     M = M0 + n.*deltaT;
 %     tru = computeTrueAnomFromMean(M, ecc);
-    parentbodyInfo = getParentBodyInfo(bodyInfo, celBodyData);
+    parentBodyInfo = bodyInfo.getParBodyInfo(celBodyData);
 
     [rVectB, vVectB] = getStateAtTime(bodyInfo, time, getParentGM(bodyInfo, celBodyData));
     [sma, ecc, inc, raan, arg, tru] = getKeplerFromState(rVectB, vVectB, getParentGM(bodyInfo, celBodyData));
     
 % Here we are calculating position and velocity for these parameters, but
 % with GM factor
-    [rVect,vVect]=getStatefromKepler(sma, ecc, inc, raan, arg, tru, parentbodyInfo.gm, true);
+    [rVect,vVect]=getStatefromKepler(sma, ecc, inc, raan, arg, tru, parentBodyInfo.gm, true);
 end

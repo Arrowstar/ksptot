@@ -5,7 +5,7 @@ function [value, isterminal, direction, causes] = getSoITransitionOdeEvents(ut, 
         causes = AbstractIntegrationTerminationCause.empty(0,1);
             
         %Max Radius (SoI Radius) Constraint (Leave SOI Upwards)
-        parentBodyInfo = getParentBodyInfo(bodyInfo, celBodyData);
+        parentBodyInfo = bodyInfo.getParBodyInfo(celBodyData);
         rSOI = getSOIRadius(bodyInfo, parentBodyInfo);
         radius = norm(rVect);
 

@@ -17,14 +17,14 @@ function [x, dv, rp, orbitsIn, orbitsOut, xferOrbits, deltaVVect, vInfDNorm, c, 
         minRadii(inds) = atmoRad*ones(size(inds));
         minRadiiSingle(i) = atmoRad; %#ok<AGROW>
 
-        pBodyInfo = getParentBodyInfo(flybyBodies{i}, celBodyData);
-        rSOI = getSOIRadius(flybyBodies{i}, pBodyInfo);
+        parentBodyInfo = flybyBodies{i}.getParBodyInfo(celBodyData);
+        rSOI = getSOIRadius(flybyBodies{i}, parentBodyInfo);
         maxRadii(inds) = rSOI*ones(size(inds));
         maxRadiiSingle(i) = rSOI; %#ok<AGROW>
     end
     
-    pBodyInfo = getParentBodyInfo(flybyBodies{1}, celBodyData);
-    minXferRad = pBodyInfo.radius + pBodyInfo.atmohgt + minCbPeriHgt;
+    parentBodyInfo = flybyBodies{1}.getParBodyInfo(celBodyData);
+    minXferRad = parentBodyInfo.radius + parentBodyInfo.atmohgt + minCbPeriHgt;
 
     [lb, ub] = getMultiFlybyLBUB(lWindDef(1), lWindDef(2), bodiesInfo, celBodyData);
     lb(2:1+length(bnds(:,1))) = bnds(:,1);

@@ -11,9 +11,9 @@ function hBody = ma_plotChildBody(bodyInfo, child, time, gmu, orbitDispAxes, sho
         plot3(orbitDispAxes,rVect(1),rVect(2),rVect(3),'Color','k','Marker','o','MarkerFaceColor','k','MarkerSize',4.5);
     end
     
-    parentBodyInfo = getParentBodyInfo(bodyInfo, celBodyData);
+    parentBodyInfo = bodyInfo.getParBodyInfo(celBodyData);
     if(showSoI && ~isempty(parentBodyInfo))
-        r = getSOIRadius(bodyInfo, getParentBodyInfo(bodyInfo, celBodyData));
+        r = getSOIRadius(bodyInfo, parentBodyInfo);
         plotOrbit('k', r, 0, deg2rad(bodyInfo.inc), deg2rad(bodyInfo.raan), deg2rad(bodyInfo.arg), 0, 2*pi, getParentGM(bodyInfo, celBodyData), gca, rVect,1.5,'--');
     end
 end

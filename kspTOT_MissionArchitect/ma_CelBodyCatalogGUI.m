@@ -114,7 +114,7 @@ function catalogListbox_Callback(hObject, eventdata, handles)
     
     celBodyData = getappdata(handles.ma_CelBodyCatalogGUI,'celBodyData');
     bodyInfo = celBodyData.(strtrim(lower(selected)));
-    parentInfo = getParentBodyInfo(bodyInfo, celBodyData);
+    parentBodyInfo = bodyInfo.getParBodyInfo(celBodyData);
     bodyInfoStr = generateBodyInfoStr(bodyInfo, celBodyData);
     set(handles.infoLabel,'String',bodyInfoStr);
     
@@ -142,9 +142,9 @@ function catalogListbox_Callback(hObject, eventdata, handles)
         plotBody(handles.ma_CelBodyCatalogGUI,handles.dispAxes,bodyInfo);
         set(handles.dispAxes,'Position',get(handles.displayAtmoRadio,'UserData'));
     elseif(dispOrbValue==1)
-        if(~isempty(parentInfo))
+        if(~isempty(parentBodyInfo))
             plotBodyOrbit(bodyInfo, 'r', getParentGM(bodyInfo, celBodyData));
-            plotBody(handles.ma_CelBodyCatalogGUI,handles.dispAxes,parentInfo);
+            plotBody(handles.ma_CelBodyCatalogGUI,handles.dispAxes,parentBodyInfo);
         else
             plotBody(handles.ma_CelBodyCatalogGUI,handles.dispAxes,bodyInfo);
         end
@@ -188,8 +188,8 @@ function bodyInfoStr = generateBodyInfoStr(bodyInfo, celBodyData)
     [year, day, hour, minute, sec] = convertSec2YearDayHrMnSec(bodyInfo.epoch);
     [dateStr] = formDateStr(year, day, hour, minute, sec);
 
-    parentInfo = getParentBodyInfo(bodyInfo, celBodyData);
-    if(bodyInfo.sma > 0 && ~isempty(parentInfo))
+    parentBodyInfo = bodyInfo.getParBodyInfo(celBodyData);
+    if(bodyInfo.sma > 0 && ~isempty(parentBodyInfo))
         [~, ~, secInDay, ~] = getSecondsInVariousTimeUnits();
         period = computePeriod(bodyInfo.sma, getParentGM(bodyInfo, celBodyData));
         periodStr = [num2str(period/secInDay), ' days'];
@@ -216,7 +216,7 @@ function bodyInfoStr = generateBodyInfoStr(bodyInfo, celBodyData)
     else
         parentStr = bodyInfo.parent;
         
-        rSOI = getSOIRadius(bodyInfo, parentInfo);
+        rSOI = getSOIRadius(bodyInfo, parentBodyInfo);
         rSOIStr = [num2str(rSOI), ' km'];
     end
     

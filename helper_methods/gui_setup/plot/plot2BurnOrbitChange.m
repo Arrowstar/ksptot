@@ -4,7 +4,7 @@ function plot2BurnOrbitChange(hAxis, bodyInfo, iniOrbit, finOrbit, xfrOrbit, del
 
     gmuXfr = bodyInfo.gm;
     
-    [parentBodyInfo] = getParentBodyInfo(bodyInfo, celBodyData);
+    parentBodyInfo = bodyInfo.getParBodyInfo(celBodyData);
 
     [iniLB, iniUB, ~] = getOrbitTAPlotBnds(bodyInfo, parentBodyInfo, iniOrbit);
     [finLB, finUB, ~] = getOrbitTAPlotBnds(bodyInfo, parentBodyInfo, finOrbit);

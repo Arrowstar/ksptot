@@ -24,8 +24,8 @@ function xferOrbits = getMultiFlybyXferOrbits(x, numRev, r1Sc, r2Sc, v1Sc, v2Sc,
     x = x(:,1:end-numTM);
     daTimes = cumsum(x,2);
 
-    pBodyInfo = getParentBodyInfo(bodiesInfo{1}, celBodyData);
-    gmu = pBodyInfo.gm;
+    parentBodyInfo = bodiesInfo{1}.getParBodyInfo(celBodyData);
+    gmu = parentBodyInfo.gm;
     
     xferOrbits = zeros(length(bodiesInfo)-1,10);
     for(i=1:length(bodiesInfo)-1) %#ok<*NO4LP>

@@ -26,7 +26,7 @@ function [rVectB, vVectB] = getPositOfBodyWRTSun(time, bodyInfo, celBodyData)
     rVectB = zeros(3,numTimes);
     vVectB = zeros(3,numTimes);
     while(loop)
-        parentBodyInfo = getParentBodyInfo(bodyInfo, celBodyData);
+        parentBodyInfo = bodyInfo.getParBodyInfo(celBodyData);
         if(isempty(parentBodyInfo))
             break;
         end

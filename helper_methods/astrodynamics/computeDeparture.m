@@ -48,7 +48,8 @@ function hDepartDisp = computeDeparture(celBodyData, departBody, arrivalBody, de
     [smaX, eccX, incX, raanX, argX, anomAX] = getKeplerFromState(rVecA,arrivalVelocity,gmuXfr);
     [~, ~, ~, ~, ~, anomDX] = getKeplerFromState(rVecD,departVelocity,gmuXfr);
    
-    parentBodyInfo = getParentBodyInfo(celBodyData.(lower(departBody)), celBodyData);
+    bodyInfo = celBodyData.(lower(departBody));
+    parentBodyInfo = bodyInfo.getParBodyInfo(celBodyData);
     rSOI = getSOIRadius(celBodyData.(lower(departBody)), parentBodyInfo)*1.0;
     if(eEcc < 1.0)
         iniLB = 0;

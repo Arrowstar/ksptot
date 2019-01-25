@@ -24,8 +24,6 @@ function [dv, rp, orbitIn, orbitOut, deltaVVect, vInfDNorm, vInfDepart, vInfArri
     flybyBodies = bodiesInfo(2:end-1);
     numFB = length(flybyBodies);
     numREVS = length(bodiesInfo) - 1;
-%     pBodyInfo = getParentBodyInfo(bodiesInfo{1}, celBodyData);
-%     xferGmu = getParentGM(bodiesInfo{1}, celBodyData);
     
     tm = x(:,end-numREVS-numFB:end-numREVS);
     tm = round(tm);
@@ -68,8 +66,8 @@ function [dv, rp, orbitIn, orbitOut, deltaVVect, vInfDNorm, vInfDepart, vInfArri
 
     tempXferGmu = zeros(1,length(bodiesInfo)-1);
     for(i=1:length(bodiesInfo)-1)
-        pBodyInfo = getParentBodyInfo(bodiesInfo{i}, celBodyData);
-        tempXferGmuScalar = pBodyInfo.gm;
+        parentBodyInfo = bodiesInfo{i}.getParBodyInfo(celBodyData);
+        tempXferGmuScalar = parentBodyInfo.gm;
         
 %         tempXferGmuScalar = getParentGM(bodiesInfo{i}, celBodyData);
         tempXferGmu((i-1)*numX+1:i*numX) = tempXferGmuScalar;

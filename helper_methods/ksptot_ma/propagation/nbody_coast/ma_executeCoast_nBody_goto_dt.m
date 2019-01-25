@@ -66,7 +66,7 @@ function [eventLog] = ma_executeCoast_nBody_goto_dt(dt, initialState, eventNum, 
             vVect = YE(4:6);
             
             if(contains(eDesc,'Up'))
-                parentBodyInfo = getParentBodyInfo(bodyInfo, celBodyData);
+                parentBodyInfo = bodyInfo.getParBodyInfo(celBodyData);
                 [rVectNew, vVectNew] = convertRVVectOnUpwardsSoITransition(bodyInfo, celBodyData, ut, rVect, vVect);
                 newBodyId = parentBodyInfo.id;
             elseif(contains(eDesc,'Down'))

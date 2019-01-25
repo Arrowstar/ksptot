@@ -119,8 +119,8 @@ function [childrenHGs] = plotSubStateLog(subStateLog, prevSubStateLog, showSoI, 
 %     plot3([-nVect(1) nVect(1)], [-nVect(2) nVect(2)], [-nVect(3) nVect(3)]);
     %DELETE THIS PARAGRAPH
     
-    if(showSoI && ~isempty(getParentBodyInfo(bodyInfo, celBodyData)))
-        r = getSOIRadius(bodyInfo, getParentBodyInfo(bodyInfo, celBodyData));
+    if(showSoI && ~isempty(bodyInfo.getParBodyInfo(celBodyData)))
+        r = getSOIRadius(bodyInfo, bodyInfo.getParBodyInfo(celBodyData));
         plot(dAxes,r*sin(0:0.01:2*pi),r*cos(0:0.01:2*pi), 'k--','LineWidth',1.5);
     end
     

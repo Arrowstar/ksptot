@@ -49,7 +49,7 @@ function rts_orbOps_populateOrbitAxis(hFig, orbitDispAxes,orbitData,celBodyData)
         rVectAp=-1;
     end
     
-    [parentBodyInfo] = getParentBodyInfo(bodyInfo, celBodyData);
+    parentBodyInfo = bodyInfo.getParBodyInfo(celBodyData);
     [iniLB, iniUB, ~] = getOrbitTAPlotBnds(bodyInfo, parentBodyInfo, orbitData);
     
     hold(orbitDispAxes,'on');

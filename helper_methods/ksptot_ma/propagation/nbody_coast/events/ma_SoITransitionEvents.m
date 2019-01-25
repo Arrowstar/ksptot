@@ -10,7 +10,7 @@ function [value,isterminal,direction,eventDesc] = ma_SoITransitionEvents(T,Y, bo
     eventDesc = {};
     
     %First do upwards transition
-	parentBodyInfo = getParentBodyInfo(bodyInfo, celBodyData);
+	parentBodyInfo = bodyInfo.getParBodyInfo(celBodyData);
     if(~isempty(parentBodyInfo))
         soiRadius = getSOIRadius(bodyInfo, parentBodyInfo);
         

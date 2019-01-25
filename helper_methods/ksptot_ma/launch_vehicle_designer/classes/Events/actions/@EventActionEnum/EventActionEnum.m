@@ -17,6 +17,7 @@ classdef EventActionEnum < matlab.mixin.SetGet
         SetStopwatchRunningState('Set Stopwatch Running State','SetStopwatchRunningStateAction');
         SetExtremumRecordingState('Set Extremum Recording State','SetExtremumRecordingStateAction');
         ResetExtremumValueAction('Reset Extremum Value','ResetExtremumValueAction');
+        SetThirdBodyGravSourcesAction('Set Third Body Gravity Sources','SetThirdBodyGravitySourcesAction');
     end
     
     properties

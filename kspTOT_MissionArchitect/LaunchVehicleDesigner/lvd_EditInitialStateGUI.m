@@ -22,7 +22,7 @@ function varargout = lvd_EditInitialStateGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditInitialStateGUI
 
-% Last Modified by GUIDE v2.5 25-Jan-2019 09:52:03
+% Last Modified by GUIDE v2.5 25-Jan-2019 14:21:52
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1363,7 +1363,7 @@ function edit3BodyGravPropertiesButton_Callback(hObject, eventdata, handles)
     celBodyData = lvdData.celBodyData;
     
     [bodiesStr, sortedBodyInfo] = ma_getSortedBodyNames(celBodyData);
-    promptStr = {'Select the bodies you wish to use as third body gravity sources.  The central body of your orbit is always included as a gravity source regardless of your selection here.'};
+    promptStr = 'Select the bodies you wish to use as third body gravity sources.';
     
     sortedBodyInfoArr = KSPTOT_BodyInfo.empty(1,0);
     for(i=1:length(sortedBodyInfo))
@@ -1376,7 +1376,8 @@ function edit3BodyGravPropertiesButton_Callback(hObject, eventdata, handles)
     [Selection,ok] = listdlg('ListString',bodiesStr,...
                              'InitialValue', inds, ...
                              'Name','3rd Body Gravity Sources', ...
-                             'PromptString',promptStr);
+                             'PromptString',promptStr, ...
+                             'ListSize', [350 300]);
 
 	if(ok == 1)
         lvdData.initStateModel.thirdBodyGravity.bodies = sortedBodyInfoArr(Selection);

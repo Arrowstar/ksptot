@@ -8,7 +8,8 @@ function [lb, ub] = getMultiFlybyLBUB(lOpenUT, lDuration, bodiesInfo, celBodyDat
     lb = zeros(1,nvars);
     ub = zeros(1,nvars);
     
-    parentBodyInfo = getParentBodyInfo(bodiesInfo{1}, celBodyData);
+    bodyInfo = bodiesInfo{1};
+    parentBodyInfo = bodyInfo.getParBodyInfo(celBodyData);
     xferGmu = parentBodyInfo.gm;
 
     lb(1) = lOpenUT;

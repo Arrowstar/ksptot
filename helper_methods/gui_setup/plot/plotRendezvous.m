@@ -23,7 +23,7 @@ function plotRendezvous(hAxis, timeArr, bodyInfo, iniOrbit, finOrbit, xfrOrbit, 
     surf(dRad*X,dRad*Y,dRad*Z);
     colormap(bodyInfo.bodycolor);
 
-    [parentBodyInfo] = getParentBodyInfo(bodyInfo, celBodyData);
+    parentBodyInfo = bodyInfo.getParBodyInfo(celBodyData);
 
     [iniLB, iniUB, ~] = getOrbitTAPlotBnds(bodyInfo, parentBodyInfo, iniOrbit);
     [finLB, finUB, ~] = getOrbitTAPlotBnds(bodyInfo, parentBodyInfo, finOrbit);

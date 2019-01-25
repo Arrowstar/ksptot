@@ -311,7 +311,7 @@ else
     tru = deg2rad(str2double(get(handles.truText,'String')));
     
     if(ecc >= 1)
-        parentBodyInfo = getParentBodyInfo(bodyInfoSetState, celBodyData);
+        parentBodyInfo = bodyInfoSetState.getParBodyInfo(celBodyData);
         rSOI = getSOIRadius(bodyInfoSetState, parentBodyInfo);
         maxTru = computeTrueAFromRadiusEcc(rSOI - 1, sma, ecc);
         
@@ -452,7 +452,7 @@ function [errMsg, basicLaunchCheckPassed] = validateInputs(handles)
         selected = strtrim(contents{get(handles.bodiesCombo,'Value')});
         bodyInfo = celBodyData.(lower(selected));
         
-        parentBodyInfo = getParentBodyInfo(bodyInfo, celBodyData);
+        parentBodyInfo = bodyInfo.getParBodyInfo(celBodyData);
         soiRadius = getSOIRadius(bodyInfo, parentBodyInfo);
         
         eEcc = str2double(get(handles.eccText,'String'));
@@ -753,7 +753,7 @@ function [errMsg, basicLaunchCheckPassed] = validateInputs(handles)
         selected = strtrim(contents{get(handles.launchBodiesCombo,'Value')});
         bodyInfo = celBodyData.(lower(selected));
         
-        parentBodyInfo = getParentBodyInfo(bodyInfo, celBodyData);
+        parentBodyInfo = bodyInfo.getParBodyInfo(celBodyData);
         soiRadius = getSOIRadius(bodyInfo, parentBodyInfo);
         
         value = str2double(get(handles.launchEpochText,'String'));

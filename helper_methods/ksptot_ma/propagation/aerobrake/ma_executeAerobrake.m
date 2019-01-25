@@ -11,7 +11,7 @@ function [eventLog] = ma_executeAerobrake(initialState, eventNum, maneuverEvent,
     vVect = initialState(5:7)';
     mass = sum(initialState(9:12));
     
-    parentBodyInfo = getParentBodyInfo(bodyInfo, celBodyData);
+    parentBodyInfo = bodyInfo.getParBodyInfo(celBodyData);
     [sma, ecc, ~, ~, ~, tru] = getKeplerFromState(rVect,vVect,gmu);
     [rAp, rPe] = computeApogeePerigee(sma, ecc);
     rSOI = getSOIRadius(bodyInfo, parentBodyInfo);

@@ -13,8 +13,9 @@ function [minRadii,minRadiiSingle,maxRadii,maxRadiiSingle] = getMinMaxRadForMfms
         minRadii(inds) = atmoRad*ones(size(inds));
         minRadiiSingle(i) = atmoRad; %#ok<AGROW>
 
-        pBodyInfo = getParentBodyInfo(flybyBodies{i}, celBodyData);
-        rSOI = getSOIRadius(flybyBodies{i}, pBodyInfo);
+        bodyInfo = flybyBodies{i};
+        parentBodyInfo = bodyInfo.getParBodyInfo(celBodyData);
+        rSOI = getSOIRadius(flybyBodies{i}, parentBodyInfo);
         maxRadii(inds) = rSOI*ones(size(inds));
         maxRadiiSingle(i) = rSOI; %#ok<AGROW>
     end

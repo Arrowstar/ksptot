@@ -47,7 +47,7 @@ function eventLog = ma_executeCoast_goto_tru(truTarget, initialState, eventNum, 
     end
         
     if(ecc >= 1.0)
-        parentBodyInfo = getParentBodyInfo(bodyInfo, celBodyData);
+        parentBodyInfo = bodyInfo.getParBodyInfo(celBodyData);
         if(~isempty(parentBodyInfo))
             rSOI = getSOIRadius(bodyInfo, parentBodyInfo);
         else

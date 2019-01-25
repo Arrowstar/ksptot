@@ -20,7 +20,7 @@ function plotFlybyTraj(hAxis, flybyBodyInfo, flyByOrbitIn, flyByOrbitOut, flyByD
     surf(dRad*X,dRad*Y,dRad*Z);
     colormap(flybyBodyInfo.bodycolor);
     
-    [parentBodyInfo] = getParentBodyInfo(flybyBodyInfo, celBodyData);
+    parentBodyInfo = flybyBodyInfo.getParBodyInfo(celBodyData);
     rSOI = getSOIRadius(flybyBodyInfo, parentBodyInfo)*0.1;
     if(rSOI > 5*flybyBodyInfo.radius) 
         rSOI = 5*flybyBodyInfo.radius;

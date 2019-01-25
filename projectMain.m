@@ -45,7 +45,6 @@ else
     [celBodyDataFromINI,~,~] = inifile('bodies.ini','readall');
 end
 celBodyData = processINIBodyInfo(celBodyDataFromINI, false, 'bodyInfo');
-% celBodyData = setParentBodyInfo(celBodyData);
 bodyNames = fieldnames(celBodyData);
 
 %Pause for some time to show the splash screen

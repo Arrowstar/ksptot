@@ -234,6 +234,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             newStateLogEntry.extremaStates = obj.extremaStates.copy();
             
             newStateLogEntry.aero = obj.aero.deepCopy();
+            newStateLogEntry.thirdBodyGravity = obj.thirdBodyGravity.copy();
         end
         
         function obj = createCopiesOfCopyableInternals(obj)
@@ -248,6 +249,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             obj.extremaStates = obj.extremaStates.copy();
             
             obj.aero = obj.aero.copy();
+            obj.thirdBodyGravity = obj.thirdBodyGravity.copy();
         end
     end
     

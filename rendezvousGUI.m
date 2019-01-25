@@ -496,7 +496,7 @@ contents = cellstr(get(handles.orbitingAboutCombo,'String'));
 cbName = strtrim(lower(contents{get(handles.orbitingAboutCombo,'Value')}));
 
 bodyInfo = celBodyData.(cbName);
-parentBodyInfo = getParentBodyInfo(bodyInfo, celBodyData);
+parentBodyInfo = bodyInfo.getParBodyInfo(celBodyData);
 if(isempty(parentBodyInfo))
     soiRadiusParent = Inf;
 else

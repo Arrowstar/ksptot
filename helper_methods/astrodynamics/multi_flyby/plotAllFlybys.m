@@ -20,7 +20,6 @@ function plotAllFlybys(hAxis, cBodyInfo, xferOrbits, bodiesInfo, numRev, celBody
     usedIds = [];
     for(i=1:length(bodiesInfo)) %#ok<*NO4LP>
         bodyInfo = bodiesInfo{i};
-%         pBodyInfo = getParentBodyInfo(bodyInfo, celBodyData);
         gmu = getParentGM(bodyInfo, celBodyData);
         
         bColor = bodyInfo.bodycolor;

@@ -31,7 +31,7 @@ function plotTransferOrbit(departAxis, varargin)
     
     departBodyInfo = celBodyData.(lower(departBody));
     arrivalBodyInfo = celBodyData.(lower(arrivalBody));
-    parentBodyInfo = getParentBodyInfo(departBodyInfo, celBodyData);
+    parentBodyInfo = departBodyInfo.getParBodyInfo(celBodyData);
     
     gmuXfr = parentBodyInfo.gm;
     
@@ -106,7 +106,8 @@ function plotTransferOrbit(departAxis, varargin)
     h = plot3([rVecD(1) rVecA(1)], [rVecD(2) rVecA(2)], [rVecD(3) rVecA(3)], 'g*');
 %     plot3(0,0,0, 'yo', 'MarkerEdgeColor', 'y', 'MarkerFaceColor', 'y', 'MarkerSize', 10);
     
-    cBodyInfo = getParentBodyInfo(celBodyData.(lower(departBody)), celBodyData);
+    bodyInfo = celBodyData.(lower(departBody));
+    cBodyInfo = bodyInfo.getParBodyInfo(celBodyData);
     bColor = cBodyInfo.bodycolor;
     cmap = colormap(bColor);
     bColorRGB = mean(cmap,1);

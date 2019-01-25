@@ -727,7 +727,7 @@ if(isempty(errMsg))
         x0(2) = 0.1;
         x0(3) = 500;
 
-        [parentBodyInfo] = getParentBodyInfo(bodyInfo, celBodyData);
+        parentBodyInfo = bodyInfo.getParBodyInfo(celBodyData);
 
         [iniLB, iniUB, iniPeriod] = getOrbitTAPlotBnds(bodyInfo, parentBodyInfo, iniOrbit);
         [finLB, finUB, finPeriod] = getOrbitTAPlotBnds(bodyInfo, parentBodyInfo, finOrbit);

@@ -14,7 +14,6 @@ function [departDV, arrivalDV, totalDV, departTimeArr, arrivalTimeArr, numSynPer
 
     synPeriod = computeSynodicPeriod(departBodyMeanMotion, arrivalBodyMeanMotion);
 
-%     testParentInfo = getParentBodyInfo(departBodyInfo, celBodyData);
     testSMA = (departBodyInfo.sma + arrivalBodyInfo.sma)/2;
     testPeriod = computePeriod(testSMA, getParentGM(departBodyInfo, celBodyData));
     
