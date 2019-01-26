@@ -7,31 +7,40 @@ classdef BodyFixedOrbitStateModel < AbstractOrbitStateModel
         long(1,1) double
         alt(1,1) double
         
-        vVectECEF_x(1,1) double
-        vVectECEF_y(1,1) double
-        vVectECEF_z(1,1) double
+        vVectNEZ_az(1,1) double
+        vVectNEZ_el(1,1) double
+        vVectNEZ_mag(1,1) double
         
         optVar BodyFixedOrbitVariable
     end
     
     methods
-        function obj = BodyFixedOrbitStateModel(lat, long, alt, vVectECEF_x, vVectECEF_y, vVectECEF_z)
+        function obj = BodyFixedOrbitStateModel(lat, long, alt, vVectNEZ_az, vVectNEZ_el, vVectNEZ_mag)
             obj.lat = deg2rad(lat);
             obj.long = deg2rad(long);
             obj.alt = alt;
-            obj.vVectECEF_x = vVectECEF_x;
-            obj.vVectECEF_y = vVectECEF_y;
-            obj.vVectECEF_z = vVectECEF_z;
+            obj.vVectNEZ_az = deg2rad(vVectNEZ_az);
+            obj.vVectNEZ_el = deg2rad(vVectNEZ_el);
+            obj.vVectNEZ_mag = vVectNEZ_mag;
         end
         
         function [rVect, vVect] = getPositionAndVelocityVector(obj, ut, bodyInfo)
-            vVectECEF = [obj.vVectECEF_x; obj.vVectECEF_y; obj.vVectECEF_z];
+%             vVectECEF = [obj.vVectECEF_x; obj.vVectECEF_y; obj.vVectECEF_z];
+            rVectECEF = getrVectEcefFromLatLongAlt(obj.lat, obj.long, obj.alt, bodyInfo);
+            
+            sezVVectAz = pi - obj.vVectNEZ_az;
+            sezVVectEl = obj.vVectNEZ_el;
+            sezVVectMag = obj.vVectNEZ_mag;
+            
+            [x,y,z] = sph2cart(sezVVectAz, sezVVectEl, sezVVectMag);
+            vectorSez = [x;y;z];
+            vVectECEF = rotSEZVectToECEFCoords(rVectECEF, vectorSez);
             
             [rVect,vVect] = getInertialVectFromLatLongAlt(ut, obj.lat, obj.long, obj.alt, bodyInfo, vVectECEF);
         end
         
         function elemVect = getElementVector(obj)
-            elemVect = [rad2deg(obj.lat),rad2deg(obj.long),obj.alt,obj.vVectECEF_x,obj.vVectECEF_y,obj.vVectECEF_z];
+            elemVect = [rad2deg(obj.lat),rad2deg(obj.long),obj.alt,rad2deg(obj.vVectNEZ_az),rad2deg(obj.vVectNEZ_el),obj.vVectNEZ_mag];
         end
     end
     
@@ -73,24 +82,24 @@ classdef BodyFixedOrbitStateModel < AbstractOrbitStateModel
             
             bfVx = str2double(get(hBfVx,'String'));
             enteredStr = get(hBfVx,'String');
-            numberName = ['Body-Fixed Velocity (X)', bndStr];
-            lb = -Inf;
-            ub = Inf;
+            numberName = ['Velocity Azimuth', bndStr];
+            lb = -360;
+            ub = 360;
             isInt = false;
             errMsg = validateNumber(bfVx, numberName, lb, ub, isInt, errMsg, enteredStr);
             
             bfVy = str2double(get(hBfVy,'String'));
             enteredStr = get(hBfVy,'String');
-            numberName = ['Body-Fixed Velocity (Y)', bndStr];
-            lb = -Inf;
-            ub = Inf;
+            numberName = ['Velocity Elevation', bndStr];
+            lb = -90;
+            ub = 90;
             isInt = false;
             errMsg = validateNumber(bfVy, numberName, lb, ub, isInt, errMsg, enteredStr);
             
             bfVz = str2double(get(hBfVz,'String'));
             enteredStr = get(hBfVz,'String');
-            numberName = ['Body-Fixed Velocity (Z)', bndStr];
-            lb = -Inf;
+            numberName = ['Velocity Magnitude', bndStr];
+            lb = 0;
             ub = Inf;
             isInt = false;
             errMsg = validateNumber(bfVz, numberName, lb, ub, isInt, errMsg, enteredStr);
