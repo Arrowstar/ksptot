@@ -82,7 +82,7 @@ classdef BodyFixedOrbitStateModel < AbstractOrbitStateModel
             
             bfVx = str2double(get(hBfVx,'String'));
             enteredStr = get(hBfVx,'String');
-            numberName = ['Velocity Azimuth', bndStr];
+            numberName = ['Body-Fixed Velocity Azimuth', bndStr];
             lb = -360;
             ub = 360;
             isInt = false;
@@ -90,7 +90,7 @@ classdef BodyFixedOrbitStateModel < AbstractOrbitStateModel
             
             bfVy = str2double(get(hBfVy,'String'));
             enteredStr = get(hBfVy,'String');
-            numberName = ['Velocity Elevation', bndStr];
+            numberName = ['Body-Fixed Velocity Elevation', bndStr];
             lb = -90;
             ub = 90;
             isInt = false;
@@ -98,7 +98,7 @@ classdef BodyFixedOrbitStateModel < AbstractOrbitStateModel
             
             bfVz = str2double(get(hBfVz,'String'));
             enteredStr = get(hBfVz,'String');
-            numberName = ['Velocity Magnitude', bndStr];
+            numberName = ['Body-Fixed Velocity Magnitude', bndStr];
             lb = 0;
             ub = Inf;
             isInt = false;
