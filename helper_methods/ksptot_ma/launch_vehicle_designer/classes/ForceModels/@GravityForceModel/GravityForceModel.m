@@ -12,8 +12,6 @@ classdef GravityForceModel < AbstractForceModel
         end
         
         function [forceVect, tankMdots] = getForce(obj, ~, rVect, ~, mass, bodyInfo, ~, ~, ~, ~, ~, ~, ~, ~, ~)
-%             [~, rVect, ~, mass, bodyInfo, ~] = obj.getParamsFromStateLogEntry(stateLogEntry);
-            
             r = norm(rVect);
             forceVect = -((bodyInfo.gm * mass)/(r^3)) * rVect; %km^3/s^2 * mT / km^2 = km*mT/s^2
             

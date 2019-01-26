@@ -617,8 +617,18 @@ function openMissionPlanMenu_Callback(hObject, eventdata, handles)
             setappdata(handles.ma_MainGUI,'undo_states',{});
             setappdata(handles.ma_MainGUI,'undo_pointer',0);
             
+            if(isfield(maData,'celBodyData')) %#ok<NODEF>
+                names = fieldnames(maData.celBodyData);
+                for(i=1:length(names))
+                    name = names{i};
+                    if(not(isprop(maData.celBodyData.(name),'celBodyData')))
+                        maData.celBodyData.(name).celBodyData = celBodyData;
+                    end
+                end
+            end
+            
             if(isfield(maData,'celBodyData') && ...
-               length(fields(celBodyData.sun)) == length(fields(maData.celBodyData.sun))) %#ok<NODEF>
+               length(fields(celBodyData.sun)) == length(fields(maData.celBodyData.sun)))
                 celBodyData = maData.celBodyData;
                 setappdata(handles.ma_MainGUI,'celBodyData',celBodyData);
             else

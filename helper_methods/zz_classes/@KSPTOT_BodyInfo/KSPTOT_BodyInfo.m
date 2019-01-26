@@ -31,6 +31,7 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
     end
     
     properties
+        celBodyData struct
         parentBodyInfo KSPTOT_BodyInfo
         parentBodyInfoNeedsUpdate logical = true;
     end

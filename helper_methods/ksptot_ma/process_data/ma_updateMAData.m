@@ -224,5 +224,13 @@ function maData = ma_updateMAData(maData, handles)
                 maData.celBodyData.(bodyNames{i}) = KSPTOT_BodyInfo.getObjFromBodyInfoStruct(maData.celBodyData.(bodyNames{i}));
             end
         end
+        
+        names = fieldnames(maData.celBodyData);
+        for(i=1:length(names))
+            name = names{i};
+            if(not(isprop(maData.celBodyData.(name),'celBodyData')))
+                maData.celBodyData.(name).celBodyData = celBodyData;
+            end
+        end
     end
 end

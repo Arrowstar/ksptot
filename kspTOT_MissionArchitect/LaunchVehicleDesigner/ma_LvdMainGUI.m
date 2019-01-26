@@ -681,8 +681,18 @@ function openMissionPlanMenu_Callback(hObject, eventdata, handles)
         if(exist('lvdData','var'))
             setappdata(handles.ma_LvdMainGUI,'undoRedo',LVD_UndoRedoStateSet());
 
+            if(isprop(lvdData,'celBodyData')) %#ok<NODEF>
+                names = fieldnames(lvdData.celBodyData);
+                for(i=1:length(names))
+                    name = names{i};
+                    if(not(isprop(lvdData.celBodyData.(name),'celBodyData')))
+                        lvdData.celBodyData.(name).celBodyData = celBodyData;
+                    end
+                end
+            end
+            
             if(isprop(lvdData,'celBodyData') && ...
-               length(fields(celBodyData.sun)) == length(fields(lvdData.celBodyData.sun))) %#ok<NODEF>
+               length(fields(celBodyData.sun)) == length(fields(lvdData.celBodyData.sun)))
                 celBodyData = lvdData.celBodyData;
                 setappdata(handles.ma_LvdMainGUI,'celBodyData',celBodyData);
             else

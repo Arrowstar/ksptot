@@ -1,6 +1,6 @@
 function [value,isterminal,direction, causes] = odeEvents(t,y, obj, eventInitStateLogEntry, evtTermCond, maxSimTime, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses)
     celBodyData = obj.celBodyData;
-    causes = AbstractIntegrationTerminationCause.empty(0,1);
+%     causes = AbstractIntegrationTerminationCause.empty(0,1);
 
     sizeY = size(y);
     if(sizeY(2) > sizeY(1))

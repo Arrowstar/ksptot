@@ -18,7 +18,7 @@ classdef Gravity3rdBodyForceModel < AbstractForceModel
             celBodyData = grav3Body.celBodyData;
             for(i=1:length(bodies))
                 if(bodies(i) ~= bodySC)
-                    rVect = getAbsPositBetweenSpacecraftAndBody(ut, rVectSC, bodySC, bodies(i), celBodyData);
+                    rVect = -1 * getAbsPositBetweenSpacecraftAndBody(ut, rVectSC, bodySC, bodies(i), celBodyData);
 
                     r = norm(rVect);
                     forceVect = -((bodies(i).gm * mass)/(r^3)) * rVect; %km^3/s^2 * mT / km^2 = km*mT/s^2

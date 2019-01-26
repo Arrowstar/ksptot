@@ -71,6 +71,14 @@ function [celBodyData] = processINIBodyInfo(celBodyDataFromINI, varargin)
         end
     end
     
+    if(strcmpi(dataType,'bodyInfo'))
+        names = fieldnames(celBodyData);
+        for(i=1:length(names))
+            name = names{i};
+            celBodyData.(name).celBodyData = celBodyData;
+        end
+    end
+    
     if(showWaitbar)
         close(hWaitbar);
     end

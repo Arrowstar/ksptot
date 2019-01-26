@@ -25,6 +25,16 @@ classdef InitialStateModel < matlab.mixin.SetGet
             
         end
         
+        function cb = getCentralBodyForStateLog(obj)
+            if(isa(obj.orbitModel,'BodyFixedOrbitStateModel'))
+                cb = obj.centralBody;
+            elseif(isa(obj.orbitModel,'KeplerianOrbitStateModel'))
+                cb = obj.centralBody;
+            elseif(isa(obj.orbitModel,'CR3BPOrbitStateModel'))
+                cb = obj.centralBody.getParBodyInfo(obj.centralBody.celBodyData);
+            end
+        end
+        
         function addStageState(obj, newStageState)
             obj.stageStates(end+1) = newStageState;
         end
@@ -45,7 +55,7 @@ classdef InitialStateModel < matlab.mixin.SetGet
             stateLogEntry.position = rVectECI;
             stateLogEntry.velocity = vVectECI;
             
-            stateLogEntry.centralBody = obj.centralBody;
+            stateLogEntry.centralBody = obj.getCentralBodyForStateLog();
             stateLogEntry.lvState = obj.lvState.deepCopy();
         
             for(i=1:length(obj.stageStates))

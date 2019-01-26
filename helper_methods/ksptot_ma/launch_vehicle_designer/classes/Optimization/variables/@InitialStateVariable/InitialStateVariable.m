@@ -24,6 +24,8 @@ classdef InitialStateVariable < AbstractOptimizationVariable
                 obj.orbitVar = BodyFixedOrbitVariable(obj.varObj.orbitModel);
             elseif(isa(obj.varObj.orbitModel,'KeplerianOrbitStateModel'))
                 obj.orbitVar = KeplerianOrbitVariable(obj.varObj.orbitModel);
+            elseif(isa(obj.varObj.orbitModel,'CR3BPOrbitStateModel'))
+                obj.orbitVar = CR3BPOrbitVariable(obj.varObj.orbitModel);
             else
                 error('Unknown orbit type while creating initial state variable: %s', class(obj.varObj.orbitModel))
             end

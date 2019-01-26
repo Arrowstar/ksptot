@@ -78,8 +78,9 @@ function populateGUI(handles, lvdData)
 	handles.centralBodyCombo.Value = value;
     
     handles.orbitTypeCombo.String = OrbitStateEnum.getListBoxStr();
-    [value, ~] = OrbitStateEnum.getIndForClass(class(initStateModel.orbitModel));
+    [value, enum] = OrbitStateEnum.getIndForClass(class(initStateModel.orbitModel));
     handles.orbitTypeCombo.Value = value;
+    setappdata(handles.orbitTypeCombo,'curEnum',enum);
     
     orbitTypeCombo_Callback(handles.orbitTypeCombo, [], handles);
     
@@ -150,15 +151,14 @@ function varargout = lvd_EditInitialStateGUI_OutputFcn(hObject, eventdata, handl
         lvdData = getappdata(handles.lvd_EditInitialStateGUI,'lvdData');
         initStateModel = lvdData.initStateModel;
         
+        contents = cellstr(get(handles.orbitTypeCombo,'String'));
+        selOrbitType = contents{get(handles.orbitTypeCombo,'Value')};
+        [~,enum] = OrbitStateEnum.getIndForName(selOrbitType);
+        orbitClass = enum.class;
+        
         bodyInfo = getSelectedBodyInfo(handles);
         initStateModel.centralBody = bodyInfo;
         
-        contents = cellstr(get(handles.orbitTypeCombo,'String'));
-        selOrbitType = contents{get(handles.orbitTypeCombo,'Value')};
-        
-        [~,enum] = OrbitStateEnum.getIndForName(selOrbitType);
-        orbitClass = enum.class;
-
         orbit1Elem = str2double(handles.orbit1Text.String);
         orbit2Elem = str2double(handles.orbit2Text.String);
         orbit3Elem = str2double(handles.orbit3Text.String);
@@ -239,6 +239,7 @@ function bodyInfo = getSelectedBodyInfo(handles)
 function errMsg = validateInputs(handles)
     errMsg = {};
     bodyInfo = getSelectedBodyInfo(handles);
+    celBodyData = bodyInfo.celBodyData;
     
     ut = str2double(get(handles.utText,'String'));
     enteredStr = get(handles.utText,'String');
@@ -265,6 +266,13 @@ function errMsg = validateInputs(handles)
     errMsg = feval(sprintf('%s.validateInputOrbit',orbitClass),errMsg, handles.orbit1LbText, handles.orbit2LbText, handles.orbit3LbText, handles.orbit4LbText, handles.orbit5LbText, handles.orbit6LbText, bodyInfo, 'Lower', checkElementBnds);
     errMsg = feval(sprintf('%s.validateInputOrbit',orbitClass),errMsg, handles.orbit1UbText, handles.orbit2UbText, handles.orbit3UbText, handles.orbit4UbText, handles.orbit5UbText, handles.orbit6UbText, bodyInfo, 'Upper', checkElementBnds);
         
+    if(enum == OrbitStateEnum.CR3BP)
+        parentBodyInfo = bodyInfo.getParBodyInfo(celBodyData);
+        if(isempty(parentBodyInfo))
+            errMsg{end+1} = sprintf('If using the CR3BP orbit type, your secondary body selection MUST have a parent body to use as the primary.  %s has no parent body in the solar system.', bodyInfo.name);
+        end
+    end
+    
     
 % --- Executes on selection change in orbitTypeCombo.
 function orbitTypeCombo_Callback(hObject, eventdata, handles)
@@ -274,6 +282,10 @@ function orbitTypeCombo_Callback(hObject, eventdata, handles)
 
 % Hints: contents = cellstr(get(hObject,'String')) returns orbitTypeCombo contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from orbitTypeCombo
+	lvdData = getappdata(handles.lvd_EditInitialStateGUI,'lvdData');
+    celBodyData = lvdData.celBodyData;
+    prevEnum = getappdata(handles.orbitTypeCombo,'curEnum');
+
     contents = cellstr(get(hObject,'String'));
     sel = contents{get(hObject,'Value')};
     
@@ -296,11 +308,50 @@ function orbitTypeCombo_Callback(hObject, eventdata, handles)
     handles.orbit5UnitLabel.String = unitNames{5};
     handles.orbit6UnitLabel.String = unitNames{6};
     
-    if(enum == OrbitStateEnum.BodyFixed)
-        convertKeplerianTextToBodyFixed(handles);
-    elseif(enum == OrbitStateEnum.KeplerianOrbit)
-        convertBodyFixedTextToKeplerian(handles);
+    handles.cbLabel.String = enum.cbLabel;
+    handles.cbLabel.TooltipString = enum.cbTooltip;
+    handles.centralBodyCombo.TooltipString = enum.cbTooltip;
+       
+    contents = cellstr(get(handles.centralBodyCombo,'String'));
+    selected = strtrim(contents{get(handles.centralBodyCombo,'Value')});
+    bodyInfo = celBodyData.(lower(selected));
+    parentBodyInfo = bodyInfo.getParBodyInfo();
+    [children, childrenNames] = getChildrenOfParentInfo(celBodyData, bodyInfo.name);
+    children = [children{:}];
+    
+    if(prevEnum == OrbitStateEnum.BodyFixed)
+        [ut, rVectECI, vVectECI] = convertBodyFixedToECI(handles);
+    elseif(prevEnum == OrbitStateEnum.KeplerianOrbit)
+        [ut, rVectECI, vVectECI] = convertKeplerianToECI(handles);
+    elseif(prevEnum == OrbitStateEnum.CR3BP)
+        [ut, rVectECI, vVectECI] = convertCr3bpToECI(handles);
     end
+    
+    if(enum == OrbitStateEnum.BodyFixed)
+        if(prevEnum == OrbitStateEnum.CR3BP)
+            value = findValueFromComboBox(parentBodyInfo.name, handles.centralBodyCombo);
+            handles.centralBodyCombo.Value = value;
+        end
+        convertToBodyFixed(ut, rVectECI, vVectECI, handles);
+    elseif(enum == OrbitStateEnum.KeplerianOrbit)
+        if(prevEnum == OrbitStateEnum.CR3BP)
+            value = findValueFromComboBox(parentBodyInfo.name, handles.centralBodyCombo);
+            handles.centralBodyCombo.Value = value;
+        end
+        convertToKeplerian(ut, rVectECI, vVectECI, handles);
+	elseif(enum == OrbitStateEnum.CR3BP)
+        if((prevEnum == OrbitStateEnum.KeplerianOrbit || prevEnum == OrbitStateEnum.BodyFixed) && not(isempty(childrenNames)))
+            %take one with highest GM
+            [~,I] = max([children.gm]);
+            childName = childrenNames{I};
+            
+            value = findValueFromComboBox(childName, handles.centralBodyCombo);
+            handles.centralBodyCombo.Value = value;
+        end
+        convertToCr3bp(ut, rVectECI, vVectECI, handles);
+    end
+    
+    setappdata(handles.orbitTypeCombo,'curEnum',enum);
     
 
 % --- Executes during object creation, after setting all properties.
@@ -1105,7 +1156,8 @@ function getOrbitFromSFSFileContextMenu_Callback(hObject, eventdata, handles)
     selOrbitType = contents{get(handles.orbitTypeCombo,'Value')};
     [~,enum] = OrbitStateEnum.getIndForName(selOrbitType);
     if(enum == OrbitStateEnum.BodyFixed)
-        convertKeplerianTextToBodyFixed(handles)
+        [ut, rVectECI, vVectECI] = convertKeplerianToECI(handles);
+        convertToBodyFixed(ut, rVectECI, vVectECI, handles);
     end
 
 % --------------------------------------------------------------------
@@ -1139,7 +1191,8 @@ function getOrbitFromKSPTOTConnectContextMenu_Callback(hObject, eventdata, handl
     selOrbitType = contents{get(handles.orbitTypeCombo,'Value')};
     [~,enum] = OrbitStateEnum.getIndForName(selOrbitType);
     if(enum == OrbitStateEnum.BodyFixed)
-        convertKeplerianTextToBodyFixed(handles)
+        [ut, rVectECI, vVectECI] = convertKeplerianToECI(handles);
+        convertToBodyFixed(ut, rVectECI, vVectECI, handles);
     end
 
 
@@ -1174,7 +1227,8 @@ function getOrbitFromKSPActiveVesselMenu_Callback(hObject, eventdata, handles)
     selOrbitType = contents{get(handles.orbitTypeCombo,'Value')};
     [~,enum] = OrbitStateEnum.getIndForName(selOrbitType);
     if(enum == OrbitStateEnum.BodyFixed)
-        convertKeplerianTextToBodyFixed(handles)
+        [ut, rVectECI, vVectECI] = convertKeplerianToECI(handles);
+        convertToBodyFixed(ut, rVectECI, vVectECI, handles);
     end
 
 % --------------------------------------------------------------------
@@ -1224,7 +1278,8 @@ function pasteOrbitFromClipboardMenu_Callback(hObject, eventdata, handles)
     selOrbitType = contents{get(handles.orbitTypeCombo,'Value')};
     [~,enum] = OrbitStateEnum.getIndForName(selOrbitType);
     if(enum == OrbitStateEnum.BodyFixed)
-        convertKeplerianTextToBodyFixed(handles)
+        [ut, rVectECI, vVectECI] = convertKeplerianToECI(handles);
+        convertToBodyFixed(ut, rVectECI, vVectECI, handles);
     end
 
 % --------------------------------------------------------------------
@@ -1251,7 +1306,7 @@ function orbitPanelContextMenu_Callback(hObject, eventdata, handles)
 %         handles.getOrbitFromKSPActiveVesselMenu.Enable = 'off';
     end
     
-function convertKeplerianTextToBodyFixed(handles)
+function [ut, rVectECI, vVectECI] = convertKeplerianToECI(handles)
 	lvdData = getappdata(handles.lvd_EditInitialStateGUI,'lvdData');
     celBodyData = lvdData.celBodyData;
     
@@ -1270,6 +1325,15 @@ function convertKeplerianTextToBodyFixed(handles)
     
     [rVectECI,vVectECI]=getStatefromKepler(sma, ecc, inc, raan, arg, tru, gmu);
     
+    
+function convertToBodyFixed(ut, rVectECI, vVectECI, handles)    
+	lvdData = getappdata(handles.lvd_EditInitialStateGUI,'lvdData');
+    celBodyData = lvdData.celBodyData;
+    
+    contents = cellstr(get(handles.centralBodyCombo,'String'));
+    selected = strtrim(contents{get(handles.centralBodyCombo,'Value')});
+    bodyInfo = celBodyData.(lower(selected));
+    
     [lat, long, alt, ~, ~, ~, rVectECEF, vVectECEF] = getLatLongAltFromInertialVect(ut, rVectECI, bodyInfo, vVectECI);
     
     vVectSEZ = rotVectToSEZCoords(rVectECEF, vVectECEF);
@@ -1284,14 +1348,13 @@ function convertKeplerianTextToBodyFixed(handles)
     handles.orbit6Text.String = fullAccNum2Str(mag);
     
 
-function convertBodyFixedTextToKeplerian(handles)
+function [ut, rVectECI, vVectECI] = convertBodyFixedToECI(handles)
 	lvdData = getappdata(handles.lvd_EditInitialStateGUI,'lvdData');
     celBodyData = lvdData.celBodyData;
     
     contents = cellstr(get(handles.centralBodyCombo,'String'));
     selected = strtrim(contents{get(handles.centralBodyCombo,'Value')});
     bodyInfo = celBodyData.(lower(selected));
-    gmu = bodyInfo.gm;
     
     ut = str2double(get(handles.utText, 'String'));
     lat = deg2rad(str2double(get(handles.orbit1Text, 'String')));
@@ -1313,6 +1376,17 @@ function convertBodyFixedTextToKeplerian(handles)
     vVectECEF = rotSEZVectToECEFCoords(rVectECEF, vVectSez);
     
     [rVectECI, vVectECI] = getInertialVectFromLatLongAlt(ut, lat, long, alt, bodyInfo, vVectECEF);
+    
+    
+function convertToKeplerian(ut, rVectECI, vVectECI, handles)
+	lvdData = getappdata(handles.lvd_EditInitialStateGUI,'lvdData');
+    celBodyData = lvdData.celBodyData;
+    
+    contents = cellstr(get(handles.centralBodyCombo,'String'));
+    selected = strtrim(contents{get(handles.centralBodyCombo,'Value')});
+    bodyInfo = celBodyData.(lower(selected));
+    gmu = bodyInfo.gm;
+    
     [sma, ecc, inc, raan, arg, tru] = getKeplerFromState(rVectECI,vVectECI,gmu);
     
     handles.orbit1Text.String = fullAccNum2Str(sma);
@@ -1321,6 +1395,46 @@ function convertBodyFixedTextToKeplerian(handles)
     handles.orbit4Text.String = fullAccNum2Str(rad2deg(raan));
     handles.orbit5Text.String = fullAccNum2Str(rad2deg(arg));
     handles.orbit6Text.String = fullAccNum2Str(rad2deg(tru));
+    
+function [ut, rVectECI, vVectECI] = convertCr3bpToECI(handles)
+	lvdData = getappdata(handles.lvd_EditInitialStateGUI,'lvdData');
+    celBodyData = lvdData.celBodyData;
+    
+    contents = cellstr(get(handles.centralBodyCombo,'String'));
+    selected = strtrim(contents{get(handles.centralBodyCombo,'Value')});
+    secBodyInfo = celBodyData.(lower(selected));
+    
+    ut = str2double(get(handles.utText, 'String'));
+    x = str2double(get(handles.orbit1Text, 'String'));
+    y = str2double(get(handles.orbit2Text, 'String'));
+    z = str2double(get(handles.orbit3Text, 'String'));
+    
+    vX = str2double(get(handles.orbit4Text, 'String'));
+    vY = str2double(get(handles.orbit5Text, 'String'));
+    vZ = str2double(get(handles.orbit6Text, 'String'));
+    
+    rVectCR3BP = [x;y;z];
+    vVectCR3BP = [vX;vY;vZ];
+    
+    [rVectECI, vVectECI] = getECIVectFromCR3BPVect(ut, rVectCR3BP, vVectCR3BP, secBodyInfo, celBodyData);
+    
+function convertToCr3bp(ut, rVectECI, vVectECI, handles)
+	lvdData = getappdata(handles.lvd_EditInitialStateGUI,'lvdData');
+    celBodyData = lvdData.celBodyData;
+    
+    contents = cellstr(get(handles.centralBodyCombo,'String'));
+    selected = strtrim(contents{get(handles.centralBodyCombo,'Value')});
+    secBodyInfo = celBodyData.(lower(selected));
+    
+    [rVectCR3BP, vVectCR3BP] = getCR3BPVectFromECIVect(ut, rVectECI, vVectECI, secBodyInfo, celBodyData);
+    
+    handles.orbit1Text.String = fullAccNum2Str(rVectCR3BP(1));
+    handles.orbit2Text.String = fullAccNum2Str(rVectCR3BP(2));
+    handles.orbit3Text.String = fullAccNum2Str(rVectCR3BP(3));
+    handles.orbit4Text.String = fullAccNum2Str(vVectCR3BP(1));
+    handles.orbit5Text.String = fullAccNum2Str(vVectCR3BP(2));
+    handles.orbit6Text.String = fullAccNum2Str(vVectCR3BP(3));
+        
     
 % --------------------------------------------------------------------
 function enterUTAsDateTimeContextMenu_Callback(hObject, eventdata, handles)
