@@ -253,9 +253,17 @@ function errMsg = validateInputs(handles)
     [~,enum] = OrbitStateEnum.getIndForName(orbitType);
     orbitClass = enum.class;
     
-    errMsg = feval(sprintf('%s.validateInputOrbit',orbitClass),errMsg, handles.orbit1Text, handles.orbit2Text, handles.orbit3Text, handles.orbit4Text, handles.orbit5Text, handles.orbit6Text, bodyInfo, '');
-    errMsg = feval(sprintf('%s.validateInputOrbit',orbitClass),errMsg, handles.orbit1LbText, handles.orbit2LbText, handles.orbit3LbText, handles.orbit4LbText, handles.orbit5LbText, handles.orbit6LbText, bodyInfo, 'Lower');
-    errMsg = feval(sprintf('%s.validateInputOrbit',orbitClass),errMsg, handles.orbit1UbText, handles.orbit2UbText, handles.orbit3UbText, handles.orbit4UbText, handles.orbit5UbText, handles.orbit6UbText, bodyInfo, 'Upper');
+    checkElementValues = ones(1,6);
+    checkElementBnds = [handles.optOrbit1Checkbox.Value, ...
+                        handles.optOrbit2Checkbox.Value, ...
+                        handles.optOrbit3Checkbox.Value, ...
+                        handles.optOrbit4Checkbox.Value, ...
+                        handles.optOrbit5Checkbox.Value, ...
+                        handles.optOrbit6Checkbox.Value];
+    
+    errMsg = feval(sprintf('%s.validateInputOrbit',orbitClass),errMsg, handles.orbit1Text, handles.orbit2Text, handles.orbit3Text, handles.orbit4Text, handles.orbit5Text, handles.orbit6Text, bodyInfo, '', checkElementValues);
+    errMsg = feval(sprintf('%s.validateInputOrbit',orbitClass),errMsg, handles.orbit1LbText, handles.orbit2LbText, handles.orbit3LbText, handles.orbit4LbText, handles.orbit5LbText, handles.orbit6LbText, bodyInfo, 'Lower', checkElementBnds);
+    errMsg = feval(sprintf('%s.validateInputOrbit',orbitClass),errMsg, handles.orbit1UbText, handles.orbit2UbText, handles.orbit3UbText, handles.orbit4UbText, handles.orbit5UbText, handles.orbit6UbText, bodyInfo, 'Upper', checkElementBnds);
         
     
 % --- Executes on selection change in orbitTypeCombo.
@@ -1262,14 +1270,18 @@ function convertKeplerianTextToBodyFixed(handles)
     
     [rVectECI,vVectECI]=getStatefromKepler(sma, ecc, inc, raan, arg, tru, gmu);
     
-    [lat, long, alt, ~, ~, ~, ~, vVectECEF] = getLatLongAltFromInertialVect(ut, rVectECI, bodyInfo, vVectECI);
+    [lat, long, alt, ~, ~, ~, rVectECEF, vVectECEF] = getLatLongAltFromInertialVect(ut, rVectECI, bodyInfo, vVectECI);
+    
+    vVectSEZ = rotVectToSEZCoords(rVectECEF, vVectECEF);
+    [az,el,mag]=cart2sph(vVectSEZ(1),vVectSEZ(2),vVectSEZ(3));
+    az = az - pi;
     
     handles.orbit1Text.String = fullAccNum2Str(rad2deg(lat));
     handles.orbit2Text.String = fullAccNum2Str(rad2deg(long));
     handles.orbit3Text.String = fullAccNum2Str(alt);
-    handles.orbit4Text.String = fullAccNum2Str(vVectECEF(1));
-    handles.orbit5Text.String = fullAccNum2Str(vVectECEF(2));
-    handles.orbit6Text.String = fullAccNum2Str(vVectECEF(3));
+    handles.orbit4Text.String = fullAccNum2Str(rad2deg(az));
+    handles.orbit5Text.String = fullAccNum2Str(rad2deg(el));
+    handles.orbit6Text.String = fullAccNum2Str(mag);
     
 
 function convertBodyFixedTextToKeplerian(handles)
@@ -1285,9 +1297,20 @@ function convertBodyFixedTextToKeplerian(handles)
     lat = deg2rad(str2double(get(handles.orbit1Text, 'String')));
     long = deg2rad(str2double(get(handles.orbit2Text, 'String')));
     alt = str2double(get(handles.orbit3Text, 'String'));
-    vVectECEF(1) = str2double(get(handles.orbit4Text, 'String'));
-    vVectECEF(2) = str2double(get(handles.orbit5Text, 'String'));
-    vVectECEF(3) = str2double(get(handles.orbit6Text, 'String'));
+    
+    vVectNEZ_az = deg2rad(str2double(get(handles.orbit4Text, 'String')));
+    vVectNEZ_el = deg2rad(str2double(get(handles.orbit5Text, 'String')));
+    vVectNEZ_mag = str2double(get(handles.orbit6Text, 'String'));
+    
+    rVectECEF = getrVectEcefFromLatLongAlt(lat, long, alt, bodyInfo);
+
+    sezVVectAz = pi - vVectNEZ_az;
+    sezVVectEl = vVectNEZ_el;
+    sezVVectMag = vVectNEZ_mag;
+
+    [x,y,z] = sph2cart(sezVVectAz, sezVVectEl, sezVVectMag);
+    vVectSez = [x;y;z];
+    vVectECEF = rotSEZVectToECEFCoords(rVectECEF, vVectSez);
     
     [rVectECI, vVectECI] = getInertialVectFromLatLongAlt(ut, lat, long, alt, bodyInfo, vVectECEF);
     [sma, ecc, inc, raan, arg, tru] = getKeplerFromState(rVectECI,vVectECI,gmu);

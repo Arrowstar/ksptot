@@ -1,4 +1,4 @@
-function [lat, long, alt, vVectSez, horzVel, vertVel, rVectECEF, vVectECEF, REci2Ecef, velEcefAz, velEcefEl, velEcefMag] = getLatLongAltFromInertialVect(ut, rVectECI, bodyInfo, varargin)
+function [lat, long, alt, vVectSez, horzVel, vertVel, rVectECEF, vVectECEF, REci2Ecef] = getLatLongAltFromInertialVect(ut, rVectECI, bodyInfo, varargin)
 %getLatLongAltFromInertialVect Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -19,16 +19,10 @@ function [lat, long, alt, vVectSez, horzVel, vertVel, rVectECEF, vVectECEF, REci
         vVectSez = rotVectToSEZCoords(rVectECEF, vVectECEF);
         horzVel = sqrt(vVectSez(1)^2 + vVectSez(2)^2);
         vertVel = vVectSez(3);
-        
-        [azimuth,velEcefEl,velEcefMag] = cart2sph(vVectSez(1),vVectSez(2),vVectSez(3));
-        velEcefAz = pi - azimuth;
     else
         vVectSez = [NaN;NaN;NaN];
         horzVel = NaN;
         vertVel = NaN;
-        velEcefAz = NaN;
-        velEcefEl = NaN;
-        velEcefMag = NaN;
     end
 end
 

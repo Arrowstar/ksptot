@@ -49,60 +49,72 @@ classdef BodyFixedOrbitStateModel < AbstractOrbitStateModel
             defaultOrbitState = BodyFixedOrbitStateModel(0, 0, 0, 0, 0, 0);
         end
         
-        function errMsg = validateInputOrbit(errMsg, hLat, hLong, hAlt, hBfVx, hBfVy, hBfVz, bodyInfo, bndStr)
+        function errMsg = validateInputOrbit(errMsg, hLat, hLong, hAlt, hBfVx, hBfVy, hBfVz, bodyInfo, bndStr, checkElement)
             if(isempty(bndStr))
                 bndStr = '';
             else
                 bndStr = sprintf(' (%s Bound)', bndStr);
             end
             
-            lat = str2double(get(hLat,'String'));
-            enteredStr = get(hLat,'String');
-            numberName = ['Latitude', bndStr];
-            lb = -90;
-            ub = 90;
-            isInt = false;
-            errMsg = validateNumber(lat, numberName, lb, ub, isInt, errMsg, enteredStr);
+            if(checkElement(1))
+                lat = str2double(get(hLat,'String'));
+                enteredStr = get(hLat,'String');
+                numberName = ['Latitude', bndStr];
+                lb = -90;
+                ub = 90;
+                isInt = false;
+                errMsg = validateNumber(lat, numberName, lb, ub, isInt, errMsg, enteredStr);
+            end
             
-            long = str2double(get(hLong,'String'));
-            enteredStr = get(hLong,'String');
-            numberName = ['Longitude', bndStr];
-            lb = -360;
-            ub = 360;
-            isInt = false;
-            errMsg = validateNumber(long, numberName, lb, ub, isInt, errMsg, enteredStr);
+            if(checkElement(2))
+                long = str2double(get(hLong,'String'));
+                enteredStr = get(hLong,'String');
+                numberName = ['Longitude', bndStr];
+                lb = -360;
+                ub = 360;
+                isInt = false;
+                errMsg = validateNumber(long, numberName, lb, ub, isInt, errMsg, enteredStr);
+            end
             
-            alt = str2double(get(hAlt,'String'));
-            enteredStr = get(hAlt,'String');
-            numberName = ['Altitude', bndStr];
-            lb = -bodyInfo.radius;
-            ub = Inf;
-            isInt = false;
-            errMsg = validateNumber(alt, numberName, lb, ub, isInt, errMsg, enteredStr);
+            if(checkElement(3))
+                alt = str2double(get(hAlt,'String'));
+                enteredStr = get(hAlt,'String');
+                numberName = ['Altitude', bndStr];
+                lb = -bodyInfo.radius;
+                ub = Inf;
+                isInt = false;
+                errMsg = validateNumber(alt, numberName, lb, ub, isInt, errMsg, enteredStr);
+            end
             
-            bfVx = str2double(get(hBfVx,'String'));
-            enteredStr = get(hBfVx,'String');
-            numberName = ['Body-Fixed Velocity Azimuth', bndStr];
-            lb = -360;
-            ub = 360;
-            isInt = false;
-            errMsg = validateNumber(bfVx, numberName, lb, ub, isInt, errMsg, enteredStr);
+            if(checkElement(4))
+                bfVx = str2double(get(hBfVx,'String'));
+                enteredStr = get(hBfVx,'String');
+                numberName = ['Body-Fixed Velocity Azimuth', bndStr];
+                lb = -360;
+                ub = 360;
+                isInt = false;
+                errMsg = validateNumber(bfVx, numberName, lb, ub, isInt, errMsg, enteredStr);
+            end
             
-            bfVy = str2double(get(hBfVy,'String'));
-            enteredStr = get(hBfVy,'String');
-            numberName = ['Body-Fixed Velocity Elevation', bndStr];
-            lb = -90;
-            ub = 90;
-            isInt = false;
-            errMsg = validateNumber(bfVy, numberName, lb, ub, isInt, errMsg, enteredStr);
+            if(checkElement(5))
+                bfVy = str2double(get(hBfVy,'String'));
+                enteredStr = get(hBfVy,'String');
+                numberName = ['Body-Fixed Velocity Elevation', bndStr];
+                lb = -90;
+                ub = 90;
+                isInt = false;
+                errMsg = validateNumber(bfVy, numberName, lb, ub, isInt, errMsg, enteredStr);
+            end
             
-            bfVz = str2double(get(hBfVz,'String'));
-            enteredStr = get(hBfVz,'String');
-            numberName = ['Body-Fixed Velocity Magnitude', bndStr];
-            lb = 0;
-            ub = Inf;
-            isInt = false;
-            errMsg = validateNumber(bfVz, numberName, lb, ub, isInt, errMsg, enteredStr);
+            if(checkElement(6))
+                bfVz = str2double(get(hBfVz,'String'));
+                enteredStr = get(hBfVz,'String');
+                numberName = ['Body-Fixed Velocity Magnitude', bndStr];
+                lb = 0;
+                ub = Inf;
+                isInt = false;
+                errMsg = validateNumber(bfVz, numberName, lb, ub, isInt, errMsg, enteredStr);
+            end
         end
     end
 end

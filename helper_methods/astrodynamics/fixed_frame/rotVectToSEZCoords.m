@@ -1,4 +1,4 @@
-function vectorSez = rotVectToSEZCoords(rVectorECEF, vector)
+function vectorSez = rotVectToSEZCoords(rVectorECEF, vectorECEF)
 
     kHat = [0;0;1];
     zHat = normVector(rVectorECEF);
@@ -7,5 +7,5 @@ function vectorSez = rotVectToSEZCoords(rVectorECEF, vector)
     
     rotMat = [sHat'; eHat'; zHat'];
     
-    vectorSez = rotMat * vector;
+    vectorSez = rotMat * vectorECEF;
 end

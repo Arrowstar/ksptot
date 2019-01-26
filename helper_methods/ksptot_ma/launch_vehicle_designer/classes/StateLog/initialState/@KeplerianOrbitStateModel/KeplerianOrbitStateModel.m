@@ -37,80 +37,92 @@ classdef KeplerianOrbitStateModel < AbstractOrbitStateModel
             defaultOrbitState = KeplerianOrbitStateModel(700, 0, 0, 0, 0, 0);
         end
         
-        function errMsg = validateInputOrbit(errMsg, hSMA, hEcc, hInc, hRaan, hArg, hTru, bodyInfo, bndStr)
+        function errMsg = validateInputOrbit(errMsg, hSMA, hEcc, hInc, hRaan, hArg, hTru, bodyInfo, bndStr, checkElement)
             if(isempty(bndStr))
                 bndStr = '';
             else
                 bndStr = sprintf(' (%s Bound)', bndStr);
             end
             
-            sma = str2double(get(hSMA,'String'));
-            enteredStr = get(hSMA,'String');
-            numberName = ['Semi-major Axis', bndStr];
-            lb = -Inf;
-            ub = Inf;
-            isInt = false;
-            errMsg = validateNumber(sma, numberName, lb, ub, isInt, errMsg, enteredStr);
+            if(checkElement(2))
+                ecc = str2double(get(hEcc,'String'));
+                enteredStr = get(hEcc,'String');
+                numberName = ['Eccentricity', bndStr];
+                lb = 0;
+                ub = Inf;
+                isInt = false;
+                errMsg = validateNumber(ecc, numberName, lb, ub, isInt, errMsg, enteredStr);
+            end
             
-            ecc = str2double(get(hEcc,'String'));
-            enteredStr = get(hEcc,'String');
-            numberName = ['Eccentricity', bndStr];
-            lb = 0;
-            ub = Inf;
-            isInt = false;
-            errMsg = validateNumber(ecc, numberName, lb, ub, isInt, errMsg, enteredStr);
-            
-            if(isempty(errMsg))
-                if(ecc < 1)
-                    sma = str2double(get(hSMA,'String'));
-                    enteredStr = get(hSMA,'String');
-                    numberName = ['Semi-major Axis', bndStr];
-                    lb = 1E-3;
-                    ub = Inf;
-                    isInt = false;
-                    errMsg = validateNumber(sma, numberName, lb, ub, isInt, errMsg, enteredStr);
-                else
-                    sma = str2double(get(hSMA,'String'));
-                    enteredStr = get(hSMA,'String');
-                    numberName = ['Semi-major Axis', bndStr];
-                    lb = -Inf;
-                    ub = -1E-3;
-                    isInt = false;
-                    errMsg = validateNumber(sma, numberName, lb, ub, isInt, errMsg, enteredStr);
+            if(checkElement(1))
+                sma = str2double(get(hSMA,'String'));
+                enteredStr = get(hSMA,'String');
+                numberName = ['Semi-major Axis', bndStr];
+                lb = -Inf;
+                ub = Inf;
+                isInt = false;
+                errMsg = validateNumber(sma, numberName, lb, ub, isInt, errMsg, enteredStr);
+
+                if(isempty(errMsg))
+                    if(ecc < 1)
+                        sma = str2double(get(hSMA,'String'));
+                        enteredStr = get(hSMA,'String');
+                        numberName = ['Semi-major Axis', bndStr];
+                        lb = 1E-3;
+                        ub = Inf;
+                        isInt = false;
+                        errMsg = validateNumber(sma, numberName, lb, ub, isInt, errMsg, enteredStr);
+                    else
+                        sma = str2double(get(hSMA,'String'));
+                        enteredStr = get(hSMA,'String');
+                        numberName = ['Semi-major Axis', bndStr];
+                        lb = -Inf;
+                        ub = -1E-3;
+                        isInt = false;
+                        errMsg = validateNumber(sma, numberName, lb, ub, isInt, errMsg, enteredStr);
+                    end
                 end
             end
             
-            inc = str2double(get(hInc,'String'));
-            enteredStr = get(hInc,'String');
-            numberName = ['Inclination', bndStr];
-            lb = 0;
-            ub = 180;
-            isInt = false;
-            errMsg = validateNumber(inc, numberName, lb, ub, isInt, errMsg, enteredStr);
+            if(checkElement(3))
+                inc = str2double(get(hInc,'String'));
+                enteredStr = get(hInc,'String');
+                numberName = ['Inclination', bndStr];
+                lb = 0;
+                ub = 180;
+                isInt = false;
+                errMsg = validateNumber(inc, numberName, lb, ub, isInt, errMsg, enteredStr);
+            end
+
+            if(checkElement(4))
+                raan = str2double(get(hRaan,'String'));
+                enteredStr = get(hRaan,'String');
+                numberName = ['Right Asc. of the Asc. Node', bndStr];
+                lb = 0;
+                ub = 360;
+                isInt = false;
+                errMsg = validateNumber(raan, numberName, lb, ub, isInt, errMsg, enteredStr);
+            end
             
-            raan = str2double(get(hRaan,'String'));
-            enteredStr = get(hRaan,'String');
-            numberName = ['Right Asc. of the Asc. Node', bndStr];
-            lb = 0;
-            ub = 360;
-            isInt = false;
-            errMsg = validateNumber(raan, numberName, lb, ub, isInt, errMsg, enteredStr);
+            if(checkElement(5))
+                arg = str2double(get(hArg,'String'));
+                enteredStr = get(hArg,'String');
+                numberName = ['Argument of Periapsis', bndStr];
+                lb = 0;
+                ub = 360;
+                isInt = false;
+                errMsg = validateNumber(arg, numberName, lb, ub, isInt, errMsg, enteredStr);
+            end
             
-            arg = str2double(get(hArg,'String'));
-            enteredStr = get(hArg,'String');
-            numberName = ['Argument of Periapsis', bndStr];
-            lb = 0;
-            ub = 360;
-            isInt = false;
-            errMsg = validateNumber(arg, numberName, lb, ub, isInt, errMsg, enteredStr);
-            
-            tru = str2double(get(hTru,'String'));
-            enteredStr = get(hTru,'String');
-            numberName = ['True Anomaly', bndStr];
-            lb = -360;
-            ub = 360;
-            isInt = false;
-            errMsg = validateNumber(tru, numberName, lb, ub, isInt, errMsg, enteredStr);
+            if(checkElement(6))
+                tru = str2double(get(hTru,'String'));
+                enteredStr = get(hTru,'String');
+                numberName = ['True Anomaly', bndStr];
+                lb = -360;
+                ub = 360;
+                isInt = false;
+                errMsg = validateNumber(tru, numberName, lb, ub, isInt, errMsg, enteredStr);
+            end
         end
     end
 end
