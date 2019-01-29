@@ -1,4 +1,4 @@
-function lvd_updateDispAxis(handles, maStateLog, orbitNumToPlot, lvdData)
+function lvd_updateDispAxis(handles, maStateLog, orbitNumToPlot, orbitPlotType, lvdData)
 %lvd_updateDispAxis Summary of this function goes here
 %   Detailed explanation goes here    
 
@@ -47,5 +47,5 @@ function lvd_updateDispAxis(handles, maStateLog, orbitNumToPlot, lvdData)
     axes(hDispAxes);
     cla(gca);
     
-    lvd_plotStateLog(maStateLog, [], showSoI, showChildBodies, showChildMarker, showOtherSC, orbitNumToPlot, hDispAxisTitleLabel, lvdData, celBodyData);
+    lvd_plotStateLog(maStateLog, [], showSoI, showChildBodies, showChildMarker, showOtherSC, orbitNumToPlot, hDispAxisTitleLabel, orbitPlotType, lvdData, celBodyData);
 end

@@ -22,7 +22,7 @@ function varargout = ma_LvdMainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_LvdMainGUI
 
-% Last Modified by GUIDE v2.5 15-Jan-2019 09:00:14
+% Last Modified by GUIDE v2.5 28-Jan-2019 18:54:55
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -77,6 +77,8 @@ function ma_LvdMainGUI_OpeningFcn(hObject, eventdata, handles, varargin)
     
     setDeleteButtonEnable(lvdData, handles);
     setNonSeqDeleteButtonEnable(lvdData, handles);
+    
+    setappdata(hObject,'orbitPlotType','3DInertial');    
     
     runScript(handles, lvdData, 1);
     lvd_processData(handles);
@@ -1549,4 +1551,62 @@ function showChildBodyMarker_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of showChildBodyMarker
+    lvd_processData(handles); 
+
+
+% --------------------------------------------------------------------
+function viewMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to viewMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function orbitDisplayMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to orbitDisplayMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    orbitPlotType = getappdata(handles.ma_LvdMainGUI,'orbitPlotType');
+    
+    switch orbitPlotType
+        case '3DInertial'
+            set(handles.inertial3dPlotMenu, 'Checked', 'on');
+            set(handles.bodyFixed3dPlotMenu, 'Checked', 'off');
+            set(handles.mercator2dPlotMenu, 'Checked', 'off');
+        case '3DBodyFixed'
+            set(handles.inertial3dPlotMenu, 'Checked', 'off');
+            set(handles.bodyFixed3dPlotMenu, 'Checked', 'on');
+            set(handles.mercator2dPlotMenu, 'Checked', 'off');
+        case '2DMercador'
+            set(handles.inertial3dPlotMenu, 'Checked', 'off');
+            set(handles.bodyFixed3dPlotMenu, 'Checked', 'off');
+            set(handles.mercator2dPlotMenu, 'Checked', 'on');
+        otherwise
+            error('Unknown plot type: %s', orbitPlotType);        
+    end
+
+% --------------------------------------------------------------------
+function inertial3dPlotMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to inertial3dPlotMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    setappdata(handles.ma_LvdMainGUI,'orbitPlotType','3DInertial'); 
+    lvd_processData(handles); 
+
+
+% --------------------------------------------------------------------
+function bodyFixed3dPlotMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to bodyFixed3dPlotMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    setappdata(handles.ma_LvdMainGUI,'orbitPlotType','3DBodyFixed'); 
+    lvd_processData(handles); 
+
+
+% --------------------------------------------------------------------
+function mercator2dPlotMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to mercator2dPlotMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    setappdata(handles.ma_LvdMainGUI,'orbitPlotType','2DMercador'); 
     lvd_processData(handles); 

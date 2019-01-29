@@ -12,7 +12,8 @@ function lvd_processData(handles)
     set(handles.plotWorkingLbl,'Visible','on');
     drawnow;
     [az,el] = view(handles.dispAxes);
-    lvd_updateDispAxis(handles, maStateLog, get(handles.dispAxes,'UserData'), lvdData);
+    orbitPlotType = getappdata(handles.ma_LvdMainGUI,'orbitPlotType');
+    lvd_updateDispAxis(handles, maStateLog, get(handles.dispAxes,'UserData'), orbitPlotType, lvdData);
     
 %     entry = lvdData.stateLog.getLastStateLogForEvent(lvdData.script.getEventForInd(3));
 %     rVect = entry.position;
@@ -24,7 +25,15 @@ function lvd_processData(handles)
 %     plot3([rVect(1), rVect(1) + f*dcm(1,3)], [rVect(2), rVect(2) + f*dcm(2,3)], [rVect(3), rVect(3) + f*dcm(3,3)],'b-');
 %     hold off;
     
-    view(handles.dispAxes, [az,el]);
+    if(strcmpi(orbitPlotType,'3DInertial') || strcmpi(orbitPlotType,'3DBodyFixed'))
+        view(handles.dispAxes, [az,el]);
+        handles.dispAxes.Position = [531.0, 206.0, 418.0, 350.0];
+    elseif(strcmpi(orbitPlotType,'2DMercador'))
+        view(2);
+        handles.dispAxes.OuterPosition = [531.0, 206.0, 418.0, 350.0];
+    else
+        error('Unknown plot type: %s', orbitPlotType);
+    end
     set(handles.plotWorkingLbl,'Visible','off');
     drawnow;
     
