@@ -54,6 +54,10 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
             
             parentBodyInfo = obj.parentBodyInfo;
         end
+        
+%         function tf = eq(A,B)
+%             tf = [A.id] == [B.id];
+%         end
     end
     
 	methods(Static)

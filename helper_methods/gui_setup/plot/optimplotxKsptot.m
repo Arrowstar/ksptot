@@ -29,6 +29,7 @@ switch state
             x = x(1:100);
             lb = lb(1:100);
             ub = ub(1:100);
+            xLength = length(x);
             xlabelText = {xlabelText,getString(message('MATLAB:optimfun:funfun:optimplots:LabelShowingOnlyFirst100Variables'))};
         end
         

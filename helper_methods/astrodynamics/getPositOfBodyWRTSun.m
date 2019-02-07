@@ -5,7 +5,12 @@ function [rVectB, vVectB] = getPositOfBodyWRTSun(time, bodyInfo, celBodyData)
     rVectB = zeros(3,numTimes);
     vVectB = zeros(3,numTimes);
     while(loop)
-        parentBodyInfo = bodyInfo.getParBodyInfo(celBodyData);
+        try
+            parentBodyInfo = bodyInfo.getParBodyInfo(celBodyData);
+        catch 
+            parentBodyInfo = getParentBodyInfo(bodyInfo, celBodyData);
+        end
+        
         if(isempty(parentBodyInfo))
             break;
         end
