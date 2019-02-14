@@ -787,7 +787,7 @@ function getBurnParamsFromKspActiveVesselMenu_Callback(hObject, eventdata, handl
     [rVect, vVect] = getStateAtTime(orbitBodyInfo, nodes(node,1), bodyInfo.gm);
     [~, ~, ~, ~, ~, tru] = getKeplerFromState(rVect,vVect,bodyInfo.gm);
     
-    set(handles.progradeDVText,'String', fullAccNum2Str(nodes(node,2)));
-    set(handles.radialDVText,'String', fullAccNum2Str(nodes(node,4)));
+    set(handles.progradeDVText,'String', fullAccNum2Str(nodes(node,4)));
+    set(handles.radialDVText,'String', fullAccNum2Str(nodes(node,2)));
     set(handles.normalDVText,'String', fullAccNum2Str(nodes(node,3)));
     set(handles.burnTruText,'String', fullAccNum2Str(rad2deg(tru)));
