@@ -640,7 +640,7 @@ function mccRTS_Callback(hObject, eventdata, handles)
     celBodyData = mainGUIUserData{1,1};
     appOptions = getappdata(handles.mainGUIFigure,'appOptions');
     
-    if(isfield(appOptions.ksptot,'rtshostname') && ~isempty(appOptions.ksptot.rtshostname))
+    if(isprop(appOptions.ksptot,'rtshostname') && ~isempty(appOptions.ksptot.rtshostname))
         rtsHost = appOptions.ksptot.rtshostname;
     else
         rtsHost = 'localhost';

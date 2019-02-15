@@ -65,6 +65,7 @@ function rts_VesselSelectGUI_OpeningFcn(hObject, eventdata, handles, varargin)
     rHost = varargin{2};
     if(~isempty(rHost)) %should always be populated
         set(handles.remoteHostText,'String',rHost);
+        setappdata(handles.rts_VesselSelectGUI, 'RHost',rHost);
     end
 
     % UIWAIT makes rts_VesselSelectGUI wait for user response (see UIRESUME)
@@ -98,6 +99,9 @@ function testConnection(handles)
     
     populateVesselSelectCombo(handles);
     setappdata(handles.rts_VesselSelectGUI, 'RHost', rHost);
+    
+    mainGUIFig = getappdata(handles.rts_VesselSelectGUI,'mainGUIFig');
+    updateAppOptions(mainGUIFig, 'ksptot', 'rtshostname', rHost);
 end
 
 function populateVesselSelectCombo(handles)

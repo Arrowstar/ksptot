@@ -60,7 +60,9 @@ function hardStart(hRtsMainGUI)
     mainGUIHandles.vesselGUID = vGUID;
     setappdata(hRtsMainGUI,'VesselGUID',mainGUIHandles.vesselGUID);
     setappdata(hRtsMainGUI,'RHost',rHost);
-    updateAppOptions(mainGUIFig, 'ksptot', 'rtshostname', rHost);
+    if(not(isempty(rHost)) && not(isnumeric(rHost)))
+        updateAppOptions(mainGUIFig, 'ksptot', 'rtshostname', rHost);
+    end
     
     guidata(hRtsMainGUI,mainGUIHandles);
     if(~isempty(mainGUIHandles.vesselGUID))
