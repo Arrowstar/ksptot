@@ -12,6 +12,10 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
         nonSeqEvts LaunchVehicleNonSeqEvents 
     end
     
+    properties(Constant)
+        emptyEvtArr = LaunchVehicleEvent.empty(1,0);
+    end
+    
     methods
         function obj = LaunchVehicleScript(lvdData, simDriver)
             obj.lvdData = lvdData;
@@ -54,7 +58,7 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
         end
         
         function evt = getEventForInd(obj, ind)
-            evt = LaunchVehicleEvent.empty(1,0);
+            evt = obj.emptyEvtArr;
             
             if(ind >= 1 && ind <= length(obj.evts))
                 evt = obj.evts(ind);
