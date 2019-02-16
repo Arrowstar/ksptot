@@ -122,5 +122,16 @@ classdef CR3BPOrbitVariable < AbstractOrbitModelVariable
                 xInd = xInd + 1; %#ok<NASGU>
             end
         end
+        
+        function nameStrs = getStrNamesOfVars(obj, evtNum)
+            nameStrs = {sprintf('Event %i CR3BP Position (X)', evtNum), ...
+                        sprintf('Event %i CR3BP Position (Y)', evtNum), ...
+                        sprintf('Event %i CR3BP Position (Z)', evtNum), ...
+                        sprintf('Event %i CR3BP Velocity (X)', evtNum), ...
+                        sprintf('Event %i CR3BP Velocity (Y)', evtNum), ...
+                        sprintf('Event %i CR3BP Velocity (Z)', evtNum)};
+                    
+            nameStrs = nameStrs(obj.getUseTfForVariable());
+        end
     end
 end

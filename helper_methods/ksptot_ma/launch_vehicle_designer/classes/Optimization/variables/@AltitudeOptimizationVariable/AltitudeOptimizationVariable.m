@@ -53,5 +53,9 @@ classdef AltitudeOptimizationVariable < AbstractOptimizationVariable
         function updateObjWithVarValue(obj, x)
             obj.varObj.altitude = x;
         end
+        
+        function nameStrs = getStrNamesOfVars(obj, evtNum)
+            nameStrs = {sprintf('Event %i Altitude Termination Condition', evtNum)};
+        end
     end
 end

@@ -54,5 +54,9 @@ classdef Thr2WghtTermCondOptimVar < AbstractOptimizationVariable
         function updateObjWithVarValue(obj, x)
             obj.varObj.targetTtW = x;
         end
+        
+        function nameStrs = getStrNamesOfVars(obj, evtNum)
+            nameStrs = {sprintf('Event %i Thrust to Weight Termination Condition', evtNum)};
+        end
     end
 end

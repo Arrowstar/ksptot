@@ -53,5 +53,9 @@ classdef TrueAnomalyOptimizationVariable < AbstractOptimizationVariable
         function updateObjWithVarValue(obj, x)
             obj.varObj.tru = x;
         end
+        
+        function nameStrs = getStrNamesOfVars(obj, evtNum)
+            nameStrs = {sprintf('Event %i True Anomaly Termination Condition', evtNum)};
+        end
     end
 end

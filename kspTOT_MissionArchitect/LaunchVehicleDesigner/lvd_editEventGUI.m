@@ -57,6 +57,7 @@ function lvd_editEventGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 
     event = varargin{1};
     setappdata(hObject,'event',event);
+    event.clearActiveOptVarsCache();
 
     populateGUI(handles, event);
     
@@ -136,6 +137,7 @@ function varargout = lvd_editEventGUI_OutputFcn(hObject, eventdata, handles)
         event.checkForSoITrans = logical(handles.checkSoITransCheckbox.Value);
         
         event.integrationStep = str2double(get(handles.intStepSizeText,'String'));
+        event.clearActiveOptVarsCache();
         
         close(handles.lvd_editEventGUI);
     end

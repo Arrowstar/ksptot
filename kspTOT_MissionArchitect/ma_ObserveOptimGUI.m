@@ -69,10 +69,15 @@ if(length(varargin) >= 4)
 end
 
 propNames = {'Liquid Fuel/Ox','Monopropellant','Xenon'};
-if(length(varargin) >= 5)
+if(length(varargin) >= 5 && ~isempty(varargin{5}))
     handles.ma_MainGUI = varargin{5};  
     maData = getappdata(handles.ma_MainGUI,'ma_data');
     propNames = maData.spacecraft.propellant.names;
+end
+
+varLabels = [];
+if(length(varargin) >= 6)
+    varLabels = varargin{6};
 end
 
 % Update handles structure
@@ -90,7 +95,7 @@ drawnow;
 
 % celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
 recorder = ma_OptimRecorder();
-outputFnc = @(x, optimValues, state) ma_OptimOutputFunc(x, optimValues, state, handles, problem, celBodyData, recorder, propNames, writeOutput);
+outputFnc = @(x, optimValues, state) ma_OptimOutputFunc(x, optimValues, state, handles, problem, celBodyData, recorder, propNames, writeOutput, varLabels);
 problem.options.OutputFcn = outputFnc;
 
 if(not(isLVD))
@@ -104,8 +109,7 @@ close(handles.ma_ObserveOptimGUI);
 % UIWAIT makes ma_ObserveOptimGUI wait for user response (see UIRESUME)
 % uiwait(handles.ma_ObserveOptimGUI);
 
-
-        
+   
 
 % --- Outputs from this function are returned to the command line.
 function varargout = ma_ObserveOptimGUI_OutputFcn(hObject, eventdata, handles) 

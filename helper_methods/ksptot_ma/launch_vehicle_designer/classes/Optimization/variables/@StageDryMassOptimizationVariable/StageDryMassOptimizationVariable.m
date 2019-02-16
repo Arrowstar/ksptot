@@ -53,5 +53,9 @@ classdef StageDryMassOptimizationVariable < AbstractOptimizationVariable
         function updateObjWithVarValue(obj, x)            
             obj.stage.dryMass = x;
         end
+        
+        function nameStrs = getStrNamesOfVars(obj, evtNum)
+            nameStrs = {sprintf('Event %i Stage Dry Mass', evtNum)};
+        end
     end
 end

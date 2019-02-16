@@ -151,5 +151,31 @@ classdef SetRPYSteeringModelActionOptimVar < AbstractOptimizationVariable
                 ind = ind + 1; %#ok<NASGU>
             end
         end
+        
+        function nameStrs = getStrNamesOfVars(obj, evtNum)
+            nameStrs = {sprintf('Event %i Roll Angle Constant', evtNum), ...
+                        sprintf('Event %i Roll Angle Rate', evtNum), ...
+                        sprintf('Event %i Roll Angle Acceleration', evtNum), ...
+                        sprintf('Event %i Pitch Constant', evtNum), ...
+                        sprintf('Event %i Pitch Rate', evtNum), ...
+                        sprintf('Event %i Pitch Acceleration', evtNum), ...
+                        sprintf('Event %i Yaw Slip Constant', evtNum), ...
+                        sprintf('Event %i Yaw Slip Rate', evtNum), ...
+                        sprintf('Event %i Yaw Slip Acceleration', evtNum)};
+                    
+            nameStrs = nameStrs(obj.getUseTfForVariable());
+        end
     end
 end
+
+%         varRollConst(1,1) logical = false;
+%         varRollLin(1,1) logical   = false;
+%         varRollAccel(1,1) logical = false;
+%         
+%         varPitchConst(1,1) logical = false;
+%         varPitchLin(1,1) logical   = false;
+%         varPitchAccel(1,1) logical = false;
+%         
+%         varYawConst(1,1) logical = false;
+%         varYawLin(1,1) logical   = false;
+%         varYawAccel(1,1) logical = false;

@@ -7,6 +7,10 @@ classdef SetEngineActiveStateAction < AbstractEventAction
         activeStateToSet(1,1) logical = false;
     end
     
+    properties(Constant)
+        emptyVarArr = AbstractOptimizationVariable.empty(0,1);
+    end
+    
     methods
         function obj = SetEngineActiveStateAction(engine, activeStateToSet)
             if(nargin > 0)
@@ -71,7 +75,7 @@ classdef SetEngineActiveStateAction < AbstractEventAction
         
         function [tf, vars] = hasActiveOptimVar(obj)
             tf = false;
-            vars = AbstractOptimizationVariable.empty(0,1);
+            vars = obj.emptyVarArr;
         end
     end
     

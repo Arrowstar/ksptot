@@ -6,6 +6,10 @@ classdef SetThrottleModelAction < AbstractEventAction
         throttleModel(1,1) AbstractThrottleModel = ThrottlePolyModel.getDefaultThrottleModel()
     end
     
+    properties(Constant)
+        emptyVarArr = AbstractOptimizationVariable.empty(0,1);
+    end
+    
     methods
         function obj = SetThrottleModelAction(throttleModel)
             if(nargin > 0)
@@ -73,7 +77,7 @@ classdef SetThrottleModelAction < AbstractEventAction
         
         function [tf, vars] = hasActiveOptimVar(obj)
             tf = false;
-            vars = AbstractOptimizationVariable.empty(0,1);
+            vars = obj.emptyVarArr;
             
             optVar = obj.throttleModel.getExistingOptVar();
             if(not(isempty(optVar)))

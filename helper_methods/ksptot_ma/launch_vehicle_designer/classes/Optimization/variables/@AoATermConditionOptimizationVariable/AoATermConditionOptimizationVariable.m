@@ -53,5 +53,9 @@ classdef AoATermConditionOptimizationVariable < AbstractOptimizationVariable
         function updateObjWithVarValue(obj, x)
             obj.varObj.targetAoA = x;
         end
+        
+        function nameStrs = getStrNamesOfVars(obj, evtNum)
+            nameStrs = {sprintf('Event %i Angle Of Attack Termination Condition', evtNum)};
+        end
     end
 end

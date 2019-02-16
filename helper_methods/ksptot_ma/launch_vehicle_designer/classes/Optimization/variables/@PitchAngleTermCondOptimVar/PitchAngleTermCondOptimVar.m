@@ -53,5 +53,9 @@ classdef PitchAngleTermCondOptimVar < AbstractOptimizationVariable
         function updateObjWithVarValue(obj, x)
             obj.varObj.targetPitchAngle = x;
         end
+        
+        function nameStrs = getStrNamesOfVars(obj, evtNum)
+            nameStrs = {sprintf('Event %i Pitch Angle Termination Condition', evtNum)};
+        end
     end
 end

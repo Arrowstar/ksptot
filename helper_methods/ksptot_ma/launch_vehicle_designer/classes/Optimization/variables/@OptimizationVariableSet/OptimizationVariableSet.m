@@ -29,10 +29,11 @@ classdef OptimizationVariableSet < matlab.mixin.SetGet
             obj.clearCachedVarEvtDisabledStatus();
         end
         
-        function [x, vars] = getTotalScaledXVector(obj)
+        function [x, vars, varNameStrs] = getTotalScaledXVector(obj)
             x = [];
             vars = AbstractOptimizationVariable.empty(0,1);
             
+            varNameStrs = {};
             for(i=1:length(obj.vars)) %#ok<*NO4LP>
                 var = obj.vars(i);
                 
@@ -45,6 +46,16 @@ classdef OptimizationVariableSet < matlab.mixin.SetGet
                 
                 for(j=1:length(vX))
                     vars(end+1) = obj.vars(i); %#ok<AGROW>
+                end
+                
+                if(not(isempty(vX)))
+                    evtNum = getEventNumberForVar(var, obj.lvdData);
+                    
+                    if(isempty(evtNum))
+                        evtNum = 0;
+                    end
+                    
+                    varNameStrs = horzcat(varNameStrs,var.getStrNamesOfVars(evtNum)); %#ok<AGROW>
                 end
             end
         end

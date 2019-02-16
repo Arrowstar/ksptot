@@ -53,5 +53,9 @@ classdef RollAngleTermCondOptimizationVariable < AbstractOptimizationVariable
         function updateObjWithVarValue(obj, x)
             obj.varObj.targetRollAngle = x;
         end
+        
+        function nameStrs = getStrNamesOfVars(obj, evtNum)
+            nameStrs = {sprintf('Event %i Roll Angle Termination Condition', evtNum)};
+        end
     end
 end

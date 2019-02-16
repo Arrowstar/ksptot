@@ -53,5 +53,9 @@ classdef LatitudeOptimizationVariable < AbstractOptimizationVariable
         function updateObjWithVarValue(obj, x)
             obj.varObj.lat = x;
         end
+        
+        function nameStrs = getStrNamesOfVars(obj, evtNum)
+            nameStrs = {sprintf('Event %i Latitude Termination Condition', evtNum)};
+        end
     end
 end

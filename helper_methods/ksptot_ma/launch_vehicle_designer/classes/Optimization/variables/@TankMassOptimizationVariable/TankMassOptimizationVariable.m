@@ -53,5 +53,9 @@ classdef TankMassOptimizationVariable < AbstractOptimizationVariable
         function updateObjWithVarValue(obj, x)
             obj.varObj.targetMass = x;
         end
+        
+        function nameStrs = getStrNamesOfVars(obj, evtNum)
+            nameStrs = {sprintf('Event %i Tank Mass Termination Condition', evtNum)};
+        end
     end
 end

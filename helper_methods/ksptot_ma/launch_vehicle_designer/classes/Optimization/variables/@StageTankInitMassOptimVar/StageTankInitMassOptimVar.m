@@ -53,5 +53,9 @@ classdef StageTankInitMassOptimVar < AbstractOptimizationVariable
         function updateObjWithVarValue(obj, x)            
             obj.tank.initialMass = x;
         end
+        
+        function nameStrs = getStrNamesOfVars(obj, evtNum)
+            nameStrs = {sprintf('Event %i Tank Initial Mass', evtNum)};
+        end
     end
 end

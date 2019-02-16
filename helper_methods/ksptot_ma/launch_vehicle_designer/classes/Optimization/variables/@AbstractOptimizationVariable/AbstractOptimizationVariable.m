@@ -21,6 +21,8 @@ classdef(Abstract) AbstractOptimizationVariable < matlab.mixin.SetGet & matlab.m
         
         updateObjWithVarValue(obj, x)
         
+        nameStrs = getStrNamesOfVars(obj, evtNum)
+        
         function [xS, lbS, ubS] = getScaledXsForVariable(obj)
             x = obj.getXsForVariable();
             [lb, ub] = obj.getBndsForVariable();

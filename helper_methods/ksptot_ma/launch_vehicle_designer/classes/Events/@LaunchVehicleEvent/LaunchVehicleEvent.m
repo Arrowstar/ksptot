@@ -24,6 +24,15 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
         lvdData LvdData
     end
     
+    properties(Constant)
+        emptyVarArr = AbstractOptimizationVariable.empty(0,1);
+    end
+    
+    properties(Transient, Access=private)
+        hasActiveOptVarsTF logical = false(0);
+        hasActiveOptVarsVars AbstractOptimizationVariable = AbstractOptimizationVariable.empty(0,1);
+    end
+    
     methods
         function obj = LaunchVehicleEvent(script)
             obj.script = script;
@@ -178,27 +187,39 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
         end
         
         function [tf, vars] = hasActiveOptVars(obj)
-            tf = false;
-            
-            vars = AbstractOptimizationVariable.empty(0,1);
-            
-            tcOptVar = obj.termCond.getExistingOptVar();
-            if(not(isempty(tcOptVar)))
-                tf = any(tcOptVar.getUseTfForVariable());
-                
-                vars(end+1) = tcOptVar;
-            end
-            
-            for(i=1:length(obj.actions))
-                [aTf, aVars] = obj.actions(i).hasActiveOptimVar();
-                tf = tf || aTf;
-                
-                if(isempty(vars))
-                    vars = aVars;
-                else
-                    vars = horzcat(vars, aVars); %#ok<AGROW>
+            if(isempty(obj.hasActiveOptVarsTF) || isempty(obj.hasActiveOptVarsVars))
+                tf = false;
+                vars = obj.emptyVarArr;
+
+                tcOptVar = obj.termCond.getExistingOptVar();
+                if(not(isempty(tcOptVar)))
+                    tf = any(tcOptVar.getUseTfForVariable());
+
+                    vars(end+1) = tcOptVar;
                 end
+
+                for(i=1:length(obj.actions))
+                    [aTf, aVars] = obj.actions(i).hasActiveOptimVar();
+                    tf = tf || aTf;
+
+                    if(isempty(vars))
+                        vars = aVars;
+                    else
+                        vars = horzcat(vars, aVars); %#ok<AGROW>
+                    end
+                end
+                
+                obj.hasActiveOptVarsTF = tf;
+                obj.hasActiveOptVarsVars = vars;
+            else
+                tf = obj.hasActiveOptVarsTF;
+                vars = obj.hasActiveOptVarsVars;
             end
+        end
+        
+        function clearActiveOptVarsCache(obj)
+            obj.hasActiveOptVarsTF = false(0);
+            obj.hasActiveOptVarsVars = AbstractOptimizationVariable.empty(0,1);
         end
     end
     

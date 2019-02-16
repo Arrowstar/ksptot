@@ -6,6 +6,10 @@ classdef SetSteeringModelAction < AbstractEventAction
         steeringModel(1,1) AbstractSteeringModel = RollPitchYawPolySteeringModel.getDefaultSteeringModel()
     end
     
+    properties(Constant)
+        emptyVarArr = AbstractOptimizationVariable.empty(0,1);
+    end
+    
     methods
         function obj = SetSteeringModelAction(steeringModel)
             if(nargin > 0)
@@ -67,7 +71,7 @@ classdef SetSteeringModelAction < AbstractEventAction
         
         function [tf, vars] = hasActiveOptimVar(obj)
             tf = false;
-            vars = AbstractOptimizationVariable.empty(0,1);
+            vars = obj.emptyVarArr;
             
             optVar = obj.steeringModel.getExistingOptVar();
             if(not(isempty(optVar)))

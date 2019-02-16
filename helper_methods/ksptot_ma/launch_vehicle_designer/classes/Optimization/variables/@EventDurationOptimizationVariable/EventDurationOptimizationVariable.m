@@ -53,5 +53,9 @@ classdef EventDurationOptimizationVariable < AbstractOptimizationVariable
         function updateObjWithVarValue(obj, x)
             obj.varObj.duration = x;
         end
+        
+        function nameStrs = getStrNamesOfVars(obj, evtNum)
+            nameStrs = {sprintf('Event %i Duration Termination Condition', evtNum)};
+        end
     end
 end

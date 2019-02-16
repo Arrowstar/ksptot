@@ -122,5 +122,16 @@ classdef KeplerianOrbitVariable < AbstractOrbitModelVariable
                 xInd = xInd + 1; %#ok<NASGU>
             end
         end
+        
+        function nameStrs = getStrNamesOfVars(obj, evtNum)
+            nameStrs = {sprintf('Event %i SMA', evtNum), ...
+                        sprintf('Event %i Eccentricity', evtNum), ...
+                        sprintf('Event %i Inclination', evtNum), ...
+                        sprintf('Event %i RAAN', evtNum), ...
+                        sprintf('Event %i Argument of Periapsis', evtNum), ...
+                        sprintf('Event %i True Anomaly', evtNum)};
+                    
+            nameStrs = nameStrs(obj.getUseTfForVariable());
+        end
     end
 end

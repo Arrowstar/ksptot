@@ -53,5 +53,9 @@ classdef BankAngleTermCondOptimizationVariable < AbstractOptimizationVariable
         function updateObjWithVarValue(obj, x)
             obj.varObj.targetBankAngle = x;
         end
+        
+        function nameStrs = getStrNamesOfVars(obj, evtNum)
+            nameStrs = {sprintf('Event %i Bank Angle Termination Condition', evtNum)};
+        end
     end
 end

@@ -95,5 +95,9 @@ classdef InitialStateVariable < AbstractOptimizationVariable
         function updateObjWithVarValue(obj, x)
             obj.varObj.time = x(1);
         end
+        
+        function nameStrs = getStrNamesOfVars(obj, evtNum)
+            nameStrs = obj.orbitVar.getStrNamesOfVars(evtNum);
+        end
     end
 end

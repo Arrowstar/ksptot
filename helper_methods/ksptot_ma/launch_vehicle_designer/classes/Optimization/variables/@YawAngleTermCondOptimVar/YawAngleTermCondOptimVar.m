@@ -53,5 +53,9 @@ classdef YawAngleTermCondOptimVar < AbstractOptimizationVariable
         function updateObjWithVarValue(obj, x)
             obj.varObj.targetYawAngle = x;
         end
+        
+        function nameStrs = getStrNamesOfVars(obj, evtNum)
+            nameStrs = {sprintf('Event %i Yaw Angle Termination Condition', evtNum)};
+        end
     end
 end

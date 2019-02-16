@@ -122,5 +122,16 @@ classdef BodyFixedOrbitVariable < AbstractOrbitModelVariable
                 xInd = xInd + 1; %#ok<NASGU>
             end
         end
+        
+        function nameStrs = getStrNamesOfVars(obj, evtNum)
+            nameStrs = {sprintf('Event %i Latitude', evtNum), ...
+                        sprintf('Event %i Longitude', evtNum), ...
+                        sprintf('Event %i Altitude', evtNum), ...
+                        sprintf('Event %i Body-Fixed Velocity Azimuth', evtNum), ...
+                        sprintf('Event %i Body-Fixed Velocity Elevation', evtNum), ...
+                        sprintf('Event %i Body-Fixed Velocity Magnitude', evtNum)};
+                    
+            nameStrs = nameStrs(obj.getUseTfForVariable());
+        end
     end
 end

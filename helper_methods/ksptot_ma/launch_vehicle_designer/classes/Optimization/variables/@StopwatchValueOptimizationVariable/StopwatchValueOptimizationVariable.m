@@ -53,5 +53,9 @@ classdef StopwatchValueOptimizationVariable < AbstractOptimizationVariable
         function updateObjWithVarValue(obj, x)
             obj.varObj.value = x;
         end
+        
+        function nameStrs = getStrNamesOfVars(obj, evtNum)
+            nameStrs = {sprintf('Event %i Stopwatch Termination Condition', evtNum)};
+        end
     end
 end

@@ -53,5 +53,9 @@ classdef T2WThrottleModelOptimVar < AbstractOptimizationVariable
         function updateObjWithVarValue(obj, x)
             obj.varObj.targetT2W = x;
         end
+        
+        function nameStrs = getStrNamesOfVars(obj, evtNum)
+            nameStrs = {sprintf('Event %i Throttle Thrust to Weight', evtNum)};
+        end
     end
 end
