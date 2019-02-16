@@ -159,7 +159,7 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
             tf = tf || obj.nonSeqEvts.usesTankToTankConn(tankToTank);
         end
         
-        function stateLog = executeScript(obj, isSparseOutput, evtToStartScriptExecAt, evalConstraints)
+        function stateLog = executeScript(obj, isSparseOutput, evtToStartScriptExecAt, evalConstraints, allowInterrupt)
             stateLog = obj.lvdData.stateLog;
             
             if(not(isempty(evtToStartScriptExecAt)))
@@ -186,6 +186,12 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
                 tStartPropTime = tic();
                 for(i=evtStartNum:length(obj.evts)) %#ok<*NO4LP>
                     evt = obj.evts(i);
+                    
+                    %allow interrupting script execution with figure
+                    %callbacks 
+                    if(allowInterrupt && logical(mod(i,2)) && usejava('desktop'))
+                        drawnow;
+                    end
                     
                     %Init Event
                     evt.initEvent(initStateLogEntry);

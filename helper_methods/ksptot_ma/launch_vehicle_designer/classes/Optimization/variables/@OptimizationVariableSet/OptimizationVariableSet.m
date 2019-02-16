@@ -60,9 +60,11 @@ classdef OptimizationVariableSet < matlab.mixin.SetGet
             end
         end
                
-        function [LwrBnds, UprBnds] = getTotalScaledBndsVector(obj)
+        function [LwrBnds, UprBnds, LwrBndsUnscaled, UprBndsUnscaled] = getTotalScaledBndsVector(obj)
             LwrBnds = [];
             UprBnds = [];
+            LwrBndsUnscaled = [];
+            UprBndsUnscaled = [];
             
             for(i=1:length(obj.vars)) %#ok<*NO4LP>
                 var = obj.vars(i);
@@ -74,6 +76,10 @@ classdef OptimizationVariableSet < matlab.mixin.SetGet
                 [~, lb, ub]= var.getScaledXsForVariable();
                 LwrBnds = horzcat(LwrBnds, lb); %#ok<AGROW>
                 UprBnds = horzcat(UprBnds, ub); %#ok<AGROW>
+                
+                [lb, ub] = var.getBndsForVariable();
+                LwrBndsUnscaled = horzcat(LwrBndsUnscaled, lb); %#ok<AGROW>
+                UprBndsUnscaled = horzcat(UprBndsUnscaled, ub); %#ok<AGROW>
             end
         end
         

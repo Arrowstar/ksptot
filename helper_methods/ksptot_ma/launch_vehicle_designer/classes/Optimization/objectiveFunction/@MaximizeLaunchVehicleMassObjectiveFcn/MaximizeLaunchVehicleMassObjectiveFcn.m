@@ -18,7 +18,7 @@ classdef MaximizeLaunchVehicleMassObjectiveFcn < AbstractObjectiveFcn
         
         function [f, stateLog] = evalObjFcn(obj, x, evtToStartScriptExecAt)          
             obj.lvdOptim.vars.updateObjsWithScaledVarValues(x);
-            stateLog = obj.lvdData.script.executeScript(true, evtToStartScriptExecAt, false);
+            stateLog = obj.lvdData.script.executeScript(true, evtToStartScriptExecAt, false, true);
             
             subStateLog = stateLog.getLastStateLogForEvent(obj.event);
             f = -1*subStateLog.getTotalVehicleMass();

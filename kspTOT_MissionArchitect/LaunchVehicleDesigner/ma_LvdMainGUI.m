@@ -118,7 +118,7 @@ function runScript(handles, lvdData, evtStartNum)
 
     t = tic;
     evt = lvdData.script.getEventForInd(evtStartNum);
-    lvdData.script.executeScript(isSparseOutput, evt, true);
+    lvdData.script.executeScript(isSparseOutput, evt, true, false);
     execTime = toc(t);
     
     if(not(isdeployed))

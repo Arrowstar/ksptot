@@ -1,4 +1,4 @@
-function stop = ma_OptimOutputFunc(x, optimValues, state, handles, problem, celBodyData, recorder, propNames, writeOutput, varLabels)
+function stop = ma_OptimOutputFunc(x, optimValues, state, handles, problem, celBodyData, recorder, propNames, writeOutput, varLabels, lbUsAll, ubUsAll)
     stop = false;
     switch state
         case 'iter'
@@ -24,7 +24,7 @@ function stop = ma_OptimOutputFunc(x, optimValues, state, handles, problem, celB
     
     writeOptimStatus(handles, optimValues, state, writeOutput);
     writeFinalState(handles, stateLog, celBodyData, propNames);
-    generatePlots(x, optimValues, state, handles, problem.lb, problem.ub, varLabels);
+    generatePlots(x, optimValues, state, handles, problem.lb, problem.ub, varLabels, lbUsAll, ubUsAll);
     drawnow;
 end
 
@@ -81,7 +81,7 @@ function writeFinalState(handles, stateLog, celBodyData, propNames)
     ma_UpdateStateReadout(hStateReadoutLabel, whichState, propNames, stateLog, celBodyData);
 end
     
-function generatePlots(x, optimValues, state, handles, lb, ub, varLabels)
+function generatePlots(x, optimValues, state, handles, lb, ub, varLabels, lbUsAll, ubUsAll)
     persistent fValPlotIsLog
     
     if(isempty(fValPlotIsLog))
@@ -98,7 +98,7 @@ function generatePlots(x, optimValues, state, handles, lb, ub, varLabels)
     set(groot,'CurrentFigure',handles.ma_ObserveOptimGUI);
     
     subplot(3,1,1);
-    optimplotxKsptot(x, optimValues, state, lb, ub, varLabels);
+    optimplotxKsptot(x, optimValues, state, lb, ub, varLabels, lbUsAll, ubUsAll);
     
     h=subplot(3,1,2);
     if(optimValues.fval<=0)

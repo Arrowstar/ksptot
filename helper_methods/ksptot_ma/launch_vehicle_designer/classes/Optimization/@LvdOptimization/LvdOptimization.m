@@ -21,7 +21,7 @@ classdef LvdOptimization < matlab.mixin.SetGet
         
         function optimize(obj, writeOutput)                        
             [x0All, actVars, varNameStrs] = obj.vars.getTotalScaledXVector();
-            [lbAll, ubAll] = obj.vars.getTotalScaledBndsVector();
+            [lbAll, ubAll, lbUsAll, ubUsAll] = obj.vars.getTotalScaledBndsVector();
             typicalX = obj.vars.getTypicalScaledXVector();
             
             if(isempty(x0All) && isempty(actVars))
@@ -64,7 +64,7 @@ classdef LvdOptimization < matlab.mixin.SetGet
             
             problem.lvdData = obj.lvdData; %need to get lvdData in somehow
                     
-            ma_ObserveOptimGUI(obj.lvdData.celBodyData, problem, true, writeOutput, [], varNameStrs);
+            ma_ObserveOptimGUI(obj.lvdData.celBodyData, problem, true, writeOutput, [], varNameStrs, lbUsAll, ubUsAll);
         end
         
         function tf = usesStage(obj, stage)

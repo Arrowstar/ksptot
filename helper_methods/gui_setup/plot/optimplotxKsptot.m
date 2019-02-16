@@ -1,4 +1,4 @@
-function stop = optimplotxKsptot(x,optimValues,state,lb,ub,varLabels,varargin)
+function stop = optimplotxKsptot(x,optimValues,state,lb,ub,varLabels,lbUsAll,ubUsAll, varargin)
 % OPTIMPLOTX Plot current point at each iteration.
 %
 %   STOP = OPTIMPLOTX(X,OPTIMVALUES,STATE,LB,UB) plots the current point, X, as a
@@ -21,6 +21,8 @@ function stop = optimplotxKsptot(x,optimValues,state,lb,ub,varLabels,varargin)
             x = x(:);
             lb = reshape(lb,size(x));
             ub = reshape(ub,size(x));
+            lbUsAll = reshape(lbUsAll,size(x));
+            ubUsAll = reshape(ubUsAll,size(x));
             xLength = length(x);
             xlabelText = getString(message('MATLAB:optimfun:funfun:optimplots:LabelNumberOfVariables',sprintf('%g',xLength)));
 
@@ -70,13 +72,15 @@ function stop = optimplotxKsptot(x,optimValues,state,lb,ub,varLabels,varargin)
                 tb.FontSize = 8;
                 tb.HorizontalAlignment = 'center';
                 tb.VerticalAlignment = 'middle';
-                tb.Margin  = 1;
+                tb.Margin  = 5;
                 tb.BackgroundColor = [255,255,224]/255;
                 tb.LineWidth = 0.1;
                 tb.FitBoxToText = 'off';
                 tb.Position(4) = tb.Position(4)/2;
                 
-                hFig.WindowButtonMotionFcn = @(src,callbackdata) wbmcb(src,callbackdata, hAxes, rects, labels, tb);
+                hFig.WindowButtonMotionFcn = @(src,callbackdata) wbmcb(src,callbackdata, hAxes, hPanel, rects, labels, tb, lbUsAll,ubUsAll);
+                
+                setappdata(hAxes,'x',x);
             else
                 plotx = findobj(get(gca,'Children'),'Tag','optimplotxksptot');
                 set(plotx,'Ydata',x);
@@ -84,11 +88,14 @@ function stop = optimplotxKsptot(x,optimValues,state,lb,ub,varLabels,varargin)
                 ylim(gca,[0, 1]);
                 set(gca,'YTickLabel',{'Lwr Bnd','Upr Bnd'});
                 yticks(gca,[0 1]);
+                
+                hAxes = ancestor(plotx,'axes');
+                setappdata(hAxes,'x',x);
             end
     end
 end
 
-function wbmcb(~,~, hAxes, rects, labels, tb)
+function wbmcb(~,~, hAxes, hPanel, rects, labels, tb, lb, ub)
     cp = hAxes.CurrentPoint;
     
     
@@ -104,11 +111,18 @@ function wbmcb(~,~, hAxes, rects, labels, tb)
         in = inpolygon(xq,yq,xv,yv);
         
         if(in)
-            hT = text(hAxes,0,0,labels{i}, 'Units','normalized', 'FontSize',tb.FontSize, 'Visible','off', 'LineWidth',0.01, 'Margin',0.01);
-            reqdWidth = hT.Extent(3);
+            x = getappdata(hAxes,'x');
+            x = x.*(ub-lb)+lb; %unscale x
+            varVal = x(i);
+            
+            str = sprintf('%s\n(Value: %0.3g)\n(Bounds: [%0.3g, %0.3g])',labels{i}, varVal, lb(i), ub(i));
+            
+            hT = text(hAxes,0,0,str, 'Units','normalized', 'FontSize',tb.FontSize, 'Visible','off', 'LineWidth',0.01, 'Margin',0.01);
+            reqdWidth = hT.Extent(3) * hAxes.Position(3);
+            reqdHeight = hT.Extent(4) * hAxes.Position(4);
             delete(hT);
             
-            tb.String = [labels{i}];
+            tb.String = str;
             tbPos = tb.Position;
             
             [figx, figy] = dsxy2figxy(hAxes, [xq xq],[yq yq]);     
@@ -119,7 +133,7 @@ function wbmcb(~,~, hAxes, rects, labels, tb)
                 figx = figx - reqdWidth;
             end
             
-            tbPos(1:3) = [figx, figy, reqdWidth];
+            tbPos(1:4) = [figx, figy, reqdWidth, reqdHeight];
             tb.Position = tbPos;
             
             found = true;

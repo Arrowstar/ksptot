@@ -80,6 +80,13 @@ if(length(varargin) >= 6)
     varLabels = varargin{6};
 end
 
+lbUsAll = problem.lb;
+ubUsAll = problem.ub;
+if(length(varargin) >= 8)
+    lbUsAll = varargin{7};
+    ubUsAll = varargin{8};
+end
+
 % Update handles structure
 guidata(hObject, handles);
 
@@ -95,7 +102,7 @@ drawnow;
 
 % celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
 recorder = ma_OptimRecorder();
-outputFnc = @(x, optimValues, state) ma_OptimOutputFunc(x, optimValues, state, handles, problem, celBodyData, recorder, propNames, writeOutput, varLabels);
+outputFnc = @(x, optimValues, state) ma_OptimOutputFunc(x, optimValues, state, handles, problem, celBodyData, recorder, propNames, writeOutput, varLabels, lbUsAll, ubUsAll);
 problem.options.OutputFcn = outputFnc;
 
 if(not(isLVD))
