@@ -104,6 +104,7 @@ drawnow;
 recorder = ma_OptimRecorder();
 outputFnc = @(x, optimValues, state) ma_OptimOutputFunc(x, optimValues, state, handles, problem, celBodyData, recorder, propNames, writeOutput, varLabels, lbUsAll, ubUsAll);
 problem.options.OutputFcn = outputFnc;
+datacursormode(handles.ma_ObserveOptimGUI,'on');
 
 if(not(isLVD))
     executeOptimProblem(handles, problem, recorder);

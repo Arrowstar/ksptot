@@ -54,7 +54,7 @@ classdef LvdOptimization < matlab.mixin.SetGet
             evtToStartScriptExecAt = obj.lvdData.script.getEventForInd(evtNumToStartScriptExecAt);
             
             objFuncWrapper = @(x) obj.objFcn.evalObjFcn(x, evtToStartScriptExecAt);
-            nonlcon = @(x) obj.constraints.evalConstraints(x, true, evtToStartScriptExecAt);
+            nonlcon = @(x) obj.constraints.evalConstraints(x, true, evtToStartScriptExecAt, true);
             
             optimAlg = obj.lvdData.settings.optAlgo.algoName;
             usePara = obj.lvdData.settings.optUsePara;
