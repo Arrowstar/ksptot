@@ -28,12 +28,32 @@ function plotRendezvous(hAxis, timeArr, bodyInfo, iniOrbit, finOrbit, xfrOrbit, 
     [iniLB, iniUB, ~] = getOrbitTAPlotBnds(bodyInfo, parentBodyInfo, iniOrbit);
     [finLB, finUB, ~] = getOrbitTAPlotBnds(bodyInfo, parentBodyInfo, finOrbit);
 
+    time1 = timeArr(1);
+    time2 = timeArr(2);
+    
+    if(iniOrbit(2) >= 1)
+        [rVect, vVect] = getStateAtTime(iniOrbBodyInfo, time1, iniOrbit(8));
+        [~, ~, ~, ~, ~, iniTA1] = getKeplerFromState(rVect,vVect,iniOrbit(8));
+        iniLB = min(iniLB,iniTA1);
+        
+        [rVect, vVect] = getStateAtTime(iniOrbBodyInfo, time2, finOrbit(8));
+        [~, ~, ~, ~, ~, iniTA2] = getKeplerFromState(rVect,vVect,finOrbit(8));
+        iniUB = max(iniUB,iniTA2);
+    end
+    
+    if(finOrbit(2) >= 1)
+        [rVect, vVect] = getStateAtTime(finOrbBodyInfo, time1, finOrbit(8));
+        [~, ~, ~, ~, ~, finTA1] = getKeplerFromState(rVect,vVect,finOrbit(8));
+        finLB = min(finLB,finTA1);
+        
+        [rVect, vVect] = getStateAtTime(finOrbBodyInfo, time2, finOrbit(8));
+        [~, ~, ~, ~, ~, finTA2] = getKeplerFromState(rVect,vVect,finOrbit(8));
+        finUB = max(finUB,finTA2);
+    end
+    
     plotOrbit('r', iniOrbit(1), iniOrbit(2), iniOrbit(3), iniOrbit(4), iniOrbit(5), iniLB, iniUB, gmuXfr);
     plotOrbit('b', finOrbit(1), finOrbit(2), finOrbit(3), finOrbit(4), finOrbit(5), finLB, finUB, gmuXfr);
     plotOrbit('k', xfrOrbit(1), xfrOrbit(2), xfrOrbit(3), xfrOrbit(4), xfrOrbit(5), xfrOrbit(6), xfrOrbit(7), gmuXfr,[],[],[],'--');
-
-    time1 = timeArr(1);
-    time2 = timeArr(2);
 
     [iniRVectT1, ~] = getStateAtTime(iniOrbBodyInfo, time1, gmuXfr);
     [iniRVectT2, ~] = getStateAtTime(iniOrbBodyInfo, time2, gmuXfr);

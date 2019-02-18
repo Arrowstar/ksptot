@@ -22,7 +22,7 @@ function varargout = rendezvousGUI(varargin)
 
 % Edit the above text to modify the response to help rendezvousGUI
 
-% Last Modified by GUIDE v2.5 11-Jun-2018 20:31:45
+% Last Modified by GUIDE v2.5 18-Feb-2019 09:12:03
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -683,8 +683,8 @@ if(isempty(errMsg))
             
             MA1 = computeMeanFromTrueAnom(iniHyTruMin, iniOrbit(2));
             MA2 = computeMeanFromTrueAnom(iniHyTruMax, iniOrbit(2));
-            
-            MAEpoch = computeMeanFromTrueAnom(iniOrbit(6), iniOrbit(2));
+%             MAEpoch = computeMeanFromTrueAnom(iniOrbit(6), iniOrbit(2));
+            MAEpoch = iniOrbit(6);
             finOrbitEpoch = iniOrbit(7);
                         
             dMASubtract1 = MAEpoch - MA1;
@@ -716,7 +716,8 @@ if(isempty(errMsg))
             
             MA1 = computeMeanFromTrueAnom(iniHyTruMin, finOrbit(2));
             MA2 = computeMeanFromTrueAnom(iniHyTruMax, finOrbit(2));
-            MAEpoch = computeMeanFromTrueAnom(finOrbit(6), finOrbit(2));
+%             MAEpoch = computeMeanFromTrueAnom(finOrbit(6), finOrbit(2));
+            MAEpoch = finOrbit(6);
             finOrbitEpoch = finOrbit(7);
                         
             dMASubtract1 = MAEpoch - MA1;
@@ -743,8 +744,9 @@ if(isempty(errMsg))
         endEpoch = startEpoch + searchDuration;
 
         weights = get(handles.paramWgtSlider,'UserData');
+        onlyOptBurn1 = logical(get(handles.optBurn1OnlyCheckbox,'Value'));
         
-        objFunc = @(x) rendezvousObjFunc(x, iniOrbit, finOrbit, gmuXfr, weights);
+        objFunc = @(x) rendezvousObjFunc(x, iniOrbit, finOrbit, gmuXfr, weights, onlyOptBurn1);
         x0 = [startEpoch+searchDuration/2 duration/2];
         lb = [startEpoch 1000];
         ub = [endEpoch duration];
@@ -763,7 +765,7 @@ if(isempty(errMsg))
         
         minPe = bodyInfo.radius + bodyInfo.atmohgt + 1;
         maxAp = getSOIRadius(bodyInfo, parentBodyInfo) - 1;
-        nonlcon = @(x)rendezvousNonlconFunc(x, iniOrbit, finOrbit, gmuXfr, minPe, maxAp);
+        nonlcon = @(x)rendezvousNonlconFunc(x, iniOrbit, finOrbit, gmuXfr, minPe, maxAp, onlyOptBurn1);
         
         [x,fval,exitflag,output,solutions] = multiStartCommonRun('Computing Rendezvous Maneuvers...', 20, objFunc, x0, A, b, lb, ub, nonlcon);
         [objFuncValue, dv, deltaV1, deltaV2, deltaV1R, deltaV2R, xfrOrbit, deltaV1NTW, deltaV2NTW] = objFunc(x);
@@ -1477,3 +1479,12 @@ function getFinalOrbitFromKSPActiveVesselMenu_Callback(hObject, eventdata, handl
         set(handles.orbitingAboutCombo,'Value',value);
         orbitingAboutCombo_Callback(handles.orbitingAboutCombo, [], handles);
     end
+
+
+% --- Executes on button press in optBurn1OnlyCheckbox.
+function optBurn1OnlyCheckbox_Callback(hObject, eventdata, handles)
+% hObject    handle to optBurn1OnlyCheckbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of optBurn1OnlyCheckbox

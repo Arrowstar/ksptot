@@ -1,4 +1,4 @@
-function [objFuncValue, dv, deltaV1, deltaV2, deltaV1R, deltaV2R, xfrOrbit, deltaV1NTW, deltaV2NTW] = rendezvousObjFunc(x, iniOrbit, finOrbit, gmuXfr, weights)
+function [objFuncValue, dv, deltaV1, deltaV2, deltaV1R, deltaV2R, xfrOrbit, deltaV1NTW, deltaV2NTW] = rendezvousObjFunc(x, iniOrbit, finOrbit, gmuXfr, weights, onlyOptBurn1)
 %rendezvousObjFunc Summary of this function goes here
 %   Detailed explanation goes here
     time1 = x(1);
@@ -21,6 +21,10 @@ function [objFuncValue, dv, deltaV1, deltaV2, deltaV1R, deltaV2R, xfrOrbit, delt
     x(3) = time2 - time1;
     [dv, deltaV1, deltaV2, deltaV1R, deltaV2R, xfrOrbit, deltaV1NTW, deltaV2NTW] = twoBurnOrbitChangeObjFunc(x, iniOrbit, finOrbit, gmuXfr);
 
+    if(onlyOptBurn1)
+        dv = norm(deltaV1);
+    end
+    
     dvWt = weights(1);
     timeWt = weights(2);
     timeNorm = computePeriod(mean([abs(iniOrbit(1)),abs(finOrbit(1))]), gmuXfr); %time norm is the period of the average of the initial and final orbit SMAs
