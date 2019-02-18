@@ -3,7 +3,7 @@ function [c, ceq, value, lb, ub, type, eventNum] = ma_optimConstrWrapper(x, scri
 %   Detailed explanation goes here
 
     script = ma_updateOptimScript(x, script, variables);
-    stateLog = ma_produceStateLogFromScript(script, maData, celBodyData, partialExec);
+    stateLog = ma_produceStateLogFromScript(script, maData, celBodyData, true, partialExec);
 
     c = [];
     ceq = [];

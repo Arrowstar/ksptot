@@ -1,4 +1,4 @@
-function optVar = ma_createOptimizationVariable(eventNum, numVars, x0, lb, ub)
+function optVar = ma_createOptimizationVariable(eventNum, numVars, x0, lb, ub, varStr)
 %ma_createOptimizationVariable Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -8,5 +8,6 @@ function optVar = ma_createOptimizationVariable(eventNum, numVars, x0, lb, ub)
     optVar.x0       = x0;
     optVar.lb       = lb;
     optVar.ub       = ub;
+    optVar.varStr   = varStr;
 end
 

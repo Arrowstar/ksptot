@@ -43,7 +43,7 @@ function stateLog = ma_executeScript(script,handles,celBodyData,varargin)
     clearWarningErrorLabels();
 
     tt = tic;
-    [stateLog, errorStr, errorEventNum] = ma_produceStateLogFromScript(script,maData,celBodyData);
+    [stateLog, errorStr, errorEventNum] = ma_produceStateLogFromScript(script,maData,celBodyData,false);
     execTime = toc(tt);
     writeOutput(sprintf('Executed mission script in %0.3f seconds.',execTime),'append');
     

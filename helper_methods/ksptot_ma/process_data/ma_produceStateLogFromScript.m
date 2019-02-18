@@ -1,4 +1,4 @@
-function [stateLog, errorStr, errorEventNum] = ma_produceStateLogFromScript(script, maData, celBodyData, varargin)
+function [stateLog, errorStr, errorEventNum] = ma_produceStateLogFromScript(script, maData, celBodyData, allowInterrupt, varargin)
 %ma_produceStateLogFromScript Summary of this function goes here
 %   Detailed explanation goes here
     if(isempty(varargin))
@@ -20,6 +20,11 @@ function [stateLog, errorStr, errorEventNum] = ma_produceStateLogFromScript(scri
     errorEventNum = -1;
     for(i = initialEventNum:length(script)) %#ok<*NO4LP>
         event = script{i};
+        
+        if(allowInterrupt && mod(i,2))
+            drawnow;
+        end
+        
         try
             eventLog = ma_executeEvent(event, getLastStateLogEntry(stateLog), eventNum, maData, celBodyData);
             stateLog = [stateLog ; eventLog]; %#ok<*AGROW>

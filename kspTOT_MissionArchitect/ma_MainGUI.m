@@ -22,7 +22,7 @@ function varargout = ma_MainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_MainGUI
 
-% Last Modified by GUIDE v2.5 15-Sep-2018 15:49:16
+% Last Modified by GUIDE v2.5 17-Feb-2019 17:01:19
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1103,12 +1103,20 @@ function reoptimizeMission_Callback(hObject, eventdata, handles)
 
         setappdata(handles.ma_MainGUI,'ma_data',maData);
 
+        %%%%%%%
+        % Get Var Strings
+        %%%%%%%
+        varStrs = {};
+        for(i=1:length(maData.optimizer.variables{2}))
+            varStrs = horzcat(varStrs,maData.optimizer.variables{2}{i}.varStr); %#ok<AGROW>
+        end
+        
         if(~isempty(problem))
             waitbar(1,hWaitbar);
             close(hWaitbar);
 
             writeOutput = getappdata(handles.ma_MainGUI,'write_to_output_func');
-            ma_ObserveOptimGUI(celBodyData, problem, false, writeOutput, handles.ma_MainGUI);
+            ma_ObserveOptimGUI(celBodyData, problem, false, writeOutput, handles.ma_MainGUI, varStrs);
             ma_processData(handles);
         end
     end
@@ -2556,19 +2564,16 @@ function setNumSoITransSearchAttemptsMenu_Callback(hObject, eventdata, handles)
         writeOutput(sprintf('Could not set number of SoI search attempts per rev.  "%s" is an invalid entry.', str),'append');
         beep;
     end
-
-
-% --------------------------------------------------------------------
-function launchVehicleMenu_Callback(hObject, eventdata, handles)
-% hObject    handle to launchVehicleMenu (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
+ 
 
 % --------------------------------------------------------------------
-function launchVehicleDesignerMenu_Callback(hObject, eventdata, handles)
-% hObject    handle to launchVehicleDesignerMenu (see GCBO)
+function runScriptMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to runScriptMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
     maData = getappdata(handles.ma_MainGUI,'ma_data');
-
+    celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
+    
+    maData.stateLog = ma_executeScript(maData.script,handles,celBodyData,handles.scriptWorkingLbl);
+    setappdata(handles.ma_MainGUI,'ma_data',maData);
+    ma_processData(handles);

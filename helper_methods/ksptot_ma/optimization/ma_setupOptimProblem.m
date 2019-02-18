@@ -41,18 +41,33 @@ function [maData, problem] = ma_setupOptimProblem(maData, celBodyData, hWaitbar,
         else
             activeVars = event.vars(1,:) == 1;
             numVar = length(find(activeVars));
+            
+            switch event.type
+                case 'Coast'
+                    varStr = {sprintf('Event %u: Coast Value', i)};
+                case 'DV_Maneuver'
+                    varStr = {sprintf('Event %u: DV Maneuver (Component 1)', i), sprintf('Event %u: DV Maneuver (Component 2)', i), sprintf('Event %u: DV Maneuver (Component 3)', i)};
+                case 'NBodyCoast'
+                    varStr = {sprintf('Event %u: N-Body Coast Value', i)};
+                case 'Set_State'
+                    varStr = {sprintf('Event %u: Set State', i)};
+                    varStr = repmat(varStr, size(event.vars,2), 1);
+                otherwise
+                    error('Event has variables but no name label for those vars.');
+            end
         end
         
         eventNum = i;
         x0 = ma_getX0ForEvent(event);
         lb = event.vars(2,activeVars);
         ub = event.vars(3,activeVars);
+        varStr = varStr(activeVars);
         
         if(size(x0,1) > 1)
             x0 = x0';
         end
                
-        vars{end+1} = ma_createOptimizationVariable(eventNum, numVar, x0, lb, ub); %#ok<AGROW>
+        vars{end+1} = ma_createOptimizationVariable(eventNum, numVar, x0, lb, ub, varStr); %#ok<AGROW>
     end
     
     if(isempty(vars))

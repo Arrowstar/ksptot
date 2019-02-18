@@ -2,7 +2,7 @@ function [f, stateLog] = ma_optimObjWrapper(x, script,variables,objFunc,maData,c
 %ma_optimObjWrapper Summary of this function goes here
 %   Detailed explanation goes here
     script = ma_updateOptimScript(x, script, variables);
-    [stateLog] = ma_produceStateLogFromScript(script,maData,celBodyData, partialExec);
+    [stateLog] = ma_produceStateLogFromScript(script,maData,celBodyData,true, partialExec);
     
     f = objFunc(stateLog);
     if(length(f) > 1)

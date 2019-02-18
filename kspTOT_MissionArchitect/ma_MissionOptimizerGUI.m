@@ -555,6 +555,14 @@ function optimizeMissionButton_Callback(hObject, eventdata, handles)
     setappdata(handles.ma_MainGUI,'ma_data',maData);
     
     %%%%%%%
+    % Get Var Strings
+    %%%%%%%
+    varStrs = {};
+    for(i=1:length(maData.optimizer.variables{2}))
+        varStrs = horzcat(varStrs,maData.optimizer.variables{2}{i}.varStr); %#ok<AGROW>
+    end
+    
+    %%%%%%%
     % Run optimizer!
     %%%%%%%   
     set(handles.ma_MissionOptimizerGUI,'Visible','off');
@@ -562,7 +570,7 @@ function optimizeMissionButton_Callback(hObject, eventdata, handles)
     waitbar(1,hWaitbar);
     close(hWaitbar);
     
-    ma_ObserveOptimGUI(celBodyData, problem, false, writeOutput, handles.ma_MainGUI);
+    ma_ObserveOptimGUI(celBodyData, problem, false, writeOutput, handles.ma_MainGUI, varStrs);
 
     uiresume(handles.ma_MissionOptimizerGUI);
     close(handles.ma_MissionOptimizerGUI); 
