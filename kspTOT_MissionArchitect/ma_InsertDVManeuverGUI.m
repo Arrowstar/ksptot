@@ -942,7 +942,7 @@ function saveCloseButton_Callback(hObject, eventdata, handles)
     if(isempty(errMsg))
         uiresume(handles.ma_InsertDVManeuverGUI);
     else
-        msgbox(errMsg,'Errors were found while inserting a massd dump.','error');
+        msgbox(errMsg,'Errors were found while inserting a delta-v maneuver.','error');
     end
     
     
