@@ -115,6 +115,8 @@ function populateGUIWithEvent(handles, event)
             set(handles.optVar1UprText, 'string', fullAccNum2Str(opt(3,1)*1000));
             set(handles.optVar2UprText, 'string', fullAccNum2Str(opt(3,2)*1000));
             set(handles.optVar3UprText, 'string', fullAccNum2Str(opt(3,3)*1000));
+            
+            handles.dvMagLabel.String = sprintf('Burn Magnitude: %0.3f m/s', norm(value(1:3))*1000);
         case 'dv_orbit'
             set(handles.typeCombo,'value',findValueFromComboBox('Proscribed Delta-V (Orbital Vector)', handles.typeCombo));
             set(handles.vector1Text,'String',fullAccNum2Str(value(1)*1000)); %convert km/s to m/s
@@ -128,6 +130,8 @@ function populateGUIWithEvent(handles, event)
             set(handles.optVar1UprText, 'string', fullAccNum2Str(opt(3,1)*1000));
             set(handles.optVar2UprText, 'string', fullAccNum2Str(opt(3,2)*1000));
             set(handles.optVar3UprText, 'string', fullAccNum2Str(opt(3,3)*1000));
+            
+            handles.dvMagLabel.String = sprintf('Burn Magnitude: %0.3f m/s', norm(value(1:3))*1000);
         case 'finite_inertial'
             set(handles.typeCombo,'value',findValueFromComboBox('Finite Duration (Inertial Vector)', handles.typeCombo));
             set(handles.vector1Text,'String',fullAccNum2Str(value(1)*1000)); %convert km/s to m/s
@@ -141,6 +145,8 @@ function populateGUIWithEvent(handles, event)
             set(handles.optVar1UprText, 'string', fullAccNum2Str(opt(3,1)*1000));
             set(handles.optVar2UprText, 'string', fullAccNum2Str(opt(3,2)*1000));
             set(handles.optVar3UprText, 'string', fullAccNum2Str(opt(3,3)*1000));
+            
+            handles.dvMagLabel.String = sprintf('Burn Magnitude: %0.3f m/s', norm(value(1:3))*1000);
         case 'finite_steered'
             set(handles.typeCombo,'value',findValueFromComboBox('Finite Duration (Orbital Vector)', handles.typeCombo));
             set(handles.vector1Text,'String',fullAccNum2Str(value(1)*1000)); %convert km/s to m/s
@@ -154,6 +160,8 @@ function populateGUIWithEvent(handles, event)
             set(handles.optVar1UprText, 'string', fullAccNum2Str(opt(3,1)*1000));
             set(handles.optVar2UprText, 'string', fullAccNum2Str(opt(3,2)*1000));
             set(handles.optVar3UprText, 'string', fullAccNum2Str(opt(3,3)*1000));
+            
+            handles.dvMagLabel.String = sprintf('Burn Magnitude: %0.3f m/s', norm(value(1:3))*1000);
         case 'dv_inertial_spherical'
             set(handles.typeCombo,'value',findValueFromComboBox('Proscribed Delta-V (Inertial Spherical)', handles.typeCombo));
             set(handles.vector1Text,'String',fullAccNum2Str(rad2deg(value(1)))); 
@@ -167,6 +175,8 @@ function populateGUIWithEvent(handles, event)
             set(handles.optVar1UprText, 'string', fullAccNum2Str(rad2deg(opt(3,1))));
             set(handles.optVar2UprText, 'string', fullAccNum2Str(rad2deg(opt(3,2))));
             set(handles.optVar3UprText, 'string', fullAccNum2Str(opt(3,3)*1000));
+            
+            handles.dvMagLabel.String = sprintf('Burn Magnitude: %0.3f m/s', value(3)*1000);
         case 'dv_orbit_spherical'
             set(handles.typeCombo,'value',findValueFromComboBox('Proscribed Delta-V (Orbital Spherical)', handles.typeCombo));
             set(handles.vector1Text,'String',fullAccNum2Str(rad2deg(value(1)))); 
@@ -180,6 +190,8 @@ function populateGUIWithEvent(handles, event)
             set(handles.optVar1UprText, 'string', fullAccNum2Str(rad2deg(opt(3,1))));
             set(handles.optVar2UprText, 'string', fullAccNum2Str(rad2deg(opt(3,2))));
             set(handles.optVar3UprText, 'string', fullAccNum2Str(opt(3,3)*1000));
+            
+            handles.dvMagLabel.String = sprintf('Burn Magnitude: %0.3f m/s', value(3)*1000);
         case 'finite_inertial_spherical'
             set(handles.typeCombo,'value',findValueFromComboBox('Finite Duration (Inertial Spherical)', handles.typeCombo));
             set(handles.vector1Text,'String',fullAccNum2Str(rad2deg(value(1)))); 
@@ -193,6 +205,8 @@ function populateGUIWithEvent(handles, event)
             set(handles.optVar1UprText, 'string', fullAccNum2Str(rad2deg(opt(3,1))));
             set(handles.optVar2UprText, 'string', fullAccNum2Str(rad2deg(opt(3,2))));
             set(handles.optVar3UprText, 'string', fullAccNum2Str(opt(3,3)*1000));
+            
+            handles.dvMagLabel.String = sprintf('Burn Magnitude: %0.3f m/s', value(3)*1000);
         case 'finite_steered_spherical'
             set(handles.typeCombo,'value',findValueFromComboBox('Finite Duration (Orbital Spherical)', handles.typeCombo));
             set(handles.vector1Text,'String',fullAccNum2Str(rad2deg(value(1)))); 
@@ -206,8 +220,12 @@ function populateGUIWithEvent(handles, event)
             set(handles.optVar1UprText, 'string', fullAccNum2Str(rad2deg(opt(3,1))));
             set(handles.optVar2UprText, 'string', fullAccNum2Str(rad2deg(opt(3,2))));
             set(handles.optVar3UprText, 'string', fullAccNum2Str(opt(3,3)*1000));
+            
+            handles.dvMagLabel.String = sprintf('Burn Magnitude: %0.3f m/s', value(3)*1000);
         case 'circularize'
             set(handles.typeCombo,'value',findValueFromComboBox('Circularize', handles.typeCombo));
+            
+            handles.dvMagLabel.String = sprintf('Burn Magnitude: Variable');
     end
     
     set(handles.optVar1ChkBox, 'value', opt(1,1));
@@ -262,7 +280,7 @@ else
     thruster = thrusters{thrusterNum};
     
     switch selected
-        case 'Proscribed Delta-V (Inertial Vector)';
+        case 'Proscribed Delta-V (Inertial Vector)'
             vector1 = str2double(get(handles.vector1Text,'String'));
             vector2 = str2double(get(handles.vector2Text,'String'));
             vector3 = str2double(get(handles.vector3Text,'String'));
@@ -281,7 +299,7 @@ else
             vars(3,3) = [str2double(get(handles.optVar3UprText,'string'))] / 1000;
             
             maneuverType = 'dv_inertial';
-        case 'Proscribed Delta-V (Orbital Vector)';
+        case 'Proscribed Delta-V (Orbital Vector)'
             vector1 = str2double(get(handles.vector1Text,'String'));
             vector2 = str2double(get(handles.vector2Text,'String'));
             vector3 = str2double(get(handles.vector3Text,'String'));
@@ -414,7 +432,7 @@ else
             vars(3,3) = [str2double(get(handles.optVar3UprText,'string'))] / 1000; %store in km/s
             
             maneuverType = 'finite_steered_spherical';
-        case 'Circularize';
+        case 'Circularize'
             vector = [];
             
             vars = [0 0 0; 0 0 0; 0 0 0];
@@ -484,7 +502,7 @@ function typeCombo_Callback(hObject, eventdata, handles)
     selected = contents{get(hObject,'Value')};
     
     switch selected
-        case 'Proscribed Delta-V (Inertial Vector)';
+        case 'Proscribed Delta-V (Inertial Vector)'
             set(handles.vector1Text,'Enable','on');
             set(handles.vector2Text,'Enable','on');
             set(handles.vector3Text,'Enable','on');
@@ -499,6 +517,8 @@ function typeCombo_Callback(hObject, eventdata, handles)
                     set(handles.vector1Text, 'String', num2str(returnValue(1),'%15.10f'));
                     set(handles.vector2Text, 'String', num2str(returnValue(2),'%15.10f'));
                     set(handles.vector3Text, 'String', num2str(returnValue(3),'%15.10f'));
+                    
+                    handles.dvMagLabel.String = sprintf('Burn Magnitude: %0.3f m/s', norm(returnValue(1:3))*1000);
                 end
             end
             
@@ -528,7 +548,7 @@ function typeCombo_Callback(hObject, eventdata, handles)
             
             set(handles.estBurnLabel,'Visible','off');
             set(handles.finiteDurBurnWarnLabel,'Visible','off');
-        case 'Proscribed Delta-V (Orbital Vector)';
+        case 'Proscribed Delta-V (Orbital Vector)'
             set(handles.vector1Text,'Enable','on');
             set(handles.vector2Text,'Enable','on');
             set(handles.vector3Text,'Enable','on');
@@ -543,6 +563,8 @@ function typeCombo_Callback(hObject, eventdata, handles)
                     set(handles.vector1Text, 'String', num2str(returnValue(1),'%15.10f'));
                     set(handles.vector2Text, 'String', num2str(returnValue(2),'%15.10f'));
                     set(handles.vector3Text, 'String', num2str(returnValue(3),'%15.10f'));
+                    
+                    handles.dvMagLabel.String = sprintf('Burn Magnitude: %0.3f m/s', norm(returnValue(1:3))*1000);
                 end
             end
             
@@ -662,6 +684,8 @@ function typeCombo_Callback(hObject, eventdata, handles)
                     set(handles.vector1Text, 'String', num2str(returnValue(1),'%15.10f'));
                     set(handles.vector2Text, 'String', num2str(returnValue(2),'%15.10f'));
                     set(handles.vector3Text, 'String', num2str(returnValue(3),'%15.10f'));
+                    
+                    handles.dvMagLabel.String = sprintf('Burn Magnitude: %0.3f m/s', returnValue(3)*1000);
                 end
             end
             
@@ -707,6 +731,8 @@ function typeCombo_Callback(hObject, eventdata, handles)
                     set(handles.vector1Text, 'String', num2str(returnValue(1),'%15.10f'));
                     set(handles.vector2Text, 'String', num2str(returnValue(2),'%15.10f'));
                     set(handles.vector3Text, 'String', num2str(returnValue(3),'%15.10f'));
+                    
+                    handles.dvMagLabel.String = sprintf('Burn Magnitude: %0.3f m/s', returnValue(3)*1000);
                 end
             end
             
@@ -813,7 +839,7 @@ function typeCombo_Callback(hObject, eventdata, handles)
             
             recomputeBurnDurStr(handles);                  
             
-        case 'Circularize';
+        case 'Circularize'
             set(handles.vector1Text,'Enable','off');
             set(handles.vector2Text,'Enable','off');
             set(handles.vector3Text,'Enable','off');
@@ -844,7 +870,12 @@ function typeCombo_Callback(hObject, eventdata, handles)
             
             set(handles.estBurnLabel,'Visible','off');
             set(handles.finiteDurBurnWarnLabel,'Visible','off');
+            handles.dvMagLabel.String = sprintf('Burn Magnitude: Variable');
     end
+    
+    optVar1ChkBox_Callback(handles.optVar1ChkBox, [], handles);
+    optVar2ChkBox_Callback(handles.optVar2ChkBox, [], handles);
+    optVar3ChkBox_Callback(handles.optVar3ChkBox, [], handles);
 
 % --- Executes during object creation, after setting all properties.
 function typeCombo_CreateFcn(hObject, eventdata, handles)
@@ -2131,6 +2162,9 @@ function recomputeBurnDurStr(handles)
     script = maData.script;
     event = get(handles.ma_InsertDVManeuverGUI,'UserData');
 
+    contents = cellstr(get(handles.typeCombo,'String'));
+    type = contents{get(handles.typeCombo,'Value')};
+    
     if(~isempty(event) && isstruct(event))
         for(i=1:length(script)) 
             if(script{i}.id == event.id)
@@ -2166,12 +2200,33 @@ function recomputeBurnDurStr(handles)
     vector1 = str2double(get(handles.vector1Text,'String'));
     vector2 = str2double(get(handles.vector2Text,'String'));
     vector3 = str2double(get(handles.vector3Text,'String'));
-    vector = [vector1; vector2; vector3]/1000; %store in km/s
 
+    switch type
+        case {'Proscribed Delta-V (Inertial Vector)', ...
+		      'Proscribed Delta-V (Orbital Vector)', ...
+			  'Finite Duration (Inertial Vector)', ...
+			  'Finite Duration (Orbital Vector)'}
+          
+            vector = [vector1; vector2; vector3]/1000; %store in km/s
+            dvMag = norm(vector);
+            handles.dvMagLabel.String = sprintf('Burn Magnitude: %0.3f m/s', dvMag*1000);
+            
+        case {'Proscribed Delta-V (Inertial Spherical)', ...
+		      'Proscribed Delta-V (Orbital Spherical)', ...
+			  'Finite Duration (Inertial Spherical)', ...
+			  'Finite Duration (Orbital Spherical)'}
+            dvMag = vector3 / 1000; %store in km/s
+            handles.dvMagLabel.String = sprintf('Burn Magnitude: %0.3f m/s', dvMag*1000);
+            
+        case 'Circularize'
+            dvMag = 0;
+            handles.dvMagLabel.String = sprintf('Burn Magnitude: Variable');
+    end
+    
     isp = thruster.isp;
     thrust = thruster.thrust;
     mass0 = sum(stateRowPreEvent(9:12));
-    dvMag = norm(vector);
+    
     massFlowRate = getMdotFromThrustIsp(thrust, isp);
     burnDur = getBurnDuration(mass0, massFlowRate, isp, dvMag);
     
