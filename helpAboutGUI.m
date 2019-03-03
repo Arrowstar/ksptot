@@ -63,7 +63,11 @@ guidata(hObject, handles);
 
 handles.versionLabel.String = ['v',getKSPTOTVersionNumStr()];
 
-rgb = imread('images\testlogo.png');
+if(ispc)
+    rgb = imread('images\testlogo.png');
+else
+    rgb = imread('images/testlogo.png');
+end
 image(rgb,'Parent',handles.logoAxes);
 axis off; 
 axis image;
