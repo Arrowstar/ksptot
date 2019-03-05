@@ -94,7 +94,7 @@ function [v1, v2] = lambertBattinVector(r1, r2, dt, numRevs, gmu)
         betaE(bool) = real(2*asin(sinBetaEOver2(bool))); %real needed to prevent complex numbers from appearing
         
         if(any(deltaTA(bool) > pi))
-            bool2 = deltaTA(bool) > pi;
+            bool2 = bool & deltaTA > pi;
             betaE(bool2) = -betaE(bool2);
         end
 
@@ -104,7 +104,7 @@ function [v1, v2] = lambertBattinVector(r1, r2, dt, numRevs, gmu)
         alphaE(bool) = real(2*asin(sqrt(s(bool)./(2*a(bool))))); %real needed to prevent complex numbers from appearing
         
         if(any(dt > tmin))
-            bool2 = dt > tmin;
+            bool2 = bool & dt > tmin;
             alphaE(bool2) = 2*pi - alphaE(bool2);
         end
         
