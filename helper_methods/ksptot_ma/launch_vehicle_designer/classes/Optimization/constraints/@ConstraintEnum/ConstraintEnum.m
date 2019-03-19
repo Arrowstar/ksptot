@@ -50,6 +50,7 @@ classdef ConstraintEnum < matlab.mixin.SetGet
         HyperVelRA('Hyperbolic Velocity Vector Right Ascension','GenericMAConstraint','Hyperbolic Velocity Vector Right Ascension')
         HyperVelDec('Hyperbolic Velocity Vector Declination','GenericMAConstraint','Hyperbolic Velocity Vector Declination')
         HyperVelMag('Hyperbolic Velocity Magnitude','GenericMAConstraint','Hyperbolic Velocity Magnitude')
+        C3Energy('C3 Energy','GenericMAConstraint','C3 Energy');
         
         PitchAngle('Pitch Angle','PitchAngleConstraint',[]);
         RollAngle('Roll Angle','RollAngleConstraint',[]);

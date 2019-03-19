@@ -104,6 +104,10 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                 eventNum = obj.event.getEventNum();
             end
             
+            if(isempty(eventNum))
+                eventNum = NaN;
+            end
+            
             massesByType = obj.getTotalVehiclePropMassesByFluidType();
             if(length(massesByType) > 3)
                 otherMass = sum(massesByType(4:end));

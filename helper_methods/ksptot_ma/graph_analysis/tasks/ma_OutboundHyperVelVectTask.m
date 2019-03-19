@@ -14,7 +14,7 @@ function datapt = ma_OutboundHyperVelVectTask(stateLogEntry, subTask, celBodyDat
     if(ecc > 1)
         [~, OUnitVector] = computeHyperSVectOVect(sma, ecc, inc, raan, arg, tru, gmu);
         [vInfRA,vInfDec,~] = cart2sph(OUnitVector(1),OUnitVector(2),OUnitVector(3));
-        vInfRA = rad2deg(vInfRA);
+        vInfRA = rad2deg(AngleZero2Pi(vInfRA));
         vInfDec = rad2deg(vInfDec);
         
         switch subTask
@@ -30,9 +30,16 @@ function datapt = ma_OutboundHyperVelVectTask(stateLogEntry, subTask, celBodyDat
                 datapt = vInfRA;
             case 'Dec'
                 datapt = vInfDec;
+            case 'C3Energy'
+                datapt = -gmu/sma;
         end
     else
-        datapt = 0.0;
+        switch subTask
+            case 'C3Energy'
+                datapt = -gmu/sma;
+            otherwise
+                datapt = 0.0;
+        end
     end
 end
 

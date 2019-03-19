@@ -695,6 +695,20 @@ function [unit, lbLim, ubLim, lbVal, ubVal, body, othersc, usesLbUb, usesCelBody
             usesLbUb = true;
             usesCelBody = true;
             usesRefSc = false;
+            
+        case 'C3 Energy'
+            unit = 'km^2/s^2';
+            lbLim = -Inf;
+            ubLim = Inf;
+            lbVal = 0;
+            ubVal = 0;
+            body = -1;
+            othersc = -1;
+            
+            usesLbUb = true;
+            usesCelBody = false;
+            usesRefSc = false;
+            
         case 'Hyperbolic Velocity Vector Right Ascension'
             unit = 'deg';
             lbLim = -180;

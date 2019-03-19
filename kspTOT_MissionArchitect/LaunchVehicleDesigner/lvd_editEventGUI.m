@@ -73,6 +73,7 @@ function populateGUI(handles, event)
     
     termCond = event.termCond;
     set(handles.termCondNameLabel,'String',termCond.getName());
+    set(handles.termCondNameLabel,'TooltipString',termCond.getName());
     
     set(handles.actionsListbox,'String',event.getActionsListboxStr());
     set(handles.actionsListbox,'Value',1);

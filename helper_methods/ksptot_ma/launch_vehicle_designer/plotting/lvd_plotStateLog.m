@@ -228,27 +228,27 @@ function [childrenHGs] = plotSubStateLog(subStateLog, prevSubStateLog, showSoI, 
         
         r = getSOIRadius(bodyInfo, bodyInfo.getParBodyInfo(celBodyData));
         plot(dAxes,r*sin(0:0.01:2*pi),r*cos(0:0.01:2*pi), 'k--','LineWidth',1.5);
-        
-        if(showChildBodies)
-            [children] = getChildrenOfParentInfo(celBodyData, bodyInfo.name);
-
-            time1 = subStateLog(1,1);
-            time2 = subStateLog(end,1);
-            for(childA = children) %#ok<*NO4LP>
-                child = childA{1};            
-
-                hOrbit = plotBodyOrbit(child, 'k', bodyInfo.gm, true);
-
-                hBody1 = ma_plotChildBody(child, child, time1, bodyInfo.gm, dAxes, showSoI, showChildMarker, celBodyData);
-                if(time1~=time2)
-                    hBody2 = ma_plotChildBody(child, child, time2, bodyInfo.gm, dAxes, showSoI, showChildMarker, celBodyData);
-                else
-                    hBody2 = [];
-                end
-                childrenHGs(end+1,:) = {child, hBody1, hBody2, hOrbit}; %#ok<AGROW>
-            end
-        end
     end
+    
+	if(showChildBodies && (strcmpi(orbitPlotType,'3DInertial') || strcmpi(orbitPlotType,'3DBodyFixed')))
+        [children] = getChildrenOfParentInfo(celBodyData, bodyInfo.name);
+
+        time1 = subStateLog(1,1);
+        time2 = subStateLog(end,1);
+        for(childA = children) %#ok<*NO4LP>
+            child = childA{1};            
+
+            hOrbit = plotBodyOrbit(child, 'k', bodyInfo.gm, true);
+
+            hBody1 = ma_plotChildBody(child, child, time1, bodyInfo.gm, dAxes, showSoI, showChildMarker, celBodyData);
+            if(time1~=time2)
+                hBody2 = ma_plotChildBody(child, child, time2, bodyInfo.gm, dAxes, showSoI, showChildMarker, celBodyData);
+            else
+                hBody2 = [];
+            end
+            childrenHGs(end+1,:) = {child, hBody1, hBody2, hOrbit}; %#ok<AGROW>
+        end
+	end
     
 
     
