@@ -361,7 +361,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                                         end
                                     end
                                     
-                                    if(totalConnTankCapacity > 0)
+                                    if(totalConnTankCapacity > 0 && totalConnTankMass > 0)
                                         fuelRemainPct = 100 * totalConnTankMass / totalConnTankCapacity; %it's a percent
                                     else
                                         fuelRemainPct = 0;
@@ -371,6 +371,10 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                                     %flow rate, this time incorporating the
                                     %fuel remaining in all connected tanks
                                     adjustedThrottle = engine.adjustThrottle(throttle, fuelRemainPct);
+                                    if(totalConnTankMass <= 0)
+                                        adjustedThrottle = 0;
+                                    end
+                                    
 %                                     [thrust, mdot] = engine.getThrustFlowRateForPressure(presskPa); %total mass flow through engine
                                     mdot = adjustedThrottle * baseMdot;
                                     totalThrust = totalThrust + adjustedThrottle*baseThrust;

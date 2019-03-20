@@ -136,6 +136,7 @@ classdef OptimizationVariableSet < matlab.mixin.SetGet
         end
         
         function removeVariablesThatUseEvent(obj, evt, lvdData)
+            indsToDelete = [];
             for(i=1:length(obj.vars))
                 var = obj.vars(i);
                 
@@ -145,9 +146,14 @@ classdef OptimizationVariableSet < matlab.mixin.SetGet
                     inputEvtNum = evt.getEventNum();
                     
                     if(evtNum == inputEvtNum)
-                        obj.removeVariable(var);
+                        indsToDelete(end+1) = i; %#ok<AGROW>
                     end
                 end
+            end
+            
+            for(i=length(indsToDelete):-1:1)
+                indToDel = indsToDelete(i);
+                obj.removeVariable(obj.vars(indToDel));  
             end
             
             obj.clearCachedVarEvtDisabledStatus();
