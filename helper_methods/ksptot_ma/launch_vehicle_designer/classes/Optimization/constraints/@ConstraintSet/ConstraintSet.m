@@ -42,7 +42,13 @@ classdef ConstraintSet < matlab.mixin.SetGet
             listBoxStr = {};
             
             for(i=1:length(obj.consts))
-                listBoxStr{end+1} = obj.consts(i).getName(); %#ok<AGROW>
+                if(obj.consts(i).active)
+                    prefStr = '';
+                else
+                    prefStr = '** ';
+                end
+                
+                listBoxStr{end+1} = [prefStr,obj.consts(i).getName()]; %#ok<AGROW>
             end
         end
         
@@ -83,7 +89,7 @@ classdef ConstraintSet < matlab.mixin.SetGet
                 for(i=1:length(obj.consts)) %#ok<*NO4LP>
                     constraint = obj.consts(i);
                     
-                    if(obj.isEventOptimDisabled(constraint))
+                    if(obj.isEventOptimDisabled(constraint) || constraint.active == false)
                         continue;
                     end
                     

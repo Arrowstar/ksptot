@@ -7,6 +7,8 @@ classdef(Abstract) AbstractConstraint < matlab.mixin.SetGet & matlab.mixin.Heter
         refOtherSC struct
         refBodyInfo KSPTOT_BodyInfo
         
+        active(1,1) logical = true
+        
         id(1,1) double = 0;
     end
     

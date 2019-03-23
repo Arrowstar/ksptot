@@ -71,9 +71,14 @@ function lvd_AddMassToTankActionGUI_OpeningFcn(hObject, eventdata, handles, vara
 
 function populateGUI(handles, action, lvdData)
     [tanksListStr, tanks] = lvdData.launchVehicle.getTanksListBoxStr();
-    indVal = find(tanks == action.tank, 1);
-    if(isempty(indVal))
+    
+    if(isempty(action.tank))
         indVal = 1;
+    else
+        indVal = find(tanks == action.tank, 1);
+        if(isempty(indVal))
+            indVal = 1;
+        end
     end
     
     handles.tankCombo.String = tanksListStr;

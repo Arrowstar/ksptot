@@ -22,7 +22,7 @@ function varargout = lvd_EditGenericMAConstraintGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditGenericMAConstraintGUI
 
-% Last Modified by GUIDE v2.5 03-Dec-2018 17:20:04
+% Last Modified by GUIDE v2.5 21-Mar-2019 18:27:29
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -143,6 +143,8 @@ function populateGUI(handles, constraint, lvdData)
         handles.eventCombo.Value = 1;
     end
     
+    handles.constActiveCheckbox.Value = constraint.active;
+    
 % --- Outputs from this function are returned to the command line.
 function varargout = lvd_EditGenericMAConstraintGUI_OutputFcn(hObject, eventdata, handles) 
 % varargout  cell array for returning output args (see VARARGOUT);
@@ -187,6 +189,8 @@ function varargout = lvd_EditGenericMAConstraintGUI_OutputFcn(hObject, eventdata
         else
             constraint.event = LaunchVehicleEvent.empty(1,0);
         end
+        
+        constraint.active = logical(handles.constActiveCheckbox.Value);
         
         varargout{1} = true;
         close(handles.lvd_EditGenericMAConstraintGUI);
@@ -471,3 +475,12 @@ function lvd_EditGenericMAConstraintGUI_WindowKeyPressFcn(hObject, eventdata, ha
         case 'escape'
             close(handles.lvd_EditGenericMAConstraintGUI);
     end
+
+
+% --- Executes on button press in constActiveCheckbox.
+function constActiveCheckbox_Callback(hObject, eventdata, handles)
+% hObject    handle to constActiveCheckbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of constActiveCheckbox
