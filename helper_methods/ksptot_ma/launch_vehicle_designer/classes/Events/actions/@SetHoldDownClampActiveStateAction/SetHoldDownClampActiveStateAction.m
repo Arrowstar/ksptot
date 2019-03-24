@@ -22,6 +22,15 @@ classdef SetHoldDownClampActiveStateAction < AbstractEventAction
         function newStateLogEntry = executeAction(obj, stateLogEntry)
             newStateLogEntry = stateLogEntry;
             newStateLogEntry.lvState.holdDownEnabled = obj.activeStateToSet;
+            
+            if(obj.activeStateToSet == true)
+                %need to set planet relative velocity to zero or it gets
+                %carried by the integrator through "hold down"
+                rVectECEF = getFixedFrameVectFromInertialVect(newStateLogEntry.time, newStateLogEntry.position, newStateLogEntry.centralBody);
+                vVectECEF = [0;0;0];
+                [~, vVectECI] = getInertialVectFromFixedFrameVect(newStateLogEntry.time, rVectECEF, newStateLogEntry.centralBody, vVectECEF);
+                newStateLogEntry.velocity = vVectECI;
+            end
         end
         
         function initAction(obj, initialStateLogEntry)
