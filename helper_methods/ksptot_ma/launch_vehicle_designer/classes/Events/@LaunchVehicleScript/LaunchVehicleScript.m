@@ -168,18 +168,16 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
                 evtStartNum = 1;
             end
             
-%             if(isempty(evtStartNum) || evtStartNum <= 1)
+            if(isempty(evtStartNum) || evtStartNum <= 1)
                 evtStartNum = 1;  %disable the event start exec time optimization for now, it is buggy/broken
                 stateLog.clearStateLog();
-                initStateLogEntry = obj.lvdData.initialState;  
-%             else
-%                 stateLog.clearStateLogAtOrAfterEvent(evtToStartScriptExecAt);
-%                 initStateLogEntry = stateLog.getFinalStateLogEntry().deepCopy();
-%             end
-            
-            obj.nonSeqEvts.resetAllNumExecsRemaining();
-            
-%             evtStartNum = 1; 
+                initStateLogEntry = obj.lvdData.initialState; 
+                obj.nonSeqEvts.resetAllNumExecsRemaining();
+            else
+                stateLog.clearStateLogAtOrAfterEvent(evtToStartScriptExecAt);
+                initStateLogEntry = stateLog.getFinalStateLogEntry().deepCopy();
+                obj.nonSeqEvts = stateLog.getFinalNonSeqEvtsState().nonSeqEvts.copy();
+            end
             
             tPropTime = 0;
             if(~isempty(obj.evts))
@@ -190,7 +188,7 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
                     evt = obj.evts(i);
                     
                     %allow interrupting script execution with figure
-                    %callbacks 
+                    %callbacks on every other event
                     if(allowInterrupt && logical(mod(i,2)) && usejava('desktop'))
                         drawnow;
                     end
@@ -216,9 +214,10 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
                     %Add state log entries to state log
                     if(not(isempty(actionStateLogEntries)))
                         stateLog.appendStateLogEntries(actionStateLogEntries);
-%                         initStateLogEntry = actionStateLogEntries(end).deepCopy();
-                        initStateLogEntry = actionStateLogEntries(end);
+                        initStateLogEntry = actionStateLogEntries(end).deepCopy(); %this state log entry must be copied or the answers will change;
                     end
+                    
+                    stateLog.appendNonSeqEvtsState(obj.nonSeqEvts.copy(), evt);
                 end
                 
                 tPropTime = toc(tStartPropTime);

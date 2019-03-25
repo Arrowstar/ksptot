@@ -1,6 +1,7 @@
 function lvd_processData(handles)
     %lvd_processData Summary of this function goes here
     %   Detailed explanation goes here
+    set(handles.plotWorkingLbl,'Visible','on'); drawnow;
     lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
     celBodyData = lvdData.celBodyData;
     
@@ -9,7 +10,6 @@ function lvd_processData(handles)
     %%%%%%%%%%
     % Redraw plots
     %%%%%%%%%%
-    set(handles.plotWorkingLbl,'Visible','on');
     drawnow;
     [az,el] = view(handles.dispAxes);
     orbitPlotType = getappdata(handles.ma_LvdMainGUI,'orbitPlotType');

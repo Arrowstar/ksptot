@@ -4,6 +4,8 @@ classdef LaunchVehicleStateLog < matlab.mixin.SetGet
     
     properties
         entries LaunchVehicleStateLogEntry
+        
+        nonSeqEvtsStates NonSeqEvtsState
     end
     
     methods
@@ -17,6 +19,7 @@ classdef LaunchVehicleStateLog < matlab.mixin.SetGet
         
         function clearStateLog(obj)
             obj.entries = LaunchVehicleStateLogEntry.empty(1,0);
+            obj.nonSeqEvtsStates = NonSeqEvtsState.empty(1,0);
         end
         
         function clearStateLogAtOrAfterEvent(obj, evt)
@@ -31,6 +34,16 @@ classdef LaunchVehicleStateLog < matlab.mixin.SetGet
             
             indsToClear(isnan(indsToClear)) = [];
             obj.entries(indsToClear) = [];
+            
+            indsToClear = NaN(size(obj.entries));
+            for(i=1:length(obj.nonSeqEvtsStates))
+                if(obj.nonSeqEvtsStates(i).event.getEventNum() >= evtNumBnd)
+                    indsToClear(i) = i;
+                end
+            end
+            
+            indsToClear(isnan(indsToClear)) = [];
+            obj.nonSeqEvtsStates(indsToClear) = [];
         end
         
         function stateLog = getMAFormattedStateLogMatrix(obj)
@@ -65,6 +78,25 @@ classdef LaunchVehicleStateLog < matlab.mixin.SetGet
         function [tStart, tEnd] = getStartAndEndTimes(obj)
             tStart = min([obj.entries.time]);
             tEnd = max([obj.entries.time]);
+        end
+        
+        function appendNonSeqEvtsState(obj, nonSeqEvts, event)
+            bool = [obj.nonSeqEvtsStates.event] == event;
+            if(any(bool))
+                ind = find(bool,1);
+                obj.nonSeqEvtsStates(ind).nonSeqEvts = nonSeqEvts;
+            else
+                obj.nonSeqEvtsStates(end+1) = NonSeqEvtsState(event, nonSeqEvts);
+            end
+        end
+        
+        function nonSeqEvtsState = getFinalNonSeqEvtsState(obj)
+            events = [obj.nonSeqEvtsStates.event];
+            eventNums = arrayfun(@getEventNum, events, 'UniformOutput',false);
+            eventNums = cell2mat(eventNums);
+            [~,I] = max(eventNums);
+            
+            nonSeqEvtsState = obj.nonSeqEvtsStates(I);
         end
     end
 end

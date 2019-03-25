@@ -1,4 +1,4 @@
-classdef LaunchVehicleNonSeqEvent <  matlab.mixin.SetGet
+classdef LaunchVehicleNonSeqEvent <  matlab.mixin.SetGet & matlab.mixin.Copyable
     %LaunchVehicleNonSeqEvent Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -37,4 +37,10 @@ classdef LaunchVehicleNonSeqEvent <  matlab.mixin.SetGet
             listBoxStr = obj.evt.name;
         end
     end
+    
+	methods(Access = protected)
+        function cpObj = copyElement(obj)
+            cpObj = copyElement@matlab.mixin.Copyable(obj); 
+        end
+	end
 end

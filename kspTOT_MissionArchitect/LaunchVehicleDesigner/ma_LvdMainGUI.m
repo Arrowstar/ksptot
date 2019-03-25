@@ -202,7 +202,7 @@ function insertEventButton_Callback(hObject, eventdata, handles)
     
 	setDeleteButtonEnable(lvdData, handles);
 
-    runScript(handles, lvdData, selEvtNum-1);
+    runScript(handles, lvdData, 1);
     lvd_processData(handles);
 
 % --- Executes on button press in moveEventDown.
@@ -221,7 +221,7 @@ function moveEventDown_Callback(hObject, eventdata, handles)
         set(handles.scriptListbox,'Value',eventNum+1);
     end
     
-    runScript(handles, lvdData, eventNum-1);
+    runScript(handles, lvdData, 1);
     lvd_processData(handles);
     
 % --- Executes on button press in deleteEvent.
@@ -253,7 +253,7 @@ function deleteEvent_Callback(hObject, eventdata, handles)
     
     setDeleteButtonEnable(lvdData, handles);
     
-    runScript(handles, lvdData, eventNum-1);
+    runScript(handles, lvdData, 1);
     lvd_processData(handles);
     
 function setDeleteButtonEnable(lvdData, handles)
@@ -289,7 +289,7 @@ function moveEventUp_Callback(hObject, eventdata, handles)
         set(handles.scriptListbox,'Value',eventNum-1);
     end
     
-    runScript(handles, lvdData, eventNum-1);
+    runScript(handles, lvdData, 1);
     lvd_processData(handles);
 
 
