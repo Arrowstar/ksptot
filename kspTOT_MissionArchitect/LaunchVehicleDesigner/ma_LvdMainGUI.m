@@ -1035,6 +1035,8 @@ function optUseParaMenu_Callback(hObject, eventdata, handles)
     lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
     writeOutput = getappdata(handles.ma_LvdMainGUI,'write_to_output_func');
     
+    addUndoState(handles,'Toggle Parallel Optimization Mode');  
+    
     if strcmp(get(gcbo, 'Checked'),'on')
         set(gcbo, 'Checked', 'off');
         lvdData.settings.optUsePara = false;
@@ -1088,6 +1090,8 @@ function integrationAbsTolMenu_Callback(hObject, eventdata, handles)
     str = str{1};
     
     if(checkStrIsNumeric(str) && str2double(str) >= 1E-14 && str2double(str) <= 1E-2)
+        addUndoState(handles,'Edit Integrator Abs Tol');  
+        
         writeOutput(sprintf('Setting integration absolute error tolerance to %s.', str),'append');
         
         lvdData.settings.intAbsTol = str2double(str);       
@@ -1118,6 +1122,8 @@ function integrationRelTolMenu_Callback(hObject, eventdata, handles)
     str = str{1};
     
     if(checkStrIsNumeric(str) && str2double(str) >= 1E-14 && str2double(str) <= 1E-2)
+        addUndoState(handles,'Edit Integrator Rel Tol');  
+        
         writeOutput(sprintf('Setting integration relative error tolerance to %s.', str),'append');
         
         lvdData.settings.intRelTol = str2double(str);       
@@ -1148,6 +1154,8 @@ function intMinAltitudeMenu_Callback(hObject, eventdata, handles)
     str = str{1};
     
     if(checkStrIsNumeric(str) && str2double(str) >= -Inf && str2double(str) <= 0.0)
+        addUndoState(handles,'Edit Minimum Altitude');        
+
         writeOutput(sprintf('Setting minimum integration altitude to %s km.', str),'append');
         
         lvdData.settings.minAltitude = str2double(str);       
@@ -1178,6 +1186,8 @@ function intMaxSimTimeMenu_Callback(hObject, eventdata, handles)
     str = str{1};
     
     if(checkStrIsNumeric(str) && str2double(str) >= 0 && str2double(str) <= Inf)
+        addUndoState(handles,'Set Max Simulation Time');
+        
         writeOutput(sprintf('Setting maximum simulation time to %s sec.', str),'append');
         
         lvdData.settings.simMaxDur = str2double(str);       
@@ -1197,6 +1207,8 @@ function optInteriorPointAlgoMenu_Callback(hObject, eventdata, handles)
     lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
     writeOutput = getappdata(handles.ma_LvdMainGUI,'write_to_output_func');
     
+    addUndoState(handles,'Edit Optimization Algo (Interior Point)');
+    
     lvdData.settings.optAlgo = LvdOptimAlgorithmEnum.InteriorPoint;
     writeOutput('Optimization algorithm changed to interior point.','append');
 
@@ -1208,6 +1220,8 @@ function optSqpAlgoMenu_Callback(hObject, eventdata, handles)
     lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
     writeOutput = getappdata(handles.ma_LvdMainGUI,'write_to_output_func');
     
+    addUndoState(handles,'Edit Optimization Algo (SQP)');
+    
     lvdData.settings.optAlgo = LvdOptimAlgorithmEnum.SQP;
     writeOutput('Optimization algorithm changed to SQP.','append');
 
@@ -1218,6 +1232,8 @@ function optActiveSetAlgoMenu_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
     lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
     writeOutput = getappdata(handles.ma_LvdMainGUI,'write_to_output_func');
+    
+    addUndoState(handles,'Edit Optimization Algo (Active Set)');
     
     lvdData.settings.optAlgo = LvdOptimAlgorithmEnum.ActiveSet;
     writeOutput('Optimization algorithm changed to active set.','append');
@@ -1311,6 +1327,8 @@ function maxScriptPropTimeMenu_Callback(hObject, eventdata, handles)
     str = str{1};
     
     if(checkStrIsNumeric(str) && str2double(str) >= 0.001 && str2double(str) <= 3600)
+        addUndoState(handles,'Edit Max Script Propagation Time');
+        
         writeOutput(sprintf('Setting maximum script execution time to %s sec.', str),'append');
         
         lvdData.settings.maxScriptPropTime = str2double(str);       
@@ -1330,6 +1348,8 @@ function sparseIntegratorOutputMenu_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
     lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
     writeOutput = getappdata(handles.ma_LvdMainGUI,'write_to_output_func');
+    
+    addUndoState(handles,'Toggle Sparse Output');
     
     if strcmp(get(gcbo, 'Checked'),'on')
         set(gcbo, 'Checked', 'off');
@@ -1362,6 +1382,8 @@ function optScaleProblemMenu_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
     lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
     writeOutput = getappdata(handles.ma_LvdMainGUI,'write_to_output_func');
+    
+    addUndoState(handles,'Toggle Optimization Scale Problem');
     
     if strcmp(get(gcbo, 'Checked'),'on')
         set(gcbo, 'Checked', 'off');
