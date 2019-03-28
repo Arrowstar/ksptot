@@ -315,7 +315,7 @@ function orbitTypeCombo_Callback(hObject, eventdata, handles)
     contents = cellstr(get(handles.centralBodyCombo,'String'));
     selected = strtrim(contents{get(handles.centralBodyCombo,'Value')});
     bodyInfo = celBodyData.(lower(selected));
-    parentBodyInfo = bodyInfo.getParBodyInfo();
+    parentBodyInfo = bodyInfo.getParBodyInfo(celBodyData);
     [children, childrenNames] = getChildrenOfParentInfo(celBodyData, bodyInfo.name);
     children = [children{:}];
     
