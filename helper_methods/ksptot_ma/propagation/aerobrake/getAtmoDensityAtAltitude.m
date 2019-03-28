@@ -5,16 +5,20 @@ function [density] = getAtmoDensityAtAltitude(bodyInfo, altitude, lat)
     if(altitude <= bodyInfo.atmohgt && altitude >= 0)
         pressure = getPressureAtAltitude(bodyInfo, altitude);
         
-        atmosphereTemperatureOffset = bodyInfo.lattempbiascurve(abs(lat)) + ...
-                                      bodyInfo.lattempsunmultcurve(abs(lat))*1.0 + ... %the 1.0 is the sunDotNormalized, I'm not computing that here and just assuming its 1
-                                      0.0; % this is where the axial temp sun mult curve would go, but I'm also not doing anything that that, so 0.
+        if(pressure > 0)
+            atmosphereTemperatureOffset = bodyInfo.lattempbiascurve(abs(lat)) + ...
+                                          bodyInfo.lattempsunmultcurve(abs(lat))*1.0 + ... %the 1.0 is the sunDotNormalized, I'm not computing that here and just assuming its 1
+                                          0.0; % this is where the axial temp sun mult curve would go, but I'm also not doing anything that that, so 0.
 
-        temperature = bodyInfo.atmotempcurve(altitude) + ... %base temperature
-                      bodyInfo.atmotempsunmultcurve(altitude) + ... % altitude-based multiplier to temperature delta
-                      atmosphereTemperatureOffset; 
+            temperature = bodyInfo.atmotempcurve(altitude) + ... %base temperature
+                          bodyInfo.atmotempsunmultcurve(altitude) + ... % altitude-based multiplier to temperature delta
+                          atmosphereTemperatureOffset; 
 
-        density = getDensityFromIdealGasLaw(pressure, temperature, bodyInfo.atmomolarmass);
-        if(density<0)
+            density = getDensityFromIdealGasLaw(pressure, temperature, bodyInfo.atmomolarmass);
+            if(density<0)
+                density = 0;
+            end
+        else
             density = 0;
         end
     elseif(altitude <= 0)
