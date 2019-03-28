@@ -12,7 +12,7 @@ function [bankAng,angOfAttack,angOfSideslip] = computeAeroAnglesFromBodyAxes(ut,
     [R_wind_2_inert, ~, ~, ~] = computeWindFrame(rVectECEF,vVectECEF);
     Rtotal = horzcat(bodyX, bodyY, bodyZ);
     
-    angles = rotm2eul((REci2Ecef' * R_wind_2_inert)' * Rtotal, 'xyz');
+    angles = rotm2eulARH((REci2Ecef' * R_wind_2_inert)' * Rtotal, 'xyz');
 
     bankAng = angles(1);
 	angOfAttack = angles(2);

@@ -241,11 +241,14 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             newStateLogEntry.thirdBodyGravity = obj.thirdBodyGravity.copy();
         end
         
-        function obj = createCopiesOfCopyableInternals(obj)
+        function obj = createCopiesOfCopyableInternals(obj, deepCopyStageState)
             %stuff that requires it's own copy
-%             obj.stageStates = obj.stageStates.copy();
             for(i=1:length(obj.stageStates))
-                obj.stageStates(i) = obj.stageStates(i).deepCopy();
+                if(deepCopyStageState)
+                    obj.stageStates(i) = obj.stageStates(i).deepCopy();
+                else
+                    obj.stageStates(i) = obj.stageStates(i).copy();
+                end
             end
             
             obj.stopwatchStates = obj.stopwatchStates.copy();
@@ -258,9 +261,13 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
     end
     
     methods(Access=protected)
-        function cpObj = copyElement(obj)
+        function cpObj = copyElement(obj, deepCopyStageState)
+            if(nargin <= 1)
+                deepCopyStageState = true;
+            end
+            
             cpObj = copyElement@matlab.mixin.Copyable(obj);
-            cpObj = cpObj.createCopiesOfCopyableInternals();
+            cpObj = cpObj.createCopiesOfCopyableInternals(deepCopyStageState);
         end
     end
     
@@ -269,7 +276,17 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             y = reshape(y,length(t), numel(y)/length(t));
             
             stateLogEntries = repmat(eventInitStateLogEntry,1,length(t));
-            stateLogEntries = stateLogEntries.copy();
+            
+            if(length(t) > 1)
+                for(i=1:length(stateLogEntries)-1)
+                    stateLogEntries(i) = stateLogEntries(i).copyElement(false);
+                end
+                
+                stateLogEntries(end) = stateLogEntries(end).copyElement(true);
+            else
+                stateLogEntries = stateLogEntries.copy();
+            end
+            
             
             stopwatchStates = eventInitStateLogEntry.stopwatchStates;
             initSwValues = [stopwatchStates.value];

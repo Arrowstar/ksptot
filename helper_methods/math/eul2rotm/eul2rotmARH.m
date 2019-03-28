@@ -1,4 +1,4 @@
-function R = eul2rotm( eul, varargin )
+function R = eul2rotmARH( eul, varargin )
 %EUL2ROTM Convert Euler angles to rotation matrix
 %   R = EUL2ROTM(EUL) converts a set of 3D Euler angles, EUL, into the
 %   corresponding rotation matrix, R. EUL is an N-by-3 matrix of Euler rotation
