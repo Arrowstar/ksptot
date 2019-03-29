@@ -193,6 +193,14 @@ function maData = ma_updateMAData(maData, handles)
         if(~isfield(maData.spacecraft.stations{i},'maxCommRange'))
             maData.spacecraft.stations{i}.maxCommRange = Inf;
         end
+        
+        if(~isfield(maData.spacecraft.stations{i},'linestyle'))
+            maData.spacecraft.stations{i}.linestyle = '-';
+        end
+        
+        if(~isfield(maData.spacecraft.stations{i},'lineWidth'))
+            maData.spacecraft.stations{i}.lineWidth = 0.5;
+        end
     end
     
     if(~isfield(maData,'launch'))

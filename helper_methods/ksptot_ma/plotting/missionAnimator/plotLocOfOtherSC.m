@@ -32,6 +32,12 @@ function [hOtherScPt, hOtherScO] = plotLocOfOtherSC(hAxis, oScStruct, validBodyI
             else
                 oLineStyle = '--';
             end
+            
+            if(isfield(oScStruct,'lineWidth'))
+                oLineWidth = oScStruct.lineWidth;
+            else
+                oLineWidth = 0.5;
+            end
                 
             if(ecc<1)
                 minTru = 0;
@@ -43,7 +49,7 @@ function [hOtherScPt, hOtherScO] = plotLocOfOtherSC(hAxis, oScStruct, validBodyI
                 maxTru = baseTru;
             end
             
-            hOtherScO = plotOrbit(oColor, sma, ecc, inc, raan, arg, minTru, maxTru, bodyInfo.gm, hAxis, posOffset, 0.5, oLineStyle);
+            hOtherScO = plotOrbit(oColor, sma, ecc, inc, raan, arg, minTru, maxTru, bodyInfo.gm, hAxis, posOffset, oLineWidth, oLineStyle);
         end
     end
 end

@@ -22,7 +22,7 @@ function varargout = ma_OtherSpacecraftGUI(varargin)
 
 % Edit the above text to modify the response to help ma_OtherSpacecraftGUI
 
-% Last Modified by GUIDE v2.5 01-Jul-2015 17:13:45
+% Last Modified by GUIDE v2.5 29-Mar-2019 17:03:34
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -124,7 +124,17 @@ function populateSpacecraft(handles,oSC)
     else
         set(handles.otherSCLineStyle,'Value',2);
     end
-        
+    
+    if(isfield(oSC,'lineWidth'))
+        lineWidth = oSC.lineWidth;
+
+        contents = handles.lineWidthCombo.String;
+        contentsDouble = str2double(contents);
+        ind = find(contentsDouble == lineWidth);
+        set(handles.lineWidthCombo,'Value',ind);
+    else
+        set(handles.lineWidthCombo,'Value',2);
+    end
 
 
 % --- Outputs from this function are returned to the command line.
@@ -221,18 +231,9 @@ function updateSCButton_Callback(hObject, eventdata, handles)
     contents = cellstr(get(handles.otherSCLineStyle,'String'));
 	oscLineStyle = contents{get(handles.otherSCLineStyle,'Value')};
     lineStyle = getLineStyleStrFromText(oscLineStyle);
-%     switch oscLineStyle
-%         case 'Solid Line'
-%             lineStyle = '-';
-%         case 'Dashed Line'
-%             lineStyle = '--';
-%         case 'Dotted Line'
-%             lineStyle = ':';
-%         case 'Dashed-dot Line'
-%             lineStyle = '-.';
-%         otherwise
-%             lineStyle = '--';
-%     end
+
+    contents = cellstr(get(handles.lineWidthCombo,'String'));
+	oscLineWidth = str2double(contents{get(handles.lineWidthCombo,'Value')});
     
     otherSC = struct();
     
@@ -256,6 +257,7 @@ function updateSCButton_Callback(hObject, eventdata, handles)
     otherSC.id = oldID;
     otherSC.color = oscColor;
     otherSC.linestyle = lineStyle;
+    otherSC.lineWidth = oscLineWidth;
     
     maData.spacecraft.otherSC{oscLBValue} = otherSC;
     setappdata(handles.ma_MainGUI,'ma_data',maData);
@@ -297,6 +299,7 @@ function addSCButton_Callback(hObject, eventdata, handles)
     otherSC.id = rand();
     otherSC.color = oscColor;
     otherSC.linestyle = lineStyle;
+    otherSC.lineWidth = 0.5;
     
     maData.spacecraft.otherSC{end+1} = otherSC;
     setappdata(handles.ma_MainGUI,'ma_data',maData);
@@ -879,6 +882,29 @@ function maxCommRangeText_CreateFcn(hObject, eventdata, handles)
 % handles    empty - handles not created until after all CreateFcns called
 
 % Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in lineWidthCombo.
+function lineWidthCombo_Callback(hObject, eventdata, handles)
+% hObject    handle to lineWidthCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns lineWidthCombo contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from lineWidthCombo
+    updateSCButton_Callback([], [], handles);
+
+% --- Executes during object creation, after setting all properties.
+function lineWidthCombo_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to lineWidthCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
 %       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
