@@ -107,12 +107,14 @@ classdef LaunchVehicleStageState < matlab.mixin.SetGet & matlab.mixin.Copyable
             stageMass = obj.getStateDryMass() + obj.getStageTotalTankMass();
         end
         
-        function newStageState = deepCopy(obj)
+        function newStageState = deepCopy(obj, deepCopyState)
             newStageState = obj.copy();
             
-            newEngineStates = obj.engineStates.copy();
-            [newEngineStates.stageState] = deal(newStageState);
-            newStageState.engineStates = newEngineStates;
+            if(deepCopyState)
+                newEngineStates = obj.engineStates.copy();
+                [newEngineStates.stageState] = deal(newStageState);
+                newStageState.engineStates = newEngineStates;
+            end
             
             newTankStates = obj.tankStates.copy();
             [newTankStates.stageState] = deal(newStageState);

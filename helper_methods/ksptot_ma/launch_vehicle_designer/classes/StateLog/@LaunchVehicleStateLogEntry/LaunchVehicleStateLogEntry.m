@@ -49,7 +49,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                 tankMasses(i) = tankStates(i).tankMass;
             end
             
-            value = obj.throttleModel.getThrottleAtTime(obj.time, obj.position, tankMasses, obj.getTotalVehicleDryMass(), ...
+            value = obj.throttleModel.getThrottleAtTime(obj.time, obj.position, obj.velocity, tankMasses, obj.getTotalVehicleDryMass(), ...
                                                         obj.stageStates, obj.lvState, tankStates, obj.centralBody);
         end
         
@@ -230,7 +230,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             newStateLogEntry.lvState = obj.lvState.deepCopy();
             
             for(i=1:length(obj.stageStates))
-                newStateLogEntry.stageStates(i) = obj.stageStates(i).deepCopy();
+                newStateLogEntry.stageStates(i) = obj.stageStates(i).deepCopy(true);
             end
             
             newStateLogEntry.stopwatchStates = obj.stopwatchStates.copy();
@@ -244,12 +244,12 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
         function obj = createCopiesOfCopyableInternals(obj, deepCopyState)
             %stuff that requires it's own copy
             for(i=1:length(obj.stageStates))
-                if(deepCopyState)
-                    obj.stageStates(i) = obj.stageStates(i).deepCopy();
+%                 if(deepCopyState)
+                    obj.stageStates(i) = obj.stageStates(i).deepCopy(deepCopyState);
 %                 else
-% %                     obj.stageStates(i) = obj.stageStates(i).copy();
+%                     obj.stageStates(i) = obj.stageStates(i).copy();
 %                     obj.stageStates(i) = obj.stageStates(i);
-                end
+%                 end
             end
             
             obj.stopwatchStates = obj.stopwatchStates.copy();
@@ -280,7 +280,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             
             stateLogEntries = repmat(eventInitStateLogEntry,1,length(t));
             
-            if(length(t) > 1)
+            if(length(t) > 1)                
                 for(i=1:length(stateLogEntries)-1)
                     stateLogEntries(i) = stateLogEntries(i).copyElement(false);
                 end
