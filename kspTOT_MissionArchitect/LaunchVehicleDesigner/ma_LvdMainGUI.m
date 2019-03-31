@@ -22,7 +22,7 @@ function varargout = ma_LvdMainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_LvdMainGUI
 
-% Last Modified by GUIDE v2.5 28-Jan-2019 18:54:55
+% Last Modified by GUIDE v2.5 31-Mar-2019 12:00:04
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1632,3 +1632,12 @@ function mercator2dPlotMenu_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
     setappdata(handles.ma_LvdMainGUI,'orbitPlotType','2DMercador'); 
     lvd_processData(handles); 
+
+
+% --------------------------------------------------------------------
+function editMissionNotesMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to editMissionNotesMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    lvd_MissionNotesGUI(lvdData);

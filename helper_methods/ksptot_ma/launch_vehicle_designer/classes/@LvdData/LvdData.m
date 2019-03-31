@@ -10,6 +10,8 @@ classdef LvdData < matlab.mixin.SetGet
         optimizer LvdOptimization
         validation LaunchVehicleDataValidation
         settings LvdSettings
+        notes char
+        
         
         celBodyData struct
         ksptotVer char
@@ -125,4 +127,3 @@ classdef LvdData < matlab.mixin.SetGet
         end
     end
 end
-

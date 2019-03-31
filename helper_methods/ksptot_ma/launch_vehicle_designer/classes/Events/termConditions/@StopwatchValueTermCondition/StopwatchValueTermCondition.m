@@ -93,7 +93,7 @@ classdef StopwatchValueTermCondition < AbstractEventTerminationCondition
     methods(Static, Access=private)
         function [value,isterminal,direction] = eventTermCond(t,~, swValue, t0, initStopwatchState)
             if(not(isempty(initStopwatchState)))
-                if(initStopwatchState.running == false)
+                if(initStopwatchState.running == StopwatchRunningEnum.NotRunning)
                     value = swValue - initStopwatchState.value;
                 else
                     deltaT = t - t0;

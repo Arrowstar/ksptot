@@ -5,7 +5,7 @@ classdef LaunchVehicleAeroState < matlab.mixin.SetGet & matlab.mixin.Copyable
     properties
         %drag
         area(1,1) double = 1; %m^2
-        Cd(1,1) double = 2.2;
+        Cd(1,1) double = 0.3;
         
         %lift
         useLift(1,1) logical = false;
