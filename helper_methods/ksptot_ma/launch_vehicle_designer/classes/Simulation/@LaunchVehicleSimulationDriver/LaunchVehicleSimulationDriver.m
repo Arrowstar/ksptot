@@ -135,6 +135,18 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
                         
             newStateLogEntries = LaunchVehicleStateLogEntry.createStateLogEntryFromIntegratorOutputRow(t, y, eventInitStateLogEntry);
             
+            newStateLogEntries = obj.processIntegratorTerminationCauses(ie, newStateLogEntries, integrator, odeEventsFun, event, tStartPropTime, tStartSimTime, isSparseOutput, checkForSoITrans, activeNonSeqEvts, forceModels);
+        end
+        
+        function [odefun, odeEventsFun, options] = getFunctionsAndOptions(obj, integrator, eventInitStateLogEntry, dryMass, forceModels, event, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, tStartPropTime)
+            odefun = integrator.getOdeFunctionHandle(obj, eventInitStateLogEntry, dryMass, forceModels);
+            odeEventsFun = integrator.getOdeEventsFunctionHandle(obj, eventInitStateLogEntry, event.termCond.getEventTermCondFuncHandle(), maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses);
+            odeOutputFun = integrator.getOdeOutputFunctionHandle(tStartPropTime, obj.maxPropTime);
+            options = odeset('RelTol',obj.relTol, 'AbsTol',obj.absTol,   'Events',odeEventsFun, 'NormControl','on', 'OutputFcn',odeOutputFun, 'InitialStep', 10, 'Refine', 1);
+            options.EventsFcn = odeEventsFun;
+        end
+        
+        function newStateLogEntries = processIntegratorTerminationCauses(obj, ie, newStateLogEntries, integrator, odeEventsFun, event, tStartPropTime, tStartSimTime, isSparseOutput, checkForSoITrans, activeNonSeqEvts, forceModels)
             if(not(isempty(ie)))
                 finalStateLogEntry = newStateLogEntries(end);
                 [~,~,~,causes] = integrator.callEventsFcn(odeEventsFun, finalStateLogEntry);
@@ -155,14 +167,6 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
                     newStateLogEntries = horzcat(newStateLogEntries,newStateLogEntriesRestart);
                 end
             end
-        end
-        
-        function [odefun, odeEventsFun, options] = getFunctionsAndOptions(obj, integrator, eventInitStateLogEntry, dryMass, forceModels, event, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, tStartPropTime)
-            odefun = integrator.getOdeFunctionHandle(obj, eventInitStateLogEntry, dryMass, forceModels);
-            odeEventsFun = integrator.getOdeEventsFunctionHandle(obj, eventInitStateLogEntry, event.termCond.getEventTermCondFuncHandle(), maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses);
-            odeOutputFun = integrator.getOdeOutputFunctionHandle(tStartPropTime, obj.maxPropTime);
-            options = odeset('RelTol',obj.relTol, 'AbsTol',obj.absTol,   'Events',odeEventsFun, 'NormControl','on', 'OutputFcn',odeOutputFun, 'InitialStep', 10, 'Refine', 1);
-            options.EventsFcn = odeEventsFun;
         end
     end
 end
