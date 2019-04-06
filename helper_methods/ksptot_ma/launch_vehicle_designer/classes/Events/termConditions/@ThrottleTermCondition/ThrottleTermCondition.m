@@ -97,9 +97,10 @@ classdef ThrottleTermCondition < AbstractEventTerminationCondition
         function [value,isterminal,direction] = eventTermCond(t,y, targetThrottle, throttleModel, dryMass, stgStates, lvState, tankStates, bodyInfo)
             ut = t;
             rVect = y(1:3);
+            vVect = y(4:6);
             tankMasses = y(7:end);            
             
-            throttle = throttleModel.getThrottleAtTime(ut, rVect, tankMasses, dryMass, stgStates, lvState, tankStates, bodyInfo);
+            throttle = throttleModel.getThrottleAtTime(ut, rVect, vVect, tankMasses, dryMass, stgStates, lvState, tankStates, bodyInfo);
             
             value = throttle - targetThrottle;
             isterminal = 1;

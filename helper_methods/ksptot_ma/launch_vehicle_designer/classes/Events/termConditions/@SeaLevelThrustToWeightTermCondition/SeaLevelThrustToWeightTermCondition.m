@@ -99,7 +99,7 @@ classdef SeaLevelThrustToWeightTermCondition < AbstractEventTerminationCondition
             rVect = y(1:3);
             vVect = y(4:6);
             tankMasses = y(7:end);
-            throttle = throttleModel.getThrottleAtTime(ut, rVect, tankMasses, dryMass, stgStates, lvState, tankStates, bodyInfo);
+            throttle = throttleModel.getThrottleAtTime(ut, rVect, vVect, tankMasses, dryMass, stgStates, lvState, tankStates, bodyInfo);
             
             altitude = norm(rVect) - bodyInfo.radius;
             presskPa = getPressureAtAltitude(bodyInfo, altitude); 

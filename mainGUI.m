@@ -22,7 +22,7 @@ function varargout = mainGUI(varargin)
 
 % Edit the above text to modify the response to help mainGUI
 
-% Last Modified by GUIDE v2.5 08-Oct-2018 11:25:24
+% Last Modified by GUIDE v2.5 05-Apr-2019 17:21:48
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -887,6 +887,39 @@ function launchVehicleDesignerMenu_Callback(hObject, eventdata, handles)
     else
         hMsg = helpdlg('Starting Launch Vehicle Designer.  Please wait...','Launch Vehicle Designer');
         hFig = ma_LvdMainGUI(celBodyData,handles.mainGUIFigure);
+
+        openToolWindows = getappdata(handles.mainGUIFigure,'openToolWindows');
+        openToolWindows = cleanOpenToolWindowsArr(openToolWindows);
+        openToolWindows(end+1) = hFig;
+        setappdata(handles.mainGUIFigure,'openToolWindows',openToolWindows);
+        
+        if(isvalid(hMsg))
+            close(hMsg);
+        end
+    end
+
+
+% --------------------------------------------------------------------
+function vehicleSizingMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to vehicleSizingMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function vehicleSizingToolMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to vehicleSizingToolMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    mainGUIUserData = get(handles.mainGUIFigure, 'UserData');
+    celBodyData = mainGUIUserData{1,1};
+    
+    lvd_hFig = findall(0,'Tag','vs_mainGUI');
+    if(~isempty(lvd_hFig))
+        figure(lvd_hFig);
+    else
+        hMsg = helpdlg('Starting Vehicle Sizing Tool.  Please wait...','Vehicle Sizing Tool');
+        hFig = vs_mainGUI(celBodyData,handles.mainGUIFigure);
 
         openToolWindows = getappdata(handles.mainGUIFigure,'openToolWindows');
         openToolWindows = cleanOpenToolWindowsArr(openToolWindows);
