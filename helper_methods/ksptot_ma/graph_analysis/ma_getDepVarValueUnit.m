@@ -128,6 +128,9 @@ function [depVarValue, depVarUnit, prevDistTraveled, taskStr, refBodyInfo, other
         case 'Distance to Ref. Celestial Body'
             depVarValue = ma_GADistToCelBodyTask(subLog(i,:), 'distToCelBody', refBodyInfo, celBodyData);
             depVarUnit = 'km';
+        case 'Elevation Angle of Ref. Celestial Body'
+            depVarValue = ma_GADistToCelBodyTask(subLog(i,:), 'CelBodyElevation', refBodyInfo, celBodyData);
+            depVarUnit = 'deg';
         case 'Distance to Ref. Spacecraft'
             depVarValue = ma_GADistToRefSCTask(subLog(i,:), 'distToRefSC',  otherSC, celBodyData);
             depVarUnit = 'km';
