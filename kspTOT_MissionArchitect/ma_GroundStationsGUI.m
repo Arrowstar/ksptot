@@ -95,10 +95,10 @@ function setupGUI(handles)
 function populateStation(handles,stn)
     set(handles.stnNameText,'String',stn.name);
 
-    set(handles.longText,'String',num2str(rad2deg(stn.long)));
-    set(handles.latText,'String',num2str(rad2deg(stn.lat)));
-    set(handles.altText,'String',num2str(stn.alt));
-    set(handles.maxCommRangeText,'String',num2str(stn.maxCommRange));
+    set(handles.longText,'String',fullAccNum2Str(rad2deg(stn.long)));
+    set(handles.latText,'String',fullAccNum2Str(rad2deg(stn.lat)));
+    set(handles.altText,'String',fullAccNum2Str(stn.alt));
+    set(handles.maxCommRangeText,'String',fullAccNum2Str(stn.maxCommRange));
 
     bodyComboValue = findValueFromComboBox(stn.parent, handles.centralBodyCombo);
     if(isempty(bodyComboValue))
@@ -416,6 +416,11 @@ end
 
 function errMsg = validateInputs(handles)
     errMsg = {};
+    
+    celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
+    contents = cellstr(get(handles.centralBodyCombo,'String'));
+    cbName = strtrim(contents{get(handles.centralBodyCombo,'Value')});
+    bodyInfo = celBodyData.(strtrim(lower(cbName)));
 
     value = str2double(get(handles.longText,'String'));
     enteredStr = get(handles.longText,'String');
@@ -436,7 +441,7 @@ function errMsg = validateInputs(handles)
     value = str2double(get(handles.altText,'String'));
     enteredStr = get(handles.altText,'String');
     numberName = 'Station Altitude';
-    lb = 0;
+    lb = -bodyInfo.radius;
     ub = 10000;
     isInt = false;
     errMsg = validateNumber(value, numberName, lb, ub, isInt, errMsg, enteredStr);
