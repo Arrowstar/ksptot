@@ -27,6 +27,20 @@ function [c, ceq, value, lb, ub, type, eventNum] = ma_genericConstraint(stateLog
 
     if(strcmpi(type,'Central Body ID'))
            [c, ceq, value, lb, ub] = ma_centralBodyConstraint(stateLog, eventID, bodyIDApply, bodyIDApply, bodyIDApply, celBodyData, maData);
+    
+    elseif(strcmpi(type,'Elevation Angle of Ref. Celestial Body'))
+        value = funcHandle(finalEntry, false, maData);
+        
+        if(lb == ub)
+            c = [0 0];
+            ceq(1) = value - ub;
+        else
+            c(1) = lb - value;
+            c(2) = value - ub;
+            ceq = [0];
+        end
+        c = c/normFact;
+        ceq = ceq/normFact;
     else
         if(bodyID == bodyIDApply || bodyIDApply==-1)
             value = funcHandle(finalEntry, false, maData);

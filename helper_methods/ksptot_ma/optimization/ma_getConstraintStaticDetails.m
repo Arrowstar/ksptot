@@ -279,6 +279,18 @@ function [unit, lbLim, ubLim, lbVal, ubVal, body, othersc, usesLbUb, usesCelBody
             usesLbUb = true;
             usesCelBody = true;
             usesRefSc = false;
+        case 'Elevation Angle of Ref. Celestial Body'
+            unit = 'deg';
+            lbLim = -90;
+            ubLim = 90;
+            lbVal = 0;
+            ubVal = 0;
+            body = -1;
+            othersc = -1;
+            
+            usesLbUb = true;
+            usesCelBody = true;
+            usesRefSc = false;
         case 'Distance to Ref. Spacecraft'
             unit = 'km';
             lbLim = 0;
