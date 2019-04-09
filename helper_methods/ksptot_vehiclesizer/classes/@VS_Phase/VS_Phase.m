@@ -4,7 +4,7 @@ classdef VS_Phase < matlab.mixin.SetGet
     
     properties
         name char = 'Untitled Phase';
-        stages(1,:) VS_Stage
+        stages(1,:) VS_AbstractStage
         
         %direct inputs
         phaseDv(1,1) double = 0;
@@ -62,7 +62,7 @@ classdef VS_Phase < matlab.mixin.SetGet
             totalDryMass = 0;
             
             for(i=1:length(obj.stages))
-                totalDryMass = totalDryMass + obj.stages(i).dryMass;
+                totalDryMass = totalDryMass + obj.stages(i).getTotalStageDryMass();
             end
         end
         
@@ -78,7 +78,7 @@ classdef VS_Phase < matlab.mixin.SetGet
             totalDv = 0;
             
             for(i=1:length(obj.stages))
-                totalDv = totalDv + obj.stages(i).deltaV;
+                totalDv = totalDv + obj.stages(i).getStageDeltaV();
             end
         end
         

@@ -1,10 +1,9 @@
-classdef VS_Stage < matlab.mixin.SetGet
-    %VS_Stage Summary of this class goes here
+classdef VS_Stage < VS_AbstractStage
+    %VS_Stage Basic stage with one tank and one engine (and no boosters)
     %   Detailed explanation goes here
-    
+       
     properties
         %direct inputs
-        name char = 'Untitled Stage';
         isp double = 300; %seconds
         dryMassFrac(1,1) double = 0.2;
         desiredT2W(1,1) double = 1.0;
@@ -19,14 +18,6 @@ classdef VS_Stage < matlab.mixin.SetGet
         
         %flags
         isPayload(1,1) logical = false;
-        
-        %data
-        phase VS_Phase
-    end
-    
-    properties(Dependent)
-        %computed
-        payloadStage(1,:) VS_Stage
     end
     
     methods
@@ -34,42 +25,12 @@ classdef VS_Stage < matlab.mixin.SetGet
             obj.phase = phase;
         end
         
-        function payloadStage = get.payloadStage(obj)
-            allPhaseStages = obj.phase.getPhaseStages();
-            stageInd = obj.phase.getIndOfStage(obj);
-            
-            if(stageInd == 1)
-                vsProb = obj.phase.vsProb;
-                phaseInd = vsProb.getIndOfPhase(obj.phase);
-                if(phaseInd == 1)
-                    payloadStage = VS_Stage.empty(1,0);
-                else
-                    nextPhase = vsProb.getPhaseForInd(phaseInd - 1);
-                    nextPhaseStages = nextPhase.getPhaseStages();
-                    payloadStage = nextPhaseStages(end);
-                end
-            else
-                payloadStage = allPhaseStages(stageInd - 1);
-            end
+        function deltaV = getStageDeltaV(obj)
+            deltaV = obj.deltaV;
         end
-        
-        function payloadMass = computePayloadMass(obj)
-            if(isempty(obj.payloadStage))
-                payloadMass = 0;
-            else
-                payloadMass = obj.payloadStage.computeInitMass();
-            end
-        end
-        
-        function finalMass = computeFinalMass(obj)
-            finalMass = obj.computePayloadMass() + obj.dryMass;
-        end
-        
-        function initMass = computeInitMass(obj)
-            finalMass = obj.computeFinalMass();
-            g0 = getG0();
-            
-            initMass = finalMass * exp(obj.deltaV/(g0*obj.isp));
+                      
+        function dryMass = getTotalStageDryMass(obj)
+            dryMass = obj.dryMass;
         end
                
         function expPropMass = computeExpendedPropMass(obj)
@@ -83,19 +44,7 @@ classdef VS_Stage < matlab.mixin.SetGet
         function stageTotalMass = computeStageTotalMass(obj)
             stageTotalMass = obj.dryMass + obj.computeExpendedPropMass();
         end
-        
-        function reqdThrust = computeReqdThrust(obj)
-            reqdThrust = obj.desiredT2W * (obj.computeStageTotalMass() + obj.computePayloadMass()) * obj.computeGforBody();
-        end
-        
-        function engineBurnTime = computeEngineBurnTime(obj)
-            engineBurnTime = obj.computeExpendedPropMass() / (obj.computeReqdThrust() / (getG0() * obj.isp));
-        end
-        
-        function tf = isPayloadOnlyStage(obj)
-            tf = obj.isPayload;
-        end
-        
+                        
         function str = getStageOutputStr(obj)
             str = cell(0,1);
             str{end+1} = sprintf('\tStage: %s', obj.name);
@@ -110,15 +59,88 @@ classdef VS_Stage < matlab.mixin.SetGet
             str{end+1} = sprintf('\t\tStage Dry Mass Fraction: %0.3f', obj.dryMassFrac);
             str{end+1} = sprintf('\t\tStage Celestial Body: %s', obj.bodyInfo.name);
         end
+        
+        %%%%%%%% For Optimizer Use %%%%%%%%%
+        function initStageForOpt(obj, phaseDvPerStage)
+            obj.deltaV = phaseDvPerStage;
+            
+            if(not(obj.isPayloadOnlyStage()))
+                diff = Inf;
+                iterCnt = 1;
+                while(diff >= 0.01 && iterCnt <=200)
+                    obj.dryMass = obj.computeTgtDryMass();
+
+                    diff = abs(obj.dryMass - obj.computeTgtDryMass());
+                    iterCnt = iterCnt + 1;
+                end
+            end
+        end
+        
+        function x = getStageOptimizerVars(obj)
+            x = [];
+            
+            if(not(obj.isPayloadOnlyStage())) 
+                x = [obj.deltaV, obj.dryMass];
+            end
+        end
+        
+        function updateStageWithVars(obj, x)
+            if(not(obj.isPayloadOnlyStage()))  
+                obj.deltaV = x(1);
+                obj.dryMass = x(2);
+            end
+        end
+        
+        function [lb,ub] = getStageOptVarBounds(obj)
+            lb = [];
+            ub = [];
+            
+            if(not(obj.isPayloadOnlyStage()))                
+                lb = [0, 0]; %dV and dry mass have lower bounds of 0
+                ub = [Inf, Inf]; %no upper bounds on these variables
+            end
+        end
+        
+        function [c, ceq] = getStageNlConValues(obj)
+            c = [];
+            ceq = [];
+            
+            if(not(obj.isPayloadOnlyStage()))
+                ceq(1) = obj.getTotalStageDryMass() - obj.computeTgtDryMass();
+            end
+        end
     end
     
     methods(Access=private)
-        function g = computeGforBody(obj)
-            if(not(isempty(obj.bodyInfo)))
-                g = (obj.bodyInfo.gm / obj.bodyInfo.radius^2) * 1000; %km/s/s -> m/s/s
+        function finalMass = computeFinalMass(obj)
+            finalMass = obj.computePayloadMass() + obj.dryMass;
+        end
+        
+        function initMass = computeInitMass(obj)
+            finalMass = obj.computeFinalMass();
+            g0 = getG0();
+            
+            initMass = finalMass * exp(obj.deltaV/(g0*obj.isp));
+        end
+        
+        function payloadMass = computePayloadMass(obj)
+            if(isempty(obj.payloadStage))
+                payloadMass = 0;
             else
-                g = getG0();
+                payloadMass = obj.payloadStage.computeInitMass();
             end
+        end
+        
+        function reqdThrust = computeReqdThrust(obj)
+            reqdThrust = obj.desiredT2W * (obj.computeStageTotalMass() + obj.computePayloadMass()) * obj.computeGforBody();
+        end
+        
+        function engineBurnTime = computeEngineBurnTime(obj)
+            engineBurnTime = obj.computeExpendedPropMass() / (obj.computeReqdThrust() / (getG0() * obj.isp));
+        end
+        
+        function tf = isPayloadOnlyStage(obj)
+            tf = obj.isPayload;
         end
     end
 end

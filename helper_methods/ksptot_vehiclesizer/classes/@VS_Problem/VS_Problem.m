@@ -95,27 +95,19 @@ classdef VS_Problem < matlab.mixin.SetGet
             for(i=1:length(stages))
                 stage = stages(i);
                 
-                if(not(stage.isPayloadOnlyStage())) 
-                    x = horzcat(x, [stage.deltaV, stage.dryMass]); %#ok<AGROW>
-                end
+                x = horzcat(x, stage.getStageOptimizerVars()); %#ok<AGROW>
             end
         end
         
         function updateStagesWithVars(obj, x)
             stages = obj.getAllProblemStages();
             
-            ind = 1;
             for(i=1:length(stages))
                 stage = stages(i);
+                numVars = stage.getNumVariables();
                 
-                
-                if(not(stage.isPayloadOnlyStage()))  
-                    stage.deltaV = x(ind);
-                    ind = ind + 1;
-                    
-                    stage.dryMass = x(ind);
-                    ind = ind + 1;
-                end
+                stage.updateStageWithVars(x(1:numVars));
+                x(1:numVars) = []; %pop off the vars we just assigned
             end
         end
         
@@ -126,10 +118,11 @@ classdef VS_Problem < matlab.mixin.SetGet
             ub = [];
             for(i=1:length(stages))   
                 stage = stages(i);
-                if(not(stage.isPayloadOnlyStage()))                
-                    lb = horzcat(lb, [0, 0]); %#ok<AGROW> %dV and dry mass have lower bounds of 0
-                    ub = horzcat(ub, [Inf, Inf]); %#ok<AGROW> %no upper bounds on these variables
-                end
+                
+                [lbS,ubS] = stage.getStageOptVarBounds();
+                
+                lb = horzcat(lb, lbS); %#ok<AGROW> 
+                ub = horzcat(ub, ubS); %#ok<AGROW> 
             end
         end
         
@@ -149,9 +142,9 @@ classdef VS_Problem < matlab.mixin.SetGet
             for(i=1:length(stages))
                 stage = stages(i);
                 
-                if(not(stage.isPayloadOnlyStage()))
-                    ceq(end+1) = stage.dryMass - stage.computeTgtDryMass(); %#ok<AGROW>
-                end
+                [cS, ceqS] = stage.getStageNlConValues();
+                c = horzcat(c, cS); %#ok<AGROW>
+                ceq = horzcat(ceq, ceqS); %#ok<AGROW>
             end
             
             for(i=1:length(obj.phases))
@@ -162,6 +155,9 @@ classdef VS_Problem < matlab.mixin.SetGet
         
         function initProblemForOptimization(obj)
             %1) Split desired delta-v per phase equally into all phase stages
+            %2) Starting with upper-most dry mass, iterate on just that dry mass such that it equals its target dry mass
+            %   Repeat for all subsequent dry masses            
+            
             for(i=1:length(obj.phases))
                 phase = obj.phases(i);
                 stages = phase.getPhaseStages();
@@ -170,29 +166,7 @@ classdef VS_Problem < matlab.mixin.SetGet
                 for(j=1:length(stages))
                     stage = stages(j);
                     
-                    stage.deltaV = phaseDvPerStage;
-                end
-            end
-            
-            %2) Starting with upper-most dry mass, iterate on just that dry mass such that it equals its target dry mass
-            %   Repeat for all subsequent dry masses
-            for(i=1:length(obj.phases))
-                phase = obj.phases(i);
-                stages = phase.getPhaseStages();
-                
-                for(j=1:length(stages))
-                    stage = stages(j);
-                    
-                    if(not(stage.isPayloadOnlyStage()))
-                        diff = Inf;
-                        iterCnt = 1;
-                        while(diff >= 0.01 && iterCnt <=200)
-                            stage.dryMass = stage.computeTgtDryMass();
-
-                            diff = abs(stage.dryMass - stage.computeTgtDryMass());
-                            iterCnt = iterCnt + 1;
-                        end
-                    end
+                    stage.initStageForOpt(phaseDvPerStage);
                 end
             end
         end
@@ -283,7 +257,6 @@ classdef VS_Problem < matlab.mixin.SetGet
             stage1.dryMassFrac = 0.18;
             stage1.desiredT2W = 1;
             stage1.bodyInfo = celBodyData.eve;
-%             stage1.payloadStage = stage0;
             stage1.dryMass = 607.73;
             stage1.deltaV = 4237.78;
             phase1.addStage(stage1);
@@ -294,7 +267,6 @@ classdef VS_Problem < matlab.mixin.SetGet
             stage2.dryMassFrac = 0.18;
             stage2.desiredT2W = 1.4;
             stage2.bodyInfo = celBodyData.eve;
-%             stage2.payloadStage = stage1;
             stage2.dryMass = 3343.01;
             stage2.deltaV = 3226.36;
             phase1.addStage(stage2);
@@ -305,7 +277,6 @@ classdef VS_Problem < matlab.mixin.SetGet
             stage3.dryMassFrac = 0.19;
             stage3.desiredT2W = 1.4;
             stage3.bodyInfo = celBodyData.eve;
-%             stage3.payloadStage = stage2;
             stage3.dryMass = 18139.93;
             stage3.deltaV = 2980.86;
             phase1.addStage(stage3);
@@ -322,7 +293,6 @@ classdef VS_Problem < matlab.mixin.SetGet
             stage4.dryMassFrac = 0.20;
             stage4.desiredT2W = 1;
             stage4.bodyInfo = celBodyData.kerbin;
-%             stage4.payloadStage = stage3;
             stage4.dryMass = 41375.90;
             stage4.deltaV = 2375.46;
             phase2.addStage(stage4);
@@ -333,7 +303,6 @@ classdef VS_Problem < matlab.mixin.SetGet
             stage5.dryMassFrac = 0.20;
             stage5.desiredT2W = 1.4;
             stage5.bodyInfo = celBodyData.kerbin;
-%             stage5.payloadStage = stage4;
             stage5.dryMass = 62345.40;
             stage5.deltaV = 1462.83;
             phase2.addStage(stage5);
@@ -344,7 +313,6 @@ classdef VS_Problem < matlab.mixin.SetGet
             stage6.dryMassFrac = 0.20;
             stage6.desiredT2W = 1.3;
             stage6.bodyInfo = celBodyData.kerbin;
-%             stage6.payloadStage = stage5;
             stage6.dryMass = 109549.07;
             stage6.deltaV = 1336.71;
             phase2.addStage(stage6);
