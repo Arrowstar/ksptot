@@ -1,4 +1,4 @@
-function [dv, rp, orbitIn, orbitOut, deltaVVect, vInfDNorm, vInfDepart, vInfArrive, totDV, r1B, r2B, v1Output, v2Output, xferRp] =  multiFlybyObjFunc(x, numRevsArr,bodiesInfo,celBodyData)
+function [dv, rp, orbitIn, orbitOut, deltaVVect, vInfDNorm, vInfDepart, vInfArrive, totDV, r1B, r2B, v1Output, v2Output, xferRp] =  multiFlybyObjFunc(x, numRevsArr,bodiesInfo,includeDepartVInf,includeArrivalVInf,celBodyData)
 %multiFlybyObjFunc Summary of this function goes here
 %   Detailed explanation goes here
     numX = size(x,1);
@@ -163,7 +163,18 @@ function [dv, rp, orbitIn, orbitOut, deltaVVect, vInfDNorm, vInfDepart, vInfArri
     deltaV = sqrt(sum(abs(deltaVVect).^2,1));
     totDV = sum(reshape(deltaV,numX,length(flybyBodies)),2);
     
-    dv = vInfDNorm + totDV + vInfANorm;
+    dv = totDV;
+    
+    if(includeDepartVInf)
+        dv = dv + vInfDNorm;
+    end
+    
+    if(includeArrivalVInf)
+        dv = dv + vInfANorm;
+    end
+    
+%     dv = vInfDNorm + totDV + vInfANorm;
+
     dv(dv>=1E99) = NaN;
     dv(isnan(dv)) = max(dv)+10;
 end

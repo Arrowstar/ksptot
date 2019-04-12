@@ -1,4 +1,4 @@
-function [x, dv, rp, orbitsIn, orbitsOut, xferOrbits, deltaVVect, vInfDNorm, c, vInfDepart, vInfArrive, numRev] = multiFlybyExec(bodiesInfo, lWindDef, bnds, minCbPeriHgt, maxMsnDur, popSize, numGen, celBodyData)
+function [x, dv, rp, orbitsIn, orbitsOut, xferOrbits, deltaVVect, vInfDNorm, c, vInfDepart, vInfArrive, numRev] = multiFlybyExec(bodiesInfo, lWindDef, bnds, minCbPeriHgt, maxMsnDur, popSize, numGen, includeDepartVInf, includeArrivalVInf, maxDepartVInf, maxArriveVInf, celBodyData)
 %multiFlybyExec Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -62,8 +62,8 @@ function [x, dv, rp, orbitsIn, orbitsOut, xferOrbits, deltaVVect, vInfDNorm, c, 
     A(2:nSegments+1) = 1;
     b = maxMsnDur;
     
-    fitnessfcn = @(x) multiFlybyObjFunc(x, numRevsArr,bodiesInfo,celBodyData);
-    nonlcon = @(x) multiFlybyNonlcon(x, fitnessfcn,minRadii,maxRadii,minXferRad);
+    fitnessfcn = @(x) multiFlybyObjFunc(x, numRevsArr,bodiesInfo,includeDepartVInf,includeArrivalVInf,celBodyData);
+    nonlcon = @(x) multiFlybyNonlcon(x, fitnessfcn,minRadii,maxRadii,minXferRad,maxDepartVInf,maxArriveVInf);
     options = gaoptimset('Vectorized','on',...
                          'PopulationSize',popSize,...
                          'Display','iter',...
@@ -107,7 +107,7 @@ function [x, dv, rp, orbitsIn, orbitsOut, xferOrbits, deltaVVect, vInfDNorm, c, 
         populationC = population(Ind,:);
         scoresC = scores(Ind,:);
 
-        [x, dv, rp, orbitsIn, orbitsOut, deltaVVect, vInfDNorm, xferOrbits, c, vInfDepart, vInfArrive, numRev] = findSaneTraj(scoresC, populationC, bodiesInfo, lb, ub, fitnessfcn, minRadiiSingle, maxRadiiSingle, minXferRad, numRevsArr, celBodyData);
+        [x, dv, rp, orbitsIn, orbitsOut, deltaVVect, vInfDNorm, xferOrbits, c, vInfDepart, vInfArrive, numRev] = findSaneTraj(scoresC, populationC, bodiesInfo, lb, ub, fitnessfcn, minRadiiSingle, maxRadiiSingle, minXferRad, numRevsArr, maxDepartVInf, maxArriveVInf, celBodyData);
     else
         cMaxes = max(abs(c),[],1);
         cNorm = zeros(size(c));
@@ -118,7 +118,7 @@ function [x, dv, rp, orbitsIn, orbitsOut, xferOrbits, deltaVVect, vInfDNorm, c, 
         
         scoresC = scores(cI,:);
         populationC = population(cI,:);
-        [x, dv, rp, orbitsIn, orbitsOut, deltaVVect, vInfDNorm, xferOrbits, c, vInfDepart, vInfArrive, numRev] = findSaneTraj(scoresC, populationC, bodiesInfo, lb, ub, fitnessfcn, minRadiiSingle, maxRadiiSingle, minXferRad, numRevsArr, celBodyData);
+        [x, dv, rp, orbitsIn, orbitsOut, deltaVVect, vInfDNorm, xferOrbits, c, vInfDepart, vInfArrive, numRev] = findSaneTraj(scoresC, populationC, bodiesInfo, lb, ub, fitnessfcn, minRadiiSingle, maxRadiiSingle, minXferRad, numRevsArr, maxDepartVInf, maxArriveVInf, celBodyData);
         
         warning('No valid solutions');
     end

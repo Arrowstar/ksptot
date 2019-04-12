@@ -1,4 +1,4 @@
-function [x, dv, rp, orbitsIn, orbitsOut, deltaVVect, vInfDNorm, xferOrbits, c, vInfDepart, vInfArrive, numRev] = findSaneTraj(scoresC, populationC, bodiesInfo, lb, ub, fitnessfcn, minRadiiSingle, maxRadiiSingle, minXferRad, numRevsArr, celBodyData)
+function [x, dv, rp, orbitsIn, orbitsOut, deltaVVect, vInfDNorm, xferOrbits, c, vInfDepart, vInfArrive, numRev] = findSaneTraj(scoresC, populationC, bodiesInfo, lb, ub, fitnessfcn, minRadiiSingle, maxRadiiSingle, minXferRad, numRevsArr, maxDepartVInf, maxArriveVInf, celBodyData)
 %findSaneTraj Summary of this function goes here
 %   Detailed explanation goes here
     [best,~] = min(scoresC);
@@ -22,8 +22,8 @@ function [x, dv, rp, orbitsIn, orbitsOut, deltaVVect, vInfDNorm, xferOrbits, c, 
     lb = lb(1:length(bodiesInfo));
     ub = ub(1:length(bodiesInfo));
     objfun = @(x) fitnessfcn([x,tm,numRevInds]);
-    nonlconFMC1 = @(x) multiFlybyNonlcon([x,tm,numRevInds], fitnessfcn,minRadiiSingle,maxRadiiSingle, minXferRad);
-    nonlconFMC2 = @(x) multiFlybyNonlcon(x, fitnessfcn,minRadiiSingle,maxRadiiSingle, minXferRad);
+    nonlconFMC1 = @(x) multiFlybyNonlcon([x,tm,numRevInds], fitnessfcn,minRadiiSingle,maxRadiiSingle, minXferRad, maxDepartVInf, maxArriveVInf);
+    nonlconFMC2 = @(x) multiFlybyNonlcon(x, fitnessfcn,minRadiiSingle,maxRadiiSingle, minXferRad, maxDepartVInf, maxArriveVInf);
     optionsFMC = optimoptions('fmincon','Algorithm','interior-point','Display','none','ScaleProblem','obj-and-constr');
     try
         [x3,dv3] = fmincon(objfun,x0,[],[],[],[],lb,ub,nonlconFMC1, optionsFMC);

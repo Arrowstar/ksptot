@@ -56,10 +56,17 @@ function [str] = printHyperOrbitsMFMSToTextbox(hHyperbolicOrbitsText, waypoints,
             str{end+1} = [paddStr('Out. Hyp. Vel. Vect Declin. = ',paddLen), num2str(vInfDec, form), ' deg'];
             str{end+1} = [paddStr('Out. Hyp. Vel. Magnitude = ',paddLen), num2str(vInfMag, form2), ' km/s'];
         else
+            [vInfRA,vInfDec,~] = cart2sph(vInfArrive(1),vInfArrive(2),vInfArrive(3));
+            vInfRA = rad2deg(vInfRA);
+            vInfDec = rad2deg(vInfDec);
+            
             str{end+1} = hRule;
             str{end+1} = ['Inbound Hyperbolic Orbit to ', cap1stLetter(waypoints{i}.name)];
             str{end+1} = hRule;
-            str{end+1} = [paddStr('Hyperbolic Excess Vel. = ',paddLen), num2str(norm(vInfArrive), form), ' km/s'];
+            str{end+1} = [paddStr('Inb. Hyp. Vel. Vect Rt. Asc. = ',paddLen), num2str(vInfRA, form), ' deg'];
+            str{end+1} = [paddStr('Inb. Hyp. Vel. Vect Declin. = ',paddLen), num2str(vInfDec, form), ' deg'];
+            str{end+1} = [paddStr('Inb. Hyp. Vel. Magnitude = ',paddLen), num2str(norm(vInfArrive), form), ' km/s'];
+%             str{end+1} = [paddStr('Hyperbolic Excess Vel. = ',paddLen), num2str(norm(vInfArrive), form), ' km/s'];
         end
     end
     

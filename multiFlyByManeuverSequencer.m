@@ -22,7 +22,7 @@ function varargout = multiFlyByManeuverSequencer(varargin)
 
 % Edit the above text to modify the response to help multiFlyByManeuverSequencer
 
-% Last Modified by GUIDE v2.5 14-Jun-2018 17:20:36
+% Last Modified by GUIDE v2.5 11-Apr-2019 17:25:36
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -574,6 +574,22 @@ function computeFlybyManSeqButton_Callback(hObject, eventdata, handles)
     isInt = false;
     errMsg = validateNumber(maxMsnDur, numberName, lb, ub, isInt, errMsg, enteredStr);
     
+    maxDepartVInf = str2double(get(handles.maxDepartVInfText, 'String'));
+    enteredStr = get(handles.maxDepartVInfText,'String');
+    numberName = 'Maximum Departure Hyp. Excess Velocity';
+    lb = 0.001;
+    ub = Inf;
+    isInt = false;
+    errMsg = validateNumber(maxDepartVInf, numberName, lb, ub, isInt, errMsg, enteredStr);
+    
+    maxArriveVInf = str2double(get(handles.maxArriveVInfText, 'String'));
+    enteredStr = get(handles.maxArriveVInfText,'String');
+    numberName = 'Maximum Arrival Hyp. Excess Velocity';
+    lb = 0.001;
+    ub = Inf;
+    isInt = false;
+    errMsg = validateNumber(maxArriveVInf, numberName, lb, ub, isInt, errMsg, enteredStr);
+    
     if(isempty(errMsg))
         contents = cellstr(get(handles.centralBodyCombo,'String'));
         cbName = contents{get(handles.centralBodyCombo,'Value')};
@@ -592,10 +608,13 @@ function computeFlybyManSeqButton_Callback(hObject, eventdata, handles)
             hWaitbar = waitbar(0,sprintf('Executing Sequence of MFMS Runs... [%u/%u]', 1, numRuns));
         end
         
+        includeDepartVInf = logical(handles.includeDepartVInfCheckbox.Value);
+        includeArrivalVInf = logical(handles.includeArrivalVInfCheckbox.Value);
+        
         runs = cell(numRuns,12);
         for(i=1:numRuns)            
             [x, dv, rp, orbitsIn, orbitsOut, xferOrbits, deltaVVect, vInfDNorm, c, vInfDepart, vInfArrive, numRev] = ...
-                multiFlybyExec(wayPtBodies,lWindDef,bnds,minCbPeriHgt,maxMsnDur,popSize,numGen,celBodyData);
+                multiFlybyExec(wayPtBodies,lWindDef,bnds,minCbPeriHgt,maxMsnDur,popSize,numGen,includeDepartVInf,includeArrivalVInf,maxDepartVInf,maxArriveVInf,celBodyData);
             
             if(isempty(x))
                 return; %we hit an error condition in multiFlybyExec()
@@ -1265,3 +1284,69 @@ function multiFlybyManSeqGUI_CloseRequestFcn(hObject, eventdata, handles)
         drawnow;
         delete(h);
     end
+
+
+% --- Executes on button press in includeDepartVInfCheckbox.
+function includeDepartVInfCheckbox_Callback(hObject, eventdata, handles)
+% hObject    handle to includeDepartVInfCheckbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of includeDepartVInfCheckbox
+
+
+
+function maxDepartVInfText_Callback(hObject, eventdata, handles)
+% hObject    handle to maxDepartVInfText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of maxDepartVInfText as text
+%        str2double(get(hObject,'String')) returns contents of maxDepartVInfText as a double
+    newInput = attemptStrEval(get(hObject,'String'));
+    set(hObject, 'String', newInput);
+
+% --- Executes during object creation, after setting all properties.
+function maxDepartVInfText_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to maxDepartVInfText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in includeArrivalVInfCheckbox.
+function includeArrivalVInfCheckbox_Callback(hObject, eventdata, handles)
+% hObject    handle to includeArrivalVInfCheckbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of includeArrivalVInfCheckbox
+
+
+
+function maxArriveVInfText_Callback(hObject, eventdata, handles)
+% hObject    handle to maxArriveVInfText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of maxArriveVInfText as text
+%        str2double(get(hObject,'String')) returns contents of maxArriveVInfText as a double
+    newInput = attemptStrEval(get(hObject,'String'));
+    set(hObject, 'String', newInput);
+
+% --- Executes during object creation, after setting all properties.
+function maxArriveVInfText_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to maxArriveVInfText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

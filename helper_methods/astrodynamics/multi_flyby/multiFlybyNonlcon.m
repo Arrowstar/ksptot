@@ -1,11 +1,11 @@
-function [c, ceq ] = multiFlybyNonlcon(x, fitnessfcn, minRadii, maxRadii, minXferRad)
+function [c, ceq ] = multiFlybyNonlcon(x, fitnessfcn, minRadii, maxRadii, minXferRad, maxDepartVInf, maxArriveVInf)
 %multiFlybyNonlcon Summary of this function goes here
 %   Detailed explanation goes here
     ceq = [];
 
     numPop = size(x,1);
     
-    [~, rp, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, xferRp] = fitnessfcn(x);
+    [~, rp, ~, ~, ~, vInfDNorm, ~, vInfArrive, ~, ~, ~, ~, ~, xferRp] = fitnessfcn(x);
     if(size(rp,2) < size(minRadii,2))
         c = 0;
         return;
@@ -20,6 +20,11 @@ function [c, ceq ] = multiFlybyNonlcon(x, fitnessfcn, minRadii, maxRadii, minXfe
     c3 = -(xferRp - minXferRad)'; %need the minus sign to make greater than values negative for the constraint
     c3 = reshape(c3,numPop,size(c3,1)/numPop);
     
-    c = horzcat(c,c2,c3);
+%     c = horzcat(c,c2,c3);
+    
+    c4 = vInfDNorm - maxDepartVInf;
+    c5 = (sqrt(sum(abs(vInfArrive).^2,1)))' - maxArriveVInf;
+    c = horzcat(c,c2,c3,c4,c5);
+    
     c(isnan(c)) = 1;
 end
