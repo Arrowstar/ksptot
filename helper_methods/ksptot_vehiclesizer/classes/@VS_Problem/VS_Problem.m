@@ -228,15 +228,15 @@ classdef VS_Problem < matlab.mixin.SetGet
     methods(Static)
         function vsProb = getDefaultVsProblem(celBodyData)
             vsProb = VS_Problem();
-            
+
             %Payload Phase
             phase0 = VS_Phase(vsProb);
-            phase0.name = 'Payload';
-            phase0.phaseDv = 0;
+            phase0.name = 'Untitled Phase';
+            phase0.phaseDv = 5000;
             vsProb.addPhase(phase0);
             
             stage0 = VS_Stage(phase0);
-            stage0.name = 'Payload Stage';
+            stage0.name = 'Untitled Stage';
             stage0.isp = 300;
             stage0.dryMassFrac = 0.2;
             stage0.desiredT2W = 1;
@@ -245,77 +245,93 @@ classdef VS_Problem < matlab.mixin.SetGet
             stage0.isPayload = true;
             phase0.addStage(stage0);
             
-            %Phase 1 Eve
-            phase1 = VS_Phase(vsProb);
-            phase1.name = 'Eve';
-            phase1.phaseDv = 10445;
-            vsProb.addPhase(phase1);
-            
-            stage1 = VS_Stage(phase1);
-            stage1.name = 'Eve 3rd';
-            stage1.isp = 345;
-            stage1.dryMassFrac = 0.18;
-            stage1.desiredT2W = 1;
-            stage1.bodyInfo = celBodyData.eve;
-            stage1.dryMass = 607.73;
-            stage1.deltaV = 4237.78;
-            phase1.addStage(stage1);
-            
-            stage2 = VS_Stage(phase1);
-            stage2.name = 'Eve 2nd';
-            stage2.isp = 290;
-            stage2.dryMassFrac = 0.18;
-            stage2.desiredT2W = 1.4;
-            stage2.bodyInfo = celBodyData.eve;
-            stage2.dryMass = 3343.01;
-            stage2.deltaV = 3226.36;
-            phase1.addStage(stage2);
-            
-            stage3 = VS_Stage(phase1);
-            stage3.name = 'Eve 1st';
-            stage3.isp = 285;
-            stage3.dryMassFrac = 0.19;
-            stage3.desiredT2W = 1.4;
-            stage3.bodyInfo = celBodyData.eve;
-            stage3.dryMass = 18139.93;
-            stage3.deltaV = 2980.86;
-            phase1.addStage(stage3);
-            
-            %Phase 1 Kerbin
-            phase2 = VS_Phase(vsProb);
-            phase2.name = 'Kerbin';
-            phase2.phaseDv = 5175;
-            vsProb.addPhase(phase2);
-            
-            stage4 = VS_Stage(phase2);
-            stage4.name = 'Kerbin 3rd';
-            stage4.isp = 340;
-            stage4.dryMassFrac = 0.20;
-            stage4.desiredT2W = 1;
-            stage4.bodyInfo = celBodyData.kerbin;
-            stage4.dryMass = 41375.90;
-            stage4.deltaV = 2375.46;
-            phase2.addStage(stage4);
-            
-            stage5 = VS_Stage(phase2);
-            stage5.name = 'Kerbin 2nd';
-            stage5.isp = 300;
-            stage5.dryMassFrac = 0.20;
-            stage5.desiredT2W = 1.4;
-            stage5.bodyInfo = celBodyData.kerbin;
-            stage5.dryMass = 62345.40;
-            stage5.deltaV = 1462.83;
-            phase2.addStage(stage5);
-            
-            stage6 = VS_Stage(phase2);
-            stage6.name = 'Kerbin 1st';
-            stage6.isp = 295;
-            stage6.dryMassFrac = 0.20;
-            stage6.desiredT2W = 1.3;
-            stage6.bodyInfo = celBodyData.kerbin;
-            stage6.dryMass = 109549.07;
-            stage6.deltaV = 1336.71;
-            phase2.addStage(stage6);
+%             %Payload Phase
+%             phase0 = VS_Phase(vsProb);
+%             phase0.name = 'Payload';
+%             phase0.phaseDv = 0;
+%             vsProb.addPhase(phase0);
+%             
+%             stage0 = VS_Stage(phase0);
+%             stage0.name = 'Payload Stage';
+%             stage0.isp = 300;
+%             stage0.dryMassFrac = 0.2;
+%             stage0.desiredT2W = 1;
+%             stage0.bodyInfo = celBodyData.kerbin;
+%             stage0.dryMass = 500;
+%             stage0.isPayload = true;
+%             phase0.addStage(stage0);
+%             
+%             %Phase 1 Eve
+%             phase1 = VS_Phase(vsProb);
+%             phase1.name = 'Eve';
+%             phase1.phaseDv = 10445;
+%             vsProb.addPhase(phase1);
+%             
+%             stage1 = VS_Stage(phase1);
+%             stage1.name = 'Eve 3rd';
+%             stage1.isp = 345;
+%             stage1.dryMassFrac = 0.18;
+%             stage1.desiredT2W = 1;
+%             stage1.bodyInfo = celBodyData.eve;
+%             stage1.dryMass = 607.73;
+%             stage1.deltaV = 4237.78;
+%             phase1.addStage(stage1);
+%             
+%             stage2 = VS_Stage(phase1);
+%             stage2.name = 'Eve 2nd';
+%             stage2.isp = 290;
+%             stage2.dryMassFrac = 0.18;
+%             stage2.desiredT2W = 1.4;
+%             stage2.bodyInfo = celBodyData.eve;
+%             stage2.dryMass = 3343.01;
+%             stage2.deltaV = 3226.36;
+%             phase1.addStage(stage2);
+%             
+%             stage3 = VS_Stage(phase1);
+%             stage3.name = 'Eve 1st';
+%             stage3.isp = 285;
+%             stage3.dryMassFrac = 0.19;
+%             stage3.desiredT2W = 1.4;
+%             stage3.bodyInfo = celBodyData.eve;
+%             stage3.dryMass = 18139.93;
+%             stage3.deltaV = 2980.86;
+%             phase1.addStage(stage3);
+%             
+%             %Phase 1 Kerbin
+%             phase2 = VS_Phase(vsProb);
+%             phase2.name = 'Kerbin';
+%             phase2.phaseDv = 5175;
+%             vsProb.addPhase(phase2);
+%             
+%             stage4 = VS_Stage(phase2);
+%             stage4.name = 'Kerbin 3rd';
+%             stage4.isp = 340;
+%             stage4.dryMassFrac = 0.20;
+%             stage4.desiredT2W = 1;
+%             stage4.bodyInfo = celBodyData.kerbin;
+%             stage4.dryMass = 41375.90;
+%             stage4.deltaV = 2375.46;
+%             phase2.addStage(stage4);
+%             
+%             stage5 = VS_Stage(phase2);
+%             stage5.name = 'Kerbin 2nd';
+%             stage5.isp = 300;
+%             stage5.dryMassFrac = 0.20;
+%             stage5.desiredT2W = 1.4;
+%             stage5.bodyInfo = celBodyData.kerbin;
+%             stage5.dryMass = 62345.40;
+%             stage5.deltaV = 1462.83;
+%             phase2.addStage(stage5);
+%             
+%             stage6 = VS_Stage(phase2);
+%             stage6.name = 'Kerbin 1st';
+%             stage6.isp = 295;
+%             stage6.dryMassFrac = 0.20;
+%             stage6.desiredT2W = 1.3;
+%             stage6.bodyInfo = celBodyData.kerbin;
+%             stage6.dryMass = 109549.07;
+%             stage6.deltaV = 1336.71;
+%             phase2.addStage(stage6);
         end
     end
 end
