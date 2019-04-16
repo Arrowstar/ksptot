@@ -61,10 +61,11 @@ guidata(hObject, handles);
 %Possible fix for people with display issues.
 checkForCharUnitsInGUI(hObject);
 
-mainGUIHandle = varargin{1};
-mainGUIUserData = get(mainGUIHandle,'UserData');
-setappdata(hObject,'MainGUIHandle',mainGUIHandle);
-celBodyData = mainGUIUserData{1,1};
+% mainGUIHandle = varargin{1};
+% mainGUIUserData = get(mainGUIHandle,'UserData');
+% setappdata(hObject,'MainGUIHandle',mainGUIHandle);
+% celBodyData = mainGUIUserData{1,1};
+celBodyData = varargin{1};
 setappdata(hObject,'celBodyData',celBodyData);
 setappdata(handles.multiFlybyManSeqGUI,'Output',[]);
 
@@ -652,10 +653,11 @@ function computeFlybyManSeqButton_Callback(hObject, eventdata, handles)
         
         [x, dv, rp, orbitsIn, orbitsOut, xferOrbits, deltaVVect, vInfDNorm, c, vInfDepart, vInfArrive, numRev] = runs{I,:};
         
-        MainGUIHandle = getappdata(handles.multiFlybyManSeqGUI,'MainGUIHandle');
-        mainGUIUserData = get(MainGUIHandle,'UserData');
-        mainUiOptions = mainGUIUserData{1,9};
-        numComputeDepart = mainUiOptions.departplotnumoptiters;
+%         MainGUIHandle = getappdata(handles.multiFlybyManSeqGUI,'MainGUIHandle');
+%         mainGUIUserData = get(MainGUIHandle,'UserData');
+%         mainUiOptions = mainGUIUserData{1,9};
+%         numComputeDepart = mainUiOptions.departplotnumoptiters;
+        numComputeDepart = 25;
         
         [dVDepartVect, dVDepartVectNTW, eRDepartVect, hOrbit, eTA] = computeDepartureOrbit(eSMA, eEcc, eInc, eRAAN, eArg, eMA, eEpoch, wayPtBodies{1}.gm, vInfDepart, xferOrbits(1,8), xferOrbits(1,9), numComputeDepart, pi, 0, 2*pi, waypts{1}, waypts{2}, numRev(1), cBodyInfo, celBodyData);
         eOrbit = [eSMA, eEcc, eInc, eRAAN, eArg, 0, 2*pi, eTA];

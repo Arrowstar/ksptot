@@ -1,8 +1,13 @@
 function [refBody, scName] = orbitPanelGetOrbitFromSFSContextCallBack(mainGUIHandle, hSMA, hECC, hINC, hRAAN, hARG, varargin)
 %orbitPanelGetOrbitFromSFSContextCallBack Summary of this function goes here
 %   Detailed explanation goes here
-    mainUserData = get(mainGUIHandle,'UserData');
-    prevPathName = mainUserData{3,1};
+    if(not(isempty(mainGUIHandle)))
+        mainUserData = get(mainGUIHandle,'UserData');
+        prevPathName = mainUserData{3,1};
+    else
+        mainUserData = [];
+        prevPathName = [];
+    end
     
     refBody = [];
     [orbit,PathName,scName] = importOrbitGUI(1, prevPathName);
@@ -21,9 +26,10 @@ function [refBody, scName] = orbitPanelGetOrbitFromSFSContextCallBack(mainGUIHan
             set(hEpoch, 'String', fullAccNum2Str(orbit{9}));
         end
         
-        mainUserData{3,1} = PathName;
+        if(not(isempty(mainUserData)))
+            mainUserData{3,1} = PathName;
+            set(mainGUIHandle,'UserData',mainUserData);
+        end
     end
-    
-    set(mainGUIHandle,'UserData',mainUserData);
 end
 

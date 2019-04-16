@@ -686,8 +686,12 @@ function multiFlyByManeuverSequencerMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to multiFlyByManeuverSequencerMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-    hFig = multiFlyByManeuverSequencer(handles.mainGUIFigure);
+    mainGUIUserData = get(handles.mainGUIFigure, 'UserData');
+    celBodyData = mainGUIUserData{1,1};
 
+%     hFig = multiFlyByManeuverSequencer(handles.mainGUIFigure);
+    hFig = multiFlyByManeuverSequencer(celBodyData);
+    
     openToolWindows = getappdata(handles.mainGUIFigure,'openToolWindows');
     openToolWindows = cleanOpenToolWindowsArr(openToolWindows);
     openToolWindows(end+1) = hFig;
