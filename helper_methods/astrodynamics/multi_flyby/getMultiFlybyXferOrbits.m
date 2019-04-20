@@ -21,7 +21,9 @@ function xferOrbits = getMultiFlybyXferOrbits(x, numRev, r1Sc, r2Sc, v1Sc, v2Sc,
     tm(tm==2) = -1;
     numTM = size(tm,2);
     
-    x = x(:,1:end-numTM);
+%     x = x(:,1:end-numTM);
+%     daTimes = cumsum(x,2);
+    x = x(:,1:end-numTM-numREVS);
     daTimes = cumsum(x,2);
 
     parentBodyInfo = bodiesInfo{1}.getParBodyInfo(celBodyData);
