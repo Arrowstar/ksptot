@@ -701,7 +701,7 @@ function openMissionPlanMenu_Callback(hObject, eventdata, handles)
                 lvdData.celBodyData = celBodyData;
             end
             
-            set(handles.ma_LvdMainGUI,'Name',[application_title, ' - ', filePath]);
+            set(handles.ma_LvdMainGUI,'Name',[application_title, ' - ', FileName]);
             write_to_output_func(['Done.'],'appendSameLine');
             
             setappdata(handles.ma_LvdMainGUI,'lvdData',lvdData);
@@ -765,6 +765,8 @@ function saveAsMissionPlanMenu_Callback(hObject, eventdata, handles)
 function saveMission(handles, varargin)
     if(length(varargin) == 1)
         filePath = varargin{1};
+        [PathName,name,ext] = fileparts(filePath);
+        FileName = [name,ext];
     else
         [FileName,PathName] = uiputfile({'*.mat','KSP TOT Launch Vehicle Designer Case File (*.mat)'},...
                                                     'Save Launch Vehicle Designer Case',...
@@ -785,7 +787,7 @@ function saveMission(handles, varargin)
     save(filePath,'lvdData');
     application_title = getappdata(handles.ma_LvdMainGUI,'application_title');
     
-    set(handles.ma_LvdMainGUI,'Name',[application_title, ' - ', filePath]);
+    set(handles.ma_LvdMainGUI,'Name',[application_title, ' - ', FileName]);
     setappdata(handles.ma_LvdMainGUI,'current_save_location',filePath);
     
     write_to_output_func(['Done.'],'appendSameLine');

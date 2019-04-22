@@ -635,7 +635,7 @@ function openMissionPlanMenu_Callback(hObject, eventdata, handles)
                 maData.celBodyData = celBodyData;
             end
             
-            set(handles.ma_MainGUI,'Name',[application_title, ' - ', filePath]);
+            set(handles.ma_MainGUI,'Name',[application_title, ' - ', FileName]);
             set(handles.dispAxes,'UserData', 1);
             write_to_output_func(['Done.'],'appendSameLine');
 
@@ -689,6 +689,8 @@ function saveMission(handles, varargin)
 
     if(length(varargin) == 1)
         filePath = varargin{1};
+        [PathName,name,ext] = fileparts(filePath);
+        FileName = [name,ext];
     else
         [FileName,PathName] = uiputfile({'*.mat','KSP TOT Mission Architect Case File (*.mat)'},...
                                                     'Save Mission Architect Case',...
@@ -722,7 +724,7 @@ function saveMission(handles, varargin)
     save(filePath,'maData');
     application_title = getappdata(handles.ma_MainGUI,'application_title');
     
-    set(handles.ma_MainGUI,'Name',[application_title, ' - ', filePath]);
+    set(handles.ma_MainGUI,'Name',[application_title, ' - ', FileName]);
     setappdata(handles.ma_MainGUI,'current_save_location',filePath);
     
     write_to_output_func(['Done.'],'appendSameLine');
