@@ -603,10 +603,18 @@ function openMissionPlanMenu_Callback(hObject, eventdata, handles)
     celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
     write_to_output_func = getappdata(handles.ma_MainGUI,'write_to_output_func');
     application_title = getappdata(handles.ma_MainGUI,'application_title');
+    current_save_location = getappdata(handles.ma_MainGUI,'current_save_location');
+    
+    if(isempty(current_save_location))
+        fileNameToDefaultTo = 'mission.mat';
+    else
+        [current_save_location_path,~,~] = fileparts(current_save_location);
+        fileNameToDefaultTo = [current_save_location_path,filesep,'mission.mat'];
+    end
 
     [FileName,PathName] = uigetfile({'*.mat','KSP TOT Mission Architect Case File (*.mat)'},...
                                                 'Open Mission Architect Case',...
-                                                'mission.mat');
+                                                fileNameToDefaultTo);
     filePath = [PathName,FileName];
 
     if(ischar(filePath))
@@ -692,9 +700,18 @@ function saveMission(handles, varargin)
         [PathName,name,ext] = fileparts(filePath);
         FileName = [name,ext];
     else
+        current_save_location = getappdata(handles.ma_MainGUI,'current_save_location');
+
+        if(isempty(current_save_location))
+            fileNameToDefaultTo = 'mission.mat';
+        else
+            [current_save_location_path,~,~] = fileparts(current_save_location);
+            fileNameToDefaultTo = [current_save_location_path,filesep,'mission.mat'];
+        end
+        
         [FileName,PathName] = uiputfile({'*.mat','KSP TOT Mission Architect Case File (*.mat)'},...
                                                     'Save Mission Architect Case',...
-                                                    'mission.mat');
+                                                    fileNameToDefaultTo);
         if(ischar(FileName) && ischar(PathName))
             filePath = [PathName,FileName];
         else
@@ -730,9 +747,18 @@ function saveMission(handles, varargin)
     write_to_output_func(['Done.'],'appendSameLine');
     
 function saveMissionAs(handles)
+    current_save_location = getappdata(handles.ma_MainGUI,'current_save_location');
+
+    if(isempty(current_save_location))
+        fileNameToDefaultTo = 'mission.mat';
+    else
+        [current_save_location_path,~,~] = fileparts(current_save_location);
+        fileNameToDefaultTo = [current_save_location_path,filesep,'mission.mat'];
+    end
+    
     [FileName,PathName] = uiputfile({'*.mat','KSP TOT Mission Architect Case File (*.mat)'},...
                                                 'Save Mission Architect Case',...
-                                                'mission.mat');
+                                                fileNameToDefaultTo);
     if(ischar(FileName) && ischar(PathName))
         saveMission(handles, [PathName,FileName]);
     end

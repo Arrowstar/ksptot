@@ -663,10 +663,18 @@ function openMissionPlanMenu_Callback(hObject, eventdata, handles)
     celBodyData = getappdata(handles.ma_LvdMainGUI,'celBodyData');
     write_to_output_func = getappdata(handles.ma_LvdMainGUI,'write_to_output_func');
     application_title = getappdata(handles.ma_LvdMainGUI,'application_title');
+    current_save_location = getappdata(handles.ma_LvdMainGUI,'current_save_location');
+    
+    if(isempty(current_save_location))
+        fileNameToDefaultTo = 'mission.mat';
+    else
+        [current_save_location_path,~,~] = fileparts(current_save_location);
+        fileNameToDefaultTo = [current_save_location_path,filesep,'mission.mat'];
+    end
     
     [FileName,PathName] = uigetfile({'*.mat','KSP TOT Launch Vehicle Designer Case File (*.mat)'},...
                                                 'Open Launch Vehicle Designer Case',...
-                                                'mission.mat');
+                                                fileNameToDefaultTo);
 	filePath = [PathName,FileName];
     
     if(ischar(filePath))
@@ -765,12 +773,21 @@ function saveAsMissionPlanMenu_Callback(hObject, eventdata, handles)
 function saveMission(handles, varargin)
     if(length(varargin) == 1)
         filePath = varargin{1};
-        [PathName,name,ext] = fileparts(filePath);
+        [~,name,ext] = fileparts(filePath);
         FileName = [name,ext];
     else
+        current_save_location = getappdata(handles.ma_LvdMainGUI,'current_save_location');
+
+        if(isempty(current_save_location))
+            fileNameToDefaultTo = 'mission.mat';
+        else
+            [current_save_location_path,~,~] = fileparts(current_save_location);
+            fileNameToDefaultTo = [current_save_location_path,filesep,'mission.mat'];
+        end
+        
         [FileName,PathName] = uiputfile({'*.mat','KSP TOT Launch Vehicle Designer Case File (*.mat)'},...
                                                     'Save Launch Vehicle Designer Case',...
-                                                    'mission.mat');
+                                                    fileNameToDefaultTo);
         if(ischar(FileName) && ischar(PathName))
             filePath = [PathName,FileName];
         else
@@ -793,9 +810,18 @@ function saveMission(handles, varargin)
     write_to_output_func(['Done.'],'appendSameLine');
     
 function saveMissionAs(handles)
+    current_save_location = getappdata(handles.ma_LvdMainGUI,'current_save_location');
+
+    if(isempty(current_save_location))
+        fileNameToDefaultTo = 'mission.mat';
+    else
+        [current_save_location_path,~,~] = fileparts(current_save_location);
+        fileNameToDefaultTo = [current_save_location_path,filesep,'mission.mat'];
+    end
+    
     [FileName,PathName] = uiputfile({'*.mat','KSP TOT Launch Vehicle Designer Case File (*.mat)'},...
                                                 'Save Launch Vehicle Designer Case',...
-                                                'mission.mat');
+                                                current_save_location);
     if(ischar(FileName) && ischar(PathName))
         saveMission(handles, [PathName,FileName]);
     end
