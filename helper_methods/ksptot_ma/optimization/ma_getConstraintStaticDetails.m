@@ -769,6 +769,46 @@ function [unit, lbLim, ubLim, lbVal, ubVal, body, othersc, usesLbUb, usesCelBody
             usesLbUb = true;
             usesCelBody = true;
             usesRefSc = false;
+            
+        case 'Dynamic Pressure'
+            unit = 'kPa';
+            lbLim = 0;
+            ubLim = Inf;
+            lbVal = 0;
+            ubVal = 0;
+            body = -1;
+            othersc = -1;
+            
+            usesLbUb = true;
+            usesCelBody = true;
+            usesRefSc = false;
+            
+        case 'Atmospheric Pressure'
+            unit = 'kPa';
+            lbLim = 0;
+            ubLim = Inf;
+            lbVal = 0;
+            ubVal = 0;
+            body = -1;
+            othersc = -1;
+            
+            usesLbUb = true;
+            usesCelBody = true;
+            usesRefSc = false;
+            
+        case 'Atmospheric Density'
+            unit = 'kg/m^3';
+            lbLim = 0;
+            ubLim = Inf;
+            lbVal = 0;
+            ubVal = 0;
+            body = -1;
+            othersc = -1;
+            
+            usesLbUb = true;
+            usesCelBody = true;
+            usesRefSc = false;
+            
         otherwise
             error(['Unrecongized Constraint Type: ', type]);
 	end

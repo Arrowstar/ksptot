@@ -125,6 +125,12 @@ function [depVarValue, depVarUnit, prevDistTraveled, taskStr, refBodyInfo, other
         case 'Dynamic Pressure'
             depVarValue = ma_GAAeroTasks(subLog(i,:), 'dynPress', celBodyData);
             depVarUnit = 'kPa';
+        case 'Atmospheric Pressure'
+            depVarValue = ma_GAAeroTasks(subLog(i,:), 'atmoPress', celBodyData);
+            depVarUnit = 'kPa';
+        case 'Atmospheric Density'
+            depVarValue = ma_GAAeroTasks(subLog(i,:), 'atmoDensity', celBodyData);
+            depVarUnit = 'kg/m^3';
         case 'Distance to Ref. Celestial Body'
             depVarValue = ma_GADistToCelBodyTask(subLog(i,:), 'distToCelBody', refBodyInfo, celBodyData);
             depVarUnit = 'km';

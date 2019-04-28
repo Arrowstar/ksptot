@@ -31,6 +31,25 @@ function datapt = ma_GAAeroTasks(stateLogEntry, subTask, celBodyData)
             dynP_kPa = dynP/1000;
             
             datapt = dynP_kPa;
+        case 'atmoPress'
+            altitude = norm(rVectECI) - bodyInfo.radius;
+            pressure = getPressureAtAltitude(bodyInfo, altitude);
+            
+            datapt = pressure;
+            
+        case 'atmoDensity'
+            altitude = norm(rVectECI) - bodyInfo.radius;
+
+            if(altitude <= bodyInfo.atmohgt && altitude >= 0)
+                [lat, ~, ~, ~, ~, ~, ~, ~] = getLatLongAltFromInertialVect(ut, rVectECI, bodyInfo, vVectECI);
+                density = getAtmoDensityAtAltitude(bodyInfo, altitude, lat); 
+            elseif(altitude <= 0)
+                density = 0;
+            else 
+                density = 0;
+            end
+            
+            datapt = density;
     end
 end
 
