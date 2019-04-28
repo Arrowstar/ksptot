@@ -809,6 +809,58 @@ function [unit, lbLim, ubLim, lbVal, ubVal, body, othersc, usesLbUb, usesCelBody
             usesCelBody = true;
             usesRefSc = false;
             
+        case 'Body-Fixed Velocity (X)'
+            unit = 'km/s';
+            lbLim = -Inf;
+            ubLim = Inf;
+            lbVal = 0;
+            ubVal = 0;
+            body = -1;
+            othersc = -1;
+            
+            usesLbUb = true;
+            usesCelBody = true;
+            usesRefSc = false;
+            
+        case 'Body-Fixed Velocity (Y)'
+            unit = 'km/s';
+            lbLim = -Inf;
+            ubLim = Inf;
+            lbVal = 0;
+            ubVal = 0;
+            body = -1;
+            othersc = -1;
+            
+            usesLbUb = true;
+            usesCelBody = true;
+            usesRefSc = false;
+            
+        case 'Body-Fixed Velocity (Z)'
+            unit = 'km/s';
+            lbLim = -Inf;
+            ubLim = Inf;
+            lbVal = 0;
+            ubVal = 0;
+            body = -1;
+            othersc = -1;
+            
+            usesLbUb = true;
+            usesCelBody = true;
+            usesRefSc = false;
+            
+        case 'Body-Fixed Velocity'
+            unit = 'km/s';
+            lbLim = 0;
+            ubLim = Inf;
+            lbVal = 0;
+            ubVal = 0;
+            body = -1;
+            othersc = -1;
+            
+            usesLbUb = true;
+            usesCelBody = true;
+            usesRefSc = false;
+            
         otherwise
             error(['Unrecongized Constraint Type: ', type]);
 	end

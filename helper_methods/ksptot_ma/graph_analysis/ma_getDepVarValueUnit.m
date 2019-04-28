@@ -119,6 +119,18 @@ function [depVarValue, depVarUnit, prevDistTraveled, taskStr, refBodyInfo, other
         case 'Vertical Velocity'
             depVarValue = ma_GALongLatAltTasks(subLog(i,:), 'vertVel', celBodyData);
             depVarUnit = 'km/s';
+        case 'Body-Fixed Velocity (X)'
+            depVarValue = ma_GALongLatAltTasks(subLog(i,:), 'bodyFixedVx', celBodyData);
+            depVarUnit = 'km/s';
+        case 'Body-Fixed Velocity (Y)'
+            depVarValue = ma_GALongLatAltTasks(subLog(i,:), 'bodyFixedVy', celBodyData);
+            depVarUnit = 'km/s';
+        case 'Body-Fixed Velocity (Z)'
+            depVarValue = ma_GALongLatAltTasks(subLog(i,:), 'bodyFixedVz', celBodyData);
+            depVarUnit = 'km/s';
+        case 'Body-Fixed Velocity'
+            depVarValue = ma_GALongLatAltTasks(subLog(i,:), 'bodyFixedVNorm', celBodyData);
+            depVarUnit = 'km/s';
         case 'Solar Beta Angle'
             depVarValue = ma_GAKeplerElementsTask(subLog(i,:), 'betaAngle', celBodyData);
             depVarUnit = 'deg';

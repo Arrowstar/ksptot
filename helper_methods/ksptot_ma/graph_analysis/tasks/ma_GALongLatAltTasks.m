@@ -9,7 +9,7 @@ function datapt = ma_GALongLatAltTasks(stateLogEntry, subTask, celBodyData)
     rVect = stateLogEntry(2:4)';
     vVect = stateLogEntry(5:7)';
     
-    [lat, long, alt, vectSez, horzVel, vertVel] = getLatLongAltFromInertialVect(utSec, rVect, bodyInfo, vVect);
+    [lat, long, alt, ~, horzVel, vertVel, rVectECEF, vVectECEF] = getLatLongAltFromInertialVect(utSec, rVect, bodyInfo, vVect);
     
     switch subTask
         case 'long'
@@ -25,5 +25,13 @@ function datapt = ma_GALongLatAltTasks(stateLogEntry, subTask, celBodyData)
             datapt = horzVel;
         case 'vertVel'
             datapt = vertVel;
+        case 'bodyFixedVx'
+            datapt = vVectECEF(1);
+        case 'bodyFixedVy'
+            datapt = vVectECEF(2);
+        case 'bodyFixedVz'
+            datapt = vVectECEF(3);
+        case 'bodyFixedVNorm'
+            datapt = norm(vVectECEF);
     end
 end
