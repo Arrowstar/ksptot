@@ -50,6 +50,29 @@ function datapt = ma_GAAeroTasks(stateLogEntry, subTask, celBodyData)
             end
             
             datapt = density;
+        case 'machNumber'
+            altitude = norm(rVectECI) - bodyInfo.radius;
+            pressure = getPressureAtAltitude(bodyInfo, altitude);
+            
+            if(altitude <= bodyInfo.atmohgt && altitude >= 0)
+                [lat, ~, ~, ~, ~, ~, ~, vVectECEF, ~] = getLatLongAltFromInertialVect(ut, rVectECI, bodyInfo, vVectECI);
+                density = getAtmoDensityAtAltitude(bodyInfo, altitude, lat); 
+            elseif(altitude <= 0)
+                density = 0;
+            else 
+                density = 0;
+            end
+            
+            pressurePa = pressure*1000; %kPa -> Pa
+            
+            if(density > 0)
+                speedSound = sqrt(1.4 * pressurePa / density);
+                vECEFMag = norm(vVectECEF) * 1000; %km/s -> m/s
+
+                datapt = vECEFMag/speedSound;
+            else
+                datapt = 0;
+            end
     end
 end
 

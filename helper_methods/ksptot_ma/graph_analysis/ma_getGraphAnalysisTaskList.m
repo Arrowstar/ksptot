@@ -79,6 +79,7 @@ function [taskList] = ma_getGraphAnalysisTaskList(excludeList)
     taskList{end+1} = 'Hyperbolic Velocity Vector Declination';
     taskList{end+1} = 'Hyperbolic Velocity Magnitude';
     taskList{end+1} = 'C3 Energy';
+    taskList{end+1} = 'Mach Number';
     
     taskList = setdiff(taskList,excludeList);
 end

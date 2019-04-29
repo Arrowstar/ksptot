@@ -263,7 +263,10 @@ function [depVarValue, depVarUnit, prevDistTraveled, taskStr, refBodyInfo, other
         case 'C3 Energy'
             depVarValue = ma_OutboundHyperVelVectTask(subLog(i,:), 'C3Energy', celBodyData);
             depVarUnit = 'km^2/s^2';
+        case 'Mach Number'
+            depVarValue = ma_GAAeroTasks(subLog(i,:), 'machNumber', celBodyData);
+            depVarUnit = '';
         otherwise
-            
+            error('Unknown task "%s"', taskStr);
     end
 end

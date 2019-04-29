@@ -861,6 +861,19 @@ function [unit, lbLim, ubLim, lbVal, ubVal, body, othersc, usesLbUb, usesCelBody
             usesCelBody = true;
             usesRefSc = false;
             
+        case 'Mach Number'
+            unit = '';
+            lbLim = 0;
+            ubLim = Inf;
+            lbVal = 0;
+            ubVal = 0;
+            body = -1;
+            othersc = -1;
+            
+            usesLbUb = true;
+            usesCelBody = true;
+            usesRefSc = false;
+            
         otherwise
             error(['Unrecongized Constraint Type: ', type]);
 	end
