@@ -177,6 +177,7 @@ try
 catch ME
     varargout{1} = [];
     varargout{2} = [];
+    varargout{3} = '';
 end
 
 

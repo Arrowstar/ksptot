@@ -725,7 +725,17 @@ function getOrbitFromSFSFileContextMenu_Callback(hObject, eventdata, handles)
     end
     
     if(~isempty(scName))
-        set(handles.scNameText,'String',scName);
+        if(strcmpi(handles.scNameText.String,'New Spacecraft'))
+            set(handles.scNameText,'String',scName);
+        else
+            qstring = sprintf('Do you wish overwrite the name of the spacecraft with the name of the imported spacecraft (%s)?', scName);
+            title = 'Update S/C Name?';
+            button = questdlg(qstring,title,'Yes','No','No');
+            
+            if(strcmpi(button,'Yes'))
+                set(handles.scNameText,'String',scName);
+            end
+        end
     end
     
     updateSCButton_Callback([], [], handles);
@@ -747,7 +757,17 @@ function getOrbitFromKSPTOTConnectContextMenu_Callback(hObject, eventdata, handl
     end
     
     if(~isempty(scName))
-        set(handles.scNameText,'String',scName);
+        if(strcmpi(handles.scNameText.String,'New Spacecraft'))
+            set(handles.scNameText,'String',scName);
+        else
+            qstring = sprintf('Do you wish overwrite the name of the spacecraft with the name of the imported spacecraft (%s)?', scName);
+            title = 'Update S/C Name?';
+            button = questdlg(qstring,title,'Yes','No','No');
+            
+            if(strcmpi(button,'Yes'))
+                set(handles.scNameText,'String',scName);
+            end
+        end
     end
     
     updateSCButton_Callback([], [], handles);
@@ -855,7 +875,17 @@ function getOrbitFromKSPActiveVesselMenu_Callback(hObject, eventdata, handles)
     end
     
     if(~isempty(scName))
-        set(handles.scNameText,'String',scName);
+        if(strcmpi(handles.scNameText.String,'New Spacecraft'))
+            set(handles.scNameText,'String',scName);
+        else
+            qstring = sprintf('Do you wish overwrite the name of the spacecraft with the name of the imported spacecraft (%s)?', scName);
+            title = 'Update S/C Name?';
+            button = questdlg(qstring,title,'Yes','No','No');
+            
+            if(strcmpi(button,'Yes'))
+                set(handles.scNameText,'String',scName);
+            end
+        end
     end
     
     updateSCButton_Callback([], [], handles);
