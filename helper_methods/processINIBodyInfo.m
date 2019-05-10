@@ -97,13 +97,13 @@ function celBodyData = createCurveFitFromRows(celBodyDataFromINI, bodyName, indV
     depVar = reshape(depVar, length(depVar), 1);
 
     if(length(indVar) > 1 && length(depVar) > 1)
-%         fitobject = fit(indVar,depVar,'linearinterp');
+%         fitobject = fit(indVar,depVar,'smoothingspline');
         fitobject = @(xi) interp1qr(indVar,depVar,xi);
     elseif(length(indVar) == 1 && length(depVar) == 1)
-%         fitobject = fit([indVar(1) indVar(1)+1]',[depVar(1) depVar(1)]','linearinterp');
+%         fitobject = fit([indVar(1) indVar(1)+1]',[depVar(1) depVar(1)]','smoothingspline');
         fitobject = @(xi) interp1qr([indVar(1) indVar(1)+1]',[depVar(1) depVar(1)]',xi);
     else
-%         fitobject = fit([0 1]',[0 0]','linearinterp');
+%         fitobject = fit([0 1]',[0 0]','smoothingspline');
         fitobject = @(xi) interp1qr([0 1]',[0 0]',xi);
     end
     
