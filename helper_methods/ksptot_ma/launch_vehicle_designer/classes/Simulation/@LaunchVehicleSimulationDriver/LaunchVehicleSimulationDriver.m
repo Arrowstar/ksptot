@@ -66,16 +66,7 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
             end
             
             %Set up non-seq event term conditions
-            nonSeqTermConds = {};
-            nonSeqTermCauses = NonSeqEventTermCondIntTermCause.empty(1,0);
-            for(i=1:length(activeNonSeqEvts))
-                activeNonSeqEvt = activeNonSeqEvts(i);
-                
-                if(activeNonSeqEvt.numExecsRemaining > 0)
-                    nonSeqTermConds{end+1} = activeNonSeqEvt.getTerminationCondition(); %#ok<AGROW>
-                    nonSeqTermCauses(end+1) = NonSeqEventTermCondIntTermCause(activeNonSeqEvt); %#ok<AGROW>
-                end
-            end
+            [nonSeqTermConds, nonSeqTermCauses] = LaunchVehicleSimulationDriver.getNonSeqEvtTermConds(activeNonSeqEvts);
             
             %Set up integrator functions
             dryMass = eventInitStateLogEntry.getTotalVehicleDryMass();
@@ -123,6 +114,17 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
                         eventInitStateLogEntry = causes(i).getRestartInitialState(eventInitStateLogEntry);
                         [odefun, odeEventsFun, options] = getFunctionsAndOptions(obj, integrator, eventInitStateLogEntry, dryMass, forceModels, event, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, tStartPropTime);
                     end
+                elseif(isa(causes(i),'NonSeqEventTermCondIntTermCause'))
+                    if(values(i) <= 0)
+                        eventInitStateLogEntry = causes(i).getRestartInitialState(eventInitStateLogEntry);
+                        
+                        for(j=1:length(activeNonSeqEvts))
+                            activeNonSeqEvts(j).initEvent(eventInitStateLogEntry);
+                        end
+                    
+                        [nonSeqTermConds, nonSeqTermCauses] = LaunchVehicleSimulationDriver.getNonSeqEvtTermConds(activeNonSeqEvts);
+                        [odefun, odeEventsFun, options] = getFunctionsAndOptions(obj, integrator, eventInitStateLogEntry, dryMass, forceModels, event, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, tStartPropTime);
+                    end
                 end
             end
             
@@ -165,6 +167,22 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
                     [newStateLogEntriesRestart] = obj.integrateOneEvent(event, newFinalStateLogEntry, integrator, tStartPropTime, tStartSimTime, isSparseOutput, checkForSoITrans, activeNonSeqEvts, forceModels);
                     
                     newStateLogEntries = horzcat(newStateLogEntries,newStateLogEntriesRestart);
+                end
+            end
+        end        
+    end
+    
+    methods(Static)
+        function [nonSeqTermConds,nonSeqTermCauses] = getNonSeqEvtTermConds(activeNonSeqEvts)
+            nonSeqTermConds = {};
+            
+            nonSeqTermCauses = NonSeqEventTermCondIntTermCause.empty(1,0);
+            for(i=1:length(activeNonSeqEvts))
+                activeNonSeqEvt = activeNonSeqEvts(i);
+                
+                if(activeNonSeqEvt.numExecsRemaining > 0)
+                    nonSeqTermConds{end+1} = activeNonSeqEvt.getTerminationCondition(); %#ok<AGROW>
+                    nonSeqTermCauses(end+1) = NonSeqEventTermCondIntTermCause(activeNonSeqEvt); %#ok<AGROW>
                 end
             end
         end
