@@ -210,7 +210,7 @@ classdef InitialStateModel < matlab.mixin.SetGet
             
             aeroState = LaunchVehicleAeroState();
             aeroState.area = 1;
-            aeroState.Cd = 2.2;
+            aeroState.Cd = 0.3;
             stateLogModel.aero = aeroState;
             
             grav3Body = LaunchVehicle3BodyGravState();

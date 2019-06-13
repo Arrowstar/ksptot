@@ -15,6 +15,8 @@ classdef(Abstract) AbstractConstraint < matlab.mixin.SetGet & matlab.mixin.Heter
     methods
         [c, ceq, value, lb, ub, type, eventNum] = evalConstraint(obj, stateLog, celBodyData);
         
+        [lb, ub] = getBounds(obj);
+        
         sF = getScaleFactor(obj);
         
         setScaleFactor(obj, sF);
@@ -39,7 +41,18 @@ classdef(Abstract) AbstractConstraint < matlab.mixin.SetGet & matlab.mixin.Heter
         
         type = getConstraintType(obj);
         
-        name = getName(obj)
+        function name = getName(obj)
+            name = sprintf('%s - Event %i', obj.getConstraintType(), obj.getConstraintEvent().getEventNum());
+        end
+        
+        function str = getListboxTooltipStr(obj)
+            type = obj.getConstraintType();
+            [lb, ub] = obj.getBounds();
+            sF =obj.getScaleFactor();
+            
+            str = sprintf('%s\n\tBounds: [%0.3g, %0.3g]\n\tScale factor: %0.3g', ...
+                          type, lb, ub, sF);
+        end
         
         [unit, lbLim, ubLim, usesLbUb, usesCelBody, usesRefSc] = getConstraintStaticDetails(obj)
         

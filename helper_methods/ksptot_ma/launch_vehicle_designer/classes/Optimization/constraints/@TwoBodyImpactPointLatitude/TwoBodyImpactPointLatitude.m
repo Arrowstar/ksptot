@@ -95,9 +95,9 @@ classdef TwoBodyImpactPointLatitude < AbstractConstraint
             type = 'Two-Body Impact Longitude';
         end
         
-        function name = getName(obj)
-            name = sprintf('%s - Event %i', obj.getConstraintType(), obj.event.getEventNum());
-        end
+%         function name = getName(obj)
+%             name = sprintf('%s - Event %i', obj.getConstraintType(), obj.event.getEventNum());
+%         end
         
         function [unit, lbLim, ubLim, usesLbUb, usesCelBody, usesRefSc] = getConstraintStaticDetails(obj)
             unit = 'degN';

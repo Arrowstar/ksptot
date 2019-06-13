@@ -52,6 +52,14 @@ classdef ConstraintSet < matlab.mixin.SetGet
             end
         end
         
+        function tooltipStrs = getToolboxStrs(obj)
+            tooltipStrs = {};
+            
+            for(i=1:length(obj.consts))
+                tooltipStrs{end+1} = obj.consts(i).getListboxTooltipStr(); %#ok<AGROW>
+            end
+        end
+        
         function num = getNumConstraints(obj)
             num = length(obj.consts);
         end

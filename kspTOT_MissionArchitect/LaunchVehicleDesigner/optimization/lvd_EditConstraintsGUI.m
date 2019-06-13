@@ -68,6 +68,14 @@ function lvd_EditConstraintsGUI_OpeningFcn(hObject, eventdata, handles, varargin
 
 function populateGUI(handles, lvdData)
     set(handles.constraintsListBox,'String',lvdData.optimizer.constraints.getListboxStr());
+    
+    hListbox = handles.constraintsListBox;
+    jScrollPane = findjobj(hListbox);
+    jListbox = jScrollPane.getViewport.getComponent(0);
+    jListbox = handle(jListbox, 'CallbackProperties');
+    
+    tooltipStrs = lvdData.optimizer.constraints.getToolboxStrs();
+    set(jListbox, 'MouseMovedCallback', @(src, evt) mouseMovedCallback(src, evt, hListbox, tooltipStrs));
 
     
 % --- Outputs from this function are returned to the command line.
@@ -203,3 +211,17 @@ function lvd_EditConstraintsGUI_WindowKeyPressFcn(hObject, eventdata, handles)
         case 'escape'
             uiresume(handles.lvd_EditConstraintsGUI);
     end
+    
+    
+% Mouse-movement callback
+function mouseMovedCallback(jListbox, jEventData, hListbox, tooltipStrs)
+   % Get the currently-hovered list-item
+   mousePos = java.awt.Point(jEventData.getX, jEventData.getY);
+   hoverIndex = jListbox.locationToIndex(mousePos) + 1;
+%    listValues = get(hListbox,'string');
+%    hoverValue = listValues{hoverIndex};
+
+   % Modify the tooltip based on the hovered item
+   msgStr = tooltipStrs{hoverIndex};
+   set(hListbox, 'Tooltip',msgStr);
+       

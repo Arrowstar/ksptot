@@ -98,9 +98,9 @@ classdef ExtremumValueConstraint < AbstractConstraint
             type = 'Extremum Value';
         end
         
-        function name = getName(obj)
-            name = sprintf('%s - Event %i', obj.getConstraintType(), obj.event.getEventNum());
-        end
+%         function name = getName(obj)
+%             name = sprintf('%s - Event %i', obj.getConstraintType(), obj.event.getEventNum());
+%         end
         
         function [unit, lbLim, ubLim, usesLbUb, usesCelBody, usesRefSc] = getConstraintStaticDetails(obj)
             unit = obj.extremum.unitStr;

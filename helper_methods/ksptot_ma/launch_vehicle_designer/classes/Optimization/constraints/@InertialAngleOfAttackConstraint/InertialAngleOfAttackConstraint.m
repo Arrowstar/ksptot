@@ -102,9 +102,9 @@ classdef InertialAngleOfAttackConstraint < AbstractConstraint
             type = 'Inertial Angle of Attack';
         end
         
-        function name = getName(obj)
-            name = sprintf('%s - Event %i', obj.getConstraintType(), obj.event.getEventNum());
-        end
+%         function name = getName(obj)
+%             name = sprintf('%s - Event %i', obj.getConstraintType(), obj.event.getEventNum());
+%         end
         
         function [unit, lbLim, ubLim, usesLbUb, usesCelBody, usesRefSc] = getConstraintStaticDetails(obj)
             unit = 'deg';
