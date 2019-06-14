@@ -43,7 +43,7 @@ else
     seq = upper(varargin{1});
 end
 
-R = zeros(3,3,size(eul,1),'like',eul);
+R = zeros(3,3,size(eul,1));
 ct = cos(eul);
 st = sin(eul);
 

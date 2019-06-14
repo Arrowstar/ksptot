@@ -33,7 +33,11 @@ classdef(Abstract) AbstractThrottleCurve < matlab.mixin.SetGet & matlab.mixin.Co
                 con = struct('xc',xc,'cc',cc,'yc',yc);
                 obj.curve = splinefit(x,y,x,con);
                 
-                obj.constValue = NaN;
+                if(all(not(diff(y))))
+                    obj.constValue = y(1);
+                else
+                    obj.constValue = NaN;
+                end
             elseif(length(obj.elems) == 2)
                 x = [obj.elems.indepVar];
                 y = [obj.elems.depVar];
@@ -50,12 +54,12 @@ classdef(Abstract) AbstractThrottleCurve < matlab.mixin.SetGet & matlab.mixin.Co
             end
         end
         
-        function yq = evalCurve(obj, xq)
-            if(isempty(obj.curve))
-                obj.generateCurve();
-            end
-            
+        function yq = evalCurve(obj, xq)            
             if(isnan(obj.constValue))
+                if(isempty(obj.curve))
+                    obj.generateCurve();
+                end
+                
                 yq = ppval(obj.curve,xq);
             else
                 yq = ones(size(xq)) * obj.constValue;

@@ -1,0 +1,107 @@
+<!-- saved from url=(0014)about:internet -->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>RTW Report - _coder_interp1qr_mex.c</title>
+<script language="JavaScript" type="text/javascript" src="rtwreport_utils.js"></script>
+<script src="resources/eml_report_loadable_data.js"></script>
+</head>
+<body bgcolor="#eeeeee" onload="try {if (top) { if (top.rtwFileOnLoad) top.rtwFileOnLoad(window.document); else local_onload();}} catch(err) {};">
+<p>
+<table border="0" cellspacing="0" cellpadding="6" width="100%%" height="100%%"><tr><td width="100%%" valign="top" bgcolor="#ffffff">
+<h4>File: <a href="../interface/_coder_interp1qr_mex.c" target="rtwreport_document_frame" id="linkToText_plain">_coder_interp1qr_mex.c</a></h4>
+<pre id="RTWcode">
+<a name="1"><font color="#888888 "><i>    1   </i></font></a><font color="#117755"><i>/*</i></font>
+<a name="2"><font color="#888888 "><i>    2   </i></font></a><font color="#117755"><I> * _coder_interp1qr_mex.c</i></font>
+<a name="3"><font color="#888888 "><i>    3   </i></font></a><font color="#117755"><I> *</i></font>
+<a name="4"><font color="#888888 "><i>    4   </i></font></a><font color="#117755"><I> * Code generation for function '_coder_interp1qr_mex'</i></font>
+<a name="5"><font color="#888888 "><i>    5   </i></font></a><font color="#117755"><I> *</i></font>
+<a name="6"><font color="#888888 "><i>    6   </i></font></a><font color="#117755"><I> */</i></font>
+<a name="7"><font color="#888888 "><i>    7   </i></font></a>
+<a name="8"><font color="#888888 "><i>    8   </i></font></a><font color="#117755"><i>/* Include files */</i></font>
+<a name="9"><font color="#888888 "><i>    9   </i></font></a><font color="#992211">#</font><font color="#992211"><b>include</b></font> <font color="#992211">&quot;interp1qr.h&quot;</font>
+<a name="10"><font color="#888888 "><i>   10   </i></font></a><font color="#992211">#</font><font color="#992211"><b>include</b></font> <font color="#992211">&quot;_coder_interp1qr_mex.h&quot;</font>
+<a name="11"><font color="#888888 "><i>   11   </i></font></a><font color="#992211">#</font><font color="#992211"><b>include</b></font> <font color="#992211">&quot;interp1qr_terminate.h&quot;</font>
+<a name="12"><font color="#888888 "><i>   12   </i></font></a><font color="#992211">#</font><font color="#992211"><b>include</b></font> <font color="#992211">&quot;_coder_interp1qr_api.h&quot;</font>
+<a name="13"><font color="#888888 "><i>   13   </i></font></a><font color="#992211">#</font><font color="#992211"><b>include</b></font> <font color="#992211">&quot;interp1qr_initialize.h&quot;</font>
+<a name="14"><font color="#888888 "><i>   14   </i></font></a><font color="#992211">#</font><font color="#992211"><b>include</b></font> <font color="#992211">&quot;interp1qr_data.h&quot;</font>
+<a name="15"><font color="#888888 "><i>   15   </i></font></a>
+<a name="16"><font color="#888888 "><i>   16   </i></font></a><font color="#117755"><i>/* Function Declarations */</i></font>
+<a name="17"><font color="#888888 "><i>   17   </i></font></a><font color="#112266"><b>static</b></font> <font color="#112266"><b>void</b></font> <a href="#fcn_interp1qr_mexFunction" onclick="if (top) if (top.docHiliteMe) top.docHiliteMe(window, 'fcn_interp1qr_mexFunction');" target="_self"><font color="#1122aa">interp1qr_mexFunction</font></a>(int32_T nlhs, mxArray *plhs[1], int32_T nrhs,
+<a name="18"><font color="#888888 "><i>   18   </i></font></a>  <font color="#112266"><b>const</b></font> mxArray *prhs[3]);
+<a name="19"><font color="#888888 "><i>   19   </i></font></a>
+<a name="20"><font color="#888888 "><i>   20   </i></font></a><font color="#117755"><i>/* Function Definitions */</i></font>
+<a name="21"><font color="#888888 "><i>   21   </i></font></a><font color="#112266"><b>static</b></font> <font color="#112266"><b>void</b></font> <a name="fcn_interp1qr_mexFunction">interp1qr_mexFunction</a>(int32_T nlhs, mxArray *plhs[1], int32_T nrhs,
+<a name="22"><font color="#888888 "><i>   22   </i></font></a>  <font color="#112266"><b>const</b></font> mxArray *prhs[3])
+<a name="23"><font color="#888888 "><i>   23   </i></font></a><b>{</b>
+<a name="24"><font color="#888888 "><i>   24   </i></font></a>  int32_T n;
+<a name="25"><font color="#888888 "><i>   25   </i></font></a>  <font color="#112266"><b>const</b></font> mxArray *inputs[3];
+<a name="26"><font color="#888888 "><i>   26   </i></font></a>  <font color="#112266"><b>const</b></font> mxArray *outputs[1];
+<a name="27"><font color="#888888 "><i>   27   </i></font></a>  int32_T b_nlhs;
+<a name="28"><font color="#888888 "><i>   28   </i></font></a>  emlrtStack st = <b>{</b> NULL,              <font color="#117755"><i>/* site */</i></font>
+<a name="29"><font color="#888888 "><i>   29   </i></font></a>    NULL,                              <font color="#117755"><i>/* tls */</i></font>
+<a name="30"><font color="#888888 "><i>   30   </i></font></a>    NULL                               <font color="#117755"><i>/* prev */</i></font>
+<a name="31"><font color="#888888 "><i>   31   </i></font></a>  <b>}</b>;
+<a name="32"><font color="#888888 "><i>   32   </i></font></a>
+<a name="33"><font color="#888888 "><i>   33   </i></font></a>  st.tls = emlrtRootTLSGlobal;
+<a name="34"><font color="#888888 "><i>   34   </i></font></a>
+<a name="35"><font color="#888888 "><i>   35   </i></font></a>  <font color="#117755"><i>/* Check for proper number of arguments. */</i></font>
+<a name="36"><font color="#888888 "><i>   36   </i></font></a>  <font color="#112266"><b>if</b></font> (nrhs != 3) <b>{</b>
+<a name="37"><font color="#888888 "><i>   37   </i></font></a>    emlrtErrMsgIdAndTxt(&amp;st, <font color="#1122ff">&quot;EMLRT:runTime:WrongNumberOfInputs&quot;</font>, 5, 12, 3, 4, 9,
+<a name="38"><font color="#888888 "><i>   38   </i></font></a>                        <font color="#1122ff">&quot;interp1qr&quot;</font>);
+<a name="39"><font color="#888888 "><i>   39   </i></font></a>  <b>}</b>
+<a name="40"><font color="#888888 "><i>   40   </i></font></a>
+<a name="41"><font color="#888888 "><i>   41   </i></font></a>  <font color="#112266"><b>if</b></font> (nlhs &gt; 1) <b>{</b>
+<a name="42"><font color="#888888 "><i>   42   </i></font></a>    emlrtErrMsgIdAndTxt(&amp;st, <font color="#1122ff">&quot;EMLRT:runTime:TooManyOutputArguments&quot;</font>, 3, 4, 9,
+<a name="43"><font color="#888888 "><i>   43   </i></font></a>                        <font color="#1122ff">&quot;interp1qr&quot;</font>);
+<a name="44"><font color="#888888 "><i>   44   </i></font></a>  <b>}</b>
+<a name="45"><font color="#888888 "><i>   45   </i></font></a>
+<a name="46"><font color="#888888 "><i>   46   </i></font></a>  <font color="#117755"><i>/* Temporary copy for mex inputs. */</i></font>
+<a name="47"><font color="#888888 "><i>   47   </i></font></a>  <font color="#112266"><b>for</b></font> (n = 0; n &lt; nrhs; n++) <b>{</b>
+<a name="48"><font color="#888888 "><i>   48   </i></font></a>    inputs[n] = prhs[n];
+<a name="49"><font color="#888888 "><i>   49   </i></font></a>    <font color="#112266"><b>if</b></font> (*emlrtBreakCheckR2012bFlagVar != 0) <b>{</b>
+<a name="50"><font color="#888888 "><i>   50   </i></font></a>      emlrtBreakCheckR2012b(&amp;st);
+<a name="51"><font color="#888888 "><i>   51   </i></font></a>    <b>}</b>
+<a name="52"><font color="#888888 "><i>   52   </i></font></a>  <b>}</b>
+<a name="53"><font color="#888888 "><i>   53   </i></font></a>
+<a name="54"><font color="#888888 "><i>   54   </i></font></a>  <font color="#117755"><i>/* Call the function. */</i></font>
+<a name="55"><font color="#888888 "><i>   55   </i></font></a>  <a href="_coder_interp1qr_api_c.html#fcn_interp1qr_api" onclick="if (top) if (top.docHiliteMe) top.docHiliteMe(window, 'fcn_interp1qr_api');" target="_self"><font color="#1122aa">interp1qr_api</font></a>(inputs, outputs);
+<a name="56"><font color="#888888 "><i>   56   </i></font></a>
+<a name="57"><font color="#888888 "><i>   57   </i></font></a>  <font color="#117755"><i>/* Copy over outputs to the caller. */</i></font>
+<a name="58"><font color="#888888 "><i>   58   </i></font></a>  <font color="#112266"><b>if</b></font> (nlhs &lt; 1) <b>{</b>
+<a name="59"><font color="#888888 "><i>   59   </i></font></a>    b_nlhs = 1;
+<a name="60"><font color="#888888 "><i>   60   </i></font></a>  <b>}</b> <font color="#112266"><b>else</b></font> <b>{</b>
+<a name="61"><font color="#888888 "><i>   61   </i></font></a>    b_nlhs = nlhs;
+<a name="62"><font color="#888888 "><i>   62   </i></font></a>  <b>}</b>
+<a name="63"><font color="#888888 "><i>   63   </i></font></a>
+<a name="64"><font color="#888888 "><i>   64   </i></font></a>  emlrtReturnArrays(b_nlhs, plhs, outputs);
+<a name="65"><font color="#888888 "><i>   65   </i></font></a>
+<a name="66"><font color="#888888 "><i>   66   </i></font></a>  <font color="#117755"><i>/* Module termination. */</i></font>
+<a name="67"><font color="#888888 "><i>   67   </i></font></a>  interp1qr_terminate();
+<a name="68"><font color="#888888 "><i>   68   </i></font></a><b>}</b>
+<a name="69"><font color="#888888 "><i>   69   </i></font></a>
+<a name="70"><font color="#888888 "><i>   70   </i></font></a><font color="#112266"><b>void</b></font> <a name="fcn_mexFunction">mexFunction</a>(int32_T nlhs, mxArray *plhs[], int32_T nrhs, <font color="#112266"><b>const</b></font> mxArray
+<a name="71"><font color="#888888 "><i>   71   </i></font></a>                 *prhs[])
+<a name="72"><font color="#888888 "><i>   72   </i></font></a><b>{</b>
+<a name="73"><font color="#888888 "><i>   73   </i></font></a>  mexAtExit(interp1qr_atexit);
+<a name="74"><font color="#888888 "><i>   74   </i></font></a>
+<a name="75"><font color="#888888 "><i>   75   </i></font></a>  <font color="#117755"><i>/* Initialize the memory manager. */</i></font>
+<a name="76"><font color="#888888 "><i>   76   </i></font></a>  <font color="#117755"><i>/* Module initialization. */</i></font>
+<a name="77"><font color="#888888 "><i>   77   </i></font></a>  interp1qr_initialize();
+<a name="78"><font color="#888888 "><i>   78   </i></font></a>
+<a name="79"><font color="#888888 "><i>   79   </i></font></a>  <font color="#117755"><i>/* Dispatch the entry-point. */</i></font>
+<a name="80"><font color="#888888 "><i>   80   </i></font></a>  <a href="#fcn_interp1qr_mexFunction" onclick="if (top) if (top.docHiliteMe) top.docHiliteMe(window, 'fcn_interp1qr_mexFunction');" target="_self"><font color="#1122aa">interp1qr_mexFunction</font></a>(nlhs, plhs, nrhs, prhs);
+<a name="81"><font color="#888888 "><i>   81   </i></font></a><b>}</b>
+<a name="82"><font color="#888888 "><i>   82   </i></font></a>
+<a name="83"><font color="#888888 "><i>   83   </i></font></a>emlrtCTX <a name="fcn_mexFunctionCreateRootTLS">mexFunctionCreateRootTLS</a>(<font color="#112266"><b>void</b></font>)
+<a name="84"><font color="#888888 "><i>   84   </i></font></a><b>{</b>
+<a name="85"><font color="#888888 "><i>   85   </i></font></a>  emlrtCreateRootTLS(&amp;emlrtRootTLSGlobal, &amp;emlrtContextGlobal, NULL, 1);
+<a name="86"><font color="#888888 "><i>   86   </i></font></a>  <font color="#112266"><b>return</b></font> emlrtRootTLSGlobal;
+<a name="87"><font color="#888888 "><i>   87   </i></font></a><b>}</b>
+<a name="88"><font color="#888888 "><i>   88   </i></font></a>
+<a name="89"><font color="#888888 "><i>   89   </i></font></a><font color="#117755"><i>/* End of code generation (_coder_interp1qr_mex.c) */</i></font>
+<a name="90"><font color="#888888 "><i>   90   </i></font></a></pre>
+</td></tr></table>
+</p>
+</body>
+</html>

@@ -1,4 +1,11 @@
 function [value,isterminal,direction, causes] = odeEvents(t,y, obj, eventInitStateLogEntry, evtTermCond, maxSimTime, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses)
+    persistent maxSimTimeCause minAltTermCause eventTermCondCause
+    if(isempty(maxSimTimeCause))
+        maxSimTimeCause = MaxEventSimTimeIntTermCause();
+        minAltTermCause = MinAltitudeIntTermCause();
+        eventTermCondCause = EventTermCondIntTermCause();
+    end
+    
     celBodyData = obj.celBodyData;
 %     causes = AbstractIntegrationTerminationCause.empty(0,1);
 
@@ -15,7 +22,7 @@ function [value,isterminal,direction, causes] = odeEvents(t,y, obj, eventInitSta
     value(1) = simTimeRemaining;
     isterminal(1) = 1;
     direction(1) = 0;
-    causes(1) = MaxEventSimTimeIntTermCause();
+    causes(1) = maxSimTimeCause;
 
     %Min Altitude Constraint
     rMag = norm(rVect);
@@ -23,7 +30,7 @@ function [value,isterminal,direction, causes] = odeEvents(t,y, obj, eventInitSta
     value(end+1) = altitude - obj.minAltitude;
     isterminal(end+1) = 1;
     direction(end+1) = -1;
-    causes(end+1) = MinAltitudeIntTermCause();
+    causes(end+1) = minAltTermCause;
 
     %Non-Sequence Events
     for(i=1:length(nonSeqTermConds))
@@ -34,7 +41,7 @@ function [value,isterminal,direction, causes] = odeEvents(t,y, obj, eventInitSta
     end
 
     if(checkForSoITrans)
-    %SoI transitions
+        %SoI transitions
         [soivalue, soiisterminal, soidirection, soicauses] = getSoITransitionOdeEvents(ut, rVect, bodyInfo, celBodyData);
 
         value = horzcat(value, soivalue);
@@ -45,5 +52,5 @@ function [value,isterminal,direction, causes] = odeEvents(t,y, obj, eventInitSta
 
     %Event Termination Condition
     [value(end+1),isterminal(end+1),direction(end+1)] = evtTermCond(t,y);
-    causes(end+1) = EventTermCondIntTermCause();
+    causes(end+1) = eventTermCondCause;
 end

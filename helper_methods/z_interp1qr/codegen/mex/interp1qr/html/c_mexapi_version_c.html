@@ -1,0 +1,31 @@
+<!-- saved from url=(0014)about:internet -->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>RTW Report - c_mexapi_version.c</title>
+<script language="JavaScript" type="text/javascript" src="rtwreport_utils.js"></script>
+<script src="resources/eml_report_loadable_data.js"></script>
+</head>
+<body bgcolor="#eeeeee" onload="try {if (top) { if (top.rtwFileOnLoad) top.rtwFileOnLoad(window.document); else local_onload();}} catch(err) {};">
+<p>
+<table border="0" cellspacing="0" cellpadding="6" width="100%%" height="100%%"><tr><td width="100%%" valign="top" bgcolor="#ffffff">
+<h4>File: <a href="../c_mexapi_version.c" target="rtwreport_document_frame" id="linkToText_plain">c_mexapi_version.c</a></h4>
+<pre id="RTWcode">
+<a name="1"><font color="#888888 "><i>    1   </i></font></a><font color="#992211">#</font><font color="#992211"><b>include</b></font> <font color="#992211">&lt;mex.h&gt;</font>
+<a name="2"><font color="#888888 "><i>    2   </i></font></a><font color="#992211">#</font><font color="#992211"><b>if</b></font> <font color="#992211"><b>defined</b></font>(MX_COMPAT_32) || <font color="#992211"><b>defined</b></font>(MX_COMPAT_64) || !<font color="#992211"><b>defined</b></font>(USE_MEX_CMD) || TARGET_API_VERSION &gt;= 800
+<a name="3"><font color="#888888 "><i>    3   </i></font></a><font color="#992211">#</font><font color="#992211"><b>define</b></font> MX_TMP_TARGET_API_VER MX_TARGET_API_VER
+<a name="4"><font color="#888888 "><i>    4   </i></font></a><font color="#992211">#</font><font color="#992211"><b>else</b></font>
+<a name="5"><font color="#888888 "><i>    5   </i></font></a><font color="#992211">#</font><font color="#992211"><b>define</b></font> MX_TMP_TARGET_API_VER 0
+<a name="6"><font color="#888888 "><i>    6   </i></font></a><font color="#992211">#</font><font color="#992211"><b>endif</b></font>
+<a name="7"><font color="#888888 "><i>    7   </i></font></a>MEXFUNCTION_LINKAGE
+<a name="8"><font color="#888888 "><i>    8   </i></font></a><font color="#112266"><b>void</b></font> <a name="fcn_mexfilerequiredapiversion">mexfilerequiredapiversion</a>(<font color="#112266"><b>unsigned</b></font> <font color="#112266"><b>int</b></font>* built_by_rel, <font color="#112266"><b>unsigned</b></font> <font color="#112266"><b>int</b></font>* target_api_ver)
+<a name="9"><font color="#888888 "><i>    9   </i></font></a><b>{</b>
+<a name="10"><font color="#888888 "><i>   10   </i></font></a>  *built_by_rel = 0x2017b;
+<a name="11"><font color="#888888 "><i>   11   </i></font></a>  *target_api_ver = MX_TMP_TARGET_API_VER;
+<a name="12"><font color="#888888 "><i>   12   </i></font></a><b>}</b> 
+<a name="13"><font color="#888888 "><i>   13   </i></font></a>
+<a name="14"><font color="#888888 "><i>   14   </i></font></a></pre>
+</td></tr></table>
+</p>
+</body>
+</html>

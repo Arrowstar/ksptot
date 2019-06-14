@@ -41,7 +41,7 @@ classdef OptimizationVariableSet < matlab.mixin.SetGet
                     continue;
                 end
                 
-                vX = obj.vars(i).getScaledXsForVariable();
+                vX = var.getScaledXsForVariable();
                 x = horzcat(x, vX); %#ok<AGROW>
                 
                 for(j=1:length(vX))

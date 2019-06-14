@@ -16,16 +16,15 @@ function dydt = odefun(t,y, simDriver, eventInitStateLogEntry, tankStates, dryMa
     throttleModel = eventInitStateLogEntry.throttleModel;
     steeringModel = eventInitStateLogEntry.steeringModel;
     
-    throttle = throttleModel.getThrottleAtTime(ut, rVect, vVect, tankStatesMasses, dryMass, stageStates, lvState, tankStates, bodyInfo);
-
-    pressure = getPressureAtAltitude(bodyInfo, altitude);            
-
     holdDownEnabled = eventInitStateLogEntry.isHoldDownEnabled();
 
     tankMassDotsT2TConns = TankToTankConnection.getTankMassFlowRatesFromTankToTankConnections(tankStates, tankStatesMasses, t2tConnStates);
     
     dydt = zeros(length(y),1);
     if(holdDownEnabled)
+        pressure = getPressureAtAltitude(bodyInfo, altitude);
+        throttle = throttleModel.getThrottleAtTime(ut, rVect, vVect, tankStatesMasses, dryMass, stageStates, lvState, tankStates, bodyInfo);
+        
         %launch clamp is enabled, only motion is circular motion
         %(fixed to body)
         tankMassDotsEngines = eventInitStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, tankStatesMasses, stageStates, throttle, lvState, pressure, ut, rVect, vVect, bodyInfo, steeringModel);

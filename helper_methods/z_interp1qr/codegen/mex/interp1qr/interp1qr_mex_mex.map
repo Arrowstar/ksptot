@@ -1,0 +1,23 @@
+MEX {
+	global:
+		mexFunction;
+		mexfilerequiredapiversion;
+		emlrtMexFcnProperties;
+		interp1qr;
+		emxEnsureCapacity_boolean_T;
+		emxEnsureCapacity_int32_T;
+		emxEnsureCapacity_real_T;
+		emxEnsureCapacity_real_T1;
+		emxFree_boolean_T;
+		emxFree_int32_T;
+		emxFree_real_T;
+		emxInit_boolean_T;
+		emxInit_int32_T;
+		emxInit_real_T;
+		emxInit_real_T1;
+		interp1qr_initialize;
+		interp1qr_terminate;
+		interp1qr_atexit;
+	local:
+		*;
+};

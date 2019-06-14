@@ -2,7 +2,7 @@ function [value, isterminal, direction, causes] = getSoITransitionOdeEvents(ut, 
         value = [];
         isterminal = [];
         direction = [];
-        causes = AbstractIntegrationTerminationCause.empty(0,1);
+%         causes = AbstractIntegrationTerminationCause.empty(0,1);
             
         %Max Radius (SoI Radius) Constraint (Leave SOI Upwards)
         parentBodyInfo = bodyInfo.getParBodyInfo(celBodyData);
@@ -16,7 +16,7 @@ function [value, isterminal, direction, causes] = getSoITransitionOdeEvents(ut, 
         value(end+1) = rSOI - radius;
         isterminal(end+1) = 1;
         direction(end+1) = -1;
-        causes(end+1) = SoITransitionUpIntTermCause(bodyInfo, parentBodyInfo, celBodyData);    
+        causes(1) = SoITransitionUpIntTermCause(bodyInfo, parentBodyInfo, celBodyData);    
 
         %Leave SoI Downwards
         children = getChildrenOfParentInfo(celBodyData, bodyInfo.name);

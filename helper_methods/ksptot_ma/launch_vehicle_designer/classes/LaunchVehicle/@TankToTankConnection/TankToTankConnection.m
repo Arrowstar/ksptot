@@ -51,12 +51,17 @@ classdef TankToTankConnection < matlab.mixin.SetGet
     
     methods(Static)
         function tankMassDots = getTankMassFlowRatesFromTankToTankConnections(tankStates, tankStatesMasses, t2tConnStates)
+            activeT2TConnStates = t2tConnStates([t2tConnStates.active]);
+            
             tankMassDots = zeros(size(tankStates));
             tankMassDots = tankMassDots(:);
+            
+            if(isempty(activeT2TConnStates))
+                return
+            end
+            
             tanks = [tankStates.tank];
-            
-            activeT2TConnStates = t2tConnStates([t2tConnStates.active] == true);
-            
+
             for(i=1:length(activeT2TConnStates))
                 t2tConnState = activeT2TConnStates(i);
                 
