@@ -11,6 +11,10 @@ classdef LaunchVehicleStageState < matlab.mixin.SetGet & matlab.mixin.Copyable
         engineStates = LaunchVehicleEngineState.empty(1,0)% LaunchVehicleEngineState
         tankStates = LaunchVehicleTankState.empty(1,0);% LaunchVehicleTankState
     end
+    
+    properties(Constant)
+        emptyTankArr = LaunchVehicleTank.empty(1,0);
+    end
 
     methods
         function obj = LaunchVehicleStageState(stage)
@@ -78,6 +82,18 @@ classdef LaunchVehicleStageState < matlab.mixin.SetGet & matlab.mixin.Copyable
             obj.tankStates(ind).tankMass = tank.initialMass;
         end
         
+        function [tankState, ind] = getStateForTank(obj, tank)
+            ind = [];
+            for(i=1:length(obj.tankStates)) %#ok<*NO4LP>
+                if(tank == obj.tankStates(i).tank)
+                    ind = i;
+                    break;
+                end
+            end
+            
+            tankState = obj.tankStates(ind);
+        end
+        
         function dryMass = getStateDryMass(obj)
             dryMass = obj.stage.dryMass;
         end
@@ -107,18 +123,52 @@ classdef LaunchVehicleStageState < matlab.mixin.SetGet & matlab.mixin.Copyable
             stageMass = obj.getStateDryMass() + obj.getStageTotalTankMass();
         end
         
-        function newStageState = deepCopy(obj, deepCopyState)
-            newStageState = obj.copy();
+        function newStageState = deepCopy(obj, deepCopyState, lvState)
             
-            if(deepCopyState)
-                newEngineStates = obj.engineStates.copy();
-                [newEngineStates.stageState] = deal(newStageState);
-                newStageState.engineStates = newEngineStates;
+            
+            if(obj.active)    
+                newStageState = obj.copy();
+            
+                if(deepCopyState)
+                    if(not(isempty(obj.engineStates)))
+                        newEngineStates = obj.engineStates.copy();
+                        [newEngineStates.stageState] = deal(newStageState);
+                        newStageState.engineStates = newEngineStates;
+                    end
+                end
+
+                if(not(isempty(obj.tankStates)))
+                    tanksToUpdateStatesFor = LaunchVehicleStageState.emptyTankArr;
+                    
+                    for(i=1:length(obj.engineStates))
+                        if(obj.engineStates(i).active)
+                            tanksToUpdateStatesFor = [tanksToUpdateStatesFor, lvState.getTanksConnectedToEngine(obj.engineStates(i).engine)]; %#ok<AGROW>
+                        end
+                    end
+                    
+                    stageTanks = [obj.tankStates.tank];
+                    if(not(isempty(tanksToUpdateStatesFor)))
+                        [Lia, ~] = ismember(tanksToUpdateStatesFor,stageTanks);
+                        tanksToUpdateStatesFor = tanksToUpdateStatesFor(logical(Lia));
+                        
+                        if(not(isempty(tanksToUpdateStatesFor)))
+                            for(i=1:length(tanksToUpdateStatesFor))
+                                tankToUpdateState = tanksToUpdateStatesFor(i);
+                                
+                                [tankState, ind] = obj.getStateForTank(tankToUpdateState);
+                                newTankState = tankState.copy();
+                                newTankState.stageState = newStageState;
+                                newStageState.tankStates(ind) = newTankState;
+                            end
+                        end
+                    end
+%                     newTankStates = obj.tankStates.copy();
+%                     [newTankStates.stageState] = deal(newStageState);
+%                     newStageState.tankStates = newTankStates;
+                end
+            else
+                newStageState = obj;
             end
-            
-            newTankStates = obj.tankStates.copy();
-            [newTankStates.stageState] = deal(newStageState);
-            newStageState.tankStates = newTankStates;
         end
     end
 end

@@ -115,7 +115,7 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
                         [odefun, odeEventsFun, options] = getFunctionsAndOptions(obj, integrator, eventInitStateLogEntry, dryMass, forceModels, event, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, tStartPropTime);
                     end
                 elseif(isa(causes(i),'NonSeqEventTermCondIntTermCause'))
-                    if(values(i) <= 0)
+                    if(abs(values(i)) <= tol)
                         eventInitStateLogEntry = causes(i).getRestartInitialState(eventInitStateLogEntry);
                         
                         for(j=1:length(activeNonSeqEvts))

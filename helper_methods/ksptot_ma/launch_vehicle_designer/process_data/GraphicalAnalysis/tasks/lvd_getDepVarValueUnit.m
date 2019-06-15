@@ -64,6 +64,9 @@ function [depVarValue, depVarUnit, taskStr, refBodyInfo] = lvd_getDepVarValueUni
         case 'Two-Body Impact Longitude'
             depVarValue = lvd_TwoBodyImpactPointTasks(subLog(i), 'longitude');
             depVarUnit = 'degE';
+        case 'Drag Coefficient'    
+            depVarValue = lvd_StageTasks(subLog(i), 'dragCoeff', []);
+            depVarUnit = '';
             
         otherwise %is a programmatically generated string that we'll handle here
             tankMassPattern = 'Tank (\d+?) Mass - ".*"';

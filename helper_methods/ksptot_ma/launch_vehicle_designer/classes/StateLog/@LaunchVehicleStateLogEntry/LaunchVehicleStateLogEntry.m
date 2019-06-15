@@ -230,7 +230,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             newStateLogEntry.lvState = obj.lvState.deepCopy();
             
             for(i=1:length(obj.stageStates))
-                newStateLogEntry.stageStates(i) = obj.stageStates(i).deepCopy(true);
+                newStateLogEntry.stageStates(i) = obj.stageStates(i).deepCopy(true, newStateLogEntry.lvState);
             end
             
             newStateLogEntry.stopwatchStates = obj.stopwatchStates.copy();
@@ -245,7 +245,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             %stuff that requires it's own copy
             for(i=1:length(obj.stageStates))
 %                 if(deepCopyState)
-                    obj.stageStates(i) = obj.stageStates(i).deepCopy(deepCopyState);
+                    obj.stageStates(i) = obj.stageStates(i).deepCopy(deepCopyState, obj.lvState);
 %                 else
 %                     obj.stageStates(i) = obj.stageStates(i).copy();
 %                     obj.stageStates(i) = obj.stageStates(i);
@@ -330,7 +330,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             end
         end
         
-        function [tankMDots, totalThrust, forceVect]= getTankMassFlowRatesDueToEngines(tankStates, tankStatesMasses, stgStates, throttle, lvState, presskPa, ut, rVect, vVect, bodyInfo, steeringModel)
+        function [tankMDots, totalThrust, forceVect] = getTankMassFlowRatesDueToEngines(tankStates, tankStatesMasses, stgStates, throttle, lvState, presskPa, ut, rVect, vVect, bodyInfo, steeringModel)
             tankMDots = zeros(size(tankStates));
             tankMDots = tankMDots(:);
             totalThrust = 0;
