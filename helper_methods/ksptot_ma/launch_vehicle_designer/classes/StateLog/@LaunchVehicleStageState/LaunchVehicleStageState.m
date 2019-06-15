@@ -148,7 +148,7 @@ classdef LaunchVehicleStageState < matlab.mixin.SetGet & matlab.mixin.Copyable
                     
                     stageTanks = [obj.tankStates.tank];
                     if(not(isempty(tanksToUpdateStatesFor)))
-                        [Lia, ~] = ismember(tanksToUpdateStatesFor,stageTanks);
+                        [Lia] = ismemberClassTypesARH(tanksToUpdateStatesFor,stageTanks);
                         tanksToUpdateStatesFor = tanksToUpdateStatesFor(logical(Lia));
                         
                         if(not(isempty(tanksToUpdateStatesFor)))
