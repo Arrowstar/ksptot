@@ -124,9 +124,7 @@ classdef LaunchVehicleStageState < matlab.mixin.SetGet & matlab.mixin.Copyable
         end
         
         function newStageState = deepCopy(obj, deepCopyState, lvState)
-            
-            
-            if(obj.active)    
+            if(obj.active || deepCopyState)    
                 newStageState = obj.copy();
             
                 if(deepCopyState)
