@@ -252,9 +252,13 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
 %                 end
             end
             
-            obj.stopwatchStates = obj.stopwatchStates.copy();
+            if(~isempty(obj.stopwatchStates))
+                obj.stopwatchStates = obj.stopwatchStates.copy();
+            end
             
-            obj.extremaStates = obj.extremaStates.copy();
+            if(~isempty(obj.extremaStates))
+                obj.extremaStates = obj.extremaStates.copy();
+            end
             
             if(deepCopyState)
                 obj.aero = obj.aero.copy();

@@ -111,7 +111,7 @@ function runScript(handles, lvdData, evtStartNum)
     drawnow;
     
     if(not(isdeployed))
-%         profile('on','-detail','builtin', '-remove_overhead','on');
+        profile('on','-detail','builtin', '-remove_overhead','on');
     end
     
     isSparseOutput = lvdData.settings.isSparseOutput;
@@ -122,7 +122,7 @@ function runScript(handles, lvdData, evtStartNum)
     execTime = toc(t);
     
     if(not(isdeployed))
-%         profile viewer;
+        profile viewer;
     end
     
     handles.scriptWorkingLbl.Visible = 'off';
