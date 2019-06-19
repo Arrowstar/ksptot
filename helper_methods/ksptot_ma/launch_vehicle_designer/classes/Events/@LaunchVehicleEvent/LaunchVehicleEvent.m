@@ -14,6 +14,7 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
         integrator(1,1) IntegratorEnum = IntegratorEnum.ODE45;
         integrationStep(1,1) double = -1;
         checkForSoITrans(1,1) logical = true;
+        initialStep(1,1) double = 10;
         
         forceModels ForceModelsEnum = ForceModelsEnum.getDefaultArrayOfForceModelEnums();
         

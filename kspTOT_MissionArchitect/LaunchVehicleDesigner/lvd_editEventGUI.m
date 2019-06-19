@@ -22,7 +22,7 @@ function varargout = lvd_editEventGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_editEventGUI
 
-% Last Modified by GUIDE v2.5 20-Jan-2019 16:52:01
+% Last Modified by GUIDE v2.5 19-Jun-2019 16:24:07
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -99,6 +99,7 @@ function populateGUI(handles, event)
     handles.checkSoITransCheckbox.Value = double(event.checkForSoITrans);
     
     handles.intStepSizeText.String = fullAccNum2Str(event.integrationStep);
+    handles.initialStepText.String = fullAccNum2Str(event.initialStep);
 
 % --- Outputs from this function are returned to the command line.
 function varargout = lvd_editEventGUI_OutputFcn(hObject, eventdata, handles) 
@@ -138,6 +139,7 @@ function varargout = lvd_editEventGUI_OutputFcn(hObject, eventdata, handles)
         event.checkForSoITrans = logical(handles.checkSoITransCheckbox.Value);
         
         event.integrationStep = str2double(get(handles.intStepSizeText,'String'));
+        event.initialStep = str2double(get(handles.initialStepText,'String'));
         event.clearActiveOptVarsCache();
         
         close(handles.lvd_editEventGUI);
@@ -164,6 +166,14 @@ function errMsg = validateInputs(handles)
     enteredStr = get(handles.intStepSizeText,'String');
     numberName = 'Integrator Output Step Size';
     lb = -Inf;
+    ub = Inf;
+    isInt = false;
+    errMsg = validateNumber(value, numberName, lb, ub, isInt, errMsg, enteredStr);
+    
+    value = str2double(get(handles.initialStepText,'String'));
+    enteredStr = get(handles.initialStepText,'String');
+    numberName = 'Initial Step Size';
+    lb = 0.01;
     ub = Inf;
     isInt = false;
     errMsg = validateNumber(value, numberName, lb, ub, isInt, errMsg, enteredStr);
@@ -579,3 +589,87 @@ function lineWidthCombo_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+
+function initialStepText_Callback(hObject, eventdata, handles)
+% hObject    handle to initialStepText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of initialStepText as text
+%        str2double(get(hObject,'String')) returns contents of initialStepText as a double
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
+
+% --- Executes during object creation, after setting all properties.
+function initialStepText_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to initialStepText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --------------------------------------------------------------------
+function optimizeInitialStepSizeMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to optimizeInitialStepSizeMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    event = getappdata(handles.lvd_editEventGUI,'event');
+    lvdData = event.lvdData;
+    script = lvdData.script;
+    
+    simDriver = script.simDriver;
+    tStartSimTime = 0;
+    isSparseOutput = false;
+    
+    initStateLogEntry = lvdData.stateLog.getFirstStateLogForEvent(event);
+    
+    activeNonSeqEvts = script.nonSeqEvts.getNonSeqEventsForScriptEvent(event);
+    for(j=1:length(activeNonSeqEvts))
+        activeNonSeqEvts(j).initEvent(initStateLogEntry);
+    end
+    
+    oldInitStep = event.initialStep;
+    
+    fun = @(x) optInitStepSizeObjFcn(x, event, initStateLogEntry, simDriver, tStartSimTime, isSparseOutput, activeNonSeqEvts);
+    x0 = oldInitStep;
+    lb = 0.01;
+    ub = 1E10;
+    options = optimoptions(@fmincon, 'Display','iter', 'OptimalityTolerance',1E-2, 'StepTolerance',1E-10, 'PlotFcn',{@optimplotx, @optimplotfval});
+    
+    x = fmincon(fun,x0,[],[],[],[],lb,ub,[],options);
+    msg = sprintf('Results of initial step size tuning: %0.3f sec', x);
+    
+    msg = horzcat(msg,{'','',sprintf('Apply optimized initial step size to this event?')});
+    
+    button = questdlg(msg,'Speed Test Results','Yes','No','Yes');
+    
+    if(strcmpi(button,'Yes'))
+        handles.initialStepText.String = fullAccNum2Str(x);
+        initialStepText_Callback(handles.initialStepText, [], handles);
+    else
+        event.initialStep = oldInitStep;
+    end
+    
+function elapsedTime = optInitStepSizeObjFcn(x, event, initStateLogEntry, simDriver, tStartSimTime, isSparseOutput, activeNonSeqEvts)
+    event.initialStep = x(1);
+    
+    tStartPropTime = tic();
+
+    tt = tic;
+    event.executeEvent(initStateLogEntry, simDriver, tStartPropTime, tStartSimTime, isSparseOutput, activeNonSeqEvts);
+    elapsedTime = toc(tt);
+    
+    
+% --------------------------------------------------------------------
+function initialStepSizeContextMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to initialStepSizeContextMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
