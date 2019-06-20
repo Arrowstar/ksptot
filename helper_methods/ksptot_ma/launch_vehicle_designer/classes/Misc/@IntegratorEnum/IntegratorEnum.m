@@ -91,9 +91,28 @@ classdef IntegratorEnum < matlab.mixin.SetGet
                       IntegratorEnum.ODE15s, ...
                       IntegratorEnum.ODE23s, ...
                       IntegratorEnum.DOP853}
-                    [~,y0, ~] = eventInitStateLogEntry.getFirstOrderIntegratorStateRepresentation();
-                    [t,y,te,ye,ie] = obj.functionHandle(odefun, tspan, y0, options);
-                
+                    [t0,y0, ~] = eventInitStateLogEntry.getFirstOrderIntegratorStateRepresentation();
+                    
+                    holdDownEnabled = eventInitStateLogEntry.isHoldDownEnabled();
+                    if(holdDownEnabled)
+                        %Integrate in the body-fixed frame with zero rates
+                        %For performance reasons
+                        bodyInfo = eventInitStateLogEntry.centralBody;
+                        [rVectECEF, vVectECEF] = getFixedFrameVectFromInertialVect(t0, y0(1:3)', bodyInfo, y0(4:6)');
+                        y0 = [rVectECEF', vVectECEF', y0(:,7:end)];
+                        
+                        [t,y,te,ye,ie] = obj.functionHandle(odefun, tspan, y0, options);
+                        
+                        [rVectECI, vVectECI] = getInertialVectFromFixedFrameVect(t, y(:,1:3)', bodyInfo, y(:,4:6)');
+                        y = [rVectECI', vVectECI', y(:,7:end)];
+                        
+                        if(~isempty(ye))
+                            [rVectECIe, vVectECIe] = getInertialVectFromFixedFrameVect(te, ye(:,1:3)', bodyInfo, ye(:,4:6)');
+                            ye = [rVectECIe', vVectECIe', ye(:,7:end)];
+                        end
+                    else
+                        [t,y,te,ye,ie] = obj.functionHandle(odefun, tspan, y0, options);
+                    end
                 case IntegratorEnum.RKN1210
                     [~,y0,yp0] = eventInitStateLogEntry.getSecondOrderIntegratorStateRepresentation();
                     [t, y, yp, te, ye, ype, ie, ~, ~] = obj.functionHandle(odefun, tspan, y0, yp0, options);

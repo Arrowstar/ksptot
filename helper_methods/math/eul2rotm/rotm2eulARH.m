@@ -30,8 +30,9 @@ function eul = rotm2eulARH( R, varargin )
 
 %#codegen
 
-robotics.internal.validation.validateRotationMatrix(R, 'rotm2eul', 'R');
-seq = robotics.internal.validation.validateEulerSequence(varargin{:});
+% robotics.internal.validation.validateRotationMatrix(R, 'rotm2eul', 'R');
+% seq = robotics.internal.validation.validateEulerSequence(varargin{:});
+seq = upper(varargin{:});
 
 % Pre-allocate output
 eul = zeros(size(R,3), 3 , 'like', R); %#ok<PREALL>

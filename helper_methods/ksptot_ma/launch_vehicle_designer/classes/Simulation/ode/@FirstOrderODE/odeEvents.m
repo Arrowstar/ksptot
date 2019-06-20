@@ -13,9 +13,19 @@ function [value,isterminal,direction, causes] = odeEvents(t,y, obj, eventInitSta
     if(sizeY(2) > sizeY(1))
         y = y';
     end
+    
+    bodyInfo = eventInitStateLogEntry.centralBody;
+    
+    holdDownEnabled = eventInitStateLogEntry.isHoldDownEnabled();
+    if(holdDownEnabled)
+        %Need to convert back to ECI if the hold downs are enabled because
+        %we are integrating in body fixed in this case
+        [rVectECI, vVectECI] = getInertialVectFromFixedFrameVect(t, y(1:3,:)', bodyInfo, y(1:3,:)');
+        y = [rVectECI; vVectECI; y(7:end,:)];
+    end
 
     [ut, rVect, ~, ~] = AbstractODE.decomposeIntegratorTandY(t,y);
-    bodyInfo = eventInitStateLogEntry.centralBody;
+    
 
     %Max Sim Time Constraint
     simTimeRemaining = maxSimTime - ut;

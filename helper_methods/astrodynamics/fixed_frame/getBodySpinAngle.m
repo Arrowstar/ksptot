@@ -4,6 +4,6 @@ function [spinAngle] = getBodySpinAngle(bodyInfo, ut)
 
     bodySpinRate = 2*pi/bodyInfo.rotperiod; %rad/sec
     rotInit = deg2rad(bodyInfo.rotini);     %rad
-    spinAngle = AngleZero2Pi(rotInit + bodySpinRate*ut); %theta)
+    spinAngle = AngleZero2Pi(rotInit + bodySpinRate.*ut); %theta)
 end
 

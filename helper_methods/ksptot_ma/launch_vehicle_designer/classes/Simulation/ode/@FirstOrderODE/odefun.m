@@ -1,18 +1,12 @@
 function dydt = odefun(t,y, simDriver, eventInitStateLogEntry, tankStates, dryMass, fmEnums)
     bodyInfo = eventInitStateLogEntry.centralBody;
     [ut, rVect, vVect, tankStatesMasses] = AbstractODE.decomposeIntegratorTandY(t,y);
-%     tankStates = eventInitStateLogEntry.getAllActiveTankStates();
+    altitude = norm(rVect) - bodyInfo.radius;
+    
     stageStates = eventInitStateLogEntry.stageStates;
     lvState = eventInitStateLogEntry.lvState;
     t2tConnStates = lvState.t2TConns;
-    
-    altitude = norm(rVect) - bodyInfo.radius;
-    if(altitude <= 0 && any(fmEnums == ForceModelsEnum.Normal))
-        rswVVect = rotateVectorFromEciToRsw(vVect, rVect, vVect);
-        rswVVect(1) = 0; %kill vertical velocity because we don't want to go throught the surface of the planet
-        vVect = rotateVectorFromRsw2Eci(rswVVect, rVect, vVect);
-    end
-    
+       
     throttleModel = eventInitStateLogEntry.throttleModel;
     steeringModel = eventInitStateLogEntry.steeringModel;
     
@@ -25,25 +19,36 @@ function dydt = odefun(t,y, simDriver, eventInitStateLogEntry, tankStates, dryMa
         pressure = getPressureAtAltitude(bodyInfo, altitude);
         throttle = throttleModel.getThrottleAtTime(ut, rVect, vVect, tankStatesMasses, dryMass, stageStates, lvState, tankStates, bodyInfo);
         
-        %launch clamp is enabled, only motion is circular motion
-        %(fixed to body)
         tankMassDotsEngines = eventInitStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, tankStatesMasses, stageStates, throttle, lvState, pressure, ut, rVect, vVect, bodyInfo, steeringModel);
         
         tankMassDots = tankMassDotsEngines + tankMassDotsT2TConns;
         
-        bodySpinRate = 2*pi/bodyInfo.rotperiod; %rad/sec
-        spinVect = [0;0;bodySpinRate];
-        rotAccel = crossARH(spinVect,crossARH(spinVect,rVect));
-
-        [rVectECEF] = getFixedFrameVectFromInertialVect(ut, rVect, bodyInfo);
-        vVectECEF = [0;0;0];
-        [~, vVectECI] = getInertialVectFromFixedFrameVect(ut, rVectECEF, bodyInfo, vVectECEF);
-
-        dydt(1:3) = vVectECI(:); 
-        dydt(4:6) = rotAccel(:);
+        %launch clamp is enabled, only motion is circular motion
+        %(fixed to body)
+        %In this case, we are integrating in the body-fixed frame, 
+        %so all rates are effectively zero
+% % % % % %         bodySpinRate = 2*pi/bodyInfo.rotperiod; %rad/sec
+% % % % % %         spinVect = [0;0;bodySpinRate];
+% % % % % %         rotAccel = crossARH(spinVect,crossARH(spinVect,rVect));
+% % % % % % 
+% % % % % %         [rVectECEF] = getFixedFrameVectFromInertialVect(ut, rVect, bodyInfo);
+% % % % % %         vVectECEF = [0;0;0];
+% % % % % %         [~, vVectECI] = getInertialVectFromFixedFrameVect(ut, rVectECEF, bodyInfo, vVectECEF);
+% % % % % % 
+% % % % % %         dydt(1:3) = vVectECI(:); 
+% % % % % %         dydt(4:6) = rotAccel(:);
+        
+        dydt(1:3) = [0;0;0]; 
+        dydt(4:6) = [0;0;0];
         dydt(7:end) = tankMassDots;
     else
         %launch clamp disabled, propagate like normal
+        if(altitude <= 0 && any(fmEnums == ForceModelsEnum.Normal))
+            rswVVect = rotateVectorFromEciToRsw(vVect, rVect, vVect);
+            rswVVect(1) = 0; %kill vertical velocity because we don't want to go throught the surface of the planet
+            vVect = rotateVectorFromRsw2Eci(rswVVect, rVect, vVect);
+        end
+        
         aero = eventInitStateLogEntry.aero;
         thirdBodyGravity = eventInitStateLogEntry.thirdBodyGravity;
         
