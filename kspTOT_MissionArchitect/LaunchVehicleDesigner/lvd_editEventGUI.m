@@ -22,7 +22,7 @@ function varargout = lvd_editEventGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_editEventGUI
 
-% Last Modified by GUIDE v2.5 19-Jun-2019 16:24:07
+% Last Modified by GUIDE v2.5 25-Jun-2019 16:48:43
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -86,6 +86,10 @@ function populateGUI(handles, event)
     [~,ind] = LineSpecEnum.getEnumForListboxStr(event.colorLineSpec.lineSpec.name);
     handles.lineSpecCombo.Value = ind;
     
+    handles.eventTermCondDirCombo.String = EventTermCondDirectionEnum.getListboxStr();
+    [~,ind] = EventTermCondDirectionEnum.getEnumForListboxStr(event.termCondDir.name);
+    handles.eventTermCondDirCombo.Value = ind;
+    
     contents = handles.lineWidthCombo.String;
     contentsDouble = str2double(contents);
     ind = find(contentsDouble == event.colorLineSpec.lineWidth);
@@ -124,6 +128,10 @@ function varargout = lvd_editEventGUI_OutputFcn(hObject, eventdata, handles)
         nameStr = handles.lineSpecCombo.String(handles.lineSpecCombo.Value);
         [enum,~] = LineSpecEnum.getEnumForListboxStr(nameStr);
     	event.colorLineSpec.lineSpec = enum;
+        
+        nameStr = handles.eventTermCondDirCombo.String(handles.eventTermCondDirCombo.Value);
+        [enum,~] = EventTermCondDirectionEnum.getEnumForListboxStr(nameStr);
+    	event.termCondDir = enum;
         
         contents = handles.lineWidthCombo.String;
         contentsDouble = str2double(contents);
@@ -642,9 +650,11 @@ function optimizeInitialStepSizeMenu_Callback(hObject, eventdata, handles)
     x0 = oldInitStep;
     lb = 0.01;
     ub = 1E10;
-    options = optimoptions(@fmincon, 'Display','iter', 'OptimalityTolerance',1E-2, 'StepTolerance',1E-10, 'PlotFcn',{@optimplotx, @optimplotfval});
+%     options = optimoptions(@fmincon, 'Display','iter', 'OptimalityTolerance',1E-2, 'StepTolerance',1E-10, 'PlotFcn',{@optimplotx, @optimplotfval});
+    options = optimoptions(@patternsearch, 'Display','iter', 'UseParallel',lvdData.settings.optUsePara, 'PlotFcn',{@psplotbestx, @psplotbestf});
     
-    x = fmincon(fun,x0,[],[],[],[],lb,ub,[],options);
+%     x = fmincon(fun,x0,[],[],[],[],lb,ub,[],options);
+    x = patternsearch(fun,x0,[],[],[],[],lb,ub,[],options);
     msg = sprintf('Results of initial step size tuning: %0.3f sec', x);
     
     msg = horzcat(msg,{'','',sprintf('Apply optimized initial step size to this event?')});
@@ -673,3 +683,26 @@ function initialStepSizeContextMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to initialStepSizeContextMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on selection change in eventTermCondDirCombo.
+function eventTermCondDirCombo_Callback(hObject, eventdata, handles)
+% hObject    handle to eventTermCondDirCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns eventTermCondDirCombo contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from eventTermCondDirCombo
+
+
+% --- Executes during object creation, after setting all properties.
+function eventTermCondDirCombo_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to eventTermCondDirCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

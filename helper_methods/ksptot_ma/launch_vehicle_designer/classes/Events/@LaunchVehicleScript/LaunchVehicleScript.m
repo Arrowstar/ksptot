@@ -185,6 +185,7 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
                 tStartSimTime = initStateLogEntry.time;
                 tStartPropTime = tic();
                 for(i=evtStartNum:length(obj.evts)) %#ok<*NO4LP>
+%                     ttt = tic;
                     evt = obj.evts(i);
                     
                     %allow interrupting script execution with figure
@@ -206,7 +207,7 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
                     %Execute Event
                     newStateLogEntries = evt.executeEvent(initStateLogEntry, obj.simDriver, tStartPropTime, tStartSimTime, isSparseOutput, activeNonSeqEvts);
                     stateLog.appendStateLogEntries(newStateLogEntries);
-
+                    
                     %Clean Up Event
                     initStateLogEntry = newStateLogEntries(end).deepCopy(); %this state log entry must be copied or the answers will change
                     actionStateLogEntries = evt.cleanupEvent(initStateLogEntry);
@@ -218,6 +219,9 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
                     end
                     
                     stateLog.appendNonSeqEvtsState(obj.nonSeqEvts.copy(), evt);
+                    
+%                     evtTime = toc(ttt);
+%                     fprintf('Duration to execute Event %u: %0.3f\n', i, evtTime);
                 end
                 
                 tPropTime = toc(tStartPropTime);
