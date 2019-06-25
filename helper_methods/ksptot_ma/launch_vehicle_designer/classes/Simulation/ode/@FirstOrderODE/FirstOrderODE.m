@@ -18,8 +18,8 @@ classdef FirstOrderODE < AbstractODE
             odeFH = @(t,y) FirstOrderODE.odefun(t,y, simDriver, eventInitStateLogEntry, tankStates, dryMass, forceModels);
         end
         
-        function odeEventsFH = getOdeEventsFunctionHandle(simDriver, eventInitStateLogEntry, eventTermCondFuncHandle, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses)
-            odeEventsFH = @(t,y) FirstOrderODE.odeEvents(t,y, simDriver, eventInitStateLogEntry, eventTermCondFuncHandle, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses);
+        function odeEventsFH = getOdeEventsFunctionHandle(simDriver, eventInitStateLogEntry, eventTermCondFuncHandle, termCondDir, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses)
+            odeEventsFH = @(t,y) FirstOrderODE.odeEvents(t,y, simDriver, eventInitStateLogEntry, eventTermCondFuncHandle, termCondDir, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses);
         end
         
         function odeOutputFH = getOdeOutputFunctionHandle(tStartPropTime, maxPropTime)
@@ -30,7 +30,7 @@ classdef FirstOrderODE < AbstractODE
     methods(Static, Access=private)
         dydt = odefun(t,y, obj, eventInitStateLogEntry, tankStates, dryMass, forceModels);
         
-        [value,isterminal,direction, causes] = odeEvents(t,y, obj, eventInitStateLogEntry, evtTermCond, maxSimTime, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses);
+        [value,isterminal,direction, causes] = odeEvents(t,y, obj, eventInitStateLogEntry, evtTermCond, termCondDir, maxSimTime, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses);
         
         status = odeOutput(t,y,flag, intStartTime, maxIntegrationDuration)
     end

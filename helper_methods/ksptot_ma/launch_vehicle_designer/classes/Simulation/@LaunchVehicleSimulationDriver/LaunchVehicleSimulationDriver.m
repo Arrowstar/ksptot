@@ -142,7 +142,7 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
         
         function [odefun, odeEventsFun, options] = getFunctionsAndOptions(obj, integrator, eventInitStateLogEntry, dryMass, forceModels, event, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, tStartPropTime)
             odefun = integrator.getOdeFunctionHandle(obj, eventInitStateLogEntry, dryMass, forceModels);
-            odeEventsFun = integrator.getOdeEventsFunctionHandle(obj, eventInitStateLogEntry, event.termCond.getEventTermCondFuncHandle(), maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses);
+            odeEventsFun = integrator.getOdeEventsFunctionHandle(obj, eventInitStateLogEntry, event.termCond.getEventTermCondFuncHandle(), event.termCondDir, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses);
             odeOutputFun = integrator.getOdeOutputFunctionHandle(tStartPropTime, obj.maxPropTime);
             options = odeset('RelTol',obj.relTol, 'AbsTol',obj.absTol,   'Events',odeEventsFun, 'NormControl','on', 'OutputFcn',odeOutputFun, 'InitialStep', event.initialStep, 'Refine', 1);
             options.EventsFcn = odeEventsFun;

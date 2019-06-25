@@ -5,7 +5,7 @@ classdef(Abstract) AbstractODE < matlab.mixin.SetGet
     methods(Abstract)
         odeFH = getOdeFunctionHandle(simDriver, eventInitStateLogEntry, dryMass, forceModels)
 
-        odeEventsFH = getOdeEventsFunctionHandle(simDriver, eventInitStateLogEntry, eventTermCondFuncHandle, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses)
+        odeEventsFH = getOdeEventsFunctionHandle(simDriver, eventInitStateLogEntry, eventTermCondFuncHandle, termCondDir, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses)
 
         odeOutputFH = getOdeOutputFunctionHandle(tStartPropTime, maxPropTime)
     end

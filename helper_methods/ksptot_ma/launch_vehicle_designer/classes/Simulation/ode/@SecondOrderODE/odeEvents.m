@@ -1,4 +1,4 @@
-function [value,isterminal,direction, causes] = odeEvents(t,y,yp, simDriver, eventInitStateLogEntry, evtTermCond, maxSimTime, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, numTankStatesToAppend)
+function [value,isterminal,direction, causes] = odeEvents(t,y,yp, simDriver, eventInitStateLogEntry, evtTermCond, termCondDir, maxSimTime, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, numTankStatesToAppend)
     celBodyData = simDriver.celBodyData;
     causes = AbstractIntegrationTerminationCause.empty(0,1);
 
@@ -47,5 +47,6 @@ function [value,isterminal,direction, causes] = odeEvents(t,y,yp, simDriver, eve
 
     %Event Termination Condition
     [value(end+1),isterminal(end+1),direction(end+1)] = evtTermCond(t,y);
+    direction(end) = termCondDir.direction;
     causes(end+1) = EventTermCondIntTermCause();
 end

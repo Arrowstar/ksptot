@@ -20,10 +20,10 @@ classdef SecondOrderODE < AbstractODE
             odeFH = @(t,y) SecondOrderODE.odefun(t,y, simDriver, eventInitStateLogEntry, [], totalMass, gravityForceModel);
         end
         
-        function odeEventsFH = getOdeEventsFunctionHandle(simDriver, eventInitStateLogEntry, eventTermCondFuncHandle, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses)
+        function odeEventsFH = getOdeEventsFunctionHandle(simDriver, eventInitStateLogEntry, eventTermCondFuncHandle, termCondDir, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses)
             numTankStatesToAppend = length(eventInitStateLogEntry.getAllActiveTankStates());
             
-            odeEventsFH = @(t,y,yp) SecondOrderODE.odeEvents(t,y,yp, simDriver, eventInitStateLogEntry, eventTermCondFuncHandle, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses,numTankStatesToAppend);
+            odeEventsFH = @(t,y,yp) SecondOrderODE.odeEvents(t,y,yp, simDriver, eventInitStateLogEntry, eventTermCondFuncHandle, termCondDir, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses,numTankStatesToAppend);
         end
         
         function odeOutputFH = getOdeOutputFunctionHandle(tStartPropTime, maxPropTime)
@@ -34,7 +34,7 @@ classdef SecondOrderODE < AbstractODE
     methods(Static, Access=private)
         ypp = odefun(t,y, obj, eventInitStateLogEntry, tankStates, dryMass, forceModels);
         
-        [value,isterminal,direction, causes] = odeEvents(t,y,yp, obj, eventInitStateLogEntry, evtTermCond, maxSimTime, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses,numTankStatesToAppend);
+        [value,isterminal,direction, causes] = odeEvents(t,y,yp, obj, eventInitStateLogEntry, evtTermCond, termCondDir, maxSimTime, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses,numTankStatesToAppend);
         
         status = odeOutput(t,y,yp,flag, intStartTime, maxIntegrationDuration)
     end

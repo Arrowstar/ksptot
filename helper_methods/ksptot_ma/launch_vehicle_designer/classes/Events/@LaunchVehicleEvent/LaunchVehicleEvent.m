@@ -4,6 +4,7 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
     
     properties
         termCond(1,1) AbstractEventTerminationCondition = EventDurationTermCondition(0);
+        termCondDir(1,1) EventTermCondDirectionEnum = EventTermCondDirectionEnum.NoDir
         actions AbstractEventAction
         
         name char = 'Untitled Event';

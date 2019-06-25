@@ -47,7 +47,7 @@ classdef IntegratorEnum < matlab.mixin.SetGet
             end
         end
         
-        function odeEventsFH = getOdeEventsFunctionHandle(obj, simDriver, eventInitStateLogEntry, eventTermCondFuncHandle, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses)
+        function odeEventsFH = getOdeEventsFunctionHandle(obj, simDriver, eventInitStateLogEntry, eventTermCondFuncHandle, termCondDir, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses)
             switch obj
                 case {IntegratorEnum.ODE45, ...
                       IntegratorEnum.ODE113, ...
@@ -55,10 +55,10 @@ classdef IntegratorEnum < matlab.mixin.SetGet
                       IntegratorEnum.ODE15s, ...
                       IntegratorEnum.ODE23s, ...
                       IntegratorEnum.DOP853}
-                    odeEventsFH = FirstOrderODE.getOdeEventsFunctionHandle(simDriver, eventInitStateLogEntry, eventTermCondFuncHandle, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses);
+                    odeEventsFH = FirstOrderODE.getOdeEventsFunctionHandle(simDriver, eventInitStateLogEntry, eventTermCondFuncHandle, termCondDir, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses);
                 
                 case IntegratorEnum.RKN1210
-                    odeEventsFH = SecondOrderODE.getOdeEventsFunctionHandle(simDriver, eventInitStateLogEntry, eventTermCondFuncHandle, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses);
+                    odeEventsFH = SecondOrderODE.getOdeEventsFunctionHandle(simDriver, eventInitStateLogEntry, eventTermCondFuncHandle, termCondDir, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses);
                 
                 otherwise
                     error('Unknown integrator in IntegratorEnum!');
