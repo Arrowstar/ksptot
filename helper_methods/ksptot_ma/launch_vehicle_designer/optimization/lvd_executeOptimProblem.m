@@ -17,11 +17,13 @@ function lvd_executeOptimProblem(celBodyData, writeOutput, problem, recorder)
         
         writeOutput('Beginning mission script optimization...','append');
         tt = tic;
-%         profile on;
-        [x,fval,exitflag,output,lambda,grad,hessian] = fmincon(problem);
-%         gs = GlobalSearch('NumTrialPoints',201, 'StartPointsToRun','bounds');
-%         [x,fval,exitflag,output,solutions] = run(gs,problem);
-%         profile viewer;
+        if(strcmpi(problem.solver,'fmincon'))
+            [x,fval,exitflag,output,lambda,grad,hessian] = fmincon(problem);
+        elseif(strcmpi(problem.solver,'patternsearch'))
+            [x,fval,exitflag,output] = patternsearch(problem);
+        else
+            error('Unknown optimizer function: %s', problem.solver);
+        end
         
         execTime = toc(tt);
         writeOutput(sprintf('Mission script optimization finished in %0.3f sec with exit flag "%i".', execTime, exitflag),'append');

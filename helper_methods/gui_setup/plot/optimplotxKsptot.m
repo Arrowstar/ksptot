@@ -16,7 +16,7 @@ function stop = optimplotxKsptot(x,optimValues,state,lb,ub,varLabels,lbUsAll,ubU
 
     stop = false;
     switch state
-        case 'iter'
+        case {'iter', 'interrupt'}
             % Reshape if x is a matrix
             x = x(:);
             lb = reshape(lb,size(x));

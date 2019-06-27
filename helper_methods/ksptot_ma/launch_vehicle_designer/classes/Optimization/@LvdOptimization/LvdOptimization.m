@@ -56,11 +56,38 @@ classdef LvdOptimization < matlab.mixin.SetGet
             objFuncWrapper = @(x) obj.objFcn.evalObjFcn(x, evtToStartScriptExecAt);
             nonlcon = @(x) obj.constraints.evalConstraints(x, true, evtToStartScriptExecAt, true);
             
-            optimAlg = obj.lvdData.settings.optAlgo.algoName;
+%             slvr = 'fmincon';
+            slvr = 'patternsearch';
+                        
             usePara = obj.lvdData.settings.optUsePara;
             scaleProb = obj.lvdData.settings.getScaleProbStr();
-            options = optimoptions('fmincon','Algorithm',optimAlg, 'Diagnostics','on', 'Display','iter-detailed','TolFun',1E-10,'TolX',1E-10,'TolCon',1E-10,'ScaleProblem',scaleProb,'TypicalX',typicalX,'MaxIter',500,'UseParallel',usePara,'OutputFcn',[],'HonorBounds',true,'MaxFunctionEvaluations',3000, 'FunValCheck','on');
-            problem = createOptimProblem('fmincon', 'objective',objFuncWrapper, 'x0', x0All, 'lb', lbAll, 'ub', ubAll, 'nonlcon', nonlcon, 'options', options);
+            
+            if(strcmpi(slvr,'fmincon'))
+                optimAlg = obj.lvdData.settings.optAlgo.algoName;
+                
+                options = optimoptions('fmincon','Algorithm',optimAlg, 'Diagnostics','on', 'Display','iter-detailed','TolFun',1E-10,'TolX',1E-10,'TolCon',1E-10,'ScaleProblem',scaleProb,'TypicalX',typicalX,'MaxIter',500,'UseParallel',usePara,'OutputFcn',[],'HonorBounds',true,'MaxFunctionEvaluations',3000, 'FunValCheck','on');
+                problem = createOptimProblem('fmincon', 'objective',objFuncWrapper, 'x0', x0All, 'lb', lbAll, 'ub', ubAll, 'nonlcon', nonlcon, 'options', options);
+            elseif(strcmpi(slvr,'patternsearch'))
+                if(strcmpi(scaleProb,'scaleProb'))
+                    scaleMesh = true;
+                else
+                    scaleMesh = false;
+                end
+                
+                options = optimoptions('patternsearch','Display','iter','FunctionTolerance',1E-10,'MeshTolerance',1E-10,'ConstraintTolerance',1E-10,'ScaleMesh',scaleMesh,'MaxIterations',500,'UseParallel',usePara,'OutputFcn',[],'MaxFunctionEvaluations',3000);
+                
+                problem.objective = objFuncWrapper;
+                problem.x0 = x0All;
+                problem.Aineq = [];
+                problem.bineq = [];
+                problem.Aeq = [];
+                problem.beq = [];
+                problem.lb = lbAll;
+                problem.ub = ubAll;
+                problem.nonlcon = nonlcon;
+                problem.options = options;
+                problem.solver = 'patternsearch';
+            end
             
             problem.lvdData = obj.lvdData; %need to get lvdData in somehow
                     
