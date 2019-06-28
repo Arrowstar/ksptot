@@ -152,7 +152,7 @@ function maxConstr = getMaxConstraintViolation(optimValues)
         end
 
         if(isfield(optimValues,'nonlineq'))
-            maxConstr = max([maxConstr;optimValues.nonlinineq(:)]);
+            maxConstr = max([maxConstr;abs(optimValues.nonlineq(:))]);
         end
     else
         maxConstr = 0;
