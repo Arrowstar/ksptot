@@ -33,10 +33,12 @@ function [stop,options,optchanged] = ma_OptimOutputFunc(x, optimValues, state, h
         stateLog = stateLog.getMAFormattedStateLogMatrix();
     end
     
-    writeOptimStatus(handles, optimValues, state, writeOutput);
-    writeFinalState(handles, stateLog, celBodyData, propNames);
-    generatePlots(x, optimValues, state, handles, problem.lb, problem.ub, varLabels, lbUsAll, ubUsAll);
-    drawnow;
+    if(strcmpi(state,'init') || strcmpi(state,'iter'))
+        writeOptimStatus(handles, optimValues, state, writeOutput);
+        writeFinalState(handles, stateLog, celBodyData, propNames);
+        generatePlots(x, optimValues, state, handles, problem.lb, problem.ub, varLabels, lbUsAll, ubUsAll);
+        drawnow;
+    end
 end
 
 
@@ -69,7 +71,7 @@ function writeOptimStatus(handles, optimValues, state, writeOutput)
     outStr{end+1} = ['                       '];
     outStr{end+1} = ['Elapsed Time         = ', num2str(elapTime), ' sec'];
     
-    if(strcmpi(state,'iter') || strcmpi(state,'interrupt'))
+    if(strcmpi(state,'iter'))
         formatstr = ' %- 12.1i %- 12.0i %- 12.6g %- 12.3g %- 12.3g %- 12.3g';
 
         iter = optimValues.iteration;

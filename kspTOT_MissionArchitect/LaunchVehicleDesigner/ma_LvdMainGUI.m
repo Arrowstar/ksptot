@@ -22,7 +22,7 @@ function varargout = ma_LvdMainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_LvdMainGUI
 
-% Last Modified by GUIDE v2.5 31-Mar-2019 12:00:04
+% Last Modified by GUIDE v2.5 27-Jun-2019 18:01:06
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1669,3 +1669,49 @@ function editMissionNotesMenu_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
     lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
     lvd_MissionNotesGUI(lvdData);
+
+
+% --------------------------------------------------------------------
+function optSubroutineMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to optSubroutineMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+
+    optSubRoutine = lvdData.settings.optSubroutine;
+    switch optSubRoutine
+        case LvdOptimSubroutineEnum.fmincon
+            set(handles.fminconOptSubroutineMenu, 'Checked', 'on');
+            set(handles.psOptSubroutineMenu, 'Checked', 'off');
+        case LvdOptimSubroutineEnum.patternseach
+            set(handles.fminconOptSubroutineMenu, 'Checked', 'off');
+            set(handles.psOptSubroutineMenu, 'Checked', 'on');
+        otherwise
+            error('Unknown optimization subroutine when setting menu checkmark.');
+    end
+
+% --------------------------------------------------------------------
+function fminconOptSubroutineMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to fminconOptSubroutineMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    writeOutput = getappdata(handles.ma_LvdMainGUI,'write_to_output_func');
+    
+    addUndoState(handles,'Edit Optimization Subroutine (FMINCON)');
+    
+    lvdData.settings.optSubroutine = LvdOptimSubroutineEnum.fmincon;
+    writeOutput('Optimization subroutine changed to FMINCON.','append');
+
+% --------------------------------------------------------------------
+function psOptSubroutineMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to psOptSubroutineMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    writeOutput = getappdata(handles.ma_LvdMainGUI,'write_to_output_func');
+    
+    addUndoState(handles,'Edit Optimization Subroutine (Pattern Search)');
+    
+    lvdData.settings.optSubroutine = LvdOptimSubroutineEnum.patternseach;
+    writeOutput('Optimization subroutine changed to Pattern Search.','append');

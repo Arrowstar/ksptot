@@ -55,26 +55,25 @@ classdef LvdOptimization < matlab.mixin.SetGet
             
             objFuncWrapper = @(x) obj.objFcn.evalObjFcn(x, evtToStartScriptExecAt);
             nonlcon = @(x) obj.constraints.evalConstraints(x, true, evtToStartScriptExecAt, true);
-            
-%             slvr = 'fmincon';
-            slvr = 'patternsearch';
                         
             usePara = obj.lvdData.settings.optUsePara;
             scaleProb = obj.lvdData.settings.getScaleProbStr();
             
-            if(strcmpi(slvr,'fmincon'))
+            optSubroutine = obj.lvdData.settings.optSubroutine;
+            if(optSubroutine == LvdOptimSubroutineEnum.fmincon)
                 optimAlg = obj.lvdData.settings.optAlgo.algoName;
                 
                 options = optimoptions('fmincon','Algorithm',optimAlg, 'Diagnostics','on', 'Display','iter-detailed','TolFun',1E-10,'TolX',1E-10,'TolCon',1E-10,'ScaleProblem',scaleProb,'TypicalX',typicalX,'MaxIter',500,'UseParallel',usePara,'OutputFcn',[],'HonorBounds',true,'MaxFunctionEvaluations',3000, 'FunValCheck','on');
                 problem = createOptimProblem('fmincon', 'objective',objFuncWrapper, 'x0', x0All, 'lb', lbAll, 'ub', ubAll, 'nonlcon', nonlcon, 'options', options);
-            elseif(strcmpi(slvr,'patternsearch'))
-                if(strcmpi(scaleProb,'scaleProb'))
+            elseif(optSubroutine == LvdOptimSubroutineEnum.patternseach)
+                if(strcmpi(scaleProb,'obj-and-constr'))
                     scaleMesh = true;
                 else
                     scaleMesh = false;
                 end
                 
-                options = optimoptions('patternsearch','Display','iter','FunctionTolerance',1E-10,'MeshTolerance',1E-10,'ConstraintTolerance',1E-10,'ScaleMesh',scaleMesh,'MaxIterations',500,'UseParallel',usePara,'OutputFcn',[],'MaxFunctionEvaluations',3000);
+                initMeshSize = norm(typicalX)/(10*length(typicalX));
+                options = optimoptions('patternsearch','Display','diagnose','FunctionTolerance',1E-6,'MeshTolerance',1E-6,'ConstraintTolerance',1E-10,'ScaleMesh',scaleMesh,'MaxIterations',500,'UseParallel',usePara,'OutputFcn',[],'MaxFunctionEvaluations',3000, 'PollMethod','GPSPositiveBasis2N', 'SearchMethod','MADSPositiveBasisNp1', 'Cache','on','CacheSize',1E6,'AccelerateMesh',true, 'InitialMeshSize',initMeshSize, 'UseCompletePoll',usePara, 'UseCompleteSearch',usePara);
                 
                 problem.objective = objFuncWrapper;
                 problem.x0 = x0All;

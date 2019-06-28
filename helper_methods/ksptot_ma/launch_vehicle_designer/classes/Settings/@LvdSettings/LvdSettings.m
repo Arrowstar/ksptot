@@ -12,6 +12,7 @@ classdef LvdSettings < matlab.mixin.SetGet
         isSparseOutput(1,1) logical = false;
         
         %optimization
+        optSubroutine(1,1) = LvdOptimSubroutineEnum.fmincon;
         optUsePara(1,1) logical = false;
         optAlgo LvdOptimAlgorithmEnum = LvdOptimAlgorithmEnum.InteriorPoint
         optScaleProp(1,1) logical = true;

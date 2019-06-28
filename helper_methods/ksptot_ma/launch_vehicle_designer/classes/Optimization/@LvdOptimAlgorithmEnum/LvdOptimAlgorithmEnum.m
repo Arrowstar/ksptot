@@ -18,4 +18,3 @@ classdef LvdOptimAlgorithmEnum < matlab.mixin.SetGet
         end
     end
 end
-
