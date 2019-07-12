@@ -57,6 +57,10 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
         
         function tf = eq(A,B)
             tf = [A.id] == [B.id];
+            
+            if(isempty(tf))
+                tf = false;
+            end
         end
     end
     

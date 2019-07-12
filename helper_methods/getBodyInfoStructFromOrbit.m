@@ -11,5 +11,6 @@ function [bodyInfo] = getBodyInfoStructFromOrbit(inputOrbit)
     bodyInfo.raan = rad2deg(inputOrbit(4));
     bodyInfo.arg = rad2deg(inputOrbit(5));
     bodyInfo.mean = rad2deg(inputOrbit(6));
+    bodyInfo.id = rand();
 end
 
