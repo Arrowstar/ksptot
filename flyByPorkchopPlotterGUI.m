@@ -510,7 +510,7 @@ function computeFlybyPorkchopPlotButton_Callback(hObject, eventdata, handles)
 
             drawnow;
             waitbar(0.50,hWaitBar,'Computing delta-v...');
-            fitnessfcn = @(x) multiFlybyObjFunc(x, numRevsArr,wayPtBodies,celBodyData);
+            fitnessfcn = @(x) multiFlybyObjFunc(x, numRevsArr,wayPtBodies,false,false,celBodyData);
             [~, ~, ~, ~, ~, ~, vInfDepart, vInfArrive, totDV] =  fitnessfcn(xsol);
 
             dvToPlot = totDV;
