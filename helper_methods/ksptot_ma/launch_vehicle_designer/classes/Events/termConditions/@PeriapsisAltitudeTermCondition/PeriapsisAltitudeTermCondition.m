@@ -1,19 +1,19 @@
-classdef AltitudeTermCondition < AbstractEventTerminationCondition
-    %AltitudeTermCondition Summary of this class goes here
+classdef PeriapsisAltitudeTermCondition < AbstractEventTerminationCondition
+    %PeriapsisAltitudeTermCondition Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
-        altitude(1,1) double = 0; %km
+        perialt(1,1) double = 0; %km
         bodyInfo KSPTOT_BodyInfo
     end
     
     methods
-        function obj = AltitudeTermCondition(altitude)
-            obj.altitude = altitude;
+        function obj = PeriapsisAltitudeTermCondition(perialt)
+            obj.perialt = perialt;
         end
         
         function evtTermCondFcnHndl = getEventTermCondFuncHandle(obj)            
-            evtTermCondFcnHndl = @(t,y) obj.eventTermCond(t,y, obj.altitude, obj.bodyInfo);
+            evtTermCondFcnHndl = @(t,y) obj.eventTermCond(t,y, obj.perialt, obj.bodyInfo);
         end
         
         function initTermCondition(obj, initialStateLogEntry)
@@ -21,7 +21,7 @@ classdef AltitudeTermCondition < AbstractEventTerminationCondition
         end
         
         function name = getName(obj)
-            name = sprintf('Altitude (%.3f km)', obj.altitude);
+            name = sprintf('Periapsis Altitude (%.3f km)', obj.perialt);
         end
         
         function tf = shouldBeReinitOnRestart(obj)
@@ -31,7 +31,7 @@ classdef AltitudeTermCondition < AbstractEventTerminationCondition
         function params = getTermCondUiStruct(obj)
             params = struct();
             
-            params.paramName = 'Altitude';
+            params.paramName = 'Peri. Altitude';
             params.paramUnit = 'km';
             params.useParam = 'on';
             params.useStages = 'off';
@@ -39,7 +39,7 @@ classdef AltitudeTermCondition < AbstractEventTerminationCondition
             params.useEngines = 'off';
             params.useStopwatches = 'off';
             
-            params.value = obj.altitude;
+            params.value = obj.perialt;
             params.refStage = LaunchVehicleStage.empty(1,0);
             params.refTank = LaunchVehicleEngine.empty(1,0);
             params.refEngine = LaunchVehicleEngine.empty(1,0);
@@ -47,7 +47,7 @@ classdef AltitudeTermCondition < AbstractEventTerminationCondition
         end
         
         function optVar = getNewOptVar(obj)
-            optVar = AltitudeOptimizationVariable(obj);
+            optVar = PeriapsisAltitudeOptimizationVariable(obj);
         end
         
         function optVar = getExistingOptVar(obj)
@@ -77,19 +77,24 @@ classdef AltitudeTermCondition < AbstractEventTerminationCondition
     
     methods(Static)
         function termCond = getTermCondForParams(paramValue, stage, tank, engine, stopwatch)
-            termCond = AltitudeTermCondition(paramValue);
+            termCond = PeriapsisAltitudeTermCondition(paramValue);
         end
     end
     
     methods(Static, Access=private)
-        function [value,isterminal,direction] = eventTermCond(~,y, targetAlt, bodyInfo)
+        function [value,isterminal,direction] = eventTermCond(~,y, targetPeriAlt, bodyInfo)
             rVect = y(1:3);
-
-            rMag = norm(rVect);
-            bRadius = bodyInfo.radius;
-            altitude = rMag - bRadius;
+            vVect = y(4:6);
             
-            value = altitude - targetAlt;
+            gmu = bodyInfo.gm;
+            [sma, ecc, ~, ~, ~, ~] = getKeplerFromState(rVect,vVect,gmu);
+            
+            [rAp, rPe] = computeApogeePerigee(sma, ecc);
+            
+            bRadius = bodyInfo.radius;
+            periAltitude = rPe - bRadius;
+            
+            value = periAltitude - targetPeriAlt;
             isterminal = 1;
             direction = 0;
         end

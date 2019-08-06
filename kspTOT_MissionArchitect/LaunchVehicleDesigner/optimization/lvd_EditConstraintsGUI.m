@@ -222,6 +222,10 @@ function mouseMovedCallback(jListbox, jEventData, hListbox, tooltipStrs)
 %    hoverValue = listValues{hoverIndex};
 
    % Modify the tooltip based on the hovered item
-   msgStr = tooltipStrs{hoverIndex};
-   set(hListbox, 'Tooltip',msgStr);
+   if(hoverIndex > 0 && hoverIndex <= length(tooltipStrs))
+       msgStr = tooltipStrs{hoverIndex};
+       set(hListbox, 'Tooltip',msgStr);
+   else
+       set(hListbox, 'Tooltip','');
+   end
        
