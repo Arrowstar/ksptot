@@ -389,7 +389,7 @@ function soITrans = findSoITransitions(initialState, maxSearchUT, soiSkipIds, ma
                 for(j=1:length(startPts)-1)
                     minUT_Opt = startPts(j);
                     maxUT_Opt = startPts(j+1);
-                    
+                                        
                     [crossingUTs(j), ~,~,~] = fminbnd(findChildSoITransFunc,minUT_Opt,maxUT_Opt, options);
                     minDistFromSOI2s(j) = findChildSoITransFuncRealSoI(crossingUTs(j));
                     
@@ -411,9 +411,20 @@ function soITrans = findSoITransitions(initialState, maxSearchUT, soiSkipIds, ma
             if(abs(minDistFromSOI2) > 0)
                 minUT = crossingUT-1200;
                 maxUT = crossingUT+1200;
-                [crossingUT,minDistFromSOI2] = bisection(findChildSoITransFuncNoAbs, minUT, maxUT, 0.0, tolX2);
+                unrefinedCrossingUt = crossingUT;
+                
+                [crossingUT,minDistFromSOI2, exitFlag] = bisection(findChildSoITransFuncNoAbs, minUT, maxUT, 0.0, tolX2);
                 if(minDistFromSOI2 > 0.01)
                     continue;
+                end
+                
+                if(minDistFromSOI2 < 0.01 && isnan(crossingUT))
+                    options = optimset('Display','off', 'TolX',tolX2);
+                    [crossingUT,minDistFromSOI2, exitFlag] = fzero(findChildSoITransFuncNoAbs, unrefinedCrossingUt, options);
+                    
+                    if(minDistFromSOI2 > 0.01)
+                        continue;
+                    end
                 end
             end
             

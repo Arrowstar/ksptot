@@ -15,15 +15,15 @@ function ma_UndoRedoAddState(handles, actionName)
     maData.stateLog = [];
     maData.celBodyData = [];
     maData.optimizer.problem = []; 
-    for(i=1:size(maData.script,2)) %#ok<*NO4LP>
-        if(isfield(maData.script{i},'centralBody'))
-            maData.script{i}.centralBody.atmopresscurve = [];
-            maData.script{i}.centralBody.atmotempcurve = [];
-            maData.script{i}.centralBody.atmotempsunmultcurve = [];
-            maData.script{i}.centralBody.lattempbiascurve = [];
-            maData.script{i}.centralBody.lattempsunmultcurve = [];
-        end
-    end
+%     for(i=1:size(maData.script,2)) %#ok<*NO4LP>
+%         if(isfield(maData.script{i},'centralBody'))
+%             maData.script{i}.centralBody.atmopresscurve = [];
+%             maData.script{i}.centralBody.atmotempcurve = [];
+%             maData.script{i}.centralBody.atmotempsunmultcurve = [];
+%             maData.script{i}.centralBody.lattempbiascurve = [];
+%             maData.script{i}.centralBody.lattempsunmultcurve = [];
+%         end
+%     end
     
     if(undo_pointer == 0)
         undo_states = {};
