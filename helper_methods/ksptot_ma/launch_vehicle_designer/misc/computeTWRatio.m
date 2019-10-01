@@ -7,5 +7,6 @@ function twRatio = computeTWRatio(throttle, ut, rVect, vVect, tankMasses, dryMas
     totalMass = (dryMass + sum(tankMasses))*1000; %kg          
     totalThrust = totalThrust * 1000; % N
 
-    twRatio = computeSLThrustToWeight(bodyInfo, totalThrust, totalMass);
+%     twRatio = computeSLThrustToWeight(bodyInfo, totalThrust, totalMass);
+    twRatio = computeTrueThrustToWeight(bodyInfo, totalThrust, totalMass, altitude);
 end
