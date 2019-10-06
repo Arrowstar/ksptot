@@ -105,10 +105,6 @@ function soITrans = findSoITransitions(initialState, maxSearchUT, soiSkipIds, ma
     downSoITrans = [];
     for(child = childBodies)
         childBodyInfo = child{1};
-                
-        if(strcmpi(childBodyInfo.name,'Duna') && initialState(13)==12)
-            a = 1;
-        end
         
         if(use_selective_soi_search && ismember(childBodyInfo.id,soiSkipIds))
             continue;
@@ -378,7 +374,7 @@ function soITrans = findSoITransitions(initialState, maxSearchUT, soiSkipIds, ma
                 if(minUT > maxUT)
                     continue;
                 end
-                
+                               
                 if(num_soi_search_attempts_per_rev > 1)
                     startPts = linspace(minUT,maxUT,num_soi_search_attempts_per_rev+1);
                 else

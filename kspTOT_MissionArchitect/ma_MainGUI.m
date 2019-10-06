@@ -2565,7 +2565,7 @@ function setNumSoITransSearchAttemptsMenu_Callback(hObject, eventdata, handles)
     writeOutput = getappdata(handles.ma_MainGUI,'write_to_output_func');
     
     input_str = sprintf(['Enter the number of SoI search attempts per search rev:\n',...
-                         '(Minimum = 1, Maximum = 100)\n',...
+                         '(Minimum = 1, Maximum = 10000)\n',...
                          '(The smaller the number, the faster the search but some SoI transitions may go missing.)\n',...
                          '(This will influence script execution speed and SoI transition search.)']);
     str = inputdlg(input_str, 'SoI Search Attempts', [1 75], {num2str(maData.settings.numSoiSearchAttemptsPerRev,'%i')});
@@ -2575,7 +2575,7 @@ function setNumSoITransSearchAttemptsMenu_Callback(hObject, eventdata, handles)
     
     str = str{1};
     
-    if(checkStrIsNumeric(str) && str2double(str) >= 1 && str2double(str) <= 100)
+    if(checkStrIsNumeric(str) && str2double(str) >= 1 && str2double(str) <= 10000)
         ma_UndoRedoAddState(handles, 'Update Num. of SoI Search Attempts');
         
 		str = num2str(ceil(str2double(str)));
