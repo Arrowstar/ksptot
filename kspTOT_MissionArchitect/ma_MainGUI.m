@@ -22,7 +22,7 @@ function varargout = ma_MainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_MainGUI
 
-% Last Modified by GUIDE v2.5 17-Feb-2019 17:01:19
+% Last Modified by GUIDE v2.5 11-Oct-2019 21:19:14
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -183,8 +183,8 @@ function maData = generateCleanMissionPlan(handles)
     maData.settings.numSoISearchRevs = 3;
     maData.settings.gravParamType = options_gravParamType; 
     maData.settings.optimAlg = 'interior-point';
-    maData.settings.soiSearchTol = 1E-6;
-    maData.settings.numSoiSearchAttemptsPerRev = 2;
+    maData.settings.soiSearchTol = 1E-12;
+    maData.settings.numSoiSearchAttemptsPerRev = 50;
     number_state_log_entries_per_coast = maData.settings.numStateLogPtsPerCoast;
     num_SoI_search_revs = maData.settings.numSoISearchRevs;
     strict_SoI_search = maData.settings.strictSoISearch;
@@ -2605,3 +2605,10 @@ function runScriptMenu_Callback(hObject, eventdata, handles)
     maData.stateLog = ma_executeScript(maData.script,handles,celBodyData,handles.scriptWorkingLbl);
     setappdata(handles.ma_MainGUI,'ma_data',maData);
     ma_processData(handles);
+
+
+% --------------------------------------------------------------------
+function soiTransitionSettingsMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to soiTransitionSettingsMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)

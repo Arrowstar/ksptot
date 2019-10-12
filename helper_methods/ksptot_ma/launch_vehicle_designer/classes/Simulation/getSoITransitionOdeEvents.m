@@ -31,12 +31,7 @@ function [value, isterminal, direction, causes] = getSoITransitionOdeEvents(ut, 
                 rSOI = getSOIRadius(childBodyInfo, bodyInfo);
 
                 val = distToChild - rSOI;
-%                 if(val < 0)
-%                     value(end+1) = 0; %#ok<AGROW>
-%                     direction(end+1) = -1; %#ok<AGROW>
-%                 else
-% 
-%                 end
+
                 value(end+1) = val; %#ok<AGROW>
                 direction(end+1) = -1; %#ok<AGROW>
                 isterminal(end+1) = 1; %#ok<AGROW>
