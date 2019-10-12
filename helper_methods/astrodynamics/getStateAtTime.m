@@ -20,6 +20,6 @@ function [rVect, vVect] = getStateAtTime(bodyInfo, time, gmu)
     if(length(tru) > 1)
         [rVect,vVect]=vect_getStatefromKepler(sma, ecc, inc, raan, argp, tru, gmu, true); 
     else
-        [rVect,vVect]=getStatefromKepler(sma, ecc, inc, raan, argp, tru, gmu, true);
+        [rVect,vVect]=getStatefromKepler(sma, ecc, inc, raan, argp, tru, gmu, false);
     end
 end

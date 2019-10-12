@@ -105,6 +105,7 @@ function soITrans = findSoITransitions(initialState, maxSearchUT, soiSkipIds, ma
     downSoITrans = [];
     
     searchableChildBodies = KSPTOT_BodyInfo.empty(1,0);
+    childBodySoIRadii = [];
     for(child = childBodies)
         childBodyInfo = child{1};
         
@@ -112,6 +113,7 @@ function soITrans = findSoITransitions(initialState, maxSearchUT, soiSkipIds, ma
             continue;
         else
             searchableChildBodies(end+1) = childBodyInfo; %#ok<AGROW>
+            childBodySoIRadii(end+1) = getSOIRadius(childBodyInfo, bodyInfo);
         end
     end
     
@@ -132,8 +134,8 @@ function soITrans = findSoITransitions(initialState, maxSearchUT, soiSkipIds, ma
         end
         y0 = meanIni;
         
-        odeEvtFcn = @(ut,mean) getSoITransitionOdeEvents(ut, mean, sma, ecc, inc, raan, arg, bodyInfo, gmu, searchableChildBodies, celBodyData);
-        options = odeset('RelTol',soi_search_tol, 'AbsTol',soi_search_tol, 'Events',odeEvtFcn, 'MaxStep',maxStepSize);
+        odeEvtFcn = @(ut,mean) getSoITransitionOdeEvents(ut, mean, sma, ecc, inc, raan, arg, bodyInfo, gmu, searchableChildBodies, childBodySoIRadii, celBodyData);
+        options = odeset('RelTol',soi_search_tol, 'AbsTol',soi_search_tol, 'Events',odeEvtFcn, 'MaxStep',maxStepSize, 'Refine',1, 'InitialStep',maxStepSize);
         
         [~,~,te,~,ie] = ode113(odefun,tspan,y0,options);
         
@@ -181,13 +183,13 @@ function meandot = soiSearchOdeFun(~, ~, meanMotion)
     meandot = meanMotion;
 end
 
-function [value, isterminal, direction] = getSoITransitionOdeEvents(ut, mean, sma, ecc, inc, raan, arg, bodyInfo, gmu, childBodies, celBodyData)
+function [value, isterminal, direction] = getSoITransitionOdeEvents(ut, mean, sma, ecc, inc, raan, arg, bodyInfo, gmu, childBodies, searchableChildBodies, celBodyData)
     value = [];
     isterminal = [];
     direction = [];
     
     tru = computeTrueAnomFromMean(mean, ecc);
-    [rVect, ~] = getStatefromKepler(sma, ecc, inc, raan, arg, tru, gmu);
+    [rVect, ~] = getStatefromKepler(sma, ecc, inc, raan, arg, tru, gmu, false);
 
     for(i=1:length(childBodies)) %#ok<*NO4LP>
         childBodyInfo = childBodies(i);
@@ -195,7 +197,8 @@ function [value, isterminal, direction] = getSoITransitionOdeEvents(ut, mean, sm
         dVect = getAbsPositBetweenSpacecraftAndBody(ut, rVect, bodyInfo, childBodyInfo, celBodyData);
         distToChild = norm(dVect);
 
-        rSOI = getSOIRadius(childBodyInfo, bodyInfo);
+%         rSOI = getSOIRadius(childBodyInfo, bodyInfo);
+        rSOI = searchableChildBodies(i);
 
         val = distToChild - rSOI;
         

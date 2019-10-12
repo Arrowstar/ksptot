@@ -2602,9 +2602,17 @@ function runScriptMenu_Callback(hObject, eventdata, handles)
     maData = getappdata(handles.ma_MainGUI,'ma_data');
     celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
     
+%     if(isdeployed)
+%         profile off; profile on;
+%     end
+
     maData.stateLog = ma_executeScript(maData.script,handles,celBodyData,handles.scriptWorkingLbl);
     setappdata(handles.ma_MainGUI,'ma_data',maData);
     ma_processData(handles);
+    
+%     if(isdeployed)
+%         profile viewer;
+%     end
 
 
 % --------------------------------------------------------------------
