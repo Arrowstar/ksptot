@@ -122,7 +122,7 @@ function soITrans = findSoITransitions(initialState, maxSearchUT, soiSkipIds, ma
         odefun = @(ut, mean) soiSearchOdeFun(ut, mean, meanMotion);
         
         [maxSearchUTComputed, maxStepSize] = getMaxSoISearchTime(ut, sma, ecc, truINI, bodyInfo, gmu, parentBodyInfo, num_SoI_search_revs, num_soi_search_attempts_per_rev);
-        if(not(isfinite(maxSearchUT)))
+        if(not(isfinite(maxSearchUT)) || isnan(maxSearchUT))
             maxSearchUT = maxSearchUTComputed;
         end
         
@@ -197,7 +197,6 @@ function [value, isterminal, direction] = getSoITransitionOdeEvents(ut, mean, sm
         dVect = getAbsPositBetweenSpacecraftAndBody(ut, rVect, bodyInfo, childBodyInfo, celBodyData);
         distToChild = norm(dVect);
 
-%         rSOI = getSOIRadius(childBodyInfo, bodyInfo);
         rSOI = searchableChildBodies(i);
 
         val = distToChild - rSOI;

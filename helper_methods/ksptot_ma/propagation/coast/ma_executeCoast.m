@@ -52,7 +52,7 @@ function eventLog = ma_executeCoast(coastEvent, initialState, eventNum, maData, 
             end
             
             for(r=1:revs) %#ok<*NO4LP>
-                eventLog = vertcat(eventLog,ma_executeCoast_goto_dt(period, initialState, eventNum, true, soiSkipIds, massLoss, orbitDecay, celBodyData)); %#ok<AGROW>
+                eventLog = vertcat(eventLog,ma_executeCoast_goto_dt(period, initialState, eventNum, false, soiSkipIds, massLoss, orbitDecay, celBodyData)); %#ok<AGROW>
                 initialState = eventLog(end,:);
             end
             coastINIState = eventLog(end,:);

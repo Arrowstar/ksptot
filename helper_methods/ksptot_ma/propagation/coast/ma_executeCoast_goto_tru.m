@@ -85,18 +85,24 @@ function eventLog = ma_executeCoast_goto_tru(truTarget, initialState, eventNum, 
             dt = getDtToTru(truTarget, sma, ecc, truINI, gmu);
             utTru = initialState(1) + dt;
         else
+            dt = NaN;
             utTru = Inf;
         end
         
-        soITrans = findSoITransitions(initialState, utTru, soiSkipIds, massLoss, orbitDecay, celBodyData);
-        SoITransEventLog = [];
-        if(~isempty(soITrans) && min(soITrans(:,2)) < utTru)            
-            SoITransEventLog = ma_executeCoast_goto_soi_trans(initialState, eventNum, utTru, soiSkipIds, massLoss, orbitDecay, celBodyData, soITrans);
-            goToUTEventLog = ma_executeCoast_goto_tru(truTarget, SoITransEventLog(end,:), eventNum, true, soiSkipIds, refBody, massLoss, orbitDecay, celBodyData);
-        else 
-            goToUTEventLog = ma_executeCoast_goto_tru(truTarget, initialState, eventNum, false, soiSkipIds, refBody, massLoss, orbitDecay, celBodyData);
+        if(not(isfinite(utTru)) || dt > 0)
+            soITrans = findSoITransitions(initialState, utTru, soiSkipIds, massLoss, orbitDecay, celBodyData);
+            SoITransEventLog = [];
+            if(~isempty(soITrans) && min(soITrans(:,2)) < utTru)            
+                SoITransEventLog = ma_executeCoast_goto_soi_trans(initialState, eventNum, utTru, soiSkipIds, massLoss, orbitDecay, celBodyData, soITrans);
+                goToUTEventLog = ma_executeCoast_goto_tru(truTarget, SoITransEventLog(end,:), eventNum, true, soiSkipIds, refBody, massLoss, orbitDecay, celBodyData);
+            else 
+                goToUTEventLog = ma_executeCoast_goto_tru(truTarget, initialState, eventNum, false, soiSkipIds, refBody, massLoss, orbitDecay, celBodyData);
+            end
+            eventLog = [SoITransEventLog; goToUTEventLog];
+        else
+            eventLog = initialState;
         end
-        eventLog = [SoITransEventLog; goToUTEventLog];
+        
         return;
     end
         
