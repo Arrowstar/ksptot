@@ -6,6 +6,10 @@ function temperature = getTemperatureAtAltitude(bodyInfo, altitude, lat, ut, rEC
         axialtempsunbias = computeAxialTempSunBias(ut, bodyInfo, parentGmu);
         ecctempbias = computeEccTempBias(ut, bodyInfo, parentGmu);
 
+%         sunDotNormal = 1.0;
+%         axialtempsunbias = 0.0;
+%         ecctempbias = 0.0;
+
         atmosphereTemperatureOffset = bodyInfo.lattempbiascurve(abs(lat)) + ...
                                       bodyInfo.lattempsunmultcurve(abs(lat))*sunDotNormal + ... 
                                       axialtempsunbias * bodyInfo.axialtempsunmultcurve(abs(lat)) + ...

@@ -7,20 +7,7 @@ function [density] = getAtmoDensityAtAltitude(bodyInfo, altitude, lat, ut, rECEF
         pressure = getPressureAtAltitude(bodyInfo, altitude);
         
         if(pressure > 0)
-            parentGmu = getParentGM(bodyInfo, celBodyData);
-            
-            sunDotNormal = computeSunDotNormal(ut, rECEF, bodyInfo, celBodyData);
-            axialtempsunbias = computeAxialTempSunBias(ut, bodyInfo, parentGmu);
-            ecctempbias = computeEccTempBias(ut, bodyInfo, parentGmu);
-            
-            atmosphereTemperatureOffset = bodyInfo.lattempbiascurve(abs(lat)) + ...
-                                          bodyInfo.lattempsunmultcurve(abs(lat))*sunDotNormal + ... 
-                                          axialtempsunbias * bodyInfo.axialtempsunmultcurve(abs(lat)) + ...
-                                          ecctempbias;
-
-            temperature = bodyInfo.atmotempcurve(altitude) + ... %base temperature
-                          bodyInfo.atmotempsunmultcurve(altitude) + ... % altitude-based multiplier to temperature delta
-                          atmosphereTemperatureOffset; 
+            temperature = getTemperatureAtAltitude(bodyInfo, altitude, lat, ut, rECEF, celBodyData);
 
             density = getDensityFromIdealGasLaw(pressure, temperature, bodyInfo.atmomolarmass);
             if(density < 0)
