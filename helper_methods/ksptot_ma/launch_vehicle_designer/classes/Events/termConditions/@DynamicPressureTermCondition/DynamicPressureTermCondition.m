@@ -89,8 +89,8 @@ classdef DynamicPressureTermCondition < AbstractEventTerminationCondition
             altitude = norm(rVectECI) - bodyInfo.radius;
 
             if(altitude <= bodyInfo.atmohgt && altitude >= 0)
-                [lat, ~, ~, ~, ~, ~, ~, vVectECEF] = getLatLongAltFromInertialVect(ut, rVectECI, bodyInfo, vVectECI);
-                density = getAtmoDensityAtAltitude(bodyInfo, altitude, lat); 
+                [lat, ~, ~, ~, ~, ~, rECEF, vVectECEF] = getLatLongAltFromInertialVect(ut, rVectECI, bodyInfo, vVectECI);
+                density = getAtmoDensityAtAltitude(bodyInfo, altitude, lat, ut, rECEF, struct()); 
             elseif(altitude <= 0)
                 density = 0;
                 vVectECEF = [0;0;0];
@@ -108,6 +108,7 @@ classdef DynamicPressureTermCondition < AbstractEventTerminationCondition
             value = dynP_kPa - targetDynP;
             isterminal = 1;
             direction = 0;
+            disp(value);
         end
     end
 end

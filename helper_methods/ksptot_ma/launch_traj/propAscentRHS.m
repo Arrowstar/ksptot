@@ -1,4 +1,4 @@
-function xdot = propAscentRHS(ut, x, gmu, lvPerfTable, pitchFit, headingAngle, bodyInfo)
+function xdot = propAscentRHS(ut, x, gmu, lvPerfTable, pitchFit, headingAngle, bodyInfo, celBodyData)
     rVect = x(1:3);
     r = norm(rVect);
     vVect = x(4:6);
@@ -24,7 +24,7 @@ function xdot = propAscentRHS(ut, x, gmu, lvPerfTable, pitchFit, headingAngle, b
     gAccel = -(gmu/r^3)*rVect; %km^3/s^2 / km^2 = km/s^2    
     
     dragCoeff = cDa;
-    dragAccel = getDragAccel(bodyInfo, ut, rVect, vVect, dragCoeff, m, 'Stock');
+    dragAccel = getDragAccel(bodyInfo, ut, rVect, vVect, dragCoeff, m, 'Stock', celBodyData);
 %     dragAccel = 0;
     
     xdot(1:3) = vVect;

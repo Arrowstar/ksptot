@@ -9,12 +9,16 @@ function [parentGm] = getParentGM(bodyInfo, celBodyData)
         parentBodyInfo = getParentBodyInfo(bodyInfo, celBodyData);
     end
     
-    switch options_gravParamType
-        case 'kspStockLike'
-            parentGm = parentBodyInfo.gm;
-        case 'rssLike'
-            parentGm = parentBodyInfo.gm + bodyInfo.gm;
-        otherwise
-            error('Unknown grav parameter option "%s"!', options_gravParamType);
+    if(not(isempty(parentBodyInfo)))
+        switch options_gravParamType
+            case 'kspStockLike'
+                parentGm = parentBodyInfo.gm;
+            case 'rssLike'
+                parentGm = parentBodyInfo.gm + bodyInfo.gm;
+            otherwise
+                error('Unknown grav parameter option "%s"!', options_gravParamType);
+        end
+    else
+        parentGm = 0;
     end
 end

@@ -40,6 +40,7 @@ function [taskList] = ma_getGraphAnalysisTaskList(excludeList)
     taskList{end+1} = 'Solar Beta Angle';
     taskList{end+1} = 'Dynamic Pressure';
     taskList{end+1} = 'Atmospheric Pressure';
+    taskList{end+1} = 'Atmospheric Temperature';
     taskList{end+1} = 'Atmospheric Density';
     taskList{end+1} = 'Distance to Ref. Celestial Body';
     taskList{end+1} = 'Elevation Angle of Ref. Celestial Body';

@@ -4,7 +4,11 @@ function [parentBodyInfo] = getParentBodyInfo(bodyInfo, celBodyData)
 
     parentName = lower(bodyInfo.parent);
     if(isfield(celBodyData,parentName))
-        parentBodyInfo = celBodyData.(parentName);
+        if(isempty(fieldnames(celBodyData)))
+            parentBodyInfo = bodyInfo.celBodyData.(parentName);
+        else
+            parentBodyInfo = celBodyData.(parentName);
+        end
     else
         parentBodyInfo = [];
     end

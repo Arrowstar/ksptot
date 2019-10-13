@@ -18,6 +18,9 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
         atmotempsunmultcurve
         lattempbiascurve
         lattempsunmultcurve
+        axialtempsunbiascurve = griddedInterpolant([0 1]',[0 0]','spline', 'nearest');
+        axialtempsunmultcurve = griddedInterpolant([0 1]',[0 0]','spline', 'nearest');
+        ecctempbiascurve = griddedInterpolant([0 1]',[0 0]','spline', 'nearest');
         atmomolarmass@double
         rotperiod@double
         rotini@double

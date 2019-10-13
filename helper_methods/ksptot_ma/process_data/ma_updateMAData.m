@@ -236,9 +236,8 @@ function maData = ma_updateMAData(maData, handles)
         names = fieldnames(maData.celBodyData);
         for(i=1:length(names))
             name = names{i};
-            if(not(isprop(maData.celBodyData.(name),'celBodyData')))
-                maData.celBodyData.(name).celBodyData = celBodyData;
-            end
+            maData.celBodyData.(name).celBodyData = maData.celBodyData;
+            [~] = maData.celBodyData.(name).getParBodyInfo(maData.celBodyData); %set that parent info now so that we don't have to handle it later
         end
     end
 end

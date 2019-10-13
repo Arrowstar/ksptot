@@ -796,6 +796,19 @@ function [unit, lbLim, ubLim, lbVal, ubVal, body, othersc, usesLbUb, usesCelBody
             usesCelBody = true;
             usesRefSc = false;
             
+        case 'Atmospheric Temperature'
+            unit = 'K';
+            lbLim = 0;
+            ubLim = Inf;
+            lbVal = 0;
+            ubVal = 0;
+            body = -1;
+            othersc = -1;
+            
+            usesLbUb = true;
+            usesCelBody = true;
+            usesRefSc = false;
+            
         case 'Atmospheric Density'
             unit = 'kg/m^3';
             lbLim = 0;

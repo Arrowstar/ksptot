@@ -24,8 +24,8 @@ classdef LiftForceModel < AbstractForceModel
             altitude = norm(rVectECI) - bodyInfo.radius;
 
             if(altitude <= bodyInfo.atmohgt && altitude >= 0)
-                [lat, ~, ~, ~, ~, ~, ~, vVectECEF] = getLatLongAltFromInertialVect(ut, rVectECI, bodyInfo, vVectECI);
-                density = getAtmoDensityAtAltitude(bodyInfo, altitude, lat); 
+                [lat, ~, ~, ~, ~, ~, rECEF, vVectECEF] = getLatLongAltFromInertialVect(ut, rVectECI, bodyInfo, vVectECI);
+                density = getAtmoDensityAtAltitude(bodyInfo, altitude, lat, ut, rECEF, struct()); 
             elseif(altitude <= 0)
                 density = 0;
             else 

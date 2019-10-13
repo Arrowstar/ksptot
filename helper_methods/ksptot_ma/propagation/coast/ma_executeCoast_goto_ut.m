@@ -72,7 +72,7 @@ function eventLog = ma_executeCoast_goto_ut(ut, initialState, eventNum, consider
         vesselArea = orbitDecay.scArea;
         f107Flux = orbitDecay.solarFlux;
         geomagneticIndex = orbitDecay.geoMagInd;
-        [sma, ecc, mean] = computeAtmosphericDecay(ut(2:end), sma, ecc, mean, bodyInfo, vesselMass, vesselArea, f107Flux, geomagneticIndex);
+        [sma, ecc, mean] = computeAtmosphericDecay(ut(2:end), sma, ecc, mean, bodyInfo, vesselMass, vesselArea, f107Flux, geomagneticIndex, celBodyData);
     end
     
     tru = computeTrueAnomFromMean(mean, ecc);

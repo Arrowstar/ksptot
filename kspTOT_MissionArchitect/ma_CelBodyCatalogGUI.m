@@ -150,18 +150,18 @@ function catalogListbox_Callback(hObject, eventdata, handles)
         end
         set(handles.dispAxes,'Position',get(handles.displayAtmoRadio,'UserData'));
     elseif(dispAtmoValue==1)
-        plotAtmoCurve(handles.dispAxes, bodyInfo);
+        plotAtmoCurve(handles.dispAxes, bodyInfo, celBodyData);
         set(handles.dispAxes,'OuterPosition',get(handles.displayAtmoRadio,'UserData'));
     end
     
-function plotAtmoCurve(orbitDispAxes, bodyInfo)
+function plotAtmoCurve(orbitDispAxes, bodyInfo, celBodyData)
     atmoHgt = bodyInfo.atmohgt;
     
     if(atmoHgt > 0)
         hArr = linspace(0,atmoHgt,100);
         density = zeros(size(hArr));
         for(i=1:length(hArr))
-            density(i) = getAtmoDensityAtAltitude(bodyInfo, hArr(i), deg2rad(45));
+            density(i) = getAtmoDensityAtAltitude(bodyInfo, hArr(i), deg2rad(45), 0, [bodyInfo.radius + hArr(i);0;0], celBodyData);
         end
 
         plot(orbitDispAxes,hArr,density,'r-','LineWidth',2);

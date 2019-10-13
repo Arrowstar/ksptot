@@ -1,4 +1,4 @@
-function [dragAccel, dragForce] = getDragAccel(bodyInfo, ut, rVectECI, vVectECI, dragCoeff, mass, dragModel)
+function [dragAccel, dragForce] = getDragAccel(bodyInfo, ut, rVectECI, vVectECI, dragCoeff, mass, dragModel, celBodyData)
 %getDragAccel Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -8,8 +8,8 @@ function [dragAccel, dragForce] = getDragAccel(bodyInfo, ut, rVectECI, vVectECI,
     altitude = norm(rVectECI) - bodyInfo.radius;
     
     if(altitude <= bodyInfo.atmohgt && altitude >= 0)
-        [lat, ~, ~, ~, ~, ~, ~, vVectECEF] = getLatLongAltFromInertialVect(ut, rVectECI, bodyInfo, vVectECI);
-        density = getAtmoDensityAtAltitude(bodyInfo, altitude, lat); 
+        [lat, ~, ~, ~, ~, ~, rVectECEF, vVectECEF] = getLatLongAltFromInertialVect(ut, rVectECI, bodyInfo, vVectECI);
+        density = getAtmoDensityAtAltitude(bodyInfo, altitude, lat, ut, rVectECEF, celBodyData); 
     elseif(altitude <= 0)
         density = 0;
     else 

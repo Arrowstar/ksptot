@@ -44,7 +44,16 @@ function [celBodyData] = processINIBodyInfo(celBodyDataFromINI, varargin)
         elseif(strcmpi(row{3}, 'latTempSunMultLats'))
             celBodyData = createCurveFitFromRows(celBodyDataFromINI, row{1}, 'latTempSunMultLats', 'latTempSunMults', 'latTempSunMultCurve', celBodyData);
             
-        elseif(any(strcmpi(row{3}, {'atmoPressPresses', 'atmoTempTemps', 'atmoTempSunMults', 'latTempBiases', 'latTempSunMults'})))
+        elseif(strcmpi(row{3}, 'axialtemperaturesunbiasdeg'))
+           celBodyData = createCurveFitFromRows(celBodyDataFromINI, row{1}, 'axialtemperaturesunbiasdeg', 'axialtemperaturesunbiases', 'axialTempSunBiasCurve', celBodyData);
+           
+        elseif(strcmpi(row{3}, 'axialtemperaturesunmultlats'))
+            celBodyData = createCurveFitFromRows(celBodyDataFromINI, row{1}, 'axialtemperaturesunmultlats', 'axialtemperaturesunmults', 'axialTempSunMultCurve', celBodyData);
+            
+        elseif(strcmpi(row{3}, 'eccentricitytemperaturebiaspts'))
+            celBodyData = createCurveFitFromRows(celBodyDataFromINI, row{1}, 'eccentricitytemperaturebiaspts', 'eccentricitytemperaturebiases', 'eccTempBiasCurve', celBodyData);
+            
+        elseif(any(strcmpi(row{3}, {'atmoPressPresses', 'atmoTempTemps', 'atmoTempSunMults', 'latTempBiases', 'latTempSunMults', 'axialtemperaturesunbiases', 'axialtemperaturesunmults', 'eccentricitytemperaturebiases'})))
             continue;
         else
             if(~checkStrIsNumeric(row{4})) 
@@ -76,6 +85,7 @@ function [celBodyData] = processINIBodyInfo(celBodyDataFromINI, varargin)
         for(i=1:length(names))
             name = names{i};
             celBodyData.(name).celBodyData = celBodyData;
+            [~] = celBodyData.(name).getParBodyInfo(celBodyData); %set that parent info now so that we don't have to handle it later
         end
     end
     

@@ -47,7 +47,7 @@ function [eventLog] = ma_executeAerobrake(initialState, eventNum, maneuverEvent,
     dragCoeff = maneuverEvent.dragCoeff;
     dragModel = maneuverEvent.dragModel;
     
-    dragAccelModel = @(ut,rVectECI,vVectECI,mass) getDragAccel(bodyInfo, ut, rVectECI, vVectECI, dragCoeff, mass, dragModel);
+    dragAccelModel = @(ut,rVectECI,vVectECI,mass) getDragAccel(bodyInfo, ut, rVectECI, vVectECI, dragCoeff, mass, dragModel, celBodyData);
     eventsModel = @(t,x) events(t, x, bodyInfo);
     
     rVect = reshape(rVect,1,3);

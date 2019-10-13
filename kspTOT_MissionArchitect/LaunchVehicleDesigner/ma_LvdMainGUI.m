@@ -695,9 +695,8 @@ function openMissionPlanMenu_Callback(hObject, eventdata, handles)
                 names = fieldnames(lvdData.celBodyData);
                 for(i=1:length(names))
                     name = names{i};
-                    if(not(isprop(lvdData.celBodyData.(name),'celBodyData')))
-                        lvdData.celBodyData.(name).celBodyData = celBodyData;
-                    end
+                    lvdData.celBodyData.(name).celBodyData = celBodyData;
+                    lvdData.celBodyData.(name).getParBodyInfo(lvdData.celBodyData);
                 end
             end
             

@@ -140,6 +140,9 @@ function [depVarValue, depVarUnit, prevDistTraveled, taskStr, refBodyInfo, other
         case 'Atmospheric Pressure'
             depVarValue = ma_GAAeroTasks(subLog(i,:), 'atmoPress', celBodyData);
             depVarUnit = 'kPa';
+        case 'Atmospheric Temperature'
+            depVarValue = ma_GAAeroTasks(subLog(i,:), 'atmoTemp', celBodyData);
+            depVarUnit = 'K';
         case 'Atmospheric Density'
             depVarValue = ma_GAAeroTasks(subLog(i,:), 'atmoDensity', celBodyData);
             depVarUnit = 'kg/m^3';
