@@ -16,8 +16,7 @@ function temperature = getTemperatureAtAltitude(bodyInfo, altitude, lat, ut, rEC
                                       ecctempbias;
 
         temperature = bodyInfo.atmotempcurve(altitude) + ... %base temperature
-                      bodyInfo.atmotempsunmultcurve(altitude) + ... % altitude-based multiplier to temperature delta
-                      atmosphereTemperatureOffset;
+                      atmosphereTemperatureOffset * bodyInfo.atmotempsunmultcurve(altitude); % altitude-based multiplier to temperature delta
     elseif(altitude <= 0)
         temperature = 0;
     else 
@@ -38,7 +37,7 @@ function sunDotNormal = computeSunDotNormal(ut, rECEF, bodyInfo, celBodyData)
 
         hra = angleNegPiToPi(dang(planarRvectEcef,planarRvectSunEcef));
 
-        sunDotNormal = 0.5 * cos(hra - deg2rad(45)) + 0.5;
+        sunDotNormal = 0.5 * cos(hra + deg2rad(45)) + 0.5;
     end
 end
 
