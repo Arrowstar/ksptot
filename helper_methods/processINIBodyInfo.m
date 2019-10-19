@@ -1,6 +1,8 @@
 function [celBodyData] = processINIBodyInfo(celBodyDataFromINI, varargin)
 %processINIBodyInfo Summary of this function goes here
 %   Detailed explanation goes here
+    clear findRow
+
     if(length(varargin)>=1)
         showWaitbar = varargin{1};
         
