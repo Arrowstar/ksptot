@@ -2158,6 +2158,7 @@ function editMissionNotesMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to editMissionNotesMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+    ma_UndoRedoAddState(handles, 'Edit Mission Notes');
     ma_MissionNotesGUI(handles.ma_MainGUI);
 
 
