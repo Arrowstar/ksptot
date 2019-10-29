@@ -18,6 +18,7 @@ helpsearch*/
 
 # Other directories to ignore
 background/
+codegen/
 deploy/
 KSPTrajectoryOptimizationTool/
 KSPTrajectoryOptimizationTool_resources/
