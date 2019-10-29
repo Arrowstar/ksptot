@@ -1,6 +1,6 @@
 clc; clear variables; format long g; close all;
 
-%Include matlabrc, hopefully
+%Incadlude matlabrc, hopefully
 %#function matlabrc
 
 %set pathes if not deployed

@@ -1,0 +1,43 @@
+<!-- saved from url=(0014)about:internet -->
+<html>
+<body>
+<script src="resources/eml_report_loadable_data.js"></script>
+<pre class="code">
+<span class="srcline"><span class="lineno"><a href="78,1" id="srcline1"> 1</a></span><span class="line"><span class="keyword">function</span> [<span class="var type1" id="S2T1U3">EccA</span>] = solveKepler(<span class="var type1" id="S3T1U6">mean</span>, <span class="var type1" id="S4T1U7">ecc</span>)</span></span>
+<span class="srcline"><span class="lineno"><a href="78,2" id="srcline2"> 2</a></span><span class="line"><span class="comment">%solveKepler Summary of this function goes here</span></span></span>
+<span class="srcline"><span class="lineno"><a href="78,3" id="srcline3"> 3</a></span><span class="line"><span class="comment">%   Detailed explanation goes here.</span></span></span>
+<span class="srcline"><span class="lineno"><a href="78,4" id="srcline4"> 4</a></span><span class="line">    <span class="mxinfo " id="T2:U4"><span class="var type1" id="S5T2U10">tol</span> = <span class="mxinfo " id="T2:U6">1E-12</span></span>;</span></span>
+<span class="srcline"><span class="lineno"><a href="78,5" id="srcline5"> 5</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="78,6" id="srcline6"> 6</a></span><span class="line">    <span class="keyword">if</span>(<span class="mxinfo " id="T28:U7"><span class="var type1" id="S4T1U16">ecc</span> &lt; <span class="mxinfo " id="T2:U9">1</span></span>)</span></span>
+<span class="srcline"><span class="lineno"><a href="78,7" id="srcline7"> 7</a></span><span class="line">        <span class="mxinfo " id="T5:U10"><span class="keyword">if</span>(<span class="mxinfo " id="T28:U11"><span class="var type1" id="S3T1U23">mean</span> &lt; <span class="mxinfo " id="T2:U13">0</span></span> || <span class="mxinfo " id="T28:U14"><span class="var type1" id="S3T1U26">mean</span> &gt; <span class="mxinfo " id="T2:U16"><span class="mxinfo " id="T2:U17">2</span>*<span class="mxinfo " id="T2:U18">pi</span></span></span>)</span></span>
+<span class="srcline"><span class="lineno"><a href="78,8" id="srcline8"> 8</a></span><span class="line">            <span class="mxinfo " id="T1:U19"><span class="var type1" id="S3T1U33">mean</span> = <span class="mxinfo " id="T1:U21"><span class="fcn" id="F20N2:B35">AngleZero2Pi</span>(<span class="var type1" id="S3T1U36">mean</span>)</span></span>;</span></span>
+<span class="srcline"><span class="lineno"><a href="78,9" id="srcline9"> 9</a></span><span class="line">        <span class="keyword">end</span></span></span></span>
+<span class="srcline"><span class="lineno"><a href="78,10" id="srcline10">10</a></span><span class="line">        <span class="keyword">if</span>(<span class="mxinfo " id="T28:U23"><span class="mxinfo " id="T1:U24">abs(<span class="mxinfo " id="T1:U25"><span class="var type1" id="S3T1U44">mean</span> - <span class="mxinfo " id="T2:U27">0</span></span>)</span> &lt; <span class="mxinfo " id="T2:U28">1E-8</span></span>)</span></span>
+<span class="srcline"><span class="lineno"><a href="78,11" id="srcline11">11</a></span><span class="line">            <span class="mxinfo " id="T1:U29"><span class="var type1" id="S2T1U49">EccA</span> = <span class="mxinfo " id="T2:U31">0</span></span>;</span></span>
+<span class="srcline"><span class="lineno"><a href="78,12" id="srcline12">12</a></span><span class="line">            <span class="keyword">return</span></span></span>
+<span class="srcline"><span class="lineno"><a href="78,13" id="srcline13">13</a></span><span class="line">        <span class="keyword">elseif</span>(<span class="mxinfo " id="T28:U32"><span class="mxinfo " id="T1:U33">abs(<span class="mxinfo " id="T1:U34"><span class="var type1" id="S3T1U58">mean</span> - <span class="mxinfo " id="T2:U36">pi</span></span>)</span> &lt; <span class="mxinfo " id="T2:U37">1E-8</span></span> )</span></span>
+<span class="srcline"><span class="lineno"><a href="78,14" id="srcline14">14</a></span><span class="line">            <span class="mxinfo " id="T1:U38"><span class="var type1" id="S2T1U64">EccA</span> = <span class="mxinfo " id="T2:U40">pi</span></span>;</span></span>
+<span class="srcline"><span class="lineno"><a href="78,15" id="srcline15">15</a></span><span class="line">            <span class="keyword">return</span>;</span></span>
+<span class="srcline"><span class="lineno"><a href="78,16" id="srcline16">16</a></span><span class="line">        <span class="keyword">else</span></span></span>
+<span class="srcline"><span class="lineno"><a href="78,17" id="srcline17">17</a></span><span class="line"><span class="comment">%             if(mean &lt; pi)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="78,18" id="srcline18">18</a></span><span class="line"><span class="comment">%                 lb = 0;</span></span></span>
+<span class="srcline"><span class="lineno"><a href="78,19" id="srcline19">19</a></span><span class="line"><span class="comment">%                 ub = pi;</span></span></span>
+<span class="srcline"><span class="lineno"><a href="78,20" id="srcline20">20</a></span><span class="line"><span class="comment">%             else</span></span></span>
+<span class="srcline"><span class="lineno"><a href="78,21" id="srcline21">21</a></span><span class="line"><span class="comment">%                 lb = pi;</span></span></span>
+<span class="srcline"><span class="lineno"><a href="78,22" id="srcline22">22</a></span><span class="line"><span class="comment">%                 ub = 2*pi;</span></span></span>
+<span class="srcline"><span class="lineno"><a href="78,23" id="srcline23">23</a></span><span class="line"><span class="comment">%             end</span></span></span>
+<span class="srcline"><span class="lineno"><a href="78,24" id="srcline24">24</a></span><span class="line">        <span class="keyword">end</span></span></span>
+<span class="srcline"><span class="lineno"><a href="78,25" id="srcline25">25</a></span><span class="line">        <span class="mxinfo " id="T1:U41"><span class="var type1" id="S2T1U71">EccA</span> = <span class="mxinfo " id="T1:U43"><span class="fcn" id="F239N15:B73">keplerEq</span>(<span class="var type1" id="S3T1U74">mean</span>,<span class="var type1" id="S4T1U75">ecc</span>,<span class="var type1" id="S5T2U76">tol</span>)</span></span>;</span></span>
+<span class="srcline"><span class="lineno"><a href="78,26" id="srcline26">26</a></span><span class="line">    <span class="keyword">else</span></span></span>
+<span class="srcline"><span class="lineno"><a href="78,27" id="srcline27">27</a></span><span class="line">        <span class="keyword">if</span>(<span class="mxinfo " id="T28:U47"><span class="mxinfo " id="T1:U48">abs(<span class="mxinfo " id="T1:U49"><span class="var type1" id="S3T1U85">mean</span> - <span class="mxinfo " id="T2:U51">0</span></span>)</span> &lt; <span class="mxinfo " id="T2:U52">1E-8</span></span>)</span></span>
+<span class="srcline"><span class="lineno"><a href="78,28" id="srcline28">28</a></span><span class="line">            <span class="mxinfo " id="T1:U53"><span class="var type1" id="S2T1U90">EccA</span> = <span class="mxinfo " id="T2:U55">0</span></span>;</span></span>
+<span class="srcline"><span class="lineno"><a href="78,29" id="srcline29">29</a></span><span class="line">            <span class="keyword">return</span></span></span>
+<span class="srcline"><span class="lineno"><a href="78,30" id="srcline30">30</a></span><span class="line">        <span class="keyword">else</span></span></span>
+<span class="srcline"><span class="lineno"><a href="78,31" id="srcline31">31</a></span><span class="line">            <span class="mxinfo " id="T1:U56"><span class="var type1" id="S2T1U96">EccA</span> = <span class="mxinfo " id="T1:U58"><span class="fcn" id="F540N16:B98">keplerEqHyp</span>(<span class="var type1" id="S3T1U99">mean</span>,<span class="var type1" id="S4T1U100">ecc</span>,<span class="var type1" id="S5T2U101">tol</span>)</span></span>;</span></span>
+<span class="srcline"><span class="lineno"><a href="78,32" id="srcline32">32</a></span><span class="line">        <span class="keyword">end</span></span></span>
+<span class="srcline"><span class="lineno"><a href="78,33" id="srcline33">33</a></span><span class="line">    <span class="keyword">end</span></span></span>
+<span class="srcline"><span class="lineno"><a href="78,34" id="srcline34">34</a></span><span class="line"><span class="keyword">end</span></span></span>
+<span class="srcline"><span class="lineno"><a href="78,35" id="srcline35">35</a></span><span class="line"></span></span>
+</pre>
+</body>
+</html>

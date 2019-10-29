@@ -1,0 +1,17 @@
+<!-- saved from url=(0014)about:internet -->
+<html>
+<body>
+<script src="resources/eml_report_loadable_data.js"></script>
+<pre class="code">
+<span class="srcline"><span class="lineno"><a href="75,1" id="srcline1"> 1</a></span><span class="line"><span class="keyword">function</span> [<span class="var type1" id="S2T1U3">tru</span>] = computeTrueAnomFromHypAnom(<span class="var type1" id="S3T1U6">HypA</span>, <span class="var type1" id="S4T1U7">ecc</span>)</span></span>
+<span class="srcline"><span class="lineno"><a href="75,2" id="srcline2"> 2</a></span><span class="line"><span class="comment">%computeTrueAnomFromHypAnom Summary of this function goes here</span></span></span>
+<span class="srcline"><span class="lineno"><a href="75,3" id="srcline3"> 3</a></span><span class="line"><span class="comment">%   Detailed explanation goes here</span></span></span>
+<span class="srcline"><span class="lineno"><a href="75,4" id="srcline4"> 4</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="75,5" id="srcline5"> 5</a></span><span class="line">    <span class="mxinfo " id="T1:U4"><span class="var type1" id="S5T1U10">upper</span> = <span class="mxinfo " id="T1:U6"><span class="mxinfo " id="T1:U7">sqrt(<span class="mxinfo " id="T1:U8"><span class="var type1" id="S4T1U15">ecc</span>+<span class="mxinfo " id="T2:U10">1</span></span>)</span> .* <span class="mxinfo " id="T1:U11">tanh(<span class="mxinfo " id="T1:U12"><span class="var type1" id="S3T1U20">HypA</span>/2</span>)</span></span></span>;</span></span>
+<span class="srcline"><span class="lineno"><a href="75,6" id="srcline6"> 6</a></span><span class="line">    <span class="mxinfo " id="T1:U14"><span class="var type1" id="S8T1U24">lower</span> = <span class="mxinfo " id="T1:U16">sqrt(<span class="mxinfo " id="T1:U17"><span class="var type1" id="S4T1U28">ecc</span>-<span class="mxinfo " id="T2:U19">1</span></span>)</span></span>;</span></span>
+<span class="srcline"><span class="lineno"><a href="75,7" id="srcline7"> 7</a></span><span class="line">    <span class="mxinfo " id="T1:U20"><span class="var type1" id="S2T1U32">tru</span> = <span class="mxinfo " id="T1:U22"><span class="mxinfo " id="T1:U23">atan2(<span class="var type1" id="S5T1U36">upper</span>, <span class="var type1" id="S8T1U37">lower</span>)</span> * <span class="mxinfo " id="T2:U26">2</span></span></span>;</span></span>
+<span class="srcline"><span class="lineno"><a href="75,8" id="srcline8"> 8</a></span><span class="line"><span class="keyword">end</span></span></span>
+<span class="srcline"><span class="lineno"><a href="75,9" id="srcline9"> 9</a></span><span class="line"></span></span>
+</pre>
+</body>
+</html>
