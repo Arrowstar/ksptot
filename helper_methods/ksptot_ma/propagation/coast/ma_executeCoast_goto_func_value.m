@@ -4,19 +4,40 @@ function eventLog = ma_executeCoast_goto_func_value(event, initialState, eventNu
     global number_state_log_entries_per_coast;
     
     old_number_state_log_entries_per_coast = number_state_log_entries_per_coast;
-    number_state_log_entries_per_coast = 10; %#ok<NASGU>
+    number_state_log_entries_per_coast = 5; %#ok<NASGU>
     
     bnds = [0, event.maxPropTime];
     func = @(dt) getCoastFuncValue(dt, event.funcHandle, event.coastToValue, initialState, eventNum, considerSoITransitions, soiSkipIds, massLoss, orbitDecay, maData, celBodyData);
-    options = optimset('TolX',1E-6);
-    [x, fval, exitflag] = fminbnd(func, bnds(1), bnds(2), options);
+%     options = optimset('TolX',1E-6);
+%     [x, fval, exitflag] = fminbnd(func, bnds(1), bnds(2), options);
+% 
+%     if(exitflag == 0 || abs(fval) > 1E-4)
+%         x = event.maxPropTime;
+%     end
+
+    odeFunc = @(t,y) odefun(t,y);
+    evtFnc = @(t,y) odeEventsFun(t,y,func);
+    options = odeset('RelTol',1E-4, 'AbsTol',1E-4, 'Events',evtFnc, 'MaxStep',abs(diff(bnds))/10);
+    [~,~,te,~,ie] = ode45(odeFunc, bnds, bnds(1), options);
     
-    if(exitflag == 0 || abs(fval) > 1E-4)
+    if(isempty(ie))
         x = event.maxPropTime;
+    else
+        x = te(1);
     end
     
     number_state_log_entries_per_coast = old_number_state_log_entries_per_coast;
     eventLog = ma_executeCoast_goto_dt(x, initialState, eventNum, considerSoITransitions, soiSkipIds, massLoss, orbitDecay, celBodyData);
+end
+
+function ydot = odefun(~,~)
+    ydot = 1;
+end
+
+function [value,isterminal,direction] = odeEventsFun(t,~, func)
+    value = func(t);
+    isterminal = 1;
+    direction = 0;
 end
 
 function value = getCoastFuncValue(dt, funcHandle, desiredValue, initialState, eventNum, considerSoITransitions, soiSkipIds, massLoss, orbitDecay, maData, celBodyData)
@@ -24,5 +45,6 @@ function value = getCoastFuncValue(dt, funcHandle, desiredValue, initialState, e
     finalState = eventLog(end,:);
     
     [datapt, ~, ~, taskStr, refBodyInfo, otherSC, station] = funcHandle(finalState, false, maData);
-    value = abs(datapt - desiredValue);
+%     value = abs(datapt - desiredValue);
+    value = datapt - desiredValue;
 end
