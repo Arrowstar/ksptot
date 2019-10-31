@@ -8,20 +8,19 @@ function eventLog = ma_executeCoast_goto_func_value(event, initialState, eventNu
     
     bnds = [0, event.maxPropTime];
     func = @(dt) getCoastFuncValue(dt, event.funcHandle, event.coastToValue, initialState, eventNum, considerSoITransitions, soiSkipIds, massLoss, orbitDecay, maData, celBodyData);
-%     options = optimset('TolX',1E-6);
-%     [x, fval, exitflag] = fminbnd(func, bnds(1), bnds(2), options);
-% 
-%     if(exitflag == 0 || abs(fval) > 1E-4)
-%         x = event.maxPropTime;
-%     end
 
     odeFunc = @(t,y) odefun(t,y);
     evtFnc = @(t,y) odeEventsFun(t,y,func);
-    options = odeset('RelTol',1E-4, 'AbsTol',1E-4, 'Events',evtFnc, 'MaxStep',abs(diff(bnds))/10);
+    options = odeset('RelTol',1E-6, 'AbsTol',1E-6, 'Events',evtFnc, 'MaxStep',abs(diff(bnds))/50);
     [~,~,te,~,ie] = ode45(odeFunc, bnds, bnds(1), options);
     
-    if(isempty(ie))
-        x = event.maxPropTime;
+    if(isempty(ie)) %fall back to old way of doing things
+        options = optimset('TolX',1E-6);
+        [x, fval, exitflag] = fminbnd(func, bnds(1), bnds(2), options);
+
+        if(exitflag == 0 || abs(fval) > 1E-4)
+            x = event.maxPropTime;
+        end
     else
         x = te(1);
     end
