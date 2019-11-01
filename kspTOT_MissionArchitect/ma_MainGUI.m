@@ -22,7 +22,7 @@ function varargout = ma_MainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_MainGUI
 
-% Last Modified by GUIDE v2.5 11-Oct-2019 21:19:14
+% Last Modified by GUIDE v2.5 31-Oct-2019 20:20:58
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -185,6 +185,7 @@ function maData = generateCleanMissionPlan(handles)
     maData.settings.optimAlg = 'interior-point';
     maData.settings.soiSearchTol = 1E-12;
     maData.settings.numSoiSearchAttemptsPerRev = 1000;
+    maData.settings.autoPropScript = true;
     number_state_log_entries_per_coast = maData.settings.numStateLogPtsPerCoast;
     num_SoI_search_revs = maData.settings.numSoISearchRevs;
     strict_SoI_search = maData.settings.strictSoISearch;
@@ -192,7 +193,7 @@ function maData = generateCleanMissionPlan(handles)
     soi_search_tol = maData.settings.soiSearchTol;
     num_soi_search_attempts_per_rev = maData.settings.numSoiSearchAttemptsPerRev;
 
-    maData.stateLog = ma_executeScript(maData.script, handles, celBodyData, []);
+    maData.stateLog = ma_executeScript(maData.script, handles, celBodyData, [], true);
     
 	maData.optimizer = struct();
     maData.optimizer.variables = {};
@@ -657,7 +658,7 @@ function openMissionPlanMenu_Callback(hObject, eventdata, handles)
             num_soi_search_attempts_per_rev = maData.settings.numSoiSearchAttemptsPerRev;
             
             setappdata(handles.ma_MainGUI,'ma_data',maData);
-            maData.stateLog = ma_executeScript(maData.script, handles, celBodyData, handles.scriptWorkingLbl);
+            maData.stateLog = ma_executeScript(maData.script, handles, celBodyData, handles.scriptWorkingLbl, true);
             setappdata(handles.ma_MainGUI,'ma_data',maData);
             setappdata(handles.ma_MainGUI,'current_save_location',filePath);
             
@@ -2607,7 +2608,7 @@ function runScriptMenu_Callback(hObject, eventdata, handles)
 %         profile off; profile on;
 %     end
 
-    maData.stateLog = ma_executeScript(maData.script,handles,celBodyData,handles.scriptWorkingLbl);
+    maData.stateLog = ma_executeScript(maData.script,handles,celBodyData,handles.scriptWorkingLbl, true);
     setappdata(handles.ma_MainGUI,'ma_data',maData);
     ma_processData(handles);
     
@@ -2621,3 +2622,48 @@ function soiTransitionSettingsMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to soiTransitionSettingsMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function simulationMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to simulationMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function autopropagateMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to autopropagateMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    maData = getappdata(handles.ma_MainGUI,'ma_data');
+    writeOutput = getappdata(handles.ma_MainGUI,'write_to_output_func');
+    
+    ma_UndoRedoAddState(handles, 'Edit Script Auto-Propagation');
+    
+    if(strcmp(get(gcbo, 'Checked'),'on'))
+        maData.settings.autoPropScript = false;
+        
+        writeOutput('Script auto-propagation is off.  Run script manually with ctrl-p.','append');
+    else
+        maData.settings.autoPropScript = true;
+        
+        writeOutput('Script auto-propagation is on.','append');
+    end
+    
+    setappdata(handles.ma_MainGUI,'ma_data',maData);
+    
+    
+% --------------------------------------------------------------------
+function scriptMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to scriptMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    maData = getappdata(handles.ma_MainGUI,'ma_data');
+    
+	isAutoProp = maData.settings.autoPropScript;
+    if(isAutoProp==true)
+        set(handles.autopropagateMenu, 'Checked', 'on');
+    else
+        set(handles.autopropagateMenu, 'Checked', 'off');
+    end

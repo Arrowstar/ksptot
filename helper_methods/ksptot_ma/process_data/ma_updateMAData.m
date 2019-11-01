@@ -240,4 +240,8 @@ function maData = ma_updateMAData(maData, handles)
             [~] = maData.celBodyData.(name).getParBodyInfo(maData.celBodyData); %set that parent info now so that we don't have to handle it later
         end
     end
+    
+    if(~isfield(maData.settings,'autoPropScript'))
+        maData.settings.autoPropScript = true;
+    end
 end

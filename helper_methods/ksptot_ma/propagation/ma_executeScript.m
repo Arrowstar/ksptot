@@ -21,18 +21,35 @@ function stateLog = ma_executeScript(script,handles,celBodyData,varargin)
     writeOutput = getappdata(handles.ma_MainGUI,'write_to_output_func');
     maData      = getappdata(handles.ma_MainGUI,'ma_data');
     
+    if(numel(varargin) >= 2)
+        forcePropScript = varargin{2};
+    else
+        forcePropScript = false;
+    end
+    
+    if(isempty(maData) || forcePropScript == true || maData.settings.autoPropScript == true)
+        stateLog = propagateScript(script,handles,celBodyData,maData,writeOutput,varargin);
+    else
+        set(handles.scriptResultsOutOfDateLbl,'visible','on');
+        
+        stateLog = maData.stateLog;
+    end
+end
+
+function stateLog = propagateScript(script,handles,celBodyData,maData,writeOutput,vInputs)
     if(isempty(maData))
         otherSCs = {};
     else
         otherSCs = maData.spacecraft.otherSC;
     end
     
-    if(~isempty(varargin))
-        hScriptWorkingLbl = varargin{1};
+    if(numel(vInputs) >= 1)
+        hScriptWorkingLbl = vInputs{1};
     else
         hScriptWorkingLbl = [];
     end
     
+    set(handles.scriptResultsOutOfDateLbl,'visible','off');
     if(ishandle(hScriptWorkingLbl))
         set(hScriptWorkingLbl,'visible','on');
         drawnow;
@@ -64,7 +81,6 @@ function stateLog = ma_executeScript(script,handles,celBodyData,varargin)
     try
         checkForOptimConstraintViolations(maData, celBodyData);
     catch ME
-        a = 1;
         %don't want anything to happen here...
     end
     
@@ -79,4 +95,3 @@ function stateLog = ma_executeScript(script,handles,celBodyData,varargin)
         drawnow;
     end
 end
-
