@@ -16,6 +16,9 @@ classdef LvdSettings < matlab.mixin.SetGet
         optUsePara(1,1) logical = false;
         optAlgo LvdOptimAlgorithmEnum = LvdOptimAlgorithmEnum.InteriorPoint
         optScaleProp(1,1) logical = true;
+        
+        %auto-propagation
+        autoPropScript(2,1) logical = true;
     end
     
     methods
