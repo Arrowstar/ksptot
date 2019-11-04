@@ -1,4 +1,4 @@
-function [g] = computeGradAtPoint(fun, x0, h, diffType, numPts, useParallel)
+function [g] = computeGradAtPoint(fun, x0, fAtX0, h, diffType, numPts, useParallel)
 %computeGradAtPoint Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -52,7 +52,12 @@ function [g] = computeGradAtPoint(fun, x0, h, diffType, numPts, useParallel)
         numerator = 0;
         for(j=1:numPtsToEval)
             if(diffCoeff(j) ~= 0) %#ok<PFBNS> %otherwise we're just adding zero regardless
-                numerator = numerator + diffCoeff(j) * fun(xToEvalAt(:,j)); %#ok<PFBNS>
+                if(not(isempty(fAtX0)) && all(x0 == xToEvalAt(:,j)))
+                    fAtX = fAtX0;
+                else
+                    fAtX = fun(xToEvalAt(:,j)); %#ok<PFBNS>
+                end
+                numerator = numerator + diffCoeff(j) * fAtX; 
             end
         end
         
