@@ -14,7 +14,6 @@ function [g] = computeGradAtPoint(fun, x0, h, diffType, numPts, useParallel)
         end
         
         xPts = [-numPtsPerSide:1:0, 1:1:numPtsPerSide];
-        disp(xPts);
     elseif(strcmpi(diffType,'forward'))
         xPts = 0:1:(numPts-1);
     elseif(strcmpi(diffType,'backward'))
