@@ -2,24 +2,28 @@ function [g] = computeGradAtPoint(fun, x0, fAtX0, h, diffType, numPts, useParall
 %computeGradAtPoint Summary of this function goes here
 %   Detailed explanation goes here
 
-    if(strcmpi(diffType,'central'))
-        if(mod(numPts,2) == 0) %even
-            numPtsPerSide = numPts/2;
-        else %odd
-            numPtsPerSide = (numPts-1)/2;
-        end        
-        
-        if(numPtsPerSide <= 0)
-            numPtsPerSide = 1;
-        end
-        
-        xPts = [-numPtsPerSide:1:0, 1:1:numPtsPerSide];
-    elseif(strcmpi(diffType,'forward'))
-        xPts = 0:1:(numPts-1);
-    elseif(strcmpi(diffType,'backward'))
-        xPts = 0:-1:(numPts-1);
-    else
-        error('Invalid finite difference type!  Only forward, backward, and central allowed!');
+    switch diffType
+        case FiniteDiffTypeEnum.Central
+            if(mod(numPts,2) == 0) %even
+                numPtsPerSide = numPts/2;
+            else %odd
+                numPtsPerSide = (numPts-1)/2;
+            end        
+
+            if(numPtsPerSide <= 0)
+                numPtsPerSide = 1;
+            end
+
+            xPts = [-numPtsPerSide:1:0, 1:1:numPtsPerSide];
+            
+        case FiniteDiffTypeEnum.Forward
+            xPts = 0:1:(numPts-1);
+            
+        case FiniteDiffTypeEnum.Backward
+            xPts = 0:-1:(numPts-1);
+            
+        otherwise
+            error('Invalid finite difference type!  Only forward, backward, and central allowed!');
     end
     xPts = xPts(:)';
 
