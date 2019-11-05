@@ -1,4 +1,4 @@
-function [stop,options,optchanged] = ma_OptimOutputFunc(x, optimValues, state, handles, problem, celBodyData, recorder, propNames, writeOutput, varLabels, lbUsAll, ubUsAll)
+function [stop,options,optchanged] = ma_OptimOutputFunc(x, optimValues, state, handles, objFcn, lb, ub, celBodyData, recorder, propNames, writeOutput, varLabels, lbUsAll, ubUsAll)
     if(isstruct(x)) %covers for patternsearch, need to map fmincon output function inputs to patternsearch ones
         options = optimValues;
         optchanged = false;
@@ -27,7 +27,15 @@ function [stop,options,optchanged] = ma_OptimOutputFunc(x, optimValues, state, h
         return;
     end
     
-    [~, stateLog] = problem.objective(x);
+    try
+        [~, ~, stateLog] = objFcn(x);
+    catch ME
+        try
+            [~, stateLog] = objFcn(x);
+        catch ME
+            error('Objective function must return either 2 or 3 objects.');
+        end
+    end
 
     if(isa(stateLog,'LaunchVehicleStateLog'))
         stateLog = stateLog.getMAFormattedStateLogMatrix();
@@ -36,7 +44,7 @@ function [stop,options,optchanged] = ma_OptimOutputFunc(x, optimValues, state, h
     if(strcmpi(state,'init') || strcmpi(state,'iter'))
         writeOptimStatus(handles, optimValues, state, writeOutput);
         writeFinalState(handles, stateLog, celBodyData, propNames);
-        generatePlots(x, optimValues, state, handles, problem.lb, problem.ub, varLabels, lbUsAll, ubUsAll);
+        generatePlots(x, optimValues, state, handles, lb, ub, varLabels, lbUsAll, ubUsAll);
         drawnow;
     end
 end

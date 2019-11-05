@@ -1145,7 +1145,21 @@ function reoptimizeMission_Callback(hObject, eventdata, handles)
             close(hWaitbar);
 
             writeOutput = getappdata(handles.ma_MainGUI,'write_to_output_func');
-            ma_ObserveOptimGUI(celBodyData, problem, false, writeOutput, handles.ma_MainGUI, varStrs);
+            handlesObsOptimGui = ma_ObserveOptimGUI();
+            handlesObsOptimGui.ma_MainGUI = handles.ma_MainGUI; 
+            
+            propNames = maData.spacecraft.propellant.names;
+            varLabels = [];
+            lbUsAll = problem.lb;
+            ubUsAll = problem.ub;
+            
+            recorder = ma_OptimRecorder();
+            outputFnc = @(x, optimValues, state) ma_OptimOutputFunc(x, optimValues, state, handlesObsOptimGui, problem.objective, problem.lb, problem.ub, celBodyData, recorder, propNames, writeOutput, varLabels, lbUsAll, ubUsAll);
+            problem.options.OutputFcn = outputFnc;
+
+            executeOptimProblem(handlesObsOptimGui, problem, recorder);
+            close(handlesObsOptimGui.ma_ObserveOptimGUI);
+            
             ma_processData(handles);
         end
     end

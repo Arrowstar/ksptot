@@ -1,7 +1,7 @@
 classdef ObjectiveFunctionEnum < matlab.mixin.SetGet
     %ObjectiveFunctionEnum Summary of this class goes here
     %   Detailed explanation goes here
-    
+    %%%% See ConstraintEnum!
     enumeration
         NoObjectiveFunction('Satisfy Constraints Only','NoOptimizationObjectiveFcn')
         MinDistToBody('Minimize Distance to Body','MinDistanceToBodyObjectiveFcn')

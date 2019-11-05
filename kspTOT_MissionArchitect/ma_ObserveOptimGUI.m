@@ -55,37 +55,37 @@ function ma_ObserveOptimGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 % Choose default command line output for ma_ObserveOptimGUI
 handles.output = hObject;
 
-celBodyData = varargin{1};
-problem = varargin{2};
+% celBodyData = varargin{1};
+% problem = varargin{2};
+% 
+% if(length(varargin) >= 3)
+%     isLVD = varargin{3};
+% else
+%     isLVD = true;
+% end
+% 
+% if(length(varargin) >= 4)
+%     writeOutput = varargin{4};    
+% end
 
-if(length(varargin) >= 3)
-    isLVD = varargin{3};
-else
-    isLVD = true;
-end
+% propNames = {'Liquid Fuel/Ox','Monopropellant','Xenon'};
+% if(length(varargin) >= 5 && ~isempty(varargin{5}))
+%     handles.ma_MainGUI = varargin{5};  
+%     maData = getappdata(handles.ma_MainGUI,'ma_data');
+%     propNames = maData.spacecraft.propellant.names;
+% end
 
-if(length(varargin) >= 4)
-    writeOutput = varargin{4};    
-end
+% varLabels = [];
+% if(length(varargin) >= 6)
+%     varLabels = varargin{6};
+% end
 
-propNames = {'Liquid Fuel/Ox','Monopropellant','Xenon'};
-if(length(varargin) >= 5 && ~isempty(varargin{5}))
-    handles.ma_MainGUI = varargin{5};  
-    maData = getappdata(handles.ma_MainGUI,'ma_data');
-    propNames = maData.spacecraft.propellant.names;
-end
-
-varLabels = [];
-if(length(varargin) >= 6)
-    varLabels = varargin{6};
-end
-
-lbUsAll = problem.lb;
-ubUsAll = problem.ub;
-if(length(varargin) >= 8)
-    lbUsAll = varargin{7};
-    ubUsAll = varargin{8};
-end
+% lbUsAll = problem.lb;
+% ubUsAll = problem.ub;
+% if(length(varargin) >= 8)
+%     lbUsAll = varargin{7};
+%     ubUsAll = varargin{8};
+% end
 
 % Update handles structure
 guidata(hObject, handles);
@@ -100,19 +100,18 @@ set(handles.dispAxes,'ZTickLabel',[]);
 set(handles.dispAxes,'Visible','off');
 drawnow;
 
-% celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
-recorder = ma_OptimRecorder();
-outputFnc = @(x, optimValues, state) ma_OptimOutputFunc(x, optimValues, state, handles, problem, celBodyData, recorder, propNames, writeOutput, varLabels, lbUsAll, ubUsAll);
-problem.options.OutputFcn = outputFnc;
+% recorder = ma_OptimRecorder();
+% outputFnc = @(x, optimValues, state) ma_OptimOutputFunc(x, optimValues, state, handles, problem.objective, problem.lb, problem.ub, celBodyData, recorder, propNames, writeOutput, varLabels, lbUsAll, ubUsAll);
+% problem.options.OutputFcn = outputFnc;
 datacursormode(handles.ma_ObserveOptimGUI,'on');
 
-if(not(isLVD))
-    executeOptimProblem(handles, problem, recorder);
-else
-    lvd_executeOptimProblem(celBodyData, writeOutput, problem, recorder);
-end
+% if(not(isLVD))
+%     executeOptimProblem(handles, problem, recorder);
+% else
+%     lvd_executeOptimProblem(celBodyData, writeOutput, problem, recorder);
+% end
 
-close(handles.ma_ObserveOptimGUI);
+% close(handles.ma_ObserveOptimGUI);
 
 % UIWAIT makes ma_ObserveOptimGUI wait for user response (see UIRESUME)
 % uiwait(handles.ma_ObserveOptimGUI);
@@ -127,7 +126,7 @@ function varargout = ma_ObserveOptimGUI_OutputFcn(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Get default command line output from handles structure
-varargout{1} = [];
+varargout{1} = handles;
 
 
 % --- Executes on button press in pauseButton.
