@@ -4,13 +4,11 @@ classdef FminconOptimizer < AbstractGradientOptimizer
     
     properties(Access = private)
         options(1,1) FminconOptions = FminconOptions();
-        gradCalcMethod(1,1) AbstractGradientCalculationMethod = CustomFiniteDiffsCalculationMethod();
     end
     
     methods
         function obj = FminconOptimizer()
             obj.options = FminconOptions();
-            obj.gradCalcMethod = CustomFiniteDiffsCalculationMethod();
         end
         
         function optimize(obj, lvdOpt, writeOutput)
@@ -27,7 +25,8 @@ classdef FminconOptimizer < AbstractGradientOptimizer
             
             objFuncWrapper = @(x) lvdOpt.objFcn.evalObjFcn(x, evtToStartScriptExecAt);
             nonlcon = @(x) lvdOpt.constraints.evalConstraints(x, true, evtToStartScriptExecAt, true);
-                        
+                
+            %%% These three need to be removed once the options are set up!
             usePara = lvdOpt.lvdData.settings.optUsePara;
             scaleProb = lvdOpt.lvdData.settings.getScaleProbStr();
             optimAlg = lvdOpt.lvdData.settings.optAlgo.algoName;
@@ -35,11 +34,12 @@ classdef FminconOptimizer < AbstractGradientOptimizer
             opts = obj.options.getOptionsForOptimizer(typicalX);
             opts = optimoptions(opts, 'UseParallel',usePara, 'ScaleProblem',scaleProb, 'Algorithm',optimAlg, 'CheckGradients',true);
             
-            if(obj.gradCalcMethod.useBuiltInMethod())
+            if(lvdOpt.gradAlgo == LvdOptimizerGradientCalculationAlgoEnum.BuiltIn)
                 objFunToPass = objFuncWrapper;
                 opts = optimoptions(opts, 'SpecifyObjectiveGradient',false);
-            else
-                objFunToPass = @(x) obj.objFuncWithGradient(objFuncWrapper, x, usePara);
+            elseif(lvdOpt.gradAlgo == LvdOptimizerGradientCalculationAlgoEnum.FiniteDifferences)
+                gradCalcMethod = lvdOpt.customFiniteDiffsCalcMethod;
+                objFunToPass = @(x) obj.objFuncWithGradient(objFuncWrapper, x, gradCalcMethod, usePara);
                 opts = optimoptions(opts, 'SpecifyObjectiveGradient',true);
             end
             
@@ -69,11 +69,11 @@ classdef FminconOptimizer < AbstractGradientOptimizer
     end
     
     methods(Access=private)
-        function [f, g, stateLog] = objFuncWithGradient(obj, objFun, x, useParallel)
+        function [f, g, stateLog] = objFuncWithGradient(~, objFun, x, gradCalcMethod,useParallel)
             [f, stateLog] = objFun(x);
             
             if(nargout >= 2)
-                g = obj.gradCalcMethod.computeGrad(objFun, x, f, useParallel);
+                g = gradCalcMethod.computeGrad(objFun, x, f, useParallel);
             end
         end
     end

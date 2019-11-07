@@ -22,7 +22,7 @@ function varargout = ma_LvdMainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_LvdMainGUI
 
-% Last Modified by GUIDE v2.5 31-Oct-2019 19:52:33
+% Last Modified by GUIDE v2.5 06-Nov-2019 18:40:36
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1753,3 +1753,74 @@ function autopropagateMenu_Callback(hObject, eventdata, handles)
         
         writeOutput('Script auto-propagation is on.','append');
     end
+
+
+% --------------------------------------------------------------------
+function showConstrJacobianHeatMapMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to showConstrJacobianHeatMapMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    
+    constrLbls = lvdData.optimizer.constraints.getListboxStr();
+    [x0All, ~, varLbls] = lvdData.optimizer.vars.getTotalScaledXVector();
+    
+    if(~isempty(constrLbls) && ~isempty(varLbls))
+        hHlpDlg = helpdlg('Computing constraint Jacobian with current trajectory.  Please wait...','Computing Jacobian');
+        
+        try
+            evtToStartScriptExecAt = lvdData.script.getEventForInd(1);
+            nonlcon = @(x) lvdData.optimizer.constraints.evalConstraints(x, true, evtToStartScriptExecAt, false);
+            jacNonlcon = @(x) computeJacNonlconFunc(x, nonlcon);
+
+            jac = abs(mklJac(jacNonlcon, x0All));
+
+            zeroColInds = find(all(jac < eps));
+            totalColInds = 1:1:size(jac,2);
+            nonZeroColInds = setdiff(totalColInds,zeroColInds);
+
+            filteredJac = jac(:,nonZeroColInds);
+            filteredVarLbls = varLbls(nonZeroColInds);
+
+            [c, ceq] = nonlcon(x0All);
+            heatMapConstrLbls = {};
+            totNumIneqConstr = length(c)/2;
+            totNumConstr = totNumIneqConstr + length(ceq);
+            for(i=1:totNumIneqConstr)
+                heatMapConstrLbls{end+1} = sprintf('%s (Lwr Bnd)', constrLbls{i}); %#ok<AGROW>
+                heatMapConstrLbls{end+1} = sprintf('%s (Upr Bnd)', constrLbls{i}); %#ok<AGROW>
+            end
+
+            heatMapConstrLbls = horzcat(heatMapConstrLbls, constrLbls(totNumIneqConstr+1:totNumConstr));
+
+            hFig = figure();
+            hHeatMap = heatmap(hFig, filteredVarLbls,heatMapConstrLbls,filteredJac);
+            
+            hHeatMap.Title = {'Increase the scale factor of','any constraint with values >> 1'};
+            hHeatMap.XLabel = 'Variables';
+            hHeatMap.YLabel = 'Constraints';
+        catch ME
+            errordlg(sprintf('The following error was encountered while trying to compute the Jacobian:\n\n %s',ME.message));
+        end
+        
+        if(ishandle(hHlpDlg) && isvalid(hHlpDlg))
+            close(hHlpDlg);
+        end
+    end
+    
+function c = computeJacNonlconFunc(x, nonlcon)
+    [cML, ceqML] = nonlcon(x);
+    
+    c = [cML(:)', ceqML(:)'];
+
+    
+
+
+% --------------------------------------------------------------------
+function selectOptimizationAlgosMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to selectOptimizationAlgosMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    
+    lvd_OptimizerSelectionGUI(lvdData);

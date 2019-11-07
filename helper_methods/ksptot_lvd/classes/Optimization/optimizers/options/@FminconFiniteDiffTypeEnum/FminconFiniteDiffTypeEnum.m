@@ -3,8 +3,8 @@ classdef FminconFiniteDiffTypeEnum < matlab.mixin.SetGet
     %   Detailed explanation goes here
     
     enumeration
-        TwoPtForwardDiff('forward', 'Two Point Forward Difference')
-        ThreePtCentralDiff('central', 'Three Point Central Difference');
+        TwoPtForwardDiff('forward', 'Forward Difference')
+        ThreePtCentralDiff('central', 'Central Difference');
     end
     
     properties
@@ -31,6 +31,12 @@ classdef FminconFiniteDiffTypeEnum < matlab.mixin.SetGet
             [~,I] = sort({m.name});
             m = m(I);
             ind = find(ismember({m.name},name),1,'first');
+            enum = m(ind);
+        end
+        
+        function [enum, ind] = getEnumForListboxStr(nameStr)
+            m = enumeration('FminconFiniteDiffTypeEnum');
+            ind = find(ismember({m.name},nameStr),1,'first');
             enum = m(ind);
         end
     end

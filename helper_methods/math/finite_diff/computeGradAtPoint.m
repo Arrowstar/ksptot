@@ -47,7 +47,7 @@ function [g] = computeGradAtPoint(fun, x0, fAtX0, h, diffType, numPts, useParall
         varArr = zeroArr;
         varArr(i) = 1;
         
-        xDeltas = h*(varArr * xPts);
+        xDeltas = h.*(varArr * xPts); %consider FMINCON style: delta = v.*sign?(x).*max(abs(x),TypicalX); or delta = v.*max(abs(x),TypicalX);
         
         xToEvalAt = bsxfun(@plus, x0, xDeltas);
         

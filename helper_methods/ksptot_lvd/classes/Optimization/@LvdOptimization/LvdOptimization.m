@@ -9,9 +9,19 @@ classdef LvdOptimization < matlab.mixin.SetGet
         objFcn(1,1) AbstractObjectiveFcn = NoOptimizationObjectiveFcn()
         constraints(1,1) ConstraintSet =  ConstraintSet()
         
+        %Optimization Algo Selection
+        optAlgo(1,1) LvdOptimizerAlgoEnum = LvdOptimizerAlgoEnum.Fmincon;
+        
         %Optimizers
         fminconOpt(1,1) FminconOptimizer = FminconOptimizer();
         patternSearchOpt(1,1) PatternSearchOptimizer = PatternSearchOptimizer();
+        
+        %Gradient Calc Algo Selection
+        gradAlgo(1,1) LvdOptimizerGradientCalculationAlgoEnum = LvdOptimizerGradientCalculationAlgoEnum.BuiltIn;
+
+        %Gradient Calculation Algos
+        builtInGradMethod(1,1) BuiltInGradientCalculationMethod = BuiltInGradientCalculationMethod();
+        customFiniteDiffsCalcMethod(1,1) CustomFiniteDiffsCalculationMethod = CustomFiniteDiffsCalculationMethod();
     end
     
     methods
@@ -22,15 +32,19 @@ classdef LvdOptimization < matlab.mixin.SetGet
             obj.objFcn = NoOptimizationObjectiveFcn();
             obj.constraints = ConstraintSet(obj, lvdData);
             
+            obj.optAlgo = LvdOptimizerAlgoEnum.Fmincon;
             obj.fminconOpt = FminconOptimizer();
             obj.patternSearchOpt = PatternSearchOptimizer();
+            
+            obj.builtInGradMethod = BuiltInGradientCalculationMethod();
+            obj.customFiniteDiffsCalcMethod = CustomFiniteDiffsCalculationMethod();
         end
         
         function optimize(obj, writeOutput)                        
-            optSubroutine = obj.lvdData.settings.optSubroutine;
-            if(optSubroutine == LvdOptimSubroutineEnum.fmincon)
+            optAlgorithm = obj.optAlgo;
+            if(optAlgorithm == LvdOptimizerAlgoEnum.Fmincon)
                 optimizer = obj.fminconOpt;
-            elseif(optSubroutine == LvdOptimSubroutineEnum.patternseach)
+            elseif(optAlgorithm == LvdOptimizerAlgoEnum.PatternSearch)
                 optimizer = obj.patternSearchOpt;
             end
             

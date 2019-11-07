@@ -3,7 +3,7 @@ classdef FminconOptions < matlab.mixin.SetGet
     %   Detailed explanation goes here
     
     properties
-        algorithm(1,1) LvdOptimAlgorithmEnum = LvdOptimAlgorithmEnum.InteriorPoint;
+        algorithm(1,1) LvdFminconAlgorithmEnum = LvdFminconAlgorithmEnum.InteriorPoint;
         
         %Tolerances
         optTol(1,1) double = 1E-10;
@@ -17,8 +17,7 @@ classdef FminconOptions < matlab.mixin.SetGet
         %Parallel
         useParallel(1,1) logical = false;
         
-        %Finite Differences - if I allow difference finite difference
-        %types (SpecifyObjectiveGradient), these will get blended into that instead of being here
+        %Finite Differences
         finDiffStepSize(1,1) double = 1E-8;
         finDiffType FminconFiniteDiffTypeEnum = FminconFiniteDiffTypeEnum.TwoPtForwardDiff;
         
