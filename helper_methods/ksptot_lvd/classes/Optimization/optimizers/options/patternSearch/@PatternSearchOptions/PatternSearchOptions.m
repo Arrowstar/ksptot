@@ -14,15 +14,15 @@ classdef PatternSearchOptions < matlab.mixin.SetGet
         stepTol(1,1) double = 1E-6;
         
         %Cache
-        cache(1,1) logical = true; %should be enum
+        cache(1,1) PatternSearchUseCacheEnum = PatternSearchUseCacheEnum.UseCache;
         cacheSize(1,1) uint64 = 1E6;
         
         %Mesh
-        accelMesh(1,1) logical = true; %should be enum
+        accelMesh(1,1) PatternSearchUseMeshAccelEnum = PatternSearchUseMeshAccelEnum.UseAccel;
         initMeshSize(1,1) double = 1;
         meshContrFact(1,1) double = 0.5;
         meshExpFact(1,1) double = 2.0;
-        meshRotate(1,1) logical = true; %should be enum
+        meshRotate(1,1) PatternSearchUseMeshRotationEnum = PatternSearchUseMeshRotationEnum.UseMeshRotation;
 
         %Maximums
         maxFunEvals(1,1) uint64 = 3000;
@@ -31,12 +31,12 @@ classdef PatternSearchOptions < matlab.mixin.SetGet
         %Polling
         pollMethod(1,1) PattSrchPollMethodEnum = PattSrchPollMethodEnum.GPSPositiveBasis2N;
         pollOrder(1,1) PattSrchPollOrderEnum = PattSrchPollOrderEnum.Consecutive;
-        useCompletePoll(1,1) logical = true; %should be enum;
+        useCompletePoll(1,1) PatternSearchUseCompletePollEnum = PatternSearchUseCompletePollEnum.UseCompletePoll;
         
         %Search
-        scaleMesh(1,1) logical = true;%should be enum
+        scaleMesh(1,1) PatternSearchUseMeshScalingEnum = PatternSearchUseMeshScalingEnum.UseMeshScaling;
         searchFunc(1,1) PattSrchSearchFcnEnum = PattSrchSearchFcnEnum.None;
-        useCompleteSearch(1,1) logical = true; %should be enum
+        useCompleteSearch(1,1) PatternSearchUseCompleteSearchEnum = PatternSearchUseCompleteSearchEnum.UseCompleteSearch;
         
         %Penalty
         initPenalty(1,1) double = 10;
@@ -71,7 +71,7 @@ classdef PatternSearchOptions < matlab.mixin.SetGet
                 options = optimoptions(options, 'StepTolerance', obj.stepTol);
             end
             
-            if(obj.cache)
+            if(obj.cache.optionVal)
                 options = optimoptions(options, 'Cache', 'on');
             else
                 options = optimoptions(options, 'Cache', 'off');
@@ -81,7 +81,7 @@ classdef PatternSearchOptions < matlab.mixin.SetGet
                 options = optimoptions(options, 'CacheSize', double(obj.cacheSize));
             end
             
-            options = optimoptions(options, 'AccelerateMesh', obj.accelMesh);
+            options = optimoptions(options, 'AccelerateMesh', obj.accelMesh.optionVal);
             
             if(not(isnan(obj.initMeshSize)))
                 options = optimoptions(options, 'InitialMeshSize', obj.initMeshSize);
@@ -95,7 +95,7 @@ classdef PatternSearchOptions < matlab.mixin.SetGet
                 options = optimoptions(options, 'MeshExpansionFactor', obj.meshExpFact);
             end
             
-            if(obj.meshRotate)
+            if(obj.meshRotate.optionVal)
                 options = optimoptions(options, 'MeshRotate', 'on');
             else
                 options = optimoptions(options, 'MeshRotate', 'off'); 
@@ -113,13 +113,13 @@ classdef PatternSearchOptions < matlab.mixin.SetGet
             
             options = optimoptions(options, 'PollOrderAlgorithm', obj.pollOrder.optionStr);
             
-            options = optimoptions(options, 'UseCompletePoll', obj.useCompletePoll);
+            options = optimoptions(options, 'UseCompletePoll', obj.useCompletePoll.optionVal);
             
-            options = optimoptions(options, 'ScaleMesh', obj.scaleMesh);
+            options = optimoptions(options, 'ScaleMesh', obj.scaleMesh.optionVal);
             
             options = optimoptions(options, 'SearchFcn', obj.searchFunc.optionFcn);
             
-            options = optimoptions(options, 'UseCompleteSearch', obj.useCompleteSearch);
+            options = optimoptions(options, 'UseCompleteSearch', obj.useCompleteSearch.optionVal);
             
             if(not(isnan(obj.penaltyFact)))
                 options = optimoptions(options, 'PenaltyFactor', obj.penaltyFact);
@@ -129,7 +129,7 @@ classdef PatternSearchOptions < matlab.mixin.SetGet
                 options = optimoptions(options, 'InitialPenalty', obj.initPenalty);
             end           
             
-            options = optimoptions(options, 'UseParallel',obj.useParallel);
+            options = optimoptions(options, 'UseParallel',obj.useParallel.optionVal);
         end
         
         function tf = usesParallel(obj)

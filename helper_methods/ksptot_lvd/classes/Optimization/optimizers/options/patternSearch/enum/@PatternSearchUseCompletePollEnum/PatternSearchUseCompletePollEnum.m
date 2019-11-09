@@ -1,10 +1,10 @@
-classdef FminconUseParallelEnum < matlab.mixin.SetGet
-    %FminconFiniteDiffTypeEnum Summary of this class goes here
+classdef PatternSearchUseCompletePollEnum < matlab.mixin.SetGet
+    %PatternSearchUseMeshRotationEnum Summary of this class goes here
     %   Detailed explanation goes here
     
     enumeration
-        UseParallel('Compute Gradients in Parallel',true)
-        DoNotUseParallel('Compute Gradients in Serial',false);
+        UseCompletePoll('Use Complete Poll',true)
+        DoNotUseCompletePoll('Do Not Use Complete Poll',false);
     end
     
     properties
@@ -13,7 +13,7 @@ classdef FminconUseParallelEnum < matlab.mixin.SetGet
     end
     
     methods
-        function obj = FminconUseParallelEnum(name, optionVal)
+        function obj = PatternSearchUseCompletePollEnum(name, optionVal)
             obj.name = name;
             obj.optionVal = optionVal;
         end
@@ -21,13 +21,13 @@ classdef FminconUseParallelEnum < matlab.mixin.SetGet
     
     methods(Static)
         function listBoxStr = getListBoxStr()
-            m = enumeration('FminconUseParallelEnum');
+            m = enumeration('PatternSearchUseCompletePollEnum');
             [~,I] = sort({m.name});
             listBoxStr = {m(I).name};
         end
         
         function [ind, enum] = getIndForName(name)
-            m = enumeration('FminconUseParallelEnum');
+            m = enumeration('PatternSearchUseCompletePollEnum');
             [~,I] = sort({m.name});
             m = m(I);
             ind = find(ismember({m.name},name),1,'first');
@@ -35,7 +35,7 @@ classdef FminconUseParallelEnum < matlab.mixin.SetGet
         end
         
         function [enum, ind] = getEnumForListboxStr(nameStr)
-            m = enumeration('FminconUseParallelEnum');
+            m = enumeration('PatternSearchUseCompletePollEnum');
             ind = find(ismember({m.name},nameStr),1,'first');
             enum = m(ind);
         end
