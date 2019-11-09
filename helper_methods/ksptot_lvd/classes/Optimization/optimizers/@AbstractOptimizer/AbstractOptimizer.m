@@ -10,6 +10,8 @@ classdef(Abstract) AbstractOptimizer < matlab.mixin.SetGet
         optimize(obj, lvdOpt, writeOutput);
         
         options = getOptions(obj);
+        
+        openOptionsDialog(obj);
     end
     
     methods(Static, Access=protected)

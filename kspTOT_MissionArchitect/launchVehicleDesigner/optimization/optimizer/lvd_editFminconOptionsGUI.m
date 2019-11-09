@@ -53,36 +53,79 @@ function lvd_editFminconOptionsGUI_OpeningFcn(hObject, eventdata, handles, varar
 % varargin   command line arguments to lvd_editFminconOptionsGUI (see VARARGIN)
 
 % Choose default command line output for lvd_editFminconOptionsGUI
-handles.output = hObject;
+    handles.output = hObject;
 
-populateGUI(handles);
+    fminconOpt = varargin{1};
+    setappdata(hObject,'fminconOpt',fminconOpt);
 
-% Update handles structure
-guidata(hObject, handles);
+    handles = populateGUI(handles, fminconOpt);
 
-% UIWAIT makes lvd_editFminconOptionsGUI wait for user response (see UIRESUME)
-% uiwait(handles.lvd_editFminconOptionsGUI);
+    % Update handles structure
+    guidata(hObject, handles);
 
-function populateGUI(handles)
+    % UIWAIT makes lvd_editFminconOptionsGUI wait for user response (see UIRESUME)
+    uiwait(handles.lvd_editFminconOptionsGUI);
+
+function handles = populateGUI(handles, fminconOpt)
+    options = fminconOpt.getOptions();
+    
     setDocLbl(handles);
     
     algoListboxStr = LvdFminconAlgorithmEnum.getListBoxStr();
     handles.algoCombo.String = algoListboxStr;
+    handles.algoCombo.Value = LvdFminconAlgorithmEnum.getIndForName(options.algorithm.name);
     
     finiteDiffTypeStrs = FminconFiniteDiffTypeEnum.getListBoxStr();
     handles.finiteDiffTypeCombo.String = finiteDiffTypeStrs;
+    handles.finiteDiffTypeCombo.Value = FminconFiniteDiffTypeEnum.getIndForName(options.finDiffType.name);
     
     typicalXStrs = OptimizerTypicalXEnum.getListBoxStr();
     handles.typicalXCombo.String = typicalXStrs;
+    handles.typicalXCombo.Value = OptimizerTypicalXEnum.getIndForName(options.typicalXType.name);
     
     hessApproxStrs = FminconHessApproxAlgEnum.getListBoxStr();
     handles.IpApproxAlgoCombo.String = hessApproxStrs;
+    handles.IpApproxAlgoCombo.Value = FminconHessApproxAlgEnum.getIndForName(options.hessianApproxAlg.name);
     
     subProbStrs = FminconIpSubprobAlgEnum.getListBoxStr();
     handles.IpSubproblemAlgoCombo.String = subProbStrs;
+    handles.IpSubproblemAlgoCombo.Value = FminconIpSubprobAlgEnum.getIndForName(options.subproblemAlgorithm.name);
     
     useParaStr = FminconUseParallelEnum.getListBoxStr();
     handles.useParallelCombo.String = useParaStr;
+    handles.useParallelCombo.Value = FminconUseParallelEnum.getIndForName(options.useParallel.name);
+    
+    setOptsDoubleValueStrInGUI(handles, options, 'optTol', 'optTolText');
+    setOptsDoubleValueStrInGUI(handles, options, 'stepTol', 'conTolText');
+    setOptsDoubleValueStrInGUI(handles, options, 'tolCon', 'stepTolText');
+    
+    setOptsDoubleValueStrInGUI(handles, options, 'maxIter', 'maxItersText');
+    setOptsDoubleValueStrInGUI(handles, options, 'maxFuncEvals', 'maxFuncEvalsText');
+    
+    setOptsDoubleValueStrInGUI(handles, options, 'finDiffStepSize', 'finiteDiffStepSizeText');
+    
+    setOptsDoubleValueStrInGUI(handles, options, 'initBarrierParam', 'IpInitBarrierParamText');
+    setOptsDoubleValueStrInGUI(handles, options, 'initTrustRegionRadius', 'IpInitTrustRegionRadiusText');
+    setOptsDoubleValueStrInGUI(handles, options, 'maxProjCGIter', 'IpMaxProjCGItersText');
+    setOptsDoubleValueStrInGUI(handles, options, 'tolProjCG', 'IpRelProjCGTolText');
+    setOptsDoubleValueStrInGUI(handles, options, 'tolProjCGAbs', 'IpAbsProjCGTolText');
+    
+    setOptsDoubleValueStrInGUI(handles, options, 'funcTol', 'AsFuncTolText');
+    setOptsDoubleValueStrInGUI(handles, options, 'maxSQPIter', 'AsMaxSqpItersText');
+    setOptsDoubleValueStrInGUI(handles, options, 'relLineSrchBnd', 'AsRelLineSrchBndText');
+    setOptsDoubleValueStrInGUI(handles, options, 'relLineSrchBndDuration', 'AsLineSrchBndDurText');
+    setOptsDoubleValueStrInGUI(handles, options, 'tolConSQP', 'AsTolConSqpText');
+    
+function setOptsDoubleValueStrInGUI(handles, options, optPropName, handlesFieldName)
+    value = options.(optPropName);
+    
+    if(isnan(value))
+        str = '';
+    else
+        str = fullAccNum2Str(double(value));
+    end
+    
+    handles.(handlesFieldName).String = str;
     
 function setDocLbl(handles)
     docLinkLblPos = handles.matlabDocLinkLabel.Position;
@@ -109,9 +152,98 @@ function varargout = lvd_editFminconOptionsGUI_OutputFcn(hObject, eventdata, han
 % handles    structure with handles and user data (see GUIDATA)
 
 % Get default command line output from handles structure
-varargout{1} = handles.output;
+    if(isempty(handles))
+        varargout{1} = false;
+    else
+        fminconOpt = getappdata(hObject,'fminconOpt');
+        options = fminconOpt.getOptions();
+        
+        algoListboxStr = LvdFminconAlgorithmEnum.getListBoxStr();
+        options.algorithm = LvdFminconAlgorithmEnum.getEnumForListboxStr(algoListboxStr{handles.algoCombo.Value});
+        
+        finiteDiffTypeStrs = FminconFiniteDiffTypeEnum.getListBoxStr();
+        options.finDiffType = FminconFiniteDiffTypeEnum.getEnumForListboxStr(finiteDiffTypeStrs{handles.finiteDiffTypeCombo.Value});
+        
+        typicalXStrs = OptimizerTypicalXEnum.getListBoxStr();
+        options.typicalXType = OptimizerTypicalXEnum.getEnumForListboxStr(typicalXStrs{handles.typicalXCombo.Value});
+        
+        hessApproxStrs = FminconHessApproxAlgEnum.getListBoxStr();
+        options.hessianApproxAlg = FminconHessApproxAlgEnum.getEnumForListboxStr(hessApproxStrs{handles.IpApproxAlgoCombo.Value});
+        
+        subProbStrs = FminconIpSubprobAlgEnum.getListBoxStr();
+        options.subproblemAlgorithm = FminconIpSubprobAlgEnum.getEnumForListboxStr(subProbStrs{handles.IpSubproblemAlgoCombo.Value});
+        
+        useParaStrs = FminconUseParallelEnum.getListBoxStr();
+        options.useParallel = FminconUseParallelEnum.getEnumForListboxStr(useParaStrs{handles.useParallelCombo.Value});
+        
+        setOptsDoubleValueInObject(handles, options, 'optTol', 'optTolText');
+        setOptsDoubleValueInObject(handles, options, 'stepTol', 'conTolText');
+        setOptsDoubleValueInObject(handles, options, 'tolCon', 'stepTolText');
 
+        setOptsDoubleValueInObject(handles, options, 'maxIter', 'maxItersText');
+        setOptsDoubleValueInObject(handles, options, 'maxFuncEvals', 'maxFuncEvalsText');
 
+        setOptsDoubleValueInObject(handles, options, 'finDiffStepSize', 'finiteDiffStepSizeText');
+
+        setOptsDoubleValueInObject(handles, options, 'initBarrierParam', 'IpInitBarrierParamText');
+        setOptsDoubleValueInObject(handles, options, 'initTrustRegionRadius', 'IpInitTrustRegionRadiusText');
+        setOptsDoubleValueInObject(handles, options, 'maxProjCGIter', 'IpMaxProjCGItersText');
+        setOptsDoubleValueInObject(handles, options, 'tolProjCG', 'IpRelProjCGTolText');
+        setOptsDoubleValueInObject(handles, options, 'tolProjCGAbs', 'IpAbsProjCGTolText');
+
+        setOptsDoubleValueInObject(handles, options, 'funcTol', 'AsFuncTolText');
+        setOptsDoubleValueInObject(handles, options, 'maxSQPIter', 'AsMaxSqpItersText');
+        setOptsDoubleValueInObject(handles, options, 'relLineSrchBnd', 'AsRelLineSrchBndText');
+        setOptsDoubleValueInObject(handles, options, 'relLineSrchBndDuration', 'AsLineSrchBndDurText');
+        setOptsDoubleValueInObject(handles, options, 'tolConSQP', 'AsTolConSqpText');
+    
+        varargout{1} = true;
+        close(handles.lvd_editFminconOptionsGUI);
+    end
+
+function setOptsDoubleValueInObject(handles, options, optPropName, handlesFieldName)
+    strValue = strtrim(get(handles.(handlesFieldName),'String'));
+
+    if(~isempty(strValue)) %allow empty, implies default
+        value = str2double(strValue);
+    else
+        value = NaN;
+    end
+    options.(optPropName) = value;
+    
+    
+function errMsg = validateInputs(handles)
+    errMsg = {};
+
+    errMsg = validateDoubleValue(handles, errMsg, 'optTolText', 'Optimality Tolerance', 1E-12, 1, false);
+    errMsg = validateDoubleValue(handles, errMsg, 'conTolText', 'Constraint Tolerance', 1E-12, 1, false);
+    errMsg = validateDoubleValue(handles, errMsg, 'stepTolText', 'Step Tolerance', 1E-12, 1, false);
+    
+    errMsg = validateDoubleValue(handles, errMsg, 'maxItersText', 'Max Iterations', 0, Inf, true);
+    errMsg = validateDoubleValue(handles, errMsg, 'maxFuncEvalsText', 'Max Function Evaluations', 0, Inf, true);
+
+	errMsg = validateDoubleValue(handles, errMsg, 'finiteDiffStepSizeText', 'Finite Difference Step Size', 1E-10, 1E-2, false);
+     
+	errMsg = validateDoubleValue(handles, errMsg, 'IpInitBarrierParamText', 'I-P Intial Barrier Param', 1E-10, Inf, false);
+    errMsg = validateDoubleValue(handles, errMsg, 'IpInitTrustRegionRadiusText', 'I-P Initial Trust Region', 1E-10, Inf, false);
+    errMsg = validateDoubleValue(handles, errMsg, 'IpMaxProjCGItersText', 'I-P Max Projected C.G. Iterations', 1, Inf, true);
+    errMsg = validateDoubleValue(handles, errMsg, 'IpRelProjCGTolText', 'I-P Relative Projected C.G. Tolerance', 1E-10, Inf, false);
+    errMsg = validateDoubleValue(handles, errMsg, 'IpAbsProjCGTolText', 'I-P Absolute Projected C.G. Tolerance', 1E-10, Inf, false);
+    
+    errMsg = validateDoubleValue(handles, errMsg, 'AsFuncTolText', 'A-S Function Tolerance', 1E-10, 1, false);
+    errMsg = validateDoubleValue(handles, errMsg, 'AsMaxSqpItersText', 'A-S Max SQP Iterations', 1, Inf, true);
+    errMsg = validateDoubleValue(handles, errMsg, 'AsRelLineSrchBndText', 'A-S Relative Line Search Bound', 0, Inf, false);
+    errMsg = validateDoubleValue(handles, errMsg, 'AsLineSrchBndDurText', 'A-S Line Search Bound Duration', 1, Inf, true);
+    errMsg = validateDoubleValue(handles, errMsg, 'AsTolConSqpText', 'A-S Inner SQP Constraint Tolerance', 1E-10, Inf, false);
+     
+function errMsg = validateDoubleValue(handles, errMsg, handlesFieldName, numberName, lb, ub, isInt)
+    strValue = strtrim(get(handles.(handlesFieldName),'String'));
+    
+    if(~isempty(strValue)) %allow empty, implies default
+        value = str2double(strValue);
+        enteredStr = get(handles.(handlesFieldName),'String');
+        errMsg = validateNumber(value, numberName, lb, ub, isInt, errMsg, enteredStr);
+    end
 
 function optTolText_Callback(hObject, eventdata, handles)
 % hObject    handle to optTolText (see GCBO)
@@ -120,7 +252,9 @@ function optTolText_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of optTolText as text
 %        str2double(get(hObject,'String')) returns contents of optTolText as a double
-
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
 
 % --- Executes during object creation, after setting all properties.
 function optTolText_CreateFcn(hObject, eventdata, handles)
@@ -143,7 +277,9 @@ function conTolText_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of conTolText as text
 %        str2double(get(hObject,'String')) returns contents of conTolText as a double
-
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
 
 % --- Executes during object creation, after setting all properties.
 function conTolText_CreateFcn(hObject, eventdata, handles)
@@ -166,7 +302,9 @@ function stepTolText_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of stepTolText as text
 %        str2double(get(hObject,'String')) returns contents of stepTolText as a double
-
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
 
 % --- Executes during object creation, after setting all properties.
 function stepTolText_CreateFcn(hObject, eventdata, handles)
@@ -212,7 +350,9 @@ function maxItersText_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of maxItersText as text
 %        str2double(get(hObject,'String')) returns contents of maxItersText as a double
-
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
 
 % --- Executes during object creation, after setting all properties.
 function maxItersText_CreateFcn(hObject, eventdata, handles)
@@ -235,7 +375,9 @@ function maxFuncEvalsText_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of maxFuncEvalsText as text
 %        str2double(get(hObject,'String')) returns contents of maxFuncEvalsText as a double
-
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
 
 % --- Executes during object creation, after setting all properties.
 function maxFuncEvalsText_CreateFcn(hObject, eventdata, handles)
@@ -281,7 +423,9 @@ function finiteDiffStepSizeText_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of finiteDiffStepSizeText as text
 %        str2double(get(hObject,'String')) returns contents of finiteDiffStepSizeText as a double
-
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
 
 % --- Executes during object creation, after setting all properties.
 function finiteDiffStepSizeText_CreateFcn(hObject, eventdata, handles)
@@ -350,7 +494,9 @@ function IpInitBarrierParamText_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of IpInitBarrierParamText as text
 %        str2double(get(hObject,'String')) returns contents of IpInitBarrierParamText as a double
-
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
 
 % --- Executes during object creation, after setting all properties.
 function IpInitBarrierParamText_CreateFcn(hObject, eventdata, handles)
@@ -373,7 +519,9 @@ function IpInitTrustRegionRadiusText_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of IpInitTrustRegionRadiusText as text
 %        str2double(get(hObject,'String')) returns contents of IpInitTrustRegionRadiusText as a double
-
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
 
 % --- Executes during object creation, after setting all properties.
 function IpInitTrustRegionRadiusText_CreateFcn(hObject, eventdata, handles)
@@ -396,7 +544,9 @@ function IpMaxProjCGItersText_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of IpMaxProjCGItersText as text
 %        str2double(get(hObject,'String')) returns contents of IpMaxProjCGItersText as a double
-
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
 
 % --- Executes during object creation, after setting all properties.
 function IpMaxProjCGItersText_CreateFcn(hObject, eventdata, handles)
@@ -442,7 +592,9 @@ function IpRelProjCGTolText_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of IpRelProjCGTolText as text
 %        str2double(get(hObject,'String')) returns contents of IpRelProjCGTolText as a double
-
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
 
 % --- Executes during object creation, after setting all properties.
 function IpRelProjCGTolText_CreateFcn(hObject, eventdata, handles)
@@ -465,7 +617,9 @@ function IpAbsProjCGTolText_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of IpAbsProjCGTolText as text
 %        str2double(get(hObject,'String')) returns contents of IpAbsProjCGTolText as a double
-
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
 
 % --- Executes during object creation, after setting all properties.
 function IpAbsProjCGTolText_CreateFcn(hObject, eventdata, handles)
@@ -485,7 +639,13 @@ function saveAndCloseButton_Callback(hObject, eventdata, handles)
 % hObject    handle to saveAndCloseButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
+    errMsg = validateInputs(handles);
+    
+    if(isempty(errMsg))
+        uiresume(handles.lvd_editFminconOptionsGUI);
+    else
+        msgbox(errMsg,'Invalid FMINCON Options Inputs','error');
+    end
 
 
 function AsTolConSqpText_Callback(hObject, eventdata, handles)
@@ -495,7 +655,9 @@ function AsTolConSqpText_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of AsTolConSqpText as text
 %        str2double(get(hObject,'String')) returns contents of AsTolConSqpText as a double
-
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
 
 % --- Executes during object creation, after setting all properties.
 function AsTolConSqpText_CreateFcn(hObject, eventdata, handles)
@@ -518,7 +680,9 @@ function AsLineSrchBndDurText_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of AsLineSrchBndDurText as text
 %        str2double(get(hObject,'String')) returns contents of AsLineSrchBndDurText as a double
-
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
 
 % --- Executes during object creation, after setting all properties.
 function AsLineSrchBndDurText_CreateFcn(hObject, eventdata, handles)
@@ -541,7 +705,9 @@ function AsRelLineSrchBndText_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of AsRelLineSrchBndText as text
 %        str2double(get(hObject,'String')) returns contents of AsRelLineSrchBndText as a double
-
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
 
 % --- Executes during object creation, after setting all properties.
 function AsRelLineSrchBndText_CreateFcn(hObject, eventdata, handles)
@@ -564,7 +730,9 @@ function AsMaxSqpItersText_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of AsMaxSqpItersText as text
 %        str2double(get(hObject,'String')) returns contents of AsMaxSqpItersText as a double
-
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
 
 % --- Executes during object creation, after setting all properties.
 function AsMaxSqpItersText_CreateFcn(hObject, eventdata, handles)
@@ -587,7 +755,9 @@ function AsFuncTolText_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of AsFuncTolText as text
 %        str2double(get(hObject,'String')) returns contents of AsFuncTolText as a double
-
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
 
 % --- Executes during object creation, after setting all properties.
 function AsFuncTolText_CreateFcn(hObject, eventdata, handles)

@@ -41,14 +41,17 @@ classdef LvdOptimization < matlab.mixin.SetGet
         end
         
         function optimize(obj, writeOutput)                        
+            optimizer = obj.getSelectedOptimizer();
+            optimizer.optimize(obj, writeOutput);
+        end
+        
+        function optimizer = getSelectedOptimizer(obj)
             optAlgorithm = obj.optAlgo;
             if(optAlgorithm == LvdOptimizerAlgoEnum.Fmincon)
                 optimizer = obj.fminconOpt;
             elseif(optAlgorithm == LvdOptimizerAlgoEnum.PatternSearch)
                 optimizer = obj.patternSearchOpt;
             end
-            
-            optimizer.optimize(obj, writeOutput);
         end
         
         function tf = usesStage(obj, stage)

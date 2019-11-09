@@ -66,6 +66,10 @@ classdef FminconOptimizer < AbstractGradientOptimizer
         function setGradientCalculationMethod(obj, newGradCalcMethod)
             obj.gradCalcMethod = newGradCalcMethod;
         end
+        
+        function openOptionsDialog(obj)
+            lvd_editFminconOptionsGUI(obj);
+        end
     end
     
     methods(Access=private)
