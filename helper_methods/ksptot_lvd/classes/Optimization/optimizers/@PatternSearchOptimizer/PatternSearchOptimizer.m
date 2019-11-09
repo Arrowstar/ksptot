@@ -66,8 +66,16 @@ classdef PatternSearchOptimizer < AbstractOptimizer
             close(handlesObsOptimGui.ma_ObserveOptimGUI);
         end
         
+        function options = getOptions(obj)
+            options = obj.options;
+        end
+        
         function tf = usesParallel(obj)
             tf = obj.options.useParallel.optionVal;
+        end
+        
+        function openOptionsDialog(obj)
+            lvd_editPatternSearchOptionsGUI(obj);
         end
     end
 end

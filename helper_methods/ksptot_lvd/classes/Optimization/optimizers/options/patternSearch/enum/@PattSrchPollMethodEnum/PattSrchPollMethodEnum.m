@@ -1,5 +1,5 @@
 classdef PattSrchPollMethodEnum < matlab.mixin.SetGet
-    %FminconFiniteDiffTypeEnum Summary of this class goes here
+    %PattSrchPollMethodEnum Summary of this class goes here
     %   Detailed explanation goes here
     
     enumeration
@@ -25,16 +25,22 @@ classdef PattSrchPollMethodEnum < matlab.mixin.SetGet
     
     methods(Static)
         function listBoxStr = getListBoxStr()
-            m = enumeration('FminconFiniteDiffTypeEnum');
+            m = enumeration('PattSrchPollMethodEnum');
             [~,I] = sort({m.name});
             listBoxStr = {m(I).name};
         end
         
         function [ind, enum] = getIndForName(name)
-            m = enumeration('FminconFiniteDiffTypeEnum');
+            m = enumeration('PattSrchPollMethodEnum');
             [~,I] = sort({m.name});
             m = m(I);
             ind = find(ismember({m.name},name),1,'first');
+            enum = m(ind);
+        end
+        
+        function [enum, ind] = getEnumForListboxStr(nameStr)
+            m = enumeration('PattSrchPollMethodEnum');
+            ind = find(ismember({m.name},nameStr),1,'first');
             enum = m(ind);
         end
     end

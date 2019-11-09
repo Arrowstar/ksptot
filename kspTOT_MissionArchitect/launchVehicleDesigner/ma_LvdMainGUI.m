@@ -1824,6 +1824,8 @@ function selectOptimizationAlgosMenu_Callback(hObject, eventdata, handles)
     lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
     writeOutput = getappdata(handles.ma_LvdMainGUI,'write_to_output_func');
     
+    addUndoState(handles,'Edit Optimizer Algorithm');
+    
     lvd_OptimizerSelectionGUI(lvdData);
     
     if(lvdData.optimizer.getSelectedOptimizer().usesParallel())

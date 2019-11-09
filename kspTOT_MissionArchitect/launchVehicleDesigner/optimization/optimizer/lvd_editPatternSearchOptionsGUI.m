@@ -22,7 +22,7 @@ function varargout = lvd_editPatternSearchOptionsGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_editPatternSearchOptionsGUI
 
-% Last Modified by GUIDE v2.5 08-Nov-2019 18:46:12
+% Last Modified by GUIDE v2.5 09-Nov-2019 14:41:08
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -55,9 +55,10 @@ function lvd_editPatternSearchOptionsGUI_OpeningFcn(hObject, eventdata, handles,
     % Choose default command line output for lvd_editPatternSearchOptionsGUI
     handles.output = hObject;
 
-    patternSearchOpt = [];
+    patternSearchOpt = varargin{1};
     handles = populateGUI(handles, patternSearchOpt);
-
+    setappdata(hObject,'patternSearchOpt',patternSearchOpt);
+    
     % Update handles structure
     guidata(hObject, handles);
 
@@ -66,10 +67,67 @@ function lvd_editPatternSearchOptionsGUI_OpeningFcn(hObject, eventdata, handles,
 
 
 function handles = populateGUI(handles, patternSearchOpt)
-%     options = patternSearchOpt.getOptions();
+    options = patternSearchOpt.getOptions();
     
     setDocLbl(handles);
+    
+    useCacheStrs = PatternSearchUseCacheEnum.getListBoxStr();
+    handles.useCacheCombo.String = useCacheStrs;
+    handles.useCacheCombo.Value = PatternSearchUseCacheEnum.getIndForName(options.cache.name);
+    
+    useCompletePollStrs = PatternSearchUseCompletePollEnum.getListBoxStr();
+    handles.useCompletePollCombo.String = useCompletePollStrs;
+    handles.useCompletePollCombo.Value = PatternSearchUseCompletePollEnum.getIndForName(options.useCompletePoll.name);
 
+    useCompleteSearchStrs = PatternSearchUseCompleteSearchEnum.getListBoxStr();
+    handles.useCompleteSearchCombo.String = useCompleteSearchStrs;
+    handles.useCompleteSearchCombo.Value = PatternSearchUseCompleteSearchEnum.getIndForName(options.useCompleteSearch.name);    
+    
+    useMeshAccelStrs = PatternSearchUseMeshAccelEnum.getListBoxStr();
+    handles.accelMeshCombo.String = useMeshAccelStrs;
+    handles.accelMeshCombo.Value = PatternSearchUseMeshAccelEnum.getIndForName(options.accelMesh.name);
+    
+    useMeshRotStrs = PatternSearchUseMeshRotationEnum.getListBoxStr();
+    handles.useMeshRotateCombo.String = useMeshRotStrs;
+    handles.useMeshRotateCombo.Value = PatternSearchUseMeshRotationEnum.getIndForName(options.meshRotate.name);
+    
+    pollMethodStrs = PattSrchPollMethodEnum.getListBoxStr();
+    handles.pollMethodCombo.String = pollMethodStrs;
+    handles.pollMethodCombo.Value = PattSrchPollMethodEnum.getIndForName(options.pollMethod.name);
+    
+    pollOrderStrs = PattSrchPollOrderEnum.getListBoxStr();
+    handles.pollOrderCombo.String = pollOrderStrs;
+    handles.pollOrderCombo.Value = PattSrchPollOrderEnum.getIndForName(options.pollOrder.name);
+    
+    searchFuncStrs = PattSrchSearchFcnEnum.getListBoxStr();
+    handles.searchFuncCombo.String = searchFuncStrs;
+    handles.searchFuncCombo.Value = PattSrchSearchFcnEnum.getIndForName(options.searchFunc.name);
+    
+    scaleMeshStrs = PatternSearchUseMeshScalingEnum.getListBoxStr();
+    handles.scaleMeshCombo.String = scaleMeshStrs;
+    handles.scaleMeshCombo.Value = PatternSearchUseMeshScalingEnum.getIndForName(options.scaleMesh.name);
+
+    useParallelStrs = PatternSearchUseParallelEnum.getListBoxStr();
+    handles.useParallelCombo.String = useParallelStrs;
+    handles.useParallelCombo.Value = PatternSearchUseParallelEnum.getIndForName(options.useParallel.name);
+    
+    setOptsDoubleValueStrInGUI(handles, options, 'cacheTol', 'cacheTolText');
+    setOptsDoubleValueStrInGUI(handles, options, 'conTol', 'conTolText');
+    setOptsDoubleValueStrInGUI(handles, options, 'funTol', 'funcTolText');
+    setOptsDoubleValueStrInGUI(handles, options, 'meshTol', 'meshTolText');
+    setOptsDoubleValueStrInGUI(handles, options, 'stepTol', 'stepTolText');
+    
+    setOptsDoubleValueStrInGUI(handles, options, 'maxIters', 'maxIterText');
+    setOptsDoubleValueStrInGUI(handles, options, 'maxFunEvals', 'maxFunEvalsText');
+    
+    setOptsDoubleValueStrInGUI(handles, options, 'cacheSize', 'cacheSizeText');
+    
+    setOptsDoubleValueStrInGUI(handles, options, 'initMeshSize', 'initMeshSizeText');
+    setOptsDoubleValueStrInGUI(handles, options, 'meshContrFact', 'meshContrFactorText');
+    setOptsDoubleValueStrInGUI(handles, options, 'meshExpFact', 'meshExpFactorText');
+    
+    setOptsDoubleValueStrInGUI(handles, options, 'initPenalty', 'initPenaltyText');
+    setOptsDoubleValueStrInGUI(handles, options, 'penaltyFact', 'penaltyFactText');
 
 function setDocLbl(handles)
     docLinkLblPos = handles.matlabDocLinkLabel.Position;
@@ -97,7 +155,63 @@ function varargout = lvd_editPatternSearchOptionsGUI_OutputFcn(hObject, eventdat
 % handles    structure with handles and user data (see GUIDATA)
 
 % Get default command line output from handles structure
-varargout{1} = handles.output;
+    if(isempty(handles))
+        varargout{1} = false;
+    else
+        patternSearchOpt = getappdata(hObject,'patternSearchOpt');
+        options = patternSearchOpt.getOptions();
+        
+        useCacheStrs = PatternSearchUseCacheEnum.getListBoxStr();
+        options.cache = PatternSearchUseCacheEnum.getEnumForListboxStr(useCacheStrs{handles.useCacheCombo.Value});
+
+        useCompletePollStrs = PatternSearchUseCompletePollEnum.getListBoxStr();
+        options.useCompletePoll = PatternSearchUseCompletePollEnum.getEnumForListboxStr(useCompletePollStrs{handles.useCompletePollCombo.Value});
+
+        useCompleteSearchStrs = PatternSearchUseCompleteSearchEnum.getListBoxStr();
+        options.useCompleteSearch = PatternSearchUseCompleteSearchEnum.getEnumForListboxStr(useCompleteSearchStrs{handles.useCompleteSearchCombo.Value});
+
+        useMeshAccelStrs = PatternSearchUseMeshAccelEnum.getListBoxStr();
+        options.accelMesh = PatternSearchUseMeshAccelEnum.getEnumForListboxStr(useMeshAccelStrs{handles.accelMeshCombo.Value});
+
+        useMeshRotStrs = PatternSearchUseMeshRotationEnum.getListBoxStr();
+        options.meshRotate = PatternSearchUseMeshRotationEnum.getEnumForListboxStr(useMeshRotStrs{handles.useMeshRotateCombo.Value});
+
+        pollMethodStrs = PattSrchPollMethodEnum.getListBoxStr();
+        options.pollMethod = PattSrchPollMethodEnum.getEnumForListboxStr(pollMethodStrs{handles.pollMethodCombo.Value});
+
+        pollOrderStrs = PattSrchPollOrderEnum.getListBoxStr();
+        options.pollOrder = PattSrchPollOrderEnum.getEnumForListboxStr(pollOrderStrs{handles.pollOrderCombo.Value});
+
+        searchFuncStrs = PattSrchSearchFcnEnum.getListBoxStr();
+        options.searchFunc = PattSrchSearchFcnEnum.getEnumForListboxStr(searchFuncStrs{handles.searchFuncCombo.Value});
+
+        scaleMeshStrs = PatternSearchUseMeshScalingEnum.getListBoxStr();
+        options.scaleMesh = PatternSearchUseMeshScalingEnum.getEnumForListboxStr(scaleMeshStrs{handles.scaleMeshCombo.Value});
+
+        useParallelStrs = PatternSearchUseParallelEnum.getListBoxStr();
+        options.useParallel = PatternSearchUseParallelEnum.getEnumForListboxStr(useParallelStrs{handles.useParallelCombo.Value});
+        
+        setOptsDoubleValueInObject(handles, options, 'cacheTol', 'cacheTolText');
+        setOptsDoubleValueInObject(handles, options, 'conTol', 'conTolText');
+        setOptsDoubleValueInObject(handles, options, 'funTol', 'funcTolText');
+        setOptsDoubleValueInObject(handles, options, 'meshTol', 'meshTolText');
+        setOptsDoubleValueInObject(handles, options, 'stepTol', 'stepTolText');
+
+        setOptsDoubleValueInObject(handles, options, 'maxIters', 'maxIterText');
+        setOptsDoubleValueInObject(handles, options, 'maxFunEvals', 'maxFunEvalsText');
+
+        setOptsDoubleValueInObject(handles, options, 'cacheSize', 'cacheSizeText');
+
+        setOptsDoubleValueInObject(handles, options, 'initMeshSize', 'initMeshSizeText');
+        setOptsDoubleValueInObject(handles, options, 'meshContrFact', 'meshContrFactorText');
+        setOptsDoubleValueInObject(handles, options, 'meshExpFact', 'meshExpFactorText');
+
+        setOptsDoubleValueInObject(handles, options, 'initPenalty', 'initPenaltyText');
+        setOptsDoubleValueInObject(handles, options, 'penaltyFact', 'penaltyFactText');
+        
+        varargout{1} = true;
+        close(handles.lvd_editPatternSearchOptionsGUI);
+    end
 
 
 
@@ -108,7 +222,9 @@ function funcTolText_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of funcTolText as text
 %        str2double(get(hObject,'String')) returns contents of funcTolText as a double
-
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
 
 % --- Executes during object creation, after setting all properties.
 function funcTolText_CreateFcn(hObject, eventdata, handles)
@@ -131,7 +247,9 @@ function conTolText_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of conTolText as text
 %        str2double(get(hObject,'String')) returns contents of conTolText as a double
-
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
 
 % --- Executes during object creation, after setting all properties.
 function conTolText_CreateFcn(hObject, eventdata, handles)
@@ -154,7 +272,9 @@ function cacheTolText_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of cacheTolText as text
 %        str2double(get(hObject,'String')) returns contents of cacheTolText as a double
-
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
 
 % --- Executes during object creation, after setting all properties.
 function cacheTolText_CreateFcn(hObject, eventdata, handles)
@@ -177,7 +297,9 @@ function meshTolText_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of meshTolText as text
 %        str2double(get(hObject,'String')) returns contents of meshTolText as a double
-
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
 
 % --- Executes during object creation, after setting all properties.
 function meshTolText_CreateFcn(hObject, eventdata, handles)
@@ -200,7 +322,9 @@ function stepTolText_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of stepTolText as text
 %        str2double(get(hObject,'String')) returns contents of stepTolText as a double
-
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
 
 % --- Executes during object creation, after setting all properties.
 function stepTolText_CreateFcn(hObject, eventdata, handles)
@@ -246,7 +370,9 @@ function cacheSizeText_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of cacheSizeText as text
 %        str2double(get(hObject,'String')) returns contents of cacheSizeText as a double
-
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
 
 % --- Executes during object creation, after setting all properties.
 function cacheSizeText_CreateFcn(hObject, eventdata, handles)
@@ -269,7 +395,9 @@ function meshExpFactorText_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of meshExpFactorText as text
 %        str2double(get(hObject,'String')) returns contents of meshExpFactorText as a double
-
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
 
 % --- Executes during object creation, after setting all properties.
 function meshExpFactorText_CreateFcn(hObject, eventdata, handles)
@@ -292,7 +420,9 @@ function meshContrFactorText_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of meshContrFactorText as text
 %        str2double(get(hObject,'String')) returns contents of meshContrFactorText as a double
-
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
 
 % --- Executes during object creation, after setting all properties.
 function meshContrFactorText_CreateFcn(hObject, eventdata, handles)
@@ -315,7 +445,9 @@ function initMeshSizeText_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of initMeshSizeText as text
 %        str2double(get(hObject,'String')) returns contents of initMeshSizeText as a double
-
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
 
 % --- Executes during object creation, after setting all properties.
 function initMeshSizeText_CreateFcn(hObject, eventdata, handles)
@@ -384,7 +516,9 @@ function maxFunEvalsText_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of maxFunEvalsText as text
 %        str2double(get(hObject,'String')) returns contents of maxFunEvalsText as a double
-
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
 
 % --- Executes during object creation, after setting all properties.
 function maxFunEvalsText_CreateFcn(hObject, eventdata, handles)
@@ -407,7 +541,9 @@ function maxIterText_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of maxIterText as text
 %        str2double(get(hObject,'String')) returns contents of maxIterText as a double
-
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
 
 % --- Executes during object creation, after setting all properties.
 function maxIterText_CreateFcn(hObject, eventdata, handles)
@@ -430,7 +566,9 @@ function penaltyFactText_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of penaltyFactText as text
 %        str2double(get(hObject,'String')) returns contents of penaltyFactText as a double
-
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
 
 % --- Executes during object creation, after setting all properties.
 function penaltyFactText_CreateFcn(hObject, eventdata, handles)
@@ -453,7 +591,9 @@ function initPenaltyText_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of initPenaltyText as text
 %        str2double(get(hObject,'String')) returns contents of initPenaltyText as a double
-
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
 
 % --- Executes during object creation, after setting all properties.
 function initPenaltyText_CreateFcn(hObject, eventdata, handles)
@@ -606,19 +746,19 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes on selection change in popupmenu10.
-function popupmenu10_Callback(hObject, eventdata, handles)
-% hObject    handle to popupmenu10 (see GCBO)
+% --- Executes on selection change in useParallelCombo.
+function useParallelCombo_Callback(hObject, eventdata, handles)
+% hObject    handle to useParallelCombo (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: contents = cellstr(get(hObject,'String')) returns popupmenu10 contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from popupmenu10
+% Hints: contents = cellstr(get(hObject,'String')) returns useParallelCombo contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from useParallelCombo
 
 
 % --- Executes during object creation, after setting all properties.
-function popupmenu10_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to popupmenu10 (see GCBO)
+function useParallelCombo_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to useParallelCombo (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -634,3 +774,31 @@ function saveAndCloseButton_Callback(hObject, eventdata, handles)
 % hObject    handle to saveAndCloseButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+    errMsg = validateInputs(handles);
+    
+    if(isempty(errMsg))
+        uiresume(handles.lvd_editPatternSearchOptionsGUI);
+    else
+        msgbox(errMsg,'Invalid Pattern Search Options Inputs','error');
+    end
+
+function errMsg = validateInputs(handles)
+    errMsg = {};
+
+    errMsg = validateDoubleValue(handles, errMsg, 'cacheTolText', 'Cache Tolerance', 1E-12, 1, false);
+    errMsg = validateDoubleValue(handles, errMsg, 'conTolText', 'Constraint Tolerance', 1E-12, 1, false);
+    errMsg = validateDoubleValue(handles, errMsg, 'funcTolText', 'Function Tolerance', 1E-12, 1, false);
+    errMsg = validateDoubleValue(handles, errMsg, 'meshTolText', 'Mesh Tolerance', 1E-12, 1, false);
+    errMsg = validateDoubleValue(handles, errMsg, 'stepTolText', 'Step Tolerance', 1E-12, 1, false);
+    
+    errMsg = validateDoubleValue(handles, errMsg, 'maxIterText', 'Max Iterations', 0, Inf, true);
+    errMsg = validateDoubleValue(handles, errMsg, 'maxFunEvalsText', 'Max Function Evaluations', 0, Inf, true);
+    
+    errMsg = validateDoubleValue(handles, errMsg, 'cacheSizeText', 'Cache Size', 1, Inf, true);
+    
+    errMsg = validateDoubleValue(handles, errMsg, 'initMeshSizeText', 'Initial Mesh Size', 1E-12, Inf, false);
+    errMsg = validateDoubleValue(handles, errMsg, 'meshContrFactorText', 'Mesh Constraction Factor', 1E-12, 1, false);
+    errMsg = validateDoubleValue(handles, errMsg, 'meshExpFactorText', 'Mesh Expansion Factor', 1, Inf, false); 
+
+    errMsg = validateDoubleValue(handles, errMsg, 'initPenaltyText', 'Initial Penalty', 1, Inf, false);
+    errMsg = validateDoubleValue(handles, errMsg, 'penaltyFactText', 'Penalty Factor', 1, Inf, false);

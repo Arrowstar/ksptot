@@ -116,17 +116,7 @@ function handles = populateGUI(handles, fminconOpt)
     setOptsDoubleValueStrInGUI(handles, options, 'relLineSrchBndDuration', 'AsLineSrchBndDurText');
     setOptsDoubleValueStrInGUI(handles, options, 'tolConSQP', 'AsTolConSqpText');
     
-function setOptsDoubleValueStrInGUI(handles, options, optPropName, handlesFieldName)
-    value = options.(optPropName);
-    
-    if(isnan(value))
-        str = '';
-    else
-        str = fullAccNum2Str(double(value));
-    end
-    
-    handles.(handlesFieldName).String = str;
-    
+   
 function setDocLbl(handles)
     docLinkLblPos = handles.matlabDocLinkLabel.Position;
     docLinkLblParent = handles.matlabDocLinkLabel.Parent;
@@ -200,17 +190,7 @@ function varargout = lvd_editFminconOptionsGUI_OutputFcn(hObject, eventdata, han
         varargout{1} = true;
         close(handles.lvd_editFminconOptionsGUI);
     end
-
-function setOptsDoubleValueInObject(handles, options, optPropName, handlesFieldName)
-    strValue = strtrim(get(handles.(handlesFieldName),'String'));
-
-    if(~isempty(strValue)) %allow empty, implies default
-        value = str2double(strValue);
-    else
-        value = NaN;
-    end
-    options.(optPropName) = value;
-    
+   
     
 function errMsg = validateInputs(handles)
     errMsg = {};
@@ -236,14 +216,6 @@ function errMsg = validateInputs(handles)
     errMsg = validateDoubleValue(handles, errMsg, 'AsLineSrchBndDurText', 'A-S Line Search Bound Duration', 1, Inf, true);
     errMsg = validateDoubleValue(handles, errMsg, 'AsTolConSqpText', 'A-S Inner SQP Constraint Tolerance', 1E-10, Inf, false);
      
-function errMsg = validateDoubleValue(handles, errMsg, handlesFieldName, numberName, lb, ub, isInt)
-    strValue = strtrim(get(handles.(handlesFieldName),'String'));
-    
-    if(~isempty(strValue)) %allow empty, implies default
-        value = str2double(strValue);
-        enteredStr = get(handles.(handlesFieldName),'String');
-        errMsg = validateNumber(value, numberName, lb, ub, isInt, errMsg, enteredStr);
-    end
 
 function optTolText_Callback(hObject, eventdata, handles)
 % hObject    handle to optTolText (see GCBO)
