@@ -32,7 +32,7 @@ classdef FminconOptimizer < AbstractGradientOptimizer
 %             optimAlg = lvdOpt.lvdData.settings.optAlgo.algoName;
             
             opts = obj.options.getOptionsForOptimizer(typicalX);
-            opts = optimoptions(opts, 'UseParallel',usePara, 'ScaleProblem',scaleProb, 'Algorithm',optimAlg, 'CheckGradients',true);
+%             opts = optimoptions(opts, 'UseParallel',usePara, 'ScaleProblem',scaleProb, 'Algorithm',optimAlg, 'CheckGradients',true);
             
             if(lvdOpt.gradAlgo == LvdOptimizerGradientCalculationAlgoEnum.BuiltIn)
                 objFunToPass = objFuncWrapper;
