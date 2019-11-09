@@ -65,5 +65,9 @@ classdef PatternSearchOptimizer < AbstractOptimizer
             lvd_executeOptimProblem(celBodyData, writeOutput, problem, recorder);
             close(handlesObsOptimGui.ma_ObserveOptimGUI);
         end
+        
+        function tf = usesParallel(obj)
+            tf = obj.options.useParallel.optionVal;
+        end
     end
 end

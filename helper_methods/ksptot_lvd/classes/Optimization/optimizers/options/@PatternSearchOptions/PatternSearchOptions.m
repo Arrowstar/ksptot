@@ -4,7 +4,7 @@ classdef PatternSearchOptions < matlab.mixin.SetGet
     
     properties
         %Parallel
-        useParallel(1,1) logical = false;
+        useParallel(1,1) PatternSearchUseParallelEnum = PatternSearchUseParallelEnum.UseParallel;
         
         %Tolerances
         cacheTol(1,1) double = eps;
@@ -14,15 +14,15 @@ classdef PatternSearchOptions < matlab.mixin.SetGet
         stepTol(1,1) double = 1E-6;
         
         %Cache
-        cache(1,1) logical = true;
+        cache(1,1) logical = true; %should be enum
         cacheSize(1,1) uint64 = 1E6;
         
         %Mesh
-        accelMesh(1,1) logical = true;
+        accelMesh(1,1) logical = true; %should be enum
         initMeshSize(1,1) double = 1;
         meshContrFact(1,1) double = 0.5;
         meshExpFact(1,1) double = 2.0;
-        meshRotate(1,1) logical = true;
+        meshRotate(1,1) logical = true; %should be enum
 
         %Maximums
         maxFunEvals(1,1) uint64 = 3000;
@@ -31,12 +31,12 @@ classdef PatternSearchOptions < matlab.mixin.SetGet
         %Polling
         pollMethod(1,1) PattSrchPollMethodEnum = PattSrchPollMethodEnum.GPSPositiveBasis2N;
         pollOrder(1,1) PattSrchPollOrderEnum = PattSrchPollOrderEnum.Consecutive;
-        useCompletePoll(1,1) logical = true;
+        useCompletePoll(1,1) logical = true; %should be enum;
         
         %Search
-        scaleMesh(1,1) logical = true;
+        scaleMesh(1,1) logical = true;%should be enum
         searchFunc(1,1) PattSrchSearchFcnEnum = PattSrchSearchFcnEnum.None;
-        useCompleteSearch(1,1) logical = true;
+        useCompleteSearch(1,1) logical = true; %should be enum
         
         %Penalty
         initPenalty(1,1) double = 10;

@@ -3,17 +3,19 @@ classdef FminconUseParallelEnum < matlab.mixin.SetGet
     %   Detailed explanation goes here
     
     enumeration
-        UseParallel('Compute Gradients in Parallel')
-        DoNotUseParallel('Compute Gradients in Serial');
+        UseParallel('Compute Gradients in Parallel',true)
+        DoNotUseParallel('Compute Gradients in Serial',false);
     end
     
     properties
         name char = '';
+        optionVal(1,1) logical = true
     end
     
     methods
-        function obj = FminconUseParallelEnum(name)
+        function obj = FminconUseParallelEnum(name, optionVal)
             obj.name = name;
+            obj.optionVal = optionVal;
         end
     end
     
