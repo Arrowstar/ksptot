@@ -27,9 +27,9 @@ classdef FminconOptimizer < AbstractGradientOptimizer
             nonlcon = @(x) lvdOpt.constraints.evalConstraints(x, true, evtToStartScriptExecAt, true);
                 
             %%% These three need to be removed once the options are set up!
-            usePara = lvdOpt.lvdData.settings.optUsePara;
-            scaleProb = lvdOpt.lvdData.settings.getScaleProbStr();
-            optimAlg = lvdOpt.lvdData.settings.optAlgo.algoName;
+%             usePara = lvdOpt.lvdData.settings.optUsePara;
+%             scaleProb = lvdOpt.lvdData.settings.getScaleProbStr();
+%             optimAlg = lvdOpt.lvdData.settings.optAlgo.algoName;
             
             opts = obj.options.getOptionsForOptimizer(typicalX);
             opts = optimoptions(opts, 'UseParallel',usePara, 'ScaleProblem',scaleProb, 'Algorithm',optimAlg, 'CheckGradients',true);
