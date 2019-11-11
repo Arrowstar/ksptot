@@ -2,7 +2,13 @@ function lvd_executeOptimProblem(celBodyData, writeOutput, problem, recorder)
     global options_gravParamType;
     initX = [];
     
-    if(problem.options.UseParallel)
+    if(isfield(struct(problem.options),'UseParallel'))
+        useParallel = problem.options.UseParallel;
+    else
+        useParallel = problem.UseParallel;
+    end
+    
+    if(useParallel)
         pp=gcp('nocreate');
         
         if(not(isempty(pp)))
@@ -21,6 +27,9 @@ function lvd_executeOptimProblem(celBodyData, writeOutput, problem, recorder)
             [x,fval,exitflag,output,lambda,grad,hessian] = fmincon(problem);
         elseif(strcmpi(problem.solver,'patternsearch'))
             [x,fval,exitflag,output] = patternsearch(problem);
+        elseif(strcmpi(problem.solver,'nomad'))            
+%             [x,fval,exitflag,iter,nfval] = nomad(problem.objective, problem.x0, problem.lb, problem.ub, problem.options);
+            [x,fval,exitflag,iter,nfval] = nomad(problem.objective, problem.x0, problem.lb, problem.ub, problem.nlcon, problem.nlrhs, problem.xtype, problem.options);
         else
             error('Unknown optimizer function: %s', problem.solver);
         end

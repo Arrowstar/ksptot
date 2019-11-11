@@ -194,6 +194,7 @@ function editSelectedOptimizerOptionsButton_Callback(hObject, eventdata, handles
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
     lvdData = getappdata(handles.lvd_OptimizerSelectionGUI, 'lvdData');
+    
     lvdOpt = lvdData.optimizer;
     optimizer = lvdOpt.getSelectedOptimizer();
     optimizer.openOptionsDialog();

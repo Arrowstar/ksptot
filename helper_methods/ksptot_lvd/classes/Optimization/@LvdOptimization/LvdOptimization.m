@@ -15,6 +15,7 @@ classdef LvdOptimization < matlab.mixin.SetGet
         %Optimizers
         fminconOpt(1,1) FminconOptimizer = FminconOptimizer();
         patternSearchOpt(1,1) PatternSearchOptimizer = PatternSearchOptimizer();
+        nomadOpt(1,1) NomadOptimizer = NomadOptimizer();
         
         %Gradient Calc Algo Selection
         gradAlgo(1,1) LvdOptimizerGradientCalculationAlgoEnum = LvdOptimizerGradientCalculationAlgoEnum.BuiltIn;
@@ -35,6 +36,7 @@ classdef LvdOptimization < matlab.mixin.SetGet
             obj.optAlgo = LvdOptimizerAlgoEnum.Fmincon;
             obj.fminconOpt = FminconOptimizer();
             obj.patternSearchOpt = PatternSearchOptimizer();
+            obj.nomadOpt = NomadOptimizer();
             
             obj.builtInGradMethod = BuiltInGradientCalculationMethod();
             obj.customFiniteDiffsCalcMethod = CustomFiniteDiffsCalculationMethod();
@@ -51,6 +53,8 @@ classdef LvdOptimization < matlab.mixin.SetGet
                 optimizer = obj.fminconOpt;
             elseif(optAlgorithm == LvdOptimizerAlgoEnum.PatternSearch)
                 optimizer = obj.patternSearchOpt;
+            elseif(optAlgorithm == LvdOptimizerAlgoEnum.Nomad)
+                optimizer = obj.nomadOpt;
             end
         end
         

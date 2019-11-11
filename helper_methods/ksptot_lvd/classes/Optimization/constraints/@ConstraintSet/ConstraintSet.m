@@ -72,7 +72,7 @@ classdef ConstraintSet < matlab.mixin.SetGet
             end
         end
         
-        function [c, ceq, value, lb, ub, type, eventNum, cEventInds, ceqEventInds] = evalConstraints(obj, x, tfRunScript, evtToStartScriptExecAt, allowInterrupt)
+        function [c, ceq, value, lb, ub, type, eventNum, cEventInds, ceqEventInds] = evalConstraints(obj, x, tfRunScript, evtToStartScriptExecAt, allowInterrupt, stateLogToEval)
             c = [];
             ceq = [];
             value = [];
@@ -90,6 +90,8 @@ classdef ConstraintSet < matlab.mixin.SetGet
                     obj.lvdOptim.vars.updateObjsWithScaledVarValues(x);
                     useSparse = obj.canUseSparseOutput();
                     stateLog = obj.lvdData.script.executeScript(useSparse, evtToStartScriptExecAt, false, allowInterrupt);
+                elseif(not(isempty(stateLogToEval)) && isa(stateLogToEval, 'LaunchVehicleStateLog'))
+                    stateLog = stateLogToEval;
                 else
                     stateLog = obj.lvdData.stateLog;
                 end

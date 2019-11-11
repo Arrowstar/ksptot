@@ -24,7 +24,7 @@ classdef PatternSearchOptimizer < AbstractOptimizer
             evtToStartScriptExecAt = lvdOpt.lvdData.script.getEventForInd(evtNumToStartScriptExecAt);
             
             objFuncWrapper = @(x) lvdOpt.objFcn.evalObjFcn(x, evtToStartScriptExecAt);
-            nonlcon = @(x) lvdOpt.constraints.evalConstraints(x, true, evtToStartScriptExecAt, true);
+            nonlcon = @(x) lvdOpt.constraints.evalConstraints(x, true, evtToStartScriptExecAt, true, []);
                         
             usePara = lvdOpt.lvdData.settings.optUsePara;
             scaleProb = lvdOpt.lvdData.settings.getScaleProbStr();

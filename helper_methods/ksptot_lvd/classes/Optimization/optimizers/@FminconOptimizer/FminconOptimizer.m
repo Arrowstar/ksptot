@@ -24,7 +24,7 @@ classdef FminconOptimizer < AbstractGradientOptimizer
             evtToStartScriptExecAt = lvdOpt.lvdData.script.getEventForInd(evtNumToStartScriptExecAt);
             
             objFuncWrapper = @(x) lvdOpt.objFcn.evalObjFcn(x, evtToStartScriptExecAt);
-            nonlcon = @(x) lvdOpt.constraints.evalConstraints(x, true, evtToStartScriptExecAt, true);
+            nonlcon = @(x) lvdOpt.constraints.evalConstraints(x, true, evtToStartScriptExecAt, true, []);
                 
             %%% These three need to be removed once the options are set up!
 %             usePara = lvdOpt.lvdData.settings.optUsePara;

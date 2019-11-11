@@ -704,7 +704,7 @@ switch(no)
         nlrhs = [0;0;0];
         nle = [0;0;0];
         x0 = [35;-31;11;5;-5];
-        prob = optiprob('obj',fun,'grad',grad,'nlmix',nlcon,nlrhs,nle,'nljac',nljac,'x0',x0);
+        prob = optiprob('solver','nomad','obj',fun,'grad',grad,'nlmix',nlcon,nlrhs,nle,'nljac',nljac,'x0',x0);
         sol = [1;1;1;1;1];
         fmin = 0;
         
