@@ -28,8 +28,8 @@ function lvd_executeOptimProblem(celBodyData, writeOutput, problem, recorder)
         elseif(strcmpi(problem.solver,'patternsearch'))
             [x,fval,exitflag,output] = patternsearch(problem);
         elseif(strcmpi(problem.solver,'nomad'))            
-%             [x,fval,exitflag,iter,nfval] = nomad(problem.objective, problem.x0, problem.lb, problem.ub, problem.options);
-            [x,fval,exitflag,iter,nfval] = nomad(problem.objective, problem.x0, problem.lb, problem.ub, problem.nlcon, problem.nlrhs, problem.xtype, problem.options);
+            [x,fval,exitflag,iter,nfval] = nomad(problem.objective, problem.x0, problem.lb, problem.ub, problem.options);
+%             [x,fval,exitflag,iter,nfval] = nomad(problem.objective, problem.x0, problem.lb, problem.ub, problem.nlcon, problem.nlrhs, problem.xtype, problem.options);
         else
             error('Unknown optimizer function: %s', problem.solver);
         end

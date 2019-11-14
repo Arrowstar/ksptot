@@ -24,39 +24,38 @@ classdef NomadOptimizer < AbstractOptimizer
             evtToStartScriptExecAt = lvdOpt.lvdData.script.getEventForInd(evtNumToStartScriptExecAt);
             
             objFuncWrapper = @(x) lvdOpt.objFcn.evalObjFcn(x, evtToStartScriptExecAt);
-            nomadObjFunc = @(x) NomadOptimizer.nomadObjFuncWrapper(x, objFuncWrapper);
+%             nomadObjFunc = @(x) NomadOptimizer.nomadObjFuncWrapper(x, objFuncWrapper);
             nonlcon = @(x, tfRunScript, stateLog) lvdOpt.constraints.evalConstraints(x, tfRunScript, evtToStartScriptExecAt, true, stateLog);
                         
             [c, ceq] = lvdOpt.constraints.evalConstraints(x0All, true, evtToStartScriptExecAt, false, []);
             numConstr = length(c) + 2*length(ceq);
-            bboutput = horzcat(repmat({'PB'},1,numConstr));
+            bboutput = horzcat({'OBJ'}, repmat({'PB'},1,numConstr));
             numElemPerOutput = length(bboutput);
-%             bboutput = strjoin(bboutput,' ');
+            bboutput = strjoin(bboutput,' ');
             nomadNonlconWrapper = @(x) NomadOptimizer.nomadConstrWrapper(x, nonlcon);
-            nlrhs = zeros(1,numConstr);
+%             nlrhs = zeros(1,numConstr);
             
             pp = gcp('nocreate');
-            if(true) %
-                blockSize = 1;
+            if(isempty(pp)) %
                 numWorkers = 0;
                 useParallel = false;
             else
-                blockSize = 100;
                 numWorkers = pp.NumWorkers;
                 useParallel = true;
             end
+            blockSize = 1E20;
             
-%             numVars = length(x0All);
-%             f = @(x) NomadOptimizer.nomadObjConstrWrapper(x, objFuncWrapper, nonlcon, numVars, numElemPerOutput, numWorkers);
-            opts = nomadset('display_degree',3, 'display_all_eval',0, 'bb_output_type',bboutput, 'stop_if_feasible',1); %, 'bb_max_block_size',blockSize
+            numVars = length(x0All);
+            f = @(x) NomadOptimizer.nomadObjConstrWrapper(x, objFuncWrapper, nomadNonlconWrapper, numVars, numElemPerOutput, numWorkers);
+            opts = nomadset('display_degree',3, 'display_all_eval',0, 'bb_output_type',bboutput, 'stop_if_feasible',0, 'bb_max_block_size',blockSize, 'nm_search',0);
             
-            problem.objective = nomadObjFunc; %f
+            problem.objective = f; %f
             problem.x0 = x0All;
             problem.lb = lbAll;
             problem.ub = ubAll;
-            problem.nlcon = nomadNonlconWrapper;
-            problem.nlrhs = nlrhs;
-            problem.xtype = repmat('C',1,length(x0All));
+%             problem.nlcon = nomadNonlconWrapper;
+%             problem.nlrhs = nlrhs;
+%             problem.xtype = repmat('C',1,length(x0All));
             problem.options = opts;
             
             problem.solver = 'nomad';
@@ -70,7 +69,7 @@ classdef NomadOptimizer < AbstractOptimizer
             
             recorder = ma_OptimRecorder();
             outputFnc = @(x, optimValues, state) ma_OptimOutputFunc(x, optimValues, state, handlesObsOptimGui, problem.objective, problem.lb, problem.ub, celBodyData, recorder, propNames, writeOutput, varNameStrs, lbUsAll, ubUsAll);
-            nomadOutput1 = @(iter, fval, x, state) NomadOptimizer.nomadIterFunWrapper(iter, fval, x, outputFnc, state, nomadNonlconWrapper);
+            nomadOutput1 = @(iter, fval, x, state) NomadOptimizer.nomadIterFunWrapper(iter, fval, x, outputFnc, state);
             nomadOutput2 = @(iter, fval, x) nomadOutput1(iter, fval, x, 'iter');
             problem.options = nomadset(problem.options, 'iterfun',nomadOutput2);
             problem.UseParallel = useParallel;
@@ -160,15 +159,42 @@ classdef NomadOptimizer < AbstractOptimizer
         
         function [fcRow, stateLog] = loopInternal(xI, objFun, nonlcon)
             [f, stateLog] = objFun(xI);
-            [c, ceq] = nonlcon(xI);
+            [c] = nonlcon(xI);
 
-            fcRow = [f; c(:); ceq(:); -1*ceq(:)]';
+            fcRow = [f; c(:);]';
         end
         
-        function stop = nomadIterFunWrapper(iter, fval, x, outputFnc, state, nonlcon)
-            c = nonlcon(x);
-            c(c <= 0) = 0;
-            cViol = norm(c);
+        function stop = nomadIterFunWrapper(iter, fval, x, outputFnc, state)
+            f = fval(:,1);
+            c = fval(:,2:end);
+            
+            if(isempty(c))
+                [fval,I] = min(f);
+                cViol = 0;
+                xx = x(I,:);
+            else
+                c(c <= 0) = 0;
+                cViol = sqrt(sum(c.^2,2));
+                
+                [minViolation,I] = min(cViol);
+                
+                if(sum(cViol == minViolation) > 1)
+                    boolC = cViol == minViolation;
+                    fBool = f(boolC);
+                    [minFBool,~] = min(fBool);
+                    
+                    boolF = f == minFBool;
+                    II = find(boolF & boolC,1,'first');
+                    
+                    fval = f(II);
+                    cViol = minViolation;
+                    xx = x(II,:);
+                else
+                    fval = f(I);
+                    cViol = minViolation;
+                    xx = x(I,:);
+                end
+            end
             
             optimValues.constrviolation = max(cViol, 0);
             optimValues.funccount = iter;
@@ -177,7 +203,7 @@ classdef NomadOptimizer < AbstractOptimizer
             optimValues.stepsize = 0;
             optimValues.firstorderopt = 0;
 
-            [stop,~,~] = outputFnc(x, optimValues, state);
+            [stop,~,~] = outputFnc(xx, optimValues, state);
             stop = logical(stop);
         end
     end
