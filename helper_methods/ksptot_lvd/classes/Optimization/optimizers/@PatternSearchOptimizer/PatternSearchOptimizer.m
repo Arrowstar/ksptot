@@ -26,15 +26,6 @@ classdef PatternSearchOptimizer < AbstractOptimizer
             objFuncWrapper = @(x) lvdOpt.objFcn.evalObjFcn(x, evtToStartScriptExecAt);
             nonlcon = @(x) lvdOpt.constraints.evalConstraints(x, true, evtToStartScriptExecAt, true, []);
                         
-            usePara = lvdOpt.lvdData.settings.optUsePara;
-            scaleProb = lvdOpt.lvdData.settings.getScaleProbStr();
-            
-            if(strcmpi(scaleProb,'obj-and-constr'))
-                scaleMesh = true;
-            else
-                scaleMesh = false;
-            end
-
             initMeshSize = norm(typicalX)/(10*length(typicalX));
             opts = obj.options.getOptionsForOptimizer(x0All);
             opts = optimoptions(opts, 'ScaleMesh',scaleMesh, 'UseParallel',usePara, 'InitialMeshSize',initMeshSize);

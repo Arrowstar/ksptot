@@ -25,14 +25,8 @@ classdef FminconOptimizer < AbstractGradientOptimizer
             
             objFuncWrapper = @(x) lvdOpt.objFcn.evalObjFcn(x, evtToStartScriptExecAt);
             nonlcon = @(x) lvdOpt.constraints.evalConstraints(x, true, evtToStartScriptExecAt, true, []);
-                
-            %%% These three need to be removed once the options are set up!
-%             usePara = lvdOpt.lvdData.settings.optUsePara;
-%             scaleProb = lvdOpt.lvdData.settings.getScaleProbStr();
-%             optimAlg = lvdOpt.lvdData.settings.optAlgo.algoName;
-            
+                            
             opts = obj.options.getOptionsForOptimizer(typicalX);
-%             opts = optimoptions(opts, 'UseParallel',usePara, 'ScaleProblem',scaleProb, 'Algorithm',optimAlg, 'CheckGradients',true);
             
             if(lvdOpt.gradAlgo == LvdOptimizerGradientCalculationAlgoEnum.BuiltIn)
                 objFunToPass = objFuncWrapper;

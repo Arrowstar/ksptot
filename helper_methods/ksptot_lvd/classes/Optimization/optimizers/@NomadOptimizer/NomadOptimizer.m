@@ -3,12 +3,12 @@ classdef NomadOptimizer < AbstractOptimizer
     %   Detailed explanation goes here
     
     properties
-        
+        options(1,1) NomadOptions = NomadOptions();
     end
     
     methods
         function obj = NomadOptimizer()
-%             obj.options = PatternSearchOptions();
+            obj.options = NomadOptions();
         end
         
         function optimize(obj, lvdOpt, writeOutput)
@@ -80,11 +80,11 @@ classdef NomadOptimizer < AbstractOptimizer
         end
         
         function options = getOptions(obj)
-            
+            options = obj.options;
         end
         
         function tf = usesParallel(obj)
-            tf = false;
+            tf = obj.getOptions().usesParallel();
         end
         
         function openOptionsDialog(obj)

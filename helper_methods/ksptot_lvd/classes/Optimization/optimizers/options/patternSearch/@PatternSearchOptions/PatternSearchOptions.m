@@ -1,5 +1,5 @@
 classdef PatternSearchOptions < matlab.mixin.SetGet
-    %FminconOptions Summary of this class goes here
+    %PatternSearchOptions Summary of this class goes here
     %   Detailed explanation goes here
     
     properties

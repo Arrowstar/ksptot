@@ -58,6 +58,10 @@ classdef LvdOptimization < matlab.mixin.SetGet
             end
         end
         
+        function tf = usesParallel(obj)
+            tf = obj.getSelectedOptimizer().usesParallel();
+        end
+        
         function tf = usesStage(obj, stage)
             tf = obj.objFcn.usesStage(stage);
             

@@ -22,7 +22,7 @@ function varargout = ma_LvdMainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_LvdMainGUI
 
-% Last Modified by GUIDE v2.5 06-Nov-2019 18:40:36
+% Last Modified by GUIDE v2.5 16-Nov-2019 21:42:48
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -725,7 +725,7 @@ function openMissionPlanMenu_Callback(hObject, eventdata, handles)
             setDeleteButtonEnable(lvdData, handles);
             setNonSeqDeleteButtonEnable(lvdData, handles)
             
-            if(lvdData.settings.optUsePara)
+            if(lvdData.optimizer.usesParallel())
                 startParallelPool(write_to_output_func);
             end
             
@@ -1035,61 +1035,7 @@ function optimSettingsMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to optimSettingsMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
 
-    parallelOptim = lvdData.settings.optUsePara;
-    if(parallelOptim==true)
-        set(handles.optUseParaMenu, 'Checked', 'on');
-    else
-        set(handles.optUseParaMenu, 'Checked', 'off');
-    end
-
-% --------------------------------------------------------------------
-function optAlgorithmMenu_Callback(hObject, eventdata, handles)
-% hObject    handle to optAlgorithmMenu (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
-
-    optAlgo = lvdData.settings.optAlgo;
-    switch optAlgo
-        case LvdOptimAlgorithmEnum.InteriorPoint
-            set(handles.optInteriorPointAlgoMenu, 'Checked', 'on');
-            set(handles.optSqpAlgoMenu, 'Checked', 'off');
-            set(handles.optActiveSetAlgoMenu, 'Checked', 'off');
-        case LvdOptimAlgorithmEnum.SQP
-            set(handles.optInteriorPointAlgoMenu, 'Checked', 'off');
-            set(handles.optSqpAlgoMenu, 'Checked', 'on');
-            set(handles.optActiveSetAlgoMenu, 'Checked', 'off');
-        case LvdOptimAlgorithmEnum.ActiveSet
-            set(handles.optInteriorPointAlgoMenu, 'Checked', 'off');
-            set(handles.optSqpAlgoMenu, 'Checked', 'off');
-            set(handles.optActiveSetAlgoMenu, 'Checked', 'on');
-        otherwise
-            error('Unknown optimization algorithm when setting menu checkmark.');
-    end
-
-% --------------------------------------------------------------------
-function optUseParaMenu_Callback(hObject, eventdata, handles)
-% hObject    handle to optUseParaMenu (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
-    writeOutput = getappdata(handles.ma_LvdMainGUI,'write_to_output_func');
-    
-    addUndoState(handles,'Toggle Parallel Optimization Mode');  
-    
-    if strcmp(get(gcbo, 'Checked'),'on')
-        set(gcbo, 'Checked', 'off');
-        lvdData.settings.optUsePara = false;
-        writeOutput('Parallel optimization mode disabled.','append');
-    else
-        set(gcbo, 'Checked', 'on');
-        lvdData.settings.optUsePara = true;
-        
-        drawnow;
-        startParallelPool(writeOutput);
-    end
 
 function startParallelPool(writeOutput)
     p = gcp('nocreate');
@@ -1241,45 +1187,6 @@ function intMaxSimTimeMenu_Callback(hObject, eventdata, handles)
         beep;
     end
 
-% --------------------------------------------------------------------
-function optInteriorPointAlgoMenu_Callback(hObject, eventdata, handles)
-% hObject    handle to optInteriorPointAlgoMenu (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
-    writeOutput = getappdata(handles.ma_LvdMainGUI,'write_to_output_func');
-    
-    addUndoState(handles,'Edit Optimization Algo (Interior Point)');
-    
-    lvdData.settings.optAlgo = LvdOptimAlgorithmEnum.InteriorPoint;
-    writeOutput('Optimization algorithm changed to interior point.','append');
-
-% --------------------------------------------------------------------
-function optSqpAlgoMenu_Callback(hObject, eventdata, handles)
-% hObject    handle to optSqpAlgoMenu (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
-    writeOutput = getappdata(handles.ma_LvdMainGUI,'write_to_output_func');
-    
-    addUndoState(handles,'Edit Optimization Algo (SQP)');
-    
-    lvdData.settings.optAlgo = LvdOptimAlgorithmEnum.SQP;
-    writeOutput('Optimization algorithm changed to SQP.','append');
-
-% --------------------------------------------------------------------
-function optActiveSetAlgoMenu_Callback(hObject, eventdata, handles)
-% hObject    handle to optActiveSetAlgoMenu (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
-    writeOutput = getappdata(handles.ma_LvdMainGUI,'write_to_output_func');
-    
-    addUndoState(handles,'Edit Optimization Algo (Active Set)');
-    
-    lvdData.settings.optAlgo = LvdOptimAlgorithmEnum.ActiveSet;
-    writeOutput('Optimization algorithm changed to active set.','append');
-
 
 % --------------------------------------------------------------------
 function toolsMenu_Callback(hObject, eventdata, handles)
@@ -1416,26 +1323,6 @@ function ma_LvdMainGUI_WindowKeyPressFcn(hObject, eventdata, handles)
 %	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
 % handles    structure with handles and user data (see GUIDATA)
 
-
-% --------------------------------------------------------------------
-function optScaleProblemMenu_Callback(hObject, eventdata, handles)
-% hObject    handle to optScaleProblemMenu (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
-    writeOutput = getappdata(handles.ma_LvdMainGUI,'write_to_output_func');
-    
-    addUndoState(handles,'Toggle Optimization Scale Problem');
-    
-    if strcmp(get(gcbo, 'Checked'),'on')
-        set(gcbo, 'Checked', 'off');
-        lvdData.settings.optScaleProp = false;
-        writeOutput('Optimizer will not normalize the constraints and objective function.','append');
-    else
-        set(gcbo, 'Checked', 'on');
-        lvdData.settings.optScaleProp = true;
-        writeOutput('Optimizer will normalize all constraints and the objective function.','append');
-    end
 
 
 % --- Executes on selection change in nonSeqEventsListbox.
@@ -1686,52 +1573,6 @@ function editMissionNotesMenu_Callback(hObject, eventdata, handles)
     addUndoState(handles,'Edit Mission Notes');
     
     lvd_MissionNotesGUI(lvdData);
-
-
-% --------------------------------------------------------------------
-function optSubroutineMenu_Callback(hObject, eventdata, handles)
-% hObject    handle to optSubroutineMenu (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
-
-    optSubRoutine = lvdData.settings.optSubroutine;
-    switch optSubRoutine
-        case LvdOptimSubroutineEnum.fmincon
-            set(handles.fminconOptSubroutineMenu, 'Checked', 'on');
-            set(handles.psOptSubroutineMenu, 'Checked', 'off');
-        case LvdOptimSubroutineEnum.patternseach
-            set(handles.fminconOptSubroutineMenu, 'Checked', 'off');
-            set(handles.psOptSubroutineMenu, 'Checked', 'on');
-        otherwise
-            error('Unknown optimization subroutine when setting menu checkmark.');
-    end
-
-% --------------------------------------------------------------------
-function fminconOptSubroutineMenu_Callback(hObject, eventdata, handles)
-% hObject    handle to fminconOptSubroutineMenu (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
-    writeOutput = getappdata(handles.ma_LvdMainGUI,'write_to_output_func');
-    
-    addUndoState(handles,'Edit Optimization Subroutine (FMINCON)');
-    
-    lvdData.settings.optSubroutine = LvdOptimSubroutineEnum.fmincon;
-    writeOutput('Optimization subroutine changed to FMINCON.','append');
-
-% --------------------------------------------------------------------
-function psOptSubroutineMenu_Callback(hObject, eventdata, handles)
-% hObject    handle to psOptSubroutineMenu (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
-    writeOutput = getappdata(handles.ma_LvdMainGUI,'write_to_output_func');
-    
-    addUndoState(handles,'Edit Optimization Subroutine (Pattern Search)');
-    
-    lvdData.settings.optSubroutine = LvdOptimSubroutineEnum.patternseach;
-    writeOutput('Optimization subroutine changed to Pattern Search.','append');
 
 
 % --------------------------------------------------------------------

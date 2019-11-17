@@ -11,12 +11,6 @@ classdef LvdSettings < matlab.mixin.SetGet
         maxScriptPropTime(1,1) double = 5; %sec
         isSparseOutput(1,1) logical = false;
         
-        %optimization
-        optSubroutine(1,1) = LvdOptimSubroutineEnum.fmincon;
-        optUsePara(1,1) logical = false;
-        optAlgo LvdOptimAlgorithmEnum = LvdOptimAlgorithmEnum.InteriorPoint
-        optScaleProp(1,1) logical = true;
-        
         %auto-propagation
         autoPropScript(2,1) logical = true;
     end
@@ -24,14 +18,6 @@ classdef LvdSettings < matlab.mixin.SetGet
     methods
         function obj = LvdSettings()
 
-        end
-        
-        function str = getScaleProbStr(obj)
-            if(obj.optScaleProp)
-                str = 'obj-and-constr';
-            else
-                str = 'none';
-            end
         end
     end
 end

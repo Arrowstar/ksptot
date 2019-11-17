@@ -651,7 +651,7 @@ function optimizeInitialStepSizeMenu_Callback(hObject, eventdata, handles)
     lb = 0.01;
     ub = 1E10;
 %     options = optimoptions(@fmincon, 'Display','iter', 'OptimalityTolerance',1E-2, 'StepTolerance',1E-10, 'PlotFcn',{@optimplotx, @optimplotfval});
-    options = optimoptions(@patternsearch, 'Display','iter', 'UseParallel',lvdData.settings.optUsePara, 'PlotFcn',{@psplotbestx, @psplotbestf});
+    options = optimoptions(@patternsearch, 'Display','iter', 'UseParallel',lvdData.optimizer.usesParallel(), 'PlotFcn',{@psplotbestx, @psplotbestf});
     
 %     x = fmincon(fun,x0,[],[],[],[],lb,ub,[],options);
     x = patternsearch(fun,x0,[],[],[],[],lb,ub,[],options);
