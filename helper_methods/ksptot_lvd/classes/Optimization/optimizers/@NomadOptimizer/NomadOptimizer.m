@@ -67,7 +67,7 @@ classdef NomadOptimizer < AbstractOptimizer
             
             recorder = ma_OptimRecorder();
             outputFnc = @(x, optimValues, state) ma_OptimOutputFunc(x, optimValues, state, handlesObsOptimGui, problem.objective, problem.lb, problem.ub, celBodyData, recorder, propNames, writeOutput, varNameStrs, lbUsAll, ubUsAll);
-            nomadOutput1 = @(iter, fval, x, state) NomadOptimizer.nomadIterFunWrapper(iter, fval, x, outputFnc, state);
+            nomadOutput1 = @(iter, fval, x, state) NomadOptimizer.nomadIterFunWrapper(iter, fval, x, outputFnc, state, numVars);
             nomadOutput2 = @(iter, fval, x) nomadOutput1(iter, fval, x, 'iter');
             problem.options = nomadset(problem.options, 'iterfun',nomadOutput2);
             problem.UseParallel = useParallel;
@@ -162,7 +162,15 @@ classdef NomadOptimizer < AbstractOptimizer
             fcRow = [f; c(:);]';
         end
         
-        function stop = nomadIterFunWrapper(iter, fval, x, outputFnc, state)
+        function stop = nomadIterFunWrapper(iter, fval, x, outputFnc, state, numVars)
+            if(numel(x) == numVars)
+                numEvals = 1;
+            else
+                numEvals = size(x,1);
+            end
+
+            x = reshape(x, numEvals, numel(x)/numEvals);
+            
             f = fval(:,1);
             c = fval(:,2:end);
             
