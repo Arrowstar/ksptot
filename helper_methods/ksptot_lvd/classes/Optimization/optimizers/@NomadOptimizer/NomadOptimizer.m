@@ -24,38 +24,36 @@ classdef NomadOptimizer < AbstractOptimizer
             evtToStartScriptExecAt = lvdOpt.lvdData.script.getEventForInd(evtNumToStartScriptExecAt);
             
             objFuncWrapper = @(x) lvdOpt.objFcn.evalObjFcn(x, evtToStartScriptExecAt);
-%             nomadObjFunc = @(x) NomadOptimizer.nomadObjFuncWrapper(x, objFuncWrapper);
             nonlcon = @(x, tfRunScript, stateLog) lvdOpt.constraints.evalConstraints(x, tfRunScript, evtToStartScriptExecAt, true, stateLog);
                         
+            opts = obj.options.getOptionsForOptimizer();
+            constrTypeStr = obj.options.getConstrTypeStr();
+            useParallel = obj.options.usesParallel();
+            
             [c, ceq] = lvdOpt.constraints.evalConstraints(x0All, true, evtToStartScriptExecAt, false, []);
             numConstr = length(c) + 2*length(ceq);
-            bboutput = horzcat({'OBJ'}, repmat({'PB'},1,numConstr));
+            bboutput = horzcat({'OBJ'}, repmat({constrTypeStr},1,numConstr));
             numElemPerOutput = length(bboutput);
             bboutput = strjoin(bboutput,' ');
             nomadNonlconWrapper = @(x) NomadOptimizer.nomadConstrWrapper(x, nonlcon);
-%             nlrhs = zeros(1,numConstr);
             
             pp = gcp('nocreate');
-            if(isempty(pp)) %
+            if(isempty(pp) || useParallel == false) %
                 numWorkers = 0;
                 useParallel = false;
             else
                 numWorkers = pp.NumWorkers;
                 useParallel = true;
             end
-            blockSize = 1E20;
             
             numVars = length(x0All);
             f = @(x) NomadOptimizer.nomadObjConstrWrapper(x, objFuncWrapper, nomadNonlconWrapper, numVars, numElemPerOutput, numWorkers);
-            opts = nomadset('display_degree',3, 'display_all_eval',0, 'bb_output_type',bboutput, 'stop_if_feasible',0, 'bb_max_block_size',blockSize, 'nm_search',0);
+            opts = nomadset(opts, 'bb_output_type',bboutput);
             
             problem.objective = f; %f
             problem.x0 = x0All;
             problem.lb = lbAll;
             problem.ub = ubAll;
-%             problem.nlcon = nomadNonlconWrapper;
-%             problem.nlrhs = nlrhs;
-%             problem.xtype = repmat('C',1,length(x0All));
             problem.options = opts;
             
             problem.solver = 'nomad';
@@ -88,7 +86,7 @@ classdef NomadOptimizer < AbstractOptimizer
         end
         
         function openOptionsDialog(obj)
-            
+            lvd_editNomadOptionsGUI(obj);
         end
     end
     

@@ -49,12 +49,18 @@ classdef LvdOptimization < matlab.mixin.SetGet
         
         function optimizer = getSelectedOptimizer(obj)
             optAlgorithm = obj.optAlgo;
+            optimizer = obj.getOptimizerForEnum(optAlgorithm);
+        end
+        
+        function optimizer = getOptimizerForEnum(obj, optAlgorithm)
             if(optAlgorithm == LvdOptimizerAlgoEnum.Fmincon)
                 optimizer = obj.fminconOpt;
             elseif(optAlgorithm == LvdOptimizerAlgoEnum.PatternSearch)
                 optimizer = obj.patternSearchOpt;
             elseif(optAlgorithm == LvdOptimizerAlgoEnum.Nomad)
                 optimizer = obj.nomadOpt;
+            else
+                error('Unknown LVD optimization algorithm!');
             end
         end
         

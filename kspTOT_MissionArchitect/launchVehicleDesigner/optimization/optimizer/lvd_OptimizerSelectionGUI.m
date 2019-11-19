@@ -195,6 +195,10 @@ function editSelectedOptimizerOptionsButton_Callback(hObject, eventdata, handles
 % handles    structure with handles and user data (see GUIDATA)
     lvdData = getappdata(handles.lvd_OptimizerSelectionGUI, 'lvdData');
     
+    optAlgoStrs = LvdOptimizerAlgoEnum.getListBoxStr();
+    optAlgoInd = handles.optimizerSelectionCombo.Value;
+    optAlgoEnum = LvdOptimizerAlgoEnum.getEnumForListboxStr(optAlgoStrs{optAlgoInd});
+    
     lvdOpt = lvdData.optimizer;
-    optimizer = lvdOpt.getSelectedOptimizer();
+    optimizer = lvdOpt.getOptimizerForEnum(optAlgoEnum);
     optimizer.openOptionsDialog();

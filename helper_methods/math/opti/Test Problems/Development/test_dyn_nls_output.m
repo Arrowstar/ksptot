@@ -33,8 +33,3 @@ g = Opt.nlprob.grad
 % Output
 [~,zm] = ode45(oi,tm,z0);
 h = @(z,p) 2*z + 3*p;
-
-h(
-
-
-function 

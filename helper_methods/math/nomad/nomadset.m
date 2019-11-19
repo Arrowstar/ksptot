@@ -50,7 +50,7 @@ Defaults = {[],[],[],[],[],[],[],1,...%bb_max_block_size
             [],0,0,[],[],-1,0.1,[],[],...%sec_poll_dir_type
             1,1,[],0,1,[],25,2,0,... %display_all_eval
             [],[],[],[],[],[],1e-13,0,[],1,0,...%has_sgte
-            [],[],1,'','P',[],'ORTHO 1',[],1}';
+            [],[],1,'','P',[],'ORTHO 1',[],0}';
 
 %Collect Sizes and lowercase matches         
 m = size(Names,1); numberargs = nargin;

@@ -7,7 +7,7 @@ classdef PatternSearchOptions < matlab.mixin.SetGet
         useParallel(1,1) PatternSearchUseParallelEnum = PatternSearchUseParallelEnum.UseParallel;
         
         %Tolerances
-        cacheTol(1,1) double = eps;
+        cacheTol(1,1) double = 1.1*eps;
         conTol(1,1) double = 1E-10;
         funTol(1,1) double = 1E-6;        
         meshTol(1,1) double = 1E-6;

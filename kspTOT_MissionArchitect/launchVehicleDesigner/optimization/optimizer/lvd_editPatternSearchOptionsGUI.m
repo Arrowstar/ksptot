@@ -785,7 +785,7 @@ function saveAndCloseButton_Callback(hObject, eventdata, handles)
 function errMsg = validateInputs(handles)
     errMsg = {};
 
-    errMsg = validateDoubleValue(handles, errMsg, 'cacheTolText', 'Cache Tolerance', 1E-12, 1, false);
+    errMsg = validateDoubleValue(handles, errMsg, 'cacheTolText', 'Cache Tolerance', eps, 1, false);
     errMsg = validateDoubleValue(handles, errMsg, 'conTolText', 'Constraint Tolerance', 1E-12, 1, false);
     errMsg = validateDoubleValue(handles, errMsg, 'funcTolText', 'Function Tolerance', 1E-12, 1, false);
     errMsg = validateDoubleValue(handles, errMsg, 'meshTolText', 'Mesh Tolerance', 1E-12, 1, false);
