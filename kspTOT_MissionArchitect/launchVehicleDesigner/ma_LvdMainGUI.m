@@ -141,6 +141,12 @@ function propagateScript(handles, lvdData, evtStartNum)
     
     writeOutput(sprintf('Executed mission script in %.3f seconds.',execTime),'append');
     drawnow;
+    
+function celBodyData = getCelBodyDataFromMainGui(handles)
+    hKsptotMainGUI = getappdata(handles.ma_LvdMainGUI,'ksptotMainGUI');
+    
+    mainGUIUserData = get(hKsptotMainGUI, 'UserData');
+    celBodyData = mainGUIUserData{1,1};
 
 % --- Outputs from this function are returned to the command line.
 function varargout = ma_LvdMainGUI_OutputFcn(hObject, eventdata, handles) 
@@ -620,7 +626,10 @@ function newMissionPlanMenu_Callback(hObject, eventdata, handles, varargin)
     
     setappdata(handles.ma_LvdMainGUI,'undoRedo',LVD_UndoRedoStateSet());
 
-    celBodyData = getappdata(handles.ma_LvdMainGUI,'celBodyData');
+    celBodyData = getCelBodyDataFromMainGui(handles);
+    setappdata(handles.ma_LvdMainGUI,'celBodyData', celBodyData);
+    
+%     celBodyData = getappdata(handles.ma_LvdMainGUI,'celBodyData');
     write_to_output_func = getappdata(handles.ma_LvdMainGUI,'write_to_output_func');
     application_title = getappdata(handles.ma_LvdMainGUI,'application_title');
     if(askToClear)

@@ -108,6 +108,10 @@ function initializeOutputWindowText(handles, hOutputText)
             write_to_output_func(statusBoxMsg{i},'appendNoDate');
         end
     end
+    
+function celBodyData = getCelBodyDataFromMainGui(handles)    
+    mainGUIUserData = get(handles.ksptotMainGUI, 'UserData');
+    celBodyData = mainGUIUserData{1,1};
 
 
 function maData = generateCleanMissionPlan(handles) 
@@ -553,7 +557,10 @@ function newMissionPlanMenu_Callback(hObject, eventdata, handles, varargin)
     setappdata(handles.ma_MainGUI,'undo_states',{});
     setappdata(handles.ma_MainGUI,'undo_pointer',0);
 
-    celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
+%     celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
+    celBodyData = getCelBodyDataFromMainGui(handles);
+    setappdata(handles.ma_MainGUI,'celBodyData',celBodyData);
+
     write_to_output_func = getappdata(handles.ma_MainGUI,'write_to_output_func');
     application_title = getappdata(handles.ma_MainGUI,'application_title');
     if(askToClear)
