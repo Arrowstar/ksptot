@@ -1,6 +1,6 @@
 function [depVarValue, depVarUnit, taskStr, refBodyInfo] = lvd_getDepVarValueUnit(i, subLog, taskStr, refBodyId, celBodyData, onlyReturnTaskStr)
-%lvd_getDepVarValueUnit Summary of this function goes here
-%   Detailed explanation goes here
+    %lvd_getDepVarValueUnit Summary of this function goes here
+    %   Detailed explanation goes here
     
     if(~isempty(refBodyId))
         refBodyInfo = getBodyInfoByNumber(refBodyId, celBodyData);
@@ -8,18 +8,18 @@ function [depVarValue, depVarUnit, taskStr, refBodyInfo] = lvd_getDepVarValueUni
         refBodyInfo = [];
     end
     
-%     if(~isempty(oscId))
-%         otherSC = getOtherSCInfoByID(maData, oscId);
-%     else
-%         otherSC = [];
-%     end
-%     
-%     if(~isempty(stnId))
-%         station = getStationInfoByID(maData, stnId);
-%     else
-%         station = [];
-%     end
-
+    %     if(~isempty(oscId))
+    %         otherSC = getOtherSCInfoByID(maData, oscId);
+    %     else
+    %         otherSC = [];
+    %     end
+    %
+    %     if(~isempty(stnId))
+    %         station = getStationInfoByID(maData, stnId);
+    %     else
+    %         station = [];
+    %     end
+    
     if(onlyReturnTaskStr == true)
         depVarValue = NaN;
         depVarUnit = NaN;
@@ -27,7 +27,7 @@ function [depVarValue, depVarUnit, taskStr, refBodyInfo] = lvd_getDepVarValueUni
         return;
     end
     
-	switch taskStr
+    switch taskStr
         case 'Yaw Angle'
             depVarValue = lvd_SteeringAngleTask(subLog(i), 'yaw');
             depVarUnit = 'deg';
@@ -64,9 +64,15 @@ function [depVarValue, depVarUnit, taskStr, refBodyInfo] = lvd_getDepVarValueUni
         case 'Two-Body Impact Longitude'
             depVarValue = lvd_TwoBodyImpactPointTasks(subLog(i), 'longitude');
             depVarUnit = 'degE';
-        case 'Drag Coefficient'    
+        case 'Drag Coefficient'
             depVarValue = lvd_StageTasks(subLog(i), 'dragCoeff', []);
             depVarUnit = '';
+        case 'Event Number'
+            depVarValue = lvd_EventNumTask(subLog(i), 'eventNum');
+            depVarUnit = '';
+        case 'Total Effective Isp'
+            depVarValue = lvd_PropulsionTasks(subLog(i), 'totalEffIsp');
+            depVarUnit = 'sec';
             
         otherwise %is a programmatically generated string that we'll handle here
             tankMassPattern = 'Tank (\d+?) Mass - ".*"';

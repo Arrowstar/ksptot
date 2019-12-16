@@ -56,20 +56,22 @@ classdef AddDeltaVAction < AbstractEventAction
 
                 [tankMDots, totalThrust, ~] = newStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, tankStatesMasses, stageStates, throttle, lvState, pressure, ut, rVect, vVect, bodyInfo, steeringModel);
                 
-                tankMDotsKgS = tankMDots * 1000;
-                totalMDotKgS = sum(tankMDotsKgS);
-                totalThrustN = totalThrust * 1000;
-                effIsp = totalThrustN / (getG0() * abs(totalMDotKgS)); %sec
-                
-                dvVectMag = norm(dvKmsVect);
-                m0 = newStateLogEntry.getTotalVehicleMass();
-                m1 = revRocketEqn(m0, effIsp, dvVectMag);
-                deltaMassMT = m0 - m1;
-                
-                deltaMassPerTankMT = deltaMassMT * (abs(tankMDots) / abs(sum(tankMDots)));
-                
-                for(i=1:length(tankStates))
-                    tankStates(i).setTankMass(tankStates(i).getTankMass() - deltaMassPerTankMT(i));
+                if(abs(sum(tankMDots)) > 0)
+                    tankMDotsKgS = tankMDots * 1000;
+                    totalMDotKgS = sum(tankMDotsKgS);
+                    totalThrustN = totalThrust * 1000;
+                    effIsp = totalThrustN / (getG0() * abs(totalMDotKgS)); %sec
+
+                    dvVectMag = norm(dvKmsVect);
+                    m0 = newStateLogEntry.getTotalVehicleMass();
+                    m1 = revRocketEqn(m0, effIsp, dvVectMag);
+                    deltaMassMT = m0 - m1;
+
+                    deltaMassPerTankMT = deltaMassMT * (abs(tankMDots) / abs(sum(tankMDots)));
+
+                    for(i=1:length(tankStates))
+                        tankStates(i).setTankMass(tankStates(i).getTankMass() - deltaMassPerTankMT(i));
+                    end
                 end
             end
         end

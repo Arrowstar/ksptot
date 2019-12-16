@@ -62,7 +62,15 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
             if(integrationStep <= 0)
                 tspan = [t0, maxT];
             else
-                tspan = [t0:integrationStep:maxT]; %#ok<NBRAK>
+                if(maxT - t0 < integrationStep)
+                    tspan = [t0, maxT];
+                else
+                    tspan = [t0:integrationStep:maxT]; %#ok<NBRAK>
+                end
+            end
+            
+            if(length(tspan) == 1)
+                tspan = [tspan(1), tspan(1)+integrationStep];
             end
             
             %Set up non-seq event term conditions
