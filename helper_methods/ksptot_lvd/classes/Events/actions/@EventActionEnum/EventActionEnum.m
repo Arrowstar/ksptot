@@ -3,6 +3,7 @@ classdef EventActionEnum < matlab.mixin.SetGet
     %   Detailed explanation goes here
     
     enumeration
+        AddDeltaV('Add Impulsive Delta-V', 'AddDeltaVAction'); 
         AddMassToTank('Add Mass To Tank','AddMassToTankAction')
         SetEngineActiveState('Set Engine Active State','SetEngineActiveStateAction')
         SetStageActiveState('Set Stage Active State','SetStageActiveStateAction');

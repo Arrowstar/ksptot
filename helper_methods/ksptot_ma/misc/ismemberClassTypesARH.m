@@ -55,3 +55,107 @@ function [lia,locb] = ismemberClassTypesARH(a,b)
         locb = reshape(locb,size(a));
     end
 end
+
+function [lia,locb] = ismemberBuiltinTypes(a,b)
+    % General handling.
+    % Use FIND method for very small sizes of the input vector to avoid SORT.
+    if nargout > 1
+        locb = zeros(size(a));
+    end
+    % Handle empty arrays and scalars.
+    numelA = numel(a);
+    numelB = numel(b);
+    if numelA == 0 || numelB <= 1
+        if numelA > 0 && numelB == 1
+            lia = (a == b);
+            if nargout > 1
+                % Use DOUBLE to convert logical "1" index to double "1" index.
+                locb = double(lia);
+            end
+        else
+            lia = false(size(a));
+        end
+        return
+    end
+    
+    scalarcut = 5;
+    if numelA <= scalarcut
+        lia = false(size(a));
+        if nargout <= 1
+            for i=1:numelA
+                lia(i) = any(a(i)==b(:));
+            end
+        else
+            for i=1:numelA
+                found = a(i)==b(:);
+                if any(found)
+                    lia(i) = true;
+                    locb(i) = find(found,1);
+                end
+            end
+        end
+    else
+        % Use method which sorts list, then performs binary search.
+        % Convert to full to work in C helper.
+        if issparse(a)
+            a = full(a);
+        end
+        if issparse(b)
+            b = full(b);
+        end
+        
+        if (isreal(b))
+            % Find out whether list is presorted before sort
+            sortedlist = issorted(b(:));
+            if nargout > 1
+                if ~sortedlist
+                    [b,idx] = sort(b(:));
+                end
+            elseif ~sortedlist
+                b = sort(b(:));
+            end
+        else
+            sortedlist = 0;
+            [~,idx] = sort(real(b(:)));
+            b = b(idx);
+        end
+        
+        % Use builtin helper function ISMEMBERHELPER:
+        % [LIA,LOCB] = ISMEMBERHELPER(A,B) Returns logical array LIA indicating
+        % which elements of A occur in B and a double array LOCB with the
+        % locations of the elements of A occuring in B. If multiple instances
+        % occur, the first occurence is returned. B must be already sorted.
+        
+        if ~isobject(a) && ~isobject(b) && (isnumeric(a) || ischar(a) || islogical(a))
+            if (isnan(b(end)))
+                % If NaNs detected, remove NaNs from B.
+                b = b(~isnan(b(:)));
+            end
+            if nargout <= 1
+                lia = builtin('_ismemberhelper',a,b);
+            else
+                [lia, locb] = builtin('_ismemberhelper',a,b);
+            end
+        else % a,b, are some other class like gpuArray, sym object.
+            lia = false(size(a));
+            if nargout <= 1
+                for i=1:numelA
+                    lia(i) = any(a(i)==b(:));   % ANY returns logical.
+                end
+            else
+                for i=1:numelA
+                    found = a(i)==b(:); % FIND returns indices for LOCB.
+                    if any(found)
+                        lia(i) = true;
+                        found = find(found);
+                        locb(i) = found(1);
+                    end
+                end
+            end
+        end
+        if nargout > 1 && ~sortedlist
+            % Re-reference locb to original list if it was unsorted
+            locb(lia) = idx(locb(lia));
+        end
+    end
+end
