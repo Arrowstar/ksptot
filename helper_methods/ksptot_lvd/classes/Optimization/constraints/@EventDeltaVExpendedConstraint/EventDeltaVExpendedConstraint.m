@@ -67,7 +67,9 @@ classdef EventDeltaVExpendedConstraint < AbstractConstraint
                         totalMass1 = dryMass + stateLogEntry1.getTotalVehiclePropMass();
                         totalMass2 = dryMass + stateLogEntry2.getTotalVehiclePropMass();
                         
-                        deltaVExpended = deltaVExpended + (g0 * effIsp * log(totalMass1 / totalMass2))/1000; %need to convert to km/s
+                        if(totalMass1 > totalMass2)
+                            deltaVExpended = deltaVExpended + (g0 * effIsp * log(totalMass1 / totalMass2))/1000; %need to convert to km/s
+                        end
                     end
                 end
             else
