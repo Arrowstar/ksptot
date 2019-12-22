@@ -12,7 +12,6 @@ classdef LvdData < matlab.mixin.SetGet
         settings LvdSettings
         notes char
         
-        
         celBodyData struct
         ksptotVer char
     end

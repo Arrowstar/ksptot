@@ -6,7 +6,8 @@ classdef LvdOptimization < matlab.mixin.SetGet
         lvdData LvdData
         
         vars OptimizationVariableSet
-        objFcn(1,1) AbstractObjectiveFcn = NoOptimizationObjectiveFcn()
+%         objFcn(1,1) AbstractObjectiveFcn = NoOptimizationObjectiveFcn()
+        objFcn(1,1) AbstractObjectiveFcn = CompositeObjectiveFcn()
         constraints(1,1) ConstraintSet =  ConstraintSet()
         
         %Optimization Algo Selection
