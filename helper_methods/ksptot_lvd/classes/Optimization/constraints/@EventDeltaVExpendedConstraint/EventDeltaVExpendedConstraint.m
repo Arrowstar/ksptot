@@ -47,8 +47,6 @@ classdef EventDeltaVExpendedConstraint < AbstractConstraint
 
                     dryMass = stateLogEntry1.getTotalVehicleDryMass();
                     tankStatesMasses = [tankStates.tankMass]';
-                    totalMass1 = stateLogEntry1.getTotalVehicleMass();
-                    totalMass2 = stateLogEntry2.getTotalVehicleMass();
                     
                     throttleModel = stateLogEntry1.throttleModel;
                     steeringModel = stateLogEntry1.steeringModel;
@@ -66,6 +64,9 @@ classdef EventDeltaVExpendedConstraint < AbstractConstraint
                         totalThrustN = totalThrust * 1000;
                         effIsp = totalThrustN / (getG0() * abs(totalMDotKgS)); %sec
 
+                        totalMass1 = dryMass + stateLogEntry1.getTotalVehiclePropMass();
+                        totalMass2 = dryMass + stateLogEntry2.getTotalVehiclePropMass();
+                        
                         deltaVExpended = deltaVExpended + (g0 * effIsp * log(totalMass1 / totalMass2))/1000; %need to convert to km/s
                     end
                 end

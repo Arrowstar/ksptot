@@ -33,5 +33,11 @@ classdef ObjFcnCompositeMethodEnum < matlab.mixin.SetGet
             ind = find(ismember({m.name},name),1,'first');
             enum = m(ind);
         end
+        
+        function [enum, ind] = getEnumForListboxStr(nameStr)
+            m = enumeration('ObjFcnCompositeMethodEnum');
+            ind = find(ismember({m.name},nameStr),1,'first');
+            enum = m(ind);
+        end
     end
 end

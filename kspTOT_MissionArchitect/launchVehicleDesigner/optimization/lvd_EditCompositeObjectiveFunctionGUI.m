@@ -107,15 +107,11 @@ function varargout = lvd_EditCompositeObjectiveFunctionGUI_OutputFcn(hObject, ev
         
         contents = cellstr(get(handles.optDirTypeCombo,'String'));
         str = contents{get(handles.optDirTypeCombo,'Value')};
-        ind = ObjFcnDirectionTypeEnum.getIndForName(str);
-        enums = enumeration('ObjFcnDirectionTypeEnum');
-        compObjFcn.dirType = enums(ind);
+        compObjFcn.dirType = ObjFcnDirectionTypeEnum.getEnumForListboxStr(str);
         
         contents = cellstr(get(handles.compositionTypeCombo,'String'));
         str = contents{get(handles.compositionTypeCombo,'Value')};
-        ind = ObjFcnCompositeMethodEnum.getIndForName(str);
-        enums = enumeration('ObjFcnCompositeMethodEnum');
-        compObjFcn.compositeMethod = enums(ind);
+        compObjFcn.compositeMethod = ObjFcnCompositeMethodEnum.getEnumForListboxStr(str);
         
         close(handles.lvd_EditCompositeObjectiveFunctionGUI);
     end

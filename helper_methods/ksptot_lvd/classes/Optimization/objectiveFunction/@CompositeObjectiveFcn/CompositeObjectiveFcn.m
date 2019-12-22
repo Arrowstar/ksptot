@@ -31,7 +31,8 @@ classdef CompositeObjectiveFcn < AbstractObjectiveFcn
         
         function [f, stateLog] = evalObjFcn(obj, x, evtToStartScriptExecAt)
             obj.lvdOptim.vars.updateObjsWithScaledVarValues(x);
-            stateLog = obj.lvdData.script.executeScript(true, evtToStartScriptExecAt, false, true);
+            useSparse = obj.canUseSparseOutput();
+            stateLog = obj.lvdData.script.executeScript(useSparse, evtToStartScriptExecAt, false, true);
             
             numObjFcns = length(obj.objFcns);
             if(numObjFcns == 0)
@@ -130,6 +131,14 @@ classdef CompositeObjectiveFcn < AbstractObjectiveFcn
         function bodyInfo = getRefBody(obj)
             for(i=1:length(obj.objFcns))
                 bodyInfo(i) = obj.objFcns(i).targetBodyInfo; %#ok<AGROW>
+            end
+        end
+        
+        function tf = canUseSparseOutput(obj)
+            tf = true;
+            
+            for(i=1:length(obj.objFcns))
+                tf = tf && obj.objFcns(i).fcn.canUseSparseOutput();
             end
         end
     end
