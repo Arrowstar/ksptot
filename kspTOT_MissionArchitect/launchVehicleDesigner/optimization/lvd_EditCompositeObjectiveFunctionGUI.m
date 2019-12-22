@@ -182,14 +182,14 @@ function objFuncListbox_Callback(hObject, eventdata, handles)
         
         value = get(hObject,'Value');
         handles.objFuncListbox.String = compObjFcn.getListBoxStr();
-        handles.objFuncListbox.Value = value;
         
         objFun = compObjFcn.objFcns(value);
         [~, ~, ~, ~, usesCelBody, ~] = objFun.fcn.getConstraintStaticDetails();
         handles.objFuncTypeLabel.String = objFun.fcn.getConstraintType();
         handles.objFuncTypeLabel.TooltipString = objFun.fcn.getConstraintType();
 
-        handles.scaleFactorText.String = fullAccNum2Str(objFun.scaleFactor);
+        eventNum = objFun.event.getEventNum();
+        handles.eventCombo.Value = eventNum;
         
         if(usesCelBody)
             handles.refCelBodyCombo.Enable = 'on';
@@ -206,6 +206,8 @@ function objFuncListbox_Callback(hObject, eventdata, handles)
             handles.refCelBodyCombo.Value = 1;
             handles.refCelBodyCombo.Enable = 'off';
         end
+        
+        handles.scaleFactorText.String = fullAccNum2Str(objFun.scaleFactor);
     end
     
     updateValueLabels(handles);
