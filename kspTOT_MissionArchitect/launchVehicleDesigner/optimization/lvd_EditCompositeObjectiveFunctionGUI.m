@@ -362,6 +362,7 @@ function eventCombo_Callback(hObject, eventdata, handles)
     evtNum = get(hObject,'Value');
     event = lvdData.script.getEventForInd(evtNum);
     genObjFunc.event = event;
+    genObjFunc.fcn.event = event;
     
     updateValueLabels(handles);
     

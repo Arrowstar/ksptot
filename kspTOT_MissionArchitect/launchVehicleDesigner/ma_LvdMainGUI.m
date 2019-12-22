@@ -450,6 +450,9 @@ function editObjFunctionMenu_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
     lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    
+    addUndoState(handles,'Edit Objective Function');
+    
 %     lvd_EditObjectiveFunctionGUI(lvdData);
     lvd_EditCompositeObjectiveFunctionGUI(lvdData);
 
