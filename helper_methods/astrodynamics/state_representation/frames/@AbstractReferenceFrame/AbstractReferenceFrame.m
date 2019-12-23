@@ -1,4 +1,4 @@
-classdef (Abstract) AbstractReferenceFrame < matlab.mixin.SetGet & matlab.mixin.Heterogeneous
+classdef (Abstract) AbstractReferenceFrame < matlab.mixin.SetGet & matlab.mixin.Heterogeneous & matlab.mixin.CustomDisplay
     %AbstractReferenceFrame Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -12,5 +12,11 @@ classdef (Abstract) AbstractReferenceFrame < matlab.mixin.SetGet & matlab.mixin.
         bodyInfo = getOriginBody(obj)
         
         nameStr = getNameStr(obj)
+    end
+    
+    methods(Access=protected)
+        function displayScalarObject(obj)
+            fprintf(obj.getNameStr());
+        end        
     end
 end

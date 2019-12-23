@@ -6,9 +6,9 @@ classdef GeographicElementSet < AbstractElementSet
         lat(1,1) double %rad
         long(1,1) double %rad
         alt(1,1) double %km
-        velAz(1,1) double %rad
-        velEl(1,1) double %rad
-        velMag(1,1) double %km/s
+        velAz(1,1) double %rad NEZ frame
+        velEl(1,1) double %rad NEZ frame
+        velMag(1,1) double %km/s NEZ frame
     end
     
     methods
@@ -32,8 +32,16 @@ classdef GeographicElementSet < AbstractElementSet
 
             rVect = [x;y;z];
             
-            [vx,vy,vz] = sph2cart(obj.velAz, obj.velEl, obj.velMag);
-            vVect = [vx;vy;vz];
+            sezVVectAz = pi - obj.velAz;
+            sezVVectEl = obj.velEl;
+            sezVVectMag = obj.velMag;
+
+            [x,y,z] = sph2cart(sezVVectAz, sezVVectEl, sezVVectMag);
+            vectorSez = [x;y;z];
+            vVect = rotSEZVectToECEFCoords(rVect, vectorSez); %not necessarily ECEF coords here but the transform holds
+            
+%             [vx,vy,vz] = sph2cart(obj.velAz, obj.velEl, obj.velMag);
+%             vVect = [vx;vy;vz];
             
             cartElemSet = CartesianElementSet(obj.time, rVect, vVect, obj.frame);
         end

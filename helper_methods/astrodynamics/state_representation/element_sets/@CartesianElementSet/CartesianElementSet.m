@@ -33,7 +33,9 @@ classdef CartesianElementSet < AbstractElementSet
             lat = pi/2 - acos(obj.rVect(3)/rNorm);
             alt = rNorm - obj.frame.getOriginBody().radius;
             
-            [velAz, velEl, velMag] = cart2sph(obj.vVect(1), obj.vVect(2), obj.vVect(3));
+            vectorSez = rotVectToSEZCoords(obj.rVect, obj.vVect);
+            [velAz, velEl, velMag] = cart2sph(vectorSez(1), vectorSez(2), vectorSez(3));
+            velAz = pi - velAz;
             
             geoElemSet = GeographicElementSet(obj.time, lat, long, alt, velAz, velEl, velMag, obj.frame);
         end

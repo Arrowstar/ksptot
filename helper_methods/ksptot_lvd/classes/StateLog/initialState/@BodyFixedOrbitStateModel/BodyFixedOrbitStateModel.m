@@ -25,7 +25,6 @@ classdef BodyFixedOrbitStateModel < AbstractOrbitStateModel
         end
         
         function [rVect, vVect] = getPositionAndVelocityVector(obj, ut, bodyInfo)
-%             vVectECEF = [obj.vVectECEF_x; obj.vVectECEF_y; obj.vVectECEF_z];
             rVectECEF = getrVectEcefFromLatLongAlt(obj.lat, obj.long, obj.alt, bodyInfo);
             
             sezVVectAz = pi - obj.vVectNEZ_az;
