@@ -189,11 +189,11 @@ classdef InitialStateModel < matlab.mixin.SetGet
             stateLogModel = InitialStateModel();
             
             ut = 0;
-            stateLogModel.time = ut;
+%             stateLogModel.time = ut;
             
-            stateLogModel.centralBody = bodyInfo;
+%             stateLogModel.centralBody = bodyInfo;
             bfFrame = BodyFixedFrame(bodyInfo, celBodyData);
-            geoElemSet = GeographicElementSet(0, 0, 0, 0, 0, 0, 0, bfFrame);
+            geoElemSet = GeographicElementSet(ut, 0, 0, 0, 0, 0, 0, bfFrame);
             stateLogModel.orbitModel = geoElemSet;
             
             lvsState = LaunchVehicleState(lv);
