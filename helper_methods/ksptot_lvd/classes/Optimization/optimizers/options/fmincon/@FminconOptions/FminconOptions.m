@@ -15,7 +15,7 @@ classdef FminconOptions < matlab.mixin.SetGet
         maxFuncEvals(1,1) uint64 = 3000;
         
         %Parallel
-        useParallel(1,1) FminconUseParallelEnum = FminconUseParallelEnum.UseParallel;
+        useParallel(1,1) FminconUseParallelEnum = FminconUseParallelEnum.DoNotUseParallel;
         
         %Finite Differences
         finDiffStepSize(1,1) double = 1E-8;

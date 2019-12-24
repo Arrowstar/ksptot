@@ -9,18 +9,26 @@ classdef KeplerianElementSet < AbstractElementSet
         raan(1,1) double %rad
         arg(1,1) double %rad
         tru(1,1) double %rad
+        
+        optVar KeplerianElementSetVariable
+    end
+    
+    properties(Constant)
+        typeEnum = ElementSetEnum.KeplerianElements;
     end
     
     methods
         function obj = KeplerianElementSet(time, sma, ecc, inc, raan, arg, tru, frame)
-            obj.time = time;
-            obj.sma = sma;
-            obj.ecc = ecc;
-            obj.inc = inc;
-            obj.raan = raan;
-            obj.arg = arg;
-            obj.tru = tru;
-            obj.frame = frame;
+            if(nargin > 0)
+                obj.time = time;
+                obj.sma = sma;
+                obj.ecc = ecc;
+                obj.inc = inc;
+                obj.raan = raan;
+                obj.arg = arg;
+                obj.tru = tru;
+                obj.frame = frame;
+            end
         end
         
         function cartElemSet = convertToCartesianElementSet(obj)
@@ -37,6 +45,10 @@ classdef KeplerianElementSet < AbstractElementSet
         function geoElemSet = convertToGeographicElementSet(obj)
             geoElemSet = obj.convertToCartesianElementSet().convertToGeographicElementSet();
         end
+        
+        function elemVect = getElementVector(obj)
+            elemVect = [obj.sma,obj.ecc,rad2deg(obj.inc),rad2deg(obj.raan),rad2deg(obj.arg),rad2deg(obj.tru)];
+        end
     end
     
     methods(Access=protected)
@@ -51,5 +63,11 @@ classdef KeplerianElementSet < AbstractElementSet
                     rad2deg(obj.tru), ...
                     obj.frame.getNameStr());
         end        
+    end
+    
+    methods(Static)
+        function elemSet = getDefaultElements()
+            elemSet = KeplerianElementSet();
+        end
     end
 end

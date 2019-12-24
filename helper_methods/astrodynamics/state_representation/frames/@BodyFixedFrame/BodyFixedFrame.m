@@ -7,6 +7,10 @@ classdef BodyFixedFrame < AbstractReferenceFrame
         celBodyData struct
     end
     
+    properties(Constant)
+        typeEnum = ReferenceFrameEnum.BodyFixedRotating
+    end
+    
     methods
         function obj = BodyFixedFrame(bodyInfo, celBodyData)
             obj.bodyInfo = bodyInfo;
@@ -31,6 +35,10 @@ classdef BodyFixedFrame < AbstractReferenceFrame
         
         function bodyInfo = getOriginBody(obj)
             bodyInfo = obj.bodyInfo;
+        end
+        
+        function setOriginBody(obj, newBodyInfo)
+            obj.bodyInfo = newBodyInfo;
         end
         
         function nameStr = getNameStr(obj)

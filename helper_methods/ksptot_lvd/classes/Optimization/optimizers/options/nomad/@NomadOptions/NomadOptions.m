@@ -4,7 +4,7 @@ classdef NomadOptions < matlab.mixin.SetGet
     
     properties
         %Parallel
-        useParallel(1,1) PatternSearchUseParallelEnum = PatternSearchUseParallelEnum.UseParallel;
+        useParallel(1,1) PatternSearchUseParallelEnum = PatternSearchUseParallelEnum.DoNotUseParallel;
         
         %basic parameters
         direction_type(1,1) NomadDirectionTypeEnum = NomadDirectionTypeEnum.OrthoN1Quad;

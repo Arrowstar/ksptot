@@ -7,6 +7,10 @@ classdef (Abstract) AbstractElementSet < matlab.mixin.SetGet & matlab.mixin.Cust
         frame AbstractReferenceFrame
     end
     
+    properties(Abstract, Constant)
+        typeEnum
+    end
+    
     methods
         cartElemSet = convertToCartesianElementSet(obj)
         
@@ -14,7 +18,14 @@ classdef (Abstract) AbstractElementSet < matlab.mixin.SetGet & matlab.mixin.Cust
         
         geoElemSet = convertToGeographicElementSet(obj)
         
+        elemVect = getElementVector(obj)
+        
         function convertedElemSet = convertToFrame(obj, toFrame)
+            if(obj.frame == toFrame)
+                convertedElemSet = obj;
+                return;
+            end
+            
             cartElemSet = obj.convertToCartesianElementSet();
             rVect1 = cartElemSet.rVect;
             vVect1 = cartElemSet.vVect;
@@ -42,5 +53,9 @@ classdef (Abstract) AbstractElementSet < matlab.mixin.SetGet & matlab.mixin.Cust
                 error('Unknown element set frame type: %s', class(toFrame));
             end
         end
+    end
+    
+    methods(Static)
+        elemSet = getDefaultElements();
     end
 end

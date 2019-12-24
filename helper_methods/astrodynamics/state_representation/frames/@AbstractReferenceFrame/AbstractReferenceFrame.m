@@ -2,14 +2,16 @@ classdef (Abstract) AbstractReferenceFrame < matlab.mixin.SetGet & matlab.mixin.
     %AbstractReferenceFrame Summary of this class goes here
     %   Detailed explanation goes here
     
-    properties
-
+    properties(Abstract, Constant)
+        typeEnum
     end
     
     methods
         [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin] = getOffsetsWrtInertialOrigin(obj, time)
         
         bodyInfo = getOriginBody(obj)
+        
+        setOriginBody(obj, newBodyInfo)
         
         nameStr = getNameStr(obj)
     end

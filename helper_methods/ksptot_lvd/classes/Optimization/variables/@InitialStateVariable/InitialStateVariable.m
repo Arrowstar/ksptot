@@ -8,7 +8,6 @@ classdef InitialStateVariable < AbstractOptimizationVariable
         %For Time var
         lb(1,1) double = 0;
         ub(1,1) double = 0;
-        
         useTf(1,1) = false;
         
         %For Orbit
@@ -20,15 +19,29 @@ classdef InitialStateVariable < AbstractOptimizationVariable
             obj.varObj = varObj;
             obj.varObj.optVar = obj;
             
-            if(isa(obj.varObj.orbitModel,'BodyFixedOrbitStateModel'))
-                obj.orbitVar = BodyFixedOrbitVariable(obj.varObj.orbitModel);
-            elseif(isa(obj.varObj.orbitModel,'KeplerianOrbitStateModel'))
-                obj.orbitVar = KeplerianOrbitVariable(obj.varObj.orbitModel);
-            elseif(isa(obj.varObj.orbitModel,'CR3BPOrbitStateModel'))
-                obj.orbitVar = CR3BPOrbitVariable(obj.varObj.orbitModel);
-            else
-                error('Unknown orbit type while creating initial state variable: %s', class(obj.varObj.orbitModel))
+            switch obj.varObj.orbitModel.typeEnum
+                case ElementSetEnum.CartesianElements
+                    obj.orbitVar = CartesianElementSetVariable(obj.varObj.orbitModel);
+                    
+                case ElementSetEnum.KeplerianElements
+                    obj.orbitVar = KeplerianElementSetVariable(obj.varObj.orbitModel);
+                    
+                case ElementSetEnum.GeographicElements
+                    obj.orbitVar = GeographicElementSetVariable(obj.varObj.orbitModel);
+                    
+                otherwise
+                    error('Unknown orbit type while creating initial state variable: %s', class(obj.varObj.orbitModel.typeEnum))
             end
+            
+%             if(isa(obj.varObj.orbitModel,'BodyFixedOrbitStateModel'))
+%                 obj.orbitVar = BodyFixedOrbitVariable(obj.varObj.orbitModel);
+%             elseif(isa(obj.varObj.orbitModel,'KeplerianOrbitStateModel'))
+%                 obj.orbitVar = KeplerianOrbitVariable(obj.varObj.orbitModel);
+%             elseif(isa(obj.varObj.orbitModel,'CR3BPOrbitStateModel'))
+%                 obj.orbitVar = CR3BPOrbitVariable(obj.varObj.orbitModel);
+%             else
+%                 error('Unknown orbit type while creating initial state variable: %s', class(obj.varObj.orbitModel))
+%             end
             
             obj.id = rand();
         end
@@ -93,7 +106,12 @@ classdef InitialStateVariable < AbstractOptimizationVariable
         end
         
         function updateObjWithVarValue(obj, x)
-            obj.varObj.time = x(1);
+            if(obj.useTf)
+                obj.varObj.time = x(1);
+                obj.orbitVar.updateObjWithVarValue(x(2:end));
+            else
+                obj.orbitVar.updateObjWithVarValue(x(1:end));
+            end
         end
         
         function nameStrs = getStrNamesOfVars(obj, evtNum)

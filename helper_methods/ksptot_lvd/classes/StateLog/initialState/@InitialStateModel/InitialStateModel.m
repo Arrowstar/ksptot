@@ -3,11 +3,9 @@ classdef InitialStateModel < matlab.mixin.SetGet
     %   Detailed explanation goes here
     
     properties
-        time(1,1) double = 0;
-        centralBody(1,1) KSPTOT_BodyInfo
-        
-        orbitModel(1,1) AbstractOrbitStateModel = BodyFixedOrbitStateModel.getDefaultOrbitState()
-        
+%         orbitModel(1,1) AbstractOrbitStateModel = BodyFixedOrbitStateModel.getDefaultOrbitState()
+        orbitModel(1,1) AbstractElementSet = GeographicElementSet.getDefaultElements();
+
         lvState LaunchVehicleState
         stageStates LaunchVehicleStageState
         
@@ -20,19 +18,42 @@ classdef InitialStateModel < matlab.mixin.SetGet
         optVar InitialStateVariable
     end
     
+    properties(Dependent)
+        time(1,1) double
+        centralBody(1,1) KSPTOT_BodyInfo
+    end
+    
     methods
         function obj = InitialStateModel()
-            
+
+        end
+        
+        function time = get.time(obj)
+            time = obj.orbitModel.time;
+        end
+        
+        function set.time(obj, newTime)
+            obj.orbitModel.time = newTime;
+        end
+        
+        function time = get.centralBody(obj)
+            time = obj.orbitModel.frame.getOriginBody();
+        end
+        
+        function set.centralBody(obj, newCentralBody)
+            obj.orbitModel.frame.setOriginBody(newCentralBody);
         end
         
         function cb = getCentralBodyForStateLog(obj)
-            if(isa(obj.orbitModel,'BodyFixedOrbitStateModel'))
-                cb = obj.centralBody;
-            elseif(isa(obj.orbitModel,'KeplerianOrbitStateModel'))
-                cb = obj.centralBody;
-            elseif(isa(obj.orbitModel,'CR3BPOrbitStateModel'))
-                cb = obj.centralBody.getParBodyInfo(obj.centralBody.celBodyData);
-            end
+%             if(isa(obj.orbitModel,'BodyFixedOrbitStateModel'))
+%                 cb = obj.centralBody;
+%             elseif(isa(obj.orbitModel,'KeplerianOrbitStateModel'))
+%                 cb = obj.centralBody;
+%             elseif(isa(obj.orbitModel,'CR3BPOrbitStateModel'))
+%                 cb = obj.centralBody.getParBodyInfo(obj.centralBody.celBodyData);
+%             end
+
+            cb = obj.orbitModel.frame.getOriginBody();
         end
         
         function addStageState(obj, newStageState)
@@ -46,14 +67,20 @@ classdef InitialStateModel < matlab.mixin.SetGet
         end
         
         function stateLogEntry = getInitialStateLogEntry(obj)
+            celBodyData = obj.centralBody.celBodyData;
             stateLogEntry = LaunchVehicleStateLogEntry();
             
             ut = obj.time;
             stateLogEntry.time = ut;
             
-            [rVectECI, vVectECI] = obj.orbitModel.getPositionAndVelocityVector(ut, obj.centralBody);
-            stateLogEntry.position = rVectECI;
-            stateLogEntry.velocity = vVectECI;
+%             [rVectECI, vVectECI] = obj.orbitModel.getPositionAndVelocityVector(ut, obj.centralBody);
+%             stateLogEntry.position = rVectECI;
+%             stateLogEntry.velocity = vVectECI;
+
+            iFrame = BodyCenteredInertialFrame(obj.centralBody, celBodyData);
+            cartElemSet = obj.orbitModel.convertToFrame(iFrame).convertToCartesianElementSet();
+            stateLogEntry.position = cartElemSet.rVect;
+            stateLogEntry.velocity = cartElemSet.vVect;
             
             stateLogEntry.centralBody = obj.getCentralBodyForStateLog();
             stateLogEntry.lvState = obj.lvState.deepCopy();
@@ -165,6 +192,9 @@ classdef InitialStateModel < matlab.mixin.SetGet
             stateLogModel.time = ut;
             
             stateLogModel.centralBody = bodyInfo;
+            bfFrame = BodyFixedFrame(bodyInfo, celBodyData);
+            geoElemSet = GeographicElementSet(0, 0, 0, 0, 0, 0, 0, bfFrame);
+            stateLogModel.orbitModel = geoElemSet;
             
             lvsState = LaunchVehicleState(lv);
             stateLogModel.lvState = lvsState;

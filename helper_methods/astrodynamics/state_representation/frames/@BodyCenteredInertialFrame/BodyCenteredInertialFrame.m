@@ -7,6 +7,10 @@ classdef BodyCenteredInertialFrame < AbstractReferenceFrame
         celBodyData struct
     end
     
+    properties(Constant)
+        typeEnum = ReferenceFrameEnum.BodyCenteredInertial
+    end
+    
     methods
         function obj = BodyCenteredInertialFrame(bodyInfo, celBodyData)
             obj.bodyInfo = bodyInfo;
@@ -24,6 +28,10 @@ classdef BodyCenteredInertialFrame < AbstractReferenceFrame
         
         function bodyInfo = getOriginBody(obj)
             bodyInfo = obj.bodyInfo;
+        end
+        
+        function setOriginBody(obj, newBodyInfo)
+            obj.bodyInfo = newBodyInfo;
         end
         
         function nameStr = getNameStr(obj)

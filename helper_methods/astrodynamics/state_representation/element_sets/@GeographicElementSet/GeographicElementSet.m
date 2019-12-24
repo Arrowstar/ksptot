@@ -9,18 +9,26 @@ classdef GeographicElementSet < AbstractElementSet
         velAz(1,1) double %rad NEZ frame
         velEl(1,1) double %rad NEZ frame
         velMag(1,1) double %km/s NEZ frame
+        
+        optVar GeographicElementSetVariable
+    end
+    
+    properties(Constant)
+        typeEnum = ElementSetEnum.GeographicElements;
     end
     
     methods
         function obj = GeographicElementSet(time, lat, long, alt, velAz, velEl, velMag, frame)
-            obj.time = time;
-            obj.lat = lat;
-            obj.long = long;
-            obj.alt = alt;
-            obj.velAz = velAz;
-            obj.velEl = velEl;
-            obj.velMag = velMag;
-            obj.frame = frame;
+            if(nargin > 0)
+                obj.time = time;
+                obj.lat = lat;
+                obj.long = long;
+                obj.alt = alt;
+                obj.velAz = velAz;
+                obj.velEl = velEl;
+                obj.velMag = velMag;
+                obj.frame = frame;
+            end
         end
         
         function cartElemSet = convertToCartesianElementSet(obj)
@@ -53,6 +61,10 @@ classdef GeographicElementSet < AbstractElementSet
         function geoElemSet = convertToGeographicElementSet(obj)
             geoElemSet = obj;
         end
+        
+        function elemVect = getElementVector(obj)
+            elemVect = [rad2deg(obj.lat),rad2deg(obj.long),obj.alt,rad2deg(obj.velAz),rad2deg(obj.velEl),obj.velMag];
+        end
     end
     
     methods(Access=protected)
@@ -67,5 +79,11 @@ classdef GeographicElementSet < AbstractElementSet
                     obj.velMag, ...
                     obj.frame.getNameStr());
         end        
+    end
+    
+    methods(Static)
+        function elemSet = getDefaultElements()
+            elemSet = GeographicElementSet();
+        end
     end
 end

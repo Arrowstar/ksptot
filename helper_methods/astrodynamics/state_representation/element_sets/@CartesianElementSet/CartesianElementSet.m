@@ -5,14 +5,22 @@ classdef CartesianElementSet < AbstractElementSet
     properties
         rVect(3,1) double %km
         vVect(3,1) double %km/s
+        
+        optVar CartesianElementSetVariable
+    end
+    
+    properties(Constant)
+        typeEnum = ElementSetEnum.CartesianElements;
     end
     
     methods
         function obj = CartesianElementSet(time, rVect, vVect, frame)
-            obj.time = time;
-            obj.rVect = rVect;
-            obj.vVect = vVect;
-            obj.frame = frame;
+            if(nargin > 0)
+                obj.time = time;
+                obj.rVect = rVect;
+                obj.vVect = vVect;
+                obj.frame = frame;
+            end
         end
         
         function cartElemSet = convertToCartesianElementSet(obj)
@@ -39,6 +47,10 @@ classdef CartesianElementSet < AbstractElementSet
             
             geoElemSet = GeographicElementSet(obj.time, lat, long, alt, velAz, velEl, velMag, obj.frame);
         end
+        
+        function elemVect = getElementVector(obj)
+            elemVect = [obj.rVect(1),obj.rVect(2),obj.rVect(3),obj.vVect(1),obj.vVect(2),obj.vVect(3)];
+        end
     end
     
     methods(Access=protected)
@@ -49,5 +61,11 @@ classdef CartesianElementSet < AbstractElementSet
                     obj.vVect(1), obj.vVect(2), obj.vVect(3), ...
                     obj.frame.getNameStr());
         end        
+    end
+    
+    methods(Static)
+        function elemSet = getDefaultElements()
+            elemSet = CartesianElementSet();
+        end
     end
 end
