@@ -71,6 +71,7 @@ function lvd_EditInitialStateGUI_OpeningFcn(hObject, eventdata, handles, varargi
     
 function populateGUI(handles, lvdData)
     initStateModel = lvdData.initStateModel;
+    setappdata(handles.lvd_EditInitialStateGUI,'curElemSet',initStateModel.orbitModel);
     
     bodyInfo = initStateModel.centralBody;
     populateBodiesCombo(lvdData.celBodyData, handles.centralBodyCombo, false);
@@ -79,12 +80,7 @@ function populateGUI(handles, lvdData)
     
     handles.refFrameTypeCombo.String = ReferenceFrameEnum.getListBoxStr();
     handles.refFrameTypeCombo.Value = ReferenceFrameEnum.getIndForName(initStateModel.orbitModel.frame.typeEnum.name);
-    
-%     handles.elementSetCombo.String = OrbitStateEnum.getListBoxStr();
-%     [value, enum] = OrbitStateEnum.getIndForClass(class(initStateModel.orbitModel));
-%     handles.elementSetCombo.Value = value;
-%     setappdata(handles.elementSetCombo,'curEnum',enum);
-    
+       
     handles.elementSetCombo.String = ElementSetEnum.getListBoxStr();
     value = ElementSetEnum.getIndForName(initStateModel.orbitModel.typeEnum.name);
     handles.elementSetCombo.Value = value;
@@ -192,10 +188,10 @@ function varargout = lvd_EditInitialStateGUI_OutputFcn(hObject, eventdata, handl
                 orbitModel = CartesianElementSet(time, [orbit1Elem, orbit2Elem, orbit3Elem], [orbit4Elem, orbit5Elem, orbit6Elem], frame);
                 
             case ElementSetEnum.KeplerianElements
-                orbitModel = KeplerianElementSet(time, orbit1Elem, orbit2Elem, orbit3Elem, orbit4Elem, orbit5Elem, orbit6Elem, frame);
+                orbitModel = KeplerianElementSet(time, orbit1Elem, orbit2Elem, deg2rad(orbit3Elem), deg2rad(orbit4Elem), deg2rad(orbit5Elem), deg2rad(orbit6Elem), frame);
                 
             case ElementSetEnum.GeographicElements
-                orbitModel = GeographicElementSet(time, orbit1Elem, orbit2Elem, orbit3Elem, orbit4Elem, orbit5Elem, orbit6Elem, frame);
+                orbitModel = GeographicElementSet(time, deg2rad(orbit1Elem), deg2rad(orbit2Elem), orbit3Elem, deg2rad(orbit4Elem), deg2rad(orbit5Elem), orbit6Elem, frame);
                 
             otherwise
                 error('Unknown element set type: %s', class(elemSetEnum));
@@ -339,7 +335,7 @@ function errMsg = validateInputs(handles)
             
         otherwise
             error('Unknown element set type: %s', class(elemSetEnum));
-    end
+	end
     
     hVal = [handles.orbit1Text, handles.orbit2Text, handles.orbit3Text, handles.orbit4Text, handles.orbit5Text, handles.orbit6Text];
     hLb = [handles.orbit1LbText, handles.orbit2LbText, handles.orbit3LbText, handles.orbit4LbText, handles.orbit5LbText, handles.orbit6LbText];
@@ -363,19 +359,7 @@ function errMsg = validateInputs(handles)
             end
         end
     end
-    
-%     errMsg = feval(sprintf('%s.validateInputOrbit',orbitClass),errMsg, handles.orbit1Text, handles.orbit2Text, handles.orbit3Text, handles.orbit4Text, handles.orbit5Text, handles.orbit6Text, bodyInfo, '', checkElementValues);
-%     errMsg = feval(sprintf('%s.validateInputOrbit',orbitClass),errMsg, handles.orbit1LbText, handles.orbit2LbText, handles.orbit3LbText, handles.orbit4LbText, handles.orbit5LbText, handles.orbit6LbText, bodyInfo, 'Lower', checkElementBnds);
-%     errMsg = feval(sprintf('%s.validateInputOrbit',orbitClass),errMsg, handles.orbit1UbText, handles.orbit2UbText, handles.orbit3UbText, handles.orbit4UbText, handles.orbit5UbText, handles.orbit6UbText, bodyInfo, 'Upper', checkElementBnds);
-        
-
-
-%     if(enum == OrbitStateEnum.CR3BP)
-%         parentBodyInfo = bodyInfo.getParBodyInfo(celBodyData);
-%         if(isempty(parentBodyInfo))
-%             errMsg{end+1} = sprintf('If using the CR3BP orbit type, your secondary body selection MUST have a parent body to use as the primary.  %s has no parent body in the solar system.', bodyInfo.name);
-%         end
-%     end
+   
     
     
 % --- Executes on selection change in elementSetCombo.
@@ -387,15 +371,13 @@ function elementSetCombo_Callback(hObject, eventdata, handles)
 % Hints: contents = cellstr(get(hObject,'String')) returns elementSetCombo contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from elementSetCombo
 % 	lvdData = getappdata(handles.lvd_EditInitialStateGUI,'lvdData');
-%     celBodyData = lvdData.celBodyData;
-%     prevEnum = getappdata(handles.elementSetCombo,'curEnum');
 
     contents = cellstr(get(hObject,'String'));
     sel = contents{get(hObject,'Value')};
-    [~, enum] = ElementSetEnum.getIndForName(sel);
+    [~, elemSetEnum] = ElementSetEnum.getIndForName(sel);
     
-    elemNames = enum.elemNames;
-    unitNames = enum.unitNames;
+    elemNames = elemSetEnum.elemNames;
+    unitNames = elemSetEnum.unitNames;
     
     handles.orbit1Label.String = elemNames{1};
     handles.orbit2Label.String = elemNames{2};
@@ -411,51 +393,42 @@ function elementSetCombo_Callback(hObject, eventdata, handles)
     handles.orbit5UnitLabel.String = unitNames{5};
     handles.orbit6UnitLabel.String = unitNames{6};
     
-%     handles.cbLabel.String = enum.cbLabel;
-%     handles.cbLabel.TooltipString = enum.cbTooltip;
-%     handles.centralBodyCombo.TooltipString = enum.cbTooltip;
-       
-%     contents = cellstr(get(handles.centralBodyCombo,'String'));
-%     selected = strtrim(contents{get(handles.centralBodyCombo,'Value')});
-%     bodyInfo = celBodyData.(lower(selected));
-%     parentBodyInfo = bodyInfo.getParBodyInfo(celBodyData);
-%     [children, childrenNames] = getChildrenOfParentInfo(celBodyData, bodyInfo.name);
-%     children = [children{:}];
-%     
-%     if(prevEnum == OrbitStateEnum.BodyFixed)
-%         [ut, rVectECI, vVectECI] = convertBodyFixedToECI(handles);
-%     elseif(prevEnum == OrbitStateEnum.KeplerianOrbit)
-%         [ut, rVectECI, vVectECI] = convertKeplerianToECI(handles);
-%     elseif(prevEnum == OrbitStateEnum.CR3BP)
-%         [ut, rVectECI, vVectECI] = convertCr3bpToECI(handles);
-%     end
-%     
-%     if(enum == OrbitStateEnum.BodyFixed)
-%         if(prevEnum == OrbitStateEnum.CR3BP)
-%             value = findValueFromComboBox(parentBodyInfo.name, handles.centralBodyCombo);
-%             handles.centralBodyCombo.Value = value;
-%         end
-%         convertToBodyFixed(ut, rVectECI, vVectECI, handles);
-%     elseif(enum == OrbitStateEnum.KeplerianOrbit)
-%         if(prevEnum == OrbitStateEnum.CR3BP)
-%             value = findValueFromComboBox(parentBodyInfo.name, handles.centralBodyCombo);
-%             handles.centralBodyCombo.Value = value;
-%         end
-%         convertToKeplerian(ut, rVectECI, vVectECI, handles);
-% 	elseif(enum == OrbitStateEnum.CR3BP)
-%         if((prevEnum == OrbitStateEnum.KeplerianOrbit || prevEnum == OrbitStateEnum.BodyFixed) && not(isempty(childrenNames)))
-%             %take one with highest GM
-%             [~,I] = max([children.gm]);
-%             childName = childrenNames{I};
-%             
-%             value = findValueFromComboBox(childName, handles.centralBodyCombo);
-%             handles.centralBodyCombo.Value = value;
-%         end
-%         convertToCr3bp(ut, rVectECI, vVectECI, handles);
-%     end
-%     
-%     setappdata(handles.elementSetCombo,'curEnum',enum);
+    curElemSet = getappdata(handles.lvd_EditInitialStateGUI,'curElemSet');
     
+    try
+        switch elemSetEnum
+            case ElementSetEnum.CartesianElements
+                newElemSet = curElemSet.convertToCartesianElementSet();
+
+            case ElementSetEnum.KeplerianElements
+                newElemSet = curElemSet.convertToKeplerianElementSet();
+
+            case ElementSetEnum.GeographicElements
+                newElemSet = curElemSet.convertToGeographicElementSet();
+
+            otherwise
+                error('Unknown element set type: %s', class(elemSetEnum));
+        end
+        
+        elemVect = newElemSet.getElementVector();
+        
+        if(any(isnan(elemVect)) || any(not(isfinite(elemVect))))
+            error('State conversion resulted in NaN or Inf');
+        end        
+        
+        handles.orbit1Text.String = fullAccNum2Str(elemVect(1));
+        handles.orbit2Text.String = fullAccNum2Str(elemVect(2));
+        handles.orbit3Text.String = fullAccNum2Str(elemVect(3));
+        handles.orbit4Text.String = fullAccNum2Str(elemVect(4));
+        handles.orbit5Text.String = fullAccNum2Str(elemVect(5));
+        handles.orbit6Text.String = fullAccNum2Str(elemVect(6));
+
+        setappdata(handles.lvd_EditInitialStateGUI,'curElemSet', newElemSet);
+        
+    catch ME
+        updateValuesInState(handles);
+        msgbox('Error converting state to new element set.','Conversion Error','error');
+    end
 
 % --- Executes during object creation, after setting all properties.
 function elementSetCombo_CreateFcn(hObject, eventdata, handles)
@@ -469,6 +442,80 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
+function updateStateDueToFrameChange(handles)
+    lvdData = getappdata(handles.lvd_EditInitialStateGUI,'lvdData');
+    celBodyData = lvdData.celBodyData;
+
+    curElemSet = getappdata(handles.lvd_EditInitialStateGUI,'curElemSet');
+    
+    bodyInfo = getSelectedBodyInfo(handles);
+    
+    contents = cellstr(get(handles.refFrameTypeCombo,'String'));
+    selFrameType = contents{get(handles.refFrameTypeCombo,'Value')};
+    refFrameEnum = ReferenceFrameEnum.getEnumForListboxStr(selFrameType);
+    
+    switch refFrameEnum
+        case ReferenceFrameEnum.BodyCenteredInertial
+            newFrame = BodyCenteredInertialFrame(bodyInfo, celBodyData);
+
+        case ReferenceFrameEnum.BodyFixedRotating
+            newFrame = BodyFixedFrame(bodyInfo, celBodyData);
+
+        otherwise
+            error('Unknown reference frame type: %s', class(refFrameEnum));                
+    end
+    
+    try
+        newElemSet = curElemSet.convertToFrame(newFrame);
+
+        elemVect = newElemSet.getElementVector();
+        
+        if(any(isnan(elemVect)) || any(not(isfinite(elemVect))))
+            error('State conversion resulted in NaN');
+        end
+        
+        handles.orbit1Text.String = fullAccNum2Str(elemVect(1));
+        handles.orbit2Text.String = fullAccNum2Str(elemVect(2));
+        handles.orbit3Text.String = fullAccNum2Str(elemVect(3));
+        handles.orbit4Text.String = fullAccNum2Str(elemVect(4));
+        handles.orbit5Text.String = fullAccNum2Str(elemVect(5));
+        handles.orbit6Text.String = fullAccNum2Str(elemVect(6));
+
+        setappdata(handles.lvd_EditInitialStateGUI,'curElemSet', newElemSet);
+    catch ME
+        updateValuesInState(handles);
+        msgbox('Error converting state to new frame.','Conversion Error','error');
+    end
+    
+function updateValuesInState(handles)
+    curElemSet = getappdata(handles.lvd_EditInitialStateGUI,'curElemSet');
+    newElemSet = curElemSet;
+    
+    time = str2double(handles.utText.String);
+    orbit1Elem = str2double(handles.orbit1Text.String);
+    orbit2Elem = str2double(handles.orbit2Text.String);
+    orbit3Elem = str2double(handles.orbit3Text.String);
+    orbit4Elem = str2double(handles.orbit4Text.String);
+    orbit5Elem = str2double(handles.orbit5Text.String);
+    orbit6Elem = str2double(handles.orbit6Text.String);
+    
+    frame = newElemSet.frame;
+	switch newElemSet.typeEnum
+        case ElementSetEnum.CartesianElements
+            newElemSet = CartesianElementSet(time, [orbit1Elem, orbit2Elem, orbit3Elem], [orbit4Elem, orbit5Elem, orbit6Elem], frame);
+
+        case ElementSetEnum.KeplerianElements
+            newElemSet = KeplerianElementSet(time, orbit1Elem, orbit2Elem, deg2rad(orbit3Elem), deg2rad(orbit4Elem), deg2rad(orbit5Elem), deg2rad(orbit6Elem), frame);
+
+        case ElementSetEnum.GeographicElements
+            newElemSet = GeographicElementSet(time, deg2rad(orbit1Elem), deg2rad(orbit2Elem), orbit3Elem, deg2rad(orbit4Elem), deg2rad(orbit5Elem), orbit6Elem, frame);
+                
+        otherwise
+            error('Unknown element set type: %s', class(elemSetEnum));
+	end
+    
+    setappdata(handles.lvd_EditInitialStateGUI,'curElemSet', newElemSet);
+
 
 % --- Executes on selection change in centralBodyCombo.
 function centralBodyCombo_Callback(hObject, eventdata, handles)
@@ -478,7 +525,7 @@ function centralBodyCombo_Callback(hObject, eventdata, handles)
 
 % Hints: contents = cellstr(get(hObject,'String')) returns centralBodyCombo contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from centralBodyCombo
-
+    updateStateDueToFrameChange(handles);
 
 % --- Executes during object creation, after setting all properties.
 function centralBodyCombo_CreateFcn(hObject, eventdata, handles)
@@ -504,6 +551,8 @@ function utText_Callback(hObject, eventdata, handles)
     newInput = get(hObject,'String');
     newInput = attemptStrEval(newInput);
     set(hObject,'String', newInput);
+    
+    updateValuesInState(handles);
 
 % --- Executes during object creation, after setting all properties.
 function utText_CreateFcn(hObject, eventdata, handles)
@@ -594,6 +643,8 @@ function orbit1Text_Callback(hObject, eventdata, handles)
     newInput = get(hObject,'String');
     newInput = attemptStrEval(newInput);
     set(hObject,'String', newInput);
+    
+    updateValuesInState(handles);
 
 % --- Executes during object creation, after setting all properties.
 function orbit1Text_CreateFcn(hObject, eventdata, handles)
@@ -684,6 +735,8 @@ function orbit2Text_Callback(hObject, eventdata, handles)
     newInput = get(hObject,'String');
     newInput = attemptStrEval(newInput);
     set(hObject,'String', newInput);
+    
+    updateValuesInState(handles);
 
 % --- Executes during object creation, after setting all properties.
 function orbit2Text_CreateFcn(hObject, eventdata, handles)
@@ -774,6 +827,8 @@ function orbit3Text_Callback(hObject, eventdata, handles)
     newInput = get(hObject,'String');
     newInput = attemptStrEval(newInput);
     set(hObject,'String', newInput);
+    
+    updateValuesInState(handles);
 
 % --- Executes during object creation, after setting all properties.
 function orbit3Text_CreateFcn(hObject, eventdata, handles)
@@ -864,6 +919,8 @@ function orbit4Text_Callback(hObject, eventdata, handles)
     newInput = get(hObject,'String');
     newInput = attemptStrEval(newInput);
     set(hObject,'String', newInput);
+    
+    updateValuesInState(handles);
 
 % --- Executes during object creation, after setting all properties.
 function orbit4Text_CreateFcn(hObject, eventdata, handles)
@@ -954,6 +1011,8 @@ function orbit5Text_Callback(hObject, eventdata, handles)
     newInput = get(hObject,'String');
     newInput = attemptStrEval(newInput);
     set(hObject,'String', newInput);
+    
+    updateValuesInState(handles);
 
 % --- Executes during object creation, after setting all properties.
 function orbit5Text_CreateFcn(hObject, eventdata, handles)
@@ -1019,6 +1078,8 @@ function orbit5UbText_Callback(hObject, eventdata, handles)
     newInput = get(hObject,'String');
     newInput = attemptStrEval(newInput);
     set(hObject,'String', newInput);
+    
+    updateValuesInState(handles);
 
 % --- Executes during object creation, after setting all properties.
 function orbit5UbText_CreateFcn(hObject, eventdata, handles)
@@ -1044,6 +1105,8 @@ function orbit6Text_Callback(hObject, eventdata, handles)
     newInput = get(hObject,'String');
     newInput = attemptStrEval(newInput);
     set(hObject,'String', newInput);
+    
+    updateValuesInState(handles);
 
 % --- Executes during object creation, after setting all properties.
 function orbit6Text_CreateFcn(hObject, eventdata, handles)
@@ -1633,7 +1696,7 @@ function refFrameTypeCombo_Callback(hObject, eventdata, handles)
 
 % Hints: contents = cellstr(get(hObject,'String')) returns refFrameTypeCombo contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from refFrameTypeCombo
-
+    updateStateDueToFrameChange(handles);
 
 % --- Executes during object creation, after setting all properties.
 function refFrameTypeCombo_CreateFcn(hObject, eventdata, handles)
