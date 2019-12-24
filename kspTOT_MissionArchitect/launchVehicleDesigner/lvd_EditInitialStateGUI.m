@@ -281,10 +281,37 @@ function errMsg = validateInputs(handles)
     isInt = false;
     errMsg = validateNumber(ut, numberName, lb, ub, isInt, errMsg, enteredStr);
     
-    orbitTypeStrs = handles.elementSetCombo.String;
-    orbitType = orbitTypeStrs{handles.elementSetCombo.Value};
-    [~,enum] = OrbitStateEnum.getIndForName(orbitType);
-    orbitClass = enum.class;
+    if(handles.optUtCheckbox.Value)
+        utLb = str2double(get(handles.utLbText,'String'));
+        enteredStr = get(handles.utLbText,'String');
+        numberName = 'Epoch (UT) (Lower Bound)';
+        lb = 0;
+        ub = Inf;
+        isInt = false;
+        errMsg = validateNumber(utLb, numberName, lb, ub, isInt, errMsg, enteredStr);
+
+        utUb = str2double(get(handles.utUbText,'String'));
+        enteredStr = get(handles.utUbText,'String');
+        numberName = 'Epoch (UT) (Upper Bound)';
+        lb = 0;
+        ub = Inf;
+        isInt = false;
+        errMsg = validateNumber(utUb, numberName, lb, ub, isInt, errMsg, enteredStr);
+
+        if(utLb < utUb)
+            ut = str2double(get(handles.utText,'String'));
+            enteredStr = get(handles.utText,'String');
+            numberName = 'Epoch (UT)';
+            isInt = false;
+            errMsg = validateNumber(ut, numberName, utLb, utUb, isInt, errMsg, enteredStr);
+        else
+            errMsg{end+1} = sprintf('%s lower bound must be less than the upper bound.', 'Epoch (UT)');
+        end
+    end
+    
+    contents = cellstr(get(handles.elementSetCombo,'String'));
+    selElemSet = contents{get(handles.elementSetCombo,'Value')};
+    elemSetEnum = ElementSetEnum.getEnumForListboxStr(selElemSet);
     
     checkElementValues = ones(1,6);
     checkElementBnds = [handles.optOrbit1Checkbox.Value, ...
@@ -293,17 +320,62 @@ function errMsg = validateInputs(handles)
                         handles.optOrbit4Checkbox.Value, ...
                         handles.optOrbit5Checkbox.Value, ...
                         handles.optOrbit6Checkbox.Value];
+                    
+	switch elemSetEnum
+        case ElementSetEnum.CartesianElements
+            errMsg = CartesianElementSet.validateInputOrbit(errMsg, handles.orbit1Text, handles.orbit2Text, handles.orbit3Text, handles.orbit4Text, handles.orbit5Text, handles.orbit6Text, bodyInfo, '', checkElementValues);
+            errMsg = CartesianElementSet.validateInputOrbit(errMsg, handles.orbit1LbText, handles.orbit2LbText, handles.orbit3LbText, handles.orbit4LbText, handles.orbit5LbText, handles.orbit6LbText, bodyInfo, 'Lower', checkElementBnds);
+            errMsg = CartesianElementSet.validateInputOrbit(errMsg, handles.orbit1UbText, handles.orbit2UbText, handles.orbit3UbText, handles.orbit4UbText, handles.orbit5UbText, handles.orbit6UbText, bodyInfo, 'Upper', checkElementBnds);
+            
+        case ElementSetEnum.KeplerianElements
+            errMsg = KeplerianElementSet.validateInputOrbit(errMsg, handles.orbit1Text, handles.orbit2Text, handles.orbit3Text, handles.orbit4Text, handles.orbit5Text, handles.orbit6Text, bodyInfo, '', checkElementValues);
+            errMsg = KeplerianElementSet.validateInputOrbit(errMsg, handles.orbit1LbText, handles.orbit2LbText, handles.orbit3LbText, handles.orbit4LbText, handles.orbit5LbText, handles.orbit6LbText, bodyInfo, 'Lower', checkElementBnds);
+            errMsg = KeplerianElementSet.validateInputOrbit(errMsg, handles.orbit1UbText, handles.orbit2UbText, handles.orbit3UbText, handles.orbit4UbText, handles.orbit5UbText, handles.orbit6UbText, bodyInfo, 'Upper', checkElementBnds);
+            
+        case ElementSetEnum.GeographicElements
+            errMsg = GeographicElementSet.validateInputOrbit(errMsg, handles.orbit1Text, handles.orbit2Text, handles.orbit3Text, handles.orbit4Text, handles.orbit5Text, handles.orbit6Text, bodyInfo, '', checkElementValues);
+            errMsg = GeographicElementSet.validateInputOrbit(errMsg, handles.orbit1LbText, handles.orbit2LbText, handles.orbit3LbText, handles.orbit4LbText, handles.orbit5LbText, handles.orbit6LbText, bodyInfo, 'Lower', checkElementBnds);
+            errMsg = GeographicElementSet.validateInputOrbit(errMsg, handles.orbit1UbText, handles.orbit2UbText, handles.orbit3UbText, handles.orbit4UbText, handles.orbit5UbText, handles.orbit6UbText, bodyInfo, 'Upper', checkElementBnds);
+            
+        otherwise
+            error('Unknown element set type: %s', class(elemSetEnum));
+    end
     
-    errMsg = feval(sprintf('%s.validateInputOrbit',orbitClass),errMsg, handles.orbit1Text, handles.orbit2Text, handles.orbit3Text, handles.orbit4Text, handles.orbit5Text, handles.orbit6Text, bodyInfo, '', checkElementValues);
-    errMsg = feval(sprintf('%s.validateInputOrbit',orbitClass),errMsg, handles.orbit1LbText, handles.orbit2LbText, handles.orbit3LbText, handles.orbit4LbText, handles.orbit5LbText, handles.orbit6LbText, bodyInfo, 'Lower', checkElementBnds);
-    errMsg = feval(sprintf('%s.validateInputOrbit',orbitClass),errMsg, handles.orbit1UbText, handles.orbit2UbText, handles.orbit3UbText, handles.orbit4UbText, handles.orbit5UbText, handles.orbit6UbText, bodyInfo, 'Upper', checkElementBnds);
-        
-    if(enum == OrbitStateEnum.CR3BP)
-        parentBodyInfo = bodyInfo.getParBodyInfo(celBodyData);
-        if(isempty(parentBodyInfo))
-            errMsg{end+1} = sprintf('If using the CR3BP orbit type, your secondary body selection MUST have a parent body to use as the primary.  %s has no parent body in the solar system.', bodyInfo.name);
+    hVal = [handles.orbit1Text, handles.orbit2Text, handles.orbit3Text, handles.orbit4Text, handles.orbit5Text, handles.orbit6Text];
+    hLb = [handles.orbit1LbText, handles.orbit2LbText, handles.orbit3LbText, handles.orbit4LbText, handles.orbit5LbText, handles.orbit6LbText];
+    hUb = [handles.orbit1UbText, handles.orbit2UbText, handles.orbit3UbText, handles.orbit4UbText, handles.orbit5UbText, handles.orbit6UbText];
+    
+    elemNames = elemSetEnum.elemNames;
+    
+    for(i=1:length(hVal))
+        if(checkElementBnds(i) == 1)
+            lb = str2double(get(hLb(i),'String'));
+            ub = str2double(get(hUb(i),'String'));
+            
+            if(lb <= ub)
+                value = str2double(get(hVal(i),'String'));
+                enteredStr = get(hVal(i),'String');
+                numberName = [elemNames{i}];
+                isInt = false;
+                errMsg = validateNumber(value, numberName, lb, ub, isInt, errMsg, enteredStr);
+            else
+                errMsg{end+1} = sprintf('%s lower bound must be less than the upper bound.', elemNames{i}); %#ok<AGROW>
+            end
         end
     end
+    
+%     errMsg = feval(sprintf('%s.validateInputOrbit',orbitClass),errMsg, handles.orbit1Text, handles.orbit2Text, handles.orbit3Text, handles.orbit4Text, handles.orbit5Text, handles.orbit6Text, bodyInfo, '', checkElementValues);
+%     errMsg = feval(sprintf('%s.validateInputOrbit',orbitClass),errMsg, handles.orbit1LbText, handles.orbit2LbText, handles.orbit3LbText, handles.orbit4LbText, handles.orbit5LbText, handles.orbit6LbText, bodyInfo, 'Lower', checkElementBnds);
+%     errMsg = feval(sprintf('%s.validateInputOrbit',orbitClass),errMsg, handles.orbit1UbText, handles.orbit2UbText, handles.orbit3UbText, handles.orbit4UbText, handles.orbit5UbText, handles.orbit6UbText, bodyInfo, 'Upper', checkElementBnds);
+        
+
+
+%     if(enum == OrbitStateEnum.CR3BP)
+%         parentBodyInfo = bodyInfo.getParBodyInfo(celBodyData);
+%         if(isempty(parentBodyInfo))
+%             errMsg{end+1} = sprintf('If using the CR3BP orbit type, your secondary body selection MUST have a parent body to use as the primary.  %s has no parent body in the solar system.', bodyInfo.name);
+%         end
+%     end
     
     
 % --- Executes on selection change in elementSetCombo.
@@ -320,7 +392,6 @@ function elementSetCombo_Callback(hObject, eventdata, handles)
 
     contents = cellstr(get(hObject,'String'));
     sel = contents{get(hObject,'Value')};
-    
     [~, enum] = ElementSetEnum.getIndForName(sel);
     
     elemNames = enum.elemNames;
@@ -1139,8 +1210,7 @@ function saveAndCloseButton_Callback(hObject, eventdata, handles)
 % hObject    handle to saveAndCloseButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-    errMsg = {};
-%     errMsg = validateInputs(handles);
+    errMsg = validateInputs(handles);
 
     if(isempty(errMsg))
         uiresume(handles.lvd_EditInitialStateGUI);

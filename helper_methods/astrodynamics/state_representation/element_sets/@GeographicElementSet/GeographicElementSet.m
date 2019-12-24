@@ -85,5 +85,73 @@ classdef GeographicElementSet < AbstractElementSet
         function elemSet = getDefaultElements()
             elemSet = GeographicElementSet();
         end
+        
+        function errMsg = validateInputOrbit(errMsg, hLat, hLong, hAlt, hVelAz, hVelEl, hVelMag, bodyInfo, bndStr, checkElement)
+            if(isempty(bndStr))
+                bndStr = '';
+            else
+                bndStr = sprintf(' (%s Bound)', bndStr);
+            end
+            
+            if(checkElement(1))
+                lat = str2double(get(hLat,'String'));
+                enteredStr = get(hLat,'String');
+                numberName = ['Latitude', bndStr];
+                lb = -90;
+                ub = 90;
+                isInt = false;
+                errMsg = validateNumber(lat, numberName, lb, ub, isInt, errMsg, enteredStr);
+            end
+            
+            if(checkElement(2))
+                long = str2double(get(hLong,'String'));
+                enteredStr = get(hLong,'String');
+                numberName = ['Longitude', bndStr];
+                lb = -360;
+                ub = 360;
+                isInt = false;
+                errMsg = validateNumber(long, numberName, lb, ub, isInt, errMsg, enteredStr);
+            end
+            
+            if(checkElement(3))
+                alt = str2double(get(hAlt,'String'));
+                enteredStr = get(hAlt,'String');
+                numberName = ['Altitude', bndStr];
+                lb = -bodyInfo.radius;
+                ub = Inf;
+                isInt = false;
+                errMsg = validateNumber(alt, numberName, lb, ub, isInt, errMsg, enteredStr);
+            end
+            
+            if(checkElement(4))
+                bfVx = str2double(get(hVelAz,'String'));
+                enteredStr = get(hVelAz,'String');
+                numberName = ['Body-Fixed Velocity Azimuth', bndStr];
+                lb = -360;
+                ub = 360;
+                isInt = false;
+                errMsg = validateNumber(bfVx, numberName, lb, ub, isInt, errMsg, enteredStr);
+            end
+            
+            if(checkElement(5))
+                bfVy = str2double(get(hVelEl,'String'));
+                enteredStr = get(hVelEl,'String');
+                numberName = ['Body-Fixed Velocity Elevation', bndStr];
+                lb = -90;
+                ub = 90;
+                isInt = false;
+                errMsg = validateNumber(bfVy, numberName, lb, ub, isInt, errMsg, enteredStr);
+            end
+            
+            if(checkElement(6))
+                bfVz = str2double(get(hVelMag,'String'));
+                enteredStr = get(hVelMag,'String');
+                numberName = ['Body-Fixed Velocity Magnitude', bndStr];
+                lb = 0;
+                ub = Inf;
+                isInt = false;
+                errMsg = validateNumber(bfVz, numberName, lb, ub, isInt, errMsg, enteredStr);
+            end
+        end
     end
 end
