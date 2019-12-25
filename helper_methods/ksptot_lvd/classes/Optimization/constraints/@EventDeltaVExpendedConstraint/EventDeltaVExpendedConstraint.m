@@ -32,7 +32,7 @@ classdef EventDeltaVExpendedConstraint < AbstractConstraint
                 g0 = getG0();
                 deltaVExpended = 0;
                 
-                for(i=1:length(subStateLog)-1)
+                for(i=1:length(subStateLog)-1) %#ok<NO4LP>
                     stateLogEntry1 = subStateLog(i);
                     stateLogEntry2 = subStateLog(i+1);
 
@@ -67,7 +67,7 @@ classdef EventDeltaVExpendedConstraint < AbstractConstraint
                         totalMass1 = dryMass + stateLogEntry1.getTotalVehiclePropMass();
                         totalMass2 = dryMass + stateLogEntry2.getTotalVehiclePropMass();
                         
-                        if(totalMass1 > totalMass2)
+                        if(totalMass1 > totalMass2 && stateLogEntry1.time < stateLogEntry2.time)
                             deltaVExpended = deltaVExpended + (g0 * effIsp * log(totalMass1 / totalMass2))/1000; %need to convert to km/s
                         end
                     end
