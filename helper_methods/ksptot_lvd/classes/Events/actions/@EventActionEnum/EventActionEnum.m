@@ -19,6 +19,7 @@ classdef EventActionEnum < matlab.mixin.SetGet
         SetExtremumRecordingState('Set Extremum Recording State','SetExtremumRecordingStateAction');
         ResetExtremumValueAction('Reset Extremum Value','ResetExtremumValueAction');
         SetThirdBodyGravSourcesAction('Set Third Body Gravity Sources','SetThirdBodyGravitySourcesAction');
+        SetKinematicStateAction('Set Kinematic State','SetKinematicStateAction');
     end
     
     properties
