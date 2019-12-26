@@ -234,6 +234,7 @@ function actionsListbox_Callback(hObject, eventdata, handles)
             action = event.getActionForInd(selActionInd);
 
             action.openEditActionUI(action, lv);
+            action.event = event;
 
             actionsListBoxStr = event.getActionsListboxStr();
 
@@ -286,6 +287,7 @@ function addActionButton_Callback(hObject, eventdata, handles)
         
         if(addActionTf)
             event.addAction(newAction);
+            newAction.event = event;
         end
         
         set(handles.actionsListbox,'String',event.getActionsListboxStr());

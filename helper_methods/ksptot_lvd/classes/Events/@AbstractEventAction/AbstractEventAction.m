@@ -4,6 +4,7 @@ classdef(Abstract) AbstractEventAction < matlab.mixin.SetGet & matlab.mixin.Hete
         
     properties(Abstract=false)
         id(1,1) double
+        event LaunchVehicleEvent
     end
     
     methods

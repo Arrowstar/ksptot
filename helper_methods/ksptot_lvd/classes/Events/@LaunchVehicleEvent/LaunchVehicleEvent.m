@@ -230,6 +230,12 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
             newEvent = LaunchVehicleEvent(script);
             newEvent.termCond = EventDurationTermCondition(0);
         end
+        
+        function obj = loadobj(obj)
+            for(i=1:length(obj.actions))
+                obj.actions(i).event = obj;
+            end
+        end
     end
 end
 
