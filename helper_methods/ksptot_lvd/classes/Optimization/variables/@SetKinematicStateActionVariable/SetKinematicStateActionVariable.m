@@ -1,9 +1,9 @@
-classdef InitialStateVariable < AbstractOptimizationVariable
+classdef SetKinematicStateActionVariable < AbstractOptimizationVariable
     %InitialStateVariable Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
-        varObj(1,1) InitialStateModel = InitialStateModel();
+        varObj(1,1) SetKinematicStateAction = SetKinematicStateAction();
         
         %For Time var
         lb(1,1) double = 0;
@@ -15,7 +15,7 @@ classdef InitialStateVariable < AbstractOptimizationVariable
     end
     
     methods
-        function obj = InitialStateVariable(varObj)
+        function obj = SetKinematicStateActionVariable(varObj)
             obj.varObj = varObj;
             obj.varObj.optVar = obj;
             
