@@ -265,6 +265,11 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                 obj.thirdBodyGravity = obj.thirdBodyGravity.copy();
             end
         end
+        
+        function cartElemSet = getCartesianElementSetRepresentation(obj)            
+            frame = BodyCenteredInertialFrame(obj.centralBody, obj.celBodyData);
+            cartElemSet = CartesianElementSet(obj.time, obj.position, obj.velocity, frame);
+        end
     end
     
     methods(Access=protected)

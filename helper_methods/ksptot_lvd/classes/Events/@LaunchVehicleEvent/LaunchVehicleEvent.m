@@ -68,6 +68,10 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
             end
         end
         
+        function numActions = getNumberOfActions(obj)
+            numActions = length(obj.actions);
+        end
+        
         function evtNum = getEventNum(obj)
             evtNum = obj.script.getNumOfEvent(obj);
         end

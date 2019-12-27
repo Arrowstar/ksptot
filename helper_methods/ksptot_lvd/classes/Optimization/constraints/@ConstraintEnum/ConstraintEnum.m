@@ -75,6 +75,10 @@ classdef ConstraintEnum < matlab.mixin.SetGet
         TwoBodyImpactLat('Two-Body Impact Latitude','TwoBodyImpactPointLatitude',[]);
         
         EventDeltaVExpended('Event Delta-V Expended','EventDeltaVExpendedConstraint',[]);
+        
+        TimeContinuity('Time Continuity','TimeContinuityConstraint',[]);
+        PositionContinuity('Position Continuity','PositionContinuityConstraint',[]);
+        VelocityContinuity('Velocity Continuity','VelocityContinuityConstraint',[]);
     end
     
     properties
