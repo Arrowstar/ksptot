@@ -46,7 +46,7 @@ classdef AddDeltaVActionVariable < AbstractOrbitModelVariable
         
         function [lb, ub] = getAllBndsForVariable(obj)
             lb = obj.lb;
-            ub = obj.lb;
+            ub = obj.ub;
         end
         
         function setBndsForVariable(obj, lb, ub)

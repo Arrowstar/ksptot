@@ -10,6 +10,11 @@ classdef SetKinematicStateAction < AbstractEventAction
         optVar SetKinematicStateActionVariable
     end
     
+    properties(Dependent)
+        time(1,1) double
+        centralBody(1,1) KSPTOT_BodyInfo
+    end
+    
     methods
         function obj = SetKinematicStateAction(orbitModel)
             if(nargin > 0)
@@ -17,6 +22,22 @@ classdef SetKinematicStateAction < AbstractEventAction
             end
             
             obj.id = rand();
+        end
+        
+        function time = get.time(obj)
+            time = obj.orbitModel.time;
+        end
+        
+        function set.time(obj, newTime)
+            obj.orbitModel.time = newTime;
+        end
+        
+        function time = get.centralBody(obj)
+            time = obj.orbitModel.frame.getOriginBody();
+        end
+        
+        function set.centralBody(obj, newCentralBody)
+            obj.orbitModel.frame.setOriginBody(newCentralBody);
         end
         
         function newStateLogEntry = executeAction(obj, stateLogEntry)

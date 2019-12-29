@@ -88,6 +88,8 @@ function populateGUI(handles, action, lvdData)
     handles.optCheckbox3.Value = double(tf(3));
     
     [lb, ub] = optVar.getAllBndsForVariable();
+    lb = lb * 1000;
+    ub = ub * 1000;
     
     handles.lbText1.String = fullAccNum2Str(lb(1));
     handles.ubText1.String = fullAccNum2Str(ub(1));
@@ -141,20 +143,25 @@ function varargout = lvd_AddDeltaVActionGUI_OutputFcn(hObject, eventdata, handle
                  get(handles.optCheckbox2,'Value'), ...
                  get(handles.optCheckbox3,'Value')];
         
-        if(isempty(optVar))
-            optVar = AddDeltaVActionVariable(action);
+%         if(isempty(optVar))
+%             optVar = AddDeltaVActionVariable(action);
+%         end
+        optVar = action.optVar;
+        if(not(isempty(optVar)))
+            lvdData.optimizer.vars.removeVariable(optVar);
         end
+        optVar = AddDeltaVActionVariable(action);
         
         optVar.setUseTfForVariable(useTf);
         
         %Bnds
         lb = [str2double(get(handles.lbText1,'String')), ...
               str2double(get(handles.lbText2,'String')), ...
-              str2double(get(handles.lbText3,'String'))];
+              str2double(get(handles.lbText3,'String'))]/1000; %store as km/s
         
         ub = [str2double(get(handles.ubText1,'String')), ...
               str2double(get(handles.ubText2,'String')), ...
-              str2double(get(handles.ubText3,'String'))];
+              str2double(get(handles.ubText3,'String'))]/1000; %store as km/s
         
         optVar.setUseTfForVariable(true(size(lb))); %need this to get the full lb/set in there
         optVar.setBndsForVariable(lb, ub);

@@ -393,7 +393,7 @@ function cancelButton_Callback(hObject, eventdata, handles)
 % hObject    handle to cancelButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
+    close(handles.lvd_EditActionSetKinematicStateGUI);
 
 % --- Executes on button press in inheritStateCheckbox.
 function inheritStateCheckbox_Callback(hObject, eventdata, handles)

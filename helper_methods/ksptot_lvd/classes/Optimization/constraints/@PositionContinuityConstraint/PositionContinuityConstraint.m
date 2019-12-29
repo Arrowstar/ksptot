@@ -26,7 +26,7 @@ classdef PositionContinuityConstraint < AbstractConstraint
             type = obj.getConstraintType();
             
             stateLogEntries = stateLog.getAllStateLogEntriesForEvent(obj.event);
-            if(length(stateLogEntries) > 2 && obj.event.getNumberOfActions() > 0)
+            if(obj.event.getNumberOfActions() > 0)
                 stateLogEntry1 = stateLogEntries(end-1);
                 stateLogEntry2 = stateLogEntries(end);
 
@@ -37,7 +37,7 @@ classdef PositionContinuityConstraint < AbstractConstraint
                 value = norm(cartElemSet2.rVect - cartElemSet1.rVect);
                 
                 c = [];
-                ceq = value;
+                ceq = cartElemSet2.rVect - cartElemSet1.rVect;
             else
                 c = [];
                 ceq = [];

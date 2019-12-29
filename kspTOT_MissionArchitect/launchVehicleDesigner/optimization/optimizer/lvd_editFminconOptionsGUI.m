@@ -195,9 +195,9 @@ function varargout = lvd_editFminconOptionsGUI_OutputFcn(hObject, eventdata, han
 function errMsg = validateInputs(handles)
     errMsg = {};
 
-    errMsg = validateDoubleValue(handles, errMsg, 'optTolText', 'Optimality Tolerance', 1E-12, 1, false);
-    errMsg = validateDoubleValue(handles, errMsg, 'conTolText', 'Constraint Tolerance', 1E-12, 1, false);
-    errMsg = validateDoubleValue(handles, errMsg, 'stepTolText', 'Step Tolerance', 1E-12, 1, false);
+    errMsg = validateDoubleValue(handles, errMsg, 'optTolText', 'Optimality Tolerance', 0, 1, false);
+    errMsg = validateDoubleValue(handles, errMsg, 'conTolText', 'Constraint Tolerance', 0, 1, false);
+    errMsg = validateDoubleValue(handles, errMsg, 'stepTolText', 'Step Tolerance', 0, 1, false);
     
     errMsg = validateDoubleValue(handles, errMsg, 'maxItersText', 'Max Iterations', 0, Inf, true);
     errMsg = validateDoubleValue(handles, errMsg, 'maxFuncEvalsText', 'Max Function Evaluations', 0, Inf, true);

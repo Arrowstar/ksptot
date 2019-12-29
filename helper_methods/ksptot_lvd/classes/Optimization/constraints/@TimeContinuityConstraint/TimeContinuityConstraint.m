@@ -26,7 +26,7 @@ classdef TimeContinuityConstraint < AbstractConstraint
             type = obj.getConstraintType();
             
             stateLogEntries = stateLog.getAllStateLogEntriesForEvent(obj.event);
-            if(length(stateLogEntries) > 2 && obj.event.getNumberOfActions() > 0)
+            if(obj.event.getNumberOfActions() > 0)
                 stateLogEntry1 = stateLogEntries(end-1);
                 stateLogEntry2 = stateLogEntries(end);
 
