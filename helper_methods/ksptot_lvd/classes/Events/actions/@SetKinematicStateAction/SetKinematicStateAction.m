@@ -88,7 +88,7 @@ classdef SetKinematicStateAction < AbstractEventAction
     
     methods(Static)
         function addActionTf = openEditActionUI(action, lv)
-%             addActionTf = lvd_EditActionSetStageStateGUI(action, lv);
+            addActionTf = lvd_EditActionSetKinematicStateGUI(action, lv.lvdData);
         end
     end
 end
