@@ -14,7 +14,7 @@ classdef PatternSearchOptimizer < AbstractOptimizer
         function optimize(obj, lvdOpt, writeOutput)
             [x0All, actVars, varNameStrs] = lvdOpt.vars.getTotalScaledXVector();
             [lbAll, ubAll, lbUsAll, ubUsAll] = lvdOpt.vars.getTotalScaledBndsVector();
-            typicalX = lvdOpt.vars.getTypicalScaledXVector();
+%             typicalX = lvdOpt.vars.getTypicalScaledXVector();
             
             if(isempty(x0All) && isempty(actVars))
                 return;
@@ -26,7 +26,7 @@ classdef PatternSearchOptimizer < AbstractOptimizer
             objFuncWrapper = @(x) lvdOpt.objFcn.evalObjFcn(x, evtToStartScriptExecAt);
             nonlcon = @(x) lvdOpt.constraints.evalConstraints(x, true, evtToStartScriptExecAt, true, []);
                         
-            initMeshSize = norm(typicalX)/(10*length(typicalX));
+%             initMeshSize = norm(typicalX)/(10*length(typicalX));
             opts = obj.options.getOptionsForOptimizer(x0All);
 %             opts = optimoptions(opts, 'ScaleMesh',scaleMesh, 'UseParallel',usePara, 'InitialMeshSize',initMeshSize);
             
