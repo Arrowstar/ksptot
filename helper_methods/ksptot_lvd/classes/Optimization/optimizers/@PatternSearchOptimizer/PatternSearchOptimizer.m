@@ -28,7 +28,7 @@ classdef PatternSearchOptimizer < AbstractOptimizer
                         
             initMeshSize = norm(typicalX)/(10*length(typicalX));
             opts = obj.options.getOptionsForOptimizer(x0All);
-            opts = optimoptions(opts, 'ScaleMesh',scaleMesh, 'UseParallel',usePara, 'InitialMeshSize',initMeshSize);
+%             opts = optimoptions(opts, 'ScaleMesh',scaleMesh, 'UseParallel',usePara, 'InitialMeshSize',initMeshSize);
             
             problem.objective = objFuncWrapper;
             problem.x0 = x0All;
