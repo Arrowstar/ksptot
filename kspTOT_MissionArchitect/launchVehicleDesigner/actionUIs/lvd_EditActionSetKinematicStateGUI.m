@@ -22,7 +22,7 @@ function varargout = lvd_EditActionSetKinematicStateGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditActionSetKinematicStateGUI
 
-% Last Modified by GUIDE v2.5 29-Dec-2019 09:53:52
+% Last Modified by GUIDE v2.5 29-Dec-2019 12:08:18
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -165,7 +165,6 @@ function varargout = lvd_EditActionSetKinematicStateGUI_OutputFcn(hObject, event
         celBodyData = lvdData.celBodyData;
         action = getappdata(handles.lvd_EditActionSetKinematicStateGUI, 'action');
         
-        
         contents = cellstr(get(handles.elementSetCombo,'String'));
         selElemSet = contents{get(handles.elementSetCombo,'Value')};
         elemSetEnum = ElementSetEnum.getEnumForListboxStr(selElemSet);
@@ -222,13 +221,13 @@ function varargout = lvd_EditActionSetKinematicStateGUI_OutputFcn(hObject, event
         action.inheritTime = logical(handles.inheritTimeCheckbox.Value);
         action.inheritPosVel = logical(handles.inheritStateCheckbox.Value);
         
-        optUt         = logical(handles.optUtCheckbox.Value) && action.inheritTime;
-        optOrbit1Elem = logical(handles.optOrbit1Checkbox.Value) && action.inheritPosVel;
-        optOrbit2Elem = logical(handles.optOrbit2Checkbox.Value) && action.inheritPosVel;
-        optOrbit3Elem = logical(handles.optOrbit3Checkbox.Value) && action.inheritPosVel;
-        optOrbit4Elem = logical(handles.optOrbit4Checkbox.Value) && action.inheritPosVel;
-        optOrbit5Elem = logical(handles.optOrbit5Checkbox.Value) && action.inheritPosVel;
-        optOrbit6Elem = logical(handles.optOrbit6Checkbox.Value) && action.inheritPosVel;
+        optUt         = logical(handles.optUtCheckbox.Value) && not(action.inheritTime);
+        optOrbit1Elem = logical(handles.optOrbit1Checkbox.Value) && not(action.inheritPosVel);
+        optOrbit2Elem = logical(handles.optOrbit2Checkbox.Value) && not(action.inheritPosVel);
+        optOrbit3Elem = logical(handles.optOrbit3Checkbox.Value) && not(action.inheritPosVel);
+        optOrbit4Elem = logical(handles.optOrbit4Checkbox.Value) && not(action.inheritPosVel);
+        optOrbit5Elem = logical(handles.optOrbit5Checkbox.Value) && not(action.inheritPosVel);
+        optOrbit6Elem = logical(handles.optOrbit6Checkbox.Value) && not(action.inheritPosVel);
         
         useTf = [optUt optOrbit1Elem optOrbit2Elem optOrbit3Elem optOrbit4Elem optOrbit5Elem optOrbit6Elem];
         optVar.setUseTfForVariable(useTf);
@@ -403,7 +402,7 @@ function inheritStateCheckbox_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of inheritStateCheckbox
-    if(get(hObject,'Value'))
+    if(not(get(hObject,'Value')))
         handles.orbit1Text.Enable = 'on';
         handles.optOrbit1Checkbox.Enable = 'on';
         
@@ -474,7 +473,7 @@ function inheritTimeCheckbox_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of inheritTimeCheckbox
-    if(get(hObject,'Value'))
+    if(not(get(hObject,'Value')))
         handles.utText.Enable = 'on';
         handles.optUtCheckbox.Enable = 'on';
         
@@ -518,7 +517,7 @@ function elementSetCombo_Callback(hObject, eventdata, handles)
     handles.orbit5UnitLabel.String = unitNames{5};
     handles.orbit6UnitLabel.String = unitNames{6};
     
-    curElemSet = getappdata(handles.lvd_EditInitialStateGUI,'curElemSet');
+    curElemSet = getappdata(handles.lvd_EditActionSetKinematicStateGUI,'curElemSet');
     
     try
         switch elemSetEnum
@@ -548,7 +547,7 @@ function elementSetCombo_Callback(hObject, eventdata, handles)
         handles.orbit5Text.String = fullAccNum2Str(elemVect(5));
         handles.orbit6Text.String = fullAccNum2Str(elemVect(6));
 
-        setappdata(handles.lvd_EditInitialStateGUI,'curElemSet', newElemSet);
+        setappdata(handles.lvd_EditActionSetKinematicStateGUI,'curElemSet', newElemSet);
         
     catch ME
         updateValuesInState(handles);
@@ -568,10 +567,10 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 function updateStateDueToFrameChange(handles)
-    lvdData = getappdata(handles.lvd_EditInitialStateGUI,'lvdData');
+    lvdData = getappdata(handles.lvd_EditActionSetKinematicStateGUI,'lvdData');
     celBodyData = lvdData.celBodyData;
 
-    curElemSet = getappdata(handles.lvd_EditInitialStateGUI,'curElemSet');
+    curElemSet = getappdata(handles.lvd_EditActionSetKinematicStateGUI,'curElemSet');
     
     bodyInfo = getSelectedBodyInfo(handles);
     
@@ -606,14 +605,14 @@ function updateStateDueToFrameChange(handles)
         handles.orbit5Text.String = fullAccNum2Str(elemVect(5));
         handles.orbit6Text.String = fullAccNum2Str(elemVect(6));
 
-        setappdata(handles.lvd_EditInitialStateGUI,'curElemSet', newElemSet);
+        setappdata(handles.lvd_EditActionSetKinematicStateGUI,'curElemSet', newElemSet);
     catch ME
         updateValuesInState(handles);
         msgbox('Error converting state to new frame.','Conversion Error','error');
     end
     
 function updateValuesInState(handles)
-    curElemSet = getappdata(handles.lvd_EditInitialStateGUI,'curElemSet');
+    curElemSet = getappdata(handles.lvd_EditActionSetKinematicStateGUI,'curElemSet');
     newElemSet = curElemSet;
     
     time = str2double(handles.utText.String);
@@ -639,7 +638,7 @@ function updateValuesInState(handles)
             error('Unknown element set type: %s', class(elemSetEnum));
 	end
     
-    setappdata(handles.lvd_EditInitialStateGUI,'curElemSet', newElemSet);
+    setappdata(handles.lvd_EditActionSetKinematicStateGUI,'curElemSet', newElemSet);
 
 
 % --- Executes on selection change in centralBodyCombo.
@@ -720,7 +719,7 @@ function optUtCheckbox_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of optUtCheckbox
-    if(get(hObject,'Value') && get(handles.inheritTimeCheckbox,'Value'))
+    if(get(hObject,'Value') && not(get(handles.inheritTimeCheckbox,'Value')))
         handles.utLbText.Enable = 'on';
         handles.utUbText.Enable = 'on';
     else
@@ -810,7 +809,7 @@ function optOrbit1Checkbox_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of optOrbit1Checkbox
-    if(get(hObject,'Value') && get(handles.inheritStateCheckbox,'Value'))
+    if(get(hObject,'Value') && not(get(handles.inheritStateCheckbox,'Value')))
         handles.orbit1LbText.Enable = 'on';
         handles.orbit1UbText.Enable = 'on';
     else
@@ -900,7 +899,7 @@ function optOrbit2Checkbox_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of optOrbit2Checkbox
-    if(get(hObject,'Value') && get(handles.inheritStateCheckbox,'Value'))
+    if(get(hObject,'Value') && not(get(handles.inheritStateCheckbox,'Value')))
         handles.orbit2LbText.Enable = 'on';
         handles.orbit2UbText.Enable = 'on';
     else
@@ -991,7 +990,7 @@ function optOrbit3Checkbox_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of optOrbit3Checkbox
-    if(get(hObject,'Value') && get(handles.inheritStateCheckbox,'Value'))
+    if(get(hObject,'Value') && not(get(handles.inheritStateCheckbox,'Value')))
         handles.orbit3LbText.Enable = 'on';
         handles.orbit3UbText.Enable = 'on';
     else
@@ -1082,7 +1081,7 @@ function optOrbit4Checkbox_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of optOrbit4Checkbox
-    if(get(hObject,'Value') && get(handles.inheritStateCheckbox,'Value'))
+    if(get(hObject,'Value') && not(get(handles.inheritStateCheckbox,'Value')))
         handles.orbit4LbText.Enable = 'on';
         handles.orbit4UbText.Enable = 'on';
     else
@@ -1172,7 +1171,7 @@ function optOrbit5Checkbox_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of optOrbit5Checkbox
-    if(get(hObject,'Value') && get(handles.inheritStateCheckbox,'Value'))
+    if(get(hObject,'Value') && not(get(handles.inheritStateCheckbox,'Value')))
         handles.orbit5LbText.Enable = 'on';
         handles.orbit5UbText.Enable = 'on';
     else
@@ -1262,7 +1261,7 @@ function optOrbit6Checkbox_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of optOrbit6Checkbox
-    if(get(hObject,'Value') && get(handles.inheritStateCheckbox,'Value'))
+    if(get(hObject,'Value') && not(get(handles.inheritStateCheckbox,'Value')))
         handles.orbit6LbText.Enable = 'on';
         handles.orbit6UbText.Enable = 'on';
     else
