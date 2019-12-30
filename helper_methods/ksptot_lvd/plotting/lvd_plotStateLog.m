@@ -106,18 +106,28 @@ function [childrenHGs] = plotSubStateLog(subStateLog, prevSubStateLog, showSoI, 
     plotLineColor = event.colorLineSpec.color.color;
     plotLineStyle = event.colorLineSpec.lineSpec.linespec;
     plotLineWidth = event.colorLineSpec.lineWidth;
+    plotMethodEnum = event.plotMethod;
 
     hold(dAxes,'on');
     
-%     ut = [prevSubStateLog(end,1);subStateLog(1:end,1)];
-%     x = [prevSubStateLog(end,2);subStateLog(1:end,2)];
-%     y = [prevSubStateLog(end,3);subStateLog(1:end,3)];
-%     z = [prevSubStateLog(end,4);subStateLog(1:end,4)];
+    switch plotMethodEnum
+        case EventPlottingMethodEnum.PlotContinuous
+            ut = [prevSubStateLog(end,1);subStateLog(1:end,1)];
+            x = [prevSubStateLog(end,2);subStateLog(1:end,2)];
+            y = [prevSubStateLog(end,3);subStateLog(1:end,3)];
+            z = [prevSubStateLog(end,4);subStateLog(1:end,4)];
+        case EventPlottingMethodEnum.SkipFirstState
+            ut = subStateLog(2:end,1);
+            x = subStateLog(2:end,2);
+            y = subStateLog(2:end,3);
+            z = subStateLog(2:end,4);
+        case EventPlottingMethodEnum.DoNotPlot
+            ut = [];
+            x = [];
+            y = [];
+            z = [];
+    end
 
-    ut = subStateLog(2:end,1);
-    x = subStateLog(2:end,2);
-    y = subStateLog(2:end,3);
-    z = subStateLog(2:end,4);
     switch orbitPlotType
         case '3DInertial'
             plot3(dAxes, x, y, z, 'Color', plotLineColor, 'LineStyle', plotLineStyle, 'LineWidth',plotLineWidth);

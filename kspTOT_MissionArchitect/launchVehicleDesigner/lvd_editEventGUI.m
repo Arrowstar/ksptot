@@ -22,7 +22,7 @@ function varargout = lvd_editEventGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_editEventGUI
 
-% Last Modified by GUIDE v2.5 25-Jun-2019 16:48:43
+% Last Modified by GUIDE v2.5 30-Dec-2019 15:34:42
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -86,6 +86,10 @@ function populateGUI(handles, event)
     [~,ind] = LineSpecEnum.getEnumForListboxStr(event.colorLineSpec.lineSpec.name);
     handles.lineSpecCombo.Value = ind;
     
+    handles.plotMethodCombo.String = EventPlottingMethodEnum.getListBoxStr();
+    ind = EventPlottingMethodEnum.getIndForName(event.plotMethod.name);
+    handles.plotMethodCombo.Value = ind;
+    
     handles.eventTermCondDirCombo.String = EventTermCondDirectionEnum.getListboxStr();
     [~,ind] = EventTermCondDirectionEnum.getEnumForListboxStr(event.termCondDir.name);
     handles.eventTermCondDirCombo.Value = ind;
@@ -132,6 +136,10 @@ function varargout = lvd_editEventGUI_OutputFcn(hObject, eventdata, handles)
         nameStr = handles.eventTermCondDirCombo.String(handles.eventTermCondDirCombo.Value);
         [enum,~] = EventTermCondDirectionEnum.getEnumForListboxStr(nameStr);
     	event.termCondDir = enum;
+        
+        nameStr = handles.plotMethodCombo.String(handles.plotMethodCombo.Value);
+        [enum,~] = EventPlottingMethodEnum.getEnumForListboxStr(nameStr);
+    	event.plotMethod = enum;
         
         contents = handles.lineWidthCombo.String;
         contentsDouble = str2double(contents);
@@ -700,6 +708,29 @@ function eventTermCondDirCombo_Callback(hObject, eventdata, handles)
 % --- Executes during object creation, after setting all properties.
 function eventTermCondDirCombo_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to eventTermCondDirCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in plotMethodCombo.
+function plotMethodCombo_Callback(hObject, eventdata, handles)
+% hObject    handle to plotMethodCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns plotMethodCombo contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from plotMethodCombo
+
+
+% --- Executes during object creation, after setting all properties.
+function plotMethodCombo_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to plotMethodCombo (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 

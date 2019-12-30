@@ -11,6 +11,7 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
         script LaunchVehicleScript
         
         colorLineSpec(1,1) EventColorLineSpec 
+        plotMethod(1,1) EventPlottingMethodEnum = EventPlottingMethodEnum.PlotContinuous
         
         integrator(1,1) IntegratorEnum = IntegratorEnum.ODE45;
         integrationStep(1,1) double = -1;
