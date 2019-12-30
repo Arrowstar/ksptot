@@ -233,9 +233,9 @@ function actionsListbox_Callback(hObject, eventdata, handles)
             selActionInd = get(handles.actionsListbox,'Value');
             action = event.getActionForInd(selActionInd);
 
-            action.openEditActionUI(action, lv);
             action.event = event;
-
+            action.openEditActionUI(action, lv);
+            
             actionsListBoxStr = event.getActionsListboxStr();
 
             if(not(isempty(actionsListBoxStr)))
@@ -283,11 +283,11 @@ function addActionButton_Callback(hObject, eventdata, handles)
         actionEnum = m(inds);
         
         newAction = feval(actionEnum.classNameStr);
+        newAction.event = event;
         addActionTf = newAction.openEditActionUI(newAction, lv);
         
         if(addActionTf)
             event.addAction(newAction);
-            newAction.event = event;
         end
         
         set(handles.actionsListbox,'String',event.getActionsListboxStr());

@@ -3,9 +3,18 @@ classdef SetKinematicStateAction < AbstractEventAction
     %   Detailed explanation goes here
     
     properties
+        stateLog LaunchVehicleStateLog
         orbitModel(1,1) AbstractElementSet = KeplerianElementSet.getDefaultElements();
+        
+        %Inherit Time
         inheritTime(1,1) = false;
+        inheritTimeFrom(1,1) InheritStateEnum = InheritStateEnum.InheritFromLastState;
+        inheritTimeFromEvent LaunchVehicleEvent = LaunchVehicleEvent.empty(1,0);
+        
+        %Inherit State
         inheritPosVel(1,1) = false;
+        inheritPosVelFrom(1,1) InheritStateEnum = InheritStateEnum.InheritFromLastState;
+        inheritPosVelFromEvent LaunchVehicleEvent = LaunchVehicleEvent.empty(1,0);
         
         optVar SetKinematicStateActionVariable
     end
@@ -16,8 +25,9 @@ classdef SetKinematicStateAction < AbstractEventAction
     end
     
     methods
-        function obj = SetKinematicStateAction(orbitModel)
+        function obj = SetKinematicStateAction(stateLog, orbitModel)
             if(nargin > 0)
+                obj.stateLog = stateLog;
                 obj.orbitModel = orbitModel;
             end
             
@@ -43,11 +53,33 @@ classdef SetKinematicStateAction < AbstractEventAction
         function newStateLogEntry = executeAction(obj, stateLogEntry)
             newStateLogEntry = stateLogEntry;
 
-            if(obj.inheritTime == false)
-                 newStateLogEntry.time = obj.orbitModel.time;
+            if(obj.inheritTime)
+                if(obj.inheritTimeFrom == InheritStateEnum.InheritFromSpecifiedEvent && ...
+                   not(isempty(obj.inheritTimeFromEvent)) && ...
+                   not(isempty(obj.inheritTimeFromEvent.getEventNum())) && ...
+                   obj.inheritTimeFromEvent.getEventNum() > 0)
+               
+                    timeEvtStateLog = obj.stateLog.getLastStateLogForEvent(obj.inheritTimeFromEvent);
+                    if(not(isempty(timeEvtStateLog)))
+                        newStateLogEntry.time = timeEvtStateLog(end).time;
+                    end
+                end
+            else
+                newStateLogEntry.time = obj.orbitModel.time;
             end
             
-            if(obj.inheritPosVel == false)
+            if(obj.inheritPosVel)
+                if(obj.inheritPosVelFrom == InheritStateEnum.InheritFromSpecifiedEvent && ...
+                   not(isempty(obj.inheritPosVelFromEvent)) && ...
+                   not(isempty(obj.inheritPosVelFromEvent.getEventNum())) && ...
+                   obj.inheritPosVelFromEvent.getEventNum() > 0)
+               
+                    posVelEvtStateLog = obj.stateLog.getLastStateLogForEvent(obj.inheritPosVelFromEvent);
+                    if(not(isempty(posVelEvtStateLog)))
+                        newStateLogEntry.time = posVelEvtStateLog(end).time;
+                    end
+                end
+            else
                 cartElemSet = obj.orbitModel.convertToCartesianElementSet();
                 rVect = cartElemSet.rVect;
                 vVect = cartElemSet.vVect;
@@ -93,6 +125,15 @@ classdef SetKinematicStateAction < AbstractEventAction
         
         function tf = usesTankToTankConn(obj, tankToTank)
             tf = false;
+        end
+        
+        function tf = usesEvent(obj, event)
+            tf = false;
+            
+            if((obj.inheritTimeFrom == InheritStateEnum.InheritFromSpecifiedEvent && not(isempty(obj.inheritTimeFromEvent)) && obj.inheritTimeFromEvent == event) || ...
+               (obj.inheritPosVelFrom == InheritStateEnum.InheritFromSpecifiedEvent && not(isempty(obj.inheritPosVelFromEvent)) && obj.inheritPosVelFromEvent == event))
+                tf = true;
+            end
         end
         
         function [tf, vars] = hasActiveOptimVar(obj)

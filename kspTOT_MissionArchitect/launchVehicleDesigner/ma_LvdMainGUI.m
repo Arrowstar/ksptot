@@ -250,25 +250,31 @@ function deleteEvent_Callback(hObject, eventdata, handles)
     eventNum = get(handles.scriptListbox,'Value');
     evt = lvdData.script.getEventForInd(eventNum);
     
-    lvdData.optimizer.vars.removeVariablesThatUseEvent(evt, lvdData);
-    lvdData.optimizer.constraints.removeConstraintsThatUseEvent(evt);
-    
-    if(lvdData.optimizer.objFcn.usesEvent(evt))
-        lvdData.optimizer.objFcn = NoOptimizationObjectiveFcn(lvdData.optimizer, lvdData);
-        
-        warndlg(sprintf('The existing objective function referenced the deleted event.  The objective function has been replaced with a "%s" objective function.',ObjectiveFunctionEnum.NoObjectiveFunction.name),'Objective Function Reset','modal');
+    tf = evt.usesEvent(evt);
+    if(tf)
+        warndlg(sprintf('Could not delete the event "%s" because it is in use as part of event action.  Remove the event dependencies before attempting to delete the event.', evt.getListboxStr()),'Cannot Delete Event','modal');
+    else
+        lvdData.optimizer.vars.removeVariablesThatUseEvent(evt, lvdData);
+        lvdData.optimizer.constraints.removeConstraintsThatUseEvent(evt);
+
+        if(lvdData.optimizer.objFcn.usesEvent(evt))
+            lvdData.optimizer.objFcn = NoOptimizationObjectiveFcn(lvdData.optimizer, lvdData);
+
+            warndlg(sprintf('The existing objective function referenced the deleted event.  The objective function has been replaced with a "%s" objective function.',ObjectiveFunctionEnum.NoObjectiveFunction.name),'Objective Function Reset','modal');
+        end
+
+        lvdData.script.removeEventFromIndex(eventNum);
+
+        if(eventNum > length(lvdData.script.evts))
+            set(handles.scriptListbox,'Value',length(lvdData.script.evts));
+        end
+
+        setDeleteButtonEnable(lvdData, handles);
+
+        runScript(handles, lvdData, 1);
+        lvd_processData(handles);
     end
-    
-    lvdData.script.removeEventFromIndex(eventNum);
-    
-    if(eventNum > length(lvdData.script.evts))
-        set(handles.scriptListbox,'Value',length(lvdData.script.evts));
-    end
-    
-    setDeleteButtonEnable(lvdData, handles);
-    
-    runScript(handles, lvdData, 1);
-    lvd_processData(handles);
+   
     
 function setDeleteButtonEnable(lvdData, handles)
     numEvents = lvdData.script.getTotalNumOfEvents();
