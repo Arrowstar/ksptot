@@ -39,7 +39,7 @@ classdef CompositeObjectiveFcn < AbstractObjectiveFcn
                 f = 0;
             else
                 fArr = NaN(1, numObjFcns);
-                for(i=1:numObjFcns)
+                for(i=1:numObjFcns) %#ok<NO4LP>
                     fArr(i) = obj.objFcns.evalObjFcn(stateLog);
                 end
                 

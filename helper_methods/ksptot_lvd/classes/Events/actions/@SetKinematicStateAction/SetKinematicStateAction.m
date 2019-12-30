@@ -44,8 +44,7 @@ classdef SetKinematicStateAction < AbstractEventAction
             newStateLogEntry = stateLogEntry;
 
             if(obj.inheritTime == false)
-                time = obj.orbitModel.time;
-                newStateLogEntry.time = time;
+                 newStateLogEntry.time = obj.orbitModel.time;
             end
             
             if(obj.inheritPosVel == false)

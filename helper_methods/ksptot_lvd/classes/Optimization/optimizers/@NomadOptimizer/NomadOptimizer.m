@@ -129,7 +129,7 @@ classdef NomadOptimizer < AbstractOptimizer
 
                 fc = NaN(numEvals,numElementsInEachOutput);
 
-                for(i=1:numEvals)
+                for(i=1:numEvals) %#ok<NO4LP>
                     stateLogs(i) = LaunchVehicleStateLog(); %#ok<AGROW>
                 end
 

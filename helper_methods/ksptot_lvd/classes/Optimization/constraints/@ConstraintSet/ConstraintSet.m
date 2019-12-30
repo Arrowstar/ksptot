@@ -104,7 +104,12 @@ classdef ConstraintSet < matlab.mixin.SetGet
                     end
                     
                     [c1, ceq1, value1, lb1, ub1, type1, eventNum1] = constraint.evalConstraint(stateLog, celBodyData);
-
+                    c1 = c1(:)';
+                    ceq1 = ceq1(:)';
+                    value1 = value1(:)';
+                    lb1 = lb1(:)';
+                    ub1 = ub1(:)';
+                    
                     for(j=1:length(c1))
                         cEventInds(end+1) = eventNum1; %#ok<AGROW>
                     end

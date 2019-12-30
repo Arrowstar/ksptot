@@ -89,7 +89,7 @@ function populateGUI(handles, action, lvdData)
     handles.refFrameTypeCombo.Value = ReferenceFrameEnum.getIndForName(orbitModel.frame.typeEnum.name);
     
     handles.elementSetCombo.String = ElementSetEnum.getListBoxStr();
-    value = ElementSetEnum.getIndForName(orbitModel.typeEnum.name);
+    [value, elemSetEnum] = ElementSetEnum.getIndForName(orbitModel.typeEnum.name);
     handles.elementSetCombo.Value = value;
     elementSetCombo_Callback(handles.elementSetCombo, [], handles);
     
@@ -124,6 +124,22 @@ function populateGUI(handles, action, lvdData)
     [lb, ub] = optVar.getBndsForVariable();
     optVar.setUseTfForVariable(useTf);
     
+    switch elemSetEnum
+        case ElementSetEnum.CartesianElements
+            %nothing needed
+
+        case ElementSetEnum.KeplerianElements
+            lb = [lb(1) lb(2) lb(3) rad2deg(lb(4)) rad2deg(lb(5)) rad2deg(lb(6)) rad2deg(lb(7))];
+            ub = [ub(1) ub(2) ub(3) rad2deg(ub(4)) rad2deg(ub(5)) rad2deg(ub(6)) rad2deg(ub(7))];
+
+        case ElementSetEnum.GeographicElements
+            lb = [lb(1) rad2deg(lb(2)) rad2deg(lb(3)) lb(4) rad2deg(lb(5)) rad2deg(lb(6)) lb(7)];
+            ub = [lb(1) rad2deg(ub(2)) rad2deg(ub(3)) ub(4) rad2deg(ub(5)) rad2deg(ub(6)) ub(7)];
+
+        otherwise
+            error('Unknown element set type: %s', class(elemSetEnum));
+    end
+
     handles.utLbText.String     = fullAccNum2Str(lb(1));
     handles.orbit1LbText.String = fullAccNum2Str(lb(2));
     handles.orbit2LbText.String = fullAccNum2Str(lb(3));
@@ -248,8 +264,22 @@ function varargout = lvd_EditActionSetKinematicStateGUI_OutputFcn(hObject, event
         orbit5ElemUb = str2double(handles.orbit5UbText.String);
         orbit6ElemUb = str2double(handles.orbit6UbText.String);
         
-        lb = [utLb orbit1ElemLb orbit2ElemLb orbit3ElemLb orbit4ElemLb orbit5ElemLb orbit6ElemLb];
-        ub = [utUb orbit1ElemUb orbit2ElemUb orbit3ElemUb orbit4ElemUb orbit5ElemUb orbit6ElemUb];
+        switch elemSetEnum
+            case ElementSetEnum.CartesianElements
+                lb = [utLb orbit1ElemLb orbit2ElemLb orbit3ElemLb orbit4ElemLb orbit5ElemLb orbit6ElemLb];
+                ub = [utUb orbit1ElemUb orbit2ElemUb orbit3ElemUb orbit4ElemUb orbit5ElemUb orbit6ElemUb];
+                
+            case ElementSetEnum.KeplerianElements
+                lb = [utLb orbit1ElemLb orbit2ElemLb deg2rad(orbit3ElemLb) deg2rad(orbit4ElemLb) deg2rad(orbit5ElemLb) deg2rad(orbit6ElemLb)];
+                ub = [utUb orbit1ElemUb orbit2ElemUb deg2rad(orbit3ElemUb) deg2rad(orbit4ElemUb) deg2rad(orbit5ElemUb) deg2rad(orbit6ElemUb)];
+                
+            case ElementSetEnum.GeographicElements
+                lb = [utLb deg2rad(orbit1ElemLb) deg2rad(orbit2ElemLb) orbit3ElemLb deg2rad(orbit4ElemLb) deg2rad(orbit5ElemLb) orbit6ElemLb];
+                ub = [utUb deg2rad(orbit1ElemUb) deg2rad(orbit2ElemUb) orbit3ElemUb deg2rad(orbit4ElemUb) deg2rad(orbit5ElemUb) orbit6ElemUb];
+                
+            otherwise
+                error('Unknown element set type: %s', class(elemSetEnum));
+        end
         
         for(i=1:length(lb)) %#ok<*NO4LP>
             if(lb(i) > ub(i))
