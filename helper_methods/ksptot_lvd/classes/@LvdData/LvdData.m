@@ -107,8 +107,12 @@ classdef LvdData < matlab.mixin.SetGet
             %Optimization
             lvdOptim = LvdOptimization(lvdData);
             
-            %-Objective Function
-            lvdOptim.objFcn = NoOptimizationObjectiveFcn(lvdOptim, lvdData);
+            %Objective Function
+%             lvdOptim.objFcn = NoOptimizationObjectiveFcn(lvdOptim, lvdData);
+            lvdOptim.objFcn = CompositeObjectiveFcn(GenericObjectiveFcn.empty(1,0), ...
+                                                    ObjFcnDirectionTypeEnum.Minimize, ...
+                                                    ObjFcnCompositeMethodEnum.Sum, ...
+                                                    lvdData.optimizer, lvdData);
             
             lvdData.optimizer = lvdOptim;
         end

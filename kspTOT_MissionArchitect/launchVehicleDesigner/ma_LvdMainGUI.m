@@ -250,18 +250,23 @@ function deleteEvent_Callback(hObject, eventdata, handles)
     eventNum = get(handles.scriptListbox,'Value');
     evt = lvdData.script.getEventForInd(eventNum);
     
-    tf = evt.usesEvent(evt);
-    if(tf)
-        warndlg(sprintf('Could not delete the event "%s" because it is in use as part of event action.  Remove the event dependencies before attempting to delete the event.', evt.getListboxStr()),'Cannot Delete Event','modal');
+    tfEvt = evt.usesEvent(evt);
+    tfObj = lvdData.optimizer.objFcn.usesEvent(evt);
+    if(tfEvt || tfObj)
+        warndlg(sprintf('Could not delete the event "%s" because it is in use as part of an event action or objective function.  Remove the event dependencies before attempting to delete the event.', evt.getListboxStr()),'Cannot Delete Event','modal');
     else
         lvdData.optimizer.vars.removeVariablesThatUseEvent(evt, lvdData);
         lvdData.optimizer.constraints.removeConstraintsThatUseEvent(evt);
 
-        if(lvdData.optimizer.objFcn.usesEvent(evt))
-            lvdData.optimizer.objFcn = NoOptimizationObjectiveFcn(lvdData.optimizer, lvdData);
-
-            warndlg(sprintf('The existing objective function referenced the deleted event.  The objective function has been replaced with a "%s" objective function.',ObjectiveFunctionEnum.NoObjectiveFunction.name),'Objective Function Reset','modal');
-        end
+%         if(lvdData.optimizer.objFcn.usesEvent(evt))
+% %             lvdData.optimizer.objFcn = NoOptimizationObjectiveFcn(lvdData.optimizer, lvdData);
+%             lvdData.optimizer.objFcn = CompositeObjectiveFcn(GenericObjectiveFcn.empty(1,0), ...
+%                                                              ObjFcnDirectionTypeEnum.Minimize, ...
+%                                                              ObjFcnCompositeMethodEnum.Sum, ...
+%                                                              lvdData.optimizer, lvdData);
+% 
+%             warndlg(sprintf('The existing objective function referenced the deleted event.  The objective function has been replaced with a "%s" objective function.',ObjectiveFunctionEnum.NoObjectiveFunction.name),'Objective Function Reset','modal');
+%         end
 
         lvdData.script.removeEventFromIndex(eventNum);
 
