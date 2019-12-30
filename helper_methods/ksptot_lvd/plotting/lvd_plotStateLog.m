@@ -109,10 +109,15 @@ function [childrenHGs] = plotSubStateLog(subStateLog, prevSubStateLog, showSoI, 
 
     hold(dAxes,'on');
     
-    ut = [prevSubStateLog(end,1);subStateLog(1:end,1)];
-    x = [prevSubStateLog(end,2);subStateLog(1:end,2)];
-    y = [prevSubStateLog(end,3);subStateLog(1:end,3)];
-    z = [prevSubStateLog(end,4);subStateLog(1:end,4)];
+%     ut = [prevSubStateLog(end,1);subStateLog(1:end,1)];
+%     x = [prevSubStateLog(end,2);subStateLog(1:end,2)];
+%     y = [prevSubStateLog(end,3);subStateLog(1:end,3)];
+%     z = [prevSubStateLog(end,4);subStateLog(1:end,4)];
+
+    ut = subStateLog(2:end,1);
+    x = subStateLog(2:end,2);
+    y = subStateLog(2:end,3);
+    z = subStateLog(2:end,4);
     switch orbitPlotType
         case '3DInertial'
             plot3(dAxes, x, y, z, 'Color', plotLineColor, 'LineStyle', plotLineStyle, 'LineWidth',plotLineWidth);

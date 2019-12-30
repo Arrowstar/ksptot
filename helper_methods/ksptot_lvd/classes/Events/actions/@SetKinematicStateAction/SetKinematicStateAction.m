@@ -81,7 +81,8 @@ classdef SetKinematicStateAction < AbstractEventAction
                
                     posVelEvtStateLog = obj.stateLog.getLastStateLogForEvent(obj.inheritPosVelFromEvent);
                     if(not(isempty(posVelEvtStateLog)))
-                        newStateLogEntry.time = posVelEvtStateLog(end).time;
+                        newStateLogEntry.position = posVelEvtStateLog(end).position;
+                        newStateLogEntry.velocity = posVelEvtStateLog(end).velocity;
                     end
                 end
             else
