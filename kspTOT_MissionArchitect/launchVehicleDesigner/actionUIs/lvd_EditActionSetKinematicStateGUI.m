@@ -22,7 +22,7 @@ function varargout = lvd_EditActionSetKinematicStateGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditActionSetKinematicStateGUI
 
-% Last Modified by GUIDE v2.5 29-Dec-2019 20:27:15
+% Last Modified by GUIDE v2.5 30-Dec-2019 10:10:03
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -95,6 +95,13 @@ function populateGUI(handles, action, lvdData)
     handles.elementSetCombo.Value = value;
     elementSetCombo_Callback(handles.elementSetCombo, [], handles);
     
+    evtListStr = lvdData.script.getListboxStr();
+    thisActionEvtNum = action.event.getEventNum();
+    if(not(isempty(thisActionEvtNum)))
+        evtListStr = evtListStr(1:thisActionEvtNum);
+    end
+    
+    %inherit time
     switch action.inheritTimeFrom
         case InheritStateEnum.InheritFromLastState
             handles.inheritTimeFromPrevStateRadioBtn.Value = 1;
@@ -105,13 +112,7 @@ function populateGUI(handles, action, lvdData)
         otherwise
             error('Unknown inheritance type (time): %s', class(action.inheritTimeFrom));
     end
-    
-    evtListStr = lvdData.script.getListboxStr();
-    thisActionEvtNum = action.event.getEventNum();
-    if(not(isempty(thisActionEvtNum)))
-        evtListStr = evtListStr(1:thisActionEvtNum);
-    end
-    
+      
     handles.inheritTimeSpecEvtCombo.String = evtListStr;
     if(not(isempty(action.inheritTimeFromEvent)))
         evtNum = action.inheritTimeFromEvent.getEventNum();
@@ -124,6 +125,7 @@ function populateGUI(handles, action, lvdData)
     
     inheritTimeButtonGroup_SelectionChangedFcn(handles.inheritTimeButtonGroup.SelectedObject,[],handles);
     
+    %inherit pos/vel state
     switch action.inheritPosVelFrom
         case InheritStateEnum.InheritFromLastState
             handles.inheritStateFromPrevStateRadioBtn.Value = 1;
@@ -132,7 +134,7 @@ function populateGUI(handles, action, lvdData)
             handles.inheritStateFromSpecEvtRadioBtn.Value = 1;
             
         otherwise
-            error('Unknown inheritance type (state): %s', class(action.inheritTimeFrom));
+            error('Unknown inheritance type (state): %s', class(action.inheritPosVelFrom));
     end
     
     handles.inheritStateSpecEvtCombo.String = evtListStr;
@@ -147,6 +149,31 @@ function populateGUI(handles, action, lvdData)
     
     inheritStateButtonGroup_SelectionChangedFcn(handles.inheritStateButtonGroup.SelectedObject,[],handles);
     
+    %inherit stage states
+    switch action.inheritStageStatesFrom
+        case InheritStateEnum.InheritFromLastState
+            handles.inheritStageStatesFromPrevStateRadioBtn.Value = 1;
+            
+        case InheritStateEnum.InheritFromSpecifiedEvent
+            handles.inheritStageStatesFromSpecEvtRadioBtn.Value = 1;
+            
+        otherwise
+            error('Unknown inheritance type (stage states): %s', class(action.inheritStageStatesFrom));
+    end
+    
+    handles.inheritStageStatesSpecEvtCombo.String = evtListStr;
+    if(not(isempty(action.inheritStageStatesFromEvent)))
+        evtNum = action.inheritStageStatesFromEvent.getEventNum();
+        if(evtNum > length(evtListStr))
+            handles.inheritStageStatesSpecEvtCombo.Value = 1;
+        else
+            handles.inheritStageStatesSpecEvtCombo.Value = evtNum;
+        end
+    end
+    
+    inheritStageStatesButtonGroup_SelectionChangedFcn(handles.inheritStageStatesButtonGroup.SelectedObject, [], handles);
+    
+    %populate pos/vel states stuff
     handles.utText.String = fullAccNum2Str(orbitModel.time);
     
     elemVector = orbitModel.getElementVector();
@@ -282,31 +309,50 @@ function varargout = lvd_EditActionSetKinematicStateGUI_OutputFcn(hObject, event
 
         action.orbitModel = orbitModel;
         
+        %inherit time
         action.inheritTime = logical(handles.inheritTimeCheckbox.Value);
         switch handles.inheritTimeButtonGroup.SelectedObject
             case handles.inheritTimeFromPrevStateRadioBtn
                 action.inheritTimeFrom = InheritStateEnum.InheritFromLastState;
+                action.inheritTimeFromEvent = LaunchVehicleEvent.empty(1,0);
                 
             case handles.inheritTimeFromSpecEvtRadioBtn
                 action.inheritTimeFrom = InheritStateEnum.InheritFromSpecifiedEvent;
+                action.inheritTimeFromEvent = lvdData.script.getEventForInd(handles.inheritTimeSpecEvtCombo.Value);
                 
             otherwise
                 error('Unknown UI widget handle for time inheritence selection: %s', handles.inheritTimeButtonGroup.SelectedObject.Tag);
         end
-        action.inheritTimeFromEvent = lvdData.script.getEventForInd(handles.inheritTimeSpecEvtCombo.Value);
         
+        %inherit pos/vel state
         action.inheritPosVel = logical(handles.inheritStateCheckbox.Value);
         switch handles.inheritStateButtonGroup.SelectedObject
             case handles.inheritStateFromPrevStateRadioBtn
                 action.inheritPosVelFrom = InheritStateEnum.InheritFromLastState;
+                action.inheritPosVelFromEvent = LaunchVehicleEvent.empty(1,0);
                 
             case handles.inheritStateFromSpecEvtRadioBtn
                 action.inheritPosVelFrom = InheritStateEnum.InheritFromSpecifiedEvent;
+                action.inheritPosVelFromEvent = lvdData.script.getEventForInd(handles.inheritStateSpecEvtCombo.Value);
                 
             otherwise
-                error('Unknown UI widget handle for state inheritence selection: %s', handles.inheritStateButtonGroup.SelectedObject.Tag);
+                error('Unknown UI widget handle for pos/vel state inheritence selection: %s', handles.inheritStateButtonGroup.SelectedObject.Tag);
         end
-        action.inheritPosVelFromEvent = lvdData.script.getEventForInd(handles.inheritStateSpecEvtCombo.Value);
+        
+        %inherit stage states
+        action.inheritStageStates = logical(handles.inheritStageStatesCheckbox.Value);
+        switch handles.inheritStageStatesButtonGroup.SelectedObject
+            case handles.inheritStageStatesFromPrevStateRadioBtn
+                action.inheritStageStatesFrom = InheritStateEnum.InheritFromLastState;
+                action.inheritStageStatesFromEvent = LaunchVehicleEvent.empty(1,0);
+                
+            case handles.inheritStageStatesFromSpecEvtRadioBtn
+                action.inheritStageStatesFrom = InheritStateEnum.InheritFromSpecifiedEvent;
+                action.inheritStageStatesFromEvent = lvdData.script.getEventForInd(handles.inheritStageStatesSpecEvtCombo.Value);
+                
+            otherwise
+                error('Unknown UI widget handle for stage state inheritence selection: %s', handles.inheritStageStatesButtonGroup.SelectedObject.Tag);
+        end
         
         %Vars
         optVar = action.optVar;
@@ -1755,4 +1801,58 @@ function inheritStateButtonGroup_SelectionChangedFcn(hObject, eventdata, handles
         handles.inheritStateSpecEvtCombo.Enable = 'off';
     else
         handles.inheritStateSpecEvtCombo.Enable = 'on';
+    end
+
+
+% --- Executes on button press in inheritStageStatesCheckbox.
+function inheritStageStatesCheckbox_Callback(hObject, eventdata, handles)
+% hObject    handle to inheritStageStatesCheckbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of inheritStageStatesCheckbox
+    if(not(get(hObject,'Value')))
+        
+        handles.inheritStageStatesFromPrevStateRadioBtn.Enable = 'off';
+        handles.inheritStageStatesFromSpecEvtRadioBtn.Enable = 'off';
+        handles.inheritStageStatesSpecEvtCombo.Enable = 'off';
+    else
+                
+        handles.inheritStageStatesFromPrevStateRadioBtn.Enable = 'on';
+        handles.inheritStageStatesFromSpecEvtRadioBtn.Enable = 'on';
+        inheritStageStatesButtonGroup_SelectionChangedFcn(handles.inheritStageStatesButtonGroup.SelectedObject, [], handles);
+    end
+
+% --- Executes on selection change in inheritStageStatesSpecEvtCombo.
+function inheritStageStatesSpecEvtCombo_Callback(hObject, eventdata, handles)
+% hObject    handle to inheritStageStatesSpecEvtCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns inheritStageStatesSpecEvtCombo contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from inheritStageStatesSpecEvtCombo
+
+
+% --- Executes during object creation, after setting all properties.
+function inheritStageStatesSpecEvtCombo_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to inheritStageStatesSpecEvtCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes when selected object is changed in inheritStageStatesButtonGroup.
+function inheritStageStatesButtonGroup_SelectionChangedFcn(hObject, eventdata, handles)
+% hObject    handle to the selected object in inheritStageStatesButtonGroup 
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    if(hObject == handles.inheritStageStatesFromPrevStateRadioBtn)
+        handles.inheritStageStatesSpecEvtCombo.Enable = 'off';
+    else
+        handles.inheritStageStatesSpecEvtCombo.Enable = 'on';
     end

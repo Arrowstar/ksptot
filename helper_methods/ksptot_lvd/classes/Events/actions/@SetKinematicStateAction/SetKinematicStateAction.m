@@ -7,14 +7,19 @@ classdef SetKinematicStateAction < AbstractEventAction
         orbitModel(1,1) AbstractElementSet = KeplerianElementSet.getDefaultElements();
         
         %Inherit Time
-        inheritTime(1,1) = false;
+        inheritTime(1,1) logical = false;
         inheritTimeFrom(1,1) InheritStateEnum = InheritStateEnum.InheritFromLastState;
         inheritTimeFromEvent LaunchVehicleEvent = LaunchVehicleEvent.empty(1,0);
         
         %Inherit State
-        inheritPosVel(1,1) = false;
+        inheritPosVel(1,1) logical = false;
         inheritPosVelFrom(1,1) InheritStateEnum = InheritStateEnum.InheritFromLastState;
         inheritPosVelFromEvent LaunchVehicleEvent = LaunchVehicleEvent.empty(1,0);
+        
+        %Inherit Stage States
+        inheritStageStates(1,1) logical = true;
+        inheritStageStatesFrom(1,1) InheritStateEnum = InheritStateEnum.InheritFromLastState;
+        inheritStageStatesFromEvent LaunchVehicleEvent = LaunchVehicleEvent.empty(1,0);
         
         optVar SetKinematicStateActionVariable
     end
@@ -89,6 +94,30 @@ classdef SetKinematicStateAction < AbstractEventAction
                 newStateLogEntry.velocity = vVect;
                 newStateLogEntry.centralBody = bodyInfo;
             end
+            
+            if(obj.inheritStageStates)
+                if(obj.inheritStageStatesFrom == InheritStateEnum.InheritFromSpecifiedEvent && ...
+                   not(isempty(obj.inheritStageStatesFromEvent)) && ...
+                   not(isempty(obj.inheritStageStatesFromEvent.getEventNum())) && ...
+                   obj.inheritStageStatesFromEvent.getEventNum() > 0)
+               
+               
+                    stageStateEvtState = obj.stateLog.getLastStateLogForEvent(obj.inheritStageStatesFromEvent);
+                    stageStateEvtState = stageStateEvtState(end);
+                    if(not(isempty(stageStateEvtState)))
+                        lvState = stageStateEvtState.lvState.deepCopy();
+                        newStateLogEntry.lvState = lvState;
+                        
+                        for(i=1:length(stageStateEvtState.stageStates)) %#ok<NO4LP>
+                            newStateLogEntry.stageStates(i) = stageStateEvtState.stageStates(i).deepCopy(true, lvState);
+                        end
+                    end
+                end
+                
+            else
+                %do nothing, there is no behavior for this yet
+                warning('SetKinematicStateAction.inheritStageStates must be set to true, no behavior yet defined when this is set to false.');
+            end
         end
         
         function initAction(obj, initialStateLogEntry)
@@ -130,8 +159,9 @@ classdef SetKinematicStateAction < AbstractEventAction
         function tf = usesEvent(obj, event)
             tf = false;
             
-            if((obj.inheritTimeFrom == InheritStateEnum.InheritFromSpecifiedEvent && not(isempty(obj.inheritTimeFromEvent)) && obj.inheritTimeFromEvent == event) || ...
-               (obj.inheritPosVelFrom == InheritStateEnum.InheritFromSpecifiedEvent && not(isempty(obj.inheritPosVelFromEvent)) && obj.inheritPosVelFromEvent == event))
+            if((obj.inheritTime && obj.inheritTimeFrom == InheritStateEnum.InheritFromSpecifiedEvent && not(isempty(obj.inheritTimeFromEvent)) && obj.inheritTimeFromEvent == event) || ...
+               (obj.inheritPosVel && obj.inheritPosVelFrom == InheritStateEnum.InheritFromSpecifiedEvent && not(isempty(obj.inheritPosVelFromEvent)) && obj.inheritPosVelFromEvent == event) || ...
+               (obj.inheritStageStates && obj.inheritStageStatesFrom == InheritStateEnum.InheritFromSpecifiedEvent && not(isempty(obj.inheritStageStatesFromEvent)) && obj.inheritStageStatesFromEvent == event))
                 tf = true;
             end
         end

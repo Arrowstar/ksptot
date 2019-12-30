@@ -709,7 +709,17 @@ function openMissionPlanMenu_Callback(hObject, eventdata, handles)
         
         hMsg = helpdlg('Loading LVD Case File.  Please wait...','Launch Vehicle Designer');
         
-        load(filePath); %#ok<LOAD>
+        try
+            load(filePath); %#ok<LOAD>
+        catch ME
+            write_to_output_func(['There was a problem loading the case file from disk: ',filePath,'.  Case not loaded.'],'append'); 
+            
+            if(isvalid(hMsg))
+                close(hMsg);
+            end
+            
+            return;
+        end
         
         if(isvalid(hMsg))
             close(hMsg);

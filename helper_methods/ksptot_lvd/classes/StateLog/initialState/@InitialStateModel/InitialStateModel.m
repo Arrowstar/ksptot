@@ -4,7 +4,7 @@ classdef InitialStateModel < matlab.mixin.SetGet
     
     properties
 %         orbitModel(1,1) AbstractOrbitStateModel = BodyFixedOrbitStateModel.getDefaultOrbitState()
-        orbitModel(1,1) AbstractElementSet = GeographicElementSet.getDefaultElements();
+        orbitModel(1,1) = GeographicElementSet.getDefaultElements();
 
         lvState LaunchVehicleState
         stageStates LaunchVehicleStageState
@@ -41,7 +41,32 @@ classdef InitialStateModel < matlab.mixin.SetGet
         end
         
         function set.centralBody(obj, newCentralBody)
+            if(isempty(obj.orbitModel.frame))
+                obj.orbitModel.frame = BodyCenteredInertialFrame(newCentralBody, newCentralBody.celBodyData);
+            end
             obj.orbitModel.frame.setOriginBody(newCentralBody);
+        end
+        
+        function set.orbitModel(obj, newOrbitModel)
+            if(isa(newOrbitModel,'AbstractOrbitStateModel'))
+                if(isa(newOrbitModel,'BodyFixedOrbitStateModel'))
+                    newFrame = BodyFixedFrame(obj.centralBody, obj.centralBody.celBodyData); %#ok<MCSUP>
+                    elemSet = GeographicElementSet(obj.time, newOrbitModel.lat, newOrbitModel.long, newOrbitModel.alt, ...
+                                                   newOrbitModel.vVectNEZ_az, newOrbitModel.vVectNEZ_el, newOrbitModel.vVectNEZ_mag, newFrame); %#ok<MCSUP>
+
+                elseif(isa(newOrbitModel,'KeplerianOrbitStateModel'))
+                    newFrame = BodyCenteredInertialFrame(obj.centralBody, obj.centralBody.celBodyData); %#ok<MCSUP>
+                    elemSet = KeplerianElementSet(obj.time, newOrbitModel.sma, newOrbitModel.ecc, newOrbitModel.inc, ...
+                                                  newOrbitModel.raan, newOrbitModel.arg, newOrbitModel.tru, newFrame); %#ok<MCSUP>
+                    
+                elseif(isa(newOrbitModel,'CR3BPOrbitStateModel'))
+                    error('No conversion available for CR3BPOrbitStateModel to new element set models.');
+                end
+
+                obj.orbitModel = elemSet;
+            else
+                obj.orbitModel = newOrbitModel;
+            end
         end
         
         function cb = getCentralBodyForStateLog(obj)
