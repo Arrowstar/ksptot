@@ -1528,11 +1528,11 @@ function enterUTAsDateTimeContextMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to enterUTAsDateTimeContextMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-secUT = enterUTAsDateTimeGUI(str2double(get(gco, 'String')));
-if(secUT >= 0)
-    set(gco, 'String', fullAccNum2Str(secUT));
-     utText_Callback(handles.utText, eventdata, handles);
-end
+    secUT = enterUTAsDateTimeGUI(str2double(get(gco, 'String')));
+    if(secUT >= 0)
+        set(gco, 'String', fullAccNum2Str(secUT));
+         utText_Callback(handles.utText, eventdata, handles);
+    end
 
 
 % --------------------------------------------------------------------
