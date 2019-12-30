@@ -1,5 +1,5 @@
-classdef VelocityContinuityConstraint < AbstractConstraint
-    %PositionContinuityConstraint Summary of this class goes here
+classdef VelocityContinuityConstraintZ < AbstractConstraint
+    %VelocityContinuityConstraintZ Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
@@ -11,7 +11,7 @@ classdef VelocityContinuityConstraint < AbstractConstraint
     end
     
     methods
-        function obj = VelocityContinuityConstraint(event)
+        function obj = VelocityContinuityConstraintZ(event)
             obj.event = event; 
             
             obj.id = rand();
@@ -34,10 +34,11 @@ classdef VelocityContinuityConstraint < AbstractConstraint
                 cartElemSet1 = stateLogEntry1.getCartesianElementSetRepresentation().convertToFrame(sunFrame);
                 cartElemSet2 = stateLogEntry2.getCartesianElementSetRepresentation().convertToFrame(sunFrame);
                 
-                value = norm(cartElemSet2.vVect - cartElemSet1.vVect);
+                value = cartElemSet2.vVect - cartElemSet1.vVect;
+                value = value(3);
                 
                 c = [];
-                ceq = cartElemSet2.vVect - cartElemSet1.vVect;
+                ceq = value;
             else
                 c = [];
                 ceq = [];
@@ -98,7 +99,7 @@ classdef VelocityContinuityConstraint < AbstractConstraint
         end
         
         function type = getConstraintType(obj)
-            type = 'Velocity Continuity';
+            type = 'Velocity Continuity (Z)';
         end
         
         function [unit, lbLim, ubLim, usesLbUb, usesCelBody, usesRefSc] = getConstraintStaticDetails(obj)
@@ -117,7 +118,7 @@ classdef VelocityContinuityConstraint < AbstractConstraint
     
     methods(Static)
         function constraint = getDefaultConstraint(~)            
-            constraint = VelocityContinuityConstraint(LaunchVehicleEvent.empty(1,0));
+            constraint = VelocityContinuityConstraintZ(LaunchVehicleEvent.empty(1,0));
         end
     end
 end

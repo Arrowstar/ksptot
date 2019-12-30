@@ -77,8 +77,12 @@ classdef ConstraintEnum < matlab.mixin.SetGet
         EventDeltaVExpended('Event Delta-V Expended','EventDeltaVExpendedConstraint',[]);
         
         TimeContinuity('Time Continuity','TimeContinuityConstraint',[]);
-        PositionContinuity('Position Continuity','PositionContinuityConstraint',[]);
-        VelocityContinuity('Velocity Continuity','VelocityContinuityConstraint',[]);
+        PositionContinuityX('Position Continuity (X)','PositionContinuityConstraintX',[]);
+        PositionContinuityY('Position Continuity (Y)','PositionContinuityConstraintY',[]);
+        PositionContinuityZ('Position Continuity (Z)','PositionContinuityConstraintZ',[]);
+        VelocityContinuityX('Velocity Continuity (X)','VelocityContinuityConstraintX',[]);
+        VelocityContinuityY('Velocity Continuity (Y)','VelocityContinuityConstraintY',[]);
+        VelocityContinuityZ('Velocity Continuity (Z)','VelocityContinuityConstraintZ',[]);
     end
     
     properties

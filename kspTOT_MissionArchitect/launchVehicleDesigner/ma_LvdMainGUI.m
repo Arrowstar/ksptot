@@ -1642,7 +1642,7 @@ function showConstrJacobianHeatMapMenu_Callback(hObject, eventdata, handles)
             filteredJac = jac(:,nonZeroColInds);
             filteredVarLbls = varLbls(nonZeroColInds);
 
-            [c, ceq] = nonlcon(x0All);
+            [c, ceq, ~, ~, ~, ~, ~, ~, ~, ~] = nonlcon(x0All);
             heatMapConstrLbls = {};
             totNumIneqConstr = length(c)/2;
             totNumConstr = totNumIneqConstr + length(ceq);
@@ -1668,7 +1668,7 @@ function showConstrJacobianHeatMapMenu_Callback(hObject, eventdata, handles)
         end
     end
     
-function c = computeJacNonlconFunc(x, nonlcon)
+function [c] = computeJacNonlconFunc(x, nonlcon)
     [cML, ceqML] = nonlcon(x);
     
     c = [cML(:)', ceqML(:)'];
