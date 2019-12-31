@@ -72,8 +72,8 @@ function lvd_GraphicalAnalysisGUI_OpeningFcn(hObject, eventdata, handles, vararg
     propNames = lvdData.launchVehicle.tankTypes.getFirstThreeTypesCellArr();
     substituteDefaultPropNamesWithCustomNamesInDepVarListbox(handles.depVarListbox, propNames);
     useSubplotCheckbox_Callback(handles.useSubplotCheckbox, [], handles);
-    set(handles.startTimeText,'String',fullAccNum2Str(maStateLog(1,1)));
-    set(handles.endTimeText,'String',fullAccNum2Str(maStateLog(end,1)));
+    set(handles.startTimeText,'String',fullAccNum2Str(min(maStateLog(:,1))));
+    set(handles.endTimeText,'String',fullAccNum2Str(max(maStateLog(:,1))));
     populateBodiesCombo(lvdData.celBodyData, handles.refBodyCombo);
     % populateOtherSCCombo(handles, handles.refSpacecraftCombo);
     % populateStationsCombo(handles, handles.refStationCombo);
@@ -455,6 +455,31 @@ function genPlotsButton_Callback(hObject, eventdata, handles)
     end
     close(hWaitBar);
     
+    plotMethods = [lvdData.script.evts.plotMethod];
+    if(any(plotMethods == EventPlottingMethodEnum.SkipFirstState))
+        evtIndsToInsertNaNBetween = find(plotMethods == EventPlottingMethodEnum.SkipFirstState);
+        
+        stateInds = [];
+        for(i=1:length(evtIndsToInsertNaNBetween))
+            evtInd = evtIndsToInsertNaNBetween(i);
+            stateInd = find(maSubLog(:,13) == evtInd,1,'first');
+            if(stateInd > 1)
+                stateInds(end+1) = stateInd;
+            end
+        end
+        
+        numIndepVars = size(indepVarValues,2);
+        numDepVars = size(depVarValues,2);
+        for(i=1:length(stateInds))
+            indepVarValues = [indepVarValues(1:stateInds(i)-1,:); NaN(1,numIndepVars); indepVarValues(stateInds(i)+1:end,:)];
+            depVarValues = [depVarValues(1:stateInds(i)-1,:); NaN(1,numDepVars); depVarValues(stateInds(i)+1:end,:)];
+            
+%             if(i < length(stateInds))
+%                 stateInds(i+1:end) = stateInds(i+1:end)+1;  %accounts for the fact that we're inserting data
+%             end
+        end
+    end
+    
     figNum = 100;
     if(get(handles.useSubplotCheckbox,'Value'))
         subPlotMaxX = str2double(get(handles.subPlotSizeXText,'String'));
@@ -779,8 +804,8 @@ function errMsg = validateInputs(handles)
     
     errMsg = {};
     
-    stateLogMinUT = floor(stateLog(1,1)*10000)/10000;
-    stateLogMaxUT = ceil(stateLog(end,1)*10000)/10000;
+    stateLogMinUT = floor(min(stateLog(:,1))*10000)/10000;
+    stateLogMaxUT = ceil(max(stateLog(:,1))*10000)/10000;
     
     value = str2double(get(handles.startTimeText,'String'));
     enteredStr = get(handles.startTimeText,'String');
@@ -1155,9 +1180,9 @@ function setTimeFromScriptMenu_Callback(hObject, eventdata, handles)
     
     h = gco;
     if(strcmpi(h.Tag,'startTimeText'))
-        set(gco,'String', num2str(stateLog(1,1), '%1.15f'));
+        set(gco,'String', num2str(min(stateLog(:,1)), '%1.15f'));
     elseif(strcmpi(h.Tag,'endTimeText'))
-        set(gco,'String', num2str(stateLog(end,1), '%1.15f'));
+        set(gco,'String', num2str(max(stateLog(:,1)), '%1.15f'));
     else
         return;
     end
