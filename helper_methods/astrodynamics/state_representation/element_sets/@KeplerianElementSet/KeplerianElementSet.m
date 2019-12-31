@@ -3,7 +3,7 @@ classdef KeplerianElementSet < AbstractElementSet
     %   Detailed explanation goes here
     
     properties
-        sma(1,1) double %km
+        sma(1,1) double = 1000; %km 
         ecc(1,1) double %ND
         inc(1,1) double %rad
         raan(1,1) double %rad
