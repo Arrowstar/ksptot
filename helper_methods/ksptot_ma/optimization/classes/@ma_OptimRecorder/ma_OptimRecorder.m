@@ -13,7 +13,11 @@ classdef ma_OptimRecorder < matlab.mixin.SetGet
         function [iterNum, xVals, fVal, maxCVal] = getIterWithLowestFVal(obj)
             [fVal,I] = min(obj.fVals);
             
-            inds = find(obj.fVals == fVal);
+            inds = find(obj.fVals == fVal & not(isnan(obj.fVals)));
+            if(isempty(inds))
+                inds = find(obj.fVals == fVal);
+            end
+            
             if(length(inds) > 1)
                 minCVal = obj.maxCVal(inds(1));
                 for(i=1:length(inds)) %#ok<*NO4LP>
@@ -33,7 +37,11 @@ classdef ma_OptimRecorder < matlab.mixin.SetGet
         function [iterNum, xVals, fVal, maxCVal] = getIterWithLowestCVal(obj)
             [minCVal,I] = min(obj.maxCVal);
             
-            inds = find(obj.maxCVal == minCVal);
+            inds = find(obj.maxCVal == minCVal & not(isnan(obj.fVals)));
+            if(isempty(inds))
+                inds = find(obj.maxCVal == minCVal);
+            end            
+            
             if(length(inds) > 1)
                 minFVal = obj.fVals(inds(1));
                 for(i=1:length(inds)) %#ok<*NO4LP>
