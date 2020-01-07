@@ -139,11 +139,25 @@ function generatePlots(x, optimValues, state, handles, lb, ub, varLabels, lbUsAl
     grid on;
     grid minor;
     
-    subplot(3,1,3);
+    h = subplot(3,1,3);
     if(isfield(optimValues,'constrviolation'))
         optimplotconstrviolation(x, optimValues, state);
     elseif(isfield(optimValues,'nonlinineq') || isfield(optimValues,'nonlineq'))
         psplotmaxconstr(optimValues, state);
+    end
+    
+    if(not(isempty(h.Children)))
+        hLine = h.Children(1);
+        if(isa(hLine,'matlab.graphics.chart.primitive.Line'))
+            yDataLine = hLine.YData;
+            if(abs(max(yDataLine) / min(yDataLine)) >= 10)
+                set(h,'yscale','log');
+            else
+                set(h,'yscale','linear');
+            end
+        else
+            set(h,'yscale','linear');
+        end
     end
     
     grid on;

@@ -1,19 +1,29 @@
 function temperature = getTemperatureAtAltitude(bodyInfo, altitude, lat, ut, rECEF, celBodyData) 
     if(altitude <= bodyInfo.atmohgt && altitude >= 0)
-        parentGmu = getParentGM(bodyInfo, celBodyData);
+        if(isa(bodyInfo.atmotempsunmultcurve,'griddedInterpolant') && all(bodyInfo.atmotempsunmultcurve.Values == 0))
+            atmosphereTemperatureOffset = 1;
+        else
+            parentGmu = getParentGM(bodyInfo, celBodyData);
 
-        sunDotNormal = computeSunDotNormal(ut, rECEF, bodyInfo, celBodyData);
-        axialtempsunbias = computeAxialTempSunBias(ut, bodyInfo, parentGmu);
-        ecctempbias = computeEccTempBias(ut, bodyInfo, parentGmu);
+            if(isa(bodyInfo.lattempsunmultcurve,'griddedInterpolant') && all(bodyInfo.lattempsunmultcurve.Values == 0))
+                sunDotNormal = 1;
+            else
+                sunDotNormal = computeSunDotNormal(ut, rECEF, bodyInfo, celBodyData);
+            end
 
-%         sunDotNormal = 1.0;
-%         axialtempsunbias = 0.0;
-%         ecctempbias = 0.0;
+            if(isa(bodyInfo.axialtempsunmultcurve,'griddedInterpolant') && all(bodyInfo.axialtempsunmultcurve.Values == 0))
+                axialtempsunbias = 1;
+            else
+                axialtempsunbias = computeAxialTempSunBias(ut, bodyInfo, parentGmu);
+            end
 
-        atmosphereTemperatureOffset = bodyInfo.lattempbiascurve(abs(lat)) + ...
-                                      bodyInfo.lattempsunmultcurve(abs(lat))*sunDotNormal + ... 
-                                      axialtempsunbias * bodyInfo.axialtempsunmultcurve(abs(lat)) + ...
-                                      ecctempbias;
+            ecctempbias = computeEccTempBias(ut, bodyInfo, parentGmu);
+            
+            atmosphereTemperatureOffset = bodyInfo.lattempbiascurve(abs(lat)) + ...
+                                        bodyInfo.lattempsunmultcurve(abs(lat))*sunDotNormal + ... 
+                                        axialtempsunbias * bodyInfo.axialtempsunmultcurve(abs(lat)) + ...
+                                        ecctempbias;
+        end
 
         temperature = bodyInfo.atmotempcurve(altitude) + ... %base temperature
                       atmosphereTemperatureOffset * bodyInfo.atmotempsunmultcurve(altitude); % altitude-based multiplier to temperature delta
@@ -42,7 +52,7 @@ function sunDotNormal = computeSunDotNormal(ut, rECEF, bodyInfo, celBodyData)
 end
 
 function axialtempsunbias = computeAxialTempSunBias(ut, bodyInfo, gmu)
-    if(isempty(gmu) || gmu == 0)
+    if(isempty(gmu) || gmu == 0 || (isa(bodyInfo.axialtempsunbiascurve,'griddedInterpolant') &&  all(bodyInfo.axialtempsunbiascurve.Values == 0)))
         axialtempsunbias = 0;
     else
         sma = bodyInfo.sma;
@@ -60,7 +70,7 @@ function axialtempsunbias = computeAxialTempSunBias(ut, bodyInfo, gmu)
 end
 
 function ecctempbias = computeEccTempBias(ut, bodyInfo, gmu)
-    if(isempty(gmu) || gmu == 0)
+    if(isempty(gmu) || gmu == 0 || (isa(bodyInfo.ecctempbiascurve,'griddedInterpolant') &&  all(bodyInfo.ecctempbiascurve.Values == 0)))
         ecctempbias = 0;
     else
         [rVect, ~] = getStateAtTime(bodyInfo,ut,gmu);
