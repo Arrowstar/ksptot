@@ -46,6 +46,19 @@ classdef KeplerianElementSet < AbstractElementSet
             geoElemSet = obj.convertToCartesianElementSet().convertToGeographicElementSet();
         end
         
+        function univElemSet = convertToUniversalElementSet(obj)
+            gmu = obj.frame.getOriginBody().gm;
+            
+            c3 = -gmu./obj.sma;
+            rP = (1-obj.ecc) .* obj.sma;
+            
+            n = computeMeanMotion(obj.sma, gmu);
+            mean = computeMeanFromTrueAnom(obj.tru, obj.ecc);
+            tau = mean ./ n;
+            
+            univElemSet = UniversalElementSet(obj.time, c3, rP, obj.inc, obj.raan, obj.arg, tau, obj.frame);
+        end
+        
         function elemVect = getElementVector(obj)
             elemVect = [obj.sma,obj.ecc,rad2deg(obj.inc),rad2deg(obj.raan),rad2deg(obj.arg),rad2deg(obj.tru)];
         end

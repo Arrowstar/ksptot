@@ -48,6 +48,10 @@ classdef CartesianElementSet < AbstractElementSet
             geoElemSet = GeographicElementSet(obj.time, lat, long, alt, velAz, velEl, velMag, obj.frame);
         end
         
+        function univElemSet = convertToUniversalElementSet(obj)
+            univElemSet = obj.convertToKeplerianElementSet().convertToUniversalElementSet();
+        end
+        
         function elemVect = getElementVector(obj)
             elemVect = [obj.rVect(1),obj.rVect(2),obj.rVect(3),obj.vVect(1),obj.vVect(2),obj.vVect(3)];
         end

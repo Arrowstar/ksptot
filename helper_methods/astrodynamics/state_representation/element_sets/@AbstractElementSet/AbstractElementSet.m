@@ -18,6 +18,8 @@ classdef (Abstract) AbstractElementSet < matlab.mixin.SetGet & matlab.mixin.Cust
         
         geoElemSet = convertToGeographicElementSet(obj)
         
+        univElemSet = convertToUniversalElementSet(obj)
+        
         elemVect = getElementVector(obj)
         
         function convertedElemSet = convertToFrame(obj, toFrame)

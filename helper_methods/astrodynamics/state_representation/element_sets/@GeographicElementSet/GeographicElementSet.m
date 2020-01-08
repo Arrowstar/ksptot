@@ -62,6 +62,10 @@ classdef GeographicElementSet < AbstractElementSet
             geoElemSet = obj;
         end
         
+        function univElemSet = convertToUniversalElementSet(obj)
+            univElemSet = obj.convertToKeplerianElementSet().convertToUniversalElementSet();
+        end
+        
         function elemVect = getElementVector(obj)
             elemVect = [rad2deg(obj.lat),rad2deg(obj.long),obj.alt,rad2deg(obj.velAz),rad2deg(obj.velEl),obj.velMag];
         end
