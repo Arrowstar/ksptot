@@ -29,6 +29,9 @@ classdef SetKinematicStateActionVariable < AbstractOptimizationVariable
                 case ElementSetEnum.GeographicElements
                     obj.orbitVar = GeographicElementSetVariable(obj.varObj.orbitModel);
                     
+                case ElementSetEnum.UniversalElements
+                    obj.orbitVar = UniversalElementSetVariable(obj.varObj.orbitModel);
+                    
                 otherwise
                     error('Unknown orbit type while creating initial state variable: %s', class(obj.varObj.orbitModel.typeEnum))
             end

@@ -193,6 +193,9 @@ function varargout = lvd_EditInitialStateGUI_OutputFcn(hObject, eventdata, handl
             case ElementSetEnum.GeographicElements
                 orbitModel = GeographicElementSet(time, deg2rad(orbit1Elem), deg2rad(orbit2Elem), orbit3Elem, deg2rad(orbit4Elem), deg2rad(orbit5Elem), orbit6Elem, frame);
                 
+            case ElementSetEnum.UniversalElements
+                orbitModel = UniversalElementSet(time, orbit1Elem, orbit2Elem, deg2rad(orbit3Elem), deg2rad(orbit4Elem), deg2rad(orbit5Elem), orbit6Elem, frame);
+                
             otherwise
                 error('Unknown element set type: %s', class(elemSetEnum));
         end
@@ -338,6 +341,11 @@ function errMsg = validateInputs(handles)
             errMsg = GeographicElementSet.validateInputOrbit(errMsg, handles.orbit1LbText, handles.orbit2LbText, handles.orbit3LbText, handles.orbit4LbText, handles.orbit5LbText, handles.orbit6LbText, bodyInfo, 'Lower', checkElementBnds);
             errMsg = GeographicElementSet.validateInputOrbit(errMsg, handles.orbit1UbText, handles.orbit2UbText, handles.orbit3UbText, handles.orbit4UbText, handles.orbit5UbText, handles.orbit6UbText, bodyInfo, 'Upper', checkElementBnds);
             
+        case ElementSetEnum.UniversalElements
+            errMsg = UniversalElementSet.validateInputOrbit(errMsg, handles.orbit1Text, handles.orbit2Text, handles.orbit3Text, handles.orbit4Text, handles.orbit5Text, handles.orbit6Text, bodyInfo, '', checkElementValues);
+            errMsg = UniversalElementSet.validateInputOrbit(errMsg, handles.orbit1LbText, handles.orbit2LbText, handles.orbit3LbText, handles.orbit4LbText, handles.orbit5LbText, handles.orbit6LbText, bodyInfo, 'Lower', checkElementBnds);
+            errMsg = UniversalElementSet.validateInputOrbit(errMsg, handles.orbit1UbText, handles.orbit2UbText, handles.orbit3UbText, handles.orbit4UbText, handles.orbit5UbText, handles.orbit6UbText, bodyInfo, 'Upper', checkElementBnds);
+            
         otherwise
             error('Unknown element set type: %s', class(elemSetEnum));
 	end
@@ -410,6 +418,9 @@ function elementSetCombo_Callback(hObject, eventdata, handles)
 
             case ElementSetEnum.GeographicElements
                 newElemSet = curElemSet.convertToGeographicElementSet();
+                
+            case ElementSetEnum.UniversalElements
+                newElemSet = curElemSet.convertToUniversalElementSet();
 
             otherwise
                 error('Unknown element set type: %s', class(elemSetEnum));
@@ -519,6 +530,9 @@ function updateValuesInState(handles)
         case ElementSetEnum.GeographicElements
             newElemSet = GeographicElementSet(time, deg2rad(orbit1Elem), deg2rad(orbit2Elem), orbit3Elem, deg2rad(orbit4Elem), deg2rad(orbit5Elem), orbit6Elem, frame);
                 
+        case ElementSetEnum.UniversalElements
+            newElemSet = UniversalElementSet(time, orbit1Elem, orbit2Elem, deg2rad(orbit3Elem), deg2rad(orbit4Elem), deg2rad(orbit5Elem), orbit6Elem, frame);
+        
         otherwise
             error('Unknown element set type: %s', class(elemSetEnum));
 	end
