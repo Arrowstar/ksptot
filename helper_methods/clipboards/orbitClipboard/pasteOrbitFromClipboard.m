@@ -1,4 +1,4 @@
-function pasteOrbitFromClipboard(hEpoch, hSMA, hEcc, hInc, hRAAN, hArg, hAnomaly, isTrueAnomaly, hCelBody, celBodyData)
+function bodyInfo = pasteOrbitFromClipboard(hEpoch, hSMA, hEcc, hInc, hRAAN, hArg, hAnomaly, isTrueAnomaly, hCelBody, celBodyData)
 %pasteOrbitFromClipboard Summary of this function goes here
 %   Detailed explanation goes here
     global GLOBAL_OrbitClipboard;
@@ -40,8 +40,11 @@ function pasteOrbitFromClipboard(hEpoch, hSMA, hEcc, hInc, hRAAN, hArg, hAnomaly
             if(~isempty(ind))
                 hCelBody.Value = ind;
             end
+        else
+            bodyInfo = KSPTOT_BodyInfo.empty(1,0);
         end
     else
+        bodyInfo = KSPTOT_BodyInfo.empty(1,0);
         GLOBAL_OrbitClipboard = [];
         warndlg('Could not paste orbit.  Orbit clipboard contents are either empty or invalid.  Try copying an orbit to the clipboard first.','Could not paste orbit.');
     end

@@ -14,11 +14,13 @@ classdef (Abstract) AbstractReferenceFrame < matlab.mixin.SetGet & matlab.mixin.
         setOriginBody(obj, newBodyInfo)
         
         nameStr = getNameStr(obj)
+        
+        editFrameDialogUI(obj)
     end
     
     methods(Access=protected)
         function displayScalarObject(obj)
-            fprintf(obj.getNameStr());
+            fprintf('%s\n',obj.getNameStr());
         end        
     end
 end
