@@ -37,5 +37,26 @@ classdef BodyCenteredInertialFrame < AbstractReferenceFrame
         function nameStr = getNameStr(obj)
             nameStr = sprintf('Inertial Frame (Origin: %s)', obj.bodyInfo.name);
         end
+        
+        function newFrame = editFrameDialogUI(obj)
+            [bodiesStr, sortedBodyInfo] = ma_getSortedBodyNames(obj.celBodyData);
+            for(i=1:length(sortedBodyInfo))
+                sortedBodyInfoArr(i) = sortedBodyInfo{i}; %#ok<AGROW>
+            end
+            
+            ind = find(obj.bodyInfo == sortedBodyInfoArr,1,'first');
+            
+            [selection,ok] = listdlgARH('ListString',bodiesStr, 'SelectionMode','single', 'InitialValue',ind, ...
+                                           'Name','Select Frame Central Body', ...
+                                           'PromptString', {'Select the central body of the reference frame:'}, ...
+                                           'ListSize', [250 300]);
+                           
+            if(ok == 1)
+                newBodyInfo = sortedBodyInfoArr(selection);
+                newFrame = BodyCenteredInertialFrame(newBodyInfo, obj.celBodyData);
+            else
+                newFrame = obj;
+            end
+        end
     end
 end

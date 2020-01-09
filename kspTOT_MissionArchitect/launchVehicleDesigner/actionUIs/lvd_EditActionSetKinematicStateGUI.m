@@ -22,7 +22,7 @@ function varargout = lvd_EditActionSetKinematicStateGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditActionSetKinematicStateGUI
 
-% Last Modified by GUIDE v2.5 30-Dec-2019 10:10:03
+% Last Modified by GUIDE v2.5 08-Jan-2020 20:03:20
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -79,13 +79,13 @@ function populateGUI(handles, action, lvdData)
         orbitModel.frame = newFrame;
     end
     
-    frame = orbitModel.frame;
+%     frame = orbitModel.frame;
     setappdata(handles.lvd_EditActionSetKinematicStateGUI,'curElemSet',orbitModel);
     
-    bodyInfo = frame.getOriginBody();
-    populateBodiesCombo(lvdData.celBodyData, handles.centralBodyCombo, false);
-    value = findValueFromComboBox(bodyInfo.name, handles.centralBodyCombo);
-	handles.centralBodyCombo.Value = value;
+%     bodyInfo = frame.getOriginBody();
+%     populateBodiesCombo(lvdData.celBodyData, handles.centralBodyCombo, false);
+%     value = findValueFromComboBox(bodyInfo.name, handles.centralBodyCombo);
+% 	handles.centralBodyCombo.Value = value;
     
     handles.refFrameTypeCombo.String = ReferenceFrameEnum.getListBoxStr();
     handles.refFrameTypeCombo.Value = ReferenceFrameEnum.getIndForName(orbitModel.frame.typeEnum.name);
@@ -423,12 +423,15 @@ function varargout = lvd_EditActionSetKinematicStateGUI_OutputFcn(hObject, event
     end 
     
 function bodyInfo = getSelectedBodyInfo(handles)
-	lvdData = getappdata(handles.lvd_EditActionSetKinematicStateGUI,'lvdData');
-    celBodyData = lvdData.celBodyData;
+% 	lvdData = getappdata(handles.lvd_EditActionSetKinematicStateGUI,'lvdData');
+%     celBodyData = lvdData.celBodyData;
     
-    bodyStr = handles.centralBodyCombo.String;
-    bodyName = lower(strtrim(bodyStr{handles.centralBodyCombo.Value}));
-    bodyInfo = celBodyData.(bodyName);
+    curElemSet = getappdata(handles.lvd_EditActionSetKinematicStateGUI,'curElemSet');
+    bodyInfo = curElemSet.frame.getOriginBody();
+
+%     bodyStr = handles.centralBodyCombo.String;
+%     bodyName = lower(strtrim(bodyStr{handles.centralBodyCombo.Value}));
+%     bodyInfo = celBodyData.(bodyName);
     
 
 function errMsg = validateInputs(handles)
@@ -736,13 +739,17 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-function updateStateDueToFrameChange(handles)
+function updateStateDueToFrameChange(handles, oldBody)
     lvdData = getappdata(handles.lvd_EditActionSetKinematicStateGUI,'lvdData');
     celBodyData = lvdData.celBodyData;
 
     curElemSet = getappdata(handles.lvd_EditActionSetKinematicStateGUI,'curElemSet');
     
-    bodyInfo = getSelectedBodyInfo(handles);
+    if(isempty(oldBody))
+        bodyInfo = getSelectedBodyInfo(handles);
+    else
+        bodyInfo = oldBody;
+    end
     
     contents = cellstr(get(handles.refFrameTypeCombo,'String'));
     selFrameType = contents{get(handles.refFrameTypeCombo,'Value')};
@@ -811,27 +818,27 @@ function updateValuesInState(handles)
     setappdata(handles.lvd_EditActionSetKinematicStateGUI,'curElemSet', newElemSet);
 
 
-% --- Executes on selection change in centralBodyCombo.
-function centralBodyCombo_Callback(hObject, eventdata, handles)
-% hObject    handle to centralBodyCombo (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: contents = cellstr(get(hObject,'String')) returns centralBodyCombo contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from centralBodyCombo
-    updateStateDueToFrameChange(handles);
-
-% --- Executes during object creation, after setting all properties.
-function centralBodyCombo_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to centralBodyCombo (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: popupmenu controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
+% % --- Executes on selection change in centralBodyCombo.
+% function centralBodyCombo_Callback(hObject, eventdata, handles)
+% % hObject    handle to centralBodyCombo (see GCBO)
+% % eventdata  reserved - to be defined in a future version of MATLAB
+% % handles    structure with handles and user data (see GUIDATA)
+% 
+% % Hints: contents = cellstr(get(hObject,'String')) returns centralBodyCombo contents as cell array
+% %        contents{get(hObject,'Value')} returns selected item from centralBodyCombo
+%     updateStateDueToFrameChange(handles);
+% 
+% % --- Executes during object creation, after setting all properties.
+% function centralBodyCombo_CreateFcn(hObject, eventdata, handles)
+% % hObject    handle to centralBodyCombo (see GCBO)
+% % eventdata  reserved - to be defined in a future version of MATLAB
+% % handles    empty - handles not created until after all CreateFcns called
+% 
+% % Hint: popupmenu controls usually have a white background on Windows.
+% %       See ISPC and COMPUTER.
+% if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+%     set(hObject,'BackgroundColor','white');
+% end
 
 
 % --- Executes on selection change in refFrameTypeCombo.
@@ -842,7 +849,7 @@ function refFrameTypeCombo_Callback(hObject, eventdata, handles)
 
 % Hints: contents = cellstr(get(hObject,'String')) returns refFrameTypeCombo contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from refFrameTypeCombo
-    updateStateDueToFrameChange(handles);
+    updateStateDueToFrameChange(handles, KSPTOT_BodyInfo.empty(1,0));
 
 % --- Executes during object creation, after setting all properties.
 function refFrameTypeCombo_CreateFcn(hObject, eventdata, handles)
@@ -1540,8 +1547,13 @@ function getOrbitFromSFSFileContextMenu_Callback(hObject, eventdata, handles)
         lvdData = getappdata(handles.lvd_EditActionSetKinematicStateGUI,'lvdData');
         celBodyData = lvdData.celBodyData;
         bodyInfo = getBodyInfoByNumber(refBodyID, celBodyData);
-        value = findValueFromComboBox(bodyInfo.name, handles.centralBodyCombo);
-        set(handles.centralBodyCombo,'Value',value);
+        
+        curElemSet = getappdata(handles.lvd_EditInitialStateGUI,'curElemSet');
+        curElemSet.frame.setOriginBody(bodyInfo);
+        updateStateDueToFrameChange(handles, KSPTOT_BodyInfo.empty(1,0));
+        
+%         value = findValueFromComboBox(bodyInfo.name, handles.centralBodyCombo);
+%         set(handles.centralBodyCombo,'Value',value);
     end
 
 % --------------------------------------------------------------------
@@ -1577,8 +1589,13 @@ function getOrbitFromKSPTOTConnectContextMenu_Callback(hObject, eventdata, handl
         lvdData = getappdata(handles.lvd_EditActionSetKinematicStateGUI,'lvdData');
         celBodyData = lvdData.celBodyData;
         bodyInfo = getBodyInfoByNumber(refBodyID, celBodyData);
-        value = findValueFromComboBox(bodyInfo.name, handles.centralBodyCombo);
-        set(handles.centralBodyCombo,'Value',value);
+        
+        curElemSet = getappdata(handles.lvd_EditInitialStateGUI,'curElemSet');
+        curElemSet.frame.setOriginBody(bodyInfo);
+        updateStateDueToFrameChange(handles, KSPTOT_BodyInfo.empty(1,0));
+        
+%         value = findValueFromComboBox(bodyInfo.name, handles.centralBodyCombo);
+%         set(handles.centralBodyCombo,'Value',value);
     end
 
 % --------------------------------------------------------------------
@@ -1614,8 +1631,13 @@ function getOrbitFromKSPActiveVesselMenu_Callback(hObject, eventdata, handles)
         lvdData = getappdata(handles.lvd_EditActionSetKinematicStateGUI,'lvdData');
         celBodyData = lvdData.celBodyData;
         bodyInfo = getBodyInfoByNumber(refBodyID, celBodyData);
-        value = findValueFromComboBox(bodyInfo.name, handles.centralBodyCombo);
-        set(handles.centralBodyCombo,'Value',value);
+        
+        curElemSet = getappdata(handles.lvd_EditInitialStateGUI,'curElemSet');
+        curElemSet.frame.setOriginBody(bodyInfo);
+        updateStateDueToFrameChange(handles, KSPTOT_BodyInfo.empty(1,0));
+        
+%         value = findValueFromComboBox(bodyInfo.name, handles.centralBodyCombo);
+%         set(handles.centralBodyCombo,'Value',value);
     end
 
 % --------------------------------------------------------------------
@@ -1623,12 +1645,14 @@ function copyOrbitToClipboardMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to copyOrbitToClipboardMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-	lvdData = getappdata(handles.lvd_EditActionSetKinematicStateGUI,'lvdData');
-    celBodyData = lvdData.celBodyData;
+% 	lvdData = getappdata(handles.lvd_EditActionSetKinematicStateGUI,'lvdData');
+%     celBodyData = lvdData.celBodyData;
     
-    contents = cellstr(get(handles.centralBodyCombo,'String'));
-    selected = strtrim(contents{get(handles.centralBodyCombo,'Value')});
-    bodyInfo = celBodyData.(lower(selected));
+%     contents = cellstr(get(handles.centralBodyCombo,'String'));
+%     selected = strtrim(contents{get(handles.centralBodyCombo,'Value')});
+%     bodyInfo = celBodyData.(lower(selected));
+
+    bodyInfo = getSelectedBodyInfo(handles);
 
     o1V = handles.orbit1Text.String;
     o2V = handles.orbit2Text.String;
@@ -1706,9 +1730,15 @@ function pasteOrbitFromClipboardMenu_Callback(hObject, eventdata, handles)
 	lvdData = getappdata(handles.lvd_EditActionSetKinematicStateGUI,'lvdData');
     celBodyData = lvdData.celBodyData;
 
-    pasteOrbitFromClipboard(handles.utText, handles.orbit1Text, handles.orbit2Text, ...
-                                 handles.orbit3Text, handles.orbit4Text, handles.orbit5Text, ...
-                                 handles.orbit6Text, true, handles.centralBodyCombo, celBodyData);
+    bodyInfo = pasteOrbitFromClipboard(handles.utText, handles.orbit1Text, handles.orbit2Text, ...
+                                       handles.orbit3Text, handles.orbit4Text, handles.orbit5Text, ...
+                                       handles.orbit6Text, true, [], celBodyData);
+                                   
+	if(not(isempty(bodyInfo)))
+        curElemSet = getappdata(handles.lvd_EditActionSetKinematicStateGUI,'curElemSet');
+        curElemSet.frame.setOriginBody(bodyInfo);
+        updateStateDueToFrameChange(handles, KSPTOT_BodyInfo.empty(1,0));
+	end
 
 % --------------------------------------------------------------------
 function enterUTAsDateTimeContextMenu_Callback(hObject, eventdata, handles)
@@ -1856,3 +1886,15 @@ function inheritStageStatesButtonGroup_SelectionChangedFcn(hObject, eventdata, h
     else
         handles.inheritStageStatesSpecEvtCombo.Enable = 'on';
     end
+
+
+% --- Executes on button press in setFrameOptionsButton.
+function setFrameOptionsButton_Callback(hObject, eventdata, handles)
+% hObject    handle to setFrameOptionsButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    curElemSet = getappdata(handles.lvd_EditActionSetKinematicStateGUI,'curElemSet');
+    frame = curElemSet.frame;
+    newFrame = frame.editFrameDialogUI();
+    
+    updateStateDueToFrameChange(handles, newFrame.getOriginBody());
