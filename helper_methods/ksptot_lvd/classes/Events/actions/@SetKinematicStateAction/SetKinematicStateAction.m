@@ -21,6 +21,11 @@ classdef SetKinematicStateAction < AbstractEventAction
         inheritStageStatesFrom(1,1) InheritStateEnum = InheritStateEnum.InheritFromLastState;
         inheritStageStatesFromEvent LaunchVehicleEvent = LaunchVehicleEvent.empty(1,0);
         
+        %Inherit all other state elements
+        inheritStateElems(1,1) logical = true;
+        inheritStateElemsFrom(1,1) InheritStateEnum = InheritStateEnum.InheritFromLastState;
+        inheritStateElemsFromEvent LaunchVehicleEvent = LaunchVehicleEvent.empty(1,0);
+        
         optVar SetKinematicStateActionVariable
     end
     
@@ -118,6 +123,29 @@ classdef SetKinematicStateAction < AbstractEventAction
             else
                 %do nothing, there is no behavior for this yet
                 warning('SetKinematicStateAction.inheritStageStates must be set to true, no behavior yet defined when this is set to false.');
+            end
+            
+            if(obj.inheritStateElems)
+              if(obj.inheritStateElemsFrom == InheritStateEnum.InheritFromSpecifiedEvent && ...
+                   not(isempty(obj.inheritStateElemsFromEvent)) && ...
+                   not(isempty(obj.inheritStateElemsFromEvent.getEventNum())) && ...
+                   obj.inheritStateElemsFromEvent.getEventNum() > 0)
+               
+                    stateElemsEvtState = obj.stateLog.getLastStateLogForEvent(obj.inheritStateElemsFromEvent);
+                    stateElemsEvtState = stateElemsEvtState(end);
+                    
+                    if(not(isempty(stateElemsEvtState)))
+                        newStateLogEntry.aero = stateElemsEvtState.aero.deepCopy();
+                        newStateLogEntry.thirdBodyGravity = stateElemsEvtState.thirdBodyGravity.copy();
+                        newStateLogEntry.stopwatchStates = stateElemsEvtState.stopwatchStates.copy();
+                        newStateLogEntry.extremaStates = stateElemsEvtState.extremaStates.copy();
+                        newStateLogEntry.steeringModel = stateElemsEvtState.steeringModel; %NEED TO WARN USE TO REINITIALIZE THROTTLE AND STEERING MODELS!
+                        newStateLogEntry.throttleModel = stateElemsEvtState.throttleModel;
+                    end
+              end
+            else
+                %do nothing, there is no behavior for this yet
+                warning('SetKinematicStateAction.inheritStateElems must be set to true, no behavior yet defined when this is set to false.');
             end
         end
         

@@ -22,7 +22,7 @@ function varargout = lvd_EditActionSetKinematicStateGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditActionSetKinematicStateGUI
 
-% Last Modified by GUIDE v2.5 08-Jan-2020 20:03:20
+% Last Modified by GUIDE v2.5 10-Jan-2020 17:25:45
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -98,7 +98,12 @@ function populateGUI(handles, action, lvdData)
     evtListStr = lvdData.script.getListboxStr();
     thisActionEvtNum = action.event.getEventNum();
     if(not(isempty(thisActionEvtNum)))
-        evtListStr = evtListStr(1:thisActionEvtNum);
+        if(thisActionEvtNum > 1)
+            finalEvtNumToShow = thisActionEvtNum-1;
+        else
+            finalEvtNumToShow = thisActionEvtNum;
+        end
+        evtListStr = evtListStr(1:finalEvtNumToShow);
     end
     
     %inherit time
@@ -172,6 +177,31 @@ function populateGUI(handles, action, lvdData)
     end
     
     inheritStageStatesButtonGroup_SelectionChangedFcn(handles.inheritStageStatesButtonGroup.SelectedObject, [], handles);
+    
+    %inherit other state elements
+    switch action.inheritStateElemsFrom
+        case InheritStateEnum.InheritFromLastState
+            handles.inheritOtherStateElementsFromPrevStateRadioBtn.Value = 1;
+            
+        case InheritStateEnum.InheritFromSpecifiedEvent
+            handles.inheritOtherStateElementsFromSpecEvtRadioBtn.Value = 1;
+            
+        otherwise
+            error('Unknown inheritance type (other state elements): %s', class(action.inheritStateElemsFrom));
+    end
+    
+    handles.inheritOtherStateElementsEvtCombo.String = evtListStr;
+    if(not(isempty(action.inheritStateElemsFromEvent)))
+        evtNum = action.inheritStateElemsFromEvent.getEventNum();
+        if(evtNum > length(evtListStr))
+            handles.inheritOtherStateElementsEvtCombo.Value = 1;
+        else
+            handles.inheritOtherStateElementsEvtCombo.Value = evtNum;
+        end
+    end
+    
+    inheritOtherStateElementsButtonGroup_SelectionChangedFcn(handles.inheritOtherStateElementsButtonGroup.SelectedObject, [], handles);
+    
     
     %populate pos/vel states stuff
     handles.utText.String = fullAccNum2Str(orbitModel.time);
@@ -352,6 +382,21 @@ function varargout = lvd_EditActionSetKinematicStateGUI_OutputFcn(hObject, event
                 
             otherwise
                 error('Unknown UI widget handle for stage state inheritence selection: %s', handles.inheritStageStatesButtonGroup.SelectedObject.Tag);
+        end
+        
+        %inherit other state elements
+        action.inheritStateElems = logical(handles.inheritOtherStateElementsCheckbox.Value);
+        switch handles.inheritOtherStateElementsButtonGroup.SelectedObject
+            case handles.inheritOtherStateElementsFromPrevStateRadioBtn
+                action.inheritStateElemsFrom = InheritStateEnum.InheritFromLastState;
+                action.inheritStateElemsFromEvent = LaunchVehicleEvent.empty(1,0);
+                
+            case handles.inheritOtherStateElementsFromSpecEvtRadioBtn
+                action.inheritStateElemsFrom = InheritStateEnum.InheritFromSpecifiedEvent;
+                action.inheritStateElemsFromEvent = lvdData.script.getEventForInd(handles.inheritOtherStateElementsEvtCombo.Value);
+                
+            otherwise
+                error('Unknown UI widget handle for other state element inheritence selection: %s', handles.inheritOtherStateElementsButtonGroup.SelectedObject.Tag);
         end
         
         %Vars
@@ -1898,3 +1943,47 @@ function setFrameOptionsButton_Callback(hObject, eventdata, handles)
     newFrame = frame.editFrameDialogUI();
     
     updateStateDueToFrameChange(handles, newFrame.getOriginBody());
+
+
+% --- Executes on button press in inheritOtherStateElementsCheckbox.
+function inheritOtherStateElementsCheckbox_Callback(hObject, eventdata, handles)
+% hObject    handle to inheritOtherStateElementsCheckbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of inheritOtherStateElementsCheckbox
+
+
+% --- Executes on selection change in inheritOtherStateElementsEvtCombo.
+function inheritOtherStateElementsEvtCombo_Callback(hObject, eventdata, handles)
+% hObject    handle to inheritOtherStateElementsEvtCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns inheritOtherStateElementsEvtCombo contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from inheritOtherStateElementsEvtCombo
+
+
+% --- Executes during object creation, after setting all properties.
+function inheritOtherStateElementsEvtCombo_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to inheritOtherStateElementsEvtCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes when selected object is changed in inheritOtherStateElementsButtonGroup.
+function inheritOtherStateElementsButtonGroup_SelectionChangedFcn(hObject, eventdata, handles)
+% hObject    handle to the selected object in inheritOtherStateElementsButtonGroup 
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    if(hObject == handles.inheritOtherStateElementsFromPrevStateRadioBtn)
+        handles.inheritOtherStateElementsEvtCombo.Enable = 'off';
+    else
+        handles.inheritOtherStateElementsEvtCombo.Enable = 'on';
+    end
