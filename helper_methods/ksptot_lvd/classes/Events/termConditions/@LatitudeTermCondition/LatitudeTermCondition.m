@@ -89,7 +89,7 @@ classdef LatitudeTermCondition < AbstractEventTerminationCondition
             
             [lat, ~] = getLatLongAltFromInertialVect(ut, rVect, bodyInfo);
             
-            value = targetLat - lat;
+            value = lat - targetLat;
             isterminal = 1;
             direction = inputDirection;
         end

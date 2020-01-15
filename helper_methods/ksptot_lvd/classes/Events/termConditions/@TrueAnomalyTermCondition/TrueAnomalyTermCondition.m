@@ -107,7 +107,7 @@ classdef TrueAnomalyTermCondition < AbstractEventTerminationCondition
                 end
             end
             
-            value = targetTru - tru;
+            value = tru - targetTru;
             isterminal = 1;
             direction = 0;
         end
