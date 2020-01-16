@@ -22,7 +22,7 @@ function varargout = ma_LvdMainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_LvdMainGUI
 
-% Last Modified by GUIDE v2.5 16-Nov-2019 21:42:48
+% Last Modified by GUIDE v2.5 15-Jan-2020 19:38:01
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1706,3 +1706,20 @@ function selectOptimizationAlgosMenu_Callback(hObject, eventdata, handles)
     if(lvdData.optimizer.getSelectedOptimizer().usesParallel())
         startParallelPool(writeOutput);
     end
+
+
+% --- Executes on button press in pushbutton9.
+function pushbutton9_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton9 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    figure();
+    h = axes();
+    numToPlot = get(handles.dispAxes,'UserData');
+    handles.dispAxes = h;
+    set(h,'UserData',get(handles.dispAxes,'UserData'));
+    orbitPlotType = getappdata(handles.ma_LvdMainGUI,'orbitPlotType');
+    maStateLog = lvdData.stateLog.getMAFormattedStateLogMatrix();
+    
+    lvd_updateDispAxis(handles, maStateLog, numToPlot, orbitPlotType, lvdData);
