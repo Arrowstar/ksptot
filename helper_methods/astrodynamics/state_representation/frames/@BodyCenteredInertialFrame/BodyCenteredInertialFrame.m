@@ -23,7 +23,7 @@ classdef BodyCenteredInertialFrame < AbstractReferenceFrame
             posOffsetOrigin = rVectB;
             velOffsetOrigin = vVectB;
             angVelWrtOrigin = [0;0;0];
-            rotMatToInertial = eye(3);
+            rotMatToInertial = obj.bodyInfo.bodyRotMatFromGlobalInertialToBodyInertial;
         end
         
         function bodyInfo = getOriginBody(obj)

@@ -23,7 +23,7 @@ classdef BodyFixedFrame < AbstractReferenceFrame
             spinAngle = getBodySpinAngle(obj.bodyInfo, time);
             rotMatToInertial = [cos(spinAngle) -sin(spinAngle) 0;
                                 sin(spinAngle) cos(spinAngle) 0;
-                                0 0 1];
+                                0 0 1] * obj.bodyInfo.bodyRotMatFromGlobalInertialToBodyInertial;
             
             rotRateRadSec = 2*pi/obj.bodyInfo.rotperiod;
             omegaRI = [0;0;rotRateRadSec];

@@ -3,16 +3,16 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
     %   Detailed explanation goes here
     
     properties
-        epoch@double
-        sma@double
-        ecc@double
-        inc@double
-        raan@double
-        arg@double
-        mean@double
-        gm@double
-        radius@double
-        atmohgt@double
+        epoch double
+        sma double
+        ecc double
+        inc double
+        raan double
+        arg double
+        mean double
+        gm double
+        radius double
+        atmohgt double
         atmopresscurve = griddedInterpolant([0 1]',[0 0]','spline', 'nearest');
         atmotempcurve = griddedInterpolant([0 1]',[0 0]','spline', 'nearest');
         atmotempsunmultcurve = griddedInterpolant([0 1]',[0 0]','spline', 'nearest');
@@ -21,22 +21,32 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
         axialtempsunbiascurve = griddedInterpolant([0 1]',[0 0]','spline', 'nearest');
         axialtempsunmultcurve = griddedInterpolant([0 1]',[0 0]','spline', 'nearest');
         ecctempbiascurve = griddedInterpolant([0 1]',[0 0]','spline', 'nearest');
-        atmomolarmass@double
-        rotperiod@double
-        rotini@double
-        bodycolor@char
-        canbecentral@double
-        canbearrivedepart@double
+        atmomolarmass double
+        rotperiod double
+        rotini double
+        bodycolor char
+        canbecentral double
+        canbearrivedepart double
         parent
-        parentid@double
-        name@char
-        id@double
+        parentid double
+        name char
+        id double
+        
+        %orientation of inertial frame (spin axis handling)
+        bodyZAxis(3,1) double = [0;0;1];
+        bodyXAxis(3,1) double = [1;0;0];
+        bodyRotMatFromGlobalInertialToBodyInertial = [];
     end
     
     properties
         celBodyData struct
         parentBodyInfo KSPTOT_BodyInfo
         parentBodyInfoNeedsUpdate logical = true;
+    end
+    
+    properties(Access=private)
+        bodyInertialFrameCache BodyCenteredInertialFrame = BodyCenteredInertialFrame.empty(1,0);
+        bodyFixedFrameCache BodyFixedFrame = BodyFixedFrame.empty(1,0);
     end
     
     methods
@@ -56,6 +66,37 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
             end
             
             parentBodyInfo = obj.parentBodyInfo;
+        end
+        
+        function rotMat = get.bodyRotMatFromGlobalInertialToBodyInertial(obj)
+            if(isempty(obj.bodyRotMatFromGlobalInertialToBodyInertial))
+                obj.bodyZAxis = normVector(obj.bodyZAxis);
+                obj.bodyXAxis = normVector(obj.bodyXAxis);
+                
+                rotY = normVector(crossARH(obj.bodyZAxis, obj.bodyXAxis));
+                rotX = normVector(crossARH(rotY, obj.bodyZAxis));
+                rotMat = [rotX, rotY, obj.bodyZAxis];
+                
+                obj.bodyRotMatFromGlobalInertialToBodyInertial = rotMat;
+            else
+                rotMat = obj.bodyRotMatFromGlobalInertialToBodyInertial;
+            end
+        end
+        
+        function frame = getBodyCenteredInertialFrame(obj)
+            if(isempty(obj.bodyInertialFrameCache))
+                obj.bodyInertialFrameCache = BodyCenteredInertialFrame(obj, obj.celBodyData);
+            end
+            
+            frame = obj.bodyInertialFrameCache;
+        end
+        
+        function frame = getBodyFixedFrame(obj)
+            if(isempty(obj.bodyFixedFrameCache))
+                obj.bodyFixedFrameCache = BodyFixedFrame(obj, obj.celBodyData);
+            end
+            
+            frame = obj.bodyFixedFrameCache;
         end
         
         function tf = eq(A,B)
