@@ -5,14 +5,16 @@ classdef PositionContinuityConstraintZ < AbstractConstraint
     properties
         normFact = 1;
         event LaunchVehicleEvent
+        constraintEvent LaunchVehicleEvent
         
         lb(1,1) double = 0;
         ub(1,1) double = 0;
     end
     
     methods
-        function obj = PositionContinuityConstraintZ(event)
+        function obj = PositionContinuityConstraintZ(event, constraintEvent)
             obj.event = event; 
+            obj.constraintEvent = constraintEvent;
             
             obj.id = rand();
         end
@@ -25,18 +27,17 @@ classdef PositionContinuityConstraintZ < AbstractConstraint
         function [c, ceq, value, lwrBnd, uprBnd, type, eventNum] = evalConstraint(obj, stateLog, celBodyData)           
             type = obj.getConstraintType();
             
-            stateLogEntries = stateLog.getAllStateLogEntriesForEvent(obj.event);
-            if(obj.event.getNumberOfActions() > 0)
-                stateLogEntry1 = stateLogEntries(end-1);
-                stateLogEntry2 = stateLogEntries(end);
+            if(not(isempty(obj.event)) && not(isempty(obj.constraintEvent)))
+                stateLogEntriesEvt = stateLog.getAllStateLogEntriesForEvent(obj.event);
+                stateLogEntriesConstrEvt = stateLog.getAllStateLogEntriesForEvent(obj.constraintEvent);
 
-                sunFrame = BodyCenteredInertialFrame(celBodyData.sun, celBodyData);
-                cartElemSet1 = stateLogEntry1.getCartesianElementSetRepresentation().convertToFrame(sunFrame);
-                cartElemSet2 = stateLogEntry2.getCartesianElementSetRepresentation().convertToFrame(sunFrame);
-                
+                frame = BodyCenteredInertialFrame(celBodyData.sun, celBodyData);
+                cartElemSet1 = stateLogEntriesEvt(end).getCartesianElementSetRepresentation().convertToFrame(frame);
+                cartElemSet2 = stateLogEntriesConstrEvt(end).getCartesianElementSetRepresentation().convertToFrame(frame);
+
                 value = cartElemSet2.rVect - cartElemSet1.rVect;
                 value = value(3);
-                
+
                 c = [];
                 ceq = value;
             else
@@ -112,13 +113,13 @@ classdef PositionContinuityConstraintZ < AbstractConstraint
         end
         
         function addConstraintTf = openEditConstraintUI(obj, lvdData)
-            addConstraintTf = lvd_EditGenericMAConstraintGUI(obj, lvdData);
+            addConstraintTf = lvd_EditContinuityConstraintGUI(obj, lvdData);
         end
     end
     
     methods(Static)
         function constraint = getDefaultConstraint(~)            
-            constraint = PositionContinuityConstraintZ(LaunchVehicleEvent.empty(1,0));
+            constraint = PositionContinuityConstraintZ(LaunchVehicleEvent.empty(1,0), LaunchVehicleEvent.empty(1,0));
         end
     end
 end

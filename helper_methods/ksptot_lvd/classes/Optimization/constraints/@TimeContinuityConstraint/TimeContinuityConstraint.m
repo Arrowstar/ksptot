@@ -5,14 +5,16 @@ classdef TimeContinuityConstraint < AbstractConstraint
     properties
         normFact = 1;
         event LaunchVehicleEvent
+        constraintEvent LaunchVehicleEvent
         
         lb(1,1) double = 0;
         ub(1,1) double = 0;
     end
     
     methods
-        function obj = TimeContinuityConstraint(event)
+        function obj = TimeContinuityConstraint(event, constraintEvent)
             obj.event = event; 
+            obj.constraintEvent = constraintEvent;
             
             obj.id = rand();
         end
@@ -25,13 +27,16 @@ classdef TimeContinuityConstraint < AbstractConstraint
         function [c, ceq, value, lwrBnd, uprBnd, type, eventNum] = evalConstraint(obj, stateLog, celBodyData)           
             type = obj.getConstraintType();
             
-            stateLogEntries = stateLog.getAllStateLogEntriesForEvent(obj.event);
-            if(obj.event.getNumberOfActions() > 0)
-                stateLogEntry1 = stateLogEntries(end-1);
-                stateLogEntry2 = stateLogEntries(end);
+            if(not(isempty(obj.event)) && not(isempty(obj.constraintEvent)))
+                stateLogEntriesEvt = stateLog.getAllStateLogEntriesForEvent(obj.event);
+                stateLogEntriesConstrEvt = stateLog.getAllStateLogEntriesForEvent(obj.constraintEvent);
 
-                value = stateLogEntry2.time - stateLogEntry1.time;
-                
+                frame = BodyCenteredInertialFrame(celBodyData.sun, celBodyData);
+                cartElemSet1 = stateLogEntriesEvt(end).getCartesianElementSetRepresentation().convertToFrame(frame);
+                cartElemSet2 = stateLogEntriesConstrEvt(end).getCartesianElementSetRepresentation().convertToFrame(frame);
+
+                value = cartElemSet2.time - cartElemSet1.time;
+
                 c = [];
                 ceq = value;
             else
@@ -107,13 +112,13 @@ classdef TimeContinuityConstraint < AbstractConstraint
         end
         
         function addConstraintTf = openEditConstraintUI(obj, lvdData)
-            addConstraintTf = lvd_EditGenericMAConstraintGUI(obj, lvdData);
+            addConstraintTf = lvd_EditContinuityConstraintGUI(obj, lvdData);
         end
     end
     
     methods(Static)
         function constraint = getDefaultConstraint(~)            
-            constraint = TimeContinuityConstraint(LaunchVehicleEvent.empty(1,0));
+            constraint = TimeContinuityConstraint(LaunchVehicleEvent.empty(1,0), LaunchVehicleEvent.empty(1,0));
         end
     end
 end

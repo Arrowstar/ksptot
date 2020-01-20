@@ -30,6 +30,10 @@ classdef CompositeObjectiveFcn < AbstractObjectiveFcn
         end
         
         function [f, stateLog] = evalObjFcn(obj, x, evtToStartScriptExecAt)
+            if(isempty(obj.lvdOptim))
+                obj.lvdOptim = obj.lvdData.optimizer;
+            end
+            
             obj.lvdOptim.vars.updateObjsWithScaledVarValues(x);
             useSparse = obj.canUseSparseOutput();
             stateLog = obj.lvdData.script.executeScript(useSparse, evtToStartScriptExecAt, false, true);

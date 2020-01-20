@@ -90,7 +90,7 @@ classdef KeplerianElementSet < AbstractElementSet
                 bndStr = sprintf(' (%s Bound)', bndStr);
             end
             
-            if(checkElement(2))
+            if(checkElement(2) || checkElement(1))
                 ecc = str2double(get(hEcc,'String'));
                 enteredStr = get(hEcc,'String');
                 numberName = ['Eccentricity', bndStr];
