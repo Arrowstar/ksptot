@@ -30,7 +30,14 @@ function stateLog = ma_executeScript(script,handles,celBodyData,varargin)
     if(isempty(maData) || forcePropScript == true || maData.settings.autoPropScript == true)
         stateLog = propagateScript(script,handles,celBodyData,maData,writeOutput,varargin);
     else
-        set(handles.scriptResultsOutOfDateLbl,'visible','on');
+        if(isfield(handles,'scriptResultsOutOfDateLbl'))
+            set(handles.scriptResultsOutOfDateLbl,'visible','on');
+        else
+            hLbl = findobj(handles.ma_MainGUI.Children,'Tag','scriptResultsOutOfDateLbl');
+            if(isgraphics(hLbl) && isvalid(hLbl))
+                hLbl.Visible = 'on';
+            end
+        end
         
         stateLog = maData.stateLog;
     end
@@ -49,7 +56,16 @@ function stateLog = propagateScript(script,handles,celBodyData,maData,writeOutpu
         hScriptWorkingLbl = [];
     end
     
-    set(handles.scriptResultsOutOfDateLbl,'visible','off');
+    
+    if(isfield(handles,'scriptResultsOutOfDateLbl'))
+        set(handles.scriptResultsOutOfDateLbl,'visible','off');
+    else
+        hLbl = findobj(handles.ma_MainGUI.Children,'Tag','scriptResultsOutOfDateLbl');
+        if(isgraphics(hLbl) && isvalid(hLbl))
+            hLbl.Visible = 'off';
+        end
+    end
+    
     if(ishandle(hScriptWorkingLbl))
         set(hScriptWorkingLbl,'visible','on');
         drawnow;
