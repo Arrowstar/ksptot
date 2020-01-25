@@ -427,6 +427,14 @@ classdef LaunchVehicle < matlab.mixin.SetGet
                 end
             end
         end
+        
+        function tf = isVarFromLaunchVehicle(obj, var)
+            tf = false;
+            
+            for(i=1:length(obj.stages))
+                tf = tf || obj.stages(i).isVarFromStage(var);
+            end
+        end
     end
     
     methods(Static)

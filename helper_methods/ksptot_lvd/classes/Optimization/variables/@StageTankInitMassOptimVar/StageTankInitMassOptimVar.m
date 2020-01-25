@@ -54,8 +54,19 @@ classdef StageTankInitMassOptimVar < AbstractOptimizationVariable
             obj.tank.initialMass = x;
         end
         
-        function nameStrs = getStrNamesOfVars(obj, evtNum)
-            nameStrs = {sprintf('Event %i Tank Initial Mass', evtNum)};
+        function nameStrs = getStrNamesOfVars(obj, evtNum, varLocType)
+            if(evtNum > 0)
+                subStr = sprintf('Event %i',evtNum);
+            else
+                subStr = varLocType;
+            end
+            
+            tankName = obj.tank.name;
+            if(isempty(tankName))
+                tankName = 'Untitled Tank';
+            end
+            
+            nameStrs = {sprintf('%s Tank "%s" Initial Mass', subStr, tankName)};
         end
     end
 end

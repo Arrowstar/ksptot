@@ -21,7 +21,7 @@ classdef(Abstract) AbstractOptimizationVariable < matlab.mixin.SetGet & matlab.m
         
         updateObjWithVarValue(obj, x)
         
-        nameStrs = getStrNamesOfVars(obj, evtNum)
+        nameStrs = getStrNamesOfVars(obj, evtNum, varLocType)
         
         function [xS, lbS, ubS] = getScaledXsForVariable(obj)
             x = obj.getXsForVariable();
@@ -41,6 +41,10 @@ classdef(Abstract) AbstractOptimizationVariable < matlab.mixin.SetGet & matlab.m
                     xS(i) = (xi - bndCenter)/(bndDiff/2);
                     lbS(i) = -1;
                     ubS(i) = 1; 
+                else
+                    xS(i) = xi;
+                    lbS(i) = lbi;
+                    ubS(i) = ubi; 
                 end
             end
         end
@@ -59,6 +63,8 @@ classdef(Abstract) AbstractOptimizationVariable < matlab.mixin.SetGet & matlab.m
                 
                 if(bndDiff > 1E-10)
                     x(i) = xSi * (bndDiff/2) + bndCenter;
+                else                    
+                    x(i) = xSi;
                 end
             end
             

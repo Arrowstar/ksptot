@@ -54,7 +54,7 @@ classdef DynPressOptimizationVariable < AbstractOptimizationVariable
             obj.varObj.dynP = x;
         end
         
-        function nameStrs = getStrNamesOfVars(obj, evtNum)
+        function nameStrs = getStrNamesOfVars(obj, evtNum, varLocType)
             nameStrs = {sprintf('Event %i Dynamic Pressure Termination Condition', evtNum)};
         end
     end

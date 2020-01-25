@@ -54,7 +54,7 @@ classdef PeriapsisAltitudeOptimizationVariable < AbstractOptimizationVariable
             obj.varObj.perialt = x;
         end
         
-        function nameStrs = getStrNamesOfVars(obj, evtNum)
+        function nameStrs = getStrNamesOfVars(obj, evtNum, varLocType)
             nameStrs = {sprintf('Event %i Periapsis Altitude Termination Condition', evtNum)};
         end
     end

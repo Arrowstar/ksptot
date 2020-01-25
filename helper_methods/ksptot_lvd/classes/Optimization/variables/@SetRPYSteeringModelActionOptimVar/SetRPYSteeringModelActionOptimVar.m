@@ -152,7 +152,7 @@ classdef SetRPYSteeringModelActionOptimVar < AbstractOptimizationVariable
             end
         end
         
-        function nameStrs = getStrNamesOfVars(obj, evtNum)
+        function nameStrs = getStrNamesOfVars(obj, evtNum, varLocType)
             nameStrs = {sprintf('Event %i Roll Angle Constant', evtNum), ...
                         sprintf('Event %i Roll Angle Rate', evtNum), ...
                         sprintf('Event %i Roll Angle Acceleration', evtNum), ...
@@ -167,15 +167,3 @@ classdef SetRPYSteeringModelActionOptimVar < AbstractOptimizationVariable
         end
     end
 end
-
-%         varRollConst(1,1) logical = false;
-%         varRollLin(1,1) logical   = false;
-%         varRollAccel(1,1) logical = false;
-%         
-%         varPitchConst(1,1) logical = false;
-%         varPitchLin(1,1) logical   = false;
-%         varPitchAccel(1,1) logical = false;
-%         
-%         varYawConst(1,1) logical = false;
-%         varYawLin(1,1) logical   = false;
-%         varYawAccel(1,1) logical = false;

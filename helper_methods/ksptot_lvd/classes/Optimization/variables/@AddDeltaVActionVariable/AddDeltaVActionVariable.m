@@ -90,7 +90,7 @@ classdef AddDeltaVActionVariable < AbstractOrbitModelVariable
             end
         end
         
-        function nameStrs = getStrNamesOfVars(obj, evtNum)
+        function nameStrs = getStrNamesOfVars(obj, evtNum, varLocType)
             compNames = obj.varObj.frame.compNames;
             
             nameStrs = {sprintf('Event %i Delta-V (%s)', evtNum, compNames{1}), ...

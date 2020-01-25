@@ -54,7 +54,7 @@ classdef BankAngleTermCondOptimizationVariable < AbstractOptimizationVariable
             obj.varObj.targetBankAngle = x;
         end
         
-        function nameStrs = getStrNamesOfVars(obj, evtNum)
+        function nameStrs = getStrNamesOfVars(obj, evtNum, varLocType)
             nameStrs = {sprintf('Event %i Bank Angle Termination Condition', evtNum)};
         end
     end

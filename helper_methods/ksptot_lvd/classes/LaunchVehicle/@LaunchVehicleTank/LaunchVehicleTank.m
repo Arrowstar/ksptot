@@ -70,5 +70,13 @@ classdef LaunchVehicleTank < matlab.mixin.SetGet
 %         function tf = eq(A,B)
 %             tf = [A.id] == [B.id];
 %         end
+
+        function tf = isVarFromTank(obj, var)
+            if(not(isempty(obj.optVar)))
+                tf = obj.optVar == var;
+            else
+                tf = false;
+            end
+        end
     end
 end

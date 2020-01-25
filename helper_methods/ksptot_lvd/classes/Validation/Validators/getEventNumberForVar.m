@@ -1,5 +1,6 @@
-function evtNum = getEventNumberForVar(var, lvdData)
+function [evtNum, varLocType] = getEventNumberForVar(var, lvdData)
     evtNum = [];
+    varLocType = '';
     
     numEvents = lvdData.script.getTotalNumOfEvents();
     for(i=1:numEvents)
@@ -12,12 +13,26 @@ function evtNum = getEventNumberForVar(var, lvdData)
             
             if(strcmpi(class(var), class(eVar)) && var == eVar)
                 evtNum = i;
+                varLocType = 'Event';
                 break;
             end
         end
         
         if(not(isempty(evtNum)))
             break;
+        end
+    end
+    
+    if(isempty(evtNum))
+        if(lvdData.initStateModel.isVarFromInitialState(var))
+            varLocType = 'Initial State';
+            
+        elseif(lvdData.launchVehicle.isVarFromLaunchVehicle(var))
+            varLocType = 'Launch Vehicle';
+            
+        else
+            varLocType = '';
+            
         end
     end
 end

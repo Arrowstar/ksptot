@@ -19,18 +19,21 @@ classdef OptimizationVariableSet < matlab.mixin.SetGet
         
         function addVariable(obj, newVar)
             obj.vars(end+1) = newVar;
+            obj.sortVarsByEvtNum();
             
             obj.clearCachedVarEvtDisabledStatus();
         end
         
         function removeVariable(obj, var)
             obj.vars([obj.vars] == var) = [];
+            obj.sortVarsByEvtNum();
             
             obj.clearCachedVarEvtDisabledStatus();
         end
         
-        function [x, vars, varNameStrs] = getTotalScaledXVector(obj)
+        function [x, vars, varNameStrs, xUnscaled] = getTotalScaledXVector(obj)
             x = [];
+            xUnscaled = [];
             vars = AbstractOptimizationVariable.empty(0,1);
             
             varNameStrs = {};
@@ -44,18 +47,21 @@ classdef OptimizationVariableSet < matlab.mixin.SetGet
                 vX = var.getScaledXsForVariable();
                 x = horzcat(x, vX); %#ok<AGROW>
                 
+                vXUnscaled = var.getXsForVariable();
+                xUnscaled = horzcat(xUnscaled, vXUnscaled); %#ok<AGROW>
+                
                 for(j=1:length(vX))
                     vars(end+1) = obj.vars(i); %#ok<AGROW>
                 end
                 
                 if(not(isempty(vX)))
-                    evtNum = getEventNumberForVar(var, obj.lvdData);
+                    [evtNum, varLocType] = getEventNumberForVar(var, obj.lvdData);
                     
                     if(isempty(evtNum))
                         evtNum = 0;
                     end
                     
-                    varNameStrs = horzcat(varNameStrs,var.getStrNamesOfVars(evtNum)); %#ok<AGROW>
+                    varNameStrs = horzcat(varNameStrs,var.getStrNamesOfVars(evtNum, varLocType)); %#ok<AGROW>
                 end
             end
         end
@@ -163,6 +169,24 @@ classdef OptimizationVariableSet < matlab.mixin.SetGet
             obj.cachedVars = AbstractOptimizationVariable.empty(1,0);
             obj.cachedVarEventDis = logical([]);
         end
+        
+        function sortVarsByEvtNum(obj)
+            evtNums = [];
+            for(i=1:length(obj.vars)) %#ok<*NO4LP>
+                var = obj.vars(i);
+                evtNum = getEventNumberForVar(var, obj.lvdData);
+                if(isempty(evtNum))
+                    evtNum = 0;
+                end
+                
+                evtNums(i) = evtNum; %#ok<AGROW>
+            end
+            
+            [~,I] = sort(evtNums);
+            obj.vars = obj.vars(I);
+            
+            obj.clearCachedVarEvtDisabledStatus();
+        end
     end
     
     methods(Access=private)
@@ -185,6 +209,23 @@ classdef OptimizationVariableSet < matlab.mixin.SetGet
                 obj.cachedVars(end+1) = var;
                 obj.cachedVarEventDis(end+1) = tf;
             end
+        end
+    end
+    
+    methods(Static, Access=private)
+        function obj = loadobj(obj)
+            indsToRemove = [];
+            for(i=1:length(obj.vars))
+                var = obj.vars(i);
+                lvdData = obj.lvdData;
+                [~, varLocType] = getEventNumberForVar(var, lvdData);
+                
+                if(isempty(varLocType))
+                    indsToRemove(end+1) = i; %#ok<AGROW>
+                end
+            end
+            
+            obj.vars(indsToRemove) = [];
         end
     end
 end

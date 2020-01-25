@@ -54,7 +54,7 @@ classdef ThrottleTermCondOptimVar < AbstractOptimizationVariable
             obj.varObj.targetThrottle = x;
         end
         
-        function nameStrs = getStrNamesOfVars(obj, evtNum)
+        function nameStrs = getStrNamesOfVars(obj, evtNum, varLocType)
             nameStrs = {sprintf('Event %i Throttle Termination Condition', evtNum)};
         end
     end

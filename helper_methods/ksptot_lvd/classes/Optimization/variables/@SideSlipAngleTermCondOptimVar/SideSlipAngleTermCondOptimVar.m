@@ -54,7 +54,7 @@ classdef SideSlipAngleTermCondOptimVar < AbstractOptimizationVariable
             obj.varObj.targetSlipAngle = x;
         end
 
-        function nameStrs = getStrNamesOfVars(obj, evtNum)
+        function nameStrs = getStrNamesOfVars(obj, evtNum, varLocType)
             nameStrs = {sprintf('Event %i Side Slip Termination Condition', evtNum)};
         end
     end

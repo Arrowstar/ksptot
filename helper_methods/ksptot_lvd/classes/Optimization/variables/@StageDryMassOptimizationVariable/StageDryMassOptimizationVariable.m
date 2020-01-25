@@ -54,8 +54,19 @@ classdef StageDryMassOptimizationVariable < AbstractOptimizationVariable
             obj.stage.dryMass = x;
         end
         
-        function nameStrs = getStrNamesOfVars(obj, evtNum)
-            nameStrs = {sprintf('Event %i Stage Dry Mass', evtNum)};
+        function nameStrs = getStrNamesOfVars(obj, evtNum, varLocType)
+            if(evtNum > 0)
+                subStr = sprintf('Event %i',evtNum);
+            else
+                subStr = varLocType;
+            end
+            
+            stageName = obj.stage.name;
+            if(isempty(stageName))
+                stageName = 'Untitled Stage';
+            end
+            
+            nameStrs = {sprintf('%s Stage "%s" Dry Mass', subStr, stageName)};
         end
     end
 end

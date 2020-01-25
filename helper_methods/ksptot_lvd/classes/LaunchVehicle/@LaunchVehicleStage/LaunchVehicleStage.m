@@ -115,5 +115,17 @@ classdef LaunchVehicleStage < matlab.mixin.SetGet
         function tf = eq(A,B)
             tf = [A.id] == [B.id];
         end
+        
+        function tf = isVarFromStage(obj, var)
+            if(not(isempty(obj.optVar)))
+                tf = obj.optVar == var;
+            else
+                tf = false;
+            end
+            
+            for(i=1:length(obj.tanks))
+                tf = tf || obj.tanks(i).isVarFromTank(var);
+            end
+        end
     end
 end

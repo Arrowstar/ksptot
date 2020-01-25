@@ -54,7 +54,7 @@ classdef AddMassToTankActionOptimVar < AbstractOptimizationVariable
             obj.varObj.massToAdd = x;
         end
         
-        function nameStrs = getStrNamesOfVars(obj, evtNum)
+        function nameStrs = getStrNamesOfVars(obj, evtNum, varLocType)
             nameStrs = {sprintf('Event %i Add Mass To Tank Action', evtNum)};
         end
     end

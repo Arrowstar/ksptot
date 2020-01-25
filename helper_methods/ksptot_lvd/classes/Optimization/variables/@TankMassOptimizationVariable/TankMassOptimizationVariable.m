@@ -54,7 +54,7 @@ classdef TankMassOptimizationVariable < AbstractOptimizationVariable
             obj.varObj.targetMass = x;
         end
         
-        function nameStrs = getStrNamesOfVars(obj, evtNum)
+        function nameStrs = getStrNamesOfVars(obj, evtNum, varLocType)
             nameStrs = {sprintf('Event %i Tank Mass Termination Condition', evtNum)};
         end
     end

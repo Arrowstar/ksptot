@@ -107,7 +107,7 @@ classdef SetKinematicStateActionVariable < AbstractOptimizationVariable
             end
         end
         
-        function nameStrs = getStrNamesOfVars(obj, evtNum)
+        function nameStrs = getStrNamesOfVars(obj, evtNum, varLocType)
             nameStrs = horzcat(sprintf('Event %i Time', evtNum), obj.orbitVar.getStrNamesOfVars(evtNum));
         end
     end

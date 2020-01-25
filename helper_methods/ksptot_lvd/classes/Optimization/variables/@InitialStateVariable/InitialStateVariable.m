@@ -45,25 +45,32 @@ classdef InitialStateVariable < AbstractOptimizationVariable
             if(obj.useTf)
                 x(end+1) = obj.varObj.time;
             end
-            x = horzcat(x, obj.orbitVar.getXsForVariable());
+            
+            if(not(isempty(obj.orbitVar)))
+                x = horzcat(x, obj.orbitVar.getXsForVariable());
+            end
         end
         
         function [lb, ub] = getBndsForVariable(obj)
             lb = obj.lb(obj.useTf);
             ub = obj.ub(obj.useTf);
             
-            [oLb, oUb] = obj.orbitVar.getBndsForVariable();
-            lb = horzcat(lb, oLb);
-            ub = horzcat(ub, oUb);
+            if(not(isempty(obj.orbitVar)))
+                [oLb, oUb] = obj.orbitVar.getBndsForVariable();
+                lb = horzcat(lb, oLb);
+                ub = horzcat(ub, oUb);
+            end
         end
         
         function [lb, ub] = getAllBndsForVariable(obj)
             lb = obj.lb;
             ub = obj.lb;
             
-            [oLb, oUb] = obj.orbitVar.getAllBndsForVariable();
-            lb = horzcat(lb, oLb);
-            ub = horzcat(ub, oUb);
+            if(not(isempty(obj.orbitVar)))
+                [oLb, oUb] = obj.orbitVar.getAllBndsForVariable();
+                lb = horzcat(lb, oLb);
+                ub = horzcat(ub, oUb);
+            end
         end
         
         function setBndsForVariable(obj, lb, ub)
@@ -107,8 +114,21 @@ classdef InitialStateVariable < AbstractOptimizationVariable
             end
         end
         
-        function nameStrs = getStrNamesOfVars(obj, evtNum)
-            nameStrs = horzcat(sprintf('Event %i Time', evtNum), obj.orbitVar.getStrNamesOfVars(evtNum));
+        function nameStrs = getStrNamesOfVars(obj, evtNum, varLocType)
+            if(evtNum > 0)
+                subStr = sprintf('Event %i',evtNum);
+            else
+                subStr = varLocType;
+            end
+            
+            nameStrs = horzcat(sprintf('%s Time', subStr), obj.orbitVar.getStrNamesOfVars(evtNum, varLocType));
+        end
+        
+        function tf = isVarContainedWithin(obj, var)
+            tf = var == obj;
+            if(not(isempty(obj.orbitVar)))
+                tf = tf || var == obj.orbitVar;
+            end
         end
     end
 end

@@ -22,7 +22,7 @@ function varargout = ma_LvdMainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_LvdMainGUI
 
-% Last Modified by GUIDE v2.5 15-Jan-2020 19:38:01
+% Last Modified by GUIDE v2.5 23-Jan-2020 18:04:07
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1708,9 +1708,9 @@ function selectOptimizationAlgosMenu_Callback(hObject, eventdata, handles)
     end
 
 
-% --- Executes on button press in pushbutton9.
-function pushbutton9_Callback(hObject, eventdata, handles)
-% hObject    handle to pushbutton9 (see GCBO)
+% --- Executes on button press in popOutOrbitDisplayButton.
+function popOutOrbitDisplayButton_Callback(hObject, eventdata, handles)
+% hObject    handle to popOutOrbitDisplayButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
     lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
@@ -1723,3 +1723,29 @@ function pushbutton9_Callback(hObject, eventdata, handles)
     maStateLog = lvdData.stateLog.getMAFormattedStateLogMatrix();
     
     lvd_updateDispAxis(handles, maStateLog, numToPlot, orbitPlotType, lvdData);
+
+
+% --------------------------------------------------------------------
+function adjustVariablesMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to adjustVariablesMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    lvdOpt = lvdData.optimizer;
+    varSet = lvdOpt.vars;
+    varSet.sortVarsByEvtNum();
+    [x, ~, ~, ~] = varSet.getTotalScaledXVector();
+    
+    if(~isempty(x))
+        addUndoState(handles,'Adjust Optimization Variables');
+        
+        propScriptFcn = @() propagateScript(handles, lvdData, 1);
+        procDataFcn = @() lvd_processData(handles);
+        
+        lvd_adjustOptVarGUI(lvdData, propScriptFcn, procDataFcn);
+        
+        propagateScript(handles, lvdData, 1);
+        lvd_processData(handles);
+    else
+        warndlg('Cannot display adjustment dialog: no optimization variables are enabled on this script.');
+    end
