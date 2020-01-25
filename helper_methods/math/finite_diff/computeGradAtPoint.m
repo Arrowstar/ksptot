@@ -40,20 +40,22 @@ function [g] = computeGradAtPoint(fun, x0, fAtX0, h, diffType, numPts, useParall
         M = 0;
     end
     
+    numFunOutputs = length(fAtX0);
     x0 = x0(:);
-    g = nan([numel(x0),1]);
-    zeroArr = zeros(size(g));
-    parfor(i=1:length(g), M)
+    g = nan([numel(x0),numFunOutputs]);
+    zeroArr = zeros(1,size(g,1));
+    parfor(i=1:size(g,1), M)
+% 	for(i=1:size(g,1))
         varArr = zeroArr;
         varArr(i) = 1;
         
-        xDeltas = h.*(varArr * xPts); %consider FMINCON style: delta = v.*sign?(x).*max(abs(x),TypicalX); or delta = v.*max(abs(x),TypicalX);
+        xDeltas = h.*(varArr(:) .* xPts); %consider FMINCON style: delta = v.*sign?(x).*max(abs(x),TypicalX); or delta = v.*max(abs(x),TypicalX);
         
         xToEvalAt = bsxfun(@plus, x0, xDeltas);
         
         numPtsToEval = size(xToEvalAt, 2);
         
-        numerator = 0;
+        numerator = zeros(1,numFunOutputs);
         for(j=1:numPtsToEval)
             if(diffCoeff(j) ~= 0) %#ok<PFBNS> %otherwise we're just adding zero regardless
                 if(not(isempty(fAtX0)) && all(x0 == xToEvalAt(:,j)))
@@ -61,11 +63,11 @@ function [g] = computeGradAtPoint(fun, x0, fAtX0, h, diffType, numPts, useParall
                 else
                     fAtX = fun(xToEvalAt(:,j)); %#ok<PFBNS>
                 end
-                numerator = numerator + diffCoeff(j) * fAtX; 
+                numerator = numerator + diffCoeff(j) .* fAtX(:)'; 
             end
         end
         
-        g(i) = numerator/h;
+        g(i,:) = numerator/h;
     end
 end
 

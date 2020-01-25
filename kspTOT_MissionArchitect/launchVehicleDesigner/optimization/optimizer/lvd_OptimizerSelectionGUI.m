@@ -22,7 +22,7 @@ function varargout = lvd_OptimizerSelectionGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_OptimizerSelectionGUI
 
-% Last Modified by GUIDE v2.5 06-Nov-2019 19:32:08
+% Last Modified by GUIDE v2.5 25-Jan-2020 16:16:14
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -186,8 +186,16 @@ function editSelectedGradAlgoOptions_Callback(hObject, eventdata, handles)
 % hObject    handle to editSelectedGradAlgoOptions (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.lvd_OptimizerSelectionGUI, 'lvdData');
+    
+    gradAlgoStrs = LvdOptimizerGradientCalculationAlgoEnum.getListBoxStr();
+    gradAlgoInd = handles.gradientSelCombo.Value;
+    gradAlgoEnum = LvdOptimizerGradientCalculationAlgoEnum.getEnumForListboxStr(gradAlgoStrs{gradAlgoInd});
 
-
+    lvdOpt = lvdData.optimizer;
+    gradAlgo = lvdOpt.getGradAlgoForEnum(gradAlgoEnum);
+    gradAlgo.openOptionsDialog();
+    
 % --- Executes on button press in editSelectedOptimizerOptionsButton.
 function editSelectedOptimizerOptionsButton_Callback(hObject, eventdata, handles)
 % hObject    handle to editSelectedOptimizerOptionsButton (see GCBO)

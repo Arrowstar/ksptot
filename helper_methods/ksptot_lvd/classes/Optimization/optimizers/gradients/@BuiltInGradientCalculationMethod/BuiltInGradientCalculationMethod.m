@@ -19,5 +19,13 @@ classdef BuiltInGradientCalculationMethod < AbstractGradientCalculationMethod
         function g = computeGrad(fun, x0, fAtX0, useParallel)
             error('The builtin method for computing gradients should not call computeGrad()');
         end
+        
+        function J = computeJacobian(obj, cFun, x0, cAtX0, useParallel)
+            error('The builtin method for computing the Jacobian should not call computeJacobian()');
+        end
+        
+        function openOptionsDialog(obj)
+            %nothing
+        end
     end
 end

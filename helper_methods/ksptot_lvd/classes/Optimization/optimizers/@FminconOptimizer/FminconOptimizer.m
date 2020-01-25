@@ -33,7 +33,7 @@ classdef FminconOptimizer < AbstractGradientOptimizer
                 opts = optimoptions(opts, 'SpecifyObjectiveGradient',false);
             elseif(lvdOpt.gradAlgo == LvdOptimizerGradientCalculationAlgoEnum.FiniteDifferences)
                 gradCalcMethod = lvdOpt.customFiniteDiffsCalcMethod;
-                objFunToPass = @(x) obj.objFuncWithGradient(objFuncWrapper, x, gradCalcMethod, usePara);
+                objFunToPass = @(x) obj.objFuncWithGradient(objFuncWrapper, x, gradCalcMethod, obj.usesParallel());
                 opts = optimoptions(opts, 'SpecifyObjectiveGradient',true);
             end
             
@@ -71,7 +71,7 @@ classdef FminconOptimizer < AbstractGradientOptimizer
     end
     
     methods(Access=private)
-        function [f, g, stateLog] = objFuncWithGradient(~, objFun, x, gradCalcMethod,useParallel)
+        function [f, g, stateLog] = objFuncWithGradient(~, objFun, x, gradCalcMethod, useParallel)
             [f, stateLog] = objFun(x);
             
             if(nargout >= 2)

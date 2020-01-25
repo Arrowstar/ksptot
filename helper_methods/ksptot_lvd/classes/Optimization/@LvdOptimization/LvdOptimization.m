@@ -17,6 +17,7 @@ classdef LvdOptimization < matlab.mixin.SetGet
         fminconOpt(1,1) FminconOptimizer = FminconOptimizer();
         patternSearchOpt(1,1) PatternSearchOptimizer = PatternSearchOptimizer();
         nomadOpt(1,1) NomadOptimizer = NomadOptimizer();
+        ipoptOpt(1,1) IpOptOptimizer = IpOptOptimizer();
         
         %Gradient Calc Algo Selection
         gradAlgo(1,1) LvdOptimizerGradientCalculationAlgoEnum = LvdOptimizerGradientCalculationAlgoEnum.BuiltIn;
@@ -38,6 +39,7 @@ classdef LvdOptimization < matlab.mixin.SetGet
             obj.fminconOpt = FminconOptimizer();
             obj.patternSearchOpt = PatternSearchOptimizer();
             obj.nomadOpt = NomadOptimizer();
+            obj.ipoptOpt = IpOptOptimizer();
             
             obj.builtInGradMethod = BuiltInGradientCalculationMethod();
             obj.customFiniteDiffsCalcMethod = CustomFiniteDiffsCalculationMethod();
@@ -60,8 +62,20 @@ classdef LvdOptimization < matlab.mixin.SetGet
                 optimizer = obj.patternSearchOpt;
             elseif(optAlgorithm == LvdOptimizerAlgoEnum.Nomad)
                 optimizer = obj.nomadOpt;
+            elseif(optAlgorithm == LvdOptimizerAlgoEnum.Ipopt)
+                optimizer = obj.ipoptOpt;
             else
                 error('Unknown LVD optimization algorithm!');
+            end
+        end
+        
+        function gradAlgo = getGradAlgoForEnum(obj, gradAlgoEnum)
+            if(gradAlgoEnum == LvdOptimizerGradientCalculationAlgoEnum.BuiltIn)
+                gradAlgo = obj.builtInGradMethod;
+            elseif(gradAlgoEnum == LvdOptimizerGradientCalculationAlgoEnum.FiniteDifferences)
+                gradAlgo = obj.customFiniteDiffsCalcMethod;
+            else
+                error('Unknown LVD gradient algorithm!');
             end
         end
         

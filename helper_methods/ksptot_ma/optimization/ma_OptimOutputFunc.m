@@ -53,6 +53,10 @@ end
 function writeOptimStatus(handles, optimValues, state, writeOutput)
     persistent timer;
     
+    if(isempty(timer))
+        timer = tic;
+    end
+    
     elapTime = 0;
     switch state
         case 'iter'
