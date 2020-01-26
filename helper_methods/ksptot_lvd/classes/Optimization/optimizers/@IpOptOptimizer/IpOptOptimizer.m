@@ -3,12 +3,12 @@ classdef IpOptOptimizer < AbstractGradientOptimizer
     %   Detailed explanation goes here
     
     properties(Access = private)
-%         options(1,1) FminconOptions = FminconOptions();
+        options(1,1) IpoptOptions = IpoptOptions();
     end
     
     methods
         function obj = IpOptOptimizer()
-%             obj.options = FminconOptions();
+            obj.options = IpoptOptions();
         end
         
         function optimize(obj, lvdOpt, writeOutput)
@@ -45,20 +45,15 @@ classdef IpOptOptimizer < AbstractGradientOptimizer
             funcs.jacobian = @(x) obj.computeJacobian(cFun, x, gradCalcMethod, obj.usesParallel());
             funcs.jacobianstructure = @() obj.computeJacobianStruct(length(x0All), numConstrs);
             
-            options.lb = lbAll;
-            options.ub = ubAll;
-            options.cl = [-Inf * ones(numIneq,1); zeros(numEq,1)];
-            options.cu = zeros(numConstrs,1);
-            options.ipopt.print_level = 5;
-            options.ipopt.hessian_approximation = 'limited-memory';
-            options.ipopt.honor_original_bounds = 'yes';
-            options.ipopt.print_timing_statistics = 'yes';
-            options.ipopt.print_user_options = 'yes';
-            options.ipopt.mu_strategy = 'adaptive';
+            optionsStruct.lb = lbAll;
+            optionsStruct.ub = ubAll;
+            optionsStruct.cl = [-Inf * ones(numIneq,1); zeros(numEq,1)];
+            optionsStruct.cu = zeros(numConstrs,1);
+            optionsStruct.ipopt = obj.options.getOptionsForOptimizer();
             
             problem.x0 = x0All;
             problem.funcs = funcs;
-            problem.options = options;
+            problem.options = optionsStruct;
             problem.lvdData = lvdOpt.lvdData; %need to get lvdData in somehow
             problem.solver = 'ipopt';
             problem.UseParallel = obj.usesParallel();
@@ -69,7 +64,7 @@ classdef IpOptOptimizer < AbstractGradientOptimizer
             handlesObsOptimGui = ma_ObserveOptimGUI(celBodyData, problem, true, writeOutput, [], varNameStrs, lbUsAll, ubUsAll);
             
             recorder = ma_OptimRecorder();
-            outputFnc = @(iterNum, fVal, iterInfo) obj.outputFunc(iterNum, fVal, iterInfo, handlesObsOptimGui, objFuncWrapper, lbAll, ubAll, celBodyData, recorder, propNames, writeOutput, varNameStrs, lbUsAll, ubUsAll);
+            outputFnc = @(iterNum, fVal, iterInfo) obj.outputFunc(iterNum, fVal, iterInfo, handlesObsOptimGui, objFuncWrapper, cFun, lbAll, ubAll, celBodyData, recorder, propNames, writeOutput, varNameStrs, lbUsAll, ubUsAll);
             problem.funcs.iterfunc = outputFnc;
             
             lvd_executeOptimProblem(celBodyData, writeOutput, problem, recorder);
@@ -77,7 +72,7 @@ classdef IpOptOptimizer < AbstractGradientOptimizer
         end
         
         function options = getOptions(obj)
-%             options = obj.options;
+            options = obj.options;
         end
         
         function setGradientCalculationMethod(obj, newGradCalcMethod)
@@ -89,8 +84,7 @@ classdef IpOptOptimizer < AbstractGradientOptimizer
         end
         
         function tf = usesParallel(obj)
-%             tf = obj.options.useParallel.optionVal;
-            tf = true;
+            tf = obj.options.usesParallel().optionVal;
         end
     end
     
@@ -126,12 +120,15 @@ classdef IpOptOptimizer < AbstractGradientOptimizer
             Js = sparse(ones(numConstrs, numVars));
         end
         
-        function stop = outputFunc(~, iterNum, fVal, iterInfo,   handlesObsOptimGui, objFcn, lb, ub, celBodyData, recorder, propNames, writeOutput, varNameStrs, lbUsAll, ubUsAll)
+        function stop = outputFunc(~, iterNum, fVal, iterInfo,   handlesObsOptimGui, objFcn, constrFunc, lb, ub, celBodyData, recorder, propNames, writeOutput, varNameStrs, lbUsAll, ubUsAll)
             global ipoptFuncCount ipoptLastXVect
             state = 'iter';
             
             x = ipoptLastXVect;
-            optimValues.constrviolation = iterInfo.inf_pr;
+            cOut = constrFunc(x);
+            cMax = max([0, max(cOut)]);
+            
+            optimValues.constrviolation = cMax;
             optimValues.firstorderopt = iterInfo.inf_du;
             optimValues.funccount = ipoptFuncCount;
             optimValues.fval = fVal;

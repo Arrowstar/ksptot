@@ -1,5 +1,5 @@
-classdef FminconUseParallelEnum < matlab.mixin.SetGet
-    %FminconUseParallelEnum Summary of this class goes here
+classdef IpoptUseParallelEnum < matlab.mixin.SetGet
+    %IpoptUseParallelEnum Summary of this class goes here
     %   Detailed explanation goes here
     
     enumeration
@@ -13,7 +13,7 @@ classdef FminconUseParallelEnum < matlab.mixin.SetGet
     end
     
     methods
-        function obj = FminconUseParallelEnum(name, optionVal)
+        function obj = IpoptUseParallelEnum(name, optionVal)
             obj.name = name;
             obj.optionVal = optionVal;
         end
@@ -21,13 +21,13 @@ classdef FminconUseParallelEnum < matlab.mixin.SetGet
     
     methods(Static)
         function listBoxStr = getListBoxStr()
-            m = enumeration('FminconUseParallelEnum');
+            m = enumeration('IpoptUseParallelEnum');
             [~,I] = sort({m.name});
             listBoxStr = {m(I).name};
         end
         
         function [ind, enum] = getIndForName(name)
-            m = enumeration('FminconUseParallelEnum');
+            m = enumeration('IpoptUseParallelEnum');
             [~,I] = sort({m.name});
             m = m(I);
             ind = find(ismember({m.name},name),1,'first');
@@ -35,7 +35,7 @@ classdef FminconUseParallelEnum < matlab.mixin.SetGet
         end
         
         function [enum, ind] = getEnumForListboxStr(nameStr)
-            m = enumeration('FminconUseParallelEnum');
+            m = enumeration('IpoptUseParallelEnum');
             ind = find(ismember({m.name},nameStr),1,'first');
             enum = m(ind);
         end

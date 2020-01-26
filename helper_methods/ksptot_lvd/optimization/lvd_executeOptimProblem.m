@@ -32,7 +32,7 @@ function lvd_executeOptimProblem(celBodyData, writeOutput, problem, recorder)
             [x,fval,exitflag,iter,nfval] = nomad(problem.objective, problem.x0, problem.lb, problem.ub, problem.options);
             
         elseif(strcmpi(problem.solver,'ipopt'))
-            [x, info] = ipopt(problem.x0, problem.funcs, problem.options);
+            [x,info] = ipopt(problem.x0, problem.funcs, problem.options);
             exitflag = info.status;
             
         else

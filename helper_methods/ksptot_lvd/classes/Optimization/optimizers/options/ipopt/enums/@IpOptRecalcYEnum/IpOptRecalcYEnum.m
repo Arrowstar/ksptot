@@ -1,33 +1,33 @@
-classdef FminconUseParallelEnum < matlab.mixin.SetGet
-    %FminconUseParallelEnum Summary of this class goes here
+classdef IpOptRecalcYEnum < matlab.mixin.SetGet
+    %IpOptRecalcYEnum Summary of this class goes here
     %   Detailed explanation goes here
     
     enumeration
-        UseParallel('Compute Gradients in Parallel',true)
-        DoNotUseParallel('Compute Gradients in Serial',false);
+        No('No','no')
+        Yes('Yes','yes')
     end
     
     properties
-        name char = '';
-        optionVal(1,1) logical = true
+        name(1,:) char
+        optStr(1,:) char
     end
     
     methods
-        function obj = FminconUseParallelEnum(name, optionVal)
+        function obj = IpOptRecalcYEnum(name, optStr)
             obj.name = name;
-            obj.optionVal = optionVal;
+            obj.optStr = optStr;
         end
     end
     
     methods(Static)
         function listBoxStr = getListBoxStr()
-            m = enumeration('FminconUseParallelEnum');
+            m = enumeration('IpOptRecalcYEnum');
             [~,I] = sort({m.name});
             listBoxStr = {m(I).name};
         end
         
         function [ind, enum] = getIndForName(name)
-            m = enumeration('FminconUseParallelEnum');
+            m = enumeration('IpOptRecalcYEnum');
             [~,I] = sort({m.name});
             m = m(I);
             ind = find(ismember({m.name},name),1,'first');
@@ -35,7 +35,7 @@ classdef FminconUseParallelEnum < matlab.mixin.SetGet
         end
         
         function [enum, ind] = getEnumForListboxStr(nameStr)
-            m = enumeration('FminconUseParallelEnum');
+            m = enumeration('IpOptRecalcYEnum');
             ind = find(ismember({m.name},nameStr),1,'first');
             enum = m(ind);
         end
