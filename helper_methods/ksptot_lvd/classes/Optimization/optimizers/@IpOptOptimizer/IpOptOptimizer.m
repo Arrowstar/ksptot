@@ -80,7 +80,7 @@ classdef IpOptOptimizer < AbstractGradientOptimizer
         end
         
         function openOptionsDialog(obj)
-%             lvd_editFminconOptionsGUI(obj);
+            lvd_editIpoptOptionsGUI(obj);
         end
         
         function tf = usesParallel(obj)
