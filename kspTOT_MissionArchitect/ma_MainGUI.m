@@ -242,10 +242,22 @@ function scriptListbox_Callback(hObject, eventdata, handles)
             initialState = [];
         else
             stateLog = maData.stateLog;
-            eventLog = stateLog(stateLog(:,13)==(eventNum-1),:);
-            finalEntry = eventLog(end,:);
             
-            initialState = finalEntry;
+            try
+                eventLog = stateLog(stateLog(:,13)==(eventNum),:);
+                
+                if(not(isempty(eventLog)))
+                    initialState = eventLog(1,:);
+                else
+                    eventLog = stateLog(stateLog(:,13)==(eventNum-1),:);
+                    finalEntry = eventLog(end,:);
+                    initialState = finalEntry;
+                end            
+            catch
+                eventLog = stateLog(stateLog(:,13)==(eventNum-1),:);
+                finalEntry = eventLog(end,:);
+                initialState = finalEntry;
+            end
         end
         
         oldID = event.id;

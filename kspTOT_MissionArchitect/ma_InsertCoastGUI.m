@@ -482,7 +482,7 @@ function coastTypeCombo_Callback(hObject, eventdata, handles)
                 end
             end
 
-            hcmenu = uicontextmenu;
+            hcmenu = uicontextmenu(handles.ma_InsertCoastGUI);
             cMCallback = @(src,eventdata) enterUTAsDateTime_Callback(src,eventdata);
             uimenu(hcmenu,'Label','Enter UT As Date/Time','Callback',cMCallback);
             set(handles.coastValueText,'uicontextmenu',hcmenu);

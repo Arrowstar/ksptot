@@ -63,7 +63,7 @@ function [eventLog] = ma_executeAerobrake(initialState, eventNum, maneuverEvent,
     tspan = [ut, ut + 2*period];
     x0 = [rVect, vVect, mass];
     options = odeset('Events',eventsModel,'RelTol',1E-6,'AbsTol',1E-6);
-    [T,Y] = ode45(rhs,tspan,x0,options);
+    [T,Y] = ode15s(rhs,tspan,x0,options);
     
     eventLog = zeros(length(T), length(initialState));
     eventLog(:,1) = T;
