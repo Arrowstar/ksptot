@@ -6,6 +6,10 @@ classdef CustomFiniteDiffsCalculationMethod < AbstractGradientCalculationMethod
         h(1,1) double = 1E-7;
         diffType(1,1) FiniteDiffTypeEnum = FiniteDiffTypeEnum.Forward;
         numPts(1,1) uint64 = 2;
+        
+        %sparsity
+        computeSparsity(1,1) logical = false;
+        gradientSparsity(:,1) double = [];
     end
     
     methods
@@ -17,13 +21,37 @@ classdef CustomFiniteDiffsCalculationMethod < AbstractGradientCalculationMethod
             tf = false;
         end
         
+        function tf = shouldComputeSparsity(obj)
+            tf = obj.computeSparsity;
+        end
+        
+        function computeGradientSparsity(obj, fun, x0, fAtX0, useParallel)
+            if(obj.computeSparsity)
+                obj.gradientSparsity = ones(length(x0),1);
+                g = obj.computeGrad(fun, x0, fAtX0, useParallel);
+                g(g~=0) = 1;
+
+                obj.gradientSparsity = g;
+            else
+                obj.gradientSparsity = [];
+            end
+        end
+        
         function g = computeGrad(obj, fun, x0, fAtX0, useParallel)
-            g = computeGradAtPoint(fun, x0, fAtX0, obj.h, obj.diffType, double(obj.numPts), useParallel);
+            if(obj.computeSparsity)
+                sparsity = obj.gradientSparsity;
+            else
+                sparsity = [];
+            end
+            
+            g = computeGradAtPoint(fun, x0, fAtX0, obj.h, obj.diffType, double(obj.numPts), sparsity, useParallel);
             g = g(:)';
         end
         
         function J = computeJacobian(obj, cFun, x0, cAtX0, useParallel)
-            J = computeGradAtPoint(cFun, x0, cAtX0, obj.h, obj.diffType, double(obj.numPts), useParallel);
+            sparsity = [];
+            
+            J = computeGradAtPoint(cFun, x0, cAtX0, obj.h, obj.diffType, double(obj.numPts), sparsity, useParallel);
             J = J';
         end
         

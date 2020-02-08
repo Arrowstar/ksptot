@@ -16,6 +16,14 @@ classdef BuiltInGradientCalculationMethod < AbstractGradientCalculationMethod
             tf = true;
         end
         
+        function tf = shouldComputeSparsity(obj)
+            tf = false;
+        end
+        
+        function computeGradientSparsity(obj, fun, x0, fAtX0, useParallel)
+            error('The builtin method for computing gradient sparsity should not call computeGradientSparsity()');
+        end
+        
         function g = computeGrad(fun, x0, fAtX0, useParallel)
             error('The builtin method for computing gradients should not call computeGrad()');
         end

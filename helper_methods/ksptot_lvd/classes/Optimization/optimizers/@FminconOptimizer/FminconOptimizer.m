@@ -35,6 +35,20 @@ classdef FminconOptimizer < AbstractGradientOptimizer
                 gradCalcMethod = lvdOpt.customFiniteDiffsCalcMethod;
                 objFunToPass = @(x) obj.objFuncWithGradient(objFuncWrapper, x, gradCalcMethod, obj.usesParallel());
                 opts = optimoptions(opts, 'SpecifyObjectiveGradient',true);
+                
+                sparsityTF = gradCalcMethod.shouldComputeSparsity();
+                if(sparsityTF)
+                    hMsgBox = msgbox('Computing sparsity.  Please wait...');
+                else
+                    hMsgBox = NaN;
+                end
+                
+                fAtX0 = objFunToPass(x0All);
+                gradCalcMethod.computeGradientSparsity(objFuncWrapper, x0All, fAtX0, obj.usesParallel());
+                
+                if(sparsityTF && isgraphics(hMsgBox))
+                    close(hMsgBox);
+                end
             end
             
             problem = createOptimProblem('fmincon', 'objective',objFunToPass, 'x0', x0All, 'lb', lbAll, 'ub', ubAll, 'nonlcon', nonlcon, 'options', opts);

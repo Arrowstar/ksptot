@@ -1,4 +1,4 @@
-function [g] = computeGradAtPoint(fun, x0, fAtX0, h, diffType, numPts, useParallel)
+function [g] = computeGradAtPoint(fun, x0, fAtX0, h, diffType, numPts, sparsity, useParallel)
 %computeGradAtPoint Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -45,29 +45,32 @@ function [g] = computeGradAtPoint(fun, x0, fAtX0, h, diffType, numPts, useParall
     g = nan([numel(x0),numFunOutputs]);
     zeroArr = zeros(1,size(g,1));
     parfor(i=1:size(g,1), M)
-% 	for(i=1:size(g,1))
-        varArr = zeroArr;
-        varArr(i) = 1;
-        
-        xDeltas = h.*(varArr(:) .* xPts); %consider FMINCON style: delta = v.*sign?(x).*max(abs(x),TypicalX); or delta = v.*max(abs(x),TypicalX);
-        
-        xToEvalAt = bsxfun(@plus, x0, xDeltas);
-        
-        numPtsToEval = size(xToEvalAt, 2);
-        
-        numerator = zeros(1,numFunOutputs);
-        for(j=1:numPtsToEval)
-            if(diffCoeff(j) ~= 0) %#ok<PFBNS> %otherwise we're just adding zero regardless
-                if(not(isempty(fAtX0)) && all(x0 == xToEvalAt(:,j)))
-                    fAtX = fAtX0;
-                else
-                    fAtX = fun(xToEvalAt(:,j)); %#ok<PFBNS>
+        if(numFunOutputs == 1 && not(isempty(sparsity)) && sparsity(i) ~= 0)
+            varArr = zeroArr;
+            varArr(i) = 1;
+
+            xDeltas = h.*(varArr(:) .* xPts); %consider FMINCON style: delta = v.*sign?(x).*max(abs(x),TypicalX); or delta = v.*max(abs(x),TypicalX);
+
+            xToEvalAt = bsxfun(@plus, x0, xDeltas);
+
+            numPtsToEval = size(xToEvalAt, 2);
+
+            numerator = zeros(1,numFunOutputs);
+            for(j=1:numPtsToEval)
+                if(diffCoeff(j) ~= 0) %#ok<PFBNS> %otherwise we're just adding zero regardless
+                    if(not(isempty(fAtX0)) && all(x0 == xToEvalAt(:,j)))
+                        fAtX = fAtX0;
+                    else
+                        fAtX = fun(xToEvalAt(:,j)); %#ok<PFBNS>
+                    end
+                    numerator = numerator + diffCoeff(j) .* fAtX(:)'; 
                 end
-                numerator = numerator + diffCoeff(j) .* fAtX(:)'; 
             end
+
+            g(i,:) = numerator/h;
+        else
+            g(i,:) = zeros(1,numFunOutputs);
         end
-        
-        g(i,:) = numerator/h;
     end
 end
 

@@ -22,7 +22,7 @@ function varargout = lvd_finiteDiffOptionsGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_finiteDiffOptionsGUI
 
-% Last Modified by GUIDE v2.5 25-Jan-2020 16:31:28
+% Last Modified by GUIDE v2.5 08-Feb-2020 12:12:32
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -73,6 +73,12 @@ function handles = populateGUI(handles, finDiffObj)
     typeListboxStr = FiniteDiffTypeEnum.getListBoxStr();
     handles.finDiffTypeCombo.String = typeListboxStr;
     handles.finDiffTypeCombo.Value = FiniteDiffTypeEnum.getIndForName(finDiffObj.diffType.name);
+    
+    if(finDiffObj.shouldComputeSparsity())
+        handles.computeSparsityCheckbox.Value = 1;
+    else
+        handles.computeSparsityCheckbox.Value = 0;
+    end
 
 % --- Outputs from this function are returned to the command line.
 function varargout = lvd_finiteDiffOptionsGUI_OutputFcn(hObject, eventdata, handles) 
@@ -92,6 +98,9 @@ function varargout = lvd_finiteDiffOptionsGUI_OutputFcn(hObject, eventdata, hand
         
         typeListboxStr = FiniteDiffTypeEnum.getListBoxStr();
         finDiffObj.diffType = FiniteDiffTypeEnum.getEnumForListboxStr(typeListboxStr{handles.finDiffTypeCombo.Value});
+        
+        computeSparsity = logical(handles.computeSparsityCheckbox.Value);
+        finDiffObj.computeSparsity = computeSparsity;
         
         close(handles.lvd_finiteDiffOptionsGUI);
         varargout{1} = true;
@@ -188,3 +197,12 @@ function numPointsText_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on button press in computeSparsityCheckbox.
+function computeSparsityCheckbox_Callback(hObject, eventdata, handles)
+% hObject    handle to computeSparsityCheckbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of computeSparsityCheckbox

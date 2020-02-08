@@ -39,6 +39,22 @@ classdef IpOptOptimizer < AbstractGradientOptimizer
                 gradCalcMethod = lvdOpt.getGradAlgoForEnum(lvdOpt.gradAlgo);
             end
             
+            %sparsity calculations
+            sparsityTF = gradCalcMethod.shouldComputeSparsity();
+            if(sparsityTF)
+                hMsgBox = msgbox('Computing sparsity.  Please wait...');
+            else
+                hMsgBox = NaN;
+            end
+
+            fAtX0 = objFuncWrapper(x0All);
+            gradCalcMethod.computeGradientSparsity(objFuncWrapper, x0All, fAtX0, obj.usesParallel());
+
+            if(sparsityTF && isgraphics(hMsgBox))
+                close(hMsgBox);
+            end
+            %end sparsity calculations
+            
             funcs.objective = @(x) obj.computeObjFun(objFuncWrapper, x);
             funcs.gradient = @(x) obj.computeGrad(funcs.objective, x, gradCalcMethod, obj.usesParallel());
             funcs.constraints = cFun;
