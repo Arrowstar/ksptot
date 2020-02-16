@@ -28,10 +28,14 @@ classdef CustomFiniteDiffsCalculationMethod < AbstractGradientCalculationMethod
         function computeGradientSparsity(obj, fun, x0, fAtX0, useParallel)
             if(obj.computeSparsity)
                 obj.gradientSparsity = ones(length(x0),1);
-                g = obj.computeGrad(fun, x0, fAtX0, useParallel);
-                g(g~=0) = 1;
+                try
+                    g = obj.computeGrad(fun, x0, fAtX0, useParallel);
+                    g(g~=0) = 1;
 
-                obj.gradientSparsity = g;
+                    obj.gradientSparsity = g;
+                catch ME
+                    obj.gradientSparsity = ones(length(x0),1);
+                end
             else
                 obj.gradientSparsity = [];
             end

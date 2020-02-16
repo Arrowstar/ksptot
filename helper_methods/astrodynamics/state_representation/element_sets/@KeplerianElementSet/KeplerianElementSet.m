@@ -62,6 +62,15 @@ classdef KeplerianElementSet < AbstractElementSet
         function elemVect = getElementVector(obj)
             elemVect = [obj.sma,obj.ecc,rad2deg(obj.inc),rad2deg(obj.raan),rad2deg(obj.arg),rad2deg(obj.tru)];
         end
+        
+        function mean = getMeanAnomaly(obj)
+            [mean] = computeMeanFromTrueAnom(obj.tru, obj.ecc);
+        end
+        
+        function meanMotion = getMeanMotion(obj)
+            gmu = obj.frame.getOriginBody().gm;
+            meanMotion = computeMeanMotion(obj.sma, gmu);
+        end
     end
     
     methods(Access=protected)

@@ -154,7 +154,7 @@ function generatePlots(x, optimValues, state, handles, lb, ub, varLabels, lbUsAl
         hLine = h.Children(1);
         if(isa(hLine,'matlab.graphics.chart.primitive.Line'))
             yDataLine = hLine.YData;
-            if(abs(max(yDataLine) / min(yDataLine)) >= 10)
+            if(abs(max(yDataLine) / min(yDataLine)) >= 10 && all(yDataLine > 0))
                 set(h,'yscale','log');
             else
                 set(h,'yscale','linear');

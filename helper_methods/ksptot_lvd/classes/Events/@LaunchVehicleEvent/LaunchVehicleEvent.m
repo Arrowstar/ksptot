@@ -12,15 +12,28 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
         
         colorLineSpec(1,1) EventColorLineSpec 
         plotMethod(1,1) EventPlottingMethodEnum = EventPlottingMethodEnum.PlotContinuous
-        
-        integrator(1,1) IntegratorEnum = IntegratorEnum.ODE45;
-        integrationStep(1,1) double = -1;
+
+        integratorObj(1,1) AbstractIntegrator = ODE45Integrator();
+        propagatorObj(1,1) AbstractPropagator = ForceModelPropagator();
+
         checkForSoITrans(1,1) logical = true;
-        initialStep(1,1) double = 10;
-        
-        forceModels ForceModelsEnum = ForceModelsEnum.getDefaultArrayOfForceModelEnums();
         
         disableOptim(1,1) logical = false;
+        
+        %%%%%
+        %Propagators
+        %%%%%
+        forceModelPropagator(1,1) ForceModelPropagator = ForceModelPropagator();
+        twoBodyPropagator(1,1) TwoBodyPropagator = TwoBodyPropagator();
+        
+        %%%%%
+        %Integrators
+        %%%%%
+        ode45Integrator(1,1) ODE45Integrator = ODE45Integrator();
+        ode113Integrator(1,1) ODE113Integrator = ODE113Integrator();
+        ode23Integrator(1,1) ODE23Integrator = ODE23Integrator();
+        ode23sIntegrator(1,1) ODE23sIntegrator = ODE23sIntegrator();
+        ode15sIntegrator(1,1) ODE15sIntegrator = ODE15sIntegrator();
     end
     
     properties(Dependent)
@@ -40,7 +53,19 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
         function obj = LaunchVehicleEvent(script)
             obj.script = script;
             obj.colorLineSpec = EventColorLineSpec();
-            obj.integrator = IntegratorEnum.ODE45;
+%             obj.integrator = IntegratorEnum.ODE45;
+
+            obj.integratorObj = ODE45Integrator();
+            obj.propagatorObj = ForceModelPropagator();
+            
+            obj.forceModelPropagator = ForceModelPropagator();
+            obj.twoBodyPropagator = TwoBodyPropagator();
+            
+            obj.ode45Integrator = ODE45Integrator();
+            obj.ode113Integrator = ODE113Integrator();
+            obj.ode23Integrator = ODE23Integrator();
+            obj.ode23sIntegrator = ODE23sIntegrator();
+            obj.ode15sIntegrator = ODE15sIntegrator();
         end
         
         function lvdData = get.lvdData(obj)
@@ -125,10 +150,7 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
         end
         
         function newStateLogEntries = executeEvent(obj, initStateLogEntry, simDriver, tStartPropTime, tStartSimTime, isSparseOutput, activeNonSeqEvts)
-            if(isempty(obj.integrator))
-                obj.integrator = IntegratorEnum.ODE45;
-            end
-            [newStateLogEntries] = simDriver.integrateOneEvent(obj, initStateLogEntry, obj.integrator, tStartPropTime, tStartSimTime, isSparseOutput, obj.checkForSoITrans, activeNonSeqEvts, obj.forceModels);
+            [newStateLogEntries] = simDriver.integrateOneEvent(obj, initStateLogEntry, tStartPropTime, tStartSimTime, isSparseOutput, obj.checkForSoITrans, activeNonSeqEvts);
         end
         
         function tf = usesStage(obj, stage)

@@ -76,7 +76,7 @@ classdef ForceModelsEnum < matlab.mixin.SetGet & matlab.mixin.Heterogeneous
         end
         
         function fmArr = getDefaultArrayOfForceModelEnums()
-            fmArr = [ForceModelsEnum.Gravity, ForceModelsEnum.Drag, ForceModelsEnum.Thrust, ForceModelsEnum.Lift, ForceModelsEnum.Normal];
+            fmArr = [ForceModelsEnum.Gravity, ForceModelsEnum.Drag, ForceModelsEnum.Thrust];
         end
         
         function fmArr = getAllForceModelsThatCannotBeDisabled()
@@ -85,7 +85,7 @@ classdef ForceModelsEnum < matlab.mixin.SetGet & matlab.mixin.Heterogeneous
             fmArr = ForceModelsEnum.empty(1,0);
             for(i=1:length(m))
                 if(m(i).canBeDisabled == false)
-                    fmArr(end+1) = m(i);
+                    fmArr(end+1) = m(i); %#ok<AGROW>
                 end
             end
         end

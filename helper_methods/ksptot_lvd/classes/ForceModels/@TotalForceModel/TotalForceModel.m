@@ -4,15 +4,17 @@ classdef TotalForceModel < matlab.mixin.SetGet
     %   Detailed explanation goes here
     
     properties(Transient)
-%         forceModels AbstractForceModel
+
     end
     
     methods
         function obj = TotalForceModel()
-%             obj.forceModels = TotalForceModel.getForceModels();
+
         end
-        
-        function [forceVect, tankMdots] = getForce(obj, fmEnums, ut, rVect, vVect, mass, bodyInfo, aero, throttleModel, steeringModel, tankStates, stageStates, lvState, dryMass, tankStatesMasses, thirdBodyGravity)
+    end
+    
+   methods (Static)
+        function [forceVect, tankMdots] = getForce(fmEnums, ut, rVect, vVect, mass, bodyInfo, aero, throttleModel, steeringModel, tankStates, stageStates, lvState, dryMass, tankStatesMasses, thirdBodyGravity)
             forceVect = [0;0;0];
             tankMdots = zeros(length(tankStates),1);
             
@@ -28,21 +30,5 @@ classdef TotalForceModel < matlab.mixin.SetGet
                 end
             end
         end
-    end
-    
-   methods (Static)
-%       function s = loadobj(s)
-%          s.forceModels = TotalForceModel.getForceModels();
-%       end
-      
-%       function forceModels = getForceModels()
-%         forceModels = AbstractForceModel.empty(0,1);
-%           
-%         forceModels(end+1) = GravityForceModel();
-%         forceModels(end+1) = DragForceModel();
-%         forceModels(end+1) = ThrustForceModel();
-% %         forceModels(end+1) = NormalForceModel();
-%         forceModels(end+1) = LiftForceModel();
-%       end
    end
 end

@@ -18,6 +18,7 @@ function test_ipopt
   options.ipopt.mu_strategy      = 'adaptive';
   options.ipopt.max_iter         = 400;
   options.ipopt.tol              = 1e-10;
+  options.ipopt.linear_solver = 'ma57';
   
   % The callback functions.
   funcs.objective         = @objective;
@@ -25,7 +26,7 @@ function test_ipopt
   funcs.gradient          = @gradient;
   funcs.jacobian          = @jacobian;
   funcs.jacobianstructure = @jacobianstructure;
-  if true
+  if false
     options.ipopt.derivative_test = 'first-order';
     funcs.hessian           = @hessian;
     funcs.hessianstructure  = @hessianstructure;

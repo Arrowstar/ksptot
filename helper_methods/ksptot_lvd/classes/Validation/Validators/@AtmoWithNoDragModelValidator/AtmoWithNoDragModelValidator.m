@@ -19,15 +19,32 @@ classdef AtmoWithNoDragModelValidator < AbstractLaunchVehicleDataValidator
             evts = obj.lvdData.script.evts;
             for(i=1:length(evts))
                 evt = evts(i);
+                evtPropagator = evt.propagatorObj;
+                propagatorEnum = evtPropagator.propagatorEnum;
                 
-                if(not(any(evt.forceModels == ForceModelsEnum.Drag)))                    
+                if(propagatorEnum == PropagatorEnum.ForceModel)
+                    if(not(any(evtPropagator.forceModels == ForceModelsEnum.Drag)))                    
+                        stateLogEntries = obj.lvdData.stateLog.getAllStateLogEntriesForEvent(evt);
+
+                        for(j=1:length(stateLogEntries))
+                            stateLogEntry = stateLogEntries(j);
+                            bodyInfo = stateLogEntry.centralBody;
+                            altitude = norm(stateLogEntry.position) - bodyInfo.radius;
+
+                            if(altitude <= bodyInfo.atmohgt && altitude >= 0)
+                                warnEvtNums(end+1) = evt.getEventNum(); %#ok<AGROW>
+                                break;
+                            end
+                        end
+                    end
+                elseif(propagatorEnum == PropagatorEnum.TwoBody)
                     stateLogEntries = obj.lvdData.stateLog.getAllStateLogEntriesForEvent(evt);
-                    
+
                     for(j=1:length(stateLogEntries))
                         stateLogEntry = stateLogEntries(j);
                         bodyInfo = stateLogEntry.centralBody;
                         altitude = norm(stateLogEntry.position) - bodyInfo.radius;
-                        
+
                         if(altitude <= bodyInfo.atmohgt && altitude >= 0)
                             warnEvtNums(end+1) = evt.getEventNum(); %#ok<AGROW>
                             break;

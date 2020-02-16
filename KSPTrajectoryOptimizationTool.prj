@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.ezdeploy" plugin-version="1.0">
-  <configuration build-checksum="706916291" file="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\KSPTrajectoryOptimizationTool.prj" location="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool" name="KSPTrajectoryOptimizationTool" preferred-package-location="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\deploy\KSPTrajectoryOptimizationTool\for_redistribution" preferred-package-type="package.type.exe" target="target.ezdeploy.standalone" target-name="Application Compiler">
+  <configuration build-checksum="3088017123" file="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\KSPTrajectoryOptimizationTool.prj" location="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool" name="KSPTrajectoryOptimizationTool" preferred-package-location="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\deploy\KSPTrajectoryOptimizationTool\for_redistribution" preferred-package-type="package.type.exe" target="target.ezdeploy.standalone" target-name="Application Compiler">
     <param.appname>KSPTrajectoryOptimizationTool</param.appname>
     <param.icon>${PROJECT_ROOT}\KSPTrajectoryOptimizationTool_resources\icon.ico</param.icon>
     <param.icons>
@@ -131,6 +131,7 @@
       <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\@opti\opti.m</file>
       <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\@opti\solveOpti.m</file>
       <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\@opti\testProblem.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Solvers\opti_ipopt.m</file>
       <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Solvers\opti_nomad.m</file>
       <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\abs.m</file>
       <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\acos.m</file>
@@ -184,6 +185,7 @@
       <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\times.m</file>
       <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\uminus.m</file>
       <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\vertcat.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\opti\ipoptset.m</file>
       <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\SymBuilder\@SymBuilder\buildCFun.m</file>
       <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\SymBuilder\@SymBuilder\buildMFun.m</file>
       <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\SymBuilder\@SymBuilder\detVarNames.m</file>

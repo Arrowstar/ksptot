@@ -19,8 +19,24 @@ classdef ThrottleWithNoThrustModelValidator < AbstractLaunchVehicleDataValidator
             evts = obj.lvdData.script.evts;
             for(i=1:length(evts))
                 evt = evts(i);
+                evtPropagator = evt.propagatorObj;
+                propagatorEnum = evtPropagator.propagatorEnum;
                 
-                if(not(any(evt.forceModels == ForceModelsEnum.Thrust)))                    
+                if(propagatorEnum == PropagatorEnum.ForceModel)
+                    if(not(any(evtPropagator.forceModels == ForceModelsEnum.Thrust)))                    
+                        stateLogEntries = obj.lvdData.stateLog.getAllStateLogEntriesForEvent(evt);
+                        times = [stateLogEntries.time];
+                        finalTime = max(times);
+
+                        for(j=1:length(stateLogEntries))
+                            stateLogEntry = stateLogEntries(j);
+                            if(stateLogEntry.throttle > 0 && stateLogEntry.time < finalTime) %less than sign so we don't include the final time, which may have actions to enable the throttle and would be erronously picked up here
+                                warnEvtNums(end+1) = evt.getEventNum(); %#ok<AGROW>
+                                break;
+                            end
+                        end
+                    end
+                elseif(propagatorEnum == PropagatorEnum.TwoBody)
                     stateLogEntries = obj.lvdData.stateLog.getAllStateLogEntriesForEvent(evt);
                     times = [stateLogEntries.time];
                     finalTime = max(times);
@@ -31,7 +47,7 @@ classdef ThrottleWithNoThrustModelValidator < AbstractLaunchVehicleDataValidator
                             warnEvtNums(end+1) = evt.getEventNum(); %#ok<AGROW>
                             break;
                         end
-                    end
+                    end            
                 end
             end
             

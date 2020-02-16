@@ -16,4 +16,3 @@ classdef(Abstract) AbstractGradientCalculationMethod < matlab.mixin.SetGet
         openOptionsDialog(obj)
     end
 end
-
