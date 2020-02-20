@@ -405,11 +405,12 @@ function [hCbGrdStn] = plotLocOfGrndStation(hAxis, stnStruct, validBodyID, ut, p
         long = stnStruct.long;
         alt = stnStruct.alt;
         color = stnStruct.color;
+        markerSym = stnStruct.markerSymbol;
         rVectECI = getInertialVectFromLatLongAlt(ut, lat, long, alt, bodyInfo, [NaN;NaN;NaN]);
         
         hold on;
         pos = rVectECI+posOffset;
-        hCbGrdStn = plot3(hAxis, pos(1), pos(2), pos(3),'s','Color',color, 'MarkerFaceColor',color, 'MarkerSize', 6);
+        hCbGrdStn = plot3(hAxis, pos(1), pos(2), pos(3), markerSym, 'Color',color, 'MarkerFaceColor',color, 'MarkerSize', 6);
 %         hCbGrdStnText = text(pos(1), pos(2), pos(3),stnStruct.name,'BackgroundColor','w'); 
         hold off;
     end

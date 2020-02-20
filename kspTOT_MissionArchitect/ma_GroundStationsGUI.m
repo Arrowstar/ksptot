@@ -22,7 +22,7 @@ function varargout = ma_GroundStationsGUI(varargin)
 
 % Edit the above text to modify the response to help ma_GroundStationsGUI
 
-% Last Modified by GUIDE v2.5 01-Jul-2015 17:30:33
+% Last Modified by GUIDE v2.5 19-Feb-2020 20:28:26
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -109,7 +109,12 @@ function populateStation(handles,stn)
     colorComboStr = getStringFromLineSpecColor(stn.color); 
 	value = findValueFromComboBox(colorComboStr, handles.grndStnColor);
     set(handles.grndStnColor,'Value',value);
-        
+    
+    markerComboValue = findValueFromComboBox(stn.markerSymbol, handles.animatorMarkerSymbolCombo);
+    if(isempty(markerComboValue))
+        markerComboValue = 1;
+    end
+    set(handles.animatorMarkerSymbolCombo,'Value',markerComboValue); 
 
 
 % --- Outputs from this function are returned to the command line.
@@ -196,6 +201,10 @@ function updateStnButton_Callback(hObject, eventdata, handles)
     
     Stn.id = oldID;
     Stn.color = stnColor;
+    
+    contents = cellstr(get(handles.animatorMarkerSymbolCombo,'String'));
+    markerName = strtrim(contents{get(handles.animatorMarkerSymbolCombo,'Value')});
+    Stn.markerSymbol = markerName;
     
     maData.spacecraft.stations{stnLBValue} = Stn;
     setappdata(handles.ma_MainGUI,'ma_data',maData);
@@ -511,6 +520,29 @@ function maxCommRangeText_CreateFcn(hObject, eventdata, handles)
 % handles    empty - handles not created until after all CreateFcns called
 
 % Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in animatorMarkerSymbolCombo.
+function animatorMarkerSymbolCombo_Callback(hObject, eventdata, handles)
+% hObject    handle to animatorMarkerSymbolCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns animatorMarkerSymbolCombo contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from animatorMarkerSymbolCombo
+    updateStnButton_Callback([], [], handles);
+
+% --- Executes during object creation, after setting all properties.
+function animatorMarkerSymbolCombo_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to animatorMarkerSymbolCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
 %       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
