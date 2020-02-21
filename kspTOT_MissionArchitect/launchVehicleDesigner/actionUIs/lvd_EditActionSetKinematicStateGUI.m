@@ -75,7 +75,8 @@ function lvd_EditActionSetKinematicStateGUI_OpeningFcn(hObject, eventdata, handl
 function populateGUI(handles, action, lvdData)
     orbitModel = action.orbitModel;
     if(isempty(orbitModel.frame))
-        newFrame = BodyCenteredInertialFrame(lvdData.celBodyData.sun,lvdData.celBodyData);
+        topLevelBodyInfo = getTopLevelCentralBody(lvdData.celBodyData);
+        newFrame = BodyCenteredInertialFrame(topLevelBodyInfo,lvdData.celBodyData);
         orbitModel.frame = newFrame;
     end
     

@@ -304,7 +304,8 @@ function performNetworkAnalysisButton_Callback(hObject, eventdata, handles)
     hWaitBar = waitbar(0,'');
     
     bodyNames = fieldnames(celBodyData);
-    bodyInfoSun = celBodyData.sun;
+    topLevelBodyInfo = getTopLevelCentralBody(celBodyData);
+    bodyInfoSun = topLevelBodyInfo;
     timeSteps = stateLog(:,1);
     timeSteps = timeSteps(timeSteps >= startTime & timeSteps <= endTime);
     tOffset = find(timeSteps(1)==stateLog(:,1),1,'first')-1;

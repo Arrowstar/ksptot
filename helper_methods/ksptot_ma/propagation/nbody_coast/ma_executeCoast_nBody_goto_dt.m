@@ -28,7 +28,8 @@ function [eventLog] = ma_executeCoast_nBody_goto_dt(dt, initialState, eventNum, 
     
 	bodyID = initialState(8);
     bodyInfo = getBodyInfoByNumber(bodyID, celBodyData);
-    bodyInfoSun = celBodyData.sun;
+    topLevelBodyInfo = getTopLevelCentralBody(celBodyData);
+    bodyInfoSun = topLevelBodyInfo;
     forceModel.gravModelBodyIds(end+1) = bodyInfoSun.id;
     forceModel.gravModelBodyIds = unique(forceModel.gravModelBodyIds);
     

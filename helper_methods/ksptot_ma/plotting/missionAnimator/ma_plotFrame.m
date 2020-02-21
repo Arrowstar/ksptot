@@ -109,9 +109,10 @@ function [bodyPlotted] = ma_plotFrame(hFig, mAxes, maData, stateLog, time, prevB
             
             campos(mAxes,rPosCam); camtarget(mAxes,rPosTgt);
             camva(mAxes,get(handles.fieldOfViewText,'UserData'));
-	end
+    end
       
-    rVectSun = getAbsPositBetweenSpacecraftAndBody(time, [0,0,0]', bodyInfo, celBodyData.sun, celBodyData);
+    topLevelBodyInfo = getTopLevelCentralBody(celBodyData);
+    rVectSun = getAbsPositBetweenSpacecraftAndBody(time, [0,0,0]', bodyInfo, topLevelBodyInfo, celBodyData);
     if(norm(rVectSun) < 0.01)
         rVectSun = [0 0 0.01];
     end

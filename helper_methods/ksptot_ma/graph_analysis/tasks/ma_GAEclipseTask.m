@@ -10,7 +10,7 @@ function datapt = ma_GAEclipseTask(stateLogEntry, subTask, otherSC, station, cel
             datapt = 0;
             for(i=1:length(bodies)) %#ok<*NO4LP>
                 eclipseBodyInfo = celBodyData.(bodies{i});
-                targetBodyInfo = celBodyData.sun;
+                targetBodyInfo = getTopLevelCentralBody(celBodyData);
 
                 LoS = LoS2Target(stateLogEntry, bodyInfo, eclipseBodyInfo, targetBodyInfo, celBodyData, []);
                 if(LoS == 0)

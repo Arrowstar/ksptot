@@ -108,7 +108,7 @@ function plotPorkChopPlot(mainGUIHandle)
     set(get(t,'ylabel'),'String', 'Delta-V [km/s]');
     hX = xlabel(hAxes,[cap1stLetter(lower(departName)),' Departure Time (UT) [day]']);
     hY = ylabel(hAxes,[cap1stLetter(lower(arrivalName)),' Arrival Time (UT) [day]']);
-    grid on;
+    grid minor;
     uistack(hAxes, 'top');
     
     hold(hAxes,'off'); 
