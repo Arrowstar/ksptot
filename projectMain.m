@@ -9,6 +9,8 @@ if(~isdeployed)
     addpath(genpath('formsGUIs'));
     addpath(genpath('kspTOT_RTS'));
     addpath(genpath('kspTOT_MissionArchitect'));
+    addpath(genpath('kspTOT_LaunchVehicleDesigner'));
+    addpath(genpath('kspTOT_VehicleSizer'));
 %     addpath('zArchive');
 end
 

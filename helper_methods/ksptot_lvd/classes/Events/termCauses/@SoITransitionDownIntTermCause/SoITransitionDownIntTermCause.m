@@ -5,7 +5,7 @@ classdef SoITransitionDownIntTermCause < AbstractIntegrationTerminationCause
     properties
         fromBody KSPTOT_BodyInfo
         toBody KSPTOT_BodyInfo
-        celBodyData struct
+        celBodyData
     end
     
     methods
