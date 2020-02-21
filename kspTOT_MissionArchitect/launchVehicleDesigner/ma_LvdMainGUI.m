@@ -56,6 +56,7 @@ function ma_LvdMainGUI_OpeningFcn(hObject, eventdata, handles, varargin)
     handles.output = hObject;
 
     celBodyData = varargin{1};
+    celBodyData = CelestialBodyData(celBodyData);
     setappdata(hObject,'celBodyData',celBodyData);
     
     setappdata(hObject,'ksptotMainGUI',varargin{2});
@@ -734,6 +735,8 @@ function openMissionPlanMenu_Callback(hObject, eventdata, handles)
             setappdata(handles.ma_LvdMainGUI,'undoRedo',LVD_UndoRedoStateSet());
 
             if(isprop(lvdData,'celBodyData')) %#ok<NODEF>
+                lvdData.celBodyData = CelestialBodyData(lvdData.celBodyData);
+                
                 names = fieldnames(lvdData.celBodyData);
                 for(i=1:length(names))
                     name = names{i};

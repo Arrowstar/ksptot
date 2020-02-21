@@ -5,14 +5,14 @@ classdef KSPTOT_AppOptions
     properties
         bodiesinifile
         rtshostname
-        timesystem@char
-        gravparamtype@char
+        timesystem char
+        gravparamtype char
         
-        plotmaxdeltav@double
-        porkchopptsaxes@double
-        porkchopnumsynperiods@double
-        departplotnumoptiters@double
-        quant2opt@char
+        plotmaxdeltav double
+        porkchopptsaxes double
+        porkchopnumsynperiods double
+        departplotnumoptiters double
+        quant2opt char
     end
     
     methods

@@ -58,6 +58,7 @@ clc;
 % Set Prefs
 handles.ksptotMainGUI = varargin{1};
 celBodyData = varargin{2};
+celBodyData = CelestialBodyData(celBodyData);
 
 % Choose default command line output for ma_MainGUI
 handles.output = hObject;
@@ -646,6 +647,7 @@ function openMissionPlanMenu_Callback(hObject, eventdata, handles)
             setappdata(handles.ma_MainGUI,'undo_pointer',0);
             
             if(isfield(maData,'celBodyData')) %#ok<NODEF>
+                maData.celBodyData = CelestialBodyData(maData.celBodyData);
                 names = fieldnames(maData.celBodyData);
                 for(i=1:length(names))
                     name = names{i};
