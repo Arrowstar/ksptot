@@ -45,7 +45,17 @@ else
     [celBodyDataFromINI,~,~] = inifile('bodies.ini','readall');
 end
 celBodyData = processINIBodyInfo(celBodyDataFromINI, false, 'bodyInfo');
+[goodTF, celBodyWarnMsgs] = verifyCelBodyData(celBodyData);
 bodyNames = fieldnames(celBodyData);
+
+if(not(goodTF))
+    msg = {sprintf('Potential issues were found with the loaded celestial body information: \n')};
+    for(i=1:length(celBodyWarnMsgs))
+        msg{end+1} = sprintf('\t%s\n', celBodyWarnMsgs{i}); %#ok<SAGROW>
+    end
+    
+    msgbox(msg,'Celestial Body Data Warnings','warn');
+end
 
 %Pause for some time to show the splash screen
 while(toc(t) < 1)

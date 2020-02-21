@@ -581,6 +581,16 @@ end
 [celBodyDataFromINI,~,~] = inifile(filePathName,'readall');
 celBodyData = processINIBodyInfo(celBodyDataFromINI);
 
+[goodTF, celBodyWarnMsgs] = verifyCelBodyData(celBodyData);
+if(not(goodTF))
+    msg = {sprintf('Potential issues were found with the loaded celestial body information: \n')};
+    for(i=1:length(celBodyWarnMsgs))
+        msg{end+1} = sprintf('\t%s\n', celBodyWarnMsgs{i}); %#ok<AGROW>
+    end
+    
+    msgbox(msg,'Celestial Body Data Warnings','warn');
+end
+
 updateAppOptions(hObject, 'ksptot', 'bodiesinifile', filePathName);
 
 mainGUIUserData = get(handles.mainGUIFigure, 'UserData');
