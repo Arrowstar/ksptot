@@ -34,7 +34,7 @@ classdef CelestialBodyData < matlab.mixin.SetGet & dynamicprops
         end
         
         %Override the following structure methods for backwards
-        %compatibility
+        %compatibility with structure celBodyData
         function f = fields(obj)
             f = {};
             

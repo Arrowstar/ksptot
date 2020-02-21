@@ -4,7 +4,7 @@ classdef BodyCenteredInertialFrame < AbstractReferenceFrame
     
     properties
         bodyInfo KSPTOT_BodyInfo
-        celBodyData struct
+        celBodyData
     end
     
     properties(Constant)
