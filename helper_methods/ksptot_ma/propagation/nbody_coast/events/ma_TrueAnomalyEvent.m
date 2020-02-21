@@ -20,7 +20,8 @@ function [value,isterminal,direction,eventDesc] = ma_TrueAnomalyEvent(T,Y, truTa
     rVect = Y(1:3);
     vVect = Y(4:6);
 
-    bodyInfoSun = celBodyData.sun;
+    topLevelBodyInfo = getTopLevelCentralBody(celBodyData);
+    bodyInfoSun = topLevelBodyInfo;
     [rVect,vVect] = getAbsPositBetweenSpacecraftAndBody(T, rVect, bodyInfoSun, bodyInfo, celBodyData, vVect);
     
     [~, ~, ~, ~, ~, tru] = getKeplerFromState(-rVect, -vVect, bodyInfo.gm, true);

@@ -14,7 +14,8 @@ function [sortedBodyNames, sortedBodyInfo] = ma_getSortedBodyNames(celBodyData, 
     end
     
     if(curLevel == 1)
-        curParent = celBodyData.sun;
+        topLevelBodyInfo = getTopLevelCentralBody(celBodyData);
+        curParent = topLevelBodyInfo;
         sortedBodyNames = {curParent.name};
     else
         curParent = varargin{3};

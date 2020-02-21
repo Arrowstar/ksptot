@@ -201,6 +201,10 @@ function maData = ma_updateMAData(maData, handles)
         if(~isfield(maData.spacecraft.stations{i},'lineWidth'))
             maData.spacecraft.stations{i}.lineWidth = 0.5;
         end
+        
+        if(~isfield(maData.spacecraft.stations{i},'markerSymbol'))
+            maData.spacecraft.stations{i}.markerSymbol = 's';
+        end
     end
     
     if(~isfield(maData,'launch'))

@@ -3,17 +3,25 @@ function hDepartDisp = computeDeparture(celBodyData, departBody, arrivalBody, de
     timeOfFlight = (arrivalUT - departUT)/(86400);
     numRevs=0;
 
-    [rVecD, vVecDBody] = getStateAtTime(celBodyData.(departBody), departUT, gmuXfr);
-    [rVecA, vVecABody] = getStateAtTime(celBodyData.(arrivalBody), arrivalUT, gmuXfr);
+    centralBodyInfo = celBodyData.(cBody);
+    centralBodyFrame = centralBodyInfo.getBodyCenteredInertialFrame();
+    departBodyInfo = celBodyData.(departBody);
+    departBodyFrame = departBodyInfo.getBodyCenteredInertialFrame();
+    arriveBodyInfo = celBodyData.(arrivalBody);
+    
+    [rVecD, vVecDBody] = getStateAtTime(departBodyInfo, departUT, gmuXfr);
+    [rVecA, vVecABody] = getStateAtTime(arriveBodyInfo, arrivalUT, gmuXfr);
 
     %Type 1 Orbits (compute depart/arrive dv)
     [departVelocity,arrivalVelocity]=lambert(rVecD', rVecA', 1*timeOfFlight, numRevs, gmuXfr);
     departVelocity = correctNaNInVelVect(departVelocity);
     arrivalVelocity = correctNaNInVelVect(arrivalVelocity);
+    departStateXfrBody = CartesianElementSet(departUT,rVecD,departVelocity(:),centralBodyFrame);
+    departStateDepartBody = departStateXfrBody.convertToFrame(departBodyFrame);
     departDVT1 = norm(departVelocity' - vVecDBody);
     arrivalDVT1 = norm(arrivalVelocity' - vVecABody);
     totalDVT1 = departDVT1 + arrivalDVT1;
-    hyperExcessVelDepT1 = departVelocity' - vVecDBody;
+    hyperExcessVelDepT1 = departStateDepartBody.vVect;
     arrivalVelocity1 = arrivalVelocity;
     rVecA1 = rVecA;
     departVelocity1 = departVelocity;
@@ -23,10 +31,12 @@ function hDepartDisp = computeDeparture(celBodyData, departBody, arrivalBody, de
     [departVelocity,arrivalVelocity]=lambert(rVecD', rVecA', -1*timeOfFlight, numRevs, gmuXfr);
     departVelocity = correctNaNInVelVect(departVelocity);
     arrivalVelocity = correctNaNInVelVect(arrivalVelocity);
+    departStateXfrBody = CartesianElementSet(departUT,rVecD,departVelocity(:),centralBodyFrame);
+    departStateDepartBody = departStateXfrBody.convertToFrame(departBodyFrame);
     departDVT2 = norm(departVelocity' - vVecDBody);
     arrivalDVT2 = norm(arrivalVelocity' - vVecABody);
     totalDVT2 = departDVT2 + arrivalDVT2;
-    hyperExcessVelDepT2 = departVelocity' - vVecDBody;
+    hyperExcessVelDepT2 = departStateDepartBody.vVect; % departVelocity' - vVecDBody;
     arrivalVelocity2 = arrivalVelocity;
     rVecA2 = rVecA;
     departVelocity2 = departVelocity;

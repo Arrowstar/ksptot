@@ -11,6 +11,7 @@ function datapt = ma_GAKeplerElementsTask(stateLogEntry, subTask, celBodyData)
     
     [sma, ecc, inc, raan, arg, tru] = getKeplerFromState(rVect,vVect,gmu);
         
+    topLevelBodyInfo = getTopLevelCentralBody(celBodyData);
     switch subTask
         case 'sma'
             datapt = sma;
@@ -35,17 +36,17 @@ function datapt = ma_GAKeplerElementsTask(stateLogEntry, subTask, celBodyData)
         case 'sunRX'
             bodySCInfo = getBodyInfoByNumber(bodyID, celBodyData);
             dVect = getAbsPositBetweenSpacecraftAndBody(stateLogEntry(1), stateLogEntry(2:4)',...
-                    bodySCInfo, celBodyData.sun, celBodyData);
+                    bodySCInfo, topLevelBodyInfo, celBodyData);
             datapt = -dVect(1); %neg sign to go from spacecraft to sun -> sun to spacecraft
         case 'sunRY'
             bodySCInfo = getBodyInfoByNumber(bodyID, celBodyData);
             dVect = getAbsPositBetweenSpacecraftAndBody(stateLogEntry(1), stateLogEntry(2:4)',...
-                    bodySCInfo, celBodyData.sun, celBodyData);
+                    bodySCInfo, topLevelBodyInfo, celBodyData);
             datapt = -dVect(2); %neg sign to go from spacecraft to sun -> sun to spacecraft
         case 'sunRZ'
             bodySCInfo = getBodyInfoByNumber(bodyID, celBodyData);
             dVect = getAbsPositBetweenSpacecraftAndBody(stateLogEntry(1), stateLogEntry(2:4)',...
-                    bodySCInfo, celBodyData.sun, celBodyData);
+                    bodySCInfo, topLevelBodyInfo, celBodyData);
             datapt = -dVect(3); %neg sign to go from spacecraft to sun -> sun to spacecraft
         case 'rPe'
             [~, rPe] = computeApogeePerigee(sma, ecc);

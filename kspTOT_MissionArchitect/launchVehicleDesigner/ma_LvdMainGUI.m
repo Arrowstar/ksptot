@@ -745,8 +745,10 @@ function openMissionPlanMenu_Callback(hObject, eventdata, handles)
                 end
             end
             
+            topLevelBodyInfo = getTopLevelCentralBody(celBodyData);
+            ldvDataTopLevelBodyInfo = getTopLevelCentralBody(lvdData.celBodyData);
             if(isprop(lvdData,'celBodyData') && ...
-               length(fields(celBodyData.sun)) == length(fields(lvdData.celBodyData.sun)))
+               length(fields(topLevelBodyInfo)) == length(fields(ldvDataTopLevelBodyInfo)))
                 celBodyData = lvdData.celBodyData;
                 setappdata(handles.ma_LvdMainGUI,'celBodyData',celBodyData);
             else

@@ -19,7 +19,8 @@ function [value,isterminal,direction,eventDesc] = ma_NodeEvents(T,Y, node, bodyI
     
     rVectECI = Y(1:3);
     
-    bodyInfoSun = celBodyData.sun;
+    topLevelBodyInfo = getTopLevelCentralBody(celBodyData);
+    bodyInfoSun = topLevelBodyInfo;
     [rVectECI,vVectECI] = getAbsPositBetweenSpacecraftAndBody(T, rVectECI, bodyInfoSun, bodyInfo, celBodyData);
     
     [lat, ~, ~] = getLatLongAltFromInertialVect(T, -rVectECI, bodyInfo, vVectECI);

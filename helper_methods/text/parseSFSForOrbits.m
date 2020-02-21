@@ -6,7 +6,7 @@ function [orbits] = parseSFSForOrbits(filePath)
     text = text(strfind(text,'FLIGHTSTATE') : strfind(text, 'ROSTER') ); % trim to just the FLIGHTSTATE portion
     genNum = '[\d\.E\-]*';
     regex = {};
-    regex{end+1} = ['[^\w]VESSEL.*?name \= [ ^\S]*'];
+    regex{end+1} = ['[^\w]VESSEL(?:\n|\r\n).*?name \= [ ^\S]*'];
     regex{end+1} = ['sit \= [ \w]*'];
     regex{end+1} = ['SMA \= ', genNum];
     regex{end+1} = ['ECC \= ', genNum];

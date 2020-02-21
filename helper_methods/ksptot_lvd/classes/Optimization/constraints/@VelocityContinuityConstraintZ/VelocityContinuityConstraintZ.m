@@ -31,7 +31,8 @@ classdef VelocityContinuityConstraintZ < AbstractConstraint
                 stateLogEntriesEvt = stateLog.getAllStateLogEntriesForEvent(obj.event);
                 stateLogEntriesConstrEvt = stateLog.getAllStateLogEntriesForEvent(obj.constraintEvent);
 
-                frame = BodyCenteredInertialFrame(celBodyData.sun, celBodyData);
+                topLevelBodyInfo = getTopLevelCentralBody(celBodyData);
+                frame = BodyCenteredInertialFrame(topLevelBodyInfo, celBodyData);
                 cartElemSet1 = stateLogEntriesEvt(end).getCartesianElementSetRepresentation().convertToFrame(frame);
                 cartElemSet2 = stateLogEntriesConstrEvt(end).getCartesianElementSetRepresentation().convertToFrame(frame);
 
