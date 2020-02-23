@@ -13,8 +13,8 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
         colorLineSpec(1,1) EventColorLineSpec 
         plotMethod(1,1) EventPlottingMethodEnum = EventPlottingMethodEnum.PlotContinuous
 
-        integratorObj(1,1) AbstractIntegrator = ODE45Integrator();
-        propagatorObj(1,1) AbstractPropagator = ForceModelPropagator();
+        integratorObj(1,:) AbstractIntegrator
+        propagatorObj(1,:) AbstractPropagator
 
         checkForSoITrans(1,1) logical = true;
         
@@ -268,6 +268,14 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
         function obj = loadobj(obj)
             for(i=1:length(obj.actions))
                 obj.actions(i).event = obj;
+            end
+            
+            if(isempty(obj.propagatorObj))
+                obj.propagatorObj = ForceModelPropagator();
+            end
+            
+            if(isempty(obj.integratorObj))
+                obj.integratorObj = ODE45Integrator();
             end
         end
     end
