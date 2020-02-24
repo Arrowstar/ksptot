@@ -694,12 +694,13 @@ function plotData(hFig, indepVarValues, data, lineColor, lineType, lineWidth, in
             bodyInfo = getBodyInfoByNumber(bodyID, celBodyData);
             
             [~, ~, ~, ~, ~, tru] = vect_getKeplerFromState(bodyLog(:,2:4)',bodyLog(:,5:7)',bodyInfo.gm);
+            tru = angleNegPiToPi(tru);
             
             for(j=2:length(tru))
                 tru1 = tru(j-1);
                 tru2 = tru(j);
                 
-                if(((tru1 > tru2 && abs(tru1-tru2)>pi) || (tru1 < 0 && tru2 >= 0)) && bodyLog(j-1,13)==bodyLog(j,13))                   
+                if(((tru1 > tru2 && abs(tru1-tru2)>pi) || (tru1 < 0 && tru2 >= 0)) && bodyLog(j-1,8)==bodyLog(j,8))                   
                     eventTime = bodyLog(j,1)*indepTimeUnitMult;
                     indepVarEventLoc = indepVarValues(indepVarValues(:,2)==eventTime,1);
                     indepVarEventLoc = indepVarEventLoc(1);
@@ -747,7 +748,7 @@ function plotData(hFig, indepVarValues, data, lineColor, lineType, lineWidth, in
                 tru1 = tru(j-1);
                 tru2 = tru(j);
                                
-                if(tru1 < pi && tru2 >= pi && bodyLog(j-1,13)==bodyLog(j,13))                   
+                if(tru1 < pi && tru2 >= pi && bodyLog(j-1,8)==bodyLog(j,8))                   
                     eventTime = bodyLog(j,1)*indepTimeUnitMult;
                     indepVarEventLoc = indepVarValues(indepVarValues(:,2)==eventTime,1);
                     indepVarEventLoc = indepVarEventLoc(1);
