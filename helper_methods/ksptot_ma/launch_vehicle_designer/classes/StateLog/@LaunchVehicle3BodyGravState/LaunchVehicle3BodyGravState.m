@@ -4,7 +4,7 @@ classdef LaunchVehicle3BodyGravState < matlab.mixin.SetGet & matlab.mixin.Copyab
     
     properties
         bodies KSPTOT_BodyInfo %an array of bodies
-        celBodyData struct
+        celBodyData
     end
     
     methods
