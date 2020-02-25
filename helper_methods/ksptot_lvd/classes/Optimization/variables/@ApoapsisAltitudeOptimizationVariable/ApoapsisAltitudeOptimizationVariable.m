@@ -54,7 +54,7 @@ classdef ApoapsisAltitudeOptimizationVariable < AbstractOptimizationVariable
             obj.varObj.apoalt = x;
         end
         
-        function nameStrs = getStrNamesOfVars(obj, evtNum, varLocType)
+        function nameStrs = getStrNamesOfVars(obj, evtNum)
             nameStrs = {sprintf('Event %i Apoapsis Altitude Termination Condition', evtNum)};
         end
     end

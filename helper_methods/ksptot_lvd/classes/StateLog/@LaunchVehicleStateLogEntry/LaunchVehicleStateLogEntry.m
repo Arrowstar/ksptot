@@ -27,7 +27,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
         altitude double
         attitude LaunchVehicleAttitudeState
         throttle double
-        celBodyData struct
+        celBodyData
         launchVehicle LaunchVehicle
     end
     

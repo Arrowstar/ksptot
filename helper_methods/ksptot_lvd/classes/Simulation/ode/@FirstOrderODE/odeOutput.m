@@ -4,5 +4,6 @@ function status = odeOutput(t,y,flag, intStartTime, maxIntegrationDuration)
     status = 0;
     if(integrationDuration > maxIntegrationDuration)
         status = 1;
+        disp('STOP!');
     end
 end

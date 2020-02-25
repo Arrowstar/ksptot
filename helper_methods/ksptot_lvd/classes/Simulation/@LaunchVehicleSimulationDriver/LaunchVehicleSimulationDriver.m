@@ -54,11 +54,18 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
             end
             
             %get integrator and propagator
+            if(isempty(event.integratorObj))
+                event.integratorObj = event.ode45Integrator;
+            end
             integrator = event.integratorObj;
+            
+            if(isempty(event.propagatorObj))
+                event.propagatorObj = event.forceModelPropagator;
+            end
             propagator = event.propagatorObj;
             
             %set integration output step size
-            integratorOptions = integrator.getOptions;
+            integratorOptions = integrator.getOptions();
             integrationStep = integratorOptions.getIntegratorStepSize();
             
             if(integrationStep <= 0)

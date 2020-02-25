@@ -1,4 +1,4 @@
-classdef(Abstract) AbstractPropagator < matlab.mixin.SetGet
+classdef(Abstract) AbstractPropagator < matlab.mixin.SetGet & matlab.mixin.Heterogeneous
     %AbstractPropagator Summary of this class goes here
     %   Detailed explanation goes here
     

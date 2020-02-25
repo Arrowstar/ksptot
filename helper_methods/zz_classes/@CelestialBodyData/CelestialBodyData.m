@@ -2,7 +2,7 @@ classdef CelestialBodyData < matlab.mixin.SetGet & dynamicprops
     %CelestialBodyData Summary of this class goes here
     %   Detailed explanation goes here
     
-    properties
+    properties(Access=private)
         bodies(1,:) KSPTOT_BodyInfo
     end
     
