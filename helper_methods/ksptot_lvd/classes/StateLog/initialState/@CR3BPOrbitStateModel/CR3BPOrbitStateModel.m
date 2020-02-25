@@ -11,7 +11,7 @@ classdef CR3BPOrbitStateModel < AbstractOrbitStateModel
         vy(1,1) double
         vz(1,1) double
         
-        celBodyData struct
+        celBodyData
         
         optVar CR3BPOrbitVariable
     end
