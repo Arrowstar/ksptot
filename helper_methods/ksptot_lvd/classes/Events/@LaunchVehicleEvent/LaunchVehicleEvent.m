@@ -13,8 +13,8 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
         colorLineSpec(1,1) EventColorLineSpec 
         plotMethod(1,1) EventPlottingMethodEnum = EventPlottingMethodEnum.PlotContinuous
 
-        integratorObj(1,:) AbstractIntegrator
-        propagatorObj(1,:) AbstractPropagator
+        integratorObj(1,:) AbstractIntegrator = AbstractIntegrator.empty(1,0);
+        propagatorObj(1,:) AbstractPropagator = AbstractPropagator.empty(1,0);
 
         checkForSoITrans(1,1) logical = true;
         
