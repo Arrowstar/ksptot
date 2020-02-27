@@ -40,8 +40,13 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
     
     properties
         celBodyData
+        
         parentBodyInfo KSPTOT_BodyInfo
         parentBodyInfoNeedsUpdate logical = true;
+        
+        childrenBodyInfo KSPTOT_BodyInfo
+        childrenBodyNames cell
+        childrenBodyInfoNeedsUpdate logical = true;
     end
     
     properties(Access=private)
@@ -66,6 +71,22 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
             end
             
             parentBodyInfo = obj.parentBodyInfo;
+        end
+        
+        function [childrenBodyInfo, cbNames] = getChildrenBodyInfo(obj, celBodyData)
+            if(obj.childrenBodyInfoNeedsUpdate && isempty(obj.childrenBodyInfo))
+                [cBodyInfo,cbNames] = getChildrenOfParentInfo(celBodyData, obj.name);
+                
+                if(not(isempty(cBodyInfo)))
+                    obj.childrenBodyInfo = cBodyInfo;
+                    obj.childrenBodyNames = cbNames;
+                end
+                
+                obj.childrenBodyInfoNeedsUpdate = false;
+            end
+            
+            childrenBodyInfo = obj.childrenBodyInfo;
+            cbNames = obj.childrenBodyNames;
         end
         
         function rotMat = get.bodyRotMatFromGlobalInertialToBodyInertial(obj)
