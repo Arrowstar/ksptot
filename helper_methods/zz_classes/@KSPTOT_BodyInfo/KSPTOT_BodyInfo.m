@@ -78,7 +78,9 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
                 [cBodyInfo,cbNames] = getChildrenOfParentInfo(celBodyData, obj.name);
                 
                 if(not(isempty(cBodyInfo)))
-                    obj.childrenBodyInfo = cBodyInfo;
+                    for(i=1:length(cBodyInfo))
+                        obj.childrenBodyInfo(i) = cBodyInfo{i};
+                    end
                     obj.childrenBodyNames = cbNames;
                 end
                 
