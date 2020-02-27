@@ -26,7 +26,18 @@ function dydt = odefun(t,y, simDriver, eventInitStateLogEntry, tankStates, dryMa
         %launch clamp is enabled, only motion is circular motion
         %(fixed to body)
         %In this case, we are integrating in the body-fixed frame, 
-        %so all rates are effectively zero        
+        %so all rates are effectively zero
+% % % % % %         bodySpinRate = 2*pi/bodyInfo.rotperiod; %rad/sec
+% % % % % %         spinVect = [0;0;bodySpinRate];
+% % % % % %         rotAccel = crossARH(spinVect,crossARH(spinVect,rVect));
+% % % % % % 
+% % % % % %         [rVectECEF] = getFixedFrameVectFromInertialVect(ut, rVect, bodyInfo);
+% % % % % %         vVectECEF = [0;0;0];
+% % % % % %         [~, vVectECI] = getInertialVectFromFixedFrameVect(ut, rVectECEF, bodyInfo, vVectECEF);
+% % % % % % 
+% % % % % %         dydt(1:3) = vVectECI(:); 
+% % % % % %         dydt(4:6) = rotAccel(:);
+        
         dydt(1:3) = [0;0;0]; 
         dydt(4:6) = [0;0;0];
         dydt(7:end) = tankMassDots;
