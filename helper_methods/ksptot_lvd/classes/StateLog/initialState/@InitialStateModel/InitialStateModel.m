@@ -208,7 +208,11 @@ classdef InitialStateModel < matlab.mixin.SetGet
         end
         
         function tf = isVarFromInitialState(obj, var)
-            tf = obj.optVar.isVarContainedWithin(var);
+            tf = false;
+            
+            if(not(isempty(obj)) && not(isempty(obj.optVar)))
+                tf = obj.optVar.isVarContainedWithin(var);
+            end
         end
     end
 
