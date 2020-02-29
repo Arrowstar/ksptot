@@ -28,7 +28,7 @@ classdef TwoBodyPropagator < AbstractPropagator
             
             y0 = [kepState.getMeanAnomaly(), tankStates];
             
-            [t,y,te,~,ie] = integrator.integrate(odefun, tspan, y0, evtsFunc, odeOutputFun);  
+            [t,y,te,ye,ie] = integrator.integrate(odefun, tspan, y0, evtsFunc, odeOutputFun);  
             
             onesArr = ones(1,length(t));
             sma = kepState.sma * onesArr;
@@ -63,7 +63,10 @@ classdef TwoBodyPropagator < AbstractPropagator
             end
             
             y = ynew;
-            ye = ynew(t == te,:);
+            
+            if(not(isempty(te)))
+                ye = ynew(t == te,:);
+            end
         end
         
         function odeFH = getOdeFunctionHandle(obj, eventInitStateLogEntry)

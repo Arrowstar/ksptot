@@ -23,17 +23,17 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
         %%%%%
         %Propagators
         %%%%%
-        forceModelPropagator(1,1) ForceModelPropagator = ForceModelPropagator();
-        twoBodyPropagator(1,1) TwoBodyPropagator = TwoBodyPropagator();
+        forceModelPropagator(1,:) ForceModelPropagator
+        twoBodyPropagator(1,:) TwoBodyPropagator
         
         %%%%%
         %Integrators
         %%%%%
-        ode45Integrator(1,1) ODE45Integrator = ODE45Integrator();
-        ode113Integrator(1,1) ODE113Integrator = ODE113Integrator();
-        ode23Integrator(1,1) ODE23Integrator = ODE23Integrator();
-        ode23sIntegrator(1,1) ODE23sIntegrator = ODE23sIntegrator();
-        ode15sIntegrator(1,1) ODE15sIntegrator = ODE15sIntegrator();
+        ode45Integrator(1,:) ODE45Integrator
+        ode113Integrator(1,:) ODE113Integrator
+        ode23Integrator(1,:) ODE23Integrator 
+        ode23sIntegrator(1,:) ODE23sIntegrator 
+        ode15sIntegrator(1,:) ODE15sIntegrator
     end
     
     properties(Dependent)
@@ -270,12 +270,40 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
                 obj.actions(i).event = obj;
             end
             
+            if(isempty(obj.forceModelPropagator))
+                obj.forceModelPropagator = ForceModelPropagator();
+            end
+            
+            if(isempty(obj.twoBodyPropagator))
+                obj.twoBodyPropagator = TwoBodyPropagator();
+            end
+            
             if(isempty(obj.propagatorObj))
-                obj.propagatorObj = ForceModelPropagator();
+                obj.propagatorObj = obj.forceModelPropagator;
+            end
+            
+            if(isempty(obj.ode45Integrator))
+                obj.ode45Integrator = ODE45Integrator();
+            end
+            
+            if(isempty(obj.ode113Integrator))
+                obj.ode113Integrator = ODE113Integrator();
+            end
+            
+            if(isempty(obj.ode23Integrator))
+                obj.ode23Integrator = ODE23Integrator();
+            end
+            
+            if(isempty(obj.ode23sIntegrator))
+                obj.ode23sIntegrator = ODE23sIntegrator();
+            end
+            
+            if(isempty(obj.ode15sIntegrator))
+                obj.ode15sIntegrator = ODE15sIntegrator();
             end
             
             if(isempty(obj.integratorObj))
-                obj.integratorObj = ODE45Integrator();
+                obj.integratorObj = obj.ode45Integrator;
             end
         end
     end

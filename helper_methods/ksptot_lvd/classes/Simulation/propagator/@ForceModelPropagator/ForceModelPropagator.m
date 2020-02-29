@@ -46,8 +46,6 @@ classdef ForceModelPropagator < AbstractPropagator
             else
                 [t,y,te,ye,ie] = integrator.integrate(odefun, tspan, y0, evtsFunc, odeOutputFun);
             end   
-            
-            
         end
         
         function odeFH = getOdeFunctionHandle(obj, eventInitStateLogEntry)
