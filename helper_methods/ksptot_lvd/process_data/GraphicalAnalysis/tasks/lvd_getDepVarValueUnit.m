@@ -65,8 +65,11 @@ function [depVarValue, depVarUnit, taskStr, refBodyInfo] = lvd_getDepVarValueUni
             depVarValue = lvd_TwoBodyImpactPointTasks(subLog(i), 'longitude');
             depVarUnit = 'degE';
         case 'Drag Coefficient'
-            depVarValue = lvd_StageTasks(subLog(i), 'dragCoeff', []);
+            depVarValue = lvd_AeroTasks(subLog(i), 'dragCoeff', []);
             depVarUnit = '';
+        case 'Drag Area'
+            depVarValue = lvd_AeroTasks(subLog(i), 'dragArea', []);
+            depVarUnit = 'm^2';
         case 'Event Number'
             depVarValue = lvd_EventNumTask(subLog(i), 'eventNum');
             depVarUnit = '';

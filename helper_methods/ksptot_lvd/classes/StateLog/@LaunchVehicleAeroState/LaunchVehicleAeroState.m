@@ -19,6 +19,14 @@ classdef LaunchVehicleAeroState < matlab.mixin.SetGet & matlab.mixin.Copyable
             
         end
         
+        function area = getArea(obj)
+            area = obj.area;
+        end
+        
+        function Cd = getDragCoeff(obj)
+            Cd = obj.Cd;
+        end
+        
         function newAeroState = deepCopy(obj)
             newAeroState = obj.copy();
         end

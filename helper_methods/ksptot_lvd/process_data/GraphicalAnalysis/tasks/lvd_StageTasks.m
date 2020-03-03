@@ -16,8 +16,5 @@ function datapt = lvd_StageTasks(stateLogEntry, subTask, stage)
             else
                 datapt = -1;
             end
-            
-        case 'dragCoeff'
-            datapt = stateLogEntry.aero.Cd;
     end
 end

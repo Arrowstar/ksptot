@@ -12,7 +12,7 @@ classdef DragForceModel < AbstractForceModel
         end
         
         function [forceVect,tankMdots] = getForce(obj, ut, rVect, vVect, mass, bodyInfo, aero, ~, ~, ~, ~, ~, ~, ~, ~)
-            CdA = aero.area * aero.Cd; 
+            CdA = aero.getArea() * aero.getDragCoeff(); 
             [~, forceVect] = getDragAccel(bodyInfo, ut, rVect, vVect, CdA, mass, 'Stock', struct());
             
             tankMdots = [];

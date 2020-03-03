@@ -16,6 +16,7 @@ function [taskList] = lvd_getGraphAnalysisTaskList(lvdData, excludeList)
     taskList{end+1} = 'Two-Body Impact Latitude';
     taskList{end+1} = 'Two-Body Impact Longitude';
     taskList{end+1} = 'Drag Coefficient';
+    taskList{end+1} = 'Drag Area';
     taskList{end+1} = 'Event Number';
     taskList{end+1} = 'Total Effective Isp';
     
