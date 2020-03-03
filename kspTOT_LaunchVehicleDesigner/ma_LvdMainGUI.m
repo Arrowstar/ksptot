@@ -1361,8 +1361,16 @@ function ma_LvdMainGUI_WindowKeyPressFcn(hObject, eventdata, handles)
 %	Character: character interpretation of the key(s) that was pressed
 %	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
 % handles    structure with handles and user data (see GUIDATA)
-
-
+    key = eventdata.Key;
+    mod = eventdata.Modifier;
+        
+    if(gco == handles.scriptListbox && ...
+       strcmpi(key,'f') && ...
+       length(mod) == 1 && ...
+       strcmpi(mod{1},'control'))
+        
+        toggleOptimForSelEventMenu_Callback(handles.scriptListbox, [], handles);
+    end
 
 % --- Executes on selection change in nonSeqEventsListbox.
 function nonSeqEventsListbox_Callback(hObject, eventdata, handles)
@@ -1479,7 +1487,6 @@ function toggleOptimForSelEventMenu_Callback(hObject, eventdata, handles)
         addUndoState(handles,sprintf('Toggle Optimization on Event %u', eventNum));
         event.toggleOptimDisable(lvdData);
         
-%         runScript(handles, lvdData);
         lvd_processData(handles);
     end
 
