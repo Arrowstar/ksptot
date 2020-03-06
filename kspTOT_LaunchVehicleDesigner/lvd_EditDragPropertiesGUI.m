@@ -22,7 +22,7 @@ function varargout = lvd_EditDragPropertiesGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditDragPropertiesGUI
 
-% Last Modified by GUIDE v2.5 04-Mar-2020 20:15:18
+% Last Modified by GUIDE v2.5 05-Mar-2020 19:16:27
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -440,7 +440,7 @@ function plotCurveButton_Callback(hObject, eventdata, handles)
     
     grid minor;
     
-    ylim(hAx, [-0.05, 1.1*max(v)]);
+    ylim(hAx, [-0.05, 1.1*max(vPtsToPlot)]);
     
     whitebg(hFig);
     hold(hAx,'off');
@@ -467,3 +467,90 @@ function interpMethodCombo_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --------------------------------------------------------------------
+function importPointsFromCsvFileMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to importPointsFromCsvFileMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.lvd_EditDragPropertiesGUI,'lvdData');
+    initStateModel = lvdData.initStateModel;
+    aero = initStateModel.aero;
+    
+    qstring(1) = {'Importing points from CSV will remove all existing points and replace them with the points in the file.  Do you wish to continue?'};
+    qstring{2} = '';
+    qstring{3} = 'The CSV file should be two columns.  The first column should be that of the independent variable values.  The second column should be the drag coefficient values.  There must be at least two rows.';
+    
+    title = 'Import Points from CSV';
+    
+    button = questdlg(qstring,title,'Continue','Cancel','Continue');
+    
+    if(strcmpi(button,'Continue'))
+        DialogTitle = 'Open CSV File';
+        [FileName,PathName] = uigetfile({'*.csv','CSV Files (*.csv)'},DialogTitle);
+        
+        if(not(FileName == 0))
+            file = fullfile(PathName,FileName);
+            
+            try
+                T = readtable(file);
+            catch ME
+                msgbox(sprintf('An error was encountered while reading the CSV file: \n\n%s', ME.message), 'Import Error', 'error');
+                
+                return;
+            end
+            
+            errMsg = {};
+            
+            sizeT = size(T);
+            if(sizeT(1) < 2)
+                errMsg{end+1} = sprintf('The number of rows in the data must be at least two.  Number of rows found: %u', sizeT(1));
+            end
+            
+            if(sizeT(2) < 2)
+                errMsg{end+1} = sprintf('The number of columns in the data must be equal to two.  Number of columns found: %u', sizeT(2));
+            end
+            
+            if(isempty(errMsg))
+                x = table2array(T(:,1));
+                v = table2array(T(:,2));
+                
+                for(i=1:length(x))
+                    if(not(isfinite(x(i))) || isnan(x(i)) || ...
+                       not(isfinite(v(i))) || isnan(v(i)))
+                        continue;
+                    end
+                    
+                    points(i) = GriddedInterpolantPoint(x(i), v(i));  %#ok<AGROW>
+                end    
+                
+                if(length(points) >= 2)
+                    cDInterpPts = aero.CdInterpPts;
+                    cDInterpPts.removeAllPoints();
+
+                    for(i=1:length(points))
+                        cDInterpPts.addPoint(points(i));
+                    end
+
+                    handles.ptsListbox.String = aero.CdInterpPts.getListboxStr();
+                    handles.ptsListbox.Value = 1;
+                    
+                else
+                    msgbox(sprintf('Only %u point(s) was successfully imported.  Check the CSV file format and try again.', length(points)),'Import Error','error');
+                end
+            else
+                msgbox(errMsg,'Errors were found while importing Cd values.','error');
+                
+                return;
+            end
+        end
+    end
+
+% --------------------------------------------------------------------
+function cdPtsListboxContextMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to cdPtsListboxContextMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+    

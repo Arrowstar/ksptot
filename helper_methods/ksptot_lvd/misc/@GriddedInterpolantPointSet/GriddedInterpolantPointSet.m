@@ -22,6 +22,10 @@ classdef GriddedInterpolantPointSet < matlab.mixin.SetGet
             obj.points(obj.points == point) = [];
         end
         
+        function removeAllPoints(obj)
+            obj.points = GriddedInterpolantPoint.empty(1,0);
+        end
+        
         function point = getPointByIndex(obj, ind)
             point = GriddedInterpolantPoint.empty(1,0);
             
