@@ -522,7 +522,7 @@ function importPointsFromCsvFileMenu_Callback(hObject, eventdata, handles)
                         continue;
                     end
                     
-                    points(i) = GriddedInterpolantPoint(x(i), v(i));  %#ok<AGROW>
+                    points(i) = GriddedInterpolantPoint(x(i), abs(v(i)));  %#ok<AGROW>
                 end    
                 
                 if(length(points) >= 2)
