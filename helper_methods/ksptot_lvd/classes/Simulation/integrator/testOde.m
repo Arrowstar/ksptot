@@ -21,7 +21,7 @@ toc;
 
 int = ODE5Integrator();
 tic;
-[tMyOde,yMyOde]= int.integrate(odefun,tspan,y0,options);
+[tMyOde,yMyOde]= int.integrate(odefun,tspan,y0);
 toc;
 
 hF = figure();
