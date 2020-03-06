@@ -2,7 +2,6 @@ classdef ODE5Integrator < AbstractFixedStepIntegrator
     %ODE5Integrator Summary of this class goes here
     %   Detailed explanation goes here
     
-    
     methods
         function obj = ODE5Integrator()
 
