@@ -663,7 +663,7 @@ function plotData(hFig, indepVarValues, data, lineColor, lineType, lineWidth, in
                 tru1 = tru(j-1);
                 tru2 = tru(j);
                 
-                if(((tru1 > tru2 && abs(tru1-tru2)>pi) || (tru1 < 0 && tru2 >= 0)) && bodyLog(j-1,8)==bodyLog(j,8))                   
+                if(((tru1 < 0 && tru2 >= 0)) && bodyLog(j-1,8)==bodyLog(j,8))                   
                     eventTime = bodyLog(j,1)*indepTimeUnitMult;
                     indepVarEventLoc = indepVarValues(indepVarValues(:,2)==eventTime,1);
                     indepVarEventLoc = indepVarEventLoc(1);
@@ -678,7 +678,6 @@ function plotData(hFig, indepVarValues, data, lineColor, lineType, lineWidth, in
                     plot([indepVarEventLoc indepVarEventLoc], [minData, maxData],periLineColor,'LineWidth',0.25);
                     text(indepVarEventLoc,maxData-4*onePercData,[' P',num2str(periCnt)],'Color',periLineColor);
                     periCnt = periCnt + 1;
-                    disp(j);
                 end
             end
         end

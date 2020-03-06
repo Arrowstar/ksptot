@@ -25,7 +25,7 @@ classdef InitialStateModel < matlab.mixin.SetGet
     
     methods
         function obj = InitialStateModel()
-
+            
         end
         
         function time = get.time(obj)
@@ -270,7 +270,7 @@ classdef InitialStateModel < matlab.mixin.SetGet
             
             aeroState = LaunchVehicleAeroState();
             aeroState.area = 1;
-            aeroState.Cd = 0.3;
+            aeroState.CdInterp = griddedInterpolant([0 1], [0.3 0.3], 'linear','nearest');
             stateLogModel.aero = aeroState;
             
             grav3Body = LaunchVehicle3BodyGravState();

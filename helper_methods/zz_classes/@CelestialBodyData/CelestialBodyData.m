@@ -31,6 +31,12 @@ classdef CelestialBodyData < matlab.mixin.SetGet & dynamicprops
             else
                 error('Input to CelestialBodyData must be the structure representation of celestial body data.');
             end
+            
+            for(i=1:length(obj.bodies))
+                if(isstruct(obj.bodies(i).celBodyData) || isempty(obj.bodies(i).celBodyData))
+                    obj.bodies(i).celBodyData = obj;
+                end
+            end
         end
         
         %Override the following structure methods for backwards

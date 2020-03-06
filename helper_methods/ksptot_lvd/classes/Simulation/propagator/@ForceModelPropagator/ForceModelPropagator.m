@@ -96,6 +96,10 @@ classdef ForceModelPropagator < AbstractPropagator
         %%%
         function dydt = odefun(t,y, eventInitStateLogEntry, tankStates, dryMass, fmEnums)
             bodyInfo = eventInitStateLogEntry.centralBody;
+            if(isstruct(bodyInfo.celBodyData) || isempty(bodyInfo.celBodyData))
+                bodyInfo.celBodyData = eventInitStateLogEntry.celBodyData;
+            end
+            
             [ut, rVect, vVect, tankStatesMasses] = AbstractPropagator.decomposeIntegratorTandY(t,y);
             altitude = norm(rVect) - bodyInfo.radius;
 
