@@ -716,7 +716,6 @@ function plotData(hFig, indepVarValues, data, lineColor, lineType, lineWidth, in
                     plot([indepVarEventLoc indepVarEventLoc], [minData, maxData],periLineColor,'LineWidth',0.25);
                     text(indepVarEventLoc,maxData-4*onePercData,[' P',num2str(periCnt)],'Color',periLineColor);
                     periCnt = periCnt + 1;
-                    disp(j);
                 end
             end
         end
