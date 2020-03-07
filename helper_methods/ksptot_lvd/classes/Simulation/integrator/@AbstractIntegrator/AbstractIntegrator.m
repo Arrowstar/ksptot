@@ -7,7 +7,7 @@ classdef(Abstract) AbstractIntegrator < matlab.mixin.SetGet & matlab.mixin.Heter
     end
     
     methods
-        [t,y,te,ye,ie] = integrate(obj, odefun, tspan, y0)
+        [t,y,te,ye,ie] = integrate(obj, odefun, tspan, y0, evtsFunc, odeOutputFun)
         
         options = getOptions(obj)
     end

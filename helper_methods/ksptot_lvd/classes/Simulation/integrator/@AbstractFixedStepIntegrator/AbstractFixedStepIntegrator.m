@@ -83,7 +83,7 @@ classdef AbstractFixedStepIntegrator < AbstractIntegrator
             te = [];
             ye = [];
             if(hasEvents)
-                [prevEvtValues,~,~] = eventFcn(t(1),Y(:,1));
+                [prevEvtValues,~,~] = eventFcn(t(1),Y(:,1)); %#ok<RHSFN>
             else
                 prevEvtValues = [];
             end
@@ -106,15 +106,15 @@ classdef AbstractFixedStepIntegrator < AbstractIntegrator
                 Y(:,i) = ODE5Integrator.stepOnce(odefun, ti, yi, hi, neq);
                 
                 if(hasEvents)
-                    [evtValues,evtIsTerminal,evtDirection] = eventFcn(t(i),Y(:,i));
+                    [evtValues,evtIsTerminal,evtDirection] = eventFcn(t(i),Y(:,i)); %#ok<RHSFN>
                     
                     signDetect = prevEvtValues .* evtValues < 0;
                     if(any(signDetect))
                         diffForDeriv = sign(evtValues - prevEvtValues);
                         
                         rootFcn = @(subHi) ODE5Integrator.rootFindingFunc(subHi, odefun, ti, yi, neq, eventFcn);
-                        [tSubI,~,exitflag,~] = fminbnd(rootFcn,t(i-1),t(i));
-                        
+                        [tSubI,fval,exitflag,~] = fminbnd(rootFcn,t(i-1),t(i), optimset('TolX',1E-6));
+
                         if(exitflag == 1)
                             [~, evtInd] = rootFcn(tSubI);
                             if(evtDirection(evtInd) == 0 || ...
@@ -196,6 +196,7 @@ classdef AbstractFixedStepIntegrator < AbstractIntegrator
                 error('Entries of TSPAN are not in order.')
             end
             
+            y0 = y0(:);   % Make a column vector.
             try
                 f0 = odefun(tspan(1),y0);
             catch ME
@@ -203,7 +204,6 @@ classdef AbstractFixedStepIntegrator < AbstractIntegrator
                 error(msg);
             end
             
-            y0 = y0(:);   % Make a column vector.
             if ~isequal(size(y0),size(f0))
                 error('Inconsistent sizes of Y0 and f(t0,y0).');
             end

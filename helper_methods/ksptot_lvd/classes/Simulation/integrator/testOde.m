@@ -1,27 +1,27 @@
 clc; clear all; format long g; close all;
 
-tspan = 0:0.5:20;
-y0 = [2 0];
-odefun = @vdp1;
-options = odeset();
+% tspan = 0:0.5:20;
+% y0 = [2 0];
+% odefun = @vdp1;
+% options = odeset();
 
 % tspan = 0:0.5:15;
 % y0 = [20 20]';
 % odefun = @lotka;
 % options = odeset('Events',@events);
 
-% tspan = 0:1:30;
-% y0 = [0; 20];
-% odefun = @f;
-% options = odeset('Events',@events);
+tspan = 0:4:30;
+y0 = [0; 20];
+odefun = @f;
+options = odeset('Events',@events);
 
 tic;
-[tOde45,yOde45]= ode113(odefun,tspan,y0,options);
+[tOde45,yOde45]= ode45(odefun,tspan,y0,options);
 toc;
 
 int = ODE5Integrator();
 tic;
-[tMyOde,yMyOde]= int.integrate(odefun,tspan,y0);
+[tMyOde,yMyOde]= int.integrate(odefun,tspan,y0, @events, []);
 toc;
 
 hF = figure();

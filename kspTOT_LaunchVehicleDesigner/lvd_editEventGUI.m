@@ -691,6 +691,9 @@ function integratorObj = getSelectedEventIntegratorObj(handles)
 
         case IntegratorEnum.ODE45
             integratorObj = event.ode45Integrator;
+            
+        case IntegratorEnum.ODE5
+            integratorObj = event.ode5Integrator;
 
         otherwise
             error('Unknown integrator type.');

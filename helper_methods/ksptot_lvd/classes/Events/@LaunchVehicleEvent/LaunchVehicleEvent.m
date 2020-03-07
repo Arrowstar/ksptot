@@ -29,11 +29,15 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
         %%%%%
         %Integrators
         %%%%%
+        %Adaptive Step Size
         ode45Integrator(1,:) ODE45Integrator
         ode113Integrator(1,:) ODE113Integrator
         ode23Integrator(1,:) ODE23Integrator 
         ode23sIntegrator(1,:) ODE23sIntegrator 
         ode15sIntegrator(1,:) ODE15sIntegrator
+        
+        %Fixed Step Size
+        ode5Integrator(1,:) ODE5Integrator
     end
     
     properties(Dependent)
@@ -65,6 +69,7 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
             obj.ode23Integrator = ODE23Integrator();
             obj.ode23sIntegrator = ODE23sIntegrator();
             obj.ode15sIntegrator = ODE15sIntegrator();
+            obj.ode5Integrator = ODE5Integrator();
         end
         
         function lvdData = get.lvdData(obj)
@@ -300,6 +305,10 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
             
             if(isempty(obj.ode15sIntegrator))
                 obj.ode15sIntegrator = ODE15sIntegrator();
+            end
+            
+            if(isempty(obj.ode5Integrator))
+                obj.ode5Integrator = ODE5Integrator();
             end
             
             if(isempty(obj.integratorObj))

@@ -2,18 +2,30 @@ classdef ODE5Integrator < AbstractFixedStepIntegrator
     %ODE5Integrator Summary of this class goes here
     %   Detailed explanation goes here
     
+    properties
+        options(1,1) FixedStepSizeIntegratorOptions = FixedStepSizeIntegratorOptions()
+        integratorEnum = IntegratorEnum.ODE5;
+    end
+    
     methods
-        function obj = ODE5Integrator()
-
+        function obj = ODE5Integrator(options)
+            if(nargin > 0)
+                obj.options = options;
+            else
+                obj.options = FixedStepSizeIntegratorOptions();
+            end
         end
         
-        function [t,y,te,ye,ie] = integrate(obj, odefun, tspan, y0)
-            options = odeset(); %TODO remove when options are added in
-            [t,y, te,ye,ie] = AbstractFixedStepIntegrator.integrate(odefun, tspan, y0, options);
+        function [t,y,te,ye,ie] = integrate(obj, odefun, tspan, y0, evtsFunc, odeOutputFun)
+%             odeSetOptions = obj.options.getIntegratorOptions();
+            odeSetOptions = odeset();
+            optionsToUse = odeset(odeSetOptions, 'Events',evtsFunc, 'OutputFcn',odeOutputFun);
+            
+            [t,y, te,ye,ie] = AbstractFixedStepIntegrator.integrate(odefun, tspan, y0, optionsToUse);
         end
         
         function options = getOptions(obj)
-            %TODO
+            options = obj.options;
         end
     end
     
