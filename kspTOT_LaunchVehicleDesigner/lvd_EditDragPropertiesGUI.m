@@ -493,9 +493,14 @@ function importPointsFromCsvFileMenu_Callback(hObject, eventdata, handles)
         if(not(FileName == 0))
             file = fullfile(PathName,FileName);
             
+            hMsgbox = msgbox('Importing Cd Data from csv file.  Please wait...','modal');
+            
             try
                 T = readtable(file);
             catch ME
+                if(isvalid(hMsgbox))
+                    close(hMsgbox);
+                end
                 msgbox(sprintf('An error was encountered while reading the CSV file: \n\n%s', ME.message), 'Import Error', 'error');
                 
                 return;
@@ -536,10 +541,19 @@ function importPointsFromCsvFileMenu_Callback(hObject, eventdata, handles)
                     handles.ptsListbox.String = aero.CdInterpPts.getListboxStr();
                     handles.ptsListbox.Value = 1;
                     
+                    if(isvalid(hMsgbox))
+                        close(hMsgbox);
+                    end
                 else
+                    if(isvalid(hMsgbox))
+                        close(hMsgbox);
+                    end
                     msgbox(sprintf('Only %u point(s) was successfully imported.  Check the CSV file format and try again.', length(points)),'Import Error','error');
                 end
             else
+                if(isvalid(hMsgbox))
+                    close(hMsgbox);
+                end
                 msgbox(errMsg,'Errors were found while importing Cd values.','error');
                 
                 return;
