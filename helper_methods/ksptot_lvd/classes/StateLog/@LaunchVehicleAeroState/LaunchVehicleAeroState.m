@@ -83,6 +83,7 @@ classdef LaunchVehicleAeroState < matlab.mixin.SetGet & matlab.mixin.Copyable
                 pointSet.addPoint(GriddedInterpolantPoint(0,obj.Cd));
                 pointSet.addPoint(GriddedInterpolantPoint(1,obj.Cd));
                 obj.CdInterp = pointSet.getGriddedInterpFromPoints(obj.CdInterpMethod, GriddedInterpolantMethodEnum.Nearest);
+                obj.CdInterpPts = pointSet;
             end
         end
     end

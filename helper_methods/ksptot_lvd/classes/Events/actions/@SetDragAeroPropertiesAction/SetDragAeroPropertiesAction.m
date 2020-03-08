@@ -3,16 +3,19 @@ classdef SetDragAeroPropertiesAction < AbstractEventAction
     %   Detailed explanation goes here
     
     properties       
+        %area
         areaToSet(1,1) double = 0;
+        
+        %drag
         CdInterpToSet
-        CdIndepVarToSet
-        CdInterpMethodToSet
+        CdIndepVarToSet(1,1) AeroIndepVar = AeroIndepVar.Altitude;
+        CdInterpMethodToSet (1,1) GriddedInterpolantMethodEnum = GriddedInterpolantMethodEnum.Linear;
         CdInterpPtsToSet
     end
     
     %deprecated
     properties
-        CdToSet(1,1) double = 0;
+        CdToSet(1,1) double = 0.3;
     end
     
     methods
@@ -24,6 +27,15 @@ classdef SetDragAeroPropertiesAction < AbstractEventAction
                 obj.CdInterpPtsToSet = CdInterpPtsToSet;
                 
                 obj.areaToSet = areaToSet;
+            else
+                obj.CdInterpMethodToSet = GriddedInterpolantMethodEnum.Linear;
+
+                pointSet = GriddedInterpolantPointSet();
+                obj.CdInterpPtsToSet = pointSet;
+
+                pointSet.addPoint(GriddedInterpolantPoint(0,0.3));
+                pointSet.addPoint(GriddedInterpolantPoint(1,0.3));
+                obj.CdInterpToSet = pointSet.getGriddedInterpFromPoints(obj.CdInterpMethod, GriddedInterpolantMethodEnum.Nearest);
             end
             
             obj.id = rand();
@@ -101,6 +113,18 @@ classdef SetDragAeroPropertiesAction < AbstractEventAction
                 action.CdIndepVarToSet = aero.CdIndepVar;
                 action.CdInterpMethodToSet = aero.CdInterpMethod;
                 action.CdInterpPtsToSet = aero.CdInterpPts;
+            end
+        end
+        
+        function obj = loadobj(obj)
+            if(isempty(obj.CdInterpToSet))
+                pointSet = GriddedInterpolantPointSet();
+                obj.CdInterpMethodToSet = GriddedInterpolantMethodEnum.Linear;
+                
+                pointSet.addPoint(GriddedInterpolantPoint(0,obj.CdToSet));
+                pointSet.addPoint(GriddedInterpolantPoint(1,obj.CdToSet));
+                obj.CdInterpToSet = pointSet.getGriddedInterpFromPoints(obj.CdInterpMethodToSet, GriddedInterpolantMethodEnum.Nearest);
+                obj.CdInterpPtsToSet = pointSet;
             end
         end
     end
