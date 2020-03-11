@@ -234,13 +234,15 @@ classdef VS_Problem < matlab.mixin.SetGet
             phase0.name = 'Untitled Phase';
             phase0.phaseDv = 5000;
             vsProb.addPhase(phase0);
+           
+            bodynames = celBodyData.fieldnames();
             
             stage0 = VS_Stage(phase0);
             stage0.name = 'Untitled Stage';
             stage0.isp = 300;
             stage0.dryMassFrac = 0.2;
             stage0.desiredT2W = 1;
-            stage0.bodyInfo = celBodyData.kerbin;
+            stage0.bodyInfo = celBodyData.(bodynames{1});
             stage0.dryMass = 500;
             stage0.isPayload = true;
             phase0.addStage(stage0);

@@ -335,6 +335,8 @@ function dryMassFractionText_Callback(hObject, eventdata, handles)
     newInput = attemptStrEval(newInput);
     set(hObject,'String', newInput);
     
+    errMsg = {};
+    
     rawDouble = str2double(get(hObject,'String'));
     enteredStr = get(hObject,'String');
     numberName = 'Stage Dry Mass Fraction';
