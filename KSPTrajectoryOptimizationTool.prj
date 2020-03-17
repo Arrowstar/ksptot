@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.ezdeploy" plugin-version="1.0">
-  <configuration build-checksum="2752776358" file="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\KSPTrajectoryOptimizationTool.prj" location="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool" name="KSPTrajectoryOptimizationTool" preferred-package-location="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\deploy\KSPTrajectoryOptimizationTool\for_redistribution" preferred-package-type="package.type.exe" target="target.ezdeploy.standalone" target-name="Application Compiler">
+  <configuration build-checksum="74072516" file="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\KSPTrajectoryOptimizationTool.prj" location="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool" name="KSPTrajectoryOptimizationTool" preferred-package-location="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\deploy\KSPTrajectoryOptimizationTool\for_redistribution" preferred-package-type="package.type.exe" target="target.ezdeploy.standalone" target-name="Application Compiler">
     <param.appname>KSPTrajectoryOptimizationTool</param.appname>
     <param.icon>${PROJECT_ROOT}\KSPTrajectoryOptimizationTool_resources\icon.ico</param.icon>
     <param.icons>
@@ -199,6 +199,64 @@
       <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\SymBuilder\@SymBuilder\Results.m</file>
       <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\SymBuilder\@SymBuilder\sym2fun.m</file>
       <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\SymBuilder\@SymBuilder\SymBuilder.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\actionUIs\lvd_AddDeltaVActionGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\actionUIs\lvd_AddMassToTankActionGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\actionUIs\lvd_EditActionResetExtremumValueGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\actionUIs\lvd_EditActionSetClampStateGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\actionUIs\lvd_EditActionSetEngineStateGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\actionUIs\lvd_EditActionSetEngineToTankConnStateGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\actionUIs\lvd_EditActionSetExtremumRecordingStateGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\actionUIs\lvd_EditActionSetKinematicStateGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\actionUIs\lvd_EditActionSetStageStateGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\actionUIs\lvd_EditActionSetSteeringModelGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\actionUIs\lvd_EditActionSetStopwatchRunningStateGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\actionUIs\lvd_EditActionSetThirdBodyGravitySourcesGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\actionUIs\lvd_EditActionSetThrottleModelGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\actionUIs\lvd_EditT2WThrottleModelGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\editLaunchVehicleUIs\editThrottleModifierProfileGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\editLaunchVehicleUIs\lvd_EditActionSetTankToTankConnFlowRateGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\editLaunchVehicleUIs\lvd_EditActionSetTankToTankConnStateGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\editLaunchVehicleUIs\lvd_EditEngineGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\editLaunchVehicleUIs\lvd_EditEnginesGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\editLaunchVehicleUIs\lvd_EditEngineToTanksConnGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\editLaunchVehicleUIs\lvd_EditEngineToTanksConnsGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\editLaunchVehicleUIs\lvd_EditExtremaGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\editLaunchVehicleUIs\lvd_EditExtremasGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\editLaunchVehicleUIs\lvd_editLaunchVehicle.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\editLaunchVehicleUIs\lvd_EditStageGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\editLaunchVehicleUIs\lvd_EditStagesGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\editLaunchVehicleUIs\lvd_EditStopwatchesGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\editLaunchVehicleUIs\lvd_EditStopwatchGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\editLaunchVehicleUIs\lvd_EditTankFluidTypesGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\editLaunchVehicleUIs\lvd_EditTankGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\editLaunchVehicleUIs\lvd_EditTanksGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\editLaunchVehicleUIs\lvd_EditTankToTankConnGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\editLaunchVehicleUIs\lvd_EditTankToTankConnsGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\editLaunchVehicleUIs\lvd_editThrottleModifierProfileElementGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\lvd_EditDragPropertiesGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\lvd_editEventGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\lvd_editEvtTermCond.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\lvd_EditInitialStateGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\lvd_EditLiftPropertiesGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\lvd_EditLvAndStagesStatesGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\lvd_editNonSeqEventGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\lvd_GraphicalAnalysisGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\lvd_MissionNotesGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\ma_LvdMainGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\optimization\lvd_adjustOptVarGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\optimization\lvd_EditCompositeObjectiveFunctionGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\optimization\lvd_EditConstraintsGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\optimization\lvd_EditContinuityConstraintGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\optimization\lvd_EditGenericMAConstraintGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\optimization\optimizer\lvd_editFminconOptionsGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\optimization\optimizer\lvd_editIpoptOptionsGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\optimization\optimizer\lvd_editNomadOptionsGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\optimization\optimizer\lvd_editPatternSearchOptionsGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\optimization\optimizer\lvd_finiteDiffOptionsGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\optimization\optimizer\lvd_OptimizerSelectionGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\propagation\integration\lvd_builtInIntegratorOptionsGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\propagation\integration\lvd_fixedStepSizeIntegratorOptionsGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_VehicleSizer\vs_mainGUI.m</file>
       <file>C:\Users\Adam\Dropbox\Documents\MATLAB\uiinspect.m</file>
     </fileset.depfun>
     <build-deliverables>
