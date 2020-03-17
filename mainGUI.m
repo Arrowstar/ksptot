@@ -580,6 +580,7 @@ if(PathName == 0)
 end
 [celBodyDataFromINI,~,~] = inifile(filePathName,'readall');
 celBodyData = processINIBodyInfo(celBodyDataFromINI);
+celBodyData = CelestialBodyData(celBodyData);
 
 updateAppOptions(hObject, 'ksptot', 'bodiesinifile', filePathName);
 

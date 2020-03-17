@@ -16,21 +16,24 @@ function [taskList] = lvd_getGraphAnalysisTaskList(lvdData, excludeList)
     taskList{end+1} = 'Two-Body Impact Latitude';
     taskList{end+1} = 'Two-Body Impact Longitude';
     taskList{end+1} = 'Drag Coefficient';
-    
+    taskList{end+1} = 'Drag Area';
+    taskList{end+1} = 'Event Number';
+    taskList{end+1} = 'Total Effective Isp';
+
     [tanksGAStr, ~] = lvdData.launchVehicle.getTanksGraphAnalysisTaskStrs();
     taskList = horzcat(taskList, tanksGAStr);
-    
+
     [stagesGAStr, ~] = lvdData.launchVehicle.getStagesGraphAnalysisTaskStrs();
     taskList = horzcat(taskList, stagesGAStr);
-    
+
     [engineGAStr, ~] = lvdData.launchVehicle.getEnginesGraphAnalysisTaskStrs();
     taskList = horzcat(taskList, engineGAStr);
-    
+
     [stopwatchGAStr, ~] = lvdData.launchVehicle.getStopwatchGraphAnalysisTaskStrs();
     taskList = horzcat(taskList, stopwatchGAStr);
-    
+
     [extremaGAStr, ~] = lvdData.launchVehicle.getExtremaGraphAnalysisTaskStrs();
     taskList = horzcat(taskList, extremaGAStr);
-    
+
     taskList = setdiff(taskList,excludeList);
 end

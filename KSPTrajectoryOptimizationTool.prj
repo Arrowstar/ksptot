@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.ezdeploy" plugin-version="1.0">
-  <configuration build-checksum="3933433454" file="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\KSPTrajectoryOptimizationTool.prj" location="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool" name="KSPTrajectoryOptimizationTool" preferred-package-location="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\deploy\KSPTrajectoryOptimizationTool\for_redistribution" preferred-package-type="package.type.exe" target="target.ezdeploy.standalone" target-name="Application Compiler">
+  <configuration build-checksum="74072516" file="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\KSPTrajectoryOptimizationTool.prj" location="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool" name="KSPTrajectoryOptimizationTool" preferred-package-location="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\deploy\KSPTrajectoryOptimizationTool\for_redistribution" preferred-package-type="package.type.exe" target="target.ezdeploy.standalone" target-name="Application Compiler">
     <param.appname>KSPTrajectoryOptimizationTool</param.appname>
     <param.icon>${PROJECT_ROOT}\KSPTrajectoryOptimizationTool_resources\icon.ico</param.icon>
     <param.icons>
@@ -119,6 +119,141 @@
       <file>${MATLAB_ROOT}\toolbox\local\+matlab\+internal\+supportPackages\addInstalledSupportPackagesToPath.m</file>
       <file>${MATLAB_ROOT}\toolbox\local\initprefs.m</file>
       <file>${MATLAB_ROOT}\toolbox\local\matlabrc.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\@opti\buildConfig.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\@opti\buildOpti.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\@opti\calcStatistics.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\@opti\checkOptiSol.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\@opti\displayOPTI.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\@opti\multiSolveOpti.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\@opti\opti.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\@opti\solveOpti.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\@opti\testProblem.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Solvers\opti_ipopt.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Solvers\opti_nomad.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\abs.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\acos.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\adiff.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\adiffget.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\asin.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\atan.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\conj.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\cos.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\cosh.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\ctranspose.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\diff.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\double.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\end.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\exp.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\fft.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\full.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\ifft.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\imag.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\isreal.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\issparse.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\length.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\log.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\log10.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\max.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\min.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\minus.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\mldivide.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\mpower.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\mrdivide.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\mtimes.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\norm.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\plus.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\power.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\private\checkroot.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\private\reciprocal.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\private\rowmult.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\rdivide.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\real.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\repmat.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\sin.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\sinh.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\size.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\sparse.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\sqrt.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\subsasgn.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\subsref.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\sum.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\tan.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\tanh.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\times.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\uminus.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\vertcat.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\opti\ipoptset.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\SymBuilder\@SymBuilder\buildCFun.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\SymBuilder\@SymBuilder\buildMFun.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\SymBuilder\@SymBuilder\detVarNames.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\SymBuilder\@SymBuilder\display.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\SymBuilder\@SymBuilder\GetOPTI.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\SymBuilder\@SymBuilder\parseBound.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\SymBuilder\@SymBuilder\parseConstraint.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\SymBuilder\@SymBuilder\parseExpression.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\SymBuilder\@SymBuilder\parseInteger.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\SymBuilder\@SymBuilder\parseResExp.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\SymBuilder\@SymBuilder\Results.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\SymBuilder\@SymBuilder\sym2fun.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\SymBuilder\@SymBuilder\SymBuilder.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\actionUIs\lvd_AddDeltaVActionGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\actionUIs\lvd_AddMassToTankActionGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\actionUIs\lvd_EditActionResetExtremumValueGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\actionUIs\lvd_EditActionSetClampStateGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\actionUIs\lvd_EditActionSetEngineStateGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\actionUIs\lvd_EditActionSetEngineToTankConnStateGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\actionUIs\lvd_EditActionSetExtremumRecordingStateGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\actionUIs\lvd_EditActionSetKinematicStateGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\actionUIs\lvd_EditActionSetStageStateGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\actionUIs\lvd_EditActionSetSteeringModelGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\actionUIs\lvd_EditActionSetStopwatchRunningStateGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\actionUIs\lvd_EditActionSetThirdBodyGravitySourcesGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\actionUIs\lvd_EditActionSetThrottleModelGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\actionUIs\lvd_EditT2WThrottleModelGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\editLaunchVehicleUIs\editThrottleModifierProfileGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\editLaunchVehicleUIs\lvd_EditActionSetTankToTankConnFlowRateGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\editLaunchVehicleUIs\lvd_EditActionSetTankToTankConnStateGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\editLaunchVehicleUIs\lvd_EditEngineGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\editLaunchVehicleUIs\lvd_EditEnginesGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\editLaunchVehicleUIs\lvd_EditEngineToTanksConnGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\editLaunchVehicleUIs\lvd_EditEngineToTanksConnsGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\editLaunchVehicleUIs\lvd_EditExtremaGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\editLaunchVehicleUIs\lvd_EditExtremasGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\editLaunchVehicleUIs\lvd_editLaunchVehicle.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\editLaunchVehicleUIs\lvd_EditStageGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\editLaunchVehicleUIs\lvd_EditStagesGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\editLaunchVehicleUIs\lvd_EditStopwatchesGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\editLaunchVehicleUIs\lvd_EditStopwatchGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\editLaunchVehicleUIs\lvd_EditTankFluidTypesGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\editLaunchVehicleUIs\lvd_EditTankGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\editLaunchVehicleUIs\lvd_EditTanksGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\editLaunchVehicleUIs\lvd_EditTankToTankConnGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\editLaunchVehicleUIs\lvd_EditTankToTankConnsGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\editLaunchVehicleUIs\lvd_editThrottleModifierProfileElementGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\lvd_EditDragPropertiesGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\lvd_editEventGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\lvd_editEvtTermCond.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\lvd_EditInitialStateGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\lvd_EditLiftPropertiesGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\lvd_EditLvAndStagesStatesGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\lvd_editNonSeqEventGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\lvd_GraphicalAnalysisGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\lvd_MissionNotesGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\ma_LvdMainGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\optimization\lvd_adjustOptVarGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\optimization\lvd_EditCompositeObjectiveFunctionGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\optimization\lvd_EditConstraintsGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\optimization\lvd_EditContinuityConstraintGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\optimization\lvd_EditGenericMAConstraintGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\optimization\optimizer\lvd_editFminconOptionsGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\optimization\optimizer\lvd_editIpoptOptionsGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\optimization\optimizer\lvd_editNomadOptionsGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\optimization\optimizer\lvd_editPatternSearchOptionsGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\optimization\optimizer\lvd_finiteDiffOptionsGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\optimization\optimizer\lvd_OptimizerSelectionGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\propagation\integration\lvd_builtInIntegratorOptionsGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\propagation\integration\lvd_fixedStepSizeIntegratorOptionsGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_VehicleSizer\vs_mainGUI.m</file>
       <file>C:\Users\Adam\Dropbox\Documents\MATLAB\uiinspect.m</file>
     </fileset.depfun>
     <build-deliverables>

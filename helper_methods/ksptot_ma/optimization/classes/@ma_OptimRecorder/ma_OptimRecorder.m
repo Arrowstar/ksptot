@@ -31,6 +31,8 @@ classdef ma_OptimRecorder < matlab.mixin.SetGet
         end
         
         function [iterNum, xVals, fVal, maxCVal] = getIterWithLowestCVal(obj)
+            obj.maxCVal(isnan(obj.fVals)) = NaN;
+            
             [minCVal,I] = min(obj.maxCVal);
             
             inds = find(obj.maxCVal == minCVal);
