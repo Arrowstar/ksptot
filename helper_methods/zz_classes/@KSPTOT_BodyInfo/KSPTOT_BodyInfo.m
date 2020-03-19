@@ -1,7 +1,7 @@
 classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
     %KSPTOT_BodyInfo Summary of this class goes here
     %   Detailed explanation goes here
-
+    
     properties
         epoch@double
         sma@double
@@ -32,99 +32,45 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
         name@char
         id@double
     end
-
+    
     properties
-        celBodyData
-
+        celBodyData struct
         parentBodyInfo KSPTOT_BodyInfo
         parentBodyInfoNeedsUpdate logical = true;
-
-        childrenBodyInfo KSPTOT_BodyInfo
-        childrenBodyNames cell
-        childrenBodyInfoNeedsUpdate logical = true;
     end
-
+    
     methods
-        function obj = KSPTOT_BodyInfo()
-
+        function obj = KSPTOT_BodyInfo() 
+        
         end
-
+        
         function parentBodyInfo = getParBodyInfo(obj, celBodyData)
             if(obj.parentBodyInfoNeedsUpdate && isempty(obj.parentBodyInfo))
                 pBodyInfo = getParentBodyInfo(obj, celBodyData);
-
+                
                 if(not(isempty(pBodyInfo)))
                     obj.parentBodyInfo = pBodyInfo;
                 end
-
+                
                 obj.parentBodyInfoNeedsUpdate = false;
             end
-
+            
             parentBodyInfo = obj.parentBodyInfo;
         end
-
-        function [childrenBodyInfo, cbNames] = getChildrenBodyInfo(obj, celBodyData)
-            if(obj.childrenBodyInfoNeedsUpdate && isempty(obj.childrenBodyInfo))
-                [cBodyInfo,cbNames] = getChildrenOfParentInfo(celBodyData, obj.name);
-
-                if(not(isempty(cBodyInfo)))
-                    for(i=1:length(cBodyInfo))
-                        obj.childrenBodyInfo(i) = cBodyInfo{i};
-                    end
-                    obj.childrenBodyNames = cbNames;
-                end
-                
-                obj.childrenBodyInfoNeedsUpdate = false;
-            end
-
-            childrenBodyInfo = obj.childrenBodyInfo;
-            cbNames = obj.childrenBodyNames;
-        end
-
-        function rotMat = get.bodyRotMatFromGlobalInertialToBodyInertial(obj)
-            if(isempty(obj.bodyRotMatFromGlobalInertialToBodyInertial))
-                obj.bodyZAxis = normVector(obj.bodyZAxis);
-                obj.bodyXAxis = normVector(obj.bodyXAxis);
-
-                rotY = normVector(crossARH(obj.bodyZAxis, obj.bodyXAxis));
-                rotX = normVector(crossARH(rotY, obj.bodyZAxis));
-                rotMat = [rotX, rotY, obj.bodyZAxis];
-
-                obj.bodyRotMatFromGlobalInertialToBodyInertial = rotMat;
-            else
-                rotMat = obj.bodyRotMatFromGlobalInertialToBodyInertial;
-            end
-        end
-
-        function frame = getBodyCenteredInertialFrame(obj)
-            if(isempty(obj.bodyInertialFrameCache))
-                obj.bodyInertialFrameCache = BodyCenteredInertialFrame(obj, obj.celBodyData);
-            end
-
-            frame = obj.bodyInertialFrameCache;
-        end
-
-        function frame = getBodyFixedFrame(obj)
-            if(isempty(obj.bodyFixedFrameCache))
-                obj.bodyFixedFrameCache = BodyFixedFrame(obj, obj.celBodyData);
-            end
-
-            frame = obj.bodyFixedFrameCache;
-        end
-
+        
         function tf = eq(A,B)
             tf = [A.id] == [B.id];
-
+            
             if(isempty(tf))
                 tf = false;
             end
         end
     end
-
+    
 	methods(Static)
         function bodyObj = getObjFromBodyInfoStruct(bodyInfo)
             bodyObj = KSPTOT_BodyInfo();
-
+          
             bodyObj.epoch = bodyInfo.epoch;
             bodyObj.sma = bodyInfo.sma;
             bodyObj.ecc = bodyInfo.ecc;
@@ -153,3 +99,4 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
         end
     end
 end
+

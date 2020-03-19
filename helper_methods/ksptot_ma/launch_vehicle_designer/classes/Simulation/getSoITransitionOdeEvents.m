@@ -19,12 +19,11 @@ function [value, isterminal, direction, causes] = getSoITransitionOdeEvents(ut, 
         causes(1) = SoITransitionUpIntTermCause(bodyInfo, parentBodyInfo, celBodyData);    
 
         %Leave SoI Downwards
-%         children = getChildrenOfParentInfo(celBodyData, bodyInfo.name);
-        children = bodyInfo.getChildrenBodyInfo(celBodyData);
+        children = getChildrenOfParentInfo(celBodyData, bodyInfo.name);
         if(~isempty(children))
-            soiDownCauses(length(children)) = SoITransitionDownIntTermCause(bodyInfo, children(end), celBodyData);
+            soiDownCauses(length(children)) = SoITransitionDownIntTermCause(bodyInfo, children{end}, celBodyData);
             for(i=1:length(children)) %#ok<*NO4LP>
-                childBodyInfo = children(i);
+                childBodyInfo = children{i};
 
                 dVect = getAbsPositBetweenSpacecraftAndBody(ut, rVect, bodyInfo, childBodyInfo, celBodyData);
                 distToChild = norm(dVect);

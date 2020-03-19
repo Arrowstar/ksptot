@@ -17,7 +17,7 @@ classdef (Abstract) AbstractForceModel < matlab.mixin.SetGet & matlab.mixin.Hete
             vVect = stateLogEntry.velocity;
             mass = stateLogEntry.getTotalVehicleMass();
             bodyInfo = stateLogEntry.centralBody;
-            CdA = stateLogEntry.aero.area * stateLogEntry.aero.Cd;  %TODO WRONG
+            CdA = stateLogEntry.aero.area * stateLogEntry.aero.Cd; 
         end
     end
 end

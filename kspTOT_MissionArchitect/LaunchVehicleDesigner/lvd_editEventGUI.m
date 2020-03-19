@@ -60,7 +60,7 @@ function lvd_editEventGUI_OpeningFcn(hObject, eventdata, handles, varargin)
     event.clearActiveOptVarsCache();
 
     populateGUI(handles, event);
-
+    
     % Update handles structure
     guidata(hObject, handles);
 
@@ -70,43 +70,43 @@ function lvd_editEventGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 
 function populateGUI(handles, event)
     set(handles.eventNameText,'String',event.name);
-
+    
     termCond = event.termCond;
     set(handles.termCondNameLabel,'String',termCond.getName());
     set(handles.termCondNameLabel,'TooltipString',termCond.getName());
-
+    
     set(handles.actionsListbox,'String',event.getActionsListboxStr());
     set(handles.actionsListbox,'Value',1);
-
+    
     handles.colorSpecCombo.String = ColorSpecEnum.getListboxStr();
     [~,ind] = ColorSpecEnum.getEnumForListboxStr(event.colorLineSpec.color.name);
     handles.colorSpecCombo.Value = ind;
-
+    
     handles.lineSpecCombo.String = LineSpecEnum.getListboxStr();
     [~,ind] = LineSpecEnum.getEnumForListboxStr(event.colorLineSpec.lineSpec.name);
     handles.lineSpecCombo.Value = ind;
-
+    
     handles.eventTermCondDirCombo.String = EventTermCondDirectionEnum.getListboxStr();
     [~,ind] = EventTermCondDirectionEnum.getEnumForListboxStr(event.termCondDir.name);
     handles.eventTermCondDirCombo.Value = ind;
-
+    
     contents = handles.lineWidthCombo.String;
     contentsDouble = str2double(contents);
     ind = find(contentsDouble == event.colorLineSpec.lineWidth);
     set(handles.lineWidthCombo,'Value',ind);
-
+    
     handles.integratorCombo.String = IntegratorEnum.getListBoxStrs();
     ind = IntegratorEnum.getIndOfListboxStr(event.integrator.nameStr);
     handles.integratorCombo.Value = ind;
     integratorCombo_Callback(handles.integratorCombo, [], handles);
-
+    
     handles.checkSoITransCheckbox.Value = double(event.checkForSoITrans);
-
+    
     handles.intStepSizeText.String = fullAccNum2Str(event.integrationStep);
     handles.initialStepText.String = fullAccNum2Str(event.initialStep);
 
 % --- Outputs from this function are returned to the command line.
-function varargout = lvd_editEventGUI_OutputFcn(hObject, eventdata, handles)
+function varargout = lvd_editEventGUI_OutputFcn(hObject, eventdata, handles) 
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -117,39 +117,39 @@ function varargout = lvd_editEventGUI_OutputFcn(hObject, eventdata, handles)
         varargout{1} = [];
     else
         event = getappdata(handles.lvd_editEventGUI,'event');
-
+        
         evtName = get(handles.eventNameText,'String');
         event.name = evtName;
-
+        
         nameStr = handles.colorSpecCombo.String(handles.colorSpecCombo.Value);
         [enum,~] = ColorSpecEnum.getEnumForListboxStr(nameStr);
         event.colorLineSpec.color = enum;
-
+    
         nameStr = handles.lineSpecCombo.String(handles.lineSpecCombo.Value);
         [enum,~] = LineSpecEnum.getEnumForListboxStr(nameStr);
     	event.colorLineSpec.lineSpec = enum;
-
+        
         nameStr = handles.eventTermCondDirCombo.String(handles.eventTermCondDirCombo.Value);
         [enum,~] = EventTermCondDirectionEnum.getEnumForListboxStr(nameStr);
     	event.termCondDir = enum;
-
+        
         contents = handles.lineWidthCombo.String;
         contentsDouble = str2double(contents);
         contensInd = get(handles.lineWidthCombo,'Value');
         lineWidth = contentsDouble(contensInd);
         event.colorLineSpec.lineWidth = lineWidth;
-
+        
         contents = cellstr(get(handles.integratorCombo,'String'));
         nameStr = contents{get(handles.integratorCombo,'Value')};
         [~,m] = IntegratorEnum.getIndOfListboxStr(nameStr);
         event.integrator = m;
-
+        
         event.checkForSoITrans = logical(handles.checkSoITransCheckbox.Value);
-
+        
         event.integrationStep = str2double(get(handles.intStepSizeText,'String'));
         event.initialStep = str2double(get(handles.initialStepText,'String'));
         event.clearActiveOptVarsCache();
-
+        
         close(handles.lvd_editEventGUI);
     end
 
@@ -164,12 +164,12 @@ function saveAndCloseButton_Callback(hObject, eventdata, handles)
        uiresume(handles.lvd_editEventGUI);
     else
         msgbox(errMsg,'Errors were found while editing the event.','error');
-    end
-
-
+    end  
+    
+    
 function errMsg = validateInputs(handles)
     errMsg = {};
-
+    
     value = str2double(get(handles.intStepSizeText,'String'));
     enteredStr = get(handles.intStepSizeText,'String');
     numberName = 'Integrator Output Step Size';
@@ -177,7 +177,7 @@ function errMsg = validateInputs(handles)
     ub = Inf;
     isInt = false;
     errMsg = validateNumber(value, numberName, lb, ub, isInt, errMsg, enteredStr);
-
+    
     value = str2double(get(handles.initialStepText,'String'));
     enteredStr = get(handles.initialStepText,'String');
     numberName = 'Initial Step Size';
@@ -228,7 +228,7 @@ function actionsListbox_Callback(hObject, eventdata, handles)
     if(strcmpi(get(handles.lvd_editEventGUI,'SelectionType'),'open'))
         event = getappdata(handles.lvd_editEventGUI,'event');
         lv = event.script.lvdData.launchVehicle;
-
+        
         if(not(isempty(event.getActionsListboxStr())))
             selActionInd = get(handles.actionsListbox,'Value');
             action = event.getActionForInd(selActionInd);
@@ -274,29 +274,29 @@ function addActionButton_Callback(hObject, eventdata, handles)
                              'PromptString',{'Select the action you wish to add','to this event:'}, ...
                              'SelectionMode','single', ...
                              'ListSize',[210 300]);
-
+    
     if(tf == 1)
         [m,~] = enumeration('EventActionEnum');
         inds = strcmpi({m.nameStr},actionStrs{dialogInd});
-
+        
         actionEnum = m(inds);
-
+        
         newAction = feval(actionEnum.classNameStr);
         addActionTf = newAction.openEditActionUI(newAction, lv);
-
+        
         if(addActionTf)
             event.addAction(newAction);
         end
-
+        
         set(handles.actionsListbox,'String',event.getActionsListboxStr());
-
+        
         if(handles.actionsListbox.Value <= 0)
             handles.actionsListbox.Value = 1;
         elseif(handles.actionsListbox.Value > length(handles.actionsListbox.String))
             handles.actionsListbox.Value = length(handles.actionsListbox.String);
         end
     end
-
+    
 % --- Executes on button press in removeActionButton.
 function removeActionButton_Callback(hObject, eventdata, handles)
 % hObject    handle to removeActionButton (see GCBO)
@@ -306,9 +306,9 @@ function removeActionButton_Callback(hObject, eventdata, handles)
 
     selActionInd = get(handles.actionsListbox,'Value');
     event.removeActionByInd(selActionInd);
-
+    
     set(handles.actionsListbox,'String',event.getActionsListboxStr());
-
+    
     aListBosStr = get(handles.actionsListbox,'String');
     if(iscell(aListBosStr) && length(aListBosStr)<selActionInd)
         set(handles.actionsListbox,'Value',length(aListBosStr));
@@ -321,7 +321,7 @@ function editTermCondParamsButton_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
     event = getappdata(handles.lvd_editEventGUI,'event');
     lvd_editEvtTermCond(event);
-
+    
     termCond = event.termCond;
     set(handles.termCondNameLabel,'String',termCond.getName());
 
@@ -399,7 +399,7 @@ function integratorCombo_Callback(hObject, eventdata, handles)
 % Hints: contents = cellstr(get(hObject,'String')) returns integratorCombo contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from integratorCombo
     contents = cellstr(get(hObject,'String'));
-
+    
     if(get(hObject,'Value') < 1 || get(hObject,'Value') > length(contents))
         nameStr = contents{1};
     else
@@ -470,7 +470,7 @@ function editForceModelsButton_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
     event = getappdata(handles.lvd_editEventGUI,'event');
-
+    
     fms = event.forceModels;
     initSelInds = [];
     for(i=1:length(fms))
@@ -478,7 +478,7 @@ function editForceModelsButton_Callback(hObject, eventdata, handles)
             initSelInds(end+1) = ForceModelsEnum.getIndOfDisablableListboxStrsForModel(fms(i).model); %#ok<AGROW>
         end
     end
-
+    
     [Selection,ok] = listdlgARH('ListString',ForceModelsEnum.getListBoxStrsOfDisablableModels(), ...
                                 'SelectionMode', 'multiple', ...
                                 'ListSize', [300, 300], ...
@@ -500,32 +500,32 @@ function determineFastestIntegratorMenu_Callback(hObject, eventdata, handles)
     event = getappdata(handles.lvd_editEventGUI,'event');
     lvdData = event.lvdData;
     script = lvdData.script;
-
+    
     simDriver = script.simDriver;
     tStartSimTime = 0;
     isSparseOutput = false;
-
+    
     initStateLogEntry = lvdData.stateLog.getFirstStateLogForEvent(event);
-
+    
     activeNonSeqEvts = script.nonSeqEvts.getNonSeqEventsForScriptEvent(event);
     for(j=1:length(activeNonSeqEvts))
         activeNonSeqEvts(j).initEvent(initStateLogEntry);
     end
-
+    
     oldIntegrator = event.integrator;
-
+    
     hWaitBar = waitbar(0, '');
-
+    
     try
         [m,~] = enumeration('IntegratorEnum');
         results = cell(length(m),2);
         for(i=1:length(m))
             newIntegrator = m(i);
-
+            
             waitbar(((i-1)/length(m)), hWaitBar, sprintf('Running event with integrator "%s"...',newIntegrator.nameStr));
-
+            
             tStartPropTime = tic();
-
+            
             event.integrator = newIntegrator;
 
             tt = tic;
@@ -533,34 +533,34 @@ function determineFastestIntegratorMenu_Callback(hObject, eventdata, handles)
             elapsedTime = toc(tt);
 
             results(i,:) = {newIntegrator, elapsedTime};
-        end
+        end      
     catch ME
         event.integrator = oldIntegrator;
         throw(ME);
     end
-
+    
     if(isvalid(hWaitBar))
         close(hWaitBar);
     end
-
+    
     msg = {'Results of integrator speed test:', ''};
     for(i=1:size(results,1))
         integrator = results{i,1};
         time = results{i,2};
-
+        
         msg = horzcat(msg, sprintf('%s:     %.3f sec', integrator.nameStr, time)); %#ok<AGROW>
     end
-
+    
     [~,I] = min([results{:,2}]);
     fastestIntegrator = m(I);
-
+    
     msg = horzcat(msg,{'',sprintf('Apply fastest integrator (%s) for this event?',fastestIntegrator.nameStr)});
-
+    
     button = questdlg(msg,'Speed Test Results','Yes','No','Yes');
-
+    
     if(strcmpi(button,'Yes'))
         event.integrator = fastestIntegrator;
-
+        
         ind = IntegratorEnum.getIndOfListboxStr(event.integrator.nameStr);
         handles.integratorCombo.Value = ind;
         integratorCombo_Callback(handles.integratorCombo, [], handles);
@@ -632,52 +632,52 @@ function optimizeInitialStepSizeMenu_Callback(hObject, eventdata, handles)
     event = getappdata(handles.lvd_editEventGUI,'event');
     lvdData = event.lvdData;
     script = lvdData.script;
-
+    
     simDriver = script.simDriver;
     tStartSimTime = 0;
     isSparseOutput = false;
-
+    
     initStateLogEntry = lvdData.stateLog.getFirstStateLogForEvent(event);
-
+    
     activeNonSeqEvts = script.nonSeqEvts.getNonSeqEventsForScriptEvent(event);
     for(j=1:length(activeNonSeqEvts))
         activeNonSeqEvts(j).initEvent(initStateLogEntry);
     end
-
+    
     oldInitStep = event.initialStep;
-
+    
     fun = @(x) optInitStepSizeObjFcn(x, event, initStateLogEntry, simDriver, tStartSimTime, isSparseOutput, activeNonSeqEvts);
     x0 = oldInitStep;
     lb = 0.01;
     ub = 1E10;
 %     options = optimoptions(@fmincon, 'Display','iter', 'OptimalityTolerance',1E-2, 'StepTolerance',1E-10, 'PlotFcn',{@optimplotx, @optimplotfval});
     options = optimoptions(@patternsearch, 'Display','iter', 'UseParallel',lvdData.settings.optUsePara, 'PlotFcn',{@psplotbestx, @psplotbestf});
-
+    
 %     x = fmincon(fun,x0,[],[],[],[],lb,ub,[],options);
     x = patternsearch(fun,x0,[],[],[],[],lb,ub,[],options);
     msg = sprintf('Results of initial step size tuning: %0.3f sec', x);
-
+    
     msg = horzcat(msg,{'','',sprintf('Apply optimized initial step size to this event?')});
-
+    
     button = questdlg(msg,'Speed Test Results','Yes','No','Yes');
-
+    
     if(strcmpi(button,'Yes'))
         handles.initialStepText.String = fullAccNum2Str(x);
         initialStepText_Callback(handles.initialStepText, [], handles);
     else
         event.initialStep = oldInitStep;
     end
-
+    
 function elapsedTime = optInitStepSizeObjFcn(x, event, initStateLogEntry, simDriver, tStartSimTime, isSparseOutput, activeNonSeqEvts)
     event.initialStep = x(1);
-
+    
     tStartPropTime = tic();
 
     tt = tic;
     event.executeEvent(initStateLogEntry, simDriver, tStartPropTime, tStartSimTime, isSparseOutput, activeNonSeqEvts);
     elapsedTime = toc(tt);
-
-
+    
+    
 % --------------------------------------------------------------------
 function initialStepSizeContextMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to initialStepSizeContextMenu (see GCBO)
@@ -706,126 +706,3 @@ function eventTermCondDirCombo_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-% --- Executes on selection change in plotMethodCombo.
-function plotMethodCombo_Callback(hObject, eventdata, handles)
-% hObject    handle to plotMethodCombo (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: contents = cellstr(get(hObject,'String')) returns plotMethodCombo contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from plotMethodCombo
-
-
-% --- Executes during object creation, after setting all properties.
-function plotMethodCombo_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to plotMethodCombo (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: popupmenu controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
-% --- Executes on button press in integratorOptionsButton.
-function integratorOptionsButton_Callback(hObject, eventdata, handles)
-% hObject    handle to integratorOptionsButton (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-    integratorObj = getSelectedEventIntegratorObj(handles);
-
-    options = integratorObj.getOptions();
-    options.openOptionsDialog();
-
-function integratorObj = getSelectedEventIntegratorObj(handles)
-    event = getappdata(handles.lvd_editEventGUI,'event');
-
-    contents = cellstr(get(handles.integratorCombo,'String'));
-    nameStr = contents{get(handles.integratorCombo,'Value')};
-    [~,m] = IntegratorEnum.getIndOfListboxStr(nameStr);
-
-    switch m
-        case IntegratorEnum.ODE113
-            integratorObj = event.ode113Integrator;
-
-        case IntegratorEnum.ODE15s
-            integratorObj = event.ode15sIntegrator;
-
-        case IntegratorEnum.ODE23
-            integratorObj = event.ode23Integrator;
-
-        case IntegratorEnum.ODE23s
-            integratorObj = event.ode23sIntegrator;
-
-        case IntegratorEnum.ODE45
-            integratorObj = event.ode45Integrator;
-
-        case IntegratorEnum.ODE5
-            integratorObj = event.ode5Integrator;
-
-        otherwise
-            error('Unknown integrator type.');
-    end
-
-function propagatorObj = getSelectedEventPropagatorObj(handles)
-    event = getappdata(handles.lvd_editEventGUI,'event');
-
-    contents = cellstr(get(handles.propagatorCombo,'String'));
-    nameStr = contents{get(handles.propagatorCombo,'Value')};
-    [~,m] = PropagatorEnum.getIndForName(nameStr);
-
-    switch m
-        case PropagatorEnum.ForceModel
-            propagatorObj = event.forceModelPropagator;
-
-        case PropagatorEnum.TwoBody
-            propagatorObj = event.twoBodyPropagator;
-
-        otherwise
-            error('Unknown propagator type.');
-    end
-
-% --- Executes on selection change in propagatorCombo.
-function propagatorCombo_Callback(hObject, eventdata, handles)
-% hObject    handle to propagatorCombo (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: contents = cellstr(get(hObject,'String')) returns propagatorCombo contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from propagatorCombo
-    contents = cellstr(get(hObject,'String'));
-
-    if(get(hObject,'Value') < 1 || get(hObject,'Value') > length(contents))
-        nameStr = contents{1};
-    else
-        nameStr = contents{get(hObject,'Value')};
-    end
-
-    [~,m] = PropagatorEnum.getIndForName(nameStr);
-    handles.propagatorDetailLabel.String = m.desc;
-
-% --- Executes during object creation, after setting all properties.
-function propagatorCombo_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to propagatorCombo (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: popupmenu controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
-% --- Executes on button press in propagatorOptionsButton.
-function propagatorOptionsButton_Callback(hObject, eventdata, handles)
-% hObject    handle to propagatorOptionsButton (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-    propagatorObj = getSelectedEventPropagatorObj(handles);
-
-    propagatorObj.openOptionsDialog();
