@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.ezdeploy" plugin-version="1.0">
-  <configuration build-checksum="74072516" file="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\KSPTrajectoryOptimizationTool.prj" location="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool" name="KSPTrajectoryOptimizationTool" preferred-package-location="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\deploy\KSPTrajectoryOptimizationTool\for_redistribution" preferred-package-type="package.type.exe" target="target.ezdeploy.standalone" target-name="Application Compiler">
+  <configuration build-checksum="1417225882" file="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\KSPTrajectoryOptimizationTool.prj" location="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool" name="KSPTrajectoryOptimizationTool" preferred-package-location="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\deploy\KSPTrajectoryOptimizationTool\for_redistribution" preferred-package-type="package.type.exe" target="target.ezdeploy.standalone" target-name="Application Compiler">
     <param.appname>KSPTrajectoryOptimizationTool</param.appname>
     <param.icon>${PROJECT_ROOT}\KSPTrajectoryOptimizationTool_resources\icon.ico</param.icon>
     <param.icons>
@@ -8,7 +8,7 @@
       <file>${PROJECT_ROOT}\KSPTrajectoryOptimizationTool_resources\icon_24.png</file>
       <file>${PROJECT_ROOT}\KSPTrajectoryOptimizationTool_resources\icon_16.png</file>
     </param.icons>
-    <param.version>1.65</param.version>
+    <param.version>1.66</param.version>
     <param.authnamewatermark>Arrowstar</param.authnamewatermark>
     <param.email />
     <param.company />
@@ -131,6 +131,10 @@
       <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\@opti\opti.m</file>
       <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\@opti\solveOpti.m</file>
       <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\@opti\testProblem.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Solvers\csdp.mexw64</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Solvers\glpk.mexw64</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Solvers\lp_solve.mexw64</file>
+      <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Solvers\mumps.mexw64</file>
       <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Solvers\opti_ipopt.m</file>
       <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Solvers\opti_nomad.m</file>
       <file>C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\GTOCX\antique-road-show\methods\utility\math\opti\Utilities\@adiff\abs.m</file>

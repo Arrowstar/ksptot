@@ -176,6 +176,7 @@ function varValueSlider_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'Value') returns position of slider
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
     processUserChangeToVar(handles);
+    figure(handles.lvd_adjustOptVarGUI); %put this figure back on top
     
 function processUserChangeToVar(handles)
     propScriptFcn = getappdata(handles.lvd_adjustOptVarGUI,'propScriptFcn');

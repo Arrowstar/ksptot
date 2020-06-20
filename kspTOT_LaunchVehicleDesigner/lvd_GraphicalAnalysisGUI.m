@@ -22,7 +22,7 @@ function varargout = lvd_GraphicalAnalysisGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_GraphicalAnalysisGUI
 
-% Last Modified by GUIDE v2.5 18-Oct-2018 17:17:36
+% Last Modified by GUIDE v2.5 20-Jun-2020 15:32:20
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -113,12 +113,12 @@ function indepVarCombo_Callback(hObject, eventdata, handles)
     selected = deblank(contents{get(hObject,'Value')});
     
     if(strcmpi(selected,'Time') || strcmpi(selected,'Mission Elapsed Time'))
-%         set(handles.showManeuversCheckbox,'Enable','on');
+        set(handles.showEventTerminationCheckbox,'Enable','on');
 %         set(handles.showSoITransCheckbox,'Enable','on');
         set(handles.showPeriCheckbox,'Enable','on');
         set(handles.showApoCheckbox,'Enable','on');
     else
-%         set(handles.showManeuversCheckbox,'Enable','off');
+        set(handles.showEventTerminationCheckbox,'Enable','off');
 %         set(handles.showSoITransCheckbox,'Enable','off');
         set(handles.showPeriCheckbox,'Enable','off');
         set(handles.showApoCheckbox,'Enable','off');
@@ -602,38 +602,37 @@ function plotData(hFig, indepVarValues, data, lineColor, lineType, lineWidth, in
     
     subLog = maStateLog(maStateLog(:,1) >= startTimeUT & maStateLog(:,1) <= endTimeUT,:);
     
-%     hShowMan = findobj('Tag','showManeuversCheckbox');
-%     if(get(hShowMan,'Value') && strcmpi(get(hShowMan,'Enable'), 'on'))
-%         if(strcmpi(bgColor,'r'))
-%             manLineColor = 'w';
-%         else
-%             manLineColor = 'r';
-%         end
-%         
-%         script = maData.script;
-%         for(i=1:length(script))
-%             event = script{i};
-%             if(strcmpi(event.type,'DV_Maneuver'))
-%                 eventNum = i;
-%                 eventLog = subLog(subLog(:,13)==eventNum,:);
-%                 if(~isempty(eventLog))
-%                     eventTime = eventLog(end,1)*indepTimeUnitMult;
-%                     indepVarEventLoc = indepVarValues(indepVarValues(:,2)==eventTime,1);
-%                     indepVarEventLoc = indepVarEventLoc(1);
-%                     
-%                     minData = min(data);
-%                     maxData = max(data);
-%                     if(minData == maxData)
-%                         minData = minData - 0.75;
-%                         maxData = maxData + 0.75;
-%                     end
-% 
-%                     plot([indepVarEventLoc indepVarEventLoc], [minData, maxData],manLineColor,'LineWidth',1.5);
-%                     text(indepVarEventLoc,minData+2*onePercData,[' ',event.name],'Color',manLineColor);
-%                 end
-%             end
-%         end
-%     end
+    hShowMan = findobj('Tag','showEventTerminationCheckbox');
+    if(get(hShowMan,'Value') && strcmpi(get(hShowMan,'Enable'), 'on'))
+        if(strcmpi(bgColor,'r'))
+            evtEndLineColor = 'w';
+        else
+            evtEndLineColor = 'r';
+        end
+        
+        allEventNums = subLog(:,13);
+        x = diff(allEventNums)~=0;
+        inds = find(x);
+
+        minData = min(data);
+        maxData = max(data);
+        if(minData == maxData)
+            minData = minData - 0.75;
+            maxData = maxData + 0.75;
+        end
+        
+        for(i=1:length(inds))
+            ind = inds(i);
+            
+            eventTime = subLog(ind,1)*indepTimeUnitMult;
+            indepVarEventLoc = indepVarValues(indepVarValues(:,2)==eventTime,1);
+            indepVarEventLoc = indepVarEventLoc(1);
+            
+            plot([indepVarEventLoc indepVarEventLoc], [minData, maxData],evtEndLineColor,'LineWidth',0.25);
+            text(indepVarEventLoc,maxData-8*onePercData,sprintf(' Event %u End ',i),'Color',evtEndLineColor);
+        
+        end
+    end
     
     hShowSoI = findobj('Tag','showSoITransCheckbox');
     if(get(hShowSoI,'Value') && strcmpi(get(hShowSoI,'Enable'), 'on'))
@@ -1013,13 +1012,13 @@ function showGridCheckboxGA_Callback(hObject, eventdata, handles)
 % Hint: get(hObject,'Value') returns toggle state of showGridCheckboxGA
 
 
-% --- Executes on button press in showManeuversCheckbox.
-function showManeuversCheckbox_Callback(hObject, eventdata, handles)
-% hObject    handle to showManeuversCheckbox (see GCBO)
+% --- Executes on button press in showEventTerminationCheckbox.
+function showEventTerminationCheckbox_Callback(hObject, eventdata, handles)
+% hObject    handle to showEventTerminationCheckbox (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hint: get(hObject,'Value') returns toggle state of showManeuversCheckbox
+% Hint: get(hObject,'Value') returns toggle state of showEventTerminationCheckbox
 
 
 % --- Executes on button press in showSoITransCheckbox.

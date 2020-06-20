@@ -35,7 +35,7 @@ classdef SetDragAeroPropertiesAction < AbstractEventAction
 
                 pointSet.addPoint(GriddedInterpolantPoint(0,0.3));
                 pointSet.addPoint(GriddedInterpolantPoint(1,0.3));
-                obj.CdInterpToSet = pointSet.getGriddedInterpFromPoints(obj.CdInterpMethod, GriddedInterpolantMethodEnum.Nearest);
+                obj.CdInterpToSet = pointSet.getGriddedInterpFromPoints(obj.CdInterpMethodToSet, GriddedInterpolantMethodEnum.Nearest);
             end
             
             obj.id = rand();

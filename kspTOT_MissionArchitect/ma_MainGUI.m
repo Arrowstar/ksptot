@@ -152,6 +152,7 @@ function maData = generateCleanMissionPlan(handles)
     kscStation.id = rand();
     kscStation.color = 'r';
     kscStation.maxCommRange = Inf;
+    kscStation.markerSymbol = 's';
     stations{1} = kscStation;
     
     launchTraj = getDefaultMaDataLaunchStruct(kscStation);
