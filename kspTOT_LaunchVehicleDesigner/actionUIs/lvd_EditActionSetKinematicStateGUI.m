@@ -413,7 +413,6 @@ function varargout = lvd_EditActionSetKinematicStateGUI_OutputFcn(hObject, event
             lvdData.optimizer.vars.removeVariable(optVar);
         end
         optVar = SetKinematicStateActionVariable(action);
-        lvdData.optimizer.vars.addVariable(optVar);
                 
         optUt         = logical(handles.optUtCheckbox.Value) && not(action.inheritTime);
         optOrbit1Elem = logical(handles.optOrbit1Checkbox.Value) && not(action.inheritPosVel);
@@ -425,6 +424,7 @@ function varargout = lvd_EditActionSetKinematicStateGUI_OutputFcn(hObject, event
         
         useTf = [optUt optOrbit1Elem optOrbit2Elem optOrbit3Elem optOrbit4Elem optOrbit5Elem optOrbit6Elem];
         optVar.setUseTfForVariable(useTf);
+        lvdData.optimizer.vars.addVariable(optVar);
         
         utLb = str2double(handles.utLbText.String);
         orbit1ElemLb = str2double(handles.orbit1LbText.String);

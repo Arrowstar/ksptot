@@ -12,6 +12,11 @@ classdef OptimizationVariableSet < matlab.mixin.SetGet
         cachedVarEventDis logical
     end
     
+   events
+        VarsListUpdatedAddedVar
+        VarsListUpdatedRemovedVar
+   end
+    
     methods
         function obj = OptimizationVariableSet(lvdData)
             obj.lvdData = lvdData;
@@ -22,6 +27,7 @@ classdef OptimizationVariableSet < matlab.mixin.SetGet
             obj.sortVarsByEvtNum();
             
             obj.clearCachedVarEvtDisabledStatus();
+            notify(obj,'VarsListUpdatedAddedVar');
         end
         
         function removeVariable(obj, var)
@@ -29,6 +35,7 @@ classdef OptimizationVariableSet < matlab.mixin.SetGet
             obj.sortVarsByEvtNum();
             
             obj.clearCachedVarEvtDisabledStatus();
+            notify(obj,'VarsListUpdatedRemovedVar');
         end
         
         function [x, vars, varNameStrs, xUnscaled] = getTotalScaledXVector(obj)

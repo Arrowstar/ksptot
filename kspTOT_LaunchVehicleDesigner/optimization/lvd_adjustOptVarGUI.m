@@ -22,7 +22,7 @@ function varargout = lvd_adjustOptVarGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_adjustOptVarGUI
 
-% Last Modified by GUIDE v2.5 23-Jan-2020 20:18:05
+% Last Modified by GUIDE v2.5 20-Jun-2020 22:28:37
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -66,10 +66,20 @@ function lvd_adjustOptVarGUI_OpeningFcn(hObject, eventdata, handles, varargin)
     
     lvdOpt = lvdData.optimizer;
     varSet = lvdOpt.vars;
-    [xVectScaled, ~, ~, ~] = varSet.getTotalScaledXVector();
+    [xVectScaled, origVars, ~, ~] = varSet.getTotalScaledXVector();
     setappdata(hObject,'origScaledXVect',xVectScaled);
+    setappdata(hObject,'origVars',origVars);
 
     populateGUI(handles, lvdData, 1); %just close and throw an error if no variables enabled in LVD GUI
+    
+    hVarUpdatedListenerAdded = addlistener(varSet,'VarsListUpdatedAddedVar',@(src,evtData) varListUpdatedEventCallback(src,evtData, handles, lvdData));
+    setappdata(hObject,'hVarUpdatedListenerAdded',hVarUpdatedListenerAdded);
+    
+    hVarUpdatedListenerRemoved = addlistener(varSet,'VarsListUpdatedRemovedVar',@(src,evtData) varListUpdatedEventCallback(src,evtData, handles, lvdData));
+    setappdata(hObject,'hVarUpdatedListenerRemoved',hVarUpdatedListenerRemoved);
+    
+    jCombobox = findjobj(handles.variablesCombo);
+    jCombobox.PopupMenuWillBecomeVisibleCallback = @(src,evtData) varListUpdatedEventCallback(src,evtData, handles, lvdData);
     
     % Update handles structure
     guidata(hObject, handles);
@@ -80,6 +90,7 @@ function lvd_adjustOptVarGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 function populateGUI(handles, lvdData, value)
     lvdOpt = lvdData.optimizer;
     varSet = lvdOpt.vars;
+    varSet.sortVarsByEvtNum();
     [~, ~, varNameStrs, xUnscaled] = varSet.getTotalScaledXVector();
     [~, ~, lwrBndsUnscaled, uprBndsUnscaled] = varSet.getTotalScaledBndsVector();
     
@@ -89,6 +100,8 @@ function populateGUI(handles, lvdData, value)
     handles.varLowerBndLabel.String = fullAccNum2Str(lwrBndsUnscaled(value));
     handles.varUpperBndLabel.String = fullAccNum2Str(uprBndsUnscaled(value));
     handles.varValueSlider.Value = scaleXToNeg1And1(xUnscaled(value), lwrBndsUnscaled(value), uprBndsUnscaled(value));
+    
+
     
 function xScaled = scaleXToNeg1And1(xi, lbi, ubi)
     bndDiff = ubi - lbi;
@@ -102,6 +115,25 @@ function xUnscaled = unscaleXFromNeg1And(xSi, lbi, ubi)
 
     if(bndDiff > 1E-10)
         xUnscaled = xSi * (bndDiff/2) + bndCenter;
+    end
+    
+    
+function varListUpdatedEventCallback(src,evtData, handles, lvdData)
+    curStrs = handles.variablesCombo.String;
+    
+    if(~isempty(curStrs))
+        curValue = handles.variablesCombo.Value;
+        if(curValue < 1 || curValue > length(curStrs))
+            curValue = 1;
+        end
+        curStr = curStrs{curValue};
+
+        populateGUI(handles, lvdData, curValue);
+        
+        newValue = findValueFromComboBox(curStr, handles.variablesCombo);
+        if(not(isempty(newValue)))
+            handles.variablesCombo.Value = newValue;            
+        end
     end
     
     
@@ -138,7 +170,18 @@ function cancelButton_Callback(hObject, eventdata, handles)
     varSet = lvdOpt.vars;
     
     origScaledXVect = getappdata(handles.lvd_adjustOptVarGUI,'origScaledXVect');
-    varSet.updateObjsWithScaledVarValues(origScaledXVect);
+    origVars = getappdata(handles.lvd_adjustOptVarGUI,'origVars');
+    
+    [~, curVars, ~, ~] = varSet.getTotalScaledXVector();
+    for(i=1:length(curVars))
+        ind = find(curVars(i) == origVars, 1);
+        
+        if(not(isempty(ind)))
+            curVars(i).updateObjWithScaledVarValue(origScaledXVect(ind));
+        end
+    end
+    
+%     varSet.updateObjsWithScaledVarValues(origScaledXVect);
     
     close(handles.lvd_adjustOptVarGUI);
     
@@ -273,3 +316,15 @@ function varValueText_Callback(hObject, eventdata, handles)
     else
         handles.varValueText.String = fullAccNum2Str(xUnscaled(varInd));
     end
+
+
+% --- Executes during object deletion, before destroying properties.
+function lvd_adjustOptVarGUI_DeleteFcn(hObject, eventdata, handles)
+% hObject    handle to lvd_adjustOptVarGUI (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    hVarUpdatedListenerAdded = getappdata(hObject,'hVarUpdatedListenerAdded');
+    delete(hVarUpdatedListenerAdded);
+    
+    hVarUpdatedListenerRemoved = getappdata(hObject,'hVarUpdatedListenerRemoved');
+    delete(hVarUpdatedListenerRemoved);

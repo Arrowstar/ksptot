@@ -138,7 +138,6 @@ function varargout = lvd_EditTankGUI_OutputFcn(hObject, eventdata, handles)
             tank.stage.launchVehicle.lvdData.optimizer.vars.removeVariable(optVar);
         end
         optVar = tank.getNewOptVar();
-        tank.stage.launchVehicle.lvdData.optimizer.vars.addVariable(optVar);
         
         optInitMass = logical(handles.optCheckbox.Value);
         lbInitMass = str2double(handles.lbText.String);
@@ -146,6 +145,7 @@ function varargout = lvd_EditTankGUI_OutputFcn(hObject, eventdata, handles)
         
         optVar.setUseTfForVariable(optInitMass);
         optVar.setBndsForVariable(lbInitMass,ubInitMass);
+        tank.stage.launchVehicle.lvdData.optimizer.vars.addVariable(optVar);
         
         varargout{1} = true;
         close(handles.lvd_EditTankGUI);

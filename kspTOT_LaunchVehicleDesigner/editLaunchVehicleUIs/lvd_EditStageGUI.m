@@ -108,7 +108,6 @@ function varargout = lvd_EditStageGUI_OutputFcn(hObject, eventdata, handles)
             stage.launchVehicle.lvdData.optimizer.vars.removeVariable(optVar);
         end
         optVar = stage.getNewOptVar();
-        stage.launchVehicle.lvdData.optimizer.vars.addVariable(optVar);
         
         optDryMass = logical(handles.optCheckbox.Value);
         lbDryMass = str2double(handles.lbText.String);
@@ -116,6 +115,7 @@ function varargout = lvd_EditStageGUI_OutputFcn(hObject, eventdata, handles)
         
         optVar.setUseTfForVariable(optDryMass);
         optVar.setBndsForVariable(lbDryMass,ubDryMass);
+        stage.launchVehicle.lvdData.optimizer.vars.addVariable(optVar);
         
         varargout{1} = true;
         close(handles.lvd_EditStageGUI);

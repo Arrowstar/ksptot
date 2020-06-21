@@ -209,7 +209,6 @@ function varargout = lvd_EditInitialStateGUI_OutputFcn(hObject, eventdata, handl
             lvdData.optimizer.vars.removeVariable(optVar);
         end
         optVar = initStateModel.getNewOptVar();
-        lvdData.optimizer.vars.addVariable(optVar);
         
         optUt         = logical(handles.optUtCheckbox.Value);
         optOrbit1Elem = logical(handles.optOrbit1Checkbox.Value);
@@ -221,6 +220,7 @@ function varargout = lvd_EditInitialStateGUI_OutputFcn(hObject, eventdata, handl
         
         useTf = [optUt optOrbit1Elem optOrbit2Elem optOrbit3Elem optOrbit4Elem optOrbit5Elem optOrbit6Elem];
         optVar.setUseTfForVariable(useTf);
+        lvdData.optimizer.vars.addVariable(optVar);
         
         utLb = str2double(handles.utLbText.String);
         orbit1ElemLb = str2double(handles.orbit1LbText.String);

@@ -246,9 +246,10 @@ function varargout = lvd_editEvtTermCond_OutputFcn(hObject, eventdata, handles)
             useTf = logical(get(handles.optParamCheckbox,'Value'));
             optVar.setUseTfForVariable(useTf);       
 
-            lv.lvdData.optimizer.vars.addVariable(optVar);
             termCond.optVar = optVar;
             optVar.varObj = termCond;
+            
+            lv.lvdData.optimizer.vars.addVariable(optVar);
         end
         
         event.termCond = termCond;
