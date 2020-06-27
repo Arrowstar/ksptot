@@ -1781,4 +1781,8 @@ function managePluginsMenu_Callback(hObject, eventdata, handles)
     
     addUndoState(handles,'Manage Plugins');
     
-    ldv_editPluginGUI(lvdData);
+    result = ldv_editPluginGUI(lvdData);
+    
+    if(result == false)
+        undoMenu_Callback(handles.undoMenu, [], handles);
+    end

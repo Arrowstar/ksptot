@@ -64,7 +64,7 @@ function ldv_editPluginGUI_OpeningFcn(hObject, eventdata, handles, varargin)
     guidata(hObject, handles);
 
     % UIWAIT makes ldv_editPluginGUI wait for user response (see UIRESUME)
-    % uiwait(handles.ldv_editPluginGUI);
+    uiwait(handles.ldv_editPluginGUI);
 
 function handles = populateGUI(lvdData, handles)
     handles = setupCodeEditor(handles);
@@ -201,7 +201,12 @@ function varargout = ldv_editPluginGUI_OutputFcn(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Get default command line output from handles structure
-varargout{1} = handles.output;
+    if(isempty(handles))
+        varargout{1} = false;
+    else 
+        varargout{1} = true;
+        close(handles.ldv_editPluginGUI);
+    end
 
 
 % --- Executes on button press in saveAndCloseButton.
@@ -209,14 +214,21 @@ function saveAndCloseButton_Callback(hObject, eventdata, handles)
 % hObject    handle to saveAndCloseButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+%     errMsg = validateInputs(handles);
 
+    errMsg = {};
+    if(isempty(errMsg))
+        uiresume(handles.ldv_editPluginGUI);
+    else
+        msgbox(errMsg,'Errors were found while editing plugins.','error');
+    end
 
 % --- Executes on button press in cancelButton.
 function cancelButton_Callback(hObject, eventdata, handles)
 % hObject    handle to cancelButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
+    close(handles.ldv_editPluginGUI);
 
 % --- Executes on button press in showLvdDataStructButton.
 function showLvdDataStructButton_Callback(hObject, eventdata, handles)
