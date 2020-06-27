@@ -12,16 +12,6 @@ classdef LvdPluginSet < matlab.mixin.SetGet
         function obj = LvdPluginSet(lvdData)
             obj.lvdData = lvdData;
             obj.plugins = LvdPlugin.empty(1,0);
-            
-%             newPlugin = LvdPlugin();
-%             newPlugin.pluginCode = "lvdData.validation.outputs(end+1) = LaunchVehicleDataValidationWarning('Test Plugin User Warning');";
-%             newPlugin.execBeforePropTF = true;
-%             newPlugin.execBeforeEventsTF = true;
-%             newPlugin.execAfterTimeStepsTF = true;
-%             newPlugin.execAfterEventsTF = true;
-%             newPlugin.execAfterPropTF = true;
-%             
-%             obj.addPlugin(newPlugin);
         end
         
         function addPlugin(obj, newPlugin)

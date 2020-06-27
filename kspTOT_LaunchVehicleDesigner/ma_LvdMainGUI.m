@@ -1786,3 +1786,6 @@ function managePluginsMenu_Callback(hObject, eventdata, handles)
     if(result == false)
         undoMenu_Callback(handles.undoMenu, [], handles);
     end
+    
+    propagateScript(handles, lvdData, 1);
+    lvd_processData(handles);
