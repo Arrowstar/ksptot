@@ -42,10 +42,10 @@ classdef LaunchVehicleDataValidation < matlab.mixin.SetGet
                 end
             end
             
-            if(isempty(errors) && isempty(warnings))
+            if(isempty(obj.outputs) && isempty(errors) && isempty(warnings))
                 obj.outputs = allOkay;
             else
-                obj.outputs = horzcat(errors,warnings);
+                obj.outputs = horzcat(obj.outputs,errors,warnings);
             end
         end
         

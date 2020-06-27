@@ -22,7 +22,7 @@ function varargout = ma_LvdMainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_LvdMainGUI
 
-% Last Modified by GUIDE v2.5 23-Jan-2020 18:04:07
+% Last Modified by GUIDE v2.5 26-Jun-2020 19:13:05
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -122,6 +122,8 @@ function propagateScript(handles, lvdData, evtStartNum)
     if(not(isdeployed))
 %         profile('on','-detail','builtin', '-remove_overhead','on');
     end
+    
+    lvdData.validation.outputs = AbstractLaunchVehicleValidatorOutput.empty(1,0);
     
     isSparseOutput = lvdData.settings.isSparseOutput;
 
@@ -1761,3 +1763,22 @@ function adjustVariablesMenu_Callback(hObject, eventdata, handles)
     else
         warndlg('Cannot display adjustment dialog: no optimization variables are enabled on this script.');
     end
+
+
+% --------------------------------------------------------------------
+function pluginsMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to pluginsMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function managePluginsMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to managePluginsMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    
+    addUndoState(handles,'Manage Plugins');
+    
+    ldv_editPluginGUI(lvdData);

@@ -181,6 +181,8 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
             
             tPropTime = 0;
             if(~isempty(obj.evts))
+                %execute plugins that occur after propagation
+                obj.lvdData.plugins.executePluginsBeforeProp(stateLog);
                 
                 tStartSimTime = initStateLogEntry.time;
                 tStartPropTime = tic();
@@ -198,12 +200,15 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
                     evt.initEvent(initStateLogEntry);
                     initStateLogEntry.event = evt;
 
+                    %execute plugins that occur before event
+                    obj.lvdData.plugins.executePluginsBeforeEvent(stateLog, evt);
+                    
                     %Get applicable non sequential events and initialize
                     activeNonSeqEvts = obj.nonSeqEvts.getNonSeqEventsForScriptEvent(evt);
                     for(j=1:length(activeNonSeqEvts))
                         activeNonSeqEvts(j).initEvent(initStateLogEntry);
                     end
-                    
+                                        
                     %Execute Event
                     newStateLogEntries = evt.executeEvent(initStateLogEntry, obj.simDriver, tStartPropTime, tStartSimTime, isSparseOutput, activeNonSeqEvts);
                     stateLog.appendStateLogEntries(newStateLogEntries);
@@ -220,11 +225,17 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
                     
                     stateLog.appendNonSeqEvtsState(obj.nonSeqEvts.copy(), evt);
                     
+                    %execute plugins that occur after event
+                    obj.lvdData.plugins.executePluginsBeforeEvent(stateLog, evt);
+                    
 %                     evtTime = toc(ttt);
 %                     fprintf('Duration to execute Event %u: %0.3f\n', i, evtTime);
                 end
                 
                 tPropTime = toc(tStartPropTime);
+                
+                %execute plugins after propagation
+                obj.lvdData.plugins.executePluginsAfterProp(stateLog);
             else
                 stateLog.appendStateLogEntries(initStateLogEntry.deepCopy());
             end

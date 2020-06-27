@@ -11,6 +11,7 @@ classdef LvdData < matlab.mixin.SetGet
         validation LaunchVehicleDataValidation
         settings LvdSettings
         notes char
+        plugins LvdPluginSet
         
         celBodyData 
         ksptotVer char
@@ -24,6 +25,7 @@ classdef LvdData < matlab.mixin.SetGet
         function obj = LvdData()
             obj.validation = LaunchVehicleDataValidation(obj);
             obj.settings = LvdSettings();
+            obj.plugins = LvdPluginSet(obj);
         end
     end
     
@@ -122,6 +124,10 @@ classdef LvdData < matlab.mixin.SetGet
             
             if(isempty(obj.stateLog))
                 obj.stateLog = LaunchVehicleStateLog();
+            end
+            
+            if(isempty(obj.plugins))
+                obj.plugins = LvdPluginSet(obj);
             end
         end
         
