@@ -27,7 +27,13 @@ classdef LvdPlugin < matlab.mixin.SetGet
         end
         
         function executePlugin(obj, lvdData, stateLog, event, execLoc)
-            eval(sprintf(obj.pluginCode));
+            try
+                eval(sprintf(obj.pluginCode));
+            catch ME
+                errStr = sprintf('An error was encountered executing plugin "%s" at location "%s".  Msg: %s', ...
+                                 obj.pluginName, execLoc.name, ME.message);
+                lvdData.validation.outputs(end+1) = LaunchVehicleDataValidationError(errStr);
+            end
         end
     end
 end
