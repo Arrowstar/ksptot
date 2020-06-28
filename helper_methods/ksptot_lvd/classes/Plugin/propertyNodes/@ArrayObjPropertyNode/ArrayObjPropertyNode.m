@@ -42,5 +42,9 @@ classdef ArrayObjPropertyNode < AbstractObjPropertyNode
             
             obj.createBreadcrumbs(grid, jBreadCrumbBar);
         end
+        
+        function str = getCodeStr(obj)
+            str = obj.nodeName;
+        end
     end
 end

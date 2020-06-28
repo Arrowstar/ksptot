@@ -1758,7 +1758,7 @@ function adjustVariablesMenu_Callback(hObject, eventdata, handles)
         
         lvd_adjustOptVarGUI(lvdData, propScriptFcn, procDataFcn);
         
-        propagateScript(handles, lvdData, 1);
+        runScript(handles, lvdData, 1);
         lvd_processData(handles);
     else
         warndlg('Cannot display adjustment dialog: no optimization variables are enabled on this script.');
@@ -1785,7 +1785,8 @@ function managePluginsMenu_Callback(hObject, eventdata, handles)
     
     if(result == false)
         undoMenu_Callback(handles.undoMenu, [], handles);
+    else
+        runScript(handles, lvdData, 1);
     end
     
-    propagateScript(handles, lvdData, 1);
     lvd_processData(handles);

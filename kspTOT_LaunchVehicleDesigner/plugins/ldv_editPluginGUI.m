@@ -1,71 +1,73 @@
 function varargout = ldv_editPluginGUI(varargin)
-% LDV_EDITPLUGINGUI MATLAB code for ldv_editPluginGUI.fig
-%      LDV_EDITPLUGINGUI, by itself, creates a new LDV_EDITPLUGINGUI or raises the existing
-%      singleton*.
-%
-%      H = LDV_EDITPLUGINGUI returns the handle to a new LDV_EDITPLUGINGUI or the handle to
-%      the existing singleton*.
-%
-%      LDV_EDITPLUGINGUI('CALLBACK',hObject,eventData,handles,...) calls the local
-%      function named CALLBACK in LDV_EDITPLUGINGUI.M with the given input arguments.
-%
-%      LDV_EDITPLUGINGUI('Property','Value',...) creates a new LDV_EDITPLUGINGUI or raises the
-%      existing singleton*.  Starting from the left, property value pairs are
-%      applied to the GUI before ldv_editPluginGUI_OpeningFcn gets called.  An
-%      unrecognized property name or invalid value makes property application
-%      stop.  All inputs are passed to ldv_editPluginGUI_OpeningFcn via varargin.
-%
-%      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
-%      instance to run (singleton)".
-%
-% See also: GUIDE, GUIDATA, GUIHANDLES
-
-% Edit the above text to modify the response to help ldv_editPluginGUI
-
-% Last Modified by GUIDE v2.5 26-Jun-2020 21:05:54
-
-% Begin initialization code - DO NOT EDIT
-gui_Singleton = 1;
-gui_State = struct('gui_Name',       mfilename, ...
-                   'gui_Singleton',  gui_Singleton, ...
-                   'gui_OpeningFcn', @ldv_editPluginGUI_OpeningFcn, ...
-                   'gui_OutputFcn',  @ldv_editPluginGUI_OutputFcn, ...
-                   'gui_LayoutFcn',  [] , ...
-                   'gui_Callback',   []);
-if nargin && ischar(varargin{1})
-    gui_State.gui_Callback = str2func(varargin{1});
-end
-
-if nargout
-    [varargout{1:nargout}] = gui_mainfcn(gui_State, varargin{:});
-else
-    gui_mainfcn(gui_State, varargin{:});
-end
-% End initialization code - DO NOT EDIT
-
-
-% --- Executes just before ldv_editPluginGUI is made visible.
+    % LDV_EDITPLUGINGUI MATLAB code for ldv_editPluginGUI.fig
+    %      LDV_EDITPLUGINGUI, by itself, creates a new LDV_EDITPLUGINGUI or raises the existing
+    %      singleton*.
+    %
+    %      H = LDV_EDITPLUGINGUI returns the handle to a new LDV_EDITPLUGINGUI or the handle to
+    %      the existing singleton*.
+    %
+    %      LDV_EDITPLUGINGUI('CALLBACK',hObject,eventData,handles,...) calls the local
+    %      function named CALLBACK in LDV_EDITPLUGINGUI.M with the given input arguments.
+    %
+    %      LDV_EDITPLUGINGUI('Property','Value',...) creates a new LDV_EDITPLUGINGUI or raises the
+    %      existing singleton*.  Starting from the left, property value pairs are
+    %      applied to the GUI before ldv_editPluginGUI_OpeningFcn gets called.  An
+    %      unrecognized property name or invalid value makes property application
+    %      stop.  All inputs are passed to ldv_editPluginGUI_OpeningFcn via varargin.
+    %
+    %      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
+    %      instance to run (singleton)".
+    %
+    % See also: GUIDE, GUIDATA, GUIHANDLES
+    
+    % Edit the above text to modify the response to help ldv_editPluginGUI
+    
+    % Last Modified by GUIDE v2.5 27-Jun-2020 20:41:06
+    
+    % Begin initialization code - DO NOT EDIT
+    gui_Singleton = 1;
+    gui_State = struct('gui_Name',       mfilename, ...
+        'gui_Singleton',  gui_Singleton, ...
+        'gui_OpeningFcn', @ldv_editPluginGUI_OpeningFcn, ...
+        'gui_OutputFcn',  @ldv_editPluginGUI_OutputFcn, ...
+        'gui_LayoutFcn',  [] , ...
+        'gui_Callback',   []);
+    if nargin && ischar(varargin{1})
+        gui_State.gui_Callback = str2func(varargin{1});
+    end
+    
+    if nargout
+        [varargout{1:nargout}] = gui_mainfcn(gui_State, varargin{:});
+    else
+        gui_mainfcn(gui_State, varargin{:});
+    end
+    % End initialization code - DO NOT EDIT
+    
+    
+    % --- Executes just before ldv_editPluginGUI is made visible.
 function ldv_editPluginGUI_OpeningFcn(hObject, eventdata, handles, varargin)
-% This function has no output args, see OutputFcn.
-% hObject    handle to figure
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-% varargin   command line arguments to ldv_editPluginGUI (see VARARGIN)
-
+    % This function has no output args, see OutputFcn.
+    % hObject    handle to figure
+    % eventdata  reserved - to be defined in a future version of MATLAB
+    % handles    structure with handles and user data (see GUIDATA)
+    % varargin   command line arguments to ldv_editPluginGUI (see VARARGIN)
+    
     % Choose default command line output for ldv_editPluginGUI
     handles.output = hObject;
-
+    
     lvdData = varargin{1};
     setappdata(hObject,'lvdData',lvdData);
     
     handles = populateGUI(lvdData, handles);
-
+    
+    setappdata(hObject,'lvdCodeExplorerFig',[]);
+    
     % Update handles structure
     guidata(hObject, handles);
-
+    
     % UIWAIT makes ldv_editPluginGUI wait for user response (see UIRESUME)
     uiwait(handles.ldv_editPluginGUI);
-
+    
 function handles = populateGUI(lvdData, handles)
     handles = setupCodeEditor(handles);
     
@@ -97,16 +99,16 @@ function setupIndividualPluginUiElements(lvdData, plugin, handles)
     handles.execAfterPropCheckbox.Value = plugin.execAfterPropTF;
     handles.execAfterTimeStepsCheckbox.Value = plugin.execAfterTimeStepsTF;
     
-
+    
 function handles = setupCodeEditor(handles)
     jCodePane = com.mathworks.widgets.SyntaxTextPane();
     codeType = jCodePane.M_MIME_TYPE;  % ='text/m-MATLAB'
     jCodePane.setContentType(codeType)
-
+    
     str = '';
     str = sprintf(strrep(str,'%','%%'));
     jCodePane.setText(str);
-
+    
     jbh = handle(jCodePane,'CallbackProperties');
     set(jbh, 'KeyTypedCallback',@(src, evt) jCodePaneCallback(src,evt,handles));
     
@@ -116,25 +118,25 @@ function handles = setupCodeEditor(handles)
     jCodePaneWidth = codePanelPos(3);
     jCodePaneHgt = codePanelPos(4);
     jCodePane.setSize(java.awt.Dimension(jCodePaneWidth-20, jCodePaneHgt));
-
+    
     glyph = org.netbeans.editor.GlyphGutter(jCodePane.getEditorUI);
     glyph.setPreferredSize(java.awt.Dimension(20, jCodePaneHgt));
-
+    
     jPanelLineNum = javax.swing.JPanel;
     jPanelLineNum.getLayout.setHgap(0);
     jPanelLineNum.getLayout.setVgap(0);
     jPanelLineNum.setSize(java.awt.Dimension(20, jCodePaneHgt));
     jPanelLineNum.setPreferredSize(java.awt.Dimension(20, jCodePaneHgt))
     jPanelLineNum.add(glyph);
-
+    
     jCodeParentPanel = javax.swing.JPanel();
     jCodeParentPanel.setLayout(javax.swing.BoxLayout(jCodeParentPanel, javax.swing.BoxLayout.X_AXIS));
     jCodeParentPanel.add(jPanelLineNum);
     jCodeParentPanel.add(jCodePane);
-
+    
     jScrollPane = com.mathworks.mwswing.MJScrollPane(jCodeParentPanel);
     [jhPanel,hContainer] = javacomponent(jScrollPane,[0,0,jCodePaneWidth+2,jCodePaneHgt+2],hCodeTbrPanel);
-
+    
     handles.jCodePane = jCodePane;
     handles.jPanelLineNum = jPanelLineNum;
     handles.jCodeParentPanel = jCodeParentPanel;
@@ -193,202 +195,205 @@ function jCodePaneCallback(jObject, jEventData, handles)
     selPlugin = getSelectedPlugin(handles);
     selPlugin.pluginCode = jObject.getText();
     
-% --- Outputs from this function are returned to the command line.
-function varargout = ldv_editPluginGUI_OutputFcn(hObject, eventdata, handles) 
-% varargout  cell array for returning output args (see VARARGOUT);
-% hObject    handle to figure
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Get default command line output from handles structure
+    % --- Outputs from this function are returned to the command line.
+function varargout = ldv_editPluginGUI_OutputFcn(hObject, eventdata, handles)
+    % varargout  cell array for returning output args (see VARARGOUT);
+    % hObject    handle to figure
+    % eventdata  reserved - to be defined in a future version of MATLAB
+    % handles    structure with handles and user data (see GUIDATA)
+    
+    % Get default command line output from handles structure
     if(isempty(handles))
         varargout{1} = false;
-    else 
+    else
         varargout{1} = true;
         close(handles.ldv_editPluginGUI);
     end
-
-
-% --- Executes on button press in saveAndCloseButton.
+    
+    
+    % --- Executes on button press in saveAndCloseButton.
 function saveAndCloseButton_Callback(hObject, eventdata, handles)
-% hObject    handle to saveAndCloseButton (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-%     errMsg = validateInputs(handles);
-
+    % hObject    handle to saveAndCloseButton (see GCBO)
+    % eventdata  reserved - to be defined in a future version of MATLAB
+    % handles    structure with handles and user data (see GUIDATA)
+    %     errMsg = validateInputs(handles);
+    
     errMsg = {};
     if(isempty(errMsg))
         uiresume(handles.ldv_editPluginGUI);
     else
         msgbox(errMsg,'Errors were found while editing plugins.','error');
     end
-
-% --- Executes on button press in cancelButton.
+    
+    % --- Executes on button press in cancelButton.
 function cancelButton_Callback(hObject, eventdata, handles)
-% hObject    handle to cancelButton (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
+    % hObject    handle to cancelButton (see GCBO)
+    % eventdata  reserved - to be defined in a future version of MATLAB
+    % handles    structure with handles and user data (see GUIDATA)
     close(handles.ldv_editPluginGUI);
-
-% --- Executes on button press in showLvdDataStructButton.
+    
+    % --- Executes on button press in showLvdDataStructButton.
 function showLvdDataStructButton_Callback(hObject, eventdata, handles)
-% hObject    handle to showLvdDataStructButton (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-
-% --- Executes on button press in execBeforePropCheckbox.
+    % hObject    handle to showLvdDataStructButton (see GCBO)
+    % eventdata  reserved - to be defined in a future version of MATLAB
+    % handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.ldv_editPluginGUI,'lvdData');
+    
+    hFig = lvd_dataExplorerGUI(lvdData);
+    setappdata(handles.ldv_editPluginGUI,'lvdCodeExplorerFig',hFig);
+    
+    % --- Executes on button press in execBeforePropCheckbox.
 function execBeforePropCheckbox_Callback(hObject, eventdata, handles)
-% hObject    handle to execBeforePropCheckbox (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of execBeforePropCheckbox
+    % hObject    handle to execBeforePropCheckbox (see GCBO)
+    % eventdata  reserved - to be defined in a future version of MATLAB
+    % handles    structure with handles and user data (see GUIDATA)
+    
+    % Hint: get(hObject,'Value') returns toggle state of execBeforePropCheckbox
     selPlugin = getSelectedPlugin(handles);
     selPlugin.execBeforePropTF = logical(get(hObject,'Value'));
-
-% --- Executes on button press in execBeforeEventsCheckbox.
+    
+    % --- Executes on button press in execBeforeEventsCheckbox.
 function execBeforeEventsCheckbox_Callback(hObject, eventdata, handles)
-% hObject    handle to execBeforeEventsCheckbox (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of execBeforeEventsCheckbox
-	selPlugin = getSelectedPlugin(handles);
-	selPlugin.execBeforeEventsTF = logical(get(hObject,'Value'));
-
-% --- Executes on button press in execAfterEventsCheckbox.
+    % hObject    handle to execBeforeEventsCheckbox (see GCBO)
+    % eventdata  reserved - to be defined in a future version of MATLAB
+    % handles    structure with handles and user data (see GUIDATA)
+    
+    % Hint: get(hObject,'Value') returns toggle state of execBeforeEventsCheckbox
+    selPlugin = getSelectedPlugin(handles);
+    selPlugin.execBeforeEventsTF = logical(get(hObject,'Value'));
+    
+    % --- Executes on button press in execAfterEventsCheckbox.
 function execAfterEventsCheckbox_Callback(hObject, eventdata, handles)
-% hObject    handle to execAfterEventsCheckbox (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of execAfterEventsCheckbox
-	selPlugin = getSelectedPlugin(handles);
-	selPlugin.execAfterEventsTF = logical(get(hObject,'Value'));
-
-% --- Executes on button press in execAfterPropCheckbox.
+    % hObject    handle to execAfterEventsCheckbox (see GCBO)
+    % eventdata  reserved - to be defined in a future version of MATLAB
+    % handles    structure with handles and user data (see GUIDATA)
+    
+    % Hint: get(hObject,'Value') returns toggle state of execAfterEventsCheckbox
+    selPlugin = getSelectedPlugin(handles);
+    selPlugin.execAfterEventsTF = logical(get(hObject,'Value'));
+    
+    % --- Executes on button press in execAfterPropCheckbox.
 function execAfterPropCheckbox_Callback(hObject, eventdata, handles)
-% hObject    handle to execAfterPropCheckbox (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of execAfterPropCheckbox
-	selPlugin = getSelectedPlugin(handles);
-	selPlugin.execAfterPropTF = logical(get(hObject,'Value'));
-
-% --- Executes on button press in execAfterTimeStepsCheckbox.
+    % hObject    handle to execAfterPropCheckbox (see GCBO)
+    % eventdata  reserved - to be defined in a future version of MATLAB
+    % handles    structure with handles and user data (see GUIDATA)
+    
+    % Hint: get(hObject,'Value') returns toggle state of execAfterPropCheckbox
+    selPlugin = getSelectedPlugin(handles);
+    selPlugin.execAfterPropTF = logical(get(hObject,'Value'));
+    
+    % --- Executes on button press in execAfterTimeStepsCheckbox.
 function execAfterTimeStepsCheckbox_Callback(hObject, eventdata, handles)
-% hObject    handle to execAfterTimeStepsCheckbox (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of execAfterTimeStepsCheckbox
-	selPlugin = getSelectedPlugin(handles);
-	selPlugin.execAfterTimeStepsTF = logical(get(hObject,'Value'));
-
-
+    % hObject    handle to execAfterTimeStepsCheckbox (see GCBO)
+    % eventdata  reserved - to be defined in a future version of MATLAB
+    % handles    structure with handles and user data (see GUIDATA)
+    
+    % Hint: get(hObject,'Value') returns toggle state of execAfterTimeStepsCheckbox
+    selPlugin = getSelectedPlugin(handles);
+    selPlugin.execAfterTimeStepsTF = logical(get(hObject,'Value'));
+    
+    
 function pluginNameText_Callback(hObject, eventdata, handles)
-% hObject    handle to pluginNameText (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of pluginNameText as text
-%        str2double(get(hObject,'String')) returns contents of pluginNameText as a double
+    % hObject    handle to pluginNameText (see GCBO)
+    % eventdata  reserved - to be defined in a future version of MATLAB
+    % handles    structure with handles and user data (see GUIDATA)
+    
+    % Hints: get(hObject,'String') returns contents of pluginNameText as text
+    %        str2double(get(hObject,'String')) returns contents of pluginNameText as a double
     selPlugin = getSelectedPlugin(handles);
     selPlugin.pluginName = get(hObject,'String');
     
     lvdData = getappdata(handles.ldv_editPluginGUI,'lvdData');
     pluginListboxStr = lvdData.plugins.getListboxStr();
     handles.pluginsListbox.String = pluginListboxStr;
-
-% --- Executes during object creation, after setting all properties.
+    
+    % --- Executes during object creation, after setting all properties.
 function pluginNameText_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to pluginNameText (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
-
+    % hObject    handle to pluginNameText (see GCBO)
+    % eventdata  reserved - to be defined in a future version of MATLAB
+    % handles    empty - handles not created until after all CreateFcns called
+    
+    % Hint: edit controls usually have a white background on Windows.
+    %       See ISPC and COMPUTER.
+    if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+        set(hObject,'BackgroundColor','white');
+    end
+    
+    
+    
 function pluginDescText_Callback(hObject, eventdata, handles)
-% hObject    handle to pluginDescText (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of pluginDescText as text
-%        str2double(get(hObject,'String')) returns contents of pluginDescText as a double
+    % hObject    handle to pluginDescText (see GCBO)
+    % eventdata  reserved - to be defined in a future version of MATLAB
+    % handles    structure with handles and user data (see GUIDATA)
+    
+    % Hints: get(hObject,'String') returns contents of pluginDescText as text
+    %        str2double(get(hObject,'String')) returns contents of pluginDescText as a double
     selPlugin = getSelectedPlugin(handles);
     selPlugin.pluginDesc = get(hObject,'String');
-
-% --- Executes during object creation, after setting all properties.
+    
+    % --- Executes during object creation, after setting all properties.
 function pluginDescText_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to pluginDescText (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
-% --- Executes on selection change in pluginsListbox.
+    % hObject    handle to pluginDescText (see GCBO)
+    % eventdata  reserved - to be defined in a future version of MATLAB
+    % handles    empty - handles not created until after all CreateFcns called
+    
+    % Hint: edit controls usually have a white background on Windows.
+    %       See ISPC and COMPUTER.
+    if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+        set(hObject,'BackgroundColor','white');
+    end
+    
+    
+    % --- Executes on selection change in pluginsListbox.
 function pluginsListbox_Callback(hObject, eventdata, handles)
-% hObject    handle to pluginsListbox (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: contents = cellstr(get(hObject,'String')) returns pluginsListbox contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from pluginsListbox
+    % hObject    handle to pluginsListbox (see GCBO)
+    % eventdata  reserved - to be defined in a future version of MATLAB
+    % handles    structure with handles and user data (see GUIDATA)
+    
+    % Hints: contents = cellstr(get(hObject,'String')) returns pluginsListbox contents as cell array
+    %        contents{get(hObject,'Value')} returns selected item from pluginsListbox
     lvdData = getappdata(handles.ldv_editPluginGUI,'lvdData');
     selPlugin = getSelectedPlugin(handles);
-
+    
     enableDisableIndividualPluginElements(true, handles);
     setupIndividualPluginUiElements(lvdData, selPlugin, handles);
     setDeletePluginEnable(lvdData, handles);
     
-% --- Executes during object creation, after setting all properties.
+    % --- Executes during object creation, after setting all properties.
 function pluginsListbox_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to pluginsListbox (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: listbox controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
-% --- Executes on button press in addPluginButton.
+    % hObject    handle to pluginsListbox (see GCBO)
+    % eventdata  reserved - to be defined in a future version of MATLAB
+    % handles    empty - handles not created until after all CreateFcns called
+    
+    % Hint: listbox controls usually have a white background on Windows.
+    %       See ISPC and COMPUTER.
+    if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+        set(hObject,'BackgroundColor','white');
+    end
+    
+    
+    % --- Executes on button press in addPluginButton.
 function addPluginButton_Callback(hObject, eventdata, handles)
-% hObject    handle to addPluginButton (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
+    % hObject    handle to addPluginButton (see GCBO)
+    % eventdata  reserved - to be defined in a future version of MATLAB
+    % handles    structure with handles and user data (see GUIDATA)
     lvdData = getappdata(handles.ldv_editPluginGUI,'lvdData');
     newPlugin = LvdPlugin();
     lvdData.plugins.addPlugin(newPlugin);
     
     pluginListboxStr = lvdData.plugins.getListboxStr();
     handles.pluginsListbox.String = pluginListboxStr;
-
+    
     handles.pluginsListbox.Value = lvdData.plugins.getNumPlugins();
     enableDisableIndividualPluginElements(true, handles);
     setupIndividualPluginUiElements(lvdData, newPlugin, handles);
     setDeletePluginEnable(lvdData, handles);
     
-% --- Executes on button press in deletePluginButton.
+    % --- Executes on button press in deletePluginButton.
 function deletePluginButton_Callback(hObject, eventdata, handles)
-% hObject    handle to deletePluginButton (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
+    % hObject    handle to deletePluginButton (see GCBO)
+    % eventdata  reserved - to be defined in a future version of MATLAB
+    % handles    structure with handles and user data (see GUIDATA)
     lvdData = getappdata(handles.ldv_editPluginGUI,'lvdData');
     
     selPlugin = getSelectedPlugin(handles);
@@ -415,10 +420,26 @@ function deletePluginButton_Callback(hObject, eventdata, handles)
     end
     
     setDeletePluginEnable(lvdData, handles);
-
-
-% --- Executes during object creation, after setting all properties.
+    
+    
+    % --- Executes during object creation, after setting all properties.
 function saveAndCloseButton_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to saveAndCloseButton (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
+    % hObject    handle to saveAndCloseButton (see GCBO)
+    % eventdata  reserved - to be defined in a future version of MATLAB
+    % handles    empty - handles not created until after all CreateFcns called
+    
+    
+    % --- Executes when user attempts to close ldv_editPluginGUI.
+function ldv_editPluginGUI_CloseRequestFcn(hObject, eventdata, handles)
+    % hObject    handle to ldv_editPluginGUI (see GCBO)
+    % eventdata  reserved - to be defined in a future version of MATLAB
+    % handles    structure with handles and user data (see GUIDATA)
+    
+    % Hint: delete(hObject) closes the figure
+    lvdCodeExplorerFig = getappdata(hObject,'lvdCodeExplorerFig');
+    
+    if(not(isempty(lvdCodeExplorerFig)) && isvalid(lvdCodeExplorerFig) && ishandle(lvdCodeExplorerFig))
+        delete(lvdCodeExplorerFig);
+    end
+    
+    delete(hObject);

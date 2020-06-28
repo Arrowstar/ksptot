@@ -2,6 +2,10 @@ classdef (Abstract) AbstractObjPropertyNode < matlab.mixin.SetGet & matlab.mixin
     %ObjPropertyNode Summary of this class goes here
     %   Detailed explanation goes here
 
+    methods(Abstract)
+        str = getCodeStr(obj)
+    end
+    
     methods
         function createBreadcrumbs(obj, grid, jBreadCrumbBar)
             hBreadcrumbBar = handle(jBreadCrumbBar, 'CallbackProperties');
@@ -17,6 +21,15 @@ classdef (Abstract) AbstractObjPropertyNode < matlab.mixin.SetGet & matlab.mixin
 
             propChangeCallback = @(src,evt) AbstractObjPropertyNode.breadcrumbButtonPushCallback(src,evt,propNodeObjs,grid,jBreadCrumbBar);
             hBreadcrumbBar.PropertyChangeCallback = propChangeCallback;
+            
+            cm = javax.swing.JPopupMenu();
+            m1 = javax.swing.JMenuItem("Copy Data Structure Code to Clipboard");
+            cm.add(m1);
+            hBreadcrumbBar.setComponentPopupMenu(cm);
+
+            hM1 = handle(m1,'CallbackProperties');
+            callback = @(src,evt) AbstractObjPropertyNode.copyCurPath(src, evt, jBreadCrumbBar, propNodeObjs);
+            hM1.ActionPerformedCallback = callback;
         end
         
         function [treeNodes, propNodeObjs] = getAllTreeNodesHereUp(obj)          
@@ -238,7 +251,7 @@ classdef (Abstract) AbstractObjPropertyNode < matlab.mixin.SetGet & matlab.mixin
         end  % newProperty
         
         function getGridMouseDoubleClickCallback(src, evt, nodeParent, grid, jBreadCrumbBar)
-            if(evt.getButton() == 1 && evt.getClickCount() >= 2)
+            if(evt.getButton() == 1 && evt.getClickCount() == 2)
                 selectedPropertyName = char(src.getSelectedProperty().getName());
                 
                 nodeParentObj = nodeParent.nodeObj;
@@ -274,6 +287,24 @@ classdef (Abstract) AbstractObjPropertyNode < matlab.mixin.SetGet & matlab.mixin
                     newNode.createPropertyTableModel(grid,jBreadCrumbBar);
                 end
             end
+        end
+        
+        function copyCurPath(src, evt, jBreadCrumbBar, propNodeObjs)
+            menuStrs = {};
+            for(i=1:length(propNodeObjs))
+                nextNode = propNodeObjs(i);
+                
+                if(isa(nextNode,'ArrayObjPropertyNode') && i<length(propNodeObjs))
+                    continue;
+                end
+                
+                menuStrs{end+1} = nextNode.getCodeStr(); %#ok<AGROW>
+            end
+            
+            str = strjoin(menuStrs,'.');
+            
+            clipboard('copy',str);
+            disp(str);
         end
     end
 end

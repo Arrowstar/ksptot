@@ -12,7 +12,7 @@ classdef LvdPlugin < matlab.mixin.SetGet
         
         %plugin info
         pluginName(1,:) char = 'Untitled LVD Plugin';
-        pluginDesc(:,:) char = 'aaa';
+        pluginDesc(:,:) char = '';
         
         %plugin code
         pluginCode(1,1) string = "";
