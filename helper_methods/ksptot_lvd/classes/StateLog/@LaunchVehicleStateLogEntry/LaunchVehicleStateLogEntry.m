@@ -4,7 +4,6 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
     
     properties
         %validators commented out to improve performance
-        
         time double = 0;
         position double = [0;0;0];
         velocity double = [0;0;0];
@@ -29,6 +28,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
         throttle double
         celBodyData
         launchVehicle LaunchVehicle
+        lvdData LvdData
     end
     
     properties(Constant)
@@ -63,11 +63,15 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
         end
         
         function celBodyData = get.celBodyData(obj)
-            celBodyData = obj.lvState.lv.lvdData.celBodyData;
+            celBodyData = obj.lvdData.celBodyData;
         end
         
         function launchVehicle = get.launchVehicle(obj)
             launchVehicle = obj.lvState.lv;
+        end
+        
+        function lvdData = get.lvdData(obj)
+            lvdData = obj.lvState.lv.lvdData;
         end
         
         function [t,y, tankStateInds] = getFirstOrderIntegratorStateRepresentation(obj)

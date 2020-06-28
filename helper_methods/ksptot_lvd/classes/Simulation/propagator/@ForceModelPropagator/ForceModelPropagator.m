@@ -18,11 +18,13 @@ classdef ForceModelPropagator < AbstractPropagator
         function [t,y,te,ye,ie] = propagate(obj, integrator, tspan, eventInitStateLogEntry, ...
                                             eventTermCondFuncHandle, termCondDir, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, minAltitude, celBodyData, ...
                                             tStartPropTime, maxPropTime)
-                                        
+                                       
+            plugins = eventInitStateLogEntry.lvdData.plugins;         
+            
             %Create function handles
             odefun = obj.getOdeFunctionHandle(eventInitStateLogEntry);
             evtsFunc = obj.getOdeEventsFunctionHandle(eventInitStateLogEntry, eventTermCondFuncHandle, termCondDir, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, minAltitude, celBodyData);
-            odeOutputFun = obj.getOdeOutputFunctionHandle(tStartPropTime, maxPropTime);
+            odeOutputFun = obj.getOdeOutputFunctionHandle(tStartPropTime, maxPropTime, eventInitStateLogEntry, plugins);
             
             %Propagate!
             [t0,y0, ~] = eventInitStateLogEntry.getFirstOrderIntegratorStateRepresentation();
@@ -58,8 +60,8 @@ classdef ForceModelPropagator < AbstractPropagator
             odeEventsFH = @(t,y) AbstractPropagator.odeEvents(t,y, eventInitStateLogEntry, eventTermCondFuncHandle, termCondDir, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, minAltitude, celBodyData);
         end
         
-        function odeOutputFH = getOdeOutputFunctionHandle(~, tStartPropTime, maxPropTime)
-            odeOutputFH = @(t,y,flag) ForceModelPropagator.odeOutput(t,y,flag, tStartPropTime, maxPropTime);
+        function odeOutputFH = getOdeOutputFunctionHandle(~, tStartPropTime, maxPropTime, eventInitStateLogEntry, plugins)           
+            odeOutputFH = @(t,y,flag) ForceModelPropagator.odeOutput(t,y,flag, tStartPropTime, maxPropTime, eventInitStateLogEntry, plugins);
         end
         
         function [value,isterminal,direction,causes] = callEventsFcn(obj, odeEventsFun, stateLogEntry)
@@ -163,7 +165,9 @@ classdef ForceModelPropagator < AbstractPropagator
         %%%
         %ODE Output
         %%%
-        function status = odeOutput(t,y,flag, intStartTime, maxIntegrationDuration)
+        function status = odeOutput(t,y,flag, intStartTime, maxIntegrationDuration, eventInitStateLogEntry, plugins)
+            plugins.executePluginsAfterTimeStepOdeOutputFcn(t,y,flag, eventInitStateLogEntry);
+            
             integrationDuration = toc(intStartTime);
 
             status = 0;

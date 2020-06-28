@@ -26,7 +26,7 @@ classdef LvdPlugin < matlab.mixin.SetGet
             obj.id = rand();
         end
         
-        function executePlugin(obj, lvdData, stateLog, event, execLoc)
+        function executePlugin(obj, lvdData, stateLog, event, execLoc, t,y,flag)
             try
                 eval(sprintf(obj.pluginCode));
             catch ME
