@@ -35,11 +35,23 @@ classdef LvdPlugin < matlab.mixin.SetGet
         function executePlugin(obj, lvdData, stateLog, event, execLoc, t,y,flag)
             tfBadWords = contains(obj.pluginCode,LvdPlugin.badWords,'IgnoreCase',true);
             
+            inds = [];
             if(tfBadWords)
-                quotedwords = cellfun(@(c) sprintf('"%s"', c), LvdPlugin.badWords, 'UniformOutput',false);
-                wordList = grammaticalList(quotedwords);
+                for(i=1:length(LvdPlugin.badWords))
+                    if(contains(obj.pluginCode,LvdPlugin.badWords{i}))
+                        inds(end+1) = i; %#ok<AGROW>
+                    end
+                end
                 
-                errMsg = sprintf('Strings %s are not allowed in LVD plugin code.', wordList);
+                if(not(isempty(inds)))
+                    quotedwords = cellfun(@(c) sprintf('"%s"', c), LvdPlugin.badWords(inds), 'UniformOutput',false);
+                    wordList = grammaticalList(quotedwords);
+                else
+                    quotedwords = cellfun(@(c) sprintf('"%s"', c), LvdPlugin.badWords, 'UniformOutput',false);
+                    wordList = grammaticalList(quotedwords);
+                end
+ 
+                errMsg = sprintf('String(s) %s is/are not allowed in LVD plugin code.', wordList);
                 errStr = sprintf('An error was encountered executing plugin "%s" at location "%s".  Msg: %s', ...
                                  obj.pluginName, execLoc.name, errMsg);
                 lvdData.validation.outputs(end+1) = LaunchVehicleDataValidationError(errStr);

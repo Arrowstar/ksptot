@@ -95,7 +95,12 @@ function handles = populateGUI(lvdData, handles)
 
     listBoxStr = PluginFunctionInputSignatureEnum.getListBoxStr();
     handles.functionInputSigCombo.String = listBoxStr;
-    functionInputSigCombo_Callback(handles.functionInputSigCombo, [], handles);    
+    functionInputSigCombo_Callback(handles.functionInputSigCombo, [], handles);  
+    
+    quotedwords = cellfun(@(c) sprintf('"%s"', c), LvdPlugin.badWords, 'UniformOutput',false);
+    wordList = grammaticalList(quotedwords);
+    handles.codeBadWordsLabel.TooltipString = sprintf('%s', wordList);
+    
     
     
 function setupIndividualPluginUiElements(lvdData, plugin, handles)
