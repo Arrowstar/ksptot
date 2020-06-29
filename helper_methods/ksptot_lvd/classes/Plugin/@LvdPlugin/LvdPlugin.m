@@ -22,7 +22,9 @@ classdef LvdPlugin < matlab.mixin.SetGet
     end
     
     properties(Constant)
-        badWords(1,:) cell = {'rmdir', 'delete', 'copyfile', 'movefile'}
+        badWords(1,:) cell = {'rmdir', 'delete', 'copyfile', 'movefile', 'dos', ...
+                              'unix', 'system', 'perl', 'winopen', '!', 'load', ...
+                              'importdata', 'uiimport', 'matfile'}
     end
     
     methods
@@ -34,8 +36,12 @@ classdef LvdPlugin < matlab.mixin.SetGet
             tfBadWords = contains(obj.pluginCode,LvdPlugin.badWords,'IgnoreCase',true);
             
             if(tfBadWords)
+                quotedwords = cellfun(@(c) sprintf('"%s"', c), LvdPlugin.badWords, 'UniformOutput',false);
+                wordList = grammaticalList(quotedwords);
+                
+                errMsg = sprintf('Strings %s are not allowed in LVD plugin code.', wordList);
                 errStr = sprintf('An error was encountered executing plugin "%s" at location "%s".  Msg: %s', ...
-                                 obj.pluginName, execLoc.name, 'Strings "rmdir", "delete", "copyfile", and "movefile" are not allowed in LVD plugin code.');
+                                 obj.pluginName, execLoc.name, errMsg);
                 lvdData.validation.outputs(end+1) = LaunchVehicleDataValidationError(errStr);
             else
                 try
