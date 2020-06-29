@@ -26,7 +26,7 @@ classdef LvdPluginSet < matlab.mixin.SetGet
             listBoxStr = {};
             
             for(i=1:length(obj.plugins))
-                listBoxStr{end+1} = obj.plugins(i).pluginName;
+                listBoxStr{end+1} = obj.plugins(i).pluginName; %#ok<AGROW>
             end
         end
         

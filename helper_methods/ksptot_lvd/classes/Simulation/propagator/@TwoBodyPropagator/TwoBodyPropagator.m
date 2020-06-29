@@ -140,7 +140,7 @@ classdef TwoBodyPropagator < AbstractPropagator
         %%%
         %ODE Output
         %%%
-        function status = odeOutput(~,~,~, intStartTime, maxIntegrationDuration, eventInitStateLogEntry, plugins)
+        function status = odeOutput(t,y,flag, intStartTime, maxIntegrationDuration, eventInitStateLogEntry, plugins)
             plugins.executePluginsAfterTimeStepOdeOutputFcn(t,y,flag, eventInitStateLogEntry);
             
             integrationDuration = toc(intStartTime);

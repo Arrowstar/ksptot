@@ -22,7 +22,7 @@ function varargout = ldv_editPluginGUI(varargin)
     
     % Edit the above text to modify the response to help ldv_editPluginGUI
     
-    % Last Modified by GUIDE v2.5 27-Jun-2020 20:41:06
+    % Last Modified by GUIDE v2.5 28-Jun-2020 14:00:41
     
     % Begin initialization code - DO NOT EDIT
     gui_Singleton = 1;
@@ -85,6 +85,17 @@ function handles = populateGUI(lvdData, handles)
         handles.pluginDescText.String = '';
     end
     
+    syntaxLblPos = handles.functionInputSigLbl.Position;
+    
+    codeType = com.mathworks.widgets.SyntaxTextLabel.M_STYLE;
+    jCodeLabel = com.mathworks.widgets.SyntaxTextLabel('',codeType);
+    [jFuncInputSynLbl,~] = javacomponent(jCodeLabel,syntaxLblPos,handles.functionInputSigLbl.Parent);
+    handles.jCodeLabel = jCodeLabel;
+    handles.jFuncInputSynLbl = jFuncInputSynLbl;
+
+    listBoxStr = PluginFunctionInputSignatureEnum.getListBoxStr();
+    handles.functionInputSigCombo.String = listBoxStr;
+    functionInputSigCombo_Callback(handles.functionInputSigCombo, [], handles);    
     
     
 function setupIndividualPluginUiElements(lvdData, plugin, handles)
@@ -155,6 +166,8 @@ function enableDisableIndividualPluginElements(tf, handles)
         handles.execAfterEventsCheckbox.Enable = 'on';
         handles.execAfterPropCheckbox.Enable = 'on';
         handles.execAfterTimeStepsCheckbox.Enable = 'on';
+        
+        handles.functionInputSigCombo.Enable = 'on';
     else
         handles.pluginsListbox.Enable = 'off';
         
@@ -166,6 +179,8 @@ function enableDisableIndividualPluginElements(tf, handles)
         handles.execAfterEventsCheckbox.Enable = 'off';
         handles.execAfterPropCheckbox.Enable = 'off';
         handles.execAfterTimeStepsCheckbox.Enable = 'off';
+        
+        handles.functionInputSigCombo.Enable = 'off';
     end
     
     handles.jCodePane.setEditable(tf);
@@ -443,3 +458,31 @@ function ldv_editPluginGUI_CloseRequestFcn(hObject, eventdata, handles)
     end
     
     delete(hObject);
+
+
+% --- Executes on selection change in functionInputSigCombo.
+function functionInputSigCombo_Callback(hObject, eventdata, handles)
+% hObject    handle to functionInputSigCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns functionInputSigCombo contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from functionInputSigCombo
+    contents = cellstr(get(hObject,'String'));
+    nameStr = contents{get(hObject,'Value')};
+    
+    enum = PluginFunctionInputSignatureEnum.getEnumForListboxStr(nameStr);
+    handles.jCodeLabel.setText(enum.functionSig);
+    
+
+% --- Executes during object creation, after setting all properties.
+function functionInputSigCombo_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to functionInputSigCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
