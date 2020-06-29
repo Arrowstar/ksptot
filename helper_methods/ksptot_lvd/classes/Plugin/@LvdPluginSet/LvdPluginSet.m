@@ -34,6 +34,18 @@ classdef LvdPluginSet < matlab.mixin.SetGet
             numPlugins = length(obj.plugins);
         end
         
+        function movePluginAtIndexDown(obj, ind)
+            if(ind < length(obj.plugins))
+                obj.plugins([ind+1,ind]) = obj.plugins([ind,ind+1]);
+            end
+        end
+        
+        function movePluginAtIndexUp(obj, ind)
+            if(ind > 1)
+                obj.plugins([ind,ind-1]) = obj.plugins([ind-1,ind]);
+            end
+        end
+        
         %before propagation
         function executePluginsBeforeProp(obj, stateLog)
             for(i=1:length(obj.plugins))

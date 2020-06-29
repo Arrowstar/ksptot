@@ -22,7 +22,7 @@ function varargout = ldv_editPluginGUI(varargin)
     
     % Edit the above text to modify the response to help ldv_editPluginGUI
     
-    % Last Modified by GUIDE v2.5 28-Jun-2020 14:00:41
+    % Last Modified by GUIDE v2.5 29-Jun-2020 18:16:27
     
     % Begin initialization code - DO NOT EDIT
     gui_Singleton = 1;
@@ -100,7 +100,6 @@ function handles = populateGUI(lvdData, handles)
     quotedwords = cellfun(@(c) sprintf('"%s"', c), LvdPlugin.badWords, 'UniformOutput',false);
     wordList = grammaticalList(quotedwords);
     handles.codeBadWordsLabel.TooltipString = sprintf('%s', wordList);
-    
     
     
 function setupIndividualPluginUiElements(lvdData, plugin, handles)
@@ -491,3 +490,38 @@ function functionInputSigCombo_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on button press in movePluginDownButton.
+function movePluginDownButton_Callback(hObject, eventdata, handles)
+% hObject    handle to movePluginDownButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.ldv_editPluginGUI,'lvdData');
+
+    pluginNum = get(handles.pluginsListbox,'Value');
+    lvdData.plugins.movePluginAtIndexDown(pluginNum);
+    
+    if(pluginNum < lvdData.plugins.getNumPlugins())
+        set(handles.pluginsListbox,'Value',pluginNum+1);
+    end
+
+    pluginListboxStr = lvdData.plugins.getListboxStr();
+    handles.pluginsListbox.String = pluginListboxStr;
+    
+% --- Executes on button press in movePluginUpButton.
+function movePluginUpButton_Callback(hObject, eventdata, handles)
+% hObject    handle to movePluginUpButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.ldv_editPluginGUI,'lvdData');
+
+    pluginNum = get(handles.pluginsListbox,'Value');
+    lvdData.plugins.movePluginAtIndexUp(pluginNum);
+
+    if(pluginNum > 1)
+        set(handles.pluginsListbox,'Value',pluginNum-1);
+    end
+    
+    pluginListboxStr = lvdData.plugins.getListboxStr();
+    handles.pluginsListbox.String = pluginListboxStr;

@@ -24,7 +24,7 @@ classdef LvdPlugin < matlab.mixin.SetGet
     properties(Constant)
         badWords(1,:) cell = {'rmdir', 'delete', 'copyfile', 'movefile', 'dos', ...
                               'unix', 'system', 'perl', 'winopen', '!', 'load', ...
-                              'importdata', 'uiimport', 'matfile', 'fopen', 'fwrite'}
+                              'importdata', 'uiimport', 'matfile'}
     end
     
     methods
