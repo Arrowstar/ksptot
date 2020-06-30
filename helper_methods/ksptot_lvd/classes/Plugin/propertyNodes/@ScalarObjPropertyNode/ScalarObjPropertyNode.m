@@ -16,11 +16,11 @@ classdef ScalarObjPropertyNode < AbstractObjPropertyNode
             obj.nodeParent = nodeParent;
         end             
         
-        function createPropertyTableModel(obj, grid, jBreadCrumbBar)
+        function createPropertyTableModel(obj, grid, jBreadCrumbBar, jSpinnerIcon)
             list = java.util.ArrayList();
             
-            mco = metaclass(obj.nodeObj);
-            propertyList = mco.PropertyList;
+%             mco = metaclass(obj.nodeObj);
+%             propertyList = mco.PropertyList;
             
             propertyList = properties(obj.nodeObj);
             
@@ -33,8 +33,11 @@ classdef ScalarObjPropertyNode < AbstractObjPropertyNode
 %                     objPropName = propertyListItem.Name;
                     objProp = obj.nodeObj.(objPropName);
 
+                    desc = sprintf('Type: %s', ...
+                                   class(objProp));
+                    
                     [type, value] = AbstractObjPropertyNode.getTypeOfObject(objProp);
-                    propNode = AbstractObjPropertyNode.createNewPropertyNode(value, objPropName, objPropName, type, '', [], category);
+                    propNode = AbstractObjPropertyNode.createNewPropertyNode(value, objPropName, objPropName, type, desc, [], category);
 
                     list.add(propNode);
 %                 end
@@ -46,9 +49,9 @@ classdef ScalarObjPropertyNode < AbstractObjPropertyNode
             grid.setModel(model);
             
             hgrid = handle(grid, 'CallbackProperties');
-            set(hgrid,'MouseClickedCallback',@(src,evt) AbstractObjPropertyNode.getGridMouseDoubleClickCallback(src,evt,obj,grid,jBreadCrumbBar));
+            set(hgrid,'MouseClickedCallback',@(src,evt) AbstractObjPropertyNode.getGridMouseDoubleClickCallback(src,evt,obj,grid,jBreadCrumbBar,jSpinnerIcon));
             
-            obj.createBreadcrumbs(grid, jBreadCrumbBar);
+            obj.createBreadcrumbs(grid, jBreadCrumbBar, jSpinnerIcon);
         end
         
         function str = getCodeStr(obj)

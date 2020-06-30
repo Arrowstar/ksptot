@@ -22,7 +22,7 @@ function varargout = ldv_editPluginGUI(varargin)
     
     % Edit the above text to modify the response to help ldv_editPluginGUI
     
-    % Last Modified by GUIDE v2.5 29-Jun-2020 18:16:27
+    % Last Modified by GUIDE v2.5 29-Jun-2020 20:55:51
     
     % Begin initialization code - DO NOT EDIT
     gui_Singleton = 1;
@@ -92,15 +92,17 @@ function handles = populateGUI(lvdData, handles)
     [jFuncInputSynLbl,~] = javacomponent(jCodeLabel,syntaxLblPos,handles.functionInputSigLbl.Parent);
     handles.jCodeLabel = jCodeLabel;
     handles.jFuncInputSynLbl = jFuncInputSynLbl;
-
+    
     listBoxStr = PluginFunctionInputSignatureEnum.getListBoxStr();
     handles.functionInputSigCombo.String = listBoxStr;
-    functionInputSigCombo_Callback(handles.functionInputSigCombo, [], handles);  
+    functionInputSigCombo_Callback(handles.functionInputSigCombo, [], handles);
     
     quotedwords = cellfun(@(c) sprintf('"%s"', c), LvdPlugin.badWords, 'UniformOutput',false);
     wordList = grammaticalList(quotedwords);
     handles.codeBadWordsLabel.TooltipString = sprintf('%s', wordList);
     
+    handles.enablePluginsCheckbox.Value = double(lvdData.plugins.enablePlugins);
+    enablePluginsCheckbox_Callback(handles.enablePluginsCheckbox, [], handles);
     
 function setupIndividualPluginUiElements(lvdData, plugin, handles)
     handles.jCodePane.setText(plugin.pluginCode);
@@ -462,66 +464,87 @@ function ldv_editPluginGUI_CloseRequestFcn(hObject, eventdata, handles)
     end
     
     delete(hObject);
-
-
-% --- Executes on selection change in functionInputSigCombo.
+    
+    
+    % --- Executes on selection change in functionInputSigCombo.
 function functionInputSigCombo_Callback(hObject, eventdata, handles)
-% hObject    handle to functionInputSigCombo (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: contents = cellstr(get(hObject,'String')) returns functionInputSigCombo contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from functionInputSigCombo
+    % hObject    handle to functionInputSigCombo (see GCBO)
+    % eventdata  reserved - to be defined in a future version of MATLAB
+    % handles    structure with handles and user data (see GUIDATA)
+    
+    % Hints: contents = cellstr(get(hObject,'String')) returns functionInputSigCombo contents as cell array
+    %        contents{get(hObject,'Value')} returns selected item from functionInputSigCombo
     contents = cellstr(get(hObject,'String'));
     nameStr = contents{get(hObject,'Value')};
     
     enum = PluginFunctionInputSignatureEnum.getEnumForListboxStr(nameStr);
     handles.jCodeLabel.setText(enum.functionSig);
     
-
-% --- Executes during object creation, after setting all properties.
+    
+    % --- Executes during object creation, after setting all properties.
 function functionInputSigCombo_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to functionInputSigCombo (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: popupmenu controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
-% --- Executes on button press in movePluginDownButton.
+    % hObject    handle to functionInputSigCombo (see GCBO)
+    % eventdata  reserved - to be defined in a future version of MATLAB
+    % handles    empty - handles not created until after all CreateFcns called
+    
+    % Hint: popupmenu controls usually have a white background on Windows.
+    %       See ISPC and COMPUTER.
+    if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+        set(hObject,'BackgroundColor','white');
+    end
+    
+    
+    % --- Executes on button press in movePluginDownButton.
 function movePluginDownButton_Callback(hObject, eventdata, handles)
-% hObject    handle to movePluginDownButton (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
+    % hObject    handle to movePluginDownButton (see GCBO)
+    % eventdata  reserved - to be defined in a future version of MATLAB
+    % handles    structure with handles and user data (see GUIDATA)
     lvdData = getappdata(handles.ldv_editPluginGUI,'lvdData');
-
+    
     pluginNum = get(handles.pluginsListbox,'Value');
     lvdData.plugins.movePluginAtIndexDown(pluginNum);
     
     if(pluginNum < lvdData.plugins.getNumPlugins())
         set(handles.pluginsListbox,'Value',pluginNum+1);
     end
-
+    
     pluginListboxStr = lvdData.plugins.getListboxStr();
     handles.pluginsListbox.String = pluginListboxStr;
     
-% --- Executes on button press in movePluginUpButton.
+    % --- Executes on button press in movePluginUpButton.
 function movePluginUpButton_Callback(hObject, eventdata, handles)
-% hObject    handle to movePluginUpButton (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
+    % hObject    handle to movePluginUpButton (see GCBO)
+    % eventdata  reserved - to be defined in a future version of MATLAB
+    % handles    structure with handles and user data (see GUIDATA)
     lvdData = getappdata(handles.ldv_editPluginGUI,'lvdData');
-
+    
     pluginNum = get(handles.pluginsListbox,'Value');
     lvdData.plugins.movePluginAtIndexUp(pluginNum);
-
+    
     if(pluginNum > 1)
         set(handles.pluginsListbox,'Value',pluginNum-1);
     end
     
     pluginListboxStr = lvdData.plugins.getListboxStr();
     handles.pluginsListbox.String = pluginListboxStr;
+    
+    
+    % --- Executes on button press in enablePluginsCheckbox.
+function enablePluginsCheckbox_Callback(hObject, eventdata, handles)
+    % hObject    handle to enablePluginsCheckbox (see GCBO)
+    % eventdata  reserved - to be defined in a future version of MATLAB
+    % handles    structure with handles and user data (see GUIDATA)
+    
+    % Hint: get(hObject,'Value') returns toggle state of enablePluginsCheckbox
+    lvdData = getappdata(handles.ldv_editPluginGUI,'lvdData');
+    
+    value = logical(get(hObject,'Value'));
+    lvdData.plugins.enablePlugins = value;
+    
+    if(value)
+        hObject.BackgroundColor = [1 0 0];
+        hObject.TooltipString = 'Plugins enabled.  Caution: plugins are capable of corupting LVD data files.';
+    else
+        hObject.BackgroundColor = [240 240 240]/255;
+        hObject.TooltipString = 'Plugins disabled.';
+    end

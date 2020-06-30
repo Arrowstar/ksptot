@@ -5,6 +5,8 @@ classdef LvdPluginSet < matlab.mixin.SetGet
     properties
         plugins(1,:) LvdPlugin = LvdPlugin.empty(1,0);
         
+        enablePlugins(1,1) logical = true;
+        
         lvdData LvdData
     end
     
@@ -48,44 +50,54 @@ classdef LvdPluginSet < matlab.mixin.SetGet
         
         %before propagation
         function executePluginsBeforeProp(obj, stateLog)
-            for(i=1:length(obj.plugins))
-                if(obj.plugins(i).execBeforePropTF)
-                    obj.plugins(i).executePlugin(obj.lvdData, stateLog, LaunchVehicleEvent.empty(0,1), LvdPluginExecLocEnum.BeforeProp, [],[],[]);
+            if(obj.enablePlugins)
+                for(i=1:length(obj.plugins))
+                    if(obj.plugins(i).execBeforePropTF)
+                        obj.plugins(i).executePlugin(obj.lvdData, stateLog, LaunchVehicleEvent.empty(0,1), LvdPluginExecLocEnum.BeforeProp, [],[],[]);
+                    end
                 end
             end
         end
         
         %before events
         function executePluginsBeforeEvent(obj, stateLog, event)
-            for(i=1:length(obj.plugins))
-                if(obj.plugins(i).execBeforeEventsTF)
-                    obj.plugins(i).executePlugin(obj.lvdData, stateLog, event, LvdPluginExecLocEnum.BeforeEvent, [],[],[]);
+            if(obj.enablePlugins)
+                for(i=1:length(obj.plugins))
+                    if(obj.plugins(i).execBeforeEventsTF)
+                        obj.plugins(i).executePlugin(obj.lvdData, stateLog, event, LvdPluginExecLocEnum.BeforeEvent, [],[],[]);
+                    end
                 end
             end
         end
         
         %after events
         function executePluginsAfterEvent(obj, stateLog, event)
-            for(i=1:length(obj.plugins))
-                if(obj.plugins(i).execAfterEventsTF)
-                    obj.plugins(i).executePlugin(obj.lvdData, stateLog, event, LvdPluginExecLocEnum.AfterEvent, [],[],[]);
+            if(obj.enablePlugins)
+                for(i=1:length(obj.plugins))
+                    if(obj.plugins(i).execAfterEventsTF)
+                        obj.plugins(i).executePlugin(obj.lvdData, stateLog, event, LvdPluginExecLocEnum.AfterEvent, [],[],[]);
+                    end
                 end
             end
         end
         
         %after propagation
         function executePluginsAfterProp(obj, stateLog)
-            for(i=1:length(obj.plugins))
-                if(obj.plugins(i).execAfterPropTF)
-                    obj.plugins(i).executePlugin(obj.lvdData, stateLog, LaunchVehicleEvent.empty(0,1), LvdPluginExecLocEnum.AfterProp, [],[],[]);
+            if(obj.enablePlugins)
+                for(i=1:length(obj.plugins))
+                    if(obj.plugins(i).execAfterPropTF)
+                        obj.plugins(i).executePlugin(obj.lvdData, stateLog, LaunchVehicleEvent.empty(0,1), LvdPluginExecLocEnum.AfterProp, [],[],[]);
+                    end
                 end
             end
         end
         
         function executePluginsAfterTimeStepOdeOutputFcn(obj, t,y,flag, eventInitStateLogEntry)
-            for(i=1:length(obj.plugins))
-                if(obj.plugins(i).execAfterTimeStepsTF)
-                    obj.plugins(i).executePlugin(obj.lvdData, [], eventInitStateLogEntry, LvdPluginExecLocEnum.AfterTimestep, t,y,flag);
+            if(obj.enablePlugins)
+                for(i=1:length(obj.plugins))
+                    if(obj.plugins(i).execAfterTimeStepsTF)
+                        obj.plugins(i).executePlugin(obj.lvdData, [], eventInitStateLogEntry, LvdPluginExecLocEnum.AfterTimestep, t,y,flag);
+                    end
                 end
             end
         end

@@ -7,7 +7,7 @@ classdef (Abstract) AbstractObjPropertyNode < matlab.mixin.SetGet & matlab.mixin
     end
     
     methods
-        function createBreadcrumbs(obj, grid, jBreadCrumbBar)
+        function createBreadcrumbs(obj, grid, jBreadCrumbBar, jSpinnerIcon)
             hBreadcrumbBar = handle(jBreadCrumbBar, 'CallbackProperties');
             
             [treeNodes, propNodeObjs] = obj.getAllTreeNodesHereUp();
@@ -19,7 +19,7 @@ classdef (Abstract) AbstractObjPropertyNode < matlab.mixin.SetGet & matlab.mixin
             jBreadCrumbBar.setSelectedPath(jTreePath);
             jBreadCrumbBar.setDropDownAllowed(false)
 
-            propChangeCallback = @(src,evt) AbstractObjPropertyNode.breadcrumbButtonPushCallback(src,evt,propNodeObjs,grid,jBreadCrumbBar);
+            propChangeCallback = @(src,evt) AbstractObjPropertyNode.breadcrumbButtonPushCallback(src,evt,propNodeObjs,grid,jBreadCrumbBar, jSpinnerIcon);
             hBreadcrumbBar.PropertyChangeCallback = propChangeCallback;
             
             cm = javax.swing.JPopupMenu();
@@ -250,7 +250,7 @@ classdef (Abstract) AbstractObjPropertyNode < matlab.mixin.SetGet & matlab.mixin
             setPropName(prop,propName);
         end  % newProperty
         
-        function getGridMouseDoubleClickCallback(src, evt, nodeParent, grid, jBreadCrumbBar)
+        function getGridMouseDoubleClickCallback(src, evt, nodeParent, grid, jBreadCrumbBar, jSpinnerIcon)
             if(evt.getButton() == 1 && evt.getClickCount() == 2)
                 selectedPropertyName = char(src.getSelectedProperty().getName());
                 
@@ -260,31 +260,36 @@ classdef (Abstract) AbstractObjPropertyNode < matlab.mixin.SetGet & matlab.mixin
                 if(numel(nodeParentObj) == 1 && isprop(nodeParentObj,selectedPropertyName))
                     nodeObj = nodeParentObj.(selectedPropertyName);
                 elseif(numel(nodeParentObj) > 1)
-                    out = regexp(selectedPropertyName,'[\w+]\((\d+)\)','tokens');
+                    out = regexp(selectedPropertyName,'[\w+]\((\d+\,+.*\d+)\)','tokens');
                     if(numel(out) == 1 && numel(out{1}) == 1)
-                        index = str2double(out{1}{1});
+                        C=strsplit(out{1}{1},',');
+                        Cdouble = cellfun(@(c) str2double(c),C);
+                        C = num2cell(Cdouble);
+                        ind = sub2ind(size(nodeParentObj),C{:});
                         
-                        nodeObj = nodeParentObj(index);
+                        nodeObj = nodeParentObj(ind);
                     end
                 end
                 
-                if(isobject(nodeObj))
-                    if(numel(nodeObj) == 1)
-                        newNode = ScalarObjPropertyNode(nodeObj, selectedPropertyName, nodeParent);
-                        newNode.createPropertyTableModel(grid,jBreadCrumbBar);
-                    elseif(numel(nodeObj) > 1)
-                        newNode = ArrayObjPropertyNode(nodeObj, selectedPropertyName, nodeParent);
-                        newNode.createPropertyTableModel(grid,jBreadCrumbBar);
-                    end
+                jSpinnerIcon.start();
+                
+                if(isobject(nodeObj) && numel(nodeObj) == 1)
+                    newNode = ScalarObjPropertyNode(nodeObj, selectedPropertyName, nodeParent);
+                    newNode.createPropertyTableModel(grid,jBreadCrumbBar,jSpinnerIcon);
+                elseif(numel(nodeObj) > 1 && not(ischar(nodeObj)) && not(isstring(nodeObj)))
+                    newNode = ArrayObjPropertyNode(nodeObj, selectedPropertyName, nodeParent);
+                    newNode.createPropertyTableModel(grid,jBreadCrumbBar,jSpinnerIcon);
                 end
+                
+                jSpinnerIcon.stop();
             end
         end
                
-        function breadcrumbButtonPushCallback(src,evt,propNodeObjs,grid,jBreadCrumbBar)
+        function breadcrumbButtonPushCallback(src,evt,propNodeObjs,grid,jBreadCrumbBar,jSpinnerIcon)
             if(strcmpi(evt.getPropertyName(),'selectedPath'))
                 if(evt.getNewValue().getPathCount() < evt.getOldValue().getPathCount())
                     newNode = propNodeObjs(evt.getNewValue().getPathCount());                    
-                    newNode.createPropertyTableModel(grid,jBreadCrumbBar);
+                    newNode.createPropertyTableModel(grid,jBreadCrumbBar,jSpinnerIcon);
                 end
             end
         end
@@ -304,7 +309,6 @@ classdef (Abstract) AbstractObjPropertyNode < matlab.mixin.SetGet & matlab.mixin
             str = strjoin(menuStrs,'.');
             
             clipboard('copy',str);
-            disp(str);
         end
     end
 end

@@ -226,7 +226,7 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
                     stateLog.appendNonSeqEvtsState(obj.nonSeqEvts.copy(), evt);
                     
                     %execute plugins that occur after event
-                    obj.lvdData.plugins.executePluginsBeforeEvent(stateLog, evt);
+                    obj.lvdData.plugins.executePluginsAfterEvent(stateLog, evt);
                     
 %                     evtTime = toc(ttt);
 %                     fprintf('Duration to execute Event %u: %0.3f\n', i, evtTime);
