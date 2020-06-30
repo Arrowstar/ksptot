@@ -26,6 +26,10 @@ classdef ScalarObjPropertyNode < AbstractObjPropertyNode
                 objPropName = propertyList{i};
                 objProp = obj.nodeObj.(objPropName);
                 
+                if(isa(objProp,'LvdPluginSet'))
+                    continue;
+                end
+                
                 desc = sprintf('Type: %s', ...
                     class(objProp));
                 

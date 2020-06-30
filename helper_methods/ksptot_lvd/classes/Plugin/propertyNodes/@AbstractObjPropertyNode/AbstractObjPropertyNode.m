@@ -285,7 +285,7 @@ classdef (Abstract) AbstractObjPropertyNode < matlab.mixin.SetGet & matlab.mixin
                 
                 jSpinnerIcon.start();
                 
-                if(isobject(nodeObj) && numel(nodeObj) == 1)
+                if(isobject(nodeObj) && numel(nodeObj) == 1 && not(isa(nodeObj,'LvdPluginSet')))
                     newNode = ScalarObjPropertyNode(nodeObj, selectedPropertyName, nodeParent);
                     newNode.createPropertyTableModel(grid,jBreadCrumbBar,jSpinnerIcon);
                 elseif(numel(nodeObj) > 1 && not(ischar(nodeObj)) && not(isstring(nodeObj)))
