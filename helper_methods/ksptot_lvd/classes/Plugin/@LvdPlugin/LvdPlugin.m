@@ -21,10 +21,11 @@ classdef LvdPlugin < matlab.mixin.SetGet
         id(1,1) double
     end
     
-    properties(Constant)
+    properties(Constant, Access=private)
         badWords(1,:) cell = {'rmdir', 'delete', 'copyfile', 'movefile', 'dos', ...
                               'unix', 'system', 'perl', 'winopen', '!', 'load', ...
-                              'importdata', 'uiimport', 'matfile'}
+                              'importdata', 'uiimport', 'matfile', 'input', 'inputdlg', ...
+                              'inputname'}
     end
     
     methods
@@ -64,6 +65,12 @@ classdef LvdPlugin < matlab.mixin.SetGet
                     lvdData.validation.outputs(end+1) = LaunchVehicleDataValidationError(errStr);
                 end
             end
+        end
+    end
+    
+    methods(Static)
+        function badWords = getDisallowedStrings()
+            badWords = LvdPlugin.badWords;
         end
     end
 end

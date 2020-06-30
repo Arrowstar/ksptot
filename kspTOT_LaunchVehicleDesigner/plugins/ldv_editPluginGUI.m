@@ -97,7 +97,7 @@ function handles = populateGUI(lvdData, handles)
     handles.functionInputSigCombo.String = listBoxStr;
     functionInputSigCombo_Callback(handles.functionInputSigCombo, [], handles);
     
-    quotedwords = cellfun(@(c) sprintf('"%s"', c), LvdPlugin.badWords, 'UniformOutput',false);
+    quotedwords = cellfun(@(c) sprintf('"%s"', c), LvdPlugin.getDisallowedStrings(), 'UniformOutput',false);
     wordList = grammaticalList(quotedwords);
     handles.codeBadWordsLabel.TooltipString = sprintf('%s', wordList);
     
