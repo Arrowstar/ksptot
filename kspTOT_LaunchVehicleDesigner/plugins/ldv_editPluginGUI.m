@@ -83,6 +83,7 @@ function handles = populateGUI(lvdData, handles)
         enableDisableIndividualPluginElements(false, handles);
         handles.pluginNameText.String = 'No Plugin Selected';
         handles.pluginDescText.String = '';
+        plugin = LvdPlugin.empty(1,0);
     end
     
     syntaxLblPos = handles.functionInputSigLbl.Position;
@@ -94,8 +95,8 @@ function handles = populateGUI(lvdData, handles)
     handles.jFuncInputSynLbl = jFuncInputSynLbl;
     
     listBoxStr = PluginFunctionInputSignatureEnum.getListBoxStr();
-    handles.functionInputSigCombo.String = listBoxStr;
-    functionInputSigCombo_Callback(handles.functionInputSigCombo, [], handles);
+    handles.functionInputSigCombo.String = listBoxStr;   
+    setContextComboAccordingToSelectedLocations(plugin, handles);
     
     quotedwords = cellfun(@(c) sprintf('"%s"', c), LvdPlugin.getDisallowedStrings(), 'UniformOutput',false);
     wordList = grammaticalList(quotedwords);
@@ -215,6 +216,29 @@ function selPlugin = getSelectedPlugin(handles)
 function jCodePaneCallback(jObject, jEventData, handles)
     selPlugin = getSelectedPlugin(handles);
     selPlugin.pluginCode = jObject.getText();
+    
+    
+function setContextComboAccordingToSelectedLocations(plugin, handles)
+    if(not(isempty(plugin)))
+        enum = [];
+        if(plugin.execBeforePropTF)
+            enum = PluginFunctionInputSignatureEnum.BeforeProp;
+        elseif(plugin.execBeforeEventsTF)
+            enum = PluginFunctionInputSignatureEnum.BeforeEvents;
+        elseif(plugin.execAfterTimeStepsTF)
+            enum = PluginFunctionInputSignatureEnum.AfterTimeStep;
+        elseif(plugin.execAfterEventsTF)
+            enum = PluginFunctionInputSignatureEnum.AfterEvents;
+        elseif(plugin.execAfterPropTF)
+            enum = PluginFunctionInputSignatureEnum.AfterProp;
+        end
+        
+        if(not(isempty(enum)))
+            ind = PluginFunctionInputSignatureEnum.getIndForName(enum.name);
+            handles.functionInputSigCombo.Value = ind;
+        end
+    end    
+    functionInputSigCombo_Callback(handles.functionInputSigCombo, [], handles);
     
     % --- Outputs from this function are returned to the command line.
 function varargout = ldv_editPluginGUI_OutputFcn(hObject, eventdata, handles)
@@ -413,6 +437,8 @@ function pluginsListbox_Callback(hObject, eventdata, handles)
     enableDisableIndividualPluginElements(true, handles);
     setupIndividualPluginUiElements(lvdData, selPlugin, handles);
     setDeletePluginEnable(lvdData, handles);
+    
+    setContextComboAccordingToSelectedLocations(selPlugin, handles);
     
     % --- Executes during object creation, after setting all properties.
 function pluginsListbox_CreateFcn(hObject, eventdata, handles)
