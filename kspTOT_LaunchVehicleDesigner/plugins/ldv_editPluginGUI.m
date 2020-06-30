@@ -260,7 +260,41 @@ function showLvdDataStructButton_Callback(hObject, eventdata, handles)
     % handles    structure with handles and user data (see GUIDATA)
     lvdData = getappdata(handles.ldv_editPluginGUI,'lvdData');
     
-    hFig = lvd_dataExplorerGUI(lvdData);
+    contents = cellstr(get(handles.functionInputSigCombo,'String'));
+    nameStr = contents{get(handles.functionInputSigCombo,'Value')};
+    sigEnum = PluginFunctionInputSignatureEnum.getEnumForListboxStr(nameStr);
+    
+    inputNames = {'lvdData', 'stateLog', 'event', 'execLoc', 't', 'y', 'flag'};
+    switch sigEnum
+        case PluginFunctionInputSignatureEnum.BeforeProp
+            stateLog = lvdData.stateLog;
+            inputData = {lvdData, stateLog, [], LvdPluginExecLocEnum.BeforeProp, [],[],[]};
+            
+        case PluginFunctionInputSignatureEnum.BeforeEvents
+            stateLog = lvdData.stateLog;
+            event = lvdData.script.evts(1);
+            inputData = {lvdData, stateLog, event, LvdPluginExecLocEnum.BeforeEvent, [],[],[]};
+            
+        case PluginFunctionInputSignatureEnum.AfterTimeStep
+            event = lvdData.script.evts(1);
+            [t,y] = lvdData.initialState.getFirstOrderIntegratorStateRepresentation();
+            flag = 'init';
+            inputData = {lvdData, [], event, LvdPluginExecLocEnum.AfterTimestep, t,y,flag};
+            
+        case PluginFunctionInputSignatureEnum.AfterEvents
+            stateLog = lvdData.stateLog;
+            event = lvdData.script.evts(1);
+            inputData = {lvdData, stateLog, event, LvdPluginExecLocEnum.AfterEvent, [],[],[]};
+            
+        case PluginFunctionInputSignatureEnum.AfterProp
+            stateLog = lvdData.stateLog;
+            inputData = {lvdData, stateLog, [], LvdPluginExecLocEnum.AfterProp, [],[],[]};
+            
+        otherwise
+            error('Unknown plugin function input signature: %s', sigEnum);
+    end
+    
+    hFig = lvd_dataExplorerGUI(inputData, inputNames);
     setappdata(handles.ldv_editPluginGUI,'lvdCodeExplorerFig',hFig);
     
     % --- Executes on button press in execBeforePropCheckbox.
@@ -543,8 +577,8 @@ function enablePluginsCheckbox_Callback(hObject, eventdata, handles)
     
     if(value)
         hObject.BackgroundColor = [1 0 0];
-        hObject.TooltipString = 'Plugins enabled.  Caution: plugins are capable of corupting LVD data files.';
+        hObject.TooltipString = 'Plugins are enabled and will execute.  Caution: plugins are capable of corupting LVD data files.';
     else
         hObject.BackgroundColor = [240 240 240]/255;
-        hObject.TooltipString = 'Plugins disabled.';
+        hObject.TooltipString = 'Plugins are disabled and will not execute.';
     end

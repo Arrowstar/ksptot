@@ -14,33 +14,25 @@ classdef ScalarObjPropertyNode < AbstractObjPropertyNode
             obj.nodeObj = nodeObj;
             obj.nodeName = nodeName;
             obj.nodeParent = nodeParent;
-        end             
+        end
         
         function createPropertyTableModel(obj, grid, jBreadCrumbBar, jSpinnerIcon)
             list = java.util.ArrayList();
-            
-%             mco = metaclass(obj.nodeObj);
-%             propertyList = mco.PropertyList;
             
             propertyList = properties(obj.nodeObj);
             
             category = obj.nodeName;
             for(i=1:length(propertyList))
-%                 propertyListItem = propertyList(i);
                 objPropName = propertyList{i};
-
-%                 if(propertyListItem.Dependent == 0 && strcmpi(propertyListItem.GetAccess,'public') && strcmpi(propertyListItem.SetAccess,'public'))
-%                     objPropName = propertyListItem.Name;
-                    objProp = obj.nodeObj.(objPropName);
-
-                    desc = sprintf('Type: %s', ...
-                                   class(objProp));
-                    
-                    [type, value] = AbstractObjPropertyNode.getTypeOfObject(objProp);
-                    propNode = AbstractObjPropertyNode.createNewPropertyNode(value, objPropName, objPropName, type, desc, [], category);
-
-                    list.add(propNode);
-%                 end
+                objProp = obj.nodeObj.(objPropName);
+                
+                desc = sprintf('Type: %s', ...
+                    class(objProp));
+                
+                [type, value] = AbstractObjPropertyNode.getTypeOfObject(objProp);
+                propNode = AbstractObjPropertyNode.createNewPropertyNode(value, objPropName, objPropName, type, desc, [], category);
+                
+                list.add(propNode);
             end
             
             model = com.jidesoft.grid.PropertyTableModel(list);
@@ -56,6 +48,10 @@ classdef ScalarObjPropertyNode < AbstractObjPropertyNode
         
         function str = getCodeStr(obj)
             str = obj.nodeName;
+        end
+        
+        function tf = useInObjPropBreadcrumbCopy(obj)
+            tf = true;
         end
     end
 end

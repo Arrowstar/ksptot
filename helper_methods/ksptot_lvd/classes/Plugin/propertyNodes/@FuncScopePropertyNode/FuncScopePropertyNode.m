@@ -1,44 +1,39 @@
-classdef ArrayObjPropertyNode < AbstractObjPropertyNode
-    %ScalarObjPropertyNode Summary of this class goes here
+classdef FuncScopePropertyNode < AbstractObjPropertyNode
+    %FuncScopePropertyNode Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
-        nodeObj
-        nodeName(1,:) char
+        nodeObj(1,:) cell = {};
+        nodeObjsNames(1,:) cell = {};
+        
+        nodeName(1,:) char = 'Function Scope';
         
         nodeParent(1,:) AbstractObjPropertyNode = AbstractObjPropertyNode.empty(1,0)
     end
     
     methods
-        function obj = ArrayObjPropertyNode(nodeObj, nodeName, nodeParent)
+        function obj = FuncScopePropertyNode(nodeObj, nodeObjsNames)
             obj.nodeObj = nodeObj;
-            obj.nodeName = nodeName;
-            obj.nodeParent = nodeParent;
+            obj.nodeObjsNames = nodeObjsNames;
         end
-                
+        
         function createPropertyTableModel(obj, grid, jBreadCrumbBar, jSpinnerIcon)
             list = java.util.ArrayList();
-                        
+            
+            objs = obj.nodeObj;
+            
             category = obj.nodeName;
-            sizeOfObj = size(obj.nodeObj);
-            for(i=1:numel(obj.nodeObj))
-                nodeObjItem = obj.nodeObj(i);
+            for(i=1:length(objs))
+                nodeObject = objs{i};
                 
-                out = cell(size(sizeOfObj));
-                [out{:}] = ind2sub(sizeOfObj,i);
-                out = cell2mat(out);
-                
-                dimStr = regexprep(sprintf('%d,',out),{'^(.)',',$'},{'($1',')'});
-                
-                objPropName = sprintf('%s%s', obj.nodeName, dimStr);
-                objProp = nodeObjItem;
+                objPropName = obj.nodeObjsNames{i};
                 
                 desc = sprintf('Type: %s', ...
-                               class(objProp));
-
-                [type, value] = AbstractObjPropertyNode.getTypeOfObject(objProp);
+                    class(nodeObject));
+                
+                [type, value] = AbstractObjPropertyNode.getTypeOfObject(nodeObject);
                 propNode = AbstractObjPropertyNode.createNewPropertyNode(value, objPropName, objPropName, type, desc, [], category);
-
+                
                 list.add(propNode);
             end
             
@@ -58,7 +53,12 @@ classdef ArrayObjPropertyNode < AbstractObjPropertyNode
         end
         
         function tf = useInObjPropBreadcrumbCopy(obj)
-            tf = true;
+            tf = false;
         end
     end
 end
+
+function out = getVarName(var)
+    out = inputname(1);
+end
+

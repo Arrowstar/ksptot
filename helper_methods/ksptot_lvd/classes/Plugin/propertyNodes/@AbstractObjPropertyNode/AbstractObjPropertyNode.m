@@ -6,6 +6,11 @@ classdef (Abstract) AbstractObjPropertyNode < matlab.mixin.SetGet & matlab.mixin
         str = getCodeStr(obj)
     end
     
+    methods(Abstract)
+        createPropertyTableModel(obj, grid, jBreadCrumbBar, jSpinnerIcon)
+        tf = useInObjPropBreadcrumbCopy(obj)
+    end
+    
     methods
         function createBreadcrumbs(obj, grid, jBreadCrumbBar, jSpinnerIcon)
             hBreadcrumbBar = handle(jBreadCrumbBar, 'CallbackProperties');
@@ -259,7 +264,7 @@ classdef (Abstract) AbstractObjPropertyNode < matlab.mixin.SetGet & matlab.mixin
                 nodeObj = [];
                 if(numel(nodeParentObj) == 1 && isprop(nodeParentObj,selectedPropertyName))
                     nodeObj = nodeParentObj.(selectedPropertyName);
-                elseif(numel(nodeParentObj) > 1)
+                elseif(numel(nodeParentObj) > 1 && not(iscell(nodeParentObj)))
                     out = regexp(selectedPropertyName,'[\w+]\((\d+\,+.*\d+)\)','tokens');
                     if(numel(out) == 1 && numel(out{1}) == 1)
                         C=strsplit(out{1}{1},',');
@@ -268,6 +273,13 @@ classdef (Abstract) AbstractObjPropertyNode < matlab.mixin.SetGet & matlab.mixin
                         ind = sub2ind(size(nodeParentObj),C{:});
                         
                         nodeObj = nodeParentObj(ind);
+                    end
+                elseif(iscell(nodeParentObj))
+                    strFindOut = strfind(nodeParent.nodeObjsNames,selectedPropertyName);
+                    for(i=1:length(strFindOut))
+                        if(strFindOut{i} == 1)
+                            nodeObj = nodeParentObj{i};
+                        end
                     end
                 end
                 
@@ -298,6 +310,10 @@ classdef (Abstract) AbstractObjPropertyNode < matlab.mixin.SetGet & matlab.mixin
             menuStrs = {};
             for(i=1:length(propNodeObjs))
                 nextNode = propNodeObjs(i);
+                
+                if(nextNode.useInObjPropBreadcrumbCopy() == false)
+                    continue;
+                end
                 
                 if(isa(nextNode,'ArrayObjPropertyNode') && i<length(propNodeObjs))
                     continue;
