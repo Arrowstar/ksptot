@@ -107,7 +107,7 @@ function handles = populateGUI(lvdData, handles)
     
     setDeletePluginEnable(lvdData, handles);
     
-    %show the 'for all' and 'beta' symbols
+    %provide link to MATLAB documentation
     url = 'https://www.mathworks.com/help/';
     labelStr = sprintf('<html>Need help with the MATLAB language?  <a href="%s"> Visit the documentation.</a></html>',url);
     jLabel = javaObjectEDT('javax.swing.JLabel',labelStr);
