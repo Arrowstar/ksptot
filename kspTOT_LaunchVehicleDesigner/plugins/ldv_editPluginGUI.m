@@ -22,7 +22,7 @@ function varargout = ldv_editPluginGUI(varargin)
     
     % Edit the above text to modify the response to help ldv_editPluginGUI
     
-    % Last Modified by GUIDE v2.5 29-Jun-2020 20:55:51
+    % Last Modified by GUIDE v2.5 30-Jun-2020 22:07:03
     
     % Begin initialization code - DO NOT EDIT
     gui_Singleton = 1;
@@ -104,6 +104,8 @@ function handles = populateGUI(lvdData, handles)
     
     handles.enablePluginsCheckbox.Value = double(lvdData.plugins.enablePlugins);
     enablePluginsCheckbox_Callback(handles.enablePluginsCheckbox, [], handles);
+    
+    setDeletePluginEnable(lvdData, handles);
     
 function setupIndividualPluginUiElements(lvdData, plugin, handles)
     handles.jCodePane.setText(plugin.pluginCode);
@@ -199,9 +201,12 @@ function setDeletePluginEnable(lvdData, handles)
     
     if(numPlugins > 0)
         handles.deletePluginButton.Enable = 'on';
+        handles.savePluginsButton.Enable = 'on';
     else
         handles.deletePluginButton.Enable = 'off';
+        handles.savePluginsButton.Enable = 'off';
     end
+    
     
 function selPlugin = getSelectedPlugin(handles)
     lvdData = getappdata(handles.ldv_editPluginGUI,'lvdData');
@@ -607,4 +612,90 @@ function enablePluginsCheckbox_Callback(hObject, eventdata, handles)
     else
         hObject.BackgroundColor = [240 240 240]/255;
         hObject.TooltipString = 'Plugins are disabled and will not execute.';
+    end
+
+
+% --- Executes on button press in savePluginsButton.
+function savePluginsButton_Callback(hObject, eventdata, handles)
+% hObject    handle to savePluginsButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.ldv_editPluginGUI,'lvdData');
+    pluginsArr = lvdData.plugins.getPluginsArray();
+    
+    numPlugins = lvdData.plugins.getNumPlugins();
+    if(numPlugins >= 1)
+        listboxStr = lvdData.plugins.getListboxStr();
+
+        [Selection,ok] = listdlgARH('ListString',listboxStr, ...
+                                    'SelectionMode','multiple', ...
+                                    'InitialValue', [1:numPlugins], ...
+                                    'Name','Save Plugins', ...
+                                    'PromptString','Select the plugins to save to file:');
+        
+        if(ok == 1)
+            storedPlugins = pluginsArr(Selection); %#ok<NASGU>
+            
+            [FileName,PathName] = uiputfile({'*.mat','KSP TOT Launch Vehicle Designer Plugins (*.mat)'},...
+                                            'Save Launch Vehicle Designer Plugins',...
+                                            'plugins.mat');
+                                        
+            if(ischar(FileName) && ischar(PathName))
+                filePath = [PathName,FileName];
+            else
+                return;
+            end
+            
+            try
+                save(filePath,'storedPlugins');
+            catch
+                errordlg('There was an error attempting to save the plugins MAT file.  Message: %s', ME.message);
+            end
+        else
+            return;
+        end
+    end
+
+% --- Executes on button press in loadPluginsButton.
+function loadPluginsButton_Callback(hObject, eventdata, handles)
+% hObject    handle to loadPluginsButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.ldv_editPluginGUI,'lvdData');
+    origNumPlugins = lvdData.plugins.getNumPlugins();
+    
+    [FileName,PathName] = uigetfile({'*.mat','KSP TOT Launch Vehicle Designer Plugins (*.mat)'},...
+                                    'Load Launch Vehicle Designer Plugins',...
+                                    'plugins.mat');
+                               
+	filePath = [PathName,FileName];
+    
+    if(ischar(filePath))
+        try
+            load(filePath); %#ok<LOAD>
+        catch ME
+            errordlg('There was an error attempting to load the plugins MAT file.  Message: %s', ME.message);
+            
+            return;
+        end
+        
+        if(exist('storedPlugins','var') && length(storedPlugins) >= 1)
+            for(i=1:length(storedPlugins))
+                lvdData.plugins.addPlugin(storedPlugins(i));
+            end
+                       
+            pluginListboxStr = lvdData.plugins.getListboxStr();
+            handles.pluginsListbox.String = pluginListboxStr;
+            
+            if(origNumPlugins == 0)
+                handles.pluginsListbox.Value = 1;
+
+                selPlugin = getSelectedPlugin(handles);
+                setupIndividualPluginUiElements(lvdData, selPlugin, handles);
+                setContextComboAccordingToSelectedLocations(selPlugin, handles);
+            end
+
+            enableDisableIndividualPluginElements(true, handles);
+            setDeletePluginEnable(lvdData, handles);
+        end
     end

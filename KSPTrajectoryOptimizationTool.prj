@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.ezdeploy" plugin-version="1.0">
-  <configuration build-checksum="1417225882" file="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\KSPTrajectoryOptimizationTool.prj" location="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool" name="KSPTrajectoryOptimizationTool" preferred-package-location="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\deploy\KSPTrajectoryOptimizationTool\for_redistribution" preferred-package-type="package.type.exe" target="target.ezdeploy.standalone" target-name="Application Compiler">
+  <configuration build-checksum="3833716777" file="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\KSPTrajectoryOptimizationTool.prj" location="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool" name="KSPTrajectoryOptimizationTool" preferred-package-location="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\deploy\KSPTrajectoryOptimizationTool\for_redistribution" preferred-package-type="package.type.exe" target="target.ezdeploy.standalone" target-name="Application Compiler">
     <param.appname>KSPTrajectoryOptimizationTool</param.appname>
     <param.icon>${PROJECT_ROOT}\KSPTrajectoryOptimizationTool_resources\icon.ico</param.icon>
     <param.icons>
@@ -258,6 +258,8 @@
       <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\optimization\optimizer\lvd_editPatternSearchOptionsGUI.m</file>
       <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\optimization\optimizer\lvd_finiteDiffOptionsGUI.m</file>
       <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\optimization\optimizer\lvd_OptimizerSelectionGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\plugins\ldv_editPluginGUI.m</file>
+      <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\plugins\lvd_dataExplorerGUI.m</file>
       <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\propagation\integration\lvd_builtInIntegratorOptionsGUI.m</file>
       <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner\propagation\integration\lvd_fixedStepSizeIntegratorOptionsGUI.m</file>
       <file>${PROJECT_ROOT}\kspTOT_VehicleSizer\vs_mainGUI.m</file>

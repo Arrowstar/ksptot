@@ -32,6 +32,10 @@ classdef LvdPluginSet < matlab.mixin.SetGet
             end
         end
         
+        function plugins = getPluginsArray(obj)
+            plugins = obj.plugins;
+        end
+        
         function numPlugins = getNumPlugins(obj)
             numPlugins = length(obj.plugins);
         end
