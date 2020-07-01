@@ -107,6 +107,15 @@ function handles = populateGUI(lvdData, handles)
     
     setDeletePluginEnable(lvdData, handles);
     
+    %show the 'for all' and 'beta' symbols
+    url = 'https://www.mathworks.com/help/';
+    labelStr = sprintf('<html>Need help with the MATLAB language?  <a href="%s"> Visit the documentation.</a></html>',url);
+    jLabel = javaObjectEDT('javax.swing.JLabel',labelStr);
+    docPnlPos = handles.docLinkPanel.Position;
+    [hjLabel,~] = javacomponent(jLabel,[0, 0, docPnlPos(3)+1, docPnlPos(4)+1],handles.docLinkPanel);
+    hjLabel.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR));
+    set(hjLabel, 'MouseClickedCallback', @(h,e)web(url, '-browser'));
+    
 function setupIndividualPluginUiElements(lvdData, plugin, handles)
     handles.jCodePane.setText(plugin.pluginCode);
     
