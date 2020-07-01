@@ -33,7 +33,7 @@ classdef LvdPlugin < matlab.mixin.SetGet
             obj.id = rand();
         end
         
-        function executePlugin(obj, lvdData, stateLog, event, execLoc, t,y,flag)
+        function userData = executePlugin(obj, lvdData, stateLog, event, execLoc, t,y,flag, userData)
             tfBadWords = contains(obj.pluginCode,LvdPlugin.badWords,'IgnoreCase',true);
             
             inds = [];

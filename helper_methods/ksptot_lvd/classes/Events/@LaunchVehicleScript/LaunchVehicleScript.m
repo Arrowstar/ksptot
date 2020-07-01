@@ -179,6 +179,8 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
                 obj.nonSeqEvts = stateLog.getFinalNonSeqEvtsState().nonSeqEvts.copy();
             end
             
+            obj.lvdData.plugins.initializePlugins();
+            
             tPropTime = 0;
             if(~isempty(obj.evts))
                 %execute plugins that occur after propagation
