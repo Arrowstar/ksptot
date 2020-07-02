@@ -85,5 +85,9 @@ classdef LaunchVehicleDataValidation < matlab.mixin.SetGet
             end
             drawnow;
         end
+        
+        function clearOutputs(obj)
+            obj.outputs = AbstractLaunchVehicleValidatorOutput.empty(1,0);
+        end
     end
 end

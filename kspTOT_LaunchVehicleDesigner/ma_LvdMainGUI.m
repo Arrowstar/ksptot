@@ -123,7 +123,8 @@ function propagateScript(handles, lvdData, evtStartNum)
 %         profile('on','-detail','builtin', '-remove_overhead','on');
     end
     
-    lvdData.validation.outputs = AbstractLaunchVehicleValidatorOutput.empty(1,0);
+%     lvdData.validation.outputs = AbstractLaunchVehicleValidatorOutput.empty(1,0);
+    lvdData.validation.clearOutputs();
     
     isSparseOutput = lvdData.settings.isSparseOutput;
 

@@ -3,11 +3,11 @@ classdef PluginFunctionInputSignatureEnum < matlab.mixin.SetGet
     %   Detailed explanation goes here
     
     enumeration
-        BeforeProp('Before Propagation','function userData = executePlugin(lvdData, stateLog, [], LvdPluginExecLocEnum.BeforeProp, [],[],[], userData)')
-        BeforeEvents('Before Events','function userData = executePlugin(lvdData, stateLog, event, LvdPluginExecLocEnum.BeforeEvent, [],[],[], userData)');
-        AfterEvents('After Events','function userData = executePlugin(lvdData, stateLog, event, LvdPluginExecLocEnum.AfterEvent, [],[],[], userData)');
-        AfterProp('After Propagation','function userData = executePlugin(lvdData, stateLog, [], LvdPluginExecLocEnum.AfterProp, [],[],[], userData)');
-        AfterTimeStep('After Time Steps','function userData = executePlugin(lvdData, [], eventInitStateLogEntry, LvdPluginExecLocEnum.AfterTimestep, t,y,flag, userData)')
+        BeforeProp('Before Propagation','function userData = executePlugin(lvdData, stateLog, [], execLoc, [],[],[], userData)')
+        BeforeEvents('Before Events','function userData = executePlugin(lvdData, stateLog, event, execLoc, [],[],[], userData)');
+        AfterEvents('After Events','function userData = executePlugin(lvdData, stateLog, event, execLoc, [],[],[], userData)');
+        AfterProp('After Propagation','function userData = executePlugin(lvdData, stateLog, [], execLoc, [],[],[], userData)');
+        AfterTimeStep('After Time Steps','function userData = executePlugin(lvdData, [], eventInitStateLogEntry, execLoc, t,y,flag, userData)')
     end
     
     properties
