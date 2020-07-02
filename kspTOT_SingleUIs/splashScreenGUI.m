@@ -59,15 +59,15 @@ handles.output = hObject;
 guidata(hObject, handles);
 
 if isunix
-    rgb = imread('images/logo500px.jpg');
+    rgb = imread('./images/logo500px.jpg');
 else
-    rgb = imread('images\logo500px.jpg');
+    rgb = imread('.\images\logo500px.jpg');
 end
 image(rgb,'Parent',handles.logoAxes);
 axis off; 
 axis image;
 
-str = sprintf('Version: %s (R%s)\n(C) 2018 Arrowstar',getKSPTOTVersionNumStr(),version('-release'));
+str = sprintf('Version: %s (R%s)\n(C) 2020 Arrowstar',getKSPTOTVersionNumStr(),version('-release'));
 set(handles.versionCopyrightLabel,'String',str);
 
 set(handles.splashScreenGUI,'Name',['KSP Trajectory Optimization Tool ',getKSPTOTVersionNumStr()]);
