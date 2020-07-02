@@ -39,6 +39,11 @@ classdef CelestialBodyData < matlab.mixin.SetGet & dynamicprops
             end
         end
         
+        function bodyInfo = getBodyInfoById(obj, bodyId)
+            bodyInfo = obj.bodies([obj.bodies.id] == bodyId);
+            bodyInfo = bodyInfo(1);
+        end
+        
         %Override the following structure methods for backwards
         %compatibility with structure celBodyData
         function f = fields(obj)
