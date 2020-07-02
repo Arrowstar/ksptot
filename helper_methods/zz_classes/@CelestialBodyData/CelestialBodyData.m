@@ -4,6 +4,8 @@ classdef CelestialBodyData < matlab.mixin.SetGet & dynamicprops
     
     properties(Access=private)
         bodies(1,:) KSPTOT_BodyInfo
+        
+        bodyIdCacheArr(1,:) double = [];
     end
     
     methods
@@ -37,10 +39,13 @@ classdef CelestialBodyData < matlab.mixin.SetGet & dynamicprops
                     obj.bodies(i).celBodyData = obj;
                 end
             end
+            
+            obj.bodyIdCacheArr = [obj.bodies.id];
         end
         
         function bodyInfo = getBodyInfoById(obj, bodyId)
-            bodyInfo = obj.bodies([obj.bodies.id] == bodyId);
+%             arr = [obj.bodies.id];
+            bodyInfo = obj.bodies(obj.bodyIdCacheArr == bodyId);
             bodyInfo = bodyInfo(1);
         end
         
@@ -62,6 +67,12 @@ classdef CelestialBodyData < matlab.mixin.SetGet & dynamicprops
         
         function tf = isfield(obj,field)
             tf = isprop(obj,field);
+        end
+    end
+    
+    methods(Static)
+        function obj = loadobj(obj)
+            obj.bodyIdCacheArr = [obj.bodies.id];
         end
     end
 end
