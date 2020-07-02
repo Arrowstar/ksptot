@@ -9,7 +9,11 @@ function datapt = ma_GALongLatAltTasks(stateLogEntry, subTask, celBodyData)
     rVect = stateLogEntry(2:4)';
     vVect = stateLogEntry(5:7)';
     
-    [lat, long, alt, ~, horzVel, vertVel, rVectECEF, vVectECEF] = getLatLongAltFromInertialVect(utSec, rVect, bodyInfo, vVect);
+    if(strcmpi(subTask,'alt'))
+        alt = norm(rVect) - bodyInfo.radius;
+    else
+        [lat, long, alt, ~, horzVel, vertVel, rVectECEF, vVectECEF] = getLatLongAltFromInertialVect(utSec, rVect, bodyInfo, vVect);
+    end
     
     switch subTask
         case 'long'
