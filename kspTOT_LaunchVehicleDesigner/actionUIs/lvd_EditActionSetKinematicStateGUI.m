@@ -90,6 +90,7 @@ function populateGUI(handles, action, lvdData)
     
     handles.refFrameTypeCombo.String = ReferenceFrameEnum.getListBoxStr();
     handles.refFrameTypeCombo.Value = ReferenceFrameEnum.getIndForName(orbitModel.frame.typeEnum.name);
+    handles.setFrameOptionsButton.TooltipString = sprintf('Current Frame: %s', orbitModel.frame.getNameStr()); 
     
     handles.elementSetCombo.String = ElementSetEnum.getListBoxStr();
     [value, elemSetEnum] = ElementSetEnum.getIndForName(orbitModel.typeEnum.name);
@@ -303,12 +304,12 @@ function varargout = lvd_EditActionSetKinematicStateGUI_OutputFcn(hObject, event
         selElemSet = contents{get(handles.elementSetCombo,'Value')};
         elemSetEnum = ElementSetEnum.getEnumForListboxStr(selElemSet);
         
-        contents = cellstr(get(handles.refFrameTypeCombo,'String'));
-        selFrameType = contents{get(handles.refFrameTypeCombo,'Value')};
-        refFrameEnum = ReferenceFrameEnum.getEnumForListboxStr(selFrameType);
+%         contents = cellstr(get(handles.refFrameTypeCombo,'String'));
+%         selFrameType = contents{get(handles.refFrameTypeCombo,'Value')};
+%         refFrameEnum = ReferenceFrameEnum.getEnumForListboxStr(selFrameType);
         
         time = str2double(handles.utText.String);
-        bodyInfo = getSelectedBodyInfo(handles);
+%         bodyInfo = getSelectedBodyInfo(handles);
         
         orbit1Elem = str2double(handles.orbit1Text.String);
         orbit2Elem = str2double(handles.orbit2Text.String);
@@ -317,16 +318,19 @@ function varargout = lvd_EditActionSetKinematicStateGUI_OutputFcn(hObject, event
         orbit5Elem = str2double(handles.orbit5Text.String);
         orbit6Elem = str2double(handles.orbit6Text.String);
         
-        switch refFrameEnum
-            case ReferenceFrameEnum.BodyCenteredInertial
-                frame = BodyCenteredInertialFrame(bodyInfo, celBodyData);
-                
-            case ReferenceFrameEnum.BodyFixedRotating
-                frame = BodyFixedFrame(bodyInfo, celBodyData);
-                
-            otherwise
-                error('Unknown reference frame type: %s', class(refFrameEnum));                
-        end
+        curElemSet = getappdata(handles.lvd_EditActionSetKinematicStateGUI,'curElemSet');
+        frame = curElemSet.frame;
+        
+%         switch refFrameEnum
+%             case ReferenceFrameEnum.BodyCenteredInertial
+%                 frame = BodyCenteredInertialFrame(bodyInfo, celBodyData);
+%                 
+%             case ReferenceFrameEnum.BodyFixedRotating
+%                 frame = BodyFixedFrame(bodyInfo, celBodyData);
+%                 
+%             otherwise
+%                 error('Unknown reference frame type: %s', class(refFrameEnum));                
+%         end
         
         switch elemSetEnum
             case ElementSetEnum.CartesianElements
@@ -804,17 +808,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-function updateStateDueToFrameChange(handles, oldBody)
+function updateStateDueToFrameChange(handles, newFrame)
     lvdData = getappdata(handles.lvd_EditActionSetKinematicStateGUI,'lvdData');
     celBodyData = lvdData.celBodyData;
 
     curElemSet = getappdata(handles.lvd_EditActionSetKinematicStateGUI,'curElemSet');
-    
-    if(isempty(oldBody))
-        bodyInfo = getSelectedBodyInfo(handles);
-    else
-        bodyInfo = oldBody;
-    end
     
     contents = cellstr(get(handles.refFrameTypeCombo,'String'));
     selFrameType = contents{get(handles.refFrameTypeCombo,'Value')};
@@ -822,10 +820,40 @@ function updateStateDueToFrameChange(handles, oldBody)
     
     switch refFrameEnum
         case ReferenceFrameEnum.BodyCenteredInertial
+            if(isempty(newFrame))
+                bodyInfo = getSelectedBodyInfo(handles);
+            else
+                bodyInfo = newFrame.getOriginBody();
+            end            
+            
             newFrame = BodyCenteredInertialFrame(bodyInfo, celBodyData);
 
         case ReferenceFrameEnum.BodyFixedRotating
+            if(isempty(newFrame))
+                bodyInfo = getSelectedBodyInfo(handles);
+            else
+                bodyInfo = newFrame.getOriginBody();
+            end
+            
             newFrame = BodyFixedFrame(bodyInfo, celBodyData);
+            
+        case ReferenceFrameEnum.TwoBodyRotating            
+            if(isempty(newFrame))
+                bodyInfo = getSelectedBodyInfo(handles);
+                if(not(isempty(bodyInfo.childrenBodyInfo)))
+                    primaryBody = bodyInfo;
+                    secondaryBody = bodyInfo.childrenBodyInfo(1);
+                else
+                    primaryBody = bodyInfo.getParBodyInfo();
+                    secondaryBody = bodyInfo;
+                end
+                
+                originPt = TwoBodyRotatingFrameOriginEnum.Primary;
+                
+                newFrame = TwoBodyRotatingFrame(primaryBody, secondaryBody, originPt, celBodyData);
+            else
+                newFrame = TwoBodyRotatingFrame(newFrame.primaryBodyInfo, newFrame.secondaryBodyInfo, newFrame.originPt, celBodyData);
+            end
 
         otherwise
             error('Unknown reference frame type: %s', class(refFrameEnum));                
@@ -852,6 +880,8 @@ function updateStateDueToFrameChange(handles, oldBody)
         updateValuesInState(handles);
         msgbox('Error converting state to new frame.','Conversion Error','error');
     end
+    
+    handles.setFrameOptionsButton.TooltipString = sprintf('Current Frame: %s', newFrame.getNameStr()); 
     
 function updateValuesInState(handles)
     curElemSet = getappdata(handles.lvd_EditActionSetKinematicStateGUI,'curElemSet');
@@ -917,7 +947,7 @@ function refFrameTypeCombo_Callback(hObject, eventdata, handles)
 
 % Hints: contents = cellstr(get(hObject,'String')) returns refFrameTypeCombo contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from refFrameTypeCombo
-    updateStateDueToFrameChange(handles, KSPTOT_BodyInfo.empty(1,0));
+    updateStateDueToFrameChange(handles, AbstractReferenceFrame.empty(1,0));
 
 % --- Executes during object creation, after setting all properties.
 function refFrameTypeCombo_CreateFcn(hObject, eventdata, handles)
@@ -1618,7 +1648,7 @@ function getOrbitFromSFSFileContextMenu_Callback(hObject, eventdata, handles)
         
         curElemSet = getappdata(handles.lvd_EditInitialStateGUI,'curElemSet');
         curElemSet.frame.setOriginBody(bodyInfo);
-        updateStateDueToFrameChange(handles, KSPTOT_BodyInfo.empty(1,0));
+        updateStateDueToFrameChange(handles, AbstractReferenceFrame.empty(1,0));
         
 %         value = findValueFromComboBox(bodyInfo.name, handles.centralBodyCombo);
 %         set(handles.centralBodyCombo,'Value',value);
@@ -1660,7 +1690,7 @@ function getOrbitFromKSPTOTConnectContextMenu_Callback(hObject, eventdata, handl
         
         curElemSet = getappdata(handles.lvd_EditInitialStateGUI,'curElemSet');
         curElemSet.frame.setOriginBody(bodyInfo);
-        updateStateDueToFrameChange(handles, KSPTOT_BodyInfo.empty(1,0));
+        updateStateDueToFrameChange(handles, AbstractReferenceFrame.empty(1,0));
         
 %         value = findValueFromComboBox(bodyInfo.name, handles.centralBodyCombo);
 %         set(handles.centralBodyCombo,'Value',value);
@@ -1702,7 +1732,7 @@ function getOrbitFromKSPActiveVesselMenu_Callback(hObject, eventdata, handles)
         
         curElemSet = getappdata(handles.lvd_EditInitialStateGUI,'curElemSet');
         curElemSet.frame.setOriginBody(bodyInfo);
-        updateStateDueToFrameChange(handles, KSPTOT_BodyInfo.empty(1,0));
+        updateStateDueToFrameChange(handles, AbstractReferenceFrame.empty(1,0));
         
 %         value = findValueFromComboBox(bodyInfo.name, handles.centralBodyCombo);
 %         set(handles.centralBodyCombo,'Value',value);
@@ -1805,7 +1835,7 @@ function pasteOrbitFromClipboardMenu_Callback(hObject, eventdata, handles)
 	if(not(isempty(bodyInfo)))
         curElemSet = getappdata(handles.lvd_EditActionSetKinematicStateGUI,'curElemSet');
         curElemSet.frame.setOriginBody(bodyInfo);
-        updateStateDueToFrameChange(handles, KSPTOT_BodyInfo.empty(1,0));
+        updateStateDueToFrameChange(handles, AbstractReferenceFrame.empty(1,0));
 	end
 
 % --------------------------------------------------------------------
@@ -1965,7 +1995,7 @@ function setFrameOptionsButton_Callback(hObject, eventdata, handles)
     frame = curElemSet.frame;
     newFrame = frame.editFrameDialogUI();
     
-    updateStateDueToFrameChange(handles, newFrame.getOriginBody());
+    updateStateDueToFrameChange(handles, newFrame);
 
 
 % --- Executes on button press in inheritOtherStateElementsCheckbox.

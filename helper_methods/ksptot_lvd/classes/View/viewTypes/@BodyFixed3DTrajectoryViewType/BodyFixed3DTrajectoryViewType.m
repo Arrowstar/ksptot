@@ -77,7 +77,7 @@ classdef BodyFixed3DTrajectoryViewType < AbstractTrajectoryViewType
                     curMissionSegStr = num2str(1);
                     totalMissionSegStr = num2str(1);
                 otherwise
-                    error('Unknown trajectory view type when plotting trajectory: %s', viewProfile.trajViewType.name);
+                    error('Unknown trajectory view type when plotting trajectory: %s', viewProfile.frame.name);
             end
             
             eventsList = [];
@@ -95,10 +95,8 @@ classdef BodyFixed3DTrajectoryViewType < AbstractTrajectoryViewType
 
                 if(size(subStateLogs{i},1)>1)
                     showSoI = viewProfile.showSoIRadius;
-                    showChildBodies = viewProfile.showChildBodyOrbits;
-                    showChildMarker = viewProfile.showChildBodyMarkers;
                     showLongLatAnnotations = viewProfile.showLongLatAnnotations;
-                    [childrenHGs] = plotSubStateLog(subStateLogs{i}, prevSubStateLog, showSoI, showChildBodies, showChildMarker, showLongLatAnnotations, lvdData, celBodyData, dAxes);
+                    [childrenHGs] = plotSubStateLog(subStateLogs{i}, prevSubStateLog, showSoI, showLongLatAnnotations, lvdData, celBodyData, dAxes);
                     
                     minTime = min([minTime, min(subStateLogs{i}(:,1))]);
                     maxTime = max([maxTime, max(subStateLogs{i}(:,1))]);
@@ -154,7 +152,7 @@ classdef BodyFixed3DTrajectoryViewType < AbstractTrajectoryViewType
     end
 end
 
-function [childrenHGs] = plotSubStateLog(subStateLog, prevSubStateLog, showSoI, showChildBodies, showChildMarker, showLongLatAnnotations, lvdData, celBodyData, dAxes)    
+function [childrenHGs] = plotSubStateLog(subStateLog, prevSubStateLog, showSoI, showLongLatAnnotations, lvdData, celBodyData, dAxes)    
     if(isempty(subStateLog))
         childrenHGs = [];
         return;
@@ -223,9 +221,6 @@ function [childrenHGs] = plotSubStateLog(subStateLog, prevSubStateLog, showSoI, 
 end
 
 function plotBodyFixedTrajectory(bodyInfo, ut, xBF, yBF, zBF, plotLineColor, plotLineStyle, plotLineWidth, showLongLatAnnotations, dAxes)
-    r = 1.2*bodyInfo.radius;
-    rTxt = 1.3*bodyInfo.radius;
-
     if(showLongLatAnnotations)
         %draw longitude circle and text
         th = linspace(0, 2*pi, 100);

@@ -122,7 +122,7 @@ classdef LvdData < matlab.mixin.SetGet
             lvdData.optimizer = lvdOptim;
             
             %set up view profile
-            lvdData.viewSettings.selViewProfile.viewCentralBody = initBody;
+            lvdData.viewSettings.selViewProfile.frame = BodyCenteredInertialFrame(lvdData.initialState.centralBody, lvdData.celBodyData);
         end
         
         function initBody = getDefaultInitialBodyInfo(celBodyData)

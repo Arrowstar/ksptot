@@ -14,20 +14,15 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         minorGridColor(1,1) ColorSpecEnum = ColorSpecEnum.DarkGrey;
         gridTransparency(1,1) double = 0.15;
         
-        %trajectory options
+        %trajectory view options
         trajEvtsViewType(1,1) ViewEventsTypeEnum = ViewEventsTypeEnum.SoIChunk %either chunked by event/SoI or all
-        trajViewTypeEnum(1,1) ViewTypeEnum = ViewTypeEnum.Inertial3D;
-        
-        %if view all events
-        viewCentralBody KSPTOT_BodyInfo
-        
+        frame AbstractReferenceFrame
+                
         %body fixed options
         showLongLatAnnotations(1,1) logical = true;
         
         %SoI and child body options
         showSoIRadius(1,1) logical = false;
-        showChildBodyOrbits(1,1) logical = false;
-        showChildBodyMarkers(1,1) logical = false;
         bodiesToPlot(1,:) KSPTOT_BodyInfo = KSPTOT_BodyInfo.empty(1,0);
         
         %view properties (set by user indirectly through UI controls)
@@ -38,38 +33,16 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
     end
     
     properties(Access=private)
-        %View Types
-        inertialViewType(1,1) Inertial3DTrajectoryViewType = Inertial3DTrajectoryViewType();
-        bodyFixedViewType(1,1) BodyFixed3DTrajectoryViewType = BodyFixed3DTrajectoryViewType();
-        mercatorViewType(1,1) Mercator2DTrajectoryViewType = Mercator2DTrajectoryViewType();
-    end
-    
-    properties(Access=private,Dependent)
-        trajViewType AbstractTrajectoryViewType
+        generic3DTrajView(1,1) Generic3DTrajectoryViewType = Generic3DTrajectoryViewType();
     end
     
     methods
         function obj = LaunchVehicleViewProfile()           
-            obj.inertialViewType = Inertial3DTrajectoryViewType();
-            obj.bodyFixedViewType = BodyFixed3DTrajectoryViewType();
-            obj.mercatorViewType = Mercator2DTrajectoryViewType();
+            
         end
-        
-        function value = get.trajViewType(obj)
-            switch obj.trajViewTypeEnum
-                case ViewTypeEnum.Inertial3D
-                    value = obj.inertialViewType;
-                case ViewTypeEnum.BodyFixed3D
-                    value = obj.bodyFixedViewType;
-                case ViewTypeEnum.Mercator
-                    value = obj.mercatorViewType;
-                otherwise
-                    error('Unknown view type: %s', obj.trajViewTypeEnum.name);
-            end
-        end
-        
+                
         function plotTrajectory(obj, lvdData, handles)
-            obj.trajViewType.plotStateLog(obj.orbitNumToPlot, lvdData, obj, handles);
+            obj.generic3DTrajView.plotStateLog(obj.orbitNumToPlot, lvdData, obj, handles);
         end
         
         function createTrajectoryMarkerData(obj, subStateLogs, evts)

@@ -16,6 +16,7 @@ classdef LaunchVehicleViewSettings < matlab.mixin.SetGet
             
             newProfile = LaunchVehicleViewProfile();
             newProfile.name = 'Default LVD View Profile';
+            
             obj.viewProfiles(1) = newProfile;
             obj.selViewProfile = newProfile;
         end
@@ -94,8 +95,12 @@ classdef LaunchVehicleViewSettings < matlab.mixin.SetGet
             for(i=1:length(obj.viewProfiles))
                 profile = obj.viewProfiles(i);
                 
-                if(isempty(profile.viewCentralBody))
-                    profile.viewCentralBody = obj.lvdData.initialState.centralBody;
+%                 if(isempty(profile.viewCentralBody))
+%                     profile.viewCentralBody = obj.lvdData.initialState.centralBody;
+%                 end
+
+                if(isempty(profile.frame))
+                    profile.frame = BodyCenteredInertialFrame(obj.lvdData.initialState.centralBody, obj.lvdData.celBodyData);
                 end
             end
         end

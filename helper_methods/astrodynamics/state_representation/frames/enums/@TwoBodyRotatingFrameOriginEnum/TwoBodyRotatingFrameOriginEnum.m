@@ -1,12 +1,10 @@
-classdef ViewTypeEnum < matlab.mixin.SetGet
-    %ViewTypeEnum Summary of this class goes here
+classdef TwoBodyRotatingFrameOriginEnum < matlab.mixin.SetGet
+    %TwoBodyRotatingFrameOriginEnum Summary of this class goes here
     %   Detailed explanation goes here
     
     enumeration
-        Inertial3D('3D Inertial')
-        BodyFixed3D('3D Body Fixed')
-        TwoBodyRotating3D('3D Two-Body Rotating')
-        Mercator('2D Mercator Projection')
+        Primary('Primary Body')
+        Secondary('Secondary Body');
     end
     
     properties
@@ -14,20 +12,20 @@ classdef ViewTypeEnum < matlab.mixin.SetGet
     end
     
     methods
-        function obj = ViewTypeEnum(name)
+        function obj = TwoBodyRotatingFrameOriginEnum(name)
             obj.name = name;
         end
     end
     
     methods(Static)
         function listBoxStr = getListBoxStr()
-            m = enumeration('ViewTypeEnum');
+            m = enumeration('TwoBodyRotatingFrameOriginEnum');
             [~,I] = sort({m.name});
             listBoxStr = {m(I).name};
         end
         
         function [ind, enum] = getIndForName(name)
-            m = enumeration('ViewTypeEnum');
+            m = enumeration('TwoBodyRotatingFrameOriginEnum');
             [~,I] = sort({m.name});
             m = m(I);
             ind = find(ismember({m.name},name),1,'first');
@@ -35,9 +33,10 @@ classdef ViewTypeEnum < matlab.mixin.SetGet
         end
         
         function [enum, ind] = getEnumForListboxStr(nameStr)
-            m = enumeration('ViewTypeEnum');
+            m = enumeration('TwoBodyRotatingFrameOriginEnum');
             ind = find(ismember({m.name},nameStr),1,'first');
             enum = m(ind);
         end
     end
 end
+

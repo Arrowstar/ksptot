@@ -5,6 +5,7 @@ classdef ReferenceFrameEnum < matlab.mixin.SetGet
     enumeration
         BodyCenteredInertial('Body-Centered Inertial');
         BodyFixedRotating('Body-Fixed Rotating');
+        TwoBodyRotating('Two Body Rotating');
     end
     
     properties

@@ -65,7 +65,7 @@ classdef Inertial3DTrajectoryViewType < AbstractTrajectoryViewType
                     curMissionSegStr = num2str(1);
                     totalMissionSegStr = num2str(1);
                 otherwise
-                    error('Unknown trajectory view type when plotting trajectory: %s', viewProfile.trajViewType.name);
+                    error('Unknown trajectory view type when plotting trajectory: %s', viewProfile.frame.name);
             end
             
             eventsList = [];
@@ -83,9 +83,7 @@ classdef Inertial3DTrajectoryViewType < AbstractTrajectoryViewType
 
                 if(size(subStateLogs{i},1)>1)
                     showSoI = viewProfile.showSoIRadius;
-                    showChildBodies = viewProfile.showChildBodyOrbits;
-                    showChildMarker = viewProfile.showChildBodyMarkers;
-                    [childrenHGs] = plotSubStateLog(subStateLogs{i}, prevSubStateLog, showSoI, showChildBodies, showChildMarker, lvdData, celBodyData, dAxes);
+                    [childrenHGs] = plotSubStateLog(subStateLogs{i}, prevSubStateLog, showSoI, lvdData, celBodyData, dAxes);
                     
                     minTime = min([minTime, min(subStateLogs{i}(:,1))]);
                     maxTime = max([maxTime, max(subStateLogs{i}(:,1))]);
@@ -143,7 +141,7 @@ classdef Inertial3DTrajectoryViewType < AbstractTrajectoryViewType
     end
 end
 
-function [childrenHGs] = plotSubStateLog(subStateLog, prevSubStateLog, showSoI, showChildBodies, showChildMarker, lvdData, celBodyData, dAxes)    
+function [childrenHGs] = plotSubStateLog(subStateLog, prevSubStateLog, showSoI, lvdData, celBodyData, dAxes)    
     if(isempty(subStateLog))
         childrenHGs = [];
         return;

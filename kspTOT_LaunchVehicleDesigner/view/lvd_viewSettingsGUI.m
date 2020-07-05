@@ -22,7 +22,7 @@ function varargout = lvd_viewSettingsGUI(varargin)
     
     % Edit the above text to modify the response to help lvd_viewSettingsGUI
     
-    % Last Modified by GUIDE v2.5 04-Jul-2020 12:00:49
+    % Last Modified by GUIDE v2.5 05-Jul-2020 14:22:38
     
     % Begin initialization code - DO NOT EDIT
     gui_Singleton = 1;
@@ -71,7 +71,7 @@ function handles = populateGUI(viewSettings, handles)
     handles.viewProfilesListbox.Value = viewSettings.getIndOfSelectedProfile();
     
     celBodyData = viewSettings.lvdData.celBodyData;
-    populateBodiesCombo(celBodyData, handles.viewAllOriginCentralBodyCombo);
+    %     populateBodiesCombo(celBodyData, handles.viewAllOriginCentralBodyCombo);
     populateBodiesCombo(celBodyData, handles.bodiesToPlotListbox);
     
     profile = getSelectedProfile(handles);
@@ -86,8 +86,6 @@ function updateGuiForProfile(profile, handles)
     handles.setAsActiveProfileCheckbox.Value = viewSettings.isProfileActive(profile);
     
     handles.showSoICheckbox.Value = profile.showSoIRadius;
-    handles.showChildBodyOrbitsCheckbox.Value = profile.showChildBodyOrbits;
-    handles.showChildBodyMarkersCheckbox.Value = profile.showChildBodyMarkers;
     handles.showFixedFrameGridCheckbox.Value = profile.showLongLatAnnotations;
     
     handles.axesBackgroundColorCombo.String = ColorSpecEnum.getListboxStr();
@@ -107,13 +105,17 @@ function updateGuiForProfile(profile, handles)
     handles.evtsPlottingStyleCombo.String = ViewEventsTypeEnum.getListBoxStr();
     handles.evtsPlottingStyleCombo.Value = ViewEventsTypeEnum.getIndForName(profile.trajEvtsViewType.name);
     
-    handles.trajViewFrameCombo.String = ViewTypeEnum.getListBoxStr();
-    handles.trajViewFrameCombo.Value = ViewTypeEnum.getIndForName(profile.trajViewTypeEnum.name);
+    handles.trajViewFrameCombo.String = ReferenceFrameEnum.getListBoxStr();
+    handles.trajViewFrameCombo.Value = ReferenceFrameEnum.getIndForName(profile.frame.typeEnum.name);
+    handles.setFrameOptionsButton.TooltipString = sprintf('Current Frame: %s', profile.frame.getNameStr());
     
-    [~, sortedBodyInfo] = ma_getSortedBodyNames(celBodyData);
-    tf = cellfun(@(c) c == profile.viewCentralBody, sortedBodyInfo);
-    bInd = find(tf,1,'first');
-    handles.viewAllOriginCentralBodyCombo.Value = bInd;
+    %     handles.trajViewFrameCombo.String = ViewTypeEnum.getListBoxStr();
+    %     handles.trajViewFrameCombo.Value = ViewTypeEnum.getIndForName(profile.frameEnum.name);
+    
+        [~, sortedBodyInfo] = ma_getSortedBodyNames(celBodyData);
+    %     tf = cellfun(@(c) c == profile.viewCentralBody, sortedBodyInfo);
+    %     bInd = find(tf,1,'first');
+    %     handles.viewAllOriginCentralBodyCombo.Value = bInd;
     
     indsToSel = [];
     for(i=1:length(profile.bodiesToPlot))
@@ -177,7 +179,7 @@ function addViewProfileButton_Callback(hObject, eventdata, handles)
     % handles    structure with handles and user data (see GUIDATA)
     viewSettings = getappdata(handles.lvd_viewSettingsGUI,'viewSettings');
     newProfile = LaunchVehicleViewProfile();
-    newProfile.viewCentralBody = LvdData.getDefaultInitialBodyInfo(viewSettings.lvdData.celBodyData);
+    newProfile.frame = BodyCenteredInertialFrame(viewSettings.lvdData.initialState.centralBody, viewSettings.lvdData.celBodyData);
     viewSettings.addViewProfile(newProfile);
     
     handles.viewProfilesListbox.String = viewSettings.getListboxStr();
@@ -484,12 +486,43 @@ function trajViewFrameCombo_Callback(hObject, eventdata, handles)
     
     % Hints: contents = cellstr(get(hObject,'String')) returns trajViewFrameCombo contents as cell array
     %        contents{get(hObject,'Value')} returns selected item from trajViewFrameCombo
+    viewSettings = getappdata(handles.lvd_viewSettingsGUI,'viewSettings');
+    celBodyData = viewSettings.lvdData.celBodyData;
+    
     profile = getSelectedProfile(handles);
+    bodyInfo = profile.frame.getOriginBody();
     
-    contents = cellstr(get(hObject,'String'));
-    str = contents{get(hObject,'Value')};
+    contents = cellstr(get(handles.trajViewFrameCombo,'String'));
+    selFrameType = contents{get(handles.trajViewFrameCombo,'Value')};
+    refFrameEnum = ReferenceFrameEnum.getEnumForListboxStr(selFrameType);
     
-    profile.trajViewTypeEnum = ViewTypeEnum.getEnumForListboxStr(str);
+    switch refFrameEnum
+        case ReferenceFrameEnum.BodyCenteredInertial
+            newFrame = BodyCenteredInertialFrame(bodyInfo, celBodyData);
+            
+        case ReferenceFrameEnum.BodyFixedRotating
+            newFrame = BodyFixedFrame(bodyInfo, celBodyData);
+            
+        case ReferenceFrameEnum.TwoBodyRotating
+            if(not(isempty(bodyInfo.childrenBodyInfo)))
+                primaryBody = bodyInfo;
+                secondaryBody = bodyInfo.childrenBodyInfo(1);
+            else
+                primaryBody = bodyInfo.getParBodyInfo();
+                secondaryBody = bodyInfo;
+            end
+            
+            originPt = TwoBodyRotatingFrameOriginEnum.Primary;
+            
+            newFrame = TwoBodyRotatingFrame(primaryBody, secondaryBody, originPt, celBodyData);
+            
+        otherwise
+            error('Unknown reference frame type: %s', class(refFrameEnum));
+    end
+    
+    profile.frame = newFrame;
+    handles.setFrameOptionsButton.TooltipString = sprintf('Current Frame: %s', profile.frame.getNameStr()); 
+    
     
     % --- Executes during object creation, after setting all properties.
 function trajViewFrameCombo_CreateFcn(hObject, eventdata, handles)
@@ -637,3 +670,15 @@ function bodiesToPlotListbox_CreateFcn(hObject, eventdata, handles)
     if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
         set(hObject,'BackgroundColor','white');
     end
+    
+    
+    % --- Executes on button press in setFrameOptionsButton.
+function setFrameOptionsButton_Callback(hObject, eventdata, handles)
+    % hObject    handle to setFrameOptionsButton (see GCBO)
+    % eventdata  reserved - to be defined in a future version of MATLAB
+    % handles    structure with handles and user data (see GUIDATA)
+    profile = getSelectedProfile(handles);
+    newFrame = profile.frame.editFrameDialogUI();
+    
+    profile.frame = newFrame;
+    handles.setFrameOptionsButton.TooltipString = sprintf('Current Frame: %s', profile.frame.getNameStr());
