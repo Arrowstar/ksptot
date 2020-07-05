@@ -77,34 +77,36 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
             trajMarkerData = obj.createTrajData();
             
             for(j=1:length(subStateLogs))
-                times = subStateLogs{j}(:,1);
-                rVects = subStateLogs{j}(:,2:4);
-                
-                evtNum = subStateLogs{j}(1,13);
-                evt = evts(evtNum);
-                evtColor = evt.colorLineSpec.color;
-                
-                switch(evt.plotMethod)
-                    case EventPlottingMethodEnum.PlotContinuous
-                        %nothing
-                        
-                    case EventPlottingMethodEnum.SkipFirstState
-                        times = times(2:end);
-                        rVects = rVects(2:end,:);
-                        
-                    case EventPlottingMethodEnum.DoNotPlot
-                        times = [];
-                        rVects = [];
-                        
-                    otherwise
-                        error('Unknown event plotting method: %s', EventPlottingMethodEnum.DoNotPlot.name);
-                end
-                
-                [times,ia,~] = unique(times,'stable','rows');
-                rVects = rVects(ia,:);
-                
-                if(length(times) > 1)
-                    trajMarkerData.addData(times, rVects, evtColor);
+                if(size(subStateLogs{j},1) > 0)
+                    times = subStateLogs{j}(:,1);
+                    rVects = subStateLogs{j}(:,2:4);
+
+                    evtNum = subStateLogs{j}(1,13);
+                    evt = evts(evtNum);
+                    evtColor = evt.colorLineSpec.color;
+
+                    switch(evt.plotMethod)
+                        case EventPlottingMethodEnum.PlotContinuous
+                            %nothing
+
+                        case EventPlottingMethodEnum.SkipFirstState
+                            times = times(2:end);
+                            rVects = rVects(2:end,:);
+
+                        case EventPlottingMethodEnum.DoNotPlot
+                            times = [];
+                            rVects = [];
+
+                        otherwise
+                            error('Unknown event plotting method: %s', EventPlottingMethodEnum.DoNotPlot.name);
+                    end
+
+                    [times,ia,~] = unique(times,'stable','rows');
+                    rVects = rVects(ia,:);
+
+                    if(length(unique(times)) > 1)
+                        trajMarkerData.addData(times, rVects, evtColor);
+                    end
                 end
             end
         end
@@ -125,26 +127,28 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                 bodyMarkerData = obj.createBodyData(bodyToPlot);
                 
                 for(j=1:length(subStateLogs))
-                    times = subStateLogs{j}(:,1);
-                   
-                    if(isfinite(bodyOrbitPeriod))
-                        numPeriods = (max(times) - min(times))/bodyOrbitPeriod;
-                        times = linspace(min(times), max(times), max(1000*numPeriods,length(times)));
-                    else
-                        times = linspace(min(times), max(times), length(times));
-                    end
-                    
-                    states = bodyToPlot.getElementSetsForTimes(times);
-                    
-                    for(k=1:length(states))
-                        states(k) = states(k).convertToFrame(viewInFrame);
-                    end
-                    
-                    rVects = [states.rVect];
-                    plot3(dAxes, rVects(1,:), rVects(2,:), rVects(3,:), '-', 'Color',bColorRGB, 'LineWidth',1);
-                    
-                    if(length(times) > 1)
-                        bodyMarkerData.addData(times, rVects);
+                    if(size(subStateLogs{j},1) > 0)
+                        times = subStateLogs{j}(:,1);
+
+                        if(isfinite(bodyOrbitPeriod))
+                            numPeriods = (max(times) - min(times))/bodyOrbitPeriod;
+                            times = linspace(min(times), max(times), max(1000*numPeriods,length(times)));
+                        else
+                            times = linspace(min(times), max(times), length(times));
+                        end
+
+                        states = bodyToPlot.getElementSetsForTimes(times);
+
+                        for(k=1:length(states))
+                            states(k) = states(k).convertToFrame(viewInFrame);
+                        end
+
+                        rVects = [states.rVect];
+                        plot3(dAxes, rVects(1,:), rVects(2,:), rVects(3,:), '-', 'Color',bColorRGB, 'LineWidth',1);
+
+                        if(length(unique(times)) > 1)
+                            bodyMarkerData.addData(times, rVects);
+                        end
                     end
                 end
             end
