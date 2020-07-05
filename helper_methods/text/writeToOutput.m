@@ -6,15 +6,14 @@ function writeToOutput(handle,str,msgType, varargin)
     end
 
     curStr=char(get(handle,'String'));
-    textRows=size(curStr,1);
     
     if(strcmpi(msgType,'append'))
         str=char(linewrap(str, maxlength));
         strToWrite=char(curStr,str);
         set(handle,'String',strToWrite);
     elseif(strcmpi(msgType,'appendSameLine'))
-        str=char(linewrap(str, maxlength));
-        strToWrite=char(curStr(1:end-1,:),[strtrim(curStr(end,:)),str]);
+        str=char(linewrap([strtrim(curStr(end,:)),str], maxlength));
+        strToWrite=char(curStr(1:end-1,:),str);
         set(handle,'String',strToWrite);
     elseif(strcmpi(msgType,'overwrite'))
         str=char(linewrap(str, maxlength));
