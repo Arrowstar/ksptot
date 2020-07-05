@@ -14,6 +14,9 @@ classdef ColorSpecEnum < matlab.mixin.SetGet
         White('White',[1 1 1])
         Pink('Pink',[255,0,220]/255)
         Brown('Brown',[139,69,19]/255)
+        DarkGrey('Dark Grey',[0.15 0.15 0.15]);
+        Grey('Grey',[0.5, 0.5, 0.5])
+        LightGrey('Light Grey',[223 223 223]/255);
     end
     
     properties
@@ -37,6 +40,12 @@ classdef ColorSpecEnum < matlab.mixin.SetGet
         function [enum, ind] = getEnumForListboxStr(nameStr)
             m = enumeration('ColorSpecEnum');
             ind = find(ismember({m.name},nameStr),1,'first');
+            enum = m(ind);
+        end
+        
+        function [ind, enum] = getIndForName(name)
+            m = enumeration('ColorSpecEnum');
+            ind = find(ismember({m.name},name),1,'first');
             enum = m(ind);
         end
     end

@@ -53,6 +53,14 @@ classdef LaunchVehicleStateLog < matlab.mixin.SetGet
             end
         end
         
+        function numEntries = getNumberOfEntries(obj)
+            numEntries = length(obj.entries);
+        end
+        
+        function allEntries = getAllEntries(obj)
+            allEntries = obj.entries;
+        end
+        
         function stateLogEntry = getFirstStateLogForEvent(obj, event)
             subStateLog = obj.entries([obj.entries.event] == event);
             stateLogEntry = subStateLog(1);

@@ -10,7 +10,7 @@ classdef EventColorLineSpec < matlab.mixin.SetGet
     
     methods
         function obj = EventColorLineSpec()
-
+            
         end
     end
 end

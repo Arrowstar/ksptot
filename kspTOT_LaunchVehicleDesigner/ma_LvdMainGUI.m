@@ -22,7 +22,7 @@ function varargout = ma_LvdMainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_LvdMainGUI
 
-% Last Modified by GUIDE v2.5 26-Jun-2020 19:13:05
+% Last Modified by GUIDE v2.5 04-Jul-2020 11:13:01
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -76,8 +76,23 @@ function ma_LvdMainGUI_OpeningFcn(hObject, eventdata, handles, varargin)
     initializeOutputWindowText(handles, handles.outputText);
     view(handles.dispAxes,3);
     
+    hRot3D = rotate3d(handles.ma_LvdMainGUI);
+    hRot3D.ActionPostCallback = @(src,evt) recordFinalAxesViewAfterRotation(src,evt, lvdData,handles); 
+    
     setDeleteButtonEnable(lvdData, handles);
     setNonSeqDeleteButtonEnable(lvdData, handles);
+    
+    jDispAxesTimeSlider = javax.swing.JSlider;
+    jDispAxesTimeSlider.setSnapToTicks(false);
+    sliderPnlPos = handles.timeSliderPanel.Position;
+    javacomponent(jDispAxesTimeSlider,[1, 1, sliderPnlPos(3), sliderPnlPos(4)], handles.timeSliderPanel);
+    handles.jDispAxesTimeSlider = jDispAxesTimeSlider;
+    jDispAxesTimeSlider.setToolTipText('Adjust slider to view the location of vehicles and selected celestial bodies at a given time.');
+    
+    hDispAxesTimeSlider = handle(jDispAxesTimeSlider, 'CallbackProperties');
+    handles.hDispAxesTimeSlider = hDispAxesTimeSlider;
+    timeSliderCb = @(src,evt) timeSliderStateChanged(src,evt, lvdData, handles);
+    set(hDispAxesTimeSlider, 'StateChangedCallback', timeSliderCb);
     
     setappdata(hObject,'orbitPlotType','3DInertial');    
     
@@ -151,6 +166,30 @@ function celBodyData = getCelBodyDataFromMainGui(handles)
     
     mainGUIUserData = get(hKsptotMainGUI, 'UserData');
     celBodyData = mainGUIUserData{1,1};
+   
+    
+function recordFinalAxesViewAfterRotation(obj,event_obj, lvdData,handles)  
+    [az,el] = view(handles.dispAxes);
+    lvdData.viewSettings.selViewProfile.viewAzEl = [az,el];
+    
+function timeSliderStateChanged(src,~, lvdData, handles)
+    markerTrajData = lvdData.viewSettings.selViewProfile.markerTrajData;
+    markerBodyData = lvdData.viewSettings.selViewProfile.markerBodyData;
+    
+    time = src.getValue();
+    hAx = handles.dispAxes;
+    figure(handles.ma_LvdMainGUI);
+    
+    markerTrajData.plotBodyMarkerAtTime(time, hAx);
+    for(i=1:length(markerBodyData))
+        markerBodyData(i).plotBodyMarkerAtTime(time, hAx);
+    end
+    
+    [year, day, hour, minute, sec] = convertSec2YearDayHrMnSec(time);
+    epochStr = formDateStr(year, day, hour, minute, sec);
+    
+    handles.timeSliderValueLabel.String = epochStr;
+    handles.timeSliderValueLabel.TooltipString = sprintf('UT = %0.3f sec\n%s', time, epochStr);
 
 % --- Outputs from this function are returned to the command line.
 function varargout = ma_LvdMainGUI_OutputFcn(hObject, eventdata, handles) 
@@ -349,40 +388,47 @@ function decrOrbitToPlotNum_Callback(hObject, eventdata, handles)
 % hObject    handle to decrOrbitToPlotNum (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-    orbitNumToPlot = get(handles.dispAxes,'UserData');
+%     orbitNumToPlot = get(handles.dispAxes,'UserData');
     lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    orbitNumToPlot = lvdData.viewSettings.selViewProfile.orbitNumToPlot;
     
     if(orbitNumToPlot > 1)
         orbitNumToPlot = orbitNumToPlot - 1;
-        set(handles.dispAxes,'UserData',orbitNumToPlot);
-        lvd_processData(handles);
+
     elseif(orbitNumToPlot == 1)
         maStateLog = lvdData.stateLog.getMAFormattedStateLogMatrix();
         chunkedStateLog = breakStateLogIntoSoIChunks(maStateLog);
         orbitNumToPlot = size(chunkedStateLog,1);
-        set(handles.dispAxes,'UserData',orbitNumToPlot);
-        lvd_processData(handles);
     end
+    
+    lvdData.viewSettings.selViewProfile.orbitNumToPlot = orbitNumToPlot;
+    set(handles.dispAxes,'UserData',orbitNumToPlot);
+    lvd_processData(handles);
+    
+    
 
 % --- Executes on button press in incrOrbitToPlotNum.
 function incrOrbitToPlotNum_Callback(hObject, eventdata, handles)
 % hObject    handle to incrOrbitToPlotNum (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-    orbitNumToPlot = get(handles.dispAxes,'UserData');
+%     orbitNumToPlot = get(handles.dispAxes,'UserData');
     lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
     maStateLog = lvdData.stateLog.getMAFormattedStateLogMatrix();
     chunkedStateLog = breakStateLogIntoSoIChunks(maStateLog);
-
+    orbitNumToPlot = lvdData.viewSettings.selViewProfile.orbitNumToPlot;
+    
     if(orbitNumToPlot < size(chunkedStateLog,1))
         orbitNumToPlot = orbitNumToPlot + 1;
-        set(handles.dispAxes,'UserData',orbitNumToPlot);
-        lvd_processData(handles);
+
     elseif(orbitNumToPlot == size(chunkedStateLog,1))
         orbitNumToPlot = 1;
-        set(handles.dispAxes,'UserData',orbitNumToPlot);
-        lvd_processData(handles);
+        
     end
+    
+    lvdData.viewSettings.selViewProfile.orbitNumToPlot = orbitNumToPlot;
+	set(handles.dispAxes,'UserData',orbitNumToPlot);
+    lvd_processData(handles);
 
 % --- Executes on slider movement.
 function warnAlertsSlider_Callback(hObject, eventdata, handles)
@@ -766,6 +812,12 @@ function openMissionPlanMenu_Callback(hObject, eventdata, handles)
             
             setDeleteButtonEnable(lvdData, handles);
             setNonSeqDeleteButtonEnable(lvdData, handles)
+            
+            hRot3D = rotate3d(handles.ma_LvdMainGUI);
+            hRot3D.ActionPostCallback = @(src,evt) recordFinalAxesViewAfterRotation(src,evt, lvdData,handles); 
+            
+            timeSliderCb = @(src,evt) timeSliderStateChanged(src,evt, lvdData, handles);
+            set(handles.hDispAxesTimeSlider, 'StateChangedCallback', timeSliderCb);
             
             if(lvdData.optimizer.usesParallel())
                 startParallelPool(write_to_output_func);
@@ -1559,59 +1611,41 @@ function viewMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to viewMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
-
-% --------------------------------------------------------------------
-function orbitDisplayMenu_Callback(hObject, eventdata, handles)
-% hObject    handle to orbitDisplayMenu (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-    orbitPlotType = getappdata(handles.ma_LvdMainGUI,'orbitPlotType');
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    viewProfiles = lvdData.viewSettings.getProfilesArray();
     
-    switch orbitPlotType
-        case '3DInertial'
-            set(handles.inertial3dPlotMenu, 'Checked', 'on');
-            set(handles.bodyFixed3dPlotMenu, 'Checked', 'off');
-            set(handles.mercator2dPlotMenu, 'Checked', 'off');
-        case '3DBodyFixed'
-            set(handles.inertial3dPlotMenu, 'Checked', 'off');
-            set(handles.bodyFixed3dPlotMenu, 'Checked', 'on');
-            set(handles.mercator2dPlotMenu, 'Checked', 'off');
-        case '2DMercador'
-            set(handles.inertial3dPlotMenu, 'Checked', 'off');
-            set(handles.bodyFixed3dPlotMenu, 'Checked', 'off');
-            set(handles.mercator2dPlotMenu, 'Checked', 'on');
-        otherwise
-            error('Unknown plot type: %s', orbitPlotType);        
+    oldMenus = handles.setActiveViewProfileMenu.Children;
+    for(i=1:length(oldMenus))
+        delete(oldMenus(i));
+    end
+    
+    for(i=1:length(viewProfiles))
+        profile = viewProfiles(i);
+        
+        if(lvdData.viewSettings.isProfileActive(profile))
+            checkedTxt = 'on';
+        else
+            checkedTxt = 'off';
+        end
+        
+        cbFh = @(src,evt) viewProfileMenuSelectedCallback(src,evt, profile, lvdData.viewSettings, handles);
+        
+        menus(i) = uimenu(handles.setActiveViewProfileMenu, 'Text',profile.name, ...
+                                                            'Checked',checkedTxt, ...
+                                                            'MenuSelectedFcn',cbFh); %#ok<NASGU>
     end
 
-% --------------------------------------------------------------------
-function inertial3dPlotMenu_Callback(hObject, eventdata, handles)
-% hObject    handle to inertial3dPlotMenu (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-    setappdata(handles.ma_LvdMainGUI,'orbitPlotType','3DInertial'); 
-    lvd_processData(handles); 
 
-
-% --------------------------------------------------------------------
-function bodyFixed3dPlotMenu_Callback(hObject, eventdata, handles)
-% hObject    handle to bodyFixed3dPlotMenu (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-    setappdata(handles.ma_LvdMainGUI,'orbitPlotType','3DBodyFixed'); 
-    lvd_processData(handles); 
-
-
-% --------------------------------------------------------------------
-function mercator2dPlotMenu_Callback(hObject, eventdata, handles)
-% hObject    handle to mercator2dPlotMenu (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-    setappdata(handles.ma_LvdMainGUI,'orbitPlotType','2DMercador'); 
-    lvd_processData(handles); 
-
-
+function viewProfileMenuSelectedCallback(src,~, profile, viewSettings, handles)
+    viewSettings.setProfileAsActive(profile);
+    
+    menus = src.Parent.Children;
+    for(i=1:length(menus))
+        delete(menus(i));
+    end
+    
+    lvd_processData(handles);
+    
 % --------------------------------------------------------------------
 function editMissionNotesMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to editMissionNotesMenu (see GCBO)
@@ -1721,26 +1755,9 @@ function selectOptimizationAlgosMenu_Callback(hObject, eventdata, handles)
     if(lvdData.optimizer.getSelectedOptimizer().usesParallel())
         startParallelPool(writeOutput);
     end
-
-
-% --- Executes on button press in popOutOrbitDisplayButton.
-function popOutOrbitDisplayButton_Callback(hObject, eventdata, handles)
-% hObject    handle to popOutOrbitDisplayButton (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
-    figure();
-    h = axes();
-    numToPlot = get(handles.dispAxes,'UserData');
-    handles.dispAxes = h;
-    set(h,'UserData',get(handles.dispAxes,'UserData'));
-    orbitPlotType = getappdata(handles.ma_LvdMainGUI,'orbitPlotType');
-    maStateLog = lvdData.stateLog.getMAFormattedStateLogMatrix();
     
-    lvd_updateDispAxis(handles, maStateLog, numToPlot, orbitPlotType, lvdData);
-
-
-% --------------------------------------------------------------------
+    
+    % --------------------------------------------------------------------
 function adjustVariablesMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to adjustVariablesMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -1791,3 +1808,48 @@ function managePluginsMenu_Callback(hObject, eventdata, handles)
     end
     
     lvd_processData(handles);
+
+
+% --------------------------------------------------------------------
+function editViewSettingsMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to editViewSettingsMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    
+    addUndoState(handles,'Edit View Settings');
+    
+    lvd_viewSettingsGUI(lvdData.viewSettings);
+    
+    lvd_processData(handles);
+
+
+% --------------------------------------------------------------------
+function popOutOrbitDisplayMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to popOutOrbitDisplayMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    hAx = axes(figure());
+    handles.dispAxes = hAx;
+    set(hAx,'UserData',get(handles.dispAxes,'UserData'));
+
+    wb = waitbar(0,'Popping out orbit display...');
+    wbch = allchild(wb);
+    jp = wbch(1).JavaPeer;
+    jp.setIndeterminate(1);
+    
+    try
+        lvd_processData(handles);
+    catch ME
+        %nothing
+    end
+
+    title(hAx, handles.dispAxisTitleLabel.String);
+    
+    delete(wb);
+
+% --------------------------------------------------------------------
+function setActiveViewProfileMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to setActiveViewProfileMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)

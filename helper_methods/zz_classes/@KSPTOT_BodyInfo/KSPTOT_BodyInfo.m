@@ -122,6 +122,33 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
             frame = obj.bodyFixedFrameCache;
         end
         
+        function states = getElementSetsForTimes(obj, times)
+            parBodyInfo = obj.getParBodyInfo();
+            if(not(isempty(parBodyInfo)))
+                frame = parBodyInfo.getBodyCenteredInertialFrame();
+                gmu = parBodyInfo.gm;
+
+                [rVects, vVects] = getStateAtTime(obj, times, gmu);
+
+                for(i=1:length(times))
+                    states(i) = CartesianElementSet(times(i), rVects(:,i), vVects(:,i), frame); %#ok<AGROW>
+                end
+            else
+                frame = obj.getBodyCenteredInertialFrame();
+                
+                for(i=1:length(times))
+                    states(i) = CartesianElementSet(times(i), [0;0;0], [0;0;0], frame); %#ok<AGROW>
+                end
+            end
+        end
+        
+        function bColorRGB = getBodyRGB(obj)
+            bColor = obj.bodycolor;
+            cmap = colormap(bColor);
+            midRow = round(size(cmap,1)/2);
+            bColorRGB = cmap(midRow,:);
+        end
+        
         function tf = eq(A,B)
             tf = [A.id] == [B.id];
             

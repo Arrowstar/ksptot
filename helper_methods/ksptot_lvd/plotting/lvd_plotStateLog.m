@@ -263,17 +263,5 @@ function [childrenHGs] = plotSubStateLog(subStateLog, prevSubStateLog, showSoI, 
             end
             childrenHGs(end+1,:) = {child, hBody1, hBody2, hOrbit}; %#ok<AGROW>
         end
-	end
-    
-
-    
-%     if(showOtherSC)
-%         for(i=1:length(otherSCs))
-%             otherSC = otherSCs{i};
-%             posOffset = [0,0,0]';
-%             validBodyID = bodyID;
-%             ut = otherSC.epoch;
-%             plotLocOfOtherSC(dAxes, otherSC, validBodyID, ut, posOffset, bodyInfo, true, false);
-%         end
-%     end
+    end
 end

@@ -8,7 +8,6 @@ function lvd_updateDispAxis(handles, maStateLog, orbitNumToPlot, orbitPlotType, 
     hShowSoICheckBox = handles.showSoICheckBox;
     hShowChildrenCheckBox = handles.showChildrenCheckBox;
     hDispAxisTitleLabel = handles.dispAxisTitleLabel;
-%     hShowOtherSpacecraftCheckBox = handles.showOtherSpacecraftCheckBox;
     hShowChildBodyMarker = handles.showChildBodyMarker;
     
     if(isempty(orbitNumToPlot))
@@ -16,19 +15,19 @@ function lvd_updateDispAxis(handles, maStateLog, orbitNumToPlot, orbitPlotType, 
         set(hDispAxes,'UserData',orbitNumToPlot);
     end
 
-    showSoICheckBoxINT = get(hShowSoICheckBox,'value');
-    if(showSoICheckBoxINT == 1)
-        showSoI = true;
-    else
-        showSoI = false;
-    end
+%     showSoICheckBoxINT = get(hShowSoICheckBox,'value');
+%     if(showSoICheckBoxINT == 1)
+%         showSoI = true;
+%     else
+%         showSoI = false;
+%     end
     
-    hShowChildrenCheckBoxINT = get(hShowChildrenCheckBox,'value');
-    if(hShowChildrenCheckBoxINT == 1)
-        showChildBodies = true;
-    else
-        showChildBodies = false;
-    end
+%     hShowChildrenCheckBoxINT = get(hShowChildrenCheckBox,'value');
+%     if(hShowChildrenCheckBoxINT == 1)
+%         showChildBodies = true;
+%     else
+%         showChildBodies = false;
+%     end
     
 %     hShowOtherSpacecraftCheckBoxINT = get(hShowOtherSpacecraftCheckBox,'value');
 %     if(hShowOtherSpacecraftCheckBoxINT == 1)
@@ -37,12 +36,12 @@ function lvd_updateDispAxis(handles, maStateLog, orbitNumToPlot, orbitPlotType, 
         showOtherSC = false;
 %     end
     
-    showChildBodyMarkerINT = get(hShowChildBodyMarker,'value');
-    if(showChildBodyMarkerINT == 1)
-        showChildMarker = true;
-    else
-        showChildMarker = false;
-    end
+%     showChildBodyMarkerINT = get(hShowChildBodyMarker,'value');
+%     if(showChildBodyMarkerINT == 1)
+%         showChildMarker = true;
+%     else
+%         showChildMarker = false;
+%     end
     
     axes(hDispAxes);
     cla(gca);

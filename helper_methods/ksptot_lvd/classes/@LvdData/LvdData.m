@@ -12,6 +12,7 @@ classdef LvdData < matlab.mixin.SetGet
         settings LvdSettings
         notes char
         plugins LvdPluginSet
+        viewSettings LaunchVehicleViewSettings
         
         celBodyData 
         ksptotVer char
@@ -26,6 +27,7 @@ classdef LvdData < matlab.mixin.SetGet
             obj.validation = LaunchVehicleDataValidation(obj);
             obj.settings = LvdSettings();
             obj.plugins = LvdPluginSet(obj);
+            obj.viewSettings = LaunchVehicleViewSettings(obj);
         end
     end
     
@@ -87,13 +89,14 @@ classdef LvdData < matlab.mixin.SetGet
             lvdData.launchVehicle = lv;
             
             %Set Up Initial State
-            if(isfield(celBodyData,'kerbin'))
-                initBody = celBodyData.kerbin;
-            else
-                fields = fieldnames(celBodyData);
-                initBody = celBodyData.(fields{1});
-            end
-            
+%             if(isfield(celBodyData,'kerbin'))
+%                 initBody = celBodyData.kerbin;
+%             else
+%                 fields = fieldnames(celBodyData);
+%                 initBody = celBodyData.(fields{1});
+%             end
+            initBody = LvdData.getDefaultInitialBodyInfo(celBodyData);
+
             initStateModel = InitialStateModel.getDefaultInitialStateLogModelForLaunchVehicle(lvdData.launchVehicle, initBody);
             lvdData.initStateModel = initStateModel;
                         
@@ -117,6 +120,18 @@ classdef LvdData < matlab.mixin.SetGet
                                                     lvdData.optimizer, lvdData);
             
             lvdData.optimizer = lvdOptim;
+            
+            %set up view profile
+            lvdData.viewSettings.selViewProfile.viewCentralBody = initBody;
+        end
+        
+        function initBody = getDefaultInitialBodyInfo(celBodyData)
+            if(isfield(celBodyData,'kerbin'))
+                initBody = celBodyData.kerbin;
+            else
+                fields = fieldnames(celBodyData);
+                initBody = celBodyData.(fields{1});
+            end            
         end
         
         function obj = loadobj(obj)
@@ -128,6 +143,18 @@ classdef LvdData < matlab.mixin.SetGet
             
             if(isempty(obj.plugins))
                 obj.plugins = LvdPluginSet(obj);
+            end
+            
+            if(isempty(obj.viewSettings))
+                obj.viewSettings = LaunchVehicleViewSettings(obj);
+                
+                for(i=1:length(obj.viewSettings.viewProfiles))
+                    profile = obj.viewSettings.viewProfiles(i);
+
+                    if(isempty(profile.viewCentralBody))
+                        profile.viewCentralBody = obj.initialState.centralBody;
+                    end
+                end
             end
         end
         
