@@ -6,7 +6,7 @@ function hBody = ma_plotChildBody(bodyInfo, child, time, gmu, orbitDispAxes, sho
     hold(orbitDispAxes,'on');
     CData = getCDataForSphereWithColormap(Z, bodyInfo.bodycolor);
     
-    hBody = surf(orbitDispAxes, rVect(1)+dRad*X,rVect(2)+dRad*Y,rVect(3)+dRad*Z,'CData',CData);
+    hBody = surf(orbitDispAxes, rVect(1)+dRad*X,rVect(2)+dRad*Y,rVect(3)+dRad*Z,'CData',CData, 'EdgeAlpha',0.5);
     if(showChildMarker)
         plot3(orbitDispAxes,rVect(1),rVect(2),rVect(3),'Color','k','Marker','o','MarkerFaceColor','k','MarkerSize',4.5);
     end

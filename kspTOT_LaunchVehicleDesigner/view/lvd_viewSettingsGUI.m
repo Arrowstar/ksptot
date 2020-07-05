@@ -22,7 +22,7 @@ function varargout = lvd_viewSettingsGUI(varargin)
     
     % Edit the above text to modify the response to help lvd_viewSettingsGUI
     
-    % Last Modified by GUIDE v2.5 05-Jul-2020 14:22:38
+    % Last Modified by GUIDE v2.5 05-Jul-2020 16:16:34
     
     % Begin initialization code - DO NOT EDIT
     gui_Singleton = 1;
@@ -123,6 +123,9 @@ function updateGuiForProfile(profile, handles)
         indsToSel(end+1) = find(tf,1,'first'); %#ok<AGROW>
     end
     handles.bodiesToPlotListbox.Value = indsToSel;
+    
+    handles.bodyPlottingStyleCombo.String = ViewProfileBodyPlottingStyle.getListBoxStr();
+    handles.bodyPlottingStyleCombo.Value = ViewProfileBodyPlottingStyle.getIndForName(profile.bodyPlotStyle.name);
     
     
 function profile = getSelectedProfile(handles)
@@ -546,27 +549,7 @@ function showSoICheckbox_Callback(hObject, eventdata, handles)
     % Hint: get(hObject,'Value') returns toggle state of showSoICheckbox
     profile = getSelectedProfile(handles);
     profile.showSoIRadius = logical(get(hObject,'Value'));
-    
-    % --- Executes on button press in showChildBodyOrbitsCheckbox.
-function showChildBodyOrbitsCheckbox_Callback(hObject, eventdata, handles)
-    % hObject    handle to showChildBodyOrbitsCheckbox (see GCBO)
-    % eventdata  reserved - to be defined in a future version of MATLAB
-    % handles    structure with handles and user data (see GUIDATA)
-    
-    % Hint: get(hObject,'Value') returns toggle state of showChildBodyOrbitsCheckbox
-    profile = getSelectedProfile(handles);
-    profile.showChildBodyOrbits = logical(get(hObject,'Value'));
-    
-    % --- Executes on button press in showChildBodyMarkersCheckbox.
-function showChildBodyMarkersCheckbox_Callback(hObject, eventdata, handles)
-    % hObject    handle to showChildBodyMarkersCheckbox (see GCBO)
-    % eventdata  reserved - to be defined in a future version of MATLAB
-    % handles    structure with handles and user data (see GUIDATA)
-    
-    % Hint: get(hObject,'Value') returns toggle state of showChildBodyMarkersCheckbox
-    profile = getSelectedProfile(handles);
-    profile.showChildBodyMarkers = logical(get(hObject,'Value'));
-    
+        
     % --- Executes on button press in showFixedFrameGridCheckbox.
 function showFixedFrameGridCheckbox_Callback(hObject, eventdata, handles)
     % hObject    handle to showFixedFrameGridCheckbox (see GCBO)
@@ -576,36 +559,7 @@ function showFixedFrameGridCheckbox_Callback(hObject, eventdata, handles)
     % Hint: get(hObject,'Value') returns toggle state of showFixedFrameGridCheckbox
     profile = getSelectedProfile(handles);
     profile.showLongLatAnnotations = logical(get(hObject,'Value'));
-    
-    % --- Executes on selection change in viewAllOriginCentralBodyCombo.
-function viewAllOriginCentralBodyCombo_Callback(hObject, eventdata, handles)
-    % hObject    handle to viewAllOriginCentralBodyCombo (see GCBO)
-    % eventdata  reserved - to be defined in a future version of MATLAB
-    % handles    structure with handles and user data (see GUIDATA)
-    
-    % Hints: contents = cellstr(get(hObject,'String')) returns viewAllOriginCentralBodyCombo contents as cell array
-    %        contents{get(hObject,'Value')} returns selected item from viewAllOriginCentralBodyCombo
-    viewSettings = getappdata(handles.lvd_viewSettingsGUI,'viewSettings');
-    celBodyData = viewSettings.lvdData.celBodyData;
-    
-    profile = getSelectedProfile(handles);
-    
-    [~, sortedBodyInfo] = ma_getSortedBodyNames(celBodyData);
-    
-    profile.viewCentralBody = sortedBodyInfo{hObject.Value};
-    
-    % --- Executes during object creation, after setting all properties.
-function viewAllOriginCentralBodyCombo_CreateFcn(hObject, eventdata, handles)
-    % hObject    handle to viewAllOriginCentralBodyCombo (see GCBO)
-    % eventdata  reserved - to be defined in a future version of MATLAB
-    % handles    empty - handles not created until after all CreateFcns called
-    
-    % Hint: popupmenu controls usually have a white background on Windows.
-    %       See ISPC and COMPUTER.
-    if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-        set(hObject,'BackgroundColor','white');
-    end
-    
+  
     
     % --- Executes on button press in saveAndCloseButton.
 function saveAndCloseButton_Callback(hObject, eventdata, handles)
@@ -682,3 +636,31 @@ function setFrameOptionsButton_Callback(hObject, eventdata, handles)
     
     profile.frame = newFrame;
     handles.setFrameOptionsButton.TooltipString = sprintf('Current Frame: %s', profile.frame.getNameStr());
+
+
+% --- Executes on selection change in bodyPlottingStyleCombo.
+function bodyPlottingStyleCombo_Callback(hObject, eventdata, handles)
+% hObject    handle to bodyPlottingStyleCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns bodyPlottingStyleCombo contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from bodyPlottingStyleCombo
+    profile = getSelectedProfile(handles);
+    
+    contents = cellstr(get(hObject,'String'));
+    str = contents{get(hObject,'Value')};
+    
+    profile.bodyPlotStyle = ViewProfileBodyPlottingStyle.getEnumForListboxStr(str);
+
+% --- Executes during object creation, after setting all properties.
+function bodyPlottingStyleCombo_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to bodyPlottingStyleCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

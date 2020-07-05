@@ -39,6 +39,10 @@ classdef BodyCenteredInertialFrame < AbstractReferenceFrame
         end
         
         function newFrame = editFrameDialogUI(obj)
+            if(isempty(obj.celBodyData))
+                obj.celBodyData = obj.bodyInfo.celBodyData;
+            end
+            
             [bodiesStr, sortedBodyInfo] = ma_getSortedBodyNames(obj.celBodyData);
             for(i=1:length(sortedBodyInfo))
                 sortedBodyInfoArr(i) = sortedBodyInfo{i}; %#ok<AGROW>

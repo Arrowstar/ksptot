@@ -21,9 +21,10 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         %body fixed options
         showLongLatAnnotations(1,1) logical = true;
         
-        %SoI and child body options
+        %SoI and other body options
         showSoIRadius(1,1) logical = false;
         bodiesToPlot(1,:) KSPTOT_BodyInfo = KSPTOT_BodyInfo.empty(1,0);
+        bodyPlotStyle(1,1) ViewProfileBodyPlottingStyle = ViewProfileBodyPlottingStyle.Dot;
         
         %view properties (set by user indirectly through UI controls)
         orbitNumToPlot(1,1) double = 1;
@@ -84,7 +85,7 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
             end
         end
         
-        function createBodyMarkerData(obj, dAxes, subStateLogs, viewInFrame)
+        function createBodyMarkerData(obj, dAxes, subStateLogs, viewInFrame, showSoI)
             obj.clearAllBodyData();
             
             for(i=1:length(obj.bodiesToPlot))
@@ -97,7 +98,7 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                     bodyOrbitPeriod = Inf;
                 end
                 
-                bodyMarkerData = obj.createBodyData(bodyToPlot);
+                bodyMarkerData = obj.createBodyData(bodyToPlot, obj.bodyPlotStyle, showSoI);
                 
                 for(j=1:length(subStateLogs))
                     if(size(subStateLogs{j},1) > 0)
@@ -117,7 +118,7 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                         end
 
                         rVects = [states.rVect];
-                        plot3(dAxes, rVects(1,:), rVects(2,:), rVects(3,:), '-', 'Color',bColorRGB, 'LineWidth',1);
+                        plot3(dAxes, rVects(1,:), rVects(2,:), rVects(3,:), '-', 'Color',bColorRGB, 'LineWidth',1.5);
 
                         if(length(unique(times)) > 1)
                             bodyMarkerData.addData(times, rVects);
@@ -155,8 +156,8 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
             obj.markerTrajData = trajData;
         end
         
-        function bodyData = createBodyData(obj, bodyInfo)
-            bodyData = LaunchVehicleViewProfileBodyData(bodyInfo);
+        function bodyData = createBodyData(obj, bodyInfo, bodyPlotStyle, showSoI)
+            bodyData = LaunchVehicleViewProfileBodyData(bodyInfo, bodyPlotStyle, showSoI);
             obj.markerBodyData(end+1) = bodyData;
         end
         

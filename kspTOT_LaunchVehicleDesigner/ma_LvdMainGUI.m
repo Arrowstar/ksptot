@@ -706,7 +706,13 @@ function newMissionPlanMenu_Callback(hObject, eventdata, handles, varargin)
     setappdata(handles.ma_LvdMainGUI,'current_save_location','');
     
     setDeleteButtonEnable(lvdData, handles);
-    setNonSeqDeleteButtonEnable(lvdData, handles)
+    setNonSeqDeleteButtonEnable(lvdData, handles);
+
+    hRot3D = rotate3d(handles.ma_LvdMainGUI);
+    hRot3D.ActionPostCallback = @(src,evt) recordFinalAxesViewAfterRotation(src,evt, lvdData,handles); 
+
+    timeSliderCb = @(src,evt) timeSliderStateChanged(src,evt, lvdData, handles);
+    set(handles.hDispAxesTimeSlider, 'StateChangedCallback', timeSliderCb);
     
     runScript(handles, lvdData, 1);
     lvd_processData(handles);

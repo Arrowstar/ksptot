@@ -39,4 +39,3 @@ classdef TwoBodyRotatingFrameOriginEnum < matlab.mixin.SetGet
         end
     end
 end
-
