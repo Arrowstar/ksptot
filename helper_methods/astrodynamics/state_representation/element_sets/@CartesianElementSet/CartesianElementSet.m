@@ -140,13 +140,13 @@ classdef CartesianElementSet < AbstractElementSet
             end
             
             if(all(checkElement(1:3)))
-                if(norm([rx, ry, rz] == 0))
+                if(norm([rx, ry, rz]) == 0)
                     errMsg{end+1} = 'Length of the position vector (Rx, Ry, Rz) must be greater than zero.';
                 end
             end
             
             if(all(checkElement(4:6)))
-                if(norm([vx, vy, vz] == 0))
+                if(norm([vx, vy, vz]) == 0)
                     errMsg{end+1} = 'Length of the velocity vector (Vx, Vy, Vz) must be greater than zero.';
                 end
             end

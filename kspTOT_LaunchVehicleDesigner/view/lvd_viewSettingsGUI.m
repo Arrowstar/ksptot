@@ -127,6 +127,10 @@ function updateGuiForProfile(profile, handles)
     handles.bodyPlottingStyleCombo.String = ViewProfileBodyPlottingStyle.getListBoxStr();
     handles.bodyPlottingStyleCombo.Value = ViewProfileBodyPlottingStyle.getIndForName(profile.bodyPlotStyle.name);
     
+    handles.displayXAxisCheckbox.Value = double(profile.dispXAxis);
+    handles.displayYAxisCheckbox.Value = double(profile.dispYAxis);
+    handles.displayZAxisCheckbox.Value = double(profile.dispZAxis);
+    
     
 function profile = getSelectedProfile(handles)
     viewSettings = getappdata(handles.lvd_viewSettingsGUI,'viewSettings');

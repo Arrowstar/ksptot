@@ -36,6 +36,27 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                         set(dAxes,'UserData',orbitNumToPlot);
                     end
                     subStateLogs = chunkedStateLog(orbitNumToPlot,:);
+                    
+                    for(i=1:length(subStateLogs))
+                        subStateLog = subStateLogs{i};
+                        
+                        if(isempty(subStateLog))
+                            continue;
+                        end
+                        
+                        bodyId = subStateLog(1,8);
+                        bodyInfo = celBodyData.getBodyInfoById(bodyId);
+                        inertialFrame = bodyInfo.getBodyCenteredInertialFrame();
+                        for(j=1:size(subStateLog,1))
+                            elemSet = CartesianElementSet(subStateLog(j,1), subStateLog(j,2:4)', subStateLog(5:7)', inertialFrame);
+                            elemSet = elemSet.convertToFrame(viewInFrame);
+                            
+                            subStateLog(j,2:4) = elemSet.rVect';
+                            subStateLog(j,5:7) = elemSet.vVect';
+                        end
+                        
+                        subStateLogs{i} = subStateLog;
+                    end
 
                     curMissionSegStr = num2str(orbitNumToPlot);
                     totalMissionSegStr = num2str(size(chunkedStateLog,1));
