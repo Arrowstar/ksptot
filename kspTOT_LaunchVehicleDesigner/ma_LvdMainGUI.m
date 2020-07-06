@@ -135,10 +135,9 @@ function propagateScript(handles, lvdData, evtStartNum)
     drawnow;
     
     if(not(isdeployed))
-%         profile('on','-detail','builtin', '-remove_overhead','on');
+        profile('on','-detail','builtin', '-remove_overhead','on');
     end
     
-%     lvdData.validation.outputs = AbstractLaunchVehicleValidatorOutput.empty(1,0);
     lvdData.validation.clearOutputs();
     
     isSparseOutput = lvdData.settings.isSparseOutput;
@@ -149,7 +148,7 @@ function propagateScript(handles, lvdData, evtStartNum)
     execTime = toc(t);
     
     if(not(isdeployed))
-%         profile viewer;
+        profile viewer;
     end
     
     handles.scriptWorkingLbl.Visible = 'off';

@@ -49,6 +49,15 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
         childrenBodyInfoNeedsUpdate logical = true;
     end
     
+    properties(Transient)
+        doNotUseAtmoTempSunMultCurve(1,1) logical = false;
+        doNotUseLatTempSunMultCurve(1,1) logical = false;
+        doNotUseAxialTempSunMultCurve(1,1) logical = false;
+        doNotUseAxialTempSunBiasCurveGI(1,1) logical = false;
+        doNotUseEccTempBiasCurveGI(1,1) logical = false;
+        doNotUseAtmoPressCurveGI(1,1) logical = false;
+    end
+    
     properties(Access=private)
         bodyInertialFrameCache BodyCenteredInertialFrame = BodyCenteredInertialFrame.empty(1,0);
         bodyFixedFrameCache BodyFixedFrame = BodyFixedFrame.empty(1,0);
@@ -57,6 +66,39 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
     methods
         function obj = KSPTOT_BodyInfo() 
         
+        end
+        
+        function set.atmotempsunmultcurve(obj,newValue)
+            obj.atmotempsunmultcurve = newValue;
+            obj.doNotUseAtmoTempSunMultCurve = isa(obj.atmotempsunmultcurve,'griddedInterpolant') && all(obj.atmotempsunmultcurve.Values == 0); %#ok<MCSUP>
+        end
+        
+        function set.lattempsunmultcurve(obj,newValue)
+            obj.lattempsunmultcurve = newValue;
+            obj.doNotUseLatTempSunMultCurve = isa(obj.lattempsunmultcurve,'griddedInterpolant') && all(obj.lattempsunmultcurve.Values == 0); %#ok<MCSUP>
+        end
+        
+        function set.axialtempsunmultcurve(obj,newValue)
+            obj.axialtempsunmultcurve = newValue;
+            obj.doNotUseAxialTempSunMultCurve = isa(obj.axialtempsunmultcurve,'griddedInterpolant') && all(obj.axialtempsunmultcurve.Values == 0); %#ok<MCSUP>
+        end
+        
+        function set.axialtempsunbiascurve(obj,newValue)
+            obj.axialtempsunbiascurve = newValue;
+            obj.doNotUseAxialTempSunBiasCurveGI = isa(obj.axialtempsunbiascurve,'griddedInterpolant') && all(obj.axialtempsunbiascurve.Values == 0); %#ok<MCSUP>
+        end
+        
+        function set.ecctempbiascurve(obj,newValue)
+            obj.ecctempbiascurve = newValue;
+            obj.doNotUseEccTempBiasCurveGI = isa(obj.ecctempbiascurve,'griddedInterpolant') && all(obj.ecctempbiascurve.Values == 0); %#ok<MCSUP>
+        end
+
+        function set.atmopresscurve(obj,newValue)
+            obj.atmopresscurve = newValue;
+            
+            if(not(isempty(obj.atmohgt))) %#ok<MCSUP>
+                obj.doNotUseAtmoPressCurveGI = logical(obj.atmohgt > 0 && isempty(obj.atmopresscurve)); %#ok<MCSUP>
+            end
         end
         
         function parentBodyInfo = getParBodyInfo(obj, celBodyData)
@@ -149,6 +191,36 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
             bColorRGB = cmap(midRow,:);
         end
         
+        function temperature = getBodyAtmoTemperature(obj, time, lat, long, altitude)
+            rVectECEF = getrVectEcefFromLatLongAlt(lat, long, altitude, obj);
+            
+            temperature = getTemperatureAtAltitude(obj, altitude, lat, time, rVectECEF, obj.celBodyData);
+        end
+        
+        function createAtmoTempCache(obj)
+            latGrid = deg2rad(-90:10:90);
+            longGrid = deg2rad(0:10:360);
+            altGrid = linspace(0,obj.atmohgt,25);
+            
+            time = 0;
+            temperature = NaN(length(altGrid), length(latGrid), length(longGrid));
+            parfor(i = 1:length(altGrid))
+                altitude = altGrid(i);
+                
+                temp = NaN(length(latGrid), length(longGrid));
+                for(j = 1:length(latGrid))
+                    lat = latGrid(j);
+                    
+                    for(k = 1:length(longGrid))
+                        long = longGrid(k);
+                        temp(j,k) = getBodyAtmoTemperature(obj, time, lat, long, altitude);
+                    end
+                end
+                
+                temperature(i,:,:) = temp;
+            end
+        end
+        
         function tf = eq(A,B)
             tf = [A.id] == [B.id];
             
@@ -159,6 +231,18 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
     end
     
 	methods(Static)
+        function obj = loadobj(obj)            
+            obj.doNotUseAtmoTempSunMultCurve = isa(obj.atmotempsunmultcurve,'griddedInterpolant') && all(obj.atmotempsunmultcurve.Values == 0);
+            obj.doNotUseLatTempSunMultCurve = isa(obj.lattempsunmultcurve,'griddedInterpolant') && all(obj.lattempsunmultcurve.Values == 0);
+            obj.doNotUseAxialTempSunMultCurve = isa(obj.axialtempsunmultcurve,'griddedInterpolant') && all(obj.axialtempsunmultcurve.Values == 0);
+            obj.doNotUseAxialTempSunBiasCurveGI = isa(obj.axialtempsunbiascurve,'griddedInterpolant') && all(obj.axialtempsunbiascurve.Values == 0);
+            obj.doNotUseEccTempBiasCurveGI = isa(obj.ecctempbiascurve,'griddedInterpolant') && all(obj.ecctempbiascurve.Values == 0);
+            obj.doNotUseAtmoPressCurveGI = (obj.atmohgt > 0 && isempty(obj.atmopresscurve));
+            
+            obj.parentBodyInfoNeedsUpdate = true;
+            obj.childrenBodyInfoNeedsUpdate = true;
+        end
+        
         function bodyObj = getObjFromBodyInfoStruct(bodyInfo)
             bodyObj = KSPTOT_BodyInfo();
           
@@ -187,6 +271,11 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
             bodyObj.parentid = bodyInfo.parentid;
             bodyObj.name = bodyInfo.name;
             bodyObj.id = bodyInfo.id;
+            bodyObj.celBodyData = bodyInfo.celBodyData;
+            
+            bodyObj.bodyZAxis = bodyInfo.bodyZAxis;
+            bodyObj.bodyXAxis = bodyInfo.bodyXAxis;
+            bodyObj.bodyRotMatFromGlobalInertialToBodyInertial = bodyInfo.bodyRotMatFromGlobalInertialToBodyInertial;
         end
     end
 end

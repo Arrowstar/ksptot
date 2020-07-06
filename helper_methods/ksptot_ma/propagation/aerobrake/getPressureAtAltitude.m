@@ -1,6 +1,5 @@
 function pressure = getPressureAtAltitude(bodyInfo, altitude)
-    if((bodyInfo.atmohgt > 0 && isempty(bodyInfo.atmopresscurve)) || ...
-        altitude > bodyInfo.atmohgt)
+    if(altitude > bodyInfo.atmohgt || (bodyInfo.doNotUseAtmoPressCurveGI))
         pressure = 0;
     else
         if(altitude < 0)

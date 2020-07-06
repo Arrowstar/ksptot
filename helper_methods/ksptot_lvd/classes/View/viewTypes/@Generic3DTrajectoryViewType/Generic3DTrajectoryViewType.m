@@ -18,7 +18,8 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             stateLog = lvdData.stateLog;
             
             axes(dAxes);
-            cla(gca);
+            cla(dAxes);
+            cla(dAxes,'reset')
             
             if(stateLog.getNumberOfEntries() == 0)
                 return;
