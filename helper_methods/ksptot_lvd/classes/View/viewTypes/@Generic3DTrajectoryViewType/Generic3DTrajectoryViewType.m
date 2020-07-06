@@ -86,7 +86,7 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                        
             if(viewInFrame.typeEnum == ReferenceFrameEnum.BodyFixedRotating && ...
                viewProfile.showLongLatAnnotations)
-                plotBodyFixedGrid(dAxes, viewInFrame.getOriginBody());
+                plotBodyFixedGrid(dAxes, viewCentralBody);
             end
             
             showSoI = viewProfile.showSoIRadius;
@@ -107,6 +107,24 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                 plot3(dAxes, z, x, y, 'k--','LineWidth',0.5);
             end
             hold(dAxes,'off');
+            
+            if(viewProfile.dispXAxis || viewProfile.dispYAxis || viewProfile.dispZAxis)
+                axisLength = 2*viewCentralBody.radius;
+                
+                hold(dAxes,'on');
+                if(viewProfile.dispXAxis)
+                    quiver3(dAxes, 0,0,0, axisLength,0,0, 'r', 'LineWidth',2);
+                end
+                
+                if(viewProfile.dispYAxis)
+                    quiver3(dAxes, 0,0,0, 0,axisLength,0, 'g', 'LineWidth',2);
+                end
+                
+                if(viewProfile.dispZAxis)
+                    quiver3(dAxes, 0,0,0, 0,0,axisLength, 'b', 'LineWidth',2);
+                end
+                hold(dAxes,'off');
+            end
 
             bodyID = subStateLogs{1}(1,8);
             

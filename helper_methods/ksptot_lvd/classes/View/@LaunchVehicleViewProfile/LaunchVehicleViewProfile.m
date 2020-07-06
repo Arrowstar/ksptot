@@ -14,6 +14,11 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         minorGridColor(1,1) ColorSpecEnum = ColorSpecEnum.DarkGrey;
         gridTransparency(1,1) double = 0.15;
         
+        %axis properties
+        dispXAxis(1,1) logical = false;
+        dispYAxis(1,1) logical = false;
+        dispZAxis(1,1) logical = false;
+        
         %trajectory view options
         trajEvtsViewType(1,1) ViewEventsTypeEnum = ViewEventsTypeEnum.SoIChunk %either chunked by event/SoI or all
         frame AbstractReferenceFrame
@@ -90,6 +95,11 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
             
             for(i=1:length(obj.bodiesToPlot))
                 bodyToPlot = obj.bodiesToPlot(i);
+                
+                if(bodyToPlot == viewInFrame.getOriginBody())
+                    continue;
+                end              
+                
                 bColorRGB = bodyToPlot.getBodyRGB();
                 
                 if(bodyToPlot.sma > 0)

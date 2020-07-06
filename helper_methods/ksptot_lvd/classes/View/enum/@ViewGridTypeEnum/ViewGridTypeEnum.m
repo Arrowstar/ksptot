@@ -4,7 +4,7 @@ classdef ViewGridTypeEnum < matlab.mixin.SetGet
     
     enumeration
         Major('Major Grid Lines','on')
-        Minor('Major and Minor Grid Lines','off')
+        Minor('Major and Minor Grid Lines','minor')
         Off('No Grid Lines','off')
     end
     

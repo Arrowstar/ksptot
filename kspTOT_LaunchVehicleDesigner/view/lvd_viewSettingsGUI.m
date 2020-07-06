@@ -22,7 +22,7 @@ function varargout = lvd_viewSettingsGUI(varargin)
     
     % Edit the above text to modify the response to help lvd_viewSettingsGUI
     
-    % Last Modified by GUIDE v2.5 05-Jul-2020 16:16:34
+    % Last Modified by GUIDE v2.5 05-Jul-2020 19:58:59
     
     % Begin initialization code - DO NOT EDIT
     gui_Singleton = 1;
@@ -664,3 +664,34 @@ function bodyPlottingStyleCombo_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on button press in displayXAxisCheckbox.
+function displayXAxisCheckbox_Callback(hObject, eventdata, handles)
+% hObject    handle to displayXAxisCheckbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of displayXAxisCheckbox
+    profile = getSelectedProfile(handles);
+    profile.dispXAxis = logical(get(hObject,'Value'));
+
+% --- Executes on button press in displayYAxisCheckbox.
+function displayYAxisCheckbox_Callback(hObject, eventdata, handles)
+% hObject    handle to displayYAxisCheckbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of displayYAxisCheckbox
+    profile = getSelectedProfile(handles);
+    profile.dispYAxis = logical(get(hObject,'Value'));
+
+% --- Executes on button press in displayZAxisCheckbox.
+function displayZAxisCheckbox_Callback(hObject, eventdata, handles)
+% hObject    handle to displayZAxisCheckbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of displayZAxisCheckbox
+    profile = getSelectedProfile(handles);
+    profile.dispZAxis = logical(get(hObject,'Value'));
