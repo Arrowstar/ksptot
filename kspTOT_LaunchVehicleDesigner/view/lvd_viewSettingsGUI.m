@@ -22,7 +22,7 @@ function varargout = lvd_viewSettingsGUI(varargin)
     
     % Edit the above text to modify the response to help lvd_viewSettingsGUI
     
-    % Last Modified by GUIDE v2.5 05-Jul-2020 19:58:59
+    % Last Modified by GUIDE v2.5 06-Jul-2020 19:05:27
     
     % Begin initialization code - DO NOT EDIT
     gui_Singleton = 1;
@@ -76,6 +76,7 @@ function handles = populateGUI(viewSettings, handles)
     
     profile = getSelectedProfile(handles);
     updateGuiForProfile(profile, handles);
+    setDeleteButtonEnable(handles);
     
 function updateGuiForProfile(profile, handles)
     viewSettings = getappdata(handles.lvd_viewSettingsGUI,'viewSettings');
@@ -131,12 +132,24 @@ function updateGuiForProfile(profile, handles)
     handles.displayYAxisCheckbox.Value = double(profile.dispYAxis);
     handles.displayZAxisCheckbox.Value = double(profile.dispZAxis);
     
+    setDeleteButtonEnable(handles);
+    
     
 function profile = getSelectedProfile(handles)
     viewSettings = getappdata(handles.lvd_viewSettingsGUI,'viewSettings');
     
     ind = handles.viewProfilesListbox.Value;
     profile = viewSettings.getProfileAtInd(ind);
+    
+function setDeleteButtonEnable(handles)
+    viewSettings = getappdata(handles.lvd_viewSettingsGUI,'viewSettings');
+    numProfiles = viewSettings.getNumProfiles();
+    
+    if(numProfiles > 1)
+        handles.removeViewProfileButton.Enable = 'on';
+    else
+        handles.removeViewProfileButton.Enable = 'off';
+    end
     
     
     % --- Outputs from this function are returned to the command line.
@@ -193,7 +206,7 @@ function addViewProfileButton_Callback(hObject, eventdata, handles)
     
     handles.viewProfilesListbox.Value = viewSettings.getNumProfiles();
     updateGuiForProfile(newProfile, handles);
-    %     setDeletePluginEnable(lvdData, handles);
+    setDeleteButtonEnable(handles);
     
     % --- Executes on button press in removeViewProfileButton.
 function removeViewProfileButton_Callback(hObject, eventdata, handles)
@@ -203,6 +216,7 @@ function removeViewProfileButton_Callback(hObject, eventdata, handles)
     viewSettings = getappdata(handles.lvd_viewSettingsGUI,'viewSettings');
     
     profile = getSelectedProfile(handles);
+    isActiveProfile = viewSettings.isProfileActive(profile);
     viewSettings.removeViewProfile(profile);
     numProfiles = viewSettings.getNumProfiles();
     
@@ -213,7 +227,13 @@ function removeViewProfileButton_Callback(hObject, eventdata, handles)
     end
     
     profile = getSelectedProfile(handles);
+    if(isActiveProfile)
+        viewSettings.setProfileAsActive(profile);
+        handles.viewProfilesListbox.String = viewSettings.getListboxStr();
+    end
+    
     updateGuiForProfile(profile, handles);
+    setDeleteButtonEnable(handles);
     
     % --- Executes on button press in moveViewProfileDownButton.
 function moveViewProfileDownButton_Callback(hObject, eventdata, handles)
