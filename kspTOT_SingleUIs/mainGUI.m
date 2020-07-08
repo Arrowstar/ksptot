@@ -117,7 +117,7 @@ hStatusBox = findobj(hObject,'Tag','statusText');
 set(hStatusBox, 'String', setINIStatusBoxMsg());
 
 % UIWAIT makes mainGUI wait for user response (see UIRESUME)
-% uiwait(handles.mainGUIFigure);
+% uiwait(handles.mainGUIFigure); 
 
 
 % --- Outputs from this function are returned to the command line.
@@ -779,6 +779,9 @@ function useEarthTimeMenu_Callback(hObject, eventdata, handles)
     
     updateAppOptions(handles.mainGUIFigure, 'ksptot', 'timesystem', 'Earth');
     
+    appOptions = getappdata(handles.mainGUIFigure,'appOptions');
+    notify(appOptions.ksptot,'TimeSystemUpdated');
+    
     try
         testPorkChopper_Callback(handles.testPorkChopper, [], handles);
     catch ME
@@ -798,6 +801,9 @@ function useKerbinTimeMenu_Callback(hObject, eventdata, handles)
     departBodyCombo_Callback(handles.departBodyCombo, [], handles);
     
     updateAppOptions(handles.mainGUIFigure, 'ksptot', 'timesystem', 'Kerbin');
+    
+    appOptions = getappdata(handles.mainGUIFigure,'appOptions');
+    notify(appOptions.ksptot,'TimeSystemUpdated');
     
 	try
         testPorkChopper_Callback(handles.testPorkChopper, [], handles);
@@ -875,7 +881,10 @@ function useKspGmMenu_Callback(hObject, eventdata, handles)
     global options_gravParamType;
     
     options_gravParamType = 'kspStockLike';
-    updateAppOptions(hObject, 'ksptot', 'gravParamType', 'kspStockLike');
+    updateAppOptions(handles.mainGUIFigure, 'ksptot', 'gravParamType', 'kspStockLike');
+    
+    appOptions = getappdata(handles.mainGUIFigure,'appOptions');
+    notify(appOptions.ksptot,'GravParamTypeUpdated');
 
 % --------------------------------------------------------------------
 function useRssLikeGmMenu_Callback(hObject, eventdata, handles)
@@ -885,7 +894,10 @@ function useRssLikeGmMenu_Callback(hObject, eventdata, handles)
     global options_gravParamType;
     
     options_gravParamType = 'rssLike';
-    updateAppOptions(hObject, 'ksptot', 'gravParamType', 'rssLike');
+    updateAppOptions(handles.mainGUIFigure, 'ksptot', 'gravParamType', 'rssLike');
+    
+    appOptions = getappdata(handles.mainGUIFigure,'appOptions');
+    notify(appOptions.ksptot,'GravParamTypeUpdated');
 
 
 % --------------------------------------------------------------------

@@ -1,4 +1,4 @@
-classdef KSPTOT_AppOptions
+classdef KSPTOT_AppOptions < handle
     %KSPTOT_AppOptions Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -13,6 +13,11 @@ classdef KSPTOT_AppOptions
         porkchopnumsynperiods double
         departplotnumoptiters double
         quant2opt char
+    end
+    
+    events
+        GravParamTypeUpdated
+        TimeSystemUpdated
     end
     
     methods

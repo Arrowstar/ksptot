@@ -59,7 +59,8 @@ function ma_LvdMainGUI_OpeningFcn(hObject, eventdata, handles, varargin)
     celBodyData = CelestialBodyData(celBodyData);
     setappdata(hObject,'celBodyData',celBodyData);
     
-    setappdata(hObject,'ksptotMainGUI',varargin{2});
+    hKsptotMainGUI = varargin{2};
+    setappdata(hObject,'ksptotMainGUI',hKsptotMainGUI);
 
     setappdata(hObject,'current_save_location','');
     setappdata(hObject,'application_title','KSP TOT Launch Vehicle Designer');
@@ -95,6 +96,10 @@ function ma_LvdMainGUI_OpeningFcn(hObject, eventdata, handles, varargin)
     set(hDispAxesTimeSlider, 'StateChangedCallback', timeSliderCb);
     
     setappdata(hObject,'orbitPlotType','3DInertial');    
+    
+    gravSystemUpdateCbFh = @(src,evt) gravSystemUpdateCallback(src,evt, handles);
+    appOptions = getappdata(hKsptotMainGUI,'appOptions');
+    addlistener(appOptions.ksptot,'GravParamTypeUpdated',gravSystemUpdateCbFh);
     
     runScript(handles, lvdData, 1);
     lvd_processData(handles);
@@ -135,11 +140,11 @@ function propagateScript(handles, lvdData, evtStartNum)
     drawnow;
     
     if(not(isdeployed))
-%         s = profile('status');
-%         if(strcmpi(s.ProfilerStatus,'on'))
-%             profile off;
-%         end
-%         profile('on','-detail','builtin', '-remove_overhead','on');
+        s = profile('status');
+        if(strcmpi(s.ProfilerStatus,'on'))
+            profile off;
+        end
+        profile('on','-detail','builtin', '-remove_overhead','on');
     end
     
     lvdData.validation.clearOutputs();
@@ -152,7 +157,7 @@ function propagateScript(handles, lvdData, evtStartNum)
     execTime = toc(t);
     
     if(not(isdeployed))
-%         profile viewer;
+        profile viewer;
     end
     
     handles.scriptWorkingLbl.Visible = 'off';
@@ -193,6 +198,13 @@ function timeSliderStateChanged(src,~, lvdData, handles)
     
     handles.timeSliderValueLabel.String = epochStr;
     handles.timeSliderValueLabel.TooltipString = sprintf('UT = %0.3f sec\n%s', time, epochStr);
+    
+    
+function gravSystemUpdateCallback(src,evt, handles)
+    if(isvalid(handles.ma_LvdMainGUI))
+        lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+        lvdData.celBodyData.resetAllParentNeedsUpdateFlags();
+    end
 
 % --- Outputs from this function are returned to the command line.
 function varargout = ma_LvdMainGUI_OutputFcn(hObject, eventdata, handles) 

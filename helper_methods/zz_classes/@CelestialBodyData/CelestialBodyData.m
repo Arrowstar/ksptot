@@ -43,6 +43,12 @@ classdef CelestialBodyData < matlab.mixin.SetGet & dynamicprops
             obj.bodyIdCacheArr = [obj.bodies.id];
         end
         
+        function resetAllParentNeedsUpdateFlags(obj)
+            for(i=1:length(obj.bodies))
+                obj.bodies(i).parentBodyInfoNeedsUpdate = true;
+            end
+        end
+        
         function bodyInfo = getBodyInfoById(obj, bodyId)
 %             arr = [obj.bodies.id];
             bodyInfo = obj.bodies(obj.bodyIdCacheArr == bodyId);
