@@ -63,6 +63,7 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
         bodyFixedFrameCache BodyFixedFrame = BodyFixedFrame.empty(1,0);
         
         sunDotNormalCache SunDotNormalDataCache = SunDotNormalDataCache.empty(1,0);
+        parentGmuCache(1,1) double = NaN;
     end
     
     methods
@@ -104,7 +105,7 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
         end
         
         function parentBodyInfo = getParBodyInfo(obj, celBodyData)
-            if(obj.parentBodyInfoNeedsUpdate && isempty(obj.parentBodyInfo))
+            if(obj.parentBodyInfoNeedsUpdate || isempty(obj.parentBodyInfo))
                 pBodyInfo = getParentBodyInfo(obj, celBodyData);
                 
                 if(not(isempty(pBodyInfo)))
@@ -118,7 +119,7 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
         end
         
         function [childrenBodyInfo, cbNames] = getChildrenBodyInfo(obj, celBodyData)
-            if(obj.childrenBodyInfoNeedsUpdate && isempty(obj.childrenBodyInfo))
+            if(obj.childrenBodyInfoNeedsUpdate || isempty(obj.childrenBodyInfo))
                 [cBodyInfo,cbNames] = getChildrenOfParentInfo(celBodyData, obj.name);
                 
                 if(not(isempty(cBodyInfo)))
@@ -201,28 +202,12 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
             sunDotNormal = obj.sunDotNormalCache.getCachedBodyStateAtTimeAndLong(time, long);
         end
         
-        function createAtmoTempCache(obj)
-            latGrid = deg2rad(-90:10:90);
-            longGrid = deg2rad(0:10:360);
-            altGrid = linspace(0,obj.atmohgt,25);
-            
-            time = 0;
-            temperature = NaN(length(altGrid), length(latGrid), length(longGrid));
-            parfor(i = 1:length(altGrid))
-                altitude = altGrid(i);
-                
-                temp = NaN(length(latGrid), length(longGrid));
-                for(j = 1:length(latGrid))
-                    lat = latGrid(j);
-                    
-                    for(k = 1:length(longGrid))
-                        long = longGrid(k);
-                        temp(j,k) = getBodyAtmoTemperature(obj, time, lat, long, altitude);
-                    end
-                end
-                
-                temperature(i,:,:) = temp;
+        function parentGM = getParentGmuFromCache(obj)
+            if(isnan(obj.parentGmuCache) || obj.parentBodyInfoNeedsUpdate == true)
+                obj.parentGmuCache = getParentGM(obj, obj.celBodyData);
             end
+            
+            parentGM = obj.parentGmuCache;
         end
         
         function tf = eq(A,B)
@@ -244,7 +229,10 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
             obj.doNotUseAtmoPressCurveGI = (obj.atmohgt > 0 && isempty(obj.atmopresscurve));
             
             obj.parentBodyInfoNeedsUpdate = true;
+            obj.getParBodyInfo(obj.celBodyData);
+            
             obj.childrenBodyInfoNeedsUpdate = true;
+            obj.getChildrenBodyInfo(obj.celBodyData);
             
             if(isempty(obj.sunDotNormalCache))
                 obj.sunDotNormalCache = SunDotNormalDataCache(obj);

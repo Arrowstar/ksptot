@@ -135,6 +135,10 @@ function propagateScript(handles, lvdData, evtStartNum)
     drawnow;
     
     if(not(isdeployed))
+%         s = profile('status');
+%         if(strcmpi(s.ProfilerStatus,'on'))
+%             profile off;
+%         end
 %         profile('on','-detail','builtin', '-remove_overhead','on');
     end
     

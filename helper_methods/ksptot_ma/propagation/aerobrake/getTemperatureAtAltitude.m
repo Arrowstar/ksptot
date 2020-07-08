@@ -3,7 +3,8 @@ function temperature = getTemperatureAtAltitude(bodyInfo, altitude, lat, ut, lon
         if(bodyInfo.doNotUseAtmoTempSunMultCurve)
             atmosphereTemperatureOffset = 1;
         else
-            parentGmu = getParentGM(bodyInfo, celBodyData);
+%             parentGmu = getParentGM(bodyInfo, celBodyData);
+            parentGmu = bodyInfo.getParentGmuFromCache();
 
             if(bodyInfo.doNotUseLatTempSunMultCurve)
                 sunDotNormal = 1;
