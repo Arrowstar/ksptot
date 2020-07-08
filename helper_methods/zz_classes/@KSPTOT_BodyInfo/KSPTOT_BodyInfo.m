@@ -61,11 +61,13 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
     properties(Access=private)
         bodyInertialFrameCache BodyCenteredInertialFrame = BodyCenteredInertialFrame.empty(1,0);
         bodyFixedFrameCache BodyFixedFrame = BodyFixedFrame.empty(1,0);
+        
+        sunDotNormalCache SunDotNormalDataCache = SunDotNormalDataCache.empty(1,0);
     end
     
     methods
         function obj = KSPTOT_BodyInfo() 
-        
+            obj.sunDotNormalCache = SunDotNormalDataCache(obj);
         end
         
         function set.atmotempsunmultcurve(obj,newValue)
@@ -192,9 +194,11 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
         end
         
         function temperature = getBodyAtmoTemperature(obj, time, lat, long, altitude)
-            rVectECEF = getrVectEcefFromLatLongAlt(lat, long, altitude, obj);
-            
-            temperature = getTemperatureAtAltitude(obj, altitude, lat, time, rVectECEF, obj.celBodyData);
+            temperature = getTemperatureAtAltitude(obj, altitude, lat, time, long, obj.celBodyData);
+        end
+        
+        function sunDotNormal = getCachedSunDotNormal(obj, time, long)
+            sunDotNormal = obj.sunDotNormalCache.getCachedBodyStateAtTimeAndLong(time, long);
         end
         
         function createAtmoTempCache(obj)
@@ -241,6 +245,10 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
             
             obj.parentBodyInfoNeedsUpdate = true;
             obj.childrenBodyInfoNeedsUpdate = true;
+            
+            if(isempty(obj.sunDotNormalCache))
+                obj.sunDotNormalCache = SunDotNormalDataCache(obj);
+            end
         end
         
         function bodyObj = getObjFromBodyInfoStruct(bodyInfo)

@@ -161,7 +161,7 @@ function plotAtmoCurve(orbitDispAxes, bodyInfo, celBodyData)
         hArr = linspace(0,atmoHgt,100);
         density = zeros(size(hArr));
         for(i=1:length(hArr))
-            density(i) = getAtmoDensityAtAltitude(bodyInfo, hArr(i), deg2rad(45), 0, [bodyInfo.radius + hArr(i);0;0], celBodyData);
+            density(i) = getAtmoDensityAtAltitude(bodyInfo, hArr(i), deg2rad(45), 0, 0, celBodyData);
         end
 
         plot(orbitDispAxes,hArr,density,'r-','LineWidth',2);

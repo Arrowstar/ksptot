@@ -1,4 +1,4 @@
-function temperature = getTemperatureAtAltitude(bodyInfo, altitude, lat, ut, rECEF, celBodyData) 
+function temperature = getTemperatureAtAltitude(bodyInfo, altitude, lat, ut, long, celBodyData) 
     if(altitude <= bodyInfo.atmohgt && altitude >= 0)
         if(bodyInfo.doNotUseAtmoTempSunMultCurve)
             atmosphereTemperatureOffset = 1;
@@ -8,7 +8,8 @@ function temperature = getTemperatureAtAltitude(bodyInfo, altitude, lat, ut, rEC
             if(bodyInfo.doNotUseLatTempSunMultCurve)
                 sunDotNormal = 1;
             else
-                sunDotNormal = computeSunDotNormal(ut, rECEF, bodyInfo, celBodyData);
+%                 sunDotNormal = computeSunDotNormal(ut, long, bodyInfo, celBodyData);
+                sunDotNormal = bodyInfo.getCachedSunDotNormal(ut, long);
             end
 
             if(bodyInfo.doNotUseAxialTempSunMultCurve)
@@ -31,23 +32,6 @@ function temperature = getTemperatureAtAltitude(bodyInfo, altitude, lat, ut, rEC
         temperature = 0;
     else 
         temperature = 0;
-    end
-end
-
-function sunDotNormal = computeSunDotNormal(ut, rECEF, bodyInfo, celBodyData)
-    rVectSunSC = -1.0 * getPositOfBodyWRTSun(ut, bodyInfo, celBodyData);
-    
-    if(norm(rVectSunSC) == 0)
-        sunDotNormal = 1.0;
-    else
-        rVectSunECEF = getFixedFrameVectFromInertialVect(ut, rVectSunSC, bodyInfo);
-
-        planarRvectEcef = [rECEF(1); rECEF(2); 0];
-        planarRvectSunEcef = [rVectSunECEF(1); rVectSunECEF(2); 0];
-
-        hra = angleNegPiToPi(dang(planarRvectEcef,planarRvectSunEcef));
-
-        sunDotNormal = 0.5 * cos(hra + deg2rad(45)) + 0.5;
     end
 end
 

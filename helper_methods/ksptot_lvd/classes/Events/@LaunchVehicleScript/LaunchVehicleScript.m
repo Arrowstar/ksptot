@@ -231,7 +231,7 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
                     obj.lvdData.plugins.executePluginsAfterEvent(stateLog, evt);
                     
 %                     evtTime = toc(ttt);
-%                     fprintf('Duration to execute Event %u: %0.3f\n', i, evtTime);
+%                     fprintf('Duration to execute Event %u: %0.3f (Evt Dur: %0.3f s)\n', i, evtTime, newStateLogEntries(end).time-newStateLogEntries(1).time);
                 end
                 
                 tPropTime = toc(tStartPropTime);

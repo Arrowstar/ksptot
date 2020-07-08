@@ -14,8 +14,8 @@ function datapt = ma_GAAeroTasks(stateLogEntry, subTask, celBodyData)
             altitude = norm(rVectECI) - bodyInfo.radius;
 
             if(altitude <= bodyInfo.atmohgt && altitude >= 0)
-                [lat, ~, ~, ~, ~, ~, rECEF, vVectECEF] = getLatLongAltFromInertialVect(ut, rVectECI, bodyInfo, vVectECI);
-                density = getAtmoDensityAtAltitude(bodyInfo, altitude, lat, ut, rECEF, celBodyData); 
+                [lat, long, ~, ~, ~, ~, ~, vVectECEF] = getLatLongAltFromInertialVect(ut, rVectECI, bodyInfo, vVectECI);
+                density = getAtmoDensityAtAltitude(bodyInfo, altitude, lat, ut, long, celBodyData); 
             elseif(altitude <= 0)
                 density = 0;
                 vVectECEF = [0;0;0];
@@ -41,8 +41,8 @@ function datapt = ma_GAAeroTasks(stateLogEntry, subTask, celBodyData)
             altitude = norm(rVectECI) - bodyInfo.radius;
 
             if(altitude <= bodyInfo.atmohgt && altitude >= 0)
-                [lat, ~, ~, ~, ~, ~, rECEF, ~] = getLatLongAltFromInertialVect(ut, rVectECI, bodyInfo, vVectECI);
-                temperature = getTemperatureAtAltitude(bodyInfo, altitude, lat, ut, rECEF, celBodyData) ;
+                [lat, long, ~, ~, ~, ~, ~, ~] = getLatLongAltFromInertialVect(ut, rVectECI, bodyInfo, vVectECI);
+                temperature = getTemperatureAtAltitude(bodyInfo, altitude, lat, ut, long, celBodyData) ;
             elseif(altitude <= 0)
                 temperature = 0;
             else 
@@ -55,8 +55,8 @@ function datapt = ma_GAAeroTasks(stateLogEntry, subTask, celBodyData)
             altitude = norm(rVectECI) - bodyInfo.radius;
 
             if(altitude <= bodyInfo.atmohgt && altitude >= 0)
-                [lat, ~, ~, ~, ~, ~, rECEF, ~] = getLatLongAltFromInertialVect(ut, rVectECI, bodyInfo, vVectECI);
-                density = getAtmoDensityAtAltitude(bodyInfo, altitude, lat, ut, rECEF, celBodyData); 
+                [lat, long, ~, ~, ~, ~, ~, ~] = getLatLongAltFromInertialVect(ut, rVectECI, bodyInfo, vVectECI);
+                density = getAtmoDensityAtAltitude(bodyInfo, altitude, lat, ut, long, celBodyData); 
             elseif(altitude <= 0)
                 density = 0;
             else 
@@ -69,8 +69,8 @@ function datapt = ma_GAAeroTasks(stateLogEntry, subTask, celBodyData)
             pressure = getPressureAtAltitude(bodyInfo, altitude);
             
             if(altitude <= bodyInfo.atmohgt && altitude >= 0)
-                [lat, ~, ~, ~, ~, ~, rECEF, vVectECEF, ~] = getLatLongAltFromInertialVect(ut, rVectECI, bodyInfo, vVectECI);
-                density = getAtmoDensityAtAltitude(bodyInfo, altitude, lat, ut, rECEF, celBodyData); 
+                [lat, long, ~, ~, ~, ~, ~, vVectECEF, ~] = getLatLongAltFromInertialVect(ut, rVectECI, bodyInfo, vVectECI);
+                density = getAtmoDensityAtAltitude(bodyInfo, altitude, lat, ut, long, celBodyData); 
             elseif(altitude <= 0)
                 density = 0;
             else 
