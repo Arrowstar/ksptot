@@ -151,8 +151,9 @@ classdef LvdData < matlab.mixin.SetGet
                 for(i=1:length(obj.viewSettings.viewProfiles))
                     profile = obj.viewSettings.viewProfiles(i);
 
-                    if(isempty(profile.viewCentralBody))
-                        profile.viewCentralBody = obj.initialState.centralBody;
+                    if(isempty(profile.frame))
+                        originBodyInfo = obj.getDefaultInitialBodyInfo(obj.celBodyData);
+                        profile.frame = originBodyInfo.getBodyCenteredInertialFrame();
                     end
                 end
             end

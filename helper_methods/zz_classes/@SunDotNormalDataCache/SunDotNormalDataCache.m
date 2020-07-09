@@ -34,7 +34,7 @@ classdef SunDotNormalDataCache < matlab.mixin.SetGet
                 obj.sunDotNormalFitObj = griddedInterpolant({times,obj.cacheLongGrid},sunDotNormalR);
                 
                 obj.cacheStartTime = times(1);
-                obj.cacheEndTime = times(2);
+                obj.cacheEndTime = times(end);
             end
             
             %now handle adding to the cache, if needed

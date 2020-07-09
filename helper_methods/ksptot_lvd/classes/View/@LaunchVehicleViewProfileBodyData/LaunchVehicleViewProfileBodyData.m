@@ -47,18 +47,20 @@ classdef LaunchVehicleViewProfileBodyData < matlab.mixin.SetGet
                     z = zInterp(time);
                     
                     if(obj.plotStyle == ViewProfileBodyPlottingStyle.Dot)
-                        if(not(isempty(obj.markerPlot)) && isvalid(obj.markerPlot) && isa(obj.markerPlot, 'matlab.graphics.chart.primitive.Line'))
-                            obj.markerPlot.XData = x;
-                            obj.markerPlot.YData = y;
-                            obj.markerPlot.ZData = z;
+                        if(not(isempty(obj.markerPlot)) && isvalid(obj.markerPlot) && isa(obj.markerPlot, 'matlab.graphics.primitive.Transform'))
+                            M = makehgtform('translate',[x,y,z]);
+                            set(obj.markerPlot,'Matrix',M);
+                            
                         else
-                            hold(hAx,'on');
-%                             obj.markerPlot = plot3(hAx, x,y,z, 'o', 'MarkerEdgeColor','k', 'MarkerFaceColor',bColorRGB);    
+                            hold(hAx,'on');   
                             obj.markerPlot = hgtransform('Parent', hAx);
-                            hBM = plot3(hAx, x,y,z, 'o', 'MarkerEdgeColor','k', 'MarkerFaceColor',bColorRGB);  
+                            hBM = plot3(hAx, 0,0,0, 'o', 'MarkerEdgeColor','k', 'MarkerFaceColor',bColorRGB);  
                             set(hBM,'Parent',obj.markerPlot);    
                             
                             obj.createSoIRadii(hAx);
+                            
+                            M = makehgtform('translate',[x,y,z]);
+                            set(obj.markerPlot,'Matrix',M);
                             
                             hold(hAx,'off');
                         end

@@ -140,11 +140,11 @@ function propagateScript(handles, lvdData, evtStartNum)
     drawnow;
     
     if(not(isdeployed))
-        s = profile('status');
-        if(strcmpi(s.ProfilerStatus,'on'))
-            profile off;
-        end
-        profile('on','-detail','builtin', '-remove_overhead','on');
+%         s = profile('status');
+%         if(strcmpi(s.ProfilerStatus,'on'))
+%             profile off;
+%         end
+%         profile('on','-detail','builtin', '-remove_overhead','on');
     end
     
     lvdData.validation.clearOutputs();
@@ -157,7 +157,7 @@ function propagateScript(handles, lvdData, evtStartNum)
     execTime = toc(t);
     
     if(not(isdeployed))
-        profile viewer;
+%         profile viewer;
     end
     
     handles.scriptWorkingLbl.Visible = 'off';

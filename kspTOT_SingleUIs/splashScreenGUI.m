@@ -59,9 +59,9 @@ handles.output = hObject;
 guidata(hObject, handles);
 
 if isunix
-    rgb = imread('./images/logo500px.jpg');
+    rgb = imread('images/logo500px.jpg');
 else
-    rgb = imread('.\images\logo500px.jpg');
+    rgb = imread('images\logo500px.jpg');
 end
 image(rgb,'Parent',handles.logoAxes);
 axis off; 
