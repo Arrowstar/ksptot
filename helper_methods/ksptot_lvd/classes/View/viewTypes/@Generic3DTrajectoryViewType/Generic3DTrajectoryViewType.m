@@ -71,7 +71,7 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                         
                         if(ismember(entry.event.getEventNum(), evtIds) && ...
                            entry.centralBody == bodyInfo)
-                            lvdStateLogEntries(end+1) = entry;
+                            lvdStateLogEntries(end+1) = entry; %#ok<AGROW>
                         end
                     end
 
@@ -205,11 +205,7 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             bodyID = subStateLogs{1}(1,8);
                         
             hCBodySurf = ma_initOrbPlot(hFig, dAxes, viewCentralBody);
-            
-            if(~isempty(handles))
-                setappdata(handles.dispAxes,'CurCentralBodyId',bodyID);
-            end
-            
+                        
             eventsList = unique(eventsList);
             minEventNum = min(eventsList);
             maxEventNum = max(eventsList);

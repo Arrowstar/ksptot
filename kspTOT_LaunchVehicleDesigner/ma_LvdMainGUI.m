@@ -99,9 +99,8 @@ function ma_LvdMainGUI_OpeningFcn(hObject, eventdata, handles, varargin)
     hDispAxesTimeSlider = handle(jDispAxesTimeSlider, 'CallbackProperties');
     handles.hDispAxesTimeSlider = hDispAxesTimeSlider;
     timeSliderCb = @(src,evt) timeSliderStateChanged(src,evt, lvdData, handles);
-    set(hDispAxesTimeSlider, 'StateChangedCallback', timeSliderCb);
-    
-    setappdata(hObject,'orbitPlotType','3DInertial');    
+    set(hDispAxesTimeSlider, 'StateChangedCallback', timeSliderCb); 
+    setappdata(handles.hDispAxesTimeSlider,'lastTime',NaN);
     
     gravSystemUpdateCbFh = @(src,evt) gravSystemUpdateCallback(src,evt, handles);
     appOptions = getappdata(hKsptotMainGUI,'appOptions');
@@ -193,24 +192,30 @@ function recordFinalAxesPanZoomAfterRotation(obj,event_obj, handles)
                                                           handles.dispAxes.YLim;
                                                           handles.dispAxes.ZLim];
     
-function timeSliderStateChanged(src,~, lvdData, handles)
-    markerTrajData = lvdData.viewSettings.selViewProfile.markerTrajData;
-    markerBodyData = lvdData.viewSettings.selViewProfile.markerBodyData;
-    
+function timeSliderStateChanged(src,evt, lvdData, handles)   
     time = src.getValue();
-    hAx = handles.dispAxes;
-    figure(handles.ma_LvdMainGUI);
+    lastTime = getappdata(handles.hDispAxesTimeSlider,'lastTime');
     
-    markerTrajData.plotBodyMarkerAtTime(time, hAx);
-    for(i=1:length(markerBodyData))
-        markerBodyData(i).plotBodyMarkerAtTime(time, hAx);
+    if(time ~= lastTime)
+        hAx = handles.dispAxes;
+        figure(handles.ma_LvdMainGUI);
+        
+        markerTrajData = lvdData.viewSettings.selViewProfile.markerTrajData;
+        markerBodyData = lvdData.viewSettings.selViewProfile.markerBodyData;
+        
+        markerTrajData.plotBodyMarkerAtTime(time, hAx);
+        for(i=1:length(markerBodyData))
+            markerBodyData(i).plotBodyMarkerAtTime(time, hAx);
+        end
+
+        [year, day, hour, minute, sec] = convertSec2YearDayHrMnSec(time);
+        epochStr = formDateStr(year, day, hour, minute, sec);
+
+        handles.timeSliderValueLabel.String = epochStr;
+        handles.timeSliderValueLabel.TooltipString = sprintf('UT = %0.3f sec\n%s', time, epochStr);
+
+        setappdata(handles.hDispAxesTimeSlider,'lastTime',time);
     end
-    
-    [year, day, hour, minute, sec] = convertSec2YearDayHrMnSec(time);
-    epochStr = formDateStr(year, day, hour, minute, sec);
-    
-    handles.timeSliderValueLabel.String = epochStr;
-    handles.timeSliderValueLabel.TooltipString = sprintf('UT = %0.3f sec\n%s', time, epochStr);
     
     
 function gravSystemUpdateCallback(src,evt, handles)
@@ -736,6 +741,7 @@ function newMissionPlanMenu_Callback(hObject, eventdata, handles, varargin)
     setDeleteButtonEnable(lvdData, handles);
     setNonSeqDeleteButtonEnable(lvdData, handles);
 
+    setappdata(handles.hDispAxesTimeSlider,'lastTime',NaN);
     timeSliderCb = @(src,evt) timeSliderStateChanged(src,evt, lvdData, handles);
     set(handles.hDispAxesTimeSlider, 'StateChangedCallback', timeSliderCb);
     
@@ -844,6 +850,7 @@ function openMissionPlanMenu_Callback(hObject, eventdata, handles)
             setDeleteButtonEnable(lvdData, handles);
             setNonSeqDeleteButtonEnable(lvdData, handles)
             
+            setappdata(handles.hDispAxesTimeSlider,'lastTime',NaN);
             timeSliderCb = @(src,evt) timeSliderStateChanged(src,evt, lvdData, handles);
             set(handles.hDispAxesTimeSlider, 'StateChangedCallback', timeSliderCb);
             
@@ -1672,6 +1679,7 @@ function viewProfileMenuSelectedCallback(src,~, profile, viewSettings, handles)
         delete(menus(i));
     end
     
+    setappdata(handles.hDispAxesTimeSlider,'lastTime',NaN);
     lvd_processData(handles);
     
 % --------------------------------------------------------------------
@@ -1849,6 +1857,7 @@ function editViewSettingsMenu_Callback(hObject, eventdata, handles)
     
     lvd_viewSettingsGUI(lvdData.viewSettings);
     
+    setappdata(handles.hDispAxesTimeSlider,'lastTime',NaN);
     lvd_processData(handles);
 
 
