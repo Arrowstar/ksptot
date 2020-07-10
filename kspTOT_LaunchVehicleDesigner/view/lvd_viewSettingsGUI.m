@@ -22,7 +22,7 @@ function varargout = lvd_viewSettingsGUI(varargin)
     
     % Edit the above text to modify the response to help lvd_viewSettingsGUI
     
-    % Last Modified by GUIDE v2.5 06-Jul-2020 19:05:27
+    % Last Modified by GUIDE v2.5 09-Jul-2020 22:23:08
     
     % Begin initialization code - DO NOT EDIT
     gui_Singleton = 1;
@@ -110,13 +110,7 @@ function updateGuiForProfile(profile, handles)
     handles.trajViewFrameCombo.Value = ReferenceFrameEnum.getIndForName(profile.frame.typeEnum.name);
     handles.setFrameOptionsButton.TooltipString = sprintf('Current Frame: %s', profile.frame.getNameStr());
     
-    %     handles.trajViewFrameCombo.String = ViewTypeEnum.getListBoxStr();
-    %     handles.trajViewFrameCombo.Value = ViewTypeEnum.getIndForName(profile.frameEnum.name);
-    
-        [~, sortedBodyInfo] = ma_getSortedBodyNames(celBodyData);
-    %     tf = cellfun(@(c) c == profile.viewCentralBody, sortedBodyInfo);
-    %     bInd = find(tf,1,'first');
-    %     handles.viewAllOriginCentralBodyCombo.Value = bInd;
+    [~, sortedBodyInfo] = ma_getSortedBodyNames(celBodyData);
     
     indsToSel = [];
     for(i=1:length(profile.bodiesToPlot))
@@ -131,6 +125,17 @@ function updateGuiForProfile(profile, handles)
     handles.displayXAxisCheckbox.Value = double(profile.dispXAxis);
     handles.displayYAxisCheckbox.Value = double(profile.dispYAxis);
     handles.displayZAxisCheckbox.Value = double(profile.dispZAxis);
+    
+    handles.showThrustVectorsCheckbox.Value = double(profile.showThrustVectors);
+    
+    handles.thrustVectColorCombo.String = ColorSpecEnum.getListboxStr();
+    handles.thrustVectColorCombo.Value = ColorSpecEnum.getIndForName(profile.thrustVectColor.name);
+    
+    handles.thrustVectLineStyleCombo.String = LineSpecEnum.getListboxStr();
+    handles.thrustVectLineStyleCombo.Value = LineSpecEnum.getIndForName(profile.thrustVectLineType.name);
+    
+    handles.thrustVectScaleText.String = fullAccNum2Str(profile.thrustVectScale);
+    handles.thrustVectIncrText.String = fullAccNum2Str(profile.thrustVectEntryIncr);
     
     setDeleteButtonEnable(handles);
     
@@ -719,3 +724,177 @@ function displayZAxisCheckbox_Callback(hObject, eventdata, handles)
 % Hint: get(hObject,'Value') returns toggle state of displayZAxisCheckbox
     profile = getSelectedProfile(handles);
     profile.dispZAxis = logical(get(hObject,'Value'));
+
+
+% --- Executes on button press in showThrustVectorsCheckbox.
+function showThrustVectorsCheckbox_Callback(hObject, eventdata, handles)
+% hObject    handle to showThrustVectorsCheckbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of showThrustVectorsCheckbox
+    profile = getSelectedProfile(handles);
+    profile.showThrustVectors = logical(get(hObject,'Value'));
+
+% --- Executes on selection change in thrustVectColorCombo.
+function thrustVectColorCombo_Callback(hObject, eventdata, handles)
+% hObject    handle to thrustVectColorCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns thrustVectColorCombo contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from thrustVectColorCombo
+    profile = getSelectedProfile(handles);
+    
+    contents = cellstr(get(hObject,'String'));
+    str = contents{get(hObject,'Value')};
+    
+    profile.thrustVectColor = ColorSpecEnum.getEnumForListboxStr(str);
+
+% --- Executes during object creation, after setting all properties.
+function thrustVectColorCombo_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to thrustVectColorCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in thrustVectLineStyleCombo.
+function thrustVectLineStyleCombo_Callback(hObject, eventdata, handles)
+% hObject    handle to thrustVectLineStyleCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns thrustVectLineStyleCombo contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from thrustVectLineStyleCombo
+    profile = getSelectedProfile(handles);
+    
+    contents = cellstr(get(hObject,'String'));
+    str = contents{get(hObject,'Value')};
+    
+    profile.thrustVectLineType = LineSpecEnum.getEnumForListboxStr(str);
+
+% --- Executes during object creation, after setting all properties.
+function thrustVectLineStyleCombo_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to thrustVectLineStyleCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function thrustVectIncrText_Callback(hObject, eventdata, handles)
+% hObject    handle to thrustVectIncrText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of thrustVectIncrText as text
+%        str2double(get(hObject,'String')) returns contents of thrustVectIncrText as a double
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
+    
+    profile = getSelectedProfile(handles);
+    
+    errMsg = {};
+    
+    incr = str2double(get(hObject,'String'));
+    enteredStr = get(hObject,'String');
+    numberName = 'Thrust Vector Data Point Incrememnt';
+    lb = 1;
+    ub = Inf;
+    isInt = true;
+    errMsg = validateNumber(incr, numberName, lb, ub, isInt, errMsg, enteredStr);
+    
+    if(isempty(errMsg))
+        profile.thrustVectEntryIncr = incr;
+    else
+        hObject.String = fullAccNum2Str(profile.thrustVectEntryIncr);
+        
+        msgbox(errMsg,'Invalid Thrust Vector Data Point Incrememnt','error');
+    end
+
+% --- Executes during object creation, after setting all properties.
+function thrustVectIncrText_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to thrustVectIncrText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function thrustVectScaleText_Callback(hObject, eventdata, handles)
+% hObject    handle to thrustVectScaleText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of thrustVectScaleText as text
+%        str2double(get(hObject,'String')) returns contents of thrustVectScaleText as a double
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
+    
+    profile = getSelectedProfile(handles);
+    
+    errMsg = {};
+    
+    scale = str2double(get(hObject,'String'));
+    enteredStr = get(hObject,'String');
+    numberName = 'Thrust Vector Scale Factor';
+    lb = 0;
+    ub = Inf;
+    isInt = false;
+    errMsg = validateNumber(scale, numberName, lb, ub, isInt, errMsg, enteredStr);
+    
+    if(isempty(errMsg))
+        profile.thrustVectScale = scale;
+    else
+        hObject.String = fullAccNum2Str(profile.thrustVectScale);
+        
+        msgbox(errMsg,'Invalid Thrust Vector Scale Factor Value','error');
+    end
+
+% --- Executes during object creation, after setting all properties.
+function thrustVectScaleText_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to thrustVectScaleText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on key press with focus on lvd_viewSettingsGUI or any of its controls.
+function lvd_viewSettingsGUI_WindowKeyPressFcn(hObject, eventdata, handles)
+% hObject    handle to lvd_viewSettingsGUI (see GCBO)
+% eventdata  structure with the following fields (see MATLAB.UI.FIGURE)
+%	Key: name of the key that was pressed, in lower case
+%	Character: character interpretation of the key(s) that was pressed
+%	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
+% handles    structure with handles and user data (see GUIDATA)
+    switch(eventdata.Key)
+        case 'return'
+            saveAndCloseButton_Callback(handles.lvd_viewSettingsGUI, [], handles);
+        case 'enter'
+            saveAndCloseButton_Callback(handles.lvd_viewSettingsGUI, [], handles);
+        case 'escape'
+            close(handles.lvd_viewSettingsGUI);
+    end

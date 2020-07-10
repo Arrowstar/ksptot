@@ -90,6 +90,10 @@ classdef ForceModelPropagator < AbstractPropagator
                 obj.forceModels = [ForceModelsEnum.getAllForceModelsThatCannotBeDisabled(), m(Selection)'];
             end
         end
+        
+        function tf = canProduceThrust(obj)
+            tf = any(ismember(obj.forceModels, ForceModelsEnum.Thrust));
+        end
     end
 
     methods(Static, Access=private)

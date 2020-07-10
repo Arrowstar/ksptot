@@ -26,6 +26,13 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         %body fixed options
         showLongLatAnnotations(1,1) logical = true;
         
+        %thrust vectors
+        showThrustVectors(1,1) logical = false;
+        thrustVectColor(1,1) ColorSpecEnum  = ColorSpecEnum.Red;
+        thrustVectLineType(1,1) LineSpecEnum = LineSpecEnum.SolidLine;
+        thrustVectScale(1,1) double = 1;
+        thrustVectEntryIncr(1,1) double = 1;
+        
         %SoI and other body options
         showSoIRadius(1,1) logical = false;
         bodiesToPlot(1,:) KSPTOT_BodyInfo = KSPTOT_BodyInfo.empty(1,0);
@@ -34,6 +41,7 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         %view properties (set by user indirectly through UI controls)
         orbitNumToPlot(1,1) double = 1;
         viewAzEl(1,2) = [-37.5, 30]; %view(3)
+        viewZoomAxLims(3,2) = NaN(3,2);
         markerTrajData(1,:) LaunchVehicleViewProfileTrajectoryData = LaunchVehicleViewProfileTrajectoryData.empty(1,0);
         markerBodyData(1,:) LaunchVehicleViewProfileBodyData = LaunchVehicleViewProfileBodyData.empty(1,0);
     end

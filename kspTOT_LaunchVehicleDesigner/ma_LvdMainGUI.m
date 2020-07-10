@@ -78,7 +78,13 @@ function ma_LvdMainGUI_OpeningFcn(hObject, eventdata, handles, varargin)
     view(handles.dispAxes,3);
     
     hRot3D = rotate3d(handles.ma_LvdMainGUI);
-    hRot3D.ActionPostCallback = @(src,evt) recordFinalAxesViewAfterRotation(src,evt, lvdData,handles); 
+    hRot3D.ActionPostCallback = @(src,evt) recordFinalAxesViewAfterRotation(src,evt, handles); 
+    
+    hZoom = zoom(handles.ma_LvdMainGUI);
+    hZoom.ActionPostCallback = @(src,evt) recordFinalAxesPanZoomAfterRotation(src,evt, handles);
+    
+    hPan = pan(handles.ma_LvdMainGUI);
+    hPan.ActionPostCallback = @(src,evt) recordFinalAxesPanZoomAfterRotation(src,evt, handles);
     
     setDeleteButtonEnable(lvdData, handles);
     setNonSeqDeleteButtonEnable(lvdData, handles);
@@ -176,9 +182,16 @@ function celBodyData = getCelBodyDataFromMainGui(handles)
     celBodyData = mainGUIUserData{1,1};
    
     
-function recordFinalAxesViewAfterRotation(obj,event_obj, lvdData,handles)  
+function recordFinalAxesViewAfterRotation(obj,event_obj, handles)  
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
     [az,el] = view(handles.dispAxes);
     lvdData.viewSettings.selViewProfile.viewAzEl = [az,el];
+    
+function recordFinalAxesPanZoomAfterRotation(obj,event_obj, handles)  
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    lvdData.viewSettings.selViewProfile.viewZoomAxLims = [handles.dispAxes.XLim;
+                                                          handles.dispAxes.YLim;
+                                                          handles.dispAxes.ZLim];
     
 function timeSliderStateChanged(src,~, lvdData, handles)
     markerTrajData = lvdData.viewSettings.selViewProfile.markerTrajData;
@@ -723,9 +736,6 @@ function newMissionPlanMenu_Callback(hObject, eventdata, handles, varargin)
     setDeleteButtonEnable(lvdData, handles);
     setNonSeqDeleteButtonEnable(lvdData, handles);
 
-    hRot3D = rotate3d(handles.ma_LvdMainGUI);
-    hRot3D.ActionPostCallback = @(src,evt) recordFinalAxesViewAfterRotation(src,evt, lvdData,handles); 
-
     timeSliderCb = @(src,evt) timeSliderStateChanged(src,evt, lvdData, handles);
     set(handles.hDispAxesTimeSlider, 'StateChangedCallback', timeSliderCb);
     
@@ -833,9 +843,6 @@ function openMissionPlanMenu_Callback(hObject, eventdata, handles)
             
             setDeleteButtonEnable(lvdData, handles);
             setNonSeqDeleteButtonEnable(lvdData, handles)
-            
-            hRot3D = rotate3d(handles.ma_LvdMainGUI);
-            hRot3D.ActionPostCallback = @(src,evt) recordFinalAxesViewAfterRotation(src,evt, lvdData,handles); 
             
             timeSliderCb = @(src,evt) timeSliderStateChanged(src,evt, lvdData, handles);
             set(handles.hDispAxesTimeSlider, 'StateChangedCallback', timeSliderCb);

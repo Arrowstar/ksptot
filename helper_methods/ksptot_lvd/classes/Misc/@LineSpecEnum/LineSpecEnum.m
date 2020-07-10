@@ -32,5 +32,11 @@ classdef LineSpecEnum < matlab.mixin.SetGet
             ind = find(ismember({m.name},nameStr),1,'first');
             enum = m(ind);
         end
+        
+        function [ind, enum] = getIndForName(name)
+            m = enumeration('LineSpecEnum');
+            ind = find(ismember({m.name},name),1,'first');
+            enum = m(ind);
+        end
     end
 end

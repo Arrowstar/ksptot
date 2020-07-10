@@ -73,7 +73,7 @@ classdef LaunchVehicleViewProfileBodyData < matlab.mixin.SetGet
                             hold(hAx,'on');
                             
                             dRad = obj.bodyInfo.radius;
-                            [X,Y,Z] = sphere(20);
+                            [X,Y,Z] = sphere(30);
                             CData = getCDataForSphereWithColormap(Z, obj.bodyInfo.bodycolor);
 
                             obj.markerPlot = hgtransform('Parent', hAx);

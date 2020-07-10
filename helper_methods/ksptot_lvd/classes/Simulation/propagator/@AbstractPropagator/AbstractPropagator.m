@@ -20,6 +20,8 @@ classdef(Abstract) AbstractPropagator < matlab.mixin.SetGet & matlab.mixin.Heter
         [value,isterminal,direction,causes] = callEventsFcn(obj, odeEventsFun, stateLogEntry);
         
         openOptionsDialog(obj);
+
+        tf = canProduceThrust(obj);
     end
     
     methods(Static, Access = protected)

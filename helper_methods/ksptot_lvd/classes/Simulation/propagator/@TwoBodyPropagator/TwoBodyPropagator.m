@@ -108,6 +108,10 @@ classdef TwoBodyPropagator < AbstractPropagator
         function openOptionsDialog(obj)
             %nothing at the moment
         end
+
+        function tf = canProduceThrust(obj)
+            tf = false;
+        end
     end
 
     methods(Static, Access=private)

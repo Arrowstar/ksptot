@@ -19,6 +19,9 @@ function [taskList] = lvd_getGraphAnalysisTaskList(lvdData, excludeList)
     taskList{end+1} = 'Drag Area';
     taskList{end+1} = 'Event Number';
     taskList{end+1} = 'Total Effective Isp';
+    taskList{end+1} = 'Total Thrust Vector X Component';
+    taskList{end+1} = 'Total Thrust Vector Y Component';
+    taskList{end+1} = 'Total Thrust Vector Z Component';
     
     [tanksGAStr, ~] = lvdData.launchVehicle.getTanksGraphAnalysisTaskStrs();
     taskList = horzcat(taskList, tanksGAStr);

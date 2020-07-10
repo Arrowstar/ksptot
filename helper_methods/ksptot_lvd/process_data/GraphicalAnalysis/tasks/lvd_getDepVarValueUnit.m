@@ -76,6 +76,15 @@ function [depVarValue, depVarUnit, taskStr, refBodyInfo] = lvd_getDepVarValueUni
         case 'Total Effective Isp'
             depVarValue = lvd_PropulsionTasks(subLog(i), 'totalEffIsp');
             depVarUnit = 'sec';
+        case 'Total Thrust Vector X Component'
+            depVarValue = lvd_ThrottleTask(subLog(i), 'thrust_x');
+            depVarUnit = 'kN';
+        case 'Total Thrust Vector Y Component'
+            depVarValue = lvd_ThrottleTask(subLog(i), 'thrust_y');
+            depVarUnit = 'kN';
+        case 'Total Thrust Vector Z Component'
+            depVarValue = lvd_ThrottleTask(subLog(i), 'thrust_z');
+            depVarUnit = 'kN';
             
         otherwise %is a programmatically generated string that we'll handle here
             tankMassPattern = 'Tank (\d+?) Mass - ".*"';
