@@ -193,10 +193,8 @@ function recordFinalAxesPanZoomAfterRotation(obj,event_obj, handles)
                                                           handles.dispAxes.ZLim];
     
 function timeSliderStateChanged(src,evt, lvdData, handles)   
-    time = src.getValue();
-    lastTime = getappdata(handles.hDispAxesTimeSlider,'lastTime');
-    
-    if(time ~= lastTime)
+    if(src.getValueIsAdjusting() || (islogical(evt) && evt==true))
+        time = src.getValue();
         hAx = handles.dispAxes;
         figure(handles.ma_LvdMainGUI);
         
@@ -207,14 +205,14 @@ function timeSliderStateChanged(src,evt, lvdData, handles)
         for(i=1:length(markerBodyData))
             markerBodyData(i).plotBodyMarkerAtTime(time, hAx);
         end
+        
+        lvdData.viewSettings.selViewProfile.updateLightPosition(time);
 
         [year, day, hour, minute, sec] = convertSec2YearDayHrMnSec(time);
         epochStr = formDateStr(year, day, hour, minute, sec);
 
         handles.timeSliderValueLabel.String = epochStr;
         handles.timeSliderValueLabel.TooltipString = sprintf('UT = %0.3f sec\n%s', time, epochStr);
-
-        setappdata(handles.hDispAxesTimeSlider,'lastTime',time);
     end
     
     

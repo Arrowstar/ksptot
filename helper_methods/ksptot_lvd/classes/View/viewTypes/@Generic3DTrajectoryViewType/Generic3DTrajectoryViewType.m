@@ -201,8 +201,6 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                 end
                 hold(dAxes,'off');
             end
-            
-            bodyID = subStateLogs{1}(1,8);
                         
             hCBodySurf = ma_initOrbPlot(hFig, dAxes, viewCentralBody);
                         
@@ -256,6 +254,7 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             hold(dAxes,'on');
             viewProfile.createBodyMarkerData(dAxes, subStateLogs, viewInFrame, showSoI);
             viewProfile.createTrajectoryMarkerData(subStateLogs, lvdData.script.evts);
+            viewProfile.createSunLightSrc(dAxes, viewInFrame);
             viewProfile.configureTimeSlider(minTime, maxTime, subStateLogs, handles);
             hold(dAxes,'off');
         end

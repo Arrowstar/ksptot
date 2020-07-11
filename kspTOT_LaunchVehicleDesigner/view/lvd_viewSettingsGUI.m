@@ -22,7 +22,7 @@ function varargout = lvd_viewSettingsGUI(varargin)
     
     % Edit the above text to modify the response to help lvd_viewSettingsGUI
     
-    % Last Modified by GUIDE v2.5 09-Jul-2020 22:23:08
+    % Last Modified by GUIDE v2.5 10-Jul-2020 20:35:15
     
     % Begin initialization code - DO NOT EDIT
     gui_Singleton = 1;
@@ -136,6 +136,9 @@ function updateGuiForProfile(profile, handles)
     
     handles.thrustVectScaleText.String = fullAccNum2Str(profile.thrustVectScale);
     handles.thrustVectIncrText.String = fullAccNum2Str(profile.thrustVectEntryIncr);
+    
+    handles.showSunLightingCheckbox.Value = double(profile.showLighting);
+    handles.showSunVectorCheckbox.Value = double(profile.showSunVect);
     
     setDeleteButtonEnable(handles);
     
@@ -898,3 +901,24 @@ function lvd_viewSettingsGUI_WindowKeyPressFcn(hObject, eventdata, handles)
         case 'escape'
             close(handles.lvd_viewSettingsGUI);
     end
+
+
+% --- Executes on button press in showSunVectorCheckbox.
+function showSunVectorCheckbox_Callback(hObject, eventdata, handles)
+% hObject    handle to showSunVectorCheckbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of showSunVectorCheckbox
+    profile = getSelectedProfile(handles);
+    profile.showSunVect = logical(get(hObject,'Value'));
+
+% --- Executes on button press in showSunLightingCheckbox.
+function showSunLightingCheckbox_Callback(hObject, eventdata, handles)
+% hObject    handle to showSunLightingCheckbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of showSunLightingCheckbox
+    profile = getSelectedProfile(handles);
+    profile.showLighting = logical(get(hObject,'Value'));

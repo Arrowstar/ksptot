@@ -77,7 +77,8 @@ classdef LaunchVehicleViewProfileBodyData < matlab.mixin.SetGet
                             CData = getCDataForSphereWithColormap(Z, obj.bodyInfo.bodycolor);
 
                             obj.markerPlot = hgtransform('Parent', hAx);
-                            hS = surf(hAx, dRad*X, dRad*Y, dRad*Z, 'CData',CData, 'EdgeAlpha',0.20);
+                            hS = surf(hAx, dRad*X, dRad*Y, dRad*Z, 'CData',CData, 'LineWidth',0.1, 'EdgeAlpha',0.10, 'BackFaceLighting','lit','FaceLighting','gouraud');
+                            material(hS,'dull');
                             set(hS,'Parent',obj.markerPlot);
                             
                             obj.createSoIRadii(hAx);

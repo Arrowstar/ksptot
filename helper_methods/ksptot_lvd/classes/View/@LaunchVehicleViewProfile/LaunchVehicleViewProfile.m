@@ -38,12 +38,17 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         bodiesToPlot(1,:) KSPTOT_BodyInfo = KSPTOT_BodyInfo.empty(1,0);
         bodyPlotStyle(1,1) ViewProfileBodyPlottingStyle = ViewProfileBodyPlottingStyle.Dot;
         
+        %lighting
+        showLighting(1,1) logical = false;
+        showSunVect(1,1) logical = false;
+        
         %view properties (set by user indirectly through UI controls)
         orbitNumToPlot(1,1) double = 1;
         viewAzEl(1,2) = [-37.5, 30]; %view(3)
         viewZoomAxLims(3,2) = NaN(3,2);
         markerTrajData(1,:) LaunchVehicleViewProfileTrajectoryData = LaunchVehicleViewProfileTrajectoryData.empty(1,0);
         markerBodyData(1,:) LaunchVehicleViewProfileBodyData = LaunchVehicleViewProfileBodyData.empty(1,0);
+        sunLighting(1,:) LaunchVehicleViewProfileSunLighting = LaunchVehicleViewProfileSunLighting.empty(1,0);
     end
     
     properties(Access=private)
@@ -146,6 +151,14 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
             end
         end
         
+        function createSunLightSrc(obj, dAxes, viewInFrame)
+            obj.sunLighting = LaunchVehicleViewProfileSunLighting(dAxes, viewInFrame, obj.showLighting, obj.showSunVect);
+        end
+        
+        function updateLightPosition(obj, time)
+            obj.sunLighting.updateSunLightingPosition(time);
+        end
+        
         function configureTimeSlider(obj, minTime, maxTime, subStateLogs, handles)
             timeSlider = handles.jDispAxesTimeSlider;
             curSliderTime = timeSlider.getValue();
@@ -166,7 +179,7 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                 timeSlider.setValue(minTime);
             end
             
-            handles.hDispAxesTimeSlider.StateChangedCallback(timeSlider, []);
+            handles.hDispAxesTimeSlider.StateChangedCallback(timeSlider, true);
         end
         
         function trajData = createTrajData(obj)

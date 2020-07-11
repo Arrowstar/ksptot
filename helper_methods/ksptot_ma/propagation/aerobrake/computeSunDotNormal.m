@@ -1,10 +1,10 @@
 function sunDotNormal = computeSunDotNormal(ut, long, bodyInfo, celBodyData)    
-    rVectSunSC = -1.0 * getPositOfBodyWRTSun(ut, bodyInfo, celBodyData);
+    rVectBodyToSun = -1.0 * getPositOfBodyWRTSun(ut, bodyInfo, celBodyData);
     
-    if(norm(rVectSunSC) == 0)
+    if(norm(rVectBodyToSun) == 0)
         sunDotNormal = 1.0;
     else
-        rVectSunECEF = getFixedFrameVectFromInertialVect(ut, rVectSunSC, bodyInfo);
+        rVectSunECEF = getFixedFrameVectFromInertialVect(ut, rVectBodyToSun, bodyInfo);
         rECEF = getrVectEcefFromLatLongAlt(zeros(size(long)), long, zeros(size(long)), bodyInfo);
         
         planarRvectEcef = [rECEF(1,:); rECEF(2,:); zeros(1,size(rECEF,2))];
