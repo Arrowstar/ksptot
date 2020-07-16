@@ -240,6 +240,9 @@ function addStnButton_Callback(hObject, eventdata, handles)
 
     Stn.id = rand();
     Stn.color = stnColor;
+    Stn.linestyle = '-';
+    Stn.lineWidth = 0.5;
+    Stn.markerSymbol = 's';
     
     maData.spacecraft.stations{end+1} = Stn;
     setappdata(handles.ma_MainGUI,'ma_data',maData);

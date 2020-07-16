@@ -64,7 +64,7 @@ classdef KeplerianElementSetVariable < AbstractOrbitModelVariable
             ub = obj.lb;
         end
         
-        function setBndsForVariable(obj, lb, ub)
+        function setBndsForVariable(obj, lb, ub)            
             if(length(lb) == 6 && length(ub) == 6)
                 obj.lb = lb;
                 obj.ub = ub;

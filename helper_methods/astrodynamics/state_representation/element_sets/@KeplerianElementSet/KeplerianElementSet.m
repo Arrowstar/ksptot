@@ -153,7 +153,7 @@ classdef KeplerianElementSet < AbstractElementSet
                 raan = str2double(get(hRaan,'String'));
                 enteredStr = get(hRaan,'String');
                 numberName = ['Right Asc. of the Asc. Node', bndStr];
-                lb = 0;
+                lb = -360;
                 ub = 360;
                 isInt = false;
                 errMsg = validateNumber(raan, numberName, lb, ub, isInt, errMsg, enteredStr);
@@ -163,7 +163,7 @@ classdef KeplerianElementSet < AbstractElementSet
                 arg = str2double(get(hArg,'String'));
                 enteredStr = get(hArg,'String');
                 numberName = ['Argument of Periapsis', bndStr];
-                lb = 0;
+                lb = -360;
                 ub = 360;
                 isInt = false;
                 errMsg = validateNumber(arg, numberName, lb, ub, isInt, errMsg, enteredStr);

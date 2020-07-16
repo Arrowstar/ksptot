@@ -39,8 +39,7 @@ classdef SetThrottleModelAction < AbstractEventAction
         end
         
         function initAction(obj, initialStateLogEntry)
-            t0 = initialStateLogEntry.time;
-            obj.throttleModel.initThrottleModel(t0);
+            obj.throttleModel.initThrottleModel(initialStateLogEntry);
         end
         
         function name = getName(obj)

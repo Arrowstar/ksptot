@@ -45,25 +45,32 @@ classdef SetKinematicStateActionVariable < AbstractOptimizationVariable
             if(obj.useTf)
                 x(end+1) = obj.varObj.time;
             end
-            x = horzcat(x, obj.orbitVar.getXsForVariable());
+            
+            if(not(isempty(obj.orbitVar)))
+                x = horzcat(x, obj.orbitVar.getXsForVariable());
+            end
         end
         
         function [lb, ub] = getBndsForVariable(obj)
             lb = obj.lb(obj.useTf);
             ub = obj.ub(obj.useTf);
             
-            [oLb, oUb] = obj.orbitVar.getBndsForVariable();
-            lb = horzcat(lb, oLb);
-            ub = horzcat(ub, oUb);
+            if(not(isempty(obj.orbitVar)))
+                [oLb, oUb] = obj.orbitVar.getBndsForVariable();
+                lb = horzcat(lb, oLb);
+                ub = horzcat(ub, oUb);
+            end
         end
         
         function [lb, ub] = getAllBndsForVariable(obj)
             lb = obj.lb;
             ub = obj.lb;
             
-            [oLb, oUb] = obj.orbitVar.getAllBndsForVariable();
-            lb = horzcat(lb, oLb);
-            ub = horzcat(ub, oUb);
+            if(not(isempty(obj.orbitVar)))
+                [oLb, oUb] = obj.orbitVar.getAllBndsForVariable();
+                lb = horzcat(lb, oLb);
+                ub = horzcat(ub, oUb);
+            end
         end
         
         function setBndsForVariable(obj, lb, ub)
@@ -108,7 +115,20 @@ classdef SetKinematicStateActionVariable < AbstractOptimizationVariable
         end
         
         function nameStrs = getStrNamesOfVars(obj, evtNum, varLocType)
-            nameStrs = horzcat(sprintf('Event %i Time', evtNum), obj.orbitVar.getStrNamesOfVars(evtNum));
+            if(evtNum > 0)
+                subStr = sprintf('Event %i',evtNum);
+            else
+                subStr = varLocType;
+            end
+            
+            if(obj.useTf)
+                initTime = sprintf('%s Time', subStr);
+            else
+                initTime = {};
+            end
+            
+%             nameStrs = horzcat(sprintf('Event %i Time', evtNum), obj.orbitVar.getStrNamesOfVars(evtNum));
+            nameStrs = horzcat(initTime, obj.orbitVar.getStrNamesOfVars(evtNum, varLocType));
         end
     end
 end

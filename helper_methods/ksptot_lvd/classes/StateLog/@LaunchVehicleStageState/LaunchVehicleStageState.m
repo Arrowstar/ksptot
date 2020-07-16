@@ -110,7 +110,6 @@ classdef LaunchVehicleStageState < matlab.mixin.SetGet & matlab.mixin.Copyable
                 indivTankMasses = [obj.tankStates.tankMass];
                 tanks = [obj.tankStates.tank];
 
-
                 for(i=1:length(tankTypes))
                     type = tankTypes(i);
                     tankBool = [tanks.tankType] == type;

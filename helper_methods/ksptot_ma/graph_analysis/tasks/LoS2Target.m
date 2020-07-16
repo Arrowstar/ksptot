@@ -1,11 +1,7 @@
 function LoS = LoS2Target(stateLogEntry, bodyInfo, eclipseBodyInfo, targetBodyInfo, celBodyData, station)
-    %https://en.wikipedia.org/wiki/Line%E2%80%93sphere_intersection
+    %https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
     
     eBodyRad = eclipseBodyInfo.radius;
-%     rVectSC2EBody = getAbsPositBetweenSpacecraftAndBody(stateLogEntry(1), stateLogEntry(2:4)',...
-%                         bodyInfo, eclipseBodyInfo, celBodyData);
-%     rVectSC2Target = getAbsPositBetweenSpacecraftAndBody(stateLogEntry(1), stateLogEntry(2:4)',...
-%                         bodyInfo, targetBodyInfo, celBodyData);
 
     time = stateLogEntry(1);
     [sma, ecc, inc, raan, arg, tru] = getKeplerFromState(stateLogEntry(2:4),stateLogEntry(5:7),bodyInfo.gm);
@@ -14,25 +10,27 @@ function LoS = LoS2Target(stateLogEntry, bodyInfo, eclipseBodyInfo, targetBodyIn
     scBodyInfo = getBodyInfoStructFromOrbit(inputOrbit);
     scBodyInfo.parent = bodyInfo.name;
     [rVectBodySCwrtSun, ~] = getPositOfBodyWRTSun(time, scBodyInfo, celBodyData);
-          
+       
+    [rVectTargetwrtSun, ~] = getPositOfBodyWRTSun(time, targetBodyInfo, celBodyData);
+    
     rVectEclipseBodyBodywrtSun = getPositOfBodyWRTSun(time, eclipseBodyInfo, celBodyData);
-    rVectTargetBodywrtSun = getPositOfBodyWRTSun(time, targetBodyInfo, celBodyData);
     
 	if(~isempty(station))
         stnBodyInfo = getBodyInfoByNumber(station.parentID, celBodyData);
         stnRVectECIRelToParent = getInertialVectFromLatLongAlt(stateLogEntry(1), station.lat, station.long, station.alt, stnBodyInfo, [NaN;NaN;NaN]);
-        rVectTargetBodywrtSun = rVectTargetBodywrtSun + stnRVectECIRelToParent;
+        rVectTargetwrtSun = rVectTargetwrtSun + stnRVectECIRelToParent;
 	end
     
-%     rVectSC2Target = rVectTargetBodywrtSun - rVectBodySCwrtSun;
-    nVect = normVector(rVectBodySCwrtSun);
+    rVectScToTarget = rVectTargetwrtSun-rVectBodySCwrtSun;
+    nHat = normVector(rVectScToTarget);
     
     aVect = rVectBodySCwrtSun;
     pVect = rVectEclipseBodyBodywrtSun;
+    rVectEclipseBodyToTarget = rVectTargetwrtSun - rVectEclipseBodyBodywrtSun;
     
-    dPtToLine = norm((aVect - pVect) - (dotARH((aVect - pVect),nVect))*nVect); 
-    
-    if(dPtToLine <= eBodyRad && norm(rVectBodySCwrtSun) >= norm(rVectEclipseBodyBodywrtSun))
+    dPtToLine = norm((aVect - pVect) - (dotARH((aVect - pVect),nHat))*nHat); 
+
+    if(dPtToLine <= eBodyRad && norm(rVectScToTarget) >= norm(rVectEclipseBodyToTarget))
         LoS = 0;
     else
         LoS = 1;

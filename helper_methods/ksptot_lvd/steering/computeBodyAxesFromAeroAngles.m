@@ -9,9 +9,9 @@ function [bodyX, bodyY, bodyZ, Rtotal] = computeBodyAxesFromAeroAngles(ut, rVect
 
     [rVectECEF, vVectECEF, REci2Ecef] = getFixedFrameVectFromInertialVect(ut, rVect, bodyInfo, vVect);
 
-    [R_wind_2_inert, ~, ~, ~] = computeWindFrame(rVectECEF,vVectECEF);
+    [R_wind_2_ecef, ~, ~, ~] = computeWindFrame(rVectECEF,vVectECEF);
     RBody2Wind = eul2rotmARH([bankAng,angOfAttack,angOfSideslip],'xyz');
-    Rtotal = REci2Ecef' * R_wind_2_inert * RBody2Wind;
+    Rtotal = REci2Ecef' * R_wind_2_ecef * RBody2Wind; %body to wind -> wind to ecef -> ecef -> inertial
     
     bodyX = Rtotal(:,1);
     bodyY = Rtotal(:,2);

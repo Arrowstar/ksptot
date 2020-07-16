@@ -4,10 +4,12 @@ classdef(Abstract) AbstractThrottleModel < matlab.mixin.SetGet
     
     properties
         optVar
+        
+        throttleContinuity = false;
     end
     
     methods
-        initThrottleModel(obj, ut)
+        initThrottleModel(obj, ut, prevThrottleAtUt)
         
         throttle = getThrottleAtTime(obj, ut, rVect, vVect, tankMasses, dryMass, stgStates, lvState, tankStates, bodyInfo)
                 

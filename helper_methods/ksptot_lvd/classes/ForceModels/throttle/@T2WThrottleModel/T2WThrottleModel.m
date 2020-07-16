@@ -31,8 +31,20 @@ classdef T2WThrottleModel < AbstractThrottleModel
             end
         end
 
-        function initThrottleModel(obj, ~)
-            %nothing
+        function initThrottleModel(obj, initialStateLogEntry)            
+            if(obj.throttleContinuity)
+                throttle = initialStateLogEntry.throttle;
+
+                tankStates = initialStateLogEntry.getAllActiveTankStates();
+
+                tankMasses = zeros(size(tankStates));
+                for(i=1:length(tankStates))
+                    tankMasses(i) = tankStates(i).tankMass;
+                end
+
+                obj.targetT2W = computeTWRatio(throttle, initialStateLogEntry.time, initialStateLogEntry.position, initialStateLogEntry.velocity, tankMasses, initialStateLogEntry.getTotalVehicleDryMass(), ...
+                                               initialStateLogEntry.stageStates, initialStateLogEntry.lvState, tankStates, initialStateLogEntry.centralBody);
+            end
         end
         
         function optVar = getNewOptVar(obj)

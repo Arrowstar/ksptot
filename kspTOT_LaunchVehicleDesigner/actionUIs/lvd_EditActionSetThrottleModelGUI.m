@@ -22,7 +22,7 @@ function varargout = lvd_EditActionSetThrottleModelGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditActionSetThrottleModelGUI
 
-% Last Modified by GUIDE v2.5 03-Dec-2018 17:06:18
+% Last Modified by GUIDE v2.5 15-Jul-2020 16:44:16
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -108,6 +108,9 @@ function populateGUI(handles, action)
     set(handles.throttleLinUbText,'String',fullAccNum2Str(100*ub(2)));
     set(handles.throttleAccelUbText,'String',fullAccNum2Str(100*ub(3)));
     
+    handles.throttleContCheckbox.Value = double(throttleModel.throttleContinuity);
+    throttleContCheckbox_Callback(handles.throttleContCheckbox, [], handles);
+    
     
 % --- Outputs from this function are returned to the command line.
 function varargout = lvd_EditActionSetThrottleModelGUI_OutputFcn(hObject, eventdata, handles) 
@@ -137,6 +140,7 @@ function varargout = lvd_EditActionSetThrottleModelGUI_OutputFcn(hObject, eventd
         throttleAccel = str2double(get(handles.throttleAccelTermText,'String'))/100;
         
         throttleModel.setPolyTerms(throttleConst, throttleLinear, throttleAccel);
+        throttleModel.throttleContinuity = logical(handles.throttleContCheckbox.Value);
         
         %Set Opt T/F
         useTf(1) = get(handles.throttleConstOptCheckbox,'Value');
@@ -332,7 +336,7 @@ function throttleConstOptCheckbox_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of throttleConstOptCheckbox
-    if(get(hObject,'Value')==1)
+    if(get(hObject,'Value')==1 && handles.throttleContCheckbox.Value == 0)
         set(handles.throttleConstLbText,'Enable','on');
         set(handles.throttleConstUbText,'Enable','on');
     else
@@ -558,4 +562,26 @@ function lvd_EditActionSetThrottleModelGUI_WindowKeyPressFcn(hObject, eventdata,
             saveAndCloseButton_Callback(handles.saveAndCloseButton, [], handles);
         case 'escape'
             close(handles.lvd_EditActionSetThrottleModelGUI);
+    end
+
+
+% --- Executes on button press in throttleContCheckbox.
+function throttleContCheckbox_Callback(hObject, eventdata, handles)
+% hObject    handle to throttleContCheckbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of throttleContCheckbox
+    if(hObject.Value)
+        handles.throttleConstTermText.Enable = 'off';
+        handles.throttleConstOptCheckbox.Enable = 'off';
+        handles.throttleConstLbText.Enable = 'off';
+        handles.throttleConstUbText.Enable = 'off';
+        
+        handles.throttleConstOptCheckbox.Value = 0;
+    else
+        handles.throttleConstTermText.Enable = 'on';
+        handles.throttleConstOptCheckbox.Enable = 'on';
+        
+        throttleConstOptCheckbox_Callback(handles.throttleConstOptCheckbox, [], handles);
     end

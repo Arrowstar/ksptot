@@ -22,7 +22,7 @@ function varargout = lvd_EditT2WThrottleModelGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditT2WThrottleModelGUI
 
-% Last Modified by GUIDE v2.5 06-Dec-2018 17:15:00
+% Last Modified by GUIDE v2.5 16-Jul-2020 08:32:02
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -92,6 +92,9 @@ function populateGUI(handles, action)
     set(handles.twUbText,'String',fullAccNum2Str(ub));
     
     twOptCheckbox_Callback(handles.twOptCheckbox, [], handles);
+    
+    handles.throttleContCheckbox.Value = double(throttleModel.throttleContinuity);
+    throttleContCheckbox_Callback(handles.throttleContCheckbox, [], handles);
 
 % --- Outputs from this function are returned to the command line.
 function varargout = lvd_EditT2WThrottleModelGUI_OutputFcn(hObject, eventdata, handles) 
@@ -116,6 +119,7 @@ function varargout = lvd_EditT2WThrottleModelGUI_OutputFcn(hObject, eventdata, h
         end
         
         throttleModel.targetT2W = str2double(handles.twRatioText.String);
+        throttleModel.throttleContinuity = logical(handles.throttleContCheckbox.Value);
         
         if(isempty(optVar))
             optVar = throttleModel.getNewOptVar();
@@ -225,7 +229,7 @@ function twOptCheckbox_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of twOptCheckbox
-    if(get(hObject,'Value')==1)
+    if(get(hObject,'Value')==1 && handles.throttleContCheckbox.Value == 0)
         set(handles.twLbText,'Enable','on');
         set(handles.twUbText,'Enable','on');
     else
@@ -281,3 +285,25 @@ function twUbText_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on button press in throttleContCheckbox.
+function throttleContCheckbox_Callback(hObject, eventdata, handles)
+% hObject    handle to throttleContCheckbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of throttleContCheckbox
+    if(hObject.Value)
+        handles.twRatioText.Enable = 'off';
+        handles.twOptCheckbox.Enable = 'off';
+        handles.twLbText.Enable = 'off';
+        handles.twUbText.Enable = 'off';
+        
+        handles.twOptCheckbox.Value = 0;
+    else
+        handles.twRatioText.Enable = 'on';
+        handles.twOptCheckbox.Enable = 'on';
+        
+        twOptCheckbox_Callback(handles.twOptCheckbox, [], handles);
+    end

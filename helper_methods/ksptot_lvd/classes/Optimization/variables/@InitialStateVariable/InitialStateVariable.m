@@ -121,7 +121,13 @@ classdef InitialStateVariable < AbstractOptimizationVariable
                 subStr = varLocType;
             end
             
-            nameStrs = horzcat(sprintf('%s Time', subStr), obj.orbitVar.getStrNamesOfVars(evtNum, varLocType));
+            if(obj.useTf)
+                initTime = sprintf('%s Time', subStr);
+            else
+                initTime = {};
+            end
+            
+            nameStrs = horzcat(initTime, obj.orbitVar.getStrNamesOfVars(evtNum, varLocType));
         end
         
         function tf = isVarContainedWithin(obj, var)

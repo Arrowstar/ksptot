@@ -114,6 +114,34 @@ function populateGUI(handles, lvdData)
     optVar.setUseTfForVariable(true(size(useTf)));
     [lb, ub] = optVar.getBndsForVariable();
     optVar.setUseTfForVariable(useTf);
+            
+    % convert units on bounds
+    contents = cellstr(get(handles.elementSetCombo,'String'));
+    selElemSet = contents{get(handles.elementSetCombo,'Value')};
+    elemSetEnum = ElementSetEnum.getEnumForListboxStr(selElemSet);
+
+    switch elemSetEnum
+        case ElementSetEnum.CartesianElements
+            %no unit conversion needed
+
+        case ElementSetEnum.KeplerianElements
+            lb(3:end) = rad2deg(lb(3:end));
+            ub(3:end) = rad2deg(ub(3:end));
+
+        case ElementSetEnum.GeographicElements
+            lb(1:2) = rad2deg(lb(1:2));
+            lb(4:5) = rad2deg(lb(4:5));
+
+            ub(1:2) = rad2deg(ub(1:2));
+            ub(4:5) = rad2deg(ub(4:5));
+
+        case ElementSetEnum.UniversalElements
+            lb(3:5) = rad2deg(lb(3:5));
+            ub(3:5) = rad2deg(ub(3:5));
+
+        otherwise
+            error('Unknown element set type: %s', class(elemSetEnum));
+    end
     
     handles.utLbText.String     = fullAccNum2Str(lb(1));
     handles.orbit1LbText.String = fullAccNum2Str(lb(2));
@@ -152,7 +180,6 @@ function varargout = lvd_EditInitialStateGUI_OutputFcn(hObject, eventdata, handl
         varargout{1} = false;
     else  
         lvdData = getappdata(handles.lvd_EditInitialStateGUI,'lvdData');
-        celBodyData = lvdData.celBodyData;
         initStateModel = lvdData.initStateModel;
         
         contents = cellstr(get(handles.elementSetCombo,'String'));
@@ -242,6 +269,29 @@ function varargout = lvd_EditInitialStateGUI_OutputFcn(hObject, eventdata, handl
                 lb(i) = temp2;
                 ub(i) = temp1;
             end
+        end
+        
+        switch elemSetEnum
+            case ElementSetEnum.CartesianElements
+                %no unit conversion needed
+
+            case ElementSetEnum.KeplerianElements
+                lb(3:end) = deg2rad(lb(3:end));
+                ub(3:end) = deg2rad(ub(3:end));
+
+            case ElementSetEnum.GeographicElements
+                lb(1:2) = deg2rad(lb(1:2));
+                lb(4:5) = deg2rad(lb(4:5));
+
+                ub(1:2) = deg2rad(ub(1:2));
+                ub(4:5) = deg2rad(ub(4:5));
+
+            case ElementSetEnum.UniversalElements
+                lb(3:5) = deg2rad(lb(3:5));
+                ub(3:5) = deg2rad(ub(3:5));
+
+            otherwise
+                error('Unknown element set type: %s', class(elemSetEnum));
         end
         
         optVar.setBndsForVariable(lb, ub);

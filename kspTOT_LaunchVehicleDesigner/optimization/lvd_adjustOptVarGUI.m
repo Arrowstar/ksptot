@@ -174,7 +174,7 @@ function cancelButton_Callback(hObject, eventdata, handles)
     
     [~, curVars, ~, ~] = varSet.getTotalScaledXVector();
     for(i=1:length(curVars))
-        ind = find(curVars(i) == origVars, 1);
+        ind = find(curVars(i) == origVars);
         
         if(not(isempty(ind)))
             curVars(i).updateObjWithScaledVarValue(origScaledXVect(ind));
@@ -281,6 +281,10 @@ function varValueText_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of varValueText as text
 %        str2double(get(hObject,'String')) returns contents of varValueText as a double
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
+
     lvdData = getappdata(handles.lvd_adjustOptVarGUI,'lvdData');
     lvdOpt = lvdData.optimizer;
     varSet = lvdOpt.vars;
@@ -309,6 +313,9 @@ function varValueText_Callback(hObject, eventdata, handles)
         elseif(value > ub)
             handles.varValueText.String = fullAccNum2Str(ub);
             handles.varValueSlider.Value = 1;
+            
+        else
+            handles.varValueSlider.Value = scaleXToNeg1And1(value, lb, ub);
             
         end
         

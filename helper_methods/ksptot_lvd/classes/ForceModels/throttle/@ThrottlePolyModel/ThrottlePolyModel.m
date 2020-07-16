@@ -17,8 +17,15 @@ classdef ThrottlePolyModel < AbstractThrottleModel
             end
         end
         
-        function initThrottleModel(obj, ut)
-            obj.setT0(ut)
+        function initThrottleModel(obj, initialStateLogEntry)
+            t0 = initialStateLogEntry.time;
+            throttle = initialStateLogEntry.throttle;
+            
+            obj.setT0(t0)
+            
+            if(obj.throttleContinuity)
+                obj.throttleModel.constTerm = throttle;
+            end
         end
         
         function setT0(obj, newT0)

@@ -1596,7 +1596,6 @@ function runScriptMenu_Callback(hObject, eventdata, handles)
     propagateScript(handles, lvdData, 1);
     lvd_processData(handles);
 
-
 % --------------------------------------------------------------------
 function editExtremaMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to editExtremaMenu (see GCBO)
