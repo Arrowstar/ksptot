@@ -22,7 +22,7 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         %trajectory view options
         trajEvtsViewType(1,1) ViewEventsTypeEnum = ViewEventsTypeEnum.SoIChunk %either chunked by event/SoI or all
         frame AbstractReferenceFrame
-                
+        
         %body fixed options
         showLongLatAnnotations(1,1) logical = true;
         
@@ -38,6 +38,10 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         bodiesToPlot(1,:) KSPTOT_BodyInfo = KSPTOT_BodyInfo.empty(1,0);
         bodyPlotStyle(1,1) ViewProfileBodyPlottingStyle = ViewProfileBodyPlottingStyle.Dot;
         
+        %show sc body axes
+        showScBodyAxes(1,1) logical = false;
+        scBodyAxesScale(1,1) double = 100; %km
+        
         %lighting
         showLighting(1,1) logical = false;
         showSunVect(1,1) logical = false;
@@ -45,9 +49,10 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         %view properties (set by user indirectly through UI controls)
         orbitNumToPlot(1,1) double = 1;
         viewAzEl(1,2) = [-37.5, 30]; %view(3)
-        viewZoomAxLims(3,2) = NaN(3,2);
+        viewZoomAxLims(3,2) double = NaN(3,2);
         markerTrajData(1,:) LaunchVehicleViewProfileTrajectoryData = LaunchVehicleViewProfileTrajectoryData.empty(1,0);
         markerBodyData(1,:) LaunchVehicleViewProfileBodyData = LaunchVehicleViewProfileBodyData.empty(1,0);
+        markerTrajAxesData(1,:) LaunchVehicleViewProfileBodyAxesData = LaunchVehicleViewProfileBodyAxesData.empty(1,0);
         sunLighting(1,:) LaunchVehicleViewProfileSunLighting = LaunchVehicleViewProfileSunLighting.empty(1,0);
     end
     
@@ -56,10 +61,10 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
     end
     
     methods
-        function obj = LaunchVehicleViewProfile()           
+        function obj = LaunchVehicleViewProfile()
             
         end
-                
+        
         function plotTrajectory(obj, lvdData, handles)
             obj.generic3DTrajView.plotStateLog(obj.orbitNumToPlot, lvdData, obj, handles);
         end
@@ -72,10 +77,129 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                 if(size(subStateLogs{j},1) > 0)
                     times = subStateLogs{j}(:,1);
                     rVects = subStateLogs{j}(:,2:4);
-
+                    
                     evtNum = subStateLogs{j}(1,13);
                     evt = evts(evtNum);
                     evtColor = evt.colorLineSpec.color;
+                    
+                    switch(evt.plotMethod)
+                        case EventPlottingMethodEnum.PlotContinuous
+                            %nothing
+                            
+                        case EventPlottingMethodEnum.SkipFirstState
+                            times = times(2:end);
+                            rVects = rVects(2:end,:);
+                            
+                        case EventPlottingMethodEnum.DoNotPlot
+                            times = [];
+                            rVects = [];
+                            
+                        otherwise
+                            error('Unknown event plotting method: %s', EventPlottingMethodEnum.DoNotPlot.name);
+                    end
+                    
+                    [times,ia,~] = unique(times,'stable','rows');
+                    rVects = rVects(ia,:);
+                    
+                    if(length(unique(times)) > 1)
+                        trajMarkerData.addData(times, rVects, evtColor);
+                    end
+                end
+            end
+        end
+        
+        function createBodyMarkerData(obj, dAxes, subStateLogs, viewInFrame, showSoI)
+            obj.clearAllBodyData();
+            
+            for(i=1:length(obj.bodiesToPlot))
+                bodyToPlot = obj.bodiesToPlot(i);
+                
+                if(bodyToPlot == viewInFrame.getOriginBody())
+                    continue;
+                end
+                
+                bColorRGB = bodyToPlot.getBodyRGB();
+                
+                if(bodyToPlot.sma > 0)
+                    bodyOrbitPeriod = computePeriod(bodyToPlot.sma, bodyToPlot.gm);
+                else
+                    bodyOrbitPeriod = Inf;
+                end
+                
+                bodyMarkerData = obj.createBodyData(bodyToPlot, obj.bodyPlotStyle, showSoI);
+                
+                for(j=1:length(subStateLogs))
+                    if(size(subStateLogs{j},1) > 0)
+                        times = subStateLogs{j}(:,1);
+                        
+                        if(isfinite(bodyOrbitPeriod))
+                            numPeriods = (max(times) - min(times))/bodyOrbitPeriod;
+                            times = linspace(min(times), max(times), max(1000*numPeriods,length(times)));
+                        else
+                            times = linspace(min(times), max(times), length(times));
+                        end
+                        
+                        states = bodyToPlot.getElementSetsForTimes(times);
+                        
+                        for(k=1:length(states))
+                            states(k) = states(k).convertToFrame(viewInFrame);
+                        end
+                        
+                        rVects = [states.rVect];
+                        plot3(dAxes, rVects(1,:), rVects(2,:), rVects(3,:), '-', 'Color',bColorRGB, 'LineWidth',1.5);
+                        
+                        if(length(unique(times)) > 1)
+                            bodyMarkerData.addData(times, rVects);
+                        end
+                    end
+                end
+            end
+        end
+        
+        function createSunLightSrc(obj, dAxes, viewInFrame)
+            obj.sunLighting = LaunchVehicleViewProfileSunLighting(dAxes, viewInFrame, obj.showLighting, obj.showSunVect);
+        end
+        
+        function updateLightPosition(obj, time)
+            obj.sunLighting.updateSunLightingPosition(time);
+        end
+        
+        function createBodyAxesData(obj, lvdStateLogEntries, evts, viewInFrame)
+            obj.clearAllBodyAxesData();
+            obj.markerTrajAxesData = LaunchVehicleViewProfileBodyAxesData(obj.scBodyAxesScale);
+            
+            if(obj.showScBodyAxes)
+                for(i=1:length(evts))
+                    if(i==15)
+                        a=1;
+                    end
+                    
+                    evt = evts(i);
+                    evtStateLogEntries = lvdStateLogEntries([lvdStateLogEntries.event] == evt);
+                                                            
+                    times = [evtStateLogEntries.time];
+                    rVects = NaN(3, length(evtStateLogEntries));
+                    rotMatsBodyToView = NaN(3, 3, length(evtStateLogEntries));
+                    for(j=1:length(evtStateLogEntries))
+                        %get body position in view frame
+                        entry = evtStateLogEntries(j);
+                        cartElem = entry.getCartesianElementSetRepresentation();
+                        cartElem = cartElem.convertToFrame(viewInFrame);
+
+                        rVects(:,j) = cartElem.rVect;
+
+                        %get body axes in view frame
+                        rotMatBodyToInertial = entry.steeringModel.getBody2InertialDcmAtTime(entry.time, entry.position, entry.velocity, entry.centralBody);
+
+                        [~, ~, ~, rotMatToInertial12] = viewInFrame.getOffsetsWrtInertialOrigin(entry.time);
+                        [~, ~, ~, rotMatToInertial32] = entry.centralBody.getBodyCenteredInertialFrame().getOffsetsWrtInertialOrigin(entry.time);
+
+                        rotMatsBodyToView(:,:,j) = rotMatToInertial12' * rotMatToInertial32 * rotMatBodyToInertial; %body to inertial -> inertial to inertial -> inertial to view frame
+                    end
+
+                    [times,ia,~] = unique(times,'stable');
+                    rVects = rVects(:,ia);
+                    rotMatsBodyToView = rotMatsBodyToView(:,:,ia);
 
                     switch(evt.plotMethod)
                         case EventPlottingMethodEnum.PlotContinuous
@@ -93,70 +217,11 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                             error('Unknown event plotting method: %s', EventPlottingMethodEnum.DoNotPlot.name);
                     end
 
-                    [times,ia,~] = unique(times,'stable','rows');
-                    rVects = rVects(ia,:);
-
-                    if(length(unique(times)) > 1)
-                        trajMarkerData.addData(times, rVects, evtColor);
+                    if(length(times) >= 2 && all(diff(times)>0))
+                        obj.markerTrajAxesData.addData(times, rVects, rotMatsBodyToView);
                     end
                 end
             end
-        end
-        
-        function createBodyMarkerData(obj, dAxes, subStateLogs, viewInFrame, showSoI)
-            obj.clearAllBodyData();
-            
-            for(i=1:length(obj.bodiesToPlot))
-                bodyToPlot = obj.bodiesToPlot(i);
-                
-                if(bodyToPlot == viewInFrame.getOriginBody())
-                    continue;
-                end              
-                
-                bColorRGB = bodyToPlot.getBodyRGB();
-                
-                if(bodyToPlot.sma > 0)
-                    bodyOrbitPeriod = computePeriod(bodyToPlot.sma, bodyToPlot.gm);
-                else
-                    bodyOrbitPeriod = Inf;
-                end
-                
-                bodyMarkerData = obj.createBodyData(bodyToPlot, obj.bodyPlotStyle, showSoI);
-                
-                for(j=1:length(subStateLogs))
-                    if(size(subStateLogs{j},1) > 0)
-                        times = subStateLogs{j}(:,1);
-
-                        if(isfinite(bodyOrbitPeriod))
-                            numPeriods = (max(times) - min(times))/bodyOrbitPeriod;
-                            times = linspace(min(times), max(times), max(1000*numPeriods,length(times)));
-                        else
-                            times = linspace(min(times), max(times), length(times));
-                        end
-
-                        states = bodyToPlot.getElementSetsForTimes(times);
-
-                        for(k=1:length(states))
-                            states(k) = states(k).convertToFrame(viewInFrame);
-                        end
-
-                        rVects = [states.rVect];
-                        plot3(dAxes, rVects(1,:), rVects(2,:), rVects(3,:), '-', 'Color',bColorRGB, 'LineWidth',1.5);
-
-                        if(length(unique(times)) > 1)
-                            bodyMarkerData.addData(times, rVects);
-                        end
-                    end
-                end
-            end
-        end
-        
-        function createSunLightSrc(obj, dAxes, viewInFrame)
-            obj.sunLighting = LaunchVehicleViewProfileSunLighting(dAxes, viewInFrame, obj.showLighting, obj.showSunVect);
-        end
-        
-        function updateLightPosition(obj, time)
-            obj.sunLighting.updateSunLightingPosition(time);
         end
         
         function configureTimeSlider(obj, minTime, maxTime, subStateLogs, handles)
@@ -199,6 +264,9 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         function clearAllBodyData(obj)
             obj.markerBodyData = LaunchVehicleViewProfileBodyData.empty(1,0);
         end
+        
+        function clearAllBodyAxesData(obj)
+            obj.markerTrajAxesData = LaunchVehicleViewProfileBodyAxesData.empty(1,0);
+        end
     end
 end
-

@@ -201,7 +201,7 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                 end
                 hold(dAxes,'off');
             end
-                        
+                                    
             hCBodySurf = ma_initOrbPlot(hFig, dAxes, viewCentralBody);
                         
             eventsList = unique(eventsList);
@@ -232,9 +232,9 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             setappdata(handles.ma_LvdMainGUI,'dispOrbitXLim',xlim(dAxes));
             setappdata(handles.ma_LvdMainGUI,'dispOrbitYLim',ylim(dAxes));
             setappdata(handles.ma_LvdMainGUI,'dispOrbitZLim',zlim(dAxes));
-            zoom reset;
 %             applyZoomLevel(handles.ma_LvdMainGUI, handles, celBodyData);
-            
+            zoom reset;
+
             view(dAxes,viewProfile.viewAzEl);
             if(any(isnan(viewProfile.viewZoomAxLims)))
                 viewProfile.viewZoomAxLims = [xlim(dAxes);
@@ -254,6 +254,7 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             hold(dAxes,'on');
             viewProfile.createBodyMarkerData(dAxes, subStateLogs, viewInFrame, showSoI);
             viewProfile.createTrajectoryMarkerData(subStateLogs, lvdData.script.evts);
+            viewProfile.createBodyAxesData(lvdStateLogEntries, lvdData.script.evts, viewInFrame);
             viewProfile.createSunLightSrc(dAxes, viewInFrame);
             viewProfile.configureTimeSlider(minTime, maxTime, subStateLogs, handles);
             hold(dAxes,'off');

@@ -191,6 +191,9 @@ function recordFinalAxesPanZoomAfterRotation(obj,event_obj, handles)
     lvdData.viewSettings.selViewProfile.viewZoomAxLims = [handles.dispAxes.XLim;
                                                           handles.dispAxes.YLim;
                                                           handles.dispAxes.ZLim];
+                                                      
+    [az,el] = view(handles.dispAxes);
+    lvdData.viewSettings.selViewProfile.viewAzEl = [az,el];
     
 function timeSliderStateChanged(src,evt, lvdData, handles)   
     if(src.getValueIsAdjusting() || (islogical(evt) && evt==true))
@@ -200,12 +203,15 @@ function timeSliderStateChanged(src,evt, lvdData, handles)
         
         markerTrajData = lvdData.viewSettings.selViewProfile.markerTrajData;
         markerBodyData = lvdData.viewSettings.selViewProfile.markerBodyData;
+        markerBodyAxesData = lvdData.viewSettings.selViewProfile.markerTrajAxesData;
         
         markerTrajData.plotBodyMarkerAtTime(time, hAx);
         for(i=1:length(markerBodyData))
             markerBodyData(i).plotBodyMarkerAtTime(time, hAx);
         end
         
+        markerBodyAxesData.plotBodyAxesAtTime(time, hAx);
+
         lvdData.viewSettings.selViewProfile.updateLightPosition(time);
 
         [year, day, hour, minute, sec] = convertSec2YearDayHrMnSec(time);
