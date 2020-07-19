@@ -74,7 +74,7 @@ classdef LaunchVehicleStateLog < matlab.mixin.SetGet
         function subStateLog = getAllStateLogEntriesForEvent(obj, event)
             subStateLog = obj.entries([obj.entries.event] == event);
         end
-        
+               
         function subLog = getStateLogEntriesBetweenTimes(obj, t1, t2)
             subLog = obj.entries([obj.entries.time] >= t1 & [obj.entries.time] <= t2);
         end

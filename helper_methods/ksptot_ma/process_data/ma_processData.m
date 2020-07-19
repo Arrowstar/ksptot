@@ -10,6 +10,8 @@ function ma_processData(handles, varargin)
         celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
     end
     
+    handles.ma_MainGUI.Renderer = maData.settings.renderer.renderer;
+    
     %%%%%%%%%%
     % Redraw plots
     %%%%%%%%%%

@@ -34,14 +34,17 @@ function LoS = LoS2Target(stateLogEntry, bodyInfo, eclipseBodyInfo, targetBodyIn
             rVectTargetwrtSun = rVectTargetwrtSun + stnRVectECIRelToParent;
             
         elseif(isa(station, 'LaunchVehicleGroundObject'))
-            inertialFrame = bodyInfo.getBodyCenteredInertialFrame();
+%             inertialFrame = bodyInfo.getBodyCenteredInertialFrame();
             
             stnElemSet = station.getStateAtTime(time);
-            stnElemSet = stnElemSet.convertToFrame(inertialFrame).convertToCartesianElementSet();
+%             stnElemSet = stnElemSet.convertToFrame(inertialFrame).convertToCartesianElementSet();
+            stnElemSet = stnElemSet.convertToFrame(sunInertialFrame).convertToCartesianElementSet();           
+            rVectTargetwrtSun = stnElemSet.rVect;
             
-            stnRVectECIRelToParent = stnElemSet.rVect;
+%             stnRVectECIRelToParent = stnElemSet.rVect;
             
-            rVectTargetwrtSun = rVectTargetwrtSun + stnRVectECIRelToParent;
+%             rVectTargetwrtSun = rVectTargetwrtSun + stnRVectECIRelToParent;
+%             rVectTargetwrtSun = stnRVectECIRelToParent;
         else
             error('Other station types not yet supported');
         end

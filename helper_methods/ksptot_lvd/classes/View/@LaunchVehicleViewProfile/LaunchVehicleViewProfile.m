@@ -14,6 +14,9 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         minorGridColor(1,1) ColorSpecEnum = ColorSpecEnum.DarkGrey;
         gridTransparency(1,1) double = 0.15;
         
+        %render mode
+        renderer(1,1) FigureRendererEnum = FigureRendererEnum.OpenGL;
+        
         %axis properties
         dispXAxis(1,1) logical = false;
         dispYAxis(1,1) logical = false;

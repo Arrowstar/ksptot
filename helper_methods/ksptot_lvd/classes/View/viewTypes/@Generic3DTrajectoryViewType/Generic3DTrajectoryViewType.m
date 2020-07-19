@@ -21,6 +21,8 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             cla(dAxes);
             cla(dAxes,'reset')
             
+            hFig.Renderer = viewProfile.renderer.renderer;
+            
             if(stateLog.getNumberOfEntries() == 0)
                 return;
             end

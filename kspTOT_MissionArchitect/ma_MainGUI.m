@@ -22,7 +22,7 @@ function varargout = ma_MainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_MainGUI
 
-% Last Modified by GUIDE v2.5 31-Oct-2019 20:20:58
+% Last Modified by GUIDE v2.5 19-Jul-2020 15:31:23
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -85,6 +85,7 @@ warn_error_label_handles = [handles.warning1Lbl handles.warning2Lbl handles.warn
 set(handles.showSoICheckBox,'value',0);
 set(handles.showChildrenCheckBox,'value',0);
 view(handles.dispAxes,3);
+rotate3d(handles.dispAxes,'on');
 
 warn_error_slider_handle = handles.warnAlertsSlider;
 
@@ -192,6 +193,7 @@ function maData = generateCleanMissionPlan(handles)
     maData.settings.soiSearchTol = 1E-12;
     maData.settings.numSoiSearchAttemptsPerRev = 1000;
     maData.settings.autoPropScript = true;
+    maData.settings.renderer = FigureRendererEnum.OpenGL;
     number_state_log_entries_per_coast = maData.settings.numStateLogPtsPerCoast;
     num_SoI_search_revs = maData.settings.numSoISearchRevs;
     strict_SoI_search = maData.settings.strictSoISearch;
@@ -2705,3 +2707,66 @@ function scriptMenu_Callback(hObject, eventdata, handles)
     else
         set(handles.autopropagateMenu, 'Checked', 'off');
     end
+
+
+% --------------------------------------------------------------------
+function viewMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to viewMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function setRendererMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to setRendererMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    maData = getappdata(handles.ma_MainGUI,'ma_data');
+    
+	renderer = maData.settings.renderer;
+    switch renderer
+        case FigureRendererEnum.OpenGL
+            set(handles.useOpenGLRendererMenu, 'Checked', 'on');
+            set(handles.usePaintersRendererMenu, 'Checked', 'off');
+            
+        case FigureRendererEnum.Painters
+            set(handles.useOpenGLRendererMenu, 'Checked', 'off');
+            set(handles.usePaintersRendererMenu, 'Checked', 'on');
+            
+        otherwise
+            error('Unknown renderer type: %s', renderer.renderer);
+    end
+
+% --------------------------------------------------------------------
+function useOpenGLRendererMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to useOpenGLRendererMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    writeOutput = getappdata(handles.ma_MainGUI,'write_to_output_func');
+    
+    ma_UndoRedoAddState(handles, 'Change Renderer to OpenGL');
+
+    maData = getappdata(handles.ma_MainGUI,'ma_data');
+	maData.settings.renderer = FigureRendererEnum.OpenGL;
+    setappdata(handles.ma_MainGUI,'ma_data',maData);
+    
+    writeOutput('Renderer set to OpenGL.','append');
+    
+    ma_processData(handles);
+
+% --------------------------------------------------------------------
+function usePaintersRendererMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to usePaintersRendererMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    writeOutput = getappdata(handles.ma_MainGUI,'write_to_output_func');
+
+    ma_UndoRedoAddState(handles, 'Change Renderer to Painters');
+
+    maData = getappdata(handles.ma_MainGUI,'ma_data');
+	maData.settings.renderer = FigureRendererEnum.Painters;
+    setappdata(handles.ma_MainGUI,'ma_data',maData);
+    
+    writeOutput('Renderer set to Painters.','append');
+    
+    ma_processData(handles);

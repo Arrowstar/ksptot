@@ -69,6 +69,23 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
             numEvents = length(obj.evts);
         end
         
+        function [timeEvts, timeEvtsListboxStrs] = getAllEvtsThatOccurAtTime(obj, time)
+            stateLog = obj.lvdData.stateLog;
+            
+            timeEvts = LaunchVehicleEvent.empty(1,0);
+            timeEvtsListboxStrs = string.empty(1,0);
+            for(i=1:length(obj.evts))
+                evt = obj.evts(i);
+                t1 = stateLog.getFirstStateLogForEvent(evt).time;
+                t2 = stateLog.getLastStateLogForEvent(evt).time;
+                
+                if(time >= t1 && time <= t2)
+                    timeEvts(end+1) = evt; %#ok<AGROW>
+                    timeEvtsListboxStrs(end+1) = string(evt.getListboxStr()); %#ok<AGROW>
+                end
+            end
+        end
+        
         function moveEvtAtIndexDown(obj, ind)
             if(ind < length(obj.evts))
                 obj.evts([ind+1,ind]) = obj.evts([ind,ind+1]);

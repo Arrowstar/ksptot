@@ -22,7 +22,7 @@ function varargout = ma_LvdMainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_LvdMainGUI
 
-% Last Modified by GUIDE v2.5 18-Jul-2020 14:31:29
+% Last Modified by GUIDE v2.5 19-Jul-2020 13:39:36
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -55,6 +55,9 @@ function ma_LvdMainGUI_OpeningFcn(hObject, eventdata, handles, varargin)
     % Choose default command line output for ma_LvdMainGUI
     handles.output = hObject;
 
+    hManager = uigetmodemanager(hObject);
+    [hManager.WindowListenerHandles.Enabled] = deal(false); 
+    
     celBodyData = varargin{1};
     celBodyData = CelestialBodyData(celBodyData);
     setappdata(hObject,'celBodyData',celBodyData);
@@ -100,11 +103,16 @@ function ma_LvdMainGUI_OpeningFcn(hObject, eventdata, handles, varargin)
     handles.hDispAxesTimeSlider = hDispAxesTimeSlider;
     timeSliderCb = @(src,evt) timeSliderStateChanged(src,evt, lvdData, handles);
     set(hDispAxesTimeSlider, 'StateChangedCallback', timeSliderCb); 
+    timeSliderKeyPressCb = @(src,evt) timeSliderKeyPressCallback(src,evt, handles);
+    set(hDispAxesTimeSlider, 'KeyPressedCallback', timeSliderKeyPressCb); 
+    
     setappdata(handles.hDispAxesTimeSlider,'lastTime',NaN);
     
     gravSystemUpdateCbFh = @(src,evt) gravSystemUpdateCallback(src,evt, handles);
     appOptions = getappdata(hKsptotMainGUI,'appOptions');
     addlistener(appOptions.ksptot,'GravParamTypeUpdated',gravSystemUpdateCbFh);
+    
+    rotate3d(handles.dispAxes,'on');
     
     runScript(handles, lvdData, 1);
     lvd_processData(handles);
@@ -183,6 +191,10 @@ function celBodyData = getCelBodyDataFromMainGui(handles)
     
 function recordFinalAxesViewAfterRotation(obj,event_obj, handles)  
     lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    lvdData.viewSettings.selViewProfile.viewZoomAxLims = [handles.dispAxes.XLim;
+                                                          handles.dispAxes.YLim;
+                                                          handles.dispAxes.ZLim];
+    
     [az,el] = view(handles.dispAxes);
     lvdData.viewSettings.selViewProfile.viewAzEl = [az,el];
     
@@ -222,8 +234,18 @@ function timeSliderStateChanged(src,evt, lvdData, handles)
         [year, day, hour, minute, sec] = convertSec2YearDayHrMnSec(time);
         epochStr = formDateStr(year, day, hour, minute, sec);
 
+        [~, timeEvtsListboxStrs] = lvdData.script.getAllEvtsThatOccurAtTime(time);
+        for(i=1:length(timeEvtsListboxStrs))
+            timeEvtsListboxStrs(i) = sprintf('Event: %s',timeEvtsListboxStrs(i));
+        end
+        evtsStr = strjoin(timeEvtsListboxStrs,'\n');
+        
+        dashes = repmat('-',1,max(strlength(timeEvtsListboxStrs)));
+        
+        tooltipStr = sprintf('UT = %0.3f sec\n%s\n%s', time, dashes, evtsStr);
+        
         handles.timeSliderValueLabel.String = epochStr;
-        handles.timeSliderValueLabel.TooltipString = sprintf('UT = %0.3f sec\n%s', time, epochStr);
+        handles.timeSliderValueLabel.TooltipString = tooltipStr;
     end
     
     
@@ -231,6 +253,15 @@ function gravSystemUpdateCallback(src,evt, handles)
     if(isvalid(handles.ma_LvdMainGUI))
         lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
         lvdData.celBodyData.resetAllParentNeedsUpdateFlags();
+    end
+    
+function timeSliderKeyPressCallback(src,evt, handles)
+    if(evt.getKeyCode() == java.awt.event.KeyEvent.VK_RIGHT || ...
+       evt.getKeyCode() == java.awt.event.KeyEvent.VK_LEFT || ...
+       evt.getKeyCode() == java.awt.event.KeyEvent.VK_KP_RIGHT || ... 
+       evt.getKeyCode() == java.awt.event.KeyEvent.VK_KP_LEFT)
+   
+        src.StateChangedCallback(src,true);
     end
 
 % --- Outputs from this function are returned to the command line.
@@ -1462,7 +1493,7 @@ function ma_LvdMainGUI_WindowKeyPressFcn(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
     key = eventdata.Key;
     mod = eventdata.Modifier;
-        
+
     if(gco == handles.scriptListbox && ...
        strcmpi(key,'f') && ...
        length(mod) == 1 && ...

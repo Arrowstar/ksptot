@@ -248,4 +248,8 @@ function maData = ma_updateMAData(maData, handles)
     if(~isfield(maData.settings,'autoPropScript'))
         maData.settings.autoPropScript = true;
     end
+    
+    if(~isfield(maData.settings,'renderer'))
+        maData.settings.renderer = FigureRendererEnum.OpenGL;
+    end
 end

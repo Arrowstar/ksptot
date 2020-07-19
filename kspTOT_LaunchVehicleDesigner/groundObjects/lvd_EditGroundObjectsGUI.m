@@ -22,7 +22,7 @@ function varargout = lvd_EditGroundObjectsGUI(varargin)
     
     % Edit the above text to modify the response to help lvd_EditGroundObjectsGUI
     
-    % Last Modified by GUIDE v2.5 18-Jul-2020 11:43:41
+    % Last Modified by GUIDE v2.5 19-Jul-2020 08:59:13
     
     % Begin initialization code - DO NOT EDIT
     gui_Singleton = 1;
@@ -58,7 +58,7 @@ function lvd_EditGroundObjectsGUI_OpeningFcn(hObject, eventdata, handles, vararg
     grndObjs = varargin{1};
     setappdata(hObject,'grndObjs',grndObjs);
     
-	handles = populateGUI(grndObjs, handles);
+    handles = populateGUI(grndObjs, handles);
     
     % Update handles structure
     guidata(hObject, handles);
@@ -84,32 +84,32 @@ function updateGuiForGroundObj(grndObj, handles)
     if(not(isempty(grndObj)))
         grndObjs = getappdata(handles.lvd_EditGroundObjectsGUI,'grndObjs');
         celBodyData = grndObjs.lvdData.celBodyData;
-
+        
         handles.groundObjectNameText.String = grndObj.name;
         handles.groundObjDescText.String = grndObj.desc;
-
+        
         [~, sortedBodyInfo] = ma_getSortedBodyNames(celBodyData);
         sortedBodyInfo = [sortedBodyInfo{:}];
         
         ind = find(grndObj.centralBodyInfo == sortedBodyInfo,1,'first');
         handles.celestialBodyCombo.Value = ind;
-
+        
         handles.groundObjColorCombo.String = ColorSpecEnum.getListboxStr();
         handles.groundObjColorCombo.Value = ColorSpecEnum.getIndForName(grndObj.markerColor.name);
-
+        
         handles.groundObjMarkerShapeCombo.String = MarkerStyleEnum.getListboxStr();
         handles.groundObjMarkerShapeCombo.Value = MarkerStyleEnum.getIndForName(grndObj.markerShape.name);
-
+        
         handles.groundObjLineColorCombo.String = ColorSpecEnum.getListboxStr();
         handles.groundObjLineColorCombo.Value = ColorSpecEnum.getIndForName(grndObj.grdTrkLineColor.name);
-
+        
         handles.groundObjLineSpecCombo.String = LineSpecEnum.getListboxStr();
-        handles.groundObjLineSpecCombo.Value = LineSpecEnum.getIndForName(grndObj.grdTrkLineSpec.name);    
-
+        handles.groundObjLineSpecCombo.Value = LineSpecEnum.getIndForName(grndObj.grdTrkLineSpec.name);
+        
         handles.initialTimeText.String = fullAccNum2Str(grndObj.initialTime);
         handles.extrapolateTimesCheckbox.Value = double(grndObj.extrapolateTimes);
         handles.loopGroundObjTrackCheckbox.Value = double(grndObj.loopWayPts);
-
+        
         handles.waypointsListbox.String = grndObj.getWayListboxStr();
         
         wayPt = getSelectedWayPt(handles);
@@ -117,7 +117,7 @@ function updateGuiForGroundObj(grndObj, handles)
         
         toggleEnableForGuiElements('on', handles);
     else
-        handles.groundObjectNameText.String = '';        
+        handles.groundObjectNameText.String = '';
         handles.groundObjDescText.String = '';
         handles.initialTimeText.String = '';
         
@@ -134,7 +134,7 @@ function updateGuiForWayPt(wayPt, grndObj, handles)
         handles.waypointLongText.String = fullAccNum2Str(rad2deg(wayPt.getLongitude()));
         handles.waypointAltText.String = fullAccNum2Str(wayPt.getAltitude());
         handles.timeToNextWaypointText.String = fullAccNum2Str(wayPt.getTimesToNextWaypt());
-
+        
         updateDistanceLabel(handles);
     else
         handles.waypointLatText.String = '';
@@ -158,7 +158,7 @@ function updateDistanceLabel(handles)
     else
         wayPtDistStr = '--';
     end
-
+    
     handles.distToNextWaypointLabel.String = wayPtDistStr;
     
 function wayPt = getSelectedWayPt(handles)
@@ -173,7 +173,7 @@ function grndObj = getSelectedGroundObj(handles)
     ind = handles.groundObjListbox.Value;
     grndObj = grndObjs.getGroundObjAtInd(ind);
     
-
+    
 function toggleEnableForGuiElements(enableStr, handles)
     handles.groundObjListbox.Enable = enableStr;
     handles.removeGroundObjButton.Enable = enableStr;
@@ -219,7 +219,7 @@ function setWayPtDeleteButtonEnable(handles)
     
     if(not(isempty(grndObj)))
         numWayPts = grndObj.getNumWayPts();
-
+        
         if(numWayPts > 1)
             handles.removeWaypointButton.Enable = 'on';
         else
@@ -276,8 +276,8 @@ function addGroundObjButton_Callback(hObject, eventdata, handles)
     % handles    structure with handles and user data (see GUIDATA)
     grndObjs = getappdata(handles.lvd_EditGroundObjectsGUI,'grndObjs');
     celBodyData = grndObjs.lvdData.celBodyData;
-        
-	grndObj = LaunchVehicleGroundObject.getDefaultObj(celBodyData);
+    
+    grndObj = LaunchVehicleGroundObject.getDefaultObj(celBodyData);
     grndObjs.addGroundObj(grndObj);
     
     handles.groundObjListbox.String = grndObjs.getListboxStr();
@@ -305,7 +305,7 @@ function removeGroundObjButton_Callback(hObject, eventdata, handles)
         handles.groundObjListbox.Value = numGrndObjs;
     end
     
-    grndObj = getSelectedGroundObj(handles);  
+    grndObj = getSelectedGroundObj(handles);
     updateGuiForGroundObj(grndObj, handles);
     setGrndObjDeleteButtonEnable(handles);
     
@@ -373,7 +373,7 @@ function groundObjColorCombo_Callback(hObject, eventdata, handles)
     contents = cellstr(get(hObject,'String'));
     str = contents{get(hObject,'Value')};
     
-    grndObj.markerColor = ColorSpecEnum.getEnumForListboxStr(str);    
+    grndObj.markerColor = ColorSpecEnum.getEnumForListboxStr(str);
     
     % --- Executes during object creation, after setting all properties.
 function groundObjColorCombo_CreateFcn(hObject, eventdata, handles)
@@ -401,7 +401,7 @@ function groundObjLineSpecCombo_Callback(hObject, eventdata, handles)
     contents = cellstr(get(hObject,'String'));
     str = contents{get(hObject,'Value')};
     
-    grndObj.grdTrkLineSpec = LineSpecEnum.getEnumForListboxStr(str);   
+    grndObj.grdTrkLineSpec = LineSpecEnum.getEnumForListboxStr(str);
     
     % --- Executes during object creation, after setting all properties.
 function groundObjLineSpecCombo_CreateFcn(hObject, eventdata, handles)
@@ -447,10 +447,10 @@ function addWaypointButton_Callback(hObject, eventdata, handles)
     % eventdata  reserved - to be defined in a future version of MATLAB
     % handles    structure with handles and user data (see GUIDATA)
     grndObj = getSelectedGroundObj(handles);
-        
+    
     initialTime = grndObj.initialTime;
     frameToUse = grndObj.centralBodyInfo.getBodyFixedFrame();
-	wayPt = LaunchVehicleGroundObjectWayPt.getDefaultWayPt(initialTime, frameToUse);
+    wayPt = LaunchVehicleGroundObjectWayPt.getDefaultWayPt(initialTime, frameToUse);
     grndObj.addWaypoint(wayPt);
     
     handles.waypointsListbox.String = grndObj.getWayListboxStr();
@@ -476,7 +476,7 @@ function removeWaypointButton_Callback(hObject, eventdata, handles)
         handles.waypointsListbox.Value = numWayPts;
     end
     
-    wayPt = getSelectedWayPt(handles); 
+    wayPt = getSelectedWayPt(handles);
     updateGuiForWayPt(wayPt, grndObj, handles);
     setWayPtDeleteButtonEnable(handles);
     
@@ -840,7 +840,7 @@ function groundObjLineColorCombo_Callback(hObject, eventdata, handles)
     contents = cellstr(get(hObject,'String'));
     str = contents{get(hObject,'Value')};
     
-    grndObj.grdTrkLineColor = ColorSpecEnum.getEnumForListboxStr(str);    
+    grndObj.grdTrkLineColor = ColorSpecEnum.getEnumForListboxStr(str);
     
     % --- Executes during object creation, after setting all properties.
 function groundObjLineColorCombo_CreateFcn(hObject, eventdata, handles)
@@ -868,7 +868,7 @@ function groundObjMarkerShapeCombo_Callback(hObject, eventdata, handles)
     contents = cellstr(get(hObject,'String'));
     str = contents{get(hObject,'Value')};
     
-    grndObj.markerShape = MarkerStyleEnum.getEnumForListboxStr(str);   
+    grndObj.markerShape = MarkerStyleEnum.getEnumForListboxStr(str);
     
     % --- Executes during object creation, after setting all properties.
 function groundObjMarkerShapeCombo_CreateFcn(hObject, eventdata, handles)
@@ -881,3 +881,32 @@ function groundObjMarkerShapeCombo_CreateFcn(hObject, eventdata, handles)
     if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
         set(hObject,'BackgroundColor','white');
     end
+    
+    
+    % --------------------------------------------------------------------
+function enterUTAsDateTimeMenu_Callback(hObject, eventdata, handles)
+    % hObject    handle to enterUTAsDateTimeMenu (see GCBO)
+    % eventdata  reserved - to be defined in a future version of MATLAB
+    % handles    structure with handles and user data (see GUIDATA)
+    secUT = enterUTAsDateTimeGUI(str2double(get(gco, 'String')));
+    if(secUT >= 0)
+        set(gco, 'String', fullAccNum2Str(secUT));
+        initialTimeText_Callback(handles.initialTimeText, [], handles);
+    end
+    
+    % --------------------------------------------------------------------
+function getUTFromKSPMenu_Callback(hObject, eventdata, handles)
+    % hObject    handle to getUTFromKSPMenu (see GCBO)
+    % eventdata  reserved - to be defined in a future version of MATLAB
+    % handles    structure with handles and user data (see GUIDATA)
+    secUT = readDoublesFromKSPTOTConnect('GetUT', '', true);
+    if(secUT >= 0)
+        set(gco, 'String', fullAccNum2Str(secUT));
+        initialTimeText_Callback(handles.initialTimeText, [], handles);
+    end
+    
+    % --------------------------------------------------------------------
+function initialTimeContextMenu_Callback(hObject, eventdata, handles)
+    % hObject    handle to initialTimeContextMenu (see GCBO)
+    % eventdata  reserved - to be defined in a future version of MATLAB
+    % handles    structure with handles and user data (see GUIDATA)
