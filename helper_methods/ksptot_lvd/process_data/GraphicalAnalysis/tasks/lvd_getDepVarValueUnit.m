@@ -94,6 +94,10 @@ function [depVarValue, depVarUnit, taskStr, refBodyInfo] = lvd_getDepVarValueUni
             engineActivePattern = 'Engine (\d+?) Active State - ".*"';
             stopwatchValuePattern = 'Stopwatch (\d+?) Value - ".*"';
             extremaValuePattern = 'Extrema (\d+?) Value - ".*"';
+            grdObjAzValuePattern = 'Ground Object (\d+?) Azimuth to S/C - ".*"';
+            grdObjElValuePattern = 'Ground Object (\d+?) Elevation to S/C - ".*"';
+            grdObjRngValuePattern = 'Ground Object (\d+?) Range to S/C - ".*"';
+            grdObjLoSValuePattern = 'Ground Object (\d+?) Line of Sight to S/C - ".*"';
             
             if(not(isempty(regexpi(taskStr, tankMassPattern))))
                 tokens = regexpi(taskStr, tankMassPattern, 'tokens');
@@ -177,6 +181,53 @@ function [depVarValue, depVarUnit, taskStr, refBodyInfo] = lvd_getDepVarValueUni
                 extremum = extrema(extremaInd);
                 
                 [depVarValue, depVarUnit] = lvd_ExtremaTasks(subLog(i), 'extremumValue', extremum);
+            
+            elseif(not(isempty(regexpi(taskStr, grdObjAzValuePattern))))
+                tokens = regexpi(taskStr, grdObjAzValuePattern, 'tokens');
+                tokens = tokens{1};
+                tokens = tokens{1};
+                ind = str2double(tokens);
+                
+                [~, grdObjs] = subLog(i).lvdData.groundObjs.getGrdObjAzGraphAnalysisTaskStrs();
+                grdObj = grdObjs(ind);
+                
+                [depVarValue, depVarUnit] = lvd_GrdObjTasks(subLog(i), 'azimuth', grdObj);
+                
+            elseif(not(isempty(regexpi(taskStr, grdObjElValuePattern))))
+                tokens = regexpi(taskStr, grdObjElValuePattern, 'tokens');
+                tokens = tokens{1};
+                tokens = tokens{1};
+                ind = str2double(tokens);
+                
+                [~, grdObjs] = subLog(i).lvdData.groundObjs.getGrdObjAzGraphAnalysisTaskStrs();
+                grdObj = grdObjs(ind);
+                
+                [depVarValue, depVarUnit] = lvd_GrdObjTasks(subLog(i), 'elevation', grdObj);
+                
+            elseif(not(isempty(regexpi(taskStr, grdObjRngValuePattern))))
+                tokens = regexpi(taskStr, grdObjRngValuePattern, 'tokens');
+                tokens = tokens{1};
+                tokens = tokens{1};
+                ind = str2double(tokens);
+                
+                [~, grdObjs] = subLog(i).lvdData.groundObjs.getGrdObjAzGraphAnalysisTaskStrs();
+                grdObj = grdObjs(ind);
+                
+                [depVarValue, depVarUnit] = lvd_GrdObjTasks(subLog(i), 'range', grdObj);
+                
+            elseif(not(isempty(regexpi(taskStr, grdObjLoSValuePattern))))
+                tokens = regexpi(taskStr, grdObjLoSValuePattern, 'tokens');
+                tokens = tokens{1};
+                tokens = tokens{1};
+                ind = str2double(tokens);
+                
+                [~, grdObjs] = subLog(i).lvdData.groundObjs.getGrdObjAzGraphAnalysisTaskStrs();
+                grdObj = grdObjs(ind);
+                
+                [depVarValue, depVarUnit] = lvd_GrdObjTasks(subLog(i), 'LoS', grdObj);
+                
+            else
+                error('Unknown LVD task string: "%s"', taskStr);                
             end
     end
 end

@@ -48,6 +48,50 @@ classdef LaunchVehicleGroundObjectSet < matlab.mixin.SetGet
         function numGrndObjs = getNumGroundObj(obj)
             numGrndObjs = length(obj.groundObjs);
         end
+        
+        function [grdObjAzGAStr, grdObjs] = getGrdObjAzGraphAnalysisTaskStrs(obj)
+            grdObjs = obj.groundObjs;
+            
+            grdObjAzGAStr = cell(1,length(grdObjs));
+            A = length(grdObjs);
+            formSpec = sprintf('%%0%uu',floor(log10(abs(A)+1)) + 1);
+            for(i=1:length(grdObjs))
+                grdObjAzGAStr{i} = sprintf(sprintf('Ground Object %s Azimuth to S/C - "%s"',formSpec, grdObjs(i).name), i);
+            end
+        end
+        
+        function [grdObjElevGAStr, grdObjs] = getGrdObjElevGraphAnalysisTaskStrs(obj)
+            grdObjs = obj.groundObjs;
+            
+            grdObjElevGAStr = cell(1,length(grdObjs));
+            A = length(grdObjs);
+            formSpec = sprintf('%%0%uu',floor(log10(abs(A)+1)) + 1);
+            for(i=1:length(grdObjs))
+                grdObjElevGAStr{i} = sprintf(sprintf('Ground Object %s Elevation to S/C - "%s"',formSpec, grdObjs(i).name), i);
+            end
+        end
+        
+        function [grdObjRngGAStr, grdObjs] = getGrdObjRangeGraphAnalysisTaskStrs(obj)
+            grdObjs = obj.groundObjs;
+            
+            grdObjRngGAStr = cell(1,length(grdObjs));
+            A = length(grdObjs);
+            formSpec = sprintf('%%0%uu',floor(log10(abs(A)+1)) + 1);
+            for(i=1:length(grdObjs))
+                grdObjRngGAStr{i} = sprintf(sprintf('Ground Object %s Range to S/C - "%s"',formSpec, grdObjs(i).name), i);
+            end
+        end
+        
+        function [grdObjLoSGAStr, grdObjs] = getGrdObjLoSGraphAnalysisTaskStrs(obj)
+            grdObjs = obj.groundObjs;
+            
+            grdObjLoSGAStr = cell(1,length(grdObjs));
+            A = length(grdObjs);
+            formSpec = sprintf('%%0%uu',floor(log10(abs(A)+1)) + 1);
+            for(i=1:length(grdObjs))
+                grdObjLoSGAStr{i} = sprintf(sprintf('Ground Object %s Line of Sight to S/C - "%s"',formSpec, grdObjs(i).name), i);
+            end
+        end
     end
 end
 

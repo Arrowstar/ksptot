@@ -38,5 +38,17 @@ function [taskList] = lvd_getGraphAnalysisTaskList(lvdData, excludeList)
     [extremaGAStr, ~] = lvdData.launchVehicle.getExtremaGraphAnalysisTaskStrs();
     taskList = horzcat(taskList, extremaGAStr);
     
+    [grdObjAzGAStr, ~] = lvdData.groundObjs.getGrdObjAzGraphAnalysisTaskStrs();
+    taskList = horzcat(taskList, grdObjAzGAStr);
+    
+    [grdObjElevGAStr, ~] = lvdData.groundObjs.getGrdObjElevGraphAnalysisTaskStrs();
+    taskList = horzcat(taskList, grdObjElevGAStr);
+    
+    [grdObjRngGAStr, ~] = lvdData.groundObjs.getGrdObjRangeGraphAnalysisTaskStrs();
+    taskList = horzcat(taskList, grdObjRngGAStr);
+    
+    [grdObjLoSGAStr, ~] = lvdData.groundObjs.getGrdObjLoSGraphAnalysisTaskStrs();
+    taskList = horzcat(taskList, grdObjLoSGAStr);
+    
     taskList = setdiff(taskList,excludeList);
 end
