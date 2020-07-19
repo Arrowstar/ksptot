@@ -32,6 +32,7 @@ function LoS = LoS2Target(stateLogEntry, bodyInfo, eclipseBodyInfo, targetBodyIn
             stnBodyInfo = getBodyInfoByNumber(station.parentID, celBodyData);
             stnRVectECIRelToParent = getInertialVectFromLatLongAlt(stateLogEntry(1), station.lat, station.long, station.alt, stnBodyInfo, [NaN;NaN;NaN]);
             rVectTargetwrtSun = rVectTargetwrtSun + stnRVectECIRelToParent;
+            
         elseif(isa(station, 'LaunchVehicleGroundObject'))
             inertialFrame = bodyInfo.getBodyCenteredInertialFrame();
             
@@ -52,12 +53,9 @@ function LoS = LoS2Target(stateLogEntry, bodyInfo, eclipseBodyInfo, targetBodyIn
     
     aVect = rVectBodySCwrtSun;
     pVect = rVectEclipseBodyBodywrtSun;
-%     rVectEclipseBodyToTarget = rVectTargetwrtSun - rVectEclipseBodyBodywrtSun;
-    
-%     dPtToLine = norm((aVect - pVect) - (dotARH((aVect - pVect),nHat))*nHat);
     
     points = intersectLineSphere([aVect(:)' nHat(:)'], [pVect(:)' eBodyRad]);
-    
+   
     tol=1E-6;
     if(any(not(isnan(points))))       
         LoS = 1;
@@ -78,6 +76,14 @@ function LoS = LoS2Target(stateLogEntry, bodyInfo, eclipseBodyInfo, targetBodyIn
     else
         LoS = 1;
     end
+    
+%     if(strcmpi(bodyInfo.name,'Kerbin'))
+%         R_ned_2_inert = computeNedFrame(time, stnRVectECIRelToParent, bodyInfo);
+%         rVectTargetToSc = -rVectScToTarget;
+%         rVectTargetToScNed = R_ned_2_inert' * rVectTargetToSc;
+%         [az, elev, r] = getAzElRngFromNedPosition(rVectTargetToScNed);
+%         fprintf('Az: %0.3f, El: %0.3f, Dist: %0.3f\n', rad2deg(az), rad2deg(elev), r);
+%     end
     
     %     dist2Target = norm(rVectSC2Target);
     %
