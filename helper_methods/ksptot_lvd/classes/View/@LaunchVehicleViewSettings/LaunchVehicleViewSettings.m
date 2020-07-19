@@ -88,6 +88,12 @@ classdef LaunchVehicleViewSettings < matlab.mixin.SetGet
                 tf = false;
             end
         end
+        
+        function removeGrdObjFromViewProfiles(obj, grdObj)
+            for(i=1:length(obj.viewProfiles))
+                obj.viewProfiles(i).removeGrdObjFromList(grdObj);
+            end
+        end
     end
     
     methods(Static)

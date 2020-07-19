@@ -74,6 +74,10 @@ classdef CelestialBodyData < matlab.mixin.SetGet & dynamicprops
         function tf = isfield(obj,field)
             tf = isprop(obj,field);
         end
+        
+        function allBodyInfo = getAllBodyInfo(obj)
+            allBodyInfo = obj.bodies;
+        end
     end
     
     methods(Static)

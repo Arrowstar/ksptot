@@ -13,6 +13,7 @@ classdef LvdData < matlab.mixin.SetGet
         notes char
         plugins LvdPluginSet
         viewSettings LaunchVehicleViewSettings
+        groundObjs LaunchVehicleGroundObjectSet
         
         celBodyData 
         ksptotVer char
@@ -28,6 +29,7 @@ classdef LvdData < matlab.mixin.SetGet
             obj.settings = LvdSettings();
             obj.plugins = LvdPluginSet(obj);
             obj.viewSettings = LaunchVehicleViewSettings(obj);
+            obj.groundObjs = LaunchVehicleGroundObjectSet(obj);
         end
     end
     
@@ -89,12 +91,6 @@ classdef LvdData < matlab.mixin.SetGet
             lvdData.launchVehicle = lv;
             
             %Set Up Initial State
-%             if(isfield(celBodyData,'kerbin'))
-%                 initBody = celBodyData.kerbin;
-%             else
-%                 fields = fieldnames(celBodyData);
-%                 initBody = celBodyData.(fields{1});
-%             end
             initBody = LvdData.getDefaultInitialBodyInfo(celBodyData);
 
             initStateModel = InitialStateModel.getDefaultInitialStateLogModelForLaunchVehicle(lvdData.launchVehicle, initBody);
@@ -123,6 +119,19 @@ classdef LvdData < matlab.mixin.SetGet
             
             %set up view profile
             lvdData.viewSettings.selViewProfile.frame = BodyCenteredInertialFrame(lvdData.initialState.centralBody, lvdData.celBodyData);
+            
+            %set up ground objects
+            grndObj = LaunchVehicleGroundObject.getDefaultObj(celBodyData);
+            lvdData.groundObjs.addGroundObj(grndObj);
+            grndObj.name = 'KSC';
+            grndObj.desc = "Kerbin Space Center";
+            
+            bfFrame = grndObj.centralBodyInfo.getBodyFixedFrame();
+            
+            durToNextWayPt = 3600;
+            elemSet = GeographicElementSet(grndObj.initialTime + durToNextWayPt, deg2rad(-0.1025), deg2rad(285.42472), 0.06841, 0, 0, 0, bfFrame);
+            wayPt = LaunchVehicleGroundObjectWayPt(elemSet, durToNextWayPt);
+            grndObj.wayPts = wayPt;
         end
         
         function initBody = getDefaultInitialBodyInfo(celBodyData)
@@ -156,6 +165,10 @@ classdef LvdData < matlab.mixin.SetGet
                         profile.frame = originBodyInfo.getBodyCenteredInertialFrame();
                     end
                 end
+            end
+            
+            if(isempty(obj.groundObjs))
+                obj.groundObjs = LaunchVehicleGroundObjectSet(obj);
             end
         end
         

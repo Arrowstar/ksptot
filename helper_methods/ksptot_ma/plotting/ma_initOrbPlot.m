@@ -11,7 +11,7 @@ function hCBodySurf = ma_initOrbPlot(hFig, orbitDispAxes, bodyInfo)
 
     if(~isempty(bodyInfo))
         dRad = bodyInfo.radius;
-        [X,Y,Z] = sphere(40);
+        [X,Y,Z] = sphere(50);
         CData = getCDataForSphereWithColormap(Z, bodyInfo.bodycolor);
 %         hold(orbitDispAxes,'on');
         mColor = colorFromColorMap(bodyInfo.bodycolor);

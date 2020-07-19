@@ -22,7 +22,7 @@ function varargout = lvd_viewSettingsGUI(varargin)
     
     % Edit the above text to modify the response to help lvd_viewSettingsGUI
     
-    % Last Modified by GUIDE v2.5 16-Jul-2020 13:12:31
+    % Last Modified by GUIDE v2.5 18-Jul-2020 19:28:41
     
     % Begin initialization code - DO NOT EDIT
     gui_Singleton = 1;
@@ -71,8 +71,10 @@ function handles = populateGUI(viewSettings, handles)
     handles.viewProfilesListbox.Value = viewSettings.getIndOfSelectedProfile();
     
     celBodyData = viewSettings.lvdData.celBodyData;
-    %     populateBodiesCombo(celBodyData, handles.viewAllOriginCentralBodyCombo);
     populateBodiesCombo(celBodyData, handles.bodiesToPlotListbox);
+    
+    grdObjSet = viewSettings.lvdData.groundObjs;
+    handles.grdObjsListbox.String = grdObjSet.getListboxStr();
     
     profile = getSelectedProfile(handles);
     updateGuiForProfile(profile, handles);
@@ -143,6 +145,11 @@ function updateGuiForProfile(profile, handles)
     handles.showScBodyAxesCheckbox.Value = double(profile.showScBodyAxes);
     handles.scBodyAxesScaleText.String = fullAccNum2Str(profile.scBodyAxesScale);
     
+    grdObjSet = viewSettings.lvdData.groundObjs;
+    handles.grdObjsListbox.Value = grdObjSet.getIndsForGroundObjs(profile.groundObjsToPlot);
+    handles.showGrdObjTrksCheckbox.Value = double(profile.showGndTracks);
+    handles.showLoSToScCheckbox.Value = double(profile.showGrdObjLoS);
+
     setDeleteButtonEnable(handles);
     
     
@@ -980,3 +987,58 @@ function scBodyAxesScaleText_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on selection change in grdObjsListbox.
+function grdObjsListbox_Callback(hObject, eventdata, handles)
+% hObject    handle to grdObjsListbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns grdObjsListbox contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from grdObjsListbox
+    viewSettings = getappdata(handles.lvd_viewSettingsGUI,'viewSettings');
+    grdObjs = viewSettings.lvdData.groundObjs;
+
+    profile = getSelectedProfile(handles);
+    
+    inds = hObject.Value;
+    if(not(isempty(inds)))
+        profile.groundObjsToPlot = grdObjs.getGroundObjsForInds(inds);
+    else
+        profile.groundObjsToPlot = LaunchVehicleGroundObject.empty(1,0);
+    end
+
+% --- Executes during object creation, after setting all properties.
+function grdObjsListbox_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to grdObjsListbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: listbox controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in showGrdObjTrksCheckbox.
+function showGrdObjTrksCheckbox_Callback(hObject, eventdata, handles)
+% hObject    handle to showGrdObjTrksCheckbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of showGrdObjTrksCheckbox
+    profile = getSelectedProfile(handles);
+    profile.showGndTracks = logical(get(hObject,'Value'));
+
+
+% --- Executes on button press in showLoSToScCheckbox.
+function showLoSToScCheckbox_Callback(hObject, eventdata, handles)
+% hObject    handle to showLoSToScCheckbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of showLoSToScCheckbox
+    profile = getSelectedProfile(handles);
+    profile.showGrdObjLoS = logical(get(hObject,'Value'));

@@ -22,7 +22,7 @@ function varargout = ma_LvdMainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_LvdMainGUI
 
-% Last Modified by GUIDE v2.5 04-Jul-2020 11:13:01
+% Last Modified by GUIDE v2.5 18-Jul-2020 14:31:29
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -204,6 +204,7 @@ function timeSliderStateChanged(src,evt, lvdData, handles)
         markerTrajData = lvdData.viewSettings.selViewProfile.markerTrajData;
         markerBodyData = lvdData.viewSettings.selViewProfile.markerBodyData;
         markerBodyAxesData = lvdData.viewSettings.selViewProfile.markerTrajAxesData;
+        markerGrdObjData = lvdData.viewSettings.selViewProfile.markerGrdObjData;
         
         markerTrajData.plotBodyMarkerAtTime(time, hAx);
         for(i=1:length(markerBodyData))
@@ -211,7 +212,11 @@ function timeSliderStateChanged(src,evt, lvdData, handles)
         end
         
         markerBodyAxesData.plotBodyAxesAtTime(time, hAx);
-
+        
+        for(i=1:length(markerGrdObjData))
+            markerGrdObjData(i).plotBodyMarkerAtTime(time, hAx);
+        end
+        
         lvdData.viewSettings.selViewProfile.updateLightPosition(time);
 
         [year, day, hour, minute, sec] = convertSec2YearDayHrMnSec(time);
@@ -1893,3 +1898,23 @@ function setActiveViewProfileMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to setActiveViewProfileMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function editGroundObjsMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to editGroundObjsMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    
+    addUndoState(handles,'Edit Ground Objects');
+    
+    result = lvd_EditGroundObjectsGUI(lvdData.groundObjs);
+    
+%     if(result == false)
+%         undoMenu_Callback(handles.undoMenu, [], handles);
+%     else
+%         runScript(handles, lvdData, 1);
+%     end
+    
+    lvd_processData(handles);

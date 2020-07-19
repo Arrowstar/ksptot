@@ -46,6 +46,11 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         showLighting(1,1) logical = false;
         showSunVect(1,1) logical = false;
         
+        %ground objects
+        groundObjsToPlot(1,:) LaunchVehicleGroundObject
+        showGndTracks(1,1) logical = true;
+        showGrdObjLoS(1,1) logical = true;
+        
         %view properties (set by user indirectly through UI controls)
         orbitNumToPlot(1,1) double = 1;
         viewAzEl(1,2) = [-37.5, 30]; %view(3)
@@ -53,6 +58,7 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         markerTrajData(1,:) LaunchVehicleViewProfileTrajectoryData = LaunchVehicleViewProfileTrajectoryData.empty(1,0);
         markerBodyData(1,:) LaunchVehicleViewProfileBodyData = LaunchVehicleViewProfileBodyData.empty(1,0);
         markerTrajAxesData(1,:) LaunchVehicleViewProfileBodyAxesData = LaunchVehicleViewProfileBodyAxesData.empty(1,0);
+        markerGrdObjData(1,:) LaunchVehicleViewProfileGroundObjData = LaunchVehicleViewProfileGroundObjData.empty(1,0);
         sunLighting(1,:) LaunchVehicleViewProfileSunLighting = LaunchVehicleViewProfileSunLighting.empty(1,0);
     end
     
@@ -63,6 +69,10 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
     methods
         function obj = LaunchVehicleViewProfile()
             
+        end
+        
+        function removeGrdObjFromList(obj, grdObj)
+            obj.groundObjsToPlot([obj.groundObjsToPlot] == grdObj) = [];
         end
         
         function plotTrajectory(obj, lvdData, handles)
@@ -170,10 +180,6 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
             
             if(obj.showScBodyAxes)
                 for(i=1:length(evts))
-                    if(i==15)
-                        a=1;
-                    end
-                    
                     evt = evts(i);
                     evtStateLogEntries = lvdStateLogEntries([lvdStateLogEntries.event] == evt);
                                                             
@@ -224,6 +230,76 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
             end
         end
         
+        function createGroundObjMarkerData(obj, dAxes, lvdStateLogEntries, evts, viewInFrame, celBodyData)
+            obj.clearAllGrdObjData();
+            
+            for(i=1:length(obj.groundObjsToPlot))
+                grdObj = obj.groundObjsToPlot(i);
+                
+                if(ismember(grdObj.centralBodyInfo, obj.bodiesToPlot) || grdObj.centralBodyInfo == viewInFrame.getOriginBody())
+                    grdObjData = LaunchVehicleViewProfileGroundObjData(grdObj, celBodyData);
+                    obj.markerGrdObjData(end+1) = grdObjData;
+                    
+                    for(j=1:length(evts))
+                        evt = evts(j);
+                        evtStateLogEntries = lvdStateLogEntries([lvdStateLogEntries.event] == evt);
+                        
+                        times = [];
+                        rVectsGrdObj = [];
+                        rVectsSc = [];
+                        for(k=1:length(evtStateLogEntries))
+                            entry = evtStateLogEntries(k);
+                            scCartElem = entry.getCartesianElementSetRepresentation();
+                            scCartElem = scCartElem.convertToFrame(viewInFrame);
+                            
+                            time = entry.time;
+                            
+                            elemSet = grdObj.getStateAtTime(time);
+                            if(not(isempty(elemSet)))
+                                elemSet = elemSet.convertToFrame(viewInFrame).convertToCartesianElementSet();
+                                
+                                times(end+1) = time;
+                                rVectsGrdObj(:,end+1) = elemSet.rVect;
+                                rVectsSc(:,end+1) = scCartElem.rVect;
+                            end
+                        end
+                        
+                        [times,ia,~] = unique(times);
+                        rVectsGrdObj = rVectsGrdObj(:,ia);
+                        rVectsSc = rVectsSc(:,ia);
+
+                        switch(evt.plotMethod)
+                            case EventPlottingMethodEnum.PlotContinuous
+                                %nothing
+
+                            case EventPlottingMethodEnum.SkipFirstState
+                                times = times(2:end);
+                                rVectsGrdObj = rVectsGrdObj(2:end,:);
+                                rVectsSc = rVectsSc(2:end,:);
+                                
+                            case EventPlottingMethodEnum.DoNotPlot
+                                times = [];
+                                rVectsGrdObj = [];
+                                rVectsSc = [];
+
+                            otherwise
+                                error('Unknown event plotting method: %s', EventPlottingMethodEnum.DoNotPlot.name);
+                        end
+                        
+                        if(length(times) >= 2 && all(diff(times)>0))
+                            grdObjData.addData(times, rVectsGrdObj, rVectsSc, viewInFrame, obj.showGrdObjLoS);
+                        
+                            if(obj.showGndTracks)
+                                hold(dAxes,'on');
+                                plot3(dAxes, rVectsGrdObj(1,:), rVectsGrdObj(2,:), rVectsGrdObj(3,:), 'Color',grdObj.grdTrkLineColor.color, 'LineStyle',grdObj.grdTrkLineSpec.linespec);
+                                hold(dAxes,'off');
+                            end
+                        end
+                    end
+                end
+            end
+        end
+        
         function configureTimeSlider(obj, minTime, maxTime, subStateLogs, handles)
             timeSlider = handles.jDispAxesTimeSlider;
             curSliderTime = timeSlider.getValue();
@@ -267,6 +343,10 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         
         function clearAllBodyAxesData(obj)
             obj.markerTrajAxesData = LaunchVehicleViewProfileBodyAxesData.empty(1,0);
+        end
+        
+        function clearAllGrdObjData(obj)
+            obj.markerGrdObjData = LaunchVehicleViewProfileGroundObjData.empty(1,0);
         end
     end
 end

@@ -17,6 +17,7 @@ classdef ColorSpecEnum < matlab.mixin.SetGet
         DarkGrey('Dark Grey',[0.15 0.15 0.15]);
         Grey('Grey',[0.5, 0.5, 0.5])
         LightGrey('Light Grey',[223 223 223]/255);
+        BrightGreen('Bright Green', [102, 255, 0]/255);
     end
     
     properties

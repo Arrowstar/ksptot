@@ -56,7 +56,7 @@ function datapt = ma_GAEclipseTask(stateLogEntry, subTask, otherSC, station, cel
             for(i=1:length(bodies))
                 eclipseBodyInfo = celBodyData.(bodies{i});
                 targetBodyInfo = stnBodyInfo;
-
+                
                 LoS = LoS2Target(stateLogEntry, bodyInfo, eclipseBodyInfo, targetBodyInfo, celBodyData, station);
                 if(LoS == 0)
                     datapt = 0;

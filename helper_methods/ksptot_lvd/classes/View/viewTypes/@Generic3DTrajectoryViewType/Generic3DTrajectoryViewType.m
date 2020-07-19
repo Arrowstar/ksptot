@@ -256,6 +256,7 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             viewProfile.createTrajectoryMarkerData(subStateLogs, lvdData.script.evts);
             viewProfile.createBodyAxesData(lvdStateLogEntries, lvdData.script.evts, viewInFrame);
             viewProfile.createSunLightSrc(dAxes, viewInFrame);
+            viewProfile.createGroundObjMarkerData(dAxes, lvdStateLogEntries, lvdData.script.evts, viewInFrame, celBodyData);
             viewProfile.configureTimeSlider(minTime, maxTime, subStateLogs, handles);
             hold(dAxes,'off');
         end
