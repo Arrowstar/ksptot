@@ -42,17 +42,17 @@ classdef LaunchVehicleViewProfileBodyAxesData < matlab.mixin.SetGet
             obj.yPosInterps{end+1} = griddedInterpolant(times, rVects(2,:), method, 'linear');
             obj.zPosInterps{end+1} = griddedInterpolant(times, rVects(3,:), method, 'linear');
             
-            obj.dcm11Interps{end+1} = griddedInterpolant(times, rotMatsBodyToView(1,1,:), method, 'linear');
-            obj.dcm21Interps{end+1} = griddedInterpolant(times, rotMatsBodyToView(2,1,:), method, 'linear');
-            obj.dcm31Interps{end+1} = griddedInterpolant(times, rotMatsBodyToView(3,1,:), method, 'linear');
+            obj.dcm11Interps{end+1} = griddedInterpolant(times, [rotMatsBodyToView(1,1,:)], method, 'linear');
+            obj.dcm21Interps{end+1} = griddedInterpolant(times, [rotMatsBodyToView(2,1,:)], method, 'linear');
+            obj.dcm31Interps{end+1} = griddedInterpolant(times, [rotMatsBodyToView(3,1,:)], method, 'linear');
             
-            obj.dcm12Interps{end+1} = griddedInterpolant(times, rotMatsBodyToView(1,2,:), method, 'linear');
-            obj.dcm22Interps{end+1} = griddedInterpolant(times, rotMatsBodyToView(2,2,:), method, 'linear');
-            obj.dcm32Interps{end+1} = griddedInterpolant(times, rotMatsBodyToView(3,2,:), method, 'linear');
+            obj.dcm12Interps{end+1} = griddedInterpolant(times, [rotMatsBodyToView(1,2,:)], method, 'linear');
+            obj.dcm22Interps{end+1} = griddedInterpolant(times, [rotMatsBodyToView(2,2,:)], method, 'linear');
+            obj.dcm32Interps{end+1} = griddedInterpolant(times, [rotMatsBodyToView(3,2,:)], method, 'linear');
             
-            obj.dcm13Interps{end+1} = griddedInterpolant(times, rotMatsBodyToView(1,3,:), method, 'linear');
-            obj.dcm23Interps{end+1} = griddedInterpolant(times, rotMatsBodyToView(2,3,:), method, 'linear');
-            obj.dcm33Interps{end+1} = griddedInterpolant(times, rotMatsBodyToView(3,3,:), method, 'linear');
+            obj.dcm13Interps{end+1} = griddedInterpolant(times, [rotMatsBodyToView(1,3,:)], method, 'linear');
+            obj.dcm23Interps{end+1} = griddedInterpolant(times, [rotMatsBodyToView(2,3,:)], method, 'linear');
+            obj.dcm33Interps{end+1} = griddedInterpolant(times, [rotMatsBodyToView(3,3,:)], method, 'linear');
             
             obj.markerPlot{end+1} = [];
         end
