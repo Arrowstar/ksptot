@@ -94,6 +94,9 @@ function ma_LvdMainGUI_OpeningFcn(hObject, eventdata, handles, varargin)
     
     jDispAxesTimeSlider = javax.swing.JSlider;
     jDispAxesTimeSlider.setSnapToTicks(false);
+    jDispAxesTimeSlider.setMinimum(0);
+    jDispAxesTimeSlider.setMaximum(1);
+    jDispAxesTimeSlider.setValue(0);
     sliderPnlPos = handles.timeSliderPanel.Position;
     javacomponent(jDispAxesTimeSlider,[1, 1, sliderPnlPos(3), sliderPnlPos(4)], handles.timeSliderPanel);
     handles.jDispAxesTimeSlider = jDispAxesTimeSlider;
@@ -240,7 +243,11 @@ function timeSliderStateChanged(src,evt, lvdData, handles)
         end
         evtsStr = strjoin(timeEvtsListboxStrs,'\n');
         
-        dashes = repmat('-',1,max(strlength(timeEvtsListboxStrs)));
+        if(not(isempty(timeEvtsListboxStrs)))
+            dashes = repmat('-',1,max(strlength(timeEvtsListboxStrs)));
+        else
+            dashes = '';
+        end
         
         tooltipStr = sprintf('UT = %0.3f sec\n%s\n%s', time, dashes, evtsStr);
         

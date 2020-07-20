@@ -22,6 +22,16 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             cla(dAxes,'reset')
             
             hFig.Renderer = viewProfile.renderer.renderer;
+            if(viewProfile.renderer == FigureRendererEnum.OpenGL)
+                d = opengl('data');
+                if(strcmpi(d.HardwareSupportLevel,'full'))
+                    opengl hardware;
+                elseif(strcmpi(d.HardwareSupportLevel,'basic'))
+                    opengl hardwarebasic;
+                end
+            end
+            
+            hFig.GraphicsSmoothing = 'on';
             
             if(stateLog.getNumberOfEntries() == 0)
                 return;
