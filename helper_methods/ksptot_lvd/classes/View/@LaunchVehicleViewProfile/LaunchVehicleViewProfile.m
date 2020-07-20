@@ -13,7 +13,8 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         majorGridColor(1,1) ColorSpecEnum = ColorSpecEnum.DarkGrey;
         minorGridColor(1,1) ColorSpecEnum = ColorSpecEnum.DarkGrey;
         gridTransparency(1,1) double = 0.15;
-        
+        meshEdgeAlpha(1,1) double = 0.1;
+
         %render mode
         renderer(1,1) FigureRendererEnum = FigureRendererEnum.OpenGL;
         
@@ -121,7 +122,7 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
             end
         end
         
-        function createBodyMarkerData(obj, dAxes, subStateLogs, viewInFrame, showSoI)
+        function createBodyMarkerData(obj, dAxes, subStateLogs, viewInFrame, showSoI, meshEdgeAlpha)
             obj.clearAllBodyData();
             
             for(i=1:length(obj.bodiesToPlot))
@@ -139,7 +140,7 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                     bodyOrbitPeriod = Inf;
                 end
                 
-                bodyMarkerData = obj.createBodyData(bodyToPlot, obj.bodyPlotStyle, showSoI);
+                bodyMarkerData = obj.createBodyData(bodyToPlot, obj.bodyPlotStyle, showSoI, meshEdgeAlpha);
                 
                 for(j=1:length(subStateLogs))
                     if(size(subStateLogs{j},1) > 0)
@@ -331,8 +332,8 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
             obj.markerTrajData = trajData;
         end
         
-        function bodyData = createBodyData(obj, bodyInfo, bodyPlotStyle, showSoI)
-            bodyData = LaunchVehicleViewProfileBodyData(bodyInfo, bodyPlotStyle, showSoI);
+        function bodyData = createBodyData(obj, bodyInfo, bodyPlotStyle, showSoI,meshEdgeAlpha)
+            bodyData = LaunchVehicleViewProfileBodyData(bodyInfo, bodyPlotStyle, showSoI, meshEdgeAlpha);
             obj.markerBodyData(end+1) = bodyData;
         end
         

@@ -22,7 +22,7 @@ function varargout = lvd_viewSettingsGUI(varargin)
     
     % Edit the above text to modify the response to help lvd_viewSettingsGUI
     
-    % Last Modified by GUIDE v2.5 19-Jul-2020 14:55:32
+    % Last Modified by GUIDE v2.5 20-Jul-2020 17:19:17
     
     % Begin initialization code - DO NOT EDIT
     gui_Singleton = 1;
@@ -152,6 +152,8 @@ function updateGuiForProfile(profile, handles)
 
     handles.rendererCombo.String = FigureRendererEnum.getListboxStr();
     handles.rendererCombo.Value = FigureRendererEnum.getIndForName(profile.renderer.name);
+    
+    handles.meshEdgeAlphaText.String = fullAccNum2Str(100*profile.meshEdgeAlpha);
     
     setDeleteButtonEnable(handles);
     
@@ -1069,6 +1071,51 @@ function rendererCombo_CreateFcn(hObject, eventdata, handles)
 % handles    empty - handles not created until after all CreateFcns called
 
 % Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function meshEdgeAlphaText_Callback(hObject, eventdata, handles)
+% hObject    handle to meshEdgeAlphaText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of meshEdgeAlphaText as text
+%        str2double(get(hObject,'String')) returns contents of meshEdgeAlphaText as a double
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
+    
+    profile = getSelectedProfile(handles);
+    
+    errMsg = {};
+    
+    alpha = str2double(get(hObject,'String'));
+    enteredStr = get(hObject,'String');
+    numberName = 'Mesh Edge Transparency';
+    lb = 0;
+    ub = 100;
+    isInt = false;
+    errMsg = validateNumber(alpha, numberName, lb, ub, isInt, errMsg, enteredStr);
+    
+    if(isempty(errMsg))
+        profile.meshEdgeAlpha = alpha/100;
+    else
+        hObject.String = fullAccNum2Str(profile.meshEdgeAlpha);
+        
+        msgbox(errMsg,'Invalid Mesh Edge Transparency Value','error');
+    end
+
+% --- Executes during object creation, after setting all properties.
+function meshEdgeAlphaText_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to meshEdgeAlphaText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
 %       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');

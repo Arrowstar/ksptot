@@ -215,7 +215,8 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             end
                                     
             hCBodySurf = ma_initOrbPlot(hFig, dAxes, viewCentralBody);
-                        
+            hCBodySurf.EdgeAlpha = viewProfile.meshEdgeAlpha;       
+            
             eventsList = unique(eventsList);
             minEventNum = min(eventsList);
             maxEventNum = max(eventsList);
@@ -264,7 +265,7 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             end
             
             hold(dAxes,'on');
-            viewProfile.createBodyMarkerData(dAxes, subStateLogs, viewInFrame, showSoI);
+            viewProfile.createBodyMarkerData(dAxes, subStateLogs, viewInFrame, showSoI, viewProfile.meshEdgeAlpha);
             viewProfile.createTrajectoryMarkerData(subStateLogs, lvdData.script.evts);
             viewProfile.createBodyAxesData(lvdStateLogEntries, lvdData.script.evts, viewInFrame);
             viewProfile.createSunLightSrc(dAxes, viewInFrame);

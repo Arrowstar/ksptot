@@ -13,13 +13,15 @@ classdef LaunchVehicleViewProfileBodyData < matlab.mixin.SetGet
         plotStyle(1,1) ViewProfileBodyPlottingStyle = ViewProfileBodyPlottingStyle.Dot;
         markerPlot = matlab.graphics.GraphicsPlaceholder.empty(1,0)
         showSoI(1,1) logical = false;
+        meshEdgeAlpha(1,1) double = 0.1;
     end
     
     methods
-        function obj = LaunchVehicleViewProfileBodyData(bodyInfo, plotStyle, showSoI)
+        function obj = LaunchVehicleViewProfileBodyData(bodyInfo, plotStyle, showSoI, meshEdgeAlpha)
             obj.bodyInfo = bodyInfo;
             obj.plotStyle = plotStyle;
             obj.showSoI = showSoI;
+            obj.meshEdgeAlpha = meshEdgeAlpha;
         end
         
         function addData(obj, times, rVects)
@@ -77,7 +79,7 @@ classdef LaunchVehicleViewProfileBodyData < matlab.mixin.SetGet
                             CData = getCDataForSphereWithColormap(Z, obj.bodyInfo.bodycolor);
 
                             obj.markerPlot = hgtransform('Parent', hAx);
-                            hS = surf(hAx, dRad*X, dRad*Y, dRad*Z, 'CData',CData, 'LineWidth',0.1, 'EdgeAlpha',0.10, 'BackFaceLighting','lit','FaceLighting','gouraud');
+                            hS = surf(hAx, dRad*X, dRad*Y, dRad*Z, 'CData',CData, 'LineWidth',0.1, 'EdgeAlpha',obj.meshEdgeAlpha, 'BackFaceLighting','lit','FaceLighting','gouraud');
                             material(hS,'dull');
                             set(hS,'Parent',obj.markerPlot);
                             

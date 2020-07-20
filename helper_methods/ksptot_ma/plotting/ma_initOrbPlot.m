@@ -16,7 +16,7 @@ function hCBodySurf = ma_initOrbPlot(hFig, orbitDispAxes, bodyInfo)
 %         hold(orbitDispAxes,'on');
         mColor = colorFromColorMap(bodyInfo.bodycolor);
         plot3(orbitDispAxes, 0, 0, 0,'Marker','o','MarkerEdgeColor',mColor,'MarkerFaceColor',mColor,'MarkerSize',3);
-        hCBodySurf = surf(orbitDispAxes, dRad*X,dRad*Y,dRad*Z,'CData',CData,'BackFaceLighting','lit','FaceLighting','gouraud','LineWidth',0.1,'EdgeAlpha',0.1);
+        hCBodySurf = surf(orbitDispAxes, dRad*X,dRad*Y,dRad*Z, 'CData',CData, 'BackFaceLighting','lit', 'FaceLighting','gouraud', 'EdgeLighting','gouraud', 'LineWidth',0.1, 'EdgeAlpha',0.1);
         material(hCBodySurf,'dull');
 %         hold(orbitDispAxes,'on');
 %         colormap(orbitDispAxes,bodyInfo.bodycolor);
