@@ -129,15 +129,15 @@ function populateGUI(handles, lvdData)
             ub(3:end) = rad2deg(ub(3:end));
 
         case ElementSetEnum.GeographicElements
-            lb(1:2) = rad2deg(lb(1:2));
-            lb(4:5) = rad2deg(lb(4:5));
+            lb(2:3) = rad2deg(lb(2:3));
+            lb(5:6) = rad2deg(lb(5:6));
 
-            ub(1:2) = rad2deg(ub(1:2));
-            ub(4:5) = rad2deg(ub(4:5));
+            ub(2:3) = rad2deg(ub(2:3));
+            ub(5:6) = rad2deg(ub(5:6));
 
         case ElementSetEnum.UniversalElements
-            lb(3:5) = rad2deg(lb(3:5));
-            ub(3:5) = rad2deg(ub(3:5));
+            lb(4:6) = rad2deg(lb(4:6));
+            ub(4:6) = rad2deg(ub(4:6));
 
         otherwise
             error('Unknown element set type: %s', class(elemSetEnum));
@@ -280,15 +280,15 @@ function varargout = lvd_EditInitialStateGUI_OutputFcn(hObject, eventdata, handl
                 ub(3:end) = deg2rad(ub(3:end));
 
             case ElementSetEnum.GeographicElements
-                lb(1:2) = deg2rad(lb(1:2));
-                lb(4:5) = deg2rad(lb(4:5));
+                lb(2:3) = deg2rad(lb(2:3));
+                lb(5:6) = deg2rad(lb(5:6));
 
-                ub(1:2) = deg2rad(ub(1:2));
-                ub(4:5) = deg2rad(ub(4:5));
+                ub(2:3) = deg2rad(ub(2:3));
+                ub(5:6) = deg2rad(ub(5:6));
 
             case ElementSetEnum.UniversalElements
-                lb(3:5) = deg2rad(lb(3:5));
-                ub(3:5) = deg2rad(ub(3:5));
+                lb(4:6) = deg2rad(lb(4:6));
+                ub(4:6) = deg2rad(ub(4:6));
 
             otherwise
                 error('Unknown element set type: %s', class(elemSetEnum));

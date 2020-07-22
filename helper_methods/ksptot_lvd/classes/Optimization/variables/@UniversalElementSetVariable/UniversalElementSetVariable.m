@@ -32,7 +32,7 @@ classdef UniversalElementSetVariable < AbstractOrbitModelVariable
             end
             
             if(obj.varRp)
-                x(end+1) = obj.varObj.Rp;
+                x(end+1) = obj.varObj.rP;
             end
             
             if(obj.varInc)
@@ -98,7 +98,7 @@ classdef UniversalElementSetVariable < AbstractOrbitModelVariable
             end
             
             if(obj.varRp)
-                obj.varObj.Rp = x(xInd);
+                obj.varObj.rP = x(xInd);
                 xInd = xInd + 1;
             end
             

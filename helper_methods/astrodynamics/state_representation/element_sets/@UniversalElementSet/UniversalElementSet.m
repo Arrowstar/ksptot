@@ -10,7 +10,7 @@ classdef UniversalElementSet < AbstractElementSet
         arg(1,1) double %rad
         tau(1,1) double %s
         
-% %         optVar KeplerianElementSetVariable
+        optVar UniversalElementSetVariable
     end
     
     properties(Constant)
@@ -57,7 +57,7 @@ classdef UniversalElementSet < AbstractElementSet
         end
         
         function elemVect = getElementVector(obj)
-            elemVect = [obj.c3,obj.Rp,rad2deg(obj.inc),rad2deg(obj.raan),rad2deg(obj.arg),obj.tau];
+            elemVect = [obj.c3,obj.rP,rad2deg(obj.inc),rad2deg(obj.raan),rad2deg(obj.arg),obj.tau];
         end
     end
     
@@ -66,7 +66,7 @@ classdef UniversalElementSet < AbstractElementSet
             fprintf('Universal State \n\tTime: %0.3f sec UT \n\tC3 Energy: %0.3f km^2/s^2 \n\tRp: %0.9f km \n\tInc: %0.3f deg \n\tRAAN: %0.3f deg \n\tArg Peri: %0.3f deg \n\tTime Past Peri.: %0.3f s \n\tFrame: %s\n', ...
                     obj.time, ...
                     obj.c3, ...
-                    obj.Rp, ...
+                    obj.rP, ...
                     rad2deg(obj.inc), ...
                     rad2deg(obj.raan), ...
                     rad2deg(obj.arg), ...
@@ -121,7 +121,7 @@ classdef UniversalElementSet < AbstractElementSet
                 raan = str2double(get(hRaan,'String'));
                 enteredStr = get(hRaan,'String');
                 numberName = ['Right Asc. of the Asc. Node', bndStr];
-                lb = 0;
+                lb = -360;
                 ub = 360;
                 isInt = false;
                 errMsg = validateNumber(raan, numberName, lb, ub, isInt, errMsg, enteredStr);
@@ -131,7 +131,7 @@ classdef UniversalElementSet < AbstractElementSet
                 arg = str2double(get(hArg,'String'));
                 enteredStr = get(hArg,'String');
                 numberName = ['Argument of Periapsis', bndStr];
-                lb = 0;
+                lb = -360;
                 ub = 360;
                 isInt = false;
                 errMsg = validateNumber(arg, numberName, lb, ub, isInt, errMsg, enteredStr);

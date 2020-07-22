@@ -240,6 +240,10 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             dAxes.GridAlpha = viewProfile.gridTransparency;
             axis(dAxes,'equal');
             
+            set(dAxes,'XTickLabel',[]);
+            set(dAxes,'YTickLabel',[]);
+            set(dAxes,'ZTickLabel',[]);
+            
             hold(dAxes,'off');
             
             setappdata(handles.ma_LvdMainGUI,'dispOrbitXLim',xlim(dAxes));

@@ -51,8 +51,10 @@ classdef (Abstract) AbstractElementSet < matlab.mixin.SetGet & matlab.mixin.Cust
             elseif(isa(obj, 'GeographicElementSet'))
                 convertedElemSet = convertCartElemSet.convertToGeographicElementSet();
                 
+            elseif(isa(obj,'UniversalElementSet'))
+                convertedElemSet = convertCartElemSet.convertToUniversalElementSet();
             else
-                error('Unknown element set frame type: %s', class(toFrame));
+                error('Unknown element set: %s', class(obj));
             end
         end
     end
