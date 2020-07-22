@@ -1,5 +1,5 @@
 function [strOut] = attemptStrEval(strIn)
-    if(length(strIn) == length(regexp(strIn, '[eE0-9+\-*/\s\.]')))
+    if(length(strIn) == length(regexp(strIn, '[eE0-9+\-*/\s\.\(\)\^[sqrt][sin][cos][tan][asin][acos][atan][csc][sec][cot][acsc][asec][acot][pi][log][log10][log2][eps]]')))
         try
             strOut = stripzeros(num2str(eval(strIn),'%.15f'));
         catch ME
