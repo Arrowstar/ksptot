@@ -61,7 +61,11 @@ classdef(Abstract) AbstractLaunchVehicleCalculusState < matlab.mixin.SetGet & ma
             [newTimes, ia, ~] = unique(newTimes);
             newDepVarValues = newDepVarValues(ia);
             
-            obj.gridInterp = griddedInterpolant(newTimes, newDepVarValues, 'makima', 'none');
+            if(length(newTimes) >= 2)
+                obj.gridInterp = griddedInterpolant(newTimes, newDepVarValues, 'makima', 'none');
+            else
+%                 warning('Did not add gridded interpolant to calculus calculation, there was less than 2 states.');
+            end
         end
         
         value = getValueAtTime(obj,time);
