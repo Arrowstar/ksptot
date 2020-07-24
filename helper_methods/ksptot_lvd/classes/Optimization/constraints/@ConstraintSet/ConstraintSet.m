@@ -179,6 +179,14 @@ classdef ConstraintSet < matlab.mixin.SetGet
             end
         end
         
+        function tf = usesCalculusCalc(obj, calculusCalc)
+            tf = false;
+            
+            for(i=1:length(obj.consts))
+                tf = tf || obj.consts(i).usesCalculusCalc(calculusCalc);
+            end
+        end
+        
         function removeConstraintsThatUseEvent(obj, event)
             indsToRemove = [];
             for(i=1:length(obj.consts))

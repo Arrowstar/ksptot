@@ -160,6 +160,14 @@ classdef LaunchVehicleNonSeqEvents < matlab.mixin.SetGet & matlab.mixin.Copyable
                 obj.nonSeqEvts(i).resetNumExecsRemaining();
             end
         end
+        
+        function tf = usesCalculusCalc(obj, calculusCalc)
+            tf = false;
+            
+            for(i=1:length(obj.evts))
+                tf = tf || obj.evts(i).usesExtremum(calculusCalc);
+            end
+        end
     end
     
 	methods(Access = protected)

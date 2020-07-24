@@ -50,5 +50,8 @@ function [taskList] = lvd_getGraphAnalysisTaskList(lvdData, excludeList)
     [grdObjLoSGAStr, ~] = lvdData.groundObjs.getGrdObjLoSGraphAnalysisTaskStrs();
     taskList = horzcat(taskList, grdObjLoSGAStr);
     
+    [calcObjsGAStr, ~] = lvdData.launchVehicle.getCalculusCalcObjGraphAnalysisTaskStrs();
+    taskList = horzcat(taskList, calcObjsGAStr);
+    
     taskList = setdiff(taskList,excludeList);
 end

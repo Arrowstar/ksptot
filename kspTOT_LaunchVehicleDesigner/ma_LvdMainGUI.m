@@ -22,7 +22,7 @@ function varargout = ma_LvdMainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_LvdMainGUI
 
-% Last Modified by GUIDE v2.5 19-Jul-2020 13:39:36
+% Last Modified by GUIDE v2.5 23-Jul-2020 20:38:43
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -156,11 +156,7 @@ function propagateScript(handles, lvdData, evtStartNum)
     drawnow;
     
     if(not(isdeployed))
-%         s = profile('status');
-%         if(strcmpi(s.ProfilerStatus,'on'))
-%             profile off;
-%         end
-%         profile('on','-detail','builtin', '-remove_overhead','on');
+%         profile off; profile('on','-detail','builtin', '-remove_overhead','on');
     end
     
     lvdData.validation.clearOutputs();
@@ -1956,3 +1952,17 @@ function editGroundObjsMenu_Callback(hObject, eventdata, handles)
 %     end
     
     lvd_processData(handles);
+
+
+% --------------------------------------------------------------------
+function editCalculusObjectsMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to editCalculusObjectsMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+
+    addUndoState(handles,'Edit Calculus Calculations');
+    lvd_EditCalculusObjsGUI(lvdData);
+    
+    runScript(handles, lvdData, 1);
+    lvd_processData(handles); 

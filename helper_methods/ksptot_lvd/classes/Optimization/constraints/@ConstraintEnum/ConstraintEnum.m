@@ -83,6 +83,8 @@ classdef ConstraintEnum < matlab.mixin.SetGet
         VelocityContinuityX('Velocity Continuity (X)','VelocityContinuityConstraintX',[]);
         VelocityContinuityY('Velocity Continuity (Y)','VelocityContinuityConstraintY',[]);
         VelocityContinuityZ('Velocity Continuity (Z)','VelocityContinuityConstraintZ',[]);
+        
+        CalculusCalculation('Calculus Calculation','CalculusCalculationValueConstraint',[]);
     end
     
     properties

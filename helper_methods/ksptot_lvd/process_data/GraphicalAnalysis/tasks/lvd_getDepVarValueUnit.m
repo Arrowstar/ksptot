@@ -8,18 +8,6 @@ function [depVarValue, depVarUnit, taskStr, refBodyInfo] = lvd_getDepVarValueUni
         refBodyInfo = [];
     end
     
-    %     if(~isempty(oscId))
-    %         otherSC = getOtherSCInfoByID(maData, oscId);
-    %     else
-    %         otherSC = [];
-    %     end
-    %
-    %     if(~isempty(stnId))
-    %         station = getStationInfoByID(maData, stnId);
-    %     else
-    %         station = [];
-    %     end
-    
     if(onlyReturnTaskStr == true)
         depVarValue = NaN;
         depVarUnit = NaN;
@@ -87,17 +75,18 @@ function [depVarValue, depVarUnit, taskStr, refBodyInfo] = lvd_getDepVarValueUni
             depVarUnit = 'kN';
             
         otherwise %is a programmatically generated string that we'll handle here
-            tankMassPattern = 'Tank (\d+?) Mass - ".*"';
-            tankMassDotPattern = 'Tank (\d+?) Mass Flow Rate - ".*"';
-            stageDryMassPattern = 'Stage (\d+?) Dry Mass - ".*"';
-            stageActivePattern = 'Stage (\d+?) Active State - ".*"';
-            engineActivePattern = 'Engine (\d+?) Active State - ".*"';
-            stopwatchValuePattern = 'Stopwatch (\d+?) Value - ".*"';
-            extremaValuePattern = 'Extrema (\d+?) Value - ".*"';
-            grdObjAzValuePattern = 'Ground Object (\d+?) Azimuth to S/C - ".*"';
-            grdObjElValuePattern = 'Ground Object (\d+?) Elevation to S/C - ".*"';
-            grdObjRngValuePattern = 'Ground Object (\d+?) Range to S/C - ".*"';
-            grdObjLoSValuePattern = 'Ground Object (\d+?) Line of Sight to S/C - ".*"';
+            tankMassPattern = '^Tank (\d+?) Mass - ".*"';
+            tankMassDotPattern = '^Tank (\d+?) Mass Flow Rate - ".*"';
+            stageDryMassPattern = '^Stage (\d+?) Dry Mass - ".*"';
+            stageActivePattern = '^Stage (\d+?) Active State - ".*"';
+            engineActivePattern = '^Engine (\d+?) Active State - ".*"';
+            stopwatchValuePattern = '^Stopwatch (\d+?) Value - ".*"';
+            extremaValuePattern = '^Extrema (\d+?) Value - ".*"';
+            grdObjAzValuePattern = '^Ground Object (\d+?) Azimuth to S/C - ".*"';
+            grdObjElValuePattern = '^Ground Object (\d+?) Elevation to S/C - ".*"';
+            grdObjRngValuePattern = '^Ground Object (\d+?) Range to S/C - ".*"';
+            grdObjLoSValuePattern = '^Ground Object (\d+?) Line of Sight to S/C - ".*"';
+            calcObjValuePattern = '^Calculus (\d+?) Value - ".*"';
             
             if(not(isempty(regexpi(taskStr, tankMassPattern))))
                 tokens = regexpi(taskStr, tankMassPattern, 'tokens');
@@ -175,12 +164,12 @@ function [depVarValue, depVarUnit, taskStr, refBodyInfo] = lvd_getDepVarValueUni
                 tokens = regexpi(taskStr, extremaValuePattern, 'tokens');
                 tokens = tokens{1};
                 tokens = tokens{1};
-                extremaInd = str2double(tokens);
+                calcObjInd = str2double(tokens);
                 
-                [~,extrema] = subLog(i).launchVehicle.getExtremaGraphAnalysisTaskStrs();
-                extremum = extrema(extremaInd);
+                [~,calcObjs] = subLog(i).launchVehicle.getExtremaGraphAnalysisTaskStrs();
+                calcObj = calcObjs(calcObjInd);
                 
-                [depVarValue, depVarUnit] = lvd_ExtremaTasks(subLog(i), 'extremumValue', extremum);
+                [depVarValue, depVarUnit] = lvd_ExtremaTasks(subLog(i), 'extremumValue', calcObj);
             
             elseif(not(isempty(regexpi(taskStr, grdObjAzValuePattern))))
                 tokens = regexpi(taskStr, grdObjAzValuePattern, 'tokens');
@@ -225,6 +214,17 @@ function [depVarValue, depVarUnit, taskStr, refBodyInfo] = lvd_getDepVarValueUni
                 grdObj = grdObjs(ind);
                 
                 [depVarValue, depVarUnit] = lvd_GrdObjTasks(subLog(i), 'LoS', grdObj);
+                
+            elseif(not(isempty(regexpi(taskStr, calcObjValuePattern))))
+                tokens = regexpi(taskStr, calcObjValuePattern, 'tokens');
+                tokens = tokens{1};
+                tokens = tokens{1};
+                calcObjInd = str2double(tokens);
+                
+                [~,calcObjs] = subLog(i).launchVehicle.getCalculusCalcObjGraphAnalysisTaskStrs();
+                calcObj = calcObjs(calcObjInd);
+                
+                [depVarValue, depVarUnit] = lvd_CalculusCalculationTasks(subLog(i), 'calcObjValue', calcObj);
                 
             else
                 error('Unknown LVD task string: "%s"', taskStr);                

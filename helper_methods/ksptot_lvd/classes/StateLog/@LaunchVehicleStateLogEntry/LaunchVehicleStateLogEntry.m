@@ -17,6 +17,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
         
         stopwatchStates LaunchVehicleStopwatchState
         extremaStates LaunchVehicleExtremaState
+        calcObjStates AbstractLaunchVehicleCalculusState
         
         steeringModel AbstractSteeringModel = RollPitchYawPolySteeringModel.getDefaultSteeringModel();
         throttleModel AbstractThrottleModel = ThrottlePolyModel.getDefaultThrottleModel();
@@ -167,6 +168,10 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             extremaStates = obj.extremaStates;
         end
         
+        function calcObjStates = getAllCalculusObjStates(obj)
+            calcObjStates = obj.calcObjStates;
+        end
+        
         function dryMass = getTotalVehicleDryMass(obj)
             dryMass = 0;
             
@@ -241,6 +246,8 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             
             newStateLogEntry.extremaStates = obj.extremaStates.copy();
             
+            newStateLogEntry.calcObjStates = obj.calcObjStates.copy();
+            
             newStateLogEntry.aero = obj.aero.deepCopy();
             newStateLogEntry.thirdBodyGravity = obj.thirdBodyGravity.copy();
         end
@@ -248,12 +255,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
         function obj = createCopiesOfCopyableInternals(obj, deepCopyState)
             %stuff that requires it's own copy
             for(i=1:length(obj.stageStates))
-%                 if(deepCopyState)
-                    obj.stageStates(i) = obj.stageStates(i).deepCopy(deepCopyState, obj.lvState);
-%                 else
-%                     obj.stageStates(i) = obj.stageStates(i).copy();
-%                     obj.stageStates(i) = obj.stageStates(i);
-%                 end
+                obj.stageStates(i) = obj.stageStates(i).deepCopy(deepCopyState, obj.lvState);
             end
             
             if(~isempty(obj.stopwatchStates))
@@ -262,6 +264,10 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             
             if(~isempty(obj.extremaStates))
                 obj.extremaStates = obj.extremaStates.copy();
+            end
+            
+            if(~isempty(obj.calcObjStates))
+                obj.calcObjStates = obj.calcObjStates.copy();
             end
             
             if(deepCopyState)
@@ -303,7 +309,6 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                 stateLogEntries = stateLogEntries.copy();
             end
             
-            
             stopwatchStates = eventInitStateLogEntry.stopwatchStates;
             initSwValues = [stopwatchStates.value];
             initSwRunningEnums = [stopwatchStates.running];
@@ -340,6 +345,20 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                 end
                 
                 stateLogEntries(i) = stateLogEntry;
+            end
+            
+            calcObjStates = stateLogEntries(1).calcObjStates;
+            for(i=1:length(calcObjStates))
+                calcObjStates(i).createDataFromStates(stateLogEntries);
+                
+                
+                if(calcObjStates(i).calcObj.type == CalculusCalculationEnum.Integral)
+                    calcObjStates(i).constant = eventInitStateLogEntry.calcObjStates(i).getValueAtTime(eventInitStateLogEntry.time);
+                end
+            end
+            
+            for(i=2:length(stateLogEntries))
+                stateLogEntries(i).calcObjStates = calcObjStates;
             end
         end
         

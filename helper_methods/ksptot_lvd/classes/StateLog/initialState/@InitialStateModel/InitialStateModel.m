@@ -70,14 +70,6 @@ classdef InitialStateModel < matlab.mixin.SetGet
         end
         
         function cb = getCentralBodyForStateLog(obj)
-%             if(isa(obj.orbitModel,'BodyFixedOrbitStateModel'))
-%                 cb = obj.centralBody;
-%             elseif(isa(obj.orbitModel,'KeplerianOrbitStateModel'))
-%                 cb = obj.centralBody;
-%             elseif(isa(obj.orbitModel,'CR3BPOrbitStateModel'))
-%                 cb = obj.centralBody.getParBodyInfo(obj.centralBody.celBodyData);
-%             end
-
             cb = obj.orbitModel.frame.getOriginBody();
         end
         
@@ -98,10 +90,6 @@ classdef InitialStateModel < matlab.mixin.SetGet
             ut = obj.time;
             stateLogEntry.time = ut;
             
-%             [rVectECI, vVectECI] = obj.orbitModel.getPositionAndVelocityVector(ut, obj.centralBody);
-%             stateLogEntry.position = rVectECI;
-%             stateLogEntry.velocity = vVectECI;
-
             iFrame = BodyCenteredInertialFrame(obj.centralBody, celBodyData);
             cartElemSet = obj.orbitModel.convertToFrame(iFrame).convertToCartesianElementSet();
             stateLogEntry.position = cartElemSet.rVect;
@@ -126,6 +114,11 @@ classdef InitialStateModel < matlab.mixin.SetGet
             extrema = stateLogEntry.launchVehicle.extrema;
             for(i=1:length(extrema))
                 stateLogEntry.extremaStates(end+1) = extrema(i).createInitialState();
+            end
+            
+            calcObjs = stateLogEntry.launchVehicle.calcObjs;
+            for(i=1:length(calcObjs))
+                stateLogEntry.calcObjStates(end+1) = calcObjs(i).createInitialState();
             end
             
             obj.steeringModel.setT0(obj.time);

@@ -18,31 +18,31 @@ classdef LaunchVehicleExtremaState < matlab.mixin.SetGet & matlab.mixin.Copyable
         end
                 
         function [newValue] = updateExtremaStateWithStateLogEntry(obj, stateLogEntry, prevValue)    
-            if(obj.active == LaunchVehicleExtremaRecordingEnum.Recording) %if it's not recording, then we can just return the exState as it is b/c it won't change                
-                i = 1;
+            if(obj.active == LaunchVehicleExtremaRecordingEnum.Recording) %if it's not recording, then we can just return the exState as it is b/c it won't change     
+                maTaskList = ma_getGraphAnalysisTaskList(getLvdGAExcludeList());
+                
                 maSubLog = stateLogEntry.getMAFormattedStateLogMatrix();
                 taskStr = obj.extrema.quantStr;
                 prevDistTraveled = 0;
                 refBodyId = obj.extrema.refBody.id;
-                otherSCId = [];
-                stationID = [];
                 propNames = obj.extrema.lvdData.launchVehicle.tankTypes.getFirstThreeTypesCellArr();
-%                 propNames = {'Liquid Fuel/Ox','Monopropellant','Xenon'};
+
                 celBodyData = obj.extrema.lvdData.celBodyData;
 
-                [depVarValue, depVarUnit, ~] = ma_getDepVarValueUnit(i, maSubLog, taskStr, prevDistTraveled, refBodyId, otherSCId, stationID, propNames, [], celBodyData, false);
+                if(ismember(taskStr,maTaskList))
+                    [depVarValue, depVarUnit, ~] = ma_getDepVarValueUnit(1, maSubLog, taskStr, prevDistTraveled, refBodyId, [], [], propNames, [], celBodyData, false);
+                else
+                    [depVarValue, depVarUnit] = lvd_getDepVarValueUnit(1, stateLogEntry, taskStr, refBodyId, celBodyData, false);
+                end
                 
-%                 ow = false;
                 if(isempty(obj.value))
                     obj.value = depVarValue;
                 else
                     if(obj.extrema.type == LaunchVehicleExtremaTypeEnum.Maximum)
                         if(isnan(prevValue) || prevValue < depVarValue)
                             obj.value = depVarValue;
-%                             ow = true;
                         else
                             obj.value = prevValue;
-%                             ow = false;
                         end
                     elseif(obj.extrema.type == LaunchVehicleExtremaTypeEnum.Minimum)
                         if(isnan(prevValue) || prevValue > depVarValue)
@@ -53,7 +53,6 @@ classdef LaunchVehicleExtremaState < matlab.mixin.SetGet & matlab.mixin.Copyable
                     end
                 end
                 
-%                 fprintf('%.3f --- %.3f --- %.0f\n', prevValue, obj.value, ow);
                 newValue = obj.value;
 
                 if(isempty(obj.extrema.unitStr))
@@ -68,6 +67,10 @@ classdef LaunchVehicleExtremaState < matlab.mixin.SetGet & matlab.mixin.Copyable
     methods(Access=protected)
         function copyObj = copyElement(obj)
             copyObj = copyElement@matlab.mixin.Copyable(obj);
+            
+            for(i=1:length(obj))
+                copyObj(i).extrema = obj(i).extrema;
+            end
         end
     end
 end

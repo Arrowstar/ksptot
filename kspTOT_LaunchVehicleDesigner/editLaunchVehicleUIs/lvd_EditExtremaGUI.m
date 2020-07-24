@@ -72,7 +72,10 @@ function lvd_EditExtremaGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 function populateGUI(handles, extrema, lvdData)
     exclude = getLvdGAExcludeList();
     exclude{end+1} = 'Distance Traveled';
-    taskList = ma_getGraphAnalysisTaskList(exclude);
+    [extremaGAStr, ~] = lvdData.launchVehicle.getExtremaGraphAnalysisTaskStrs();
+    exclude = horzcat(exclude,extremaGAStr);
+    taskList = lvd_getGraphAnalysisTaskList(lvdData, exclude);
+    
     handles.extremaQuantCombo.String = taskList;
     if(isempty(extrema.quantStr))
         value = 1;

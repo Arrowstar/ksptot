@@ -176,6 +176,16 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
             tf = tf || obj.nonSeqEvts.usesTankToTankConn(tankToTank);
         end
         
+        function tf = usesCalculusCalc(obj, calculusCalc)
+            tf = false;
+            
+            for(i=1:length(obj.evts))
+                tf = tf || obj.evts(i).usesCalculusCalc(calculusCalc);
+            end
+            
+            tf = tf || obj.nonSeqEvts.usesCalculusCalc(calculusCalc);
+        end
+        
         function stateLog = executeScript(obj, isSparseOutput, evtToStartScriptExecAt, evalConstraints, allowInterrupt)
             stateLog = obj.lvdData.stateLog;
             

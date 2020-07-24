@@ -28,6 +28,10 @@ classdef(Abstract) AbstractEventAction < matlab.mixin.SetGet & matlab.mixin.Hete
         
         tf = usesTankToTankConn(obj, tankToTank)
         
+        function tf = usesCalculusCalc(obj, calculusCalc)
+            tf = false;
+        end
+        
         function tf = usesEvent(obj, event)
             tf = false;
         end

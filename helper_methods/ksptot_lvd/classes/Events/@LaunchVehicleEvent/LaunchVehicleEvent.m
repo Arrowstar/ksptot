@@ -213,6 +213,14 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
             end
         end
         
+        function tf = usesCalculusCalc(obj, calculusCalc)
+            tf = false;
+            
+            for(i=1:length(obj.actions))
+                tf = tf || obj.actions(i).usesCalculusCalc(calculusCalc);
+            end
+        end
+        
         function tf = usesEvent(obj, event)
             tf = false;
             

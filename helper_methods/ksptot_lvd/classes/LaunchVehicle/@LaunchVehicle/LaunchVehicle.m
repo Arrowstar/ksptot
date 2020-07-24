@@ -8,6 +8,7 @@ classdef LaunchVehicle < matlab.mixin.SetGet
         tankToTankConns TankToTankConnection
         stopwatches LaunchVehicleStopwatch
         extrema LaunchVehicleExtrema
+        calcObjs AbstractLaunchVehicleCalculusCalc
         
         tankTypes TankFluidTypeSet
         
@@ -307,6 +308,51 @@ classdef LaunchVehicle < matlab.mixin.SetGet
             formSpec = sprintf('%%0%uu',floor(log10(abs(A)+1)) + 1);
             for(i=1:length(extrema))
                 extremaGAStr{i} = sprintf(sprintf('Extrema %s Value - "%s"',formSpec, extrema(i).getNameStr()), i);
+            end
+        end
+        
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % Calculus Calculation Objects
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        function addCalculusCalcObj(obj, calcObj)
+            obj.calcObjs(end+1) = calcObj;
+        end
+        
+        function removeCalculusCalcObj(obj, calcObj)
+            obj.calcObjs([obj.calcObjs] == calcObj) = [];
+        end
+        
+        function [calcListStr, calcObjs] = getCalculusCalcObjListBoxStr(obj)
+            calcObjs = obj.calcObjs;
+            calcListStr = cell(size(obj.calcObjs));
+            
+            for(i=1:length(obj.calcObjs))
+                calcListStr{i} = obj.calcObjs(i).getNameStr();
+            end
+        end
+        
+        function ind = getListBoxIndForCalculusCalcObj(obj, calcObj)
+            [~, cObj] = obj.getCalculusCalcObjListBoxStr();
+            ind = find(cObj == calcObj, 1, 'first'); 
+        end
+        
+        function calcObj = getCalculusCalcObjForInd(obj, ind)
+            [~, cObj] = obj.getCalculusCalcObjListBoxStr();
+            calcObj = AbstractLaunchVehicleCalculusCalc.empty(1,0);
+
+            if(ind >= 1 && ind <= length(cObj))
+                calcObj = cObj(ind);
+            end
+        end
+        
+        function [calcObjsGAStr, cObjs] = getCalculusCalcObjGraphAnalysisTaskStrs(obj)
+            [~, cObjs] = obj.getCalculusCalcObjListBoxStr();
+            
+            calcObjsGAStr = cell(1,length(cObjs));
+            A = length(cObjs);
+            formSpec = sprintf('%%0%uu',floor(log10(abs(A)+1)) + 1);
+            for(i=1:length(cObjs))
+                calcObjsGAStr{i} = sprintf(sprintf('Calculus %s Value - "%s"',formSpec, cObjs(i).getNameStr()), i);
             end
         end
         

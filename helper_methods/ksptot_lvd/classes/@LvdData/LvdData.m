@@ -71,6 +71,12 @@ classdef LvdData < matlab.mixin.SetGet
         function tf = usesTankToTankConn(obj, tankToTank)
             tf = obj.script.usesTankToTankConn(tankToTank);
         end
+        
+        function tf = usesCalculusCalc(obj, calculusCalc)
+            tf = obj.script.usesCalculusCalc(calculusCalc);
+            
+            tf = tf || obj.optimizer.constraints.usesCalculusCalc(calculusCalc);
+        end
     end
     
     methods(Static)        
