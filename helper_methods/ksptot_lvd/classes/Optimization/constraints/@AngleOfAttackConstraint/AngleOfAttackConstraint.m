@@ -121,7 +121,7 @@ classdef AngleOfAttackConstraint < AbstractConstraint
     end
     
     methods(Static)
-        function constraint = getDefaultConstraint(~)            
+        function constraint = getDefaultConstraint(~, ~)            
             constraint = AngleOfAttackConstraint(LaunchVehicleEvent.empty(1,0),0,0);
         end
     end

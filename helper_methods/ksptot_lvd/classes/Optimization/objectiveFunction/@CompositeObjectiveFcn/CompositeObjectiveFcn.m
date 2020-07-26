@@ -126,6 +126,20 @@ classdef CompositeObjectiveFcn < AbstractObjectiveFcn
             end
         end
         
+        function tf = usesExtremum(obj, extremum)
+            tf = false;
+            for(i=1:length(obj.objFcns))
+                tf = tf || obj.objFcns(i).usesExtremum(extremum);
+            end
+        end
+        
+        function tf = usesCalculusCalc(obj, calculusCalc)
+            tf = false;
+            for(i=1:length(obj.objFcns))
+                tf = tf || obj.objFcns(i).usesCalculusCalc(calculusCalc);
+            end
+        end
+        
         function event = getRefEvent(obj)
             for(i=1:length(obj.objFcns))
                 event(i) = obj.objFcns(i).event; %#ok<AGROW>

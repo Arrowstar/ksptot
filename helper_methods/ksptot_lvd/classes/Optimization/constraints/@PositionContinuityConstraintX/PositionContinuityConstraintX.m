@@ -119,7 +119,7 @@ classdef PositionContinuityConstraintX < AbstractConstraint
     end
     
     methods(Static)
-        function constraint = getDefaultConstraint(~)            
+        function constraint = getDefaultConstraint(~, ~)            
             constraint = PositionContinuityConstraintX(LaunchVehicleEvent.empty(1,0), LaunchVehicleEvent.empty(1,0));
         end
     end

@@ -119,7 +119,7 @@ classdef VelocityContinuityConstraintZ < AbstractConstraint
     end
     
     methods(Static)
-        function constraint = getDefaultConstraint(~)            
+        function constraint = getDefaultConstraint(~, ~)            
             constraint = VelocityContinuityConstraintZ(LaunchVehicleEvent.empty(1,0), LaunchVehicleEvent.empty(1,0));
         end
     end

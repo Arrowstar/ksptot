@@ -113,33 +113,76 @@ classdef CalculusCalculationValueConstraint < AbstractConstraint
         end
         
         function addConstraintTf = openEditConstraintUI(obj, lvdData)
+%             [listBoxStr, calcObjs] = lvdData.launchVehicle.getCalculusCalcObjListBoxStr();
+% 
+%             if(isempty(calcObjs))
+%                 addConstraintTf = false;
+%                 
+%                 warndlg('Cannot create calculus calculation constraint: no calculus calculations have been created.  Create a calculus calculation first.','Calculus Calculation Constraint','modal');
+%             else
+%                 [Selection,ok] = listdlg('PromptString',{'Select the calculus calculation','to constrain:'},...
+%                                 'SelectionMode','single',...
+%                                 'Name','Calculus Calculation',...
+%                                 'ListString',listBoxStr);
+%                             
+%                 if(ok == 0)
+%                     addConstraintTf = false;
+%                 else
+%                     calcObj = calcObjs(Selection);
+%                     obj.calculusCalc = calcObj;
+%                     
+%                     addConstraintTf = lvd_EditGenericMAConstraintGUI(obj, lvdData);
+%                 end
+%             end
+            calcObj = obj.selectConstraintObj(lvdData);
+            
+            if(not(isempty(calcObj)))
+                obj.calculusCalc = calcObj;
+                addConstraintTf = lvd_EditGenericMAConstraintGUI(obj, lvdData);
+            else
+                addConstraintTf = false;
+            end
+        end
+        
+        function [calcObj] = selectConstraintObj(obj, lvdData)
             [listBoxStr, calcObjs] = lvdData.launchVehicle.getCalculusCalcObjListBoxStr();
 
-            if(isempty(calcObjs))
-                addConstraintTf = false;
-                
-                warndlg('Cannot create calculus calculation constraint: no calculus calculations have been created.  Create a calculus calculation first.','Calculus Calculation Constraint','modal');
+            calcObj = [];
+            if(isempty(calcObjs))                
+                warndlg('Cannot create calculus calculation-based object: no calculus calculations have been created.  Create a calculus calculation first.','Calculus Calculation Constraint','modal');
             else
-                [Selection,ok] = listdlg('PromptString',{'Select the calculus calculation','to constrain:'},...
+                [Selection,ok] = listdlg('PromptString',{'Select a calculus calculation:'},...
                                 'SelectionMode','single',...
                                 'Name','Calculus Calculation',...
                                 'ListString',listBoxStr);
                             
                 if(ok == 0)
-                    addConstraintTf = false;
+                    calcObj = [];
                 else
                     calcObj = calcObjs(Selection);
-                    obj.calculusCalc = calcObj;
-                    
-                    addConstraintTf = lvd_EditGenericMAConstraintGUI(obj, lvdData);
                 end
+            end
+        end
+        
+        function setupForUseAsObjectiveFcn(obj,lvdData)
+            calcObj = obj.selectConstraintObj(lvdData);
+            
+            if(not(isempty(calcObj)))
+                obj.calculusCalc = calcObj;
             end
         end
     end
     
     methods(Static)
-        function constraint = getDefaultConstraint(~)            
-            constraint = CalculusCalculationValueConstraint(LaunchVehicleEvent.empty(1,0),0,0);
+        function constraint = getDefaultConstraint(~, lvdData)     
+            evt = lvdData.script.getEventForInd(1);
+            constraint = CalculusCalculationValueConstraint(evt,0,0);
+            
+%             addConstraintTf = constraint.openEditConstraintUI(lvdData);
+%             
+%             if(addConstraintTf == false)
+%                 constraint = CalculusCalculationValueConstraint.empty(1,0);
+%             end
         end
     end
 end

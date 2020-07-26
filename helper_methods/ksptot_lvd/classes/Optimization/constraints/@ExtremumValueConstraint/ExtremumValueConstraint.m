@@ -112,32 +112,69 @@ classdef ExtremumValueConstraint < AbstractConstraint
         end
         
         function addConstraintTf = openEditConstraintUI(obj, lvdData)
+%             [listBoxStr, extrema] = lvdData.launchVehicle.getExtremaListBoxStr();
+% 
+%             if(isempty(extrema))
+%                 addConstraintTf = false;
+%                 
+%                 warndlg('Cannot create extrema value object: no extrema have been created.  Create an extremum first.','Extremum Value Constraint','modal');
+%             else
+%                 [Selection,ok] = listdlg('PromptString',{'Select an extremum:'},...
+%                                 'SelectionMode','single',...
+%                                 'Name','Extremum',...
+%                                 'ListString',listBoxStr);
+%                             
+%                 if(ok == 0)
+%                     addConstraintTf = false;
+%                 else
+%                     ex = extrema(Selection);
+%                     obj.extremum = ex;
+%                     
+%                     addConstraintTf = lvd_EditGenericMAConstraintGUI(obj, lvdData);
+%                 end
+%             end
+
+            ex = obj.selectConstraintObj(lvdData);
+            
+            if(not(isempty(ex)))
+                obj.extremum = ex;
+                addConstraintTf = lvd_EditGenericMAConstraintGUI(obj, lvdData);
+            else
+                addConstraintTf = false;
+            end
+        end
+        
+        function ex = selectConstraintObj(obj, lvdData)
             [listBoxStr, extrema] = lvdData.launchVehicle.getExtremaListBoxStr();
 
-            if(isempty(extrema))
-                addConstraintTf = false;
-                
-                warndlg('Cannot create extrema value constraint: no extrema have been created.  Create an extremum first.','Extremum Value Constraint','modal');
+            ex = [];
+            if(isempty(extrema))                
+                warndlg('Cannot create extrema value object: no extrema have been created.  Create an extremum first.','Extremum Value Constraint','modal');
             else
-                [Selection,ok] = listdlg('PromptString',{'Select the extremum','to constraint:'},...
+                [Selection,ok] = listdlg('PromptString',{'Select an extremum:'},...
                                 'SelectionMode','single',...
                                 'Name','Extremum',...
                                 'ListString',listBoxStr);
                             
                 if(ok == 0)
-                    addConstraintTf = false;
+                    ex = [];
                 else
                     ex = extrema(Selection);
-                    obj.extremum = ex;
-                    
-                    addConstraintTf = lvd_EditGenericMAConstraintGUI(obj, lvdData);
                 end
+            end
+        end
+        
+        function setupForUseAsObjectiveFcn(obj,lvdData)
+            ex = obj.selectConstraintObj(lvdData);
+            
+            if(not(isempty(ex)))
+                obj.extremum = ex;
             end
         end
     end
     
     methods(Static)
-        function constraint = getDefaultConstraint(~)            
+        function constraint = getDefaultConstraint(~, ~)            
             constraint = ExtremumValueConstraint(LaunchVehicleEvent.empty(1,0),0,0);
         end
     end

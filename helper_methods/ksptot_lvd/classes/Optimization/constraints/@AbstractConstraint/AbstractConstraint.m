@@ -61,6 +61,10 @@ classdef(Abstract) AbstractConstraint < matlab.mixin.SetGet & matlab.mixin.Heter
         [unit, lbLim, ubLim, usesLbUb, usesCelBody, usesRefSc] = getConstraintStaticDetails(obj)
         
         addConstraintTf = openEditConstraintUI(obj, lvdData);
+        
+        function setupForUseAsObjectiveFcn(~,~)
+            return; %nothing
+        end
     end
     
     methods(Static)

@@ -112,32 +112,68 @@ classdef StopwatchValueConstraint < AbstractConstraint
         end
         
         function addConstraintTf = openEditConstraintUI(obj, lvdData)
+%             [listBoxStr, stopwatches] = lvdData.launchVehicle.getStopwatchesListBoxStr();
+% 
+%             if(isempty(stopwatches))
+%                 addConstraintTf = false;
+%                 
+%                 warndlg('Cannot create stopwatch value constraint: no stopwatches have been created.  Create a stopwatch first.','Stopwatch Value Constraint','modal');
+%             else
+%                 [Selection,ok] = listdlg('PromptString',{'Select the stopwatch','to constraint:'},...
+%                                 'SelectionMode','single',...
+%                                 'Name','Stopwatch',...
+%                                 'ListString',listBoxStr);
+%                             
+%                 if(ok == 0)
+%                     addConstraintTf = false;
+%                 else
+%                     sw = stopwatches(Selection);
+%                     obj.stopwatch = sw;
+%                     
+%                     addConstraintTf = lvd_EditGenericMAConstraintGUI(obj, lvdData);
+%                 end
+%             end
+
+            sw = obj.selectConstraintObj(lvdData);
+            
+            if(not(isempty(sw)))
+                obj.stopwatch = sw;
+                addConstraintTf = lvd_EditGenericMAConstraintGUI(obj, lvdData);
+            else
+                addConstraintTf = false;
+            end
+        end
+        
+        function sw = selectConstraintObj(obj, lvdData)
             [listBoxStr, stopwatches] = lvdData.launchVehicle.getStopwatchesListBoxStr();
 
-            if(isempty(stopwatches))
-                addConstraintTf = false;
-                
-                warndlg('Cannot create stopwatch value constraint: no stopwatches have been created.  Create a stopwatch first.','Stopwatch Value Constraint','modal');
+            if(isempty(stopwatches))                
+                warndlg('Cannot create stopwatch value object: no stopwatches have been created.  Create a stopwatch first.','Stopwatch Value Constraint','modal');
             else
-                [Selection,ok] = listdlg('PromptString',{'Select the stopwatch','to constraint:'},...
+                [Selection,ok] = listdlg('PromptString',{'Select the stopwatch:'},...
                                 'SelectionMode','single',...
                                 'Name','Stopwatch',...
                                 'ListString',listBoxStr);
                             
                 if(ok == 0)
-                    addConstraintTf = false;
+                    sw = [];
                 else
                     sw = stopwatches(Selection);
-                    obj.stopwatch = sw;
-                    
-                    addConstraintTf = lvd_EditGenericMAConstraintGUI(obj, lvdData);
                 end
+            end
+        end
+        
+        function setupForUseAsObjectiveFcn(obj,lvdData)
+            sw = obj.selectConstraintObj(lvdData);
+            
+            if(not(isempty(sw)))
+                obj.stopwatch = sw;
             end
         end
     end
     
     methods(Static)
-        function constraint = getDefaultConstraint(~)            
+        function constraint = getDefaultConstraint(~, ~)            
             constraint = StopwatchValueConstraint(LaunchVehicleEvent.empty(1,0),0,0);
         end
     end

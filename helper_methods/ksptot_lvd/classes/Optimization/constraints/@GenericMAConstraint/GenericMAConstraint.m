@@ -132,7 +132,7 @@ classdef GenericMAConstraint < AbstractConstraint
     end
     
     methods(Static)
-        function constraint = getDefaultConstraint(constraintType)            
+        function constraint = getDefaultConstraint(constraintType, lvdData)            
             constraint = GenericMAConstraint(constraintType, LaunchVehicleEvent.empty(1,0), 0, 0, [], [], KSPTOT_BodyInfo.empty(1,0));
         end
     end

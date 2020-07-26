@@ -55,6 +55,14 @@ classdef GenericObjectiveFcn < AbstractObjectiveFcn
             tf = obj.event == event;
         end
         
+        function tf = usesExtremum(obj, extremum)
+            tf = obj.fcn.usesExtremum(extremum);
+        end
+        
+        function tf = usesCalculusCalc(obj, calculusCalc)
+            tf = obj.fcn.usesCalculusCalc(calculusCalc);
+        end
+        
         function event = getRefEvent(obj)
             event = obj.event;
         end

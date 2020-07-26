@@ -121,7 +121,7 @@ classdef InertialBankAngleConstraint < AbstractConstraint
     end
     
     methods(Static)
-        function constraint = getDefaultConstraint(~)            
+        function constraint = getDefaultConstraint(~, ~)            
             constraint = InertialBankAngleConstraint(LaunchVehicleEvent.empty(1,0),0,0);
         end
     end

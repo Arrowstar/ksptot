@@ -106,6 +106,18 @@ classdef LvdOptimization < matlab.mixin.SetGet
             
             tf = tf || obj.constraints.usesEngineToTankConn(engineToTank);
         end
+        
+        function tf = usesExtremum(obj, extremum)
+            tf = obj.objFcn.usesExtremum(extremum);
+            
+            tf = tf || obj.constraints.usesExtremum(extremum);
+        end
+        
+        function tf = usesCalculusCalc(obj, calculusCalc)
+            tf = obj.objFcn.usesCalculusCalc(calculusCalc);
+            
+            tf = tf || obj.constraints.usesCalculusCalc(calculusCalc);
+        end
     end
     
     methods(Static)

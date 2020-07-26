@@ -154,7 +154,7 @@ function addConstraintButton_Callback(hObject, eventdata, handles)
         constClass = enum.class;
         input1 = enum.constructorInput1;
         
-        newConstraint = eval(sprintf('%s.getDefaultConstraint(%s)', constClass, 'input1'));
+        newConstraint = eval(sprintf('%s.getDefaultConstraint(%s, %s)', constClass, 'input1', 'lvdData'));
         
         addConstraintTf = newConstraint.openEditConstraintUI(lvdData);
         

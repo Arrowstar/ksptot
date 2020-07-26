@@ -65,7 +65,7 @@ classdef LvdData < matlab.mixin.SetGet
         
         function tf = usesExtremum(obj, extremum)
             tf = obj.script.usesExtremum(extremum);
-            tf = tf || obj.optimizer.constraints.usesExtremum(extremum);
+            tf = tf || obj.optimizer.usesExtremum(extremum);
         end
         
         function tf = usesTankToTankConn(obj, tankToTank)
@@ -75,7 +75,7 @@ classdef LvdData < matlab.mixin.SetGet
         function tf = usesCalculusCalc(obj, calculusCalc)
             tf = obj.script.usesCalculusCalc(calculusCalc);
             
-            tf = tf || obj.optimizer.constraints.usesCalculusCalc(calculusCalc);
+            tf = tf || obj.optimizer.usesCalculusCalc(calculusCalc);
         end
     end
     
