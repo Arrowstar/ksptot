@@ -541,7 +541,7 @@ function runSizingButton_Callback(hObject, eventdata, handles)
     initStage = vsProb.getProblemState();
     
     try
-%         handles.runSizingButton.Enable = 'off';
+        handles.runSizingButton.Enable = 'off';
         drawnow;
         
         hWaitbar = waitbar(0,'Running Vehicle Sizing Analysis...');

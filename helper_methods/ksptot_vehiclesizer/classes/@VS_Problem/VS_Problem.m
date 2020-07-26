@@ -172,7 +172,7 @@ classdef VS_Problem < matlab.mixin.SetGet
         end
         
         function [x,fval,exitflag,output] = sizeVehicle(obj)
-            preOptStage = obj.getProblemState();
+            preOptState = obj.getProblemState();
             
             obj.initProblemForOptimization();
             objFcn = @(x) obj.objFunc(x);
@@ -186,7 +186,7 @@ classdef VS_Problem < matlab.mixin.SetGet
             if(exitflag > 0)
                 obj.updateStagesWithVars(x);
             else
-                obj.updateStagesWithVars(preOptStage);
+                obj.updateStagesWithVars(preOptState);
             end
         end
         

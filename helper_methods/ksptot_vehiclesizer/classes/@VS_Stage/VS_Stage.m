@@ -73,6 +73,10 @@ classdef VS_Stage < VS_AbstractStage
                     diff = abs(obj.dryMass - obj.computeTgtDryMass());
                     iterCnt = iterCnt + 1;
                 end
+            else
+                if(obj.dryMassFrac == 1)
+                    obj.deltaV = 0;
+                end
             end
         end
         
@@ -81,6 +85,8 @@ classdef VS_Stage < VS_AbstractStage
             
             if(not(obj.isPayloadOnlyStage())) 
                 x = [obj.deltaV, obj.dryMass];
+            else
+                x = [obj.deltaV];
             end
         end
         
@@ -88,6 +94,8 @@ classdef VS_Stage < VS_AbstractStage
             if(not(obj.isPayloadOnlyStage()))  
                 obj.deltaV = x(1);
                 obj.dryMass = x(2);
+            else
+                obj.deltaV = x(1);
             end
         end
         
@@ -98,6 +106,9 @@ classdef VS_Stage < VS_AbstractStage
             if(not(obj.isPayloadOnlyStage()))                
                 lb = [0, 0]; %dV and dry mass have lower bounds of 0
                 ub = [Inf, Inf]; %no upper bounds on these variables
+            else
+                lb = 0;
+                ub = Inf;
             end
         end
         
@@ -105,9 +116,9 @@ classdef VS_Stage < VS_AbstractStage
             c = [];
             ceq = [];
             
-            if(not(obj.isPayloadOnlyStage()))
+%             if(not(obj.isPayloadOnlyStage()))
                 ceq(1) = obj.getTotalStageDryMass() - obj.computeTgtDryMass();
-            end
+%             end
         end
     end
     
