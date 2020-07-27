@@ -15,13 +15,18 @@ classdef GenericObjectiveFcn < AbstractObjectiveFcn
     methods
         function obj = GenericObjectiveFcn(event, targetBodyInfo, fcn, scaleFactor, lvdOptim, lvdData)
             if(nargin > 0)
-                obj.event = event;
-                obj.targetBodyInfo = targetBodyInfo;
-                obj.fcn = fcn;
-                obj.scaleFactor = scaleFactor;
-                obj.lvdOptim = lvdOptim;
                 obj.lvdData = lvdData;
+                obj.lvdOptim = lvdOptim;
+                obj.event = event;
+                obj.fcn = fcn;
+                obj.targetBodyInfo = targetBodyInfo;
+                obj.scaleFactor = scaleFactor;
             end
+        end
+        
+        function set.targetBodyInfo(obj, newValue)
+            obj.targetBodyInfo = newValue;
+            obj.fcn.refBodyInfo = newValue; %#ok<MCSUP>
         end
         
         function listBoxStr = getListBoxStr(obj)
