@@ -5,7 +5,7 @@ classdef ControlFramesEnum  < matlab.mixin.SetGet
     enumeration
         NedFrame('NED Frame')
         WindFrame('Wind Frame');
-        InertialFrame('Inertial Frame');
+        InertialFrame('Base Frame Relative');
     end
     
     properties
