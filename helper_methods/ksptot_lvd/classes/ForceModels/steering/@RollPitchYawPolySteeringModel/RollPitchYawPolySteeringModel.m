@@ -131,7 +131,6 @@ classdef RollPitchYawPolySteeringModel < AbstractAnglePolySteeringModel
         end
         
         function typeStr = getTypeNameStr()
-%             typeStr = 'Roll/Pitch/Yaw Steering';
             typeStr = SteeringModelEnum.RollPitchYawPoly.nameStr;
         end
     end

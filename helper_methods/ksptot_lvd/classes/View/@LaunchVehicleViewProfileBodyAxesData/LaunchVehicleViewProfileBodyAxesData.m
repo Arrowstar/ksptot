@@ -69,13 +69,17 @@ classdef LaunchVehicleViewProfileBodyAxesData < matlab.mixin.SetGet
                            obj.dcm31Interps{i}(time), obj.dcm32Interps{i}(time), obj.dcm33Interps{i}(time)]';
                     
                     if(not(isempty(obj.markerPlot{i})) && isvalid(obj.markerPlot{i}) && isa(obj.markerPlot{i}, 'matlab.graphics.primitive.Transform'))
-                        q = dcm2quat(dcm);
-                        angle = 2 * acos(q(1));
-                        x = q(2) / sqrt(1-q(1)*q(1));
-                        y = q(3) / sqrt(1-q(1)*q(1));
-                        z = q(4) / sqrt(1-q(1)*q(1));
+%                         q = dcm2quat(dcm);
+%                         angle = 2 * acos(q(1));
+%                         x = q(2) / sqrt(1-q(1)*q(1));
+%                         y = q(3) / sqrt(1-q(1)*q(1));
+%                         z = q(4) / sqrt(1-q(1)*q(1));
+%                         
+%                         M = makehgtform('translate',pos, 'axisrotate',[x,y,z],angle);
+
+                        [r1, r2, r3] = dcm2angle(dcm, 'XYZ');
                         
-                        M = makehgtform('translate',pos, 'axisrotate',[x,y,z],angle);
+                        M = makehgtform('translate',pos, 'xrotate',r1, 'yrotate',r2, 'zrotate',r3);
                         set(obj.markerPlot{i},'Matrix',M);
                         obj.markerPlot{i}.Visible = 'on';
                     else
@@ -91,13 +95,17 @@ classdef LaunchVehicleViewProfileBodyAxesData < matlab.mixin.SetGet
                         zAxis = quiver3(0,0,0,0,0,obj.scale, 'Color','b', 'LineWidth',2);
                         set(zAxis,'Parent',obj.markerPlot{i});
                         
-                        q = dcm2quat(dcm);
-                        angle = 2 * acos(q(1));
-                        x = q(2) / sqrt(1-q(1)*q(1));
-                        y = q(3) / sqrt(1-q(1)*q(1));
-                        z = q(4) / sqrt(1-q(1)*q(1));
-                        
-                        M = makehgtform('translate',pos, 'axisrotate',[x,y,z],angle);
+%                         q = dcm2quat(dcm);
+%                         angle = 2 * acos(q(1));
+%                         x = q(2) / sqrt(1-q(1)*q(1));
+%                         y = q(3) / sqrt(1-q(1)*q(1));
+%                         z = q(4) / sqrt(1-q(1)*q(1));
+
+%                         M = makehgtform('translate',pos, 'axisrotate',[x,y,z],angle);
+
+                        [r1, r2, r3] = dcm2angle(dcm, 'XYZ');
+
+                        M = makehgtform('translate',pos, 'xrotate',r1, 'yrotate',r2, 'zrotate',r3);
                         set(obj.markerPlot{i},'Matrix',M);
                         obj.markerPlot{i}.Visible = 'on';
                         

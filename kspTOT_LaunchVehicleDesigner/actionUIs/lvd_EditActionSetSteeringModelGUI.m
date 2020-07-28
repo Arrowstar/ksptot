@@ -22,7 +22,7 @@ function varargout = lvd_EditActionSetSteeringModelGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditActionSetSteeringModelGUI
 
-% Last Modified by GUIDE v2.5 03-Dec-2018 17:04:26
+% Last Modified by GUIDE v2.5 27-Jul-2020 20:11:16
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -72,6 +72,32 @@ function lvd_EditActionSetSteeringModelGUI_OpeningFcn(hObject, eventdata, handle
 
 function populateGUI(handles, action, lv)
     steeringModel = action.steeringModel;
+    
+    handles.baseFrameCombo.String = ReferenceFrameEnum.getListBoxStr();
+%     handles.baseFrameCombo.Value = ReferenceFrameEnum.getIndForName(initStateModel.orbitModel.frame.typeEnum.name);
+%     handles.setFrameOptionsButton.TooltipString = sprintf('Current Frame: %s', initStateModel.orbitModel.frame.getNameStr());  
+
+    if(steeringModel.usesRefFrame())
+        handles.baseFrameCombo.Enable = 'on';
+        baseFrame = steeringModel.getRefFrame();
+        
+    else
+        handles.baseFrameCombo.Enable = 'off';
+        baseFrame = lv.lvdData.getDefaultInitialBodyInfo(lv.lvdData.celBodyData).getBodyCenteredInertialFrame();
+    end
+    handles.baseFrameCombo.Value = ReferenceFrameEnum.getIndForName(baseFrame.typeEnum.name);
+    setappdata(handles.lvd_EditActionSetSteeringModelGUI, 'baseFrame', baseFrame);
+
+    handles.controlFrameCombo.String = ControlFramesEnum.getListBoxStr();
+    
+    if(steeringModel.usesControlFrame())
+        handles.controlFrameCombo.Enable = 'on';
+        handles.controlFrameCombo.Value = ControlFramesEnum.getIndForName(steeringModel.getControlFrame().enum.name);
+        
+    else
+        handles.controlFrameCombo.Enable = 'off';
+        handles.controlFrameCombo.Value = ControlFramesEnum.getIndForName(ControlFramesEnum.NedFrame.name);
+    end
     
     [angle1Name, angle2Name, angle3Name] = steeringModel.getAngleNames();
     set(handles.angle1Panel,'Title',sprintf('%s Angle', angle1Name));
@@ -200,6 +226,19 @@ function varargout = lvd_EditActionSetSteeringModelGUI_OutputFcn(hObject, eventd
             [m,~] = enumeration('SteeringModelEnum');
             steeringModel = eval(sprintf('%s.getDefaultSteeringModel()', m(indFromCombo).classNameStr));
             action.steeringModel = steeringModel;
+        end
+        
+        if(steeringModel.usesRefFrame())
+            steeringModel.setRefFrame(getappdata(hObject,'baseFrame'));
+        end
+
+        if(steeringModel.usesControlFrame())
+            contents = cellstr(get(handles.controlFrameCombo,'String'));
+            cFrameName = contents{get(handles.controlFrameCombo,'Value')};
+            cFrameEnum = ControlFramesEnum.getEnumForListboxStr(cFrameName);
+            cFrame = ControlFramesEnum.getControlFrameForEnum(cFrameEnum);
+            
+            steeringModel.setControlFrame(cFrame);
         end
         
         %Set Steering Terms
@@ -1362,6 +1401,18 @@ function steeringModelTypeCombo_Callback(hObject, eventdata, handles)
     set(handles.angle2Panel,'Title',sprintf('%s Angle', angle2Name));
     set(handles.angle3Panel,'Title',sprintf('%s Angle', angle3Name));
     
+    if(steeringModel.usesRefFrame())
+        handles.baseFrameCombo.Enable = 'on';
+    else
+        handles.baseFrameCombo.Enable = 'off';
+    end
+    
+    if(steeringModel.usesControlFrame())
+        handles.controlFrameCombo.Enable = 'on';        
+    else
+        handles.controlFrameCombo.Enable = 'off';
+    end
+    
 % --- Executes during object creation, after setting all properties.
 function steeringModelTypeCombo_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to steeringModelTypeCombo (see GCBO)
@@ -1430,3 +1481,95 @@ function lvd_EditActionSetSteeringModelGUI_WindowKeyPressFcn(hObject, eventdata,
         case 'escape'
             close(handles.lvd_EditActionSetSteeringModelGUI);
     end
+
+    
+function bodyInfo = getSelectedBodyInfo(handles)
+    baseFrame = getappdata(handles.lvd_EditActionSetSteeringModelGUI,'baseFrame');
+    bodyInfo = baseFrame.getOriginBody();
+    
+
+% --- Executes on selection change in baseFrameCombo.
+function baseFrameCombo_Callback(hObject, eventdata, handles)
+% hObject    handle to baseFrameCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns baseFrameCombo contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from baseFrameCombo
+    contents = cellstr(get(handles.baseFrameCombo,'String'));
+    selFrameType = contents{get(handles.baseFrameCombo,'Value')};
+    refFrameEnum = ReferenceFrameEnum.getEnumForListboxStr(selFrameType);
+    
+    switch refFrameEnum
+        case ReferenceFrameEnum.BodyCenteredInertial
+            bodyInfo = getSelectedBodyInfo(handles);           
+            newFrame = bodyInfo.getBodyCenteredInertialFrame();
+
+        case ReferenceFrameEnum.BodyFixedRotating
+            bodyInfo = getSelectedBodyInfo(handles);
+            newFrame = bodyInfo.getBodyFixedFrame();
+            
+        case ReferenceFrameEnum.TwoBodyRotating            
+            bodyInfo = getSelectedBodyInfo(handles);
+            if(not(isempty(bodyInfo.childrenBodyInfo)))
+                primaryBody = bodyInfo;
+                secondaryBody = bodyInfo.childrenBodyInfo(1);
+            else
+                primaryBody = bodyInfo.getParBodyInfo();
+                secondaryBody = bodyInfo;
+            end
+
+            originPt = TwoBodyRotatingFrameOriginEnum.Primary;
+
+            newFrame = TwoBodyRotatingFrame(primaryBody, secondaryBody, originPt, bodyInfo.celBodyData);
+
+        otherwise
+            error('Unknown reference frame type: %s', class(refFrameEnum));                
+    end
+    
+    setappdata(handles.lvd_EditActionSetSteeringModelGUI, 'baseFrame', newFrame);
+
+% --- Executes during object creation, after setting all properties.
+function baseFrameCombo_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to baseFrameCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in setBaseFrameOptionsButton.
+function setBaseFrameOptionsButton_Callback(hObject, eventdata, handles)
+% hObject    handle to setBaseFrameOptionsButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    baseFrame = getappdata(handles.lvd_EditActionSetSteeringModelGUI, 'baseFrame');
+    newFrame = baseFrame.editFrameDialogUI();
+    
+    setappdata(handles.lvd_EditActionSetSteeringModelGUI, 'baseFrame', newFrame);
+
+% --- Executes on selection change in controlFrameCombo.
+function controlFrameCombo_Callback(hObject, eventdata, handles)
+% hObject    handle to controlFrameCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns controlFrameCombo contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from controlFrameCombo
+
+
+% --- Executes during object creation, after setting all properties.
+function controlFrameCombo_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to controlFrameCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

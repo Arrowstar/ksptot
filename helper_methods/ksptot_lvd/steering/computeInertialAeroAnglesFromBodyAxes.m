@@ -6,11 +6,13 @@ function [bankAng,angOfAttack,angOfSideslip] = computeInertialAeroAnglesFromBody
     
     angles = rotm2eulARH(R_wind_2_inert' * Rtotal, 'xyz');
 
+    angles = real(angles);
+    
     bankAng = angles(1);
 	angOfAttack = angles(2);
 	angOfSideslip = angles(3);
      
-    bankAng = real(bankAng);
-    angOfAttack = real(angOfAttack);
-    angOfSideslip = real(angOfSideslip);
+%     bankAng = real(bankAng);
+%     angOfAttack = real(angOfAttack);
+%     angOfSideslip = real(angOfSideslip);
 end

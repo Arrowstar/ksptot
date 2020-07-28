@@ -35,9 +35,11 @@ classdef SoITransitionUpIntTermCause < AbstractIntegrationTerminationCause
             newStateLogEntry.centralBody = obj.toBody;
             newStateLogEntry.steeringModel = stateLogEntry.steeringModel.deepCopy();
             
-            newStateLogEntry.steeringModel.setContinuityTerms(true, true, true);
-            newStateLogEntry.steeringModel.setConstsFromDcmAndContinuitySettings(dcm, ut, rVectUp, vVectUp, obj.toBody);
-            newStateLogEntry.steeringModel.setT0(ut);
+            if(newStateLogEntry.steeringModel.requiresReInitAfterSoIChange())
+                newStateLogEntry.steeringModel.setContinuityTerms(true, true, true);
+                newStateLogEntry.steeringModel.setConstsFromDcmAndContinuitySettings(dcm, ut, rVectUp, vVectUp, obj.toBody);
+                newStateLogEntry.steeringModel.setT0(ut);
+            end
             
             newStateLogEntry.lvState.clearCachedConnEnginesTanks();
         end
