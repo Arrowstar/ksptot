@@ -19,10 +19,13 @@ classdef LaunchVehicleGroundObject < matlab.mixin.SetGet
         %ground track line
         grdTrkLineColor(1,1) ColorSpecEnum = ColorSpecEnum.Black;
         grdTrkLineSpec(1,1) LineSpecEnum = LineSpecEnum.DashedLine;
+        
+        groundObjs LaunchVehicleGroundObjectSet
     end
     
     properties(Dependent)
         centralBodyInfo
+        lvdData
     end
     
     methods
@@ -35,6 +38,10 @@ classdef LaunchVehicleGroundObject < matlab.mixin.SetGet
         
         function bodyInfo = get.centralBodyInfo(obj)
             bodyInfo = obj.wayPts(1).elemSet.frame.getOriginBody();
+        end
+        
+        function lvdData = get.lvdData(obj)
+            lvdData = obj.groundObjs.lvdData;
         end
         
         function set.centralBodyInfo(obj, newBodyInfo)
@@ -161,6 +168,10 @@ classdef LaunchVehicleGroundObject < matlab.mixin.SetGet
                 error('Need at least one waypoint!');
                 
             end
+        end
+        
+        function tf = isInUse(obj)
+            
         end
     end
     

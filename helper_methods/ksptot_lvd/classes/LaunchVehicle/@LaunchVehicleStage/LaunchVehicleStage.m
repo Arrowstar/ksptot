@@ -5,12 +5,20 @@ classdef LaunchVehicleStage < matlab.mixin.SetGet
     properties
         launchVehicle LaunchVehicle
         
+        %propulsion
         name char = 'Untitled Stage';
         engines LaunchVehicleEngine
         tanks LaunchVehicleTank
         
+        %dry mass
         dryMass(1,1) double = 0; %mT
         
+        %electrical
+        powerSrcs AbstractLaunchVehicleElectricalPowerSrcSnk = AbstractLaunchVehicleElectricalPowerSrcSnk.empty(1,0);
+        powerSinks AbstractLaunchVehicleElectricalPowerSrcSnk = AbstractLaunchVehicleElectricalPowerSrcSnk.empty(1,0);
+        powerStorages AbstractLaunchVehicleElectricalPowerStorage = AbstractLaunchVehicleElectricalPowerStorage.empty(1,0); 
+        
+        %id
         id(1,1) double = 0;
         
         optVar StageDryMassOptimizationVariable
@@ -30,6 +38,7 @@ classdef LaunchVehicleStage < matlab.mixin.SetGet
             lvdData = obj.launchVehicle.lvdData;
         end
         
+        %% Propulsion
         function addEngine(obj, newEngine)
             obj.engines(end+1) = newEngine;
         end
@@ -50,6 +59,32 @@ classdef LaunchVehicleStage < matlab.mixin.SetGet
             obj.launchVehicle.removeAllEngineToTanksConnsWithTank(tank);
         end
         
+        %% Electrical
+        function addPwrSrc(obj, newPwrSrc)
+            obj.powerSrcs(end+1) = newPwrSrc;
+        end
+        
+        function removePwrSrc(obj, pwrSrc)
+            obj.powerSrcs([obj.powerSrcs] == pwrSrc) = [];
+        end
+        
+        function addPwrSink(obj, newPwrSink)
+            obj.powerSinks(end+1) = newPwrSink;
+        end
+        
+        function removePwrSink(obj, pwrSink)
+            obj.powerSinks([obj.powerSinks] == pwrSink) = [];
+        end
+        
+        function addPwrStorage(obj, newPwrStorage)
+            obj.powerStorages(end+1) = newPwrStorage;
+        end
+        
+        function removePwrStorage(obj, pwrStorage)
+            obj.powerStorages([obj.powerStorages] == pwrStorage) = [];
+        end
+        
+        %% Everything else
         function stageSummStr = getStageSummaryStr(obj)
             stageSummStr = {};
             
@@ -59,13 +94,48 @@ classdef LaunchVehicleStage < matlab.mixin.SetGet
             stageSummStr{end+1} = sprintf('\t%s (Dry Mass = %0.3f mT, Prop Mass = %.3f mT, Total = %.3f mT)', obj.name, obj.dryMass, propMass, totalMass);
             
             stageSummStr{end+1} = sprintf('\t\tTanks');
-            for(i=1:length(obj.tanks)) %#ok<*NO4LP>
-                stageSummStr = horzcat(stageSummStr,obj.tanks(i).getTankSummaryStr()); %#ok<AGROW>
+            if(~isempty(obj.tanks))
+                for(i=1:length(obj.tanks)) %#ok<*NO4LP>
+                    stageSummStr = horzcat(stageSummStr,obj.tanks(i).getTankSummaryStr()); %#ok<AGROW>
+                end
+            else
+                stageSummStr{end+1} = sprintf('\t\t\tNone');
             end
             
             stageSummStr{end+1} = sprintf('\t\tEngines');
-            for(i=1:length(obj.engines))
-                stageSummStr = horzcat(stageSummStr,obj.engines(i).getEngineSummaryStr()); %#ok<AGROW>
+            if(~isempty(obj.engines))
+                for(i=1:length(obj.engines))
+                    stageSummStr = horzcat(stageSummStr,obj.engines(i).getEngineSummaryStr()); %#ok<AGROW>
+                end
+            else
+                stageSummStr{end+1} = sprintf('\t\t\tNone');
+            end
+            
+            stageSummStr{end+1} = sprintf('\t\tElectrical Power Sources');
+            if(~isempty(obj.powerSrcs))
+                for(i=1:length(obj.powerSrcs))
+                    stageSummStr = horzcat(stageSummStr,obj.powerSrcs(i).getSummaryStr()); %#ok<AGROW>
+                end
+            else
+                stageSummStr{end+1} = sprintf('\t\t\tNone');
+            end
+            
+            stageSummStr{end+1} = sprintf('\t\tElectrical Power Storage');
+            if(~isempty(obj.powerStorages))
+                for(i=1:length(obj.powerStorages))
+                    stageSummStr = horzcat(stageSummStr,obj.powerStorages(i).getSummaryStr()); %#ok<AGROW>
+                end
+            else
+                stageSummStr{end+1} = sprintf('\t\t\tNone');
+            end
+            
+            stageSummStr{end+1} = sprintf('\t\tElectrical Power Sinks');
+            if(~isempty(obj.powerSinks))
+                for(i=1:length(obj.powerSinks))
+                    stageSummStr = horzcat(stageSummStr,obj.powerSinks(i).getSummaryStr()); %#ok<AGROW>
+                end
+            else
+                stageSummStr{end+1} = sprintf('\t\t\tNone');
             end
         end
         

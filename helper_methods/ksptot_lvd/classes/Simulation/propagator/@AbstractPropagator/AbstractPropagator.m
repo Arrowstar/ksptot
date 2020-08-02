@@ -45,7 +45,9 @@ classdef(Abstract) AbstractPropagator < matlab.mixin.SetGet & matlab.mixin.Heter
                 y = [rVectECI; vVectECI; y(7:end,:)];
             end
 
-            [ut, rVect, ~, ~] = ForceModelPropagator.decomposeIntegratorTandY(t,y);
+            ut = t;
+            rVect = y(1:3);
+%             [ut, rVect, ~, ~] = ForceModelPropagator.decomposeIntegratorTandY(t,y);
 
             %Max Sim Time Constraint
             simTimeRemaining = maxSimTime - ut;
@@ -86,11 +88,11 @@ classdef(Abstract) AbstractPropagator < matlab.mixin.SetGet & matlab.mixin.Heter
             causes(end+1) = eventTermCondCause;
         end
         
-        function [ut, rVect, vVect, tankStates] = decomposeIntegratorTandY(t,y)
+        function [ut, rVect, vVect, tankStates] = decomposeIntegratorTandY(t,y, numTankStates)
             ut = t;
             rVect = y(1:3);
             vVect = y(4:6);
-            tankStates = y(7:end);
+            tankStates = y(7:6+numTankStates);
         end
     end
 end

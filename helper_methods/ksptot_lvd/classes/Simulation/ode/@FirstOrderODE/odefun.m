@@ -1,6 +1,6 @@
 function dydt = odefun(t,y, simDriver, eventInitStateLogEntry, tankStates, dryMass, fmEnums)
     bodyInfo = eventInitStateLogEntry.centralBody;
-    [ut, rVect, vVect, tankStatesMasses] = AbstractODE.decomposeIntegratorTandY(t,y);
+    [ut, rVect, vVect, tankStatesMasses] = AbstractODE.decomposeIntegratorTandY(t,y, length(tankStates));
     altitude = norm(rVect) - bodyInfo.radius;
     
     stageStates = eventInitStateLogEntry.stageStates;
@@ -40,7 +40,7 @@ function dydt = odefun(t,y, simDriver, eventInitStateLogEntry, tankStates, dryMa
         
         dydt(1:3) = [0;0;0]; 
         dydt(4:6) = [0;0;0];
-        dydt(7:end) = tankMassDots;
+        dydt(7:6+length(tankMassDots)) = tankMassDots;
     else
         %launch clamp disabled, propagate like normal
         if(altitude <= 0 && any(fmEnums == ForceModelsEnum.Normal))
@@ -60,10 +60,10 @@ function dydt = odefun(t,y, simDriver, eventInitStateLogEntry, tankStates, dryMa
             
             tankMassDots = tankMassDotsForceModels + tankMassDotsT2TConns;
             
-            dydt(7:end) = tankMassDots;
+            dydt(7:6+length(tankMassDots)) = tankMassDots;
         else
             accelVect = zeros(3,1);
-            dydt(7:end) = zeros(size(tankStates));
+            dydt(7:6+length(tankStates)) = zeros(size(tankStates));
         end
 
         dydt(1:3) = vVect'; 

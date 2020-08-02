@@ -150,6 +150,10 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             end
         end
         
+        function numTankStates = getNumActiveTankStates(obj)
+            numTankStates = length(obj.getAllActiveTankStates());
+        end
+        
         function engineStates = getAllEngineStates(obj)
             engineStates = obj.emptyEngineArr;
             
@@ -319,13 +323,15 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             
             t0 = eventInitStateLogEntry.time;
             
+            numTankStates = eventInitStateLogEntry.getNumActiveTankStates();
+            
             for(i=1:length(t))
                 stateLogEntry = stateLogEntries(i);
 
                 stateLogEntry.time = t(i);
                 stateLogEntry.position = y(i,1:3)';
                 stateLogEntry.velocity = y(i,4:6)';
-                stateLogEntry.updateTankStatesWithNewMasses(y(i,7:end));
+                stateLogEntry.updateTankStatesWithNewMasses(y(i,7:6+numTankStates));
                 
                 if(any(initSwRunning))
                     deltaT = t(i)-t0;

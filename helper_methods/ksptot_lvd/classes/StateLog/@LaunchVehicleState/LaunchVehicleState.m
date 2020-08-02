@@ -101,6 +101,28 @@ classdef LaunchVehicleState < matlab.mixin.SetGet & matlab.mixin.Copyable
             end
         end
         
+        function tanks = getTanksWithActiveTankToTankConnectionsForStage(obj, stageState)
+            tanks = LaunchVehicleTank.empty(1,0);
+            
+            for(i=1:length(obj.t2TConns))
+                connState = obj.t2TConns(i);
+                
+                if(connState.active)
+                    conn = connState.conn;
+                    
+                    if((not(isempty(conn.srcTank)) && conn.srcTank.stage == stageState.stage))
+                        tanks(end+1) = conn.srcTank; %#ok<AGROW>
+                    end
+                    
+                    if((not(isempty(conn.tgtTank)) && conn.tgtTank.stage == stageState.stage))
+                        tanks(end+1) = conn.tgtTank; %#ok<AGROW>
+                    end                   
+                end
+            end
+            
+            tanks = unique(tanks);
+        end
+        
         %Misc
         function newLvState = deepCopy(obj)
             newLvState = obj.copy();

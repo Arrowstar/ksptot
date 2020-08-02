@@ -133,6 +133,13 @@ classdef CompositeObjectiveFcn < AbstractObjectiveFcn
             end
         end
         
+        function tf = usesGroundObj(obj, grdObj)
+            tf = false;
+            for(i=1:length(obj.objFcns))
+                tf = tf || obj.objFcns(i).usesGroundObj(grdObj);
+            end
+        end
+        
         function tf = usesCalculusCalc(obj, calculusCalc)
             tf = false;
             for(i=1:length(obj.objFcns))

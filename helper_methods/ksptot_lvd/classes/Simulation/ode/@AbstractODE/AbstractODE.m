@@ -11,11 +11,11 @@ classdef(Abstract) AbstractODE < matlab.mixin.SetGet
     end
     
     methods(Static, Access=protected)
-        function [ut, rVect, vVect, tankStates] = decomposeIntegratorTandY(t,y)
+        function [ut, rVect, vVect, tankStates] = decomposeIntegratorTandY(t,y, numTankStates)
             ut = t;
             rVect = y(1:3);
             vVect = y(4:6);
-            tankStates = y(7:end);
+            tankStates = y(7:6+numTankStates);
         end
     end
 end

@@ -113,6 +113,10 @@ classdef LvdOptimization < matlab.mixin.SetGet
             tf = tf || obj.constraints.usesExtremum(extremum);
         end
         
+        function tf = usesGroundObj(obj, grdObj)
+            tf = obj.objFcn.usesGroundObj(grdObj) || obj.constraints.usesGroundObj(grdObj);
+        end
+        
         function tf = usesCalculusCalc(obj, calculusCalc)
             tf = obj.objFcn.usesCalculusCalc(calculusCalc);
             

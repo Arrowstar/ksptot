@@ -35,6 +35,10 @@ classdef(Abstract) AbstractConstraint < matlab.mixin.SetGet & matlab.mixin.Heter
         
         tf = usesExtremum(obj, extremum);
         
+        function tf = usesGroundObj(obj, grdObj)
+            tf = false;
+        end
+        
         function tf = usesCalculusCalc(obj, calculusCalc)
             tf = false;
         end

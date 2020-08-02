@@ -15,6 +15,7 @@ classdef LaunchVehicleGroundObjectSet < matlab.mixin.SetGet
         
         function addGroundObj(obj, groundObj)
             obj.groundObjs(end+1) = groundObj;
+            groundObj.groundObjs = obj;
         end
         
         function removeGroundObj(obj, groundObj)
@@ -48,7 +49,7 @@ classdef LaunchVehicleGroundObjectSet < matlab.mixin.SetGet
         function numGrndObjs = getNumGroundObj(obj)
             numGrndObjs = length(obj.groundObjs);
         end
-        
+                
         function [grdObjAzGAStr, grdObjs] = getGrdObjAzGraphAnalysisTaskStrs(obj)
             grdObjs = obj.groundObjs;
             
@@ -90,6 +91,18 @@ classdef LaunchVehicleGroundObjectSet < matlab.mixin.SetGet
             formSpec = sprintf('%%0%uu',floor(log10(abs(A)+1)) + 1);
             for(i=1:length(grdObjs))
                 grdObjLoSGAStr{i} = sprintf(sprintf('Ground Object %s Line of Sight to S/C - "%s"',formSpec, grdObjs(i).name), i);
+            end
+        end
+    end
+    
+    methods(Static)
+        function obj = loadobj(obj)
+            for(i=1:length(obj.groundObjs))
+                grdObj = obj.groundObjs(i);
+                
+                if(isempty(grdObj.groundObjs))
+                    grdObj.groundObjs = obj;
+                end
             end
         end
     end

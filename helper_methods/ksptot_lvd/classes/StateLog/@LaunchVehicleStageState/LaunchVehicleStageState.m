@@ -8,8 +8,14 @@ classdef LaunchVehicleStageState < matlab.mixin.SetGet & matlab.mixin.Copyable
         
         active = true%(1,1) logical = true;
         
+        %Propulsion
         engineStates = LaunchVehicleEngineState.empty(1,0)% LaunchVehicleEngineState
         tankStates = LaunchVehicleTankState.empty(1,0);% LaunchVehicleTankState
+        
+        %Electrical Power
+        powerSinkStates = AbstractLaunchVehicleElectricalPowerSnkState.empty(1,0);
+        powerSrcStates = AbstractLaunchVehicleElectricalPowerSrcState.empty(1,0);
+        powerStorageStates = AbstractLaunchVehicleEpsStorageState.empty(1,0);
     end
     
     properties(Constant)
@@ -23,6 +29,7 @@ classdef LaunchVehicleStageState < matlab.mixin.SetGet & matlab.mixin.Copyable
             end
         end
         
+        %% Engines 
         function addEngineState(obj, newEngineState)
             obj.engineStates(end+1) = newEngineState;
         end
@@ -53,6 +60,7 @@ classdef LaunchVehicleStageState < matlab.mixin.SetGet & matlab.mixin.Copyable
             engineState = obj.engineStates(ind);
         end
         
+        %% Tanks
         function addTankState(obj, newTankState)
             obj.tankStates(end+1) = newTankState;
         end
@@ -93,11 +101,7 @@ classdef LaunchVehicleStageState < matlab.mixin.SetGet & matlab.mixin.Copyable
             
             tankState = obj.tankStates(ind);
         end
-        
-        function dryMass = getStateDryMass(obj)
-            dryMass = obj.stage.dryMass;
-        end
-        
+               
         function tankMass = getStageTotalTankMass(obj)
             tankMass = sum([obj.tankStates.tankMass]);
         end
@@ -118,6 +122,104 @@ classdef LaunchVehicleStageState < matlab.mixin.SetGet & matlab.mixin.Copyable
             end
         end
         
+        %% EPS - Sinks
+        function addPowerSinkState(obj, newPowerSinkState)
+            obj.powerSinkStates(end+1) = newPowerSinkState;
+        end
+        
+        function removePowerSinkStateForPowerState(obj, powerSink)
+            ind = [];
+            for(i=1:length(obj.powerSinkStates)) %#ok<*NO4LP>
+                if(powerSink == obj.powerSinkStates(i).getEpsSinkComponent())
+                    ind = i;
+                    break;
+                end
+            end
+            
+            if(not(isempty(ind)))
+                obj.powerSinkStates(ind) = [];
+            end
+        end
+        
+        function powerSinkState = getStateForPowerSink(obj, powerSink)
+            ind = [];
+            for(i=1:length(obj.powerSinkStates)) %#ok<*NO4LP>
+                if(powerSink == obj.powerSinkStates(i).getEpsSinkComponent())
+                    ind = i;
+                    break;
+                end
+            end
+            
+            powerSinkState = obj.powerSinkStates(ind);
+        end
+        
+        %% EPS - Sources
+        function addPowerSrcState(obj, newPowerSrcState)
+            obj.powerSrcStates(end+1) = newPowerSrcState;
+        end
+        
+        function removePowerSrcStateForPowerState(obj, powerSrc)
+            ind = [];
+            for(i=1:length(obj.powerSrcStates)) %#ok<*NO4LP>
+                if(powerSrc == obj.powerSrcStates(i).getEpsSrcComponent())
+                    ind = i;
+                    break;
+                end
+            end
+            
+            if(not(isempty(ind)))
+                obj.powerSrcStates(ind) = [];
+            end
+        end
+        
+        function powerSrcState = getStateForPowerSrc(obj, powerSrc)
+            ind = [];
+            for(i=1:length(obj.powerSrcStates)) %#ok<*NO4LP>
+                if(powerSrc == obj.powerSrcStates(i).getEpsSrcComponent())
+                    ind = i;
+                    break;
+                end
+            end
+            
+            powerSrcState = obj.powerSrcStates(ind);
+        end
+        
+        %% EPS - Storage
+        function addPowerStorageState(obj, newPowerStorageState)
+            obj.powerStorageStates(end+1) = newPowerStorageState;
+        end
+        
+        function removePowerStorageStateForPowerState(obj, powerStorage)
+            ind = [];
+            for(i=1:length(obj.powerStorageStates)) %#ok<*NO4LP>
+                if(powerStorage == obj.powerStorageStates(i).getEpsStorageComponent())
+                    ind = i;
+                    break;
+                end
+            end
+            
+            if(not(isempty(ind)))
+                obj.powerStorageStates(ind) = [];
+            end
+        end
+        
+        function powerSrcState = getStateForPowerStorage(obj, powerStorage)
+            ind = [];
+            for(i=1:length(obj.powerStorageStates)) %#ok<*NO4LP>
+                if(powerStorage == obj.powerStorageStates(i).getEpsStorageComponent())
+                    ind = i;
+                    break;
+                end
+            end
+            
+            powerSrcState = obj.powerStorageStates(ind);
+        end
+        
+        %% Other
+        function dryMass = getStateDryMass(obj)
+            dryMass = obj.stage.dryMass;
+        end
+        
         function stageMass = getStageTotalMass(obj)
             stageMass = obj.getStateDryMass() + obj.getStageTotalTankMass();
         end
@@ -126,6 +228,7 @@ classdef LaunchVehicleStageState < matlab.mixin.SetGet & matlab.mixin.Copyable
             if(obj.active || deepCopyState)    
                 newStageState = obj.copy();
             
+                %Copy Engine States
                 if(deepCopyState)
                     if(not(isempty(obj.engineStates)))
                         newEngineStates = obj.engineStates.copy();
@@ -134,6 +237,7 @@ classdef LaunchVehicleStageState < matlab.mixin.SetGet & matlab.mixin.Copyable
                     end
                 end
 
+                %Copy Tank States - why is this so complicated again?
                 if(not(isempty(obj.tankStates)))
                     tanksToUpdateStatesFor = LaunchVehicleStageState.emptyTankArr;
                     
@@ -142,6 +246,8 @@ classdef LaunchVehicleStageState < matlab.mixin.SetGet & matlab.mixin.Copyable
                             tanksToUpdateStatesFor = [tanksToUpdateStatesFor, lvState.getTanksConnectedToEngine(obj.engineStates(i).engine)]; %#ok<AGROW>
                         end
                     end
+                    
+                    tanksToUpdateStatesFor = [tanksToUpdateStatesFor, lvState.getTanksWithActiveTankToTankConnectionsForStage(obj)];
                     
                     stageTanks = [obj.tankStates.tank];
                     if(not(isempty(tanksToUpdateStatesFor)))
@@ -159,9 +265,27 @@ classdef LaunchVehicleStageState < matlab.mixin.SetGet & matlab.mixin.Copyable
                             end
                         end
                     end
-%                     newTankStates = obj.tankStates.copy();
-%                     [newTankStates.stageState] = deal(newStageState);
-%                     newStageState.tankStates = newTankStates;
+                end
+                
+                %Copy Power Sink States
+                if(deepCopyState && not(isempty(obj.powerSinkStates)))
+                    newPwrSinkStates = obj.powerSinkStates.copy();
+                    [newPwrSinkStates.stageState] = deal(newStageState);
+                    newStageState.powerSinkStates = newPwrSinkStates;
+                end
+                
+                %Copy Power Source States
+                if(deepCopyState && not(isempty(obj.powerSrcStates)))
+                    newPwrSrcStates = obj.powerSrcStates.copy();
+                    [newPwrSrcStates.stageState] = deal(newStageState);
+                    newStageState.powerSrcStates = newPwrSrcStates;
+                end
+                
+                %Copy Power Storage States
+                if(deepCopyState && not(isempty(obj.powerStorageStates)))
+                    newPwrStorageStates = obj.powerStorageStates.copy();
+                    [newPwrStorageStates.stageState] = deal(newStageState);
+                    newStageState.powerStorageStates = newPwrStorageStates;
                 end
             else
                 newStageState = obj;

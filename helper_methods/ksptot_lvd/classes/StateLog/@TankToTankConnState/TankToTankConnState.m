@@ -15,6 +15,7 @@ classdef TankToTankConnState < matlab.mixin.SetGet & matlab.mixin.Copyable
         
         function newT2TState = deepCopy(obj)
             newT2TState = obj.copy();
+            newT2TState.conn = obj.conn;
         end
     end
 end

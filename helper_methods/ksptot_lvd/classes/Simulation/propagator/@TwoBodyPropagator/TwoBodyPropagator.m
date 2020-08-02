@@ -22,10 +22,12 @@ classdef TwoBodyPropagator < AbstractPropagator
             odeOutputFun = obj.getOdeOutputFunctionHandle(tStartPropTime, maxPropTime, eventInitStateLogEntry, plugins);
             
             %Propagate!
+            numTankStates = eventInitStateLogEntry.getNumActiveTankStates();
+            
             cartState = eventInitStateLogEntry.getCartesianElementSetRepresentation();
             kepState = cartState.convertToKeplerianElementSet();
             [t0FirstOrder,y0FirstOrder, ~] = eventInitStateLogEntry.getFirstOrderIntegratorStateRepresentation();
-            [~, ~, ~, tankStates] = AbstractPropagator.decomposeIntegratorTandY(t0FirstOrder, y0FirstOrder);
+            [~, ~, ~, tankStates] = AbstractPropagator.decomposeIntegratorTandY(t0FirstOrder, y0FirstOrder, numTankStates);
             
             y0 = [kepState.getMeanAnomaly(), tankStates];
             
@@ -119,7 +121,7 @@ classdef TwoBodyPropagator < AbstractPropagator
         %ODE Function
         %%%
         function dydt = odefun(t,y, n, eventInitStateLogEntry, tankStates)
-            [~, ~, tankStatesMasses] = TwoBodyPropagator.decomposeIntegratorTandY(t,y);
+            [~, ~, tankStatesMasses] = TwoBodyPropagator.decomposeIntegratorTandY(t,y, length(tankStates));
 
             lvState = eventInitStateLogEntry.lvState;
             t2tConnStates = lvState.t2TConns;
@@ -161,7 +163,8 @@ classdef TwoBodyPropagator < AbstractPropagator
         %ODE Events
         %%%
         function [value,isterminal,direction, causes] = odeEvents(t,y, sma, ecc, inc, raan, arg, gmu, eventInitStateLogEntry, evtTermCond, termCondDir, maxSimTime, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, minAltitude, celBodyData)
-            [~, mean, tankStatesMasses] = TwoBodyPropagator.decomposeIntegratorTandY(t,y);
+            numTankStates = eventInitStateLogEntry.getNumActiveTankStates();
+            [~, mean, tankStatesMasses] = TwoBodyPropagator.decomposeIntegratorTandY(t,y, numTankStates);
             tru = computeTrueAnomFromMean(mean, ecc);
             [rVect, vVect] = getStatefromKepler(sma, ecc, inc, raan, arg, tru, gmu);
             y = [rVect(:); vVect(:); tankStatesMasses(:)];
@@ -169,10 +172,10 @@ classdef TwoBodyPropagator < AbstractPropagator
             [value,isterminal,direction, causes] = AbstractPropagator.odeEvents(t,y, eventInitStateLogEntry, evtTermCond, termCondDir, maxSimTime, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, minAltitude, celBodyData);
         end
         
-        function [ut, mean, tankStates] = decomposeIntegratorTandY(t,y)
+        function [ut, mean, tankStates] = decomposeIntegratorTandY(t,y, numTankMasses)
             ut = t;
             mean = y(1);
-            tankStates = y(2:end);
+            tankStates = y(2:1+numTankMasses);
         end
     end
 end

@@ -179,6 +179,14 @@ classdef ConstraintSet < matlab.mixin.SetGet
             end
         end
         
+        function tf = usesGroundObj(obj, grdObj)
+            tf = false;
+            
+            for(i=1:length(obj.consts))
+                tf = tf || obj.consts(i).usesGroundObj(grdObj);
+            end
+        end
+        
         function tf = usesCalculusCalc(obj, calculusCalc)
             tf = false;
             

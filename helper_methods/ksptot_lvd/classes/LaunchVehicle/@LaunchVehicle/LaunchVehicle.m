@@ -222,6 +222,138 @@ classdef LaunchVehicle < matlab.mixin.SetGet
         end
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % Electrical Power Sinks
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%        
+        function [powerSinkListStr, powerSinks] = getPowerSinksListBoxStr(obj)
+            powerSinkListStr = {};
+            powerSinks = AbstractLaunchVehicleElectricalPowerSrcSnk.empty(1,0);
+            
+            for(i=1:length(obj.stages)) %#ok<*NO4LP>
+                for(j=1:length(obj.stages(i).powerSinks))
+                    powerSinkListStr{end+1} = obj.stages(i).powerSinks(j).getName(); %#ok<AGROW>
+                    powerSinks(end+1) = obj.stages(i).powerSinks(j); %#ok<AGROW>
+                end
+            end
+            
+            if(isempty(powerSinkListStr))
+                powerSinkListStr{end+1} = '';
+            end
+        end
+    
+%         function [engineGAStr, engines] = getPowerSinksGraphAnalysisTaskStrs(obj)
+%             [~, engines] = obj.getEnginesListBoxStr();
+%             
+%             engineGAStr = cell(1,length(engines));
+%             A = length(engines);
+%             formSpec = sprintf('%%0%uu',floor(log10(abs(A)+1)) + 1);
+%             for(i=1:length(engines))
+%                 engineGAStr{i} = sprintf(sprintf('Engine %s Active State - "%s"',formSpec, engines(i).name), i);
+%             end
+%         end
+        
+        function powerSink = getPowerSinkForInd(obj, ind)
+            [~, powerSinks] = obj.getPowerSinksListBoxStr();
+            powerSink = AbstractLaunchVehicleElectricalPowerSrcSnk.empty(1,0);
+
+            if(ind >= 1 && ind <= length(powerSinks))
+                powerSink = powerSinks(ind);
+            end
+        end
+        
+        function ind = getListBoxIndForPowerSink(obj, powerSink)
+            [~, powerSinks] = obj.getPowerSinksListBoxStr();
+            ind = find([powerSinks] == powerSink, 1, 'first'); %#ok<NBRAK>
+        end
+        
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % Electrical Power Sources
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%        
+        function [powerSrcListStr, powerSrcs] = getPowerSrcsListBoxStr(obj)
+            powerSrcListStr = {};
+            powerSrcs = AbstractLaunchVehicleElectricalPowerSrcSnk.empty(1,0);
+            
+            for(i=1:length(obj.stages)) %#ok<*NO4LP>
+                for(j=1:length(obj.stages(i).powerSrcs))
+                    powerSrcListStr{end+1} = obj.stages(i).powerSrcs(j).getName(); %#ok<AGROW>
+                    powerSrcs(end+1) = obj.stages(i).powerSrcs(j); %#ok<AGROW>
+                end
+            end
+            
+            if(isempty(powerSrcListStr))
+                powerSrcListStr{end+1} = '';
+            end
+        end
+    
+%         function [engineGAStr, engines] = getPowerSinksGraphAnalysisTaskStrs(obj)
+%             [~, engines] = obj.getEnginesListBoxStr();
+%             
+%             engineGAStr = cell(1,length(engines));
+%             A = length(engines);
+%             formSpec = sprintf('%%0%uu',floor(log10(abs(A)+1)) + 1);
+%             for(i=1:length(engines))
+%                 engineGAStr{i} = sprintf(sprintf('Engine %s Active State - "%s"',formSpec, engines(i).name), i);
+%             end
+%         end
+        
+        function powerSrc = getPowerSrcForInd(obj, ind)
+            [~, powerSrcs] = obj.getPowerSrcsListBoxStr();
+            powerSrc = AbstractLaunchVehicleElectricalPowerSrcSnk.empty(1,0);
+
+            if(ind >= 1 && ind <= length(powerSrcs))
+                powerSrc = powerSrcs(ind);
+            end
+        end
+        
+        function ind = getListBoxIndForPowerSrc(obj, powerSrc)
+            [~, powerSrcs] = obj.getPowerSrcsListBoxStr();
+            ind = find([powerSrcs] == powerSrc, 1, 'first'); %#ok<NBRAK>
+        end    
+        
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % Electrical Power Storage
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%        
+        function [powerStoragesListStr, powerStorages] = getPowerStoragesListBoxStr(obj)
+            powerStoragesListStr = {};
+            powerStorages = AbstractLaunchVehicleElectricalPowerStorage.empty(1,0);
+            
+            for(i=1:length(obj.stages)) %#ok<*NO4LP>
+                for(j=1:length(obj.stages(i).powerStorages))
+                    powerStoragesListStr{end+1} = obj.stages(i).powerStorages(j).getName(); %#ok<AGROW>
+                    powerStorages(end+1) = obj.stages(i).powerStorages(j); %#ok<AGROW>
+                end
+            end
+            
+            if(isempty(powerStoragesListStr))
+                powerStoragesListStr{end+1} = '';
+            end
+        end
+    
+%         function [engineGAStr, engines] = getPowerSinksGraphAnalysisTaskStrs(obj)
+%             [~, engines] = obj.getEnginesListBoxStr();
+%             
+%             engineGAStr = cell(1,length(engines));
+%             A = length(engines);
+%             formSpec = sprintf('%%0%uu',floor(log10(abs(A)+1)) + 1);
+%             for(i=1:length(engines))
+%                 engineGAStr{i} = sprintf(sprintf('Engine %s Active State - "%s"',formSpec, engines(i).name), i);
+%             end
+%         end
+        
+        function powerStorage = getPowerStorageForInd(obj, ind)
+            [~, powerStorages] = obj.getPowerStoragesListBoxStr();
+            powerStorage = AbstractLaunchVehicleElectricalPowerStorage.empty(1,0);
+
+            if(ind >= 1 && ind <= length(powerStorages))
+                powerStorage = powerStorages(ind);
+            end
+        end
+        
+        function ind = getListBoxIndForPowerStorage(obj, powerStorage)
+            [~, powerStorages] = obj.getPowerStoragesListBoxStr();
+            ind = find([powerStorages] == powerStorage, 1, 'first'); %#ok<NBRAK>
+        end  
+                
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % Stopwatches
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         function addStopwatch(obj, sw)

@@ -106,7 +106,7 @@ classdef ForceModelPropagator < AbstractPropagator
                 bodyInfo.celBodyData = eventInitStateLogEntry.celBodyData;
             end
             
-            [ut, rVect, vVect, tankStatesMasses] = AbstractPropagator.decomposeIntegratorTandY(t,y);
+            [ut, rVect, vVect, tankStatesMasses] = AbstractPropagator.decomposeIntegratorTandY(t,y, length(tankStates));
             altitude = norm(rVect) - bodyInfo.radius;
 
             stageStates = eventInitStateLogEntry.stageStates;
@@ -135,7 +135,7 @@ classdef ForceModelPropagator < AbstractPropagator
                 %so all rates are effectively zero        
                 dydt(1:3) = [0;0;0]; 
                 dydt(4:6) = [0;0;0];
-                dydt(7:end) = tankMassDots;
+                dydt(7:6+length(tankMassDots)) = tankMassDots;
             else
                 %launch clamp disabled, propagate like normal
                 if(altitude <= 0 && any(fmEnums == ForceModelsEnum.Normal))
@@ -155,10 +155,10 @@ classdef ForceModelPropagator < AbstractPropagator
 
                     tankMassDots = tankMassDotsForceModels + tankMassDotsT2TConns;
 
-                    dydt(7:end) = tankMassDots;
+                    dydt(7:6+length(tankMassDots)) = tankMassDots;
                 else
                     accelVect = zeros(3,1);
-                    dydt(7:end) = zeros(size(tankStates));
+                    dydt(7:6+length(tankStates)) = zeros(size(tankStates));
                 end
 
                 dydt(1:3) = vVect'; 

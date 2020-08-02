@@ -64,6 +64,10 @@ classdef GenericObjectiveFcn < AbstractObjectiveFcn
             tf = obj.fcn.usesExtremum(extremum);
         end
         
+        function tf = usesGroundObj(obj, grdObj)
+            tf = obj.fcn.usesExtremum(grdObj);
+        end
+        
         function tf = usesCalculusCalc(obj, calculusCalc)
             tf = obj.fcn.usesCalculusCalc(calculusCalc);
         end

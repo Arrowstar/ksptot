@@ -24,7 +24,8 @@ function [value,isterminal,direction, causes] = odeEvents(t,y, obj, eventInitSta
         y = [rVectECI; vVectECI; y(7:end,:)];
     end
 
-    [ut, rVect, ~, ~] = AbstractODE.decomposeIntegratorTandY(t,y);
+    numTankStates = eventInitStateLogEntry.getNumActiveTankStates();
+    [ut, rVect, ~, ~] = AbstractODE.decomposeIntegratorTandY(t,y, numTankStates);
     
     %Max Sim Time Constraint
     simTimeRemaining = maxSimTime - ut;
