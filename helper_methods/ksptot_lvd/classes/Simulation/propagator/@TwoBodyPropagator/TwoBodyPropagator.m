@@ -23,13 +23,14 @@ classdef TwoBodyPropagator < AbstractPropagator
             
             %Propagate!
             numTankStates = eventInitStateLogEntry.getNumActiveTankStates();
+            numPwrStorageStates = eventInitStateLogEntry.getNumActivePwrStorageStates();
             
             cartState = eventInitStateLogEntry.getCartesianElementSetRepresentation();
             kepState = cartState.convertToKeplerianElementSet();
-            [t0FirstOrder,y0FirstOrder, ~] = eventInitStateLogEntry.getFirstOrderIntegratorStateRepresentation();
-            [~, ~, ~, tankStates] = AbstractPropagator.decomposeIntegratorTandY(t0FirstOrder, y0FirstOrder, numTankStates);
+            [t0FirstOrder,y0FirstOrder, ~, ~] = eventInitStateLogEntry.getFirstOrderIntegratorStateRepresentation();
+            [~, ~, ~, tankStates, pwrStorageStates] = AbstractPropagator.decomposeIntegratorTandY(t0FirstOrder, y0FirstOrder, numTankStates, numPwrStorageStates);
             
-            y0 = [kepState.getMeanAnomaly(), tankStates];
+            y0 = [kepState.getMeanAnomaly(), tankStates, pwrStorageStates];
             
             [t,y,te,ye,ie] = integrator.integrate(odefun, tspan, y0, evtsFunc, odeOutputFun);  
             
@@ -74,13 +75,22 @@ classdef TwoBodyPropagator < AbstractPropagator
         
         function odeFH = getOdeFunctionHandle(obj, eventInitStateLogEntry)
             tankStates = eventInitStateLogEntry.getAllActiveTankStates();
+            pwrStorageStates = eventInitStateLogEntry.getAllActivePwrStorageStates();
             
             cartState = eventInitStateLogEntry.getCartesianElementSetRepresentation();
             kepState = cartState.convertToKeplerianElementSet();
 
+            sma = kepState.sma;
+            ecc = kepState.ecc;
+            inc = kepState.inc;
+            raan = kepState.raan;
+            arg = kepState.arg;
+            
+            gmu = kepState.frame.getOriginBody().gm;
+            
             n = kepState.getMeanMotion();
             
-            odeFH = @(t,y) TwoBodyPropagator.odefun(t,y, n, eventInitStateLogEntry, tankStates);
+            odeFH = @(t,y) TwoBodyPropagator.odefun(t,y, n, sma, ecc, inc, raan, arg, gmu, eventInitStateLogEntry, tankStates, pwrStorageStates);
         end
         
         function odeEventsFH = getOdeEventsFunctionHandle(~, eventInitStateLogEntry, eventTermCondFuncHandle, termCondDir, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, minAltitude, celBodyData)
@@ -120,8 +130,8 @@ classdef TwoBodyPropagator < AbstractPropagator
         %%%
         %ODE Function
         %%%
-        function dydt = odefun(t,y, n, eventInitStateLogEntry, tankStates)
-            [~, ~, tankStatesMasses] = TwoBodyPropagator.decomposeIntegratorTandY(t,y, length(tankStates));
+        function dydt = odefun(t,y, n, sma, ecc, inc, raan, arg, gmu, eventInitStateLogEntry, tankStates, powerStorageStates)
+            [ut, ~, tankStatesMasses, storageSoCs] = TwoBodyPropagator.decomposeIntegratorTandY(t,y, length(tankStates), length(powerStorageStates));
 
             lvState = eventInitStateLogEntry.lvState;
             t2tConnStates = lvState.t2TConns;
@@ -131,16 +141,35 @@ classdef TwoBodyPropagator < AbstractPropagator
             tankMassDotsT2TConns = TankToTankConnection.getTankMassFlowRatesFromTankToTankConnections(tankStates, tankStatesMasses, t2tConnStates);
             tankMassDots = tankMassDotsT2TConns;
             
+            if(not(isempty(powerStorageStates)))
+                bodyInfo = eventInitStateLogEntry.centralBody;
+                if(isstruct(bodyInfo.celBodyData) || isempty(bodyInfo.celBodyData))
+                    bodyInfo.celBodyData = eventInitStateLogEntry.celBodyData;
+                end
+
+                stageStates = eventInitStateLogEntry.stageStates;
+                steeringModel = eventInitStateLogEntry.steeringModel;
+
+                mean = y(1);
+                tru = computeTrueAnomFromMean(mean, ecc); 
+                [rVect, vVect] = getStatefromKepler(sma, ecc, inc, raan, arg, tru, gmu);
+                storageRates = LaunchVehicleStateLogEntry.getStorageChargeRatesDueToSourcesSinks(storageSoCs, powerStorageStates, stageStates, ut, rVect(:), vVect(:), bodyInfo, steeringModel);
+                
+            else
+                storageRates = [];
+            end
+            
             dydt = zeros(length(y),1);
             if(holdDownEnabled)
                 %launch clamp is enabled, set mean motion to zero
                 dydt(1) = 0;
-                dydt(2:end) = tankMassDots;
             else
                 %launch clamp disabled, propagate like normal
                 dydt(1) = n;
-                dydt(2:end) = tankMassDots;
             end
+            
+            dydt(2:1+length(tankMassDots)) = tankMassDots;
+            dydt(1+length(tankMassDots)+1 : 1+length(tankMassDots)+length(storageRates)) = storageRates;
         end
         
         %%%
@@ -164,18 +193,20 @@ classdef TwoBodyPropagator < AbstractPropagator
         %%%
         function [value,isterminal,direction, causes] = odeEvents(t,y, sma, ecc, inc, raan, arg, gmu, eventInitStateLogEntry, evtTermCond, termCondDir, maxSimTime, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, minAltitude, celBodyData)
             numTankStates = eventInitStateLogEntry.getNumActiveTankStates();
-            [~, mean, tankStatesMasses] = TwoBodyPropagator.decomposeIntegratorTandY(t,y, numTankStates);
+            numPwrStorageStates = eventInitStateLogEntry.getNumActivePwrStorageStates();
+            [~, mean, tankStatesMasses, pwrStorageSocs] = TwoBodyPropagator.decomposeIntegratorTandY(t,y, numTankStates, numPwrStorageStates);
             tru = computeTrueAnomFromMean(mean, ecc);
             [rVect, vVect] = getStatefromKepler(sma, ecc, inc, raan, arg, tru, gmu);
-            y = [rVect(:); vVect(:); tankStatesMasses(:)];
+            y = [rVect(:); vVect(:); tankStatesMasses(:); pwrStorageSocs(:)]';
 
             [value,isterminal,direction, causes] = AbstractPropagator.odeEvents(t,y, eventInitStateLogEntry, evtTermCond, termCondDir, maxSimTime, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, minAltitude, celBodyData);
         end
         
-        function [ut, mean, tankStates] = decomposeIntegratorTandY(t,y, numTankMasses)
+        function [ut, mean, tankStates, storageSoCs] = decomposeIntegratorTandY(t,y, numTankMasses, numPwrStorageStates)
             ut = t;
             mean = y(1);
             tankStates = y(2:1+numTankMasses);
+            storageSoCs = y(1+numTankMasses+1 : 1+numTankMasses+numPwrStorageStates);
         end
     end
 end
