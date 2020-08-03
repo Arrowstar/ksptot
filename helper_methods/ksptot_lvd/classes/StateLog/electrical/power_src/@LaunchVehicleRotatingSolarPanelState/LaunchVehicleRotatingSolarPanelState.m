@@ -28,7 +28,7 @@ classdef LaunchVehicleRotatingSolarPanelState < AbstractLaunchVehicleElectricalP
         end
         
         function pwrRate = getElectricalPwrRate(obj, elemSet, steeringModel)
-            pwrRate = obj.src.getElectricalPwrRate(obj, elemSet, steeringModel);
+            pwrRate = obj.src.getElectricalPwrRate(elemSet, steeringModel);
         end
     end
 end

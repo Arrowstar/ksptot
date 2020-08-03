@@ -17,7 +17,8 @@ function LoS = LoS2Target(stateLogEntry, bodyInfo, eclipseBodyInfo, targetBodyIn
     scBodyInertialFrame = bodyInfo.getBodyCenteredInertialFrame();
     scElemSet = CartesianElementSet(time, rVectSc, [0;0;0], scBodyInertialFrame);
     
-    sunBodyInfo = getTopLevelCentralBody(celBodyData);
+%     sunBodyInfo = getTopLevelCentralBody(celBodyData);
+    sunBodyInfo = celBodyData.getTopLevelBody();
     sunInertialFrame = sunBodyInfo.getBodyCenteredInertialFrame();
     scElemSetSun = scElemSet.convertToFrame(sunInertialFrame);
     

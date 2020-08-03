@@ -21,7 +21,7 @@ classdef LaunchVehicleBasicElectricalBatteryState < AbstractLaunchVehicleEpsStor
         end
         
         function active = getActiveState(obj)
-            active = obj.active;
+            active = [obj.active];
         end
         
         function setActiveState(obj,active)

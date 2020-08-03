@@ -125,7 +125,7 @@ function storageListBox_Callback(hObject, eventdata, handles)
         
         if(not(isempty(oldStorageState)))
             newPowerStorageState.setActiveState(oldStorageState.getActiveState());
-            newPowerStorageState.setStateOfCharge(oldStorageState.getStateOfCharge());
+%             newPowerStorageState.setStateOfCharge(oldStorageState.getStateOfCharge());
         end
         stageState.addPowerStorageState(newPowerStorageState);
         

@@ -9,7 +9,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
         velocity double = [0;0;0];
         centralBody KSPTOT_BodyInfo
         lvState LaunchVehicleState
-        stageStates = LaunchVehicleStageState.empty(1,0); %LaunchVehicleStageState 
+        stageStates = LaunchVehicleStageState.empty(1,0); %LaunchVehicleStageState
         event LaunchVehicleEvent
         
         aero LaunchVehicleAeroState
@@ -35,6 +35,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
     properties(Constant)
         emptyTankArr = LaunchVehicleTankState.empty(1,0);
         emptyEngineArr = LaunchVehicleEngineState.empty(1,0);
+        emptyPwrStorageArr = AbstractLaunchVehicleElectricalPowerStorage.empty(1,0);
     end
     
     methods
@@ -51,7 +52,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             end
             
             value = obj.throttleModel.getThrottleAtTime(obj.time, obj.position, obj.velocity, tankMasses, obj.getTotalVehicleDryMass(), ...
-                                                        obj.stageStates, obj.lvState, tankStates, obj.centralBody);
+                obj.stageStates, obj.lvState, tankStates, obj.centralBody);
         end
         
         function alt = get.altitude(obj)
@@ -75,7 +76,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             lvdData = obj.lvState.lv.lvdData;
         end
         
-        function [t,y, tankStateInds] = getFirstOrderIntegratorStateRepresentation(obj)
+        function [t,y, tankStateInds, pwrStorageStateInds] = getFirstOrderIntegratorStateRepresentation(obj)
             t = obj.time;
             
             y = [];
@@ -90,6 +91,14 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                 y = [y,tankStates(i).getTankMass()]; %#ok<AGROW>
                 
                 tankStateInd = tankStateInd + 1;
+            end
+            
+            pwrStorageInd = tankStateInd; %last tank state ind + 1 is the first pwr storage ind
+            pwrStorageStateInds = [];
+            pwrStorageStates = obj.getAllActivePwrStorageStates();
+            for(i=1:length(pwrStorageStates))
+                pwrStorageStateInds(end+1) = pwrStorageInd; %#ok<AGROW>
+                y = [y, pwrStorageStates.getStateOfCharge()]; %#ok<AGROW>
             end
         end
         
@@ -226,7 +235,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             
             [tankStates.tankMass] = disperse(newTankMasses);
         end
-               
+        
         function newStateLogEntry = deepCopy(obj)
             newStateLogEntry = LaunchVehicleStateLogEntry();
             
@@ -280,9 +289,33 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             end
         end
         
-        function cartElemSet = getCartesianElementSetRepresentation(obj)            
+        function cartElemSet = getCartesianElementSetRepresentation(obj)
             frame = BodyCenteredInertialFrame(obj.centralBody, obj.celBodyData);
             cartElemSet = CartesianElementSet(obj.time, obj.position, obj.velocity, frame);
+        end
+        
+        function pwrStorageStates = getAllActivePwrStorageStates(obj)
+            stgStates = obj.stageStates;
+            pwrStorageStates = [stgStates([stgStates.active]).powerStorageStates];
+              
+            if(isempty(pwrStorageStates))
+                pwrStorageStates = obj.emptyPwrStorageArr;
+                
+            else
+                pwrStorageStates = pwrStorageStates(getActiveState(pwrStorageStates));
+            end
+        end
+        
+        function numPwrStorageStates = getNumActivePwrStorageStates(obj)
+            numPwrStorageStates = length(obj.getAllActivePwrStorageStates());
+        end
+        
+        function updatePwrStorageStatesWithNewCharges(obj, newStorageSoCs)
+            pwrStorageStates = obj.getAllActivePwrStorageStates();
+            
+            for(i=1:length(pwrStorageStates))
+                pwrStorageStates(i).setStateOfCharge(newStorageSoCs(i));
+            end
         end
     end
     
@@ -303,7 +336,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             
             stateLogEntries = repmat(eventInitStateLogEntry,1,length(t));
             
-            if(length(t) > 1)                
+            if(length(t) > 1)
                 for(i=1:length(stateLogEntries)-1)
                     stateLogEntries(i) = stateLogEntries(i).copyElement(false);
                 end
@@ -319,19 +352,23 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             initSwRunning = false(size(initSwRunningEnums));
             for(i=1:length(initSwRunningEnums))
                 initSwRunning(i) = initSwRunningEnums(i).value;
-            end          
+            end
             
             t0 = eventInitStateLogEntry.time;
             
             numTankStates = eventInitStateLogEntry.getNumActiveTankStates();
+            numPwrStorageStates = eventInitStateLogEntry.getNumActivePwrStorageStates();
             
             for(i=1:length(t))
                 stateLogEntry = stateLogEntries(i);
-
-                stateLogEntry.time = t(i);
-                stateLogEntry.position = y(i,1:3)';
-                stateLogEntry.velocity = y(i,4:6)';
-                stateLogEntry.updateTankStatesWithNewMasses(y(i,7:6+numTankStates));
+                
+                [ut, rVect, vVect, tankStates, pwrStorageStates] = AbstractPropagator.decomposeIntegratorTandY(t(i),y(i,:), numTankStates, numPwrStorageStates);
+                
+                stateLogEntry.time = ut;
+                stateLogEntry.position = rVect(:);
+                stateLogEntry.velocity = vVect(:);
+                stateLogEntry.updateTankStatesWithNewMasses(tankStates);
+                stateLogEntry.updatePwrStorageStatesWithNewCharges(pwrStorageStates);
                 
                 if(any(initSwRunning))
                     deltaT = t(i)-t0;
@@ -341,7 +378,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                         end
                     end
                 end
-                                
+                
                 for(j=1:length(stateLogEntry.extremaStates))
                     if(i == 1)
                         newValue = stateLogEntry.extremaStates(j).value;
@@ -375,11 +412,11 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             bodyThrust = [0;0;0];
             
             for(i=1:length(stgStates)) %#ok<*NO4LP>
-%                 stgState = stgStates(i);
+                %                 stgState = stgStates(i);
                 
                 if(stgStates(i).active)
                     engineStates = stgStates(i).engineStates;
-
+                    
                     for(j=1:length(engineStates))
                         engineState = engineStates(j);
                         
@@ -389,7 +426,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                             if(adjustedThrottle > 0)
                                 [baseThrust, baseMdot] = engine.getThrustFlowRateForPressure(presskPa); %total mass flow through engine
                                 mdot = adjustedThrottle * baseMdot;
-
+                                
                                 flowFromTankInds = zeros(size(tankStates));
                                 if(mdot < 0) %negative because we're flowing out
                                     tanks = lvState.getTanksConnectedToEngine(engine);
@@ -404,7 +441,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                                             
                                             if(not(isempty(tankState)))
                                                 tankStageState = tankState.stageState;
-
+                                                
                                                 if(tankStageState.active)
                                                     tankMass = tankStatesMasses(tankBool);
                                                     
@@ -433,19 +470,19 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                                         adjustedThrottle = 0;
                                     end
                                     
-%                                     [thrust, mdot] = engine.getThrustFlowRateForPressure(presskPa); %total mass flow through engine
+                                    %                                     [thrust, mdot] = engine.getThrustFlowRateForPressure(presskPa); %total mass flow through engine
                                     mdot = adjustedThrottle * baseMdot;
                                     totalThrust = totalThrust + adjustedThrottle*baseThrust;
                                     
                                     numTanksToPullFrom = sum(flowFromTankInds);
                                     if(numTanksToPullFrom > 0)
-                                        bodyThrust = bodyThrust + (baseThrust * adjustedThrottle * engine.bodyFrameThrustVect)/1000; %1/1000 to convert kN=mT*m/s^2 to mT*km/s^2 (see also ma_executeDVManeuver_finite_inertial()) 
+                                        bodyThrust = bodyThrust + (baseThrust * adjustedThrottle * engine.bodyFrameThrustVect)/1000; %1/1000 to convert kN=mT*m/s^2 to mT*km/s^2 (see also ma_executeDVManeuver_finite_inertial())
                                     end
                                     
                                     mDotPerTank = mdot/numTanksToPullFrom;
-
+                                    
                                     flowFromTankInds = logical(flowFromTankInds);
-                                    tankMDots(flowFromTankInds) = tankMDots(flowFromTankInds) + mDotPerTank;   
+                                    tankMDots(flowFromTankInds) = tankMDots(flowFromTankInds) + mDotPerTank;
                                 end
                             end
                         end
@@ -462,6 +499,57 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                 end
             else
                 forceVect = [NaN;NaN;NaN];
+            end
+        end
+        
+        function storageRates = getStorageChargeRatesDueToSourcesSinks(storageSoCs, powerStorageStates, stgStates, ut, rVect, vVect, bodyInfo, steeringModel)
+            if(length(storageSoCs) >= 1)
+                elemSet = CartesianElementSet(ut, rVect(:), vVect(:), bodyInfo.getBodyCenteredInertialFrame());
+                
+                storageRates = zeros(size(storageSoCs));
+                cumPwrRate = 0;
+                for(i=1:length(stgStates)) %#ok<*NO4LP>
+                    if(stgStates(i).active)
+                        powerSinkStates = stgStates(i).powerSinkStates;
+                        powerSrcStates = stgStates(i).powerSrcStates;
+                        
+                        for(j=1:length(powerSinkStates))
+                            powerSinkState = powerSinkStates(j);
+                            
+                            if(powerSinkState.getActiveState())
+                                cumPwrRate = cumPwrRate + powerSinkState.getElectricalPwrRate(elemSet, steeringModel);
+                            end
+                        end
+                        
+                        for(j=1:length(powerSrcStates))
+                            powerSrcState = powerSrcStates(j);
+                            
+                            if(powerSrcState.getActiveState())
+                                cumPwrRate = cumPwrRate + powerSrcState.getElectricalPwrRate(elemSet, steeringModel);
+                            end
+                        end
+                    end
+                end
+                
+                numActiveStorage = 0;
+                activeStorageInds = [];
+                if(cumPwrRate ~= 0)
+                    for(i=1:length(powerStorageStates))
+                        pwrStorage = powerStorageStates(i).getEpsStorageComponent();
+                        
+                        if((storageSoCs(i) > 0 && cumPwrRate <= 0) || ...
+                                (storageSoCs(i) < pwrStorage.getMaximumCapacity() && cumPwrRate >= 0))
+                            numActiveStorage = numActiveStorage + 1;
+                            activeStorageInds(end+1) = i; %#ok<AGROW>
+                        end
+                    end
+                    
+                    if(numActiveStorage >= 1)
+                        storageRates(activeStorageInds) = cumPwrRate / numActiveStorage;
+                    end
+                end
+            else
+                storageRates = [];
             end
         end
     end

@@ -3,8 +3,8 @@ classdef CartesianElementSet < AbstractElementSet
     %   Detailed explanation goes here
     
     properties
-        rVect(3,1) double %km
-        vVect(3,1) double %km/s
+        rVect%(3,1) double %km
+        vVect%(3,1) double %km/s
         
         optVar CartesianElementSetVariable
     end

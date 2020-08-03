@@ -12,7 +12,8 @@ classdef(Abstract) AbstractLaunchVehicleSolarPanel < AbstractLaunchVehicleElectr
             bodyInfo = elemSet.frame.getOriginBody();
             celBodyData = bodyInfo.celBodyData;
 
-            sunBodyInfo = getTopLevelCentralBody(celBodyData);
+%             sunBodyInfo = getTopLevelCentralBody(celBodyData);
+            sunBodyInfo = celBodyData.getTopLevelBody();
             
             hasSunLoS = true;
             eclipseBodies = [bodyInfo, bodyInfo.getParBodyInfo(), bodyInfo.getChildrenBodyInfo()];

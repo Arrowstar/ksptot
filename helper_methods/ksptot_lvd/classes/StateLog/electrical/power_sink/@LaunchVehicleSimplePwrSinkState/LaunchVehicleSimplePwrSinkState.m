@@ -28,7 +28,7 @@ classdef LaunchVehicleSimplePwrSinkState < AbstractLaunchVehicleElectricalPowerS
         end
         
         function pwrRate = getElectricalPwrRate(obj, elemSet, steeringModel)
-            pwrRate = obj.sink.getElectricalPwrRate(obj, elemSet, steeringModel);
+            pwrRate = obj.sink.getElectricalPwrRate(elemSet, steeringModel);
         end
     end
 end

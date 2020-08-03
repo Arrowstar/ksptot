@@ -24,7 +24,7 @@ classdef(Abstract) AbstractPropagator < matlab.mixin.SetGet & matlab.mixin.Heter
         tf = canProduceThrust(obj);
     end
     
-    methods(Static, Access = protected)
+    methods(Static)
         function [value,isterminal,direction, causes] = odeEvents(t,y, eventInitStateLogEntry, evtTermCond, termCondDir, maxSimTime, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, minAltitude, celBodyData)
             persistent maxSimTimeCause minAltTermCause eventTermCondCause
             if(isempty(maxSimTimeCause))
@@ -88,11 +88,12 @@ classdef(Abstract) AbstractPropagator < matlab.mixin.SetGet & matlab.mixin.Heter
             causes(end+1) = eventTermCondCause;
         end
         
-        function [ut, rVect, vVect, tankStates] = decomposeIntegratorTandY(t,y, numTankStates)
+        function [ut, rVect, vVect, tankStates, pwrStorageStates] = decomposeIntegratorTandY(t,y, numTankStates, numPwrStorageStates)
             ut = t;
             rVect = y(1:3);
             vVect = y(4:6);
             tankStates = y(7:6+numTankStates);
+            pwrStorageStates = y(6+numTankStates+1 : 6+numTankStates+numPwrStorageStates);
         end
     end
 end

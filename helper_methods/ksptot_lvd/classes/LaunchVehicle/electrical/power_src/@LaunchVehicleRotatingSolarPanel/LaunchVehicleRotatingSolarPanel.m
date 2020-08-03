@@ -9,7 +9,7 @@ classdef LaunchVehicleRotatingSolarPanel < AbstractLaunchVehicleSolarPanel
         
         bodyFrameRotAxis(3,1) double = [0;1;0];
         refChargeRate(1,1) double = 0;
-        refChargeRateDist(1,1) = 1;
+        refChargeRateDist(1,1) = 13599840.256;
         
         id = rand();
     end
@@ -61,9 +61,12 @@ classdef LaunchVehicleRotatingSolarPanel < AbstractLaunchVehicleSolarPanel
         
         function bodyFrameNormVect = getBodyFrameSolarPanelNormalVector(obj, elemSet, steeringModel)
             %Get sun position relative to spacecraft
+            elemSet = elemSet.convertToCartesianElementSet();
+            bodyInfo = elemSet.frame.getOriginBody();
             celBodyData = bodyInfo.celBodyData;
 
-            sunBodyInfo = getTopLevelCentralBody(celBodyData);
+%             sunBodyInfo = getTopLevelCentralBody(celBodyData);
+            sunBodyInfo = celBodyData.getTopLevelBody();
             sunInertFrame = sunBodyInfo.getBodyCenteredInertialFrame();
             
             elemSetSun = elemSet.convertToFrame(sunInertFrame);
@@ -73,14 +76,14 @@ classdef LaunchVehicleRotatingSolarPanel < AbstractLaunchVehicleSolarPanel
             rVectSpacecraft2SunHat = normVector(rVectSpacecraft2Sun);
 
             %get panel rotation axis inertially
-            panelInertialFrameAxesRotVect = obj.getInertialFrameRotAxis(elemSet, steeringModel);
+            [panelInertialFrameAxesRotVect, body2InertDcm] = obj.getInertialFrameRotAxis(elemSet, steeringModel);
 
             %Get body frame normal vector of panel
             rSpacecraft2SunProj = rVectSpacecraft2SunHat - (dotARH(rVectSpacecraft2SunHat, panelInertialFrameAxesRotVect)/norm(panelInertialFrameAxesRotVect)^2) * panelInertialFrameAxesRotVect;
             bodyFrameNormVect = body2InertDcm' * rSpacecraft2SunProj;
         end
         
-        function panelInertialFrameAxesRotVect = getInertialFrameRotAxis(obj, elemSet, steeringModel)
+        function [panelInertialFrameAxesRotVect, body2InertDcm] = getInertialFrameRotAxis(obj, elemSet, steeringModel)
             elemSet = elemSet.convertToCartesianElementSet();
             bodyInfo = elemSet.frame.getOriginBody();
             

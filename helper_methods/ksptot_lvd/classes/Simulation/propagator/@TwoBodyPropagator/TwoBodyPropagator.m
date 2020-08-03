@@ -158,7 +158,7 @@ classdef TwoBodyPropagator < AbstractPropagator
         end
     end
     
-    methods(Static, Access=protected)
+    methods(Static)
         %%%
         %ODE Events
         %%%

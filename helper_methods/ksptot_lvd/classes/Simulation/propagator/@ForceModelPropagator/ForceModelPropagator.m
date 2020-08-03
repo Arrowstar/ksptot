@@ -48,12 +48,15 @@ classdef ForceModelPropagator < AbstractPropagator
             else
                 [t,y,te,ye,ie] = integrator.integrate(odefun, tspan, y0, evtsFunc, odeOutputFun);
             end   
+            
+            disp([t, y(:,end)]);
         end
         
         function odeFH = getOdeFunctionHandle(obj, eventInitStateLogEntry)
             tankStates = eventInitStateLogEntry.getAllActiveTankStates();
             dryMass = eventInitStateLogEntry.getTotalVehicleDryMass();
-            odeFH = @(t,y) ForceModelPropagator.odefun(t,y, eventInitStateLogEntry, tankStates, dryMass, obj.forceModels);
+            pwrStorageStates = eventInitStateLogEntry.getAllActivePwrStorageStates();
+            odeFH = @(t,y) ForceModelPropagator.odefun(t,y, eventInitStateLogEntry, tankStates, dryMass, pwrStorageStates, obj.forceModels);
         end
         
         function odeEventsFH = getOdeEventsFunctionHandle(~, eventInitStateLogEntry, eventTermCondFuncHandle, termCondDir, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, minAltitude, celBodyData)
@@ -100,13 +103,13 @@ classdef ForceModelPropagator < AbstractPropagator
         %%%
         %ODE Function
         %%%
-        function dydt = odefun(t,y, eventInitStateLogEntry, tankStates, dryMass, fmEnums)
+        function dydt = odefun(t,y, eventInitStateLogEntry, tankStates, dryMass, powerStorageStates, fmEnums)
             bodyInfo = eventInitStateLogEntry.centralBody;
             if(isstruct(bodyInfo.celBodyData) || isempty(bodyInfo.celBodyData))
                 bodyInfo.celBodyData = eventInitStateLogEntry.celBodyData;
             end
             
-            [ut, rVect, vVect, tankStatesMasses] = AbstractPropagator.decomposeIntegratorTandY(t,y, length(tankStates));
+            [ut, rVect, vVect, tankStatesMasses, storageSoCs] = AbstractPropagator.decomposeIntegratorTandY(t,y, length(tankStates), length(powerStorageStates));
             altitude = norm(rVect) - bodyInfo.radius;
 
             stageStates = eventInitStateLogEntry.stageStates;
@@ -120,6 +123,9 @@ classdef ForceModelPropagator < AbstractPropagator
 
             tankMassDotsT2TConns = TankToTankConnection.getTankMassFlowRatesFromTankToTankConnections(tankStates, tankStatesMasses, t2tConnStates);
 
+            storageRates = LaunchVehicleStateLogEntry.getStorageChargeRatesDueToSourcesSinks(storageSoCs, powerStorageStates, stageStates, ut, rVect, vVect, bodyInfo, steeringModel);
+%             disp(storageRates);
+            
             dydt = zeros(length(y),1);
             if(holdDownEnabled)
                 pressure = getPressureAtAltitude(bodyInfo, altitude);
@@ -136,6 +142,7 @@ classdef ForceModelPropagator < AbstractPropagator
                 dydt(1:3) = [0;0;0]; 
                 dydt(4:6) = [0;0;0];
                 dydt(7:6+length(tankMassDots)) = tankMassDots;
+                dydt(6+length(tankMassDots)+1 : 6+length(tankMassDots)+length(storageRates)) = storageRates;
             else
                 %launch clamp disabled, propagate like normal
                 if(altitude <= 0 && any(fmEnums == ForceModelsEnum.Normal))
@@ -156,9 +163,12 @@ classdef ForceModelPropagator < AbstractPropagator
                     tankMassDots = tankMassDotsForceModels + tankMassDotsT2TConns;
 
                     dydt(7:6+length(tankMassDots)) = tankMassDots;
+                    dydt(6+length(tankMassDots)+1 : 6+length(tankMassDots)+length(storageRates)) = storageRates;
                 else
                     accelVect = zeros(3,1);
                     dydt(7:6+length(tankStates)) = zeros(size(tankStates));
+                    %don't need to do this really because the dydt is
+                    %already zeros
                 end
 
                 dydt(1:3) = vVect'; 
