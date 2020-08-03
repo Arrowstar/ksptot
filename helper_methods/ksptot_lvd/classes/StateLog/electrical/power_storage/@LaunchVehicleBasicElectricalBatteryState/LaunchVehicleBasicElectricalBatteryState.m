@@ -17,7 +17,7 @@ classdef LaunchVehicleBasicElectricalBatteryState < AbstractLaunchVehicleEpsStor
         end
         
         function epsStorageComponent = getEpsStorageComponent(obj)
-            epsStorageComponent = obj.battery;
+            epsStorageComponent = [obj.battery];
         end
         
         function active = getActiveState(obj)

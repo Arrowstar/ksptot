@@ -9,7 +9,7 @@ classdef(Abstract) AbstractLaunchVehicleElectricalPowerSnkState < matlab.mixin.S
     methods
         epsSinkComponent = getEpsSinkComponent(obj)
         
-        pwrRate = getElectricalPwrRate(obj, elemSet, steeringModel)
+        pwrRate = getElectricalPwrRate(obj, elemSet, steeringModel, hasSunLoS, body2InertDcm)
         
         active = getActiveState(obj)
         

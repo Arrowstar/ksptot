@@ -282,7 +282,7 @@ classdef LaunchVehicleStageState < matlab.mixin.SetGet & matlab.mixin.Copyable
                 end
                 
                 %Copy Power Storage States
-                if(deepCopyState && not(isempty(obj.powerStorageStates)))
+                if(not(isempty(obj.powerStorageStates)))
                     newPwrStorageStates = obj.powerStorageStates.copy();
                     [newPwrStorageStates.stageState] = deal(newStageState);
                     newStageState.powerStorageStates = newPwrStorageStates;

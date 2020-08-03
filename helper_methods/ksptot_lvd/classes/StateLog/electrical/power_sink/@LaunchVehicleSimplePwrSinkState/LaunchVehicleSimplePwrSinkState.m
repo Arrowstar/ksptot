@@ -16,7 +16,7 @@ classdef LaunchVehicleSimplePwrSinkState < AbstractLaunchVehicleElectricalPowerS
         end
         
         function active = getActiveState(obj)
-            active = obj.active;
+            active = [obj.active];
         end
         
         function setActiveState(obj,active)
@@ -24,11 +24,11 @@ classdef LaunchVehicleSimplePwrSinkState < AbstractLaunchVehicleElectricalPowerS
         end
         
         function epsSinkComponent = getEpsSinkComponent(obj)
-            epsSinkComponent = obj.sink;
+            epsSinkComponent = [obj.sink];
         end
         
-        function pwrRate = getElectricalPwrRate(obj, elemSet, steeringModel)
-            pwrRate = obj.sink.getElectricalPwrRate(elemSet, steeringModel);
+        function pwrRate = getElectricalPwrRate(obj, elemSet, steeringModel, hasSunLoS, body2InertDcm)
+            pwrRate = obj.sink.getElectricalPwrRate(elemSet, steeringModel, hasSunLoS, body2InertDcm);
         end
     end
 end

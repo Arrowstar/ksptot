@@ -87,6 +87,11 @@ function [depVarValue, depVarUnit, taskStr, refBodyInfo] = lvd_getDepVarValueUni
             grdObjRngValuePattern = '^Ground Object (\d+?) Range to S/C - ".*"';
             grdObjLoSValuePattern = '^Ground Object (\d+?) Line of Sight to S/C - ".*"';
             calcObjValuePattern = '^Calculus (\d+?) Value - ".*"';
+            pwrStorageActivePattern = '^Power Storage (\d+?) Active State - ".*"';
+            pwrStorageSoCPattern = '^Power Storage (\d+?) State of Charge - ".*"';
+            pwrSinkActivePattern = '^Power Sink (\d+?) Active State - ".*"';
+            pwrSrcActivePattern = '^Power Source (\d+?) Active State - ".*"';
+            pwrSrcChargeRatePattern = '^Power Source (\d+?) Charge Rate - ".*"';
             
             if(not(isempty(regexpi(taskStr, tankMassPattern))))
                 tokens = regexpi(taskStr, tankMassPattern, 'tokens');
@@ -225,6 +230,61 @@ function [depVarValue, depVarUnit, taskStr, refBodyInfo] = lvd_getDepVarValueUni
                 calcObj = calcObjs(calcObjInd);
                 
                 [depVarValue, depVarUnit] = lvd_CalculusCalculationTasks(subLog(i), 'calcObjValue', calcObj);
+                
+            elseif(not(isempty(regexpi(taskStr, pwrStorageActivePattern))))
+                tokens = regexpi(taskStr, pwrStorageActivePattern, 'tokens');
+                tokens = tokens{1};
+                tokens = tokens{1};
+                pwrStorageObjInd = str2double(tokens);
+                
+                [~, pwrStorages] = subLog(i).launchVehicle.getPowerStorageGraphAnalysisTaskStrs();
+                pwrStorage = pwrStorages(pwrStorageObjInd);
+                
+                [depVarValue, depVarUnit] = lvd_ElectricalPowerStorageTasks(subLog(i), 'active', pwrStorage);
+                
+            elseif(not(isempty(regexpi(taskStr, pwrStorageSoCPattern))))
+                tokens = regexpi(taskStr, pwrStorageSoCPattern, 'tokens');
+                tokens = tokens{1};
+                tokens = tokens{1};
+                pwrStorageObjInd = str2double(tokens);
+                
+                [~, pwrStorages] = subLog(i).launchVehicle.getPowerStorageGraphAnalysisTaskStrs();
+                pwrStorage = pwrStorages(pwrStorageObjInd);
+                
+                [depVarValue, depVarUnit] = lvd_ElectricalPowerStorageTasks(subLog(i), 'stateOfCharge', pwrStorage);
+                
+            elseif(not(isempty(regexpi(taskStr, pwrSinkActivePattern))))
+                tokens = regexpi(taskStr, pwrSinkActivePattern, 'tokens');
+                tokens = tokens{1};
+                tokens = tokens{1};
+                pwrSinkObjInd = str2double(tokens);
+                
+                [~, pwrSinks] = subLog(i).launchVehicle.getPowerSinksGraphAnalysisTaskStrs();
+                pwrSink = pwrSinks(pwrSinkObjInd);
+                
+                [depVarValue, depVarUnit] = lvd_ElectricalPowerSinkTasks(subLog(i), 'active', pwrSink);
+                
+            elseif(not(isempty(regexpi(taskStr, pwrSrcActivePattern))))
+                tokens = regexpi(taskStr, pwrSrcActivePattern, 'tokens');
+                tokens = tokens{1};
+                tokens = tokens{1};
+                pwrSrcObjInd = str2double(tokens);
+                
+                [~, powerSrcs] = subLog(i).launchVehicle.getPowerSrcsGraphAnalysisTaskStrs();
+                powerSrc = powerSrcs(pwrSrcObjInd);
+                
+                [depVarValue, depVarUnit] = lvd_ElectricalPowerSrcTasks(subLog(i), 'active', powerSrc);
+                
+            elseif(not(isempty(regexpi(taskStr, pwrSrcChargeRatePattern))))
+                tokens = regexpi(taskStr, pwrSrcChargeRatePattern, 'tokens');
+                tokens = tokens{1};
+                tokens = tokens{1};
+                pwrSrcObjInd = str2double(tokens);
+                
+                [~, powerSrcs] = subLog(i).launchVehicle.getPowerSrcsGraphAnalysisTaskStrs();
+                powerSrc = powerSrcs(pwrSrcObjInd);
+                
+                [depVarValue, depVarUnit] = lvd_ElectricalPowerSrcTasks(subLog(i), 'chargeRate', powerSrc);
                 
             else
                 error('Unknown LVD task string: "%s"', taskStr);                

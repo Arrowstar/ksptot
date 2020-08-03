@@ -7,7 +7,7 @@ classdef(Abstract) AbstractLaunchVehicleSolarPanel < AbstractLaunchVehicleElectr
     end
     
     methods        
-        function pwrRate = getElectricalPwrRate(obj, elemSet, steeringModel)
+        function pwrRate = getElectricalPwrRate(obj, elemSet, steeringModel, hasSunLoS, body2InertDcm)
             elemSet = elemSet.convertToCartesianElementSet();
             bodyInfo = elemSet.frame.getOriginBody();
             celBodyData = bodyInfo.celBodyData;
@@ -15,35 +15,38 @@ classdef(Abstract) AbstractLaunchVehicleSolarPanel < AbstractLaunchVehicleElectr
 %             sunBodyInfo = getTopLevelCentralBody(celBodyData);
             sunBodyInfo = celBodyData.getTopLevelBody();
             
-            hasSunLoS = true;
-            eclipseBodies = [bodyInfo, bodyInfo.getParBodyInfo(), bodyInfo.getChildrenBodyInfo()];
-            for(i=1:length(eclipseBodies))
-                eclipseBodyInfo = eclipseBodies(i);
-
-                if(eclipseBodyInfo == sunBodyInfo)
-                    continue;
-                end
-                
-                stateLogEntry = [elemSet.time, elemSet.rVect(:)'];
-                LoS = LoS2Target(stateLogEntry, bodyInfo, eclipseBodyInfo, sunBodyInfo, celBodyData, []);
-                if(LoS == 0)
-                    hasSunLoS = false;
-                    break;
-                end
+            if(isempty(hasSunLoS) || isempty(body2InertDcm))
+                [hasSunLoS, body2InertDcm] = AbstractLaunchVehicleSolarPanel.getExpensiveSolarPanelInputs(elemSet, bodyInfo, steeringModel);
+%                 hasSunLoS = true;
+%                 eclipseBodies = [bodyInfo, bodyInfo.getParBodyInfo(), bodyInfo.getChildrenBodyInfo()];
+%                 for(i=1:length(eclipseBodies))
+%                     eclipseBodyInfo = eclipseBodies(i);
+% 
+%                     if(eclipseBodyInfo == sunBodyInfo)
+%                         continue;
+%                     end
+% 
+%                     stateLogEntry = [elemSet.time, elemSet.rVect(:)'];
+%                     LoS = LoS2Target(stateLogEntry, bodyInfo, eclipseBodyInfo, sunBodyInfo, celBodyData, []);
+%                     if(LoS == 0)
+%                         hasSunLoS = false;
+%                         break;
+%                     end
+%                 end
             end
             
             if(hasSunLoS)
-                sunInertFrame = sunBodyInfo.getBodyCenteredInertialFrame();
-                elemSetSun = elemSet.convertToFrame(sunInertFrame);
-                
-                rVectSun2Spacecraft = elemSetSun.rVect();
-                rVectSpacecraft2Sun = -rVectSun2Spacecraft;
-
-                body2InertDcm = steeringModel.getBody2InertialDcmAtTime(elemSet.time, elemSet.rVect(:), elemSet.vVect(:), bodyInfo);
+%                 body2InertDcm = steeringModel.getBody2InertialDcmAtTime(elemSet.time, elemSet.rVect(:), elemSet.vVect(:), bodyInfo);
                 panelBodyFrameNormalVect = obj.getBodyFrameSolarPanelNormalVector(elemSet, steeringModel);
                 panelInertialFrameNormalVect = body2InertDcm * panelBodyFrameNormalVect(:);
 
                 if(norm(panelInertialFrameNormalVect) > 1E-10 && norm(panelBodyFrameNormalVect) > 1E-10)
+                    sunInertFrame = sunBodyInfo.getBodyCenteredInertialFrame();
+                    elemSetSun = elemSet.convertToFrame(sunInertFrame);
+
+                    rVectSun2Spacecraft = elemSetSun.rVect();
+                    rVectSpacecraft2Sun = -rVectSun2Spacecraft;
+                    
                     panelIncidAngle = angleNegPiToPi(dang(rVectSpacecraft2Sun,panelInertialFrameNormalVect));
 
                     if(panelIncidAngle > pi/2 || panelIncidAngle < -pi/2)
@@ -69,5 +72,31 @@ classdef(Abstract) AbstractLaunchVehicleSolarPanel < AbstractLaunchVehicleElectr
         refChargeRate = getRefChargeRate(obj)
         
         refChargeRateDist = getRefChargeRateDist(obj)
+    end
+    
+    methods(Static)
+        function [hasSunLoS, body2InertDcm] = getExpensiveSolarPanelInputs(elemSet, bodyInfo, steeringModel)
+            celBodyData = bodyInfo.celBodyData;
+            sunBodyInfo = celBodyData.getTopLevelBody();
+
+            hasSunLoS = true;
+            eclipseBodies = [bodyInfo, bodyInfo.getParBodyInfo(), bodyInfo.getChildrenBodyInfo()];
+            for(i=1:length(eclipseBodies))
+                eclipseBodyInfo = eclipseBodies(i);
+
+                if(eclipseBodyInfo == sunBodyInfo)
+                    continue;
+                end
+
+                stateLogEntry = [elemSet.time, elemSet.rVect(:)'];
+                LoS = LoS2Target(stateLogEntry, bodyInfo, eclipseBodyInfo, sunBodyInfo, celBodyData, []);
+                if(LoS == 0)
+                    hasSunLoS = false;
+                    break;
+                end
+            end
+
+            body2InertDcm = steeringModel.getBody2InertialDcmAtTime(elemSet.time, elemSet.rVect(:), elemSet.vVect(:), bodyInfo);
+        end
     end
 end

@@ -53,5 +53,14 @@ function [taskList] = lvd_getGraphAnalysisTaskList(lvdData, excludeList)
     [calcObjsGAStr, ~] = lvdData.launchVehicle.getCalculusCalcObjGraphAnalysisTaskStrs();
     taskList = horzcat(taskList, calcObjsGAStr);
     
+    [pwrStorageGAStr, ~] = lvdData.launchVehicle.getPowerStorageGraphAnalysisTaskStrs();
+    taskList = horzcat(taskList, pwrStorageGAStr);
+    
+    [powerSinkGAStr, ~] = lvdData.launchVehicle.getPowerSinksGraphAnalysisTaskStrs();
+    taskList = horzcat(taskList, powerSinkGAStr);
+    
+    [powerSrcsGAStr, ~] = lvdData.launchVehicle.getPowerSrcsGraphAnalysisTaskStrs();
+    taskList = horzcat(taskList, powerSrcsGAStr);
+    
     taskList = setdiff(taskList,excludeList);
 end

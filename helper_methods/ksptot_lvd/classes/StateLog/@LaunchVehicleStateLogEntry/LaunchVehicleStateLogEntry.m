@@ -35,7 +35,8 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
     properties(Constant)
         emptyTankArr = LaunchVehicleTankState.empty(1,0);
         emptyEngineArr = LaunchVehicleEngineState.empty(1,0);
-        emptyPwrStorageArr = AbstractLaunchVehicleElectricalPowerStorage.empty(1,0);
+        emptyPwrStorageArr = AbstractLaunchVehicleEpsStorageState.empty(1,0);
+        emptyPwrSrcArr = AbstractLaunchVehicleElectricalPowerSrcState.empty(1,0)
     end
     
     methods
@@ -306,6 +307,34 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             end
         end
         
+        function pwrSinksStates = getAllActivePwrSinksStates(obj)
+            stgStates = obj.stageStates;
+            pwrSinksStates = [stgStates([stgStates.active]).powerSinkStates];
+              
+            if(isempty(pwrSinksStates))
+                pwrSinksStates = obj.emptyPwrSrcArr;
+                
+            else
+                pwrSinksStates = pwrSinksStates(getActiveState(pwrSinksStates));
+            end
+        end
+        
+        function pwrSrcsStates = getAllActivePwrSrcsStates(obj)
+            stgStates = obj.stageStates;
+            pwrSrcsStates = [stgStates([stgStates.active]).powerSrcStates];
+              
+            if(isempty(pwrSrcsStates))
+                pwrSrcsStates = obj.emptyPwrSrcArr;
+                
+            else
+                for(i=1:length(pwrSrcsStates))
+                    activeInds(i) = pwrSrcsStates(i).getActiveState(); %#ok<AGROW>
+                end
+                
+                pwrSrcsStates = pwrSrcsStates(activeInds);
+            end
+        end
+        
         function numPwrStorageStates = getNumActivePwrStorageStates(obj)
             numPwrStorageStates = length(obj.getAllActivePwrStorageStates());
         end
@@ -506,6 +535,48 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             if(length(storageSoCs) >= 1)
                 elemSet = CartesianElementSet(ut, rVect(:), vVect(:), bodyInfo.getBodyCenteredInertialFrame());
                 
+                hasPanels = false;
+                for(i=1:length(stgStates))
+                    for(j=1:length([stgStates(i).powerSrcStates]))
+                        if(isa(stgStates(i).powerSrcStates(j).getEpsSrcComponent(), 'AbstractLaunchVehicleSolarPanel'))
+                            hasPanels = true;
+                            break;
+                        end
+                    end
+                    
+                    if(hasPanels)
+                        break;
+                    end
+                end
+                
+                if(hasPanels)
+                    [hasSunLoS, body2InertDcm] = AbstractLaunchVehicleSolarPanel.getExpensiveSolarPanelInputs(elemSet, bodyInfo, steeringModel);
+%                     celBodyData = bodyInfo.celBodyData;
+%                     sunBodyInfo = celBodyData.getTopLevelBody();
+%                     
+%                     hasSunLoS = true;
+%                     eclipseBodies = [bodyInfo, bodyInfo.getParBodyInfo(), bodyInfo.getChildrenBodyInfo()];
+%                     for(i=1:length(eclipseBodies))
+%                         eclipseBodyInfo = eclipseBodies(i);
+% 
+%                         if(eclipseBodyInfo == sunBodyInfo)
+%                             continue;
+%                         end
+% 
+%                         stateLogEntry = [elemSet.time, elemSet.rVect(:)'];
+%                         LoS = LoS2Target(stateLogEntry, bodyInfo, eclipseBodyInfo, sunBodyInfo, celBodyData, []);
+%                         if(LoS == 0)
+%                             hasSunLoS = false;
+%                             break;
+%                         end
+%                     end
+%                     
+%                     body2InertDcm = steeringModel.getBody2InertialDcmAtTime(elemSet.time, elemSet.rVect(:), elemSet.vVect(:), bodyInfo);
+                else
+                    hasSunLoS = true; %doesn't matter
+                    body2InertDcm = eye(3); %doesn't matter
+                end
+                
                 storageRates = zeros(size(storageSoCs));
                 cumPwrRate = 0;
                 for(i=1:length(stgStates)) %#ok<*NO4LP>
@@ -517,7 +588,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                             powerSinkState = powerSinkStates(j);
                             
                             if(powerSinkState.getActiveState())
-                                cumPwrRate = cumPwrRate + powerSinkState.getElectricalPwrRate(elemSet, steeringModel);
+                                cumPwrRate = cumPwrRate + powerSinkState.getElectricalPwrRate(elemSet, steeringModel, hasSunLoS, body2InertDcm);
                             end
                         end
                         
@@ -525,7 +596,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                             powerSrcState = powerSrcStates(j);
                             
                             if(powerSrcState.getActiveState())
-                                cumPwrRate = cumPwrRate + powerSrcState.getElectricalPwrRate(elemSet, steeringModel);
+                                cumPwrRate = cumPwrRate + powerSrcState.getElectricalPwrRate(elemSet, steeringModel, hasSunLoS, body2InertDcm);
                             end
                         end
                     end

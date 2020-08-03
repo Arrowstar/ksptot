@@ -16,7 +16,7 @@ classdef LaunchVehicleStaticSolarPanelState < AbstractLaunchVehicleElectricalPow
         end
         
         function active = getActiveState(obj)
-            active = obj.active;
+            active = [obj.active];
         end
         
         function setActiveState(obj,active)
@@ -27,8 +27,8 @@ classdef LaunchVehicleStaticSolarPanelState < AbstractLaunchVehicleElectricalPow
             epsSrcComponent = obj.src;
         end
         
-        function pwrRate = getElectricalPwrRate(obj, elemSet, steeringModel)
-            pwrRate = obj.src.getElectricalPwrRate(elemSet, steeringModel);
+        function pwrRate = getElectricalPwrRate(obj, elemSet, steeringModel, hasSunLoS, body2InertDcm)
+            pwrRate = obj.src.getElectricalPwrRate(elemSet, steeringModel, hasSunLoS, body2InertDcm);
         end
     end
 end

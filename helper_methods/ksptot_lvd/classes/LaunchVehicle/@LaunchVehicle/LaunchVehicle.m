@@ -240,16 +240,20 @@ classdef LaunchVehicle < matlab.mixin.SetGet
             end
         end
     
-%         function [engineGAStr, engines] = getPowerSinksGraphAnalysisTaskStrs(obj)
-%             [~, engines] = obj.getEnginesListBoxStr();
+        function [powerSinkGAStr, powerSinks] = getPowerSinksGraphAnalysisTaskStrs(obj)
+            [~, powerSinks] = obj.getPowerSinksListBoxStr();
+            
+            powerSinkGAStr = cell(1,length(powerSinks));
+            A = length(powerSinks);
+            formSpec = sprintf('%%0%uu',floor(log10(abs(A)+1)) + 1);
+            for(i=1:length(powerSinks))
+                powerSinkGAStr{i} = sprintf(sprintf('Power Sink %s Active State - "%s"',formSpec, powerSinks(i).getName()), i);
+            end
 %             
-%             engineGAStr = cell(1,length(engines));
-%             A = length(engines);
-%             formSpec = sprintf('%%0%uu',floor(log10(abs(A)+1)) + 1);
-%             for(i=1:length(engines))
-%                 engineGAStr{i} = sprintf(sprintf('Engine %s Active State - "%s"',formSpec, engines(i).name), i);
+%             for(i=1:length(powerSinks))
+%                 powerSinkGAStr{length(powerSinks) + i} = sprintf(sprintf('Power Sink %s Discharge Rate - "%s"',formSpec, powerSinks(i).getName()), i);
 %             end
-%         end
+        end
         
         function powerSink = getPowerSinkForInd(obj, ind)
             [~, powerSinks] = obj.getPowerSinksListBoxStr();
@@ -284,16 +288,20 @@ classdef LaunchVehicle < matlab.mixin.SetGet
             end
         end
     
-%         function [engineGAStr, engines] = getPowerSinksGraphAnalysisTaskStrs(obj)
-%             [~, engines] = obj.getEnginesListBoxStr();
-%             
-%             engineGAStr = cell(1,length(engines));
-%             A = length(engines);
-%             formSpec = sprintf('%%0%uu',floor(log10(abs(A)+1)) + 1);
-%             for(i=1:length(engines))
-%                 engineGAStr{i} = sprintf(sprintf('Engine %s Active State - "%s"',formSpec, engines(i).name), i);
-%             end
-%         end
+        function [powerSrcsGAStr, powerSrcs] = getPowerSrcsGraphAnalysisTaskStrs(obj)
+            [~, powerSrcs] = obj.getPowerSrcsListBoxStr();
+            
+            powerSrcsGAStr = cell(1,length(powerSrcs));
+            A = length(powerSrcs);
+            formSpec = sprintf('%%0%uu',floor(log10(abs(A)+1)) + 1);
+            for(i=1:length(powerSrcs))
+                powerSrcsGAStr{i} = sprintf(sprintf('Power Source %s Active State - "%s"',formSpec, powerSrcs(i).getName()), i);
+            end
+            
+            for(i=1:length(powerSrcs))
+                powerSrcsGAStr{i} = sprintf(sprintf('Power Source %s Charge Rate - "%s"',formSpec, powerSrcs(i).getName()), i);
+            end
+        end
         
         function powerSrc = getPowerSrcForInd(obj, ind)
             [~, powerSrcs] = obj.getPowerSrcsListBoxStr();
@@ -328,16 +336,20 @@ classdef LaunchVehicle < matlab.mixin.SetGet
             end
         end
     
-%         function [engineGAStr, engines] = getPowerSinksGraphAnalysisTaskStrs(obj)
-%             [~, engines] = obj.getEnginesListBoxStr();
-%             
-%             engineGAStr = cell(1,length(engines));
-%             A = length(engines);
-%             formSpec = sprintf('%%0%uu',floor(log10(abs(A)+1)) + 1);
-%             for(i=1:length(engines))
-%                 engineGAStr{i} = sprintf(sprintf('Engine %s Active State - "%s"',formSpec, engines(i).name), i);
-%             end
-%         end
+        function [pwrStorageGAStr, powerStorages] = getPowerStorageGraphAnalysisTaskStrs(obj)
+            [~, powerStorages] = obj.getPowerStoragesListBoxStr();
+            
+            pwrStorageGAStr = cell(1,2*length(powerStorages));
+            A = length(powerStorages);
+            formSpec = sprintf('%%0%uu',floor(log10(abs(A)+1)) + 1);
+            for(i=1:length(powerStorages))
+                pwrStorageGAStr{i} = sprintf(sprintf('Power Storage %s Active State - "%s"',formSpec, powerStorages(i).getName()), i);
+            end
+            
+            for(i=1:length(powerStorages))
+                pwrStorageGAStr{length(powerStorages) + i} = sprintf(sprintf('Power Storage %s State of Charge - "%s"',formSpec, powerStorages(i).getName()), i);
+            end
+        end
         
         function powerStorage = getPowerStorageForInd(obj, ind)
             [~, powerStorages] = obj.getPowerStoragesListBoxStr();

@@ -45,7 +45,7 @@ classdef LaunchVehicleEpsRtg < AbstractLaunchVehicleElectricalPowerSrcSnk
             newPowerSrc.name = sprintf('Copy of %s', obj.name);
         end
         
-        function pwrRate = getElectricalPwrRate(obj, ~, ~)
+        function pwrRate = getElectricalPwrRate(obj, ~, ~, ~, ~)
             pwrRate = obj.pwrRate;
         end
         
