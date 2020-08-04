@@ -96,7 +96,9 @@ classdef CelestialBodyData < matlab.mixin.SetGet & dynamicprops
         function obj = loadobj(obj)
             obj.bodyIdCacheArr = [obj.bodies.id];
             
-            obj.topLvlBodyCache = getTopLevelCentralBody(obj);
+            if(isprop(obj,'sun'))
+                obj.topLvlBodyCache = getTopLevelCentralBody(obj);
+            end
         end
     end
 end

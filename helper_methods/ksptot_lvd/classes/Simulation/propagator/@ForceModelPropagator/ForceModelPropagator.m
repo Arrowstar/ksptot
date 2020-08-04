@@ -48,8 +48,6 @@ classdef ForceModelPropagator < AbstractPropagator
             else
                 [t,y,te,ye,ie] = integrator.integrate(odefun, tspan, y0, evtsFunc, odeOutputFun);
             end   
-            
-            disp([t, y(:,end)]);
         end
         
         function odeFH = getOdeFunctionHandle(obj, eventInitStateLogEntry)
@@ -124,7 +122,6 @@ classdef ForceModelPropagator < AbstractPropagator
             tankMassDotsT2TConns = TankToTankConnection.getTankMassFlowRatesFromTankToTankConnections(tankStates, tankStatesMasses, t2tConnStates);
 
             storageRates = LaunchVehicleStateLogEntry.getStorageChargeRatesDueToSourcesSinks(storageSoCs, powerStorageStates, stageStates, ut, rVect, vVect, bodyInfo, steeringModel);
-%             disp(storageRates);
             
             dydt = zeros(length(y),1);
             if(holdDownEnabled)
