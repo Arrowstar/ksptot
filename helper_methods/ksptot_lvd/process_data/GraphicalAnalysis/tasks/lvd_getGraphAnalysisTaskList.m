@@ -22,6 +22,9 @@ function [taskList] = lvd_getGraphAnalysisTaskList(lvdData, excludeList)
     taskList{end+1} = 'Total Thrust Vector X Component';
     taskList{end+1} = 'Total Thrust Vector Y Component';
     taskList{end+1} = 'Total Thrust Vector Z Component';
+    taskList{end+1} = 'Electical Power Net Charge Rate';
+    taskList{end+1} = 'Electical Power Cumulative Storage State of Charge';
+    taskList{end+1} = 'Electical Power Maximum Available Storage';
     
     [tanksGAStr, ~] = lvdData.launchVehicle.getTanksGraphAnalysisTaskStrs();
     taskList = horzcat(taskList, tanksGAStr);

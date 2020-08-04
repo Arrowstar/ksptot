@@ -47,6 +47,6 @@ function [datapt, unitStr] = lvd_ElectricalPowerSrcTasks(stateLogEntry, subTask,
             end
             
         otherwise
-            error('Unknow EPS sink task: %s', subTask);            
+            error('Unknow EPS source task: %s', subTask);            
     end
 end
