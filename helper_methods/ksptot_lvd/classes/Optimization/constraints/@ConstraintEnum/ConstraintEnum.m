@@ -85,6 +85,8 @@ classdef ConstraintEnum < matlab.mixin.SetGet
         VelocityContinuityZ('Velocity Continuity (Z)','VelocityContinuityConstraintZ',[]);
         
         CalculusCalculation('Calculus Calculation','CalculusCalculationValueConstraint',[]);
+        
+        CumulativePwrStorageStateOfCharge('Electrical Power Cumulative Storage State of Charge', 'CumPwrStorageStateOfChargeConstraint', []);
     end
     
     properties
