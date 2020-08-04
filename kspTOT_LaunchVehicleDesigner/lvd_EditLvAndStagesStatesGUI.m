@@ -22,7 +22,7 @@ function varargout = lvd_EditLvAndStagesStatesGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditLvAndStagesStatesGUI
 
-% Last Modified by GUIDE v2.5 21-Jan-2019 13:17:35
+% Last Modified by GUIDE v2.5 04-Aug-2020 16:08:46
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -74,6 +74,7 @@ function populateGUI(handles, lvdData)
     handles.stageListbox.String = lv.getStagesListBoxStr();
     stageListbox_Callback(handles.stageListbox,[],handles);
     
+    %Propulsion
     handles.engineListbox.String = lv.getEnginesListBoxStr();
     engineListbox_Callback(handles.engineListbox, [], handles);
     
@@ -95,8 +96,36 @@ function populateGUI(handles, lvdData)
         handles.t2tConnCheckbox.Enable = 'off';
     end
 
+    %Electrical Power Systems
+    [handles.powerSrcListbox.String, pwrSrcs] = lv.getPowerSrcsListBoxStr();
+    if(not(isempty(pwrSrcs)))
+        powerSrcListbox_Callback(handles.powerSrcListbox, [], handles);
+    else
+        handles.powerSrcListbox.Enable = 'off';
+        handles.pwrSrcActiveCheckbox.Enable = 'off';
+    end
+    
+    [handles.powerSinkListbox.String, pwrSinks] = lv.getPowerSinksListBoxStr();
+    if(not(isempty(pwrSinks)))
+        powerSinkListbox_Callback(handles.powerSinkListbox, [], handles);
+    else
+        handles.powerSinkListbox.Enable = 'off';
+        handles.pwrSinkActiveCheckbox.Enable = 'off';
+    end
+    
+    [handles.powerStorageListbox.String, pwrStorage] = lv.getPowerStoragesListBoxStr();
+    if(not(isempty(pwrStorage)))
+        powerStorageListbox_Callback(handles.powerStorageListbox, [], handles);
+    else
+        handles.powerStorageListbox.Enable = 'off';
+        handles.pwrStorageActiveCheckbox.Enable = 'off';
+    end
+    
+    %Hold Down Clamp
     initStateModel = lvdData.initStateModel;
     handles.holdDownClampsEnabledCheckbox.Value = double(initStateModel.lvState.holdDownEnabled);
+    
+    
 
 % --- Outputs from this function are returned to the command line.
 function varargout = lvd_EditLvAndStagesStatesGUI_OutputFcn(hObject, eventdata, handles) 
@@ -367,3 +396,186 @@ function t2tConnCheckbox_Callback(hObject, eventdata, handles)
 % Hint: get(hObject,'Value') returns toggle state of t2tConnCheckbox
     state = getSelectedT2TConnState(handles);
     state.active = logical(get(hObject,'Value'));
+
+
+% --- Executes on button press in pwrStorageActiveCheckbox.
+function pwrStorageActiveCheckbox_Callback(hObject, eventdata, handles)
+% hObject    handle to pwrStorageActiveCheckbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of pwrStorageActiveCheckbox
+    state = getSelectedPwrStorageState(handles);
+    state.setActiveState(logical(get(hObject,'Value')));
+
+% --- Executes on selection change in powerStorageListbox.
+function powerStorageListbox_Callback(hObject, eventdata, handles)
+% hObject    handle to powerStorageListbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns powerStorageListbox contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from powerStorageListbox
+    state = getSelectedPwrStorageState(handles);
+    handles.pwrStorageActiveCheckbox.Value = double(state.getActiveState());
+
+    if(strcmpi(get(handles.lvd_EditLvAndStagesStatesGUI,'SelectionType'),'open'))
+        handles.pwrStorageActiveCheckbox.Value = double(not(logical(handles.pwrStorageActiveCheckbox.Value)));
+    end
+    pwrStorageActiveCheckbox_Callback(handles.pwrStorageActiveCheckbox, [], handles);
+
+function state = getSelectedPwrStorageState(handles)
+    lvdData = getappdata(handles.lvd_EditLvAndStagesStatesGUI, 'lvdData');
+    lv = lvdData.launchVehicle;
+    initStateModel = lvdData.initStateModel;
+    stageStates = initStateModel.stageStates;
+    
+    pwrStorageStates = AbstractLaunchVehicleEpsStorageState.empty(1,0);
+    for(i=1:length(stageStates)) %#ok<*NO4LP>
+        pwrStorageStates = horzcat(pwrStorageStates, stageStates(i).powerStorageStates); %#ok<AGROW>
+    end
+    
+    selPwrStorage = get(handles.powerStorageListbox,'Value');
+    pwrStorage = lv.getPowerStorageForInd(selPwrStorage);
+    
+    pwrStorages = AbstractLaunchVehicleElectricalPowerStorage.empty(1,0);
+    for(i=1:length(pwrStorageStates))
+        pwrStorages = horzcat(pwrStorages, pwrStorageStates(i).getEpsStorageComponent()); %#ok<AGROW>
+    end
+    
+    pwrStorageInd = find(pwrStorages == pwrStorage,1,'first');
+    state = pwrStorageStates(pwrStorageInd);
+
+% --- Executes during object creation, after setting all properties.
+function powerStorageListbox_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to powerStorageListbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: listbox controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in pwrSinkActiveCheckbox.
+function pwrSinkActiveCheckbox_Callback(hObject, eventdata, handles)
+% hObject    handle to pwrSinkActiveCheckbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of pwrSinkActiveCheckbox
+    state = getSelectedPwrSinkState(handles);
+    state.setActiveState(logical(get(hObject,'Value')));
+
+% --- Executes on selection change in powerSinkListbox.
+function powerSinkListbox_Callback(hObject, eventdata, handles)
+% hObject    handle to powerSinkListbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns powerSinkListbox contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from powerSinkListbox
+    state = getSelectedPwrSinkState(handles);
+    handles.pwrSinkActiveCheckbox.Value = double(state.getActiveState());
+
+    if(strcmpi(get(handles.lvd_EditLvAndStagesStatesGUI,'SelectionType'),'open'))
+        handles.pwrSinkActiveCheckbox.Value = double(not(logical(handles.pwrSinkActiveCheckbox.Value)));
+    end
+    pwrSinkActiveCheckbox_Callback(handles.pwrSinkActiveCheckbox, [], handles);
+
+function state = getSelectedPwrSinkState(handles)
+    lvdData = getappdata(handles.lvd_EditLvAndStagesStatesGUI, 'lvdData');
+    lv = lvdData.launchVehicle;
+    initStateModel = lvdData.initStateModel;
+    stageStates = initStateModel.stageStates;
+    
+    pwrSinkStates = AbstractLaunchVehicleElectricalPowerSnkState.empty(1,0);
+    for(i=1:length(stageStates)) %#ok<*NO4LP>
+        pwrSinkStates = horzcat(pwrSinkStates, stageStates(i).powerSinkStates); %#ok<AGROW>
+    end
+    
+    selPwrSink = get(handles.powerSinkListbox,'Value');
+    pwrSink = lv.getPowerSinkForInd(selPwrSink);
+    
+    pwrSinks = AbstractLaunchVehicleElectricalPowerSrcSnk.empty(1,0);
+    for(i=1:length(pwrSinkStates))
+        pwrSinks = horzcat(pwrSinks, pwrSinkStates(i).getEpsSinkComponent()); %#ok<AGROW>
+    end
+    
+    pwrSinkInd = find(pwrSinks == pwrSink,1,'first');
+    state = pwrSinkStates(pwrSinkInd);
+
+% --- Executes during object creation, after setting all properties.
+function powerSinkListbox_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to powerSinkListbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: listbox controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in pwrSrcActiveCheckbox.
+function pwrSrcActiveCheckbox_Callback(hObject, eventdata, handles)
+% hObject    handle to pwrSrcActiveCheckbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of pwrSrcActiveCheckbox
+    state = getSelectedPwrSrcState(handles);
+    state.setActiveState(logical(get(hObject,'Value')));
+
+% --- Executes on selection change in powerSrcListbox.
+function powerSrcListbox_Callback(hObject, eventdata, handles)
+% hObject    handle to powerSrcListbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns powerSrcListbox contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from powerSrcListbox
+    state = getSelectedPwrSrcState(handles);
+    handles.pwrSrcActiveCheckbox.Value = double(state.getActiveState());
+
+    if(strcmpi(get(handles.lvd_EditLvAndStagesStatesGUI,'SelectionType'),'open'))
+        handles.pwrSrcActiveCheckbox.Value = double(not(logical(handles.pwrSrcActiveCheckbox.Value)));
+    end
+    pwrSrcActiveCheckbox_Callback(handles.pwrSrcActiveCheckbox, [], handles);
+
+function state = getSelectedPwrSrcState(handles)
+    lvdData = getappdata(handles.lvd_EditLvAndStagesStatesGUI, 'lvdData');
+    lv = lvdData.launchVehicle;
+    initStateModel = lvdData.initStateModel;
+    stageStates = initStateModel.stageStates;
+    
+    pwrSrcStates = AbstractLaunchVehicleElectricalPowerSrcState.empty(1,0);
+    for(i=1:length(stageStates)) %#ok<*NO4LP>
+        pwrSrcStates = horzcat(pwrSrcStates, stageStates(i).powerSrcStates); %#ok<AGROW>
+    end
+    
+    selPwrSrc = get(handles.powerSrcListbox,'Value');
+    pwrSrc = lv.getPowerSrcForInd(selPwrSrc);
+    
+    pwrSrcs = AbstractLaunchVehicleElectricalPowerSrcSnk.empty(1,0);
+    for(i=1:length(pwrSrcStates))
+        pwrSrcs = horzcat(pwrSrcs, pwrSrcStates(i).getEpsSrcComponent()); %#ok<AGROW>
+    end
+    
+    pwrSrcInd = find(pwrSrcs == pwrSrc,1,'first');
+    state = pwrSrcStates(pwrSrcInd);
+
+% --- Executes during object creation, after setting all properties.
+function powerSrcListbox_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to powerSrcListbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: listbox controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

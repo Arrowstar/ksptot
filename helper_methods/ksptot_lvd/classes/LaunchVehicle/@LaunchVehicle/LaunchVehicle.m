@@ -249,10 +249,10 @@ classdef LaunchVehicle < matlab.mixin.SetGet
             for(i=1:length(powerSinks))
                 powerSinkGAStr{i} = sprintf(sprintf('Power Sink %s Active State - "%s"',formSpec, powerSinks(i).getName()), i);
             end
-%             
-%             for(i=1:length(powerSinks))
-%                 powerSinkGAStr{length(powerSinks) + i} = sprintf(sprintf('Power Sink %s Discharge Rate - "%s"',formSpec, powerSinks(i).getName()), i);
-%             end
+            
+            for(i=1:length(powerSinks))
+                powerSinkGAStr{length(powerSinks) + i} = sprintf(sprintf('Power Sink %s Discharge Rate - "%s"',formSpec, powerSinks(i).getName()), i);
+            end
         end
         
         function powerSink = getPowerSinkForInd(obj, ind)
@@ -299,7 +299,7 @@ classdef LaunchVehicle < matlab.mixin.SetGet
             end
             
             for(i=1:length(powerSrcs))
-                powerSrcsGAStr{i} = sprintf(sprintf('Power Source %s Charge Rate - "%s"',formSpec, powerSrcs(i).getName()), i);
+                powerSrcsGAStr{length(powerSrcs) + i} = sprintf(sprintf('Power Source %s Charge Rate - "%s"',formSpec, powerSrcs(i).getName()), i);
             end
         end
         

@@ -1,16 +1,20 @@
 function [datapt, unitStr] = lvd_ElectricalPowerSrcTasks(stateLogEntry, subTask, powerSrc)
 %lvd_ElectricalPowerSrcTasks Summary of this function goes here
 %   Detailed explanation goes here
+    stageStates = stateLogEntry.stageStates;
 
-    pwrSrcStates = stateLogEntry.getAllActivePwrSrcsStates();
-    
-    pwrSrcState = AbstractLaunchVehicleElectricalPowerSrcState.empty(1,0);
-    for(i=1:length(pwrSrcStates))
-        if(pwrSrcStates(i).getEpsSrcComponent() == powerSrc)
-            pwrSrcState = pwrSrcStates(i);
-            break;
-        end
+    pwrSrcStates = AbstractLaunchVehicleElectricalPowerSrcState.empty(1,0);
+    for(i=1:length(stageStates)) %#ok<*NO4LP>
+        pwrSrcStates = horzcat(pwrSrcStates, stageStates(i).powerSrcStates); %#ok<AGROW>
     end
+        
+    pwrSrcs = AbstractLaunchVehicleElectricalPowerSrcSnk.empty(1,0);
+    for(i=1:length(pwrSrcStates))
+        pwrSrcs = horzcat(pwrSrcs, pwrSrcStates(i).getEpsSrcComponent()); %#ok<AGROW>
+    end
+    
+    pwrSrcInd = find(pwrSrcs == powerSrc,1,'first');
+    pwrSrcState = pwrSrcStates(pwrSrcInd);
     
     switch subTask
         case 'active'           
@@ -40,10 +44,10 @@ function [datapt, unitStr] = lvd_ElectricalPowerSrcTasks(stateLogEntry, subTask,
                     datapt = -1;
                 end
                 
-                unitStr = '';
+                unitStr = 'EC/s';
             else
                 datapt = -1;
-                unitStr = '';
+                unitStr = 'EC/s';
             end
             
         otherwise

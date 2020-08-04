@@ -1,9 +1,21 @@
-function [datapt, unitStr] = lvd_ElectricalPowerStorageTasks(stateLogEntry, subTask, powerStorage)
+function [datapt, unitStr] = lvd_ElectricalPowerStorageTasks(stateLogEntry, subTask, pwrStorage)
 %lvd_ElectricalPowerStorageTasks Summary of this function goes here
 %   Detailed explanation goes here
 
-    pwrStorageStates = stateLogEntry.getAllActivePwrStorageStates();
-    pwrStorageState = pwrStorageStates([pwrStorageStates.getEpsStorageComponent()] == powerStorage);
+    stageStates = stateLogEntry.stageStates;
+
+    pwrStorageStates = AbstractLaunchVehicleEpsStorageState.empty(1,0);
+    for(i=1:length(stageStates)) %#ok<*NO4LP>
+        pwrStorageStates = horzcat(pwrStorageStates, stageStates(i).powerStorageStates); %#ok<AGROW>
+    end
+    
+    pwrStorages = AbstractLaunchVehicleElectricalPowerStorage.empty(1,0);
+    for(i=1:length(pwrStorageStates))
+        pwrStorages = horzcat(pwrStorages, pwrStorageStates(i).getEpsStorageComponent()); %#ok<AGROW>
+    end
+    
+    pwrStorageInd = find(pwrStorages == pwrStorage,1,'first');
+    pwrStorageState = pwrStorageStates(pwrStorageInd);
     
     switch subTask
         case 'active'           

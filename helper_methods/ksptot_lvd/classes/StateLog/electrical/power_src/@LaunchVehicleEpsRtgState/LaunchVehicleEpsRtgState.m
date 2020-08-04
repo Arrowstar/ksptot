@@ -28,7 +28,11 @@ classdef LaunchVehicleEpsRtgState < AbstractLaunchVehicleElectricalPowerSrcState
         end
         
         function pwrRate = getElectricalPwrRate(obj, elemSet, steeringModel, hasSunLoS, body2InertDcm)
-            pwrRate = obj.src.getElectricalPwrRate(elemSet, steeringModel, hasSunLoS, body2InertDcm);
+            if(obj.active)
+                pwrRate = obj.src.getElectricalPwrRate(elemSet, steeringModel, hasSunLoS, body2InertDcm);
+            else
+                pwrRate = 0;
+            end
         end
     end
 end

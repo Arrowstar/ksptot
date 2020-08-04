@@ -73,11 +73,11 @@ function [depVarValue, depVarUnit, taskStr, refBodyInfo] = lvd_getDepVarValueUni
         case 'Total Thrust Vector Z Component'
             depVarValue = lvd_ThrottleTask(subLog(i), 'thrust_z');
             depVarUnit = 'kN';
-        case 'Electrical Power Net Charge Rate'
+        case 'Power Net Charge Rate'
             [depVarValue, depVarUnit] = lvd_ElectricalPowerGlobalTasks(subLog(i), 'netChargeRate');
-        case 'Electrical Power Cumulative Storage State of Charge'
+        case 'Power Cumulative Storage State of Charge'
             [depVarValue, depVarUnit] = lvd_ElectricalPowerGlobalTasks(subLog(i), 'cumStorageSoC');
-        case 'Electrical Power Maximum Available Storage'
+        case 'Power Maximum Available Storage'
             [depVarValue, depVarUnit] = lvd_ElectricalPowerGlobalTasks(subLog(i), 'maxAvailableStorage');
             
         otherwise %is a programmatically generated string that we'll handle here
@@ -96,6 +96,7 @@ function [depVarValue, depVarUnit, taskStr, refBodyInfo] = lvd_getDepVarValueUni
             pwrStorageActivePattern = '^Power Storage (\d+?) Active State - ".*"';
             pwrStorageSoCPattern = '^Power Storage (\d+?) State of Charge - ".*"';
             pwrSinkActivePattern = '^Power Sink (\d+?) Active State - ".*"';
+            pwrSinkDischargeRatePattern = '^Power Sink (\d+?) Discharge Rate - ".*"';
             pwrSrcActivePattern = '^Power Source (\d+?) Active State - ".*"';
             pwrSrcChargeRatePattern = '^Power Source (\d+?) Charge Rate - ".*"';
             
@@ -269,6 +270,17 @@ function [depVarValue, depVarUnit, taskStr, refBodyInfo] = lvd_getDepVarValueUni
                 pwrSink = pwrSinks(pwrSinkObjInd);
                 
                 [depVarValue, depVarUnit] = lvd_ElectricalPowerSinkTasks(subLog(i), 'active', pwrSink);
+                
+            elseif(not(isempty(regexpi(taskStr, pwrSinkDischargeRatePattern))))
+                tokens = regexpi(taskStr, pwrSinkDischargeRatePattern, 'tokens');
+                tokens = tokens{1};
+                tokens = tokens{1};
+                pwrSinkObjInd = str2double(tokens);
+                
+                [~, pwrSinks] = subLog(i).launchVehicle.getPowerSinksGraphAnalysisTaskStrs();
+                pwrSink = pwrSinks(pwrSinkObjInd);
+                
+                [depVarValue, depVarUnit] = lvd_ElectricalPowerSinkTasks(subLog(i), 'dischargeRate', pwrSink);
                 
             elseif(not(isempty(regexpi(taskStr, pwrSrcActivePattern))))
                 tokens = regexpi(taskStr, pwrSrcActivePattern, 'tokens');

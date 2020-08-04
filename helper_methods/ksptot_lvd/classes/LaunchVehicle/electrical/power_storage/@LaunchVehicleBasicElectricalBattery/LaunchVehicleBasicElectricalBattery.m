@@ -9,11 +9,15 @@ classdef LaunchVehicleBasicElectricalBattery < AbstractLaunchVehicleElectricalPo
         
         maxCapacity(1,1) double = 0;
         initialStateOfCharge(1,1) double = 0;
+        
+        id(1,1) double = rand();
     end
     
     methods
         function obj = LaunchVehicleBasicElectricalBattery(stage)
             obj.stage = stage;
+            
+            obj.id = rand();
         end
         
         function name = getName(obj)
