@@ -1225,6 +1225,7 @@ function startParallelPool(writeOutput)
                 close(h);
             end
             msgbox('Parallel mode start failed.  Optimization will run in serial.');
+            disp(ME.message);
         end
     else
         writeOutput('Parallel optimization mode enabled.','append');
