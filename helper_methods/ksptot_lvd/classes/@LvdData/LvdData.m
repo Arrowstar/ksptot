@@ -81,6 +81,21 @@ classdef LvdData < matlab.mixin.SetGet
             
             tf = tf || obj.optimizer.usesCalculusCalc(calculusCalc);
         end
+        
+        function tf = usesPwrSink(obj, powerSink)
+            tf = obj.script.usesPwrSink(powerSink);
+%             tf = tf || obj.optimizer.usesPwrStorage(powerSink);
+        end
+        
+        function tf = usesPwrSrc(obj, powerSrc)
+            tf = obj.script.usesPwrSrc(powerSrc);
+%             tf = tf || obj.optimizer.usesPwrStorage(powerSrc);
+        end
+        
+        function tf = usesPwrStorage(obj, powerStorage)
+            tf = obj.script.usesPwrStorage(powerStorage);
+%             tf = tf || obj.optimizer.usesPwrStorage(powerStorage);
+        end
     end
     
     methods(Static)        

@@ -10,7 +10,7 @@ classdef LaunchVehicleBasicElectricalBattery < AbstractLaunchVehicleElectricalPo
         maxCapacity(1,1) double = 0;
         initialStateOfCharge(1,1) double = 0;
         
-        id(1,1) double = rand();
+        id = rand(); %(1,1) double
     end
     
     methods
@@ -37,9 +37,9 @@ classdef LaunchVehicleBasicElectricalBattery < AbstractLaunchVehicleElectricalPo
             useTF = lvd_EditBasicBatteryGUI(obj);
         end
         
-        function tf = isInUse(obj)
-            tf = false;
-        end
+%         function tf = isInUse(obj) %see abstract class
+%             tf = false;
+%         end
         
         function newObj = copy(obj)
             newObj = LaunchVehicleBasicElectricalBattery(obj.stage);

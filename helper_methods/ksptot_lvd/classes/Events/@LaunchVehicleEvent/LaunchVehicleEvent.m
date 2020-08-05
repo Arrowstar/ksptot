@@ -229,6 +229,30 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
             end
         end
         
+        function tf = usesPwrSink(obj, powerSink)
+            tf = obj.termCond.usesPwrSink(powerSink);
+            
+            for(i=1:length(obj.actions))
+                tf = tf || obj.actions(i).usesPwrSink(powerSink);
+            end
+        end
+        
+        function tf = usesPwrSrc(obj, powerSrc)
+            tf = obj.termCond.usesPwrSrc(powerSrc);
+            
+            for(i=1:length(obj.actions))
+                tf = tf || obj.actions(i).usesPwrSrc(powerSrc);
+            end
+        end
+        
+        function tf = usesPwrStorage(obj, powerStorage)
+            tf = obj.termCond.usesPwrStorage(powerStorage);
+            
+            for(i=1:length(obj.actions))
+                tf = tf || obj.actions(i).usesPwrStorage(powerStorage);
+            end
+        end
+        
         function toggleOptimDisable(obj, lvdData)
             obj.disableOptim = not(obj.disableOptim);
             

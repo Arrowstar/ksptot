@@ -2,8 +2,12 @@ classdef(Abstract) AbstractLaunchVehicleElectricalPowerStorage < matlab.mixin.Se
     %AbstractLaunchVehicleElectricalPowerStorage Summary of this class goes here
     %   Detailed explanation goes here
     
-    properties
-        
+    properties(Abstract)
+        id
+    end
+    
+    properties(Dependent)
+        lvdData
     end
     
     methods
@@ -15,7 +19,9 @@ classdef(Abstract) AbstractLaunchVehicleElectricalPowerStorage < matlab.mixin.Se
         
         useTF = openEditDialog(obj);
         
-        tf = isInUse(obj);
+        function tf = isInUse(obj)
+            tf = obj.lvdData.usesPwrStorage(obj);
+        end
         
         newObj = copy(obj);
         
@@ -24,5 +30,9 @@ classdef(Abstract) AbstractLaunchVehicleElectricalPowerStorage < matlab.mixin.Se
         maxCapacity = getMaximumCapacity(obj);
         
         initialStateOfCharge = getInitialStateOfCharge(obj);
+        
+        function lvdData = get.lvdData(obj)
+            lvdData = obj.getAttachedStage().launchVehicle.lvdData;
+        end
     end
 end

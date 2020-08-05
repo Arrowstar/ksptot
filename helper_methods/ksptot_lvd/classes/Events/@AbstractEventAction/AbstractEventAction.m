@@ -36,6 +36,18 @@ classdef(Abstract) AbstractEventAction < matlab.mixin.SetGet & matlab.mixin.Hete
             tf = false;
         end
         
+        function tf = usesPwrSink(obj, powerSink)
+            tf = false;
+        end
+        
+        function tf = usesPwrSrc(obj, powerSrc)
+            tf = false;
+        end
+        
+        function tf = usesPwrStorage(obj, powerStorage)
+            tf = false;
+        end
+        
         [tf,vars] = hasActiveOptimVar(obj)
     end
     

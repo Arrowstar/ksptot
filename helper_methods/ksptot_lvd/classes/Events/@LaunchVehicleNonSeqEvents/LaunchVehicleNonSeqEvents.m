@@ -168,6 +168,30 @@ classdef LaunchVehicleNonSeqEvents < matlab.mixin.SetGet & matlab.mixin.Copyable
                 tf = tf || obj.evts(i).usesExtremum(calculusCalc);
             end
         end
+        
+        function tf = usesPwrSink(obj, powerSink)
+            tf = false;
+            
+            for(i=1:length(obj.evts))
+                tf = tf || obj.evts(i).usesPwrSink(powerSink);
+            end
+        end
+        
+        function tf = usesPwrSrc(obj, powerSrc)
+            tf = false;
+            
+            for(i=1:length(obj.evts))
+                tf = tf || obj.evts(i).usesPwrSrc(powerSrc);
+            end
+        end
+        
+        function tf = usesPwrStorage(obj, powerStorage)
+            tf = false;
+            
+            for(i=1:length(obj.evts))
+                tf = tf || obj.evts(i).usesPwrStorage(powerStorage);
+            end
+        end
     end
     
 	methods(Access = protected)

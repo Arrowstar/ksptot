@@ -6,6 +6,10 @@ classdef(Abstract) AbstractLaunchVehicleElectricalPowerSrcSnk < matlab.mixin.Set
         id
     end
     
+    properties(Dependent)
+        lvdData
+    end
+    
     methods
         name = getName(obj);
         
@@ -22,6 +26,10 @@ classdef(Abstract) AbstractLaunchVehicleElectricalPowerSrcSnk < matlab.mixin.Set
         newObj = copy(obj);
         
         summStr = getSummaryStr(obj);
+        
+        function lvdData = get.lvdData(obj)
+            lvdData = obj.getAttachedStage().launchVehicle.lvdData;
+        end
     end
     
     methods(Sealed)

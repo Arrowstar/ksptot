@@ -14,6 +14,8 @@ classdef TerminationConditionEnum < matlab.mixin.SetGet
         Latitude('Latitude','LatitudeTermCondition');
         PeriAlt('Periapsis Altitude','PeriapsisAltitudeTermCondition');
         PitchAngle('Pitch Angle','PitchTermCondition');
+        NetChargeRate('Power Net Charge Rate','PowerNetChargeRateTermCondition');
+        TotalStateOfCharge('Power Total State of Charge','TotalVehicleEpsStateOfChargeTermCondition');
         RollAngle('Roll Angle','RollTermCondition');
         SideSlipAngle('Side Slip Angle','SideSlipAngleTermCondition');
         SoITrans('Next SoI Transition','SoITransitionTermCondition');

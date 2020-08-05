@@ -186,6 +186,36 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
             tf = tf || obj.nonSeqEvts.usesCalculusCalc(calculusCalc);
         end
         
+        function tf = usesPwrSink(obj, powerSink)
+            tf = false;
+            
+            for(i=1:length(obj.evts))
+                tf = tf || obj.evts(i).usesPwrSink(powerSink);
+            end
+            
+            tf = tf || obj.nonSeqEvts.usesPwrSink(powerSink);
+        end
+        
+        function tf = usesPwrSrc(obj, powerSrc)
+            tf = false;
+            
+            for(i=1:length(obj.evts))
+                tf = tf || obj.evts(i).usesPwrSrc(powerSrc);
+            end
+            
+            tf = tf || obj.nonSeqEvts.usesPwrSrc(powerSrc);
+        end
+        
+        function tf = usesPwrStorage(obj, powerStorage)
+            tf = false;
+            
+            for(i=1:length(obj.evts))
+                tf = tf || obj.evts(i).usesPwrStorage(powerStorage);
+            end
+            
+            tf = tf || obj.nonSeqEvts.usesPwrStorage(powerStorage);
+        end
+        
         function stateLog = executeScript(obj, isSparseOutput, evtToStartScriptExecAt, evalConstraints, allowInterrupt)
             stateLog = obj.lvdData.stateLog;
             

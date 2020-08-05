@@ -30,6 +30,18 @@ classdef(Abstract) AbstractEventTerminationCondition < matlab.mixin.SetGet & mat
         tf = usesEngineToTankConn(obj, engineToTank)
         
         tf = usesStopwatch(obj, stopwatch)
+        
+        function tf = usesPwrSink(obj, powerSink)
+            tf = false;
+        end
+        
+        function tf = usesPwrSrc(obj, powerSrc)
+            tf = false;
+        end
+        
+        function tf = usesPwrStorage(obj, powerStorage)
+            tf = false;
+        end
     end
     
     methods(Static)

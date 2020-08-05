@@ -114,7 +114,18 @@ classdef TwoBodyPropagator < AbstractPropagator
         
         function [value,isterminal,direction,causes] = callEventsFcn(obj, odeEventsFun, stateLogEntry)
             [t,y, ~] = stateLogEntry.getFirstOrderIntegratorStateRepresentation();
-            [value,isterminal,direction,causes] = odeEventsFun(t,y);
+
+            numTankStates = stateLogEntry.getNumActiveTankStates();
+            numPwrStorageStates = stateLogEntry.getNumActivePwrStorageStates();
+            [~, rVect, vVect, tankStatesMasses, pwrStorageSocs] = AbstractPropagator.decomposeIntegratorTandY(t,y, numTankStates, numPwrStorageStates);
+            gmu = stateLogEntry.centralBody.gm;
+            
+            [~, ecc, ~, ~, ~, tru] = getKeplerFromState(rVect, vVect, gmu);
+            mean = computeMeanFromTrueAnom(tru, ecc);
+            
+            yNew = [mean, tankStatesMasses(:)', pwrStorageSocs(:)'];
+            
+            [value,isterminal,direction,causes] = odeEventsFun(t,yNew);
         end
         
         function openOptionsDialog(obj)
