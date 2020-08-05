@@ -1224,7 +1224,7 @@ function startParallelPool(writeOutput)
             if(ishandle(h))
                 close(h);
             end
-            msgbox('Parallel mode start failed.  Optimization will run in serial.');
+            msgbox(sprintf('Parallel mode start failed.  Optimization will run in serial.  Message:\n\n%s',ME.message));
             disp(ME.message);
         end
     else

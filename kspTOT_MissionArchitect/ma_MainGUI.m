@@ -1563,11 +1563,12 @@ function parallelizeScriptOptimizationMenu_Callback(hObject, eventdata, handles)
                     close(h);
                 end
                 writeOutput('Parallel optimization mode enabled.','append');
-            catch ME %#ok<NASGU>
+            catch ME
                 if(ishandle(h))
                     close(h);
                 end
-                msgbox('Parallel mode start failed.  Optimization will run in serial.');
+                msgbox(sprintf('Parallel mode start failed.  Optimization will run in serial.  Message:\n\n%s',ME.message));
+                disp(ME.message);
             end
         else
             writeOutput('Parallel optimization mode enabled.','append');
