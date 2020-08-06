@@ -10,7 +10,7 @@ function [rVectDown, vVectDown] = convertRVVectOnDownwardsSoITransition(childBod
     cFrame = childBodyInfo.getBodyCenteredInertialFrame();
 %     pFrame = BodyCenteredInertialFrame(childBodyInfo.getParBodyInfo(),  celBodyData);
     pFrame = childBodyInfo.getParBodyInfo().getBodyCenteredInertialFrame();
-    pState = CartesianElementSet(ut, rVect, vVect, pFrame);
+    pState = CartesianElementSet(ut, rVect(:), vVect(:), pFrame);
     cState = pState.convertToFrame(cFrame);
     
     rVectDown = cState.rVect;

@@ -1214,7 +1214,7 @@ function startParallelPool(writeOutput)
     if(isempty(p))
         try
             h = msgbox('Attempting to start parallel computing workers.  Please wait...','modal');
-            pp=parpool('local',feature('numCores'));
+            pp=parpool('local');
             pp.IdleTimeout = 99999; %we don't want the pool to shutdown
             if(isvalid(h))
                 close(h);

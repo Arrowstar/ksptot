@@ -1557,7 +1557,7 @@ function parallelizeScriptOptimizationMenu_Callback(hObject, eventdata, handles)
         if(isempty(p))
             try
                 h = msgbox('Attempting to start parallel computing workers.  Please wait...','modal');
-                pp=parpool('local',feature('numCores'));
+                pp=parpool('local');
                 pp.IdleTimeout = 99999; %we don't want the pool to shutdown
                 if(ishandle(h))
                     close(h);
