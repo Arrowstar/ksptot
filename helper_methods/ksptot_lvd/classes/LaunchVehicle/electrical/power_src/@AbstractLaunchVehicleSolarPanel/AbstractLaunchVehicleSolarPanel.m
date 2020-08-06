@@ -44,7 +44,7 @@ classdef(Abstract) AbstractLaunchVehicleSolarPanel < AbstractLaunchVehicleElectr
                     sunInertFrame = sunBodyInfo.getBodyCenteredInertialFrame();
                     elemSetSun = elemSet.convertToFrame(sunInertFrame);
 
-                    rVectSun2Spacecraft = elemSetSun.rVect();
+                    rVectSun2Spacecraft = elemSetSun.rVect(:);
                     rVectSpacecraft2Sun = -rVectSun2Spacecraft;
                     
                     panelIncidAngle = angleNegPiToPi(dang(rVectSpacecraft2Sun,panelInertialFrameNormalVect));

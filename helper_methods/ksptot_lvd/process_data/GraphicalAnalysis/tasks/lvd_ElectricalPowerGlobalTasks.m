@@ -40,7 +40,7 @@ function [datapt, unitStr] = lvd_ElectricalPowerGlobalTasks(stateLogEntry, subTa
             powerStorageStates = stateLogEntry.getAllActivePwrStorageStates();
             maxAvailStorage = [];
             for(i=1:length(powerStorageStates))
-                maxAvailStorage(end+1) = powerStorageStates(i).getEpsStorageComponent().maxCapacity(); %#ok<AGROW>
+                maxAvailStorage(end+1) = powerStorageStates(i).getEpsStorageComponent().getMaximumCapacity(); %#ok<AGROW>
             end
             
             datapt = sum(maxAvailStorage);

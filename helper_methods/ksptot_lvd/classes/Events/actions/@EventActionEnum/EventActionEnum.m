@@ -20,6 +20,9 @@ classdef EventActionEnum < matlab.mixin.SetGet
         ResetExtremumValueAction('Reset Extremum Value','ResetExtremumValueAction');
         SetThirdBodyGravSourcesAction('Set Third Body Gravity Sources','SetThirdBodyGravitySourcesAction');
         SetKinematicStateAction('Set Kinematic State','SetKinematicStateAction');
+        SetPowerSinkActiveState('Set Power Sink Active State','SetPowerSinkActiveStateAction');
+        SetPowerSrcActiveState('Set Power Source Active State','SetPowerSrcActiveStateAction')
+        SetPowerStorageActiveState('Set Power Storage Active State','SetPowerStorageActiveStateAction')
     end
     
     properties

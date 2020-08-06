@@ -99,7 +99,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             pwrStorageStates = obj.getAllActivePwrStorageStates();
             for(i=1:length(pwrStorageStates))
                 pwrStorageStateInds(end+1) = pwrStorageInd; %#ok<AGROW>
-                y = [y, pwrStorageStates.getStateOfCharge()]; %#ok<AGROW>
+                y = [y, pwrStorageStates(i).getStateOfCharge()]; %#ok<AGROW>
             end
         end
         

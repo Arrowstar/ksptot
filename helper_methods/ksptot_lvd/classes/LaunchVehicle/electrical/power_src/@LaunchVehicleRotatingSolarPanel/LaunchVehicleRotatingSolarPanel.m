@@ -71,7 +71,7 @@ classdef LaunchVehicleRotatingSolarPanel < AbstractLaunchVehicleSolarPanel
             
             elemSetSun = elemSet.convertToFrame(sunInertFrame);
             
-            rVectSun2Spacecraft = elemSetSun.rVect();
+            rVectSun2Spacecraft = elemSetSun.rVect(:);
             rVectSpacecraft2Sun = -rVectSun2Spacecraft;
             rVectSpacecraft2SunHat = normVector(rVectSpacecraft2Sun);
 

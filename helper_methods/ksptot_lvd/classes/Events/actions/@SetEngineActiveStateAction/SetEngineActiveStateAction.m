@@ -1,5 +1,5 @@
 classdef SetEngineActiveStateAction < AbstractEventAction
-    %AbstractEventAction Summary of this class goes here
+    %SetEngineActiveStateAction Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
