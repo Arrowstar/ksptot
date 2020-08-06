@@ -1,4 +1,4 @@
-function LoS = LoS2Target(stateLogEntry, bodyInfo, eclipseBodyInfo, targetBodyInfo, celBodyData, station)
+function LoS = LoS2Target(stateLogEntry, bodyInfo, eclipseBodyInfo, targetBodyInfo, celBodyData, station, varargin)
     %https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
     
     eBodyRad = eclipseBodyInfo.radius;
@@ -17,10 +17,13 @@ function LoS = LoS2Target(stateLogEntry, bodyInfo, eclipseBodyInfo, targetBodyIn
     scBodyInertialFrame = bodyInfo.getBodyCenteredInertialFrame();
     scElemSet = CartesianElementSet(time, rVectSc, [0;0;0], scBodyInertialFrame);
     
-%     sunBodyInfo = getTopLevelCentralBody(celBodyData);
-    sunBodyInfo = celBodyData.getTopLevelBody();
-    sunInertialFrame = sunBodyInfo.getBodyCenteredInertialFrame();
-    scElemSetSun = scElemSet.convertToFrame(sunInertialFrame);
+    if(length(varargin) >= 1 && not(isempty(varargin{1})))
+        scElemSetSun = varargin{1};
+    else
+        sunBodyInfo = celBodyData.getTopLevelBody();
+        sunInertialFrame = sunBodyInfo.getBodyCenteredInertialFrame();
+        scElemSetSun = scElemSet.convertToFrame(sunInertialFrame);
+    end
     
     rVectBodySCwrtSun = scElemSetSun.rVect;
     

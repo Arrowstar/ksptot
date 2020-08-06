@@ -78,6 +78,9 @@ classdef(Abstract) AbstractLaunchVehicleSolarPanel < AbstractLaunchVehicleElectr
         function [hasSunLoS, body2InertDcm, elemSetSun] = getExpensiveSolarPanelInputs(elemSet, bodyInfo, steeringModel)
             celBodyData = bodyInfo.celBodyData;
             sunBodyInfo = celBodyData.getTopLevelBody();
+            
+            sunInertFrame = sunBodyInfo.getBodyCenteredInertialFrame();
+            elemSetSun = elemSet.convertToFrame(sunInertFrame);
 
             hasSunLoS = true;
             eclipseBodies = [bodyInfo, bodyInfo.getParBodyInfo(), bodyInfo.getChildrenBodyInfo()];
@@ -89,7 +92,7 @@ classdef(Abstract) AbstractLaunchVehicleSolarPanel < AbstractLaunchVehicleElectr
                 end
 
                 stateLogEntry = [elemSet.time, elemSet.rVect(:)'];
-                LoS = LoS2Target(stateLogEntry, bodyInfo, eclipseBodyInfo, sunBodyInfo, celBodyData, []);
+                LoS = LoS2Target(stateLogEntry, bodyInfo, eclipseBodyInfo, sunBodyInfo, celBodyData, [], elemSetSun);
                 if(LoS == 0)
                     hasSunLoS = false;
                     break;
@@ -97,9 +100,6 @@ classdef(Abstract) AbstractLaunchVehicleSolarPanel < AbstractLaunchVehicleElectr
             end
 
             body2InertDcm = steeringModel.getBody2InertialDcmAtTime(elemSet.time, elemSet.rVect(:), elemSet.vVect(:), bodyInfo);
-            
-            sunInertFrame = sunBodyInfo.getBodyCenteredInertialFrame();
-            elemSetSun = elemSet.convertToFrame(sunInertFrame);
         end
     end
 end
