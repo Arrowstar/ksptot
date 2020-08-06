@@ -550,7 +550,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                 end
                 
                 if(hasPanels)
-                    [hasSunLoS, body2InertDcm] = AbstractLaunchVehicleSolarPanel.getExpensiveSolarPanelInputs(elemSet, bodyInfo, steeringModel);
+                    [hasSunLoS, body2InertDcm, elemSetSun] = AbstractLaunchVehicleSolarPanel.getExpensiveSolarPanelInputs(elemSet, bodyInfo, steeringModel);
 %                     celBodyData = bodyInfo.celBodyData;
 %                     sunBodyInfo = celBodyData.getTopLevelBody();
 %                     
@@ -573,8 +573,9 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
 %                     
 %                     body2InertDcm = steeringModel.getBody2InertialDcmAtTime(elemSet.time, elemSet.rVect(:), elemSet.vVect(:), bodyInfo);
                 else
-                    hasSunLoS = true; %doesn't matter
+                    hasSunLoS = false; %doesn't matter
                     body2InertDcm = eye(3); %doesn't matter
+                    elemSetSun = elemSet; %doesn't matter
                 end
                 
                 storageRates = zeros(size(storageSoCs));
@@ -588,7 +589,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                             powerSinkState = powerSinkStates(j);
                             
                             if(powerSinkState.getActiveState())
-                                cumPwrRate = cumPwrRate + powerSinkState.getElectricalPwrRate(elemSet, steeringModel, hasSunLoS, body2InertDcm);
+                                cumPwrRate = cumPwrRate + powerSinkState.getElectricalPwrRate(elemSet, steeringModel, hasSunLoS, body2InertDcm, elemSetSun);
                             end
                         end
                         
@@ -596,7 +597,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                             powerSrcState = powerSrcStates(j);
                             
                             if(powerSrcState.getActiveState())
-                                cumPwrRate = cumPwrRate + powerSrcState.getElectricalPwrRate(elemSet, steeringModel, hasSunLoS, body2InertDcm);
+                                cumPwrRate = cumPwrRate + powerSrcState.getElectricalPwrRate(elemSet, steeringModel, hasSunLoS, body2InertDcm, elemSetSun);
                             end
                         end
                     end

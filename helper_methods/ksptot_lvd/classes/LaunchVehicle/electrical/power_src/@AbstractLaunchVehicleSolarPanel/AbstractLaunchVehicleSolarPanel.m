@@ -7,7 +7,7 @@ classdef(Abstract) AbstractLaunchVehicleSolarPanel < AbstractLaunchVehicleElectr
     end
     
     methods        
-        function pwrRate = getElectricalPwrRate(obj, elemSet, steeringModel, hasSunLoS, body2InertDcm)
+        function pwrRate = getElectricalPwrRate(obj, elemSet, steeringModel, hasSunLoS, body2InertDcm, elemSetSun)
             elemSet = elemSet.convertToCartesianElementSet();
             bodyInfo = elemSet.frame.getOriginBody();
             celBodyData = bodyInfo.celBodyData;
@@ -15,8 +15,8 @@ classdef(Abstract) AbstractLaunchVehicleSolarPanel < AbstractLaunchVehicleElectr
 %             sunBodyInfo = getTopLevelCentralBody(celBodyData);
             sunBodyInfo = celBodyData.getTopLevelBody();
             
-            if(isempty(hasSunLoS) || isempty(body2InertDcm))
-                [hasSunLoS, body2InertDcm] = AbstractLaunchVehicleSolarPanel.getExpensiveSolarPanelInputs(elemSet, bodyInfo, steeringModel);
+            if(isempty(hasSunLoS) || isempty(body2InertDcm) || isempty(elemSetSun))
+                [hasSunLoS, body2InertDcm, elemSetSun] = AbstractLaunchVehicleSolarPanel.getExpensiveSolarPanelInputs(elemSet, bodyInfo, steeringModel);
 %                 hasSunLoS = true;
 %                 eclipseBodies = [bodyInfo, bodyInfo.getParBodyInfo(), bodyInfo.getChildrenBodyInfo()];
 %                 for(i=1:length(eclipseBodies))
@@ -41,8 +41,8 @@ classdef(Abstract) AbstractLaunchVehicleSolarPanel < AbstractLaunchVehicleElectr
                 panelInertialFrameNormalVect = body2InertDcm * panelBodyFrameNormalVect(:);
 
                 if(norm(panelInertialFrameNormalVect) > 1E-10 && norm(panelBodyFrameNormalVect) > 1E-10)
-                    sunInertFrame = sunBodyInfo.getBodyCenteredInertialFrame();
-                    elemSetSun = elemSet.convertToFrame(sunInertFrame);
+%                     sunInertFrame = sunBodyInfo.getBodyCenteredInertialFrame();
+%                     elemSetSun = elemSet.convertToFrame(sunInertFrame);
 
                     rVectSun2Spacecraft = elemSetSun.rVect(:);
                     rVectSpacecraft2Sun = -rVectSun2Spacecraft;
@@ -75,7 +75,7 @@ classdef(Abstract) AbstractLaunchVehicleSolarPanel < AbstractLaunchVehicleElectr
     end
     
     methods(Static)
-        function [hasSunLoS, body2InertDcm] = getExpensiveSolarPanelInputs(elemSet, bodyInfo, steeringModel)
+        function [hasSunLoS, body2InertDcm, elemSetSun] = getExpensiveSolarPanelInputs(elemSet, bodyInfo, steeringModel)
             celBodyData = bodyInfo.celBodyData;
             sunBodyInfo = celBodyData.getTopLevelBody();
 
@@ -97,6 +97,9 @@ classdef(Abstract) AbstractLaunchVehicleSolarPanel < AbstractLaunchVehicleElectr
             end
 
             body2InertDcm = steeringModel.getBody2InertialDcmAtTime(elemSet.time, elemSet.rVect(:), elemSet.vVect(:), bodyInfo);
+            
+            sunInertFrame = sunBodyInfo.getBodyCenteredInertialFrame();
+            elemSetSun = elemSet.convertToFrame(sunInertFrame);
         end
     end
 end

@@ -26,7 +26,7 @@ classdef LaunchVehicleSimplePwrSink < AbstractLaunchVehicleElectricalPowerSrcSnk
             stage = obj.stage;
         end
         
-        function pwrRate = getElectricalPwrRate(obj, ~, ~, ~, ~)
+        function pwrRate = getElectricalPwrRate(obj, ~, ~, ~, ~, ~)
             pwrRate = obj.pwrRate;
         end
         

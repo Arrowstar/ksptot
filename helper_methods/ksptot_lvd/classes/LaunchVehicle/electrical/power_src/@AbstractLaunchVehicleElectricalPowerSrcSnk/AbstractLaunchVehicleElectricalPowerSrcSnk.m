@@ -15,7 +15,7 @@ classdef(Abstract) AbstractLaunchVehicleElectricalPowerSrcSnk < matlab.mixin.Set
         
         stage = getAttachedStage(obj);
         
-        pwrRate = getElectricalPwrRate(obj, elemSet, steeringModel, hasSunLoS, body2InertDcm);
+        pwrRate = getElectricalPwrRate(obj, elemSet, steeringModel, hasSunLoS, body2InertDcm, elemSetSun);
         
         newState = createDefaultInitialState(obj, stageState)
         
