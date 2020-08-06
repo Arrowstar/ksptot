@@ -13,13 +13,13 @@ function LoS = LoS2Target(stateLogEntry, bodyInfo, eclipseBodyInfo, targetBodyIn
     %     scBodyInfo = getBodyInfoStructFromOrbit(inputOrbit);
     %     scBodyInfo.parent = bodyInfo.name;
     %     [rVectBodySCwrtSun, ~] = getPositOfBodyWRTSun(time, scBodyInfo, celBodyData);
-    
-    scBodyInertialFrame = bodyInfo.getBodyCenteredInertialFrame();
-    scElemSet = CartesianElementSet(time, rVectSc, [0;0;0], scBodyInertialFrame);
-    
+       
     if(length(varargin) >= 1 && not(isempty(varargin{1})))
         scElemSetSun = varargin{1};
     else
+        scBodyInertialFrame = bodyInfo.getBodyCenteredInertialFrame();
+        scElemSet = CartesianElementSet(time, rVectSc, [0;0;0], scBodyInertialFrame);
+        
         sunBodyInfo = celBodyData.getTopLevelBody();
         sunInertialFrame = sunBodyInfo.getBodyCenteredInertialFrame();
         scElemSetSun = scElemSet.convertToFrame(sunInertialFrame);
