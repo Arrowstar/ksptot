@@ -59,35 +59,35 @@ classdef LaunchVehicleRotatingSolarPanel < AbstractLaunchVehicleSolarPanel
             summStr{end+1} = sprintf('\t\t\t\tRotation Axis = [%.3f, %.3f, %.3f]', obj.bodyFrameRotAxis(1), obj.bodyFrameRotAxis(2), obj.bodyFrameRotAxis(3));
         end
         
-        function bodyFrameNormVect = getBodyFrameSolarPanelNormalVector(obj, elemSet, steeringModel)
+        function bodyFrameNormVect = getBodyFrameSolarPanelNormalVector(obj, elemSet, steeringModel, body2InertDcm, elemSetSun)
             %Get sun position relative to spacecraft
-            elemSet = elemSet.convertToCartesianElementSet();
-            bodyInfo = elemSet.frame.getOriginBody();
-            celBodyData = bodyInfo.celBodyData;
+%             elemSet = elemSet.convertToCartesianElementSet();
+%             bodyInfo = elemSet.frame.getOriginBody();
+%             celBodyData = bodyInfo.celBodyData;
 
 %             sunBodyInfo = getTopLevelCentralBody(celBodyData);
-            sunBodyInfo = celBodyData.getTopLevelBody();
-            sunInertFrame = sunBodyInfo.getBodyCenteredInertialFrame();
+%             sunBodyInfo = celBodyData.getTopLevelBody();
+%             sunInertFrame = sunBodyInfo.getBodyCenteredInertialFrame();
             
-            elemSetSun = elemSet.convertToFrame(sunInertFrame);
+%             elemSetSun = elemSet.convertToFrame(sunInertFrame);
             
             rVectSun2Spacecraft = elemSetSun.rVect(:);
             rVectSpacecraft2Sun = -rVectSun2Spacecraft;
             rVectSpacecraft2SunHat = normVector(rVectSpacecraft2Sun);
 
             %get panel rotation axis inertially
-            [panelInertialFrameAxesRotVect, body2InertDcm] = obj.getInertialFrameRotAxis(elemSet, steeringModel);
+            panelInertialFrameAxesRotVect = obj.getInertialFrameRotAxis(body2InertDcm);
 
             %Get body frame normal vector of panel
             rSpacecraft2SunProj = rVectSpacecraft2SunHat - (dotARH(rVectSpacecraft2SunHat, panelInertialFrameAxesRotVect)/norm(panelInertialFrameAxesRotVect)^2) * panelInertialFrameAxesRotVect;
             bodyFrameNormVect = body2InertDcm' * rSpacecraft2SunProj;
         end
         
-        function [panelInertialFrameAxesRotVect, body2InertDcm] = getInertialFrameRotAxis(obj, elemSet, steeringModel)
-            elemSet = elemSet.convertToCartesianElementSet();
-            bodyInfo = elemSet.frame.getOriginBody();
+        function [panelInertialFrameAxesRotVect] = getInertialFrameRotAxis(obj, body2InertDcm)
+%             elemSet = elemSet.convertToCartesianElementSet();
+%             bodyInfo = elemSet.frame.getOriginBody();
             
-            body2InertDcm = steeringModel.getBody2InertialDcmAtTime(elemSet.time, elemSet.rVect(:), elemSet.vVect(:), bodyInfo);
+%             body2InertDcm = steeringModel.getBody2InertialDcmAtTime(elemSet.time, elemSet.rVect(:), elemSet.vVect(:), bodyInfo);
             panelInertialFrameAxesRotVect = body2InertDcm * obj.bodyFrameRotAxis;
         end
         

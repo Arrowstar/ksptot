@@ -10,10 +10,10 @@ classdef(Abstract) AbstractLaunchVehicleSolarPanel < AbstractLaunchVehicleElectr
         function pwrRate = getElectricalPwrRate(obj, elemSet, steeringModel, hasSunLoS, body2InertDcm, elemSetSun)
             elemSet = elemSet.convertToCartesianElementSet();
             bodyInfo = elemSet.frame.getOriginBody();
-            celBodyData = bodyInfo.celBodyData;
+%             celBodyData = bodyInfo.celBodyData;
 
 %             sunBodyInfo = getTopLevelCentralBody(celBodyData);
-            sunBodyInfo = celBodyData.getTopLevelBody();
+%             sunBodyInfo = celBodyData.getTopLevelBody();
             
             if(isempty(hasSunLoS) || isempty(body2InertDcm) || isempty(elemSetSun))
                 [hasSunLoS, body2InertDcm, elemSetSun] = AbstractLaunchVehicleSolarPanel.getExpensiveSolarPanelInputs(elemSet, bodyInfo, steeringModel);
@@ -37,7 +37,7 @@ classdef(Abstract) AbstractLaunchVehicleSolarPanel < AbstractLaunchVehicleElectr
             
             if(hasSunLoS)
 %                 body2InertDcm = steeringModel.getBody2InertialDcmAtTime(elemSet.time, elemSet.rVect(:), elemSet.vVect(:), bodyInfo);
-                panelBodyFrameNormalVect = obj.getBodyFrameSolarPanelNormalVector(elemSet, steeringModel);
+                panelBodyFrameNormalVect = obj.getBodyFrameSolarPanelNormalVector(elemSet, steeringModel, body2InertDcm, elemSetSun);
                 panelInertialFrameNormalVect = body2InertDcm * panelBodyFrameNormalVect(:);
 
                 if(norm(panelInertialFrameNormalVect) > 1E-10 && norm(panelBodyFrameNormalVect) > 1E-10)

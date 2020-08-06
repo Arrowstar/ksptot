@@ -59,7 +59,7 @@ classdef LaunchVehicleStaticSolarPanel < AbstractLaunchVehicleSolarPanel
             summStr{end+1} = sprintf('\t\t\t\tNormal Vector = [%.3f, %.3f, %.3f]', obj.bodyFrameNormVect(1), obj.bodyFrameNormVect(2), obj.bodyFrameNormVect(3));
         end
         
-        function bodyFrameNormVect = getBodyFrameSolarPanelNormalVector(obj, ~, ~)
+        function bodyFrameNormVect = getBodyFrameSolarPanelNormalVector(obj, ~, ~, ~, ~)
             bodyFrameNormVect = obj.bodyFrameNormVect;
         end
         
