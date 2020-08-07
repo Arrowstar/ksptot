@@ -6,7 +6,7 @@ function executeOptimProblem(handles, problem, recorder)
     writeOutput = getappdata(handles.ma_MainGUI,'write_to_output_func');
     
     pp=gcp('nocreate');
-    if(problem.options.UseParallel && not(ismepty(pp)))
+    if(problem.options.UseParallel && not(isempty(pp)))
         fnc1 = @() setNumStateLogEntryPerCoastForWorker(number_state_log_entries_per_coast);
         fnc2 = @() setUseSelectiveSoISearchForWorker(use_selective_soi_search);
         fnc3 = @() setGravParamTypeForWorker(options_gravParamType);

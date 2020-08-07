@@ -3,8 +3,8 @@ classdef CartesianElementSet < AbstractElementSet
     %   Detailed explanation goes here
     
     properties
-        rVect(3,1)% double %km
-        vVect(3,1)% double %km/s
+        rVect%(3,1)% double %km
+        vVect%(3,1)% double %km/s
         
         optVar CartesianElementSetVariable
     end
@@ -17,8 +17,8 @@ classdef CartesianElementSet < AbstractElementSet
         function obj = CartesianElementSet(time, rVect, vVect, frame)
             if(nargin > 0)
                 obj.time = time;
-                obj.rVect = rVect;
-                obj.vVect = vVect;
+                obj.rVect = reshape(rVect,3,numel(rVect)/3);
+                obj.vVect = reshape(vVect,3,numel(vVect)/3);
                 obj.frame = frame;
             end
         end

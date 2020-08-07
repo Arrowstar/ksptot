@@ -32,12 +32,12 @@ function LoS = LoS2Target(stateLogEntry, bodyInfo, eclipseBodyInfo, targetBodyIn
     rVectEclipseBodyBodywrtSun = getPositOfBodyWRTSun(time, eclipseBodyInfo, celBodyData);
     
     if(~isempty(station))
-        if(isstruct(station))
+        if(isstruct(station)) %MA ground target
             stnBodyInfo = getBodyInfoByNumber(station.parentID, celBodyData);
             stnRVectECIRelToParent = getInertialVectFromLatLongAlt(stateLogEntry(1), station.lat, station.long, station.alt, stnBodyInfo, [NaN;NaN;NaN]);
             rVectTargetwrtSun = rVectTargetwrtSun + stnRVectECIRelToParent;
             
-        elseif(isa(station, 'LaunchVehicleGroundObject'))
+        elseif(isa(station, 'LaunchVehicleGroundObject')) %LVD ground object
 %             inertialFrame = bodyInfo.getBodyCenteredInertialFrame();
             
             stnElemSet = station.getStateAtTime(time);
