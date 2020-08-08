@@ -10,7 +10,7 @@ function [deltaV2Report, departHypExVelVect] = findOptimalDepartureArrivalObjFun
     timeOfFlight = (arrivalTime - departTime)/(86400);
 
     %Type 1 Orbits (compute depart/arrive dv)
-    [departVelocity,arrivalVelocity]=lambert(rVecD', rVecA', 1*timeOfFlight, numRevs, gmu);
+    [departVelocity,arrivalVelocity]=orbit.lambert(rVecD', rVecA', 1*timeOfFlight, numRevs, gmu);
     departVelocity = correctNaNInVelVect(departVelocity);
     arrivalVelocity = correctNaNInVelVect(arrivalVelocity);
     departHypExVelVectDVT1 = departVelocity' - vVecDBody;
@@ -19,7 +19,7 @@ function [deltaV2Report, departHypExVelVect] = findOptimalDepartureArrivalObjFun
     totalDVT1 = departDVT1 + arrivalDVT1;
 
     %Type 2 Orbits (compute depart/arrive dv)
-    [departVelocity,arrivalVelocity]=lambert(rVecD', rVecA', -1*timeOfFlight, numRevs, gmu);
+    [departVelocity,arrivalVelocity]=orbit.lambert(rVecD', rVecA', -1*timeOfFlight, numRevs, gmu);
     departVelocity = correctNaNInVelVect(departVelocity);
     arrivalVelocity = correctNaNInVelVect(arrivalVelocity);
     departHypExVelVectDVT2 = departVelocity' - vVecDBody;

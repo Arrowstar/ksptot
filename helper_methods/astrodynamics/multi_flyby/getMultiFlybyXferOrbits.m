@@ -40,7 +40,7 @@ function xferOrbits = getMultiFlybyXferOrbits(x, numRev, r1Sc, r2Sc, v1Sc, v2Sc,
         
         [r1, ~] = getStateAtTime(b1Info, t1, getParentGM(b1Info, celBodyData));
         [r2, ~] = getStateAtTime(b2Info, t2, getParentGM(b2Info, celBodyData));
-        [v1, v2] = lambert(r1', r2', tm(i)*dt/86400, numRev(i), gmu);
+        [v1, v2] = orbit.lambert(r1', r2', tm(i)*dt/86400, numRev(i), gmu);
 
         if(any(isnan(v1)) || any(isnan(v2))) %failsafe incase the solver does something dumb
             v1 = v1Sc(:,i)';
@@ -51,14 +51,14 @@ function xferOrbits = getMultiFlybyXferOrbits(x, numRev, r1Sc, r2Sc, v1Sc, v2Sc,
         [~, ~, ~, ~, ~, tru2] = vect_getKeplerFromState(r2,v2',gmu);
         
         if(inc >= pi/2)
-            [v1, v2] = lambert(r1', r2', -tm(i)*dt/86400, numRev(i), gmu);
+            [v1, v2] = orbit.lambert(r1', r2', -tm(i)*dt/86400, numRev(i), gmu);
 
             [sma, ecc, inc, raan, arg, tru] = vect_getKeplerFromState(r1,v1',gmu);
             [~, ~, ~, ~, ~, tru2] = vect_getKeplerFromState(r2,v2',gmu);
         end
         
-        orbit = [sma ecc inc raan arg tru tru2 t1 t2 gmu];
-        xferOrbits(i,:) = orbit;
+        orbitData = [sma ecc inc raan arg tru tru2 t1 t2 gmu];
+        xferOrbits(i,:) = orbitData;
     end   
 end
 

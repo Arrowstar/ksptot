@@ -121,7 +121,7 @@ classdef IpOptOptimizer < AbstractGradientOptimizer
         function [cOut, numIneq, numEq] = computeConstrs(~, nonlcon, x)
             [c, ceq] = nonlcon(x);
             
-            cOut = [c(:)';ceq(:)'];
+            cOut = [c(:);ceq(:)];
             numIneq = length(c);
             numEq = length(ceq);
         end

@@ -40,16 +40,21 @@ classdef SunDotNormalDataCache < matlab.mixin.SetGet
             %now handle adding to the cache, if needed
             if(time < obj.cacheStartTime)
                 numBlocksToAdd = ceil((obj.cacheStartTime - time)/obj.cacheTimeBlockSize);
-                timesToAdd = [obj.cacheStartTime - numBlocksToAdd*obj.cacheTimeBlockSize : obj.cacheTimeIncr : obj.cacheStartTime]; %#ok<NBRAK>
-                timesToAdd = timesToAdd(1:end-1); %don't duplicate the end point
                 
-                obj.addSdnAtTimesToCache(timesToAdd);
+                for(i=1:length(numBlocksToAdd))
+                    timesToAdd = [obj.cacheStartTime - 1*obj.cacheTimeBlockSize : obj.cacheTimeIncr : obj.cacheStartTime]; %#ok<NBRAK>
+                    timesToAdd = timesToAdd(1:end-1); %don't duplicate the end point
+
+                    obj.addSdnAtTimesToCache(timesToAdd);
+                end
             elseif(time > obj.cacheEndTime)
                 numBlocksToAdd = ceil((time - obj.cacheEndTime)/obj.cacheTimeBlockSize);
-                timesToAdd = [obj.cacheEndTime : obj.cacheTimeIncr : obj.cacheEndTime + numBlocksToAdd*obj.cacheTimeBlockSize]; %#ok<NBRAK>
-                timesToAdd = timesToAdd(2:end); %don't duplicate the start point
-                
-                obj.addSdnAtTimesToCache(timesToAdd);
+                for(i=1:numBlocksToAdd)
+                    timesToAdd = [obj.cacheEndTime : obj.cacheTimeIncr : obj.cacheEndTime + 1*obj.cacheTimeBlockSize]; %#ok<NBRAK>
+                    timesToAdd = timesToAdd(2:end); %don't duplicate the start point
+                    
+                    obj.addSdnAtTimesToCache(timesToAdd);
+                end
             end
             
             sunDotNormal = obj.sunDotNormalFitObj(time, long);

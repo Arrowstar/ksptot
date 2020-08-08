@@ -33,8 +33,8 @@ function [dv, deltaV1, deltaV2, deltaV1R, deltaV2R, xfrOrbit, deltaV1NTW, deltaV
     [rVect2,vVect2Post]=getStatefromKepler(finOrbit(1), finOrbit(2), finOrbit(3), finOrbit(4), finOrbit(5), burn2TA, gmuXfr2);
 
     xfrArcTOFDays = xfrArcTOF/(86400);
-    [vVect1PostSW,vVect2PreSW]=lambert(rVect1', rVect2', xfrArcTOFDays, 0, gmuXfr);
-    [vVect1PostLW,vVect2PreLW]=lambert(rVect1', rVect2', -xfrArcTOFDays, 0, gmuXfr);
+    [vVect1PostSW,vVect2PreSW]=orbit.lambert(rVect1', rVect2', xfrArcTOFDays, 0, gmuXfr);
+    [vVect1PostLW,vVect2PreLW]=orbit.lambert(rVect1', rVect2', -xfrArcTOFDays, 0, gmuXfr);
 
     deltaV1SW = vVect1PostSW' - vVect1Pre;
     deltaV1LW = vVect1PostLW' - vVect1Pre;

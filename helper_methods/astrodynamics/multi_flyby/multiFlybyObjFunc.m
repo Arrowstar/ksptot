@@ -106,7 +106,7 @@ function [dv, rp, orbitIn, orbitOut, deltaVVect, vInfDNorm, vInfDepart, vInfArri
         for(i=1:length(inds))
             ind = inds(i);
             try
-                [v1L, v2L, ~, exitflag] = lambert(r1B(:,ind)', r2B(:,ind)', dt(ind)/86400, numRev(ind), xferGmuL(ind));
+                [v1L, v2L, ~, exitflag] = orbit.lambert(r1B(:,ind)', r2B(:,ind)', dt(ind)/86400, numRev(ind), xferGmuL(ind));
 
                 [xferSma, xferEcc, ~, ~, ~, ~] = getKeplerFromState(r1B(:,ind),v1L,xferGmuL(ind), true);
                 [~, xferRp(ind)] = computeApogeePerigee(xferSma, xferEcc);

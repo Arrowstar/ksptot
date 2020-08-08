@@ -22,7 +22,7 @@ function varargout = lvd_adjustOptVarGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_adjustOptVarGUI
 
-% Last Modified by GUIDE v2.5 20-Jun-2020 22:28:37
+% Last Modified by GUIDE v2.5 07-Aug-2020 18:25:36
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -93,6 +93,19 @@ function populateGUI(handles, lvdData, value)
     varSet.sortVarsByEvtNum();
     [~, ~, varNameStrs, xUnscaled] = varSet.getTotalScaledXVector();
     [~, ~, lwrBndsUnscaled, uprBndsUnscaled] = varSet.getTotalScaledBndsVector();
+
+    if(xUnscaled(value) < lwrBndsUnscaled(value))
+        xUnscaled(value) = lwrBndsUnscaled(value);
+    elseif(xUnscaled(value) > uprBndsUnscaled(value))
+        xUnscaled(value) = uprBndsUnscaled(value);
+    end
+    
+    if(lwrBndsUnscaled(value) == uprBndsUnscaled(value))
+        xUnscaled(value) = lwrBndsUnscaled(value);
+        
+        lwrBndsUnscaled(value) = lwrBndsUnscaled(value) - 1E-12;
+        uprBndsUnscaled(value) = uprBndsUnscaled(value) + 1E-12;
+    end
     
     handles.variablesCombo.String = varNameStrs;
     handles.variablesCombo.Value = value;
@@ -100,8 +113,6 @@ function populateGUI(handles, lvdData, value)
     handles.varLowerBndLabel.String = fullAccNum2Str(lwrBndsUnscaled(value));
     handles.varUpperBndLabel.String = fullAccNum2Str(uprBndsUnscaled(value));
     handles.varValueSlider.Value = scaleXToNeg1And1(xUnscaled(value), lwrBndsUnscaled(value), uprBndsUnscaled(value));
-    
-
     
 function xScaled = scaleXToNeg1And1(xi, lbi, ubi)
     bndDiff = ubi - lbi;

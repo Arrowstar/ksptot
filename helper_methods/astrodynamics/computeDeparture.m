@@ -13,7 +13,7 @@ function hDepartDisp = computeDeparture(celBodyData, departBody, arrivalBody, de
     [rVecA, vVecABody] = getStateAtTime(arriveBodyInfo, arrivalUT, gmuXfr);
 
     %Type 1 Orbits (compute depart/arrive dv)
-    [departVelocity,arrivalVelocity]=lambert(rVecD', rVecA', 1*timeOfFlight, numRevs, gmuXfr);
+    [departVelocity,arrivalVelocity]=orbit.lambert(rVecD', rVecA', 1*timeOfFlight, numRevs, gmuXfr);
     departVelocity = correctNaNInVelVect(departVelocity);
     arrivalVelocity = correctNaNInVelVect(arrivalVelocity);
     departStateXfrBody = CartesianElementSet(departUT,rVecD,departVelocity(:),centralBodyFrame);
@@ -28,7 +28,7 @@ function hDepartDisp = computeDeparture(celBodyData, departBody, arrivalBody, de
     rVecD1 = rVecD;
     
     %Type 2 Orbits (compute depart/arrive dv)
-    [departVelocity,arrivalVelocity]=lambert(rVecD', rVecA', -1*timeOfFlight, numRevs, gmuXfr);
+    [departVelocity,arrivalVelocity]=orbit.lambert(rVecD', rVecA', -1*timeOfFlight, numRevs, gmuXfr);
     departVelocity = correctNaNInVelVect(departVelocity);
     arrivalVelocity = correctNaNInVelVect(arrivalVelocity);
     departStateXfrBody = CartesianElementSet(departUT,rVecD,departVelocity(:),centralBodyFrame);

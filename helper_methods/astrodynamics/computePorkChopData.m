@@ -137,7 +137,7 @@ function [departDV, arrivalDV, totalDV, departTimeArr, arrivalTimeArr, numSynPer
                     numRevs=0;
 
                     %Type 1 Orbits (compute depart/arrive dv)
-                    [departVelocity,arrivalVelocity]=lambert(rVecD', rVecA', +1*timeOfFlight, numRevs, gmu);
+                    [departVelocity,arrivalVelocity]=orbit.lambert(rVecD', rVecA', +1*timeOfFlight, numRevs, gmu);
                     departVelocity = correctNaNInVelVect(departVelocity);
                     arrivalVelocity = correctNaNInVelVect(arrivalVelocity);
                     departDVT1 = norm(departVelocity' - vVecDBody);
@@ -145,7 +145,7 @@ function [departDV, arrivalDV, totalDV, departTimeArr, arrivalTimeArr, numSynPer
                     totalDVT1 = departDVT1 + arrivalDVT1;
 
                     %Type 2 Orbits (compute depart/arrive dv)
-                    [departVelocity,arrivalVelocity]=lambert(rVecD', rVecA', -1*timeOfFlight, numRevs, gmu);
+                    [departVelocity,arrivalVelocity]=orbit.lambert(rVecD', rVecA', -1*timeOfFlight, numRevs, gmu);
                     departVelocity = correctNaNInVelVect(departVelocity);
                     arrivalVelocity = correctNaNInVelVect(arrivalVelocity);
                     departDVT2 = norm(departVelocity' - vVecDBody);

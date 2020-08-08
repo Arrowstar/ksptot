@@ -35,7 +35,7 @@ classdef LaunchVehicleGroundObjectSet < matlab.mixin.SetGet
         end
         
         function inds = getIndsForGroundObjs(obj, grdObjs)
-            inds = find(ismember(grdObjs, obj.groundObjs));
+            inds = find(ismember(obj.groundObjs, grdObjs));
         end
         
         function grndObj = getGroundObjAtInd(obj, ind)
