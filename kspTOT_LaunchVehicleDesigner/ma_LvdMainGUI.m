@@ -149,6 +149,7 @@ function runScript(handles, lvdData, evtStartNum)
     else
         handles.scriptResultsOutOfDateLbl.Visible = 'on';
     end
+    setappdata(handles.hDispAxesTimeSlider,'lastTime',NaN);
     
 function propagateScript(handles, lvdData, evtStartNum)
     writeOutput = getappdata(handles.ma_LvdMainGUI,'write_to_output_func');
@@ -179,6 +180,8 @@ function propagateScript(handles, lvdData, evtStartNum)
     
     lvdData.validation.validate();
     updateWarnErrorLabels(handles, true);
+    
+    setappdata(handles.hDispAxesTimeSlider,'lastTime',NaN);
     
     writeOutput(sprintf('Executed mission script in %.3f seconds.',execTime),'append');
     drawnow;
