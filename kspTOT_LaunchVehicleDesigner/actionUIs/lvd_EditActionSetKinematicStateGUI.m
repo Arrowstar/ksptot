@@ -74,9 +74,22 @@ function lvd_EditActionSetKinematicStateGUI_OpeningFcn(hObject, eventdata, handl
     
 function populateGUI(handles, action, lvdData)
     orbitModel = action.orbitModel;
+    
+    if(isnan(orbitModel.time))
+        orbitModel.time = 0;
+    end
+    
+    if(any(isnan(orbitModel.getElementVector())))
+        bodyInfo = lvdData.getDefaultInitialBodyInfo(lvdData.celBodyData);
+        newFrame = bodyInfo.getBodyFixedFrame();
+        
+        orbitModel = GeographicElementSet(orbitModel.time, 0, 0, 0, 0, 0, 0, newFrame);
+    end
+    
     if(isempty(orbitModel.frame))
-        topLevelBodyInfo = getTopLevelCentralBody(lvdData.celBodyData);
-        newFrame = BodyCenteredInertialFrame(topLevelBodyInfo,lvdData.celBodyData);
+        bodyInfo = lvdData.getDefaultInitialBodyInfo(lvdData.celBodyData);
+        bodyInfo.getBodyCenteredInertialFrame();
+        
         orbitModel.frame = newFrame;
     end
     
@@ -204,8 +217,10 @@ function populateGUI(handles, action, lvdData)
     
     inheritOtherStateElementsButtonGroup_SelectionChangedFcn(handles.inheritOtherStateElementsButtonGroup.SelectedObject, [], handles);
     
-    
     %populate pos/vel states stuff
+    if(isempty(orbitModel.time))
+        orbitModel.time = 0;
+    end
     handles.utText.String = fullAccNum2Str(orbitModel.time);
     
     elemVector = orbitModel.getElementVector();
@@ -304,12 +319,7 @@ function varargout = lvd_EditActionSetKinematicStateGUI_OutputFcn(hObject, event
         selElemSet = contents{get(handles.elementSetCombo,'Value')};
         elemSetEnum = ElementSetEnum.getEnumForListboxStr(selElemSet);
         
-%         contents = cellstr(get(handles.refFrameTypeCombo,'String'));
-%         selFrameType = contents{get(handles.refFrameTypeCombo,'Value')};
-%         refFrameEnum = ReferenceFrameEnum.getEnumForListboxStr(selFrameType);
-        
         time = str2double(handles.utText.String);
-%         bodyInfo = getSelectedBodyInfo(handles);
         
         orbit1Elem = str2double(handles.orbit1Text.String);
         orbit2Elem = str2double(handles.orbit2Text.String);
@@ -318,20 +328,33 @@ function varargout = lvd_EditActionSetKinematicStateGUI_OutputFcn(hObject, event
         orbit5Elem = str2double(handles.orbit5Text.String);
         orbit6Elem = str2double(handles.orbit6Text.String);
         
+        if(isempty(orbit1Elem))
+            orbit1Elem = 0.1;
+        end
+        
+        if(isempty(orbit2Elem))
+            orbit2Elem = 0.1;
+        end
+        
+        if(isempty(orbit3Elem))
+            orbit3Elem = 0.1;
+        end
+        
+        if(isempty(orbit4Elem))
+            orbit4Elem = 0.1;
+        end
+        
+        if(isempty(orbit5Elem))
+            orbit5Elem = 0.1;
+        end
+        
+        if(isempty(orbit6Elem))
+            orbit6Elem = 0.1;
+        end
+
         curElemSet = getappdata(handles.lvd_EditActionSetKinematicStateGUI,'curElemSet');
         frame = curElemSet.frame;
-        
-%         switch refFrameEnum
-%             case ReferenceFrameEnum.BodyCenteredInertial
-%                 frame = BodyCenteredInertialFrame(bodyInfo, celBodyData);
-%                 
-%             case ReferenceFrameEnum.BodyFixedRotating
-%                 frame = BodyFixedFrame(bodyInfo, celBodyData);
-%                 
-%             otherwise
-%                 error('Unknown reference frame type: %s', class(refFrameEnum));                
-%         end
-        
+                
         switch elemSetEnum
             case ElementSetEnum.CartesianElements
                 orbitModel = CartesianElementSet(time, [orbit1Elem, orbit2Elem, orbit3Elem], [orbit4Elem, orbit5Elem, orbit6Elem], frame);
@@ -501,15 +524,17 @@ function errMsg = validateInputs(handles)
     errMsg = {};
     bodyInfo = getSelectedBodyInfo(handles);
     
-    ut = str2double(get(handles.utText,'String'));
-    enteredStr = get(handles.utText,'String');
-    numberName = 'Epoch (UT)';
-    lb = 0;
-    ub = Inf;
-    isInt = false;
-    errMsg = validateNumber(ut, numberName, lb, ub, isInt, errMsg, enteredStr);
+    if(handles.inheritTimeCheckbox.Value == 0)
+        ut = str2double(get(handles.utText,'String'));
+        enteredStr = get(handles.utText,'String');
+        numberName = 'Epoch (UT)';
+        lb = 0;
+        ub = Inf;
+        isInt = false;
+        errMsg = validateNumber(ut, numberName, lb, ub, isInt, errMsg, enteredStr);
+    end
     
-    if(handles.optUtCheckbox.Value)
+    if(handles.inheritTimeCheckbox.Value == 0 && handles.optUtCheckbox.Value)
         utLb = str2double(get(handles.utLbText,'String'));
         enteredStr = get(handles.utLbText,'String');
         numberName = 'Epoch (UT) (Lower Bound)';
@@ -537,62 +562,64 @@ function errMsg = validateInputs(handles)
         end
     end
     
-    contents = cellstr(get(handles.elementSetCombo,'String'));
-    selElemSet = contents{get(handles.elementSetCombo,'Value')};
-    elemSetEnum = ElementSetEnum.getEnumForListboxStr(selElemSet);
-    
-    checkElementValues = ones(1,6);
-    checkElementBnds = [handles.optOrbit1Checkbox.Value, ...
-                        handles.optOrbit2Checkbox.Value, ...
-                        handles.optOrbit3Checkbox.Value, ...
-                        handles.optOrbit4Checkbox.Value, ...
-                        handles.optOrbit5Checkbox.Value, ...
-                        handles.optOrbit6Checkbox.Value];
-                    
-	switch elemSetEnum
-        case ElementSetEnum.CartesianElements
-            errMsg = CartesianElementSet.validateInputOrbit(errMsg, handles.orbit1Text, handles.orbit2Text, handles.orbit3Text, handles.orbit4Text, handles.orbit5Text, handles.orbit6Text, bodyInfo, '', checkElementValues);
-            errMsg = CartesianElementSet.validateInputOrbit(errMsg, handles.orbit1LbText, handles.orbit2LbText, handles.orbit3LbText, handles.orbit4LbText, handles.orbit5LbText, handles.orbit6LbText, bodyInfo, 'Lower', checkElementBnds);
-            errMsg = CartesianElementSet.validateInputOrbit(errMsg, handles.orbit1UbText, handles.orbit2UbText, handles.orbit3UbText, handles.orbit4UbText, handles.orbit5UbText, handles.orbit6UbText, bodyInfo, 'Upper', checkElementBnds);
-            
-        case ElementSetEnum.KeplerianElements
-            errMsg = KeplerianElementSet.validateInputOrbit(errMsg, handles.orbit1Text, handles.orbit2Text, handles.orbit3Text, handles.orbit4Text, handles.orbit5Text, handles.orbit6Text, bodyInfo, '', checkElementValues);
-            errMsg = KeplerianElementSet.validateInputOrbit(errMsg, handles.orbit1LbText, handles.orbit2LbText, handles.orbit3LbText, handles.orbit4LbText, handles.orbit5LbText, handles.orbit6LbText, bodyInfo, 'Lower', checkElementBnds);
-            errMsg = KeplerianElementSet.validateInputOrbit(errMsg, handles.orbit1UbText, handles.orbit2UbText, handles.orbit3UbText, handles.orbit4UbText, handles.orbit5UbText, handles.orbit6UbText, bodyInfo, 'Upper', checkElementBnds);
-            
-        case ElementSetEnum.GeographicElements
-            errMsg = GeographicElementSet.validateInputOrbit(errMsg, handles.orbit1Text, handles.orbit2Text, handles.orbit3Text, handles.orbit4Text, handles.orbit5Text, handles.orbit6Text, bodyInfo, '', checkElementValues);
-            errMsg = GeographicElementSet.validateInputOrbit(errMsg, handles.orbit1LbText, handles.orbit2LbText, handles.orbit3LbText, handles.orbit4LbText, handles.orbit5LbText, handles.orbit6LbText, bodyInfo, 'Lower', checkElementBnds);
-            errMsg = GeographicElementSet.validateInputOrbit(errMsg, handles.orbit1UbText, handles.orbit2UbText, handles.orbit3UbText, handles.orbit4UbText, handles.orbit5UbText, handles.orbit6UbText, bodyInfo, 'Upper', checkElementBnds);
-            
-        case ElementSetEnum.UniversalElements
-            errMsg = UniversalElementSet.validateInputOrbit(errMsg, handles.orbit1Text, handles.orbit2Text, handles.orbit3Text, handles.orbit4Text, handles.orbit5Text, handles.orbit6Text, bodyInfo, '', checkElementValues);
-            errMsg = UniversalElementSet.validateInputOrbit(errMsg, handles.orbit1LbText, handles.orbit2LbText, handles.orbit3LbText, handles.orbit4LbText, handles.orbit5LbText, handles.orbit6LbText, bodyInfo, 'Lower', checkElementBnds);
-            errMsg = UniversalElementSet.validateInputOrbit(errMsg, handles.orbit1UbText, handles.orbit2UbText, handles.orbit3UbText, handles.orbit4UbText, handles.orbit5UbText, handles.orbit6UbText, bodyInfo, 'Upper', checkElementBnds);
-            
-        otherwise
-            error('Unknown element set type: %s', class(elemSetEnum));
-	end
-    
-    hVal = [handles.orbit1Text, handles.orbit2Text, handles.orbit3Text, handles.orbit4Text, handles.orbit5Text, handles.orbit6Text];
-    hLb = [handles.orbit1LbText, handles.orbit2LbText, handles.orbit3LbText, handles.orbit4LbText, handles.orbit5LbText, handles.orbit6LbText];
-    hUb = [handles.orbit1UbText, handles.orbit2UbText, handles.orbit3UbText, handles.orbit4UbText, handles.orbit5UbText, handles.orbit6UbText];
-    
-    elemNames = elemSetEnum.elemNames;
-    
-    for(i=1:length(hVal))
-        if(checkElementBnds(i) == 1)
-            lb = str2double(get(hLb(i),'String'));
-            ub = str2double(get(hUb(i),'String'));
-            
-            if(lb <= ub)
-                value = str2double(get(hVal(i),'String'));
-                enteredStr = get(hVal(i),'String');
-                numberName = [elemNames{i}];
-                isInt = false;
-                errMsg = validateNumber(value, numberName, lb, ub, isInt, errMsg, enteredStr);
-            else
-                errMsg{end+1} = sprintf('%s lower bound must be less than the upper bound.', elemNames{i}); %#ok<AGROW>
+    if(handles.inheritStateCheckbox.Value == 0)
+        contents = cellstr(get(handles.elementSetCombo,'String'));
+        selElemSet = contents{get(handles.elementSetCombo,'Value')};
+        elemSetEnum = ElementSetEnum.getEnumForListboxStr(selElemSet);
+
+        checkElementValues = ones(1,6);
+        checkElementBnds = [handles.optOrbit1Checkbox.Value, ...
+                            handles.optOrbit2Checkbox.Value, ...
+                            handles.optOrbit3Checkbox.Value, ...
+                            handles.optOrbit4Checkbox.Value, ...
+                            handles.optOrbit5Checkbox.Value, ...
+                            handles.optOrbit6Checkbox.Value];
+
+        switch elemSetEnum
+            case ElementSetEnum.CartesianElements
+                errMsg = CartesianElementSet.validateInputOrbit(errMsg, handles.orbit1Text, handles.orbit2Text, handles.orbit3Text, handles.orbit4Text, handles.orbit5Text, handles.orbit6Text, bodyInfo, '', checkElementValues);
+                errMsg = CartesianElementSet.validateInputOrbit(errMsg, handles.orbit1LbText, handles.orbit2LbText, handles.orbit3LbText, handles.orbit4LbText, handles.orbit5LbText, handles.orbit6LbText, bodyInfo, 'Lower', checkElementBnds);
+                errMsg = CartesianElementSet.validateInputOrbit(errMsg, handles.orbit1UbText, handles.orbit2UbText, handles.orbit3UbText, handles.orbit4UbText, handles.orbit5UbText, handles.orbit6UbText, bodyInfo, 'Upper', checkElementBnds);
+
+            case ElementSetEnum.KeplerianElements
+                errMsg = KeplerianElementSet.validateInputOrbit(errMsg, handles.orbit1Text, handles.orbit2Text, handles.orbit3Text, handles.orbit4Text, handles.orbit5Text, handles.orbit6Text, bodyInfo, '', checkElementValues);
+                errMsg = KeplerianElementSet.validateInputOrbit(errMsg, handles.orbit1LbText, handles.orbit2LbText, handles.orbit3LbText, handles.orbit4LbText, handles.orbit5LbText, handles.orbit6LbText, bodyInfo, 'Lower', checkElementBnds);
+                errMsg = KeplerianElementSet.validateInputOrbit(errMsg, handles.orbit1UbText, handles.orbit2UbText, handles.orbit3UbText, handles.orbit4UbText, handles.orbit5UbText, handles.orbit6UbText, bodyInfo, 'Upper', checkElementBnds);
+
+            case ElementSetEnum.GeographicElements
+                errMsg = GeographicElementSet.validateInputOrbit(errMsg, handles.orbit1Text, handles.orbit2Text, handles.orbit3Text, handles.orbit4Text, handles.orbit5Text, handles.orbit6Text, bodyInfo, '', checkElementValues);
+                errMsg = GeographicElementSet.validateInputOrbit(errMsg, handles.orbit1LbText, handles.orbit2LbText, handles.orbit3LbText, handles.orbit4LbText, handles.orbit5LbText, handles.orbit6LbText, bodyInfo, 'Lower', checkElementBnds);
+                errMsg = GeographicElementSet.validateInputOrbit(errMsg, handles.orbit1UbText, handles.orbit2UbText, handles.orbit3UbText, handles.orbit4UbText, handles.orbit5UbText, handles.orbit6UbText, bodyInfo, 'Upper', checkElementBnds);
+
+            case ElementSetEnum.UniversalElements
+                errMsg = UniversalElementSet.validateInputOrbit(errMsg, handles.orbit1Text, handles.orbit2Text, handles.orbit3Text, handles.orbit4Text, handles.orbit5Text, handles.orbit6Text, bodyInfo, '', checkElementValues);
+                errMsg = UniversalElementSet.validateInputOrbit(errMsg, handles.orbit1LbText, handles.orbit2LbText, handles.orbit3LbText, handles.orbit4LbText, handles.orbit5LbText, handles.orbit6LbText, bodyInfo, 'Lower', checkElementBnds);
+                errMsg = UniversalElementSet.validateInputOrbit(errMsg, handles.orbit1UbText, handles.orbit2UbText, handles.orbit3UbText, handles.orbit4UbText, handles.orbit5UbText, handles.orbit6UbText, bodyInfo, 'Upper', checkElementBnds);
+
+            otherwise
+                error('Unknown element set type: %s', class(elemSetEnum));
+        end
+
+        hVal = [handles.orbit1Text, handles.orbit2Text, handles.orbit3Text, handles.orbit4Text, handles.orbit5Text, handles.orbit6Text];
+        hLb = [handles.orbit1LbText, handles.orbit2LbText, handles.orbit3LbText, handles.orbit4LbText, handles.orbit5LbText, handles.orbit6LbText];
+        hUb = [handles.orbit1UbText, handles.orbit2UbText, handles.orbit3UbText, handles.orbit4UbText, handles.orbit5UbText, handles.orbit6UbText];
+
+        elemNames = elemSetEnum.elemNames;
+
+        for(i=1:length(hVal))
+            if(checkElementBnds(i) == 1)
+                lb = str2double(get(hLb(i),'String'));
+                ub = str2double(get(hUb(i),'String'));
+
+                if(lb <= ub)
+                    value = str2double(get(hVal(i),'String'));
+                    enteredStr = get(hVal(i),'String');
+                    numberName = [elemNames{i}];
+                    isInt = false;
+                    errMsg = validateNumber(value, numberName, lb, ub, isInt, errMsg, enteredStr);
+                else
+                    errMsg{end+1} = sprintf('%s lower bound must be less than the upper bound.', elemNames{i}); %#ok<AGROW>
+                end
             end
         end
     end

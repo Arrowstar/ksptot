@@ -3,12 +3,12 @@ classdef GeographicElementSet < AbstractElementSet
     %   Detailed explanation goes here
     
     properties
-        lat(1,1) double %rad
-        long(1,1) double %rad
-        alt(1,1) double %km
-        velAz(1,1) double %rad NEZ frame
-        velEl(1,1) double %rad NEZ frame
-        velMag(1,1) double %km/s NEZ frame
+        lat%(1,1) double %rad
+        long%(1,1) double %rad
+        alt%(1,1) double %km
+        velAz%(1,1) double %rad NEZ frame
+        velEl%(1,1) double %rad NEZ frame
+        velMag%(1,1) double %km/s NEZ frame
         
         optVar GeographicElementSetVariable
     end

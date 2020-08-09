@@ -341,11 +341,7 @@ function genPlotsButton_Callback(hObject, eventdata, handles)
             lineType = '-';
     end
     
-%     propNames = {'Liquid Fuel/Ox','Monopropellant','Xenon'};
     propNames = lvdData.launchVehicle.tankTypes.getFirstThreeTypesCellArr();
-%     for(i=1:length(propNames))
-%         propNames{i} = sprintf('%s Mass',propNames{i});
-%     end
     
     lvdSubLog = lvdData.stateLog.getStateLogEntriesBetweenTimes(startTimeUT, endTimeUT);
     maSubLog = maStateLog(maStateLog(:,1) >= startTimeUT & maStateLog(:,1) <= endTimeUT,:);
@@ -396,6 +392,12 @@ function genPlotsButton_Callback(hObject, eventdata, handles)
                 indepVarValues(i,:) = [ma_GALongLatAltTasks(maSubLog(i,:), 'long', celBodyData), maSubLog(i,1)];
             end
             indepVarUnits = 'degE';
+            
+        case 'Altitude'
+            for(i=1:size(maSubLog,1))
+                indepVarValues(i,:) = [ma_GALongLatAltTasks(maSubLog(i,:), 'alt', celBodyData), maSubLog(i,1)];
+            end
+            indepVarUnits = 'km';
     end
     
     hWaitBar = waitbar(0,'Computing Dependent Variables...','WindowStyle','modal');

@@ -89,9 +89,15 @@ classdef SetPolyThrottleModelActionOptimVar < AbstractOptimizationVariable
         end
         
         function nameStrs = getStrNamesOfVars(obj, evtNum, varLocType)
-            nameStrs = {sprintf('Event %i Throttle Constant', evtNum), ...
-                        sprintf('Event %i Throttle Rate', evtNum), ...
-                        sprintf('Event %i Throttle Acceleration', evtNum)};
+           if(evtNum > 0)
+                subStr = sprintf('Event %i',evtNum);
+            else
+                subStr = varLocType;
+            end
+            
+            nameStrs = {sprintf('%s Throttle Constant', subStr), ...
+                        sprintf('%s Throttle Rate', subStr), ...
+                        sprintf('%s Throttle Acceleration', subStr)};
                     
             nameStrs = nameStrs(obj.getUseTfForVariable());
         end

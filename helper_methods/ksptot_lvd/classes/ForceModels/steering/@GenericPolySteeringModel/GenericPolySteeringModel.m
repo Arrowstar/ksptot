@@ -116,7 +116,7 @@ classdef GenericPolySteeringModel < AbstractAnglePolySteeringModel
         end
         
         function optVar = getNewOptVar(obj)
-            optVar = SetRPYSteeringModelActionOptimVar(obj);
+            optVar = SetGenericPolySteeringModelActionOptimVar(obj);
         end
         
         function optVar = getExistingOptVar(obj)

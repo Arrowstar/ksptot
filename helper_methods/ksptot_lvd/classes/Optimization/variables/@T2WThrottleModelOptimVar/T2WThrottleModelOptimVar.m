@@ -55,7 +55,13 @@ classdef T2WThrottleModelOptimVar < AbstractOptimizationVariable
         end
         
         function nameStrs = getStrNamesOfVars(obj, evtNum, varLocType)
-            nameStrs = {sprintf('Event %i Throttle Thrust to Weight', evtNum)};
+           if(evtNum > 0)
+                subStr = sprintf('Event %i',evtNum);
+            else
+                subStr = varLocType;
+            end
+            
+            nameStrs = {sprintf('%s Throttle Thrust to Weight', subStr)};
         end
     end
 end

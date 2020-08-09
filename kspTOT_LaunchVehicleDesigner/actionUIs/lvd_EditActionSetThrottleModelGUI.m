@@ -177,82 +177,96 @@ function errMsg = validateInputs(handles)
     errMsg = {};
     
     %Angle 1
-    angle1Const = str2double(get(handles.throttleConstTermText,'String'));
+    throttleConst = str2double(get(handles.throttleConstTermText,'String'));
     enteredStr = get(handles.throttleConstTermText,'String');
     numberName = sprintf('Throttle Constant Term');
     lb = 0;
     ub = 100;
     isInt = false;
-    errMsg = validateNumber(angle1Const, numberName, lb, ub, isInt, errMsg, enteredStr);
+    errMsg = validateNumber(throttleConst, numberName, lb, ub, isInt, errMsg, enteredStr);
     
-    angle1Linear = str2double(get(handles.throttleLinTermText,'String'));
+    throttleLinear = str2double(get(handles.throttleLinTermText,'String'));
     enteredStr = get(handles.throttleLinTermText,'String');
     numberName = sprintf('Throttle Linear Term');
     lb = -Inf;
     ub = Inf;
     isInt = false;
-    errMsg = validateNumber(angle1Linear, numberName, lb, ub, isInt, errMsg, enteredStr);
+    errMsg = validateNumber(throttleLinear, numberName, lb, ub, isInt, errMsg, enteredStr);
     
-    angle1Accel = str2double(get(handles.throttleAccelTermText,'String'));
+    throttleAccel = str2double(get(handles.throttleAccelTermText,'String'));
     enteredStr = get(handles.throttleAccelTermText,'String');
     numberName = sprintf('Throttle Acceleration Term');
     lb = -Inf;
     ub = Inf;
     isInt = false;
-    errMsg = validateNumber(angle1Accel, numberName, lb, ub, isInt, errMsg, enteredStr);
+    errMsg = validateNumber(throttleAccel, numberName, lb, ub, isInt, errMsg, enteredStr);
     
     
     %%%%%Bounds
     %Throttle Const
-    angle1ConstLB = str2double(get(handles.throttleConstLbText,'String'));
+    throttleConstLB = str2double(get(handles.throttleConstLbText,'String'));
     enteredStr = get(handles.throttleConstLbText,'String');
     numberName = sprintf('Throttle Constant Term Lower Bound');
     lb = 0;
     ub = 100;
     isInt = false;
-    errMsg = validateNumber(angle1ConstLB, numberName, lb, ub, isInt, errMsg, enteredStr);
+    errMsg = validateNumber(throttleConstLB, numberName, lb, ub, isInt, errMsg, enteredStr);
     
-    angle1ConstUB = str2double(get(handles.throttleConstUbText,'String'));
+    throttleConstUB = str2double(get(handles.throttleConstUbText,'String'));
     enteredStr = get(handles.throttleConstUbText,'String');
     numberName = sprintf('Throttle Constant Term Upper Bound');
-    lb = angle1ConstLB;
+    lb = throttleConstLB;
     ub = 100;
     isInt = false;
-    errMsg = validateNumber(angle1ConstUB, numberName, lb, ub, isInt, errMsg, enteredStr);
+    errMsg = validateNumber(throttleConstUB, numberName, lb, ub, isInt, errMsg, enteredStr);
     
     %Throttle Linear
-    angle1LinearLB = str2double(get(handles.throttleLinLbText,'String'));
+    throttleLinearLB = str2double(get(handles.throttleLinLbText,'String'));
     enteredStr = get(handles.throttleLinLbText,'String');
     numberName = sprintf('Throttle Linear Term Lower Bound');
     lb = -Inf;
     ub = Inf;
     isInt = false;
-    errMsg = validateNumber(angle1LinearLB, numberName, lb, ub, isInt, errMsg, enteredStr);
+    errMsg = validateNumber(throttleLinearLB, numberName, lb, ub, isInt, errMsg, enteredStr);
     
-    angle1LinearUB = str2double(get(handles.throttleLinUbText,'String'));
+    throttleLinearUB = str2double(get(handles.throttleLinUbText,'String'));
     enteredStr = get(handles.throttleLinUbText,'String');
     numberName = sprintf('Throttle Linear Term Upper Bound');
-    lb = angle1LinearLB;
+    lb = throttleLinearLB;
     ub = Inf;
     isInt = false;
-    errMsg = validateNumber(angle1LinearUB, numberName, lb, ub, isInt, errMsg, enteredStr);
+    errMsg = validateNumber(throttleLinearUB, numberName, lb, ub, isInt, errMsg, enteredStr);
     
     %Throttle Accel
-    angle1AccelLB = str2double(get(handles.throttleAccelLbText,'String'));
+    throttleAccelLB = str2double(get(handles.throttleAccelLbText,'String'));
     enteredStr = get(handles.throttleAccelLbText,'String');
     numberName = sprintf('Throttle Acceleration Term Lower Bound');
     lb = -Inf;
     ub = Inf;
     isInt = false;
-    errMsg = validateNumber(angle1AccelLB, numberName, lb, ub, isInt, errMsg, enteredStr);
+    errMsg = validateNumber(throttleAccelLB, numberName, lb, ub, isInt, errMsg, enteredStr);
 
-    angle1AccelUB = str2double(get(handles.throttleAccelUbText,'String'));
+    throttleAccelUB = str2double(get(handles.throttleAccelUbText,'String'));
     enteredStr = get(handles.throttleAccelUbText,'String');
     numberName = sprintf('Throttle Acceleration Term Upper Bound');
-    lb = angle1AccelLB;
+    lb = throttleAccelLB;
     ub = Inf;
     isInt = false;
-    errMsg = validateNumber(angle1AccelUB, numberName, lb, ub, isInt, errMsg, enteredStr);   
+    errMsg = validateNumber(throttleAccelUB, numberName, lb, ub, isInt, errMsg, enteredStr);   
+    
+    if(isempty(errMsg))
+        if(throttleConst < throttleConstLB || throttleConst > throttleConstUB)
+            errMsg{end+1} = 'Throttle constant term must be between the upper and lower optimization bounds.';
+        end
+        
+        if(throttleLinear < throttleLinearLB || throttleLinear > throttleLinearUB)
+            errMsg{end+1} = 'Throttle linear term must be between the upper and lower optimization bounds.';
+        end
+        
+        if(throttleAccel < throttleAccelLB || throttleAccel > throttleAccelUB)
+            errMsg{end+1} = 'Throttle linear term must be between the upper and lower optimization bounds.';
+        end
+    end
     
 
 function throttleConstTermText_Callback(hObject, eventdata, handles)

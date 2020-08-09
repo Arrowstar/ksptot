@@ -187,6 +187,10 @@ function errMsg = validateInputs(handles)
         if(twRatioLB > twRatioUB)
             errMsg{end+1} = 'The lower bound must be less than or equal to the upper bound.';
         end
+        
+        if(twRatio < twRatioLB || twRatio > twRatioUB)
+            errMsg{end+1} = 'Throttle thrust to weight ratio must be between the upper and lower optimization bounds.';
+        end
     end
 
 

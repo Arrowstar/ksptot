@@ -75,8 +75,6 @@
       <file>${PROJECT_ROOT}\bodiesSolarSystem.ini</file>
       <file>${PROJECT_ROOT}\formsGUIs</file>
       <file>${PROJECT_ROOT}\helper_methods</file>
-      <file>${PROJECT_ROOT}\helper_methods\_compiled\Linux\lambert.mexa64</file>
-      <file>${PROJECT_ROOT}\helper_methods\_compiled\Windows\lambert.mexw64</file>
       <file>${PROJECT_ROOT}\images</file>
       <file>${PROJECT_ROOT}\kspTOT_LaunchVehicleDesigner</file>
       <file>${PROJECT_ROOT}\kspTOT_MissionArchitect</file>

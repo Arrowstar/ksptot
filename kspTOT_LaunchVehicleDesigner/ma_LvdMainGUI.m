@@ -92,7 +92,7 @@ function ma_LvdMainGUI_OpeningFcn(hObject, eventdata, handles, varargin)
     setDeleteButtonEnable(lvdData, handles);
     setNonSeqDeleteButtonEnable(lvdData, handles);
     
-    jDispAxesTimeSlider = javax.swing.JSlider;
+    jDispAxesTimeSlider = javaObjectEDT('javax.swing.JSlider');
     jDispAxesTimeSlider.setSnapToTicks(false);
     jDispAxesTimeSlider.setMinimum(0);
     jDispAxesTimeSlider.setMaximum(1);
@@ -106,8 +106,8 @@ function ma_LvdMainGUI_OpeningFcn(hObject, eventdata, handles, varargin)
     handles.hDispAxesTimeSlider = hDispAxesTimeSlider;
     timeSliderCb = @(src,evt) timeSliderStateChanged(src,evt, lvdData, handles);
     set(hDispAxesTimeSlider, 'StateChangedCallback', timeSliderCb); 
-    timeSliderKeyPressCb = @(src,evt) timeSliderKeyPressCallback(src,evt, handles);
-    set(hDispAxesTimeSlider, 'KeyPressedCallback', timeSliderKeyPressCb); 
+%     timeSliderKeyPressCb = @(src,evt) timeSliderKeyPressCallback(src,evt, handles);
+%     set(hDispAxesTimeSlider, 'KeyPressedCallback', timeSliderKeyPressCb); 
     
     setappdata(handles.hDispAxesTimeSlider,'lastTime',NaN);
     
@@ -116,6 +116,8 @@ function ma_LvdMainGUI_OpeningFcn(hObject, eventdata, handles, varargin)
     addlistener(appOptions.ksptot,'GravParamTypeUpdated',gravSystemUpdateCbFh);
     
     rotate3d(handles.dispAxes,'on');
+    
+    enableDisableArrowButtons(lvdData, handles);
     
     runScript(handles, lvdData, 1);
     lvd_processData(handles);
@@ -206,9 +208,9 @@ function recordFinalAxesPanZoomAfterRotation(obj,event_obj, handles)
     [az,el] = view(handles.dispAxes);
     lvdData.viewSettings.selViewProfile.viewAzEl = [az,el];
     
-function timeSliderStateChanged(src,evt, lvdData, handles)   
-    if(src.getValueIsAdjusting() || (islogical(evt) && evt==true))
-        time = src.getValue();
+function timeSliderStateChanged(src,evt, lvdData, handles)
+    if(getappdata(handles.hDispAxesTimeSlider,'lastTime') ~= javaMethodEDT('getValue',src))
+        time = javaMethodEDT('getValue',src);
         hAx = handles.dispAxes;
         figure(handles.ma_LvdMainGUI);
         
@@ -249,6 +251,8 @@ function timeSliderStateChanged(src,evt, lvdData, handles)
         
         handles.timeSliderValueLabel.String = epochStr;
         handles.timeSliderValueLabel.TooltipString = tooltipStr;
+        
+        setappdata(handles.hDispAxesTimeSlider,'lastTime',time);
     end
     
     
@@ -259,12 +263,12 @@ function gravSystemUpdateCallback(src,evt, handles)
     end
     
 function timeSliderKeyPressCallback(src,evt, handles)
-    if(evt.getKeyCode() == java.awt.event.KeyEvent.VK_RIGHT || ...
-       evt.getKeyCode() == java.awt.event.KeyEvent.VK_LEFT || ...
-       evt.getKeyCode() == java.awt.event.KeyEvent.VK_KP_RIGHT || ... 
-       evt.getKeyCode() == java.awt.event.KeyEvent.VK_KP_LEFT)
+    if(javaMethodEDT('getKeyCode',evt) == java.awt.event.KeyEvent.VK_RIGHT || ...
+       javaMethodEDT('getKeyCode',evt) == java.awt.event.KeyEvent.VK_LEFT || ...
+       javaMethodEDT('getKeyCode',evt) == java.awt.event.KeyEvent.VK_KP_RIGHT || ... 
+       javaMethodEDT('getKeyCode',evt) == java.awt.event.KeyEvent.VK_KP_LEFT)
    
-        src.StateChangedCallback(src,true);
+        src.StateChangedCallback(src,[]);
     end
 
 % --- Outputs from this function are returned to the command line.
@@ -788,6 +792,8 @@ function newMissionPlanMenu_Callback(hObject, eventdata, handles, varargin)
     timeSliderCb = @(src,evt) timeSliderStateChanged(src,evt, lvdData, handles);
     set(handles.hDispAxesTimeSlider, 'StateChangedCallback', timeSliderCb);
     
+    enableDisableArrowButtons(lvdData, handles);
+    
     runScript(handles, lvdData, 1);
     lvd_processData(handles);
     
@@ -896,6 +902,8 @@ function openMissionPlanMenu_Callback(hObject, eventdata, handles)
             setappdata(handles.hDispAxesTimeSlider,'lastTime',NaN);
             timeSliderCb = @(src,evt) timeSliderStateChanged(src,evt, lvdData, handles);
             set(handles.hDispAxesTimeSlider, 'StateChangedCallback', timeSliderCb);
+            
+            enableDisableArrowButtons(lvdData, handles);
             
             if(lvdData.optimizer.usesParallel())
                 startParallelPool(write_to_output_func);
@@ -1641,7 +1649,7 @@ function runScriptMenu_Callback(hObject, eventdata, handles)
 
     propagateScript(handles, lvdData, 1);
     lvd_processData(handles);
-
+    
 % --------------------------------------------------------------------
 function editExtremaMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to editExtremaMenu (see GCBO)
@@ -1901,8 +1909,25 @@ function editViewSettingsMenu_Callback(hObject, eventdata, handles)
     lvd_viewSettingsGUI(lvdData.viewSettings);
     
     setappdata(handles.hDispAxesTimeSlider,'lastTime',NaN);
+       
+    enableDisableArrowButtons(lvdData, handles);
     lvd_processData(handles);
 
+    
+function enableDisableArrowButtons(lvdData, handles)
+    type = lvdData.viewSettings.selViewProfile.trajEvtsViewType;
+    switch type
+        case ViewEventsTypeEnum.All
+            handles.decrOrbitToPlotNum.Enable = 'off';
+            handles.incrOrbitToPlotNum.Enable = 'off';
+            
+        case ViewEventsTypeEnum.SoIChunk
+            handles.decrOrbitToPlotNum.Enable = 'on';
+            handles.incrOrbitToPlotNum.Enable = 'on';
+            
+        otherwise
+            error('Unknown event view type: %s', type.name);
+    end
 
 % --------------------------------------------------------------------
 function popOutOrbitDisplayMenu_Callback(hObject, eventdata, handles)

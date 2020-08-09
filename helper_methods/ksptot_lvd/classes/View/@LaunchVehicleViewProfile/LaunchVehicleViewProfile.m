@@ -260,7 +260,7 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                             
                             elemSet = grdObj.getStateAtTime(time);
                             if(not(isempty(elemSet)))
-                                elemSet = elemSet.convertToFrame(viewInFrame).convertToCartesianElementSet();
+                                elemSet = elemSet.convertToCartesianElementSet().convertToFrame(viewInFrame);
                                 
                                 times(end+1) = time;
                                 rVectsGrdObj(:,end+1) = elemSet.rVect;

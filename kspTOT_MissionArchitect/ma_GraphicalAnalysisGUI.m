@@ -388,6 +388,12 @@ function genPlotsButton_Callback(hObject, eventdata, handles)
                 indepVarValues(i,:) = [ma_GALongLatAltTasks(subLog(i,:), 'long', celBodyData), subLog(i,1)];
             end
             indepVarUnits = 'degE';
+            
+        case 'Altitude'
+            for(i=1:size(subLog,1))
+                indepVarValues(i,:) = [ma_GALongLatAltTasks(subLog(i,:), 'alt', celBodyData), subLog(i,1)];
+            end
+            indepVarUnits = 'km';
     end
     
     hWaitBar = waitbar(0,'Computing Dependent Variables...','WindowStyle','modal');

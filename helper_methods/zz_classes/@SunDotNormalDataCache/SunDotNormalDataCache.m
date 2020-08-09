@@ -4,7 +4,9 @@ classdef SunDotNormalDataCache < matlab.mixin.SetGet
     
     properties
         bodyInfo KSPTOT_BodyInfo
-        
+    end
+    
+    properties(Transient)
         sunDotNormalFitObj griddedInterpolant = griddedInterpolant([0 1], [0 0]);
 
         cacheStartTime(1,1) double = NaN;
@@ -12,8 +14,8 @@ classdef SunDotNormalDataCache < matlab.mixin.SetGet
     end
     
     properties(Constant)
-        cacheTimeBlockSize(1,1) double = 100000;
-        cacheTimeIncr(1,1) double = 1000;
+        cacheTimeBlockSize(1,1) double = 1000000;
+        cacheTimeIncr(1,1) double = 10000;
         cacheLongGrid = deg2rad(linspace(0, 360, 37));
     end
     
@@ -41,7 +43,7 @@ classdef SunDotNormalDataCache < matlab.mixin.SetGet
             if(time < obj.cacheStartTime)
                 numBlocksToAdd = ceil((obj.cacheStartTime - time)/obj.cacheTimeBlockSize);
                 
-                for(i=1:length(numBlocksToAdd))
+                for(i=1:numBlocksToAdd)
                     timesToAdd = [obj.cacheStartTime - 1*obj.cacheTimeBlockSize : obj.cacheTimeIncr : obj.cacheStartTime]; %#ok<NBRAK>
                     timesToAdd = timesToAdd(1:end-1); %don't duplicate the end point
 
@@ -49,6 +51,7 @@ classdef SunDotNormalDataCache < matlab.mixin.SetGet
                 end
             elseif(time > obj.cacheEndTime)
                 numBlocksToAdd = ceil((time - obj.cacheEndTime)/obj.cacheTimeBlockSize);
+                
                 for(i=1:numBlocksToAdd)
                     timesToAdd = [obj.cacheEndTime : obj.cacheTimeIncr : obj.cacheEndTime + 1*obj.cacheTimeBlockSize]; %#ok<NBRAK>
                     timesToAdd = timesToAdd(2:end); %don't duplicate the start point
@@ -77,6 +80,17 @@ classdef SunDotNormalDataCache < matlab.mixin.SetGet
             
             obj.cacheStartTime = min(timeCache);
             obj.cacheEndTime = max(timeCache);
+        end
+    end
+    
+    methods(Static)
+        function obj = loadobj(obj)
+            if(isempty(obj.sunDotNormalFitObj))
+                obj.sunDotNormalFitObj = griddedInterpolant([0 1], [0 0]);
+                
+                obj.cacheStartTime = NaN;
+                obj.cacheEndTime = NaN;
+            end
         end
     end
 end
