@@ -22,7 +22,7 @@ function varargout = lvd_GraphicalAnalysisGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_GraphicalAnalysisGUI
 
-% Last Modified by GUIDE v2.5 20-Jun-2020 15:32:20
+% Last Modified by GUIDE v2.5 09-Aug-2020 18:29:26
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -425,19 +425,22 @@ function genPlotsButton_Callback(hObject, eventdata, handles)
         end
     end
     
-    hRefStnCombo = handles.refStationCombo;
-    if(strcmpi(get(hRefStnCombo,'Enable'),'off'))
-        stationID = [];
-    else
-        try
-            refSCInd = get(hRefStnCombo,'Value');
-            stations = maData.spacecraft.stations;
-            stationID = stations{refSCInd}.id;
-        catch
-            stationID = [];
-        end
-    end
+%     hRefStnCombo = handles.refStationCombo;
+%     if(strcmpi(get(hRefStnCombo,'Enable'),'off'))
+%         stationID = [];
+%     else
+%         try
+%             refSCInd = get(hRefStnCombo,'Value');
+%             stations = maData.spacecraft.stations;
+%             stationID = stations{refSCInd}.id;
+%         catch
+%             
+%         end
+%     end
+    
+    stationID = [];
 
+    dataEvtNums = [];
     maTaskList = ma_getGraphAnalysisTaskList({});
     for(i=1:size(maSubLog,1))
         for(j=1:length(taskInds))
@@ -454,6 +457,8 @@ function genPlotsButton_Callback(hObject, eventdata, handles)
                 [depVarValues(i,j), depVarUnits{j}] = lvd_getDepVarValueUnit(i, lvdSubLog, taskStr, refBodyId, celBodyData, false);
             end
         end
+        
+        dataEvtNums(i) = maSubLog(i,13);
     end
     close(hWaitBar);
     
@@ -482,6 +487,9 @@ function genPlotsButton_Callback(hObject, eventdata, handles)
         end
     end
     
+    useEvtLineColor = logical(handles.useEvtLineColorsCheckbox.Value);
+    evts = [lvdData.script.evts];
+    
     figNum = 100;
     if(get(handles.useSubplotCheckbox,'Value'))
         subPlotMaxX = str2double(get(handles.subPlotSizeXText,'String'));
@@ -504,7 +512,7 @@ function genPlotsButton_Callback(hObject, eventdata, handles)
             taskStr = contentsDep{taskInd};
 
             subplot(subPlotMaxX,subPlotMaxY,plotNum);
-            plotData(hFig, indepVarValues, data, lineColor, lineType, lineWidth, indepVarStr, taskStr, bgColor, indepVarUnits, indepTimeUnitMult, depVarUnits{i}, maStateLog, startTimeUT, endTimeUT, celBodyData, handles.lvd_GraphicalAnalysisGUI);
+            plotData(hFig, indepVarValues, data, lineColor, useEvtLineColor, evts, dataEvtNums, lineType, lineWidth, indepVarStr, taskStr, bgColor, indepVarUnits, indepTimeUnitMult, depVarUnits{i}, maStateLog, startTimeUT, endTimeUT, celBodyData, handles.lvd_GraphicalAnalysisGUI);
         end
     else
         for(i = 1:size(depVarValues,2)) %#ok<*NO4LP>
@@ -515,7 +523,7 @@ function genPlotsButton_Callback(hObject, eventdata, handles)
 
             hFig = figure(figNum+i);
             whitebg(hFig, bgColor);
-            plotData(hFig, indepVarValues, data, lineColor, lineType, lineWidth, indepVarStr, taskStr, bgColor, indepVarUnits, indepTimeUnitMult, depVarUnits{i}, maStateLog, startTimeUT, endTimeUT, celBodyData, handles.lvd_GraphicalAnalysisGUI);
+            plotData(hFig, indepVarValues, data, lineColor, useEvtLineColor, evts, dataEvtNums, lineType, lineWidth, indepVarStr, taskStr, bgColor, indepVarUnits, indepTimeUnitMult, depVarUnits{i}, maStateLog, startTimeUT, endTimeUT, celBodyData, handles.lvd_GraphicalAnalysisGUI);
         end
     end
     
@@ -564,13 +572,28 @@ function genPlotsButton_Callback(hObject, eventdata, handles)
         end
     end
     
-function plotData(hFig, indepVarValues, data, lineColor, lineType, lineWidth, indepVarStr, taskStr, bgColor, indepVarUnitStr, indepTimeUnitMult, depVarUnitStr, maStateLog, startTimeUT, endTimeUT, celBodyData, hGAFig)
+function plotData(hFig, indepVarValues, data, lineColor, useEvtLineColor, evts, dataEvtNums, lineType, lineWidth, indepVarStr, taskStr, bgColor, indepVarUnitStr, indepTimeUnitMult, depVarUnitStr, maStateLog, startTimeUT, endTimeUT, celBodyData, hGAFig)
     xLineValue = getappdata(hGAFig,'xLineValue');
     yLineValue = getappdata(hGAFig,'yLineValue');
 
-%     whitebg(hFig, bgColor);
     hold on;
-    plot(indepVarValues(:,1), data, 'Color', lineColor, 'LineStyle', lineType, 'LineWidth', lineWidth);
+    
+    if(useEvtLineColor)
+        for(i=1:length(evts))
+            evt = evts(i);
+            eventNum = evt.getEventNum();
+            
+            bool = dataEvtNums == eventNum;
+            
+            subIndVal = indepVarValues(bool,1);
+            subData = data(bool);
+            lineColor = evt.colorLineSpec.color.color;
+            
+            plot(subIndVal, subData, 'Color',lineColor, 'LineStyle',lineType, 'LineWidth',lineWidth);
+        end
+    else
+        plot(indepVarValues(:,1), data, 'Color',lineColor, 'LineStyle',lineType, 'LineWidth',lineWidth);
+    end
     
     minData = min(data);
     maxData = max(data);
@@ -1187,4 +1210,18 @@ function setTimeFromScriptMenu_Callback(hObject, eventdata, handles)
         set(gco,'String', num2str(max(stateLog(:,1)), '%1.15f'));
     else
         return;
+    end
+
+
+% --- Executes on button press in useEvtLineColorsCheckbox.
+function useEvtLineColorsCheckbox_Callback(hObject, eventdata, handles)
+% hObject    handle to useEvtLineColorsCheckbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of useEvtLineColorsCheckbox
+    if(hObject.Value)
+        handles.lineColorCombo.Enable = 'off';
+    else
+        handles.lineColorCombo.Enable = 'on';
     end
