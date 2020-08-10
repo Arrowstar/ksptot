@@ -22,7 +22,7 @@ function varargout = lvd_EditPowerRtgGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditPowerRtgGUI
 
-% Last Modified by GUIDE v2.5 01-Aug-2020 16:29:52
+% Last Modified by GUIDE v2.5 10-Aug-2020 15:57:36
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -80,7 +80,9 @@ function populateGUI(handles, rtg)
     set(handles.stageCombo,'String',stagesListboxStr);
     set(handles.stageCombo,'Value',ind);
     
-    set(handles.chargeRateText,'String',fullAccNum2Str(rtg.pwrRate));
+    set(handles.chargeRateText,'String',fullAccNum2Str(rtg.initPwrRate));
+    set(handles.halfLifeText,'String',fullAccNum2Str(rtg.halfLife));
+    set(handles.decayInitTimeText,'String',fullAccNum2Str(rtg.initTime));
 
 
 % --- Outputs from this function are returned to the command line.
@@ -102,11 +104,15 @@ function varargout = lvd_EditPowerRtgGUI_OutputFcn(hObject, eventdata, handles)
         stage = lv.getStageForInd(handles.stageCombo.Value);
         
         name = handles.rtgNameText.String;
-        chargeRate = str2double(handles.chargeRateText.String);
+        initChargeRate = str2double(handles.chargeRateText.String);
+        halfLife = str2double(handles.halfLifeText.String);
+        decayInitTime = str2double(handles.decayInitTimeText.String);
         
         rtg.name = name;
         rtg.stage = stage;
-        rtg.pwrRate = chargeRate;
+        rtg.initPwrRate = initChargeRate;
+        rtg.halfLife = halfLife;
+        rtg.initTime = decayInitTime;
         
         rtg.getAttachedStage().addPwrSrc(rtg);
                 
@@ -134,7 +140,23 @@ function errMsg = validateInputs(handles)
     
     val = str2double(get(handles.chargeRateText,'String'));
     enteredStr = get(handles.chargeRateText,'String');
-    numberName = 'Charge Rate';
+    numberName = 'Initial Charge Rate';
+    lb = 0;
+    ub = Inf;
+    isInt = false;
+    errMsg = validateNumber(val, numberName, lb, ub, isInt, errMsg, enteredStr);
+    
+    val = str2double(get(handles.halfLifeText,'String'));
+    enteredStr = get(handles.halfLifeText,'String');
+    numberName = 'Half Life';
+    lb = 0;
+    ub = Inf;
+    isInt = false;
+    errMsg = validateNumber(val, numberName, lb, ub, isInt, errMsg, enteredStr);
+    
+    val = str2double(get(handles.decayInitTimeText,'String'));
+    enteredStr = get(handles.decayInitTimeText,'String');
+    numberName = 'Decay Initial Time';
     lb = 0;
     ub = Inf;
     isInt = false;
@@ -236,3 +258,74 @@ function lvd_EditPowerRtgGUI_WindowKeyPressFcn(hObject, eventdata, handles)
         case 'escape'
             close(handles.lvd_EditPowerRtgGUI);
     end
+
+
+
+function halfLifeText_Callback(hObject, eventdata, handles)
+% hObject    handle to halfLifeText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of halfLifeText as text
+%        str2double(get(hObject,'String')) returns contents of halfLifeText as a double
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
+
+
+% --- Executes during object creation, after setting all properties.
+function halfLifeText_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to halfLifeText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function decayInitTimeText_Callback(hObject, eventdata, handles)
+% hObject    handle to decayInitTimeText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of decayInitTimeText as text
+%        str2double(get(hObject,'String')) returns contents of decayInitTimeText as a double
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
+
+
+% --- Executes during object creation, after setting all properties.
+function decayInitTimeText_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to decayInitTimeText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --------------------------------------------------------------------
+function enterUtAsDateTimeMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to enterUtAsDateTimeMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    secUT = enterUTAsDateTimeGUI(str2double(get(gco, 'String')));
+    if(secUT >= 0)
+        set(gco, 'String', num2str(secUT));
+        decayInitTimeText_Callback(handles.decayInitTimeText, eventdata, handles);
+    end
+
+% --------------------------------------------------------------------
+function InitialTimeMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to InitialTimeMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    
