@@ -108,7 +108,7 @@ classdef AbstractFixedStepIntegrator < AbstractIntegrator
                 if(hasEvents)
                     [evtValues,evtIsTerminal,evtDirection] = eventFcn(t(i),Y(:,i)); %#ok<RHSFN>
                     
-                    signDetect = prevEvtValues .* evtValues < 0;
+                    signDetect = (prevEvtValues .* evtValues < 0) | evtValues == 0;
                     if(any(signDetect))
                         diffForDeriv = sign(evtValues - prevEvtValues);
                         

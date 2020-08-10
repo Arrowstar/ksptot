@@ -207,8 +207,13 @@ classdef InitialStateModel < matlab.mixin.SetGet
                 tf = obj.optVar.isVarContainedWithin(var);
             end
             
-            tf = tf || obj.steeringModel.getExistingOptVar() == var;
-            tf = tf || obj.throttleModel.getExistingOptVar() == var;
+            if(not(isempty(obj.steeringModel.getExistingOptVar())))
+                tf = tf || obj.steeringModel.getExistingOptVar() == var;
+            end
+            
+            if(not(isempty(obj.throttleModel.getExistingOptVar())))
+                tf = tf || obj.throttleModel.getExistingOptVar() == var;
+            end
         end
     end
 

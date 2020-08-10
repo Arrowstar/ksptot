@@ -162,7 +162,7 @@ function [maxSearchUT, maxStep] = getMaxSoISearchTime(utINI, sma, ecc, truINI, b
     if(ecc < 1)
         oPeriod = computePeriod(sma,gmu);
         
-        maxSearchUT = utINI + num_SoI_search_revs * oPeriod;
+        maxSearchUT = utINI + num_SoI_search_revs .* oPeriod;
         
         maxStep = abs(maxSearchUT - utINI)/num_SoI_search_revs/numStepsPer;
     else
@@ -173,9 +173,9 @@ function [maxSearchUT, maxStep] = getMaxSoISearchTime(utINI, sma, ecc, truINI, b
         meanIni = computeMeanFromTrueAnom(truINI, ecc);
         maxMean = computeMeanFromTrueAnom(maxHypTru, ecc);
         
-        maxSearchUT = utINI + (maxMean - meanIni)/meanMotion;
+        maxSearchUT = utINI + (maxMean - meanIni)./meanMotion;
         
-        maxStep = abs(maxSearchUT - utINI)/numStepsPer;
+        maxStep = abs(maxSearchUT - utINI)./numStepsPer;
     end
 end
 
