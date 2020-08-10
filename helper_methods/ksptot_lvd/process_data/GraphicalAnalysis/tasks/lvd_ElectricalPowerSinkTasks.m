@@ -38,7 +38,7 @@ function [datapt, unitStr] = lvd_ElectricalPowerSinkTasks(stateLogEntry, subTask
                 
                 elemSet = stateLogEntry.getCartesianElementSetRepresentation();
                 steeringModel = stateLogEntry.steeringModel;
-                datapt = pwrSinkState.getElectricalPwrRate(elemSet, steeringModel, [], []);
+                datapt = pwrSinkState.getElectricalPwrRate(elemSet, steeringModel, [], [], []);
                 
                 if(isempty(datapt))
                     datapt = -1;
