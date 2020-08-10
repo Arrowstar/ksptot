@@ -170,7 +170,7 @@ classdef GenericPolySteeringModel < AbstractAnglePolySteeringModel
         end
         
         function typeStr = getTypeNameStr()
-            typeStr = SteeringModelEnum.GenericPoly.nameStr;
+            typeStr = SteeringModelEnum.GenericQuatInterp.nameStr;
         end
     end
 end

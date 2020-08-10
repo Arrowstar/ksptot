@@ -19,6 +19,7 @@ classdef InertialAeroAnglesPolySteeringModel < AbstractAnglePolySteeringModel
             angOfSideslip = obj.slipModel.getValueAtTime(ut);
             
             [~, ~, ~, dcm] = computeBodyAxesFromInertialAeroAngles(ut, rVect, vVect, bodyInfo, angOfAttack, angOfSideslip, bankAng);
+            dcm = real(dcm);
         end
         
         function [angleModel, continuity] = getAngleNModel(obj, n)

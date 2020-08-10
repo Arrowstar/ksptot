@@ -8,6 +8,8 @@ classdef SteeringModelEnum < matlab.mixin.SetGet
         InertialAeroAnglesPoly('Inertial Aero Angles Steering','InertialAeroAnglesPolySteeringModel');
         
         GenericPoly('Generic Angles Steering','GenericPolySteeringModel');
+        
+        GenericQuatInterp('Generic Angles Quaternion Interp','GenericQuatInterpSteeringModel');
     end
     
     properties

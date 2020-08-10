@@ -8,20 +8,14 @@ classdef(Abstract) AbstractSteeringModel < matlab.mixin.SetGet
     
     methods
         dcm = getBody2InertialDcmAtTime(obj, ut, rVect, vVect, bodyInfo)
-        
-        setT0(obj, newT0)
-        
-        setConstTerms(obj, angle1, angle2, angle3)
-        
-        setLinearTerms(obj, angle1, angle2, angle3)
-        
-        setAccelTerms(obj, angle1, angle2, angle3)
-        
+                
         setConstsFromDcmAndContinuitySettings(obj, dcm, ut, rVect, vVect, bodyInfo)     
         
         setContinuityTerms(obj, angle1Cont, angle2Cont, angle3Cont)
         
         [angle1Cont, angle2Cont, angle3Cont] = getContinuityTerms(obj)
+        
+        enum = getSteeringModelTypeEnum(obj);
         
         newSteeringModel = deepCopy(obj)
         
@@ -33,6 +27,8 @@ classdef(Abstract) AbstractSteeringModel < matlab.mixin.SetGet
     end
     
     methods(Static)
+        model = getDefaultSteeringModel();
+        
         typeStr = getTypeNameStr()
     end
 end

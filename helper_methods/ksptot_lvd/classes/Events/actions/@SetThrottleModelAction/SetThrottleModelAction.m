@@ -15,7 +15,6 @@ classdef SetThrottleModelAction < AbstractEventAction
             if(nargin > 0)
                 obj.throttleModel = throttleModel;
             else
-%                 obj.throttleModel = ThrottlePolyModel.getDefaultThrottleModel();
                 [throttleModelNameStrs, enums] = ThrottleModelEnum.getThrottleModelTypeNameStrs();
                 [dialogInd,tf] = listdlg('ListString',throttleModelNameStrs, ...
                                          'Name','Select Throttle Model', ...

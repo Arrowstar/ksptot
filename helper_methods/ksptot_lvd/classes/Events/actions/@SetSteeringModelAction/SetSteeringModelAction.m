@@ -15,7 +15,28 @@ classdef SetSteeringModelAction < AbstractEventAction
             if(nargin > 0)
                 obj.steeringModel = steeringModel;
             else
-                obj.steeringModel = RollPitchYawPolySteeringModel.getDefaultSteeringModel();
+                listboxStr = SteerModelTypeEnum.getListBoxStr();
+                [Selection,ok] = listdlgARH('ListString',listboxStr, ...
+                                         'Name','Select Steering Model Type', ...
+                                         'PromptString',{'Select steering model type:'}, ...
+                                         'SelectionMode','single', ...
+                                         'ListSize',[300 300]);
+                if(ok)
+                    enum = SteerModelTypeEnum.getEnumForListboxStr(listboxStr{Selection});
+                    
+                    switch enum
+                        case SteerModelTypeEnum.PolyAngles
+                            obj.steeringModel = RollPitchYawPolySteeringModel.getDefaultSteeringModel();
+                            
+                        case SteerModelTypeEnum.QuaterionInterp
+                            obj.steeringModel = GenericQuatInterpSteeringModel.getDefaultSteeringModel();
+                            
+                        otherwise
+                            error('Unknown steering model type: %s', enum.name);
+                    end
+                else
+                    obj.steeringModel = RollPitchYawPolySteeringModel.getDefaultSteeringModel();
+                end  
             end
             
             obj.id = rand();
@@ -83,7 +104,18 @@ classdef SetSteeringModelAction < AbstractEventAction
     
     methods(Static)
         function addActionTf = openEditActionUI(action, lv)
-            addActionTf = lvd_EditActionSetSteeringModelGUI(action, lv);
+                enum = action.steeringModel.getSteeringModelTypeEnum();
+
+                switch enum
+                    case SteerModelTypeEnum.PolyAngles
+                        addActionTf = lvd_EditActionSetSteeringModelGUI(action, lv);
+
+                    case SteerModelTypeEnum.QuaterionInterp
+                        addActionTf = lvd_EditActionSetQuatInterpSteeringModelGUI(action, lv);
+
+                    otherwise
+                        error('Unknown steering model type: %s', enum.name);
+                end
         end
     end
 end
