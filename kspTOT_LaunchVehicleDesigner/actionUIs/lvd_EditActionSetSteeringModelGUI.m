@@ -104,7 +104,7 @@ function populateGUI(handles, action, lv)
     set(handles.angle2Panel,'Title',sprintf('%s Angle', angle2Name));
     set(handles.angle3Panel,'Title',sprintf('%s Angle', angle3Name));
     
-    strs = SteeringModelEnum.getSteeringModelTypeNameStrs();
+    strs = SteeringModelEnum.getSteeringModelTypeNameStrs(true);
     set(handles.steeringModelTypeCombo,'String',strs);
     ind = SteeringModelEnum.getIndOfListboxStrsForSteeringModel(steeringModel);
     set(handles.steeringModelTypeCombo,'Value',ind);

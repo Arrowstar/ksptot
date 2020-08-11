@@ -102,7 +102,7 @@ classdef LaunchVehicleState < matlab.mixin.SetGet & matlab.mixin.Copyable
         end
         
         function tanks = getTanksWithActiveTankToTankConnectionsForStage(obj, stageState)
-            tanks = LaunchVehicleTank.empty(1,0);
+            tanks = LaunchVehicleState.emptyTankArr;
             
             for(i=1:length(obj.t2TConns))
                 connState = obj.t2TConns(i);

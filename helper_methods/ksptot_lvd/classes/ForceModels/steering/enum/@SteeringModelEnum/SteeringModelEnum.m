@@ -3,30 +3,32 @@ classdef SteeringModelEnum < matlab.mixin.SetGet
     %   Detailed explanation goes here
     
     enumeration
-        RollPitchYawPoly('Roll/Pitch/Yaw Steering','RollPitchYawPolySteeringModel');
-        AeroAnglesPoly('Body Fixed Aero Angles Steering','AeroAnglesPolySteeringModel');
-        InertialAeroAnglesPoly('Inertial Aero Angles Steering','InertialAeroAnglesPolySteeringModel');
+        RollPitchYawPoly('Roll/Pitch/Yaw Steering','RollPitchYawPolySteeringModel', true);
+        AeroAnglesPoly('Body Fixed Aero Angles Steering','AeroAnglesPolySteeringModel', true);
+        InertialAeroAnglesPoly('Inertial Aero Angles Steering','InertialAeroAnglesPolySteeringModel', true);
+        GenericPoly('Generic Angles Steering','GenericPolySteeringModel', true);
         
-        GenericPoly('Generic Angles Steering','GenericPolySteeringModel');
-        
-        GenericQuatInterp('Generic Angles Quaternion Interp','GenericQuatInterpSteeringModel');
+        GenericQuatInterp('Generic Angles Quaternion Interp','GenericQuatInterpSteeringModel', false);
     end
     
     properties
         nameStr char = '';
         classNameStr char = '';
+        showInPolyUi(1,1) logical = true;
     end
     
     methods
-        function obj = SteeringModelEnum(nameStr,classNameStr)
+        function obj = SteeringModelEnum(nameStr,classNameStr,showInPolyUi)
             obj.nameStr = nameStr;
             obj.classNameStr = classNameStr;
+            obj.showInPolyUi = showInPolyUi;
         end
     end
     
     methods(Static)
-        function steeringModelNameStrs = getSteeringModelTypeNameStrs()
+        function steeringModelNameStrs = getSteeringModelTypeNameStrs(showInPylUiMustBe)
             [m,~] = enumeration('SteeringModelEnum');
+            m = m([m.showInPolyUi] == showInPylUiMustBe);
             
             steeringModelNameStrs = {};
             for(i=1:length(m)) %#ok<*NO4LP>

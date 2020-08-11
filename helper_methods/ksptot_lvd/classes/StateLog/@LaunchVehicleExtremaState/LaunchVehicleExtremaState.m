@@ -8,6 +8,10 @@ classdef LaunchVehicleExtremaState < matlab.mixin.SetGet & matlab.mixin.Copyable
         active(1,1) LaunchVehicleExtremaRecordingEnum = LaunchVehicleExtremaRecordingEnum.Recording;
     end
     
+    properties(Constant)
+        gaTaskList = ma_getGraphAnalysisTaskList(getLvdGAExcludeList());
+    end
+    
     methods
         function obj = LaunchVehicleExtremaState(extrema)
             obj.extrema = extrema;
@@ -19,7 +23,7 @@ classdef LaunchVehicleExtremaState < matlab.mixin.SetGet & matlab.mixin.Copyable
                 
         function [newValue] = updateExtremaStateWithStateLogEntry(obj, stateLogEntry, prevValue)    
             if(obj.active == LaunchVehicleExtremaRecordingEnum.Recording) %if it's not recording, then we can just return the exState as it is b/c it won't change     
-                maTaskList = ma_getGraphAnalysisTaskList(getLvdGAExcludeList());
+                maTaskList = LaunchVehicleExtremaState.gaTaskList;
                 
                 maSubLog = stateLogEntry.getMAFormattedStateLogMatrix();
                 taskStr = obj.extrema.quantStr;

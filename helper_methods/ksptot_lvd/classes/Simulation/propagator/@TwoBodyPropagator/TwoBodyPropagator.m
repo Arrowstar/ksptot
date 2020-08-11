@@ -163,7 +163,7 @@ classdef TwoBodyPropagator < AbstractPropagator
 
                 mean = y(1);
                 tru = computeTrueAnomFromMean(mean, ecc); 
-                [rVect, vVect] = getStatefromKepler(sma, ecc, inc, raan, arg, tru, gmu);
+                [rVect, vVect] = getStatefromKepler(sma, ecc, inc, raan, arg, tru, gmu, false);
                 storageRates = LaunchVehicleStateLogEntry.getStorageChargeRatesDueToSourcesSinks(storageSoCs, powerStorageStates, stageStates, ut, rVect(:), vVect(:), bodyInfo, steeringModel);
                 
             else
@@ -207,7 +207,7 @@ classdef TwoBodyPropagator < AbstractPropagator
             numPwrStorageStates = eventInitStateLogEntry.getNumActivePwrStorageStates();
             [~, mean, tankStatesMasses, pwrStorageSocs] = TwoBodyPropagator.decomposeIntegratorTandY(t,y, numTankStates, numPwrStorageStates);
             tru = computeTrueAnomFromMean(mean, ecc);
-            [rVect, vVect] = getStatefromKepler(sma, ecc, inc, raan, arg, tru, gmu);
+            [rVect, vVect] = getStatefromKepler(sma, ecc, inc, raan, arg, tru, gmu, false);
             y = [rVect(:); vVect(:); tankStatesMasses(:); pwrStorageSocs(:)]';
 
             [value,isterminal,direction, causes] = AbstractPropagator.odeEvents(t,y, eventInitStateLogEntry, evtTermCond, termCondDir, maxSimTime, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, minAltitude, celBodyData);

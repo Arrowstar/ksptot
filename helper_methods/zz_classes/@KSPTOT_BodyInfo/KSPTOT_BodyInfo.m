@@ -205,6 +205,7 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
         function parentGM = getParentGmuFromCache(obj)
             if(isnan(obj.parentGmuCache) || obj.parentBodyInfoNeedsUpdate == true)
                 obj.parentGmuCache = getParentGM(obj, obj.celBodyData);
+                obj.parentBodyInfoNeedsUpdate = false;
             end
             
             parentGM = obj.parentGmuCache;
