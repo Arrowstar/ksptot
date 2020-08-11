@@ -29,9 +29,16 @@ function dt = getDtToTru(truTarget, sma, ecc, truINI, gmu)
         dM = meanTarget-meanINI;
         dt = dM/meanMotion;
     else
-        dt1 = getDtToTru(2*pi, sma, ecc, truINI, gmu);
-        dt2 = getDtToTru(truTarget, sma, ecc, 0, gmu);
-        dt = dt1+dt2;
+        if(ecc < 1)
+            dt1 = getDtToTru(2*pi, sma, ecc, truINI, gmu);
+            dt2 = getDtToTru(truTarget, sma, ecc, 0, gmu);
+            dt = dt1+dt2;
+        else
+            meanTarget = computeMeanFromTrueAnom(truTarget, ecc);
+            
+            dM = meanTarget-meanINI;
+            dt = dM/meanMotion;
+        end
     end
     
     if(isnan(dt) || ~isreal(dt))

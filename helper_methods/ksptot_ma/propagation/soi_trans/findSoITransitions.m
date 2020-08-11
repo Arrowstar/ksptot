@@ -122,11 +122,14 @@ function soITrans = findSoITransitions(initialState, maxSearchUT, soiSkipIds, ma
         odefun = @(ut, mean) soiSearchOdeFun(ut, mean, meanMotion);
         
         [maxSearchUTComputed, maxStepSize] = getMaxSoISearchTime(ut, sma, ecc, truINI, bodyInfo, gmu, parentBodyInfo, num_SoI_search_revs, num_soi_search_attempts_per_rev);
-        if(not(isfinite(maxSearchUT)) || isnan(maxSearchUT))
+        if(isempty(maxSearchUT) || not(isfinite(maxSearchUT)) || isnan(maxSearchUT))
             maxSearchUT = maxSearchUTComputed;
         end
-        
+
         tspan = [ut, maxSearchUT];
+        if(isempty(maxSearchUT))
+            fprintf('%0.9f - %0.9f - %0.9f - %0.9f - %0.9f - %0.9f - %0.9f\n\n', ut, sma, ecc, truINI, gmu, num_SoI_search_revs, num_soi_search_attempts_per_rev);
+        end
         
         meanIni = computeMeanFromTrueAnom(truINI, ecc);
         if(ecc < 1)

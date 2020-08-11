@@ -1,5 +1,5 @@
 function executeOptimProblem(handles, problem, recorder)
-    global number_state_log_entries_per_coast use_selective_soi_search options_gravParamType;
+    global number_state_log_entries_per_coast use_selective_soi_search options_gravParamType num_SoI_search_revs num_soi_search_attempts_per_rev;
 
     maData = getappdata(handles.ma_MainGUI,'ma_data');
     celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
@@ -10,10 +10,14 @@ function executeOptimProblem(handles, problem, recorder)
         fnc1 = @() setNumStateLogEntryPerCoastForWorker(number_state_log_entries_per_coast);
         fnc2 = @() setUseSelectiveSoISearchForWorker(use_selective_soi_search);
         fnc3 = @() setGravParamTypeForWorker(options_gravParamType);
+        fnc4 = @() setNumSoISearchRevsForWorker(num_SoI_search_revs);
+        fnc5 = @() setNumSoISearchAttemptsPerRevForWorker(num_soi_search_attempts_per_rev);
         
         pp.parfevalOnAll(fnc1, 0);
         pp.parfevalOnAll(fnc2, 0);
         pp.parfevalOnAll(fnc3, 0);
+        pp.parfevalOnAll(fnc4, 0);
+        pp.parfevalOnAll(fnc5, 0);
     end
 
     try
