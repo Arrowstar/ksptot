@@ -110,7 +110,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             yp = obj.velocity;
         end
         
-        function stateLog = getMAFormattedStateLogMatrix(obj)
+        function stateLog = getMAFormattedStateLogMatrix(obj, needMasses)
             stateLog = zeros(1,13);
             
             if(isempty(obj.event))
@@ -123,10 +123,15 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                 eventNum = NaN;
             end
             
-            massesByType = obj.getTotalVehiclePropMassesByFluidType();
-            if(length(massesByType) > 3)
-                otherMass = sum(massesByType(4:end));
+            if(needMasses)
+                massesByType = obj.getTotalVehiclePropMassesByFluidType();
+                if(length(massesByType) > 3)
+                    otherMass = sum(massesByType(4:end));
+                else
+                    otherMass = 0;
+                end
             else
+                massesByType = [0,0,0];
                 otherMass = 0;
             end
             

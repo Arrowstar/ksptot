@@ -25,7 +25,7 @@ classdef LaunchVehicleExtremaState < matlab.mixin.SetGet & matlab.mixin.Copyable
             if(obj.active == LaunchVehicleExtremaRecordingEnum.Recording) %if it's not recording, then we can just return the exState as it is b/c it won't change     
                 maTaskList = LaunchVehicleExtremaState.gaTaskList;
                 
-                maSubLog = stateLogEntry.getMAFormattedStateLogMatrix();
+                maSubLog = stateLogEntry.getMAFormattedStateLogMatrix(true);
                 taskStr = obj.extrema.quantStr;
                 prevDistTraveled = 0;
                 refBodyId = obj.extrema.refBody.id;

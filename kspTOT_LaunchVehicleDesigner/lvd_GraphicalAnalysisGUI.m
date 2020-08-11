@@ -66,7 +66,7 @@ function lvd_GraphicalAnalysisGUI_OpeningFcn(hObject, eventdata, handles, vararg
     taskList = lvd_getGraphAnalysisTaskList(lvdData, exclude);
     set(handles.depVarListbox,'String',taskList);
 
-    maStateLog = lvdData.stateLog.getMAFormattedStateLogMatrix();
+    maStateLog = lvdData.stateLog.getMAFormattedStateLogMatrix(true);
 
 %     propNames = {'Liquid Fuel/Ox','Monopropellant','Xenon'};
     propNames = lvdData.launchVehicle.tankTypes.getFirstThreeTypesCellArr();
@@ -305,7 +305,7 @@ function genPlotsButton_Callback(hObject, eventdata, handles)
 
     lvdData = getappdata(handles.lvd_GraphicalAnalysisGUI,'lvdData');
     celBodyData = lvdData.celBodyData;
-    maStateLog = lvdData.stateLog.getMAFormattedStateLogMatrix();
+    maStateLog = lvdData.stateLog.getMAFormattedStateLogMatrix(true);
 
     taskInds = get(handles.depVarListbox,'Value');
     if(isempty(taskInds))
@@ -825,7 +825,7 @@ function errMsg = validateInputs(handles)
 %     celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
     lvdData = getappdata(handles.lvd_GraphicalAnalysisGUI,'lvdData');
     celBodyData = lvdData.celBodyData;
-    stateLog = lvdData.stateLog.getMAFormattedStateLogMatrix();
+    stateLog = lvdData.stateLog.getMAFormattedStateLogMatrix(true);
     
     errMsg = {};
     
@@ -1201,7 +1201,7 @@ function setTimeFromScriptMenu_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
     lvdData = getappdata(handles.lvd_GraphicalAnalysisGUI,'lvdData');
-    stateLog = lvdData.stateLog.getMAFormattedStateLogMatrix();
+    stateLog = lvdData.stateLog.getMAFormattedStateLogMatrix(false);
     
     h = gco;
     if(strcmpi(h.Tag,'startTimeText'))

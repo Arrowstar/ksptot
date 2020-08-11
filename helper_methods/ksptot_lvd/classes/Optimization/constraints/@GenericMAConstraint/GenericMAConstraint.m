@@ -30,7 +30,7 @@ classdef GenericMAConstraint < AbstractConstraint
         end
         
         function [c, ceq, value, lwrBnd, uprBnd, type, eventNum] = evalConstraint(obj, stateLog, celBodyData)           
-            stateLogEntry = stateLog.getLastStateLogForEvent(obj.event).getMAFormattedStateLogMatrix();
+            stateLogEntry = stateLog.getLastStateLogForEvent(obj.event).getMAFormattedStateLogMatrix(true);
             type = obj.constraintType;
             
             if(not(isempty(obj.refBodyInfo)))

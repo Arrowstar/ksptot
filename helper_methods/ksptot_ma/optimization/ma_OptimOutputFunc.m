@@ -38,7 +38,7 @@ function [stop,options,optchanged] = ma_OptimOutputFunc(x, optimValues, state, h
     end
 
     if(isa(stateLog,'LaunchVehicleStateLog'))
-        stateLog = stateLog.getMAFormattedStateLogMatrix();
+        stateLog = stateLog.getMAFormattedStateLogMatrix(true);
     end
     
     if(strcmpi(state,'init') || strcmpi(state,'iter'))

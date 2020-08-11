@@ -22,7 +22,7 @@ function [datapt, unitStr] = lvd_GrdObjTasks(stateLogEntry, subTask, grdObj)
             unitStr = 'km';
             
         case 'LoS'
-            maStateLogEntry = stateLogEntry.getMAFormattedStateLogMatrix();
+            maStateLogEntry = stateLogEntry.getMAFormattedStateLogMatrix(false);
             bodyInfo = stateLogEntry.centralBody;
             celBodyData = bodyInfo.celBodyData;
             

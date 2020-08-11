@@ -43,7 +43,7 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             switch viewProfile.trajEvtsViewType
                 case ViewEventsTypeEnum.SoIChunk
                     entries = stateLog.getAllEntries();
-                    maStateLog = stateLog.getMAFormattedStateLogMatrix();
+                    maStateLog = stateLog.getMAFormattedStateLogMatrix(false);
 
                     chunkedStateLog = breakStateLogIntoSoIChunks(maStateLog);
                     if(orbitNumToPlot > size(chunkedStateLog,1))
@@ -94,7 +94,7 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                     entries = stateLog.getAllEntries();
                     subStateLogsMat = NaN(length(entries), 13);
                     for(i=1:length(entries))
-                        tempMaMatrix = entries(i).getMAFormattedStateLogMatrix();
+                        tempMaMatrix = entries(i).getMAFormattedStateLogMatrix(false);
 
                         cartesianEntry = entries(i).getCartesianElementSetRepresentation();
                         cartesianEntry = cartesianEntry.convertToFrame(viewInFrame); 

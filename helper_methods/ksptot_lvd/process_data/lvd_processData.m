@@ -5,7 +5,7 @@ function lvd_processData(handles)
     lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
     celBodyData = lvdData.celBodyData;
     
-    maStateLog = lvdData.stateLog.getMAFormattedStateLogMatrix();
+    maStateLog = lvdData.stateLog.getMAFormattedStateLogMatrix(true);
     
     %%%%%%%%%%
     % Redraw plots

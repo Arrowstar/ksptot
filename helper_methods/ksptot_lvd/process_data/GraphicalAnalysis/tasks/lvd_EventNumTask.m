@@ -4,7 +4,7 @@ function datapt = lvd_EventNumTask(stateLogEntry, subTask)
 
     switch subTask
         case 'eventNum'
-            maStateLog = stateLogEntry.getMAFormattedStateLogMatrix();
+            maStateLog = stateLogEntry.getMAFormattedStateLogMatrix(false);
             datapt = maStateLog(13);
     end
 end

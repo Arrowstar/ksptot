@@ -159,7 +159,7 @@ function propagateScript(handles, lvdData, evtStartNum)
     drawnow;
     
     if(not(isdeployed))
-%         profile off; profile('on','-detail','builtin', '-remove_overhead','on');
+        profile off; profile('on','-detail','builtin', '-remove_overhead','on');
     end
     
     lvdData.validation.clearOutputs();
@@ -172,7 +172,7 @@ function propagateScript(handles, lvdData, evtStartNum)
     execTime = toc(t);
     
     if(not(isdeployed))
-%         profile viewer;
+        profile viewer;
     end
     
     handles.scriptWorkingLbl.Visible = 'off';
@@ -479,7 +479,7 @@ function decrOrbitToPlotNum_Callback(hObject, eventdata, handles)
         orbitNumToPlot = orbitNumToPlot - 1;
 
     elseif(orbitNumToPlot == 1)
-        maStateLog = lvdData.stateLog.getMAFormattedStateLogMatrix();
+        maStateLog = lvdData.stateLog.getMAFormattedStateLogMatrix(false);
         chunkedStateLog = breakStateLogIntoSoIChunks(maStateLog);
         orbitNumToPlot = size(chunkedStateLog,1);
     end
@@ -497,7 +497,7 @@ function incrOrbitToPlotNum_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 %     orbitNumToPlot = get(handles.dispAxes,'UserData');
     lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
-    maStateLog = lvdData.stateLog.getMAFormattedStateLogMatrix();
+    maStateLog = lvdData.stateLog.getMAFormattedStateLogMatrix(false);
     chunkedStateLog = breakStateLogIntoSoIChunks(maStateLog);
     orbitNumToPlot = lvdData.viewSettings.selViewProfile.orbitNumToPlot;
     
@@ -637,7 +637,7 @@ function viewStateAfterSelectedEventMenu_Callback(hObject, eventdata, handles)
     lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
     
     eventNum = handles.scriptListbox.Value;
-    stateLog = lvdData.stateLog.getMAFormattedStateLogMatrix();
+    stateLog = lvdData.stateLog.getMAFormattedStateLogMatrix(true);
     
     state = stateLog(stateLog(:,13)==eventNum,:);
     state = state(end,:);
@@ -654,7 +654,7 @@ function copyUtAtStartOfSelEventMenu_Callback(hObject, eventdata, handles)
     lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
     
     eventNum = handles.scriptListbox.Value;
-    stateLog = lvdData.stateLog.getMAFormattedStateLogMatrix();
+    stateLog = lvdData.stateLog.getMAFormattedStateLogMatrix(false);
     
     state = stateLog(stateLog(:,13)==eventNum,:);
     state = state(1,:);
@@ -669,7 +669,7 @@ function copyUtAtEndOfSelEventMenu_Callback(hObject, eventdata, handles)
     lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
     
     eventNum = handles.scriptListbox.Value;
-    stateLog = lvdData.stateLog.getMAFormattedStateLogMatrix();
+    stateLog = lvdData.stateLog.getMAFormattedStateLogMatrix(false);
     
     state = stateLog(stateLog(:,13)==eventNum,:);
     state = state(end,:);
@@ -684,7 +684,7 @@ function copyDurationOfSelEventMenu_Callback(hObject, eventdata, handles)
     lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
     
     eventNum = handles.scriptListbox.Value;
-    stateLog = lvdData.stateLog.getMAFormattedStateLogMatrix();
+    stateLog = lvdData.stateLog.getMAFormattedStateLogMatrix(false);
     
     eventLog = stateLog(stateLog(:,13)==eventNum,:);
     duration = max(eventLog(:,1)) - min(eventLog(:,1));
@@ -700,7 +700,7 @@ function copyOrbitAfterSelectedEventMenu_Callback(hObject, eventdata, handles)
     celBodyData = getappdata(handles.ma_LvdMainGUI,'celBodyData');
     
     eventNum = handles.scriptListbox.Value;
-    stateLog = lvdData.stateLog.getMAFormattedStateLogMatrix();    
+    stateLog = lvdData.stateLog.getMAFormattedStateLogMatrix(false);    
     
     state = stateLog(stateLog(:,13)==eventNum,:);
     state = state(end,:);

@@ -21,7 +21,7 @@ function datapt = lvd_TwoBodyImpactPointTasks(stateLogEntry, subTask)
         
         truTarget = 2*pi - computeTrueAFromRadiusEcc(bodyRadius, sma, ecc); %2*pi - tru to get the descending tru anomaly
 
-        maStateLog = stateLogEntry.getMAFormattedStateLogMatrix();
+        maStateLog = stateLogEntry.getMAFormattedStateLogMatrix(false);
 
         eventNum = 1;
         considerSoITransitions = false;

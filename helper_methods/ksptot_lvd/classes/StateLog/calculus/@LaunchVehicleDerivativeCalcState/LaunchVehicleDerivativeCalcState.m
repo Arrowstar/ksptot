@@ -21,9 +21,9 @@ classdef LaunchVehicleDerivativeCalcState < AbstractLaunchVehicleCalculusState
                     [deriv,~,~] = derivest(obj.gridInterp, time, 'DerivativeOrder',1, 'MethodOrder',2, 'Style','backward', 'Vectorized','yes');
                 end
                 
-                if(isnan(deriv))
-                    error('Derivative value is NaN: %s', obj.calcObj.quantStr);
-                end
+%                 if(isnan(deriv))
+%                     error('Derivative value is NaN: %s', obj.calcObj.quantStr);
+%                 end
             end
         end
     end

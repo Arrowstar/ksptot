@@ -46,10 +46,10 @@ classdef LaunchVehicleStateLog < matlab.mixin.SetGet
             obj.nonSeqEvtsStates(indsToClear) = [];
         end
         
-        function stateLog = getMAFormattedStateLogMatrix(obj)
+        function stateLog = getMAFormattedStateLogMatrix(obj, needMasses)
             stateLog = zeros(length(obj.entries), 13);
             for(i=1:length(obj.entries)) %#ok<*NO4LP>
-                stateLog(i,:) = obj.entries(i).getMAFormattedStateLogMatrix();
+                stateLog(i,:) = obj.entries(i).getMAFormattedStateLogMatrix(needMasses);
             end
         end
         
