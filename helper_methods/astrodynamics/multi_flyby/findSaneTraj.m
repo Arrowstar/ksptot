@@ -52,7 +52,7 @@ function [x, dv, rp, orbitsIn, orbitsOut, deltaVVect, vInfDNorm, xferOrbits, c, 
     
     times = cumsum(x3(1:length(bodiesInfo)));
     parentBodyFrame = bodiesInfo{1}.getParBodyInfo().getBodyCenteredInertialFrame();
-    for(i=1:size(orbitsIn,1))
+    for(i=1:size(orbitsIn,1)) %this section handle non-uniform body spin axis
         time = times(1+i);
         bodyFrame = flybyBodies{i}.getBodyCenteredInertialFrame();
         
@@ -72,7 +72,7 @@ function [x, dv, rp, orbitsIn, orbitsOut, deltaVVect, vInfDNorm, xferOrbits, c, 
         inOrbitKepState = KeplerianElementSet(time, hSMAIn', hEccIn', hIncIn', hRAANIn', hArgIn', 0, bodyFrame);
         outOrbitKepState = KeplerianElementSet(time, hSMAOut', hEccOut', hIncOut', hRAANOut', hArgOut', 0, bodyFrame);
         
-        deltaVVect(:,1) = outOrbitKepState.convertToCartesianElementSet().vVect - inOrbitKepState.convertToCartesianElementSet().vVect;
+        deltaVVect(:,i) = outOrbitKepState.convertToCartesianElementSet().vVect - inOrbitKepState.convertToCartesianElementSet().vVect;
     end
     
     cartStateParent = CartesianElementSet(times(1), r1B(:,1), v1(:,1), parentBodyFrame);
