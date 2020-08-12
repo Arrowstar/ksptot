@@ -1,5 +1,5 @@
 classdef AbstractFixedStepIntegrator < AbstractIntegrator
-    %ODE5Integrator Summary of this class goes here
+    %AbstractFixedStepIntegrator Summary of this class goes here
     %   Detailed explanation goes here
     
     properties(Constant, Access=private)
@@ -39,15 +39,9 @@ classdef AbstractFixedStepIntegrator < AbstractIntegrator
 %        Ct = [1/2, 1/2, 1];
     end
     
-%     methods
-%         function obj = ODE5Integrator()
-%             
-%         end
-%     end
-    
     methods(Static)   
         function [t,y, te,ye,ie] = integrate(odefun, tspan, y0, options)
-            [h,y0,~] = ODE5Integrator.checkInputs(odefun, tspan, y0);
+            [h,y0,~] = AbstractFixedStepIntegrator.checkInputs(odefun, tspan, y0);
             
             if(not(isempty(options.OutputFcn)) && ...
                isa(options.OutputFcn,'function_handle'))
@@ -103,7 +97,7 @@ classdef AbstractFixedStepIntegrator < AbstractIntegrator
                 yi = Y(:,i-1);
                 
                 t(i) = tspan(i);
-                Y(:,i) = ODE5Integrator.stepOnce(odefun, ti, yi, hi, neq);
+                Y(:,i) = AbstractFixedStepIntegrator.stepOnce(odefun, ti, yi, hi, neq);
                 
                 if(hasEvents)
                     [evtValues,evtIsTerminal,evtDirection] = eventFcn(t(i),Y(:,i)); %#ok<RHSFN>
@@ -112,8 +106,8 @@ classdef AbstractFixedStepIntegrator < AbstractIntegrator
                     if(any(signDetect))
                         diffForDeriv = sign(evtValues - prevEvtValues);
                         
-                        rootFcn = @(subHi) ODE5Integrator.rootFindingFunc(subHi, odefun, ti, yi, neq, eventFcn);
-                        [tSubI,fval,exitflag,~] = fminbnd(rootFcn,t(i-1),t(i), optimset('TolX',1E-6));
+                        rootFcn = @(subHi) AbstractFixedStepIntegrator.rootFindingFunc(subHi, odefun, ti, yi, neq, eventFcn);
+                        [tSubI,~,exitflag,~] = fminbnd(rootFcn,t(i-1),t(i), optimset('TolX',1E-5));
 
                         if(exitflag == 1)
                             [~, evtInd] = rootFcn(tSubI);
@@ -130,7 +124,7 @@ classdef AbstractFixedStepIntegrator < AbstractIntegrator
                                 h = [h1, hi, h2];
 
                                 t(i) = tspan(i);
-                                Y(:,i) = ODE5Integrator.stepOnce(odefun, ti, yi, hi, neq);
+                                Y(:,i) = AbstractFixedStepIntegrator.stepOnce(odefun, ti, yi, hi, neq);
 
                                 ie(end+1,1) = evtInd;
                                 te(end+1,1) = tSubI;
@@ -210,7 +204,7 @@ classdef AbstractFixedStepIntegrator < AbstractIntegrator
         end
         
         function [yNp1, fEvals] = stepOnce(odefun, ti, yi, hi, neq)
-            [A,B,C] = ODE5Integrator.getButcherTableauData();
+            [A,B,C] = ODE5Integrator.getButcherTableauData(); %needs to be generalized
             
             nstages = length(B);
             F = NaN(neq,nstages);
@@ -230,13 +224,14 @@ classdef AbstractFixedStepIntegrator < AbstractIntegrator
     methods(Static, Access=private)
         function [rootOutput, I] = rootFindingFunc(subT, odefun, ti, yi, neq, eventFcn)
             subHi = subT - ti;
-            yNp1 = ODE5Integrator.stepOnce(odefun, ti, yi, subHi, neq);
+            yNp1 = AbstractFixedStepIntegrator.stepOnce(odefun, ti, yi, subHi, neq);
             
             [evtValues,~,~] = eventFcn(subT,yNp1);
             
             rootOutput = evtValues;
             [~,I] = min(abs(rootOutput));
             rootOutput = abs(rootOutput(I));
+%             rootOutput = rootOutput(I);
         end
     end
 end
