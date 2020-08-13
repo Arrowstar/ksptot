@@ -22,7 +22,7 @@ classdef (Abstract) AbstractElementSet < matlab.mixin.SetGet & matlab.mixin.Cust
         
         elemVect = getElementVector(obj)
         
-        function convertedElemSet = convertToFrame(obj, toFrame)
+        function convertedElemSet = convertToFrame(obj, toFrame)            
             if(obj.frame == toFrame)
                 convertedElemSet = obj;
                 return;

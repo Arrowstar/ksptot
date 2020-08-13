@@ -1,4 +1,4 @@
-function temperature = getTemperatureAtAltitude(bodyInfo, altitude, lat, ut, long, celBodyData) 
+function temperature = getTemperatureAtAltitude(bodyInfo, altitude, lat, ut, long) 
     if(altitude <= bodyInfo.atmohgt && altitude >= 0)
         if(bodyInfo.doNotUseAtmoTempSunMultCurve)
             atmosphereTemperatureOffset = 1;
@@ -9,10 +9,10 @@ function temperature = getTemperatureAtAltitude(bodyInfo, altitude, lat, ut, lon
             if(bodyInfo.doNotUseLatTempSunMultCurve)
                 sunDotNormal = 1;
             else
-%                 sunDotNormal = computeSunDotNormal(ut, long, bodyInfo, celBodyData);
+%                 sunDotNormal = computeSunDotNormal(ut, long, bodyInfo, bodyInfo.celBodyData);
                 sunDotNormal = bodyInfo.getCachedSunDotNormal(ut, long);
             end
-
+            
             if(bodyInfo.doNotUseAxialTempSunMultCurve)
                 axialtempsunbias = 1;
             else
@@ -26,7 +26,7 @@ function temperature = getTemperatureAtAltitude(bodyInfo, altitude, lat, ut, lon
                                         axialtempsunbias * bodyInfo.axialtempsunmultcurve(abs(lat)) + ...
                                         ecctempbias;
         end
-
+        
         temperature = bodyInfo.atmotempcurve(altitude) + ... %base temperature
                       atmosphereTemperatureOffset * bodyInfo.atmotempsunmultcurve(altitude); % altitude-based multiplier to temperature delta
     elseif(altitude <= 0)

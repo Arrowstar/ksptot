@@ -7,7 +7,7 @@ function [density] = getAtmoDensityAtAltitude(bodyInfo, altitude, lat, ut, long,
         pressure = getPressureAtAltitude(bodyInfo, altitude);
         
         if(pressure > 0)
-            temperature = getTemperatureAtAltitude(bodyInfo, altitude, lat, ut, long, celBodyData);
+            temperature = getTemperatureAtAltitude(bodyInfo, altitude, lat, ut, long);
 
             density = getDensityFromIdealGasLaw(pressure, temperature, bodyInfo.atmomolarmass);
             if(density < 0)

@@ -42,7 +42,7 @@ function datapt = ma_GAAeroTasks(stateLogEntry, subTask, celBodyData)
 
             if(altitude <= bodyInfo.atmohgt && altitude >= 0)
                 [lat, long, ~, ~, ~, ~, ~, ~] = getLatLongAltFromInertialVect(ut, rVectECI, bodyInfo, vVectECI);
-                temperature = getTemperatureAtAltitude(bodyInfo, altitude, lat, ut, long, celBodyData) ;
+                temperature = getTemperatureAtAltitude(bodyInfo, altitude, lat, ut, long) ;
             elseif(altitude <= 0)
                 temperature = 0;
             else 

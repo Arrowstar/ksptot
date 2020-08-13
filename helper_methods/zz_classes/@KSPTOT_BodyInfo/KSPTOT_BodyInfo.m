@@ -195,7 +195,7 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
         end
         
         function temperature = getBodyAtmoTemperature(obj, time, lat, long, altitude)
-            temperature = getTemperatureAtAltitude(obj, altitude, lat, time, long, obj.celBodyData);
+            temperature = getTemperatureAtAltitude(obj, altitude, lat, time, long);
         end
         
         function sunDotNormal = getCachedSunDotNormal(obj, time, long)

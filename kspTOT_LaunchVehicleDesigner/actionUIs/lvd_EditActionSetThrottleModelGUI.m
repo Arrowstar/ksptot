@@ -176,7 +176,7 @@ function varargout = lvd_EditActionSetThrottleModelGUI_OutputFcn(hObject, eventd
 function errMsg = validateInputs(handles)
     errMsg = {};
     
-    %Angle 1
+    %Throttle
     throttleConst = str2double(get(handles.throttleConstTermText,'String'));
     enteredStr = get(handles.throttleConstTermText,'String');
     numberName = sprintf('Throttle Constant Term');
@@ -204,67 +204,73 @@ function errMsg = validateInputs(handles)
     
     %%%%%Bounds
     %Throttle Const
-    throttleConstLB = str2double(get(handles.throttleConstLbText,'String'));
-    enteredStr = get(handles.throttleConstLbText,'String');
-    numberName = sprintf('Throttle Constant Term Lower Bound');
-    lb = 0;
-    ub = 100;
-    isInt = false;
-    errMsg = validateNumber(throttleConstLB, numberName, lb, ub, isInt, errMsg, enteredStr);
-    
-    throttleConstUB = str2double(get(handles.throttleConstUbText,'String'));
-    enteredStr = get(handles.throttleConstUbText,'String');
-    numberName = sprintf('Throttle Constant Term Upper Bound');
-    lb = throttleConstLB;
-    ub = 100;
-    isInt = false;
-    errMsg = validateNumber(throttleConstUB, numberName, lb, ub, isInt, errMsg, enteredStr);
+    if(handles.throttleConstOptCheckbox.Value == 1)
+        throttleConstLB = str2double(get(handles.throttleConstLbText,'String'));
+        enteredStr = get(handles.throttleConstLbText,'String');
+        numberName = sprintf('Throttle Constant Term Lower Bound');
+        lb = 0;
+        ub = 100;
+        isInt = false;
+        errMsg = validateNumber(throttleConstLB, numberName, lb, ub, isInt, errMsg, enteredStr);
+
+        throttleConstUB = str2double(get(handles.throttleConstUbText,'String'));
+        enteredStr = get(handles.throttleConstUbText,'String');
+        numberName = sprintf('Throttle Constant Term Upper Bound');
+        lb = throttleConstLB;
+        ub = 100;
+        isInt = false;
+        errMsg = validateNumber(throttleConstUB, numberName, lb, ub, isInt, errMsg, enteredStr);
+    end
     
     %Throttle Linear
-    throttleLinearLB = str2double(get(handles.throttleLinLbText,'String'));
-    enteredStr = get(handles.throttleLinLbText,'String');
-    numberName = sprintf('Throttle Linear Term Lower Bound');
-    lb = -Inf;
-    ub = Inf;
-    isInt = false;
-    errMsg = validateNumber(throttleLinearLB, numberName, lb, ub, isInt, errMsg, enteredStr);
-    
-    throttleLinearUB = str2double(get(handles.throttleLinUbText,'String'));
-    enteredStr = get(handles.throttleLinUbText,'String');
-    numberName = sprintf('Throttle Linear Term Upper Bound');
-    lb = throttleLinearLB;
-    ub = Inf;
-    isInt = false;
-    errMsg = validateNumber(throttleLinearUB, numberName, lb, ub, isInt, errMsg, enteredStr);
+    if(handles.throttleLinOptCheckbox.Value == 1)
+        throttleLinearLB = str2double(get(handles.throttleLinLbText,'String'));
+        enteredStr = get(handles.throttleLinLbText,'String');
+        numberName = sprintf('Throttle Linear Term Lower Bound');
+        lb = -Inf;
+        ub = Inf;
+        isInt = false;
+        errMsg = validateNumber(throttleLinearLB, numberName, lb, ub, isInt, errMsg, enteredStr);
+
+        throttleLinearUB = str2double(get(handles.throttleLinUbText,'String'));
+        enteredStr = get(handles.throttleLinUbText,'String');
+        numberName = sprintf('Throttle Linear Term Upper Bound');
+        lb = throttleLinearLB;
+        ub = Inf;
+        isInt = false;
+        errMsg = validateNumber(throttleLinearUB, numberName, lb, ub, isInt, errMsg, enteredStr);
+    end
     
     %Throttle Accel
-    throttleAccelLB = str2double(get(handles.throttleAccelLbText,'String'));
-    enteredStr = get(handles.throttleAccelLbText,'String');
-    numberName = sprintf('Throttle Acceleration Term Lower Bound');
-    lb = -Inf;
-    ub = Inf;
-    isInt = false;
-    errMsg = validateNumber(throttleAccelLB, numberName, lb, ub, isInt, errMsg, enteredStr);
+    if(handles.throttleAccelOptCheckbox.Value == 1)
+        throttleAccelLB = str2double(get(handles.throttleAccelLbText,'String'));
+        enteredStr = get(handles.throttleAccelLbText,'String');
+        numberName = sprintf('Throttle Acceleration Term Lower Bound');
+        lb = -Inf;
+        ub = Inf;
+        isInt = false;
+        errMsg = validateNumber(throttleAccelLB, numberName, lb, ub, isInt, errMsg, enteredStr);
 
-    throttleAccelUB = str2double(get(handles.throttleAccelUbText,'String'));
-    enteredStr = get(handles.throttleAccelUbText,'String');
-    numberName = sprintf('Throttle Acceleration Term Upper Bound');
-    lb = throttleAccelLB;
-    ub = Inf;
-    isInt = false;
-    errMsg = validateNumber(throttleAccelUB, numberName, lb, ub, isInt, errMsg, enteredStr);   
+        throttleAccelUB = str2double(get(handles.throttleAccelUbText,'String'));
+        enteredStr = get(handles.throttleAccelUbText,'String');
+        numberName = sprintf('Throttle Acceleration Term Upper Bound');
+        lb = throttleAccelLB;
+        ub = Inf;
+        isInt = false;
+        errMsg = validateNumber(throttleAccelUB, numberName, lb, ub, isInt, errMsg, enteredStr);   
+    end
     
     if(isempty(errMsg))
-        if(throttleConst < throttleConstLB || throttleConst > throttleConstUB)
+        if(handles.throttleConstOptCheckbox.Value == 1 && (throttleConst < throttleConstLB || throttleConst > throttleConstUB))
             errMsg{end+1} = 'Throttle constant term must be between the upper and lower optimization bounds.';
         end
         
-        if(throttleLinear < throttleLinearLB || throttleLinear > throttleLinearUB)
+        if(handles.throttleLinOptCheckbox.Value == 1 && (throttleLinear < throttleLinearLB || throttleLinear > throttleLinearUB))
             errMsg{end+1} = 'Throttle linear term must be between the upper and lower optimization bounds.';
         end
         
-        if(throttleAccel < throttleAccelLB || throttleAccel > throttleAccelUB)
-            errMsg{end+1} = 'Throttle linear term must be between the upper and lower optimization bounds.';
+        if(handles.throttleAccelOptCheckbox.Value == 1 && (throttleAccel < throttleAccelLB || throttleAccel > throttleAccelUB))
+            errMsg{end+1} = 'Throttle acceleration term must be between the upper and lower optimization bounds.';
         end
     end
     

@@ -102,15 +102,45 @@ classdef AbstractFixedStepIntegrator < AbstractIntegrator
                 if(hasEvents)
                     [evtValues,evtIsTerminal,evtDirection] = eventFcn(t(i),Y(:,i)); %#ok<RHSFN>
                     
-                    signDetect = (prevEvtValues .* evtValues < 0) | evtValues == 0;
-                    if(any(signDetect))
-                        diffForDeriv = sign(evtValues - prevEvtValues);
+                    signChangesBool = (prevEvtValues .* evtValues < 0);
+                    evtValZeroBool = evtValues == 0;
+                    
+                    rootDetect = signChangesBool | evtValZeroBool;
+                    if(any(rootDetect))
+                        rootFcnFzero = @(subHi) AbstractFixedStepIntegrator.rootFindingFunc(subHi, odefun, ti, yi, neq, eventFcn, true);
                         
-                        rootFcn = @(subHi) AbstractFixedStepIntegrator.rootFindingFunc(subHi, odefun, ti, yi, neq, eventFcn);
-                        [tSubI,~,exitflag,~] = fminbnd(rootFcn,t(i-1),t(i), optimset('TolX',1E-5));
+                        if(all(rootDetect == evtValZeroBool)) %we nailed it on the money
+                            tSubI = t(i);
+                            exitflag = 1;
+                            
+                        else %use root finding to actually find the event root
+                            m = (evtValues - prevEvtValues) / (t(i) - t(i-1));
+                            b = (evtValues - t(i) .* m);
+                            t0 = -b./m;
+                            
+                            t0(rootDetect == 0) = NaN; 
+                            [minT0, ~] = min(t0);
+                            
+%                             [tSubI, ~, exitflag] = fzero(rootFcnFzero, minT0);
+
+                            tSubI = SecantMethod(rootFcnFzero, t(i-1), minT0, 1e-6);
+                            
+                            if(isnan(tSubI))
+                                exitflag = -1;
+                            else
+                                exitflag = 1;
+                            end
+                            
+                            if(exitflag ~= 1 || tSubI < t(i-1) || tSubI > t(i))
+                                rootFcnFminBnd = @(subHi) AbstractFixedStepIntegrator.rootFindingFunc(subHi, odefun, ti, yi, neq, eventFcn, false);
+                                [tSubI,~,exitflag,~] = fminbnd(rootFcnFminBnd, t(i-1), t(i), optimset('TolX',1E-5));
+                            end
+                        end
 
                         if(exitflag == 1)
-                            [~, evtInd] = rootFcn(tSubI);
+                            diffForDeriv = sign(evtValues - prevEvtValues);
+                            
+                            [~, evtInd] = rootFcnFzero(tSubI);
                             if(evtDirection(evtInd) == 0 || ...
                                diffForDeriv(evtInd) == evtDirection(evtInd))
                                 
@@ -222,7 +252,7 @@ classdef AbstractFixedStepIntegrator < AbstractIntegrator
     end
     
     methods(Static, Access=private)
-        function [rootOutput, I] = rootFindingFunc(subT, odefun, ti, yi, neq, eventFcn)
+        function [rootOutput, I] = rootFindingFunc(subT, odefun, ti, yi, neq, eventFcn, forRootFinder)
             subHi = subT - ti;
             yNp1 = AbstractFixedStepIntegrator.stepOnce(odefun, ti, yi, subHi, neq);
             
@@ -230,8 +260,12 @@ classdef AbstractFixedStepIntegrator < AbstractIntegrator
             
             rootOutput = evtValues;
             [~,I] = min(abs(rootOutput));
-            rootOutput = abs(rootOutput(I));
-%             rootOutput = rootOutput(I);
+            
+            if(forRootFinder)
+                rootOutput = rootOutput(I); %for fzero and the like
+            else
+                rootOutput = abs(rootOutput(I)); %for an optimizer like fminbnd
+            end
         end
     end
 end
