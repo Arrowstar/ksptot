@@ -41,5 +41,9 @@ function eventLog = ma_executeEvent(event, initialState, eventNum, maData, celBo
         otherwise
             error(['Did not recongize event of type ', type]);
     end
+    
+    if(size(eventLog,1) >= 1)
+        eventLog(:,13) = eventNum;
+    end
 end
 
