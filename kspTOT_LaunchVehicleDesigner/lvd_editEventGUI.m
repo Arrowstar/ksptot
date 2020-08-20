@@ -22,7 +22,7 @@ function varargout = lvd_editEventGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_editEventGUI
 
-% Last Modified by GUIDE v2.5 15-Feb-2020 15:57:59
+% Last Modified by GUIDE v2.5 20-Aug-2020 09:59:48
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -109,6 +109,8 @@ function populateGUI(handles, event)
     handles.propagatorCombo.Value = ind;
     propagatorCombo_Callback(handles.propagatorCombo, [], handles);
     
+    handles.propDirCombo.String = PropagationDirectionEnum.getListBoxStr();
+    handles.propDirCombo.Value = PropagationDirectionEnum.getIndForName(event.propDir.name);
     
     handles.checkSoITransCheckbox.Value = double(event.checkForSoITrans);
 
@@ -155,6 +157,10 @@ function varargout = lvd_editEventGUI_OutputFcn(hObject, eventdata, handles)
         
         propagatorObj = getSelectedEventPropagatorObj(handles);
         event.propagatorObj = propagatorObj;
+        
+        nameStr = handles.propDirCombo.String(handles.propDirCombo.Value);
+        [enum,~] = PropagationDirectionEnum.getEnumForListboxStr(nameStr);
+        event.propDir = enum;
         
         event.checkForSoITrans = logical(handles.checkSoITransCheckbox.Value);
         
@@ -757,3 +763,26 @@ function propagatorOptionsButton_Callback(hObject, eventdata, handles)
     propagatorObj = getSelectedEventPropagatorObj(handles);
 
     propagatorObj.openOptionsDialog();
+
+
+% --- Executes on selection change in propDirCombo.
+function propDirCombo_Callback(hObject, eventdata, handles)
+% hObject    handle to propDirCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns propDirCombo contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from propDirCombo
+
+
+% --- Executes during object creation, after setting all properties.
+function propDirCombo_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to propDirCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

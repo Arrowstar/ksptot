@@ -88,6 +88,7 @@ classdef SetKinematicStateAction < AbstractEventAction
                     if(not(isempty(posVelEvtStateLog)))
                         newStateLogEntry.position = posVelEvtStateLog(end).position;
                         newStateLogEntry.velocity = posVelEvtStateLog(end).velocity;
+                        newStateLogEntry.centralBody = posVelEvtStateLog(end).centralBody;
                     end
                 end
             else

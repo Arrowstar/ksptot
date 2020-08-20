@@ -115,6 +115,9 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                     [times,ia,~] = unique(times,'stable','rows');
                     rVects = rVects(ia,:);
                     
+                    [times,I] = sort(times);
+                    rVects = rVects(I,:);
+                    
                     if(length(unique(times)) > 1)
                         trajMarkerData.addData(times, rVects, evtColor);
                     end
@@ -122,7 +125,7 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
             end
         end
         
-        function createBodyMarkerData(obj, dAxes, subStateLogs, viewInFrame, showSoI, meshEdgeAlpha)
+        function createBodyMarkerData(obj, dAxes, subStateLogs, viewInFrame, showSoI, meshEdgeAlpha, evts)
             obj.clearAllBodyData();
             
             for(i=1:length(obj.bodiesToPlot))
@@ -146,6 +149,9 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                     if(size(subStateLogs{j},1) > 0)
                         times = subStateLogs{j}(:,1);
                         
+                        evtNum = subStateLogs{j}(1,13);
+                        evt = evts(evtNum);
+                        
                         if(isfinite(bodyOrbitPeriod))
                             numPeriods = (max(times) - min(times))/bodyOrbitPeriod;
                             times = linspace(min(times), max(times), max(1000*numPeriods,length(times)));
@@ -160,9 +166,25 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                         end
                         
                         rVects = [states.rVect];
-                        plot3(dAxes, rVects(1,:), rVects(2,:), rVects(3,:), '-', 'Color',bColorRGB, 'LineWidth',1.5);
+                        
+                        switch(evt.plotMethod)
+                            case EventPlottingMethodEnum.PlotContinuous
+                                %nothing
+
+                            case EventPlottingMethodEnum.SkipFirstState
+                                times = times(2:end);
+                                rVects = rVects(2:end,:);
+
+                            case EventPlottingMethodEnum.DoNotPlot
+                                times = [];
+                                rVects = [];
+
+                            otherwise
+                                error('Unknown event plotting method: %s', EventPlottingMethodEnum.DoNotPlot.name);
+                        end
                         
                         if(length(unique(times)) > 1)
+                            plot3(dAxes, rVects(1,:), rVects(2,:), rVects(3,:), '-', 'Color',bColorRGB, 'LineWidth',1.5);
                             bodyMarkerData.addData(times, rVects);
                         end
                     end

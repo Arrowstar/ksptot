@@ -88,7 +88,7 @@ function populateGUI(handles, action, lvdData)
     
     if(isempty(orbitModel.frame))
         bodyInfo = lvdData.getDefaultInitialBodyInfo(lvdData.celBodyData);
-        bodyInfo.getBodyCenteredInertialFrame();
+        newFrame = bodyInfo.getBodyCenteredInertialFrame();
         
         orbitModel.frame = newFrame;
     end

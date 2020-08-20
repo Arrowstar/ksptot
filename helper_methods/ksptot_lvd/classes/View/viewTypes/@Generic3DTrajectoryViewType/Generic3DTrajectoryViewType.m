@@ -114,7 +114,7 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                 otherwise
                     error('Unknown trajectory view type when plotting trajectory: %s', viewProfile.frame.name);
             end
-                       
+                                  
             eventsList = [];
             minTime = Inf;
             maxTime = -Inf;
@@ -269,7 +269,7 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             end
             
             hold(dAxes,'on');
-            viewProfile.createBodyMarkerData(dAxes, subStateLogs, viewInFrame, showSoI, viewProfile.meshEdgeAlpha);
+            viewProfile.createBodyMarkerData(dAxes, subStateLogs, viewInFrame, showSoI, viewProfile.meshEdgeAlpha, lvdData.script.evts);
             viewProfile.createTrajectoryMarkerData(subStateLogs, lvdData.script.evts);
             viewProfile.createBodyAxesData(lvdStateLogEntries, lvdData.script.evts, viewInFrame);
             viewProfile.createSunLightSrc(dAxes, viewInFrame);
@@ -286,8 +286,8 @@ function [childrenHGs] = plotSubStateLog(subStateLog, prevSubStateLog, lvdData, 
         return;
     end
     
-    bodyID = subStateLog(1,8);
-    bodyInfo = getBodyInfoByNumber(bodyID, celBodyData);
+%     bodyID = subStateLog(1,8);
+%     bodyInfo = getBodyInfoByNumber(bodyID, celBodyData);
 
     eventNum = subStateLog(1,13);
     event = lvdData.script.getEventForInd(eventNum);

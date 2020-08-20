@@ -32,7 +32,11 @@ classdef LaunchVehicleViewProfileBodyData < matlab.mixin.SetGet
             obj.zInterps{end+1} = griddedInterpolant(times, rVects(3,:), 'spline', 'linear');
         end
         
-        function plotBodyMarkerAtTime(obj, time, hAx)           
+        function plotBodyMarkerAtTime(obj, time, hAx)    
+            if(not(isempty(obj.markerPlot)))
+                obj.markerPlot.Visible = 'off';
+            end
+            
             for(i=1:length(obj.timesArr))
                 times = obj.timesArr{i};
                 
@@ -52,7 +56,6 @@ classdef LaunchVehicleViewProfileBodyData < matlab.mixin.SetGet
                         if(not(isempty(obj.markerPlot)) && isvalid(obj.markerPlot) && isa(obj.markerPlot, 'matlab.graphics.primitive.Transform'))
                             M = makehgtform('translate',[x,y,z]);
                             set(obj.markerPlot,'Matrix',M);
-                            
                         else
                             hold(hAx,'on');   
                             obj.markerPlot = hgtransform('Parent', hAx);
@@ -66,6 +69,8 @@ classdef LaunchVehicleViewProfileBodyData < matlab.mixin.SetGet
                             
                             hold(hAx,'off');
                         end
+                        
+                        obj.markerPlot.Visible = 'on';
                     elseif(obj.plotStyle == ViewProfileBodyPlottingStyle.MeshSphere)
                         if(not(isempty(obj.markerPlot)) && isvalid(obj.markerPlot) && isa(obj.markerPlot, 'matlab.graphics.primitive.Transform'))
                             M = makehgtform('translate',[x,y,z]);
@@ -90,6 +95,8 @@ classdef LaunchVehicleViewProfileBodyData < matlab.mixin.SetGet
                             
                             hold(hAx,'off');
                         end
+                        
+                        obj.markerPlot.Visible = 'on';
                     else
                         error('Unknown body plotting style: %s', obj.plotStyle.name);
                     end

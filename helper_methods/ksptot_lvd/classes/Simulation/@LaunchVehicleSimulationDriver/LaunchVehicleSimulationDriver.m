@@ -46,13 +46,7 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
         
         function [newStateLogEntries] = integrateOneEvent(obj, event, eventInitStateLogEntry, tStartPropTime, tStartSimTime, isSparseOutput, checkForSoITrans, activeNonSeqEvts)
             [t0,y0, ~] = eventInitStateLogEntry.getFirstOrderIntegratorStateRepresentation();
-            
-            %set max integration time
-            maxT = tStartSimTime+obj.simMaxDur;
-            if(t0 > maxT)
-                maxT = t0;
-            end
-            
+                       
             %get integrator and propagator
             if(isempty(event.integratorObj))
                 event.integratorObj = event.ode45Integrator;
@@ -68,18 +62,52 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
             integratorOptions = integrator.getOptions();
             integrationStep = integratorOptions.getIntegratorStepSize();
             
-            if(integrationStep <= 0)
-                tspan = [t0, maxT];
-            else
-                if(maxT - t0 < integrationStep)
+            %get propagation direction in time
+            propagationDir = event.propDir;
+            
+            if(propagationDir == PropagationDirectionEnum.Forward) 
+            %set max integration time
+                maxT = tStartSimTime+obj.simMaxDur;
+                if(t0 > maxT)
+                    maxT = t0;
+                end
+                
+                if(integrationStep <= 0)
                     tspan = [t0, maxT];
                 else
-                    tspan = [t0:integrationStep:maxT]; %#ok<NBRAK>
+                    if(maxT - t0 < integrationStep)
+                        tspan = [t0, maxT];
+                    else
+                        tspan = [t0:integrationStep:maxT]; %#ok<NBRAK>
+                    end
                 end
-            end
-            
-            if(length(tspan) == 1)
-                tspan = [tspan(1), tspan(1)+integrationStep];
+
+                if(length(tspan) == 1)
+                    tspan = [tspan(1), tspan(1)+integrationStep];
+                end
+                
+            elseif(propagationDir == PropagationDirectionEnum.Backward) 
+                maxT = tStartSimTime-obj.simMaxDur;
+                if(t0 < maxT)
+                    maxT = t0;
+                end                
+                
+                if(integrationStep <= 0)
+                    tspan = [t0, maxT];
+                else
+                    if(t0 - maxT < integrationStep)
+                        tspan = [t0, maxT];
+                    else
+                        tspan = [t0:-1*integrationStep:maxT]; %#ok<NBRAK>
+                    end
+                end
+
+                if(length(tspan) == 1)
+                    tspan = [tspan(1), tspan(1)-integrationStep];
+                end
+                
+            else
+                error('Invalid propagation direction selected.');
             end
             
             %Set up non-seq event term conditions
@@ -140,7 +168,7 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
             
             eventTermCondFuncHandle = event.termCond.getEventTermCondFuncHandle();
             termCondDir = event.termCondDir;
-            [t,y,~,~,ie] = propagator.propagate(integrator, tspan, eventInitStateLogEntry, ...
+            [t,y,te,ye,ie] = propagator.propagate(integrator, tspan, eventInitStateLogEntry, ...
                                                 eventTermCondFuncHandle, termCondDir, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, obj.minAltitude, obj.celBodyData, ...
                                                 tStartPropTime, obj.maxPropTime);
             

@@ -5,6 +5,7 @@ classdef EventDurationTermCondition < AbstractEventTerminationCondition
     properties
         t0(1,1) double = 0;
         duration(1,1) double = 0;
+        propDir(1,1) PropagationDirectionEnum = PropagationDirectionEnum.Forward;
     end
     
     methods
@@ -13,11 +14,12 @@ classdef EventDurationTermCondition < AbstractEventTerminationCondition
         end
         
         function evtTermCondFcnHndl = getEventTermCondFuncHandle(obj)
-            evtTermCondFcnHndl = @(t,y) obj.eventTermCond(t,y, obj.t0, obj.duration);
+            evtTermCondFcnHndl = @(t,y) obj.eventTermCond(t,y, obj.t0, obj.duration, obj.propDir);
         end
         
         function initTermCondition(obj, initialStateLogEntry)
             obj.t0 = initialStateLogEntry.time;
+            obj.propDir = initialStateLogEntry.event.propDir;
         end
         
         function name = getName(obj)
@@ -82,8 +84,16 @@ classdef EventDurationTermCondition < AbstractEventTerminationCondition
     end
     
     methods(Static, Access=private)
-        function [value,isterminal,direction] = eventTermCond(t,~, t0, duration)
-            value = t - (t0+duration);
+        function [value,isterminal,direction] = eventTermCond(t,~, t0, duration, propDir)
+            switch propDir
+                case PropagationDirectionEnum.Forward
+                    value = t - (t0+duration); %forwards propagation
+                case PropagationDirectionEnum.Backward
+                    value = t - (t0-duration); %backwards propagation
+                otherwise
+                    error('Unknown propagation direction selected.');
+            end
+            
             isterminal = 1;
             direction = 0;
         end

@@ -64,4 +64,8 @@ function [value,isterminal,direction, causes] = odeEvents(t,y, obj, eventInitSta
     [value(end+1),isterminal(end+1),direction(end+1)] = evtTermCond(t,y);
 	direction(end) = termCondDir.direction;
     causes(end+1) = eventTermCondCause;
+    
+    if(eventInitStateLogEntry.event.propDir == PropagationDirectionEnum.Backward)
+        value = -value;
+    end
 end

@@ -16,6 +16,8 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
         integratorObj(1,:) AbstractIntegrator = AbstractIntegrator.empty(1,0);
         propagatorObj(1,:) AbstractPropagator = AbstractPropagator.empty(1,0);
 
+        propDir(1,1) PropagationDirectionEnum = PropagationDirectionEnum.Forward;
+        
         checkForSoITrans(1,1) logical = true;
         
         disableOptim(1,1) logical = false;

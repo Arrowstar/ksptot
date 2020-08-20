@@ -76,8 +76,20 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
             timeEvtsListboxStrs = string.empty(1,0);
             for(i=1:length(obj.evts))
                 evt = obj.evts(i);
-                t1 = stateLog.getFirstStateLogForEvent(evt).time;
-                t2 = stateLog.getLastStateLogForEvent(evt).time;
+                
+                s1 = stateLog.getFirstStateLogForEvent(evt);
+                if(not(isempty(s1)))
+                    t1 = s1.time;
+                else
+                    t1 = Inf;
+                end
+                
+                s2 = stateLog.getLastStateLogForEvent(evt);
+                if(not(isempty(s2)))
+                    t2 = s2.time;
+                else
+                    t2 = -Inf;
+                end
                 
                 if(time >= t1 && time <= t2)
                     timeEvts(end+1) = evt; %#ok<AGROW>
@@ -248,6 +260,7 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
                 for(i=evtStartNum:length(obj.evts)) %#ok<*NO4LP>
 %                     ttt = tic;
                     evt = obj.evts(i);
+                    initStateLogEntry.event = obj.evts(i); %need to set the event on the initial state
                     
                     %allow interrupting script execution with figure
                     %callbacks on every other event
