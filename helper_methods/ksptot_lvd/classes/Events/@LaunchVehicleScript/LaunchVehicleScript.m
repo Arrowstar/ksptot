@@ -91,6 +91,14 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
                     t2 = -Inf;
                 end
                 
+                if(t1 > t2)
+                    t1Temp = t2;
+                    t2Temp = t1;
+                    
+                    t1 = t1Temp;
+                    t2 = t2Temp;
+                end
+                
                 if(time >= t1 && time <= t2)
                     timeEvts(end+1) = evt; %#ok<AGROW>
                     timeEvtsListboxStrs(end+1) = string(evt.getListboxStr()); %#ok<AGROW>
