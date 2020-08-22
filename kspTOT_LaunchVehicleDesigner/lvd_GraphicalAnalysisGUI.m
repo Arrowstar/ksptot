@@ -577,22 +577,36 @@ function plotData(hFig, indepVarValues, data, lineColor, useEvtLineColor, evts, 
     yLineValue = getappdata(hGAFig,'yLineValue');
 
     hold on;
-    
-    if(useEvtLineColor)
-        for(i=1:length(evts))
-            evt = evts(i);
-            eventNum = evt.getEventNum();
-            
-            bool = dataEvtNums == eventNum;
-            
-            subIndVal = indepVarValues(bool,1);
-            subData = data(bool);
+    for(i=1:length(evts))
+        evt = evts(i);
+        eventNum = evt.getEventNum();
+        
+        bool = dataEvtNums == eventNum;
+
+        subIndVal = indepVarValues(bool,1);
+        subData = data(bool);
+        
+        switch(evt.plotMethod)
+            case EventPlottingMethodEnum.PlotContinuous
+                %nothing
+
+            case EventPlottingMethodEnum.SkipFirstState
+                subIndVal = subIndVal(2:end);
+                subData = subData(2:end);
+
+            case EventPlottingMethodEnum.DoNotPlot
+                continue;
+
+            otherwise
+                error('Unknown event plotting method: %s', EventPlottingMethodEnum.DoNotPlot.name);
+        end
+        
+        if(useEvtLineColor)
             lineColor = evt.colorLineSpec.color.color;
-            
+            plot(subIndVal, subData, 'Color',lineColor, 'LineStyle',lineType, 'LineWidth',lineWidth);
+        else
             plot(subIndVal, subData, 'Color',lineColor, 'LineStyle',lineType, 'LineWidth',lineWidth);
         end
-    else
-        plot(indepVarValues(:,1), data, 'Color',lineColor, 'LineStyle',lineType, 'LineWidth',lineWidth);
     end
     
     minData = min(data);

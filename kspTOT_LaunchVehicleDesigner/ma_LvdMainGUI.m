@@ -54,6 +54,7 @@ function ma_LvdMainGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 
     % Choose default command line output for ma_LvdMainGUI
     handles.output = hObject;
+    hObject.Visible = 'off';
 
     hManager = uigetmodemanager(hObject);
     [hManager.WindowListenerHandles.Enabled] = deal(false); 
@@ -124,6 +125,7 @@ function ma_LvdMainGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 
     % Update handles structure
     guidata(hObject, handles);
+    hObject.Visible = 'on';
 
     % UIWAIT makes ma_LvdMainGUI wait for user response (see UIRESUME)
     % uiwait(handles.ma_LvdMainGUI);
