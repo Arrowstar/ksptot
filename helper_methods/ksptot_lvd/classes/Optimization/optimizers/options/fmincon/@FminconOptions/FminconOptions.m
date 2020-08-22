@@ -11,8 +11,8 @@ classdef FminconOptions < matlab.mixin.SetGet
         tolCon(1,1) double = 1E-10;
         
         %Maximums
-        maxIter(1,1) uint64 = 500;
-        maxFuncEvals(1,1) uint64 = 3000;
+        maxIter(1,1) double = 500;
+        maxFuncEvals(1,1) double = 3000;
         
         %Parallel
         useParallel(1,1) FminconUseParallelEnum = FminconUseParallelEnum.DoNotUseParallel;
@@ -57,7 +57,8 @@ classdef FminconOptions < matlab.mixin.SetGet
                                              'Diagnostics','on', ....
                                              'Display','iter-detailed', ...
                                              'HonorBounds',true, ...
-                                             'FunValCheck','on');
+                                             'FunValCheck','on', ...
+                                             'ScaleProblem','none');
             
             if(not(isnan(obj.optTol)))
                 options = optimoptions(options, 'OptimalityTolerance', obj.optTol);

@@ -346,6 +346,10 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                 timeSlider.setValue(minTime);
             end
             
+            lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+            timeSliderCb = @(src,evt) timeSliderStateChanged(src,evt, lvdData, handles);
+            set(handles.hDispAxesTimeSlider, 'StateChangedCallback', timeSliderCb); 
+            
             handles.hDispAxesTimeSlider.StateChangedCallback(timeSlider, true);
         end
         

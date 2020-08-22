@@ -33,7 +33,7 @@ classdef LaunchVehicleViewProfileBodyData < matlab.mixin.SetGet
         end
         
         function plotBodyMarkerAtTime(obj, time, hAx)    
-            if(not(isempty(obj.markerPlot)))
+            if(not(isempty(obj.markerPlot)) && isvalid(obj.markerPlot))
                 obj.markerPlot.Visible = 'off';
             end
             

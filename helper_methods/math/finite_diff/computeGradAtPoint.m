@@ -44,8 +44,9 @@ function [g] = computeGradAtPoint(fun, x0, fAtX0, h, diffType, numPts, sparsity,
     x0 = x0(:);
     g = nan([numel(x0),numFunOutputs]);
     zeroArr = zeros(1,size(g,1));
-    parfor(i=1:size(g,1), M)
-        if(numFunOutputs == 1 && not(isempty(sparsity)) && sparsity(i) ~= 0)
+	parfor(i=1:size(g,1), M)
+% 	for(i=1:size(g,1))
+        if(isempty(sparsity) || (not(isempty(sparsity)) && sparsity(i) ~= 0)) %numFunOutputs == 1 && 
             varArr = zeroArr;
             varArr(i) = 1;
 
@@ -71,6 +72,5 @@ function [g] = computeGradAtPoint(fun, x0, fAtX0, h, diffType, numPts, sparsity,
         else
             g(i,:) = zeros(1,numFunOutputs);
         end
-    end
+	end
 end
-

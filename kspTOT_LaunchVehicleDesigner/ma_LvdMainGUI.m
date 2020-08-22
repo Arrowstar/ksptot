@@ -211,53 +211,6 @@ function recordFinalAxesPanZoomAfterRotation(obj,event_obj, handles)
     [az,el] = view(handles.dispAxes);
     lvdData.viewSettings.selViewProfile.viewAzEl = [az,el];
     
-function timeSliderStateChanged(src,evt, lvdData, handles)
-    if(getappdata(handles.hDispAxesTimeSlider,'lastTime') ~= javaMethodEDT('getValue',src))
-        time = javaMethodEDT('getValue',src);
-        hAx = handles.dispAxes;
-        figure(handles.ma_LvdMainGUI);
-        
-        markerTrajData = lvdData.viewSettings.selViewProfile.markerTrajData;
-        markerBodyData = lvdData.viewSettings.selViewProfile.markerBodyData;
-        markerBodyAxesData = lvdData.viewSettings.selViewProfile.markerTrajAxesData;
-        markerGrdObjData = lvdData.viewSettings.selViewProfile.markerGrdObjData;
-        
-        markerTrajData.plotBodyMarkerAtTime(time, hAx);
-        for(i=1:length(markerBodyData))
-            markerBodyData(i).plotBodyMarkerAtTime(time, hAx);
-        end
-        
-        markerBodyAxesData.plotBodyAxesAtTime(time, hAx);
-        
-        for(i=1:length(markerGrdObjData))
-            markerGrdObjData(i).plotBodyMarkerAtTime(time, hAx);
-        end
-        
-        lvdData.viewSettings.selViewProfile.updateLightPosition(time);
-
-        [year, day, hour, minute, sec] = convertSec2YearDayHrMnSec(time);
-        epochStr = formDateStr(year, day, hour, minute, sec);
-
-        [~, timeEvtsListboxStrs] = lvdData.script.getAllEvtsThatOccurAtTime(time);
-        for(i=1:length(timeEvtsListboxStrs))
-            timeEvtsListboxStrs(i) = sprintf('Event: %s',timeEvtsListboxStrs(i));
-        end
-        evtsStr = strjoin(timeEvtsListboxStrs,'\n');
-        
-        if(not(isempty(timeEvtsListboxStrs)))
-            dashes = repmat('-',1,max(strlength(timeEvtsListboxStrs)));
-        else
-            dashes = '';
-        end
-        
-        tooltipStr = sprintf('UT = %0.3f sec\n%s\n%s', time, dashes, evtsStr);
-        
-        handles.timeSliderValueLabel.String = epochStr;
-        handles.timeSliderValueLabel.TooltipString = tooltipStr;
-        
-        setappdata(handles.hDispAxesTimeSlider,'lastTime',time);
-    end
-    
     
 function gravSystemUpdateCallback(src,evt, handles)
     if(isvalid(handles.ma_LvdMainGUI))
@@ -1787,7 +1740,19 @@ function showConstrJacobianHeatMapMenu_Callback(hObject, eventdata, handles)
             nonlcon = @(x) lvdData.optimizer.constraints.evalConstraints(x, true, evtToStartScriptExecAt, false);
             jacNonlcon = @(x) computeJacNonlconFunc(x, nonlcon);
 
-            jac = abs(mklJac(jacNonlcon, x0All));
+%             jac = abs(mklJac(jacNonlcon, x0All));
+
+            cAtX0 = jacNonlcon(x0All);
+
+            if(not(isempty(gcp('nocreate'))))
+                useParallel = true;
+            else
+                useParallel = false;
+            end
+%             useParallel = false;
+            
+            finiteDiffMeth = CustomFiniteDiffsCalculationMethod();
+            jac = abs(finiteDiffMeth.computeJacobian(jacNonlcon, x0All, cAtX0, useParallel));
 
             zeroColInds = find(all(jac < eps));
             totalColInds = 1:1:size(jac,2);
