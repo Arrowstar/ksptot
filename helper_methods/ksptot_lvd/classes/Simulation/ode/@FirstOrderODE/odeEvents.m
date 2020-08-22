@@ -27,12 +27,17 @@ function [value,isterminal,direction, causes] = odeEvents(t,y, obj, eventInitSta
     numTankStates = eventInitStateLogEntry.getNumActiveTankStates();
     [ut, rVect, ~, ~] = AbstractODE.decomposeIntegratorTandY(t,y, numTankStates);
     
+    %Event Termination Condition
+    [value,isterminal,~] = evtTermCond(t,y);
+	direction = termCondDir.direction;
+    causes = eventTermCondCause;
+    
     %Max Sim Time Constraint
     simTimeRemaining = maxSimTime - ut;
-    value(1) = simTimeRemaining;
-    isterminal(1) = 1;
-    direction(1) = 0;
-    causes(1) = maxSimTimeCause;
+    value(end+1) = simTimeRemaining;
+    isterminal(end+1) = 1;
+    direction(end+1) = 0;
+    causes(end+1) = maxSimTimeCause;
 
     %Min Altitude Constraint
     rMag = norm(rVect);
@@ -59,11 +64,6 @@ function [value,isterminal,direction, causes] = odeEvents(t,y, obj, eventInitSta
         direction = horzcat(direction, soidirection);
         causes = horzcat(causes, soicauses);
     end
-
-    %Event Termination Condition
-    [value(end+1),isterminal(end+1),direction(end+1)] = evtTermCond(t,y);
-	direction(end) = termCondDir.direction;
-    causes(end+1) = eventTermCondCause;
     
     if(eventInitStateLogEntry.event.propDir == PropagationDirectionEnum.Backward)
         value = -value;
