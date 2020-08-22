@@ -19,7 +19,8 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             
             axes(dAxes);
             cla(dAxes);
-            cla(dAxes,'reset')
+            cla(dAxes,'reset');
+            dAxes.Color = viewProfile.backgroundColor.color;
             
             hFig.Renderer = viewProfile.renderer.renderer;
             if(viewProfile.renderer == FigureRendererEnum.OpenGL)
