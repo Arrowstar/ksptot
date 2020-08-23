@@ -11,6 +11,7 @@ classdef SeaLevelThrustToWeightTermCondition < AbstractEventTerminationCondition
         lvState LaunchVehicleState
         throttleModel AbstractThrottleModel = ThrottlePolyModel.getDefaultThrottleModel();
         bodyInfo KSPTOT_BodyInfo
+        pwrStorageStates AbstractLaunchVehicleEpsStorageState
     end
     
     methods
@@ -19,7 +20,7 @@ classdef SeaLevelThrustToWeightTermCondition < AbstractEventTerminationCondition
         end
         
         function evtTermCondFcnHndl = getEventTermCondFuncHandle(obj)
-            evtTermCondFcnHndl = @(t,y) obj.eventTermCond(t,y, obj.targetTtW, obj.dryMass, obj.stgStates, obj.lvState, obj.throttleModel, obj.tankStates, obj.bodyInfo);
+            evtTermCondFcnHndl = @(t,y) obj.eventTermCond(t,y, obj.targetTtW, obj.dryMass, obj.stgStates, obj.lvState, obj.throttleModel, obj.tankStates, obj.bodyInfo, obj.pwrStorageStates);
         end
         
         function initTermCondition(obj, initialStateLogEntry)
@@ -30,6 +31,7 @@ classdef SeaLevelThrustToWeightTermCondition < AbstractEventTerminationCondition
             obj.stgStates = initialStateLogEntry.stageStates;
             obj.lvState = initialStateLogEntry.lvState;
             obj.throttleModel = initialStateLogEntry.throttleModel;
+            obj.pwrStorageStates = initialStateLogEntry.getAllActivePwrStorageStates();
         end
         
         function tf = shouldBeReinitOnRestart(obj)
@@ -94,17 +96,19 @@ classdef SeaLevelThrustToWeightTermCondition < AbstractEventTerminationCondition
     end
     
     methods(Static, Access=private)
-        function [value,isterminal,direction] = eventTermCond(t,y, targetTtW, dryMass, stgStates, lvState, throttleModel, tankStates, bodyInfo)
-            ut = t;
-            rVect = y(1:3);
-            vVect = y(4:6);
-            tankMasses = y(7:6+length(tankStates));
-            throttle = throttleModel.getThrottleAtTime(ut, rVect, vVect, tankMasses, dryMass, stgStates, lvState, tankStates, bodyInfo);
+        function [value,isterminal,direction] = eventTermCond(t,y, targetTtW, dryMass, stgStates, lvState, throttleModel, tankStates, bodyInfo, powerStorageStates)
+%             ut = t;
+%             rVect = y(1:3);
+%             vVect = y(4:6);
+%             tankMasses = y(7:6+length(tankStates));
+            [ut, rVect, vVect, tankMasses, storageSoCs] = ForceModelPropagator.decomposeIntegratorTandY(t,y, length(tankStates), length(powerStorageStates));
+
+            throttle = throttleModel.getThrottleAtTime(ut, rVect, vVect, tankMasses, dryMass, stgStates, lvState, tankStates, bodyInfo, storageSoCs, powerStorageStates);
             
             altitude = norm(rVect) - bodyInfo.radius;
             presskPa = getPressureAtAltitude(bodyInfo, altitude); 
             
-            [~, totalThrust]= LaunchVehicleStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, tankMasses, stgStates, throttle, lvState, presskPa, ut, rVect, vVect, bodyInfo, []);
+            [~, totalThrust]= LaunchVehicleStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, tankMasses, stgStates, throttle, lvState, presskPa, ut, rVect, vVect, bodyInfo, [], storageSoCs, powerStorageStates);
             
             totalMass = (dryMass + sum(tankMasses))*1000; %kg          
             totalThrust = totalThrust * 1000; % N

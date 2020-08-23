@@ -15,8 +15,14 @@ function datapt = lvd_ThrottleTask(stateLogEntry, subTask)
                 tankMasses(i) = tankStates(i).tankMass;
             end
             
+            powerStorageStates = stateLogEntry.getAllActivePwrStorageStates();
+            storageSoCs = NaN(size(powerStorageStates));
+            for(i=1:length(powerStorageStates))
+                storageSoCs(i) = powerStorageStates(i).getStateOfCharge();
+            end
+            
             datapt = computeTWRatio(throttle, stateLogEntry.time, stateLogEntry.position, stateLogEntry.velocity, tankMasses, stateLogEntry.getTotalVehicleDryMass(), ...
-                                    stateLogEntry.stageStates, stateLogEntry.lvState, tankStates, stateLogEntry.centralBody);
+                                    stateLogEntry.stageStates, stateLogEntry.lvState, tankStates, stateLogEntry.centralBody, storageSoCs, powerStorageStates);
         case 'totalthrust'
             [totalThrust] = getThrustParameters(stateLogEntry);
             datapt = totalThrust;
@@ -68,9 +74,15 @@ function [totalThrust, thrustForceVector] = getThrustParameters(stateLogEntry)
         altitude = norm(rVect) - bodyInfo.radius;
         pressure = getPressureAtAltitude(bodyInfo, altitude); 
 
-        throttle = throttleModel.getThrottleAtTime(ut, rVect, vVect, tankStatesMasses, dryMass, stageStates, lvState, tankStates, bodyInfo);
+        powerStorageStates = stateLogEntry.getAllActivePwrStorageStates();
+        storageSoCs = NaN(size(powerStorageStates));
+        for(i=1:length(powerStorageStates))
+            storageSoCs(i) = powerStorageStates(i).getStateOfCharge();
+        end
+        
+        throttle = throttleModel.getThrottleAtTime(ut, rVect, vVect, tankStatesMasses, dryMass, stageStates, lvState, tankStates, bodyInfo, storageSoCs, powerStorageStates);
 
-        [~, totalThrust, thrustForceVector] = LaunchVehicleStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, tankStatesMasses, stageStates, throttle, lvState, pressure, ut, rVect, vVect, bodyInfo, steeringModel);
+        [~, totalThrust, thrustForceVector] = LaunchVehicleStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, tankStatesMasses, stageStates, throttle, lvState, pressure, ut, rVect, vVect, bodyInfo, steeringModel, storageSoCs, powerStorageStates);
         thrustForceVector = 1000*thrustForceVector; %in order to recover kN
     else
         totalThrust = 0;

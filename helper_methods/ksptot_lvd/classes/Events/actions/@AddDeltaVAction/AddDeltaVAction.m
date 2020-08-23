@@ -48,13 +48,17 @@ classdef AddDeltaVAction < AbstractEventAction
                 bodyInfo = newStateLogEntry.centralBody;
                 steeringModel = newStateLogEntry.steeringModel;
                 
-%                 dryMass = newStateLogEntry.getTotalVehicleDryMass();
                 altitude = newStateLogEntry.altitude;
                 pressure = getPressureAtAltitude(bodyInfo, altitude);
-%                 throttle = newStateLogEntry.throttleModel.getThrottleAtTime(ut, rVect, vVect, tankStatesMasses, dryMass, stageStates, lvState, tankStates, bodyInfo);
                 throttle = 1.0;
+                
+                powerStorageStates = newStateLogEntry.getAllActivePwrStorageStates();
+                storageSoCs = NaN(size(powerStorageStates));
+                for(j=1:length(powerStorageStates))
+                    storageSoCs(j) = powerStorageStates(j).getStateOfCharge();
+                end
 
-                [tankMDots, totalThrust, ~] = newStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, tankStatesMasses, stageStates, throttle, lvState, pressure, ut, rVect, vVect, bodyInfo, steeringModel);
+                [tankMDots, totalThrust, ~, ~] = newStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, tankStatesMasses, stageStates, throttle, lvState, pressure, ut, rVect, vVect, bodyInfo, steeringModel, storageSoCs, powerStorageStates);
                 
                 if(abs(sum(tankMDots)) > 0)
                     tankMDotsKgS = tankMDots * 1000;

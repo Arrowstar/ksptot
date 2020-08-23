@@ -11,7 +11,7 @@ classdef Gravity3rdBodyForceModel < AbstractForceModel
             
         end
         
-        function [forceVect, tankMdots] = getForce(obj, ut, rVectSC, ~, mass, bodySC, ~, ~, ~, ~, ~, ~, ~, ~, grav3Body)      
+        function [forceVect, tankMdots, ecStgDots] = getForce(obj, ut, rVectSC, ~, mass, bodySC, ~, ~, ~, ~, ~, ~, ~, ~, grav3Body, ~, ~)      
             forceVect = [0;0;0];
             
             bodies = grav3Body.bodies;
@@ -26,6 +26,7 @@ classdef Gravity3rdBodyForceModel < AbstractForceModel
             end
             
             tankMdots = [];
+            ecStgDots = [];
         end
     end
 end

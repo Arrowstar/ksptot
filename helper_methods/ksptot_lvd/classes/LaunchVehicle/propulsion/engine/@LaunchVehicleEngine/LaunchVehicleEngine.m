@@ -17,6 +17,13 @@ classdef LaunchVehicleEngine < matlab.mixin.SetGet
         
         fuelThrottleCurve FuelThrottleCurve
         
+        %EPS
+        hasAlternator(1,1) logical = false;
+        altPwrRate(1,1) double = 0;
+        
+        reqsElecCharge(1,1) logical = false;
+        pwrUsageRate(1,1) double = 0;
+        
         name char = 'Untitled Engine';
         id(1,1) double = 0;
     end
@@ -81,6 +88,14 @@ classdef LaunchVehicleEngine < matlab.mixin.SetGet
             engineSummStr{end+1} = sprintf('\t\t\t\tSea Level Thrust = %.3f kN', obj.seaLvlThrust);
             engineSummStr{end+1} = sprintf('\t\t\t\tSea Level Isp = %.3f sec', obj.seaLvlIsp);
             engineSummStr{end+1} = sprintf('\t\t\t\tThrottle Range: %.3f%% -> %.3f%%', 100*obj.minThrottle, 100*obj.maxThrottle);
+            
+            if(obj.hasAlternator)
+                engineSummStr{end+1} = sprintf('\t\t\t\tAlternator Charge Rate = %.3f EC/s', obj.altPwrRate);
+            end
+            
+            if(obj.reqsElecCharge)
+                engineSummStr{end+1} = sprintf('\t\t\t\tElectric Engine Discharge Rate = %.3f EC/s', obj.pwrUsageRate);
+            end
         end
         
         function [thrust, isp] = getThrustIspForPressure(obj, presskPa)
@@ -137,6 +152,18 @@ classdef LaunchVehicleEngine < matlab.mixin.SetGet
             newEngine.fuelThrottleCurve = obj.fuelThrottleCurve.copy();
             
             newEngine.name = sprintf('Copy of %s', obj.name);
+        end
+        
+        function pwrRate = getPowerRate(obj, throttle)
+            pwrRate = 0;
+            
+            if(obj.hasAlternator)
+                pwrRate = pwrRate + obj.altPwrRate * throttle;
+            end
+            
+            if(obj.reqsElecCharge)
+                pwrRate = pwrRate + obj.pwrUsageRate * throttle;
+            end
         end
         
 %         function tf = eq(A,B)

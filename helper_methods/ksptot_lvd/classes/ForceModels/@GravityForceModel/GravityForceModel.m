@@ -11,11 +11,12 @@ classdef GravityForceModel < AbstractForceModel
             
         end
         
-        function [forceVect, tankMdots] = getForce(obj, ~, rVect, ~, mass, bodyInfo, ~, ~, ~, ~, ~, ~, ~, ~, ~)
+        function [forceVect, tankMdots, ecStgDots] = getForce(obj, ~, rVect, ~, mass, bodyInfo, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~)
             r = norm(rVect);
             forceVect = -((bodyInfo.gm * mass)/(r^3)) * rVect; %km^3/s^2 * mT / km^2 = km*mT/s^2
             
             tankMdots = [];
+            ecStgDots = [];
         end
     end
 end

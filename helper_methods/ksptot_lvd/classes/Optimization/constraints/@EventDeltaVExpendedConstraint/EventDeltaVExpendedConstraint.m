@@ -54,9 +54,15 @@ classdef EventDeltaVExpendedConstraint < AbstractConstraint
                     altitude = norm(rVect) - bodyInfo.radius;
                     pressure = getPressureAtAltitude(bodyInfo, altitude); 
 
-                    throttle = throttleModel.getThrottleAtTime(ut, rVect, vVect, tankStatesMasses, dryMass, stageStates, lvState, tankStates, bodyInfo);
+                    powerStorageStates = stateLogEntry1.getAllActivePwrStorageStates();
+                    storageSoCs = NaN(size(powerStorageStates));
+                    for(j=1:length(powerStorageStates))
+                        storageSoCs(j) = powerStorageStates(j).getStateOfCharge();
+                    end
+                    
+                    throttle = throttleModel.getThrottleAtTime(ut, rVect, vVect, tankStatesMasses, dryMass, stageStates, lvState, tankStates, bodyInfo, storageSoCs, powerStorageStates);
 
-                    [tankMDots, totalThrust, ~] = LaunchVehicleStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, tankStatesMasses, stageStates, throttle, lvState, pressure, ut, rVect, vVect, bodyInfo, steeringModel);
+                    [tankMDots, totalThrust, ~] = LaunchVehicleStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, tankStatesMasses, stageStates, throttle, lvState, pressure, ut, rVect, vVect, bodyInfo, steeringModel, storageSoCs, powerStorageStates);
 
                     if(abs(sum(tankMDots)) > 0)
                         tankMDotsKgS = tankMDots * 1000;

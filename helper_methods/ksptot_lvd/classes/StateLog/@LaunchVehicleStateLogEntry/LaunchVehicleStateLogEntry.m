@@ -52,8 +52,14 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                 tankMasses(i) = tankStates(i).tankMass;
             end
             
+            powerStorageStates = obj.getAllActivePwrStorageStates();
+            storageSoCs = NaN(size(powerStorageStates));
+            for(i=1:length(powerStorageStates))
+                storageSoCs(i) = powerStorageStates(i).getStateOfCharge();
+            end
+            
             value = obj.throttleModel.getThrottleAtTime(obj.time, obj.position, obj.velocity, tankMasses, obj.getTotalVehicleDryMass(), ...
-                obj.stageStates, obj.lvState, tankStates, obj.centralBody);
+                obj.stageStates, obj.lvState, tankStates, obj.centralBody, storageSoCs, powerStorageStates);
         end
         
         function alt = get.altitude(obj)
@@ -439,11 +445,18 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             end
         end
         
-        function [tankMDots, totalThrust, forceVect] = getTankMassFlowRatesDueToEngines(tankStates, tankStatesMasses, stgStates, throttle, lvState, presskPa, ut, rVect, vVect, bodyInfo, steeringModel)
+        function [tankMDots, totalThrust, forceVect, ecStorageRates] = getTankMassFlowRatesDueToEngines(tankStates, tankStatesMasses, stgStates, throttle, lvState, presskPa, ut, rVect, vVect, bodyInfo, steeringModel, storageSoCs, powerStorageStates)
             tankMDots = zeros(size(tankStates));
             tankMDots = tankMDots(:);
             totalThrust = 0;
             bodyThrust = [0;0;0];
+            ecStorageRates = zeros(size(storageSoCs));
+            
+            maxEcCapacities = NaN(size(powerStorageStates));
+            for(i=1:length(powerStorageStates))
+                pwrStorage = powerStorageStates(i).getEpsStorageComponent();
+                maxEcCapacities(i) = pwrStorage.getMaximumCapacity();
+            end
             
             for(i=1:length(stgStates)) %#ok<*NO4LP>
                 %                 stgState = stgStates(i);
@@ -462,7 +475,8 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                                 mdot = adjustedThrottle * baseMdot;
                                 
                                 flowFromTankInds = zeros(size(tankStates));
-                                if(mdot < 0) %negative because we're flowing out
+                                if(mdot < 0 && ... %negative because we're flowing out
+                                   (engine.reqsElecCharge == false || (engine.reqsElecCharge == true && numel(storageSoCs)>0 && sum(storageSoCs)>0))) %handle engines that require EC to function 
                                     tanks = lvState.getTanksConnectedToEngine(engine);
                                     
                                     totalConnTankCapacity = 0;
@@ -517,6 +531,22 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                                     
                                     flowFromTankInds = logical(flowFromTankInds);
                                     tankMDots(flowFromTankInds) = tankMDots(flowFromTankInds) + mDotPerTank;
+
+                                    if(numel(storageSoCs) > 0)
+                                        pwrRate = engine.getPowerRate(throttle);
+                                        if(pwrRate > 0)
+                                            bool = storageSoCs > maxEcCapacities;
+                                            numStorage = sum(bool);
+                                            eachStgRate = pwrRate/numStorage;
+                                            ecStorageRates(bool) = ecStorageRates(bool) + eachStgRate;
+
+                                        elseif(pwrRate < 0)
+                                            bool = storageSoCs > 0;
+                                            numStorage = sum(bool);
+                                            eachStgRate = pwrRate/numStorage;
+                                            ecStorageRates(bool) = ecStorageRates(bool) + eachStgRate;
+                                        end
+                                    end
                                 end
                             end
                         end

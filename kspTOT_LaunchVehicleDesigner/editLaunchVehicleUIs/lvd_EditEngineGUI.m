@@ -22,7 +22,7 @@ function varargout = lvd_EditEngineGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditEngineGUI
 
-% Last Modified by GUIDE v2.5 07-Jan-2019 17:53:49
+% Last Modified by GUIDE v2.5 23-Aug-2020 14:59:11
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -84,6 +84,14 @@ function populateGUI(handles, engine)
     set(handles.seaLevelIspText,'String',fullAccNum2Str(engine.getSeaLvlIsp()));
     set(handles.minThrottleText,'String',fullAccNum2Str(100*engine.getMinThrottle()));
     set(handles.maxThrottleText,'String',fullAccNum2Str(100*engine.getMaxThrottle()));
+    
+    handles.hasAlternatorCheckbox.Value = double(engine.hasAlternator);
+    handles.altChargeRateText.String = fullAccNum2Str(engine.altPwrRate);
+    hasAlternatorCheckbox_Callback(handles.hasAlternatorCheckbox, [], handles);
+    
+    handles.reqsElecChargeCheckbox.Value = double(engine.reqsElecCharge);
+    handles.elecEnginePwrConsumptionText.String = fullAccNum2Str(-1*engine.pwrUsageRate);
+    reqsElecChargeCheckbox_Callback(handles.reqsElecChargeCheckbox, [], handles);
 
 % --- Outputs from this function are returned to the command line.
 function varargout = lvd_EditEngineGUI_OutputFcn(hObject, eventdata, handles) 
@@ -113,6 +121,12 @@ function varargout = lvd_EditEngineGUI_OutputFcn(hObject, eventdata, handles)
         minThrottle = str2double(handles.minThrottleText.String)/100;
         maxThrottle = str2double(handles.maxThrottleText.String)/100;
         
+        hasAlternator = logical(handles.hasAlternatorCheckbox.Value);
+        altChargeRate = str2double(handles.altChargeRateText.String);
+        
+        reqsElecCharge = logical(handles.reqsElecChargeCheckbox.Value);
+        elecEnginePwrConsumption = -1*str2double(handles.elecEnginePwrConsumptionText.String);
+        
         engine.name = name;
         engine.stage = stage;
         engine.vacThrust = vacThrust;
@@ -121,6 +135,10 @@ function varargout = lvd_EditEngineGUI_OutputFcn(hObject, eventdata, handles)
         engine.seaLvlIsp = seaLvlIsp;
         engine.minThrottle = minThrottle;
         engine.maxThrottle = maxThrottle;
+        engine.hasAlternator = hasAlternator;
+        engine.altPwrRate = altChargeRate;
+        engine.reqsElecCharge = reqsElecCharge;
+        engine.pwrUsageRate = elecEnginePwrConsumption;
         
         engine.stage.addEngine(engine);
         
@@ -208,6 +226,22 @@ function errMsg = validateInputs(handles)
         isInt = false;
         errMsg = validateNumber(maxThrottle, numberName, lb, ub, isInt, errMsg, enteredStr);
     end
+    
+    altChargeRate = str2double(get(handles.altChargeRateText,'String'));
+    enteredStr = get(handles.altChargeRateText,'String');
+    numberName = 'Alternator Charge Rate';
+    lb = 0;
+    ub = Inf;
+    isInt = false;
+    errMsg = validateNumber(altChargeRate, numberName, lb, ub, isInt, errMsg, enteredStr);
+    
+    elecEngDischargeRate = str2double(get(handles.elecEnginePwrConsumptionText,'String'));
+    enteredStr = get(handles.elecEnginePwrConsumptionText,'String');
+    numberName = 'Electric Engine Discharge Rate';
+    lb = 0;
+    ub = Inf;
+    isInt = false;
+    errMsg = validateNumber(elecEngDischargeRate, numberName, lb, ub, isInt, errMsg, enteredStr);
     
 % --- Executes on button press in cancelButton.
 function cancelButton_Callback(hObject, eventdata, handles)
@@ -437,3 +471,79 @@ function editThrottleModifierProfileButton_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
     engine = getappdata(handles.lvd_EditEngineGUI, 'engine');
     editThrottleModifierProfileGUI(engine.fuelThrottleCurve);
+
+
+% --- Executes on button press in reqsElecChargeCheckbox.
+function reqsElecChargeCheckbox_Callback(hObject, eventdata, handles)
+% hObject    handle to reqsElecChargeCheckbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of reqsElecChargeCheckbox
+    if(get(hObject,'Value'))
+        handles.elecEnginePwrConsumptionText.Enable = 'on';
+    else
+        handles.elecEnginePwrConsumptionText.Enable = 'off';
+    end
+
+
+function elecEnginePwrConsumptionText_Callback(hObject, eventdata, handles)
+% hObject    handle to elecEnginePwrConsumptionText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of elecEnginePwrConsumptionText as text
+%        str2double(get(hObject,'String')) returns contents of elecEnginePwrConsumptionText as a double
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
+
+% --- Executes during object creation, after setting all properties.
+function elecEnginePwrConsumptionText_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to elecEnginePwrConsumptionText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in hasAlternatorCheckbox.
+function hasAlternatorCheckbox_Callback(hObject, eventdata, handles)
+% hObject    handle to hasAlternatorCheckbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of hasAlternatorCheckbox
+    if(get(hObject,'Value'))
+        handles.altChargeRateText.Enable = 'on';
+    else
+        handles.altChargeRateText.Enable = 'off';
+    end
+
+
+function altChargeRateText_Callback(hObject, eventdata, handles)
+% hObject    handle to altChargeRateText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of altChargeRateText as text
+%        str2double(get(hObject,'String')) returns contents of altChargeRateText as a double
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
+
+% --- Executes during object creation, after setting all properties.
+function altChargeRateText_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to altChargeRateText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

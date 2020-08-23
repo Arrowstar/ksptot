@@ -7,11 +7,11 @@ classdef T2WThrottleModel < AbstractThrottleModel
     end
     
     methods
-        function throttle = getThrottleAtTime(obj, ut, rVect, vVect, tankMasses, dryMass, stgStates, lvState, tankStates, bodyInfo)
+        function throttle = getThrottleAtTime(obj, ut, rVect, vVect, tankMasses, dryMass, stgStates, lvState, tankStates, bodyInfo, storageSoCs, powerStorageStates)
             if(obj.targetT2W <= 0)
                 throttle = 0;
             else
-                twRatioFH = @(throttle) computeTWRatio(throttle, ut, rVect, vVect, tankMasses, dryMass, stgStates, lvState, tankStates, bodyInfo);
+                twRatioFH = @(throttle) computeTWRatio(throttle, ut, rVect, vVect, tankMasses, dryMass, stgStates, lvState, tankStates, bodyInfo, storageSoCs, powerStorageStates);
                 
                 fullThrottleTW = twRatioFH(1.0);
                 if(fullThrottleTW < obj.targetT2W)
@@ -41,9 +41,16 @@ classdef T2WThrottleModel < AbstractThrottleModel
                 for(i=1:length(tankStates))
                     tankMasses(i) = tankStates(i).tankMass;
                 end
+                
+                powerStorageStates = initialStateLogEntry.getAllActivePwrStorageStates();
+                storageSoCs = NaN(size(powerStorageStates));
+                for(i=1:length(powerStorageStates))
+                    storageSoCs(i) = powerStorageStates(i).getStateOfCharge();
+                end
 
                 obj.targetT2W = computeTWRatio(throttle, initialStateLogEntry.time, initialStateLogEntry.position, initialStateLogEntry.velocity, tankMasses, initialStateLogEntry.getTotalVehicleDryMass(), ...
-                                               initialStateLogEntry.stageStates, initialStateLogEntry.lvState, tankStates, initialStateLogEntry.centralBody);
+                                               initialStateLogEntry.stageStates, initialStateLogEntry.lvState, tankStates, initialStateLogEntry.centralBody, ...
+                                               storageSoCs, powerStorageStates);
             end
         end
         
