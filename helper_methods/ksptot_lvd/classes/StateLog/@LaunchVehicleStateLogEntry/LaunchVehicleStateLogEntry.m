@@ -535,7 +535,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                                     if(numel(storageSoCs) > 0)
                                         pwrRate = engine.getPowerRate(throttle);
                                         if(pwrRate > 0)
-                                            bool = storageSoCs > maxEcCapacities;
+                                            bool = storageSoCs < maxEcCapacities;
                                             numStorage = sum(bool);
                                             eachStgRate = pwrRate/numStorage;
                                             ecStorageRates(bool) = ecStorageRates(bool) + eachStgRate;
