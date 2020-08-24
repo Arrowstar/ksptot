@@ -59,6 +59,9 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         orbitNumToPlot(1,1) double = 1;
         viewAzEl(1,2) = [-37.5, 30]; %view(3)
         viewZoomAxLims(3,2) double = NaN(3,2);
+    end
+    
+    properties(Transient)
         markerTrajData(1,:) LaunchVehicleViewProfileTrajectoryData = LaunchVehicleViewProfileTrajectoryData.empty(1,0);
         markerBodyData(1,:) LaunchVehicleViewProfileBodyData = LaunchVehicleViewProfileBodyData.empty(1,0);
         markerTrajAxesData(1,:) LaunchVehicleViewProfileBodyAxesData = LaunchVehicleViewProfileBodyAxesData.empty(1,0);
@@ -80,7 +83,9 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         end
         
         function plotTrajectory(obj, lvdData, handles)
+%             profile on;
             obj.generic3DTrajView.plotStateLog(obj.orbitNumToPlot, lvdData, obj, handles);
+%             profile viewer;
         end
         
         function createTrajectoryMarkerData(obj, subStateLogs, evts)
@@ -128,17 +133,36 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         function createBodyMarkerData(obj, dAxes, subStateLogs, viewInFrame, showSoI, meshEdgeAlpha, evts)
             obj.clearAllBodyData();
             
-            for(i=1:length(obj.bodiesToPlot))
-                bodyToPlot = obj.bodiesToPlot(i);
+            timesArr = {};
+            rVectArr = {};
+            bodyColorsArr = {};
+            bodyMarkerDataObjs = {};
+            
+            if(isempty(gcp('nocreate')))
+                M = 0;
+            else
+                pp = gcp('nocreate');
+                M = pp.NumWorkers;
+            end
+            
+            parfor(i=1:length(obj.bodiesToPlot), M)
+                bodyToPlot = obj.bodiesToPlot(i); %#ok<PFBNS>
+                timesInner = {};
+                rVectsInner = {};
                 
-                if(bodyToPlot == viewInFrame.getOriginBody())
+                if(bodyToPlot == viewInFrame.getOriginBody()) %#ok<PFBNS>
                     continue;
                 end
                 
                 bColorRGB = bodyToPlot.getBodyRGB();
                 
+                bodyOrbitPeriod = [];
                 if(bodyToPlot.sma > 0)
-                    bodyOrbitPeriod = computePeriod(bodyToPlot.sma, bodyToPlot.gm);
+                    gmu = bodyToPlot.getParentGmuFromCache();
+                    
+                    if(not(isempty(gmu)) && not(isnan(gmu)) && isfinite(gmu))
+                        bodyOrbitPeriod = computePeriod(bodyToPlot.sma, gmu);
+                    end
                 else
                     bodyOrbitPeriod = Inf;
                 end
@@ -150,11 +174,11 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                         times = subStateLogs{j}(:,1);
                         
                         evtNum = subStateLogs{j}(1,13);
-                        evt = evts(evtNum);
+                        evt = evts(evtNum); %#ok<PFBNS>
                         
                         if(isfinite(bodyOrbitPeriod))
                             numPeriods = (max(times) - min(times))/bodyOrbitPeriod;
-                            times = linspace(min(times), max(times), max(1000*numPeriods,length(times)));
+                            times = linspace(min(times), max(times), max(10*numPeriods,length(times)));
                         else
                             times = linspace(min(times), max(times), length(times));
                         end
@@ -180,9 +204,40 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                                 rVects = [];
 
                             otherwise
-                                error('Unknown event plotting method: %s', EventPlottingMethodEnum.DoNotPlot.name);
+                                error('Unknown event plotting method: %s', evt.plotMethod.name);
                         end
                         
+                        [times,ia,~] = unique(times,'stable');
+                        rVects = rVects(:,ia);
+
+                        [times,I] = sort(times);
+                        rVects = rVects(:,I);
+                        
+                        timesInner{j} = times;
+                        rVectsInner{j} = rVects;
+                    end
+                end
+
+                timesArr{i} = timesInner;
+                rVectArr{i} = rVectsInner;
+                
+                bodyColorsArr{i} = bColorRGB;
+                bodyMarkerDataObjs{i} = bodyMarkerData;
+            end
+            
+            for(i=1:length(timesArr))
+                timesInner = timesArr{i};
+                rVectsInner = rVectArr{i};
+                bColorRGB = bodyColorsArr{i};
+                bodyMarkerData = bodyMarkerDataObjs{i};
+                
+                if(not(isempty(timesInner)))
+                    obj.markerBodyData(end+1) = bodyMarkerData;
+                    
+                    for(j=1:length(timesInner))
+                        times = timesInner{j};
+                        rVects = rVectsInner{j};
+
                         if(length(unique(times)) > 1)
                             plot3(dAxes, rVects(1,:), rVects(2,:), rVects(3,:), '-', 'Color',bColorRGB, 'LineWidth',1.5);
                             bodyMarkerData.addData(times, rVects);

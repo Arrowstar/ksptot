@@ -243,27 +243,35 @@ classdef LaunchVehicleStageState < matlab.mixin.SetGet & matlab.mixin.Copyable
                     
                     for(i=1:length(obj.engineStates))
                         if(obj.engineStates(i).active)
-                            tanksToUpdateStatesFor = [tanksToUpdateStatesFor, lvState.getTanksConnectedToEngine(obj.engineStates(i).engine)]; %#ok<AGROW>
+%                             tanksToUpdateStatesFor = [tanksToUpdateStatesFor, lvState.getTanksConnectedToEngine(obj.engineStates(i).engine)]; %#ok<AGROW>
+                            tanksToUpdateStatesFor = [tanksToUpdateStatesFor, lvState.getTanksConnectedToEngineForStage(obj.engineStates(i).engine, newStageState.stage)]; %#ok<AGROW>
                         end
                     end
                     
-                    tanksToUpdateStatesFor = [tanksToUpdateStatesFor, lvState.getTanksWithActiveTankToTankConnectionsForStage(obj)];
+                    if(~isempty(lvState.t2TConns))
+                        tanksToUpdateStatesFor = [tanksToUpdateStatesFor, lvState.getTanksWithActiveTankToTankConnectionsForStage(obj)];
+                    end
                     
-                    stageTanks = [obj.tankStates.tank];
+%                     stageTanks = [obj.tankStates.tank];
                     if(not(isempty(tanksToUpdateStatesFor)))
-                        [Lia] = ismemberClassTypesARH(tanksToUpdateStatesFor,stageTanks);
-                        tanksToUpdateStatesFor = tanksToUpdateStatesFor(logical(Lia));
+%                         [Lia] = ismemberClassTypesARH(tanksToUpdateStatesFor,stageTanks);
+%                         tanksToUpdateStatesFor = tanksToUpdateStatesFor(logical(Lia));
                         
-                        if(not(isempty(tanksToUpdateStatesFor)))
-                            for(i=1:length(tanksToUpdateStatesFor))
-                                tankToUpdateState = tanksToUpdateStatesFor(i);
-                                
-                                [tankState, ind] = obj.getStateForTank(tankToUpdateState);
-                                newTankState = tankState.copy();
-                                newTankState.stageState = newStageState;
-                                newStageState.tankStates(ind) = newTankState;
-                            end
+%                         if(not(isempty(tanksToUpdateStatesFor)))
+
+                        if(length(tanksToUpdateStatesFor) > 1)
+                            tanksToUpdateStatesFor = unique(tanksToUpdateStatesFor);
                         end
+
+                        for(i=1:length(tanksToUpdateStatesFor))
+%                             tankToUpdateState = tanksToUpdateStatesFor(i);
+
+                            [tankState, ind] = obj.getStateForTank(tanksToUpdateStatesFor(i));
+                            newTankState = tankState.copy();
+                            newTankState.stageState = newStageState;
+                            newStageState.tankStates(ind) = newTankState;
+                        end
+%                         end
                     end
                 end
                 

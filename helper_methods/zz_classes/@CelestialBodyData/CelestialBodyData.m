@@ -56,7 +56,10 @@ classdef CelestialBodyData < matlab.mixin.SetGet & dynamicprops
         function bodyInfo = getBodyInfoById(obj, bodyId)
 %             arr = [obj.bodies.id];
             bodyInfo = obj.bodies(obj.bodyIdCacheArr == bodyId);
-            bodyInfo = bodyInfo(1);
+            
+            if(numel(bodyInfo) > 1)
+                bodyInfo = bodyInfo(1);
+            end
         end
         
         %Override the following structure methods for backwards

@@ -1,5 +1,7 @@
-function temperature = getTemperatureAtAltitude(bodyInfo, altitude, lat, ut, long) 
-    if(altitude <= bodyInfo.atmohgt && altitude >= 0)
+function temperature = getTemperatureAtAltitude(bodyInfo, altitude, lat, ut, long)
+    bool = altitude <= bodyInfo.atmohgt & altitude >= 0;
+    
+    if(any(bool))
         if(bodyInfo.doNotUseAtmoTempSunMultCurve)
             atmosphereTemperatureOffset = 1;
         else
@@ -22,17 +24,17 @@ function temperature = getTemperatureAtAltitude(bodyInfo, altitude, lat, ut, lon
             ecctempbias = computeEccTempBias(ut, bodyInfo, parentGmu);
             
             atmosphereTemperatureOffset = bodyInfo.lattempbiascurve(abs(lat)) + ...
-                                        bodyInfo.lattempsunmultcurve(abs(lat))*sunDotNormal + ... 
-                                        axialtempsunbias * bodyInfo.axialtempsunmultcurve(abs(lat)) + ...
+                                        bodyInfo.lattempsunmultcurve(abs(lat)) .* sunDotNormal + ... 
+                                        axialtempsunbias .* bodyInfo.axialtempsunmultcurve(abs(lat)) + ...
                                         ecctempbias;
         end
         
         temperature = bodyInfo.atmotempcurve(altitude) + ... %base temperature
-                      atmosphereTemperatureOffset * bodyInfo.atmotempsunmultcurve(altitude); % altitude-based multiplier to temperature delta
-    elseif(altitude <= 0)
-        temperature = 0;
-    else 
-        temperature = 0;
+                      atmosphereTemperatureOffset .* bodyInfo.atmotempsunmultcurve(altitude); % altitude-based multiplier to temperature delta
+    end
+    
+    if(any(not(bool)))
+        temperature(not(bool)) = 0;
     end
 end
 

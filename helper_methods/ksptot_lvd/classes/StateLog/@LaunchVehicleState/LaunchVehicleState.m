@@ -63,8 +63,29 @@ classdef LaunchVehicleState < matlab.mixin.SetGet & matlab.mixin.Copyable
                     tanks = [connections.tank];
                 end
                 
+                if(isempty(tanks))
+                    tanks = obj.emptyTankArr;
+                end
+                
                 obj.cachedEngines(end+1) = engine;
                 obj.cachedConnTanks(end+1) = {tanks};
+            end
+        end
+        
+        function tanks = getTanksConnectedToEngineForStage(obj, engine, stage)
+%             tanks = obj.emptyTankArr;
+            
+            engineTanks = obj.getTanksConnectedToEngine(engine);
+%             for(i=1:length(engineTanks))
+%                 if(engineTanks(i).stage == stage)
+%                     tanks(end+1) = engineTanks(i); %#ok<AGROW>
+%                 end
+%             end
+            if(not(isempty(engineTanks)))
+                bool = [engineTanks.stage] == stage;
+                tanks = engineTanks(bool);
+            else
+                tanks = obj.emptyTankArr;
             end
         end
         
@@ -120,7 +141,9 @@ classdef LaunchVehicleState < matlab.mixin.SetGet & matlab.mixin.Copyable
                 end
             end
             
-            tanks = unique(tanks);
+            if(length(tanks) > 1)
+                tanks = unique(tanks);
+            end
         end
         
         %Misc
