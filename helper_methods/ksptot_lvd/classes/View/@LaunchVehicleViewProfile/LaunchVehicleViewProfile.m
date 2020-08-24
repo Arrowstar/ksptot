@@ -138,10 +138,10 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
             bodyColorsArr = {};
             bodyMarkerDataObjs = {};
             
-            if(isempty(gcp('nocreate')))
+            pp = gcp('nocreate');
+            if(isempty(pp))
                 M = 0;
             else
-                pp = gcp('nocreate');
                 M = pp.NumWorkers;
             end
             
