@@ -11,7 +11,7 @@ function [c, ceq, value, lb, ub, type, eventNum] = ma_genericConstraint(stateLog
     end
     
     if(isempty(eventNum))
-        warn('Could not find event with ID %f when evaluating optimization constraints.  Skipping.', eventID);
+        warning('Could not find event with ID %f when evaluating optimization constraints.  Skipping.', eventID);
         
         c = [0 0];
         ceq = [0];
@@ -21,6 +21,16 @@ function [c, ceq, value, lb, ub, type, eventNum] = ma_genericConstraint(stateLog
     end
 
     eventLog = stateLog(stateLog(:,13)==eventNum,:);
+    if(isempty(eventLog))
+        warning('Empty event log when evaluating constraint at event %u of type "%s".  Skipping.', eventID, type);
+        
+        c = [0 0];
+        ceq = [0];
+        value = [0];
+        
+        return;
+    end
+    
     finalEntry = eventLog(end,:);
     
     bodyID = finalEntry(8);
