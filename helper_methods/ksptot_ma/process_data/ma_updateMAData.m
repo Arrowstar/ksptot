@@ -19,10 +19,14 @@ function maData = ma_updateMAData(maData, handles)
     
 	if(not(isfield(maData,'settings') && isstruct(maData.settings) && isfield(maData.settings,'soiSearchTol')))
         maData.settings.soiSearchTol = 1E-6;
-	end
+    end
     
 	if(not(isfield(maData,'settings') && isstruct(maData.settings) && isfield(maData.settings,'numSoiSearchAttemptsPerRev')))
         maData.settings.numSoiSearchAttemptsPerRev = 2;
+	end
+    
+	if(not(isfield(maData,'settings') && isstruct(maData.settings) && isfield(maData.settings,'numParallelWorkers')))
+        maData.settings.numParallelWorkers = feature('numCores');
 	end
     
     thrusters = maData.spacecraft.thrusters;

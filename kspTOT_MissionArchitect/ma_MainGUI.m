@@ -22,7 +22,7 @@ function varargout = ma_MainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_MainGUI
 
-% Last Modified by GUIDE v2.5 19-Jul-2020 15:31:23
+% Last Modified by GUIDE v2.5 25-Aug-2020 09:50:45
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -194,6 +194,7 @@ function maData = generateCleanMissionPlan(handles)
     maData.settings.numSoiSearchAttemptsPerRev = 1000;
     maData.settings.autoPropScript = true;
     maData.settings.renderer = FigureRendererEnum.OpenGL;
+    maData.settings.numParallelWorkers = feature('numCores');
     number_state_log_entries_per_coast = maData.settings.numStateLogPtsPerCoast;
     num_SoI_search_revs = maData.settings.numSoISearchRevs;
     strict_SoI_search = maData.settings.strictSoISearch;
@@ -214,6 +215,13 @@ function maData = generateCleanMissionPlan(handles)
     maData.celBodyData = celBodyData;
     
     maData.ksptotVer = getKSPTOTVersionNumStr();
+    
+    numParallelWorkers = maData.settings.numParallelWorkers;
+    pp = gcp('nocreate');
+    if(not(isempty(pp)) && pp.NumWorkers ~= numParallelWorkers)
+        delete(pp);
+        startParallelWorkers(writeOutput, numParallelWorkers);
+    end
 
 
 % --- Outputs from this function are returned to the command line.
@@ -687,6 +695,14 @@ function openMissionPlanMenu_Callback(hObject, eventdata, handles)
             maData.stateLog = ma_executeScript(maData.script, handles, celBodyData, handles.scriptWorkingLbl, true);
             setappdata(handles.ma_MainGUI,'ma_data',maData);
             setappdata(handles.ma_MainGUI,'current_save_location',filePath);
+            
+            numParallelWorkers = maData.settings.numParallelWorkers;
+            
+            pp = gcp('nocreate');
+            if(not(isempty(pp)) && pp.NumWorkers ~= numParallelWorkers)
+                delete(pp);
+                startParallelWorkers(writeOutput, numParallelWorkers);
+            end            
             
             ma_processData(handles, maData, celBodyData);
             
@@ -1552,29 +1568,35 @@ function parallelizeScriptOptimizationMenu_Callback(hObject, eventdata, handles)
         set(gcbo, 'Checked', 'on');
         maData.settings.parallelScriptOptim = true;
         
+        numWorkers = maData.settings.numParallelWorkers;
+        
         drawnow;
         p = gcp('nocreate');
         if(isempty(p))
-            try
-                h = msgbox('Attempting to start parallel computing workers.  Please wait...','modal');
-                pp=parpool('local');
-                pp.IdleTimeout = 99999; %we don't want the pool to shutdown
-                if(ishandle(h))
-                    close(h);
-                end
-                writeOutput('Parallel optimization mode enabled.','append');
-            catch ME
-                if(ishandle(h))
-                    close(h);
-                end
-                msgbox(sprintf('Parallel mode start failed.  Optimization will run in serial.  Message:\n\n%s',ME.message));
-                disp(ME.message);
-            end
+            startParallelWorkers(writeOutput, numWorkers);
         else
             writeOutput('Parallel optimization mode enabled.','append');
         end
     end
     setappdata(handles.ma_MainGUI,'ma_data',maData);
+    
+function startParallelWorkers(writeOutput, numWorkers)
+    try
+        h = msgbox('Attempting to start parallel computing workers.  Please wait...','modal');
+        pp=parpool('local',numWorkers);
+        pp.IdleTimeout = 99999; %we don't want the pool to shutdown
+        if(ishandle(h))
+            close(h);
+        end
+        writeOutput('Parallel optimization mode enabled.','append');
+    catch ME
+        if(ishandle(h))
+            close(h);
+        end
+        msgbox(sprintf('Parallel mode start failed.  Optimization will run in serial.  Message:\n\n%s',ME.message));
+        disp(ME.message);
+    end    
+
    
 
 % --------------------------------------------------------------------
@@ -2771,3 +2793,49 @@ function usePaintersRendererMenu_Callback(hObject, eventdata, handles)
     writeOutput('Renderer set to Painters.','append');
     
     ma_processData(handles);
+
+
+% --------------------------------------------------------------------
+function setNumParallelWorkers_Callback(hObject, eventdata, handles)
+% hObject    handle to setNumParallelWorkers (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    maData = getappdata(handles.ma_MainGUI,'ma_data');
+    celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
+    writeOutput = getappdata(handles.ma_MainGUI,'write_to_output_func');
+    
+    numCores = feature('numCores');
+    
+    input_str = sprintf(['Enter the number of workers to use for parallel optimization:\n',...
+                         '(Minimum = 1, Maximum = %u)\n',...
+                         '(More workers will speed up optimization but require more memory.)\n'], numCores);
+    str = inputdlg(input_str, 'Number of Parallel Workers', [1 75], {num2str(maData.settings.numParallelWorkers,'%i')});
+    if(isempty(str))
+        return;
+    end
+    
+    str = str{1};
+    
+    if(checkStrIsNumeric(str) && str2double(str) >= 1 && str2double(str) <= numCores)
+        ma_UndoRedoAddState(handles, 'Update Num. Parallel Workers');
+        
+		str = num2str(ceil(str2double(str)));
+        writeOutput(sprintf('Setting number of parallel workers to %s.', str),'append');
+        
+        numParallelWorkers = str2double(str);
+        maData.settings.numParallelWorkers = numParallelWorkers;
+        
+        pp = gcp('nocreate');
+        if(not(isempty(pp)) && pp.NumWorkers ~= numParallelWorkers)
+            delete(pp);
+            startParallelWorkers(writeOutput, numParallelWorkers);
+        end
+        
+        setappdata(handles.ma_MainGUI,'ma_data',maData);
+        maData.stateLog = ma_executeScript(maData.script,handles,celBodyData,handles.scriptWorkingLbl);
+        setappdata(handles.ma_MainGUI,'ma_data',maData);
+        ma_processData(handles);
+    else
+        writeOutput(sprintf('Could not set number of parallel workers.  "%s" is an invalid entry.', str),'append');
+        beep;
+    end
