@@ -22,7 +22,7 @@ function varargout = lvd_editFminconOptionsGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_editFminconOptionsGUI
 
-% Last Modified by GUIDE v2.5 06-Nov-2019 20:40:27
+% Last Modified by GUIDE v2.5 25-Aug-2020 10:18:36
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -116,7 +116,8 @@ function handles = populateGUI(handles, fminconOpt)
     setOptsDoubleValueStrInGUI(handles, options, 'relLineSrchBndDuration', 'AsLineSrchBndDurText');
     setOptsDoubleValueStrInGUI(handles, options, 'tolConSQP', 'AsTolConSqpText');
     
-   
+    setOptsDoubleValueStrInGUI(handles, options, 'numWorkers', 'numParaWorkersText');
+    
 function setDocLbl(handles)
     docLinkLblPos = handles.matlabDocLinkLabel.Position;
     docLinkLblParent = handles.matlabDocLinkLabel.Parent;
@@ -186,6 +187,8 @@ function varargout = lvd_editFminconOptionsGUI_OutputFcn(hObject, eventdata, han
         setOptsDoubleValueInObject(handles, options, 'relLineSrchBnd', 'AsRelLineSrchBndText');
         setOptsDoubleValueInObject(handles, options, 'relLineSrchBndDuration', 'AsLineSrchBndDurText');
         setOptsDoubleValueInObject(handles, options, 'tolConSQP', 'AsTolConSqpText');
+        
+        setOptsDoubleValueInObject(handles, options, 'numWorkers', 'numParaWorkersText');
     
         varargout{1} = true;
         close(handles.lvd_editFminconOptionsGUI);
@@ -216,6 +219,7 @@ function errMsg = validateInputs(handles)
     errMsg = validateDoubleValue(handles, errMsg, 'AsLineSrchBndDurText', 'A-S Line Search Bound Duration', 1, Inf, true);
     errMsg = validateDoubleValue(handles, errMsg, 'AsTolConSqpText', 'A-S Inner SQP Constraint Tolerance', 1E-10, Inf, false);
      
+    errMsg = validateDoubleValue(handles, errMsg, 'numParaWorkersText', 'Number of Parallel Workers', 1, feature('numCores'), true);
 
 function optTolText_Callback(hObject, eventdata, handles)
 % hObject    handle to optTolText (see GCBO)
@@ -761,6 +765,31 @@ function useParallelCombo_CreateFcn(hObject, eventdata, handles)
 % handles    empty - handles not created until after all CreateFcns called
 
 % Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function numParaWorkersText_Callback(hObject, eventdata, handles)
+% hObject    handle to numParaWorkersText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of numParaWorkersText as text
+%        str2double(get(hObject,'String')) returns contents of numParaWorkersText as a double
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
+
+% --- Executes during object creation, after setting all properties.
+function numParaWorkersText_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to numParaWorkersText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
 %       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');

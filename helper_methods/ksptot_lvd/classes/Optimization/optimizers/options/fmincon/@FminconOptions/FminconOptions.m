@@ -16,6 +16,7 @@ classdef FminconOptions < matlab.mixin.SetGet
         
         %Parallel
         useParallel(1,1) FminconUseParallelEnum = FminconUseParallelEnum.DoNotUseParallel;
+        numWorkers(1,1) double = feature('numCores');
         
         %Finite Differences
         finDiffStepSize(1,1) double = 1E-8;
@@ -134,6 +135,18 @@ classdef FminconOptions < matlab.mixin.SetGet
         
         function tf = usesParallel(obj)
             tf = obj.useParallel;
+        end
+        
+        function numWorkers = getNumParaWorkers(obj)
+            numWorkers = obj.numWorkers;
+        end
+    end
+    
+    methods(Static)
+        function obj = loadobj(obj)
+            if(obj.numWorkers < 1 || obj.numWorkers > feature('numCores'))
+                obj.numWorkers = feature('numCores');
+            end
         end
     end
 end

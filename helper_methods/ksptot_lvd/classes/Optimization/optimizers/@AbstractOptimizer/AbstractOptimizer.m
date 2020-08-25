@@ -14,6 +14,8 @@ classdef(Abstract) AbstractOptimizer < matlab.mixin.SetGet
         openOptionsDialog(obj);
         
         tf = usesParallel(obj);
+        
+        numWorkers = getNumParaWorkers(obj);
     end
     
     methods(Static, Access=protected)

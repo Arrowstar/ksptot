@@ -22,7 +22,7 @@ function varargout = lvd_editNomadOptionsGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_editNomadOptionsGUI
 
-% Last Modified by GUIDE v2.5 17-Nov-2019 16:19:16
+% Last Modified by GUIDE v2.5 25-Aug-2020 10:31:16
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -102,6 +102,10 @@ function handles = populateGUI(handles, nomadOpt)
     
     setOptsDoubleValueStrInGUI(handles, options, 'vns_trigger', 'vnsTriggerText');
     
+    setOptsDoubleValueStrInGUI(handles, options, 'vns_trigger', 'vnsTriggerText');
+    
+    setOptsDoubleValueStrInGUI(handles, options, 'numWorkers', 'numParaWorkersText');
+    
 function setDocLbl(handles)
     docLinkLblPos = handles.docLinkLabel.Position;
     docLinkLblParent = handles.docLinkLabel.Parent;
@@ -159,6 +163,8 @@ function varargout = lvd_editNomadOptionsGUI_OutputFcn(hObject, eventdata, handl
         setOptsDoubleValueInObject(handles, options, 'h_min', 'hMinText');
 
         setOptsDoubleValueInObject(handles, options, 'vns_trigger', 'vnsTriggerText');
+        
+        setOptsDoubleValueInObject(handles, options, 'numWorkers', 'numParaWorkersText');
         
         varargout{1} = true;
         close(handles.lvd_editNomadOptionsGUI);
@@ -514,3 +520,30 @@ function errMsg = validateInputs(handles)
     errMsg = validateDoubleValue(handles, errMsg, 'hMinText', 'Constraint Tolerance', 1E-12, Inf, false);
     
     errMsg = validateDoubleValue(handles, errMsg, 'vnsTriggerText', 'VNS Trigger', 0, 1, false);
+
+    errMsg = validateDoubleValue(handles, errMsg, 'vnsTriggerText', 'VNS Trigger', 0, 1, false);
+    
+    errMsg = validateDoubleValue(handles, errMsg, 'numParaWorkersText', 'Number of Parallel Workers', 1, feature('numCores'), true);
+
+function numParaWorkersText_Callback(hObject, eventdata, handles)
+% hObject    handle to numParaWorkersText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of numParaWorkersText as text
+%        str2double(get(hObject,'String')) returns contents of numParaWorkersText as a double
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
+
+% --- Executes during object creation, after setting all properties.
+function numParaWorkersText_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to numParaWorkersText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

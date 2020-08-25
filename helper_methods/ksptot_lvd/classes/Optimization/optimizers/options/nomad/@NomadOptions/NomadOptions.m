@@ -5,6 +5,7 @@ classdef NomadOptions < matlab.mixin.SetGet
     properties
         %Parallel
         useParallel(1,1) PatternSearchUseParallelEnum = PatternSearchUseParallelEnum.DoNotUseParallel;
+        numWorkers(1,1) double = feature('numCores');
         
         %basic parameters
         direction_type(1,1) NomadDirectionTypeEnum = NomadDirectionTypeEnum.OrthoN1Quad;
@@ -86,6 +87,10 @@ classdef NomadOptions < matlab.mixin.SetGet
         
         function tf = usesParallel(obj)
             tf = obj.useParallel.optionVal;
+        end
+        
+        function numWorkers = getNumParaWorkers(obj)
+            numWorkers = obj.numWorkers;
         end
         
         function constrType = getConstrTypeStr(obj)

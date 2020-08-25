@@ -22,7 +22,7 @@ function varargout = lvd_editPatternSearchOptionsGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_editPatternSearchOptionsGUI
 
-% Last Modified by GUIDE v2.5 09-Nov-2019 14:41:08
+% Last Modified by GUIDE v2.5 25-Aug-2020 13:52:51
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -128,6 +128,10 @@ function handles = populateGUI(handles, patternSearchOpt)
     
     setOptsDoubleValueStrInGUI(handles, options, 'initPenalty', 'initPenaltyText');
     setOptsDoubleValueStrInGUI(handles, options, 'penaltyFact', 'penaltyFactText');
+    
+    setOptsDoubleValueStrInGUI(handles, options, 'penaltyFact', 'penaltyFactText');
+    
+    setOptsDoubleValueStrInGUI(handles, options, 'numWorkers', 'numParaWorkersText');
 
 function setDocLbl(handles)
     docLinkLblPos = handles.matlabDocLinkLabel.Position;
@@ -209,13 +213,15 @@ function varargout = lvd_editPatternSearchOptionsGUI_OutputFcn(hObject, eventdat
         setOptsDoubleValueInObject(handles, options, 'initPenalty', 'initPenaltyText');
         setOptsDoubleValueInObject(handles, options, 'penaltyFact', 'penaltyFactText');
         
+        setOptsDoubleValueInObject(handles, options, 'numWorkers', 'numParaWorkersText');
+        
         varargout{1} = true;
         close(handles.lvd_editPatternSearchOptionsGUI);
     end
 
 
 
-function funcTolText_Callback(hObject, eventdata, handles)
+function funcTolText_Callback(hObject, ~, handles)
 % hObject    handle to funcTolText (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -802,3 +808,27 @@ function errMsg = validateInputs(handles)
 
     errMsg = validateDoubleValue(handles, errMsg, 'initPenaltyText', 'Initial Penalty', 1, Inf, false);
     errMsg = validateDoubleValue(handles, errMsg, 'penaltyFactText', 'Penalty Factor', 1, Inf, false);
+
+    errMsg = validateDoubleValue(handles, errMsg, 'numParaWorkersText', 'Number of Parallel Workers', 1, feature('numCores'), true);
+
+
+function numParaWorkersText_Callback(hObject, eventdata, handles)
+% hObject    handle to numParaWorkersText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of numParaWorkersText as text
+%        str2double(get(hObject,'String')) returns contents of numParaWorkersText as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function numParaWorkersText_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to numParaWorkersText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

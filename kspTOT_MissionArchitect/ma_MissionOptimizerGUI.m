@@ -559,7 +559,9 @@ function optimizeMissionButton_Callback(hObject, eventdata, handles)
     %%%%%%%
     varStrs = {};
     for(i=1:length(maData.optimizer.variables{2}))
-        varStrs = horzcat(varStrs,maData.optimizer.variables{2}{i}.varStr); %#ok<AGROW>
+        varStr = maData.optimizer.variables{2}{i}.varStr;
+        varStr = varStr(:)';
+        varStrs = horzcat(varStrs,varStr); %#ok<AGROW>
     end
     
     %%%%%%%

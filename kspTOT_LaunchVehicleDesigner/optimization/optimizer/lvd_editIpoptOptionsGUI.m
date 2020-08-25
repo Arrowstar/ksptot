@@ -22,7 +22,7 @@ function varargout = lvd_editIpoptOptionsGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_editIpoptOptionsGUI
 
-% Last Modified by GUIDE v2.5 30-Jan-2020 20:01:40
+% Last Modified by GUIDE v2.5 25-Aug-2020 13:45:18
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -97,7 +97,7 @@ function handles = populateGUI(handles, ipoptOpt)
     setOptsDoubleValueStrInGUI(handles, options, 'nu_inc', 'nuIncrText');
     setOptsDoubleValueStrInGUI(handles, options, 'nu_init', 'nuInitText');
     
-    
+    setOptsDoubleValueStrInGUI(handles, options, 'numWorkers', 'numParaWorkersText');
 
 function setDocLbl(handles)
     docLinkLblPos = handles.docLinkLabel.Position;
@@ -153,6 +153,8 @@ function varargout = lvd_editIpoptOptionsGUI_OutputFcn(hObject, eventdata, handl
         setOptsDoubleValueInObject(handles, options, 'nu_inc', 'nuIncrText');
         setOptsDoubleValueInObject(handles, options, 'nu_init', 'nuInitText');
         
+        setOptsDoubleValueInObject(handles, options, 'numWorkers', 'numParaWorkersText');
+        
         varargout{1} = true;
         close(handles.lvd_editIpoptOptionsGUI);
     end
@@ -170,6 +172,8 @@ function errMsg = validateInputs(handles)
     errMsg = validateDoubleValue(handles, errMsg, 'alphaRedFactorText', 'Alpha Red Factor', 0, 1, false);
     errMsg = validateDoubleValue(handles, errMsg, 'nuIncrText', 'Initial Nu', 1E-12, Inf, false);
     errMsg = validateDoubleValue(handles, errMsg, 'nuInitText', 'Nu Increment', 1E-12, Inf, false);
+    
+    errMsg = validateDoubleValue(handles, errMsg, 'numParaWorkersText', 'Number of Parallel Workers', 1, feature('numCores'), true);
 
 % --- Executes on button press in saveAndCloseButton.
 function saveAndCloseButton_Callback(hObject, eventdata, handles)
@@ -467,6 +471,31 @@ function maxIterText_Callback(hObject, eventdata, handles)
 % --- Executes during object creation, after setting all properties.
 function maxIterText_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to maxIterText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function numParaWorkersText_Callback(hObject, eventdata, handles)
+% hObject    handle to numParaWorkersText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of numParaWorkersText as text
+%        str2double(get(hObject,'String')) returns contents of numParaWorkersText as a double
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
+
+% --- Executes during object creation, after setting all properties.
+function numParaWorkersText_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to numParaWorkersText (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 

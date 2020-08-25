@@ -5,6 +5,7 @@ classdef PatternSearchOptions < matlab.mixin.SetGet
     properties
         %Parallel
         useParallel(1,1) PatternSearchUseParallelEnum = PatternSearchUseParallelEnum.DoNotUseParallel;
+        numWorkers(1,1) double = feature('numCores');
         
         %Tolerances
         cacheTol(1,1) double = 1.1*eps;
@@ -134,6 +135,10 @@ classdef PatternSearchOptions < matlab.mixin.SetGet
         
         function tf = usesParallel(obj)
             tf = obj.useParallel;
+        end
+        
+        function numWorkers = getNumParaWorkers(obj)
+            numWorkers = obj.numWorkers;
         end
     end
 end

@@ -82,6 +82,10 @@ classdef FminconOptimizer < AbstractGradientOptimizer
         function tf = usesParallel(obj)
             tf = obj.options.useParallel.optionVal;
         end
+        
+        function numWorkers = getNumParaWorkers(obj)
+            numWorkers = obj.options.getNumParaWorkers();
+        end
     end
     
     methods(Access=private)

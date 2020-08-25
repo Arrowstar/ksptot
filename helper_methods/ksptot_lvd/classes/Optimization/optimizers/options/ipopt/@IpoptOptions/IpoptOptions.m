@@ -20,6 +20,7 @@ classdef IpoptOptions < matlab.mixin.SetGet
         
         %Parallel
         useParallel(1,1) IpoptUseParallelEnum = IpoptUseParallelEnum.DoNotUseParallel;
+        numWorkers(1,1) double = feature('numCores');
     end
     
     methods
@@ -81,6 +82,10 @@ classdef IpoptOptions < matlab.mixin.SetGet
         function tf = usesParallel(obj)
 %             tf = obj.useParallel;
             tf = IpoptUseParallelEnum.UseParallel;
+        end
+        
+        function numWorkers = getNumParaWorkers(obj)
+            numWorkers = obj.numWorkers;
         end
     end
 end

@@ -864,7 +864,8 @@ function openMissionPlanMenu_Callback(hObject, eventdata, handles)
             enableDisableArrowButtons(lvdData, handles);
             
             if(lvdData.optimizer.usesParallel())
-                startParallelPool(write_to_output_func);
+                numWorkers = lvdData.optimizer.numParaWorkers();
+                startParallelPool(write_to_output_func, numWorkers);
             end
             
             propagateScript(handles, lvdData, 1);
@@ -1175,12 +1176,17 @@ function optimSettingsMenu_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 
-function startParallelPool(writeOutput)
+function startParallelPool(writeOutput, numWorkers)
     p = gcp('nocreate');
-    if(isempty(p))
+    if(isempty(p) || p.NumWorkers ~= numWorkers)       
         try
             h = msgbox('Attempting to start parallel computing workers.  Please wait...','modal');
-            pp=parpool('local');
+            
+            if(not(isempty(p)))
+                delete(p);
+            end
+            
+            pp=parpool('local',numWorkers);
             pp.IdleTimeout = 99999; %we don't want the pool to shutdown
             if(isvalid(h))
                 close(h);
@@ -1810,7 +1816,8 @@ function selectOptimizationAlgosMenu_Callback(hObject, eventdata, handles)
     lvd_OptimizerSelectionGUI(lvdData);
     
     if(lvdData.optimizer.getSelectedOptimizer().usesParallel())
-        startParallelPool(writeOutput);
+        numWorkers = lvdData.optimizer.getSelectedOptimizer().getNumParaWorkers();
+        startParallelPool(writeOutput, numWorkers);
     end
     
     

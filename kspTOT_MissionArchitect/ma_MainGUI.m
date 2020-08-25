@@ -119,6 +119,7 @@ function celBodyData = getCelBodyDataFromMainGui(handles)
 function maData = generateCleanMissionPlan(handles) 
     global number_state_log_entries_per_coast num_SoI_search_revs strict_SoI_search use_selective_soi_search options_gravParamType soi_search_tol num_soi_search_attempts_per_rev;
     celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
+    write_to_output_func = getappdata(handles.ma_MainGUI,'write_to_output_func');
     
     thrusters = {};
     thrusters{end+1} = ma_createThruster('LV-1R "Spider"',              'fuelOxMass',   290,    2);
@@ -220,7 +221,7 @@ function maData = generateCleanMissionPlan(handles)
     pp = gcp('nocreate');
     if(not(isempty(pp)) && pp.NumWorkers ~= numParallelWorkers)
         delete(pp);
-        startParallelWorkers(writeOutput, numParallelWorkers);
+        startParallelWorkers(write_to_output_func, numParallelWorkers);
     end
 
 
@@ -1179,7 +1180,9 @@ function reoptimizeMission_Callback(hObject, eventdata, handles)
         %%%%%%%
         varStrs = {};
         for(i=1:length(maData.optimizer.variables{2}))
-            varStrs = horzcat(varStrs,maData.optimizer.variables{2}{i}.varStr); %#ok<AGROW>
+            varStr = maData.optimizer.variables{2}{i}.varStr;
+            varStr = varStr(:)';
+            varStrs = horzcat(varStrs,varStr); %#ok<AGROW>
         end
         
         if(~isempty(problem))

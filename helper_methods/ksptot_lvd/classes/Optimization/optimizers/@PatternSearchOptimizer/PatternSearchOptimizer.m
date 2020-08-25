@@ -65,6 +65,10 @@ classdef PatternSearchOptimizer < AbstractOptimizer
             tf = obj.options.useParallel.optionVal;
         end
         
+        function numWorkers = getNumParaWorkers(obj)
+            numWorkers = obj.options.getNumParaWorkers();
+        end
+        
         function openOptionsDialog(obj)
             lvd_editPatternSearchOptionsGUI(obj);
         end

@@ -85,6 +85,10 @@ classdef NomadOptimizer < AbstractOptimizer
             tf = obj.getOptions().usesParallel();
         end
         
+        function numWorkers = getNumParaWorkers(obj)
+            numWorkers = obj.options.getNumParaWorkers();
+        end
+        
         function openOptionsDialog(obj)
             lvd_editNomadOptionsGUI(obj);
         end
