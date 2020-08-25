@@ -6,8 +6,8 @@ classdef AtmoTempDataCache < matlab.mixin.SetGet
         bodyInfo KSPTOT_BodyInfo
         cacheAltGrid double
         
-        cacheTimeBlockSize(1,1) double = 1000000;
-        cacheTimeIncr(1,1) double = 10000;
+        cacheTimeBlockSize(1,1) double = NaN;
+        cacheTimeIncr(1,1) double = NaN;
     end
     
     properties(Constant)       
@@ -25,13 +25,15 @@ classdef AtmoTempDataCache < matlab.mixin.SetGet
     methods
         function obj = AtmoTempDataCache(bodyInfo)
             obj.bodyInfo = bodyInfo;
-            
-            obj.cacheAltGrid = linspace(0, bodyInfo.atmohgt, 20);
-            obj.cacheTimeIncr = bodyInfo.rotperiod/10;
-            obj.cacheTimeBlockSize = 1000*obj.cacheTimeIncr;
         end
         
         function atmoTemp = getAtmoTemperature(obj, time, lat, long, alt)
+            if(isnan(obj.cacheTimeBlockSize))
+                obj.cacheAltGrid = linspace(0, obj.bodyInfo.atmohgt, 20);
+                obj.cacheTimeIncr = obj.bodyInfo.rotperiod/10;
+                obj.cacheTimeBlockSize = 1000*obj.cacheTimeIncr;
+            end
+            
             %init cache if things are empty
             if(isnan(obj.cacheStartTime) || isnan(obj.cacheEndTime))
                 times = [time : obj.cacheTimeIncr : time+obj.cacheTimeBlockSize]; %#ok<NBRAK>

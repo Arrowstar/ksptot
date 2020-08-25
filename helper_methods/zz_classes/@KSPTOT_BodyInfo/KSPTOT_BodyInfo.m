@@ -70,10 +70,7 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
     methods
         function obj = KSPTOT_BodyInfo() 
             obj.sunDotNormalCache = SunDotNormalDataCache(obj);
-            
-            if(not(isempty(obj.atmohgt)))
-                obj.atmoTempCache = AtmoTempDataCache(obj);
-            end
+            obj.atmoTempCache = AtmoTempDataCache(obj);
         end
         
         function set.atmotempsunmultcurve(obj,newValue)
