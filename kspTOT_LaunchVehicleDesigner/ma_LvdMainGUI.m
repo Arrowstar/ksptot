@@ -864,7 +864,7 @@ function openMissionPlanMenu_Callback(hObject, eventdata, handles)
             enableDisableArrowButtons(lvdData, handles);
             
             if(lvdData.optimizer.usesParallel())
-                numWorkers = lvdData.optimizer.numParaWorkers();
+                numWorkers = lvdData.optimizer.getSelectedOptimizer().getNumParaWorkers();
                 startParallelPool(write_to_output_func, numWorkers);
             end
             

@@ -22,7 +22,7 @@ function varargout = ma_launchWindowAnalysisToolGUI(varargin)
 
 % Edit the above text to modify the response to help ma_launchWindowAnalysisToolGUI
 
-% Last Modified by GUIDE v2.5 22-Apr-2015 16:50:21
+% Last Modified by GUIDE v2.5 26-Aug-2020 15:14:25
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -58,6 +58,7 @@ handles.output = hObject;
 % Update handles structure
 guidata(hObject, handles);
 handles.ma_MainGUI = varargin{1};
+handles.ksptotMainGUI = varargin{2};
 guidata(hObject, handles);
 
 %GUI setup
@@ -437,3 +438,31 @@ function ma_launchWindowAnalysisToolGUI_WindowKeyPressFcn(hObject, eventdata, ha
         case 'escape'
             close(handles.ma_launchWindowAnalysisToolGUI);
     end
+
+
+% --------------------------------------------------------------------
+function getOrbitFromSFSFileContextMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to getOrbitFromSFSFileContextMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    orbitPanelGetOrbitFromSFSContextCallBack(handles.ksptotMainGUI, [], [], handles.targetIncText, handles.targetRAANText, []);
+
+% --------------------------------------------------------------------
+function getOrbitFromKSPTOTConnectContextMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to getOrbitFromKSPTOTConnectContextMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    orbitPanelGetOrbitFromKSPTOTConnectCallBack([], [], handles.targetIncText, handles.targetRAANText, []);
+
+% --------------------------------------------------------------------
+function getOrbitFromKSPActiveVesselMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to getOrbitFromKSPActiveVesselMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    orbitPanelGetOrbitFromKSPTOTConnectActiveVesselCallBack([], [], handles.targetIncText, handles.targetRAANText, []);
+
+% --------------------------------------------------------------------
+function targetOrbitContext_Callback(hObject, eventdata, handles)
+% hObject    handle to targetOrbitContext (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)

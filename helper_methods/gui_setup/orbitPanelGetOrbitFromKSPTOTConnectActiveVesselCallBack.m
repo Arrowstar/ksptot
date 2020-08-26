@@ -3,11 +3,26 @@ function [refBody, scName] = orbitPanelGetOrbitFromKSPTOTConnectActiveVesselCall
     refBody = [];
     [orbit] = getSingularOrbitFromKSPTOTConnect([]);
     if(not(isempty(orbit)))
-        set(hSMA, 'String', fullAccNum2Str(orbit{3}));
-        set(hECC, 'String', fullAccNum2Str(orbit{4}));
-        set(hINC, 'String', fullAccNum2Str(orbit{5}));
-        set(hRAAN, 'String', fullAccNum2Str(orbit{6}));
-        set(hARG, 'String', fullAccNum2Str(orbit{7}));
+        if(not(isempty(hSMA)))
+            set(hSMA, 'String', fullAccNum2Str(orbit{3}));
+        end
+        
+        if(not(isempty(hECC)))
+            set(hECC, 'String', fullAccNum2Str(orbit{4}));
+        end
+        
+        if(not(isempty(hINC)))
+            set(hINC, 'String', fullAccNum2Str(orbit{5}));
+        end
+        
+        if(not(isempty(hRAAN)))
+            set(hRAAN, 'String', fullAccNum2Str(orbit{6}));
+        end
+        
+        if(not(isempty(hARG)))
+            set(hARG, 'String', fullAccNum2Str(orbit{7}));
+        end
+        
         refBody = orbit{10};
         scName = orbit{1};
 

@@ -109,6 +109,9 @@ classdef ForceModelPropagator < AbstractPropagator
             
             [ut, rVect, vVect, tankStatesMasses, storageSoCs] = AbstractPropagator.decomposeIntegratorTandY(t,y, length(tankStates), length(powerStorageStates));
             altitude = norm(rVect) - bodyInfo.radius;
+            
+%             tankStatesMasses = reshape(tankStatesMasses,size(tankStates));
+%             storageSoCs = reshape(storageSoCs, size(powerStorageStates));
 
             stageStates = eventInitStateLogEntry.stageStates;
             lvState = eventInitStateLogEntry.lvState;

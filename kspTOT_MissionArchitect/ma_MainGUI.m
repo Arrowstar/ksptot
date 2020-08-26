@@ -1868,7 +1868,7 @@ function launchWindowAnalysisMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to launchWindowAnalysisMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-    ma_launchWindowAnalysisToolGUI(handles.ma_MainGUI);
+    ma_launchWindowAnalysisToolGUI(handles.ma_MainGUI, handles.ksptotMainGUI);
 
 
 % --------------------------------------------------------------------

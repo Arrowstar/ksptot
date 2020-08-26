@@ -457,6 +457,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                 pwrStorage = powerStorageStates(i).getEpsStorageComponent();
                 maxEcCapacities(i) = pwrStorage.getMaximumCapacity();
             end
+            maxEcCapacities = maxEcCapacities(:);
             
             for(i=1:length(stgStates)) %#ok<*NO4LP>
                 %                 stgState = stgStates(i);

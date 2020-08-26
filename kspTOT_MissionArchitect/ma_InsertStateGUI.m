@@ -2552,7 +2552,43 @@ function setLaunchSiteFromGrdTgtMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to setLaunchSiteFromGrdTgtMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+    maData = getappdata(handles.ma_MainGUI,'ma_data');
+    celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
+    
+    stns = maData.spacecraft.stations;
+    
+    if(~isempty(stns))
+        namesStr = {};
+        for(i=1:length(stns))
+            namesStr{i} = stns{i}.name;
+        end
+        
+        [Selection,ok] = listdlgARH('ListString',namesStr, ...
+                                    'SelectionMode','single', ...
+                                    'ListSize', [300 300], ...
+                                    'Name', 'Select Ground Target', ...
+                                    'PromptString', 'Select ground target:');
+                                
+        if(ok == 1)
+            stn = stns{Selection};
+            
+            handles.launchLatText.String = fullAccNum2Str(rad2deg(stn.lat));
+            handles.launchLongText.String = fullAccNum2Str(rad2deg(stn.long));
+            handles.launchAltText.String = fullAccNum2Str(stn.alt);
+            
+            bodyInfo = celBodyData.getBodyInfoById(stn.parentID);
 
+            [~, sortedBodyInfo] = ma_getSortedBodyNames(celBodyData);
+            sortedBodyInfo = [sortedBodyInfo{:}];
+            
+            ind = find(bodyInfo == sortedBodyInfo, 1, 'first');
+            if(not(isempty(ind)))
+                handles.launchBodiesCombo.Value = ind;
+            end
+        end
+    else
+        warndlg('There are no ground targets in this case.  Create one first.');
+    end
 
 % --------------------------------------------------------------------
 function setLaunchSiteFromGrdTgtContext_Callback(hObject, eventdata, handles)
