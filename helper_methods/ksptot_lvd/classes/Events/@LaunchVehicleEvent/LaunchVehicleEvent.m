@@ -57,7 +57,10 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
     
     methods
         function obj = LaunchVehicleEvent(script)
-            obj.script = script;
+            if(nargin > 0)
+                obj.script = script;
+            end
+            
             obj.colorLineSpec = EventColorLineSpec();
 
             obj.integratorObj = ODE45Integrator();

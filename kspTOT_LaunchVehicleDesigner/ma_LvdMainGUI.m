@@ -22,7 +22,7 @@ function varargout = ma_LvdMainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_LvdMainGUI
 
-% Last Modified by GUIDE v2.5 23-Jul-2020 20:38:43
+% Last Modified by GUIDE v2.5 28-Aug-2020 13:43:46
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1969,3 +1969,74 @@ function editCalculusObjectsMenu_Callback(hObject, eventdata, handles)
     
     runScript(handles, lvdData, 1);
     lvd_processData(handles); 
+
+
+% --------------------------------------------------------------------
+function createContConstraintsWithSelEvtMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to createContConstraintsWithSelEvtMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+
+    totNumEvts = lvdData.script.getTotalNumOfEvents();
+    eventNum = get(handles.scriptListbox,'Value');
+    evt = lvdData.script.getEventForInd(eventNum);
+    
+    prevEvts = LaunchVehicleEvent.empty(1,0);
+    prevEvtsNames = {};
+    for(i=1:totNumEvts)
+        if(i == eventNum)
+            continue;
+        end
+        
+        prevEvt = lvdData.script.getEventForInd(i);
+        prevEvts(end+1) = prevEvt; %#ok<AGROW>
+        prevEvtsNames{end+1} = prevEvt.getListboxStr(); %#ok<AGROW>
+    end
+    
+    if(not(isempty(prevEvts)))
+        [Selection,ok] = listdlgARH('ListString',prevEvtsNames, ...
+                                    'SelectionMode','single', ...
+                                    'ListSize', [300 300], ...
+                                    'Name','Select Constraint Event', ...
+                                    'PromptString', 'Select event to create continuity constraints with:');
+                                
+        if(ok == 1)
+            selEvt = prevEvts(Selection);
+            selEvtNum = selEvt.getEventNum();
+            
+            if(eventNum > selEvtNum)
+                refEvt = evt;
+                constrEvt = selEvt;
+            else
+                refEvt = selEvt;
+                constrEvt = evt;
+            end
+            
+            c = AbstractConstraint.empty(1,0);
+            
+            %position
+            c(end+1) = PositionContinuityConstraintX(refEvt, constrEvt);
+            c(end+1) = PositionContinuityConstraintY(refEvt, constrEvt);
+            c(end+1) = PositionContinuityConstraintZ(refEvt, constrEvt);
+            
+            %velocity
+            c(end+1) = VelocityContinuityConstraintX(refEvt, constrEvt);
+            c(end+1) = VelocityContinuityConstraintY(refEvt, constrEvt);
+            c(end+1) = VelocityContinuityConstraintZ(refEvt, constrEvt);
+            
+            %time
+            c(end+1) = TimeContinuityConstraint(refEvt, constrEvt);
+            
+            for(i=1:length(c))
+                lvdData.optimizer.constraints.addConstraint(c(i));
+            end
+            
+            msgbox('Position, velocity, and time continuity constraints added successfully.');
+        else
+            return;
+        end
+    else
+        warndlg('There must be at least one other event in the missions script to create continuity constraints with.');
+    end
+    
