@@ -450,6 +450,8 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             tankMDots = tankMDots(:);
             totalThrust = 0;
             bodyThrust = [0;0;0];
+            
+            storageSoCs = storageSoCs(:);
             ecStorageRates = zeros(size(storageSoCs));
             
             maxEcCapacities = NaN(size(powerStorageStates));

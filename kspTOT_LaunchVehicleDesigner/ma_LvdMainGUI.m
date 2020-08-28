@@ -826,18 +826,7 @@ function openMissionPlanMenu_Callback(hObject, eventdata, handles)
         
         if(exist('lvdData','var'))
             setappdata(handles.ma_LvdMainGUI,'undoRedo',LVD_UndoRedoStateSet());
-
-            if(isprop(lvdData,'celBodyData')) %#ok<NODEF>
-                lvdData.celBodyData = CelestialBodyData(lvdData.celBodyData);
-                
-                names = fieldnames(lvdData.celBodyData);
-                for(i=1:length(names))
-                    name = names{i};
-                    lvdData.celBodyData.(name).celBodyData = celBodyData;
-                    lvdData.celBodyData.(name).getParBodyInfo(lvdData.celBodyData);
-                end
-            end
-            
+           
             topLevelBodyInfo = getTopLevelCentralBody(celBodyData);
             ldvDataTopLevelBodyInfo = getTopLevelCentralBody(lvdData.celBodyData);
             if(isprop(lvdData,'celBodyData') && ...
@@ -846,6 +835,17 @@ function openMissionPlanMenu_Callback(hObject, eventdata, handles)
                 setappdata(handles.ma_LvdMainGUI,'celBodyData',celBodyData);
             else
                 lvdData.celBodyData = celBodyData;
+            end
+            
+            if(isprop(lvdData,'celBodyData'))
+                lvdData.celBodyData = CelestialBodyData(lvdData.celBodyData);
+                
+                names = fieldnames(lvdData.celBodyData);
+                for(i=1:length(names))
+                    name = names{i};
+                    lvdData.celBodyData.(name).celBodyData = celBodyData;
+                    lvdData.celBodyData.(name).getParBodyInfo(lvdData.celBodyData);
+                end
             end
             
             set(handles.ma_LvdMainGUI,'Name',[application_title, ' - ', FileName]);

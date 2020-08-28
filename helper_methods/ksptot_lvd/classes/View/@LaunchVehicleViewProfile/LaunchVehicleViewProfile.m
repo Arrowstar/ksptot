@@ -56,6 +56,7 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         showGrdObjLoS(1,1) logical = true;
         
         %view properties (set by user indirectly through UI controls)
+        updateViewAxesLimits(1,1) logical = true;
         orbitNumToPlot(1,1) double = 1;
         viewAzEl(1,2) = [-37.5, 30]; %view(3)
         viewZoomAxLims(3,2) double = NaN(3,2);

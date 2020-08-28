@@ -247,23 +247,23 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             
             hold(dAxes,'off');
             
-            setappdata(handles.ma_LvdMainGUI,'dispOrbitXLim',xlim(dAxes));
-            setappdata(handles.ma_LvdMainGUI,'dispOrbitYLim',ylim(dAxes));
-            setappdata(handles.ma_LvdMainGUI,'dispOrbitZLim',zlim(dAxes));
-%             applyZoomLevel(handles.ma_LvdMainGUI, handles, celBodyData);
-            zoom reset;
+            if(not(viewProfile.updateViewAxesLimits))
+                setappdata(handles.ma_LvdMainGUI,'dispOrbitXLim',xlim(dAxes));
+                setappdata(handles.ma_LvdMainGUI,'dispOrbitYLim',ylim(dAxes));
+                setappdata(handles.ma_LvdMainGUI,'dispOrbitZLim',zlim(dAxes));
+                zoom reset;
+                view(dAxes,viewProfile.viewAzEl);
 
-            view(dAxes,viewProfile.viewAzEl);
-            if(any(isnan(viewProfile.viewZoomAxLims)))
-                viewProfile.viewZoomAxLims = [xlim(dAxes);
-                                              ylim(dAxes);
-                                              zlim(dAxes)];
-            else
-                dAxes.XLim = viewProfile.viewZoomAxLims(1,:);
-                dAxes.YLim = viewProfile.viewZoomAxLims(2,:);
-                dAxes.ZLim = viewProfile.viewZoomAxLims(3,:);
+                if(any(isnan(viewProfile.viewZoomAxLims)))
+                    viewProfile.viewZoomAxLims = [xlim(dAxes);
+                                                  ylim(dAxes);
+                                                  zlim(dAxes)];
+                else
+                    dAxes.XLim = viewProfile.viewZoomAxLims(1,:);
+                    dAxes.YLim = viewProfile.viewZoomAxLims(2,:);
+                    dAxes.ZLim = viewProfile.viewZoomAxLims(3,:);
+                end
             end
-
             
             if(dAxes.Parent == hFig)
                 dAxes.Position = [531.0, 206.0, 418.0, 350.0];

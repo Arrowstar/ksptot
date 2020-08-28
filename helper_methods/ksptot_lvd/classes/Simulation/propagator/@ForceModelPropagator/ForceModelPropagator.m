@@ -190,8 +190,6 @@ classdef ForceModelPropagator < AbstractPropagator
             if(integrationDuration > maxIntegrationDuration)
                 status = 1;
             end
-            
-%             disp(t);
         end
     end
 end
