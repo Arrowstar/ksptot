@@ -65,6 +65,8 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
         atmoTempCache AtmoTempDataCache = AtmoTempDataCache.empty(1,0);
         sunDotNormalCache SunDotNormalDataCache = SunDotNormalDataCache.empty(1,0);
         parentGmuCache(1,1) double = NaN;
+        
+        soiRadiusCache(1,1) double = NaN;
     end
     
     methods
@@ -114,6 +116,7 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
                     obj.parentBodyInfo = pBodyInfo;
                 end
                 
+                obj.soiRadiusCache = NaN;
                 obj.parentBodyInfoNeedsUpdate = false;
             end
             
@@ -136,6 +139,14 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
             
             childrenBodyInfo = obj.childrenBodyInfo;
             cbNames = obj.childrenBodyNames;
+        end
+        
+        function soiRadius = getCachedSoIRadius(obj)
+            if(isnan(obj.soiRadiusCache))
+                obj.soiRadiusCache = getSOIRadius(obj, obj.getParBodyInfo);
+            end
+            
+            soiRadius = obj.soiRadiusCache;
         end
         
         function rotMat = get.bodyRotMatFromGlobalInertialToBodyInertial(obj)

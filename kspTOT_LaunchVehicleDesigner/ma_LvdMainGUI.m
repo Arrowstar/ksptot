@@ -1612,7 +1612,10 @@ function runScriptMenu_Callback(hObject, eventdata, handles)
     lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
 
     propagateScript(handles, lvdData, 1);
+    
+%     profile off; profile on;
     lvd_processData(handles);
+%     profile viewer;
     
 % --------------------------------------------------------------------
 function editExtremaMenu_Callback(hObject, eventdata, handles)

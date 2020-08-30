@@ -6,12 +6,13 @@ function [value, isterminal, direction, causes] = getSoITransitionOdeEvents(ut, 
             
         %Max Radius (SoI Radius) Constraint (Leave SOI Upwards)
         parentBodyInfo = bodyInfo.getParBodyInfo(celBodyData);
-        rSOI = getSOIRadius(bodyInfo, parentBodyInfo);
+%         rSOI = getSOIRadius(bodyInfo, parentBodyInfo);
+        rSOI = bodyInfo.getCachedSoIRadius();
         radius = norm(rVect);
 
-        if(isempty(parentBodyInfo))
-            parentBodyInfo = KSPTOT_BodyInfo.empty(0,1);
-        end
+%         if(isempty(parentBodyInfo))
+%             parentBodyInfo = KSPTOT_BodyInfo.empty(0,1);
+%         end
 
         value(end+1) = rSOI - radius;
         isterminal(end+1) = 1;
@@ -22,21 +23,22 @@ function [value, isterminal, direction, causes] = getSoITransitionOdeEvents(ut, 
 %         children = getChildrenOfParentInfo(celBodyData, bodyInfo.name);
         children = bodyInfo.getChildrenBodyInfo(celBodyData);
         if(~isempty(children))
-            soiDownCauses(length(children)) = SoITransitionDownIntTermCause(bodyInfo, children(end), celBodyData);
+%             soiDownCauses(length(children)) = SoITransitionDownIntTermCause(bodyInfo, children(end), celBodyData);
             for(i=1:length(children)) %#ok<*NO4LP>
                 childBodyInfo = children(i);
 
                 dVect = getAbsPositBetweenSpacecraftAndBody(ut, rVect, bodyInfo, childBodyInfo, celBodyData);
                 distToChild = norm(dVect);
 
-                rSOI = getSOIRadius(childBodyInfo, bodyInfo);
+%                 rSOI = getSOIRadius(childBodyInfo, bodyInfo);
+                rSOI = childBodyInfo.getCachedSoIRadius();
 
                 val = distToChild - rSOI;
 
                 value(end+1) = val; %#ok<AGROW>
                 direction(end+1) = -1; %#ok<AGROW>
                 isterminal(end+1) = 1; %#ok<AGROW>
-                soiDownCauses(i) = SoITransitionDownIntTermCause(bodyInfo, childBodyInfo, celBodyData);
+                soiDownCauses(i) = SoITransitionDownIntTermCause(bodyInfo, childBodyInfo, celBodyData); %#ok<AGROW>
             end    
             causes = [causes, soiDownCauses];
         end

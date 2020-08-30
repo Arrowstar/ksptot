@@ -3,7 +3,7 @@ classdef SoITransitionUpIntTermCause < AbstractIntegrationTerminationCause
     %   Detailed explanation goes here
     
     properties
-        fromBody(1,1) KSPTOT_BodyInfo
+        fromBody KSPTOT_BodyInfo
         toBody KSPTOT_BodyInfo
         celBodyData
     end
