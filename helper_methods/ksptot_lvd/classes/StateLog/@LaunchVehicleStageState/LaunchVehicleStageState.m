@@ -267,6 +267,9 @@ classdef LaunchVehicleStageState < matlab.mixin.SetGet & matlab.mixin.Copyable
 %                             tankToUpdateState = tanksToUpdateStatesFor(i);
 
                             [tankState, ind] = obj.getStateForTank(tanksToUpdateStatesFor(i));
+%                             newTankState = LaunchVehicleTankState(newStageState);
+%                             newTankState.tank = tanksToUpdateStatesFor(i);
+%                             newTankState.tankMass = tankState.tankMass;
                             newTankState = tankState.copy();
                             newTankState.stageState = newStageState;
                             newStageState.tankStates(ind) = newTankState;

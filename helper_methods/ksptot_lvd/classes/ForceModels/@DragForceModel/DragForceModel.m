@@ -12,7 +12,7 @@ classdef DragForceModel < AbstractForceModel
         end
         
         function [forceVect,tankMdots, ecStgDots] = getForce(obj, ut, rVect, vVect, mass, bodyInfo, aero, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~)
-            if(norm(rVect) - bodyInfo.radius > 0)
+            if(norm(rVect) - (bodyInfo.radius + bodyInfo.atmohgt) > 0)
                 forceVect = [0;0;0];
             else
                 celBodyData = bodyInfo.celBodyData;
