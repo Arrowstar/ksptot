@@ -11,7 +11,7 @@ classdef NomadOptimizer < AbstractOptimizer
             obj.options = NomadOptions();
         end
         
-        function optimize(obj, lvdOpt, writeOutput)
+        function optimize(obj, lvdOpt, writeOutput, callOutputFcn)
             [x0All, actVars, varNameStrs] = lvdOpt.vars.getTotalScaledXVector();
             [lbAll, ubAll, lbUsAll, ubUsAll] = lvdOpt.vars.getTotalScaledBndsVector();
             typicalX = lvdOpt.vars.getTypicalScaledXVector();
@@ -62,19 +62,25 @@ classdef NomadOptimizer < AbstractOptimizer
                     
             %%% Run optimizer
             celBodyData = lvdOpt.lvdData.celBodyData;
-            propNames = {'Liquid Fuel/Ox','Monopropellant','Xenon'};
-            handlesObsOptimGui = ma_ObserveOptimGUI(celBodyData, problem, true, writeOutput, [], varNameStrs, lbUsAll, ubUsAll);
-            
             recorder = ma_OptimRecorder();
-            outputFnc = @(x, optimValues, state) ma_OptimOutputFunc(x, optimValues, state, handlesObsOptimGui, problem.objective, problem.lb, problem.ub, celBodyData, recorder, propNames, writeOutput, varNameStrs, lbUsAll, ubUsAll);
-            nomadOutput1 = @(iter, fval, x, state) NomadOptimizer.nomadIterFunWrapper(iter, fval, x, outputFnc, state, numVars);
-            nomadOutput2 = @(iter, fval, x) nomadOutput1(iter, fval, x, 'iter');
-            problem.options = nomadset(problem.options, 'iterfun',nomadOutput2);
-            problem.UseParallel = useParallel;
             
-            nomadOutput1(0,NaN,x0All,'init');
-            lvd_executeOptimProblem(celBodyData, writeOutput, problem, recorder);
-            close(handlesObsOptimGui.ma_ObserveOptimGUI);
+            if(callOutputFcn)
+                propNames = {'Liquid Fuel/Ox','Monopropellant','Xenon'};
+                handlesObsOptimGui = ma_ObserveOptimGUI(celBodyData, problem, true, writeOutput, [], varNameStrs, lbUsAll, ubUsAll);
+
+                outputFnc = @(x, optimValues, state) ma_OptimOutputFunc(x, optimValues, state, handlesObsOptimGui, problem.objective, problem.lb, problem.ub, celBodyData, recorder, propNames, writeOutput, varNameStrs, lbUsAll, ubUsAll);
+                nomadOutput1 = @(iter, fval, x, state) NomadOptimizer.nomadIterFunWrapper(iter, fval, x, outputFnc, state, numVars);
+                nomadOutput2 = @(iter, fval, x) nomadOutput1(iter, fval, x, 'iter');
+                problem.options = nomadset(problem.options, 'iterfun',nomadOutput2);
+                nomadOutput1(0,NaN,x0All,'init');
+            end
+            
+            problem.UseParallel = useParallel;
+            lvd_executeOptimProblem(celBodyData, writeOutput, problem, recorder, callOutputFcn);
+            
+            if(callOutputFcn)
+                close(handlesObsOptimGui.ma_ObserveOptimGUI);
+            end
         end
         
         function options = getOptions(obj)

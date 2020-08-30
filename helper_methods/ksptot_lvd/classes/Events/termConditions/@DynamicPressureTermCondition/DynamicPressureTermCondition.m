@@ -108,7 +108,6 @@ classdef DynamicPressureTermCondition < AbstractEventTerminationCondition
             value = dynP_kPa - targetDynP;
             isterminal = 1;
             direction = 0;
-            disp(value);
         end
     end
 end

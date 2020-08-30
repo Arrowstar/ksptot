@@ -1,4 +1,4 @@
-function lvd_executeOptimProblem(celBodyData, writeOutput, problem, recorder)
+function lvd_executeOptimProblem(celBodyData, writeOutput, problem, recorder, callOutputFcn)
     global options_gravParamType;
     initX = [];
     
@@ -45,7 +45,9 @@ function lvd_executeOptimProblem(celBodyData, writeOutput, problem, recorder)
     %%%%%%%
     % Ask if the user wants to keep the current solution or not.
     %%%%%%%
-    [~, x] = ma_OptimResultsScorecardGUI(recorder);
+    if(callOutputFcn)
+        [~, x] = ma_OptimResultsScorecardGUI(recorder);
+    end
     
     if(~isempty(x))
 %         ma_UndoRedoAddState(handles, 'Optimize');

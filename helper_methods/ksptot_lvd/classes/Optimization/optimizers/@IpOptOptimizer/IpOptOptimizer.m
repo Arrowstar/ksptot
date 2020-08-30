@@ -11,7 +11,7 @@ classdef IpOptOptimizer < AbstractGradientOptimizer
             obj.options = IpoptOptions();
         end
         
-        function optimize(obj, lvdOpt, writeOutput)
+        function optimize(obj, lvdOpt, writeOutput, callOutputFcn)
             global ipoptFuncCount ipoptLastXVect
             ipoptFuncCount = 0;
             
@@ -76,15 +76,21 @@ classdef IpOptOptimizer < AbstractGradientOptimizer
             
             %%% Run optimizer
             celBodyData = lvdOpt.lvdData.celBodyData;
-            propNames = {'Liquid Fuel/Ox','Monopropellant','Xenon'};
-            handlesObsOptimGui = ma_ObserveOptimGUI(celBodyData, problem, true, writeOutput, [], varNameStrs, lbUsAll, ubUsAll);
-            
             recorder = ma_OptimRecorder();
-            outputFnc = @(iterNum, fVal, iterInfo) obj.outputFunc(iterNum, fVal, iterInfo, handlesObsOptimGui, objFuncWrapper, cFun, lbAll, ubAll, celBodyData, recorder, propNames, writeOutput, varNameStrs, lbUsAll, ubUsAll);
-            problem.funcs.iterfunc = outputFnc;
             
-            lvd_executeOptimProblem(celBodyData, writeOutput, problem, recorder);
-            close(handlesObsOptimGui.ma_ObserveOptimGUI);
+            if(callOutputFcn)
+                propNames = {'Liquid Fuel/Ox','Monopropellant','Xenon'};
+                handlesObsOptimGui = ma_ObserveOptimGUI(celBodyData, problem, true, writeOutput, [], varNameStrs, lbUsAll, ubUsAll);
+
+                outputFnc = @(iterNum, fVal, iterInfo) obj.outputFunc(iterNum, fVal, iterInfo, handlesObsOptimGui, objFuncWrapper, cFun, lbAll, ubAll, celBodyData, recorder, propNames, writeOutput, varNameStrs, lbUsAll, ubUsAll);
+                problem.funcs.iterfunc = outputFnc;
+            end
+            
+            lvd_executeOptimProblem(celBodyData, writeOutput, problem, recorder, callOutputFcn);
+            
+            if(callOutputFcn)
+                close(handlesObsOptimGui.ma_ObserveOptimGUI);
+            end
         end
         
         function options = getOptions(obj)

@@ -7,7 +7,7 @@ classdef(Abstract) AbstractOptimizer < matlab.mixin.SetGet
     end
     
     methods
-        optimize(obj, lvdOpt, writeOutput);
+        optimize(obj, lvdOpt, writeOutput, callOutputFcn);
         
         options = getOptions(obj);
         

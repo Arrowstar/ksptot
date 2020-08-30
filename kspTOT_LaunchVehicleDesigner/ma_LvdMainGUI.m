@@ -22,7 +22,7 @@ function varargout = ma_LvdMainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_LvdMainGUI
 
-% Last Modified by GUIDE v2.5 28-Aug-2020 13:43:46
+% Last Modified by GUIDE v2.5 29-Aug-2020 09:32:01
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -516,7 +516,7 @@ function optimizeMissionMenu_Callback(hObject, eventdata, handles)
     
     addUndoState(handles,'Optimize Mission');
     
-    lvdData.optimizer.optimize(writeOutput);
+    lvdData.optimizer.optimize(writeOutput, true);
     
     runScript(handles, lvdData, 1);
     lvd_processData(handles);

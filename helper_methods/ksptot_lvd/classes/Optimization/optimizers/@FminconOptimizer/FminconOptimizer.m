@@ -11,7 +11,7 @@ classdef FminconOptimizer < AbstractGradientOptimizer
             obj.options = FminconOptions();
         end
         
-        function optimize(obj, lvdOpt, writeOutput)
+        function optimize(obj, lvdOpt, writeOutput, callOutputFcn)
             [x0All, actVars, varNameStrs] = lvdOpt.vars.getTotalScaledXVector();
             [lbAll, ubAll, lbUsAll, ubUsAll] = lvdOpt.vars.getTotalScaledBndsVector();
             typicalX = lvdOpt.vars.getTypicalScaledXVector();
@@ -55,16 +55,22 @@ classdef FminconOptimizer < AbstractGradientOptimizer
             problem.lvdData = lvdOpt.lvdData; %need to get lvdData in somehow
                     
             %%% Run optimizer
-            celBodyData = lvdOpt.lvdData.celBodyData;
-            propNames = {'Liquid Fuel/Ox','Monopropellant','Xenon'};
-            handlesObsOptimGui = ma_ObserveOptimGUI(celBodyData, problem, true, writeOutput, [], varNameStrs, lbUsAll, ubUsAll);
-            
             recorder = ma_OptimRecorder();
-            outputFnc = @(x, optimValues, state) ma_OptimOutputFunc(x, optimValues, state, handlesObsOptimGui, problem.objective, problem.lb, problem.ub, celBodyData, recorder, propNames, writeOutput, varNameStrs, lbUsAll, ubUsAll);
-            problem.options.OutputFcn = outputFnc;
+            celBodyData = lvdOpt.lvdData.celBodyData;
             
-            lvd_executeOptimProblem(celBodyData, writeOutput, problem, recorder);
-            close(handlesObsOptimGui.ma_ObserveOptimGUI);
+            if(callOutputFcn)
+                propNames = {'Liquid Fuel/Ox','Monopropellant','Xenon'};
+                handlesObsOptimGui = ma_ObserveOptimGUI(celBodyData, problem, true, writeOutput, [], varNameStrs, lbUsAll, ubUsAll);
+
+                outputFnc = @(x, optimValues, state) ma_OptimOutputFunc(x, optimValues, state, handlesObsOptimGui, problem.objective, problem.lb, problem.ub, celBodyData, recorder, propNames, writeOutput, varNameStrs, lbUsAll, ubUsAll);
+                problem.options.OutputFcn = outputFnc;
+            end
+            
+            lvd_executeOptimProblem(celBodyData, writeOutput, problem, recorder, callOutputFcn);
+            
+            if(callOutputFcn)
+                close(handlesObsOptimGui.ma_ObserveOptimGUI);
+            end
         end
         
         function options = getOptions(obj)
