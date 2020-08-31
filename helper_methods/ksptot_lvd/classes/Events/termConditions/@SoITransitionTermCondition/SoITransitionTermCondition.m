@@ -85,9 +85,13 @@ classdef SoITransitionTermCondition < AbstractEventTerminationCondition
     methods(Static, Access=private)
         function [value,isterminal,direction] = eventTermCond(t,y, bodyInfo, celBodyData)
             ut = t;
-            rVect = y(1:3);
+            rVect = y(1:3); 
+            rVect = rVect(:);
+            
+            vVect = y(4:6);
+            vVect = vVect(:);
 
-            [soivalue, soiisterminal, soidirection, ~] = getSoITransitionOdeEvents(ut, rVect, bodyInfo, celBodyData);
+            [soivalue, soiisterminal, soidirection, ~] = getSoITransitionOdeEvents(ut, rVect, vVect, bodyInfo, celBodyData);
             
             [value, I] = min(soivalue);
             isterminal = soiisterminal(I);

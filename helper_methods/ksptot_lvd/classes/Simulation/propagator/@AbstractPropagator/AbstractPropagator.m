@@ -47,6 +47,10 @@ classdef(Abstract) AbstractPropagator < matlab.mixin.SetGet & matlab.mixin.Heter
 
             ut = t;
             rVect = y(1:3);
+            rVect = rVect(:);
+            
+            vVect = y(4:6);
+            vVect = vVect(:);
 %             [ut, rVect, ~, ~] = ForceModelPropagator.decomposeIntegratorTandY(t,y);
 
             %Max Sim Time Constraint
@@ -74,7 +78,7 @@ classdef(Abstract) AbstractPropagator < matlab.mixin.SetGet & matlab.mixin.Heter
 
             if(checkForSoITrans)
                 %SoI transitions
-                [soivalue, soiisterminal, soidirection, soicauses] = getSoITransitionOdeEvents(ut, rVect, bodyInfo, celBodyData);
+                [soivalue, soiisterminal, soidirection, soicauses] = getSoITransitionOdeEvents(ut, rVect, vVect, bodyInfo, celBodyData);
 
                 value = horzcat(value, soivalue);
                 isterminal = horzcat(isterminal, soiisterminal);

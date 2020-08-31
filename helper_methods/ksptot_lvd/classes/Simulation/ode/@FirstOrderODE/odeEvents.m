@@ -25,7 +25,7 @@ function [value,isterminal,direction, causes] = odeEvents(t,y, obj, eventInitSta
     end
 
     numTankStates = eventInitStateLogEntry.getNumActiveTankStates();
-    [ut, rVect, ~, ~] = AbstractODE.decomposeIntegratorTandY(t,y, numTankStates);
+    [ut, rVect, vVect, ~] = AbstractODE.decomposeIntegratorTandY(t,y, numTankStates);
     
     %Event Termination Condition
     [value,isterminal,~] = evtTermCond(t,y);
@@ -57,7 +57,7 @@ function [value,isterminal,direction, causes] = odeEvents(t,y, obj, eventInitSta
 
     if(checkForSoITrans)
         %SoI transitions
-        [soivalue, soiisterminal, soidirection, soicauses] = getSoITransitionOdeEvents(ut, rVect, bodyInfo, celBodyData);
+        [soivalue, soiisterminal, soidirection, soicauses] = getSoITransitionOdeEvents(ut, rVect, vVect, bodyInfo, celBodyData);
 
         value = horzcat(value, soivalue);
         isterminal = horzcat(isterminal, soiisterminal);

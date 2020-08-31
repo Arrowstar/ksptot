@@ -1,4 +1,4 @@
-function [value, isterminal, direction, causes] = getSoITransitionOdeEvents(ut, rVect, bodyInfo, celBodyData)
+function [value, isterminal, direction, causes] = getSoITransitionOdeEvents(ut, rVect, vVect, bodyInfo, celBodyData)
         value = [];
         isterminal = [];
         direction = [];
@@ -20,20 +20,27 @@ function [value, isterminal, direction, causes] = getSoITransitionOdeEvents(ut, 
         causes(1) = SoITransitionUpIntTermCause(bodyInfo, parentBodyInfo, celBodyData);    
 
         %Leave SoI Downwards
-%         children = getChildrenOfParentInfo(celBodyData, bodyInfo.name);
+        [sma, ecc, ~, ~, ~, ~] = getKeplerFromState(rVect, vVect, bodyInfo.gm);
+        [rApSC, rPeSC] = computeApogeePerigee(sma, ecc);
+        
         children = bodyInfo.getChildrenBodyInfo(celBodyData);
         if(~isempty(children))
 %             soiDownCauses(length(children)) = SoITransitionDownIntTermCause(bodyInfo, children(end), celBodyData);
             for(i=1:length(children)) %#ok<*NO4LP>
                 childBodyInfo = children(i);
-
-                dVect = getAbsPositBetweenSpacecraftAndBody(ut, rVect, bodyInfo, childBodyInfo, celBodyData);
-                distToChild = norm(dVect);
-
-%                 rSOI = getSOIRadius(childBodyInfo, bodyInfo);
                 rSOI = childBodyInfo.getCachedSoIRadius();
+                [rApCB, rPeCB] = computeApogeePerigee(childBodyInfo.sma, childBodyInfo.ecc);
+                
+                if((rApSC < (rPeCB - rSOI)) || ...
+                    rPeSC > (rApCB + rSOI))
+                    val = realmax;
+                    
+                else
+                    dVect = getAbsPositBetweenSpacecraftAndBody(ut, rVect, bodyInfo, childBodyInfo, celBodyData);
+                    distToChild = norm(dVect);               
 
-                val = distToChild - rSOI;
+                    val = distToChild - rSOI;
+                end
 
                 value(end+1) = val; %#ok<AGROW>
                 direction(end+1) = -1; %#ok<AGROW>

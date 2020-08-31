@@ -204,7 +204,6 @@ function [value, isterminal, direction] = getSoITransitionOdeEvents(ut, mean, sm
 
         val = distToChild - rSOI;
         
-        
         value(end+1) = val; %#ok<AGROW>
         direction(end+1) = -1; %#ok<AGROW>
         isterminal(end+1) = 1; %#ok<AGROW>
