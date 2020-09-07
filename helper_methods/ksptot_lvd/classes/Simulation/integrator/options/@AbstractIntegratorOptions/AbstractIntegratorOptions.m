@@ -7,6 +7,8 @@ classdef(Abstract) AbstractIntegratorOptions < matlab.mixin.SetGet
         
         integratorStepSize = getIntegratorStepSize(obj)
         
+        setIntegratorStepSize(obj, integratorStepSize);
+        
         openOptionsDialog(obj)
     end
 end

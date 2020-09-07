@@ -22,7 +22,7 @@ function varargout = ma_LvdMainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_LvdMainGUI
 
-% Last Modified by GUIDE v2.5 29-Aug-2020 09:32:01
+% Last Modified by GUIDE v2.5 05-Sep-2020 14:37:56
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -2043,3 +2043,42 @@ function createContConstraintsWithSelEvtMenu_Callback(hObject, eventdata, handle
         warndlg('There must be at least one other event in the missions script to create continuity constraints with.');
     end
     
+
+
+% --------------------------------------------------------------------
+function setIntegrationStepSizeForAllEventsMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to setIntegrationStepSizeForAllEventsMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    writeOutput = getappdata(handles.ma_LvdMainGUI,'write_to_output_func');
+    
+    input_str = sprintf(['Enter the desired integration step size for all events:\n',...
+                         '(Minimum = 1E-6, Maximum = Inf)\n',...
+                         '(This will influence script execution speed.)']);
+    str = inputdlg(input_str, 'Global Integrator Step Size', [1 75], {'1.0'});
+    if(isempty(str))
+        return;
+    end
+    
+    str = str{1};
+    
+    if(checkStrIsNumeric(str) && str2double(str) >= 1E-6 && str2double(str) <= Inf)
+        addUndoState(handles,'Set Global Integrator Step Size');  
+        
+        writeOutput(sprintf('Setting integrator step size on all events to %s.', str),'append');
+        
+        stepSize = str2double(str);
+        totNumEvts = lvdData.script.getTotalNumOfEvents();
+        for(i=1:totNumEvts)
+            evt = lvdData.script.getEventForInd(i);
+
+            evt.integratorObj.getOptions().setIntegratorStepSize(stepSize);
+        end
+        
+        runScript(handles, lvdData, 1);
+        lvd_processData(handles);
+    else
+        writeOutput(sprintf('Could not set the desired integration step size on all events.  "%s" is an invalid entry.', str),'append');
+        beep;
+    end

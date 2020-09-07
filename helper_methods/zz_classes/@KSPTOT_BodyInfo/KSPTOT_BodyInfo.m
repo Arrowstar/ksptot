@@ -208,11 +208,11 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
         end
         
         function temperature = getBodyAtmoTemperature(obj, time, lat, long, alt)
-            if(not(isempty(obj.atmoTempCache)))
-                temperature = obj.atmoTempCache.getAtmoTemperature(time, lat, long, alt);
-            else
+%             if(not(isempty(obj.atmoTempCache)))
+%                 temperature = obj.atmoTempCache.getAtmoTemperature(time, lat, long, alt);
+%             else
                 temperature = getTemperatureAtAltitude(obj, alt, lat, time, long);
-            end
+%             end
         end
         
         function sunDotNormal = getCachedSunDotNormal(obj, time, long)

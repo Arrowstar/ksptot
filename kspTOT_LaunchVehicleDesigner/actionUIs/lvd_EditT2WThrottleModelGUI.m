@@ -131,6 +131,14 @@ function varargout = lvd_EditT2WThrottleModelGUI_OutputFcn(hObject, eventdata, h
         lb = str2double(get(handles.twLbText,'String'));
         ub = str2double(get(handles.twUbText,'String'));
         
+        if(isnan(lb))
+            lb = 0;
+        end
+        
+        if(isnan(ub))
+            ub = 0;
+        end
+        
         optVar.setUseTfForVariable(true(size(lb))); %need this to get the full lb/set in there
         optVar.setBndsForVariable(lb, ub);
         optVar.setUseTfForVariable(useTf);
@@ -167,29 +175,32 @@ function errMsg = validateInputs(handles)
     isInt = false;
     errMsg = validateNumber(twRatio, numberName, lb, ub, isInt, errMsg, enteredStr);
     
-    twRatioLB = str2double(get(handles.twLbText,'String'));
-    enteredStr = get(handles.twLbText,'String');
-    numberName = sprintf('Thrust to Weight Ratio Lower Bound');
-    lb = 0;
-    ub = Inf;
-    isInt = false;
-    errMsg = validateNumber(twRatioLB, numberName, lb, ub, isInt, errMsg, enteredStr);
+    if(handles.twOptCheckbox.Value == 1)
+        twRatioLB = str2double(get(handles.twLbText,'String'));
+        enteredStr = get(handles.twLbText,'String');
+        numberName = sprintf('Thrust to Weight Ratio Lower Bound');
+        lb = 0;
+        ub = Inf;
+        isInt = false;
+        errMsg = validateNumber(twRatioLB, numberName, lb, ub, isInt, errMsg, enteredStr);
+
+        twRatioUB = str2double(get(handles.twUbText,'String'));
+        enteredStr = get(handles.twUbText,'String');
+        numberName = sprintf('Thrust to Weight Ratio Upper Bound');
+        lb = 0;
+        ub = Inf;
+        isInt = false;
+        errMsg = validateNumber(twRatioUB, numberName, lb, ub, isInt, errMsg, enteredStr);
     
-    twRatioUB = str2double(get(handles.twUbText,'String'));
-    enteredStr = get(handles.twUbText,'String');
-    numberName = sprintf('Thrust to Weight Ratio Upper Bound');
-    lb = 0;
-    ub = Inf;
-    isInt = false;
-    errMsg = validateNumber(twRatioUB, numberName, lb, ub, isInt, errMsg, enteredStr);
     
-    if(isempty(errMsg))
-        if(twRatioLB > twRatioUB)
-            errMsg{end+1} = 'The lower bound must be less than or equal to the upper bound.';
-        end
-        
-        if(twRatio < twRatioLB || twRatio > twRatioUB)
-            errMsg{end+1} = 'Throttle thrust to weight ratio must be between the upper and lower optimization bounds.';
+        if(isempty(errMsg))
+            if(twRatioLB > twRatioUB)
+                errMsg{end+1} = 'The lower bound must be less than or equal to the upper bound.';
+            end
+
+            if(twRatio < twRatioLB || twRatio > twRatioUB)
+                errMsg{end+1} = 'Throttle thrust to weight ratio must be between the upper and lower optimization bounds.';
+            end
         end
     end
 

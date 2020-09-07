@@ -11,8 +11,8 @@ function temperature = getTemperatureAtAltitude(bodyInfo, altitude, lat, ut, lon
             if(bodyInfo.doNotUseLatTempSunMultCurve)
                 sunDotNormal = 1;
             else
-%                 sunDotNormal = computeSunDotNormal(ut, long, bodyInfo, bodyInfo.celBodyData);
-                sunDotNormal = bodyInfo.getCachedSunDotNormal(ut, long);
+                sunDotNormal = computeSunDotNormal(ut, long, bodyInfo, bodyInfo.celBodyData);
+%                 sunDotNormal = bodyInfo.getCachedSunDotNormal(ut, long);
             end
             
             if(bodyInfo.doNotUseAxialTempSunMultCurve)

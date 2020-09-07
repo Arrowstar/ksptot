@@ -228,6 +228,7 @@ function addObjFuncButton_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
     lvdData = getappdata(handles.lvd_EditCompositeObjectiveFunctionGUI,'lvdData');
     lvdOptim = lvdData.optimizer;
+    celBodyData = lvdData.celBodyData;
     
     listBoxStr = ConstraintEnum.getListBoxStr();
     
