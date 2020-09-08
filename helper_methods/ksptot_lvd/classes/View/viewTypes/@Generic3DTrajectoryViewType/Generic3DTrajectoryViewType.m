@@ -88,9 +88,18 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                         end
                     end
 
+                    numTotMissionSegs = size(chunkedStateLog,1);
+                    
                     curMissionSegStr = num2str(orbitNumToPlot);
-                    totalMissionSegStr = num2str(size(chunkedStateLog,1));
+                    totalMissionSegStr = num2str(numTotMissionSegs);
                 
+                    if(numTotMissionSegs <= 1)
+                        handles.decrOrbitToPlotNum.Enable = 'off';
+                        handles.incrOrbitToPlotNum.Enable = 'off';
+                    else
+                        handles.decrOrbitToPlotNum.Enable = 'on';
+                        handles.incrOrbitToPlotNum.Enable = 'on';
+                    end
                 case ViewEventsTypeEnum.All
                     entries = stateLog.getAllEntries();
                     subStateLogsMat = NaN(length(entries), 13);
