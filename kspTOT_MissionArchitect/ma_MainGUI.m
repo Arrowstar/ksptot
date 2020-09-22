@@ -22,7 +22,7 @@ function varargout = ma_MainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_MainGUI
 
-% Last Modified by GUIDE v2.5 25-Aug-2020 09:50:45
+% Last Modified by GUIDE v2.5 21-Sep-2020 19:40:16
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -2260,7 +2260,32 @@ function editPropNamesMenu_Callback(hObject, eventdata, handles)
                          [1,1,1]', maData.spacecraft.propellant.names,'on');
 	if(~isempty(propNames) && length(propNames)==3)
         ma_UndoRedoAddState(handles, 'Update Propellant Names');
-        maData.spacecraft.propellant.names = strtrim(propNames');
+        oldPropNames = maData.spacecraft.propellant.names;
+        newPropNames =  strtrim(propNames');
+        maData.spacecraft.propellant.names = newPropNames;
+        
+        actConsts = maData.optimizer.constraints;
+        for(i=1:length(actConsts))
+            const = actConsts{i};
+            
+            for(j=1:length(oldPropNames))
+                oldPropName = oldPropNames{j};
+                newPropName = newPropNames{j};
+                old = sprintf('%s Mass', oldPropName);
+                new = sprintf('%s Mass', newPropName);
+                
+                k1 = strfind(const{1}, old);
+                k3 = strfind(const{3}, old);
+                if(not(isempty(k1)) || not(isempty(k3)))
+                    const{1} = strrep(const{1}, old, new);
+                    const{3} = strrep(const{3}, old, new);
+                    
+                    break;
+                end
+            end
+            actConsts{i} = const;
+        end
+        maData.optimizer.constraints = actConsts;
 
         setappdata(handles.ma_MainGUI,'ma_data',maData);
         maData.stateLog = ma_executeScript(maData.script,handles,celBodyData,handles.scriptWorkingLbl);

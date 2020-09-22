@@ -63,8 +63,15 @@ function ma_MissionOptimizerGUI_OpeningFcn(hObject, eventdata, handles, varargin
     maData = getappdata(handles.ma_MainGUI,'ma_data');
 
     excludeList = {'Distance Traveled','Distance to Ref. Station','Dry Mass','Eclipse','Elevation Angle w.r.t. Ref. Station', ...
-                   'Line of Sight to Ref. Spacecraft','Line of Sight to Ref. Station'};
+                   'Line of Sight to Ref. Spacecraft','Line of Sight to Ref. Station','Liquid Fuel/Ox Mass','Monopropellant Mass','Xenon Mass'};
     taskList = ma_getGraphAnalysisTaskList(excludeList);
+    
+    propNames = maData.spacecraft.propellant.names;
+    for(i=1:length(propNames))
+        taskList{end+1} = sprintf('%s Mass', propNames{i}); %#ok<AGROW>
+    end
+    taskList = sort(taskList);
+    
     set(handles.availConstListbox, 'String', taskList);
 
     initUserData(handles, maData);
