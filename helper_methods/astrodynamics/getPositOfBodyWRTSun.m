@@ -15,7 +15,11 @@ function [rVectB, vVectB] = getPositOfBodyWRTSun(time, bodyInfo, celBodyData)
             break;
         end
         
-        parentGM = bodyInfo.getParentGmuFromCache();
+        try
+            parentGM = bodyInfo.getParentGmuFromCache();
+        catch
+            parentGM = getParentGM(bodyInfo,celBodyData);
+        end
         
         [rVect, vVect] = getStateAtTime(bodyInfo, time, parentGM); %getParentGM(bodyInfo, celBodyData)
         rVectB = rVectB + rVect;
