@@ -143,7 +143,8 @@ classdef LvdData < matlab.mixin.SetGet
             lvdData.optimizer = lvdOptim;
             
             %set up view profile
-            lvdData.viewSettings.selViewProfile.frame = BodyCenteredInertialFrame(lvdData.initialState.centralBody, lvdData.celBodyData);
+%             lvdData.viewSettings.selViewProfile.frame = BodyCenteredInertialFrame(lvdData.initialState.centralBody, lvdData.celBodyData);
+            lvdData.viewSettings.selViewProfile.frame = lvdData.initialState.centralBody.getBodyCenteredInertialFrame();
             
             %set up ground objects
             grndObj = LaunchVehicleGroundObject.getDefaultObj(celBodyData);

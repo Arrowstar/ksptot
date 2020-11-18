@@ -149,11 +149,11 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
 %             profile off; profile on;
 %             parfor(i=1:length(obj.bodiesToPlot), M)
             for(i=1:length(obj.bodiesToPlot))
-                bodyToPlot = obj.bodiesToPlot(i); %#ok<PFBNS>
+                bodyToPlot = obj.bodiesToPlot(i); 
                 timesInner = {};
                 rVectsInner = {};
                 
-                if(bodyToPlot == viewInFrame.getOriginBody()) %#ok<PFBNS>
+                if(bodyToPlot == viewInFrame.getOriginBody()) 
                     continue;
                 end
                 
@@ -177,7 +177,7 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                         times = subStateLogs{j}(:,1);
                         
                         evtNum = subStateLogs{j}(1,13);
-                        evt = evts(evtNum); %#ok<PFBNS>
+                        evt = evts(evtNum);
                         
                         if(isfinite(bodyOrbitPeriod))
                             numPeriods = (max(times) - min(times))/bodyOrbitPeriod;
@@ -187,9 +187,14 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                         end
                         
                         states = bodyToPlot.getElementSetsForTimes(times);
+                        if(numel(states) >= 1)
+                            doConversion = states(1).frame ~= viewInFrame;
+                        else
+                            doConversion = true;
+                        end
                         
                         for(k=1:length(states))
-                            if(states(k).frame ~= viewInFrame)
+                            if(doConversion)
                                 states(k) = states(k).convertToFrame(viewInFrame);
                             end
                         end

@@ -102,7 +102,8 @@ classdef LaunchVehicleViewSettings < matlab.mixin.SetGet
                 profile = obj.viewProfiles(i);
 
                 if(isempty(profile.frame))
-                    profile.frame = BodyCenteredInertialFrame(obj.lvdData.initialState.centralBody, obj.lvdData.celBodyData);                    
+%                     profile.frame = BodyCenteredInertialFrame(obj.lvdData.initialState.centralBody, obj.lvdData.celBodyData);       
+                    profile.frame = obj.lvdData.initialState.centralBody.getBodyCenteredInertialFrame();
                 end
             end
         end

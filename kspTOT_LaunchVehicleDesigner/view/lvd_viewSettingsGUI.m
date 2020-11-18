@@ -224,7 +224,8 @@ function addViewProfileButton_Callback(hObject, eventdata, handles)
     % handles    structure with handles and user data (see GUIDATA)
     viewSettings = getappdata(handles.lvd_viewSettingsGUI,'viewSettings');
     newProfile = LaunchVehicleViewProfile();
-    newProfile.frame = BodyCenteredInertialFrame(viewSettings.lvdData.initialState.centralBody, viewSettings.lvdData.celBodyData);
+%     newProfile.frame = BodyCenteredInertialFrame(viewSettings.lvdData.initialState.centralBody, viewSettings.lvdData.celBodyData);
+    newProfile.frame = viewSettings.lvdData.initialState.centralBody.getBodyCenteredInertialFrame();
     viewSettings.addViewProfile(newProfile);
     
     handles.viewProfilesListbox.String = viewSettings.getListboxStr();

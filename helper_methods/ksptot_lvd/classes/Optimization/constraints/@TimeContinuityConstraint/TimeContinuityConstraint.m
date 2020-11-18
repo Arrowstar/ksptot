@@ -32,7 +32,8 @@ classdef TimeContinuityConstraint < AbstractConstraint
                 stateLogEntriesConstrEvt = stateLog.getAllStateLogEntriesForEvent(obj.constraintEvent);
 
                 topLevelBodyInfo = getTopLevelCentralBody(celBodyData);
-                frame = BodyCenteredInertialFrame(topLevelBodyInfo, celBodyData);
+%                 frame = BodyCenteredInertialFrame(topLevelBodyInfo, celBodyData);
+                frame = topLevelBodyInfo.getBodyCenteredInertialFrame();
                 cartElemSet1 = stateLogEntriesEvt(end).getCartesianElementSetRepresentation().convertToFrame(frame);
                 cartElemSet2 = stateLogEntriesConstrEvt(end).getCartesianElementSetRepresentation().convertToFrame(frame);
 

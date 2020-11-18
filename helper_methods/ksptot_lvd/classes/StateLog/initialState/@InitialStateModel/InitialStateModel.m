@@ -42,7 +42,8 @@ classdef InitialStateModel < matlab.mixin.SetGet
         
         function set.centralBody(obj, newCentralBody)
             if(isempty(obj.orbitModel.frame))
-                obj.orbitModel.frame = BodyCenteredInertialFrame(newCentralBody, newCentralBody.celBodyData);
+%                 obj.orbitModel.frame = BodyCenteredInertialFrame(newCentralBody, newCentralBody.celBodyData);
+                obj.orbitModel.frame = newCentralBody.getBodyCenteredInertialFrame();
             end
             obj.orbitModel.frame.setOriginBody(newCentralBody);
         end
@@ -50,12 +51,14 @@ classdef InitialStateModel < matlab.mixin.SetGet
         function set.orbitModel(obj, newOrbitModel)
             if(isa(newOrbitModel,'AbstractOrbitStateModel'))
                 if(isa(newOrbitModel,'BodyFixedOrbitStateModel'))
-                    newFrame = BodyFixedFrame(obj.centralBody, obj.centralBody.celBodyData); %#ok<MCSUP>
+%                     newFrame = BodyFixedFrame(obj.centralBody, obj.centralBody.celBodyData); %#ok<MCSUP>
+                    newFrame = obj.centralBody.getBodyFixedFrame();
                     elemSet = GeographicElementSet(obj.time, newOrbitModel.lat, newOrbitModel.long, newOrbitModel.alt, ...
                                                    newOrbitModel.vVectNEZ_az, newOrbitModel.vVectNEZ_el, newOrbitModel.vVectNEZ_mag, newFrame); %#ok<MCSUP>
 
                 elseif(isa(newOrbitModel,'KeplerianOrbitStateModel'))
-                    newFrame = BodyCenteredInertialFrame(obj.centralBody, obj.centralBody.celBodyData); %#ok<MCSUP>
+%                     newFrame = BodyCenteredInertialFrame(obj.centralBody, obj.centralBody.celBodyData); %#ok<MCSUP>
+                    newFrame = obj.centralBody.getBodyCenteredInertialFrame();
                     elemSet = KeplerianElementSet(obj.time, newOrbitModel.sma, newOrbitModel.ecc, newOrbitModel.inc, ...
                                                   newOrbitModel.raan, newOrbitModel.arg, newOrbitModel.tru, newFrame); %#ok<MCSUP>
                     
@@ -90,7 +93,8 @@ classdef InitialStateModel < matlab.mixin.SetGet
             ut = obj.time;
             stateLogEntry.time = ut;
             
-            iFrame = BodyCenteredInertialFrame(obj.centralBody, celBodyData);
+%             iFrame = BodyCenteredInertialFrame(obj.centralBody, celBodyData);
+            iFrame = obj.centralBody.getBodyCenteredInertialFrame();
             cartElemSet = obj.orbitModel.convertToFrame(iFrame).convertToCartesianElementSet();
             stateLogEntry.position = cartElemSet.rVect;
             stateLogEntry.velocity = cartElemSet.vVect;
@@ -223,7 +227,8 @@ classdef InitialStateModel < matlab.mixin.SetGet
             stateLogModel = InitialStateModel();
             
             ut = 0;
-            bfFrame = BodyFixedFrame(bodyInfo, celBodyData);
+%             bfFrame = BodyFixedFrame(bodyInfo, celBodyData);
+            bfFrame = bodyInfo.getBodyFixedFrame();
             geoElemSet = GeographicElementSet(ut, 0, 0, 0, 0, 0, 0, bfFrame);
             stateLogModel.orbitModel = geoElemSet;
             

@@ -512,7 +512,8 @@ function updateStateDueToFrameChange(handles, newFrame)
                 bodyInfo = newFrame.getOriginBody();
             end            
             
-            newFrame = BodyCenteredInertialFrame(bodyInfo, celBodyData);
+%             newFrame = BodyCenteredInertialFrame(bodyInfo, celBodyData);
+            newFrame = bodyInfo.getBodyCenteredInertialFrame();
 
         case ReferenceFrameEnum.BodyFixedRotating
             if(isempty(newFrame))
@@ -521,7 +522,8 @@ function updateStateDueToFrameChange(handles, newFrame)
                 bodyInfo = newFrame.getOriginBody();
             end
             
-            newFrame = BodyFixedFrame(bodyInfo, celBodyData);
+%             newFrame = BodyFixedFrame(bodyInfo, celBodyData);
+            newFrame = bodyInfo.getBodyFixedFrame();
             
         case ReferenceFrameEnum.TwoBodyRotating            
             if(isempty(newFrame))
