@@ -139,14 +139,16 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
             bodyColorsArr = {};
             bodyMarkerDataObjs = {};
             
-            pp = gcp('nocreate');
-            if(isempty(pp))
-                M = 0;
-            else
-                M = pp.NumWorkers;
-            end
+%             pp = gcp('nocreate');
+%             if(isempty(pp))
+%                 M = 0;
+%             else
+%                 M = pp.NumWorkers;
+%             end
             
-            parfor(i=1:length(obj.bodiesToPlot), M)
+%             profile off; profile on;
+%             parfor(i=1:length(obj.bodiesToPlot), M)
+            for(i=1:length(obj.bodiesToPlot))
                 bodyToPlot = obj.bodiesToPlot(i); %#ok<PFBNS>
                 timesInner = {};
                 rVectsInner = {};
@@ -187,7 +189,9 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                         states = bodyToPlot.getElementSetsForTimes(times);
                         
                         for(k=1:length(states))
-                            states(k) = states(k).convertToFrame(viewInFrame);
+                            if(states(k).frame ~= viewInFrame)
+                                states(k) = states(k).convertToFrame(viewInFrame);
+                            end
                         end
                         
                         rVects = [states.rVect];
@@ -225,6 +229,7 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                 bodyColorsArr{i} = bColorRGB;
                 bodyMarkerDataObjs{i} = bodyMarkerData;
             end
+%             profile viewer;
             
             for(i=1:length(timesArr))
                 timesInner = timesArr{i};

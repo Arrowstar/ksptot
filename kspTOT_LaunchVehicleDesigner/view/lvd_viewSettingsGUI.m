@@ -550,10 +550,12 @@ function trajViewFrameCombo_Callback(hObject, eventdata, handles)
     
     switch refFrameEnum
         case ReferenceFrameEnum.BodyCenteredInertial
-            newFrame = BodyCenteredInertialFrame(bodyInfo, celBodyData);
+%             newFrame = BodyCenteredInertialFrame(bodyInfo, celBodyData);
+            newFrame = bodyInfo.getBodyCenteredInertialFrame();
             
         case ReferenceFrameEnum.BodyFixedRotating
-            newFrame = BodyFixedFrame(bodyInfo, celBodyData);
+%             newFrame = BodyFixedFrame(bodyInfo, celBodyData);
+            newFrame = bodyInfo.getBodyFixedFrame();
             
         case ReferenceFrameEnum.TwoBodyRotating
             if(not(isempty(bodyInfo.childrenBodyInfo)))
