@@ -236,7 +236,7 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
             tf = tf || obj.nonSeqEvts.usesPwrStorage(powerStorage);
         end
         
-        function stateLog = executeScript(obj, isSparseOutput, evtToStartScriptExecAt, evalConstraints, allowInterrupt)
+        function stateLog = executeScript(obj, isSparseOutput, evtToStartScriptExecAt, evalConstraints, allowInterrupt, dispEvtPropTimes)
             stateLog = obj.lvdData.stateLog;
             
             if(not(isempty(evtToStartScriptExecAt)))
@@ -266,7 +266,7 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
                 tStartSimTime = initStateLogEntry.time;
                 tStartPropTime = tic();
                 for(i=evtStartNum:length(obj.evts)) %#ok<*NO4LP>
-%                     ttt = tic;
+                    ttt = tic;
                     evt = obj.evts(i);
                     initStateLogEntry.event = obj.evts(i); %need to set the event on the initial state
                     
@@ -308,8 +308,10 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
                     %execute plugins that occur after event
                     obj.lvdData.plugins.executePluginsAfterEvent(stateLog, evt);
                     
-%                     evtTime = toc(ttt);
-%                     fprintf('Duration to execute Event %u: %0.3f (Evt Dur: %0.3f s)\n', i, evtTime, newStateLogEntries(end).time-newStateLogEntries(1).time);
+                    evtTime = toc(ttt);
+                    if(dispEvtPropTimes)
+                        fprintf('(%s) Duration to execute Event %u: %0.3f (Evt Dur: %0.3f s)\n', datestr(now,'hh:MM:ss'), i, evtTime, newStateLogEntries(end).time-newStateLogEntries(1).time);
+                    end
                 end
                 
                 tPropTime = toc(tStartPropTime);

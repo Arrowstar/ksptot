@@ -10,7 +10,10 @@ classdef LvdSettings < matlab.mixin.SetGet
         isSparseOutput(1,1) logical = false;
         
         %auto-propagation
-        autoPropScript(2,1) logical = true;
+        autoPropScript(1,1) logical = true;
+        
+        %event propagation times
+        disEvtPropTimes(1,1) logical = false;
     end
     
     methods

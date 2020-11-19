@@ -22,7 +22,7 @@ function varargout = ma_LvdMainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_LvdMainGUI
 
-% Last Modified by GUIDE v2.5 05-Sep-2020 14:37:56
+% Last Modified by GUIDE v2.5 19-Nov-2020 16:58:58
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -167,10 +167,12 @@ function propagateScript(handles, lvdData, evtStartNum)
     lvdData.validation.clearOutputs();
     
     isSparseOutput = lvdData.settings.isSparseOutput;
-
-    t = tic;
+    dispEvtPropTimes = lvdData.settings.disEvtPropTimes;
+    
     evt = lvdData.script.getEventForInd(evtStartNum);
-    lvdData.script.executeScript(isSparseOutput, evt, true, false);
+    
+    t = tic;
+    lvdData.script.executeScript(isSparseOutput, evt, true, false, dispEvtPropTimes);
     execTime = toc(t);
     
     if(not(isdeployed))
@@ -1149,10 +1151,17 @@ function settingsMenu_Callback(hObject, eventdata, handles)
     lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
     
 	isAutoProp = lvdData.settings.autoPropScript;
-    if(isAutoProp==true)
+    if(isAutoProp)
         set(handles.autopropagateMenu, 'Checked', 'on');
     else
         set(handles.autopropagateMenu, 'Checked', 'off');
+    end
+    
+	disEvtPropTimes = lvdData.settings.disEvtPropTimes;
+    if(disEvtPropTimes)
+        set(handles.displayEvtPropTimesInLogFileMenu, 'Checked', 'on');
+    else
+        set(handles.displayEvtPropTimesInLogFileMenu, 'Checked', 'off');
     end
 
 % --------------------------------------------------------------------
@@ -2081,4 +2090,25 @@ function setIntegrationStepSizeForAllEventsMenu_Callback(hObject, eventdata, han
     else
         writeOutput(sprintf('Could not set the desired integration step size on all events.  "%s" is an invalid entry.', str),'append');
         beep;
+    end
+
+
+% --------------------------------------------------------------------
+function displayEvtPropTimesInLogFileMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to displayEvtPropTimesInLogFileMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    writeOutput = getappdata(handles.ma_LvdMainGUI,'write_to_output_func');
+
+    addUndoState(handles,'Edit Display Event Prop Times');
+    
+    if(strcmp(get(gcbo, 'Checked'),'on'))
+        lvdData.settings.disEvtPropTimes = false;
+        
+        writeOutput('Display of event propagation times in KSPTOT log file is off.','append');
+    else
+        lvdData.settings.disEvtPropTimes = true;
+        
+        writeOutput('Event propagation times will be displayed in the ksptot.log file.','append');
     end
