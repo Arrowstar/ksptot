@@ -310,7 +310,7 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
                     
                     evtTime = toc(ttt);
                     if(dispEvtPropTimes)
-                        fprintf('(%s) Duration to execute Event %u: %0.3f (Evt Dur: %0.3f s)\n', datestr(now,'hh:MM:ss'), i, evtTime, newStateLogEntries(end).time-newStateLogEntries(1).time);
+                        fprintf('(%s) Duration to execute Event %u: %0.3f s (Evt Dur: %0.3f s)\n', datestr(now,'hh:MM:ss'), i, evtTime, newStateLogEntries(end).time-newStateLogEntries(1).time);
                     end
                 end
                 
