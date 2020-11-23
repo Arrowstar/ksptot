@@ -63,4 +63,24 @@ classdef BodyCenteredInertialFrame < AbstractReferenceFrame
             end
         end
     end
+    
+    methods
+        function bool = eq(A,B)
+            try
+                if(numel(A) == 1 && numel(B) == 1 && ...
+                   A.typeEnum == ReferenceFrameEnum.BodyCenteredInertial && ...
+                   B.typeEnum == ReferenceFrameEnum.BodyCenteredInertial)
+                    bool = A.bodyInfo == B.bodyInfo;
+                else
+                    bool = eq@handle(A,B);
+                end
+            catch ME %#ok<NASGU>
+                bool = eq@handle(A,B);
+            end
+        end
+        
+        function bool = ne(A,B)
+            bool = not(eq(A,B));
+        end
+    end
 end
