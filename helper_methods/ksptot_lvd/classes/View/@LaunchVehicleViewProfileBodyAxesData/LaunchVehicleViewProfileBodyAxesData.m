@@ -86,13 +86,13 @@ classdef LaunchVehicleViewProfileBodyAxesData < matlab.mixin.SetGet
                         hold(hAx,'on');
                         obj.markerPlot{i} = hgtransform('Parent', hAx);
                         
-                        xAxis = quiver3(0,0,0,obj.scale,0,0, 'Color','r', 'LineWidth',2);
+                        xAxis = quiver3(hAx, 0,0,0,obj.scale,0,0, 'Color','r', 'LineWidth',2);
                         set(xAxis,'Parent',obj.markerPlot{i});
                         
-                        yAxis = quiver3(0,0,0,0,obj.scale,0, 'Color','g', 'LineWidth',2);
+                        yAxis = quiver3(hAx, 0,0,0,0,obj.scale,0, 'Color','g', 'LineWidth',2);
                         set(yAxis,'Parent',obj.markerPlot{i});
                         
-                        zAxis = quiver3(0,0,0,0,0,obj.scale, 'Color','b', 'LineWidth',2);
+                        zAxis = quiver3(hAx, 0,0,0,0,0,obj.scale, 'Color','b', 'LineWidth',2);
                         set(zAxis,'Parent',obj.markerPlot{i});
                         
 %                         q = dcm2quat(dcm);

@@ -1,9 +1,13 @@
 function timeSliderStateChanged(src,evt, lvdData, handles)
-    if(getappdata(handles.hDispAxesTimeSlider,'lastTime') ~= javaMethodEDT('getValue',src))
+    s = dbstack;
+    matches = strfind({s.name},'timeSliderStateChanged');
+    matches = cell2mat(matches(2:end));
+    tf = any(matches == 1);
+    
+    if(getappdata(handles.hDispAxesTimeSlider,'lastTime') ~= javaMethodEDT('getValue',src) && not(tf))
         time = javaMethodEDT('getValue',src);
-        hAx = handles.dispAxes;
-        figure(handles.ma_LvdMainGUI);
-        
+        hAx = handles.dispAxes;        
+
         markerTrajData = lvdData.viewSettings.selViewProfile.markerTrajData;
         markerBodyData = lvdData.viewSettings.selViewProfile.markerBodyData;
         markerBodyAxesData = lvdData.viewSettings.selViewProfile.markerTrajAxesData;
@@ -43,5 +47,6 @@ function timeSliderStateChanged(src,evt, lvdData, handles)
         handles.timeSliderValueLabel.TooltipString = tooltipStr;
         
         setappdata(handles.hDispAxesTimeSlider,'lastTime',time);
+        drawnow limitrate;
     end
 end

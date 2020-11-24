@@ -17,7 +17,7 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             celBodyData = lvdData.celBodyData;
             stateLog = lvdData.stateLog;
             
-            axes(dAxes);
+%             axes(dAxes);
             cla(dAxes);
             cla(dAxes,'reset');
             dAxes.Color = viewProfile.backgroundColor.color;
