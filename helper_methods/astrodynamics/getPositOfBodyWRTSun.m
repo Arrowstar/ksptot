@@ -1,5 +1,4 @@
-function [rVectB, vVectB] = getPositOfBodyWRTSun(time, bodyInfo, celBodyData)
-
+function [rVectB, vVectB] = getPositOfBodyWRTSun(time, bodyInfo, celBodyData)   
     numTimes = length(time);
     loop = true;
     rVectB = zeros(3,numTimes);

@@ -14,7 +14,7 @@ function [rVect, vVect] = getStateAtTime(bodyInfo, time, gmu)
        
     n = computeMeanMotion(sma, gmu);
     deltaT = time - bodyInfo.epoch;
-    M = M0 + n.*deltaT;
+    M = (M0(:) + n(:).*deltaT(:))';
     tru = computeTrueAnomFromMean(M, ecc);
     
     if(length(tru) > 1)

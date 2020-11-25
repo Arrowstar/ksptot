@@ -35,8 +35,6 @@ function lvd_processData(handles)
 %     else
 %         error('Unknown plot type: %s', orbitPlotType);
 %     end
-    set(handles.plotWorkingLbl,'Visible','off');
-    drawnow;
     
     %%%%%%%%%%
     % Update script listbox
@@ -78,6 +76,8 @@ function lvd_processData(handles)
     propNames = lvdData.launchVehicle.tankTypes.getFirstThreeTypesCellArr();
     ma_UpdateStateReadout(handles.initialStateReadoutLabel, 'initial', propNames, maStateLog, celBodyData);
     ma_UpdateStateReadout(handles.finalStateReadoutLabel, 'final', propNames, maStateLog, celBodyData);
+
+    set(handles.plotWorkingLbl,'Visible','off');
     drawnow;
 end
 

@@ -5,5 +5,5 @@ function rVectECEF = getrVectEcefFromLatLongAlt(lat, long, alt, bodyInfo)
     y = r.*cos(lat).*sin(long);
     z = r.*sin(lat);
     
-    rVectECEF = [x;y;z];
+    rVectECEF = [x(:)';y(:)';z(:)'];
 end

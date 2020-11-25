@@ -2,6 +2,11 @@ function temperature = getTemperatureAtAltitude(bodyInfo, altitude, lat, ut, lon
     bool = altitude <= bodyInfo.atmohgt & altitude >= 0;
     
     if(any(bool))
+        altitude = altitude(:);
+        lat = lat(:);
+        ut = ut(:);
+        long = long(:);
+        
         if(bodyInfo.doNotUseAtmoTempSunMultCurve)
             atmosphereTemperatureOffset = 1;
         else
@@ -9,24 +14,27 @@ function temperature = getTemperatureAtAltitude(bodyInfo, altitude, lat, ut, lon
             parentGmu = bodyInfo.getParentGmuFromCache();
 
             if(bodyInfo.doNotUseLatTempSunMultCurve)
-                sunDotNormal = 1;
+                sunDotNormalProduct = zeros(size(ut));
             else
-                sunDotNormal = computeSunDotNormal(ut, long, bodyInfo, bodyInfo.celBodyData);
+                hra = computeHourAngle(ut, long, bodyInfo, bodyInfo.celBodyData);
+                sunDotNormal = computeSunDotNormal(hra);
 %                 sunDotNormal = bodyInfo.getCachedSunDotNormal(ut, long);
+                sunDotNormalProduct = sunDotNormal(:) .* bodyInfo.lattempsunmultcurve(abs(lat));
             end
             
             if(bodyInfo.doNotUseAxialTempSunMultCurve)
-                axialtempsunbias = 1;
+                axialtempsunbiasProduct = zeros(size(ut));
             else
                 axialtempsunbias = computeAxialTempSunBias(ut, bodyInfo, parentGmu);
+                axialtempsunbiasProduct = axialtempsunbias(:) .* bodyInfo.axialtempsunmultcurve(abs(lat));
             end
 
             ecctempbias = computeEccTempBias(ut, bodyInfo, parentGmu);
             
             atmosphereTemperatureOffset = bodyInfo.lattempbiascurve(abs(lat)) + ...
-                                        bodyInfo.lattempsunmultcurve(abs(lat)) .* sunDotNormal + ... 
-                                        axialtempsunbias .* bodyInfo.axialtempsunmultcurve(abs(lat)) + ...
-                                        ecctempbias;
+                                        sunDotNormalProduct(:) + ... 
+                                        axialtempsunbiasProduct(:) + ...
+                                        ecctempbias(:);
         end
         
         temperature = bodyInfo.atmotempcurve(altitude) + ... %base temperature
@@ -40,7 +48,7 @@ end
 
 function axialtempsunbias = computeAxialTempSunBias(ut, bodyInfo, gmu)
     if(isempty(gmu) || gmu == 0 || (bodyInfo.doNotUseAxialTempSunBiasCurveGI))
-        axialtempsunbias = 0;
+        axialtempsunbias = zeros(size(ut));
     else
         sma = bodyInfo.sma;
         ecc = bodyInfo.ecc;    
@@ -58,7 +66,7 @@ end
 
 function ecctempbias = computeEccTempBias(ut, bodyInfo, gmu)
     if(isempty(gmu) || gmu == 0 || (bodyInfo.doNotUseEccTempBiasCurveGI))
-        ecctempbias = 0;
+        ecctempbias = zeros(size(ut));
     else
         [rVect, ~] = getStateAtTime(bodyInfo,ut,gmu);
         radius = norm(rVect);
