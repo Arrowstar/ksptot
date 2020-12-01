@@ -56,6 +56,9 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
         doNotUseAxialTempSunBiasCurveGI(1,1) logical = false;
         doNotUseEccTempBiasCurveGI(1,1) logical = false;
         doNotUseAtmoPressCurveGI(1,1) logical = false;
+        
+        orbitElemsChainCache cell = {};
+        fixedFrameFromInertialFrameCache cell = {};
     end
     
     properties(Access=private)
@@ -226,6 +229,57 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
             end
             
             parentGM = obj.parentGmuCache;
+        end
+        
+        function chain = getOrbitElemsChain(obj)
+            if(isempty(obj.orbitElemsChainCache))
+                smas = [];
+                eccs = [];
+                incs = [];
+                raans = [];
+                args = [];
+                means = [];
+                epochs = [];
+                parentGMs = [];
+
+                loop = true;
+                bodyInfo = obj;
+                while(loop)
+                    smas(end+1) = bodyInfo.sma; %#ok<AGROW>
+                    eccs(end+1) = bodyInfo.ecc; %#ok<AGROW>
+                    incs(end+1) = bodyInfo.inc; %#ok<AGROW>
+                    raans(end+1) = bodyInfo.raan; %#ok<AGROW>
+                    args(end+1) = bodyInfo.arg; %#ok<AGROW>
+                    means(end+1) = bodyInfo.mean; %#ok<AGROW>
+                    epochs(end+1) = bodyInfo.epoch; %#ok<AGROW>
+
+                    try
+                        thisParentBodyInfo = bodyInfo.getParBodyInfo(obj.celBodyData);
+                    catch 
+                        thisParentBodyInfo = getParentBodyInfo(bodyInfo, obj.celBodyData);
+                    end
+
+                    if(isempty(thisParentBodyInfo))
+                        break;
+                    else
+                        parentGMs(end+1) = bodyInfo.getParentGmuFromCache(); %#ok<AGROW>
+
+                        bodyInfo = thisParentBodyInfo;
+                    end
+                end
+                
+                obj.orbitElemsChainCache = {smas, eccs, incs, raans, args, means, epochs, parentGMs};
+            end
+            
+            chain = obj.orbitElemsChainCache;
+        end
+        
+        function inputs = getFixedFrameFromInertialFrameInputsCache(obj)
+            if(isempty(obj.fixedFrameFromInertialFrameCache))
+                obj.fixedFrameFromInertialFrameCache = {obj.rotperiod, obj.rotini};
+            end
+            
+            inputs = obj.fixedFrameFromInertialFrameCache;
         end
         
         function tf = eq(A,B)

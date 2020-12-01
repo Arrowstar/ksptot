@@ -10,15 +10,13 @@ function temperature = getTemperatureAtAltitude(bodyInfo, altitude, lat, ut, lon
         if(bodyInfo.doNotUseAtmoTempSunMultCurve)
             atmosphereTemperatureOffset = 1;
         else
-%             parentGmu = getParentGM(bodyInfo, celBodyData);
             parentGmu = bodyInfo.getParentGmuFromCache();
 
             if(bodyInfo.doNotUseLatTempSunMultCurve)
                 sunDotNormalProduct = zeros(size(ut));
             else
-                hra = computeHourAngle(ut, long, bodyInfo, bodyInfo.celBodyData);
+                hra = computeHourAngle(ut, long, bodyInfo);
                 sunDotNormal = computeSunDotNormal(hra);
-%                 sunDotNormal = bodyInfo.getCachedSunDotNormal(ut, long);
                 sunDotNormalProduct = sunDotNormal(:) .* bodyInfo.lattempsunmultcurve(abs(lat));
             end
             

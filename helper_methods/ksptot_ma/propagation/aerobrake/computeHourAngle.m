@@ -1,9 +1,14 @@
-function hra = computeHourAngle(ut, long, bodyInfo, celBodyData)
-    rVectBodyToSun = -1.0 * getPositOfBodyWRTSun(ut, bodyInfo, celBodyData);
+function hra = computeHourAngle(ut, long, bodyInfo)
+%     rVectBodyToSun = -1.0 * getPositOfBodyWRTSun(ut, bodyInfo, bodyInfo.celBodyData);
+    chain = bodyInfo.getOrbitElemsChain();
+    rVectBodyToSun = -1.0 * getPositOfBodyWRTSun_alg(ut, chain{:});
     rVectBodyToSun = reshape(rVectBodyToSun, 3,numel(ut));
     rVectBodyToSunNorm = sqrt(sum(rVectBodyToSun.^2,1));
     
-    rVectSunECEF = getFixedFrameVectFromInertialVect(ut, rVectBodyToSun, bodyInfo);
+%     rVectSunECEF = getFixedFrameVectFromInertialVect(ut, rVectBodyToSun, bodyInfo);
+    inputs = bodyInfo.getFixedFrameFromInertialFrameInputsCache();
+    rVectSunECEF = getFixedFrameVectFromInertialVect_alg(ut, rVectBodyToSun, inputs{:});
+    
     rECEF = getrVectEcefFromLatLongAlt(zeros(size(long)), long, zeros(size(long)), bodyInfo);
 
     planarRvectEcef = [rECEF(1,:); rECEF(2,:); zeros(1,size(rECEF,2))];

@@ -8,7 +8,9 @@ function [lat, long, alt, vVectSez, horzVel, vertVel, rVectECEF, vVectECEF, REci
         vVectECI = [NaN;NaN;NaN];
     end
 
-    [rVectECEF, vVectECEF, REci2Ecef] = getFixedFrameVectFromInertialVect(ut, rVectECI, bodyInfo, vVectECI);
+%     [rVectECEF, vVectECEF, REci2Ecef] = getFixedFrameVectFromInertialVect(ut, rVectECI, bodyInfo, vVectECI);
+    inputs = bodyInfo.getFixedFrameFromInertialFrameInputsCache();
+    [rVectECEF, vVectECEF, REci2Ecef] = getFixedFrameVectFromInertialVect_alg(ut, rVectECI, inputs{:}, vVectECI);
     
     rNorm = norm(rVectECEF);
     long = AngleZero2Pi(atan2(rVectECEF(2),rVectECEF(1)));
