@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.coder" plugin-version="R2016a">
-  <configuration build-checksum="891262054" file="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\helper_methods\astrodynamics\vectorized_elem_conv\vect_getStatefromKepler_Alg.prj" location="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\helper_methods\astrodynamics\vectorized_elem_conv" name="vect_getStatefromKepler_Alg" target="target.unifiedcoder" target-name="MATLAB Coder">
+  <configuration build-checksum="346006888" file="/home/adam/ksptot/ksptot/helper_methods/astrodynamics/vectorized_elem_conv/vect_getStatefromKepler_Alg.prj" location="/home/adam/ksptot/ksptot/helper_methods/astrodynamics/vectorized_elem_conv" name="vect_getStatefromKepler_Alg" target="target.unifiedcoder" target-name="MATLAB Coder">
     <profile key="profile.mex">
       <param.BuiltInstrumentedMex>false</param.BuiltInstrumentedMex>
       <param.RanInstrumentedMex>false</param.RanInstrumentedMex>
@@ -198,7 +198,7 @@
       <param.HardwareSizeChar.Production>8</param.HardwareSizeChar.Production>
       <param.HardwareSizeShort.Production>16</param.HardwareSizeShort.Production>
       <param.HardwareSizeInt.Production>32</param.HardwareSizeInt.Production>
-      <param.HardwareSizeLong.Production>32</param.HardwareSizeLong.Production>
+      <param.HardwareSizeLong.Production>64</param.HardwareSizeLong.Production>
       <param.HardwareSizeLongLong.Production>64</param.HardwareSizeLongLong.Production>
       <param.HardwareSizeFloat.Production>32</param.HardwareSizeFloat.Production>
       <param.HardwareSizeDouble.Production>64</param.HardwareSizeDouble.Production>
@@ -219,7 +219,7 @@
       <param.HardwareSizeChar.Target>8</param.HardwareSizeChar.Target>
       <param.HardwareSizeShort.Target>16</param.HardwareSizeShort.Target>
       <param.HardwareSizeInt.Target>32</param.HardwareSizeInt.Target>
-      <param.HardwareSizeLong.Target>32</param.HardwareSizeLong.Target>
+      <param.HardwareSizeLong.Target>64</param.HardwareSizeLong.Target>
       <param.HardwareSizeLongLong.Target>64</param.HardwareSizeLongLong.Target>
       <param.HardwareSizeFloat.Target>32</param.HardwareSizeFloat.Target>
       <param.HardwareSizeDouble.Target>64</param.HardwareSizeDouble.Target>
@@ -344,7 +344,6 @@
         <param.HardwareSizeChar.Production />
         <param.HardwareSizeShort.Production />
         <param.HardwareSizeInt.Production />
-        <param.HardwareSizeLong.Production />
         <param.HardwareSizeLongLong.Production />
         <param.HardwareSizeFloat.Production />
         <param.HardwareSizeDouble.Production />
@@ -358,7 +357,6 @@
         <param.HardwareSizeChar.Target />
         <param.HardwareSizeShort.Target />
         <param.HardwareSizeInt.Target />
-        <param.HardwareSizeLong.Target />
         <param.HardwareSizeLongLong.Target />
         <param.HardwareSizeFloat.Target />
         <param.HardwareSizeDouble.Target />
@@ -749,7 +747,7 @@
     <param.DefaultImportExportVariable>config</param.DefaultImportExportVariable>
     <param.ExternalFcnMajority>column</param.ExternalFcnMajority>
     <param.UseGlobals>option.UseGlobals.No</param.UseGlobals>
-    <param.outputfile>${PROJECT_ROOT}\vect_getStatefromKepler_Alg_mex.mexw64</param.outputfile>
+    <param.outputfile>${PROJECT_ROOT}/vect_getStatefromKepler_Alg_mex.mexa64</param.outputfile>
     <param.version>R2012a</param.version>
     <param.HasECoderFeatures>true</param.HasECoderFeatures>
     <param.HasGpuCoder>true</param.HasGpuCoder>
@@ -770,15 +768,15 @@
     <var.redirectedInputTypeData />
     <var.DismissScreener>false</var.DismissScreener>
     <param.unifiedParamStorage />
-    <var.gc.lastOutputRoot>codegen\mex\vect_getStatefromKepler_Alg</var.gc.lastOutputRoot>
+    <var.gc.lastOutputRoot>codegen/mex/vect_getStatefromKepler_Alg</var.gc.lastOutputRoot>
     <var.gc.lastOutputType>MEX_FILE</var.gc.lastOutputType>
-    <var.gc.preBuildChecksum>891262054</var.gc.preBuildChecksum>
-    <var.cfi.lastOutputRoot>codegen\mex\vect_getStatefromKepler_Alg</var.cfi.lastOutputRoot>
-    <var.cfi.preBuildChecksum>2127912822</var.cfi.preBuildChecksum>
+    <var.gc.preBuildChecksum>346006888</var.gc.preBuildChecksum>
+    <var.cfi.lastOutputRoot>codegen/mex/vect_getStatefromKepler_Alg</var.cfi.lastOutputRoot>
+    <var.cfi.preBuildChecksum>3752023455</var.cfi.preBuildChecksum>
     <var.lastCfiTestSnippet>vect_getStatefromKepler_Alg(200, 0, pi, pi, pi, pi, 1000)</var.lastCfiTestSnippet>
     <var.outdatedOnRestore>false</var.outdatedOnRestore>
-    <var.lastUserSourceChecksum>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;checksum&gt;&lt;includedFiles&gt;&lt;file&gt;C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\helper_methods\astrodynamics\vectorized_elem_conv\vect_getStatefromKepler_Alg.m&lt;/file&gt;&lt;/includedFiles&gt;&lt;value&gt;1331413560&lt;/value&gt;&lt;/checksum&gt;</var.lastUserSourceChecksum>
-    <var.sourceSetState>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;sourceModel&gt;&lt;primarySourceFiles&gt;&lt;file&gt;C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\helper_methods\astrodynamics\vectorized_elem_conv\vect_getStatefromKepler_Alg.m&lt;/file&gt;&lt;/primarySourceFiles&gt;&lt;fixedPointSourceFiles/&gt;&lt;fixedPointSourceRegistered&gt;false&lt;/fixedPointSourceRegistered&gt;&lt;fixedPointSourceSelected&gt;false&lt;/fixedPointSourceSelected&gt;&lt;/sourceModel&gt;</var.sourceSetState>
+    <var.lastUserSourceChecksum>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;checksum&gt;&lt;includedFiles&gt;&lt;file&gt;/home/adam/ksptot/ksptot/helper_methods/astrodynamics/vectorized_elem_conv/vect_getStatefromKepler_Alg.m&lt;/file&gt;&lt;/includedFiles&gt;&lt;value&gt;1112541964&lt;/value&gt;&lt;/checksum&gt;</var.lastUserSourceChecksum>
+    <var.sourceSetState>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;sourceModel&gt;&lt;primarySourceFiles&gt;&lt;file&gt;/home/adam/ksptot/ksptot/helper_methods/astrodynamics/vectorized_elem_conv/vect_getStatefromKepler_Alg.m&lt;/file&gt;&lt;/primarySourceFiles&gt;&lt;fixedPointSourceFiles/&gt;&lt;fixedPointSourceRegistered&gt;false&lt;/fixedPointSourceRegistered&gt;&lt;fixedPointSourceSelected&gt;false&lt;/fixedPointSourceSelected&gt;&lt;/sourceModel&gt;</var.sourceSetState>
     <param.forceMexBuild>false</param.forceMexBuild>
     <param.configImportActive>false</param.configImportActive>
     <var.isGpuCoder>false</var.isGpuCoder>
@@ -787,7 +785,7 @@
     <param.mex.outputfile>vect_getStatefromKepler_Alg_mex</param.mex.outputfile>
     <param.grt.outputfile>vect_getStatefromKepler_Alg</param.grt.outputfile>
     <param.artifact>option.target.artifact.mex</param.artifact>
-    <param.outputfile>${PROJECT_ROOT}\vect_getStatefromKepler_Alg_mex.mexw64</param.outputfile>
+    <param.outputfile>${PROJECT_ROOT}/vect_getStatefromKepler_Alg_mex.mexa64</param.outputfile>
     <param.EnableAutoExtrinsicCalls>true</param.EnableAutoExtrinsicCalls>
     <param.UsePreconditions>false</param.UsePreconditions>
     <param.FeatureFlags />
@@ -848,7 +846,7 @@
     <param.gpu.CustomComputeCapability />
     <param.gpu.CompilerFlags />
     <var.checkIssuesGpu>false</var.checkIssuesGpu>
-    <var.hasGpu>true</var.hasGpu>
+    <var.hasGpu>false</var.hasGpu>
     <unset>
       <param.objective />
       <param.DefaultImportExportVariable />
@@ -944,13 +942,13 @@
       <var.hasGpu />
     </unset>
     <fileset.entrypoints>
-      <file custom-data-expanded="false" value="${PROJECT_ROOT}\vect_getStatefromKepler_Alg.m">
+      <file custom-data-expanded="false" value="${PROJECT_ROOT}/vect_getStatefromKepler_Alg.m">
         <Marker>1606774832530</Marker>
       </file>
     </fileset.entrypoints>
     <fileset.testbench />
     <fileset.inputtypes>
-      <file custom-data-expanded="false" value="${PROJECT_ROOT}\vect_getStatefromKepler_Alg.m">
+      <file custom-data-expanded="false" value="${PROJECT_ROOT}/vect_getStatefromKepler_Alg.m">
         <Inputs fileName="vect_getStatefromKepler_Alg.m" functionName="vect_getStatefromKepler_Alg" nargout="2">
           <Input Name="sma" typeId="0" />
           <Input Name="ecc" typeId="0" />
@@ -973,11 +971,11 @@
       </file>
     </fileset.inputtypes>
     <build-deliverables>
-      <file location="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\helper_methods\astrodynamics\vectorized_elem_conv" name="vect_getStatefromKepler_Alg_mex.mexw64" optional="false">C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\helper_methods\astrodynamics\vectorized_elem_conv\vect_getStatefromKepler_Alg_mex.mexw64</file>
+      <file location="/home/adam/ksptot/ksptot/helper_methods/astrodynamics/vectorized_elem_conv" name="vect_getStatefromKepler_Alg_mex.mexa64" optional="false">/home/adam/ksptot/ksptot/helper_methods/astrodynamics/vectorized_elem_conv/vect_getStatefromKepler_Alg_mex.mexa64</file>
     </build-deliverables>
     <workflow />
     <matlab>
-      <root>C:\Program Files\MATLAB\R2017b</root>
+      <root>/usr/local/MATLAB/R2017b</root>
       <toolboxes>
         <toolbox name="fixedpoint" />
         <toolbox name="matlabcoder" />
@@ -1018,18 +1016,18 @@
       </toolbox>
     </matlab>
     <platform>
-      <unix>false</unix>
+      <unix>true</unix>
       <mac>false</mac>
-      <windows>true</windows>
+      <windows>false</windows>
       <win2k>false</win2k>
       <winxp>false</winxp>
       <vista>false</vista>
-      <linux>false</linux>
+      <linux>true</linux>
       <solaris>false</solaris>
-      <osver>6.1</osver>
+      <osver>4.15.0-123-generic</osver>
       <os32>false</os32>
       <os64>true</os64>
-      <arch>win64</arch>
+      <arch>glnxa64</arch>
       <matlab>true</matlab>
     </platform>
   </configuration>

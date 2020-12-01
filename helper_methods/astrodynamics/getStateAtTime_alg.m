@@ -18,7 +18,7 @@ function [rVect, vVect] = getStateAtTime_alg(time, sma, ecc, inc, raan, arg, mea
     tru = computeTrueAnomFromMean(M, ecc);
     
 %     if(length(tru) > 1)
-        [rVect,vVect]=vect_getStatefromKepler(sma, ecc, inc, raan, argp, tru, gmu, false); 
+        [rVect,vVect]=vect_getStatefromKepler_Alg(sma, ecc, inc, raan, argp, tru, gmu); 
 %     else
 %         [rVect, vVect] = getStatefromKepler_Alg(sma, ecc, inc, raan, argp, tru, gmu);
 %     end
