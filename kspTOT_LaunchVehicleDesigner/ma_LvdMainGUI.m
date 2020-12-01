@@ -1622,16 +1622,15 @@ function runScriptMenu_Callback(hObject, eventdata, handles)
 
     if(not(isdeployed))
 %         profile off; profile on;
-%         tic;
     end
     
     propagateScript(handles, lvdData, 1);
-    lvd_processData(handles);
     
     if(not(isdeployed))
 %         profile viewer;
-%         toc;
     end
+    
+    lvd_processData(handles);
     
 % --------------------------------------------------------------------
 function editExtremaMenu_Callback(hObject, eventdata, handles)

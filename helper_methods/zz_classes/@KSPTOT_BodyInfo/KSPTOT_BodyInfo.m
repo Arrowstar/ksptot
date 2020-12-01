@@ -211,21 +211,11 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
         end
         
         function temperature = getBodyAtmoTemperature(obj, time, lat, long, alt)
-            try
-                inputs = obj.getAtmoTempInputsCellArray();
-                temperature = getTemperatureAtAltitude_alg_mex(alt, lat, time, long, inputs{:});
-            catch ME %#ok<NASGU>
-                temperature = getTemperatureAtAltitude(obj, alt, lat, time, long);
-            end
+            temperature = getTemperatureAtAltitude(obj, alt, lat, time, long);
         end
         
         function pressure = getBodyAtmoPressure(obj, altitude)
-            try
-                inputs = obj.getAtmoPressInputsCellArray();
-                pressure = getPressureAtAltitude_alg(altitude, inputs{:});
-            catch ME %#ok<NASGU>
-                pressure = getPressureAtAltitude(obj, altitude);
-            end
+            pressure = getPressureAtAltitude(obj, altitude);
         end
         
         function sunDotNormal = getCachedSunDotNormal(obj, time, long)
