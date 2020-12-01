@@ -56,8 +56,8 @@ function [rVect, vVect] = vect_getStatefromKepler_Alg(sma, ecc, inc, raan, arg, 
     rPQW = reshape(rPQW, 3,1,numOrb);
     vPQW = reshape(vPQW, 3,1,numOrb);
 
-    rVect = multiprod(TransMatrix, rPQW);
-    vVect = multiprod(TransMatrix, vPQW);
+    rVect = mtimesx(TransMatrix, rPQW);
+    vVect = mtimesx(TransMatrix, vPQW);
     
     rVect = reshape(rVect, 3,numOrb);
     vVect = reshape(vVect, 3,numOrb);
