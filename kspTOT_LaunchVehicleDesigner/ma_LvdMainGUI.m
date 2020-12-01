@@ -1620,11 +1620,18 @@ function runScriptMenu_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
     lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
 
-    propagateScript(handles, lvdData, 1);
+    if(not(isdeployed))
+%         profile off; profile on;
+%         tic;
+    end
     
-%     profile off; profile on;
+    propagateScript(handles, lvdData, 1);
     lvd_processData(handles);
-%     profile viewer;
+    
+    if(not(isdeployed))
+%         profile viewer;
+%         toc;
+    end
     
 % --------------------------------------------------------------------
 function editExtremaMenu_Callback(hObject, eventdata, handles)

@@ -1,13 +1,13 @@
-function [density] = getAtmoDensityAtAltitude(bodyInfo, altitude, lat, ut, long, celBodyData)
+function [density] = getAtmoDensityAtAltitude(bodyInfo, altitude, lat, ut, long)
 %getAtmoDensityAtAltitude Summary of this function goes here
 %   Detailed explanation goes here
 %   See here for math: https://forum.kerbalspaceprogram.com/index.php?/topic/142686-modeling-atmospheres-in-ksp/
 
     if(altitude <= bodyInfo.atmohgt && altitude >= 0)
-        pressure = getPressureAtAltitude(bodyInfo, altitude);
+%         pressure = getPressureAtAltitude(bodyInfo, altitude);
+        pressure = bodyInfo.getBodyAtmoPressure(altitude);
         
         if(pressure > 0)
-%             temperature = getTemperatureAtAltitude(bodyInfo, altitude, lat, ut, long);
             temperature = bodyInfo.getBodyAtmoTemperature(ut, lat, long, altitude);
 
             density = getDensityFromIdealGasLaw(pressure, temperature, bodyInfo.atmomolarmass);

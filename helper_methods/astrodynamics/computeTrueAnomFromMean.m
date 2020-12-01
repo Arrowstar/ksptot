@@ -4,6 +4,7 @@ function [tru] = computeTrueAnomFromMean(mean, ecc)
     if(length(ecc) > 1) %use vectorized if needed, else use compiled
         bool = ecc < 1.0;
         EA = zeros(size(ecc));
+        HA = zeros(size(ecc));
         tru = zeros(size(ecc));
         if(any(bool))
             EA(bool) = vect_solveKepler(mean(bool), ecc(bool));

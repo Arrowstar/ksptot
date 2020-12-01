@@ -13,8 +13,15 @@ function [sma, ecc, inc, raan, arg, tru] = vect_getKeplerFromState_Alg(rVect,vVe
     v=sqrt(sum(abs(vVect).^2,1));
 
     nVect = cross(k_hat, hVect);
-    eVect1 = reshape(multiprod(reshape(rVect,3,1,numRV),reshape((v.^2 - gmu./r),1,1,numRV)),3,numRV);
-    eVect2 = reshape(multiprod(reshape(vVect,3,1,numRV),reshape(dot(rVect,vVect),1,1,numRV)),3,numRV);
+%     eVect1 = reshape(mtimesx(reshape(rVect,3,1,numRV),reshape((v.^2 - gmu./r),1,1,numRV)),3,numRV);
+%     eVect2 = reshape(mtimesx(reshape(vVect,3,1,numRV),reshape(dot(rVect,vVect),1,1,numRV)),3,numRV);
+
+    eVect1 = zeros(3,numRV);
+    eVect2 = zeros(3,numRV);
+    for(i=1:numRV)
+        eVect1(:,i) = rVect(:,i) * (v(i).^2 - gmu(i)./r(i)); 
+        eVect2(:,i) = vVect(:,i) * dotARH(rVect(:,i),vVect(:,i));
+    end
 %     eVect = (eVect1 - eVect2)./(gmu);
     eVectNoDiv = (eVect1 - eVect2);
     eVect = bsxfun(@times, eVectNoDiv, 1./gmu);

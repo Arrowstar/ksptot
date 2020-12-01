@@ -25,7 +25,15 @@ else
     consistencyCheck = true;
 end
 
-[rVect, vVect] = vect_getStatefromKepler_Alg(sma, ecc, inc, raan, arg, tru, gmu);
+if(isscalar(gmu))
+    gmu = gmu * ones(1,length(sma));
+end
+
+try
+    [rVect, vVect] = vect_getStatefromKepler_Alg_mex(sma(:)', ecc(:)', inc(:)', raan(:)', arg(:)', tru(:)', gmu(:)');
+catch ME
+    [rVect, vVect] = vect_getStatefromKepler_Alg(sma(:)', ecc(:)', inc(:)', raan(:)', arg(:)', tru(:)', gmu(:)');
+end
 
 tol = 1E-6;
 if(consistencyCheck)

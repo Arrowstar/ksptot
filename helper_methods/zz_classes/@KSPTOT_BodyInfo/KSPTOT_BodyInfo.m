@@ -56,6 +56,9 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
         doNotUseAxialTempSunBiasCurveGI(1,1) logical = false;
         doNotUseEccTempBiasCurveGI(1,1) logical = false;
         doNotUseAtmoPressCurveGI(1,1) logical = false;
+        
+        atmoTempInputsCache cell = {};
+        atmoPressInputsCache cell = {};
     end
     
     properties(Access=private)
@@ -208,11 +211,21 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
         end
         
         function temperature = getBodyAtmoTemperature(obj, time, lat, long, alt)
-%             if(not(isempty(obj.atmoTempCache)))
-%                 temperature = obj.atmoTempCache.getAtmoTemperature(time, lat, long, alt);
-%             else
+            try
+                inputs = obj.getAtmoTempInputsCellArray();
+                temperature = getTemperatureAtAltitude_alg_mex(alt, lat, time, long, inputs{:});
+            catch ME %#ok<NASGU>
                 temperature = getTemperatureAtAltitude(obj, alt, lat, time, long);
-%             end
+            end
+        end
+        
+        function pressure = getBodyAtmoPressure(obj, altitude)
+            try
+                inputs = obj.getAtmoPressInputsCellArray();
+                pressure = getPressureAtAltitude_alg(altitude, inputs{:});
+            catch ME %#ok<NASGU>
+                pressure = getPressureAtAltitude(obj, altitude);
+            end
         end
         
         function sunDotNormal = getCachedSunDotNormal(obj, time, long)
@@ -226,6 +239,65 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
             end
             
             parentGM = obj.parentGmuCache;
+        end
+        
+        function inputs = getAtmoTempInputsCellArray(obj)
+            if(isempty(obj.atmoTempInputsCache))
+                [smas, eccs, incs, raans, args, means, epochs, parentGMs] = obj.getOrbitElemsChain();
+
+                obj.atmoTempInputsCache = {obj.doNotUseAtmoTempSunMultCurve, obj.doNotUseLatTempSunMultCurve, obj.doNotUseAxialTempSunMultCurve, obj.doNotUseAxialTempSunBiasCurveGI, obj.doNotUseEccTempBiasCurveGI, ...
+                                          extract1DGridInterpData(obj.lattempsunmultcurve), extract1DGridInterpData(obj.axialtempsunbiascurve), extract1DGridInterpData(obj.axialtempsunmultcurve), ...
+                                          extract1DGridInterpData(obj.ecctempbiascurve), extract1DGridInterpData(obj.lattempbiascurve), extract1DGridInterpData(obj.atmotempcurve), extract1DGridInterpData(obj.atmotempsunmultcurve), ...
+                                          obj.atmohgt, obj.rotperiod, obj.rotini, obj.radius, ...
+                                          smas, eccs, incs, raans, args, means, epochs, parentGMs};
+            end
+            
+            inputs = obj.atmoTempInputsCache;
+        end
+        
+        function inputs = getAtmoPressInputsCellArray(obj)
+            if(isempty(obj.atmoPressInputsCache))
+                obj.atmoPressInputsCache = {obj.atmohgt, obj.doNotUseAtmoPressCurveGI, extract1DGridInterpData(obj.atmopresscurve)};
+            end
+            
+            inputs = obj.atmoPressInputsCache;
+        end
+        
+        function [smas, eccs, incs, raans, args, means, epochs, parentGMs] = getOrbitElemsChain(obj)
+            smas = [];
+            eccs = [];
+            incs = [];
+            raans = [];
+            args = [];
+            means = [];
+            epochs = [];
+            parentGMs = [];
+            
+            loop = true;
+            bodyInfo = obj;
+            while(loop)
+                smas(end+1) = bodyInfo.sma; %#ok<AGROW>
+                eccs(end+1) = bodyInfo.ecc; %#ok<AGROW>
+                incs(end+1) = bodyInfo.inc; %#ok<AGROW>
+                raans(end+1) = bodyInfo.raan; %#ok<AGROW>
+                args(end+1) = bodyInfo.arg; %#ok<AGROW>
+                means(end+1) = bodyInfo.mean; %#ok<AGROW>
+                epochs(end+1) = bodyInfo.epoch; %#ok<AGROW>
+                
+                try
+                    thisParentBodyInfo = bodyInfo.getParBodyInfo(obj.celBodyData);
+                catch 
+                    thisParentBodyInfo = getParentBodyInfo(bodyInfo, obj.celBodyData);
+                end
+                
+                if(isempty(thisParentBodyInfo))
+                    break;
+                else
+                    parentGMs(end+1) = bodyInfo.getParentGmuFromCache(); %#ok<AGROW>
+                    
+                    bodyInfo = thisParentBodyInfo;
+                end
+            end
         end
         
         function tf = eq(A,B)

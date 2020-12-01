@@ -20,6 +20,7 @@ function [rVect, vVect] = vect_getStatefromKepler_Alg(sma, ecc, inc, raan, arg, 
     %%%%%%%%%%
     bool = ecc < 1E-10 & inc >= 1E-10 & abs(inc-pi) >= 1E-10;
     if(any(bool))
+        u = zeros(size(bool));
         u(bool) = arg(bool) + tru(bool);
         tru(bool) = u(bool);
         arg(bool) = 0.0; %may need to remove this, new addition
@@ -56,10 +57,16 @@ function [rVect, vVect] = vect_getStatefromKepler_Alg(sma, ecc, inc, raan, arg, 
     rPQW = reshape(rPQW, 3,1,numOrb);
     vPQW = reshape(vPQW, 3,1,numOrb);
 
-    rVect = multiprod(TransMatrix, rPQW);
-    vVect = multiprod(TransMatrix, vPQW);
-    
-    rVect = reshape(rVect, 3,numOrb);
-    vVect = reshape(vVect, 3,numOrb);
-end
+%     rVect = mtimesx(TransMatrix, rPQW);
+%     vVect = mtimesx(TransMatrix, vPQW);
+% 
+%     rVect = reshape(rVect, 3,numOrb);
+%     vVect = reshape(vVect, 3,numOrb);    
 
+    rVect = zeros(3,numOrb);
+    vVect = zeros(3,numOrb);
+    for(i=1:numOrb)
+        rVect(:,i) = squeeze(TransMatrix(:,:,i)) * squeeze(rPQW(:,:,i));
+        vVect(:,i) = squeeze(TransMatrix(:,:,i)) * squeeze(vPQW(:,:,i));
+    end
+end
