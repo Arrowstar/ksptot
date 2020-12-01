@@ -29,7 +29,15 @@ numRV = size(rVect,2);
 rVect = reshape(rVect,3,numRV);
 vVect = reshape(vVect,3,numRV);
 
-[sma, ecc, inc, raan, arg, tru] = vect_getKeplerFromState_Alg(rVect,vVect,gmu);
+if(isscalar(gmu))
+    gmu = gmu * ones(1,numRV);
+end
+
+try
+    [sma, ecc, inc, raan, arg, tru] = vect_getKeplerFromState_Alg_mex(rVect,vVect,gmu(:)');
+catch
+    [sma, ecc, inc, raan, arg, tru] = vect_getKeplerFromState_Alg(rVect,vVect,gmu(:)');
+end
 
 bool = ecc<1.0;
 

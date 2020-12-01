@@ -6,3 +6,4 @@ function [spinAngle] = getBodySpinAngle_alg(rotperiod, rotini, ut)
     rotInit = deg2rad(rotini);     %rad
     spinAngle = AngleZero2Pi(rotInit + bodySpinRate.*ut); %theta)
 end
+

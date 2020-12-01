@@ -47,6 +47,13 @@ function datapt = lvd_ThrottleTask(stateLogEntry, subTask)
             if(isnan(datapt))
                 datapt = 0;
             end
+
+        case 'thrust_vector'
+            [~, thrustForceVector] = getThrustParameters(stateLogEntry);
+            datapt = thrustForceVector(:);
+            if(any(isnan(datapt)))
+                datapt = [0;0;0];
+            end
             
         otherwise
             error('Unrecongized task: %s', subTask);
