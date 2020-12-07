@@ -27,6 +27,7 @@ function [taskList] = ma_getGraphAnalysisTaskList(excludeList)
     taskList{end+1} = 'Altitude of Apoapsis';
     taskList{end+1} = 'Altitude of Periapsis';
     taskList{end+1} = 'Speed of Spacecraft';
+    taskList{end+1} = 'Flight Path Angle';
     taskList{end+1} = 'Longitude (East)';
     taskList{end+1} = 'Latitude (North)';
     taskList{end+1} = 'Longitudinal Drift Rate';

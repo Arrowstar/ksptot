@@ -78,6 +78,9 @@ function datapt = ma_GAKeplerElementsTask(stateLogEntry, subTask, celBodyData)
                 betaAngle = -pi-betaAngle;
             end
             datapt = rad2deg(betaAngle);
+        case 'flightPathAngle'
+            fpa = asind(dotARH(rVect,vVect)/(norm(rVect) * norm(vVect)));
+            datapt = fpa;
     end
 end
 

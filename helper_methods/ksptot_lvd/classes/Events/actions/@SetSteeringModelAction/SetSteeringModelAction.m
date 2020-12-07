@@ -31,6 +31,9 @@ classdef SetSteeringModelAction < AbstractEventAction
                         case SteerModelTypeEnum.QuaterionInterp
                             obj.steeringModel = GenericQuatInterpSteeringModel.getDefaultSteeringModel();
                             
+                        case SteerModelTypeEnum.LinearTangentAngles
+                            obj.steeringModel = GenericLinearTangentSteeringModel.getDefaultSteeringModel();
+                            
                         otherwise
                             error('Unknown steering model type: %s', enum.name);
                     end
@@ -112,6 +115,9 @@ classdef SetSteeringModelAction < AbstractEventAction
 
                     case SteerModelTypeEnum.QuaterionInterp
                         addActionTf = lvd_EditActionSetQuatInterpSteeringModelGUI(action, lv);
+                        
+                    case SteerModelTypeEnum.LinearTangentAngles
+                        addActionTf = lvd_EditActionSetLinearTangentSteeringModelGUI(action, lv);
 
                     otherwise
                         error('Unknown steering model type: %s', enum.name);

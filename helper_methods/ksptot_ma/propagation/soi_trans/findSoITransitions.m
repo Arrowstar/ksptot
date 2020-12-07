@@ -48,8 +48,8 @@ function soITrans = findSoITransitions(initialState, maxSearchUT, soiSkipIds, ma
     vVect = initialState(5:7)';
     
     [sma, ecc, inc, raan, arg, truINI] = getKeplerFromState(rVect,vVect,gmu);
-    meanINI = computeMeanFromTrueAnom(truINI, ecc);
-    scBodyInfo = getBodyInfoStructFromOrbit([sma, ecc, inc, raan, arg, meanINI, ut]);
+%     meanINI = computeMeanFromTrueAnom(truINI, ecc);
+%     scBodyInfo = getBodyInfoStructFromOrbit([sma, ecc, inc, raan, arg, meanINI, ut]);
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %There are two cases to consider: moving up the heirarchy and moving
@@ -140,7 +140,7 @@ function soITrans = findSoITransitions(initialState, maxSearchUT, soiSkipIds, ma
         odeEvtFcn = @(ut,mean) getSoITransitionOdeEvents(ut, mean, sma, ecc, inc, raan, arg, bodyInfo, gmu, searchableChildBodies, childBodySoIRadii, celBodyData);
         options = odeset('RelTol',soi_search_tol, 'AbsTol',soi_search_tol, 'Events',odeEvtFcn, 'MaxStep',maxStepSize, 'Refine',1, 'InitialStep',maxStepSize);
         
-        [~,~,te,ye,ie] = ode113(odefun,tspan,y0,options);
+        [~,~,te,~,ie] = ode113(odefun,tspan,y0,options);
         
         if(not(isempty(ie)))
             [crossingUT, I] = min(te);

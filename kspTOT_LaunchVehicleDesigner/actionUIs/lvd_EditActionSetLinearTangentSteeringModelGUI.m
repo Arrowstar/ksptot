@@ -1,35 +1,35 @@
-function varargout = lvd_EditActionSetSteeringModelGUI(varargin)
-% LVD_EDITACTIONSETSTEERINGMODELGUI MATLAB code for lvd_EditActionSetSteeringModelGUI.fig
-%      LVD_EDITACTIONSETSTEERINGMODELGUI, by itself, creates a new LVD_EDITACTIONSETSTEERINGMODELGUI or raises the existing
+function varargout = lvd_EditActionSetLinearTangentSteeringModelGUI(varargin)
+% LVD_EDITACTIONSETLINEARTANGENTSTEERINGMODELGUI MATLAB code for lvd_EditActionSetLinearTangentSteeringModelGUI.fig
+%      LVD_EDITACTIONSETLINEARTANGENTSTEERINGMODELGUI, by itself, creates a new LVD_EDITACTIONSETLINEARTANGENTSTEERINGMODELGUI or raises the existing
 %      singleton*.
 %
-%      H = LVD_EDITACTIONSETSTEERINGMODELGUI returns the handle to a new LVD_EDITACTIONSETSTEERINGMODELGUI or the handle to
+%      H = LVD_EDITACTIONSETLINEARTANGENTSTEERINGMODELGUI returns the handle to a new LVD_EDITACTIONSETLINEARTANGENTSTEERINGMODELGUI or the handle to
 %      the existing singleton*.
 %
-%      LVD_EDITACTIONSETSTEERINGMODELGUI('CALLBACK',hObject,eventData,handles,...) calls the local
-%      function named CALLBACK in LVD_EDITACTIONSETSTEERINGMODELGUI.M with the given input arguments.
+%      LVD_EDITACTIONSETLINEARTANGENTSTEERINGMODELGUI('CALLBACK',hObject,eventData,handles,...) calls the local
+%      function named CALLBACK in LVD_EDITACTIONSETLINEARTANGENTSTEERINGMODELGUI.M with the given input arguments.
 %
-%      LVD_EDITACTIONSETSTEERINGMODELGUI('Property','Value',...) creates a new LVD_EDITACTIONSETSTEERINGMODELGUI or raises the
+%      LVD_EDITACTIONSETLINEARTANGENTSTEERINGMODELGUI('Property','Value',...) creates a new LVD_EDITACTIONSETLINEARTANGENTSTEERINGMODELGUI or raises the
 %      existing singleton*.  Starting from the left, property value pairs are
-%      applied to the GUI before lvd_EditActionSetSteeringModelGUI_OpeningFcn gets called.  An
+%      applied to the GUI before lvd_EditActionSetLinearTangentSteeringModelGUI_OpeningFcn gets called.  An
 %      unrecognized property name or invalid value makes property application
-%      stop.  All inputs are passed to lvd_EditActionSetSteeringModelGUI_OpeningFcn via varargin.
+%      stop.  All inputs are passed to lvd_EditActionSetLinearTangentSteeringModelGUI_OpeningFcn via varargin.
 %
 %      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
 %      instance to run (singleton)".
 %
 % See also: GUIDE, GUIDATA, GUIHANDLES
 
-% Edit the above text to modify the response to help lvd_EditActionSetSteeringModelGUI
+% Edit the above text to modify the response to help lvd_EditActionSetLinearTangentSteeringModelGUI
 
-% Last Modified by GUIDE v2.5 27-Jul-2020 20:11:16
+% Last Modified by GUIDE v2.5 06-Dec-2020 17:18:47
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
                    'gui_Singleton',  gui_Singleton, ...
-                   'gui_OpeningFcn', @lvd_EditActionSetSteeringModelGUI_OpeningFcn, ...
-                   'gui_OutputFcn',  @lvd_EditActionSetSteeringModelGUI_OutputFcn, ...
+                   'gui_OpeningFcn', @lvd_EditActionSetLinearTangentSteeringModelGUI_OpeningFcn, ...
+                   'gui_OutputFcn',  @lvd_EditActionSetLinearTangentSteeringModelGUI_OutputFcn, ...
                    'gui_LayoutFcn',  [] , ...
                    'gui_Callback',   []);
 if nargin && ischar(varargin{1})
@@ -44,15 +44,15 @@ end
 % End initialization code - DO NOT EDIT
 
 
-% --- Executes just before lvd_EditActionSetSteeringModelGUI is made visible.
-function lvd_EditActionSetSteeringModelGUI_OpeningFcn(hObject, eventdata, handles, varargin)
+% --- Executes just before lvd_EditActionSetLinearTangentSteeringModelGUI is made visible.
+function lvd_EditActionSetLinearTangentSteeringModelGUI_OpeningFcn(hObject, eventdata, handles, varargin)
     % This function has no output args, see OutputFcn.
     % hObject    handle to figure
     % eventdata  reserved - to be defined in a future version of MATLAB
     % handles    structure with handles and user data (see GUIDATA)
-    % varargin   command line arguments to lvd_EditActionSetSteeringModelGUI (see VARARGIN)
+    % varargin   command line arguments to lvd_EditActionSetLinearTangentSteeringModelGUI (see VARARGIN)
 
-    % Choose default command line output for lvd_EditActionSetSteeringModelGUI
+    % Choose default command line output for lvd_EditActionSetLinearTangentSteeringModelGUI
     handles.output = hObject;
 
     action = varargin{1};
@@ -66,33 +66,42 @@ function lvd_EditActionSetSteeringModelGUI_OpeningFcn(hObject, eventdata, handle
     % Update handles structure
     guidata(hObject, handles);
 
-    % UIWAIT makes lvd_EditActionSetSteeringModelGUI wait for user response (see UIRESUME)
-    uiwait(handles.lvd_EditActionSetSteeringModelGUI);
+    % UIWAIT makes lvd_EditActionSetLinearTangentSteeringModelGUI wait for user response (see UIRESUME)
+    uiwait(handles.lvd_EditActionSetLinearTangentSteeringModelGUI);
 
 
 function populateGUI(handles, action, lv)
     steeringModel = action.steeringModel;
     
     handles.baseFrameCombo.String = ReferenceFrameEnum.getListBoxStr();
-%     handles.baseFrameCombo.Value = ReferenceFrameEnum.getIndForName(initStateModel.orbitModel.frame.typeEnum.name);
-%     handles.setFrameOptionsButton.TooltipString = sprintf('Current Frame: %s', initStateModel.orbitModel.frame.getNameStr());  
 
     if(steeringModel.usesRefFrame())
         handles.baseFrameCombo.Enable = 'on';
         baseFrame = steeringModel.getRefFrame();
         
+        if(isempty(baseFrame))
+            baseFrame = lv.lvdData.getDefaultInitialBodyInfo(lv.lvdData.celBodyData).getBodyCenteredInertialFrame();
+            steeringModel.setRefFrame(baseFrame);
+        end        
     else
         handles.baseFrameCombo.Enable = 'off';
         baseFrame = lv.lvdData.getDefaultInitialBodyInfo(lv.lvdData.celBodyData).getBodyCenteredInertialFrame();
     end
     handles.baseFrameCombo.Value = ReferenceFrameEnum.getIndForName(baseFrame.typeEnum.name);
-    setappdata(handles.lvd_EditActionSetSteeringModelGUI, 'baseFrame', baseFrame);
+    setappdata(handles.lvd_EditActionSetLinearTangentSteeringModelGUI, 'baseFrame', baseFrame);
 
     handles.controlFrameCombo.String = ControlFramesEnum.getListBoxStr();
     
     if(steeringModel.usesControlFrame())
         handles.controlFrameCombo.Enable = 'on';
-        handles.controlFrameCombo.Value = ControlFramesEnum.getIndForName(steeringModel.getControlFrame().enum.name);
+        controlFrame = steeringModel.getControlFrame();
+        
+        if(isempty(controlFrame))
+            controlFrame = NedControlFrame();
+            steeringModel.setControlFrame(controlFrame);
+        end
+        
+        handles.controlFrameCombo.Value = ControlFramesEnum.getIndForName(controlFrame.enum.name);
         
     else
         handles.controlFrameCombo.Enable = 'off';
@@ -104,10 +113,10 @@ function populateGUI(handles, action, lv)
     set(handles.angle2Panel,'Title',sprintf('%s Angle', angle2Name));
     set(handles.angle3Panel,'Title',sprintf('%s Angle', angle3Name));
     
-    strs = SteeringModelEnum.getSteeringModelTypeNameStrs(true);
-    set(handles.steeringModelTypeCombo,'String',strs);
-    ind = SteeringModelEnum.getIndOfListboxStrsForSteeringModel(steeringModel);
-    set(handles.steeringModelTypeCombo,'Value',ind);
+%     strs = SteeringModelEnum.getSteeringModelTypeNameStrs(true);
+%     set(handles.steeringModelTypeCombo,'String',strs);
+%     ind = SteeringModelEnum.getIndOfListboxStrsForSteeringModel(steeringModel);
+%     set(handles.steeringModelTypeCombo,'Value',ind);
     
     [angleModel, ~] = steeringModel.getAngleNModel(1);
     set(handles.angle1ConstTermText,'String',fullAccNum2Str(rad2deg(angleModel.constTerm)));
@@ -115,9 +124,10 @@ function populateGUI(handles, action, lv)
     set(handles.angle1AccelTermText,'String',fullAccNum2Str(rad2deg(angleModel.accelTerm)));
     
     [angleModel, ~] = steeringModel.getAngleNModel(2);
-    set(handles.angle2ConstTermText,'String',fullAccNum2Str(rad2deg(angleModel.constTerm)));
-    set(handles.angle2LinTermText,'String',fullAccNum2Str(rad2deg(angleModel.linearTerm)));
-    set(handles.angle2AccelTermText,'String',fullAccNum2Str(rad2deg(angleModel.accelTerm)));
+    set(handles.angle2ATermText,'String',fullAccNum2Str(angleModel.a));
+    set(handles.angle2ADotTermText,'String',fullAccNum2Str(angleModel.a_dot));
+    set(handles.angle2BTermText,'String',fullAccNum2Str(angleModel.b));
+    set(handles.angle2BDotTermText,'String',fullAccNum2Str(angleModel.b_dot));
     
     [angleModel, ~] = steeringModel.getAngleNModel(3);
     set(handles.angle3ConstTermText,'String',fullAccNum2Str(rad2deg(angleModel.constTerm)));
@@ -131,7 +141,7 @@ function populateGUI(handles, action, lv)
     
     optVar = steeringModel.getExistingOptVar();
     if(isempty(optVar))
-        useTf = false([1,9]);
+        useTf = false([1,10]);
         lb = zeros(size(useTf));
         ub = zeros(size(useTf));
     else
@@ -145,61 +155,60 @@ function populateGUI(handles, action, lv)
     set(handles.angle1LinOptCheckbox,'Value',(useTf(2)));
     set(handles.angle1AccelOptCheckbox,'Value',(useTf(3)));
     
-    set(handles.angle2ConstOptCheckbox,'Value',(useTf(4)));
-    set(handles.angle2LinOptCheckbox,'Value',(useTf(5)));
-    set(handles.angle2AccelOptCheckbox,'Value',(useTf(6)));
+    set(handles.angle2AOptCheckbox,'Value',(useTf(4)));
+    set(handles.angle2ADotOptCheckbox,'Value',(useTf(5)));
+    set(handles.angle2BOptCheckbox,'Value',(useTf(6)));
+    set(handles.angle2BDotOptCheckbox,'Value',(useTf(7)));
 
-    set(handles.angle3ConstOptCheckbox,'Value',(useTf(7)));
-    set(handles.angle3LinOptCheckbox,'Value',(useTf(8)));
-    set(handles.angle3AccelOptCheckbox,'Value',(useTf(9)));
+    set(handles.angle3ConstOptCheckbox,'Value',(useTf(8)));
+    set(handles.angle3LinOptCheckbox,'Value',(useTf(9)));
+    set(handles.angle3AccelOptCheckbox,'Value',(useTf(10)));
     
     angle1ConstOptCheckbox_Callback(handles.angle1ConstOptCheckbox, [], handles);
-    angle2ConstOptCheckbox_Callback(handles.angle2ConstOptCheckbox, [], handles);
     angle3ConstOptCheckbox_Callback(handles.angle3ConstOptCheckbox, [], handles);
     
     angle1LinOptCheckbox_Callback(handles.angle1LinOptCheckbox, [], handles);
-    angle2LinOptCheckbox_Callback(handles.angle2LinOptCheckbox, [], handles);
     angle3LinOptCheckbox_Callback(handles.angle3LinOptCheckbox, [], handles);
     
     angle1AccelOptCheckbox_Callback(handles.angle1AccelOptCheckbox, [], handles);
-    angle2AccelOptCheckbox_Callback(handles.angle2AccelOptCheckbox, [], handles);
     angle3AccelOptCheckbox_Callback(handles.angle3AccelOptCheckbox, [], handles);
     
-%     lb = zeros(size(useTf));
-%     lb(useTf) = lbTemp;
-%     
-%     ub = zeros(size(useTf));
-%     ub(useTf) = ubTemp;
-    
+    angle2AOptCheckbox_Callback(handles.angle2AOptCheckbox, [], handles);
+    angle2ADotOptCheckbox_Callback(handles.angle2ADotOptCheckbox, [], handles);
+    angle2BOptCheckbox_Callback(handles.angle2BOptCheckbox, [], handles);
+    angle2BDotOptCheckbox_Callback(handles.angle2BDotOptCheckbox, [], handles);
+        
     %LB
     set(handles.angle1ConstLbText,'String',fullAccNum2Str(rad2deg(lb(1))));
     set(handles.angle1LinLbText,'String',fullAccNum2Str(rad2deg(lb(2))));
     set(handles.angle1AccelLbText,'String',fullAccNum2Str(rad2deg(lb(3))));
     
-    set(handles.angle2ConstLbText,'String',fullAccNum2Str(rad2deg(lb(4))));
-    set(handles.angle2LinLbText,'String',fullAccNum2Str(rad2deg(lb(5))));
-    set(handles.angle2AccelLbText,'String',fullAccNum2Str(rad2deg(lb(6))));
+    set(handles.angle2ALbText,'String',fullAccNum2Str(lb(4)));
+    set(handles.angle2ADotLbText,'String',fullAccNum2Str(lb(5)));
+    set(handles.angle2BLbText,'String',fullAccNum2Str(lb(6)));
+    set(handles.angle2BDotLbText,'String',fullAccNum2Str(lb(7)));
     
-    set(handles.angle3ConstLbText,'String',fullAccNum2Str(rad2deg(lb(7))));
-    set(handles.angle3LinLbText,'String',fullAccNum2Str(rad2deg(lb(8))));
-    set(handles.angle3AccelLbText,'String',fullAccNum2Str(rad2deg(lb(9))));
+    set(handles.angle3ConstLbText,'String',fullAccNum2Str(rad2deg(lb(8))));
+    set(handles.angle3LinLbText,'String',fullAccNum2Str(rad2deg(lb(9))));
+    set(handles.angle3AccelLbText,'String',fullAccNum2Str(rad2deg(lb(10))));
     
     %UB
     set(handles.angle1ConstUbText,'String',fullAccNum2Str(rad2deg(ub(1))));
     set(handles.angle1LinUbText,'String',fullAccNum2Str(rad2deg(ub(2))));
     set(handles.angle1AccelUbText,'String',fullAccNum2Str(rad2deg(ub(3))));
     
-    set(handles.angle2ConstUbText,'String',fullAccNum2Str(rad2deg(ub(4))));
-    set(handles.angle2LinUbText,'String',fullAccNum2Str(rad2deg(ub(5))));
-    set(handles.angle2AccelUbText,'String',fullAccNum2Str(rad2deg(ub(6))));
+    set(handles.angle2AUbText,'String',fullAccNum2Str(ub(4)));
+    set(handles.angle2ADotUbText,'String',fullAccNum2Str(ub(5)));
+    set(handles.angle2BUbText,'String',fullAccNum2Str(ub(6)));
+    set(handles.angle2BDotUbText,'String',fullAccNum2Str(ub(7)));
     
-    set(handles.angle3ConstUbText,'String',fullAccNum2Str(rad2deg(ub(7))));
-    set(handles.angle3LinUbText,'String',fullAccNum2Str(rad2deg(ub(8))));
-    set(handles.angle3AccelUbText,'String',fullAccNum2Str(rad2deg(ub(9))));
+    set(handles.angle3ConstUbText,'String',fullAccNum2Str(rad2deg(ub(8))));
+    set(handles.angle3LinUbText,'String',fullAccNum2Str(rad2deg(ub(9))));
+    set(handles.angle3AccelUbText,'String',fullAccNum2Str(rad2deg(ub(10))));
     
     
 % --- Outputs from this function are returned to the command line.
-function varargout = lvd_EditActionSetSteeringModelGUI_OutputFcn(hObject, eventdata, handles) 
+function varargout = lvd_EditActionSetLinearTangentSteeringModelGUI_OutputFcn(hObject, eventdata, handles) 
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -214,20 +223,12 @@ function varargout = lvd_EditActionSetSteeringModelGUI_OutputFcn(hObject, eventd
         
         action = getappdata(hObject,'action');
         steeringModel = action.steeringModel;
-        ind = SteeringModelEnum.getIndOfListboxStrsForSteeringModel(steeringModel);
-        indFromCombo = get(handles.steeringModelTypeCombo,'Value');
         
         optVar = steeringModel.getExistingOptVar();
         if(not(isempty(optVar))) %need to remove existing var if it exists
             lvdData.optimizer.vars.removeVariable(optVar);
         end
-        
-        if(ind ~= indFromCombo)           
-            [m,~] = enumeration('SteeringModelEnum');
-            steeringModel = eval(sprintf('%s.getDefaultSteeringModel()', m(indFromCombo).classNameStr));
-            action.steeringModel = steeringModel;
-        end
-        
+               
         if(steeringModel.usesRefFrame())
             steeringModel.setRefFrame(getappdata(hObject,'baseFrame'));
         end
@@ -246,17 +247,19 @@ function varargout = lvd_EditActionSetSteeringModelGUI_OutputFcn(hObject, eventd
         angle1Linear = deg2rad(str2double(get(handles.angle1LinTermText,'String')));
         angle1Accel = deg2rad(str2double(get(handles.angle1AccelTermText,'String')));
 
-        angle2Const = deg2rad(str2double(get(handles.angle2ConstTermText,'String')));
-        angle2Linear = deg2rad(str2double(get(handles.angle2LinTermText,'String')));
-        angle2Accel = deg2rad(str2double(get(handles.angle2AccelTermText,'String')));
+        angle2A = str2double(get(handles.angle2ATermText,'String'));
+        angle2ADot = str2double(get(handles.angle2ADotTermText,'String'));
+        angle2B = str2double(get(handles.angle2BTermText,'String'));
+        angle2BDot = str2double(get(handles.angle2BDotTermText,'String'));
         
         angle3Const = deg2rad(str2double(get(handles.angle3ConstTermText,'String')));
         angle3Linear = deg2rad(str2double(get(handles.angle3LinTermText,'String')));
         angle3Accel = deg2rad(str2double(get(handles.angle3AccelTermText,'String')));
         
-        steeringModel.setConstTerms(angle1Const, angle2Const, angle3Const);
-        steeringModel.setLinearTerms(angle1Linear, angle2Linear, angle3Linear);
-        steeringModel.setAccelTerms(angle1Accel, angle2Accel, angle3Accel);
+        steeringModel.setConstTerms(angle1Const, angle3Const);
+        steeringModel.setLinearTerms(angle1Linear, angle3Linear);
+        steeringModel.setAccelTerms(angle1Accel,  angle3Accel);
+        steeringModel.setLinearTangentTerms(angle2A,  angle2ADot, angle2B, angle2BDot);
         
         contTf = logical(handles.angleContCheckbox.Value);
         steeringModel.setContinuityTerms(contTf,contTf,contTf);
@@ -266,13 +269,14 @@ function varargout = lvd_EditActionSetSteeringModelGUI_OutputFcn(hObject, eventd
         useTf(2) = get(handles.angle1LinOptCheckbox,'Value');
         useTf(3) = get(handles.angle1AccelOptCheckbox,'Value');
 
-        useTf(4) = get(handles.angle2ConstOptCheckbox,'Value');
-        useTf(5) = get(handles.angle2LinOptCheckbox,'Value');
-        useTf(6) = get(handles.angle2AccelOptCheckbox,'Value');
+        useTf(4) = get(handles.angle2AOptCheckbox,'Value');
+        useTf(5) = get(handles.angle2ADotOptCheckbox,'Value');
+        useTf(6) = get(handles.angle2BOptCheckbox,'Value');
+        useTf(7) = get(handles.angle2BDotOptCheckbox,'Value');
 
-        useTf(7) = get(handles.angle3ConstOptCheckbox,'Value');
-        useTf(8) = get(handles.angle3LinOptCheckbox,'Value');
-        useTf(9) = get(handles.angle3AccelOptCheckbox,'Value');
+        useTf(8) = get(handles.angle3ConstOptCheckbox,'Value');
+        useTf(9) = get(handles.angle3LinOptCheckbox,'Value');
+        useTf(10) = get(handles.angle3AccelOptCheckbox,'Value');
         
         optVar = steeringModel.getNewOptVar();
         
@@ -283,26 +287,28 @@ function varargout = lvd_EditActionSetSteeringModelGUI_OutputFcn(hObject, eventd
         lb(2) = deg2rad(str2double(get(handles.angle1LinLbText,'String')));
         lb(3) = deg2rad(str2double(get(handles.angle1AccelLbText,'String')));
 
-        lb(4) = deg2rad(str2double(get(handles.angle2ConstLbText,'String')));
-        lb(5) = deg2rad(str2double(get(handles.angle2LinLbText,'String')));
-        lb(6) = deg2rad(str2double(get(handles.angle2AccelLbText,'String')));
+        lb(4) = str2double(get(handles.angle2ALbText,'String'));
+        lb(5) = str2double(get(handles.angle2ADotLbText,'String'));
+        lb(6) = str2double(get(handles.angle2BLbText,'String'));
+        lb(7) = str2double(get(handles.angle2BDotLbText,'String'));
 
-        lb(7) = deg2rad(str2double(get(handles.angle3ConstLbText,'String')));
-        lb(8) = deg2rad(str2double(get(handles.angle3LinLbText,'String')));
-        lb(9) = deg2rad(str2double(get(handles.angle3AccelLbText,'String')));
+        lb(8) = deg2rad(str2double(get(handles.angle3ConstLbText,'String')));
+        lb(9) = deg2rad(str2double(get(handles.angle3LinLbText,'String')));
+        lb(10) = deg2rad(str2double(get(handles.angle3AccelLbText,'String')));
         
         
         ub(1) = deg2rad(str2double(get(handles.angle1ConstUbText,'String')));
         ub(2) = deg2rad(str2double(get(handles.angle1LinUbText,'String')));
         ub(3) = deg2rad(str2double(get(handles.angle1AccelUbText,'String')));
 
-        ub(4) = deg2rad(str2double(get(handles.angle2ConstUbText,'String')));
-        ub(5) = deg2rad(str2double(get(handles.angle2LinUbText,'String')));
-        ub(6) = deg2rad(str2double(get(handles.angle2AccelUbText,'String')));
+        ub(4) = str2double(get(handles.angle2AUbText,'String'));
+        ub(5) = str2double(get(handles.angle2ADotUbText,'String'));
+        ub(6) = str2double(get(handles.angle2BUbText,'String'));
+        ub(7) = str2double(get(handles.angle2BDotUbText,'String'));
 
-        ub(7) = deg2rad(str2double(get(handles.angle3ConstUbText,'String')));
-        ub(8) = deg2rad(str2double(get(handles.angle3LinUbText,'String')));
-        ub(9) = deg2rad(str2double(get(handles.angle3AccelUbText,'String')));
+        ub(8) = deg2rad(str2double(get(handles.angle3ConstUbText,'String')));
+        ub(9) = deg2rad(str2double(get(handles.angle3LinUbText,'String')));
+        ub(10) = deg2rad(str2double(get(handles.angle3AccelUbText,'String')));
         
         optVar.setUseTfForVariable(true(size(lb))); %need this to get the full lb/set in there
         optVar.setBndsForVariable(lb, ub);
@@ -311,13 +317,13 @@ function varargout = lvd_EditActionSetSteeringModelGUI_OutputFcn(hObject, eventd
         lvdData.optimizer.vars.addVariable(optVar);
         
         varargout{1} = true;
-        close(handles.lvd_EditActionSetSteeringModelGUI);
+        close(handles.lvd_EditActionSetLinearTangentSteeringModelGUI);
     end
 
 
 function errMsg = validateInputs(handles)
     errMsg = {};
-    action = getappdata(handles.lvd_EditActionSetSteeringModelGUI,'action');
+    action = getappdata(handles.lvd_EditActionSetLinearTangentSteeringModelGUI,'action');
     [angle1Name, angle2Name, angle3Name] = action.steeringModel.getAngleNames();
     
     %Angle 1
@@ -346,29 +352,37 @@ function errMsg = validateInputs(handles)
     errMsg = validateNumber(angle1Accel, numberName, lb, ub, isInt, errMsg, enteredStr);
     
     %Angle 2
-    angle2Const = str2double(get(handles.angle2ConstTermText,'String'));
-    enteredStr = get(handles.angle2ConstTermText,'String');
-    numberName = sprintf('%s Angle Constant Term', angle2Name);
+    angle2A = str2double(get(handles.angle2ATermText,'String'));
+    enteredStr = get(handles.angle2ATermText,'String');
+    numberName = sprintf('%s Angle A Term', angle2Name);
     lb = -Inf;
     ub = Inf;
     isInt = false;
-    errMsg = validateNumber(angle2Const, numberName, lb, ub, isInt, errMsg, enteredStr);
+    errMsg = validateNumber(angle2A, numberName, lb, ub, isInt, errMsg, enteredStr);
     
-    angle2Linear = str2double(get(handles.angle2LinTermText,'String'));
-    enteredStr = get(handles.angle2LinTermText,'String');
-    numberName = sprintf('%s Angle Linear Term', angle2Name);
+    angle2ADot = str2double(get(handles.angle2ADotTermText,'String'));
+    enteredStr = get(handles.angle2ADotTermText,'String');
+    numberName = sprintf('%s Angle A Dot Term', angle2Name);
     lb = -Inf;
     ub = Inf;
     isInt = false;
-    errMsg = validateNumber(angle2Linear, numberName, lb, ub, isInt, errMsg, enteredStr);
+    errMsg = validateNumber(angle2ADot, numberName, lb, ub, isInt, errMsg, enteredStr);
     
-    angle2Accel = str2double(get(handles.angle2AccelTermText,'String'));
-    enteredStr = get(handles.angle2AccelTermText,'String');
-    numberName = sprintf('%s Angle Acceleration Term', angle2Name);
+    angle2B = str2double(get(handles.angle2BTermText,'String'));
+    enteredStr = get(handles.angle2BTermText,'String');
+    numberName = sprintf('%s Angle B Term', angle2Name);
     lb = -Inf;
     ub = Inf;
     isInt = false;
-    errMsg = validateNumber(angle2Accel, numberName, lb, ub, isInt, errMsg, enteredStr);
+    errMsg = validateNumber(angle2B, numberName, lb, ub, isInt, errMsg, enteredStr);
+    
+    angle2BDot = str2double(get(handles.angle2BDotTermText,'String'));
+    enteredStr = get(handles.angle2BDotTermText,'String');
+    numberName = sprintf('%s Angle B Dot Term', angle2Name);
+    lb = -Inf;
+    ub = Inf;
+    isInt = false;
+    errMsg = validateNumber(angle2BDot, numberName, lb, ub, isInt, errMsg, enteredStr);
     
     %Angle 3
     angle3Const = str2double(get(handles.angle3ConstTermText,'String'));
@@ -447,56 +461,73 @@ function errMsg = validateInputs(handles)
     isInt = false;
     errMsg = validateNumber(angle1AccelUB, numberName, lb, ub, isInt, errMsg, enteredStr);
     
-    %Angle 2 Const
-    angle2ConstLB = str2double(get(handles.angle2ConstLbText,'String'));
-    enteredStr = get(handles.angle2ConstLbText,'String');
-    numberName = sprintf('%s Angle Constant Term Lower Bound', angle2Name);
+    %Angle 2 A
+    angle2ALB = str2double(get(handles.angle2ALbText,'String'));
+    enteredStr = get(handles.angle2ALbText,'String');
+    numberName = sprintf('%s Angle A Term Lower Bound', angle2Name);
     lb = -Inf;
     ub = Inf;
     isInt = false;
-    errMsg = validateNumber(angle2ConstLB, numberName, lb, ub, isInt, errMsg, enteredStr);
+    errMsg = validateNumber(angle2ALB, numberName, lb, ub, isInt, errMsg, enteredStr);
     
-    angle2ConstUB = str2double(get(handles.angle2ConstUbText,'String'));
-    enteredStr = get(handles.angle2ConstUbText,'String');
-    numberName = sprintf('%s Angle Constant Term Upper Bound', angle2Name);
-    lb = angle2ConstLB;
+    angle2AUB = str2double(get(handles.angle2AUbText,'String'));
+    enteredStr = get(handles.angle2AUbText,'String');
+    numberName = sprintf('%s Angle A Term Upper Bound', angle2Name);
+    lb = angle2ALB;
     ub = Inf;
     isInt = false;
-    errMsg = validateNumber(angle2ConstUB, numberName, lb, ub, isInt, errMsg, enteredStr);
+    errMsg = validateNumber(angle2AUB, numberName, lb, ub, isInt, errMsg, enteredStr);
     
-    %Angle 2 Linear
-    angle2LinearLB = str2double(get(handles.angle2LinLbText,'String'));
-    enteredStr = get(handles.angle2LinLbText,'String');
-    numberName = sprintf('%s Angle Linear Term Lower Bound', angle2Name);
+    %Angle 2 A Dot
+    angle2ADotLB = str2double(get(handles.angle2ADotLbText,'String'));
+    enteredStr = get(handles.angle2ADotLbText,'String');
+    numberName = sprintf('%s Angle A Dot Term Lower Bound', angle2Name);
     lb = -Inf;
     ub = Inf;
     isInt = false;
-    errMsg = validateNumber(angle2LinearLB, numberName, lb, ub, isInt, errMsg, enteredStr);
+    errMsg = validateNumber(angle2ADotLB, numberName, lb, ub, isInt, errMsg, enteredStr);
     
-    angle2LinearUB = str2double(get(handles.angle2LinUbText,'String'));
-    enteredStr = get(handles.angle2LinUbText,'String');
-    numberName = sprintf('%s Angle Linear Term Upper Bound', angle2Name);
-    lb = angle2LinearLB;
+    angle2ADotUB = str2double(get(handles.angle2ADotUbText,'String'));
+    enteredStr = get(handles.angle2ADotUbText,'String');
+    numberName = sprintf('%s Angle A Dot Term Upper Bound', angle2Name);
+    lb = angle2ADotLB;
     ub = Inf;
     isInt = false;
-    errMsg = validateNumber(angle2LinearUB, numberName, lb, ub, isInt, errMsg, enteredStr);
+    errMsg = validateNumber(angle2ADotUB, numberName, lb, ub, isInt, errMsg, enteredStr);
     
-    %Angle 2 Accel
-    angle2AccelLB = str2double(get(handles.angle2AccelLbText,'String'));
-    enteredStr = get(handles.angle2AccelLbText,'String');
-    numberName = sprintf('%s Angle Acceleration Term Lower Bound', angle2Name);
+    %Angle 2 B
+    angle2BLB = str2double(get(handles.angle2BLbText,'String'));
+    enteredStr = get(handles.angle2BLbText,'String');
+    numberName = sprintf('%s Angle B Term Lower Bound', angle2Name);
     lb = -Inf;
     ub = Inf;
     isInt = false;
-    errMsg = validateNumber(angle2AccelLB, numberName, lb, ub, isInt, errMsg, enteredStr);
+    errMsg = validateNumber(angle2BLB, numberName, lb, ub, isInt, errMsg, enteredStr);
 
-    angle2AccelUB = str2double(get(handles.angle2AccelUbText,'String'));
-    enteredStr = get(handles.angle2AccelUbText,'String');
-    numberName = sprintf('%s Angle Acceleration Term Upper Bound', angle2Name);
-    lb = angle2AccelLB;
+    angle2BUB = str2double(get(handles.angle2BUbText,'String'));
+    enteredStr = get(handles.angle2BUbText,'String');
+    numberName = sprintf('%s Angle B Term Upper Bound', angle2Name);
+    lb = angle2BLB;
     ub = Inf;
     isInt = false;
-    errMsg = validateNumber(angle2AccelUB, numberName, lb, ub, isInt, errMsg, enteredStr);
+    errMsg = validateNumber(angle2BUB, numberName, lb, ub, isInt, errMsg, enteredStr);
+    
+    %Angle 2 B Dot
+    angle2BDotLB = str2double(get(handles.angle2BDotLbText,'String'));
+    enteredStr = get(handles.angle2BDotLbText,'String');
+    numberName = sprintf('%s Angle B Dot Term Lower Bound', angle2Name);
+    lb = -Inf;
+    ub = Inf;
+    isInt = false;
+    errMsg = validateNumber(angle2BDotLB, numberName, lb, ub, isInt, errMsg, enteredStr);
+
+    angle2BDotUB = str2double(get(handles.angle2BDotUbText,'String'));
+    enteredStr = get(handles.angle2BDotUbText,'String');
+    numberName = sprintf('%s Angle B Dot Term Upper Bound', angle2Name);
+    lb = angle2BDotLB;
+    ub = Inf;
+    isInt = false;
+    errMsg = validateNumber(angle2BDotUB, numberName, lb, ub, isInt, errMsg, enteredStr);
     
     %Angle 3 Const
     angle3ConstLB = str2double(get(handles.angle3ConstLbText,'String'));
@@ -1091,20 +1122,20 @@ end
 
 
 
-function angle2ConstTermText_Callback(hObject, eventdata, handles)
-% hObject    handle to angle2ConstTermText (see GCBO)
+function angle2ATermText_Callback(hObject, eventdata, handles)
+% hObject    handle to angle2ATermText (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of angle2ConstTermText as text
-%        str2double(get(hObject,'String')) returns contents of angle2ConstTermText as a double
+% Hints: get(hObject,'String') returns contents of angle2ATermText as text
+%        str2double(get(hObject,'String')) returns contents of angle2ATermText as a double
     newInput = get(hObject,'String');
     newInput = attemptStrEval(newInput);
     set(hObject,'String', newInput);
 
 % --- Executes during object creation, after setting all properties.
-function angle2ConstTermText_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to angle2ConstTermText (see GCBO)
+function angle2ATermText_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to angle2ATermText (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -1116,20 +1147,20 @@ end
 
 
 
-function angle2LinTermText_Callback(hObject, eventdata, handles)
-% hObject    handle to angle2LinTermText (see GCBO)
+function angle2ADotTermText_Callback(hObject, eventdata, handles)
+% hObject    handle to angle2ADotTermText (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of angle2LinTermText as text
-%        str2double(get(hObject,'String')) returns contents of angle2LinTermText as a double
+% Hints: get(hObject,'String') returns contents of angle2ADotTermText as text
+%        str2double(get(hObject,'String')) returns contents of angle2ADotTermText as a double
     newInput = get(hObject,'String');
     newInput = attemptStrEval(newInput);
     set(hObject,'String', newInput);
 
 % --- Executes during object creation, after setting all properties.
-function angle2LinTermText_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to angle2LinTermText (see GCBO)
+function angle2ADotTermText_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to angle2ADotTermText (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -1141,20 +1172,20 @@ end
 
 
 
-function angle2AccelTermText_Callback(hObject, eventdata, handles)
-% hObject    handle to angle2AccelTermText (see GCBO)
+function angle2BTermText_Callback(hObject, eventdata, handles)
+% hObject    handle to angle2BTermText (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of angle2AccelTermText as text
-%        str2double(get(hObject,'String')) returns contents of angle2AccelTermText as a double
+% Hints: get(hObject,'String') returns contents of angle2BTermText as text
+%        str2double(get(hObject,'String')) returns contents of angle2BTermText as a double
     newInput = get(hObject,'String');
     newInput = attemptStrEval(newInput);
     set(hObject,'String', newInput);
 
 % --- Executes during object creation, after setting all properties.
-function angle2AccelTermText_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to angle2AccelTermText (see GCBO)
+function angle2BTermText_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to angle2BTermText (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -1165,36 +1196,36 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes on button press in angle2ConstOptCheckbox.
-function angle2ConstOptCheckbox_Callback(hObject, eventdata, handles)
-% hObject    handle to angle2ConstOptCheckbox (see GCBO)
+% --- Executes on button press in angle2AOptCheckbox.
+function angle2AOptCheckbox_Callback(hObject, eventdata, handles)
+% hObject    handle to angle2AOptCheckbox (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hint: get(hObject,'Value') returns toggle state of angle2ConstOptCheckbox
+% Hint: get(hObject,'Value') returns toggle state of angle2AOptCheckbox
     if(get(hObject,'Value')==1)
-        set(handles.angle2ConstLbText,'Enable','on');
-        set(handles.angle2ConstUbText,'Enable','on');
+        set(handles.angle2ALbText,'Enable','on');
+        set(handles.angle2AUbText,'Enable','on');
     else
-        set(handles.angle2ConstLbText,'Enable','off');
-        set(handles.angle2ConstUbText,'Enable','off');
+        set(handles.angle2ALbText,'Enable','off');
+        set(handles.angle2AUbText,'Enable','off');
     end
 
 
-function angle2ConstLbText_Callback(hObject, eventdata, handles)
-% hObject    handle to angle2ConstLbText (see GCBO)
+function angle2ALbText_Callback(hObject, eventdata, handles)
+% hObject    handle to angle2ALbText (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of angle2ConstLbText as text
-%        str2double(get(hObject,'String')) returns contents of angle2ConstLbText as a double
+% Hints: get(hObject,'String') returns contents of angle2ALbText as text
+%        str2double(get(hObject,'String')) returns contents of angle2ALbText as a double
     newInput = get(hObject,'String');
     newInput = attemptStrEval(newInput);
     set(hObject,'String', newInput);
 
 % --- Executes during object creation, after setting all properties.
-function angle2ConstLbText_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to angle2ConstLbText (see GCBO)
+function angle2ALbText_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to angle2ALbText (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -1206,20 +1237,20 @@ end
 
 
 
-function angle2ConstUbText_Callback(hObject, eventdata, handles)
-% hObject    handle to angle2ConstUbText (see GCBO)
+function angle2AUbText_Callback(hObject, eventdata, handles)
+% hObject    handle to angle2AUbText (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of angle2ConstUbText as text
-%        str2double(get(hObject,'String')) returns contents of angle2ConstUbText as a double
+% Hints: get(hObject,'String') returns contents of angle2AUbText as text
+%        str2double(get(hObject,'String')) returns contents of angle2AUbText as a double
     newInput = get(hObject,'String');
     newInput = attemptStrEval(newInput);
     set(hObject,'String', newInput);
 
 % --- Executes during object creation, after setting all properties.
-function angle2ConstUbText_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to angle2ConstUbText (see GCBO)
+function angle2AUbText_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to angle2AUbText (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -1230,36 +1261,36 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes on button press in angle2LinOptCheckbox.
-function angle2LinOptCheckbox_Callback(hObject, eventdata, handles)
-% hObject    handle to angle2LinOptCheckbox (see GCBO)
+% --- Executes on button press in angle2ADotOptCheckbox.
+function angle2ADotOptCheckbox_Callback(hObject, eventdata, handles)
+% hObject    handle to angle2ADotOptCheckbox (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hint: get(hObject,'Value') returns toggle state of angle2LinOptCheckbox
+% Hint: get(hObject,'Value') returns toggle state of angle2ADotOptCheckbox
     if(get(hObject,'Value')==1)
-        set(handles.angle2LinLbText,'Enable','on');
-        set(handles.angle2LinUbText,'Enable','on');
+        set(handles.angle2ADotLbText,'Enable','on');
+        set(handles.angle2ADotUbText,'Enable','on');
     else
-        set(handles.angle2LinLbText,'Enable','off');
-        set(handles.angle2LinUbText,'Enable','off');
+        set(handles.angle2ADotLbText,'Enable','off');
+        set(handles.angle2ADotUbText,'Enable','off');
     end
 
 
-function angle2LinLbText_Callback(hObject, eventdata, handles)
-% hObject    handle to angle2LinLbText (see GCBO)
+function angle2ADotLbText_Callback(hObject, eventdata, handles)
+% hObject    handle to angle2ADotLbText (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of angle2LinLbText as text
-%        str2double(get(hObject,'String')) returns contents of angle2LinLbText as a double
+% Hints: get(hObject,'String') returns contents of angle2ADotLbText as text
+%        str2double(get(hObject,'String')) returns contents of angle2ADotLbText as a double
     newInput = get(hObject,'String');
     newInput = attemptStrEval(newInput);
     set(hObject,'String', newInput);
 
 % --- Executes during object creation, after setting all properties.
-function angle2LinLbText_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to angle2LinLbText (see GCBO)
+function angle2ADotLbText_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to angle2ADotLbText (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -1271,20 +1302,20 @@ end
 
 
 
-function angle2LinUbText_Callback(hObject, eventdata, handles)
-% hObject    handle to angle2LinUbText (see GCBO)
+function angle2ADotUbText_Callback(hObject, eventdata, handles)
+% hObject    handle to angle2ADotUbText (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of angle2LinUbText as text
-%        str2double(get(hObject,'String')) returns contents of angle2LinUbText as a double
+% Hints: get(hObject,'String') returns contents of angle2ADotUbText as text
+%        str2double(get(hObject,'String')) returns contents of angle2ADotUbText as a double
     newInput = get(hObject,'String');
     newInput = attemptStrEval(newInput);
     set(hObject,'String', newInput);
 
 % --- Executes during object creation, after setting all properties.
-function angle2LinUbText_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to angle2LinUbText (see GCBO)
+function angle2ADotUbText_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to angle2ADotUbText (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -1295,36 +1326,36 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes on button press in angle2AccelOptCheckbox.
-function angle2AccelOptCheckbox_Callback(hObject, eventdata, handles)
-% hObject    handle to angle2AccelOptCheckbox (see GCBO)
+% --- Executes on button press in angle2BOptCheckbox.
+function angle2BOptCheckbox_Callback(hObject, eventdata, handles)
+% hObject    handle to angle2BOptCheckbox (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hint: get(hObject,'Value') returns toggle state of angle2AccelOptCheckbox
+% Hint: get(hObject,'Value') returns toggle state of angle2BOptCheckbox
     if(get(hObject,'Value')==1)
-        set(handles.angle2AccelLbText,'Enable','on');
-        set(handles.angle2AccelUbText,'Enable','on');
+        set(handles.angle2BLbText,'Enable','on');
+        set(handles.angle2BUbText,'Enable','on');
     else
-        set(handles.angle2AccelLbText,'Enable','off');
-        set(handles.angle2AccelUbText,'Enable','off');
+        set(handles.angle2BLbText,'Enable','off');
+        set(handles.angle2BUbText,'Enable','off');
     end
 
 
-function angle2AccelLbText_Callback(hObject, eventdata, handles)
-% hObject    handle to angle2AccelLbText (see GCBO)
+function angle2BLbText_Callback(hObject, eventdata, handles)
+% hObject    handle to angle2BLbText (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of angle2AccelLbText as text
-%        str2double(get(hObject,'String')) returns contents of angle2AccelLbText as a double
+% Hints: get(hObject,'String') returns contents of angle2BLbText as text
+%        str2double(get(hObject,'String')) returns contents of angle2BLbText as a double
     newInput = get(hObject,'String');
     newInput = attemptStrEval(newInput);
     set(hObject,'String', newInput);
 
 % --- Executes during object creation, after setting all properties.
-function angle2AccelLbText_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to angle2AccelLbText (see GCBO)
+function angle2BLbText_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to angle2BLbText (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -1336,20 +1367,20 @@ end
 
 
 
-function angle2AccelUbText_Callback(hObject, eventdata, handles)
-% hObject    handle to angle2AccelUbText (see GCBO)
+function angle2BUbText_Callback(hObject, eventdata, handles)
+% hObject    handle to angle2BUbText (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of angle2AccelUbText as text
-%        str2double(get(hObject,'String')) returns contents of angle2AccelUbText as a double
+% Hints: get(hObject,'String') returns contents of angle2BUbText as text
+%        str2double(get(hObject,'String')) returns contents of angle2BUbText as a double
     newInput = get(hObject,'String');
     newInput = attemptStrEval(newInput);
     set(hObject,'String', newInput);
 
 % --- Executes during object creation, after setting all properties.
-function angle2AccelUbText_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to angle2AccelUbText (see GCBO)
+function angle2BUbText_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to angle2BUbText (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -1369,7 +1400,7 @@ function saveAndCloseButton_Callback(hObject, eventdata, handles)
     errMsg = validateInputs(handles);
 
     if(isempty(errMsg))
-        uiresume(handles.lvd_EditActionSetSteeringModelGUI);
+        uiresume(handles.lvd_EditActionSetLinearTangentSteeringModelGUI);
     else
         msgbox(errMsg,'Errors were found while editing the steering model.','error');
     end
@@ -1380,7 +1411,7 @@ function cancelButton_Callback(hObject, eventdata, handles)
 % hObject    handle to cancelButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-    close(handles.lvd_EditActionSetSteeringModelGUI);
+    close(handles.lvd_EditActionSetLinearTangentSteeringModelGUI);
 
 
 % --- Executes on selection change in steeringModelTypeCombo.
@@ -1435,39 +1466,39 @@ function angleContCheckbox_Callback(hObject, eventdata, handles)
 % Hint: get(hObject,'Value') returns toggle state of angleContCheckbox
     if(get(hObject,'Value'))
         handles.angle1ConstTermText.Enable = 'off';
-        handles.angle2ConstTermText.Enable = 'off';
+        handles.angle2BTermText.Enable = 'off';
         handles.angle3ConstTermText.Enable = 'off';
         
         handles.angle1ConstOptCheckbox.Enable = 'off';
-        handles.angle2ConstOptCheckbox.Enable = 'off';
+        handles.angle2BOptCheckbox.Enable = 'off';
         handles.angle3ConstOptCheckbox.Enable = 'off';
         
         handles.angle1ConstOptCheckbox.Value = 0;
-        handles.angle2ConstOptCheckbox.Value = 0;
+        handles.angle2BOptCheckbox.Value = 0;
         handles.angle3ConstOptCheckbox.Value = 0;
                 
         angle1ConstOptCheckbox_Callback(handles.angle1ConstOptCheckbox, [], handles);
-        angle2ConstOptCheckbox_Callback(handles.angle2ConstOptCheckbox, [], handles);
+        angle2BOptCheckbox_Callback(handles.angle2BOptCheckbox, [], handles);
         angle3ConstOptCheckbox_Callback(handles.angle3ConstOptCheckbox, [], handles);
     else
         handles.angle1ConstTermText.Enable = 'on';
-        handles.angle2ConstTermText.Enable = 'on';
+        handles.angle2BTermText.Enable = 'on';
         handles.angle3ConstTermText.Enable = 'on';
         
         handles.angle1ConstOptCheckbox.Enable = 'on';
-        handles.angle2ConstOptCheckbox.Enable = 'on';
+        handles.angle2BOptCheckbox.Enable = 'on';
         handles.angle3ConstOptCheckbox.Enable = 'on';
 
         angle1ConstOptCheckbox_Callback(handles.angle1ConstOptCheckbox, [], handles);
-        angle2ConstOptCheckbox_Callback(handles.angle2ConstOptCheckbox, [], handles);
+        angle2BOptCheckbox_Callback(handles.angle2BOptCheckbox, [], handles);
         angle3ConstOptCheckbox_Callback(handles.angle3ConstOptCheckbox, [], handles);
     end
     
 
 
-% --- Executes on key press with focus on lvd_EditActionSetSteeringModelGUI or any of its controls.
-function lvd_EditActionSetSteeringModelGUI_WindowKeyPressFcn(hObject, eventdata, handles)
-% hObject    handle to lvd_EditActionSetSteeringModelGUI (see GCBO)
+% --- Executes on key press with focus on lvd_EditActionSetLinearTangentSteeringModelGUI or any of its controls.
+function lvd_EditActionSetLinearTangentSteeringModelGUI_WindowKeyPressFn(hObject, eventdata, handles)
+% hObject    handle to lvd_EditActionSetLinearTangentSteeringModelGUI (see GCBO)
 % eventdata  structure with the following fields (see MATLAB.UI.FIGURE)
 %	Key: name of the key that was pressed, in lower case
 %	Character: character interpretation of the key(s) that was pressed
@@ -1479,12 +1510,12 @@ function lvd_EditActionSetSteeringModelGUI_WindowKeyPressFcn(hObject, eventdata,
         case 'enter'
             saveAndCloseButton_Callback(handles.saveAndCloseButton, [], handles);
         case 'escape'
-            close(handles.lvd_EditActionSetSteeringModelGUI);
+            close(handles.lvd_EditActionSetLinearTangentSteeringModelGUI);
     end
 
     
 function bodyInfo = getSelectedBodyInfo(handles)
-    baseFrame = getappdata(handles.lvd_EditActionSetSteeringModelGUI,'baseFrame');
+    baseFrame = getappdata(handles.lvd_EditActionSetLinearTangentSteeringModelGUI,'baseFrame');
     bodyInfo = baseFrame.getOriginBody();
     
 
@@ -1527,7 +1558,7 @@ function baseFrameCombo_Callback(hObject, eventdata, handles)
             error('Unknown reference frame type: %s', class(refFrameEnum));                
     end
     
-    setappdata(handles.lvd_EditActionSetSteeringModelGUI, 'baseFrame', newFrame);
+    setappdata(handles.lvd_EditActionSetLinearTangentSteeringModelGUI, 'baseFrame', newFrame);
 
 % --- Executes during object creation, after setting all properties.
 function baseFrameCombo_CreateFcn(hObject, eventdata, handles)
@@ -1547,10 +1578,10 @@ function setBaseFrameOptionsButton_Callback(hObject, eventdata, handles)
 % hObject    handle to setBaseFrameOptionsButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-    baseFrame = getappdata(handles.lvd_EditActionSetSteeringModelGUI, 'baseFrame');
+    baseFrame = getappdata(handles.lvd_EditActionSetLinearTangentSteeringModelGUI, 'baseFrame');
     newFrame = baseFrame.editFrameDialogUI();
     
-    setappdata(handles.lvd_EditActionSetSteeringModelGUI, 'baseFrame', newFrame);
+    setappdata(handles.lvd_EditActionSetLinearTangentSteeringModelGUI, 'baseFrame', newFrame);
 
 % --- Executes on selection change in controlFrameCombo.
 function controlFrameCombo_Callback(hObject, eventdata, handles)
@@ -1569,6 +1600,96 @@ function controlFrameCombo_CreateFcn(hObject, eventdata, handles)
 % handles    empty - handles not created until after all CreateFcns called
 
 % Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function angle2BDotTermText_Callback(hObject, eventdata, handles)
+% hObject    handle to angle2BDotTermText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of angle2BDotTermText as text
+%        str2double(get(hObject,'String')) returns contents of angle2BDotTermText as a double
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
+
+% --- Executes during object creation, after setting all properties.
+function angle2BDotTermText_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to angle2BDotTermText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in angle2BDotOptCheckbox.
+function angle2BDotOptCheckbox_Callback(hObject, eventdata, handles)
+% hObject    handle to angle2BDotOptCheckbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of angle2BDotOptCheckbox
+    if(get(hObject,'Value')==1)
+        set(handles.angle2BDotLbText,'Enable','on');
+        set(handles.angle2BDotUbText,'Enable','on');
+    else
+        set(handles.angle2BDotLbText,'Enable','off');
+        set(handles.angle2BDotUbText,'Enable','off');
+    end
+
+
+function angle2BDotLbText_Callback(hObject, eventdata, handles)
+% hObject    handle to angle2BDotLbText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of angle2BDotLbText as text
+%        str2double(get(hObject,'String')) returns contents of angle2BDotLbText as a double
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
+
+% --- Executes during object creation, after setting all properties.
+function angle2BDotLbText_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to angle2BDotLbText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function angle2BDotUbText_Callback(hObject, eventdata, handles)
+% hObject    handle to angle2BDotUbText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of angle2BDotUbText as text
+%        str2double(get(hObject,'String')) returns contents of angle2BDotUbText as a double
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
+
+% --- Executes during object creation, after setting all properties.
+function angle2BDotUbText_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to angle2BDotUbText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
 %       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');

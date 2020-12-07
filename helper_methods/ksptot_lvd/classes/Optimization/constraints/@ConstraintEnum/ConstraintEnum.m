@@ -27,6 +27,7 @@ classdef ConstraintEnum < matlab.mixin.SetGet
         AltitudeApoapsis('Altitude of Apoapsis','GenericMAConstraint','Altitude of Apoapsis')
         AltitudePeriapsis('Altitude of Periapsis','GenericMAConstraint','Altitude of Periapsis')
         SpeedOfSpacecraft('Speed of Spacecraft','GenericMAConstraint','Speed of Spacecraft')
+        FlightPathAngle('Flight Path Angle','GenericMAConstraint','Flight Path Angle');
         Longitude('Longitude (East)','GenericMAConstraint','Longitude (East)')
         Latitude('Latitude (North)','GenericMAConstraint','Latitude (North)')
         LongitudeDriftRate('Longitudinal Drift Rate','GenericMAConstraint','Longitudinal Drift Rate')

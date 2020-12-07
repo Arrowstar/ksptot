@@ -3,8 +3,9 @@ classdef SteerModelTypeEnum < matlab.mixin.SetGet
     %   Detailed explanation goes here
     
     enumeration
-        PolyAngles('Polynomial Euler Angles')
+        PolyAngles('Polynomial Euler Angles');
         QuaterionInterp('Attitude Interpolation');
+        LinearTangentAngles('Linear Tangent Euler Angles')
     end
     
     properties

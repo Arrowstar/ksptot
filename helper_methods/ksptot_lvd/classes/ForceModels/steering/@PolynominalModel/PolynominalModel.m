@@ -1,5 +1,5 @@
 classdef PolynominalModel < matlab.mixin.SetGet
-    %AbstractSteeringModel Summary of this class goes here
+    %PolynominalModel Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
