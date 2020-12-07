@@ -53,82 +53,87 @@ function ma_LvdMainGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 % varargin   command line arguments to ma_LvdMainGUI (see VARARGIN)
 
     % Choose default command line output for ma_LvdMainGUI
-    handles.output = hObject;
-    hObject.Visible = 'off';
+    try
+        handles.output = hObject;
+        hObject.Visible = 'off';
 
-    hManager = uigetmodemanager(hObject);
-    [hManager.WindowListenerHandles.Enabled] = deal(false); 
-    
-    celBodyData = varargin{1};
-    celBodyData = CelestialBodyData(celBodyData);
-    setappdata(hObject,'celBodyData',celBodyData);
-    
-    hKsptotMainGUI = varargin{2};
-    setappdata(hObject,'ksptotMainGUI',hKsptotMainGUI);
+        hManager = uigetmodemanager(hObject);
+        [hManager.WindowListenerHandles.Enabled] = deal(false); 
 
-    setappdata(hObject,'current_save_location','');
-    setappdata(hObject,'application_title','KSP TOT Launch Vehicle Designer');
-    setappdata(hObject,'undoRedo',LVD_UndoRedoStateSet());
-    
-    lvdData = LvdData.getDefaultLvdData(celBodyData);
-	setappdata(handles.ma_LvdMainGUI,'lvdData',lvdData);
+        celBodyData = varargin{1};
+        celBodyData = CelestialBodyData(celBodyData);
+        setappdata(hObject,'celBodyData',celBodyData);
 
-    output_text_max_line_length = length(getMA_HR());
-    setappdata(hObject,'output_text_max_line_length',output_text_max_line_length);
-    writeOutput = @(str,type) writeToMAOutput(handles.outputText, str, type, output_text_max_line_length);
-    setappdata(hObject,'write_to_output_func',writeOutput);
-    
-    initializeOutputWindowText(handles, handles.outputText);
-    view(handles.dispAxes,3);
-    
-    hRot3D = rotate3d(handles.ma_LvdMainGUI);
-    hRot3D.ActionPostCallback = @(src,evt) recordFinalAxesViewAfterRotation(src,evt, handles); 
-    
-    hZoom = zoom(handles.ma_LvdMainGUI);
-    hZoom.ActionPostCallback = @(src,evt) recordFinalAxesPanZoomAfterRotation(src,evt, handles);
-    
-    hPan = pan(handles.ma_LvdMainGUI);
-    hPan.ActionPostCallback = @(src,evt) recordFinalAxesPanZoomAfterRotation(src,evt, handles);
-    
-    setDeleteButtonEnable(lvdData, handles);
-    setNonSeqDeleteButtonEnable(lvdData, handles);
-    
-    jDispAxesTimeSlider = javaObjectEDT('javax.swing.JSlider');
-    jDispAxesTimeSlider.setSnapToTicks(false);
-    jDispAxesTimeSlider.setMinimum(0);
-    jDispAxesTimeSlider.setMaximum(1);
-    jDispAxesTimeSlider.setValue(0);
-    sliderPnlPos = handles.timeSliderPanel.Position;
-    javacomponent(jDispAxesTimeSlider,[1, 1, sliderPnlPos(3), sliderPnlPos(4)], handles.timeSliderPanel);
-    handles.jDispAxesTimeSlider = jDispAxesTimeSlider;
-    jDispAxesTimeSlider.setToolTipText('Adjust slider to view the location of vehicles and selected celestial bodies at a given time.');
-    
-    hDispAxesTimeSlider = handle(jDispAxesTimeSlider, 'CallbackProperties');
-    handles.hDispAxesTimeSlider = hDispAxesTimeSlider;
-    timeSliderCb = @(src,evt) timeSliderStateChanged(src,evt, lvdData, handles);
-    set(hDispAxesTimeSlider, 'StateChangedCallback', timeSliderCb); 
-%     timeSliderKeyPressCb = @(src,evt) timeSliderKeyPressCallback(src,evt, handles);
-%     set(hDispAxesTimeSlider, 'KeyPressedCallback', timeSliderKeyPressCb); 
-    
-    setappdata(handles.hDispAxesTimeSlider,'lastTime',NaN);
-    
-    gravSystemUpdateCbFh = @(src,evt) gravSystemUpdateCallback(src,evt, handles);
-    appOptions = getappdata(hKsptotMainGUI,'appOptions');
-    addlistener(appOptions.ksptot,'GravParamTypeUpdated',gravSystemUpdateCbFh);
-    
-    rotate3d(handles.dispAxes,'on');
-    
-    enableDisableArrowButtons(lvdData, handles);
-    
-    runScript(handles, lvdData, 1);
-    lvd_processData(handles);
+        hKsptotMainGUI = varargin{2};
+        setappdata(hObject,'ksptotMainGUI',hKsptotMainGUI);
 
-    % Update handles structure
-    guidata(hObject, handles);
-    hObject.Visible = 'on';
+        setappdata(hObject,'current_save_location','');
+        setappdata(hObject,'application_title','KSP TOT Launch Vehicle Designer');
+        setappdata(hObject,'undoRedo',LVD_UndoRedoStateSet());
 
-    % UIWAIT makes ma_LvdMainGUI wait for user response (see UIRESUME)
-    % uiwait(handles.ma_LvdMainGUI);
+        lvdData = LvdData.getDefaultLvdData(celBodyData);
+        setappdata(handles.ma_LvdMainGUI,'lvdData',lvdData);
+
+        output_text_max_line_length = length(getMA_HR());
+        setappdata(hObject,'output_text_max_line_length',output_text_max_line_length);
+        writeOutput = @(str,type) writeToMAOutput(handles.outputText, str, type, output_text_max_line_length);
+        setappdata(hObject,'write_to_output_func',writeOutput);
+
+        jDispAxesTimeSlider = javaObjectEDT('javax.swing.JSlider');
+        jDispAxesTimeSlider.setSnapToTicks(false);
+        jDispAxesTimeSlider.setMinimum(0);
+        jDispAxesTimeSlider.setMaximum(1);
+        jDispAxesTimeSlider.setValue(0);
+        sliderPnlPos = handles.timeSliderPanel.Position;
+        javacomponent(jDispAxesTimeSlider,[1, 1, sliderPnlPos(3), sliderPnlPos(4)], handles.timeSliderPanel);
+        handles.jDispAxesTimeSlider = jDispAxesTimeSlider;
+        jDispAxesTimeSlider.setToolTipText('Adjust slider to view the location of vehicles and selected celestial bodies at a given time.');
+
+        hDispAxesTimeSlider = handle(jDispAxesTimeSlider, 'CallbackProperties');
+        handles.hDispAxesTimeSlider = hDispAxesTimeSlider;
+        timeSliderCb = @(src,evt) timeSliderStateChanged(src,evt, lvdData, handles);
+        set(hDispAxesTimeSlider, 'StateChangedCallback', timeSliderCb); 
+
+        setappdata(handles.hDispAxesTimeSlider,'lastTime',NaN);
+        
+        initializeOutputWindowText(handles, handles.outputText);
+        view(handles.dispAxes,3);
+
+        hRot3D = rotate3d(handles.ma_LvdMainGUI);
+        hRot3D.ActionPostCallback = @(src,evt) recordFinalAxesViewAfterRotation(src,evt, handles); 
+
+        hZoom = zoom(handles.ma_LvdMainGUI);
+        hZoom.ActionPostCallback = @(src,evt) recordFinalAxesPanZoomAfterRotation(src,evt, handles);
+
+        hPan = pan(handles.ma_LvdMainGUI);
+        hPan.ActionPostCallback = @(src,evt) recordFinalAxesPanZoomAfterRotation(src,evt, handles);
+
+        setDeleteButtonEnable(lvdData, handles);
+        setNonSeqDeleteButtonEnable(lvdData, handles);
+
+        gravSystemUpdateCbFh = @(src,evt) gravSystemUpdateCallback(src,evt, handles);
+        appOptions = getappdata(hKsptotMainGUI,'appOptions');
+        addlistener(appOptions.ksptot,'GravParamTypeUpdated',gravSystemUpdateCbFh);
+
+        rotate3d(handles.dispAxes,'on');
+
+        enableDisableArrowButtons(lvdData, handles);
+
+        runScript(handles, lvdData, 1);
+        lvd_processData(handles);
+
+        % Update handles structure
+        guidata(hObject, handles);
+        hObject.Visible = 'on';
+
+        % UIWAIT makes ma_LvdMainGUI wait for user response (see UIRESUME)
+        % uiwait(handles.ma_LvdMainGUI);
+    catch ME
+        beep;
+        errordlg('An error occured while opening Launch Vehicle Designer.  Please see the ksptot.log for more details.','Error');
+        disp(ME.message);
+        close(handles.ma_LvdMainGUI);
+    end
   
 function initializeOutputWindowText(handles, hOutputText) 
     write_to_output_func = getappdata(handles.ma_LvdMainGUI,'write_to_output_func');
@@ -1189,6 +1194,7 @@ function startParallelPool(writeOutput, numWorkers)
     p = gcp('nocreate');
     if(isempty(p) || p.NumWorkers ~= numWorkers)       
         try
+            beep off;
             h = msgbox('Attempting to start parallel computing workers.  Please wait...','modal');
             
             if(not(isempty(p)))
@@ -1201,12 +1207,14 @@ function startParallelPool(writeOutput, numWorkers)
                 close(h);
             end
             writeOutput('Parallel optimization mode enabled.','append');
+            beep on;
         catch ME 
             if(ishandle(h))
                 close(h);
             end
             msgbox(sprintf('Parallel mode start failed.  Optimization will run in serial.  Message:\n\n%s',ME.message));
             disp(ME.message);
+            beep on;
         end
     else
         writeOutput('Parallel optimization mode enabled.','append');

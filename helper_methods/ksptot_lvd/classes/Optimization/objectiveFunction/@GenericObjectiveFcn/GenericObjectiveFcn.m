@@ -26,7 +26,10 @@ classdef GenericObjectiveFcn < AbstractObjectiveFcn
         
         function set.targetBodyInfo(obj, newValue)
             obj.targetBodyInfo = newValue;
-            obj.fcn.refBodyInfo = newValue; %#ok<MCSUP>
+            
+            if(not(isempty(obj.fcn))) %#ok<MCSUP>
+                obj.fcn.refBodyInfo = newValue; %#ok<MCSUP>
+            end
         end
         
         function listBoxStr = getListBoxStr(obj)
