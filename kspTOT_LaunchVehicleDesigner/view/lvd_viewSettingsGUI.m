@@ -22,7 +22,7 @@ function varargout = lvd_viewSettingsGUI(varargin)
     
     % Edit the above text to modify the response to help lvd_viewSettingsGUI
     
-    % Last Modified by GUIDE v2.5 28-Aug-2020 13:35:26
+    % Last Modified by GUIDE v2.5 10-Dec-2020 17:54:43
     
     % Begin initialization code - DO NOT EDIT
     gui_Singleton = 1;
@@ -156,6 +156,8 @@ function updateGuiForProfile(profile, handles)
     handles.meshEdgeAlphaText.String = fullAccNum2Str(100*profile.meshEdgeAlpha);
     
     handles.updateViewAxesCheckbox.Value = double(profile.updateViewAxesLimits);
+    
+    handles.showCbAtmo.Value = double(profile.showAtmosphere);
     
     setDeleteButtonEnable(handles);
     
@@ -1137,3 +1139,14 @@ function updateViewAxesCheckbox_Callback(hObject, eventdata, handles)
     profile = getSelectedProfile(handles);
     
     profile.updateViewAxesLimits = logical(get(hObject,'Value'));
+
+
+% --- Executes on button press in showCbAtmo.
+function showCbAtmo_Callback(hObject, eventdata, handles)
+% hObject    handle to showCbAtmo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of showCbAtmo
+    profile = getSelectedProfile(handles);
+    profile.showAtmosphere = logical(get(hObject,'Value'));

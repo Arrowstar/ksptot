@@ -226,7 +226,15 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             end
                                     
             hCBodySurf = ma_initOrbPlot(hFig, dAxes, viewCentralBody);
-            hCBodySurf.EdgeAlpha = viewProfile.meshEdgeAlpha;       
+            hCBodySurf.EdgeAlpha = viewProfile.meshEdgeAlpha;      
+            
+            if(viewProfile.showAtmosphere && viewCentralBody.atmohgt > 0)
+                hold(dAxes,'on');
+                atmoRadius = viewCentralBody.radius + viewCentralBody.atmohgt;
+                [X,Y,Z] = sphere(50);
+                hCBodySurf = surf(dAxes, atmoRadius*X,atmoRadius*Y,atmoRadius*Z, 'BackFaceLighting','lit', 'FaceLighting','gouraud', 'FaceColor',[223 223 223]/255, 'FaceAlpha',0.2, 'EdgeLighting','gouraud', 'LineWidth',0.1, 'EdgeColor','none');
+                hold(dAxes,'off');
+            end
             
             eventsList = unique(eventsList);
             minEventNum = min(eventsList);

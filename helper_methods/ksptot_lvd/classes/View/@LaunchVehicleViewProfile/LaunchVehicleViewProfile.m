@@ -50,6 +50,9 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         showLighting(1,1) logical = false;
         showSunVect(1,1) logical = false;
         
+        %show atmosphere
+        showAtmosphere(1,1) logical = true;
+        
         %ground objects
         groundObjsToPlot(1,:) LaunchVehicleGroundObject
         showGndTracks(1,1) logical = true;
