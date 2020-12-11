@@ -269,6 +269,9 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             dAxes.GridAlpha = viewProfile.gridTransparency;
             axis(dAxes,'equal');
             
+            xlabel(dAxes, '');
+            ylabel(dAxes, '');
+            
             set(dAxes,'XTickLabel',[]);
             set(dAxes,'YTickLabel',[]);
             set(dAxes,'ZTickLabel',[]);
@@ -346,10 +349,7 @@ function [childrenHGs] = plotSubStateLog(subStateLog, prevSubStateLog, lvdData, 
             error('Unknown event plotting method enum: %s', plotMethodEnum.name);
     end
 
-    plot3(dAxes, x, y, z, 'Color', plotLineColor, 'LineStyle', plotLineStyle, 'LineWidth',plotLineWidth);
-    xlabel('');
-    ylabel('');
-    
+    plot3(dAxes, x, y, z, 'Color', plotLineColor, 'LineStyle', plotLineStyle, 'LineWidth',plotLineWidth);   
     childrenHGs = cell(0,4);
 end
 

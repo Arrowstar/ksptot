@@ -21,7 +21,7 @@ classdef LaunchVehicleViewProfileSunLighting < matlab.mixin.SetGet
                 obj.hLight.Visible = 'off';
             end
             
-            obj.hSunVectArrow = quiver3(0,0,0,1,1,1, 'Color',[204,204,0]/255, 'LineWidth',2);
+            obj.hSunVectArrow = quiver3(dAxes, 0,0,0,1,1,1, 'Color',[204,204,0]/255, 'LineWidth',2);
             if(showSunVect)
                 obj.hSunVectArrow.Visible = 'on';
             else
