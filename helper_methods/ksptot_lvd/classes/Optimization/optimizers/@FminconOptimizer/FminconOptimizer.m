@@ -27,6 +27,8 @@ classdef FminconOptimizer < AbstractGradientOptimizer
             nonlcon = @(x) lvdOpt.constraints.evalConstraints(x, true, evtToStartScriptExecAt, true, []);
                             
             opts = obj.options.getOptionsForOptimizer(typicalX);
+%             optimalStepSizes = CustomFiniteDiffsCalculationMethod.determineOptimalStepSizes(@(x) CustomFiniteDiffsCalculationMethod.combinedConstrFun(x, lvdOpt.lvdData),x0All);
+%             opts.FiniteDifferenceStepSize = optimalStepSizes;
             
             if(lvdOpt.gradAlgo == LvdOptimizerGradientCalculationAlgoEnum.BuiltIn)
                 objFunToPass = objFuncWrapper;

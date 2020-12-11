@@ -48,12 +48,20 @@ classdef CustomFiniteDiffsCalculationMethod < AbstractGradientCalculationMethod
                 sparsity = [];
             end
             
+            if(isempty(fAtX0))
+                fAtX0 = fun(x0);
+            end
+            
             g = computeGradAtPoint(fun, x0, fAtX0, obj.h, obj.diffType, double(obj.numPts), sparsity, useParallel);
             g = g(:)';
         end
         
         function J = computeJacobian(obj, cFun, x0, cAtX0, useParallel)
             sparsity = [];
+            
+            if(isempty(cAtX0))
+                cAtX0 = cFun(x0);
+            end
             
             J = computeGradAtPoint(cFun, x0, cAtX0, obj.h, obj.diffType, double(obj.numPts), sparsity, useParallel);
             J = J';
@@ -69,6 +77,52 @@ classdef CustomFiniteDiffsCalculationMethod < AbstractGradientCalculationMethod
             evtToStartScriptExecAt = lvdData.script.getEventForInd(1);
             [c, ceq] = lvdData.optimizer.constraints.evalConstraints(x, true, evtToStartScriptExecAt, false, []);
             cOut = [c(:);ceq(:)];
+        end
+        
+        function optimalStepSizes = determineOptimalStepSizes(fun, x0)
+            fAtX0 = fun(x0);
+            
+            hValsToTest = 10.^[-14:-2]; %#ok<NBRAK>
+%             hValsToTest = 2.^[-40:2:-6];
+            
+            derivs = [];
+            q = parallel.pool.DataQueue;
+            q.afterEach(@(x) disp(x));
+            parfor(i=1:length(hValsToTest))
+                fd = CustomFiniteDiffsCalculationMethod();
+                fd.h = hValsToTest(i);
+
+                if(numel(fAtX0) > 1)
+                    g = fd.computeJacobian(fun, x0, fAtX0, false);
+                    derivs(:,i) = g(:);
+                else
+                    g = fd.computeGrad(fun, x0, fAtX0, false); 
+                    derivs(:,i) = g(:);
+                end
+                
+                q.send(hValsToTest(i)); %#ok<PFBNS>
+            end
+            
+            rawBestHStep = [];
+            for(i=1:size(derivs,1))
+                derivRow = derivs(i,:);
+                
+                hValLogDiff = diff(log(hValsToTest));
+                derivValueDiffs = abs(diff(derivRow));
+                hStepDeriv = derivValueDiffs ./ hValLogDiff;
+                [~,I] = min(hStepDeriv);
+                rawBestHStep(i) = hValsToTest(I); %#ok<AGROW>
+                
+%                 hA = axes(figure()); %#ok<LAXES>
+%                 hold on
+%     %             semilogx(hA, hValsToTest, derivRow, 'o-');
+%                 semilogx(hA, hValsToTest(1:end-1), hStepDeriv, 'o-');
+%                 hold off;
+%                 hA.XScale = 'log';
+            end
+            
+            reshapedBestHStep = reshape(rawBestHStep,[numel(fAtX0),numel(x0)]);
+            optimalStepSizes = max(reshapedBestHStep,[],1);
         end
     end
 end

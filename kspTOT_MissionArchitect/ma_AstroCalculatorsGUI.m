@@ -22,7 +22,7 @@ function varargout = ma_AstroCalculatorsGUI(varargin)
 
 % Edit the above text to modify the response to help ma_AstroCalulatorGUI
 
-% Last Modified by GUIDE v2.5 06-Jul-2015 18:15:46
+% Last Modified by GUIDE v2.5 11-Dec-2020 13:26:37
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -545,6 +545,265 @@ function longFromTrueAnomText_Callback(hObject, eventdata, handles)
 % --- Executes during object creation, after setting all properties.
 function longFromTrueAnomText_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to longFromTrueAnomText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in computeSmaEccTruButton.
+function computeSmaEccTruButton_Callback(hObject, eventdata, handles)
+% hObject    handle to computeSmaEccTruButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    errMsg = {};
+
+    radius = str2double(get(handles.rSmaEccTruText,'String'));
+    enteredStr = get(handles.rSmaEccTruText,'String');
+    numberName = 'Spacecraft Radius';
+    lb = 0.001;
+    ub = Inf;
+    isInt = false;
+    errMsg = validateNumber(radius, numberName, lb, ub, isInt, errMsg, enteredStr);
+    
+    velocity = str2double(get(handles.vSmaEccTruText,'String'));
+    enteredStr = get(handles.vSmaEccTruText,'String');
+    numberName = 'Spacecraft Velocity';
+    lb = 0.001;
+    ub = Inf;
+    isInt = false;
+    errMsg = validateNumber(velocity, numberName, lb, ub, isInt, errMsg, enteredStr);
+    
+    fpa = str2double(get(handles.fpaSmaEccTruText,'String'));
+    enteredStr = get(handles.fpaSmaEccTruText,'String');
+    numberName = 'True Anomay';
+    lb = -90;
+    ub = 90;
+    isInt = false;
+    errMsg = validateNumber(fpa, numberName, lb, ub, isInt, errMsg, enteredStr);
+    
+    if(isempty(errMsg))
+        celBodyData = getappdata(handles.ma_AstroCalulatorGUI,'celBodyData');
+        contents = cellstr(get(handles.centralBodyCombo,'String'));
+        sel = strtrim(lower(contents{get(handles.centralBodyCombo,'Value')}));
+        bodyInfo = celBodyData.(sel);
+        
+        fpa = deg2rad(fpa);
+        
+        [sma, ecc, tru] = computeSmaEccTruFromRVFpa(radius, velocity, fpa, bodyInfo.gm);
+        
+        handles.smaRVPathText.String = fullAccNum2Str(sma);
+        handles.eccRVPathText.String = fullAccNum2Str(ecc);
+        handles.truRVPathText.String = fullAccNum2Str(rad2deg(tru));
+    else
+        msgbox(errMsg,'Errors were found computing SMA/Ecc/True Anomaly.','error');
+    end
+
+
+
+
+% --- Executes on button press in computeRVFpaButton.
+function computeRVFpaButton_Callback(hObject, eventdata, handles)
+% hObject    handle to computeRVFpaButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    errMsg = {};
+
+    ecc = str2double(get(handles.eccRVPathText,'String'));
+    enteredStr = get(handles.eccRVPathText,'String');
+    numberName = 'Eccentricity';
+    lb = 0;
+    ub = Inf;
+    isInt = false;
+    errMsg = validateNumber(ecc, numberName, lb, ub, isInt, errMsg, enteredStr);
+    
+    if(ecc < 1)
+        sma = str2double(get(handles.smaRVPathText,'String'));
+        enteredStr = get(handles.smaRVPathText,'String');
+        numberName = 'Semi-major Axis';
+        lb = 0.001;
+        ub = Inf;
+        isInt = false;
+        errMsg = validateNumber(sma, numberName, lb, ub, isInt, errMsg, enteredStr);
+    else
+        sma = str2double(get(handles.smaRVPathText,'String'));
+        enteredStr = get(handles.smaRVPathText,'String');
+        numberName = 'Semi-major Axis';
+        lb = -Inf;
+        ub = -0.001;
+        isInt = false;
+        errMsg = validateNumber(sma, numberName, lb, ub, isInt, errMsg, enteredStr);
+    end
+    
+    tru = str2double(get(handles.truRVPathText,'String'));
+    enteredStr = get(handles.truRVPathText,'String');
+    numberName = 'True Anomay';
+    lb = -360;
+    ub = 360;
+    isInt = false;
+    errMsg = validateNumber(tru, numberName, lb, ub, isInt, errMsg, enteredStr);
+    
+    if(isempty(errMsg))
+        celBodyData = getappdata(handles.ma_AstroCalulatorGUI,'celBodyData');
+        contents = cellstr(get(handles.centralBodyCombo,'String'));
+        sel = strtrim(lower(contents{get(handles.centralBodyCombo,'Value')}));
+        bodyInfo = celBodyData.(sel);
+        
+        tru = deg2rad(tru);
+        
+        [radius, velocity, fpa] = computeRVFpaFromSmaEccTru(sma, ecc, tru, bodyInfo.gm);
+        
+        handles.rSmaEccTruText.String = fullAccNum2Str(radius);
+        handles.vSmaEccTruText.String = fullAccNum2Str(velocity);
+        handles.fpaSmaEccTruText.String = fullAccNum2Str(rad2deg(fpa));
+    else
+        msgbox(errMsg,'Errors were found computing R/V/FPA.','error');
+    end
+
+
+function smaRVPathText_Callback(hObject, eventdata, handles)
+% hObject    handle to smaRVPathText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of smaRVPathText as text
+%        str2double(get(hObject,'String')) returns contents of smaRVPathText as a double
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
+
+% --- Executes during object creation, after setting all properties.
+function smaRVPathText_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to smaRVPathText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function eccRVPathText_Callback(hObject, eventdata, handles)
+% hObject    handle to eccRVPathText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of eccRVPathText as text
+%        str2double(get(hObject,'String')) returns contents of eccRVPathText as a double
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
+
+% --- Executes during object creation, after setting all properties.
+function eccRVPathText_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to eccRVPathText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function truRVPathText_Callback(hObject, eventdata, handles)
+% hObject    handle to truRVPathText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of truRVPathText as text
+%        str2double(get(hObject,'String')) returns contents of truRVPathText as a double
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
+
+% --- Executes during object creation, after setting all properties.
+function truRVPathText_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to truRVPathText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function rSmaEccTruText_Callback(hObject, eventdata, handles)
+% hObject    handle to rSmaEccTruText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of rSmaEccTruText as text
+%        str2double(get(hObject,'String')) returns contents of rSmaEccTruText as a double
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
+
+% --- Executes during object creation, after setting all properties.
+function rSmaEccTruText_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to rSmaEccTruText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function vSmaEccTruText_Callback(hObject, eventdata, handles)
+% hObject    handle to vSmaEccTruText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of vSmaEccTruText as text
+%        str2double(get(hObject,'String')) returns contents of vSmaEccTruText as a double
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
+
+% --- Executes during object creation, after setting all properties.
+function vSmaEccTruText_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to vSmaEccTruText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function fpaSmaEccTruText_Callback(hObject, eventdata, handles)
+% hObject    handle to fpaSmaEccTruText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of fpaSmaEccTruText as text
+%        str2double(get(hObject,'String')) returns contents of fpaSmaEccTruText as a double
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
+
+% --- Executes during object creation, after setting all properties.
+function fpaSmaEccTruText_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to fpaSmaEccTruText (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 

@@ -37,7 +37,8 @@ MKL10_3.mkl = {'C:\Program Files\Intel\ComposerXE-2011\mkl\','C:\Program Files (
 MKL10_3.ver = '10.3';
 
 %Add any new structures to below
-MKLLIB = {MKL11_3,MKL11_2,MKL11_1,MKL11,MKL10_3_1,MKL10_3};
+% MKLLIB = {MKL11_3,MKL11_2,MKL11_1,MKL11,MKL10_3_1,MKL10_3};
+MKLLIB = {MKL11_2};
 
 
 %DO NOT MODIFY BELOW HERE
