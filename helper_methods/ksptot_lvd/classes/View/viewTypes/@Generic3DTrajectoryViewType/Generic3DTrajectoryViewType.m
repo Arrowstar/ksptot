@@ -225,9 +225,19 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                 hold(dAxes,'off');
             end
                                     
-            hCBodySurf = ma_initOrbPlot(hFig, dAxes, viewCentralBody);
-            hCBodySurf.EdgeAlpha = viewProfile.meshEdgeAlpha;      
-            
+%             hCBodySurf = ma_initOrbPlot(hFig, dAxes, viewCentralBody);
+            %plot central body
+            hold(dAxes,'on');
+            dRad = viewCentralBody.radius;
+            [X,Y,Z] = sphere(50);
+            CData = getCDataForSphereWithColormap(Z, viewCentralBody.bodycolor);
+            mColor = colorFromColorMap(viewCentralBody.bodycolor);
+            plot3(dAxes, 0, 0, 0,'Marker','o','MarkerEdgeColor',mColor,'MarkerFaceColor',mColor,'MarkerSize',3);
+            hCBodySurf = surf(dAxes, dRad*X,dRad*Y,dRad*Z, 'CData',CData, 'BackFaceLighting','lit', 'FaceLighting','gouraud', 'EdgeLighting','gouraud', 'LineWidth',0.1, 'EdgeAlpha',0.1);
+            material(hCBodySurf,'dull');
+            hCBodySurf.EdgeAlpha = viewProfile.meshEdgeAlpha;  
+            hold(dAxes,'off');
+  
             if(viewProfile.showAtmosphere && viewCentralBody.atmohgt > 0)
                 hold(dAxes,'on');
                 atmoRadius = viewCentralBody.radius + viewCentralBody.atmohgt;
@@ -281,6 +291,8 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                     dAxes.YLim = viewProfile.viewZoomAxLims(2,:);
                     dAxes.ZLim = viewProfile.viewZoomAxLims(3,:);
                 end
+            else
+                view(dAxes, 3);
             end
             
             if(dAxes.Parent == hFig)
