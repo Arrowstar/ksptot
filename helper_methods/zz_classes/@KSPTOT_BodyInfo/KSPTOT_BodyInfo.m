@@ -205,7 +205,15 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
         
         function bColorRGB = getBodyRGB(obj)
             bColor = obj.bodycolor;
-            cmap = colormap(bColor);
+            
+%             cmap = colormap(bColor);
+            try
+                cmap = feval(bColor);
+            catch
+                cmap = feval('gray');
+                warning('Could not find a colormap for body color "%s".  Defaulting to grey.', bColor);
+            end
+            
             midRow = round(size(cmap,1)/2);
             bColorRGB = cmap(midRow,:);
         end
