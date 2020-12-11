@@ -295,7 +295,7 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                     dAxes.ZLim = viewProfile.viewZoomAxLims(3,:);
                 end
             else
-                view(dAxes, 3);
+                view(dAxes,viewProfile.viewAzEl);
             end
             
             if(dAxes.Parent == hFig)
