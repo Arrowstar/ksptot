@@ -19,11 +19,11 @@ classdef FminconOptions < matlab.mixin.SetGet
         numWorkers(1,1) double = feature('numCores');
         
         %Finite Differences
-        finDiffStepSize(1,1) double = 1E-8;
+        finDiffStepSize(1,1) double = 0.0001;
         finDiffType FminconFiniteDiffTypeEnum = FminconFiniteDiffTypeEnum.TwoPtForwardDiff;
         
         %TypicalX
-        typicalXType OptimizerTypicalXEnum = OptimizerTypicalXEnum.InitialValues;
+        typicalXType OptimizerTypicalXEnum = OptimizerTypicalXEnum.Ones;
         
         %Interior-Point options
         hessianApproxAlg FminconHessApproxAlgEnum = FminconHessApproxAlgEnum.BFGS;
