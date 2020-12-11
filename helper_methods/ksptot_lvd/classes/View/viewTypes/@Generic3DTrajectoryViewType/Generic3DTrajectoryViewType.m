@@ -139,7 +139,7 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                 end
 
                 if(size(subStateLogs{i},1)>1)
-                    [childrenHGs] = plotSubStateLog(subStateLogs{i}, prevSubStateLog, lvdData, celBodyData, dAxes);
+                    [childrenHGs] = plotSubStateLog(subStateLogs{i}, prevSubStateLog, lvdData, dAxes);
                     
                     minTime = min([minTime, min(subStateLogs{i}(:,1))]);
                     maxTime = max([maxTime, max(subStateLogs{i}(:,1))]);
@@ -314,7 +314,7 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
     end
 end
 
-function [childrenHGs] = plotSubStateLog(subStateLog, prevSubStateLog, lvdData, celBodyData, dAxes)    
+function [childrenHGs] = plotSubStateLog(subStateLog, prevSubStateLog, lvdData, dAxes)    
     if(isempty(subStateLog))
         childrenHGs = [];
         return;
