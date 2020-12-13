@@ -1,4 +1,4 @@
-classdef GenericLinearTangentSteeringModel < AbstractAnglePolySteeringModel
+classdef GenericLinearTangentSteeringModel < AbstractSteeringModel
     %GenericLinearTangentSteeringModel Summary of this class goes here
     %   Detailed explanation goes here
     

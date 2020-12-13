@@ -15,18 +15,7 @@ classdef SetThrottleModelAction < AbstractEventAction
             if(nargin > 0)
                 obj.throttleModel = throttleModel;
             else
-                [throttleModelNameStrs, enums] = ThrottleModelEnum.getThrottleModelTypeNameStrs();
-                [dialogInd,tf] = listdlg('ListString',throttleModelNameStrs, ...
-                                         'Name','Select Throttle Model', ...
-                                         'PromptString',{'Select throttle model type:'}, ...
-                                         'SelectionMode','single', ...
-                                         'ListSize',[300 300]);
-                if(tf)
-                    m = enums(dialogInd);
-                    obj.throttleModel = eval(sprintf('%s.%s',m.classNameStr,'getDefaultThrottleModel()'));
-                else
-                    obj.throttleModel = ThrottlePolyModel.getDefaultThrottleModel();
-                end
+                obj.throttleModel = promptForThrottleModelType([]);
             end
             
             obj.id = rand();

@@ -15,31 +15,7 @@ classdef SetSteeringModelAction < AbstractEventAction
             if(nargin > 0)
                 obj.steeringModel = steeringModel;
             else
-                listboxStr = SteerModelTypeEnum.getListBoxStr();
-                [Selection,ok] = listdlgARH('ListString',listboxStr, ...
-                                         'Name','Select Steering Model Type', ...
-                                         'PromptString',{'Select steering model type:'}, ...
-                                         'SelectionMode','single', ...
-                                         'ListSize',[300 300]);
-                if(ok)
-                    enum = SteerModelTypeEnum.getEnumForListboxStr(listboxStr{Selection});
-                    
-                    switch enum
-                        case SteerModelTypeEnum.PolyAngles
-                            obj.steeringModel = RollPitchYawPolySteeringModel.getDefaultSteeringModel();
-                            
-                        case SteerModelTypeEnum.QuaterionInterp
-                            obj.steeringModel = GenericQuatInterpSteeringModel.getDefaultSteeringModel();
-                            
-                        case SteerModelTypeEnum.LinearTangentAngles
-                            obj.steeringModel = GenericLinearTangentSteeringModel.getDefaultSteeringModel();
-                            
-                        otherwise
-                            error('Unknown steering model type: %s', enum.name);
-                    end
-                else
-                    obj.steeringModel = RollPitchYawPolySteeringModel.getDefaultSteeringModel();
-                end  
+                obj.steeringModel = promptForSteeringModelType([]);
             end
             
             obj.id = rand();

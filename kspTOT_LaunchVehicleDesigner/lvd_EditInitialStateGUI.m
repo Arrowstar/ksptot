@@ -1342,8 +1342,17 @@ function editSteeringButton_Callback(hObject, eventdata, handles)
     initStateModel = lvdData.initStateModel;
     lv = lvdData.launchVehicle;
     
-    [~,steeringModel] = initStateModel.steeringModel.openEditSteeringModelUI(lv);
-    initStateModel.steeringModel = steeringModel;
+    steeringModel = promptForSteeringModelType(initStateModel.steeringModel.getSteeringModelTypeEnum());
+    
+    if(initStateModel.steeringModel.getSteeringModelTypeEnum() == steeringModel.getSteeringModelTypeEnum())
+        [addActionTf,steeringModel] = initStateModel.steeringModel.openEditSteeringModelUI(lv);
+    else
+        [addActionTf,steeringModel] = steeringModel.openEditSteeringModelUI(lv);
+    end
+    
+    if(addActionTf)
+        initStateModel.steeringModel = steeringModel;
+    end
 
 % --- Executes on button press in editThrottleButton.
 function editThrottleButton_Callback(hObject, eventdata, handles)
@@ -1353,8 +1362,18 @@ function editThrottleButton_Callback(hObject, eventdata, handles)
     lvdData = getappdata(handles.lvd_EditInitialStateGUI,'lvdData');
     initStateModel = lvdData.initStateModel;
     lv = lvdData.launchVehicle;
+    
+    throttleModel = promptForThrottleModelType(initStateModel.throttleModel.getThrottleModelTypeEnum());
+    
+    if(initStateModel.throttleModel.getThrottleModelTypeEnum() == throttleModel.getThrottleModelTypeEnum())
+        [addActionTf,throttleModel] = initStateModel.throttleModel.openEditThrottleModelUI(lv);
+    else
+        [addActionTf,throttleModel] = throttleModel.openEditThrottleModelUI(lv);
+    end
 
-    initStateModel.throttleModel.openEditThrottleModelUI(lv);
+    if(addActionTf)
+        initStateModel.throttleModel = throttleModel;
+    end
 
 % --- Executes on button press in saveAndCloseButton.
 function saveAndCloseButton_Callback(hObject, eventdata, handles)

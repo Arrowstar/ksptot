@@ -20,14 +20,7 @@ classdef(Abstract) AbstractAnglePolySteeringModel < AbstractSteeringModel
         function enum = getSteeringModelTypeEnum(~)
             enum = SteerModelTypeEnum.PolyAngles;
         end
-        
-        function [addActionTf, steeringModel] = openEditSteeringModelUI(obj, lv)
-            fakeAction = SetSteeringModelAction(obj);
-            
-            addActionTf = lvd_EditActionSetSteeringModelGUI(fakeAction, lv);
-            steeringModel = fakeAction.steeringModel;
-        end
-        
+                
         function tf = usesRefFrame(obj)
             tf = false;
         end

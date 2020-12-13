@@ -30,6 +30,10 @@ classdef T2WThrottleModel < AbstractThrottleModel
                 throttle = 1.0;
             end
         end
+        
+        function enum = getThrottleModelTypeEnum(~)
+            enum = ThrottleModelEnum.T2WModel;
+        end
 
         function initThrottleModel(obj, initialStateLogEntry)            
             if(obj.throttleContinuity)
@@ -62,11 +66,8 @@ classdef T2WThrottleModel < AbstractThrottleModel
             optVar = obj.optVar;
         end
         
-        function addActionTf = openEditThrottleModelUI(obj, lv)
-            fakeAction = struct();
-            fakeAction.throttleModel = obj;
-            
-            addActionTf = lvd_EditActionSetThrottleModelGUI(fakeAction, lv);
+        function setT0(~,~)
+            %dummy, do nothing
         end
     end
     

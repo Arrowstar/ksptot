@@ -41,5 +41,11 @@ classdef ThrottleModelEnum < matlab.mixin.SetGet
                 end
             end
         end
+        
+        function [enum, ind] = getEnumForListboxStr(nameStr)
+            m = enumeration('ThrottleModelEnum');
+            ind = find(ismember({m.nameStr},nameStr),1,'first');
+            enum = m(ind);
+        end
     end
 end

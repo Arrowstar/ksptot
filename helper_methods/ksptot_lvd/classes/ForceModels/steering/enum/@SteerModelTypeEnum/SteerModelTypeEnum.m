@@ -19,10 +19,11 @@ classdef SteerModelTypeEnum < matlab.mixin.SetGet
     end
     
     methods(Static)
-        function listBoxStr = getListBoxStr()
+        function [listBoxStr, enums] = getListBoxStr()
             m = enumeration('SteerModelTypeEnum');
             [~,I] = sort({m.name});
             listBoxStr = {m(I).name};
+            enums = m(I);
         end
         
         function [ind, enum] = getIndForName(name)

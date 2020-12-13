@@ -17,6 +17,10 @@ classdef ThrottlePolyModel < AbstractThrottleModel
             end
         end
         
+        function enum = getThrottleModelTypeEnum(~)
+            enum = ThrottleModelEnum.PolyModel;
+        end
+        
         function initThrottleModel(obj, initialStateLogEntry)
             t0 = initialStateLogEntry.time;
             throttle = initialStateLogEntry.throttle;
@@ -44,13 +48,6 @@ classdef ThrottlePolyModel < AbstractThrottleModel
         
         function optVar = getExistingOptVar(obj)
             optVar = obj.optVar;
-        end
-        
-        function addActionTf = openEditThrottleModelUI(obj, lv)
-            fakeAction = struct();
-            fakeAction.throttleModel = obj;
-            
-            addActionTf = lvd_EditActionSetThrottleModelGUI(fakeAction, lv);
         end
     end
     
