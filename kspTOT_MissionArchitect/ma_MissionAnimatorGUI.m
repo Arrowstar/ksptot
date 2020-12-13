@@ -22,7 +22,7 @@ function varargout = ma_MissionAnimatorGUI(varargin)
 
 % Edit the above text to modify the response to help ma_MissionAnimatorGUI
 
-% Last Modified by GUIDE v2.5 13-Sep-2015 21:58:05
+% Last Modified by GUIDE v2.5 12-Dec-2020 19:41:02
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -938,6 +938,10 @@ function sliderUTText_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of sliderUTText as text
 %        str2double(get(hObject,'String')) returns contents of sliderUTText as a double
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
+
     maData = getappdata(handles.ma_MainGUI,'ma_data');
     stateLog = maData.stateLog;
     minUT = min(stateLog(:,1));
@@ -1062,3 +1066,21 @@ function showEventNameCheckbox_Callback(hObject, eventdata, handles)
     if(get(handles.playButton,'Value')==0)
         plotOneFrame(handles);
     end
+
+
+% --------------------------------------------------------------------
+function utSliderEnterUtAsDateTime_Callback(hObject, eventdata, handles)
+% hObject    handle to utSliderEnterUtAsDateTime (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    secUT = enterUTAsDateTimeGUI(str2double(get(gco, 'String')));
+    if(secUT >= 0)
+        set(gco, 'String', num2str(secUT));
+        sliderUTText_Callback(handles.sliderUTText, [], handles);
+    end
+
+% --------------------------------------------------------------------
+function sliderUtContextMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to sliderUtContextMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
