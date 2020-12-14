@@ -11,14 +11,16 @@ classdef LaunchVehicleViewProfileBodyData < matlab.mixin.SetGet
         zInterps(1,:) cell = {};
         
         plotStyle(1,1) ViewProfileBodyPlottingStyle = ViewProfileBodyPlottingStyle.Dot;
+        viewInFrame AbstractReferenceFrame = BodyCenteredInertialFrame.empty(1,0)
         markerPlot = matlab.graphics.GraphicsPlaceholder.empty(1,0)
         showSoI(1,1) logical = false;
         meshEdgeAlpha(1,1) double = 0.1;
     end
     
     methods
-        function obj = LaunchVehicleViewProfileBodyData(bodyInfo, plotStyle, showSoI, meshEdgeAlpha)
+        function obj = LaunchVehicleViewProfileBodyData(bodyInfo, viewInFrame, plotStyle, showSoI, meshEdgeAlpha)
             obj.bodyInfo = bodyInfo;
+            obj.viewInFrame = viewInFrame;
             obj.plotStyle = plotStyle;
             obj.showSoI = showSoI;
             obj.meshEdgeAlpha = meshEdgeAlpha;
@@ -54,8 +56,8 @@ classdef LaunchVehicleViewProfileBodyData < matlab.mixin.SetGet
                     
                     if(obj.plotStyle == ViewProfileBodyPlottingStyle.Dot)
                         if(not(isempty(obj.markerPlot)) && isvalid(obj.markerPlot) && isa(obj.markerPlot, 'matlab.graphics.primitive.Transform'))
-                            M = makehgtform('translate',[x,y,z]);
-                            set(obj.markerPlot,'Matrix',M);
+                            Mt = makehgtform('translate',[x,y,z]);
+                            set(obj.markerPlot,'Matrix',Mt);
                         else
                             hold(hAx,'on');   
                             obj.markerPlot = hgtransform('Parent', hAx);
@@ -64,34 +66,42 @@ classdef LaunchVehicleViewProfileBodyData < matlab.mixin.SetGet
                             
                             obj.createSoIRadii(hAx);
                             
-                            M = makehgtform('translate',[x,y,z]);
-                            set(obj.markerPlot,'Matrix',M);
+                            Mt = makehgtform('translate',[x,y,z]);
+                            set(obj.markerPlot,'Matrix',Mt);
                             
                             hold(hAx,'off');
                         end
                         
                         obj.markerPlot.Visible = 'on';
                     elseif(obj.plotStyle == ViewProfileBodyPlottingStyle.MeshSphere)
-                        if(not(isempty(obj.markerPlot)) && isvalid(obj.markerPlot) && isa(obj.markerPlot, 'matlab.graphics.primitive.Transform'))
-                            M = makehgtform('translate',[x,y,z]);
-                            set(obj.markerPlot,'Matrix',M);
+                        if(not(isempty(obj.markerPlot)) && isvalid(obj.markerPlot) && isa(obj.markerPlot, 'matlab.graphics.primitive.Transform'))                            
+                            Mt = makehgtform('translate',[x,y,z]);
+                            Mr = getBodyXformMatrix(time, obj.bodyInfo, obj.viewInFrame);
+                            set(obj.markerPlot,'Matrix',Mt*Mr);
                             
                         else
                             hold(hAx,'on');
                             
                             dRad = obj.bodyInfo.radius;
-                            [X,Y,Z] = sphere(30);
-                            CData = getCDataForSphereWithColormap(Z, obj.bodyInfo.bodycolor);
-
+                            [X,Y,Z] = sphere(50);
+                            
                             obj.markerPlot = hgtransform('Parent', hAx);
-                            hS = surf(hAx, dRad*X, dRad*Y, dRad*Z, 'CData',CData, 'LineWidth',0.1, 'EdgeAlpha',obj.meshEdgeAlpha, 'BackFaceLighting','lit','FaceLighting','gouraud');
+                            
+                            I = obj.bodyInfo.getSurfaceTexture();
+                            if(not(isempty(I)) && not(any(any(any(isnan(I))))))
+                                hS = surf(hAx, dRad*X,dRad*Y,dRad*Z, 'CData',I, 'FaceColor','texturemap', 'BackFaceLighting','lit', 'FaceLighting','gouraud', 'EdgeLighting','gouraud', 'LineStyle','none');
+                            else
+                                hS = createUntexturedSphere(obj.bodyInfo, orbitDispAxes, dRad, X, Y, Z);
+                            end
                             material(hS,'dull');
+
                             set(hS,'Parent',obj.markerPlot);
                             
                             obj.createSoIRadii(hAx);
                             
-                            M = makehgtform('translate',[x,y,z]);
-                            set(obj.markerPlot,'Matrix',M);
+                            Mt = makehgtform('translate',[x,y,z]);
+                            Mr = getBodyXformMatrix(time, obj.bodyInfo, obj.viewInFrame);
+                            set(obj.markerPlot,'Matrix',Mt*Mr);
                             
                             hold(hAx,'off');
                         end

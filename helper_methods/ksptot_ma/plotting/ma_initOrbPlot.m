@@ -49,8 +49,3 @@ function [hCBodySurf, hCBodySurfXForm] = ma_initOrbPlot(hFig, orbitDispAxes, bod
     hold(orbitDispAxes,'off');
 end
 
-function hCBodySurf = createUntexturedSphere(bodyInfo, orbitDispAxes, dRad, X, Y, Z)
-    CData = getCDataForSphereWithColormap(Z, bodyInfo.bodycolor);
-    hCBodySurf = surf(orbitDispAxes, dRad*X,dRad*Y,dRad*Z, 'CData',CData, 'BackFaceLighting','lit', 'FaceLighting','gouraud', 'EdgeLighting','gouraud', 'LineWidth',0.1, 'EdgeAlpha',0.1);
-end
-

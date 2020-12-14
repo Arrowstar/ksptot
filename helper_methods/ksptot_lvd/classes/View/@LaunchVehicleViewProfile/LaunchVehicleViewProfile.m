@@ -177,7 +177,7 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                     bodyOrbitPeriod = Inf;
                 end
                 
-                bodyMarkerData = obj.createBodyData(bodyToPlot, obj.bodyPlotStyle, showSoI, meshEdgeAlpha);
+                bodyMarkerData = obj.createBodyData(bodyToPlot, viewInFrame, obj.bodyPlotStyle, showSoI, meshEdgeAlpha);
                 
                 for(j=1:length(subStateLogs))
                     if(size(subStateLogs{j},1) > 0)
@@ -435,8 +435,8 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
             obj.centralBodyData = LaunchVehicleViewProfileCentralBodyData(bodyInfo, hCBodySurfXForm, viewFrame);
         end
         
-        function bodyData = createBodyData(obj, bodyInfo, bodyPlotStyle, showSoI,meshEdgeAlpha)
-            bodyData = LaunchVehicleViewProfileBodyData(bodyInfo, bodyPlotStyle, showSoI, meshEdgeAlpha);
+        function bodyData = createBodyData(obj, bodyInfo, viewInFrame, bodyPlotStyle, showSoI,meshEdgeAlpha)
+            bodyData = LaunchVehicleViewProfileBodyData(bodyInfo, viewInFrame, bodyPlotStyle, showSoI, meshEdgeAlpha);
             obj.markerBodyData(end+1) = bodyData;
         end
         
