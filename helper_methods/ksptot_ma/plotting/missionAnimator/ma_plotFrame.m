@@ -297,7 +297,7 @@ function [bodyPlotted] = ma_plotFrame(hFig, mAxes, maData, stateLog, time, prevB
         GLOBAL_VideoWriter.writeVideo(getframe(hFig,get(mAxes,'Position')));
     end
     
-    shading(mAxes,'interp');
+%     shading(mAxes,'interp');
     drawnow;
 end
 

@@ -267,6 +267,10 @@ function warpRateCombo_Callback(hObject, eventdata, handles)
     tokens = regexp(warpRate,pattern,'tokens');
     set(hObject,'UserData',str2double(tokens{1}{1}));
     
+    maData = getappdata(handles.ma_MainGUI,'ma_data');
+    stateLog = maData.stateLog;
+    ma_setAnimatorSliderBounds(handles, stateLog);
+    
 
 % --- Executes during object creation, after setting all properties.
 function warpRateCombo_CreateFcn(hObject, eventdata, handles)

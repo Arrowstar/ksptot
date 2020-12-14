@@ -58,6 +58,9 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         showGndTracks(1,1) logical = true;
         showGrdObjLoS(1,1) logical = true;
         
+        %central body transform
+        hCBodySurfXForm = matlab.graphics.GraphicsPlaceholder();
+        
         %view properties (set by user indirectly through UI controls)
         updateViewAxesLimits(1,1) logical = true;
         orbitNumToPlot(1,1) double = 1;
@@ -71,6 +74,7 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         markerTrajAxesData(1,:) LaunchVehicleViewProfileBodyAxesData = LaunchVehicleViewProfileBodyAxesData.empty(1,0);
         markerGrdObjData(1,:) LaunchVehicleViewProfileGroundObjData = LaunchVehicleViewProfileGroundObjData.empty(1,0);
         sunLighting(1,:) LaunchVehicleViewProfileSunLighting = LaunchVehicleViewProfileSunLighting.empty(1,0);
+        centralBodyData(1,:) LaunchVehicleViewProfileCentralBodyData = LaunchVehicleViewProfileCentralBodyData.empty(1,0);
     end
     
     properties(Access=private)
@@ -414,7 +418,7 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
             elseif(curSliderTime < minTime)
                 timeSlider.setValue(minTime);
             end
-            
+                       
             lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
             timeSliderCb = @(src,evt) timeSliderStateChanged(src,evt, lvdData, handles);
             set(handles.hDispAxesTimeSlider, 'StateChangedCallback', timeSliderCb); 
@@ -425,6 +429,10 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         function trajData = createTrajData(obj)
             trajData = LaunchVehicleViewProfileTrajectoryData();
             obj.markerTrajData = trajData;
+        end
+        
+        function createCentralBodyData(obj, bodyInfo, hCBodySurfXForm, viewFrame)
+            obj.centralBodyData = LaunchVehicleViewProfileCentralBodyData(bodyInfo, hCBodySurfXForm, viewFrame);
         end
         
         function bodyData = createBodyData(obj, bodyInfo, bodyPlotStyle, showSoI,meshEdgeAlpha)

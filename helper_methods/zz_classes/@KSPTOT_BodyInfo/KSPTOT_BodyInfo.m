@@ -32,6 +32,11 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
         name char
         id double
         
+        %body surface textures
+        surftexturefile (1,:) char = '';
+%         usesurftexture (1,1) logical = true;
+        surftexturezrotoffset(1,1) double = 0; %degrees
+        
         %orientation of inertial frame (spin axis handling)
         bodyZAxis(3,1) double = [0;0;1];
         bodyXAxis(3,1) double = [1;0;0];

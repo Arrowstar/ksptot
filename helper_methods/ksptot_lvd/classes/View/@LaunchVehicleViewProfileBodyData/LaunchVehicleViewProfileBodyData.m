@@ -126,4 +126,3 @@ classdef LaunchVehicleViewProfileBodyData < matlab.mixin.SetGet
         end
     end
 end
-

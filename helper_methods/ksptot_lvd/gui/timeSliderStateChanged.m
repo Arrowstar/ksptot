@@ -4,7 +4,7 @@ function timeSliderStateChanged(src,evt, lvdData, handles)
     matches = cell2mat(matches(2:end));
     tf = any(matches == 1);
     
-    if(getappdata(handles.hDispAxesTimeSlider,'lastTime') ~= javaMethodEDT('getValue',src) && not(tf))
+    if(not(tf)) %getappdata(handles.hDispAxesTimeSlider,'lastTime') ~= javaMethodEDT('getValue',src) && 
         time = javaMethodEDT('getValue',src);
         hAx = handles.dispAxes;        
 
@@ -12,6 +12,7 @@ function timeSliderStateChanged(src,evt, lvdData, handles)
         markerBodyData = lvdData.viewSettings.selViewProfile.markerBodyData;
         markerBodyAxesData = lvdData.viewSettings.selViewProfile.markerTrajAxesData;
         markerGrdObjData = lvdData.viewSettings.selViewProfile.markerGrdObjData;
+        centralBodyData = lvdData.viewSettings.selViewProfile.centralBodyData;
         
         markerTrajData.plotBodyMarkerAtTime(time, hAx);
         for(i=1:length(markerBodyData))
@@ -23,6 +24,8 @@ function timeSliderStateChanged(src,evt, lvdData, handles)
         for(i=1:length(markerGrdObjData))
             markerGrdObjData(i).plotBodyMarkerAtTime(time, hAx);
         end
+        
+        centralBodyData.setCentralBodyRotation(time);
         
         lvdData.viewSettings.selViewProfile.updateLightPosition(time);
         

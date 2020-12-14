@@ -22,7 +22,7 @@ function varargout = ma_LvdMainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_LvdMainGUI
 
-% Last Modified by GUIDE v2.5 19-Nov-2020 16:58:58
+% Last Modified by GUIDE v2.5 14-Dec-2020 08:18:25
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1937,10 +1937,14 @@ function popOutOrbitDisplayMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to popOutOrbitDisplayMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-    hAx = axes(figure());
+    hFig = figure('Visible','off');
+    hAx = axes(hFig);
+    inlineDispAxes = handles.dispAxes;
     handles.dispAxes = hAx;
     set(hAx,'UserData',get(handles.dispAxes,'UserData'));
 
+    hFig.DeleteFcn = @(src,evt) popOutOrbitDispDelFcn(src,evt, inlineDispAxes, handles);
+    
     wb = waitbar(0,'Popping out orbit display...');
     wbch = allchild(wb);
     jp = wbch(1).JavaPeer;
@@ -1955,6 +1959,14 @@ function popOutOrbitDisplayMenu_Callback(hObject, eventdata, handles)
     title(hAx, handles.dispAxisTitleLabel.String);
     
     delete(wb);
+    hFig.Visible = 'on';
+    
+    
+function popOutOrbitDispDelFcn(~,~, inlineDispAxes, handles)
+    handles.dispAxes = inlineDispAxes;
+    
+    lvd_processData(handles); 
+
 
 % --------------------------------------------------------------------
 function setActiveViewProfileMenu_Callback(hObject, eventdata, handles)
