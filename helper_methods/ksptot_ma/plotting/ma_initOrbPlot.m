@@ -15,12 +15,12 @@ function [hCBodySurf, hCBodySurfXForm] = ma_initOrbPlot(hFig, orbitDispAxes, bod
         
         if(not(isempty(bodyInfo.surftexturefile)))
             try
-                [I,~] = imread('images/body_textures/surface/kerbinSurface.jpg');
-                I = flip(I, 1);
-                I = flip(I, 2);
-%                 hCBodySurf = warp(dRad*X,dRad*Y,dRad*Z,I);
-%                 hCBodySurf.Parent = orbitDispAxes;
-                hCBodySurf = surf(orbitDispAxes, dRad*X,dRad*Y,dRad*Z, 'CData',I, 'FaceColor','texturemap', 'BackFaceLighting','lit', 'FaceLighting','gouraud', 'EdgeLighting','gouraud', 'LineStyle','none');
+                I = bodyInfo.getSurfaceTexture();
+                if(not(isempty(I)) && not(any(any(any(isnan(I))))))
+                    hCBodySurf = surf(orbitDispAxes, dRad*X,dRad*Y,dRad*Z, 'CData',I, 'FaceColor','texturemap', 'BackFaceLighting','lit', 'FaceLighting','gouraud', 'EdgeLighting','gouraud', 'LineStyle','none');
+                else
+                    hCBodySurf = createUntexturedSphere(bodyInfo, orbitDispAxes, dRad, X, Y, Z);
+                end
                 
             catch ME
                 if(exist('hCBodySurf','var'))
@@ -37,18 +37,20 @@ function [hCBodySurf, hCBodySurfXForm] = ma_initOrbPlot(hFig, orbitDispAxes, bod
         
         hCBodySurfXForm = hgtransform('Parent', orbitDispAxes);
         set(hCBodySurf,'Parent',hCBodySurfXForm); 
+        material(hCBodySurf,'dull');
     else
         hCBodySurf = [];
     end
+    
+    mColor = colorFromColorMap(bodyInfo.bodycolor);
+    plot3(orbitDispAxes, 0, 0, 0,'Marker','o','MarkerEdgeColor',mColor,'MarkerFaceColor',mColor,'MarkerSize',3);
+    
     axis(orbitDispAxes, 'equal');
     hold(orbitDispAxes,'off');
 end
 
 function hCBodySurf = createUntexturedSphere(bodyInfo, orbitDispAxes, dRad, X, Y, Z)
     CData = getCDataForSphereWithColormap(Z, bodyInfo.bodycolor);
-    mColor = colorFromColorMap(bodyInfo.bodycolor);
-    plot3(orbitDispAxes, 0, 0, 0,'Marker','o','MarkerEdgeColor',mColor,'MarkerFaceColor',mColor,'MarkerSize',3);
     hCBodySurf = surf(orbitDispAxes, dRad*X,dRad*Y,dRad*Z, 'CData',CData, 'BackFaceLighting','lit', 'FaceLighting','gouraud', 'EdgeLighting','gouraud', 'LineWidth',0.1, 'EdgeAlpha',0.1);
-    material(hCBodySurf,'dull');
 end
 

@@ -64,6 +64,8 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
         
         orbitElemsChainCache cell = {};
         fixedFrameFromInertialFrameCache cell = {};
+        
+        surfTextureCache uint8 = [];
     end
     
     properties(Access=private)
@@ -293,6 +295,22 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
             end
             
             inputs = obj.fixedFrameFromInertialFrameCache;
+        end
+        
+        function [surfTexture] = getSurfaceTexture(obj)
+            if(isempty(obj.surfTextureCache))
+                try
+                    [I,~] = imread(obj.surftexturefile);
+                    I = flip(I, 1);
+                catch ME
+                    I = NaN;
+                    warning('Could not load surface texture for "%s".  Message: \n\n%s', obj.name, ME.message);
+                end
+                
+                obj.surfTextureCache = I;
+            end
+            
+            surfTexture = obj.surfTextureCache;
         end
         
         function tf = eq(A,B)

@@ -175,10 +175,10 @@ function plotAtmoCurve(orbitDispAxes, bodyInfo, celBodyData)
     
     
 function plotBody(hFig,orbitDispAxes, bodyInfo)
-    dRad = bodyInfo.radius;
-    [X,Y,Z] = sphere(10);
-    hold(orbitDispAxes,'on');
-    surf(orbitDispAxes, dRad*X,dRad*Y,dRad*Z);
+%     dRad = bodyInfo.radius;
+%     [X,Y,Z] = sphere(10);
+%     hold(orbitDispAxes,'on');
+%     surf(orbitDispAxes, dRad*X,dRad*Y,dRad*Z);
     ma_initOrbPlot(hFig, orbitDispAxes, bodyInfo);
 
 
