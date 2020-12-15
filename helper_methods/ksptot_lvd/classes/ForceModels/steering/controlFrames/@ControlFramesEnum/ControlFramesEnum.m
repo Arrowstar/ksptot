@@ -3,18 +3,20 @@ classdef ControlFramesEnum  < matlab.mixin.SetGet
     %   Detailed explanation goes here
 
     enumeration
-        NedFrame('NED Frame')
-        WindFrame('Wind Frame');
-        InertialFrame('Base Frame Relative');
+        NedFrame('NED Frame', {'Roll Angle','Pitch Angle','Yaw Angle'})
+        WindFrame('Wind Frame', {'Bank Angle','Angle of Attack','Sideslip Angle'});
+        InertialFrame('Base Frame Relative', {'Bank Angle','Angle of Attack','Sideslip Angle'});
     end
     
     properties
         name(1,:) char
+        angleNames (1,3) cell
     end
     
     methods
-        function obj = ControlFramesEnum(name)
+        function obj = ControlFramesEnum(name, angleNames)
             obj.name = name;
+            obj.angleNames = angleNames;
         end
     end
     

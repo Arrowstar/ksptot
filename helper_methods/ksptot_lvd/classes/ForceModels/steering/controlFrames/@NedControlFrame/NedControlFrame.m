@@ -17,5 +17,9 @@ classdef NedControlFrame < AbstractControlFrame
         function [gammaAngle, betaAngle, alphaAngle] = getAnglesFromInertialBodyAxes(~, dcm, ut, rVect, vVect, bodyInfo, ~)
             [gammaAngle, betaAngle, alphaAngle] = computeEulerAnglesFromInertialBodyAxes(ut, rVect, vVect, bodyInfo, dcm(:,1), dcm(:,2), dcm(:,3));
         end
+        
+        function enum = getControlFrameEnum(obj)
+            enum = ControlFramesEnum.NedFrame;
+        end
     end
 end

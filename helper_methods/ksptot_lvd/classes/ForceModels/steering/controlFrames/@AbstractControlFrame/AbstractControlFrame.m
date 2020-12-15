@@ -6,6 +6,10 @@ classdef (Abstract) AbstractControlFrame < matlab.mixin.SetGet & matlab.mixin.He
         enum
     end
     
+    methods
+        enum = getControlFrameEnum(obj);
+    end
+    
     methods(Access=protected)
         function rHat = computeRHat(~, rVect)
             rHat = normVector(rVect);

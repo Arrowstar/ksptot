@@ -10,6 +10,10 @@ classdef WindControlFrame < AbstractControlFrame
             
         end
         
+        function enum = getControlFrameEnum(obj)
+            enum = ControlFramesEnum.WindFrame;
+        end
+        
         function dcm = computeDcmToInertialFrame(~, ut, rVect, vVect, bodyInfo, gammaAng, betaAng, alphaAng, ~)
            [~, ~, ~, dcm] = computeBodyAxesFromInertialAeroAngles(ut, rVect, vVect, bodyInfo, alphaAng, betaAng, gammaAng);
         end

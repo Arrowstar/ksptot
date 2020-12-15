@@ -10,6 +10,10 @@ classdef InertialControlFrame < AbstractControlFrame
             
         end
         
+        function enum = getControlFrameEnum(obj)
+            enum = ControlFramesEnum.InertialFrame;
+        end
+        
         function dcm = computeDcmToInertialFrame(~, ut, rVect, vVect, bodyInfo, gammaAng, betaAng, alphaAng, baseFrame)
             [~, ~, ~, base_frame_2_inertial] = baseFrame.getOffsetsWrtInertialOrigin(ut); 
             body_2_base_frame = eul2rotmARH([alphaAng,betaAng,gammaAng],'zyx');

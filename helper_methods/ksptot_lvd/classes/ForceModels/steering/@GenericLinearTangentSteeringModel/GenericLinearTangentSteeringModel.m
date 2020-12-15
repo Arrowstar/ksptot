@@ -104,10 +104,15 @@ classdef GenericLinearTangentSteeringModel < AbstractSteeringModel
             end
         end
         
-        function [angle1Name, angle2Name, angle3Name] = getAngleNames(~)
-            angle1Name = 'Gamma';
-            angle2Name = 'Beta';
-            angle3Name = 'Alpha';
+        function [angle1Name, angle2Name, angle3Name] = getAngleNames(obj)
+%             angle1Name = 'Gamma';
+%             angle2Name = 'Beta';
+%             angle3Name = 'Alpha';
+
+            angleNames = obj.controlFrame.getControlFrameEnum().angleNames;
+            angle1Name = angleNames{1};
+            angle2Name = angleNames{2};
+            angle3Name = angleNames{3};
         end
         
         function newSteeringModel = deepCopy(obj)

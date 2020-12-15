@@ -110,9 +110,9 @@ function populateGUI(handles, action, lv)
     end
     
     [angle1Name, angle2Name, angle3Name] = steeringModel.getAngleNames();
-    set(handles.angle1Panel,'Title',sprintf('%s Angle', angle1Name));
-    set(handles.angle2Panel,'Title',sprintf('%s Angle', angle2Name));
-    set(handles.angle3Panel,'Title',sprintf('%s Angle', angle3Name));
+    set(handles.angle1Panel,'Title',sprintf('%s', angle1Name));
+    set(handles.angle2Panel,'Title',sprintf('%s', angle2Name));
+    set(handles.angle3Panel,'Title',sprintf('%s', angle3Name));
        
     tDur = steeringModel.getDuration();
     [gamma0, beta0, alpha0] = steeringModel.getInitAngles();
@@ -314,7 +314,7 @@ function errMsg = validateInputs(handles)
     %Angle 1
     angle1Init = str2double(get(handles.angle1InitText,'String'));
     enteredStr = get(handles.angle1InitText,'String');
-    numberName = sprintf('%s Angle Initial Value', angle1Name);
+    numberName = sprintf('%s Initial Value', angle1Name);
     lb = -Inf;
     ub = Inf;
     isInt = false;
@@ -322,7 +322,7 @@ function errMsg = validateInputs(handles)
     
     angle1Final = str2double(get(handles.angle1FinalText,'String'));
     enteredStr = get(handles.angle1FinalText,'String');
-    numberName = sprintf('%s Angle Final Value', angle1Name);
+    numberName = sprintf('%s Final Value', angle1Name);
     lb = -Inf;
     ub = Inf;
     isInt = false;
@@ -331,7 +331,7 @@ function errMsg = validateInputs(handles)
     %Angle 2
     angle2Init = str2double(get(handles.angle2InitText,'String'));
     enteredStr = get(handles.angle2InitText,'String');
-    numberName = sprintf('%s Angle Initial Value', angle2Name);
+    numberName = sprintf('%s Initial Value', angle2Name);
     lb = -Inf;
     ub = Inf;
     isInt = false;
@@ -339,7 +339,7 @@ function errMsg = validateInputs(handles)
     
     angle2Final = str2double(get(handles.angle2FinalText,'String'));
     enteredStr = get(handles.angle2FinalText,'String');
-    numberName = sprintf('%s Angle Final Value', angle2Name);
+    numberName = sprintf('%s Final Value', angle2Name);
     lb = -Inf;
     ub = Inf;
     isInt = false;
@@ -348,7 +348,7 @@ function errMsg = validateInputs(handles)
     %Angle 3
     angle3Init = str2double(get(handles.angle3InitText,'String'));
     enteredStr = get(handles.angle3InitText,'String');
-    numberName = sprintf('%s Angle Initial Value', angle3Name);
+    numberName = sprintf('%s Initial Value', angle3Name);
     lb = -Inf;
     ub = Inf;
     isInt = false;
@@ -356,7 +356,7 @@ function errMsg = validateInputs(handles)
     
     angle3Final = str2double(get(handles.angle3FinalText,'String'));
     enteredStr = get(handles.angle3FinalText,'String');
-    numberName = sprintf('%s Angle Final Value', angle3Name);
+    numberName = sprintf('%s Final Value', angle3Name);
     lb = -Inf;
     ub = Inf;
     isInt = false;
@@ -366,7 +366,7 @@ function errMsg = validateInputs(handles)
     %Angle 1 Const
     angle1InitLB = str2double(get(handles.angle1InitLbText,'String'));
     enteredStr = get(handles.angle1InitLbText,'String');
-    numberName = sprintf('%s Angle Initial Value Lower Bound', angle1Name);
+    numberName = sprintf('%s Initial Value Lower Bound', angle1Name);
     lb = -Inf;
     ub = Inf;
     isInt = false;
@@ -374,7 +374,7 @@ function errMsg = validateInputs(handles)
     
     angle1InitUB = str2double(get(handles.angle1InitUbText,'String'));
     enteredStr = get(handles.angle1InitUbText,'String');
-    numberName = sprintf('%s Angle Initial Value Upper Bound', angle1Name);
+    numberName = sprintf('%s Initial Value Upper Bound', angle1Name);
     lb = angle1InitLB;
     ub = Inf;
     isInt = false;
@@ -383,7 +383,7 @@ function errMsg = validateInputs(handles)
     %Angle 1 Linear
     angle1FinalLB = str2double(get(handles.angle1FinalLbText,'String'));
     enteredStr = get(handles.angle1FinalLbText,'String');
-    numberName = sprintf('%s Angle Final Value Lower Bound', angle1Name);
+    numberName = sprintf('%s Final Value Lower Bound', angle1Name);
     lb = -Inf;
     ub = Inf;
     isInt = false;
@@ -391,7 +391,7 @@ function errMsg = validateInputs(handles)
     
     angle1FinalUB = str2double(get(handles.angle1FinalUbText,'String'));
     enteredStr = get(handles.angle1FinalUbText,'String');
-    numberName = sprintf('%s Angle Final Value Upper Bound', angle1Name);
+    numberName = sprintf('%s Final Value Upper Bound', angle1Name);
     lb = angle1FinalLB;
     ub = Inf;
     isInt = false;
@@ -400,7 +400,7 @@ function errMsg = validateInputs(handles)
     %Angle 2 Const
     angle2InitLB = str2double(get(handles.angle2InitLbText,'String'));
     enteredStr = get(handles.angle2InitLbText,'String');
-    numberName = sprintf('%s Angle Initial Value Lower Bound', angle2Name);
+    numberName = sprintf('%s Initial Value Lower Bound', angle2Name);
     lb = -Inf;
     ub = Inf;
     isInt = false;
@@ -408,7 +408,7 @@ function errMsg = validateInputs(handles)
     
     angle2InitUB = str2double(get(handles.angle2InitUbText,'String'));
     enteredStr = get(handles.angle2InitUbText,'String');
-    numberName = sprintf('%s Angle Initial Value Upper Bound', angle2Name);
+    numberName = sprintf('%s Initial Value Upper Bound', angle2Name);
     lb = angle2InitLB;
     ub = Inf;
     isInt = false;
@@ -417,7 +417,7 @@ function errMsg = validateInputs(handles)
     %Angle 2 Linear
     angle2FinalLB = str2double(get(handles.angle2FinalLbText,'String'));
     enteredStr = get(handles.angle2FinalLbText,'String');
-    numberName = sprintf('%s Angle Final Value Lower Bound', angle2Name);
+    numberName = sprintf('%s Final Value Lower Bound', angle2Name);
     lb = -Inf;
     ub = Inf;
     isInt = false;
@@ -425,7 +425,7 @@ function errMsg = validateInputs(handles)
     
     angle2FinalUB = str2double(get(handles.angle2FinalUbText,'String'));
     enteredStr = get(handles.angle2FinalUbText,'String');
-    numberName = sprintf('%s Angle Final Value Upper Bound', angle2Name);
+    numberName = sprintf('%s Final Value Upper Bound', angle2Name);
     lb = angle2FinalLB;
     ub = Inf;
     isInt = false;
@@ -434,7 +434,7 @@ function errMsg = validateInputs(handles)
     %Angle 3 Const
     angle3InitLB = str2double(get(handles.angle3InitLbText,'String'));
     enteredStr = get(handles.angle3InitLbText,'String');
-    numberName = sprintf('%s Angle Initial Value Lower Bound', angle3Name);
+    numberName = sprintf('%s Initial Value Lower Bound', angle3Name);
     lb = -Inf;
     ub = Inf;
     isInt = false;
@@ -442,7 +442,7 @@ function errMsg = validateInputs(handles)
     
     angle3InitUB = str2double(get(handles.angle3InitUbText,'String'));
     enteredStr = get(handles.angle3InitUbText,'String');
-    numberName = sprintf('%s Angle Initial Value Upper Bound', angle3Name);
+    numberName = sprintf('%s Initial Value Upper Bound', angle3Name);
     lb = angle3InitLB;
     ub = Inf;
     isInt = false;
@@ -451,7 +451,7 @@ function errMsg = validateInputs(handles)
     %Angle 2 Linear
     angle3FinalLB = str2double(get(handles.angle3FinalLbText,'String'));
     enteredStr = get(handles.angle3FinalLbText,'String');
-    numberName = sprintf('%s Angle Final Value Lower Bound', angle3Name);
+    numberName = sprintf('%s Final Value Lower Bound', angle3Name);
     lb = -Inf;
     ub = Inf;
     isInt = false;
@@ -459,7 +459,7 @@ function errMsg = validateInputs(handles)
     
     angle3FinalUB = str2double(get(handles.angle3FinalUbText,'String'));
     enteredStr = get(handles.angle3FinalUbText,'String');
-    numberName = sprintf('%s Angle Final Value Upper Bound', angle3Name);
+    numberName = sprintf('%s Final Value Upper Bound', angle3Name);
     lb = angle3FinalLB;
     ub = Inf;
     isInt = false;
@@ -1165,7 +1165,15 @@ function controlFrameCombo_Callback(hObject, eventdata, handles)
 
 % Hints: contents = cellstr(get(hObject,'String')) returns controlFrameCombo contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from controlFrameCombo
+    contents = cellstr(get(hObject,'String'));
+    listBoxStr = contents{get(hObject,'Value')};
+    
+    enum = ControlFramesEnum.getEnumForListboxStr(listBoxStr);
+    angleNames = enum.angleNames;
 
+    set(handles.angle1Panel,'Title',sprintf('%s', angleNames{1}));
+    set(handles.angle2Panel,'Title',sprintf('%s', angleNames{2}));
+    set(handles.angle3Panel,'Title',sprintf('%s', angleNames{3}));
 
 % --- Executes during object creation, after setting all properties.
 function controlFrameCombo_CreateFcn(hObject, eventdata, handles)
