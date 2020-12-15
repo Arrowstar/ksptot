@@ -34,7 +34,6 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
         
         %body surface textures
         surftexturefile (1,:) char = '';
-%         usesurftexture (1,1) logical = true;
         surftexturezrotoffset(1,1) double = 0; %degrees
         
         %orientation of inertial frame (spin axis handling)
@@ -343,6 +342,53 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
             
             if(isempty(obj.atmoTempCache))
                 obj.atmoTempCache = AtmoTempDataCache(obj);
+            end
+            
+            if(isempty(obj.surftexturefile) && strcmpi(obj.name,'Kerbin') && obj.id == 1)
+                obj.surftexturefile = 'images/body_textures/surface/kerbinSurface.png';
+                
+            elseif(isempty(obj.surftexturefile) && strcmpi(obj.name,'Mun') && obj.id == 2)
+                obj.surftexturefile = 'images/body_textures/surface/munSurface.png';
+                
+            elseif(isempty(obj.surftexturefile) && strcmpi(obj.name,'Minmus') && obj.id == 3)
+                obj.surftexturefile = 'images/body_textures/surface/minmusSurface.png';
+                
+            elseif(isempty(obj.surftexturefile) && strcmpi(obj.name,'Moho') && obj.id == 4)
+                obj.surftexturefile = 'images/body_textures/surface/mohoSurface.png';
+                
+            elseif(isempty(obj.surftexturefile) && strcmpi(obj.name,'Eve') && obj.id == 5)
+                obj.surftexturefile = 'images/body_textures/surface/eveSurface.png';
+                
+            elseif(isempty(obj.surftexturefile) && strcmpi(obj.name,'Gilly') && obj.id == 13)
+                obj.surftexturefile = 'images/body_textures/surface/gillySurface.png';
+                
+            elseif(isempty(obj.surftexturefile) && strcmpi(obj.name,'Duna') && obj.id == 6)
+                obj.surftexturefile = 'images/body_textures/surface/dunaSurface.png';
+                
+            elseif(isempty(obj.surftexturefile) && strcmpi(obj.name,'Ike') && obj.id == 7)
+                obj.surftexturefile = 'images/body_textures/surface/ikeSurface.png';
+                
+            elseif(isempty(obj.surftexturefile) && strcmpi(obj.name,'Dres') && obj.id == 15)
+                obj.surftexturefile = 'images/body_textures/surface/dresSurface.png';
+                
+            elseif(isempty(obj.surftexturefile) && strcmpi(obj.name,'Laythe') && obj.id == 9)
+                obj.surftexturefile = 'images/body_textures/surface/laytheSurface.png';
+                
+            elseif(isempty(obj.surftexturefile) && strcmpi(obj.name,'Vall') && obj.id == 10)
+                obj.surftexturefile = 'images/body_textures/surface/vallSurface.png';
+                
+            elseif(isempty(obj.surftexturefile) && strcmpi(obj.name,'Tylo') && obj.id == 12)
+                obj.surftexturefile = 'images/body_textures/surface/tyloSurface.png';
+                
+            elseif(isempty(obj.surftexturefile) && strcmpi(obj.name,'Bop') && obj.id == 11)
+                obj.surftexturefile = 'images/body_textures/surface/bopSurface.png';
+                
+            elseif(isempty(obj.surftexturefile) && strcmpi(obj.name,'Pol') && obj.id == 14)
+                obj.surftexturefile = 'images/body_textures/surface/polSurface.png';
+                
+            elseif(isempty(obj.surftexturefile) && strcmpi(obj.name,'Eeloo') && obj.id == 16)
+                obj.surftexturefile = 'images/body_textures/surface/eelooSurface.png';
+                
             end
         end
         
