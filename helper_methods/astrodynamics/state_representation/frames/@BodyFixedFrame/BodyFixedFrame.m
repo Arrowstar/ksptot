@@ -20,7 +20,7 @@ classdef BodyFixedFrame < AbstractReferenceFrame
         function [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = getOffsetsWrtInertialOrigin(obj, time)
             [rVectSunToBody, vVectSunToBody] = getPositOfBodyWRTSun(time, obj.bodyInfo, obj.celBodyData);
             
-            spinAngle = 2*getBodySpinAngle(obj.bodyInfo, time);
+            spinAngle = getBodySpinAngle(obj.bodyInfo, time);
             rotMatToInertial = [cos(spinAngle) -sin(spinAngle) 0;
                                 sin(spinAngle) cos(spinAngle) 0;
                                 0 0 1] * obj.bodyInfo.bodyRotMatFromGlobalInertialToBodyInertial;

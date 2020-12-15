@@ -298,15 +298,19 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
         
         function [surfTexture] = getSurfaceTexture(obj)
             if(isempty(obj.surfTextureCache))
-                try
-                    [I,~] = imread(obj.surftexturefile);
-                    I = flip(I, 1);
-                catch ME
-                    I = NaN;
-                    warning('Could not load surface texture for "%s".  Message: \n\n%s', obj.name, ME.message);
+                if(not(isempty(obj.surftexturefile)))
+                    try
+                        [I,~] = imread(obj.surftexturefile);
+                        I = flip(I, 1);
+                    catch ME
+                        I = NaN;
+                        warning('Could not load surface texture for "%s".  Message: \n\n%s', obj.name, ME.message);
+                    end
+
+                    obj.surfTextureCache = I;
+                else
+                    obj.surfTextureCache = NaN;
                 end
-                
-                obj.surfTextureCache = I;
             end
             
             surfTexture = obj.surfTextureCache;
