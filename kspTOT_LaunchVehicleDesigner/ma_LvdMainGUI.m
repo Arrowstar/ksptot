@@ -118,7 +118,7 @@ function ma_LvdMainGUI_OpeningFcn(hObject, eventdata, handles, varargin)
         rotate3d(handles.dispAxes,'on');
 
         enableDisableArrowButtons(lvdData, handles);
-
+        
         runScript(handles, lvdData, 1);
         lvd_processData(handles);
 
