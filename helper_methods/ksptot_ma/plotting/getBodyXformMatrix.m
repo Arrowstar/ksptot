@@ -4,7 +4,7 @@ function M = getBodyXformMatrix(time, bodyInfo, viewFrame)
     [~, ~, ~, rotMatToInertial12] = bodyFixedFrame.getOffsetsWrtInertialOrigin(time);
     [~, ~, ~, rotMatToInertial32] = viewFrame.getOffsetsWrtInertialOrigin(time);
 
-    zRotOffset = bodyInfo.surftexturezrotoffset;
+    zRotOffset = bodyInfo.surftexturezrotoffset; %degrees
     rotMatZOffset = [cosd(zRotOffset) -sind(zRotOffset) 0; sind(zRotOffset) cosd(zRotOffset) 0; 0 0 1];
     
     M33 = rotMatToInertial32' * rotMatToInertial12 * rotMatZOffset;
