@@ -300,9 +300,9 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                 view(dAxes,viewProfile.viewAzEl);
             end
             
-            if(dAxes.Parent == hFig)
-                dAxes.Position = [531.0, 206.0, 418.0, 350.0];
-            end
+%             if(dAxes.Parent == hFig)
+%                 dAxes.Position = [531.0, 206.0, 418.0, 350.0];
+%             end
             
             hold(dAxes,'on');
             viewProfile.createBodyMarkerData(dAxes, subStateLogs, viewInFrame, showSoI, viewProfile.meshEdgeAlpha, lvdData.script.evts);

@@ -22,7 +22,7 @@ function varargout = ma_LvdMainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_LvdMainGUI
 
-% Last Modified by GUIDE v2.5 14-Dec-2020 08:18:25
+% Last Modified by GUIDE v2.5 16-Dec-2020 13:42:18
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -73,8 +73,8 @@ function ma_LvdMainGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 
         lvdData = LvdData.getDefaultLvdData(celBodyData);
         setappdata(handles.ma_LvdMainGUI,'lvdData',lvdData);
-
-        output_text_max_line_length = length(getMA_HR());
+        
+        output_text_max_line_length = length(getLVD_HR(handles.outputText));
         setappdata(hObject,'output_text_max_line_length',output_text_max_line_length);
         writeOutput = @(str,type) writeToMAOutput(handles.outputText, str, type, output_text_max_line_length);
         setappdata(hObject,'write_to_output_func',writeOutput);
@@ -85,12 +85,13 @@ function ma_LvdMainGUI_OpeningFcn(hObject, eventdata, handles, varargin)
         jDispAxesTimeSlider.setMaximum(1);
         jDispAxesTimeSlider.setValue(0);
         sliderPnlPos = handles.timeSliderPanel.Position;
-        javacomponent(jDispAxesTimeSlider,[1, 1, sliderPnlPos(3), sliderPnlPos(4)], handles.timeSliderPanel);
+        [~,hDispAxesTimeSliderJavaWrapper] = javacomponent(jDispAxesTimeSlider,[1, 1, sliderPnlPos(3), sliderPnlPos(4)], handles.timeSliderPanel);
         handles.jDispAxesTimeSlider = jDispAxesTimeSlider;
         jDispAxesTimeSlider.setToolTipText('Adjust slider to view the location of vehicles and selected celestial bodies at a given time.');
 
         hDispAxesTimeSlider = handle(jDispAxesTimeSlider, 'CallbackProperties');
         handles.hDispAxesTimeSlider = hDispAxesTimeSlider;
+        handles.hDispAxesTimeSliderJavaWrapper = hDispAxesTimeSliderJavaWrapper;
         timeSliderCb = @(src,evt) timeSliderStateChanged(src,evt, lvdData, handles);
         set(hDispAxesTimeSlider, 'StateChangedCallback', timeSliderCb); 
 
@@ -119,12 +120,15 @@ function ma_LvdMainGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 
         enableDisableArrowButtons(lvdData, handles);
         
+        setResizeData(hObject, handles);
+                
         runScript(handles, lvdData, 1);
         lvd_processData(handles);
 
         % Update handles structure
         guidata(hObject, handles);
         hObject.Visible = 'on';
+        drawnow;           
 
         % UIWAIT makes ma_LvdMainGUI wait for user response (see UIRESUME)
         % uiwait(handles.ma_LvdMainGUI);
@@ -134,13 +138,80 @@ function ma_LvdMainGUI_OpeningFcn(hObject, eventdata, handles, varargin)
         disp(ME.message);
         close(handles.ma_LvdMainGUI);
     end
+    
+function setResizeData(hObject, handles)
+    pos = hObject.Position;
+    origWidth = pos(3);
+    origHgt = pos(4);
+    setappdata(hObject,'OriginalWidth',origWidth);
+    setappdata(hObject,'OriginalHeight',origHgt);
+    
+    %title label
+    titlePos = handles.titleText.Position;
+    titleOffsetFromTop = origHgt - (titlePos(2) + titlePos(4));
+    setappdata(hObject,'titleOffsetFromTop',titleOffsetFromTop);
+    
+    %initial state panel
+    initScStatePanelPos = handles.initScStatePanel.Position;
+    initScStatePanelOffsetFromTop = origHgt - (initScStatePanelPos(2) + initScStatePanelPos(4));
+    setappdata(hObject,'initScStatePanelOffsetFromTop',initScStatePanelOffsetFromTop);
+    
+    %final state panel
+    finalScStatePanelPos = handles.finalScStatePanel.Position;
+    finalScStatePanelOffsetFromTop = origHgt - (finalScStatePanelPos(2) + finalScStatePanelPos(4));
+    setappdata(hObject,'finalScStatePanelOffsetFromTop',finalScStatePanelOffsetFromTop);
+    
+    %display axes label
+    dispAxisTitleLabelPos = handles.dispAxisTitleLabel.Position;
+    dispAxisTitleLabelOffsetFromTop = origHgt - (dispAxisTitleLabelPos(2) + dispAxisTitleLabelPos(4));
+    setappdata(hObject,'dispAxisTitleLabelOffsetFromTop',dispAxisTitleLabelOffsetFromTop);
+    
+    %display axes
+    dispAxesPos = handles.dispAxes.Position;
+    dispAxesOffsetFromTop = origHgt - (dispAxesPos(2) + dispAxesPos(4));
+    setappdata(hObject,'dispAxesOffsetFromTop',dispAxesOffsetFromTop);
+    
+    %insert seq event button
+    insertEventButtonPos = handles.insertEventButton.Position;
+    insertEventButtonOffsetFromTop = origHgt - (insertEventButtonPos(2) + insertEventButtonPos(4));
+    setappdata(hObject,'insertEventButtonOffsetFromTop',insertEventButtonOffsetFromTop);
+    
+    %script listbox
+    scriptListboxPos = handles.scriptListbox.Position;
+    scriptListboxOffsetFromTop = origHgt - (scriptListboxPos(2) + scriptListboxPos(4));
+    setappdata(hObject,'scriptListboxOffsetFromTop',scriptListboxOffsetFromTop);
   
+    %incrOrbitToPlotNum Button
+    incrOrbitToPlotNumPos = handles.incrOrbitToPlotNum.Position;
+    incrOrbitToPlotNumOffsetFromRight = origWidth - (incrOrbitToPlotNumPos(1) + incrOrbitToPlotNumPos(3));
+    setappdata(hObject,'incrOrbitToPlotNumOffsetFromRight',incrOrbitToPlotNumOffsetFromRight);
+    
+    %timeSliderPanel
+    timeSliderPanelPos = handles.timeSliderPanel.Position;
+    timeSliderPanelOffsetFromRight = origWidth - (timeSliderPanelPos(1) + timeSliderPanelPos(3));
+    setappdata(hObject,'timeSliderPanelOffsetFromRight',timeSliderPanelOffsetFromRight);
+    
+    %warningAlertPanel
+    warningAlertPanelPos = handles.warningAlertPanel.Position;
+    warningAlertPanelOffsetFromRight = origWidth - (warningAlertPanelPos(1) + warningAlertPanelPos(3));
+    setappdata(hObject,'warningAlertPanelOffsetFromRight',warningAlertPanelOffsetFromRight);
+    
+    %warnAlertsSlider
+    warnAlertsSliderPos = handles.warnAlertsSlider.Position;
+    warnAlertsSliderOffsetFromRight = warningAlertPanelPos(3) - (warnAlertsSliderPos(1) + warnAlertsSliderPos(3));
+    setappdata(handles.warningAlertPanel,'warnAlertsSliderOffsetFromRight',warnAlertsSliderOffsetFromRight);
+    
+    %warning1Lbl (and others
+    warningLblPos = handles.warning1Lbl.Position;
+    warningLblOffsetFromRight = warningAlertPanelPos(3) - (warningLblPos(1) + warningLblPos(3));
+    setappdata(handles.warningAlertPanel,'warningLblOffsetFromRight',warningLblOffsetFromRight);
+
 function initializeOutputWindowText(handles, hOutputText) 
     write_to_output_func = getappdata(handles.ma_LvdMainGUI,'write_to_output_func');
 
     set(hOutputText,'String',' ');
     statusBoxMsg = {['KSP TOT Launch Vehicle Designer v', getKSPTOTVersionNumStr(), sprintf(' (R%s)', version('-release'))], 'Written By Arrowstar (C) 2020', ...
-                    getMA_HR()};
+                    getLVD_HR(hOutputText)};
 	for(i=1:size(statusBoxMsg,2)) %#ok<ALIGN,*NO4LP>
         if(i==1)
             write_to_output_func(statusBoxMsg{i},'overwrite');
@@ -148,6 +219,7 @@ function initializeOutputWindowText(handles, hOutputText)
             write_to_output_func(statusBoxMsg{i},'appendNoDate');
         end
     end
+    
 
     
 function runScript(handles, lvdData, evtStartNum)
@@ -2137,4 +2209,167 @@ function displayEvtPropTimesInLogFileMenu_Callback(hObject, eventdata, handles)
         lvdData.settings.disEvtPropTimes = true;
         
         writeOutput('Event propagation times will be displayed in the ksptot.log file.','append');
+    end
+
+
+% --- Executes when ma_LvdMainGUI is resized.
+function ma_LvdMainGUI_SizeChangedFcn(hObject, eventdata, handles)
+% hObject    handle to ma_LvdMainGUI (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    origWidth = getappdata(hObject,'OriginalWidth');
+    origHeight = getappdata(hObject,'OriginalHeight');
+    
+    newPos = hObject.Position;
+    newWidth = newPos(3);
+    newHeight = newPos(4);
+    
+    if(newWidth == origWidth && newHeight == origHeight)
+        try
+            LimitFigSize(hObject, 'min', [origWidth, origHeight]);
+        catch
+            %do nothing
+        end
+    end
+    
+%     %update figure to not get smaller than original size
+    updatedFigPos = newPos;
+%     updatedFigPos(3) = max([origWidth,newWidth]);
+%     updatedFigPos(4) = max([origHeight,newHeight]);
+%     hObject.Position = updatedFigPos;
+%     drawnow;
+    
+    %resize title text banner
+    titleOffsetFromTop = getappdata(hObject,'titleOffsetFromTop');
+    titlePos = handles.titleText.Position;
+    titlePos(3) = updatedFigPos(3);
+    titlePos(2) = updatedFigPos(4) - (titlePos(4) + titleOffsetFromTop);
+    handles.titleText.Position = titlePos;
+    
+    %initial state panel
+    initScStatePanelOffsetFromTop = getappdata(hObject,'initScStatePanelOffsetFromTop');
+    initScStatePanelPos = handles.initScStatePanel.Position;
+    initScStatePanelPos(2) = updatedFigPos(4) - (initScStatePanelPos(4) + initScStatePanelOffsetFromTop);
+    handles.initScStatePanel.Position = initScStatePanelPos;
+    
+    %final state panel
+    finalScStatePanelOffsetFromTop = getappdata(hObject,'finalScStatePanelOffsetFromTop');
+    finalScStatePanelPos = handles.finalScStatePanel.Position;
+    finalScStatePanelPos(2) = updatedFigPos(4) - (finalScStatePanelPos(4) + finalScStatePanelOffsetFromTop);
+    handles.finalScStatePanel.Position = finalScStatePanelPos;
+    
+    %display axes title label
+    dispAxisTitleLabelOffsetFromTop = getappdata(hObject,'dispAxisTitleLabelOffsetFromTop');
+    dispAxisTitleLabelPos = handles.dispAxisTitleLabel.Position;
+    dispAxisTitleLabelPos(2) = updatedFigPos(4) - (dispAxisTitleLabelPos(4) + dispAxisTitleLabelOffsetFromTop);
+    dispAxisTitleLabelPos(3) = updatedFigPos(3) - dispAxisTitleLabelPos(1);
+    handles.dispAxisTitleLabel.Position = dispAxisTitleLabelPos;
+    
+    %display axes    
+    dispAxesOffsetFromTop = getappdata(hObject,'dispAxesOffsetFromTop');
+    dispAxesPos = handles.dispAxes.Position;
+    dispAxesPos(3) = updatedFigPos(3) - dispAxesPos(1);
+    dispAxesPos(4) = newHeight - (dispAxesPos(2) + dispAxesOffsetFromTop);
+    handles.dispAxes.Position = dispAxesPos;
+    
+    %axes working label
+    plotWorkingLblPos = handles.plotWorkingLbl.Position;
+    plotWorkingLblPos(1:2) = dispAxesPos(1:2)+1;
+    handles.plotWorkingLbl.Position = plotWorkingLblPos;
+    
+    %disp axes results out of date label
+    plotOutOfDataLblPos = handles.scriptResultsOutOfDateLbl.Position;
+    plotOutOfDataLblPos(1:2) = dispAxesPos(1:2)+1;
+    plotOutOfDataLblPos(3) = dispAxesPos(3);
+    handles.scriptResultsOutOfDateLbl.Position = plotOutOfDataLblPos;
+    
+    %insert seq event button
+    insertEventButtonOffsetFromTop = getappdata(hObject,'insertEventButtonOffsetFromTop');
+    insertEventButtonPos = handles.insertEventButton.Position;
+    insertEventButtonPos(2) = updatedFigPos(4) - (insertEventButtonPos(4) + insertEventButtonOffsetFromTop);
+    handles.insertEventButton.Position = insertEventButtonPos;
+    
+    %script listbox
+    scriptListboxOffsetFromTop = getappdata(hObject,'scriptListboxOffsetFromTop');
+    scriptListboxPos = handles.scriptListbox.Position;
+    scriptListboxPos(4) = newHeight - (scriptListboxPos(2) + scriptListboxOffsetFromTop);
+    handles.scriptListbox.Position = scriptListboxPos;
+    
+    %incrOrbitToPlotNum Button
+    incrOrbitToPlotNumOffsetFromRight = getappdata(hObject,'incrOrbitToPlotNumOffsetFromRight');
+    incrOrbitToPlotNumPos = handles.incrOrbitToPlotNum.Position;
+    incrOrbitToPlotNumPos(1) = newWidth - incrOrbitToPlotNumOffsetFromRight - incrOrbitToPlotNumPos(3);
+    handles.incrOrbitToPlotNum.Position = incrOrbitToPlotNumPos;
+    
+    %timeSliderPanel
+    timeSliderPanelOffsetFromRight = getappdata(hObject,'timeSliderPanelOffsetFromRight');
+    timeSliderPanelPos = handles.timeSliderPanel.Position;
+    timeSliderPanelPos(3) = newWidth - (timeSliderPanelPos(1) + timeSliderPanelOffsetFromRight);
+    handles.timeSliderPanel.Position = timeSliderPanelPos;
+    
+    %warningAlertPanel
+    warningAlertPanelOffsetFromRight = getappdata(hObject,'warningAlertPanelOffsetFromRight');
+    warningAlertPanelPos = handles.warningAlertPanel.Position;
+    warningAlertPanelPos(3) = newWidth - (warningAlertPanelPos(1) + warningAlertPanelOffsetFromRight);
+    handles.warningAlertPanel.Position = warningAlertPanelPos;
+    
+    drawnow limitrate nocallbacks;
+    
+% --- Executes when timeSliderPanel is resized.
+function timeSliderPanel_SizeChangedFcn(hObject, eventdata, handles)
+% hObject    handle to timeSliderPanel (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    if(not(isempty(handles)))
+        panelPos = hObject.Position;
+        hDispAxesTimeSliderJavaWrapperPos = handles.hDispAxesTimeSliderJavaWrapper.Position;
+        hDispAxesTimeSliderJavaWrapperPos(3:4) = panelPos(3:4);
+        handles.hDispAxesTimeSliderJavaWrapper.Position = hDispAxesTimeSliderJavaWrapperPos;
+    end
+
+
+% --- Executes when warningAlertPanel is resized.
+function warningAlertPanel_SizeChangedFcn(hObject, eventdata, handles)
+% hObject    handle to warningAlertPanel (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    if(not(isempty(handles)))
+        panelPos = hObject.Position;
+        
+        warnAlertsSliderOffsetFromRight = getappdata(hObject,'warnAlertsSliderOffsetFromRight');
+        warnAlertsSliderPos = handles.warnAlertsSlider.Position;
+        warnAlertsSliderPos(1) = panelPos(3) - warnAlertsSliderPos(3) - warnAlertsSliderOffsetFromRight;
+        handles.warnAlertsSlider.Position = warnAlertsSliderPos;
+        
+        warningLblOffsetFromRight = getappdata(hObject,'warningLblOffsetFromRight');
+        warningLblPos = handles.warning1Lbl.Position;
+        newWarnLblWidth = panelPos(3) - warningLblPos(1) - warningLblOffsetFromRight;
+        warningLblPos(3) = newWarnLblWidth;
+        handles.warning1Lbl.Position = warningLblPos;
+        handles.warning1Lbl.String = strWrapForLabel(handles.warning1Lbl,  handles.warning1Lbl.TooltipString);
+        
+        warningLblPos = handles.warning2Lbl.Position;
+        warningLblPos(3) = newWarnLblWidth;
+        handles.warning2Lbl.Position = warningLblPos;
+        handles.warning2Lbl.String = strWrapForLabel(handles.warning2Lbl,  handles.warning2Lbl.TooltipString);
+        
+        warningLblPos = handles.warning3Lbl.Position;
+        warningLblPos(3) = newWarnLblWidth;
+        handles.warning3Lbl.Position = warningLblPos;
+        handles.warning3Lbl.String = strWrapForLabel(handles.warning3Lbl,  handles.warning3Lbl.TooltipString);
+        
+        warningLblPos = handles.warning4Lbl.Position;
+        warningLblPos(3) = newWarnLblWidth;
+        handles.warning4Lbl.Position = warningLblPos;
+        handles.warning4Lbl.String = strWrapForLabel(handles.warning4Lbl,  handles.warning4Lbl.TooltipString);
+        
+        warningLblPos = handles.warning5Lbl.Position;
+        warningLblPos(3) = newWarnLblWidth;
+        handles.warning5Lbl.Position = warningLblPos;
+        handles.warning5Lbl.String = strWrapForLabel(handles.warning5Lbl,  handles.warning5Lbl.TooltipString);
+        
+        warningLblPos = handles.warning6Lbl.Position;
+        warningLblPos(3) = newWarnLblWidth;
+        handles.warning6Lbl.Position = warningLblPos;
+        handles.warning6Lbl.String = strWrapForLabel(handles.warning6Lbl,  handles.warning6Lbl.TooltipString);
     end

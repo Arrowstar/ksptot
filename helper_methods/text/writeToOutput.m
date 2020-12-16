@@ -6,36 +6,46 @@ function writeToOutput(handle,str,msgType, varargin)
     end
 
     curStr=char(get(handle,'String'));
-    
+            
     if(strcmpi(msgType,'append'))
-        str=char(linewrap(str, maxlength));
+        str=char(str);
         strToWrite=char(curStr,str);
-        set(handle,'String',strToWrite);
+
     elseif(strcmpi(msgType,'appendSameLine'))
-        str=char(linewrap([strtrim(curStr(end,:)),str], maxlength));
+        str=char([strtrim(curStr(end,:)),str]);
         strToWrite=char(curStr(1:end-1,:),str);
-        set(handle,'String',strToWrite);
+
     elseif(strcmpi(msgType,'overwrite'))
-        str=char(linewrap(str, maxlength));
+        str=char(str);
         strToWrite=str;
-        set(handle,'String',strToWrite);
+
     elseif(strcmpi(msgType,'error'))
-        str=char(linewrap(str, maxlength));
+        str=char(str);
         strToWrite=char(curStr,str);
-        set(handle,'String',strToWrite);
+        
         set(handle,'BackgroundColor',[1 0.7 0.7])
         beep;
     elseif(strcmpi(msgType,'clear'))
-        set(handle,'String',{'                                                       KSP Trajectory Optimization Tool',...
+%         hr = {repmat('#',1,10000)};
+        hr = getLVD_HR(handle);
+        
+        strToWrite = {'                                                       KSP Trajectory Optimization Tool',...
             '                                            Written by Arrowstar", (C) 2020',...
-            '#####################################################################'});
+            hr};
         set(handle,'BackgroundColor',[1 1 1])
+        
     elseif(strcmpi(msgType,'resetBGColor'))
         set(handle,'BackgroundColor',[1 1 1])
+        
     elseif(strcmpi(msgType,'clearDAT'))
-        set(handle,'String',{'                                                    Departure Analysis Tool',...
-                             '##################################################################'});
+        strToWrite = {'                                                    Departure Analysis Tool',...
+                             '##################################################################'};
         set(handle,'BackgroundColor',[1 1 1])
     end
+    
+    strToWriteStr = cellstr(string(strToWrite));
+    lblStrCell = textwrap(handle,strToWriteStr);
+    set(handle,'String',lblStrCell);
+    
     drawnow;
 end
