@@ -34,22 +34,7 @@ classdef TwoBodyPropagator < AbstractPropagator
             
             [t,y,te,ye,ie] = integrator.integrate(odefun, tspan, y0, evtsFunc, odeOutputFun);  
             
-            onesArr = ones(1,length(t));
-            sma = kepState.sma * onesArr;
-            ecc = kepState.ecc * onesArr;
-            inc = kepState.inc * onesArr;
-            raan = kepState.raan * onesArr;
-            arg = kepState.arg * onesArr;
-            
-            bodyInfo = kepState.frame.getOriginBody();
-            gmu = bodyInfo.gm * onesArr;
-
-            mean = y(:,1);
-            mean = mean(:)';
-            tru = computeTrueAnomFromMean(mean, ecc);
-            tru = tru(:)';
-            [rVect, vVect] = vect_getStatefromKepler(sma, ecc, inc, raan, arg, tru, gmu);
-            
+            [rVect, vVect] = convertTwoBodyYToNormalY(t,y, kepState);            
             if(eventInitStateLogEntry.isHoldDownEnabled())
                 t0 = t(1);
                 rVect0 = rVect(:,1);
@@ -69,7 +54,10 @@ classdef TwoBodyPropagator < AbstractPropagator
             y = ynew;
             
             if(not(isempty(te)))
-                ye = ynew(t == te,:);
+                ye = []; %going to overwrite it soon with the 6 element state
+                for(i=1:length(te))
+                    ye(i,:) = ynew(t == te(i),:); %#ok<AGROW>
+                end
             end
         end
         
@@ -220,4 +208,22 @@ classdef TwoBodyPropagator < AbstractPropagator
             storageSoCs = y(1+numTankMasses+1 : 1+numTankMasses+numPwrStorageStates);
         end
     end
+end
+
+function [rVect, vVect] = convertTwoBodyYToNormalY(t,y, kepState)
+    onesArr = ones(1,length(t));
+    sma = kepState.sma * onesArr;
+    ecc = kepState.ecc * onesArr;
+    inc = kepState.inc * onesArr;
+    raan = kepState.raan * onesArr;
+    arg = kepState.arg * onesArr;
+
+    bodyInfo = kepState.frame.getOriginBody();
+    gmu = bodyInfo.gm * onesArr;
+
+    mean = y(:,1);
+    mean = mean(:)';
+    tru = computeTrueAnomFromMean(mean, ecc);
+    tru = tru(:)';
+    [rVect, vVect] = vect_getStatefromKepler(sma, ecc, inc, raan, arg, tru, gmu);
 end
