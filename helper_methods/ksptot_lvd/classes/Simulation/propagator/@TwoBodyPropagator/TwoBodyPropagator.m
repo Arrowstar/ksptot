@@ -34,6 +34,9 @@ classdef TwoBodyPropagator < AbstractPropagator
             
             [t,y,te,ye,ie] = integrator.integrate(odefun, tspan, y0, evtsFunc, odeOutputFun);  
             
+            [t,ia,~] = unique(t,'stable');
+            y = y(ia,:);
+            
             [rVect, vVect] = convertTwoBodyYToNormalY(t,y, kepState);            
             if(eventInitStateLogEntry.isHoldDownEnabled())
                 t0 = t(1);
