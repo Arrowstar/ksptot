@@ -219,9 +219,7 @@ function initializeOutputWindowText(handles, hOutputText)
             write_to_output_func(statusBoxMsg{i},'appendNoDate');
         end
     end
-    
-
-    
+   
 function runScript(handles, lvdData, evtStartNum)
     if(lvdData.settings.autoPropScript)
         propagateScript(handles, lvdData, evtStartNum);
@@ -2224,7 +2222,7 @@ function ma_LvdMainGUI_SizeChangedFcn(hObject, eventdata, handles)
     newWidth = newPos(3);
     newHeight = newPos(4);
     
-    if(newWidth == origWidth && newHeight == origHeight)
+    if(newWidth <= origWidth && newHeight <= origHeight)
         try
             LimitFigSize(hObject, 'min', [origWidth, origHeight]);
         catch
