@@ -2268,7 +2268,7 @@ function ma_LvdMainGUI_SizeChangedFcn(hObject, eventdata, handles)
     dispAxesPos = handles.dispAxes.Position;
     dispAxesPos(3) = updatedFigPos(3) - dispAxesPos(1);
     dispAxesPos(4) = newHeight - (dispAxesPos(2) + dispAxesOffsetFromTop);
-    handles.dispAxes.Position = dispAxesPos;
+    handles.dispAxes.Position = dispAxesPos;    
     
     %axes working label
     plotWorkingLblPos = handles.plotWorkingLbl.Position;
