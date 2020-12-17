@@ -12,6 +12,7 @@ if(~isdeployed)
     addpath(genpath('kspTOT_LaunchVehicleDesigner'));
     addpath(genpath('kspTOT_VehicleSizer'));
     addpath(genpath('kspTOT_SingleUIs'));
+    addpath(genpath('images'));
 %     addpath('zArchive');
 end
 
