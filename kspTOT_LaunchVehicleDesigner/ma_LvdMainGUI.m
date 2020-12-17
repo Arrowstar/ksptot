@@ -22,7 +22,7 @@ function varargout = ma_LvdMainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_LvdMainGUI
 
-% Last Modified by GUIDE v2.5 16-Dec-2020 13:42:18
+% Last Modified by GUIDE v2.5 17-Dec-2020 09:24:41
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -167,9 +167,14 @@ function setResizeData(hObject, handles)
     setappdata(hObject,'dispAxisTitleLabelOffsetFromTop',dispAxisTitleLabelOffsetFromTop);
     
     %display axes
-    dispAxesPos = handles.dispAxes.Position;
-    dispAxesOffsetFromTop = origHgt - (dispAxesPos(2) + dispAxesPos(4));
-    setappdata(hObject,'dispAxesOffsetFromTop',dispAxesOffsetFromTop);
+%     dispAxesPos = handles.dispAxes.Position;
+%     dispAxesOffsetFromTop = origHgt - (dispAxesPos(2) + dispAxesPos(4));
+%     setappdata(hObject,'dispAxesOffsetFromTop',dispAxesOffsetFromTop);
+    
+    %display axes panel
+    dispAxesPanelPos = handles.dispAxesPanel.Position;
+    dispAxesPanelOffsetFromTop = origHgt - (dispAxesPanelPos(2) + dispAxesPanelPos(4));
+    setappdata(hObject,'dispAxesPanelOffsetFromTop',dispAxesPanelOffsetFromTop);    
     
     %insert seq event button
     insertEventButtonPos = handles.insertEventButton.Position;
@@ -2264,23 +2269,12 @@ function ma_LvdMainGUI_SizeChangedFcn(hObject, eventdata, handles)
     handles.dispAxisTitleLabel.Position = dispAxisTitleLabelPos;
     
     %display axes    
-    dispAxesOffsetFromTop = getappdata(hObject,'dispAxesOffsetFromTop');
-    dispAxesPos = handles.dispAxes.Position;
-    dispAxesPos(3) = updatedFigPos(3) - dispAxesPos(1);
-    dispAxesPos(4) = newHeight - (dispAxesPos(2) + dispAxesOffsetFromTop);
-    handles.dispAxes.Position = dispAxesPos;    
-    
-    %axes working label
-    plotWorkingLblPos = handles.plotWorkingLbl.Position;
-    plotWorkingLblPos(1:2) = dispAxesPos(1:2)+1;
-    handles.plotWorkingLbl.Position = plotWorkingLblPos;
-    
-    %disp axes results out of date label
-    plotOutOfDataLblPos = handles.scriptResultsOutOfDateLbl.Position;
-    plotOutOfDataLblPos(1:2) = dispAxesPos(1:2)+1;
-    plotOutOfDataLblPos(3) = dispAxesPos(3);
-    handles.scriptResultsOutOfDateLbl.Position = plotOutOfDataLblPos;
-    
+    dispAxesPanelOffsetFromTop = getappdata(hObject,'dispAxesPanelOffsetFromTop');
+    dispAxesPanelPos = handles.dispAxesPanel.Position;
+    dispAxesPanelPos(3) = updatedFigPos(3) - dispAxesPanelPos(1);
+    dispAxesPanelPos(4) = newHeight - (dispAxesPanelPos(2) + dispAxesPanelOffsetFromTop);
+    handles.dispAxesPanel.Position = dispAxesPanelPos;    
+       
     %insert seq event button
     insertEventButtonOffsetFromTop = getappdata(hObject,'insertEventButtonOffsetFromTop');
     insertEventButtonPos = handles.insertEventButton.Position;
@@ -2371,3 +2365,36 @@ function warningAlertPanel_SizeChangedFcn(hObject, eventdata, handles)
         handles.warning6Lbl.Position = warningLblPos;
         handles.warning6Lbl.String = strWrapForLabel(handles.warning6Lbl,  handles.warning6Lbl.TooltipString);
     end
+
+
+% --- Executes when dispAxesPanel is resized.
+function dispAxesPanel_SizeChangedFcn(hObject, eventdata, handles)
+% hObject    handle to dispAxesPanel (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    if(not(isempty(handles)))
+        dispAxesPanelPos = hObject.Position;
+        
+        %disp axes
+        dispAxesPos = [10, 5, dispAxesPanelPos(3)-10, dispAxesPanelPos(4)-10];
+        handles.dispAxes.Position = dispAxesPos;
+        
+        %axes working label
+        plotWorkingLblPos = handles.plotWorkingLbl.Position;
+        plotWorkingLblPos(1:2) = [1 1];
+        handles.plotWorkingLbl.Position = plotWorkingLblPos;
+
+        %disp axes results out of date label
+        plotOutOfDataLblPos = handles.scriptResultsOutOfDateLbl.Position;
+        plotOutOfDataLblPos(1:2) = [1 1];
+        plotOutOfDataLblPos(3) = dispAxesPanelPos(3);
+        handles.scriptResultsOutOfDateLbl.Position = plotOutOfDataLblPos;
+    end
+
+
+% --------------------------------------------------------------------
+function toggleCameraToolbar_ClickedCallback(hObject, eventdata, handles)
+% hObject    handle to toggleCameraToolbar (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    cameratoolbar(handles.ma_LvdMainGUI, 'Toggle');
