@@ -506,6 +506,40 @@ function varargout = lvd_EditActionSetKinematicStateGUI_OutputFcn(hObject, event
         close(handles.lvd_EditActionSetKinematicStateGUI);
     end 
     
+function [orbitModel, elemSetEnum] = getCurrentElemSetFromExistingValues(handles)
+        contents = cellstr(get(handles.elementSetCombo,'String'));
+        selElemSet = contents{get(handles.elementSetCombo,'Value')};
+        elemSetEnum = ElementSetEnum.getEnumForListboxStr(selElemSet);
+                
+        time = str2double(handles.utText.String);
+        
+        orbit1Elem = str2double(handles.orbit1Text.String);
+        orbit2Elem = str2double(handles.orbit2Text.String);
+        orbit3Elem = str2double(handles.orbit3Text.String);
+        orbit4Elem = str2double(handles.orbit4Text.String);
+        orbit5Elem = str2double(handles.orbit5Text.String);
+        orbit6Elem = str2double(handles.orbit6Text.String);
+        
+        curElemSet = getappdata(handles.lvd_EditActionSetKinematicStateGUI,'curElemSet');
+        frame = curElemSet.frame;
+        
+        switch elemSetEnum
+            case ElementSetEnum.CartesianElements
+                orbitModel = CartesianElementSet(time, [orbit1Elem, orbit2Elem, orbit3Elem], [orbit4Elem, orbit5Elem, orbit6Elem], frame);
+                
+            case ElementSetEnum.KeplerianElements
+                orbitModel = KeplerianElementSet(time, orbit1Elem, orbit2Elem, deg2rad(orbit3Elem), deg2rad(orbit4Elem), deg2rad(orbit5Elem), deg2rad(orbit6Elem), frame);
+                
+            case ElementSetEnum.GeographicElements
+                orbitModel = GeographicElementSet(time, deg2rad(orbit1Elem), deg2rad(orbit2Elem), orbit3Elem, deg2rad(orbit4Elem), deg2rad(orbit5Elem), orbit6Elem, frame);
+                
+            case ElementSetEnum.UniversalElements
+                orbitModel = UniversalElementSet(time, orbit1Elem, orbit2Elem, deg2rad(orbit3Elem), deg2rad(orbit4Elem), deg2rad(orbit5Elem), orbit6Elem, frame);
+                
+            otherwise
+                error('Unknown element set type: %s', class(elemSetEnum));
+        end
+    
 function bodyInfo = getSelectedBodyInfo(handles)
 % 	lvdData = getappdata(handles.lvd_EditActionSetKinematicStateGUI,'lvdData');
 %     celBodyData = lvdData.celBodyData;
@@ -1666,7 +1700,7 @@ function getOrbitFromSFSFileContextMenu_Callback(hObject, eventdata, handles)
         elementSetCombo_Callback(handles.elementSetCombo, [], handles);
     end
 
-    refBodyID = orbitPanelGetOrbitFromSFSContextCallBack(handles.ksptotMainGUI, handles.orbit1Text, handles.orbit2Text, handles.orbit3Text, handles.orbit4Text, handles.orbit5Text, handles.orbit6Text, handles.utText);
+    refBodyID = orbitPanelGetOrbitFromSFSContextCallBack([], handles.orbit1Text, handles.orbit2Text, handles.orbit3Text, handles.orbit4Text, handles.orbit5Text, handles.orbit6Text, handles.utText);
     tru = computeTrueAnomFromMean(deg2rad(str2double(get(handles.orbit6Text,'String'))), str2double(get(handles.orbit2Text,'String')));
     set(handles.orbit6Text,'String',fullAccNum2Str(rad2deg(tru)));
 
@@ -1675,7 +1709,10 @@ function getOrbitFromSFSFileContextMenu_Callback(hObject, eventdata, handles)
         celBodyData = lvdData.celBodyData;
         bodyInfo = getBodyInfoByNumber(refBodyID, celBodyData);
         
-        curElemSet = getappdata(handles.lvd_EditInitialStateGUI,'curElemSet');
+        curElemSet = getCurrentElemSetFromExistingValues(handles);
+        setappdata(handles.lvd_EditActionSetKinematicStateGUI,'curElemSet',curElemSet);
+        
+%         curElemSet = getappdata(handles.lvd_EditActionSetKinematicStateGUI,'curElemSet');
         curElemSet.frame.setOriginBody(bodyInfo);
         updateStateDueToFrameChange(handles, AbstractReferenceFrame.empty(1,0));
         
@@ -1717,7 +1754,10 @@ function getOrbitFromKSPTOTConnectContextMenu_Callback(hObject, eventdata, handl
         celBodyData = lvdData.celBodyData;
         bodyInfo = getBodyInfoByNumber(refBodyID, celBodyData);
         
-        curElemSet = getappdata(handles.lvd_EditInitialStateGUI,'curElemSet');
+        curElemSet = getCurrentElemSetFromExistingValues(handles);
+        setappdata(handles.lvd_EditActionSetKinematicStateGUI,'curElemSet',curElemSet);
+        
+%         curElemSet = getappdata(handles.lvd_EditActionSetKinematicStateGUI,'curElemSet');
         curElemSet.frame.setOriginBody(bodyInfo);
         updateStateDueToFrameChange(handles, AbstractReferenceFrame.empty(1,0));
         
@@ -1759,7 +1799,10 @@ function getOrbitFromKSPActiveVesselMenu_Callback(hObject, eventdata, handles)
         celBodyData = lvdData.celBodyData;
         bodyInfo = getBodyInfoByNumber(refBodyID, celBodyData);
         
-        curElemSet = getappdata(handles.lvd_EditInitialStateGUI,'curElemSet');
+        curElemSet = getCurrentElemSetFromExistingValues(handles);
+        setappdata(handles.lvd_EditActionSetKinematicStateGUI,'curElemSet',curElemSet);
+        
+%         curElemSet = getappdata(handles.lvd_EditActionSetKinematicStateGUI,'curElemSet');
         curElemSet.frame.setOriginBody(bodyInfo);
         updateStateDueToFrameChange(handles, AbstractReferenceFrame.empty(1,0));
         

@@ -182,43 +182,40 @@ function varargout = lvd_EditInitialStateGUI_OutputFcn(hObject, eventdata, handl
         lvdData = getappdata(handles.lvd_EditInitialStateGUI,'lvdData');
         initStateModel = lvdData.initStateModel;
         
-        contents = cellstr(get(handles.elementSetCombo,'String'));
-        selElemSet = contents{get(handles.elementSetCombo,'Value')};
-        elemSetEnum = ElementSetEnum.getEnumForListboxStr(selElemSet);
-        
-%         contents = cellstr(get(handles.refFrameTypeCombo,'String'));
-%         selFrameType = contents{get(handles.refFrameTypeCombo,'Value')};
-%         refFrameEnum = ReferenceFrameEnum.getEnumForListboxStr(selFrameType);
-        
-        time = str2double(handles.utText.String);
-%         bodyInfo = getSelectedBodyInfo(handles);
-        
-        orbit1Elem = str2double(handles.orbit1Text.String);
-        orbit2Elem = str2double(handles.orbit2Text.String);
-        orbit3Elem = str2double(handles.orbit3Text.String);
-        orbit4Elem = str2double(handles.orbit4Text.String);
-        orbit5Elem = str2double(handles.orbit5Text.String);
-        orbit6Elem = str2double(handles.orbit6Text.String);
-        
-        curElemSet = getappdata(handles.lvd_EditInitialStateGUI,'curElemSet');
-        frame = curElemSet.frame;
-        
-        switch elemSetEnum
-            case ElementSetEnum.CartesianElements
-                orbitModel = CartesianElementSet(time, [orbit1Elem, orbit2Elem, orbit3Elem], [orbit4Elem, orbit5Elem, orbit6Elem], frame);
-                
-            case ElementSetEnum.KeplerianElements
-                orbitModel = KeplerianElementSet(time, orbit1Elem, orbit2Elem, deg2rad(orbit3Elem), deg2rad(orbit4Elem), deg2rad(orbit5Elem), deg2rad(orbit6Elem), frame);
-                
-            case ElementSetEnum.GeographicElements
-                orbitModel = GeographicElementSet(time, deg2rad(orbit1Elem), deg2rad(orbit2Elem), orbit3Elem, deg2rad(orbit4Elem), deg2rad(orbit5Elem), orbit6Elem, frame);
-                
-            case ElementSetEnum.UniversalElements
-                orbitModel = UniversalElementSet(time, orbit1Elem, orbit2Elem, deg2rad(orbit3Elem), deg2rad(orbit4Elem), deg2rad(orbit5Elem), orbit6Elem, frame);
-                
-            otherwise
-                error('Unknown element set type: %s', class(elemSetEnum));
-        end
+%         contents = cellstr(get(handles.elementSetCombo,'String'));
+%         selElemSet = contents{get(handles.elementSetCombo,'Value')};
+%         elemSetEnum = ElementSetEnum.getEnumForListboxStr(selElemSet);
+%                 
+%         time = str2double(handles.utText.String);
+%         
+%         orbit1Elem = str2double(handles.orbit1Text.String);
+%         orbit2Elem = str2double(handles.orbit2Text.String);
+%         orbit3Elem = str2double(handles.orbit3Text.String);
+%         orbit4Elem = str2double(handles.orbit4Text.String);
+%         orbit5Elem = str2double(handles.orbit5Text.String);
+%         orbit6Elem = str2double(handles.orbit6Text.String);
+%         
+%         curElemSet = getappdata(handles.lvd_EditInitialStateGUI,'curElemSet');
+%         frame = curElemSet.frame;
+%         
+%         switch elemSetEnum
+%             case ElementSetEnum.CartesianElements
+%                 orbitModel = CartesianElementSet(time, [orbit1Elem, orbit2Elem, orbit3Elem], [orbit4Elem, orbit5Elem, orbit6Elem], frame);
+%                 
+%             case ElementSetEnum.KeplerianElements
+%                 orbitModel = KeplerianElementSet(time, orbit1Elem, orbit2Elem, deg2rad(orbit3Elem), deg2rad(orbit4Elem), deg2rad(orbit5Elem), deg2rad(orbit6Elem), frame);
+%                 
+%             case ElementSetEnum.GeographicElements
+%                 orbitModel = GeographicElementSet(time, deg2rad(orbit1Elem), deg2rad(orbit2Elem), orbit3Elem, deg2rad(orbit4Elem), deg2rad(orbit5Elem), orbit6Elem, frame);
+%                 
+%             case ElementSetEnum.UniversalElements
+%                 orbitModel = UniversalElementSet(time, orbit1Elem, orbit2Elem, deg2rad(orbit3Elem), deg2rad(orbit4Elem), deg2rad(orbit5Elem), orbit6Elem, frame);
+%                 
+%             otherwise
+%                 error('Unknown element set type: %s', class(elemSetEnum));
+%         end
+
+        [orbitModel, elemSetEnum] = getCurrentElemSetFromExistingValues(handles);
 
         initStateModel.orbitModel = orbitModel;
         
@@ -298,7 +295,41 @@ function varargout = lvd_EditInitialStateGUI_OutputFcn(hObject, eventdata, handl
         
         varargout{1} = true;
         close(handles.lvd_EditInitialStateGUI);
-    end    
+    end   
+    
+function [orbitModel, elemSetEnum] = getCurrentElemSetFromExistingValues(handles)
+        contents = cellstr(get(handles.elementSetCombo,'String'));
+        selElemSet = contents{get(handles.elementSetCombo,'Value')};
+        elemSetEnum = ElementSetEnum.getEnumForListboxStr(selElemSet);
+                
+        time = str2double(handles.utText.String);
+        
+        orbit1Elem = str2double(handles.orbit1Text.String);
+        orbit2Elem = str2double(handles.orbit2Text.String);
+        orbit3Elem = str2double(handles.orbit3Text.String);
+        orbit4Elem = str2double(handles.orbit4Text.String);
+        orbit5Elem = str2double(handles.orbit5Text.String);
+        orbit6Elem = str2double(handles.orbit6Text.String);
+        
+        curElemSet = getappdata(handles.lvd_EditInitialStateGUI,'curElemSet');
+        frame = curElemSet.frame;
+        
+        switch elemSetEnum
+            case ElementSetEnum.CartesianElements
+                orbitModel = CartesianElementSet(time, [orbit1Elem, orbit2Elem, orbit3Elem], [orbit4Elem, orbit5Elem, orbit6Elem], frame);
+                
+            case ElementSetEnum.KeplerianElements
+                orbitModel = KeplerianElementSet(time, orbit1Elem, orbit2Elem, deg2rad(orbit3Elem), deg2rad(orbit4Elem), deg2rad(orbit5Elem), deg2rad(orbit6Elem), frame);
+                
+            case ElementSetEnum.GeographicElements
+                orbitModel = GeographicElementSet(time, deg2rad(orbit1Elem), deg2rad(orbit2Elem), orbit3Elem, deg2rad(orbit4Elem), deg2rad(orbit5Elem), orbit6Elem, frame);
+                
+            case ElementSetEnum.UniversalElements
+                orbitModel = UniversalElementSet(time, orbit1Elem, orbit2Elem, deg2rad(orbit3Elem), deg2rad(orbit4Elem), deg2rad(orbit5Elem), orbit6Elem, frame);
+                
+            otherwise
+                error('Unknown element set type: %s', class(elemSetEnum));
+        end
 
 
 function bodyInfo = getSelectedBodyInfo(handles)
@@ -1432,7 +1463,9 @@ function getOrbitFromSFSFileContextMenu_Callback(hObject, eventdata, handles)
         celBodyData = lvdData.celBodyData;
         bodyInfo = getBodyInfoByNumber(refBodyID, celBodyData);
         
-        curElemSet = getappdata(handles.lvd_EditInitialStateGUI,'curElemSet');
+        curElemSet = getCurrentElemSetFromExistingValues(handles);
+        setappdata(handles.lvd_EditInitialStateGUI,'curElemSet',curElemSet);
+        
         curElemSet.frame.setOriginBody(bodyInfo);
         updateStateDueToFrameChange(handles, AbstractReferenceFrame.empty(1,0));
 %         value = findValueFromComboBox(bodyInfo.name, handles.centralBodyCombo);
@@ -1473,7 +1506,10 @@ function getOrbitFromKSPTOTConnectContextMenu_Callback(hObject, eventdata, handl
         celBodyData = lvdData.celBodyData;
         bodyInfo = getBodyInfoByNumber(refBodyID, celBodyData);
         
-        curElemSet = getappdata(handles.lvd_EditInitialStateGUI,'curElemSet');
+        curElemSet = getCurrentElemSetFromExistingValues(handles);
+        setappdata(handles.lvd_EditInitialStateGUI,'curElemSet',curElemSet);
+        
+%         curElemSet = getappdata(handles.lvd_EditInitialStateGUI,'curElemSet');
         curElemSet.frame.setOriginBody(bodyInfo);
         updateStateDueToFrameChange(handles, AbstractReferenceFrame.empty(1,0));
         
@@ -1516,7 +1552,10 @@ function getOrbitFromKSPActiveVesselMenu_Callback(hObject, eventdata, handles)
         celBodyData = lvdData.celBodyData;
         bodyInfo = getBodyInfoByNumber(refBodyID, celBodyData);
         
-        curElemSet = getappdata(handles.lvd_EditInitialStateGUI,'curElemSet');
+        curElemSet = getCurrentElemSetFromExistingValues(handles);
+        setappdata(handles.lvd_EditInitialStateGUI,'curElemSet',curElemSet);
+        
+%         curElemSet = getappdata(handles.lvd_EditInitialStateGUI,'curElemSet');
         curElemSet.frame.setOriginBody(bodyInfo);
         updateStateDueToFrameChange(handles, AbstractReferenceFrame.empty(1,0));
         
