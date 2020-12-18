@@ -15,7 +15,7 @@ function eventLog = ma_executeCoast_goto_node(node, initialState, eventNum, cons
     end
  
     try
-        [truOfAN, truOfDN] = computeTruOfAscDescNodes(sma, ecc, inc, raan, arg, gmu,[0,0,1]);
+        [truOfAN, truOfDN] = computeTruOfAscDescNodes(sma, ecc, inc, raan, arg, gmu,[0;0;1]);
     catch ME
         warnStr ='Error computing nodes, setting node anomaly = 0.';
         addToExecutionWarnings(warnStr, eventNum, bodyID, celBodyData);
