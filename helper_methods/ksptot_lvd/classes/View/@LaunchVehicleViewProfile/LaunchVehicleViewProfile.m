@@ -66,6 +66,10 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         orbitNumToPlot(1,1) double = 1;
         viewAzEl(1,2) = [-37.5, 30]; %view(3)
         viewZoomAxLims(3,2) double = NaN(3,2);
+        viewCameraPosition(1,3) double = NaN(1,3);
+        viewCameraTarget(1,3) double = NaN(1,3);
+        viewCameraUpVector(1,3) double = NaN(1,3);
+        viewCameraViewAngle(1,1) double = NaN(1,1);
     end
     
     properties(Transient)

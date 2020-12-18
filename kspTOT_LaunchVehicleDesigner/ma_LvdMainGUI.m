@@ -109,6 +109,11 @@ function ma_LvdMainGUI_OpeningFcn(hObject, eventdata, handles, varargin)
         hPan = pan(handles.ma_LvdMainGUI);
         hPan.ActionPostCallback = @(src,evt) recordFinalAxesPanZoomAfterRotation(src,evt, handles);
 
+        addlistener(handles.dispAxes,'CameraPosition','PostSet', @(src,evt) recordFinalAxesPanZoomAfterRotation(src,evt, handles));
+        addlistener(handles.dispAxes,'CameraTarget','PostSet', @(src,evt) recordFinalAxesPanZoomAfterRotation(src,evt, handles));
+        addlistener(handles.dispAxes,'CameraUpVector','PostSet', @(src,evt) recordFinalAxesPanZoomAfterRotation(src,evt, handles));
+        addlistener(handles.dispAxes,'CameraViewAngle','PostSet', @(src,evt) recordFinalAxesPanZoomAfterRotation(src,evt, handles));
+        
         setDeleteButtonEnable(lvdData, handles);
         setNonSeqDeleteButtonEnable(lvdData, handles);
 
@@ -294,6 +299,11 @@ function recordFinalAxesPanZoomAfterRotation(obj,event_obj, handles)
                                                       
     [az,el] = view(handles.dispAxes);
     lvdData.viewSettings.selViewProfile.viewAzEl = [az,el];
+    
+    lvdData.viewSettings.selViewProfile.viewCameraPosition = handles.dispAxes.CameraPosition;
+	lvdData.viewSettings.selViewProfile.viewCameraTarget = handles.dispAxes.CameraTarget;
+	lvdData.viewSettings.selViewProfile.viewCameraUpVector = handles.dispAxes.CameraUpVector;
+	lvdData.viewSettings.selViewProfile.viewCameraViewAngle = handles.dispAxes.CameraViewAngle;
     
     
 function gravSystemUpdateCallback(src,evt, handles)
@@ -2035,6 +2045,11 @@ function popOutOrbitDisplayMenu_Callback(hObject, eventdata, handles)
     
     delete(wb);
     hFig.Visible = 'on';
+    
+    tf = cameratoolbar(handles.ma_LvdMainGUI, 'GetVisible');
+    if(tf)
+        cameratoolbar(hFig, 'Show');
+    end
     
     
 function popOutOrbitDispDelFcn(~,~, inlineDispAxes, handles)

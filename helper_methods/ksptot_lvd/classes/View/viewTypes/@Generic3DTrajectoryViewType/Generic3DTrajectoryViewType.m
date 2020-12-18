@@ -284,9 +284,31 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                 setappdata(handles.ma_LvdMainGUI,'dispOrbitXLim',xlim(dAxes));
                 setappdata(handles.ma_LvdMainGUI,'dispOrbitYLim',ylim(dAxes));
                 setappdata(handles.ma_LvdMainGUI,'dispOrbitZLim',zlim(dAxes));
+                
                 zoom reset;
+                
                 view(dAxes,viewProfile.viewAzEl);
-
+                
+                camPos = viewProfile.viewCameraPosition;
+                camTgt = viewProfile.viewCameraTarget;
+                camUpVec = viewProfile.viewCameraUpVector;
+                camVA = viewProfile.viewCameraViewAngle;
+                if(not(any(isnan(camPos))))
+                    dAxes.CameraPosition = camPos;
+                end
+                
+                if(not(any(isnan(camTgt))))
+                    dAxes.CameraTarget = camTgt;
+                end
+                
+                if(not(any(isnan(camUpVec))))
+                    dAxes.CameraUpVector = camUpVec;
+                end
+                
+                if(not(any(isnan(camVA))))
+                    dAxes.CameraViewAngle = camVA;
+                end
+                
                 if(any(isnan(viewProfile.viewZoomAxLims)))
                     viewProfile.viewZoomAxLims = [xlim(dAxes);
                                                   ylim(dAxes);
@@ -296,14 +318,11 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                     dAxes.YLim = viewProfile.viewZoomAxLims(2,:);
                     dAxes.ZLim = viewProfile.viewZoomAxLims(3,:);
                 end
+                
             else
                 view(dAxes,viewProfile.viewAzEl);
             end
-            
-%             if(dAxes.Parent == hFig)
-%                 dAxes.Position = [531.0, 206.0, 418.0, 350.0];
-%             end
-            
+                        
             hold(dAxes,'on');
             viewProfile.createBodyMarkerData(dAxes, subStateLogs, viewInFrame, showSoI, viewProfile.meshEdgeAlpha, lvdData.script.evts);
             viewProfile.createTrajectoryMarkerData(subStateLogs, lvdData.script.evts);
