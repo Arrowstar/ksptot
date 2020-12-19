@@ -39,7 +39,12 @@ function finalStruct = parseKspConfigFile(fileTxt)
             if(not(isempty(tokens)))
                 token = tokens{1};
                 name = matlab.lang.makeValidName(token{1});
-                data = token{2};
+                
+                dataStr = attemptStrEval(token{2});
+                data = str2double(dataStr);
+                if(isnan(data))
+                    data = dataStr;
+                end
                 
                 if(isfield(s,name))
                     if(not(iscell(s.(name))))

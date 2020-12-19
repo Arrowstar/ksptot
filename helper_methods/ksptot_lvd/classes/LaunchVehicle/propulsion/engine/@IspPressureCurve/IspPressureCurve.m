@@ -80,6 +80,8 @@ classdef IspPressureCurve < AbstractThrottleCurve
             for(i=1:length(pressPts))
                 curve.elems(end+1) = IspPressureCurveElement(pressPts(i), ispPts(i));
             end
+            
+            curve.generateCurve();
         end
     end
 end

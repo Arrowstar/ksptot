@@ -22,7 +22,7 @@ function varargout = lvd_EditEngineGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditEngineGUI
 
-% Last Modified by GUIDE v2.5 18-Dec-2020 19:52:03
+% Last Modified by GUIDE v2.5 19-Dec-2020 12:14:43
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -564,3 +564,40 @@ function editIspProfileButton_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
     engine = getappdata(handles.lvd_EditEngineGUI, 'engine');
     editThrottleModifierProfileGUI(engine.ispPressCurve);
+
+
+% --------------------------------------------------------------------
+function importEngineParamsFromKsp_Callback(hObject, eventdata, handles)
+% hObject    handle to importEngineParamsFromKsp (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    [FileName,PathName,~] = uigetfile({'*.cfg','KSP Engine Config Files'},'Import KSP Engine Data');
+    
+    if(FileName == 0)
+        return;
+    end
+    
+    engineCfgFile = fullfile(PathName,FileName);
+    try
+        [thrustCurve, ispCurve, maxThrottle, minThrottle, ~] = getEngineParametersFromKspEngineFile(engineCfgFile);
+    catch ME
+        errordlg(sprintf('Could not parse engine config file.  Message:\n\n%s', ME.message),'Could Not Parse Engine Config');
+        return;
+    end
+    
+    engine = getappdata(handles.lvd_EditEngineGUI, 'engine');
+    
+    engine.minThrottle = minThrottle;
+    engine.maxThrottle = maxThrottle;
+    engine.ispPressCurve = ispCurve;
+    engine.thrustPressCurve = thrustCurve;
+        
+    populateGUI(handles, engine);
+    
+    helpdlg('Engine data import was successful.','Engine Data Import');
+
+% --------------------------------------------------------------------
+function throttleThrustIspContextMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to throttleThrustIspContextMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)

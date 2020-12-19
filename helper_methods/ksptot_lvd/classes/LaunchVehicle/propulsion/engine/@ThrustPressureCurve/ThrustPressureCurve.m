@@ -80,6 +80,8 @@ classdef ThrustPressureCurve < AbstractThrottleCurve
             for(i=1:length(pressPts))
                 curve.elems(end+1) = ThrustPressureCurveElement(pressPts(i), thrustPts(i));
             end
+            
+            curve.generateCurve();
         end
     end
 end
