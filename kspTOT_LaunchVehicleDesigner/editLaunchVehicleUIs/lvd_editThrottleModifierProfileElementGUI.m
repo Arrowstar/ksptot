@@ -61,18 +61,28 @@ function lvd_editThrottleModifierProfileElementGUI_OpeningFcn(hObject, eventdata
     allowFuPctEdit = varargin{2};
     setappdata(hObject,'allowFuPctEdit',allowFuPctEdit);
     
+    curve = varargin{3};
+    setappdata(hObject,'curve',curve);
+    
     % Update handles structure
     guidata(hObject, handles);
     
-    populateUI(elem, allowFuPctEdit, handles);
+    populateUI(elem, allowFuPctEdit, curve, handles);
 
     % UIWAIT makes lvd_editThrottleModifierProfileElementGUI wait for user response (see UIRESUME)
     uiwait(handles.lvd_editThrottleModifierProfileElementGUI);
 
     
-function populateUI(elem, allowFuPctEdit, handles)
-    handles.fuRemainPctText.String = fullAccNum2Str(elem.indepVar); %percent
+function populateUI(elem, allowFuPctEdit, curve, handles)
+    handles.titleLabel.String = sprintf('Edit %s Element', curve.getCurveName());
+    
+    handles.indepValLabel.String = elem.getIndepVarName();
+    handles.fuRemainPctText.String = fullAccNum2Str(elem.indepVar);
+    handles.indepUnitLbl.String = elem.getIndepVarUnit();
+    
+    handles.depValLabel.String = elem.getDepVarName();
     handles.throtModifierText.String = fullAccNum2Str(elem.depVar);
+    handles.depUnitLbl.String = elem.getDepVarUnit();
     
     if(allowFuPctEdit == false)
         handles.fuRemainPctText.Enable = 'off';

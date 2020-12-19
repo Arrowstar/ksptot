@@ -4,18 +4,15 @@ classdef LaunchVehicleEngine < matlab.mixin.SetGet
     
     properties
         stage LaunchVehicleStage
-        
-        vacThrust(1,1) double = 0     %kN
-        vacIsp(1,1) double =  0       %sec
-        seaLvlThrust(1,1) double = 0  %kN
-        seaLvlIsp(1,1) double = 0     %sec
-        
+               
         bodyFrameThrustVect(3,1) double = [1;0;0]; %ND
         
         minThrottle(1,1) double = 0.0; %must be 0<=x<=1
         maxThrottle(1,1) double = 1.0; %must be 0<=x<=1
         
         fuelThrottleCurve FuelThrottleCurve
+        thrustPressCurve ThrustPressureCurve
+        ispPressCurve IspPressureCurve
         
         %EPS
         hasAlternator(1,1) logical = false;
@@ -26,6 +23,14 @@ classdef LaunchVehicleEngine < matlab.mixin.SetGet
         
         name char = 'Untitled Engine';
         id(1,1) double = 0;
+    end
+    
+    %deprecated
+    properties
+        vacThrust(1,1) double = 0     %kN
+        vacIsp(1,1) double =    1E-6  %sec
+        seaLvlThrust(1,1) double = 0  %kN
+        seaLvlIsp(1,1) double = 1E-6  %sec
     end
     
     properties(Dependent)
@@ -41,11 +46,22 @@ classdef LaunchVehicleEngine < matlab.mixin.SetGet
         function obj = LaunchVehicleEngine(stage)
             if(nargin>0)
                 obj.stage = stage;
+                
                 obj.fuelThrottleCurve = FuelThrottleCurve.getDefaultFuelThrottleCurve();
+                obj.thrustPressCurve = ThrustPressureCurve.getDefaultThrustPressureCurve();
+                obj.ispPressCurve = IspPressureCurve.getDefaultIspPressureCurve();
             end
             
             if(isempty(obj.fuelThrottleCurve))
                 obj.fuelThrottleCurve = FuelThrottleCurve.getDefaultFuelThrottleCurve();
+            end
+            
+            if(isempty(obj.thrustPressCurve))
+                obj.thrustPressCurve = ThrustPressureCurve.getDefaultThrustPressureCurve();
+            end
+            
+            if(isempty(obj.ispPressCurve))
+                obj.ispPressCurve = IspPressureCurve.getDefaultIspPressureCurve();
             end
             
             obj.id = rand();
@@ -56,19 +72,23 @@ classdef LaunchVehicleEngine < matlab.mixin.SetGet
         end
         
         function val = getVacThrust(obj)
-            val = obj.vacThrust;
+%             val = obj.vacThrust;
+            [val, ~] = obj.getThrustIspForPressure(LaunchVehicleEngine.vacPress);
         end
         
         function val = getVacIsp(obj)
-            val = obj.vacIsp;
+%             val = obj.vacIsp;
+            [~, val] = obj.getThrustIspForPressure(LaunchVehicleEngine.vacPress);
         end
         
         function val = getSeaLvlThrust(obj)
-            val = obj.seaLvlThrust;
+%             val = obj.seaLvlThrust;
+            [val, ~] = obj.getThrustIspForPressure(LaunchVehicleEngine.seaLvlPress);
         end
         
         function val = getSeaLvlIsp(obj)
-            val = obj.seaLvlIsp;
+%             val = obj.seaLvlIsp;
+            [~, val] = obj.getThrustIspForPressure(LaunchVehicleEngine.seaLvlPress);
         end
         
         function val = getMinThrottle(obj)
@@ -83,10 +103,10 @@ classdef LaunchVehicleEngine < matlab.mixin.SetGet
             engineSummStr = {};
             
             engineSummStr{end+1} = sprintf('\t\t\t%s', obj.name);
-            engineSummStr{end+1} = sprintf('\t\t\t\tVacuum Thrust = %.3f kN', obj.vacThrust);
-            engineSummStr{end+1} = sprintf('\t\t\t\tVacuum Isp = %.3f sec', obj.vacIsp);
-            engineSummStr{end+1} = sprintf('\t\t\t\tSea Level Thrust = %.3f kN', obj.seaLvlThrust);
-            engineSummStr{end+1} = sprintf('\t\t\t\tSea Level Isp = %.3f sec', obj.seaLvlIsp);
+            engineSummStr{end+1} = sprintf('\t\t\t\tVacuum Thrust = %.3f kN', obj.getVacThrust());
+            engineSummStr{end+1} = sprintf('\t\t\t\tVacuum Isp = %.3f sec', obj.getVacIsp());
+            engineSummStr{end+1} = sprintf('\t\t\t\tSea Level Thrust = %.3f kN', obj.getSeaLvlThrust());
+            engineSummStr{end+1} = sprintf('\t\t\t\tSea Level Isp = %.3f sec', obj.getSeaLvlIsp());
             engineSummStr{end+1} = sprintf('\t\t\t\tThrottle Range: %.3f%% -> %.3f%%', 100*obj.minThrottle, 100*obj.maxThrottle);
             
             if(obj.hasAlternator)
@@ -99,17 +119,27 @@ classdef LaunchVehicleEngine < matlab.mixin.SetGet
         end
         
         function [thrust, isp] = getThrustIspForPressure(obj, presskPa)
-            x = presskPa;
-            x1 = obj.seaLvlPress;
-            x2 = obj.vacPress;
+%             x = presskPa;
+%             x1 = obj.seaLvlPress;
+%             x2 = obj.vacPress;
+%             
+%             y1 = obj.seaLvlThrust;
+%             y2 = obj.vacThrust;
+%             thrust = y1 + ((x-x1)*(y2-y1))/(x2-x1);
+%             
+%             y1 = obj.seaLvlIsp;
+%             y2 = obj.vacIsp;
+%             isp = y1 + ((x-x1)*(y2-y1))/(x2-x1);
+
+            thrust = obj.thrustPressCurve.evalCurve(presskPa);
+            if(thrust < 0)
+                thrust = 0;
+            end
             
-            y1 = obj.seaLvlThrust;
-            y2 = obj.vacThrust;
-            thrust = y1 + ((x-x1)*(y2-y1))/(x2-x1);
-            
-            y1 = obj.seaLvlIsp;
-            y2 = obj.vacIsp;
-            isp = y1 + ((x-x1)*(y2-y1))/(x2-x1);
+            isp = obj.ispPressCurve.evalCurve(presskPa);
+            if(isp < 1E-6)
+                isp = 1E-6;
+            end
         end
         
         function [thrust, mdot] = getThrustFlowRateForPressure(obj, presskPa)
@@ -150,6 +180,8 @@ classdef LaunchVehicleEngine < matlab.mixin.SetGet
             newEngine.maxThrottle = obj.maxThrottle;
             
             newEngine.fuelThrottleCurve = obj.fuelThrottleCurve.copy();
+            newEngine.thrustPressCurve = obj.thrustPressCurve.copy();
+            newEngine.ispPressCurve = obj.ispPressCurve.copy();
             
             newEngine.name = sprintf('Copy of %s', obj.name);
         end
@@ -175,6 +207,24 @@ classdef LaunchVehicleEngine < matlab.mixin.SetGet
         function obj = loadobj(obj)
             if(isempty(obj.fuelThrottleCurve))
                 obj.fuelThrottleCurve = FuelThrottleCurve.getDefaultFuelThrottleCurve();
+            end
+            
+            if(isempty(obj.thrustPressCurve))
+                pressPts = [LaunchVehicleEngine.vacPress,LaunchVehicleEngine.seaLvlPress];
+                thrustPts = [obj.vacThrust, obj.seaLvlThrust];
+                obj.thrustPressCurve = ThrustPressureCurve.getCurveFromPoints(pressPts, thrustPts);
+                
+                obj.thrustPressCurve.sortElems();
+                obj.thrustPressCurve.generateCurve();
+            end
+            
+            if(isempty(obj.ispPressCurve))
+                pressPts = [LaunchVehicleEngine.vacPress,LaunchVehicleEngine.seaLvlPress];
+                ispPts = [obj.vacIsp, obj.seaLvlIsp];
+                obj.ispPressCurve = IspPressureCurve.getCurveFromPoints(pressPts, ispPts);
+                
+                obj.ispPressCurve.sortElems();
+                obj.ispPressCurve.generateCurve();
             end
         end
     end

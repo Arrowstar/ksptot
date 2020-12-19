@@ -22,7 +22,7 @@ function varargout = lvd_EditEngineGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditEngineGUI
 
-% Last Modified by GUIDE v2.5 23-Aug-2020 14:59:11
+% Last Modified by GUIDE v2.5 18-Dec-2020 19:52:03
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -78,10 +78,10 @@ function populateGUI(handles, engine)
     set(handles.engineNameText,'String',engine.name);
     set(handles.stageCombo,'String',stagesListboxStr);
     set(handles.stageCombo,'Value',ind);
-    set(handles.vacThrustText,'String',fullAccNum2Str(engine.getVacThrust()));
-    set(handles.vacIspText,'String',fullAccNum2Str(engine.getVacIsp()));
-    set(handles.seaLevelThrustText,'String',fullAccNum2Str(engine.getSeaLvlThrust()));
-    set(handles.seaLevelIspText,'String',fullAccNum2Str(engine.getSeaLvlIsp()));
+%     set(handles.vacThrustText,'String',fullAccNum2Str(engine.getVacThrust()));
+%     set(handles.vacIspText,'String',fullAccNum2Str(engine.getVacIsp()));
+%     set(handles.seaLevelThrustText,'String',fullAccNum2Str(engine.getSeaLvlThrust()));
+%     set(handles.seaLevelIspText,'String',fullAccNum2Str(engine.getSeaLvlIsp()));
     set(handles.minThrottleText,'String',fullAccNum2Str(100*engine.getMinThrottle()));
     set(handles.maxThrottleText,'String',fullAccNum2Str(100*engine.getMaxThrottle()));
     
@@ -114,10 +114,10 @@ function varargout = lvd_EditEngineGUI_OutputFcn(hObject, eventdata, handles)
         stage = lv.getStageForInd(handles.stageCombo.Value);
         
         name = handles.engineNameText.String;
-        vacThrust = str2double(handles.vacThrustText.String);
-        vacIsp = str2double(handles.vacIspText.String);
-        seaLvlThrust = str2double(handles.seaLevelThrustText.String);
-        seaLvlIsp = str2double(handles.seaLevelIspText.String);
+%         vacThrust = str2double(handles.vacThrustText.String);
+%         vacIsp = str2double(handles.vacIspText.String);
+%         seaLvlThrust = str2double(handles.seaLevelThrustText.String);
+%         seaLvlIsp = str2double(handles.seaLevelIspText.String);
         minThrottle = str2double(handles.minThrottleText.String)/100;
         maxThrottle = str2double(handles.maxThrottleText.String)/100;
         
@@ -129,10 +129,10 @@ function varargout = lvd_EditEngineGUI_OutputFcn(hObject, eventdata, handles)
         
         engine.name = name;
         engine.stage = stage;
-        engine.vacThrust = vacThrust;
-        engine.vacIsp = vacIsp;
-        engine.seaLvlThrust = seaLvlThrust;
-        engine.seaLvlIsp = seaLvlIsp;
+%         engine.vacThrust = vacThrust;
+%         engine.vacIsp = vacIsp;
+%         engine.seaLvlThrust = seaLvlThrust;
+%         engine.seaLvlIsp = seaLvlIsp;
         engine.minThrottle = minThrottle;
         engine.maxThrottle = maxThrottle;
         engine.hasAlternator = hasAlternator;
@@ -169,37 +169,37 @@ function saveAndCloseButton_Callback(hObject, eventdata, handles)
 function errMsg = validateInputs(handles)
     errMsg = {};
     
-    val = str2double(get(handles.vacThrustText,'String'));
-    enteredStr = get(handles.vacThrustText,'String');
-    numberName = 'Vacuum Thrust';
-    lb = 0;
-    ub = Inf;
-    isInt = false;
-    errMsg = validateNumber(val, numberName, lb, ub, isInt, errMsg, enteredStr);
-    
-    val = str2double(get(handles.vacIspText,'String'));
-    enteredStr = get(handles.vacIspText,'String');
-    numberName = 'Vacuum Isp';
-    lb = 0;
-    ub = Inf;
-    isInt = false;
-    errMsg = validateNumber(val, numberName, lb, ub, isInt, errMsg, enteredStr);
-    
-    val = str2double(get(handles.seaLevelThrustText,'String'));
-    enteredStr = get(handles.seaLevelThrustText,'String');
-    numberName = 'Sea Level Thrust';
-    lb = 0;
-    ub = Inf;
-    isInt = false;
-    errMsg = validateNumber(val, numberName, lb, ub, isInt, errMsg, enteredStr);
-    
-    val = str2double(get(handles.seaLevelIspText,'String'));
-    enteredStr = get(handles.seaLevelIspText,'String');
-    numberName = 'Sea Level Isp';
-    lb = 0;
-    ub = Inf;
-    isInt = false;
-    errMsg = validateNumber(val, numberName, lb, ub, isInt, errMsg, enteredStr);
+%     val = str2double(get(handles.vacThrustText,'String'));
+%     enteredStr = get(handles.vacThrustText,'String');
+%     numberName = 'Vacuum Thrust';
+%     lb = 0;
+%     ub = Inf;
+%     isInt = false;
+%     errMsg = validateNumber(val, numberName, lb, ub, isInt, errMsg, enteredStr);
+%     
+%     val = str2double(get(handles.vacIspText,'String'));
+%     enteredStr = get(handles.vacIspText,'String');
+%     numberName = 'Vacuum Isp';
+%     lb = 0;
+%     ub = Inf;
+%     isInt = false;
+%     errMsg = validateNumber(val, numberName, lb, ub, isInt, errMsg, enteredStr);
+%     
+%     val = str2double(get(handles.seaLevelThrustText,'String'));
+%     enteredStr = get(handles.seaLevelThrustText,'String');
+%     numberName = 'Sea Level Thrust';
+%     lb = 0;
+%     ub = Inf;
+%     isInt = false;
+%     errMsg = validateNumber(val, numberName, lb, ub, isInt, errMsg, enteredStr);
+%     
+%     val = str2double(get(handles.seaLevelIspText,'String'));
+%     enteredStr = get(handles.seaLevelIspText,'String');
+%     numberName = 'Sea Level Isp';
+%     lb = 0;
+%     ub = Inf;
+%     isInt = false;
+%     errMsg = validateNumber(val, numberName, lb, ub, isInt, errMsg, enteredStr);
     
     minThrottle = str2double(get(handles.minThrottleText,'String'));
     enteredStr = get(handles.minThrottleText,'String');
@@ -547,3 +547,20 @@ function altChargeRateText_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on button press in editThrustProfileButton.
+function editThrustProfileButton_Callback(hObject, eventdata, handles)
+% hObject    handle to editThrustProfileButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    engine = getappdata(handles.lvd_EditEngineGUI, 'engine');
+    editThrottleModifierProfileGUI(engine.thrustPressCurve);
+
+% --- Executes on button press in editIspProfileButton.
+function editIspProfileButton_Callback(hObject, eventdata, handles)
+% hObject    handle to editIspProfileButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    engine = getappdata(handles.lvd_EditEngineGUI, 'engine');
+    editThrottleModifierProfileGUI(engine.ispPressCurve);

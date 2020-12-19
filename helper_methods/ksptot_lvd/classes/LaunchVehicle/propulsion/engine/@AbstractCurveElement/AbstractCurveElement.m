@@ -13,6 +13,8 @@ classdef(Abstract) AbstractCurveElement < matlab.mixin.SetGet & matlab.mixin.Cop
         
         minDepValue
         maxDepValue
+        
+        mandatoryIndepValues
     end
     
     methods(Abstract)

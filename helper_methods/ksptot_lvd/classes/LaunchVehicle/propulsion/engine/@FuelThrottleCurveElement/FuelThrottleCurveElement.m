@@ -8,6 +8,8 @@ classdef FuelThrottleCurveElement < AbstractCurveElement
         
         minDepValue = 0;
         maxDepValue = 1;
+        
+        mandatoryIndepValues = [0, 100];
     end
     
     methods

@@ -27,11 +27,11 @@ classdef(Abstract) AbstractThrottleCurve < matlab.mixin.SetGet & matlab.mixin.Co
                 x = [obj.elems.indepVar];
                 y = [obj.elems.depVar];
 
-                xc = [max(x)];
-                yc = [0];
-                cc = [0;1];
-                con = struct('xc',xc,'cc',cc,'yc',yc);
-                obj.curve = splinefit(x,y,x,con);
+%                 xc = [max(x)];
+%                 yc = [0];
+%                 cc = [0;1];
+%                 con = struct('xc',xc,'cc',cc,'yc',yc);
+                obj.curve = splinefit(x,y,x,2); %I set things to use a piecewise linear interpolation now. 2020/12/18
                 
                 if(all(not(diff(y))))
                     obj.constValue = y(1);

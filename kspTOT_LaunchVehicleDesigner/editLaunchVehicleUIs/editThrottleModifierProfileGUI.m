@@ -68,6 +68,7 @@ function editThrottleModifierProfileGUI_OpeningFcn(hObject, eventdata, handles, 
 
     
 function populateUI(throttleCurve, handles)
+    handles.titleLabel.String = sprintf('Edit %s Profile', throttleCurve.getCurveName());
     handles.elementsListbox.String = throttleCurve.getListboxStr();
 	plotProfile(handles);
     
@@ -76,10 +77,24 @@ function plotProfile(handles)
     [x, y] = throttleCurve.getPlotablePoints();
     
     indMin = throttleCurve.elems(1).minIndepValue;
+    if(isnan(indMin))
+        indMin = min(x);
+    end
+    
     indMax = throttleCurve.elems(1).maxIndepValue;
+    if(isnan(indMax))
+        indMax = max(x);
+    end
     
     depMin = throttleCurve.elems(1).minDepValue;
+    if(isnan(depMin))
+        depMin = min(y);
+    end
+    
     depMax = throttleCurve.elems(1).maxDepValue;
+    if(isnan(depMax))
+        depMax = max(y);
+    end
     
     xq = linspace(indMin,indMax,1000);
     yq = throttleCurve.evalCurve(xq);
@@ -188,7 +203,7 @@ function addElementButton_Callback(hObject, eventdata, handles)
     throttleCurve = getappdata(handles.editThrottleModifierProfileGUI,'throttleCurve');
 
     elem = throttleCurve.createNewElement();
-    useTf = lvd_editThrottleModifierProfileElementGUI(elem, true);
+    useTf = lvd_editThrottleModifierProfileElementGUI(elem, true, throttleCurve);
     
     if(useTf)
         throttleCurve = getappdata(handles.editThrottleModifierProfileGUI,'throttleCurve');
@@ -202,15 +217,16 @@ function editElementButton_Callback(hObject, eventdata, handles)
 % hObject    handle to editElementButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+    throttleCurve = getappdata(handles.editThrottleModifierProfileGUI,'throttleCurve');
     elem = getSelectedElem(handles);
     
-    if(elem.indepVar == elem.minIndepValue || elem.indepVar == elem.maxIndepValue)
+    if(ismember(elem.indepVar, elem.mandatoryIndepValues))
         allowIndVarEdit = false;
     else
         allowIndVarEdit = true;
     end
     
-    useTf = lvd_editThrottleModifierProfileElementGUI(elem, allowIndVarEdit);
+    useTf = lvd_editThrottleModifierProfileElementGUI(elem, allowIndVarEdit, throttleCurve);
     
     if(useTf)
         throttleCurve = getappdata(handles.editThrottleModifierProfileGUI,'throttleCurve');
@@ -226,7 +242,7 @@ function deleteElementButton_Callback(hObject, eventdata, handles)
     elem = getSelectedElem(handles);
     throttleCurve = getappdata(handles.editThrottleModifierProfileGUI,'throttleCurve');
     
-    if(elem.indepVar == elem.minIndepValue || elem.indepVar == elem.maxIndepValue)
+    if(ismember(elem.indepVar, elem.mandatoryIndepValues))
         errordlg(sprintf('Cannot delete the endpoint elements at %.1f or %.1f.  The profile must have points at these two locations.',elem.minIndepValue,elem.maxIndepValue));
     else
         throttleCurve.removeElement(elem);
