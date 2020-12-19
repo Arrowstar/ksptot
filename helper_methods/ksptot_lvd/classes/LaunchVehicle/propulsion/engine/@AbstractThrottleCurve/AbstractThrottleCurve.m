@@ -4,9 +4,12 @@ classdef(Abstract) AbstractThrottleCurve < matlab.mixin.SetGet & matlab.mixin.Co
     
     properties
         elems AbstractCurveElement
-        curve
         
         constValue(1,1) double = NaN
+    end
+    
+    properties(Transient)
+        curve
     end
           
     methods        
@@ -23,6 +26,8 @@ classdef(Abstract) AbstractThrottleCurve < matlab.mixin.SetGet & matlab.mixin.Co
         end
         
         function generateCurve(obj)
+            obj.sortElems();
+            
             if(length(obj.elems) > 2)
                 x = [obj.elems.indepVar];
                 y = [obj.elems.depVar];
@@ -31,7 +36,8 @@ classdef(Abstract) AbstractThrottleCurve < matlab.mixin.SetGet & matlab.mixin.Co
 %                 yc = [0];
 %                 cc = [0;1];
 %                 con = struct('xc',xc,'cc',cc,'yc',yc);
-                obj.curve = splinefit(x,y,x,2); %I set things to use a piecewise linear interpolation now. 2020/12/18
+%                 obj.curve = splinefit(x,y,x,2); %I set things to use a piecewise linear interpolation now. 2020/12/18
+                obj.curve = griddedInterpolant(x,y,'linear','nearest');
                 
                 if(all(not(diff(y))))
                     obj.constValue = y(1);
@@ -42,7 +48,8 @@ classdef(Abstract) AbstractThrottleCurve < matlab.mixin.SetGet & matlab.mixin.Co
                 x = [obj.elems.indepVar];
                 y = [obj.elems.depVar];
 
-                obj.curve = splinefit(x,y,1,2);
+%                 obj.curve = splinefit(x,y,1,2);
+                obj.curve = griddedInterpolant(x,y,'linear','nearest');
                 
                 if(y(1) == y(2))
                     obj.constValue = y(1);
@@ -60,14 +67,15 @@ classdef(Abstract) AbstractThrottleCurve < matlab.mixin.SetGet & matlab.mixin.Co
                     obj.generateCurve();
                 end
                 
-                yq = ppval(obj.curve,xq);
+%                 yq = ppval(obj.curve,xq);
+                yq = obj.curve(xq);
             else
                 yq = ones(size(xq)) * obj.constValue;
             end
         end
         
         function sortElems(obj)
-            [~,I] = sort([obj.elems.indepVar], 'descend');
+            [~,I] = sort([obj.elems.indepVar], 'ascend');
             obj.elems = obj.elems(I);
         end
         
@@ -76,6 +84,12 @@ classdef(Abstract) AbstractThrottleCurve < matlab.mixin.SetGet & matlab.mixin.Co
             
             x = [obj.elems.indepVar];
             y = [obj.elems.depVar];
+        end
+    end
+    
+    methods(Static)
+        function obj = loadobj(obj)
+            obj.generateCurve();
         end
     end
     
