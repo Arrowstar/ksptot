@@ -125,6 +125,28 @@ classdef AddDeltaVAction < AbstractEventAction
                 vars(end+1) = obj.optVar;
             end
         end
+        
+        function data = getUploadDvToKspData(obj, stateLogEntry)  
+            time = stateLogEntry.time;
+            rVect = stateLogEntry.position;
+            vVect = stateLogEntry.velocity;
+            
+            if(obj.frame == DeltaVFrameEnum.Inertial)
+                deltaVNTW = 1000*getNTWdvVect(obj.deltaVVect, rVect(:), vVect(:));
+                
+            elseif(obj.frame == DeltaVFrameEnum.OrbitNtw)
+                deltaVNTW = 1000*obj.deltaVVect;
+                
+            else
+                error('Unknown reference frame found while executing action AddDeltaVAction.');
+            end
+            
+            data(1) = 0;
+            data(2) = time;
+            data(3) = deltaVNTW(1);
+            data(4) = deltaVNTW(2);
+            data(5) = deltaVNTW(3);
+        end
     end
     
     methods(Static)

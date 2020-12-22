@@ -22,7 +22,7 @@ function varargout = ma_LvdMainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_LvdMainGUI
 
-% Last Modified by GUIDE v2.5 17-Dec-2020 09:47:17
+% Last Modified by GUIDE v2.5 21-Dec-2020 18:44:52
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -2413,3 +2413,48 @@ function toggleCameraToolbar_ClickedCallback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
     cameratoolbar(handles.ma_LvdMainGUI, 'Toggle');
+
+
+% --------------------------------------------------------------------
+function uploadImpDvActionToKspMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to uploadImpDvActionToKspMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    
+    eventNum = handles.scriptListbox.Value;
+    event = lvdData.script.getEventForInd(eventNum);
+    actions = event.actions;
+    
+    bool = arrayfun(@(x) isa(x,'AddDeltaVAction'), actions);
+    if(any(bool)) %there's at least one delta-v action
+        if(sum(bool) == 1) %there's one delta-v action
+            deltaVAction = actions(bool);
+        else               %there's more than one delta-v action
+            actionsListBoxStr = event.getActionsListboxStr();
+            actionsListBoxStr = actionsListBoxStr(bool);
+            dvActions = actions(bool);
+            
+            [Selection,ok] = listdlgARH('ListString',actionsListBoxStr, ...
+                                        'SelectionMode', 'single', ...
+                                        'ListSize', [300 300], ...
+                                        'Name', 'Select Delta-V Action', ...
+                                        'PromptString', 'Select Delta-V Action to Upload:');
+            if(ok)
+                deltaVAction = dvActions(Selection);
+            else
+                return;
+            end            
+        end
+        
+    else
+        errordlg('Error: Selected event does not have an impulsive delta-v action.','Upload Failed!');
+        return;
+    end
+    
+    subStateLog = lvdData.stateLog.getAllStateLogEntriesForEvent(event);
+    preActionsStateLogEntry = subStateLog(end-1);
+    
+    data = deltaVAction.getUploadDvToKspData(preActionsStateLogEntry);
+    uploadManeuverToKSP(data);
+    
