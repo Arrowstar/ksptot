@@ -1,8 +1,8 @@
-function [rVectB, vVectB] = getPositOfBodyWRTSun(time, bodyInfo, ~)  
+function [rVectB, vVectB] = getPositOfBodyWRTSun(time, bodyInfo, celBodyData)  
     try %try new way
         chain = bodyInfo.getOrbitElemsChain();
         [rVectB, vVectB] = getPositOfBodyWRTSun_alg(time, chain{:});
-    catch %if bad then use old way
+    catch ME %if bad then use old way
         numTimes = length(time);
         loop = true;
         rVectB = zeros(3,numTimes);

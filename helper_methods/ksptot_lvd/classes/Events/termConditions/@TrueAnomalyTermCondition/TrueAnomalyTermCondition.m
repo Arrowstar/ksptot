@@ -5,6 +5,10 @@ classdef TrueAnomalyTermCondition < AbstractEventTerminationCondition
     properties
         tru(1,1) double = 0; %rad
         bodyInfo KSPTOT_BodyInfo
+        
+        hasGoneThroughZero(1,1) logical = false;
+        mustGoThrough0(1,1) logical = false;
+        prevDeltaM(1,1) double = NaN;
     end
     
     methods
@@ -19,11 +23,40 @@ classdef TrueAnomalyTermCondition < AbstractEventTerminationCondition
                 truToUse = AngleZero2Pi(truToUse);
             end
             
-            evtTermCondFcnHndl = @(t,y) obj.eventTermCond(t,y, truToUse, obj.bodyInfo);
+            evtTermCondFcnHndl = @(t,y) obj.eventTermCond(t,y, obj, truToUse, obj.bodyInfo);
         end
         
         function initTermCondition(obj, initialStateLogEntry)
             obj.bodyInfo = initialStateLogEntry.centralBody;
+            
+            targetTru = obj.tru;
+            
+            rVect = initialStateLogEntry.position;
+            vVect = initialStateLogEntry.velocity;
+            
+            gmu = obj.bodyInfo.gm;
+            [~, ecc, ~, ~, ~, curTru] = getKeplerFromState(rVect,vVect,gmu,true);
+            curTru = AngleZero2Pi(curTru);
+            
+            M0 = computeMeanFromTrueAnom(curTru, ecc);
+            Mtgt = computeMeanFromTrueAnom(targetTru, ecc);
+            
+            if(ecc >= 1)
+                M0 = angleNegPiToPi(M0);
+                Mtgt = angleNegPiToPi(Mtgt);
+            else
+                M0 = AngleZero2Pi(M0);
+                Mtgt = AngleZero2Pi(Mtgt);
+            end
+            
+            if(M0 > Mtgt)
+                obj.mustGoThrough0 = true;
+            else
+                obj.mustGoThrough0 = false;
+            end
+            
+            obj.hasGoneThroughZero = false;
+            obj.prevDeltaM = NaN;
         end
         
         function name = getName(obj)
@@ -88,28 +121,43 @@ classdef TrueAnomalyTermCondition < AbstractEventTerminationCondition
     end
     
     methods(Static, Access=private)
-        function [value,isterminal,direction] = eventTermCond(~,y, targetTru, bodyInfo)
+        function [value,isterminal,direction] = eventTermCond(~,y, obj, targetTru, bodyInfo)
             rVect = y(1:3);
             vVect = y(4:6);
+                                  
+            gmu = bodyInfo.gm;
+            [deltaT, deltaM, ~] = getDeltaTime(rVect, vVect, gmu, targetTru, obj.mustGoThrough0, obj.hasGoneThroughZero);
             
-            [~, ecc, ~, ~, ~, tru] = getKeplerFromState(rVect,vVect,bodyInfo.gm,true);
-            
-            if(ecc >= 1.0)
-                targetTru = angleNegPiToPi(targetTru);
-                tru = angleNegPiToPi(tru);
-            else
-                if(abs(targetTru) <= 0.1)
-                    targetTru = angleNegPiToPi(targetTru);
-                    tru = angleNegPiToPi(tru);
-                else
-                    targetTru = AngleZero2Pi(targetTru);
-                    tru = AngleZero2Pi(tru);
-                end
+            if(not(isnan(obj.prevDeltaM)) && deltaM > obj.prevDeltaM)
+                obj.hasGoneThroughZero = true;
+                [deltaT, deltaM, ~] = getDeltaTime(rVect, vVect, gmu, targetTru, obj.mustGoThrough0, obj.hasGoneThroughZero);
             end
             
-            value = tru - targetTru;
+            obj.prevDeltaM = deltaM;
+            
+            value = deltaT;
             isterminal = 1;
             direction = 0;
         end
     end
+end
+
+function [deltaT, deltaM, curTru] = getDeltaTime(rVect, vVect, gmu, targetTru, mustGoThrough0, hasGoneThroughZero)
+    [sma, ecc, ~, ~, ~, curTru] = getKeplerFromState(rVect,vVect,gmu,true);
+
+    M0 = computeMeanFromTrueAnom(curTru, ecc);
+    Mtgt = computeMeanFromTrueAnom(targetTru, ecc);
+    
+    if(mustGoThrough0)
+        Mtgt = Mtgt + 2*pi;
+        
+        if(hasGoneThroughZero)
+            M0 = M0 + 2*pi;
+        end
+    end
+    
+    deltaM = Mtgt - M0;   
+
+    n = computeMeanMotion(sma, gmu);
+    deltaT = deltaM/n;
 end
