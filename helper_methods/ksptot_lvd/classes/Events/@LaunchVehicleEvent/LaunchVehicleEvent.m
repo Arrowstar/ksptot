@@ -86,6 +86,13 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
         end
         
         function removeAction(obj, action)
+            [~, vars] = action.hasActiveOptimVar();
+            if(not(isempty(vars)))
+                for(i=1:length(vars))
+                    obj.lvdData.optimizer.vars.removeVariable(vars(i));
+                end
+            end
+            
             obj.actions([obj.actions] == action) = [];
         end
         
