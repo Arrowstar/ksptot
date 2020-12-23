@@ -61,7 +61,10 @@ function lvd_EditActionSetSteeringModelGUI_OpeningFcn(hObject, eventdata, handle
     lv = varargin{2};
     setappdata(hObject,'lv',lv);
     
-    populateGUI(handles, action, lv);
+    useContinuity = varargin{3};
+    setappdata(hObject,'useContinuity',useContinuity);
+    
+    populateGUI(handles, action, lv, useContinuity);
     
     % Update handles structure
     guidata(hObject, handles);
@@ -70,7 +73,7 @@ function lvd_EditActionSetSteeringModelGUI_OpeningFcn(hObject, eventdata, handle
     uiwait(handles.lvd_EditActionSetSteeringModelGUI);
 
 
-function populateGUI(handles, action, lv)
+function populateGUI(handles, action, lv, useContinuity)
     steeringModel = action.steeringModel;
     
     handles.baseFrameCombo.String = ReferenceFrameEnum.getListBoxStr();
@@ -126,6 +129,11 @@ function populateGUI(handles, action, lv)
     
     [contTf1,contTf2,contTf3] = steeringModel.getContinuityTerms();
     contTf = any([contTf1,contTf2,contTf3]);
+    if(useContinuity)
+        handles.angleContCheckbox.Enable = 'on';
+    else
+        handles.angleContCheckbox.Enable = 'off';
+    end
     handles.angleContCheckbox.Value = double(contTf);
     angleContCheckbox_Callback(handles.angleContCheckbox, [], handles);
     

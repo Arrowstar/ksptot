@@ -61,7 +61,10 @@ function lvd_EditT2WThrottleModelGUI_OpeningFcn(hObject, eventdata, handles, var
     lv = varargin{2};
     setappdata(hObject,'lv',lv);
     
-    populateGUI(handles, action);
+    useContinuity = varargin{3};
+    setappdata(hObject,'useContinuity',useContinuity);
+    
+    populateGUI(handles, action, useContinuity);
 
     % Update handles structure
     guidata(hObject, handles);
@@ -70,7 +73,7 @@ function lvd_EditT2WThrottleModelGUI_OpeningFcn(hObject, eventdata, handles, var
     uiwait(handles.lvd_EditT2WThrottleModelGUI);
 
     
-function populateGUI(handles, action)
+function populateGUI(handles, action, useContinuity)
     throttleModel = action.throttleModel;
     
     handles.twRatioText.String = fullAccNum2Str(throttleModel.targetT2W);
@@ -93,6 +96,11 @@ function populateGUI(handles, action)
     
     twOptCheckbox_Callback(handles.twOptCheckbox, [], handles);
     
+    if(useContinuity)
+        handles.throttleContCheckbox.Enable = 'on';
+    else
+        handles.throttleContCheckbox.Enable = 'off';
+    end
     handles.throttleContCheckbox.Value = double(throttleModel.throttleContinuity);
     throttleContCheckbox_Callback(handles.throttleContCheckbox, [], handles);
 

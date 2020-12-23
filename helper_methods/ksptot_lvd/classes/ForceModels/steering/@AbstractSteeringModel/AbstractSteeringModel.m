@@ -23,19 +23,19 @@ classdef(Abstract) AbstractSteeringModel < matlab.mixin.SetGet
         
         optVar = getExistingOptVar(obj)
         
-        function [addActionTf, steeringModel] = openEditSteeringModelUI(obj, lv)
+        function [addActionTf, steeringModel] = openEditSteeringModelUI(obj, lv, useContinuity)
             fakeAction = SetSteeringModelAction(obj);
 
             enum = obj.getSteeringModelTypeEnum();
             switch enum
                 case SteerModelTypeEnum.PolyAngles
-                    addActionTf = lvd_EditActionSetSteeringModelGUI(fakeAction, lv);
+                    addActionTf = lvd_EditActionSetSteeringModelGUI(fakeAction, lv, useContinuity);
 
                 case SteerModelTypeEnum.QuaterionInterp
-                    addActionTf = lvd_EditActionSetQuatInterpSteeringModelGUI(fakeAction, lv);
+                    addActionTf = lvd_EditActionSetQuatInterpSteeringModelGUI(fakeAction, lv, useContinuity);
 
                 case SteerModelTypeEnum.LinearTangentAngles
-                    addActionTf = lvd_EditActionSetLinearTangentSteeringModelGUI(fakeAction, lv);
+                    addActionTf = lvd_EditActionSetLinearTangentSteeringModelGUI(fakeAction, lv, useContinuity);
 
                 otherwise
                     error('Unknown steering model type: %s', enum.name);

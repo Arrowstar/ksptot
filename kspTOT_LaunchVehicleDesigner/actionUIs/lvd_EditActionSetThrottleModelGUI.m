@@ -61,7 +61,10 @@ function lvd_EditActionSetThrottleModelGUI_OpeningFcn(hObject, eventdata, handle
     lv = varargin{2};
     setappdata(hObject,'lv',lv);
     
-    populateGUI(handles, action);
+    useContinuity = varargin{3};
+    setappdata(hObject,'useContinuity',useContinuity);
+    
+    populateGUI(handles, action, useContinuity);
     
     % Update handles structure
     guidata(hObject, handles);
@@ -70,7 +73,7 @@ function lvd_EditActionSetThrottleModelGUI_OpeningFcn(hObject, eventdata, handle
     uiwait(handles.lvd_EditActionSetThrottleModelGUI);
 
 
-function populateGUI(handles, action)
+function populateGUI(handles, action, useContinuity)
     throttleModel = action.throttleModel;
     
     polyModel = throttleModel.throttleModel;
@@ -108,6 +111,11 @@ function populateGUI(handles, action)
     set(handles.throttleLinUbText,'String',fullAccNum2Str(100*ub(2)));
     set(handles.throttleAccelUbText,'String',fullAccNum2Str(100*ub(3)));
     
+    if(useContinuity)
+        handles.throttleContCheckbox.Enable = 'on';
+    else
+        handles.throttleContCheckbox.Enable = 'off';
+    end
     handles.throttleContCheckbox.Value = double(throttleModel.throttleContinuity);
     throttleContCheckbox_Callback(handles.throttleContCheckbox, [], handles);
     

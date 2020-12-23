@@ -1376,9 +1376,9 @@ function editSteeringButton_Callback(hObject, eventdata, handles)
     steeringModel = promptForSteeringModelType(initStateModel.steeringModel.getSteeringModelTypeEnum());
     
     if(initStateModel.steeringModel.getSteeringModelTypeEnum() == steeringModel.getSteeringModelTypeEnum())
-        [addActionTf,steeringModel] = initStateModel.steeringModel.openEditSteeringModelUI(lv);
+        [addActionTf,steeringModel] = initStateModel.steeringModel.openEditSteeringModelUI(lv, false);
     else
-        [addActionTf,steeringModel] = steeringModel.openEditSteeringModelUI(lv);
+        [addActionTf,steeringModel] = steeringModel.openEditSteeringModelUI(lv, false);
     end
     
     if(addActionTf)
@@ -1397,9 +1397,9 @@ function editThrottleButton_Callback(hObject, eventdata, handles)
     throttleModel = promptForThrottleModelType(initStateModel.throttleModel.getThrottleModelTypeEnum());
     
     if(initStateModel.throttleModel.getThrottleModelTypeEnum() == throttleModel.getThrottleModelTypeEnum())
-        [addActionTf,throttleModel] = initStateModel.throttleModel.openEditThrottleModelUI(lv);
+        [addActionTf,throttleModel] = initStateModel.throttleModel.openEditThrottleModelUI(lv, false);
     else
-        [addActionTf,throttleModel] = throttleModel.openEditThrottleModelUI(lv);
+        [addActionTf,throttleModel] = throttleModel.openEditThrottleModelUI(lv, false);
     end
 
     if(addActionTf)

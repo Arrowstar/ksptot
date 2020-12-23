@@ -61,7 +61,10 @@ function lvd_EditActionSetQuatInterpSteeringModelGUI_OpeningFcn(hObject, eventda
     lv = varargin{2};
     setappdata(hObject,'lv',lv);
     
-    populateGUI(handles, action, lv);
+    useContinuity = varargin{3};
+    setappdata(hObject,'useContinuity',useContinuity);
+    
+    populateGUI(handles, action, lv, useContinuity);
     
     % Update handles structure
     guidata(hObject, handles);
@@ -70,7 +73,7 @@ function lvd_EditActionSetQuatInterpSteeringModelGUI_OpeningFcn(hObject, eventda
     uiwait(handles.lvd_EditActionSetQuatInterpSteeringModelGUI);
 
 
-function populateGUI(handles, action, lv)
+function populateGUI(handles, action, lv, useContinuity)
     steeringModel = action.steeringModel;
     
     handles.baseFrameCombo.String = ReferenceFrameEnum.getListBoxStr();
@@ -130,6 +133,11 @@ function populateGUI(handles, action, lv)
     set(handles.angle3FinalText,'String',fullAccNum2Str(rad2deg(alpha1)));
     
     angleCont = steeringModel.getContinuityTerms();
+    if(useContinuity)
+        handles.angleContCheckbox.Enable = 'on';
+    else
+        handles.angleContCheckbox.Enable = 'off';
+    end
     handles.angleContCheckbox.Value = double(angleCont);
     angleContCheckbox_Callback(handles.angleContCheckbox, [], handles);
     
