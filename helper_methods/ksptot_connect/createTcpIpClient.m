@@ -26,7 +26,7 @@ function [tcpipClient] = createTcpIpClient(varargin)
     tcpipClient.ByteOrder = 'bigEndian';
     set(tcpipClient, 'InputBufferSize',120480);
     set(tcpipClient, 'OutputBufferSize',120480);
-    set(tcpipClient, 'Timeout',1);
+    set(tcpipClient, 'Timeout',10);
     set(tcpipClient, 'ReadAsyncMode', 'continuous');
     set(tcpipClient, 'BytesAvailableFcnMode', 'byte');
     set(tcpipClient, 'BytesAvailableFcnCount', 120240);
