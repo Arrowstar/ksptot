@@ -211,6 +211,14 @@ classdef ConstraintSet < matlab.mixin.SetGet
                 obj.removeConstraint(c);
             end
         end
+        
+        function evts = getConstrEvents(obj)
+            evts = LaunchVehicleEvent.empty(1,0);
+            
+            for(i=1:length(obj.consts))
+                evts(i) = obj.consts(i).getConstraintEvent();
+            end
+        end
     end
     
     methods(Access=private)

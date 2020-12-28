@@ -43,7 +43,7 @@ classdef CompositeObjectiveFcn < AbstractObjectiveFcn
                 f = 0;
             else
                 fArr = NaN(1, numObjFcns);
-                for(i=1:numObjFcns) %#ok<NO4LP>
+                for(i=1:numObjFcns)
                     fArr(i) = obj.objFcns(i).evalObjFcn(stateLog);
                 end
                 
@@ -162,8 +162,16 @@ classdef CompositeObjectiveFcn < AbstractObjectiveFcn
         function tf = canUseSparseOutput(obj)
             tf = true;
             
-            for(i=1:length(obj.objFcns))
+            for(i=1:length(obj.objFcns)) %#ok<*NO4LP>
                 tf = tf && obj.objFcns(i).fcn.canUseSparseOutput();
+            end
+        end
+        
+        function evts = getObjFuncEvents(obj)
+            evts = LaunchVehicleEvent.empty(1,0);
+            
+            for(i=1:length(obj.objFcns))
+                evts(i) = obj.objFcns(i).getRefEvent();
             end
         end
     end

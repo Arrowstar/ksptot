@@ -45,7 +45,9 @@ classdef LvdOptimization < matlab.mixin.SetGet
             obj.customFiniteDiffsCalcMethod = CustomFiniteDiffsCalculationMethod();
         end
         
-        function optimize(obj, writeOutput, callOutputFcn)   
+        function optimize(obj, writeOutput, callOutputFcn)  
+            disp(obj.getEvtNumToEndScriptExecAt());
+            
             obj.vars.sortVarsByEvtNum();
             optimizer = obj.getSelectedOptimizer();
             optimizer.optimize(obj, writeOutput, callOutputFcn);
@@ -168,6 +170,47 @@ classdef LvdOptimization < matlab.mixin.SetGet
                 
                 if(evtNumToStartScriptExecAt == 1)
                     break; %it can't go lower than 1, so we're executing the whole thing.  No reason to keep going.
+                end
+            end
+        end
+        
+        function evtNumToEndScriptExecAt = getEvtNumToEndScriptExecAt(obj)
+            [~, activeVars, ~, ~] = obj.vars.getTotalScaledXVector();
+            
+            evtNumToEndScriptExecAt = -1;
+            for(i=1:length(activeVars))
+                var = activeVars(i);
+                
+                if(isVarInLaunchVehicle(var, obj.lvdData) || isVarInLaunchVehicle(var, obj.lvdData))
+                    varEvtNum = 1;
+                else
+                    varEvtNum = getEventNumberForVar(var, obj.lvdData);
+                    
+                    if(isempty(varEvtNum))
+                        varEvtNum = 1;
+                    end
+                end
+                
+                if(varEvtNum > evtNumToEndScriptExecAt)
+                    evtNumToEndScriptExecAt = varEvtNum;
+                end
+            end
+            
+            objFcnEvts = obj.objFcn.getObjFuncEvents();
+            for(i=1:length(objFcnEvts))
+                objFcnEvtNum = objFcnEvts(i).getEventNum();
+                
+                if(objFcnEvtNum > evtNumToEndScriptExecAt)
+                    evtNumToEndScriptExecAt = objFcnEvtNum;
+                end
+            end
+            
+            constrEvts = obj.constraints.getConstrEvents();
+            for(i=1:length(constrEvts))
+                constrEvtNum = constrEvts(i).getEventNum();
+                
+                if(constrEvtNum > evtNumToEndScriptExecAt)
+                    evtNumToEndScriptExecAt = constrEvtNum;
                 end
             end
         end
