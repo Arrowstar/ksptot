@@ -6,8 +6,9 @@ classdef SteeringModelEnum < matlab.mixin.SetGet
         RollPitchYawPoly('Roll/Pitch/Yaw Steering','RollPitchYawPolySteeringModel', true);
         AeroAnglesPoly('Body Fixed Aero Angles Steering','AeroAnglesPolySteeringModel', true);
         InertialAeroAnglesPoly('Inertial Aero Angles Steering','InertialAeroAnglesPolySteeringModel', true);
+        GenericPoly('Generic Angles Steering','GenericPolySteeringModel', true);
         
-        GenericLinTan('Generic Linear Tangent Angles Steering','GenericPolySteeringModel', false);
+        GenericLinTan('Generic Linear Tangent Angles Steering','GenericLinearTangentSteeringModel', false);
         
         GenericQuatInterp('Generic Angles Quaternion Interp','GenericQuatInterpSteeringModel', false);
     end

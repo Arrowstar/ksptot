@@ -38,6 +38,10 @@ classdef AeroAnglesPolySteeringModel < AbstractAnglePolySteeringModel
             end
         end
         
+        function t0 = getT0(obj)
+            t0 = obj.slipModel.t0;
+        end
+        
         function setT0(obj, newT0)
             obj.bankModel.t0 = newT0;
             obj.aoAModel.t0 = newT0;
@@ -60,6 +64,12 @@ classdef AeroAnglesPolySteeringModel < AbstractAnglePolySteeringModel
             obj.bankModel.accelTerm = bank;
             obj.aoAModel.accelTerm = aoa;
             obj.slipModel.accelTerm = slip;
+        end
+        
+        function setTimeOffsets(obj, timeOffset)
+            obj.rollModel.tOffset = timeOffset;
+            obj.pitchModel.tOffset = timeOffset;
+            obj.yawModel.tOffset = timeOffset;
         end
         
         function [angle1Cont, angle2Cont, angle3Cont] = getContinuityTerms(obj)
@@ -92,10 +102,19 @@ classdef AeroAnglesPolySteeringModel < AbstractAnglePolySteeringModel
             end
         end
         
+        function setInitialAttitudeFromState(obj, stateLogEntry, tOffsetDelta)
+            t0 = stateLogEntry.time;
+            obj.setT0(t0);
+            
+            obj.bankModel.tOffset = obj.bankModel.tOffset + tOffsetDelta;
+            obj.aoAModel.tOffset = obj.aoAModel.tOffset + tOffsetDelta;
+            obj.slipModel.tOffset = obj.slipModel.tOffset + tOffsetDelta;
+        end
+        
         function [angle1Name, angle2Name, angle3Name] = getAngleNames(~)
-            angle1Name = 'Bank';
+            angle1Name = 'Bank Angle';
             angle2Name = 'Angle of Attack';
-            angle3Name = 'Side Slip';
+            angle3Name = 'Side Slip Angle';
         end
         
         function newSteeringModel = deepCopy(obj)

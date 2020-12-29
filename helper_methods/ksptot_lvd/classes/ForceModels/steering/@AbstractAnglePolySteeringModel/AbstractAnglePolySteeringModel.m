@@ -8,9 +8,7 @@ classdef(Abstract) AbstractAnglePolySteeringModel < AbstractSteeringModel
         angleModel = getAngleNModel(obj, n)
         
         [tf, lb, ub] = getAngleNModelOptVarParams(obj, n)
-        
-        setT0(obj, newT0)
-        
+                
         setConstTerms(obj, angle1, angle2, angle3)
         
         setLinearTerms(obj, angle1, angle2, angle3)

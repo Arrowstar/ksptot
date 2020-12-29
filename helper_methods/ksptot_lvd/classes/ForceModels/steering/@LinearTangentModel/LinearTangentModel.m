@@ -10,6 +10,8 @@ classdef LinearTangentModel < matlab.mixin.SetGet
         
         b(1,1) double = 0;
         b_dot(1,1) double = 0;
+        
+        tOffset(1,1) double = 0;
     end
     
     methods
@@ -24,7 +26,7 @@ classdef LinearTangentModel < matlab.mixin.SetGet
         end
         
         function value = getValueAtTime(obj,ut)
-            dt = ut - obj.t0;
+            dt = (ut - obj.t0) + obj.tOffset;
             
             a_value = obj.a + (obj.a_dot .* dt);
             b_value = obj.b + (obj.b_dot .* dt);

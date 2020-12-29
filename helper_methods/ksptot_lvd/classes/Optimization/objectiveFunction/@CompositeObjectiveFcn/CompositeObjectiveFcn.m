@@ -79,6 +79,23 @@ classdef CompositeObjectiveFcn < AbstractObjectiveFcn
             obj.objFcns(obj.objFcns == objFunc) = [];
         end      
         
+        function removeObjFcnsThatUseEvent(obj, event)
+            indsToRemove = [];
+            for(i=1:length(obj.objFcns))
+                o = obj.objFcns(i);
+                
+                if(o.usesEvent(event))
+                    indsToRemove(end+1) = i; %#ok<AGROW>
+                end
+            end
+            
+            for(i=length(indsToRemove):-1:1)
+                indToRemove = indsToRemove(i);
+                o = obj.objFcns(indToRemove);
+                obj.removeObjFunc(o);
+            end
+        end
+        
         function genObjFunc = getObjFuncForInd(obj, ind)
             genObjFunc = GenericObjectiveFcn.empty(1,0);
             

@@ -7,6 +7,8 @@ classdef PolynominalModel < matlab.mixin.SetGet
         constTerm(1,1) double = 0;
         linearTerm(1,1) double = 0;
         accelTerm(1,1) double = 0;
+        
+        tOffset(1,1) double = 0;
     end
     
     methods
@@ -18,7 +20,7 @@ classdef PolynominalModel < matlab.mixin.SetGet
         end
         
         function value = getValueAtTime(obj,ut)
-            dt = ut - obj.t0;
+            dt = (ut - obj.t0) + obj.tOffset;
             
             value = obj.constTerm + dt*obj.linearTerm + (1/2)*obj.accelTerm*dt^2;
         end

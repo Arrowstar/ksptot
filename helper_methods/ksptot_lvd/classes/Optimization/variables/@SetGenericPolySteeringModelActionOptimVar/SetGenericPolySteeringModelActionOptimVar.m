@@ -19,6 +19,8 @@ classdef SetGenericPolySteeringModelActionOptimVar < AbstractOptimizationVariabl
         varAlphaConst(1,1) logical = false;
         varAlphaLin(1,1) logical   = false;
         varAlphaAccel(1,1) logical = false;
+        
+        varTimeOffset(1,1) logical = false;
     end
     
     methods
@@ -30,7 +32,7 @@ classdef SetGenericPolySteeringModelActionOptimVar < AbstractOptimizationVariabl
         end
         
         function x = getXsForVariable(obj)
-            x = NaN(1,9);
+            x = NaN(1,10);
             
             if(obj.varGammaConst)
                 x(1) = obj.varObj.gammaAngleModel.constTerm;
@@ -62,6 +64,10 @@ classdef SetGenericPolySteeringModelActionOptimVar < AbstractOptimizationVariabl
                 x(9) = obj.varObj.alphaAngleModel.accelTerm;
             end
             
+            if(obj.varTimeOffset)
+                x(10) = obj.varObj.alphaAngleModel.tOffset; %this applies for all angle models
+            end
+            
             x(isnan(x)) = [];
         end
         
@@ -78,7 +84,7 @@ classdef SetGenericPolySteeringModelActionOptimVar < AbstractOptimizationVariabl
         end
         
         function setBndsForVariable(obj, lb, ub)
-            if(length(lb) == 9 && length(ub) == 9)
+            if(length(lb) == 10 && length(ub) == 10)
                 obj.lb = lb;
                 obj.ub = ub;
             else
@@ -92,7 +98,8 @@ classdef SetGenericPolySteeringModelActionOptimVar < AbstractOptimizationVariabl
         function useTf = getUseTfForVariable(obj)
             useTf = [obj.varGammaConst obj.varGammaLin obj.varGammaAccel ...
                      obj.varBetaConst obj.varBetaLin obj.varBetaAccel ...
-                     obj.varAlphaConst obj.varAlphaLin obj.varAlphaAccel];
+                     obj.varAlphaConst obj.varAlphaLin obj.varAlphaAccel ...
+                     obj.varTimeOffset];
         end
         
         function setUseTfForVariable(obj, useTf)                 
@@ -107,6 +114,8 @@ classdef SetGenericPolySteeringModelActionOptimVar < AbstractOptimizationVariabl
             obj.varAlphaConst = useTf(7);
             obj.varAlphaLin = useTf(8);
             obj.varAlphaAccel = useTf(9);
+            
+            obj.varTimeOffset = useTf(10);
         end
         
         function updateObjWithVarValue(obj, x)
@@ -148,6 +157,13 @@ classdef SetGenericPolySteeringModelActionOptimVar < AbstractOptimizationVariabl
             end
             if(obj.varAlphaAccel)
                 obj.varObj.alphaAngleModel.accelTerm = x(ind);
+                ind = ind + 1;
+            end
+            
+            if(obj.varTimeOffset)
+                obj.varObj.alphaAngleModel.tOffset = x(ind);
+                obj.varObj.betaAngleModel.tOffset = x(ind);
+                obj.varObj.gammaAngleModel.tOffset = x(ind);
                 ind = ind + 1; %#ok<NASGU>
             end
         end
@@ -167,7 +183,8 @@ classdef SetGenericPolySteeringModelActionOptimVar < AbstractOptimizationVariabl
                         sprintf('%s Beta Angle Acceleration', subStr), ...
                         sprintf('%s Alpha Angle Constant', subStr), ...
                         sprintf('%s Alpha Angle Rate', subStr), ...
-                        sprintf('%s Alpha Angle Acceleration', subStr)};
+                        sprintf('%s Alpha Angle Acceleration', subStr), ...
+                        sprintf('%s Steering Time Offset', subStr)};
                     
             nameStrs = nameStrs(obj.getUseTfForVariable());
         end

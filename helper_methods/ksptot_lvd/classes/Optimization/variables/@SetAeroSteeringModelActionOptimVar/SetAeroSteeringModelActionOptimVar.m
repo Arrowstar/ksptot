@@ -19,6 +19,8 @@ classdef SetAeroSteeringModelActionOptimVar < AbstractOptimizationVariable
         varSlipConst(1,1) logical = false;
         varSlipLin(1,1) logical   = false;
         varSlipAccel(1,1) logical = false;
+        
+        varTimeOffset(1,1) logical = false;
     end
     
     methods
@@ -30,7 +32,7 @@ classdef SetAeroSteeringModelActionOptimVar < AbstractOptimizationVariable
         end
         
         function x = getXsForVariable(obj)
-            x = NaN(1,9);
+            x = NaN(1,10);
             
             if(obj.varBankConst)
                 x(1) = obj.varObj.bankModel.constTerm;
@@ -62,6 +64,10 @@ classdef SetAeroSteeringModelActionOptimVar < AbstractOptimizationVariable
                 x(9) = obj.varObj.slipModel.accelTerm;
             end
             
+            if(obj.varTimeOffset)
+                x(10) = obj.varObj.slipModel.tOffset; %this applies for all angle models
+            end
+            
             x(isnan(x)) = [];
         end
         
@@ -78,7 +84,7 @@ classdef SetAeroSteeringModelActionOptimVar < AbstractOptimizationVariable
         end
         
         function setBndsForVariable(obj, lb, ub)
-            if(length(lb) == 9 && length(ub) == 9)
+            if(length(lb) == 10 && length(ub) == 10)
                 obj.lb = lb;
                 obj.ub = ub;
             else
@@ -92,7 +98,9 @@ classdef SetAeroSteeringModelActionOptimVar < AbstractOptimizationVariable
         function useTf = getUseTfForVariable(obj)
             useTf = [obj.varBankConst  obj.varBankLin    obj.varBankAccel ...
                      obj.varAoAConst  obj.varAoALin    obj.varAoAAccel ...
-                     obj.varSlipConst  obj.varSlipLin    obj.varSlipAccel];
+                     obj.varSlipConst  obj.varSlipLin    obj.varSlipAccel ...
+                     obj.varTimeOffset];
+                 
             useTf = logical(useTf);
         end
         
@@ -108,6 +116,8 @@ classdef SetAeroSteeringModelActionOptimVar < AbstractOptimizationVariable
             obj.varSlipConst = useTf(7);
             obj.varSlipLin = useTf(8);
             obj.varSlipAccel = useTf(9);
+            
+            obj.varTimeOffset = useTf(10);
         end
         
         function updateObjWithVarValue(obj, x)
@@ -149,6 +159,13 @@ classdef SetAeroSteeringModelActionOptimVar < AbstractOptimizationVariable
             end
             if(obj.varSlipAccel)
                 obj.varObj.slipModel.accelTerm = x(ind);
+                ind = ind + 1;
+            end
+            
+            if(obj.varTimeOffset)
+                obj.varObj.slipModel.tOffset = x(ind);
+                obj.varObj.aoAModel.tOffset = x(ind);
+                obj.varObj.bankModel.tOffset = x(ind);
                 ind = ind + 1; %#ok<NASGU>
             end
         end
@@ -168,7 +185,8 @@ classdef SetAeroSteeringModelActionOptimVar < AbstractOptimizationVariable
                         sprintf('%s AoA Acceleration', subStr), ...
                         sprintf('%s Side Slip Constant', subStr), ...
                         sprintf('%s Side Slip Rate', subStr), ...
-                        sprintf('%s Side Slip Acceleration', subStr)};
+                        sprintf('%s Side Slip Acceleration', subStr), ...
+                        sprintf('%s Steering Time Offset', subStr)};
                     
             nameStrs = nameStrs(obj.getUseTfForVariable());
         end

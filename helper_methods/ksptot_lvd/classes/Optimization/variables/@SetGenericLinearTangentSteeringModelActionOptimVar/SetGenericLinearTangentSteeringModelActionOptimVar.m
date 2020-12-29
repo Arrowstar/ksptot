@@ -5,8 +5,8 @@ classdef SetGenericLinearTangentSteeringModelActionOptimVar < AbstractOptimizati
     properties
         varObj = GenericLinearTangentSteeringModel.getDefaultSteeringModel();
         
-        lb(1,10) double
-        ub(1,10) double
+        lb(1,11) double
+        ub(1,11) double
         
         varGammaConst(1,1) logical = false;
         varGammaLin(1,1) logical   = false;
@@ -20,6 +20,8 @@ classdef SetGenericLinearTangentSteeringModelActionOptimVar < AbstractOptimizati
         varAlphaConst(1,1) logical = false;
         varAlphaLin(1,1) logical   = false;
         varAlphaAccel(1,1) logical = false;
+        
+        varTimeOffset(1,1) logical = false;
     end
     
     methods
@@ -31,7 +33,7 @@ classdef SetGenericLinearTangentSteeringModelActionOptimVar < AbstractOptimizati
         end
         
         function x = getXsForVariable(obj)
-            x = NaN(1,10);
+            x = NaN(1,11);
             
             if(obj.varGammaConst)
                 x(1) = obj.varObj.gammaAngleModel.constTerm;
@@ -66,6 +68,10 @@ classdef SetGenericLinearTangentSteeringModelActionOptimVar < AbstractOptimizati
                 x(10) = obj.varObj.alphaAngleModel.accelTerm;
             end
             
+            if(obj.varTimeOffset)
+                x(11) = obj.varObj.alphaAngleModel.tOffset; %this applies for all angle models
+            end
+            
             x(isnan(x)) = [];
         end
         
@@ -82,7 +88,7 @@ classdef SetGenericLinearTangentSteeringModelActionOptimVar < AbstractOptimizati
         end
         
         function setBndsForVariable(obj, lb, ub)
-            if(length(lb) == 10 && length(ub) == 10)
+            if(length(lb) == 11 && length(ub) == 11)
                 obj.lb = lb;
                 obj.ub = ub;
             else
@@ -96,7 +102,8 @@ classdef SetGenericLinearTangentSteeringModelActionOptimVar < AbstractOptimizati
         function useTf = getUseTfForVariable(obj)
             useTf = [obj.varGammaConst obj.varGammaLin obj.varGammaAccel ...
                      obj.varBetaA obj.varBetaADot obj.varBetaB obj.varBetaBDot ...
-                     obj.varAlphaConst obj.varAlphaLin obj.varAlphaAccel];
+                     obj.varAlphaConst obj.varAlphaLin obj.varAlphaAccel, ...
+                     obj.varTimeOffset];
         end
         
         function setUseTfForVariable(obj, useTf)                 
@@ -112,6 +119,8 @@ classdef SetGenericLinearTangentSteeringModelActionOptimVar < AbstractOptimizati
             obj.varAlphaConst = useTf(8);
             obj.varAlphaLin = useTf(9);
             obj.varAlphaAccel = useTf(10);
+            
+            obj.varTimeOffset = useTf(11);
         end
         
         function updateObjWithVarValue(obj, x)
@@ -157,6 +166,13 @@ classdef SetGenericLinearTangentSteeringModelActionOptimVar < AbstractOptimizati
             end
             if(obj.varAlphaAccel)
                 obj.varObj.alphaAngleModel.accelTerm = x(ind);
+                ind = ind + 1;
+            end
+            
+            if(obj.varTimeOffset)
+                obj.varObj.alphaAngleModel.tOffset = x(ind);
+                obj.varObj.betaAngleModel.tOffset = x(ind);
+                obj.varObj.gammaAngleModel.tOffset = x(ind);
                 ind = ind + 1; %#ok<NASGU>
             end
         end
@@ -177,7 +193,8 @@ classdef SetGenericLinearTangentSteeringModelActionOptimVar < AbstractOptimizati
                         sprintf('%s Beta Angle Linear Tangent B Rate', subStr), ...
                         sprintf('%s Alpha Angle Constant', subStr), ...
                         sprintf('%s Alpha Angle Rate', subStr), ...
-                        sprintf('%s Alpha Angle Acceleration', subStr)};
+                        sprintf('%s Alpha Angle Acceleration', subStr), ...
+                        sprintf('%s Steering Time Offset', subStr)};
                     
             nameStrs = nameStrs(obj.getUseTfForVariable());
         end

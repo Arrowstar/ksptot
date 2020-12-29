@@ -31,11 +31,13 @@ classdef OptimizationVariableSet < matlab.mixin.SetGet
         end
         
         function removeVariable(obj, var)
-            obj.vars([obj.vars] == var) = [];
-            obj.sortVarsByEvtNum();
-            
-            obj.clearCachedVarEvtDisabledStatus();
-            notify(obj,'VarsListUpdatedRemovedVar');
+            if(not(isempty(var)))
+                obj.vars([obj.vars] == var) = [];
+                obj.sortVarsByEvtNum();
+
+                obj.clearCachedVarEvtDisabledStatus();
+                notify(obj,'VarsListUpdatedRemovedVar');
+            end
         end
         
         function [x, vars, varNameStrs, xUnscaled] = getTotalScaledXVector(obj)

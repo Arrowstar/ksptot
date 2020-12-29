@@ -161,7 +161,7 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                 
                 rVects = [];
                 tVects = [];
-                for(i=1:entryInc:length(lvdStateLogEntries))
+                for(i=1:entryInc:length(lvdStateLogEntries)) %#ok<*NO4LP>
                     entry = lvdStateLogEntries(i);
                     
                     cartesianEntry = entry.getCartesianElementSetRepresentation();                   
@@ -187,8 +187,10 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                     tVects = [tVects, tVectNew]; %#ok<AGROW>
                 end
                 
+                tVects = scale .* tVects;
+                
                 hold(dAxes,'on');
-                quiver3(dAxes, rVects(1,:),rVects(2,:),rVects(3,:), tVects(1,:),tVects(2,:),tVects(3,:), scale, 'Color',color, 'LineStyle',lineStyle);
+                quiver3(dAxes, rVects(1,:),rVects(2,:),rVects(3,:), tVects(1,:),tVects(2,:),tVects(3,:), 0, 'Color',color, 'LineStyle',lineStyle);
                 hold(dAxes,'off');
             end
             

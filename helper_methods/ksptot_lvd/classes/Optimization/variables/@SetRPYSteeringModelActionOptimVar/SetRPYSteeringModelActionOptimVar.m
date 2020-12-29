@@ -5,8 +5,8 @@ classdef SetRPYSteeringModelActionOptimVar < AbstractOptimizationVariable
     properties
         varObj = RollPitchYawPolySteeringModel.getDefaultSteeringModel()
         
-        lb(1,9) double
-        ub(1,9) double
+        lb(1,10) double
+        ub(1,10) double
         
         varRollConst(1,1) logical = false;
         varRollLin(1,1) logical   = false;
@@ -19,6 +19,8 @@ classdef SetRPYSteeringModelActionOptimVar < AbstractOptimizationVariable
         varYawConst(1,1) logical = false;
         varYawLin(1,1) logical   = false;
         varYawAccel(1,1) logical = false;
+        
+        varTimeOffset(1,1) logical = false;
     end
     
     methods
@@ -30,7 +32,7 @@ classdef SetRPYSteeringModelActionOptimVar < AbstractOptimizationVariable
         end
         
         function x = getXsForVariable(obj)
-            x = NaN(1,9);
+            x = NaN(1,10);
             
             if(obj.varRollConst)
                 x(1) = obj.varObj.rollModel.constTerm;
@@ -62,6 +64,10 @@ classdef SetRPYSteeringModelActionOptimVar < AbstractOptimizationVariable
                 x(9) = obj.varObj.yawModel.accelTerm;
             end
             
+            if(obj.varTimeOffset)
+                x(10) = obj.varObj.yawModel.tOffset; %this applies for all angle models
+            end
+            
             x(isnan(x)) = [];
         end
         
@@ -78,7 +84,7 @@ classdef SetRPYSteeringModelActionOptimVar < AbstractOptimizationVariable
         end
         
         function setBndsForVariable(obj, lb, ub)
-            if(length(lb) == 9 && length(ub) == 9)
+            if(length(lb) == 10 && length(ub) == 10)
                 obj.lb = lb;
                 obj.ub = ub;
             else
@@ -90,9 +96,12 @@ classdef SetRPYSteeringModelActionOptimVar < AbstractOptimizationVariable
         end
         
         function useTf = getUseTfForVariable(obj)
-            useTf = [obj.varRollConst obj.varRollLin obj.varRollAccel ...
-                     obj.varPitchConst obj.varPitchLin obj.varPitchAccel ...
-                     obj.varYawConst obj.varYawLin obj.varYawAccel];
+            useTf = [obj.varRollConst obj.varRollLin obj.varRollAccel, ...
+                     obj.varPitchConst obj.varPitchLin obj.varPitchAccel, ...
+                     obj.varYawConst obj.varYawLin obj.varYawAccel, ...
+                     obj.varTimeOffset];
+
+            useTf = logical(useTf);
         end
         
         function setUseTfForVariable(obj, useTf)                 
@@ -107,6 +116,8 @@ classdef SetRPYSteeringModelActionOptimVar < AbstractOptimizationVariable
             obj.varYawConst = useTf(7);
             obj.varYawLin = useTf(8);
             obj.varYawAccel = useTf(9);
+            
+            obj.varTimeOffset = useTf(10);
         end
         
         function updateObjWithVarValue(obj, x)
@@ -148,6 +159,13 @@ classdef SetRPYSteeringModelActionOptimVar < AbstractOptimizationVariable
             end
             if(obj.varYawAccel)
                 obj.varObj.yawModel.accelTerm = x(ind);
+                ind = ind + 1;
+            end
+            
+            if(obj.varTimeOffset)
+                obj.varObj.yawModel.tOffset = x(ind);
+                obj.varObj.pitchModel.tOffset = x(ind);
+                obj.varObj.rollModel.tOffset = x(ind);
                 ind = ind + 1; %#ok<NASGU>
             end
         end
@@ -167,7 +185,8 @@ classdef SetRPYSteeringModelActionOptimVar < AbstractOptimizationVariable
                         sprintf('%s Pitch Acceleration', subStr), ...
                         sprintf('%s Yaw Slip Constant', subStr), ...
                         sprintf('%s Yaw Slip Rate', subStr), ...
-                        sprintf('%s Yaw Slip Acceleration', subStr)};
+                        sprintf('%s Yaw Slip Acceleration', subStr), ...
+                        sprintf('%s Steering Time Offset', subStr)};
                     
             nameStrs = nameStrs(obj.getUseTfForVariable());
         end

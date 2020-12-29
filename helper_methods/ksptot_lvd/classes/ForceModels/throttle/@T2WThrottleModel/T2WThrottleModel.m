@@ -37,33 +37,24 @@ classdef T2WThrottleModel < AbstractThrottleModel
 
         function initThrottleModel(obj, initialStateLogEntry)            
             if(obj.throttleContinuity)
-                throttle = initialStateLogEntry.throttle;
-
-                tankStates = initialStateLogEntry.getAllActiveTankStates();
-
-                tankMasses = zeros(size(tankStates));
-                for(i=1:length(tankStates))
-                    tankMasses(i) = tankStates(i).tankMass;
-                end
-                
-                powerStorageStates = initialStateLogEntry.getAllActivePwrStorageStates();
-                storageSoCs = NaN(size(powerStorageStates));
-                for(i=1:length(powerStorageStates))
-                    storageSoCs(i) = powerStorageStates(i).getStateOfCharge();
-                end
-
-                obj.targetT2W = computeTWRatio(throttle, initialStateLogEntry.time, initialStateLogEntry.position, initialStateLogEntry.velocity, tankMasses, initialStateLogEntry.getTotalVehicleDryMass(), ...
-                                               initialStateLogEntry.stageStates, initialStateLogEntry.lvState, tankStates, initialStateLogEntry.centralBody, ...
-                                               storageSoCs, powerStorageStates);
+                obj.targetT2W = getT2WRatioForStateLogEntry(initialStateLogEntry);
             end
         end
         
+        function setInitialThrottleFromState(obj, stateLogEntry)
+            obj.targetT2W = getT2WRatioForStateLogEntry(stateLogEntry);
+        end
+               
         function optVar = getNewOptVar(obj)
             optVar = T2WThrottleModelOptimVar(obj);
         end
         
         function optVar = getExistingOptVar(obj)
             optVar = obj.optVar;
+        end
+        
+        function t0 = getT0(obj)
+            t0 = 0;
         end
         
         function setT0(~,~)
@@ -82,4 +73,25 @@ classdef T2WThrottleModel < AbstractThrottleModel
             model = T2WThrottleModel(0);
         end
     end
+end
+
+function targetT2W = getT2WRatioForStateLogEntry(stateLogEntry)
+    throttle = stateLogEntry.throttle;
+
+    tankStates = stateLogEntry.getAllActiveTankStates();
+
+    tankMasses = zeros(size(tankStates));
+    for(i=1:length(tankStates)) %#ok<*NO4LP>
+        tankMasses(i) = tankStates(i).tankMass;
+    end
+
+    powerStorageStates = stateLogEntry.getAllActivePwrStorageStates();
+    storageSoCs = NaN(size(powerStorageStates));
+    for(i=1:length(powerStorageStates))
+        storageSoCs(i) = powerStorageStates(i).getStateOfCharge();
+    end
+
+    targetT2W = computeTWRatio(throttle, stateLogEntry.time, stateLogEntry.position, stateLogEntry.velocity, tankMasses, stateLogEntry.getTotalVehicleDryMass(), ...
+                               stateLogEntry.stageStates, stateLogEntry.lvState, tankStates, stateLogEntry.centralBody, ...
+                               storageSoCs, powerStorageStates);
 end

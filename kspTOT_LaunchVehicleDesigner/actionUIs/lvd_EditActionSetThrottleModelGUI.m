@@ -22,7 +22,7 @@ function varargout = lvd_EditActionSetThrottleModelGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditActionSetThrottleModelGUI
 
-% Last Modified by GUIDE v2.5 15-Jul-2020 16:44:16
+% Last Modified by GUIDE v2.5 29-Dec-2020 14:14:14
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -77,13 +77,14 @@ function populateGUI(handles, action, useContinuity)
     throttleModel = action.throttleModel;
     
     polyModel = throttleModel.throttleModel;
+    handles.timeOffsetText.String = fullAccNum2Str(polyModel.tOffset);
     set(handles.throttleConstTermText,'String',fullAccNum2Str(100*polyModel.constTerm));
     set(handles.throttleLinTermText,'String',fullAccNum2Str(100*polyModel.linearTerm));
     set(handles.throttleAccelTermText,'String',fullAccNum2Str(100*polyModel.accelTerm));
     
     optVar = throttleModel.getExistingOptVar();
     if(isempty(optVar))
-        useTf = false([1,3]);
+        useTf = false([1,4]);
         lb = zeros(size(useTf));
         ub = zeros(size(useTf));
     else
@@ -96,20 +97,24 @@ function populateGUI(handles, action, useContinuity)
     set(handles.throttleConstOptCheckbox,'Value',(useTf(1)));
     set(handles.throttleLinOptCheckbox,'Value',(useTf(2)));
     set(handles.throttleAccelOptCheckbox,'Value',(useTf(3)));
+    set(handles.timeOffsetConstOptCheckbox,'Value',(useTf(4)));
     
     throttleConstOptCheckbox_Callback(handles.throttleConstOptCheckbox, [], handles);
     throttleLinOptCheckbox_Callback(handles.throttleLinOptCheckbox, [], handles);    
     throttleAccelOptCheckbox_Callback(handles.throttleAccelOptCheckbox, [], handles);
+    timeOffsetConstOptCheckbox_Callback(handles.timeOffsetConstOptCheckbox, [], handles);
     
     %LB
     set(handles.throttleConstLbText,'String',fullAccNum2Str(100*lb(1)));
     set(handles.throttleLinLbText,'String',fullAccNum2Str(100*lb(2)));
     set(handles.throttleAccelLbText,'String',fullAccNum2Str(100*lb(3)));
+    set(handles.timeOffsetConstLbText,'String',fullAccNum2Str(lb(4)));
     
     %UB
     set(handles.throttleConstUbText,'String',fullAccNum2Str(100*ub(1)));
     set(handles.throttleLinUbText,'String',fullAccNum2Str(100*ub(2)));
     set(handles.throttleAccelUbText,'String',fullAccNum2Str(100*ub(3)));
+    set(handles.timeOffsetConstUbText,'String',fullAccNum2Str(ub(4)));
     
     if(useContinuity)
         handles.throttleContCheckbox.Enable = 'on';
@@ -143,10 +148,13 @@ function varargout = lvd_EditActionSetThrottleModelGUI_OutputFcn(hObject, eventd
         end
         
         %Set Throttle Terms
+        timeOffset = str2double(get(handles.timeOffsetText,'String'));
+        
         throttleConst = str2double(get(handles.throttleConstTermText,'String'))/100;
         throttleLinear = str2double(get(handles.throttleLinTermText,'String'))/100;
         throttleAccel = str2double(get(handles.throttleAccelTermText,'String'))/100;
         
+        throttleModel.setTimeOffsets(timeOffset);
         throttleModel.setPolyTerms(throttleConst, throttleLinear, throttleAccel);
         throttleModel.throttleContinuity = logical(handles.throttleContCheckbox.Value);
         
@@ -154,6 +162,7 @@ function varargout = lvd_EditActionSetThrottleModelGUI_OutputFcn(hObject, eventd
         useTf(1) = get(handles.throttleConstOptCheckbox,'Value');
         useTf(2) = get(handles.throttleLinOptCheckbox,'Value');
         useTf(3) = get(handles.throttleAccelOptCheckbox,'Value');
+        useTf(4) = get(handles.timeOffsetConstOptCheckbox,'Value');
         
         if(isempty(optVar))
             optVar = throttleModel.getNewOptVar();
@@ -161,14 +170,17 @@ function varargout = lvd_EditActionSetThrottleModelGUI_OutputFcn(hObject, eventd
         
         optVar.setUseTfForVariable(useTf);
         
-        %UB
+        %LB
         lb(1) = str2double(get(handles.throttleConstLbText,'String'))/100;
         lb(2) = str2double(get(handles.throttleLinLbText,'String'))/100;
         lb(3) = str2double(get(handles.throttleAccelLbText,'String'))/100;
+        lb(4) = str2double(get(handles.timeOffsetConstLbText,'String'));
         
+        %UB
         ub(1) = str2double(get(handles.throttleConstUbText,'String'))/100;
         ub(2) = str2double(get(handles.throttleLinUbText,'String'))/100;
         ub(3) = str2double(get(handles.throttleAccelUbText,'String'))/100;
+        ub(4) = str2double(get(handles.timeOffsetConstUbText,'String'));
         
         optVar.setUseTfForVariable(true(size(lb))); %need this to get the full lb/set in there
         optVar.setBndsForVariable(lb, ub);
@@ -209,6 +221,14 @@ function errMsg = validateInputs(handles)
     isInt = false;
     errMsg = validateNumber(throttleAccel, numberName, lb, ub, isInt, errMsg, enteredStr);
     
+    %Time offset
+    timeOffset = str2double(get(handles.timeOffsetText,'String'));
+    enteredStr = get(handles.timeOffsetText,'String');
+    numberName = 'Time Offset';
+    lb = -Inf;
+    ub = Inf;
+    isInt = false;
+    errMsg = validateNumber(timeOffset, numberName, lb, ub, isInt, errMsg, enteredStr);
     
     %%%%%Bounds
     %Throttle Const
@@ -268,6 +288,25 @@ function errMsg = validateInputs(handles)
         errMsg = validateNumber(throttleAccelUB, numberName, lb, ub, isInt, errMsg, enteredStr);   
     end
     
+    %Time Offset
+    if(handles.timeOffsetConstOptCheckbox.Value == 1)
+        timeOffsetLb = str2double(get(handles.timeOffsetConstLbText,'String'));
+        enteredStr = get(handles.timeOffsetConstLbText,'String');
+        numberName = 'Time Offset Lower Bound';
+        lb = -Inf;
+        ub = Inf;
+        isInt = false;
+        errMsg = validateNumber(timeOffsetLb, numberName, lb, ub, isInt, errMsg, enteredStr);
+
+        timeOffsetUb = str2double(get(handles.timeOffsetConstUbText,'String'));
+        enteredStr = get(handles.timeOffsetConstUbText,'String');
+        numberName = 'Time Offset Upper Bound';
+        lb = timeOffsetLb;
+        ub = Inf;
+        isInt = false;
+        errMsg = validateNumber(timeOffsetUb, numberName, lb, ub, isInt, errMsg, enteredStr);
+    end
+    
     if(isempty(errMsg))
         if(handles.throttleConstOptCheckbox.Value == 1 && (throttleConst < throttleConstLB || throttleConst > throttleConstUB))
             errMsg{end+1} = 'Throttle constant term must be between the upper and lower optimization bounds.';
@@ -279,6 +318,10 @@ function errMsg = validateInputs(handles)
         
         if(handles.throttleAccelOptCheckbox.Value == 1 && (throttleAccel < throttleAccelLB || throttleAccel > throttleAccelUB))
             errMsg{end+1} = 'Throttle acceleration term must be between the upper and lower optimization bounds.';
+        end
+        
+        if(handles.timeOffsetConstOptCheckbox.Value == 1 && (timeOffset < timeOffsetLb || timeOffset > timeOffsetUb))
+            errMsg{end+1} = 'Time offset must be between the upper and lower optimization bounds.';
         end
     end
     
@@ -601,15 +644,119 @@ function throttleContCheckbox_Callback(hObject, eventdata, handles)
 
 % Hint: get(hObject,'Value') returns toggle state of throttleContCheckbox
     if(hObject.Value)
+        %throttle values
         handles.throttleConstTermText.Enable = 'off';
         handles.throttleConstOptCheckbox.Enable = 'off';
-        handles.throttleConstLbText.Enable = 'off';
-        handles.throttleConstUbText.Enable = 'off';
-        
         handles.throttleConstOptCheckbox.Value = 0;
+        
+        throttleConstOptCheckbox_Callback(handles.throttleConstOptCheckbox, [], handles);
+        
+        %time offset
+        handles.timeOffsetText.Enable = 'off';        
+        handles.timeOffsetConstOptCheckbox.Enable = 'off';
+        handles.timeOffsetConstOptCheckbox.Value = 0;
+        
+        timeOffsetConstOptCheckbox_Callback(handles.timeOffsetConstOptCheckbox, [], handles);
     else
+        %throttle values
         handles.throttleConstTermText.Enable = 'on';
         handles.throttleConstOptCheckbox.Enable = 'on';
         
         throttleConstOptCheckbox_Callback(handles.throttleConstOptCheckbox, [], handles);
+        
+        %time offset
+        handles.timeOffsetText.Enable = 'on';        
+        handles.timeOffsetConstOptCheckbox.Enable = 'on';
+        
+        timeOffsetConstOptCheckbox_Callback(handles.timeOffsetConstOptCheckbox, [], handles);
     end
+
+
+
+function timeOffsetText_Callback(hObject, eventdata, handles)
+% hObject    handle to timeOffsetText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of timeOffsetText as text
+%        str2double(get(hObject,'String')) returns contents of timeOffsetText as a double
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
+
+% --- Executes during object creation, after setting all properties.
+function timeOffsetText_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to timeOffsetText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in timeOffsetConstOptCheckbox.
+function timeOffsetConstOptCheckbox_Callback(hObject, eventdata, handles)
+% hObject    handle to timeOffsetConstOptCheckbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of timeOffsetConstOptCheckbox
+    if(get(hObject,'Value')==1)
+        set(handles.timeOffsetConstLbText,'Enable','on');
+        set(handles.timeOffsetConstUbText,'Enable','on');
+    else
+        set(handles.timeOffsetConstLbText,'Enable','off');
+        set(handles.timeOffsetConstUbText,'Enable','off');
+    end
+
+
+function timeOffsetConstLbText_Callback(hObject, eventdata, handles)
+% hObject    handle to timeOffsetConstLbText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of timeOffsetConstLbText as text
+%        str2double(get(hObject,'String')) returns contents of timeOffsetConstLbText as a double
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
+
+% --- Executes during object creation, after setting all properties.
+function timeOffsetConstLbText_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to timeOffsetConstLbText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function timeOffsetConstUbText_Callback(hObject, eventdata, handles)
+% hObject    handle to timeOffsetConstUbText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of timeOffsetConstUbText as text
+%        str2double(get(hObject,'String')) returns contents of timeOffsetConstUbText as a double
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
+
+% --- Executes during object creation, after setting all properties.
+function timeOffsetConstUbText_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to timeOffsetConstUbText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

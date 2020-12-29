@@ -5,12 +5,14 @@ classdef SetPolyThrottleModelActionOptimVar < AbstractOptimizationVariable
     properties
         varObj = ThrottlePolyModel.getDefaultThrottleModel()
         
-        lb(1,3) double
-        ub(1,3) double
+        lb(1,4) double
+        ub(1,4) double
         
         varConst(1,1) logical = false;
         varLin(1,1) logical   = false;
         varAccel(1,1) logical = false;
+        
+        varTimeOffset(1,1) logical = false;
     end
     
     methods
@@ -22,7 +24,7 @@ classdef SetPolyThrottleModelActionOptimVar < AbstractOptimizationVariable
         end
         
         function x = getXsForVariable(obj)
-            x = NaN(1,3);
+            x = NaN(1,4);
             
             if(obj.varConst)
                 x(1) = obj.varObj.throttleModel.constTerm;
@@ -32,6 +34,10 @@ classdef SetPolyThrottleModelActionOptimVar < AbstractOptimizationVariable
             end
             if(obj.varAccel)
                 x(3) = obj.varObj.throttleModel.accelTerm;
+            end
+            
+            if(obj.varTimeOffset)
+                x(4) = obj.varObj.throttleModel.tOffset;
             end
             
             x(isnan(x)) = [];
@@ -50,7 +56,7 @@ classdef SetPolyThrottleModelActionOptimVar < AbstractOptimizationVariable
         end
         
         function setBndsForVariable(obj, lb, ub)
-            if(length(lb) == 3 && length(ub) == 3)
+            if(length(lb) == 4 && length(ub) == 4)
                 obj.lb = lb;
                 obj.ub = ub;
             else
@@ -62,13 +68,15 @@ classdef SetPolyThrottleModelActionOptimVar < AbstractOptimizationVariable
         end
         
         function useTf = getUseTfForVariable(obj)
-            useTf = [obj.varConst obj.varLin obj.varAccel];
+            useTf = [obj.varConst obj.varLin obj.varAccel ...
+                     obj.varTimeOffset];
         end
         
         function setUseTfForVariable(obj, useTf)                 
             obj.varConst = useTf(1);
             obj.varLin = useTf(2);
             obj.varAccel = useTf(3);
+            obj.varTimeOffset = useTf(4);
         end
         
         function updateObjWithVarValue(obj, x)
@@ -86,6 +94,11 @@ classdef SetPolyThrottleModelActionOptimVar < AbstractOptimizationVariable
                 obj.varObj.throttleModel.accelTerm = x(ind);
                 ind = ind + 1;
             end
+            
+            if(obj.varTimeOffset)
+                obj.varObj.throttleModel.tOffset = x(ind);
+                ind = ind + 1; %#ok<NASGU>
+            end
         end
         
         function nameStrs = getStrNamesOfVars(obj, evtNum, varLocType)
@@ -97,7 +110,8 @@ classdef SetPolyThrottleModelActionOptimVar < AbstractOptimizationVariable
             
             nameStrs = {sprintf('%s Throttle Constant', subStr), ...
                         sprintf('%s Throttle Rate', subStr), ...
-                        sprintf('%s Throttle Acceleration', subStr)};
+                        sprintf('%s Throttle Acceleration', subStr), ...
+                        sprintf('%s Throttle Time Offset', subStr)};
                     
             nameStrs = nameStrs(obj.getUseTfForVariable());
         end

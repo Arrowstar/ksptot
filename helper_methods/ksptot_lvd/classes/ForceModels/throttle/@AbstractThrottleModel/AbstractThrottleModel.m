@@ -9,7 +9,9 @@ classdef(Abstract) AbstractThrottleModel < matlab.mixin.SetGet
     end
     
     methods
-        initThrottleModel(obj, ut, prevThrottleAtUt)
+        initThrottleModel(obj, initialStateLogEntry) 
+        
+        setInitialThrottleFromState(obj, stateLogEntry, tOffsetDelta)
         
         throttle = getThrottleAtTime(obj, ut, rVect, vVect, tankMasses, dryMass, stgStates, lvState, tankStates, bodyInfo, storageSoCs, powerStorageStates)
                 
@@ -36,6 +38,8 @@ classdef(Abstract) AbstractThrottleModel < matlab.mixin.SetGet
         optVar = getNewOptVar(obj)
         
         optVar = getExistingOptVar(obj)
+        
+        t0 = getT0(obj);
         
         setT0(obj,t0);
     end

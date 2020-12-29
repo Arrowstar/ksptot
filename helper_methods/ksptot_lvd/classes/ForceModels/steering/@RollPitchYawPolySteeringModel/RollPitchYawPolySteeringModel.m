@@ -18,6 +18,8 @@ classdef RollPitchYawPolySteeringModel < AbstractAnglePolySteeringModel
             pitchAng = obj.pitchModel.getValueAtTime(ut);
             yawAng = obj.yawModel.getValueAtTime(ut);
             
+%             disp(rad2deg(pitchAng));
+            
             [~, ~, ~, dcm] = computeBodyAxesFromEuler(ut, rVect, vVect, bodyInfo, rollAng, pitchAng, yawAng);
             dcm = real(dcm);
         end
@@ -36,6 +38,10 @@ classdef RollPitchYawPolySteeringModel < AbstractAnglePolySteeringModel
                     angleModel = obj.yawModel;
                     continuity = obj.yawContinuity;
             end
+        end
+        
+        function t0 = getT0(obj)
+            t0 = obj.yawModel.t0;
         end
         
         function setT0(obj, newT0)
@@ -60,6 +66,12 @@ classdef RollPitchYawPolySteeringModel < AbstractAnglePolySteeringModel
             obj.rollModel.accelTerm = roll;
             obj.pitchModel.accelTerm = pitch;
             obj.yawModel.accelTerm = yaw;
+        end
+        
+        function setTimeOffsets(obj, timeOffset)
+            obj.rollModel.tOffset = timeOffset;
+            obj.pitchModel.tOffset = timeOffset;
+            obj.yawModel.tOffset = timeOffset;
         end
         
         function [angle1Cont, angle2Cont, angle3Cont] = getContinuityTerms(obj)
@@ -92,10 +104,19 @@ classdef RollPitchYawPolySteeringModel < AbstractAnglePolySteeringModel
             end
         end
         
+        function setInitialAttitudeFromState(obj, stateLogEntry, tOffsetDelta)            
+            t0 = stateLogEntry.time;
+            obj.setT0(t0);
+
+            obj.rollModel.tOffset = obj.rollModel.tOffset + tOffsetDelta;
+            obj.pitchModel.tOffset = obj.pitchModel.tOffset + tOffsetDelta;
+            obj.yawModel.tOffset = obj.yawModel.tOffset + tOffsetDelta;
+        end
+        
         function [angle1Name, angle2Name, angle3Name] = getAngleNames(~)
-            angle1Name = 'Roll';
-            angle2Name = 'Pitch';
-            angle3Name = 'Yaw';
+            angle1Name = 'Roll Angle';
+            angle2Name = 'Pitch Angle';
+            angle3Name = 'Yaw Angle';
         end
         
         function newSteeringModel = deepCopy(obj)

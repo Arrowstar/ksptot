@@ -23,13 +23,23 @@ classdef ThrottlePolyModel < AbstractThrottleModel
         
         function initThrottleModel(obj, initialStateLogEntry)
             t0 = initialStateLogEntry.time;
-            throttle = initialStateLogEntry.throttle;
-            
             obj.setT0(t0)
             
             if(obj.throttleContinuity)
+                throttle = initialStateLogEntry.throttle;
                 obj.throttleModel.constTerm = throttle;
             end
+        end
+        
+        function setInitialThrottleFromState(obj, stateLogEntry, tOffsetDelta)
+            t0 = stateLogEntry.time;
+            obj.setT0(t0);
+            
+            obj.throttleModel.tOffset = obj.throttleModel.tOffset + tOffsetDelta;
+        end
+        
+        function t0 = getT0(obj)
+            t0 = obj.throttleModel.t0;
         end
         
         function setT0(obj, newT0)
@@ -41,7 +51,11 @@ classdef ThrottlePolyModel < AbstractThrottleModel
             obj.throttleModel.linearTerm = linear;
             obj.throttleModel.accelTerm = accel;
         end
-
+        
+        function setTimeOffsets(obj, timeOffset)
+            obj.throttleModel.tOffset = timeOffset;
+        end
+        
         function optVar = getNewOptVar(obj)
             optVar = SetPolyThrottleModelActionOptimVar(obj);
         end

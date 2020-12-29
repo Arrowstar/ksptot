@@ -22,7 +22,7 @@ function varargout = ma_LvdMainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_LvdMainGUI
 
-% Last Modified by GUIDE v2.5 21-Dec-2020 18:44:52
+% Last Modified by GUIDE v2.5 28-Dec-2020 18:21:34
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -2458,3 +2458,40 @@ function uploadImpDvActionToKspMenu_Callback(hObject, eventdata, handles)
     data = deltaVAction.getUploadDvToKspData(preActionsStateLogEntry);
     uploadManeuverToKSP(data);
     
+
+
+% --------------------------------------------------------------------
+function advanceScriptToSelectedEventMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to advanceScriptToSelectedEventMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    
+    addUndoState(handles,'Advance Script to Event');
+    
+    oldAutoPropSetting = lvdData.settings.autoPropScript;
+    if(oldAutoPropSetting == false)
+        lvdData.settings.autoPropScript = true;
+        
+        runScript(handles, lvdData, 1);
+%         lvd_processData(handles);
+    end
+    
+    eventNum = handles.scriptListbox.Value;
+    event = lvdData.script.getEventForInd(eventNum);
+    eventNum = event.getEventNum();
+    eventFirstStateLogEntry = lvdData.stateLog.getFirstStateLogForEvent(event);
+    
+    lvdData.initStateModel.setInitialStateFromStateLogEntry(eventFirstStateLogEntry);
+    
+    for(i=eventNum-1:-1:1)
+        evt = lvdData.script.getEventForInd(i);
+        lvdData.optimizer.constraints.removeConstraintsThatUseEvent(evt);
+        lvdData.optimizer.objFcn.removeObjFcnsThatUseEvent(evt);
+        lvdData.script.removeEvent(evt);
+    end
+    
+    handles.scriptListbox.Value = 1;
+    runScript(handles, lvdData, 1);
+    lvd_processData(handles);
+    lvdData.settings.autoPropScript = oldAutoPropSetting;

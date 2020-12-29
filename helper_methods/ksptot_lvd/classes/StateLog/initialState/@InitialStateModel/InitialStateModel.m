@@ -3,7 +3,6 @@ classdef InitialStateModel < matlab.mixin.SetGet
     %   Detailed explanation goes here
     
     properties
-%         orbitModel(1,1) AbstractOrbitStateModel = BodyFixedOrbitStateModel.getDefaultOrbitState()
         orbitModel(1,1) = GeographicElementSet.getDefaultElements();
 
         lvState LaunchVehicleState
@@ -87,13 +86,11 @@ classdef InitialStateModel < matlab.mixin.SetGet
         end
         
         function stateLogEntry = getInitialStateLogEntry(obj)
-            celBodyData = obj.centralBody.celBodyData;
             stateLogEntry = LaunchVehicleStateLogEntry();
             
             ut = obj.time;
             stateLogEntry.time = ut;
             
-%             iFrame = BodyCenteredInertialFrame(obj.centralBody, celBodyData);
             iFrame = obj.centralBody.getBodyCenteredInertialFrame();
             cartElemSet = obj.orbitModel.convertToFrame(iFrame).convertToCartesianElementSet();
             stateLogEntry.position = cartElemSet.rVect;
@@ -204,11 +201,11 @@ classdef InitialStateModel < matlab.mixin.SetGet
             end
         end
         
-        function tf = isVarFromInitialState(obj, var)
-            tf = false;
+        function tf = isVarFromInitialState(obj, var)           
+            tf = obj.optVar == var;
             
             if(not(isempty(obj)) && not(isempty(obj.optVar)))
-                tf = obj.optVar.isVarContainedWithin(var);
+                tf = tf || obj.optVar.isVarContainedWithin(var);
             end
             
             if(not(isempty(obj.steeringModel.getExistingOptVar())))
@@ -218,6 +215,48 @@ classdef InitialStateModel < matlab.mixin.SetGet
             if(not(isempty(obj.throttleModel.getExistingOptVar())))
                 tf = tf || obj.throttleModel.getExistingOptVar() == var;
             end
+        end
+        
+        function setInitialStateFromStateLogEntry(obj, stateLogEntry)
+            lvdData = stateLogEntry.lvdData;
+            varSet = lvdData.optimizer.vars;
+            
+            %remove variables
+            orbitVar = obj.optVar.orbitVar;
+            varSet.removeVariable(orbitVar);
+            
+            initStateVar = obj.optVar;
+            varSet.removeVariable(initStateVar);
+            
+            steerVar = obj.steeringModel.getExistingOptVar();
+            varSet.removeVariable(steerVar);
+            
+            throttleVar = obj.throttleModel.getExistingOptVar();
+            varSet.removeVariable(throttleVar);
+            
+            %set elements
+            obj.orbitModel = stateLogEntry.getCartesianElementSetRepresentation();
+
+            obj.lvState = stateLogEntry.lvState;
+            obj.stageStates = stateLogEntry.stageStates;
+
+            obj.aero = stateLogEntry.aero;
+            obj.thirdBodyGravity = stateLogEntry.thirdBodyGravity;
+            
+            oldSteerModelT0 = stateLogEntry.steeringModel.getT0();
+            newSteerModelT0 = stateLogEntry.time;
+            tOffsetDelta = newSteerModelT0 - oldSteerModelT0;
+            obj.steeringModel = stateLogEntry.steeringModel;
+            obj.steeringModel.setInitialAttitudeFromState(stateLogEntry, tOffsetDelta);
+            
+            oldThrottleModelT0 = stateLogEntry.throttleModel.getT0();
+            newThrottleModelT0 = stateLogEntry.time;
+            tOffsetDelta = newThrottleModelT0 - oldThrottleModelT0;
+            obj.throttleModel = stateLogEntry.throttleModel;
+            obj.throttleModel.setInitialThrottleFromState(stateLogEntry, tOffsetDelta);
+            
+            %clean up
+            obj.clearDuplicateEngineStates();
         end
     end
 

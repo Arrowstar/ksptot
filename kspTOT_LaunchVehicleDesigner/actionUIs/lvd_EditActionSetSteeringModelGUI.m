@@ -22,7 +22,7 @@ function varargout = lvd_EditActionSetSteeringModelGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditActionSetSteeringModelGUI
 
-% Last Modified by GUIDE v2.5 27-Jul-2020 20:11:16
+% Last Modified by GUIDE v2.5 29-Dec-2020 11:13:59
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -113,6 +113,7 @@ function populateGUI(handles, action, lv, useContinuity)
     set(handles.steeringModelTypeCombo,'Value',ind);
     
     [angleModel, ~] = steeringModel.getAngleNModel(1);
+    handles.timeOffsetText.String = fullAccNum2Str(angleModel.tOffset); %first angle model will be the offset used everywhere
     set(handles.angle1ConstTermText,'String',fullAccNum2Str(rad2deg(angleModel.constTerm)));
     set(handles.angle1LinTermText,'String',fullAccNum2Str(rad2deg(angleModel.linearTerm)));
     set(handles.angle1AccelTermText,'String',fullAccNum2Str(rad2deg(angleModel.accelTerm)));
@@ -139,7 +140,7 @@ function populateGUI(handles, action, lv, useContinuity)
     
     optVar = steeringModel.getExistingOptVar();
     if(isempty(optVar))
-        useTf = false([1,9]);
+        useTf = false([1,10]);
         lb = zeros(size(useTf));
         ub = zeros(size(useTf));
     else
@@ -161,6 +162,8 @@ function populateGUI(handles, action, lv, useContinuity)
     set(handles.angle3LinOptCheckbox,'Value',(useTf(8)));
     set(handles.angle3AccelOptCheckbox,'Value',(useTf(9)));
     
+    set(handles.timeOffsetConstOptCheckbox,'Value',(useTf(10)));
+    
     angle1ConstOptCheckbox_Callback(handles.angle1ConstOptCheckbox, [], handles);
     angle2ConstOptCheckbox_Callback(handles.angle2ConstOptCheckbox, [], handles);
     angle3ConstOptCheckbox_Callback(handles.angle3ConstOptCheckbox, [], handles);
@@ -173,12 +176,8 @@ function populateGUI(handles, action, lv, useContinuity)
     angle2AccelOptCheckbox_Callback(handles.angle2AccelOptCheckbox, [], handles);
     angle3AccelOptCheckbox_Callback(handles.angle3AccelOptCheckbox, [], handles);
     
-%     lb = zeros(size(useTf));
-%     lb(useTf) = lbTemp;
-%     
-%     ub = zeros(size(useTf));
-%     ub(useTf) = ubTemp;
-    
+    timeOffsetConstOptCheckbox_Callback(handles.timeOffsetConstOptCheckbox, [], handles);
+        
     %LB
     set(handles.angle1ConstLbText,'String',fullAccNum2Str(rad2deg(lb(1))));
     set(handles.angle1LinLbText,'String',fullAccNum2Str(rad2deg(lb(2))));
@@ -192,6 +191,8 @@ function populateGUI(handles, action, lv, useContinuity)
     set(handles.angle3LinLbText,'String',fullAccNum2Str(rad2deg(lb(8))));
     set(handles.angle3AccelLbText,'String',fullAccNum2Str(rad2deg(lb(9))));
     
+    set(handles.timeOffsetConstLbText,'String',fullAccNum2Str(lb(10)));
+    
     %UB
     set(handles.angle1ConstUbText,'String',fullAccNum2Str(rad2deg(ub(1))));
     set(handles.angle1LinUbText,'String',fullAccNum2Str(rad2deg(ub(2))));
@@ -204,6 +205,8 @@ function populateGUI(handles, action, lv, useContinuity)
     set(handles.angle3ConstUbText,'String',fullAccNum2Str(rad2deg(ub(7))));
     set(handles.angle3LinUbText,'String',fullAccNum2Str(rad2deg(ub(8))));
     set(handles.angle3AccelUbText,'String',fullAccNum2Str(rad2deg(ub(9))));
+    
+    set(handles.timeOffsetConstUbText,'String',fullAccNum2Str(ub(10)));
     
     
 % --- Outputs from this function are returned to the command line.
@@ -250,6 +253,8 @@ function varargout = lvd_EditActionSetSteeringModelGUI_OutputFcn(hObject, eventd
         end
         
         %Set Steering Terms
+        timeOffset = str2double(get(handles.timeOffsetText,'String'));
+        
         angle1Const = deg2rad(str2double(get(handles.angle1ConstTermText,'String')));
         angle1Linear = deg2rad(str2double(get(handles.angle1LinTermText,'String')));
         angle1Accel = deg2rad(str2double(get(handles.angle1AccelTermText,'String')));
@@ -262,6 +267,7 @@ function varargout = lvd_EditActionSetSteeringModelGUI_OutputFcn(hObject, eventd
         angle3Linear = deg2rad(str2double(get(handles.angle3LinTermText,'String')));
         angle3Accel = deg2rad(str2double(get(handles.angle3AccelTermText,'String')));
         
+        steeringModel.setTimeOffsets(timeOffset);
         steeringModel.setConstTerms(angle1Const, angle2Const, angle3Const);
         steeringModel.setLinearTerms(angle1Linear, angle2Linear, angle3Linear);
         steeringModel.setAccelTerms(angle1Accel, angle2Accel, angle3Accel);
@@ -282,11 +288,13 @@ function varargout = lvd_EditActionSetSteeringModelGUI_OutputFcn(hObject, eventd
         useTf(8) = get(handles.angle3LinOptCheckbox,'Value');
         useTf(9) = get(handles.angle3AccelOptCheckbox,'Value');
         
+        useTf(10) = handles.timeOffsetConstOptCheckbox.Value;
+        
         optVar = steeringModel.getNewOptVar();
         
         optVar.setUseTfForVariable(useTf);
         
-        %UB
+        %LB
         lb(1) = deg2rad(str2double(get(handles.angle1ConstLbText,'String')));
         lb(2) = deg2rad(str2double(get(handles.angle1LinLbText,'String')));
         lb(3) = deg2rad(str2double(get(handles.angle1AccelLbText,'String')));
@@ -299,7 +307,9 @@ function varargout = lvd_EditActionSetSteeringModelGUI_OutputFcn(hObject, eventd
         lb(8) = deg2rad(str2double(get(handles.angle3LinLbText,'String')));
         lb(9) = deg2rad(str2double(get(handles.angle3AccelLbText,'String')));
         
+        lb(10) = str2double(get(handles.timeOffsetConstLbText,'String'));
         
+        %UB
         ub(1) = deg2rad(str2double(get(handles.angle1ConstUbText,'String')));
         ub(2) = deg2rad(str2double(get(handles.angle1LinUbText,'String')));
         ub(3) = deg2rad(str2double(get(handles.angle1AccelUbText,'String')));
@@ -311,6 +321,8 @@ function varargout = lvd_EditActionSetSteeringModelGUI_OutputFcn(hObject, eventd
         ub(7) = deg2rad(str2double(get(handles.angle3ConstUbText,'String')));
         ub(8) = deg2rad(str2double(get(handles.angle3LinUbText,'String')));
         ub(9) = deg2rad(str2double(get(handles.angle3AccelUbText,'String')));
+        
+        ub(10) = str2double(get(handles.timeOffsetConstUbText,'String'));
         
         optVar.setUseTfForVariable(true(size(lb))); %need this to get the full lb/set in there
         optVar.setBndsForVariable(lb, ub);
@@ -402,6 +414,15 @@ function errMsg = validateInputs(handles)
     ub = Inf;
     isInt = false;
     errMsg = validateNumber(angle3Accel, numberName, lb, ub, isInt, errMsg, enteredStr);
+    
+    %Time offset
+    timeOffset = str2double(get(handles.timeOffsetText,'String'));
+    enteredStr = get(handles.timeOffsetText,'String');
+    numberName = 'Time Offset';
+    lb = -Inf;
+    ub = Inf;
+    isInt = false;
+    errMsg = validateNumber(timeOffset, numberName, lb, ub, isInt, errMsg, enteredStr);
     
     %%%%%Bounds
     %Angle 1 Const
@@ -556,6 +577,23 @@ function errMsg = validateInputs(handles)
     ub = Inf;
     isInt = false;
     errMsg = validateNumber(angle3AccelUB, numberName, lb, ub, isInt, errMsg, enteredStr);
+    
+    %Time Offset
+    timeOffsetLb = str2double(get(handles.timeOffsetConstLbText,'String'));
+    enteredStr = get(handles.timeOffsetConstLbText,'String');
+    numberName = 'Time Offset Lower Bound';
+    lb = -Inf;
+    ub = Inf;
+    isInt = false;
+    errMsg = validateNumber(timeOffsetLb, numberName, lb, ub, isInt, errMsg, enteredStr);
+    
+    timeOffsetUb = str2double(get(handles.timeOffsetConstUbText,'String'));
+    enteredStr = get(handles.timeOffsetConstUbText,'String');
+    numberName = 'Time Offset Upper Bound';
+    lb = timeOffsetLb;
+    ub = Inf;
+    isInt = false;
+    errMsg = validateNumber(timeOffsetUb, numberName, lb, ub, isInt, errMsg, enteredStr);
     
     
 
@@ -1405,9 +1443,9 @@ function steeringModelTypeCombo_Callback(hObject, eventdata, handles)
     steeringModel = eval(sprintf('%s.getDefaultSteeringModel()', m(indFromCombo).classNameStr));
 
     [angle1Name, angle2Name, angle3Name] = steeringModel.getAngleNames();
-    set(handles.angle1Panel,'Title',sprintf('%s Angle', angle1Name));
-    set(handles.angle2Panel,'Title',sprintf('%s Angle', angle2Name));
-    set(handles.angle3Panel,'Title',sprintf('%s Angle', angle3Name));
+    set(handles.angle1Panel,'Title',sprintf('%s', angle1Name));
+    set(handles.angle2Panel,'Title',sprintf('%s', angle2Name));
+    set(handles.angle3Panel,'Title',sprintf('%s', angle3Name));
     
     if(steeringModel.usesRefFrame())
         handles.baseFrameCombo.Enable = 'on';
@@ -1442,6 +1480,7 @@ function angleContCheckbox_Callback(hObject, eventdata, handles)
 
 % Hint: get(hObject,'Value') returns toggle state of angleContCheckbox
     if(get(hObject,'Value'))
+        %angle constants
         handles.angle1ConstTermText.Enable = 'off';
         handles.angle2ConstTermText.Enable = 'off';
         handles.angle3ConstTermText.Enable = 'off';
@@ -1457,7 +1496,15 @@ function angleContCheckbox_Callback(hObject, eventdata, handles)
         angle1ConstOptCheckbox_Callback(handles.angle1ConstOptCheckbox, [], handles);
         angle2ConstOptCheckbox_Callback(handles.angle2ConstOptCheckbox, [], handles);
         angle3ConstOptCheckbox_Callback(handles.angle3ConstOptCheckbox, [], handles);
+        
+        %time offset
+        handles.timeOffsetText.Enable = 'off';        
+        handles.timeOffsetConstOptCheckbox.Enable = 'off';
+        handles.timeOffsetConstOptCheckbox.Value = 0;
+        
+        timeOffsetConstOptCheckbox_Callback(handles.timeOffsetConstOptCheckbox, [], handles);
     else
+        %angle constants
         handles.angle1ConstTermText.Enable = 'on';
         handles.angle2ConstTermText.Enable = 'on';
         handles.angle3ConstTermText.Enable = 'on';
@@ -1469,6 +1516,12 @@ function angleContCheckbox_Callback(hObject, eventdata, handles)
         angle1ConstOptCheckbox_Callback(handles.angle1ConstOptCheckbox, [], handles);
         angle2ConstOptCheckbox_Callback(handles.angle2ConstOptCheckbox, [], handles);
         angle3ConstOptCheckbox_Callback(handles.angle3ConstOptCheckbox, [], handles);
+        
+        %time offset
+        handles.timeOffsetText.Enable = 'on';        
+        handles.timeOffsetConstOptCheckbox.Enable = 'on';
+        
+        timeOffsetConstOptCheckbox_Callback(handles.timeOffsetConstOptCheckbox, [], handles);
     end
     
 
@@ -1568,7 +1621,15 @@ function controlFrameCombo_Callback(hObject, eventdata, handles)
 
 % Hints: contents = cellstr(get(hObject,'String')) returns controlFrameCombo contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from controlFrameCombo
+    contents = cellstr(get(hObject,'String'));
+    listBoxStr = contents{get(hObject,'Value')};
+    
+    enum = ControlFramesEnum.getEnumForListboxStr(listBoxStr);
+    angleNames = enum.angleNames;
 
+    set(handles.angle1Panel,'Title',sprintf('%s', angleNames{1}));
+    set(handles.angle2Panel,'Title',sprintf('%s', angleNames{2}));
+    set(handles.angle3Panel,'Title',sprintf('%s', angleNames{3}));
 
 % --- Executes during object creation, after setting all properties.
 function controlFrameCombo_CreateFcn(hObject, eventdata, handles)
@@ -1577,6 +1638,96 @@ function controlFrameCombo_CreateFcn(hObject, eventdata, handles)
 % handles    empty - handles not created until after all CreateFcns called
 
 % Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function timeOffsetText_Callback(hObject, eventdata, handles)
+% hObject    handle to timeOffsetText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of timeOffsetText as text
+%        str2double(get(hObject,'String')) returns contents of timeOffsetText as a double
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
+
+% --- Executes during object creation, after setting all properties.
+function timeOffsetText_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to timeOffsetText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in timeOffsetConstOptCheckbox.
+function timeOffsetConstOptCheckbox_Callback(hObject, eventdata, handles)
+% hObject    handle to timeOffsetConstOptCheckbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of timeOffsetConstOptCheckbox
+    if(get(hObject,'Value')==1)
+        set(handles.timeOffsetConstLbText,'Enable','on');
+        set(handles.timeOffsetConstUbText,'Enable','on');
+    else
+        set(handles.timeOffsetConstLbText,'Enable','off');
+        set(handles.timeOffsetConstUbText,'Enable','off');
+    end
+
+
+function timeOffsetConstLbText_Callback(hObject, eventdata, handles)
+% hObject    handle to timeOffsetConstLbText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of timeOffsetConstLbText as text
+%        str2double(get(hObject,'String')) returns contents of timeOffsetConstLbText as a double
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
+
+% --- Executes during object creation, after setting all properties.
+function timeOffsetConstLbText_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to timeOffsetConstLbText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function timeOffsetConstUbText_Callback(hObject, eventdata, handles)
+% hObject    handle to timeOffsetConstUbText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of timeOffsetConstUbText as text
+%        str2double(get(hObject,'String')) returns contents of timeOffsetConstUbText as a double
+    newInput = get(hObject,'String');
+    newInput = attemptStrEval(newInput);
+    set(hObject,'String', newInput);
+
+% --- Executes during object creation, after setting all properties.
+function timeOffsetConstUbText_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to timeOffsetConstUbText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
 %       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');

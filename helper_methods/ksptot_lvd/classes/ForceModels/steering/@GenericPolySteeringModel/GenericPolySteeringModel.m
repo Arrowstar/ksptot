@@ -43,6 +43,10 @@ classdef GenericPolySteeringModel < AbstractAnglePolySteeringModel
             end
         end
         
+        function t0 = getT0(obj)
+            t0 = obj.alphaAngleModel.t0;
+        end
+        
         function setT0(obj, newT0)
             obj.gammaAngleModel.t0 = newT0;
             obj.betaAngleModel.t0 = newT0;
@@ -65,6 +69,12 @@ classdef GenericPolySteeringModel < AbstractAnglePolySteeringModel
             obj.gammaAngleModel.accelTerm = gammaRateRate;
             obj.betaAngleModel.accelTerm = betaRateRate;
             obj.alphaAngleModel.accelTerm = alphaRateRate;
+        end
+        
+        function setTimeOffsets(obj, timeOffset)
+            obj.rollModel.tOffset = timeOffset;
+            obj.pitchModel.tOffset = timeOffset;
+            obj.yawModel.tOffset = timeOffset;
         end
         
         function [angle1Cont, angle2Cont, angle3Cont] = getContinuityTerms(obj)
@@ -100,11 +110,16 @@ classdef GenericPolySteeringModel < AbstractAnglePolySteeringModel
             end
         end
         
+        function setInitialAttitudeFromState(obj, stateLogEntry, tOffsetDelta)
+            t0 = stateLogEntry.time;
+            obj.setT0(t0);
+            
+            obj.gammaAngleModel.tOffset = obj.gammaAngleModel.tOffset + tOffsetDelta;
+            obj.betaAngleModel.tOffset = obj.betaAngleModel.tOffset + tOffsetDelta;
+            obj.alphaAngleModel.tOffset = obj.alphaAngleModel.tOffset + tOffsetDelta;
+        end
+        
         function [angle1Name, angle2Name, angle3Name] = getAngleNames(obj)
-%             angle1Name = 'Gamma';
-%             angle2Name = 'Beta';
-%             angle3Name = 'Alpha';
-
             angleNames = obj.controlFrame.getControlFrameEnum().angleNames;
             angle1Name = angleNames{1};
             angle2Name = angleNames{2};
@@ -162,6 +177,8 @@ classdef GenericPolySteeringModel < AbstractAnglePolySteeringModel
             obj.gammaAngleModel = gammaAngleModel;
             obj.betaAngleModel = betaAngleModel;
             obj.alphaAngleModel = alphaAngleModel;
+            
+            obj.controlFrame = NedControlFrame();
         end        
     end
     
