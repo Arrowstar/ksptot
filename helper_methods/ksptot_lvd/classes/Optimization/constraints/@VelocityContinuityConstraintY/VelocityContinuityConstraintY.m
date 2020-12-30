@@ -82,7 +82,7 @@ classdef VelocityContinuityConstraintY < AbstractConstraint
         end
         
         function tf = usesEvent(obj, event)
-            tf = obj.event == event;
+            tf = obj.event == event || obj.constraintEvent == event;
         end
         
         function tf = usesStopwatch(obj, stopwatch)
