@@ -111,22 +111,8 @@ classdef GenericQuatInterpSteeringModel < AbstractSteeringModel
             obj.setQuatsByAngles(); %need this here because I need to initialize the quaternions correctly from the angles at action init
         end
         
-        function setInitialAttitudeFromState(obj, stateLogEntry)
-            ut = stateLogEntry.time;
-            rVect = stateLogEntry.position;
-            vVect = stateLogEntry.velocity;
-            bodyInfo = stateLogEntry.centralBody;
-            attitude = stateLogEntry.attitude;
-            dcm = attitude.dcm;
+        function setInitialAttitudeFromState(obj, stateLogEntry, tOffsetDelta)
             
-            elemSet = CartesianElementSet(ut, rVect(:), vVect(:), bodyInfo.getBodyCenteredInertialFrame());
-            elemSet = elemSet.convertToFrame(obj.refFrame);
-
-            [gammaAngle, betaAngle, alphaAngle] = obj.controlFrame.getAnglesFromInertialBodyAxes(dcm, elemSet.time, elemSet.rVect(:), elemSet.vVect(:), elemSet.frame.getOriginBody(), obj.refFrame);
-
-            obj.alpha0 = alphaAngle;
-            obj.beta0 = betaAngle;
-            obj.gamma0 = gammaAngle;
         end
         
         function [angle1Name, angle2Name, angle3Name] = getAngleNames(obj)
