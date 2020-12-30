@@ -2467,31 +2467,53 @@ function advanceScriptToSelectedEventMenu_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
     lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
     
-    addUndoState(handles,'Advance Script to Event');
-    
-    oldAutoPropSetting = lvdData.settings.autoPropScript;
-    if(oldAutoPropSetting == false)
-        lvdData.settings.autoPropScript = true;
-        
-        runScript(handles, lvdData, 1);
-%         lvd_processData(handles);
-    end
-    
     eventNum = handles.scriptListbox.Value;
     event = lvdData.script.getEventForInd(eventNum);
     eventNum = event.getEventNum();
     eventFirstStateLogEntry = lvdData.stateLog.getFirstStateLogForEvent(event);
     
-    lvdData.initStateModel.setInitialStateFromStateLogEntry(eventFirstStateLogEntry);
-    
-    for(i=eventNum-1:-1:1)
+    tf = false;
+    badEvtStrs = [];
+    for(i=eventNum+1:lvdData.script.getTotalNumOfEvents())
         evt = lvdData.script.getEventForInd(i);
-        lvdData.optimizer.constraints.removeConstraintsThatUseEvent(evt);
-        lvdData.optimizer.objFcn.removeObjFcnsThatUseEvent(evt);
-        lvdData.script.removeEvent(evt);
+        
+        for(j=1:eventNum)
+            evtToBeDel = lvdData.script.getEventForInd(j);
+            
+            tf = tf || evt.usesEvent(evtToBeDel);
+            
+            if(evt.usesEvent(evtToBeDel))
+                badEvtStrs{end+1} = sprintf('Event %u uses Event %u in an action or event termination condition.', evt.getEventNum(), evtToBeDel.getEventNum());
+            end
+        end
     end
     
-    handles.scriptListbox.Value = 1;
-    runScript(handles, lvdData, 1);
-    lvd_processData(handles);
-    lvdData.settings.autoPropScript = oldAutoPropSetting;
+    if(tf == false)
+        addUndoState(handles,'Advance Script to Event');
+
+        oldAutoPropSetting = lvdData.settings.autoPropScript;
+        if(oldAutoPropSetting == false)
+            lvdData.settings.autoPropScript = true;
+
+            runScript(handles, lvdData, 1);
+    %         lvd_processData(handles);
+        end
+
+        lvdData.initStateModel.setInitialStateFromStateLogEntry(eventFirstStateLogEntry);
+
+        for(i=eventNum-1:-1:1)
+            evt = lvdData.script.getEventForInd(i);
+            lvdData.optimizer.constraints.removeConstraintsThatUseEvent(evt);
+            lvdData.optimizer.objFcn.removeObjFcnsThatUseEvent(evt);
+            lvdData.script.removeEvent(evt);
+        end
+
+        handles.scriptListbox.Value = 1;
+        runScript(handles, lvdData, 1);
+        lvd_processData(handles);
+        lvdData.settings.autoPropScript = oldAutoPropSetting;
+    else
+        badEvtStrJoin = strjoin(badEvtStrs,'\n');
+        msgStr = sprintf('Cannot advance to event because one or more of the events that would be deleted are in use elsewhere:\n\n%s', badEvtStrJoin);
+        errordlg(msgStr,'Cannot Advance to Event');
+    end

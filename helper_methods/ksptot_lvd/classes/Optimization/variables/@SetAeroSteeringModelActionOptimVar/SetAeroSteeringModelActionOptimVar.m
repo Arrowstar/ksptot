@@ -5,8 +5,8 @@ classdef SetAeroSteeringModelActionOptimVar < AbstractOptimizationVariable
     properties
         varObj = AeroAnglesPolySteeringModel.getDefaultSteeringModel()
         
-        lb(1,9) double = zeros([1,9]);
-        ub(1,9) double = zeros([1,9]);
+        lb(1,10) double = zeros([1,10]);
+        ub(1,10) double = zeros([1,10]);
         
         varBankConst(1,1) logical = false;
         varBankLin(1,1) logical   = false;

@@ -5,8 +5,8 @@ classdef SetGenericPolySteeringModelActionOptimVar < AbstractOptimizationVariabl
     properties
         varObj = GenericPolySteeringModel.getDefaultSteeringModel()
         
-        lb(1,9) double
-        ub(1,9) double
+        lb(1,10) double
+        ub(1,10) double
         
         varGammaConst(1,1) logical = false;
         varGammaLin(1,1) logical   = false;

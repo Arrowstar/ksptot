@@ -16,6 +16,7 @@ classdef OptimizationVariablesNearBoundsValidator < AbstractLaunchVehicleDataVal
             warnings = LaunchVehicleDataValidationWarning.empty(0,1);
             
             varSet = obj.lvdData.optimizer.vars;
+            varSet.sortVarsByEvtNum();
             [x, ~, varNameStrs, ~] = varSet.getTotalScaledXVector();
             [lb, ub] = varSet.getTotalScaledBndsVector();
             
