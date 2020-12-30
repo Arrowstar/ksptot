@@ -112,7 +112,7 @@ classdef GenericQuatInterpSteeringModel < AbstractSteeringModel
         end
         
         function setInitialAttitudeFromState(obj, stateLogEntry, tOffsetDelta)
-            
+            %nothing
         end
         
         function [angle1Name, angle2Name, angle3Name] = getAngleNames(obj)

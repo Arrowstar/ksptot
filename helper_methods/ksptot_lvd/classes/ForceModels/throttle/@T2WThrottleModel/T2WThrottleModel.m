@@ -41,8 +41,8 @@ classdef T2WThrottleModel < AbstractThrottleModel
             end
         end
         
-        function setInitialThrottleFromState(obj, stateLogEntry)
-            obj.targetT2W = getT2WRatioForStateLogEntry(stateLogEntry);
+        function setInitialThrottleFromState(obj, stateLogEntry, tOffsetDelta)
+            %nothing
         end
                
         function optVar = getNewOptVar(obj)
