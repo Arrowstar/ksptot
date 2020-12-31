@@ -22,7 +22,7 @@ function varargout = ma_LvdMainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_LvdMainGUI
 
-% Last Modified by GUIDE v2.5 28-Dec-2020 18:21:34
+% Last Modified by GUIDE v2.5 31-Dec-2020 09:15:12
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -2493,9 +2493,10 @@ function advanceScriptToSelectedEventMenu_Callback(hObject, eventdata, handles)
 
         oldAutoPropSetting = lvdData.settings.autoPropScript;
         if(oldAutoPropSetting == false)
-            lvdData.settings.autoPropScript = true;
+%             lvdData.settings.autoPropScript = true;
 
-            runScript(handles, lvdData, 1);
+            propagateScript(handles, lvdData, 1);
+%             runScript(handles, lvdData, 1);
     %         lvd_processData(handles);
         end
 
@@ -2511,9 +2512,61 @@ function advanceScriptToSelectedEventMenu_Callback(hObject, eventdata, handles)
         handles.scriptListbox.Value = 1;
         runScript(handles, lvdData, 1);
         lvd_processData(handles);
-        lvdData.settings.autoPropScript = oldAutoPropSetting;
+%         lvdData.settings.autoPropScript = oldAutoPropSetting;
     else
         badEvtStrJoin = strjoin(badEvtStrs,'\n');
         msgStr = sprintf('Cannot advance to event because one or more of the events that would be deleted are in use elsewhere:\n\n%s', badEvtStrJoin);
         errordlg(msgStr,'Cannot Advance to Event');
     end
+
+
+% --------------------------------------------------------------------
+function createkOSExecCodeMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to createkOSExecCodeMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    
+    oldAutoPropSetting = lvdData.settings.autoPropScript;
+    if(oldAutoPropSetting == false)
+        propagateScript(handles, lvdData, 1);
+    end
+    
+    stateLog = lvdData.stateLog;
+    stateLogEntries = stateLog.getAllEntries();
+    
+    numEntries = length(stateLogEntries);
+    
+    time = NaN(1,numEntries);
+    yaw = NaN(1,numEntries);
+    pitch = NaN(1,numEntries);
+    roll = NaN(1,numEntries);
+    throttle = NaN(1,numEntries);
+    for(i=1:length(stateLogEntries))
+        stateLogEntry = stateLogEntries(i);
+        
+        time(i) = stateLogEntry.time;
+        yaw(i) = lvd_SteeringAngleTask(stateLogEntry, 'yaw');
+        pitch(i) = lvd_SteeringAngleTask(stateLogEntry, 'pitch');
+        roll(i) = lvd_SteeringAngleTask(stateLogEntry, 'roll');
+        throttle(i) = stateLogEntry.throttle;
+    end
+
+    M = [time(:)'; ...
+         yaw(:)'; ...
+         pitch(:)'; ...
+         roll(:)'; ...
+         throttle(:)'];
+    csvwrite('C:\Users\Sue\Downloads\ksp-win64-1.11.0\KSP_win64\Ships\Script\test.csv',M)
+    
+%     dataOut.time = time;
+%     dataOut.yaw = yaw;
+%     dataOut.pitch = pitch;
+%     dataOut.roll = roll;
+%     dataOut.throttle = throttle;
+    
+%     encodedJSON = jsonencode(dataOut);  
+
+%     fid = fopen('C:\Users\Sue\Desktop\testJson.json','w+');
+%     fprintf(fid, encodedJSON); 
+%     fclose(fid);
