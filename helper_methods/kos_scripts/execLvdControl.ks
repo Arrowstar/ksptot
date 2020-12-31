@@ -16,10 +16,6 @@ lock steering to headingRot.
 set throtValue to 0.
 lock throttle to throtValue.
 
-print ship:drymass.
-print ship:wetmass.
-print ship:mass.
-
 set startInd to 0.
 
 until xq > xArr[xArr:length - 1] {
@@ -42,6 +38,7 @@ until xq > xArr[xArr:length - 1] {
 	print "SMA: " + SHIP:ORBIT:SEMIMAJORAXIS at (0,7).
 	print "ECC: " + SHIP:ORBIT:ECCENTRICITY at (0,8).
 	print "TRU: " + SHIP:ORBIT:TRUEANOMALY at (0,9).
+	print "Velocity: " + SHIP:ORBIT:VELOCITY:ORBIT:MAG / 1000 at (0,10).
 
 	set headingRot to heading(yaw, pitch, roll).
 }

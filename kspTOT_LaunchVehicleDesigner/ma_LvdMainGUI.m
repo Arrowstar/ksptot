@@ -2557,16 +2557,5 @@ function createkOSExecCodeMenu_Callback(hObject, eventdata, handles)
          pitch(:)'; ...
          roll(:)'; ...
          throttle(:)'];
-    csvwrite('C:\Users\Sue\Downloads\ksp-win64-1.11.0\KSP_win64\Ships\Script\test.csv',M)
-    
-%     dataOut.time = time;
-%     dataOut.yaw = yaw;
-%     dataOut.pitch = pitch;
-%     dataOut.roll = roll;
-%     dataOut.throttle = throttle;
-    
-%     encodedJSON = jsonencode(dataOut);  
-
-%     fid = fopen('C:\Users\Sue\Desktop\testJson.json','w+');
-%     fprintf(fid, encodedJSON); 
-%     fclose(fid);
+	assignin('base','M',M);
+    csvwrite('C:\Users\Sue\Downloads\ksp-win64-1.11.0\KSP_win64\Ships\Script\test.csv',M);
