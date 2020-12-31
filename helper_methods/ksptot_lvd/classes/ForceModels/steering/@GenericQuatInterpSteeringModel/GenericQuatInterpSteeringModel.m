@@ -32,6 +32,12 @@ classdef GenericQuatInterpSteeringModel < AbstractSteeringModel
                     f = 1;
                 else
                     f = ((ut - obj.t0)/(obj.tDur));
+                    
+                    if(f > 1)
+                        f = 1;
+                    elseif(f < 0)
+                        f = 0;
+                    end
                 end
 
                 q = quatinterp(obj.initQuat, obj.finalQuat, f);
