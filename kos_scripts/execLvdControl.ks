@@ -32,6 +32,7 @@ clearscreen.
 
 run once lib_num_to_formatted_str.ks.
 set Config:IPU to 1000.
+SET SAS TO FALSE.
 
 print "===================" at (0,0).
 print "LVD Control Script " at (0,1).
@@ -109,6 +110,7 @@ until xq > xArr[xArr:length - 1] {
 
 clearscreen.
 print "LVD control sequence completed successfully.".
+SET SAS TO TRUE.
 
 function interp1 {
 	parameter xArr. //must be a list of doubles
