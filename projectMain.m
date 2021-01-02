@@ -13,6 +13,7 @@ if(~isdeployed)
     addpath(genpath('kspTOT_VehicleSizer'));
     addpath(genpath('kspTOT_SingleUIs'));
     addpath(genpath('images'));
+    addpath(genpath('kos_scripts'));
 %     addpath('zArchive');
 end
 
