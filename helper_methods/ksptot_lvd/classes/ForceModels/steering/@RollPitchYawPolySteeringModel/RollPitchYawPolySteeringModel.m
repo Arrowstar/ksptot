@@ -17,9 +17,7 @@ classdef RollPitchYawPolySteeringModel < AbstractAnglePolySteeringModel
             rollAng = obj.rollModel.getValueAtTime(ut);
             pitchAng = obj.pitchModel.getValueAtTime(ut);
             yawAng = obj.yawModel.getValueAtTime(ut);
-            
-%             disp(rad2deg(pitchAng));
-            
+                        
             [~, ~, ~, dcm] = computeBodyAxesFromEuler(ut, rVect, vVect, bodyInfo, rollAng, pitchAng, yawAng);
             dcm = real(dcm);
         end

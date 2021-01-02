@@ -24,13 +24,13 @@ classdef InertialControlFrame < AbstractControlFrame
         function [gammaAngle, betaAngle, alphaAngle] = getAnglesFromInertialBodyAxes(~, dcm, ut, rVect, vVect, bodyInfo, baseFrame)
             [~, ~, ~, base_frame_2_inertial] = baseFrame.getOffsetsWrtInertialOrigin(ut);
             
-            angles = rotm2eulARH(base_frame_2_inertial' * dcm, 'xyz');
+            angles = rotm2eulARH(base_frame_2_inertial' * dcm, 'zyx');
 
             angles = real(angles);
 
-            gammaAngle = angles(1);
+            gammaAngle = angles(3);
             betaAngle = angles(2);
-            alphaAngle = angles(3);
+            alphaAngle = angles(1);
             
 %             [gammaAngle,betaAngle,alphaAngle] = computeInertialAeroAnglesFromBodyAxes(ut, rVect, vVect, bodyInfo, dcm(:,1), dcm(:,2), dcm(:,3));
         end

@@ -2527,6 +2527,14 @@ function createkOSExecCodeMenu_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
     lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
     
+    [FileName,PathName,FilterIndex] = uiputfile({'*.csv','CSV Files'},'Save LVD Data to CSV.');
+    
+    if(FilterIndex == 0)
+        return;
+    else
+        csvFilePath = fullfile(PathName,FileName);
+    end
+    
     oldAutoPropSetting = lvdData.settings.autoPropScript;
     if(oldAutoPropSetting == false)
         propagateScript(handles, lvdData, 1);
@@ -2542,7 +2550,10 @@ function createkOSExecCodeMenu_Callback(hObject, eventdata, handles)
     pitch = NaN(1,numEntries);
     roll = NaN(1,numEntries);
     throttle = NaN(1,numEntries);
-    for(i=1:length(stateLogEntries))
+    
+    hWaitbar = waitbar(0,'Parsing State Log Data, Please Wait...');
+    numStateLogEntries = length(stateLogEntries);
+    for(i=1:numStateLogEntries)
         stateLogEntry = stateLogEntries(i);
         
         time(i) = stateLogEntry.time;
@@ -2550,6 +2561,12 @@ function createkOSExecCodeMenu_Callback(hObject, eventdata, handles)
         pitch(i) = lvd_SteeringAngleTask(stateLogEntry, 'pitch');
         roll(i) = lvd_SteeringAngleTask(stateLogEntry, 'roll');
         throttle(i) = stateLogEntry.throttle;
+        
+        waitbar(i/numStateLogEntries, hWaitbar);
+    end
+    
+    if(isvalid(hWaitbar))
+        close(hWaitbar);
     end
 
     M = [time(:)'; ...
@@ -2557,5 +2574,4 @@ function createkOSExecCodeMenu_Callback(hObject, eventdata, handles)
          pitch(:)'; ...
          roll(:)'; ...
          throttle(:)'];
-	assignin('base','M',M);
-    csvwrite('C:\Users\Sue\Downloads\ksp-win64-1.11.0\KSP_win64\Ships\Script\test.csv',M);
+    csvwrite(csvFilePath,M);

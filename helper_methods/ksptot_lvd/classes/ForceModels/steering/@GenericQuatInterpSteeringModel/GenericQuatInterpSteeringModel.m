@@ -102,7 +102,7 @@ classdef GenericQuatInterpSteeringModel < AbstractSteeringModel
             obj.alpha1 = alpha1;
         end
         
-        function setConstsFromDcmAndContinuitySettings(obj, dcm, ut, rVect, vVect, bodyInfo)            
+        function setConstsFromDcmAndContinuitySettings(obj, dcm, ut, rVect, vVect, bodyInfo)               
             if(obj.angleContinuity)
                 elemSet = CartesianElementSet(ut, rVect(:), vVect(:), bodyInfo.getBodyCenteredInertialFrame());
                 elemSet = elemSet.convertToFrame(obj.refFrame);
@@ -199,8 +199,8 @@ classdef GenericQuatInterpSteeringModel < AbstractSteeringModel
         end   
         
         function setQuatsByAngles(obj)
-            obj.initQuat = angle2quat(obj.alpha0, obj.beta0, obj.gamma0);
-            obj.finalQuat = angle2quat(obj.alpha1, obj.beta1, obj.gamma1);
+            obj.initQuat = angle2quat(obj.alpha0, obj.beta0, obj.gamma0, 'ZYX');
+            obj.finalQuat = angle2quat(obj.alpha1, obj.beta1, obj.gamma1, 'ZYX');
         end
     end
     

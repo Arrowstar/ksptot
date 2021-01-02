@@ -83,7 +83,8 @@ classdef SetSteeringModelAction < AbstractEventAction
     
     methods(Static)
         function addActionTf = openEditActionUI(action, lv)
-            [addActionTf, ~] = action.steeringModel.openEditSteeringModelUI(lv, true);
+            [addActionTf, steeringModel] = action.steeringModel.openEditSteeringModelUI(lv, true);
+            action.steeringModel = steeringModel;
 %                 enum = action.steeringModel.getSteeringModelTypeEnum();
 % 
 %                 switch enum

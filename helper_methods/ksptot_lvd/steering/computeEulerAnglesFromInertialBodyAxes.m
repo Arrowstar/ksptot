@@ -5,7 +5,7 @@ function [rollAngle, pitchAngle, yawAngle] = computeEulerAnglesFromInertialBodyA
 
     [R_ned_2_inert, ~, ~, ~] = computeNedFrame(ut, rVect, bodyInfo);
 %     [yawAngle,pitchAngle,rollAngle]=dcm2angle(R_ned_2_inert' * R_total,'zyx');
-    angles = rotm2eulARH(R_ned_2_inert' * R_total,'zyx');
+    angles = rotm2eulARH(R_ned_2_inert' * R_total, 'zyx');
     
     rollAngle = real(angles(3));
     pitchAngle = real(angles(2));

@@ -67,9 +67,9 @@ classdef AeroAnglesPolySteeringModel < AbstractAnglePolySteeringModel
         end
         
         function setTimeOffsets(obj, timeOffset)
-            obj.rollModel.tOffset = timeOffset;
-            obj.pitchModel.tOffset = timeOffset;
-            obj.yawModel.tOffset = timeOffset;
+            obj.bankModel.tOffset = timeOffset;
+            obj.aoAModel.tOffset = timeOffset;
+            obj.slipModel.tOffset = timeOffset;
         end
         
         function [angle1Cont, angle2Cont, angle3Cont] = getContinuityTerms(obj)
