@@ -116,13 +116,6 @@ until xq > xArr[xArr:length - 1] {
 		paddedPrintLine(" Vehicle Data",0,27).
 		horzLine(28).
 		paddedPrintLine("Tot. Mass: " + padding(ship:mass, 0, dataNumPlaces) + " mT", dataPrintOffset, 29).
-		
-		set r to 1.
-		set resources to SHIP:RESOURCES.
-		for resource in resources {
-			paddedPrintLine(resource:name + ": [" + padding(resource:amount, 0, dataNumPlaces) + " / " + padding(resource:capacity, 0, dataNumPlaces) + "]", dataPrintOffset, 29 + r).
-			set r to r + 1.
-		}
 	}
 
 	set headingRot to heading(yaw, pitch, roll).
