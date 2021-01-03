@@ -22,7 +22,7 @@ function varargout = lvd_editFminconOptionsGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_editFminconOptionsGUI
 
-% Last Modified by GUIDE v2.5 25-Aug-2020 10:18:36
+% Last Modified by GUIDE v2.5 03-Jan-2021 15:29:14
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -118,6 +118,9 @@ function handles = populateGUI(handles, fminconOpt)
     
     setOptsDoubleValueStrInGUI(handles, options, 'numWorkers', 'numParaWorkersText');
     
+    handles.computeOptimalStepCheckbox.Value = double(options.computeOptimalStepSizes);
+    computeOptimalStepCheckbox_Callback(handles.computeOptimalStepCheckbox, [], handles);
+    
 function setDocLbl(handles)
     docLinkLblPos = handles.matlabDocLinkLabel.Position;
     docLinkLblParent = handles.matlabDocLinkLabel.Parent;
@@ -190,6 +193,8 @@ function varargout = lvd_editFminconOptionsGUI_OutputFcn(hObject, eventdata, han
         
         setOptsDoubleValueInObject(handles, options, 'numWorkers', 'numParaWorkersText');
     
+        options.computeOptimalStepSizes = logical(handles.computeOptimalStepCheckbox.Value);
+        
         varargout{1} = true;
         close(handles.lvd_editFminconOptionsGUI);
     end
@@ -794,3 +799,17 @@ function numParaWorkersText_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on button press in computeOptimalStepCheckbox.
+function computeOptimalStepCheckbox_Callback(hObject, eventdata, handles)
+% hObject    handle to computeOptimalStepCheckbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of computeOptimalStepCheckbox
+    if(get(hObject,'Value'))
+        handles.finiteDiffStepSizeText.Enable = 'off';
+    else
+        handles.finiteDiffStepSizeText.Enable = 'on';
+    end

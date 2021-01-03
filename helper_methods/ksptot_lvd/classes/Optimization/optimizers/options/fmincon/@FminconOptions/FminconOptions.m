@@ -21,6 +21,7 @@ classdef FminconOptions < matlab.mixin.SetGet
         %Finite Differences
         finDiffStepSize(1,1) double = 0.0001;
         finDiffType FminconFiniteDiffTypeEnum = FminconFiniteDiffTypeEnum.TwoPtForwardDiff;
+        computeOptimalStepSizes(1,1) logical = false;
         
         %TypicalX
         typicalXType OptimizerTypicalXEnum = OptimizerTypicalXEnum.Ones;

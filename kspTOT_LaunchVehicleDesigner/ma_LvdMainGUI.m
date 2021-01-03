@@ -2543,6 +2543,12 @@ function createkOSExecCodeMenu_Callback(hObject, eventdata, handles)
     stateLog = lvdData.stateLog;
     stateLogEntries = stateLog.getAllEntries();
     
+    %sort state log entries by time ascending so that they show up in the
+    %right order.
+    stateLogTimes = [stateLogEntries.time];
+    [~,I] = sort(stateLogTimes);
+    stateLogEntries = stateLogEntries(I);
+    
     numEntries = length(stateLogEntries);
     numEvents = lvdData.script.getTotalNumOfEvents();
     
@@ -2567,13 +2573,21 @@ function createkOSExecCodeMenu_Callback(hObject, eventdata, handles)
         throttle(i) = stateLogEntry.throttle;
         
         evt = stateLogEntry.event;
-        evtNum = evt.getEventNum();
         evtNames{i} = evt.name;
-        if(evtNum < numEvents)
-            nextEvt = lvdData.script.getEventForInd(evtNum + 1);
-            firstStateLogEntryNextEvt = stateLog.getFirstStateLogForEvent(nextEvt);
-            
-            timeToNextEvt(i) = firstStateLogEntryNextEvt.time - stateLogEntry.time;
+        
+        nextEvt = LaunchVehicleEvent.empty(0,1);
+        nextEvtStartTime = [];
+        for(j=i:numStateLogEntries)
+            testEntry = stateLogEntries(j);
+            if(evt ~= testEntry.event)
+                nextEvt = testEntry.event;
+                nextEvtStartTime = testEntry.time;
+                break;
+            end
+        end
+
+        if(not(isempty(nextEvt)))
+            timeToNextEvt(i) = nextEvtStartTime - stateLogEntry.time;
             nextEvtNames{i} = nextEvt.name;
         else
             timeToNextEvt(i) = 0;

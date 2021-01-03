@@ -29,7 +29,7 @@ classdef LaunchVehicleViewProfileBodyAxesData < matlab.mixin.SetGet
             obj.scale = scale;
         end
         
-        function addData(obj, times, rVects, rotMatsBodyToView)
+        function addData(obj, times, rVects, rotMatsBodyToView)            
             obj.timesArr(end+1) = {times};
             
             if(length(times) >= 3)

@@ -310,6 +310,10 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                     rVects = rVects(:,ia);
                     rotMatsBodyToView = rotMatsBodyToView(:,:,ia);
 
+                    [times,I] = sort(times);
+                    rVects = rVects(:,I);
+                    rotMatsBodyToView = rotMatsBodyToView(:,:,I);
+                    
                     switch(evt.plotMethod)
                         case EventPlottingMethodEnum.PlotContinuous
                             %nothing

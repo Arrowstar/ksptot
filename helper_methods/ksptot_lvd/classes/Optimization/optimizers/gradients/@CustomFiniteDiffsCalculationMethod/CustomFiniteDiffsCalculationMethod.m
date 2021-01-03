@@ -85,10 +85,22 @@ classdef CustomFiniteDiffsCalculationMethod < AbstractGradientCalculationMethod
             hValsToTest = 10.^[-14:-2]; %#ok<NBRAK>
 %             hValsToTest = 2.^[-40:2:-6];
             
+            p = 1;
+            N = length(hValsToTest);
+
+            hWaitbar = waitbar(0,'Computing optimal step sizes, please wait...');
             derivs = [];
             q = parallel.pool.DataQueue;
-            q.afterEach(@(x) disp(x));
-            parfor(i=1:length(hValsToTest))
+            q.afterEach(@updateParallelWaitbar);
+            
+            pp = gcp('nocreate');
+            if(not(isempty(pp)))
+                M = pp.NumWorkers;
+            else
+                M = 0;
+            end
+            
+            parfor(i=1:length(hValsToTest), M)
                 fd = CustomFiniteDiffsCalculationMethod();
                 fd.h = hValsToTest(i);
 
@@ -100,7 +112,11 @@ classdef CustomFiniteDiffsCalculationMethod < AbstractGradientCalculationMethod
                     derivs(:,i) = g(:);
                 end
                 
-                q.send(hValsToTest(i)); %#ok<PFBNS>
+                q.send(i); %#ok<PFBNS>
+            end
+            
+            if(isvalid(hWaitbar))
+                close(hWaitbar);
             end
             
             rawBestHStep = [];
@@ -123,6 +139,11 @@ classdef CustomFiniteDiffsCalculationMethod < AbstractGradientCalculationMethod
             
             reshapedBestHStep = reshape(rawBestHStep,[numel(fAtX0),numel(x0)]);
             optimalStepSizes = max(reshapedBestHStep,[],1);
+            
+            function updateParallelWaitbar(~)
+                waitbar(p/N, hWaitbar);
+                p = p + 1;
+            end
         end
     end
 end
