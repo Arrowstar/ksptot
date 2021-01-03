@@ -431,16 +431,6 @@ function deleteEvent_Callback(hObject, eventdata, handles)
         lvdData.optimizer.vars.removeVariablesThatUseEvent(evt, lvdData);
         lvdData.optimizer.constraints.removeConstraintsThatUseEvent(evt);
 
-%         if(lvdData.optimizer.objFcn.usesEvent(evt))
-% %             lvdData.optimizer.objFcn = NoOptimizationObjectiveFcn(lvdData.optimizer, lvdData);
-%             lvdData.optimizer.objFcn = CompositeObjectiveFcn(GenericObjectiveFcn.empty(1,0), ...
-%                                                              ObjFcnDirectionTypeEnum.Minimize, ...
-%                                                              ObjFcnCompositeMethodEnum.Sum, ...
-%                                                              lvdData.optimizer, lvdData);
-% 
-%             warndlg(sprintf('The existing objective function referenced the deleted event.  The objective function has been replaced with a "%s" objective function.',ObjectiveFunctionEnum.NoObjectiveFunction.name),'Objective Function Reset','modal');
-%         end
-
         lvdData.script.removeEventFromIndex(eventNum);
 
         if(eventNum > length(lvdData.script.evts))

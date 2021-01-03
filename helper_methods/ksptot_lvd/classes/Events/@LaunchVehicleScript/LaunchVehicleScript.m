@@ -40,6 +40,16 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
         end
         
         function removeEvent(obj, evt)
+            termCondOptVar = evt.termCond.getExistingOptVar();
+            if(not(isempty(termCondOptVar)))
+                obj.lvdData.optimizer.vars.removeVariable(termCondOptVar);
+            end
+            
+            actions = evt.actions;
+            for(i=1:length(actions))
+                evt.removeAction(actions(i));
+            end
+            
             obj.evts(obj.evts == evt) = [];
         end
         

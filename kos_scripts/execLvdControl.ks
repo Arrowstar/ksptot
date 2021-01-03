@@ -115,7 +115,7 @@ until xq > xArr[xArr:length - 1] {
 		horzLine(26).
 		paddedPrintLine(" Vehicle Data",0,27).
 		horzLine(28).
-		paddedPrintLine("Tot. Mass: " + padding(ship:mass, 0, dataNumPlaces) + " mT", dataPrintOffset, 29).
+		paddedPrintLine("Tot. Mass:  " + padding(ship:mass, 0, dataNumPlaces) + " mT", dataPrintOffset, 29).
 	}
 
 	set headingRot to heading(yaw, pitch, roll).
