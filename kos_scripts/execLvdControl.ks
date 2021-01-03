@@ -24,6 +24,7 @@
 // INPUTS
 // =================================================
 	set fPath to "test.csv". //change "test.csv" to your CSV file name.  See step (4) above.
+	set printOutput to true. //set to false to disable output display (time, steering, orbit, etc)
 
 // =================================================
 // EXECUTION CODE - DO NOT EDIT BELOW THIS LINE
@@ -31,7 +32,7 @@
 clearscreen.
 
 run once lib_num_to_formatted_str.ks.
-set Config:IPU to 1000.
+set Config:IPU to 2000.
 SET SAS TO FALSE.
 
 print "===================" at (0,0).
@@ -40,11 +41,17 @@ print "===================" at (0,2).
 set parsedDataList to parseCsvFileToList(fPath, 3).
 
 clearscreen.
+if printOutput = false {
+	print "Output display disabled.".
+	print "Set 'printOutput' to true to see time, commanded attitude, throttle, orbit, etc.".
+}
 
 lock xq to time:seconds.
 
 set xArr to parsedDataList[0].
-set yArr to parsedDataList:SUBLIST(1,parsedDataList:length - 1).
+set yArr to parsedDataList:SUBLIST(1,parsedDataList:length - 3).
+set curEvtList to parsedDataList[parsedDataList:length - 2].
+set nxtEvtList to parsedDataList[parsedDataList:length - 1].
 
 set headingRot to heading(0, 0, 0).
 lock steering to headingRot.
@@ -57,26 +64,6 @@ set startInd to 0.
 set dataPrintOffset to 4.
 set dataNumPlaces to 3.
 
-	print "===================" at (0,0).
-	print "   Current Time    " at (0,1).
-	print "===================" at (0,2).
-
-	print "===================" at (0,5).
-	print "Commanded Attitude " at (0,6).
-	print "===================" at (0,7).
-
-	print "===================" at (0,11).
-	print "Commanded Throttle " at (0,12).
-	print "===================" at (0,13).
-
-	print "===================" at (0,15).
-	print "Current Orbit " at (0,16).
-	print "===================" at (0,17).
-
-	print "===================" at (0,24).
-	print "Current Mass " at (0,25).
-	print "===================" at (0,26).
-
 until xq > xArr[xArr:length - 1] {
 	set interpOutput to interp1(xArr, yArr, xq, startInd).
 	set yqList to interpData:yqList.
@@ -86,24 +73,57 @@ until xq > xArr[xArr:length - 1] {
 	set pitch to yqList[1].
 	set roll to yqList[2].
 	set throtValue to yqList[3].
+	set timeToNextEvt to yqList[4].
+	set curEvtName to curEvtList[startInd].
+	set nxtEvtName to nxtEvtList[startInd].
 
-	print time:CALENDAR + " " + time:CLOCK at (dataPrintOffset,3).
-    print "UT:       " + padding(time:seconds, 0, dataNumPlaces) + " sec" at (dataPrintOffset,4).
-	
-	print "Yaw:      " + padding(yaw, 0, dataNumPlaces) + " deg" at (dataPrintOffset,8).
-	print "Pitch:    " + padding(pitch, 0, dataNumPlaces) + " deg" at (dataPrintOffset,9).
-	print "Roll:     " + padding(roll, 0, dataNumPlaces) + " deg" at (dataPrintOffset,10).
-	
-	print "Throttle: " + padding(throtValue*100, 3, dataNumPlaces) + "%" at (dataPrintOffset,14).
-	
-	print "SMA:      " + padding(SHIP:ORBIT:SEMIMAJORAXIS/1000,0, dataNumPlaces) + " km" at (dataPrintOffset,18).
-	print "ECC:      " + padding(SHIP:ORBIT:ECCENTRICITY,0, dataNumPlaces+2) at (dataPrintOffset,19).
-	print "INC:      " + padding(SHIP:ORBIT:INCLINATION, 0, dataNumPlaces) + " deg"  at (dataPrintOffset,20).
-	print "RAAN:     " + padding(SHIP:ORBIT:LAN, 0, dataNumPlaces) + " deg"  at (dataPrintOffset,21).
-	print "AOP:      " + padding(SHIP:ORBIT:ARGUMENTOFPERIAPSIS, 0, dataNumPlaces) + " deg"  at (dataPrintOffset,22).
-	print "TRU:      " + padding(SHIP:ORBIT:TRUEANOMALY, 0, dataNumPlaces) + " deg"  at (dataPrintOffset,23).
-	
-	print "Tot. Mass: " + padding(ship:mass, 0, dataNumPlaces) + " mT" at (dataPrintOffset,27).
+	if nxtEvtName:length = 0 {
+		set nxtEvtName to "N/A".
+	}
+
+	if printOutput {
+		horzLine(0).
+		paddedPrintLine(" Current Time",0,1).
+		horzLine(2).
+		paddedPrintLine(time:CALENDAR + " " + time:CLOCK, dataPrintOffset, 3).
+		paddedPrintLine("UT:         " + padding(time:seconds, 0, dataNumPlaces) + " sec", dataPrintOffset, 4).
+		paddedPrintLine("Event:      " + curEvtName, dataPrintOffset, 5).
+		paddedPrintLine("Next Event: " + nxtEvtName + " (" + time_formatting(-1 * timeToNextEvt,0,2,true) + ")", dataPrintOffset, 6).
+		
+		horzLine(7).
+		paddedPrintLine(" Commanded Attitude",0,8).
+		horzLine(9).
+		paddedPrintLine("Yaw:        " + padding(yaw, 0, dataNumPlaces) + " deg", dataPrintOffset, 10).
+		paddedPrintLine("Pitch:      " + padding(pitch, 0, dataNumPlaces) + " deg", dataPrintOffset, 11).
+		paddedPrintLine("Roll:       " + padding(roll, 0, dataNumPlaces) + " deg", dataPrintOffset, 12).
+		
+		horzLine(13).
+		paddedPrintLine(" Commanded Throttle",0,14).
+		horzLine(15).
+		paddedPrintLine("Throttle:   " + padding(throtValue*100, 3, dataNumPlaces) + "%", dataPrintOffset, 16).
+		
+		horzLine(17).
+		paddedPrintLine(" Current Orbit",0,18).
+		horzLine(19).
+		paddedPrintLine("SMA:        " + padding(SHIP:ORBIT:SEMIMAJORAXIS/1000,0, dataNumPlaces) + " km    ", dataPrintOffset, 20).
+		paddedPrintLine("ECC:        " + padding(SHIP:ORBIT:ECCENTRICITY,0, dataNumPlaces+2), dataPrintOffset, 21).
+		paddedPrintLine("INC:        " + padding(SHIP:ORBIT:INCLINATION, 0, dataNumPlaces) + " deg", dataPrintOffset, 22).
+		paddedPrintLine("RAAN:       " + padding(SHIP:ORBIT:LAN, 0, dataNumPlaces) + " deg", dataPrintOffset, 23).
+		paddedPrintLine("AOP:        " + padding(SHIP:ORBIT:ARGUMENTOFPERIAPSIS, 0, dataNumPlaces) + " deg", dataPrintOffset, 24).
+		paddedPrintLine("TRU:        " + padding(SHIP:ORBIT:TRUEANOMALY, 0, dataNumPlaces) + " deg", dataPrintOffset, 25).
+		
+		horzLine(26).
+		paddedPrintLine(" Vehicle Data",0,27).
+		horzLine(28).
+		paddedPrintLine("Tot. Mass: " + padding(ship:mass, 0, dataNumPlaces) + " mT", dataPrintOffset, 29).
+		
+		set r to 1.
+		set resources to SHIP:RESOURCES.
+		for resource in resources {
+			paddedPrintLine(resource:name + ": [" + padding(resource:amount, 0, dataNumPlaces) + " / " + padding(resource:capacity, 0, dataNumPlaces) + "]", dataPrintOffset, 29 + r).
+			set r to r + 1.
+		}
+	}
 
 	set headingRot to heading(yaw, pitch, roll).
 }
@@ -176,7 +196,12 @@ function parseCsvFileToList {
 		set i to 0.
 		set dataSet to List().
 		for value in curLineValues {
-			dataSet:add(value:tonumber()).
+			set valueToNumber to value:tonumber(-1E99).
+			
+			if(valueToNumber = -1E99) {
+				set valueToNumber to value.
+			}
+			dataSet:add(valueToNumber).
 			
 			set numEqSigns to round(((i / curLineValues:length)*100)/5).
 			set eqSignStr to "".
@@ -192,4 +217,22 @@ function parseCsvFileToList {
 	}
 	
 	return parsedDataList.
+}
+
+function paddedPrintLine {
+    parameter str.
+	parameter colOffset.
+	parameter lineNum.
+	
+	print str:padright(terminal:width-colOffset) at (colOffset,lineNum).
+}
+
+function horzLine {
+	parameter lineNum.
+	
+	set hLineStr to "".
+	set hLineStr to hLineStr:padright(terminal:width).
+	set hLineStr to hLineStr:replace(" ", "=").
+	
+	paddedPrintLine(hLineStr,0,lineNum).
 }

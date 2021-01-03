@@ -2544,12 +2544,16 @@ function createkOSExecCodeMenu_Callback(hObject, eventdata, handles)
     stateLogEntries = stateLog.getAllEntries();
     
     numEntries = length(stateLogEntries);
+    numEvents = lvdData.script.getTotalNumOfEvents();
     
     time = NaN(1,numEntries);
     yaw = NaN(1,numEntries);
     pitch = NaN(1,numEntries);
     roll = NaN(1,numEntries);
     throttle = NaN(1,numEntries);
+    timeToNextEvt = NaN(1,numEntries);
+    evtNames = cell(1,numEntries);
+    nextEvtNames = cell(1,numEntries);
     
     hWaitbar = waitbar(0,'Parsing State Log Data, Please Wait...');
     numStateLogEntries = length(stateLogEntries);
@@ -2562,6 +2566,20 @@ function createkOSExecCodeMenu_Callback(hObject, eventdata, handles)
         roll(i) = lvd_SteeringAngleTask(stateLogEntry, 'roll');
         throttle(i) = stateLogEntry.throttle;
         
+        evt = stateLogEntry.event;
+        evtNum = evt.getEventNum();
+        evtNames{i} = evt.name;
+        if(evtNum < numEvents)
+            nextEvt = lvdData.script.getEventForInd(evtNum + 1);
+            firstStateLogEntryNextEvt = stateLog.getFirstStateLogForEvent(nextEvt);
+            
+            timeToNextEvt(i) = firstStateLogEntryNextEvt.time - stateLogEntry.time;
+            nextEvtNames{i} = nextEvt.name;
+        else
+            timeToNextEvt(i) = 0;
+            nextEvtNames{i} = '';
+        end
+        
         waitbar(i/numStateLogEntries, hWaitbar);
     end
     
@@ -2573,5 +2591,11 @@ function createkOSExecCodeMenu_Callback(hObject, eventdata, handles)
          yaw(:)'; ...
          pitch(:)'; ...
          roll(:)'; ...
-         throttle(:)'];
+         throttle(:)'; ...
+         timeToNextEvt(:)'];
     csvwrite(csvFilePath,M);
+    
+    fid = fopen(csvFilePath,'a');
+    fprintf(fid, '%s\n', strjoin(evtNames,','));
+    fprintf(fid, '%s', strjoin(nextEvtNames,','));
+    fclose(fid);
