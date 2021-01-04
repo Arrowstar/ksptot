@@ -92,7 +92,7 @@ classdef TwoBodyImpactPointLatitude < AbstractConstraint
         end
         
         function type = getConstraintType(obj)
-            type = 'Two-Body Impact Longitude';
+            type = 'Two-Body Impact Latitude';
         end
         
 %         function name = getName(obj)

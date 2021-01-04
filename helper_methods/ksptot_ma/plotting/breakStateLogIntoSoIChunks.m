@@ -26,24 +26,30 @@ function stateLogChunkedByEvents = breakChunksByEvents(chunkedStateLog)
         stateLog = chunkedStateLog{i};
         allEventIDs = stateLog(:,13);
         x = diff(allEventIDs)~=0;
-        inds = find(x);
-        inds = [1 inds'+1 length(allEventIDs)];
         
-        for(j=1:length(inds)-1) %#ok<*NO4LP>
-            if(j==1)
-                ind = inds(j);
-                nextInd = inds(j+1)-1;
-            else
-                ind = inds(j);
-                nextInd = inds(j+1);
-            end
+        if(all(x == 0))
+            stateLogChunkedByEvents{i,1} = stateLog;
             
-            if(nextInd < ind)
-                nextInd = ind;
+        else
+            inds = find(x);
+            inds = [1 inds'+1 length(allEventIDs)];
+
+            for(j=1:length(inds)-1) %#ok<*NO4LP>
+                if(j==1)
+                    ind = inds(j);
+                    nextInd = inds(j+1)-1;
+                else
+                    ind = inds(j);
+                    nextInd = inds(j+1);
+                end
+
+                if(nextInd < ind)
+                    nextInd = ind;
+                end
+
+                eventLog = stateLog(ind:nextInd,:);
+                stateLogChunkedByEvents{i,j} = eventLog;
             end
-            
-            eventLog = stateLog(ind:nextInd,:);
-            stateLogChunkedByEvents{i,j} = eventLog;
         end
     end
 end

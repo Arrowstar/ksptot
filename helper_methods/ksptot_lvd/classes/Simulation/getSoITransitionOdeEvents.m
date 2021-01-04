@@ -23,6 +23,10 @@ function [value, isterminal, direction, causes] = getSoITransitionOdeEvents(ut, 
         [sma, ecc, ~, ~, ~, ~] = getKeplerFromState(rVect, vVect, bodyInfo.gm);
         [rApSC, rPeSC] = computeApogeePerigee(sma, ecc);
         
+        if(ecc >= 1)
+            rApSC = Inf;
+        end
+        
         children = bodyInfo.getChildrenBodyInfo(celBodyData);
         if(~isempty(children))
 %             soiDownCauses(length(children)) = SoITransitionDownIntTermCause(bodyInfo, children(end), celBodyData);
@@ -40,6 +44,7 @@ function [value, isterminal, direction, causes] = getSoITransitionOdeEvents(ut, 
                     distToChild = norm(dVect);               
 
                     val = distToChild - rSOI;
+                    disp(val);
                 end
 
                 value(end+1) = val; %#ok<AGROW>

@@ -28,7 +28,23 @@ function soITrans = findSoITransitions(initialState, maxSearchUT, soiSkipIds, ma
     % toVy
     % toVz
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    global num_SoI_search_revs strict_SoI_search use_selective_soi_search soi_search_tol num_soi_search_attempts_per_rev;
+    global num_SoI_search_revs use_selective_soi_search soi_search_tol num_soi_search_attempts_per_rev;
+        
+    if(isempty(use_selective_soi_search))
+        use_selective_soi_search = 0;
+    end
+    
+    if(isempty(num_SoI_search_revs))
+        num_SoI_search_revs = 3;
+    end
+    
+    if(isempty(soi_search_tol))
+        soi_search_tol = 1E-12;
+    end
+    
+    if(isempty(num_soi_search_attempts_per_rev))
+        num_soi_search_attempts_per_rev = 1000;
+    end
     
     ut = initialState(1);
     
