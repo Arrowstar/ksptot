@@ -5,6 +5,7 @@
 // Written By: Arrowstar
 // 
 //   lib_num_to_formatted_str.ks provided by KSLib 
+//	 lib_navball.ks provided by KSLib 
 //   https://github.com/KSP-KOS/KSLib
 // =================================================
 //  HOW TO USE
@@ -23,7 +24,7 @@
 // =================================================
 // INPUTS
 // =================================================
-	set fPath to "test.csv". //change "test.csv" to your CSV file name.  See step (4) above.
+	set fPath to "testMunLiftoff.csv". //change "test.csv" to your CSV file name.  See step (4) above.
 	set printOutput to true. //set to false to disable output display (time, steering, orbit, etc)
 
 // =================================================
@@ -32,6 +33,7 @@
 clearscreen.
 
 run once lib_num_to_formatted_str.ks.
+run once  lib_navball.ks.
 set Config:IPU to 2000.
 SET SAS TO FALSE.
 
@@ -82,40 +84,42 @@ until xq > xArr[xArr:length - 1] {
 	}
 
 	if printOutput {
-		horzLine(0).
-		paddedPrintLine(" Current Time",0,1).
-		horzLine(2).
-		paddedPrintLine(time:CALENDAR + " " + time:CLOCK, dataPrintOffset, 3).
-		paddedPrintLine("UT:         " + padding(time:seconds, 0, dataNumPlaces) + " sec", dataPrintOffset, 4).
-		paddedPrintLine("Event:      " + curEvtName, dataPrintOffset, 5).
-		paddedPrintLine("Next Event: " + nxtEvtName + " (" + time_formatting(-1 * timeToNextEvt,0,2,true) + ")", dataPrintOffset, 6).
+		set l to 0.
+	
+		horzLine(l). set l to l + 1.
+		paddedPrintLine(" Current Time",0,l).  set l to l + 1.
+		horzLine(l).  set l to l + 1.
+		paddedPrintLine(time:CALENDAR + " " + time:CLOCK, dataPrintOffset, l).  set l to l + 1.
+		paddedPrintLine("UT:         " + padding(time:seconds, 0, dataNumPlaces) + " sec", dataPrintOffset, l).  set l to l + 1.
+		paddedPrintLine("Event:      " + curEvtName, dataPrintOffset, l).  set l to l + 1.
+		paddedPrintLine("Next Event: " + nxtEvtName + " (" + time_formatting(-1 * timeToNextEvt,0,2,true) + ")", dataPrintOffset, l).  set l to l + 1.
 		
-		horzLine(7).
-		paddedPrintLine(" Commanded Attitude",0,8).
-		horzLine(9).
-		paddedPrintLine("Yaw:        " + padding(yaw, 0, dataNumPlaces) + " deg", dataPrintOffset, 10).
-		paddedPrintLine("Pitch:      " + padding(pitch, 0, dataNumPlaces) + " deg", dataPrintOffset, 11).
-		paddedPrintLine("Roll:       " + padding(roll, 0, dataNumPlaces) + " deg", dataPrintOffset, 12).
+		horzLine(l).  set l to l + 1.
+		paddedPrintLine(" Commanded Attitude",0,l).  set l to l + 1.
+		horzLine(l).  set l to l + 1.
+		paddedPrintLine("Yaw:        " + padding(yaw  , 0, dataNumPlaces) + " deg (Err: " + padding(yaw - compass_for(), 0, dataNumPlaces) + " deg)", dataPrintOffset, l).  set l to l + 1.
+		paddedPrintLine("Pitch:      " + padding(pitch, 0, dataNumPlaces) + " deg (Err: " + padding(pitch - pitch_for(), 0, dataNumPlaces) + " deg)", dataPrintOffset, l).  set l to l + 1.
+		paddedPrintLine("Roll:       " + padding(roll , 0, dataNumPlaces) + " deg", dataPrintOffset, l).  set l to l + 1.
 		
-		horzLine(13).
-		paddedPrintLine(" Commanded Throttle",0,14).
-		horzLine(15).
-		paddedPrintLine("Throttle:   " + padding(throtValue*100, 3, dataNumPlaces) + "%", dataPrintOffset, 16).
+		horzLine(l).  set l to l + 1.
+		paddedPrintLine(" Commanded Throttle",0,l).  set l to l + 1.
+		horzLine(l).  set l to l + 1.
+		paddedPrintLine("Throttle:   " + padding(throtValue*100, 3, dataNumPlaces) + "%", dataPrintOffset, l).  set l to l + 1.
+				
+		horzLine(l).  set l to l + 1.
+		paddedPrintLine(" Current Orbit",0,l).  set l to l + 1.
+		horzLine(l).  set l to l + 1.
+		paddedPrintLine("SMA:        " + padding(SHIP:ORBIT:SEMIMAJORAXIS/1000,0, dataNumPlaces) + " km    ", dataPrintOffset, l).  set l to l + 1.
+		paddedPrintLine("ECC:        " + padding(SHIP:ORBIT:ECCENTRICITY,0, dataNumPlaces+2), dataPrintOffset, l).  set l to l + 1.
+		paddedPrintLine("INC:        " + padding(SHIP:ORBIT:INCLINATION, 0, dataNumPlaces) + " deg", dataPrintOffset, l).  set l to l + 1.
+		paddedPrintLine("RAAN:       " + padding(SHIP:ORBIT:LAN, 0, dataNumPlaces) + " deg", dataPrintOffset, l).  set l to l + 1.
+		paddedPrintLine("AOP:        " + padding(SHIP:ORBIT:ARGUMENTOFPERIAPSIS, 0, dataNumPlaces) + " deg", dataPrintOffset, l).  set l to l + 1.
+		paddedPrintLine("TRU:        " + padding(SHIP:ORBIT:TRUEANOMALY, 0, dataNumPlaces) + " deg", dataPrintOffset, l).  set l to l + 1.
 		
-		horzLine(17).
-		paddedPrintLine(" Current Orbit",0,18).
-		horzLine(19).
-		paddedPrintLine("SMA:        " + padding(SHIP:ORBIT:SEMIMAJORAXIS/1000,0, dataNumPlaces) + " km    ", dataPrintOffset, 20).
-		paddedPrintLine("ECC:        " + padding(SHIP:ORBIT:ECCENTRICITY,0, dataNumPlaces+2), dataPrintOffset, 21).
-		paddedPrintLine("INC:        " + padding(SHIP:ORBIT:INCLINATION, 0, dataNumPlaces) + " deg", dataPrintOffset, 22).
-		paddedPrintLine("RAAN:       " + padding(SHIP:ORBIT:LAN, 0, dataNumPlaces) + " deg", dataPrintOffset, 23).
-		paddedPrintLine("AOP:        " + padding(SHIP:ORBIT:ARGUMENTOFPERIAPSIS, 0, dataNumPlaces) + " deg", dataPrintOffset, 24).
-		paddedPrintLine("TRU:        " + padding(SHIP:ORBIT:TRUEANOMALY, 0, dataNumPlaces) + " deg", dataPrintOffset, 25).
-		
-		horzLine(26).
-		paddedPrintLine(" Vehicle Data",0,27).
-		horzLine(28).
-		paddedPrintLine("Tot. Mass:  " + padding(ship:mass, 0, dataNumPlaces) + " mT", dataPrintOffset, 29).
+		horzLine(l).  set l to l + 1.
+		paddedPrintLine(" Vehicle Data",0,l).  set l to l + 1.
+		horzLine(l).  set l to l + 1.
+		paddedPrintLine("Tot. Mass:  " + padding(ship:mass, 0, dataNumPlaces) + " mT", dataPrintOffset, l).  set l to l + 1.
 	}
 
 	set headingRot to heading(yaw, pitch, roll).
