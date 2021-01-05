@@ -29,7 +29,11 @@ classdef TwoBodyImpactPointLatitude < AbstractConstraint
             stateLogEntry = stateLog.getLastStateLogForEvent(obj.event);
 
             value = lvd_TwoBodyImpactPointTasks(stateLogEntry, 'latitude');
-                       
+            
+            if(isnan(value))
+                value = 1000; %need to throw in a real number
+            end
+            
             if(obj.lb == obj.ub)
                 c = [];
                 ceq(1) = value - obj.ub;

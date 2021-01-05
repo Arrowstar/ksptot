@@ -29,7 +29,11 @@ classdef TwoBodyImpactPointTime < AbstractConstraint
             stateLogEntry = stateLog.getLastStateLogForEvent(obj.event);
 
             value = lvd_TwoBodyImpactPointTasks(stateLogEntry, 'timeToImpact');
-                       
+                  
+            if(isnan(value))
+                value = obj.ub*10; %need to throw in a real number
+            end
+            
             if(obj.lb == obj.ub)
                 c = [];
                 ceq(1) = value - obj.ub;

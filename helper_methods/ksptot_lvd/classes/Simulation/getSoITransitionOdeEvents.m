@@ -44,7 +44,6 @@ function [value, isterminal, direction, causes] = getSoITransitionOdeEvents(ut, 
                     distToChild = norm(dVect);               
 
                     val = distToChild - rSOI;
-                    disp(val);
                 end
 
                 value(end+1) = val; %#ok<AGROW>
