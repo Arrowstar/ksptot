@@ -2597,7 +2597,7 @@ function createkOSExecCodeMenu_Callback(hObject, eventdata, handles)
          roll(:)'; ...
          throttle(:)'; ...
          timeToNextEvt(:)'];
-    csvwrite(csvFilePath,M);
+    dlmwrite(csvFilePath,M,'precision','%0.13f');
     
     fid = fopen(csvFilePath,'a');
     fprintf(fid, '%s\n', strjoin(evtNames,','));
