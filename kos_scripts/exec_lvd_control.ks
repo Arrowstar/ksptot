@@ -18,13 +18,13 @@
 //     1) Enter the flight scene.
 //     2) Start the kOS terminal.
 //     3) Enter command "switch to 0." to switch to archive volume.
-//     4) Enter command "run execLvdControl.ks." to execute the attitude and throttle sequence in (3).
+//     4) Enter command "run exec_lvd_control.ks." to execute the attitude and throttle sequence in (3).
 // =================================================
 
 // =================================================
 // INPUTS
 // =================================================
-	set fPath to "testMunLiftoff.csv". //change "test.csv" to your CSV file name.  See step (4) above.
+	set fPath to "test.csv". //change "test.csv" to your CSV file name.  See step (4) above.
 	set printOutput to true. //set to false to disable output display (time, steering, orbit, etc)
 
 // =================================================
