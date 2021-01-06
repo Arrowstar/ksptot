@@ -101,7 +101,7 @@ function initializeOutputWindowText(handles, hOutputText)
     write_to_output_func = getappdata(handles.ma_MainGUI,'write_to_output_func');
 
     set(hOutputText,'String',' ');
-    statusBoxMsg = {['KSP TOT Mission Architect v', getKSPTOTVersionNumStr(), sprintf(' (R%s)', version('-release'))], 'Written By Arrowstar (C) 2020', ...
+    statusBoxMsg = {['KSP TOT Mission Architect v', getKSPTOTVersionNumStr(), sprintf(' (R%s)', version('-release'))], 'Written By Arrowstar (C) 2021', ...
                     getMA_HR()};
 	for(i=1:size(statusBoxMsg,2)) %#ok<ALIGN,*NO4LP>
         if(i==1)
