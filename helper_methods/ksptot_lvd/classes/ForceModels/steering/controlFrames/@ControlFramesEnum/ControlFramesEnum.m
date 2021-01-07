@@ -5,7 +5,7 @@ classdef ControlFramesEnum  < matlab.mixin.SetGet
     enumeration
         NedFrame('NED Frame', {'Roll Angle','Pitch Angle','Yaw Angle'})
         WindFrame('Wind Frame', {'Bank Angle','Angle of Attack','Sideslip Angle'});
-        InertialFrame('Base Frame Relative', {'Bank Angle','Angle of Attack','Sideslip Angle'});
+        InertialFrame('Base Frame Relative', {'Roll Angle','Declination Angle','Right Ascension Angle'});
     end
     
     properties
