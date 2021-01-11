@@ -21,12 +21,14 @@ classdef GeometricVectorSet < matlab.mixin.SetGet
             obj.vectors([obj.vectors] == vector) = [];
         end
         
-        function listBoxStr = getListboxStr(obj)
+        function [listBoxStr, vectors] = getListboxStr(obj)
             listBoxStr = {};
             
             for(i=1:length(obj.vectors))
                 listBoxStr{end+1} = obj.vectors(i).getListboxStr(); %#ok<AGROW>
             end
+            
+            vectors = obj.vectors;
         end
         
         function indVectors = getVectorsForInds(obj, inds)
@@ -34,7 +36,16 @@ classdef GeometricVectorSet < matlab.mixin.SetGet
         end
         
         function inds = getIndsForVectors(obj, indVectors)
-            inds = find(ismember(obj.vectors, indVectors));
+%             inds = find(ismember(obj.vectors, indVectors));
+            inds = [];
+            for(i=1:length(indVectors))
+                for(j=1:length(obj.vectors))
+                    if(indVectors(i) == obj.vectors(j))
+                        inds(end+1) = j; %#ok<AGROW>
+                        break;
+                    end
+                end
+            end
         end
         
         function indPoint = getVectorAtInd(obj, ind)

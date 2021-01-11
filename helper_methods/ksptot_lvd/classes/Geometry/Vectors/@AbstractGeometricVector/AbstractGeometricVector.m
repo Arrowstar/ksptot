@@ -27,4 +27,10 @@ classdef AbstractGeometricVector < matlab.mixin.SetGet & matlab.mixin.Heterogene
         
         tf = isInUse(obj, lvdData)
     end
+    
+    methods(Sealed)
+        function tf = eq(a,b)
+            tf = eq@handle(a,b);
+        end
+    end
 end

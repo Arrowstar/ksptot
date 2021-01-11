@@ -1,11 +1,13 @@
-classdef FixedVectorInFrame < AbstractGeometricVector
-    %FixedVectorInFrame Provides the vector from point 1 to point 2.
+classdef CrossProductVector < AbstractGeometricVector
+    %CrossProductVector Output is the cross product of two input vectors
     %   Detailed explanation goes here
     
     properties
-        cartElem(1,1) CartesianElementSet 
+        vector1(1,1) AbstractGeometricVector
+        vector2(1,1) AbstractGeometricVector
         
         name(1,:) char
+        lvdData LvdData
         
         %vector line
         lineColor(1,1) ColorSpecEnum = ColorSpecEnum.Black;
@@ -13,16 +15,19 @@ classdef FixedVectorInFrame < AbstractGeometricVector
     end
     
     methods        
-        function obj = FixedVectorInFrame(vect, frame, name) 
-            obj.cartElem = CartesianElementSet(0, vect(:), [0;0;0], frame);
+        function obj = CrossProductVector(vector1, vector2, name, lvdData) 
+            obj.vector1 = vector1;
+            obj.vector2 = vector2;
             
             obj.name = name;
+            obj.lvdData = lvdData;
         end
         
         function vect = getVectorAtTime(obj, time, inFrame)
-            obj.cartElem.time = time;
-            newCartElem = obj.cartElem.convertToFrame(inFrame);
-            vect = newCartElem.rVect;
+            vect1 = obj.vector1.getVectorAtTime(time, inFrame);
+            vect2 = obj.vector2.getVectorAtTime(time, inFrame);
+            
+            vect = crossARH(vect1(:), vect2(:));
         end
         
         function name = getName(obj)
@@ -34,19 +39,20 @@ classdef FixedVectorInFrame < AbstractGeometricVector
         end
         
         function listboxStr = getListboxStr(obj)
-            listboxStr = sprintf('%s (Fixed in Frame: %s)', obj.getName(), obj.cartElem.frame.getNameStr());
+            listboxStr = sprintf('%s ("%s" cross "%s")', obj.getName(), obj.vector1.getName(), obj.vector2.getName());
         end
         
         function useTf = openEditDialog(obj)
-            useTf = lvd_EditFixedInFrameVectorGUI(obj);
+            useTf = lvd_EditCrossProductVectorGUI(obj, obj.lvdData);
         end
         
         function tf = usesGeometricPoint(~, ~)
             tf = false;
         end
         
-        function tf = usesGeometricVector(~, ~)
-            tf = false;
+        function tf = usesGeometricVector(obj, vector)
+            tf = obj.vector1 == vector || ...
+                 obj.vector2 == vector;
         end
         
         function tf = usesGeometricCoordSys(~, ~)
@@ -59,18 +65,6 @@ classdef FixedVectorInFrame < AbstractGeometricVector
         
         function tf = isInUse(obj, lvdData)
             tf = lvdData.geometry.usesGeometricVector(obj);
-        end
-        
-        function rVect = getRVect(obj)
-            rVect = obj.cartElem.rVect;
-        end
-        
-        function setRVect(obj, rVect)
-            obj.cartElem.rVect = rVect;
-        end
-        
-        function frame = getFrame(obj)
-            frame = obj.cartElem.frame;
         end
     end
 end

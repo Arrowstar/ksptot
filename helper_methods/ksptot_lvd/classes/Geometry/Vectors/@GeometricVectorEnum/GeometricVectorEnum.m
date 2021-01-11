@@ -5,6 +5,8 @@ classdef GeometricVectorEnum < matlab.mixin.SetGet
     enumeration
         FixedInFrame('Fixed in Frame');
         TwoPoint('Two Point Vector');
+        Scaled('Scaled Vector');
+        CrossProd('Cross Product Vector');
     end
     
     properties

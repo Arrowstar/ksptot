@@ -172,8 +172,30 @@ function addVectorButton_Callback(hObject, eventdata, handles)
                     errordlg('Cannot create Two Point Vector: There must be at least two unique geometric points available.','Cannot Create Vector');
                     return;
                 end
+                
+            case GeometricVectorEnum.Scaled
+                numVectors = lvdData.geometry.vectors.getNumVectors();
+                if(numVectors >= 1)
+                    vector = lvdData.geometry.vectors.getVectorAtInd(1);
+                    newVector = ScaledVector(vector, 1.0, 'New Vector', lvdData);
+                else
+                    errordlg('Cannot create Scaled Vector: There must be at least one geometric vector available.','Cannot Create Vector');
+                    return;
+                end
+                
+            case GeometricVectorEnum.CrossProd
+                numVectors = lvdData.geometry.vectors.getNumVectors();
+                if(numVectors >= 2)
+                    vector1 = lvdData.geometry.vectors.getVectorAtInd(1);
+                    vector2 = lvdData.geometry.vectors.getVectorAtInd(2);
+                    newVector = CrossProductVector(vector1, vector2, 'New Vector', lvdData);
+                else
+                    errordlg('Cannot create Cross Product Vector: There must be at least two unique geometric vectors available.','Cannot Create Vector');
+                    return;
+                end
+                
             otherwise
-                error('Unknown Vector Type Type: %s', class(enum))
+                error('Unknown Vector Type Type: %s', enum.name)
         end
         
         useTF = newVector.openEditDialog();
@@ -193,7 +215,7 @@ function removeVectorButton_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
     lvdData = getappdata(handles.lvd_EditGeometricVectorsGUI,'lvdData');
     
-    selVectorInd = hObject.Value;
+    selVectorInd = handles.vectorsListBox.Value;
     selVector = lvdData.geometry.vectors.getVectorAtInd(selVectorInd);
 
 	tf = selVector.isInUse(lvdData);
@@ -208,7 +230,7 @@ function removeVectorButton_Callback(hObject, eventdata, handles)
             set(handles.vectorsListBox,'Value',numVectors);
         end
     else
-        warndlg(sprintf('Could not delete the geometric vector "%s" because it is in use as part of a coordinate system or reference frame.  Remove the vector dependencies before attempting to delete the vector.', selVector.getName()),'Cannot Delete Vector','modal');
+        warndlg(sprintf('Could not delete the geometric vector "%s" because it is in use as part of a vector, coordinate system, or reference frame.  Remove the vector dependencies before attempting to delete the vector.', selVector.getName()),'Cannot Delete Vector','modal');
     end
 
 

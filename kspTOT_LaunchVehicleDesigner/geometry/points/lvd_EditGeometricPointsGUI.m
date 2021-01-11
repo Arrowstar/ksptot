@@ -117,6 +117,7 @@ function pointsListBox_Callback(hObject, eventdata, handles)
     lvdData = getappdata(handles.lvd_EditGeometricPointsGUI,'lvdData');
     if(strcmpi(get(handles.lvd_EditGeometricPointsGUI,'SelectionType'),'open') && ...
        lvdData.geometry.points.getNumPoints() > 0)
+   
         selPtInd = hObject.Value;
         selPt = lvdData.geometry.points.getPointAtInd(selPtInd);
         
@@ -177,7 +178,7 @@ function addPointButton_Callback(hObject, eventdata, handles)
                 end
                 
             otherwise
-                error('Unknown Point Type Type: %s', class(enum))
+                error('Unknown Point Type Type: %s', enum.name)
         end
         
         useTF = newPoint.openEditDialog();
@@ -197,7 +198,7 @@ function removePointButton_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
     lvdData = getappdata(handles.lvd_EditGeometricPointsGUI,'lvdData');
     
-    selPtInd = hObject.Value;
+    selPtInd = handles.pointsListBox.Value;
     selPt = lvdData.geometry.points.getPointAtInd(selPtInd);
 
     tf = selPt.isInUse();

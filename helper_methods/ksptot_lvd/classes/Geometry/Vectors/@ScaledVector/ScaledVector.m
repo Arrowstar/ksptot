@@ -1,11 +1,13 @@
-classdef FixedVectorInFrame < AbstractGeometricVector
-    %FixedVectorInFrame Provides the vector from point 1 to point 2.
+classdef ScaledVector < AbstractGeometricVector
+    %ScaledVector Scales a vector by a constant
     %   Detailed explanation goes here
     
     properties
-        cartElem(1,1) CartesianElementSet 
+        vector(1,1) AbstractGeometricVector
+        scaleFactor(1,1) double = 1;
         
         name(1,:) char
+        lvdData LvdData
         
         %vector line
         lineColor(1,1) ColorSpecEnum = ColorSpecEnum.Black;
@@ -13,16 +15,16 @@ classdef FixedVectorInFrame < AbstractGeometricVector
     end
     
     methods        
-        function obj = FixedVectorInFrame(vect, frame, name) 
-            obj.cartElem = CartesianElementSet(0, vect(:), [0;0;0], frame);
+        function obj = ScaledVector(vector, scaleFactor, name, lvdData) 
+            obj.vector = vector;
+            obj.scaleFactor = scaleFactor;
             
             obj.name = name;
+            obj.lvdData = lvdData;
         end
         
         function vect = getVectorAtTime(obj, time, inFrame)
-            obj.cartElem.time = time;
-            newCartElem = obj.cartElem.convertToFrame(inFrame);
-            vect = newCartElem.rVect;
+            vect = obj.scaleFactor * obj.vector.getVectorAtTime(time, inFrame);
         end
         
         function name = getName(obj)
@@ -34,19 +36,19 @@ classdef FixedVectorInFrame < AbstractGeometricVector
         end
         
         function listboxStr = getListboxStr(obj)
-            listboxStr = sprintf('%s (Fixed in Frame: %s)', obj.getName(), obj.cartElem.frame.getNameStr());
+            listboxStr = sprintf('%s ("%s" scaled by %0.3f)', obj.getName(), obj.vector.getName(), obj.scaleFactor);
         end
         
         function useTf = openEditDialog(obj)
-            useTf = lvd_EditFixedInFrameVectorGUI(obj);
+            useTf = lvd_EditScaledVectorGUI(obj, obj.lvdData);
         end
         
         function tf = usesGeometricPoint(~, ~)
             tf = false;
         end
         
-        function tf = usesGeometricVector(~, ~)
-            tf = false;
+        function tf = usesGeometricVector(obj, vector)
+            tf = obj.vector == vector;
         end
         
         function tf = usesGeometricCoordSys(~, ~)
@@ -59,18 +61,6 @@ classdef FixedVectorInFrame < AbstractGeometricVector
         
         function tf = isInUse(obj, lvdData)
             tf = lvdData.geometry.usesGeometricVector(obj);
-        end
-        
-        function rVect = getRVect(obj)
-            rVect = obj.cartElem.rVect;
-        end
-        
-        function setRVect(obj, rVect)
-            obj.cartElem.rVect = rVect;
-        end
-        
-        function frame = getFrame(obj)
-            frame = obj.cartElem.frame;
         end
     end
 end

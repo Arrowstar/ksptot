@@ -35,4 +35,10 @@ classdef AbstractGeometricPoint < matlab.mixin.SetGet & matlab.mixin.Heterogeneo
         
         tf = isInUse(obj, lvdData)
     end
+    
+    methods(Sealed)
+        function tf = eq(a,b)
+            tf = eq@handle(a,b);
+        end
+    end
 end
