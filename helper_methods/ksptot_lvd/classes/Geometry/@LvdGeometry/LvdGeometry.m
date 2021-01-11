@@ -24,30 +24,35 @@ classdef LvdGeometry < matlab.mixin.SetGet
             tf = false;
             tf = tf || obj.points.usesGroundObj(groundObj);
             tf = tf || obj.vectors.usesGroundObj(groundObj);
+            tf = tf || obj.coordSyses.usesGroundObj(groundObj);
         end
         
         function tf = usesGeometricPoint(obj, point)
             tf = false;
             tf = tf || obj.points.usesGeometricPoint(point);
             tf = tf || obj.vectors.usesGeometricPoint(point);
+            tf = tf || obj.coordSyses.usesGeometricPoint(point);
         end
         
         function tf = usesGeometricVector(obj, vector)
             tf = false;
             tf = tf || obj.points.usesGeometricVector(vector);
             tf = tf || obj.vectors.usesGeometricVector(vector);
+            tf = tf || obj.coordSyses.usesGeometricVector(vector);
         end
         
         function tf = usesGeometricCoordSys(obj, coordSys)
             tf = false;
             tf = tf || obj.points.usesGeometricCoordSys(coordSys);
             tf = tf || obj.vectors.usesGeometricCoordSys(coordSys);
+            tf = tf || obj.coordSyses.usesGeometricCoordSys(coordSys);
         end
         
         function tf = usesGeometricRefFrame(obj, refFrame)
             tf = false;
             tf = tf || obj.points.usesGeometricRefFrame(refFrame);
             tf = tf || obj.vectors.usesGeometricRefFrame(refFrame);
+            tf = tf || obj.coordSyses.usesGeometricRefFrame(refFrame);
         end
     end
 end

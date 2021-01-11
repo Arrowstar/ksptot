@@ -6,6 +6,7 @@ classdef GeometricPointEnum < matlab.mixin.SetGet
         FixedInFrame('Fixed in Frame');
         GroundObj('Ground Object Point');
         CelestialBody('Celestial Body Point');
+        Vehicle('Vehicle Point');
     end
     
     properties

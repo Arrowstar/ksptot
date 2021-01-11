@@ -177,6 +177,9 @@ function addPointButton_Callback(hObject, eventdata, handles)
                     return;
                 end
                 
+            case GeometricPointEnum.Vehicle
+                newPoint = VehiclePoint('New Point');
+                
             otherwise
                 error('Unknown Point Type Type: %s', enum.name)
         end
