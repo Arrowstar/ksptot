@@ -8,5 +8,23 @@ classdef AbstractGeometricVector < matlab.mixin.SetGet & matlab.mixin.Heterogene
     
     methods        
         vect = getVectorAtTime(obj, time, inFrame)
+        
+        name = getName(obj)
+        
+        setName(obj, name)
+        
+        listboxStr = getListboxStr(obj)
+        
+        useTf = openEditDialog(obj)
+        
+        tf = usesGeometricPoint(obj, point)
+        
+        tf = usesGeometricVector(obj, vector)
+        
+        tf = usesGeometricCoordSys(obj, coordSys)
+        
+        tf = usesGeometricRefFrame(obj, refFrame)
+        
+        tf = isInUse(obj, lvdData)
     end
 end

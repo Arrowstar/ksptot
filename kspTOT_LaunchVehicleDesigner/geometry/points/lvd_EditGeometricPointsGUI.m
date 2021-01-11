@@ -200,9 +200,8 @@ function removePointButton_Callback(hObject, eventdata, handles)
     selPtInd = hObject.Value;
     selPt = lvdData.geometry.points.getPointAtInd(selPtInd);
 
-     tf = selPt.isInUse();
+    tf = selPt.isInUse();
 
-    tf = false;
     if(tf == false)
         lvdData.geometry.points.removePoint(selPt);
         

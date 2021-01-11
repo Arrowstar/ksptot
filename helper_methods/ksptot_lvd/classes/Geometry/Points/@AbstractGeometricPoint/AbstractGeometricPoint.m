@@ -7,7 +7,7 @@ classdef AbstractGeometricPoint < matlab.mixin.SetGet & matlab.mixin.Heterogeneo
         markerColor(1,1) ColorSpecEnum = ColorSpecEnum.Red;
         markerShape(1,1) MarkerStyleEnum = MarkerStyleEnum.RightTriangle;
         
-        %ground track line
+        %track line
         trkLineColor(1,1) ColorSpecEnum = ColorSpecEnum.Black;
         trkLineSpec(1,1) LineSpecEnum = LineSpecEnum.DottedLine;
     end

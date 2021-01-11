@@ -162,7 +162,7 @@ classdef LvdData < matlab.mixin.SetGet
             grndObj.wayPts = wayPt;
         end
         
-        function initBody = getDefaultInitialBodyInfo(celBodyData)
+        function initBody = getDefaultInitialBodyInfo(celBodyData)           
             if(isfield(celBodyData,'kerbin'))
                 initBody = celBodyData.kerbin;
             else

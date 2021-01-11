@@ -2635,6 +2635,8 @@ function editPointsMenu_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
     lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    
+    addUndoState(handles,'Edit Points');
     lvd_EditGeometricPointsGUI(lvdData);
 
 % --------------------------------------------------------------------
@@ -2642,17 +2644,25 @@ function editVectorsMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to editVectorsMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    
+    addUndoState(handles,'Edit Vectors');
+    lvd_EditGeometricVectorsGUI(lvdData);
 
 % --------------------------------------------------------------------
 function editCoordSysMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to editCoordSysMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    
+%     addUndoState(handles,'Edit Coordinate Systems');
 
 % --------------------------------------------------------------------
 function editRefRamesMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to editRefRamesMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    
+%     addUndoState(handles,'Edit Reference Frames');

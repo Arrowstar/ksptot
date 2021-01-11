@@ -34,7 +34,15 @@ classdef GeometricPointSet < matlab.mixin.SetGet
         end
         
         function inds = getIndsForPoints(obj, indPoints)
-            inds = find(ismember(obj.points, indPoints));
+            inds = [];
+            for(i=1:length(indPoints))
+                for(j=1:length(obj.points))
+                    if(indPoints(i) == obj.points(j))
+                        inds(end+1) = j; %#ok<AGROW>
+                        break;
+                    end
+                end
+            end
         end
         
         function indPoint = getPointAtInd(obj, ind)
