@@ -294,20 +294,26 @@ function removeGroundObjButton_Callback(hObject, eventdata, handles)
     grndObjs = getappdata(handles.lvd_EditGroundObjectsGUI,'grndObjs');
     
     grndObj = getSelectedGroundObj(handles);
-    grndObjs.removeGroundObj(grndObj);
-    numGrndObjs = grndObjs.getNumGroundObj();
     
-    grndObjs.lvdData.viewSettings.removeGrdObjFromViewProfiles(grndObj);
-    
-    handles.groundObjListbox.String = grndObjs.getListboxStr();
-    
-    if(handles.groundObjListbox.Value > numGrndObjs)
-        handles.groundObjListbox.Value = numGrndObjs;
+    tf = grndObj.isInUse();
+    if(tf == false)
+        grndObjs.removeGroundObj(grndObj);
+        numGrndObjs = grndObjs.getNumGroundObj();
+
+        grndObjs.lvdData.viewSettings.removeGrdObjFromViewProfiles(grndObj);
+
+        handles.groundObjListbox.String = grndObjs.getListboxStr();
+
+        if(handles.groundObjListbox.Value > numGrndObjs)
+            handles.groundObjListbox.Value = numGrndObjs;
+        end
+
+        grndObj = getSelectedGroundObj(handles);
+        updateGuiForGroundObj(grndObj, handles);
+        setGrndObjDeleteButtonEnable(handles);
+    else
+        errordlg('The selected ground object could not be deleted.  It is in use as a geometric point.  Remove ground object dependecies first.','Could Not Delete Ground Object');
     end
-    
-    grndObj = getSelectedGroundObj(handles);
-    updateGuiForGroundObj(grndObj, handles);
-    setGrndObjDeleteButtonEnable(handles);
     
     
 function groundObjectNameText_Callback(hObject, eventdata, handles)

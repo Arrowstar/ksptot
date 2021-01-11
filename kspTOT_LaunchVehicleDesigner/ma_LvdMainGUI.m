@@ -22,7 +22,7 @@ function varargout = ma_LvdMainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_LvdMainGUI
 
-% Last Modified by GUIDE v2.5 02-Jan-2021 14:06:11
+% Last Modified by GUIDE v2.5 09-Jan-2021 21:40:40
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -604,8 +604,8 @@ function optimizeMissionMenu_Callback(hObject, eventdata, handles)
     lvd_processData(handles);
 
 % --------------------------------------------------------------------
-function launchVehicleMenu_Callback(hObject, eventdata, handles)
-% hObject    handle to launchVehicleMenu (see GCBO)
+function scenarioMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to scenarioMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
@@ -2525,13 +2525,31 @@ function createkOSExecCodeMenu_Callback(hObject, eventdata, handles)
         csvFilePath = fullfile(PathName,FileName);
     end
     
+    eventsListboxStr = lvdData.script.getListboxStr();
+    evtInds = 1:length(eventsListboxStr);
+    [Selection,ok] = listdlgARH('ListString', eventsListboxStr, ...
+                                 'ListSize', [300, 300], ...
+                                 'InitialValue', evtInds, ...
+                                 'Name', 'Select Events for Export', ...
+                                 'PromptString', 'Select the events to export for kOS:');
+                             
+     if(ok == 0 || isempty(Selection))
+         return;
+     end
+        
     oldAutoPropSetting = lvdData.settings.autoPropScript;
     if(oldAutoPropSetting == false)
         propagateScript(handles, lvdData, 1);
     end
     
     stateLog = lvdData.stateLog;
-    stateLogEntries = stateLog.getAllEntries();
+    stateLogEntries = LaunchVehicleStateLogEntry.empty(1,0);
+	for(i=1:length(Selection))
+        evt = lvdData.script.getEventForInd(Selection(i));
+        stateLogEntries = [stateLogEntries, stateLog.getAllStateLogEntriesForEvent(evt)]; %#ok<AGROW>
+	end
+
+%     stateLogEntries = stateLog.getAllEntries();
     
     %sort state log entries by time ascending so that they show up in the
     %right order.
@@ -2540,7 +2558,6 @@ function createkOSExecCodeMenu_Callback(hObject, eventdata, handles)
     stateLogEntries = stateLogEntries(I);
     
     numEntries = length(stateLogEntries);
-    numEvents = lvdData.script.getTotalNumOfEvents();
     
     time = NaN(1,numEntries);
     yaw = NaN(1,numEntries);
@@ -2603,3 +2620,39 @@ function createkOSExecCodeMenu_Callback(hObject, eventdata, handles)
     fprintf(fid, '%s\n', strjoin(evtNames,','));
     fprintf(fid, '%s', strjoin(nextEvtNames,','));
     fclose(fid);
+
+
+% --------------------------------------------------------------------
+function geometryMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to geometryMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function editPointsMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to editPointsMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    lvd_EditGeometricPointsGUI(lvdData);
+
+% --------------------------------------------------------------------
+function editVectorsMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to editVectorsMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function editCoordSysMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to editCoordSysMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function editRefRamesMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to editRefRamesMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)

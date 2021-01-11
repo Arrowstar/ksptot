@@ -14,6 +14,7 @@ classdef LvdData < matlab.mixin.SetGet
         plugins LvdPluginSet
         viewSettings LaunchVehicleViewSettings
         groundObjs LaunchVehicleGroundObjectSet
+        geometry LvdGeometry
         
         celBodyData 
         ksptotVer char
@@ -30,6 +31,7 @@ classdef LvdData < matlab.mixin.SetGet
             obj.plugins = LvdPluginSet(obj);
             obj.viewSettings = LaunchVehicleViewSettings(obj);
             obj.groundObjs = LaunchVehicleGroundObjectSet(obj);
+            obj.geometry = LvdGeometry(obj);
         end
     end
     
@@ -195,6 +197,10 @@ classdef LvdData < matlab.mixin.SetGet
             
             if(isempty(obj.groundObjs))
                 obj.groundObjs = LaunchVehicleGroundObjectSet(obj);
+            end
+            
+            if(isempty(obj.geometry))
+                obj.geometry = LvdGeometry(obj);
             end
         end
         
