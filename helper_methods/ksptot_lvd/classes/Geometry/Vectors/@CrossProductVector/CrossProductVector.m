@@ -23,9 +23,9 @@ classdef CrossProductVector < AbstractGeometricVector
             obj.lvdData = lvdData;
         end
         
-        function vect = getVectorAtTime(obj, time, inFrame)
-            vect1 = obj.vector1.getVectorAtTime(time, inFrame);
-            vect2 = obj.vector2.getVectorAtTime(time, inFrame);
+        function vect = getVectorAtTime(obj, time, vehElemSet, inFrame)
+            vect1 = obj.vector1.getVectorAtTime(time, vehElemSet, inFrame);
+            vect2 = obj.vector2.getVectorAtTime(time, vehElemSet, inFrame);
             
             vect = crossARH(vect1(:), vect2(:));
         end

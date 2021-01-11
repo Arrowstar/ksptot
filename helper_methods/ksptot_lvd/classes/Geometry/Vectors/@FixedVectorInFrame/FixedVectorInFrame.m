@@ -19,7 +19,7 @@ classdef FixedVectorInFrame < AbstractGeometricVector
             obj.name = name;
         end
         
-        function vect = getVectorAtTime(obj, time, inFrame)
+        function vect = getVectorAtTime(obj, time, ~, inFrame)
             obj.cartElem.time = time;
             newCartElem = obj.cartElem.convertToFrame(inFrame);
             vect = newCartElem.rVect;

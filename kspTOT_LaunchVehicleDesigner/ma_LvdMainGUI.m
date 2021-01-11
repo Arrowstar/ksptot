@@ -2656,7 +2656,8 @@ function editCoordSysMenu_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
     lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
     
-%     addUndoState(handles,'Edit Coordinate Systems');
+    addUndoState(handles,'Edit Coordinate Systems');
+    lvd_EditGeometricCoordSysGUI(lvdData);
 
 % --------------------------------------------------------------------
 function editRefRamesMenu_Callback(hObject, eventdata, handles)

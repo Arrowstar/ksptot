@@ -14,7 +14,7 @@ classdef CelestialBodyPoint < AbstractGeometricPoint
             obj.name = name;
         end
         
-        function cartElem = getPositionAtTime(obj, time, inFrame)
+        function cartElem = getPositionAtTime(obj, time, ~, inFrame)
             cartElem = obj.bodyInfo.getElementSetsForTimes(time).convertToCartesianElementSet().convertToFrame(inFrame);
         end
         

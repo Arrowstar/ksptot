@@ -1,5 +1,5 @@
 classdef AbstractGeometricVector < matlab.mixin.SetGet & matlab.mixin.Heterogeneous
-    %AbstractGeometricPoint Summary of this class goes here
+    %AbstractGeometricVector Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
@@ -7,7 +7,7 @@ classdef AbstractGeometricVector < matlab.mixin.SetGet & matlab.mixin.Heterogene
     end
     
     methods        
-        vect = getVectorAtTime(obj, time, inFrame)
+        vect = getVectorAtTime(obj, time, vehElemSet, inFrame)
         
         name = getName(obj)
         

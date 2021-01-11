@@ -14,7 +14,7 @@ classdef FixedPointInFrame < AbstractGeometricPoint
             obj.name = name;
         end
         
-        function newCartElem = getPositionAtTime(obj, time, inFrame)
+        function newCartElem = getPositionAtTime(obj, time, ~, inFrame)
             obj.cartElem.time = time;
             newCartElem = obj.cartElem.convertToFrame(inFrame);
         end

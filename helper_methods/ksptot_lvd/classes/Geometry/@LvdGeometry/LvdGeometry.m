@@ -5,7 +5,7 @@ classdef LvdGeometry < matlab.mixin.SetGet
     properties
         points GeometricPointSet = GeometricPointSet.empty(1,0)
         vectors GeometricVectorSet = GeometricVectorSet.empty(1,0)
-        %coord sys here
+        coordSyses GeometricCoordSysSet = GeometricCoordSysSet.empty(1,0)
         %ref frames here
         
         lvdData LvdData
@@ -17,6 +17,7 @@ classdef LvdGeometry < matlab.mixin.SetGet
             
             obj.points = GeometricPointSet(lvdData);
             obj.vectors = GeometricVectorSet(lvdData);
+            obj.coordSyses = GeometricCoordSysSet(lvdData);
         end
         
         function tf = usesGroundObj(obj, groundObj)

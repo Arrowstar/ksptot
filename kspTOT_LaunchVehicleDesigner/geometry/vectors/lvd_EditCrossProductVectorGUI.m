@@ -144,9 +144,18 @@ function saveAndCloseButton_Callback(hObject, eventdata, handles)
 function errMsg = validateInputs(handles)
     errMsg = {};
     
-    if(handles.vector1Combo.Value == handles.vector2Combo.Value)
+%     lvdData = setappdata(handles.lvd_EditCrossProductVectorGUI, 'lvdData');
+%     vector = getappdata(handles.lvd_EditCrossProductVectorGUI, 'vector');
+    
+    allVectors = getappdata(handles.lvd_EditCrossProductVectorGUI, 'allVectors');
+    vector1 = allVectors(handles.vector1Combo.Value);
+    vector2 = allVectors(handles.vector2Combo.Value);
+    
+    if(vector1 == vector2)
         errMsg{end+1} = 'Vector 1 and Vector 2 must be different.';
     end
+    
+%     tf = vector.isInUse(lvdData);
     
     if(isempty(strtrim(handles.vectorNameText.String)))
         errMsg{end+1} = 'Point name must contain more than white space and must not be empty.';

@@ -23,8 +23,8 @@ classdef ScaledVector < AbstractGeometricVector
             obj.lvdData = lvdData;
         end
         
-        function vect = getVectorAtTime(obj, time, inFrame)
-            vect = obj.scaleFactor * obj.vector.getVectorAtTime(time, inFrame);
+        function vect = getVectorAtTime(obj, time, vehElemSet, inFrame)
+            vect = obj.scaleFactor * obj.vector.getVectorAtTime(time, vehElemSet, inFrame);
         end
         
         function name = getName(obj)
