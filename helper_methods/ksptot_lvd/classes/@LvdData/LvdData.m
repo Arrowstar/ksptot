@@ -98,6 +98,10 @@ classdef LvdData < matlab.mixin.SetGet
             tf = obj.script.usesPwrStorage(powerStorage);
 %             tf = tf || obj.optimizer.usesPwrStorage(powerStorage);
         end
+        
+        function baseFrame = getBaseFrame(obj)
+            baseFrame = getTopLevelCentralBody(obj.celBodyData).getBodyCenteredInertialFrame();
+        end
     end
     
     methods(Static)        

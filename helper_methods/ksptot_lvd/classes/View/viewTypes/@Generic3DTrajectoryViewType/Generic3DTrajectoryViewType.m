@@ -332,6 +332,7 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             viewProfile.createSunLightSrc(dAxes, viewInFrame);
             viewProfile.createGroundObjMarkerData(dAxes, lvdStateLogEntries, lvdData.script.evts, viewInFrame, celBodyData);
             viewProfile.createCentralBodyData(viewCentralBody, hCBodySurfXForm, viewInFrame);
+            viewProfile.createRefFrameData(lvdData.geometry.refFrames, viewInFrame, subStateLogs, lvdData.script.evts);
             viewProfile.configureTimeSlider(minTime, maxTime, subStateLogs, handles);
             hold(dAxes,'off');
             

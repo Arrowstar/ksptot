@@ -1,12 +1,9 @@
-classdef ReferenceFrameEnum < matlab.mixin.SetGet
-    %ReferenceFrameEnum Summary of this class goes here
+classdef GeometricRefFrameEnum < matlab.mixin.SetGet
+    %GeometricRefFrameEnum Summary of this class goes here
     %   Detailed explanation goes here
     
     enumeration
-        BodyCenteredInertial('Body-Centered Inertial');
-        BodyFixedRotating('Body-Fixed Rotating');
-        TwoBodyRotating('Two Body Rotating');
-        UserDefined('User-Defined');
+        CoordSystemOrigin('Coordinate System at Origin');
     end
     
     properties
@@ -14,20 +11,20 @@ classdef ReferenceFrameEnum < matlab.mixin.SetGet
     end
     
     methods
-        function obj = ReferenceFrameEnum(name)
+        function obj = GeometricRefFrameEnum(name)
             obj.name = name;
         end
     end
     
     methods(Static)
         function listBoxStr = getListBoxStr()
-            m = enumeration('ReferenceFrameEnum');
+            m = enumeration('GeometricRefFrameEnum');
             [~,I] = sort({m.name});
             listBoxStr = {m(I).name};
         end
         
         function [ind, enum] = getIndForName(name)
-            m = enumeration('ReferenceFrameEnum');
+            m = enumeration('GeometricRefFrameEnum');
             [~,I] = sort({m.name});
             m = m(I);
             ind = find(ismember({m.name},name),1,'first');
@@ -35,7 +32,7 @@ classdef ReferenceFrameEnum < matlab.mixin.SetGet
         end
         
         function [enum, ind] = getEnumForListboxStr(nameStr)
-            m = enumeration('ReferenceFrameEnum');
+            m = enumeration('GeometricRefFrameEnum');
             ind = find(ismember({m.name},nameStr),1,'first');
             enum = m(ind);
         end

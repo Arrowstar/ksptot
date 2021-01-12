@@ -6,7 +6,7 @@ classdef LvdGeometry < matlab.mixin.SetGet
         points GeometricPointSet = GeometricPointSet.empty(1,0)
         vectors GeometricVectorSet = GeometricVectorSet.empty(1,0)
         coordSyses GeometricCoordSysSet = GeometricCoordSysSet.empty(1,0)
-        %ref frames here
+        refFrames GeometricRefFrameSet = GeometricRefFrameSet.empty(1,0)
         
         lvdData LvdData
     end
@@ -18,6 +18,7 @@ classdef LvdGeometry < matlab.mixin.SetGet
             obj.points = GeometricPointSet(lvdData);
             obj.vectors = GeometricVectorSet(lvdData);
             obj.coordSyses = GeometricCoordSysSet(lvdData);
+            obj.refFrames = GeometricRefFrameSet(lvdData);
         end
         
         function tf = usesGroundObj(obj, groundObj)
@@ -25,6 +26,7 @@ classdef LvdGeometry < matlab.mixin.SetGet
             tf = tf || obj.points.usesGroundObj(groundObj);
             tf = tf || obj.vectors.usesGroundObj(groundObj);
             tf = tf || obj.coordSyses.usesGroundObj(groundObj);
+            tf = tf || obj.refFrames.usesGroundObj(groundObj);
         end
         
         function tf = usesGeometricPoint(obj, point)
@@ -32,6 +34,7 @@ classdef LvdGeometry < matlab.mixin.SetGet
             tf = tf || obj.points.usesGeometricPoint(point);
             tf = tf || obj.vectors.usesGeometricPoint(point);
             tf = tf || obj.coordSyses.usesGeometricPoint(point);
+            tf = tf || obj.refFrames.usesGeometricPoint(point);
         end
         
         function tf = usesGeometricVector(obj, vector)
@@ -39,6 +42,7 @@ classdef LvdGeometry < matlab.mixin.SetGet
             tf = tf || obj.points.usesGeometricVector(vector);
             tf = tf || obj.vectors.usesGeometricVector(vector);
             tf = tf || obj.coordSyses.usesGeometricVector(vector);
+            tf = tf || obj.refFrames.usesGeometricVector(vector);
         end
         
         function tf = usesGeometricCoordSys(obj, coordSys)
@@ -46,6 +50,7 @@ classdef LvdGeometry < matlab.mixin.SetGet
             tf = tf || obj.points.usesGeometricCoordSys(coordSys);
             tf = tf || obj.vectors.usesGeometricCoordSys(coordSys);
             tf = tf || obj.coordSyses.usesGeometricCoordSys(coordSys);
+            tf = tf || obj.refFrames.usesGeometricCoordSys(coordSys);
         end
         
         function tf = usesGeometricRefFrame(obj, refFrame)
@@ -53,6 +58,7 @@ classdef LvdGeometry < matlab.mixin.SetGet
             tf = tf || obj.points.usesGeometricRefFrame(refFrame);
             tf = tf || obj.vectors.usesGeometricRefFrame(refFrame);
             tf = tf || obj.coordSyses.usesGeometricRefFrame(refFrame);
+            tf = tf || obj.refFrames.usesGeometricRefFrame(refFrame);
         end
     end
 end

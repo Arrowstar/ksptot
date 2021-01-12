@@ -35,6 +35,10 @@ classdef FixedPointInFrame < AbstractGeometricPoint
             useTf = lvd_EditFixedInFramePointGUI(obj);
         end
         
+        function bodyInfo = getOriginBody(obj)
+            bodyInfo = obj.cartElem.frame.getOriginBody();
+        end
+        
         function tf = usesGroundObj(~, ~)
             tf = false;
         end

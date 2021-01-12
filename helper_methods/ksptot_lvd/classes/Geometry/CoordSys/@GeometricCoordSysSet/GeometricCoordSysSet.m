@@ -37,15 +37,6 @@ classdef GeometricCoordSysSet < matlab.mixin.SetGet
         
         function inds = getIndsForCoordSyses(obj, indCoordSyses)
             inds = find(ismember(obj.coordSyses, indCoordSyses));
-%             inds = [];
-%             for(i=1:length(indVectors))
-%                 for(j=1:length(obj.vectors))
-%                     if(indVectors(i) == obj.vectors(j))
-%                         inds(end+1) = j; %#ok<AGROW>
-%                         break;
-%                     end
-%                 end
-%             end
         end
         
         function indCoordSys = getCoordSysAtInd(obj, ind)

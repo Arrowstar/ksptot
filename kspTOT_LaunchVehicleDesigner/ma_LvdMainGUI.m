@@ -2638,6 +2638,9 @@ function editPointsMenu_Callback(hObject, eventdata, handles)
     
     addUndoState(handles,'Edit Points');
     lvd_EditGeometricPointsGUI(lvdData);
+    
+    runScript(handles, lvdData, 1);
+    lvd_processData(handles);
 
 % --------------------------------------------------------------------
 function editVectorsMenu_Callback(hObject, eventdata, handles)
@@ -2648,6 +2651,9 @@ function editVectorsMenu_Callback(hObject, eventdata, handles)
     
     addUndoState(handles,'Edit Vectors');
     lvd_EditGeometricVectorsGUI(lvdData);
+    
+    runScript(handles, lvdData, 1);
+    lvd_processData(handles);
 
 % --------------------------------------------------------------------
 function editCoordSysMenu_Callback(hObject, eventdata, handles)
@@ -2658,6 +2664,9 @@ function editCoordSysMenu_Callback(hObject, eventdata, handles)
     
     addUndoState(handles,'Edit Coordinate Systems');
     lvd_EditGeometricCoordSysGUI(lvdData);
+    
+    runScript(handles, lvdData, 1);
+    lvd_processData(handles);
 
 % --------------------------------------------------------------------
 function editRefRamesMenu_Callback(hObject, eventdata, handles)
@@ -2666,4 +2675,8 @@ function editRefRamesMenu_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
     lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
     
-%     addUndoState(handles,'Edit Reference Frames');
+    addUndoState(handles,'Edit Reference Frames');
+    lvd_EditGeometricRefFramesGUI(lvdData);
+    
+    runScript(handles, lvdData, 1);
+    lvd_processData(handles);

@@ -79,6 +79,8 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         markerGrdObjData(1,:) LaunchVehicleViewProfileGroundObjData = LaunchVehicleViewProfileGroundObjData.empty(1,0);
         sunLighting(1,:) LaunchVehicleViewProfileSunLighting = LaunchVehicleViewProfileSunLighting.empty(1,0);
         centralBodyData(1,:) LaunchVehicleViewProfileCentralBodyData = LaunchVehicleViewProfileCentralBodyData.empty(1,0);
+        refFrameData(1,:) LaunchVehicleViewProfileRefFrameData = LaunchVehicleViewProfileRefFrameData.empty(1,0);
+        userDefinedRefFrames(1,:) 
     end
     
     properties(Access=private)
@@ -106,34 +108,7 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
             
             for(j=1:length(subStateLogs))
                 if(size(subStateLogs{j},1) > 0)
-                    times = subStateLogs{j}(:,1);
-                    rVects = subStateLogs{j}(:,2:4);
-                    
-                    evtNum = subStateLogs{j}(1,13);
-                    evt = evts(evtNum);
-                    evtColor = evt.colorLineSpec.color;
-                    
-                    switch(evt.plotMethod)
-                        case EventPlottingMethodEnum.PlotContinuous
-                            %nothing
-                            
-                        case EventPlottingMethodEnum.SkipFirstState
-                            times = times(2:end);
-                            rVects = rVects(2:end,:);
-                            
-                        case EventPlottingMethodEnum.DoNotPlot
-                            times = [];
-                            rVects = [];
-                            
-                        otherwise
-                            error('Unknown event plotting method: %s', EventPlottingMethodEnum.DoNotPlot.name);
-                    end
-                    
-                    [times,ia,~] = unique(times,'stable','rows');
-                    rVects = rVects(ia,:);
-                    
-                    [times,I] = sort(times);
-                    rVects = rVects(I,:);
+                    [times, rVects, evtColor] = LaunchVehicleViewProfile.parseTrajDataFromSubStateLogs(subStateLogs, j, evts);
                     
                     if(length(unique(times)) > 1)
                         trajMarkerData.addData(times, rVects, evtColor);
@@ -448,6 +423,27 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
             obj.markerBodyData(end+1) = bodyData;
         end
         
+        function createRefFrameData(obj, refFrameSet, viewFrame, subStateLogs, evts)
+            obj.clearRefFrameData();
+            refFrames = refFrameSet.refFrames;
+            
+            for(i=1:length(refFrames))
+                obj.refFrameData(end+1) = LaunchVehicleViewProfileRefFrameData(refFrames(i), viewFrame);
+            end
+            
+            for(i=1:length(subStateLogs))
+                if(size(subStateLogs{i},1) > 0)
+                    [times, rVects, ~] = LaunchVehicleViewProfile.parseTrajDataFromSubStateLogs(subStateLogs, i, evts);
+                    
+                    if(length(unique(times)) > 1)
+                        for(j=1:length(obj.refFrameData))
+                            obj.refFrameData(j).addData(times, rVects);
+                        end
+                    end
+                end
+            end
+        end
+        
         function clearAllTrajData(obj)
             obj.markerTrajData = LaunchVehicleViewProfileTrajectoryData.empty(1,0);
         end
@@ -462,6 +458,43 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         
         function clearAllGrdObjData(obj)
             obj.markerGrdObjData = LaunchVehicleViewProfileGroundObjData.empty(1,0);
+        end
+        
+        function clearRefFrameData(obj)
+            obj.refFrameData = LaunchVehicleViewProfileRefFrameData.empty(1,0);
+        end
+    end
+    
+    methods(Static, Access=private)
+        function [times, rVects, evtColor] = parseTrajDataFromSubStateLogs(subStateLogs, j, evts)
+            times = subStateLogs{j}(:,1);
+            rVects = subStateLogs{j}(:,2:4);
+
+            evtNum = subStateLogs{j}(1,13);
+            evt = evts(evtNum);
+            evtColor = evt.colorLineSpec.color;
+
+            switch(evt.plotMethod)
+                case EventPlottingMethodEnum.PlotContinuous
+                    %nothing
+
+                case EventPlottingMethodEnum.SkipFirstState
+                    times = times(2:end);
+                    rVects = rVects(2:end,:);
+
+                case EventPlottingMethodEnum.DoNotPlot
+                    times = [];
+                    rVects = [];
+
+                otherwise
+                    error('Unknown event plotting method: %s', EventPlottingMethodEnum.DoNotPlot.name);
+            end
+
+            [times,ia,~] = unique(times,'stable','rows');
+            rVects = rVects(ia,:);
+
+            [times,I] = sort(times);
+            rVects = rVects(I,:);
         end
     end
 end
