@@ -1,9 +1,9 @@
-classdef AbstractGeometricRefFrame < matlab.mixin.SetGet
+classdef AbstractGeometricRefFrame < matlab.mixin.SetGet & matlab.mixin.Heterogeneous
     %AbstractGeometricRefFrame Summary of this class goes here
     %   Detailed explanation goes here
        
     methods         
-        [posOffsetOrigin, rotMatToInertial] = getRefFrameAtTime(obj, time, vehElemSet, inFrame)
+        [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = getRefFrameAtTime(obj, time, vehElemSet, inFrame)
         
         name = getName(obj)
         
@@ -12,6 +12,10 @@ classdef AbstractGeometricRefFrame < matlab.mixin.SetGet
         listboxStr = getListboxStr(obj)
         
         useTf = openEditDialog(obj)
+        
+        tf = isVehDependent(obj)
+        
+        tf = originIsVehDependent(obj)
         
         tf = usesGeometricPoint(obj, point)
         

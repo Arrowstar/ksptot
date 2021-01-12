@@ -46,6 +46,11 @@ classdef CrossProductVector < AbstractGeometricVector
             useTf = lvd_EditCrossProductVectorGUI(obj, obj.lvdData);
         end
         
+        function tf = isVehDependent(obj)
+            tf = obj.vector1.isVehDependent() || ...
+                 obj.vector2.isVehDependent();
+        end
+        
         function tf = usesGeometricPoint(~, ~)
             tf = false;
         end

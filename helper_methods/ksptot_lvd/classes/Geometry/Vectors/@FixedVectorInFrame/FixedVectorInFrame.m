@@ -3,26 +3,32 @@ classdef FixedVectorInFrame < AbstractGeometricVector
     %   Detailed explanation goes here
     
     properties
-        cartElem(1,1) CartesianElementSet 
+        vect(3,1) double 
+        frame AbstractReferenceFrame
         
         name(1,:) char
         
         %vector line
         lineColor(1,1) ColorSpecEnum = ColorSpecEnum.Black;
         lineSpec(1,1) LineSpecEnum = LineSpecEnum.DottedLine;
+        
+        lvdData LvdData
     end
     
     methods        
-        function obj = FixedVectorInFrame(vect, frame, name) 
-            obj.cartElem = CartesianElementSet(0, vect(:), [0;0;0], frame);
+        function obj = FixedVectorInFrame(vect, frame, name, lvdData) 
+            obj.vect = vect;
+            obj.frame = frame;
             
             obj.name = name;
+            obj.lvdData = lvdData;
         end
         
-        function vect = getVectorAtTime(obj, time, ~, inFrame)
-            obj.cartElem.time = time;
-            newCartElem = obj.cartElem.convertToFrame(inFrame);
-            vect = newCartElem.rVect;
+        function vect = getVectorAtTime(obj, time, vehElemSet, inFrame)
+            [~, ~, ~, rotMatToInertial12] = obj.frame.getOffsetsWrtInertialOrigin(time, vehElemSet);
+            [~, ~, ~, rotMatToInertial32] = inFrame.getOffsetsWrtInertialOrigin(time, vehElemSet);
+            
+            vect = rotMatToInertial32' * rotMatToInertial12 * obj.vect;
         end
         
         function name = getName(obj)
@@ -34,11 +40,15 @@ classdef FixedVectorInFrame < AbstractGeometricVector
         end
         
         function listboxStr = getListboxStr(obj)
-            listboxStr = sprintf('%s (Fixed in Frame: %s)', obj.getName(), obj.cartElem.frame.getNameStr());
+            listboxStr = sprintf('%s (Fixed in Frame: %s)', obj.getName(), obj.frame.getNameStr());
         end
         
         function useTf = openEditDialog(obj)
-            useTf = lvd_EditFixedInFrameVectorGUI(obj);
+            useTf = lvd_EditFixedInFrameVectorGUI(obj, obj.lvdData);
+        end
+        
+        function tf = isVehDependent(obj)
+            tf = false;
         end
         
         function tf = usesGeometricPoint(~, ~)
@@ -61,16 +71,16 @@ classdef FixedVectorInFrame < AbstractGeometricVector
             tf = lvdData.geometry.usesGeometricVector(obj);
         end
         
-        function rVect = getRVect(obj)
-            rVect = obj.cartElem.rVect;
+        function vect = getRVect(obj)
+            vect = obj.vect;
         end
         
-        function setRVect(obj, rVect)
-            obj.cartElem.rVect = rVect;
+        function setRVect(obj, vect)
+            obj.vect = vect;
         end
         
         function frame = getFrame(obj)
-            frame = obj.cartElem.frame;
+            frame = obj.frame;
         end
     end
 end

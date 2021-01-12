@@ -542,7 +542,8 @@ function trajViewFrameCombo_Callback(hObject, eventdata, handles)
     % Hints: contents = cellstr(get(hObject,'String')) returns trajViewFrameCombo contents as cell array
     %        contents{get(hObject,'Value')} returns selected item from trajViewFrameCombo
     viewSettings = getappdata(handles.lvd_viewSettingsGUI,'viewSettings');
-    celBodyData = viewSettings.lvdData.celBodyData;
+    lvdData = viewSettings.lvdData;
+    celBodyData = lvdData.celBodyData;
     
     profile = getSelectedProfile(handles);
     bodyInfo = profile.frame.getOriginBody();
@@ -553,11 +554,9 @@ function trajViewFrameCombo_Callback(hObject, eventdata, handles)
     
     switch refFrameEnum
         case ReferenceFrameEnum.BodyCenteredInertial
-%             newFrame = BodyCenteredInertialFrame(bodyInfo, celBodyData);
             newFrame = bodyInfo.getBodyCenteredInertialFrame();
             
         case ReferenceFrameEnum.BodyFixedRotating
-%             newFrame = BodyFixedFrame(bodyInfo, celBodyData);
             newFrame = bodyInfo.getBodyFixedFrame();
             
         case ReferenceFrameEnum.TwoBodyRotating
@@ -573,8 +572,40 @@ function trajViewFrameCombo_Callback(hObject, eventdata, handles)
             
             newFrame = TwoBodyRotatingFrame(primaryBody, secondaryBody, originPt, celBodyData);
             
+        case ReferenceFrameEnum.UserDefined
+            numFrames = lvdData.geometry.refFrames.getNumRefFrames();
+            if(numFrames >= 1)
+                geometricFrame = AbstractGeometricRefFrame.empty(1,0);
+                for(i=1:length(numFrames))
+                    frame = lvdData.geometry.refFrames.getRefFrameAtInd(i);
+                    if(frame.isVehDependent() == false)
+                        geometricFrame = frame;
+                        break;
+                    end
+                end
+
+                if(not(isempty(geometricFrame)))
+                    newFrame = UserDefinedGeometricFrame(geometricFrame, lvdData);
+                else
+                    bodyInfo = getSelectedBodyInfo(handles);
+                    newFrame = bodyInfo.getBodyCenteredInertialFrame();
+
+                    warndlg('There are no geometric frames available which are not dependent on vehicle properties.  A body-centered inertial frame will be selected instead.');
+                end
+            else
+                bodyInfo = getSelectedBodyInfo(handles);
+                newFrame = bodyInfo.getBodyCenteredInertialFrame();
+
+                warndlg('There are no geometric frames available which are not dependent on vehicle properties.  A body-centered inertial frame will be selected instead.');
+            end
+            
         otherwise
-            error('Unknown reference frame type: %s', class(refFrameEnum));
+            error('Unknown reference frame type: %s', string(refFrameEnum));
+    end
+    
+    if(not(isempty(newFrame)) && newFrame.typeEnum ~= refFrameEnum)
+        refFrameEnum = newFrame.typeEnum;
+        handles.trajViewFrameCombo.Value = ReferenceFrameEnum.getIndForName(refFrameEnum.name);
     end
     
     profile.frame = newFrame;
@@ -686,7 +717,7 @@ function setFrameOptionsButton_Callback(hObject, eventdata, handles)
     % eventdata  reserved - to be defined in a future version of MATLAB
     % handles    structure with handles and user data (see GUIDATA)
     profile = getSelectedProfile(handles);
-    newFrame = profile.frame.editFrameDialogUI();
+    newFrame = profile.frame.editFrameDialogUI(EditReferenceFrameContextEnum.ForView);
     
     profile.frame = newFrame;
     handles.setFrameOptionsButton.TooltipString = sprintf('Current Frame: %s', profile.frame.getNameStr());

@@ -21,7 +21,7 @@ classdef TwoBodyRotatingFrame < AbstractReferenceFrame
             obj.celBodyData = celBodyData;
         end
         
-        function [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = getOffsetsWrtInertialOrigin(obj, time)            
+        function [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = getOffsetsWrtInertialOrigin(obj, time, ~)            
             [rVectSunToPrimaryBody, vVectSunToPrimaryBody] = getPositOfBodyWRTSun(time, obj.primaryBodyInfo, obj.celBodyData);
             [rVectSunToSecondaryBody, vVectSunToSecondaryBody] = getPositOfBodyWRTSun(time, obj.secondaryBodyInfo, obj.celBodyData);
             
@@ -100,7 +100,7 @@ classdef TwoBodyRotatingFrame < AbstractReferenceFrame
                               obj.originPt.name);
         end
         
-        function newFrame = editFrameDialogUI(obj)
+        function newFrame = editFrameDialogUI(obj, ~)
             if(isempty(obj.celBodyData))
                 obj.celBodyData = obj.primaryBodyInfo.celBodyData;
             end

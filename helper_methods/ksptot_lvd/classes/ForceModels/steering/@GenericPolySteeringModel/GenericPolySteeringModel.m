@@ -22,9 +22,11 @@ classdef GenericPolySteeringModel < AbstractAnglePolySteeringModel
             alphaAng = obj.alphaAngleModel.getValueAtTime(ut);
             
             elemSet = CartesianElementSet(ut, rVect(:), vVect(:), bodyInfo.getBodyCenteredInertialFrame());
-            elemSet = elemSet.convertToFrame(obj.refFrame);
+            if(not(isempty(obj.refFrame.getOriginBody())))
+                elemSet = elemSet.convertToFrame(obj.refFrame);
+            end
             
-            dcm = obj.controlFrame.computeDcmToInertialFrame(elemSet.time, elemSet.rVect, elemSet.vVect, elemSet.frame.getOriginBody(), gammaAng, betaAng, alphaAng, obj.refFrame);
+            dcm = obj.controlFrame.computeDcmToInertialFrame(elemSet.time, elemSet.rVect, elemSet.vVect, elemSet.frame, gammaAng, betaAng, alphaAng, obj.refFrame);
         end
 
         function [angleModel, continuity] = getAngleNModel(obj, n)

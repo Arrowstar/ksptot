@@ -6,12 +6,15 @@ classdef FixedPointInFrame < AbstractGeometricPoint
         cartElem(1,1) CartesianElementSet
         
         name(1,:) char
+        
+        lvdData LvdData
     end
     
     methods
-        function obj = FixedPointInFrame(rVect, frame, name)
+        function obj = FixedPointInFrame(rVect, frame, name, lvdData)
             obj.cartElem = CartesianElementSet(0, rVect(:), [0;0;0], frame);
             obj.name = name;
+            obj.lvdData = lvdData;
         end
         
         function newCartElem = getPositionAtTime(obj, time, ~, inFrame)
@@ -32,7 +35,11 @@ classdef FixedPointInFrame < AbstractGeometricPoint
         end
         
         function useTf = openEditDialog(obj)
-            useTf = lvd_EditFixedInFramePointGUI(obj);
+            useTf = lvd_EditFixedInFramePointGUI(obj, obj.lvdData);
+        end
+        
+        function tf = isVehDependent(obj)
+            tf = false;
         end
         
         function bodyInfo = getOriginBody(obj)

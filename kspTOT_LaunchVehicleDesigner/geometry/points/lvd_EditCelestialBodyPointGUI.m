@@ -78,18 +78,6 @@ function populateGUI(handles, point)
     ind = find(point.bodyInfo == sortedBodyInfo,1,'first');
     handles.celestialBodyCombo.Value = ind;
     
-    handles.pointColorCombo.String = ColorSpecEnum.getListboxStr();
-    handles.pointColorCombo.Value = ColorSpecEnum.getIndForName(point.markerColor.name);
-
-    handles.pointMarkerShapeCombo.String = MarkerStyleEnum.getListboxStr();
-    handles.pointMarkerShapeCombo.Value = MarkerStyleEnum.getIndForName(point.markerShape.name);
-
-    handles.pointLineColorCombo.String = ColorSpecEnum.getListboxStr();
-    handles.pointLineColorCombo.Value = ColorSpecEnum.getIndForName(point.trkLineColor.name);
-
-    handles.pointLineSpecCombo.String = LineSpecEnum.getListboxStr();
-    handles.pointLineSpecCombo.Value = LineSpecEnum.getIndForName(point.trkLineSpec.name);
-
 
 % --- Outputs from this function are returned to the command line.
 function varargout = lvd_EditCelestialBodyPointGUI_OutputFcn(hObject, eventdata, handles) 
@@ -110,18 +98,6 @@ function varargout = lvd_EditCelestialBodyPointGUI_OutputFcn(hObject, eventdata,
         [~, sortedBodyInfo] = ma_getSortedBodyNames(celBodyData);
         sortedBodyInfo = [sortedBodyInfo{:}];
         point.bodyInfo = sortedBodyInfo(handles.celestialBodyCombo.Value);
-        
-        str = handles.pointColorCombo.String{handles.pointColorCombo.Value};
-        point.markerColor = ColorSpecEnum.getEnumForListboxStr(str);
-        
-        str = handles.pointMarkerShapeCombo.String{handles.pointMarkerShapeCombo.Value};
-        point.markerShape = MarkerStyleEnum.getEnumForListboxStr(str);
-        
-        str = handles.pointLineColorCombo.String{handles.pointLineColorCombo.Value};
-        point.trkLineColor = ColorSpecEnum.getEnumForListboxStr(str);
-        
-        str = handles.pointLineSpecCombo.String{handles.pointLineSpecCombo.Value};
-        point.trkLineSpec = LineSpecEnum.getEnumForListboxStr(str);
         
         varargout{1} = true;
         close(handles.lvd_EditCelestialBodyPointGUI);
@@ -197,99 +173,6 @@ function lvd_EditCelestialBodyPointGUI_WindowKeyPressFcn(hObject, eventdata, han
         case 'escape'
             close(handles.lvd_EditCelestialBodyPointGUI);
     end
-
-    
-% --- Executes on selection change in pointColorCombo.
-function pointColorCombo_Callback(hObject, eventdata, handles)
-% hObject    handle to pointColorCombo (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: contents = cellstr(get(hObject,'String')) returns pointColorCombo contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from pointColorCombo
-
-
-% --- Executes during object creation, after setting all properties.
-function pointColorCombo_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to pointColorCombo (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: popupmenu controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
-% --- Executes on selection change in pointLineSpecCombo.
-function pointLineSpecCombo_Callback(hObject, eventdata, handles)
-% hObject    handle to pointLineSpecCombo (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: contents = cellstr(get(hObject,'String')) returns pointLineSpecCombo contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from pointLineSpecCombo
-
-
-% --- Executes during object creation, after setting all properties.
-function pointLineSpecCombo_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to pointLineSpecCombo (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: popupmenu controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
-% --- Executes on selection change in pointLineColorCombo.
-function pointLineColorCombo_Callback(hObject, eventdata, handles)
-% hObject    handle to pointLineColorCombo (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: contents = cellstr(get(hObject,'String')) returns pointLineColorCombo contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from pointLineColorCombo
-
-
-% --- Executes during object creation, after setting all properties.
-function pointLineColorCombo_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to pointLineColorCombo (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: popupmenu controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
-% --- Executes on selection change in pointMarkerShapeCombo.
-function pointMarkerShapeCombo_Callback(hObject, eventdata, handles)
-% hObject    handle to pointMarkerShapeCombo (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: contents = cellstr(get(hObject,'String')) returns pointMarkerShapeCombo contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from pointMarkerShapeCombo
-
-
-% --- Executes during object creation, after setting all properties.
-function pointMarkerShapeCombo_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to pointMarkerShapeCombo (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: popupmenu controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
 
 % --- Executes on selection change in celestialBodyCombo.
 function celestialBodyCombo_Callback(hObject, eventdata, handles)

@@ -58,6 +58,9 @@ function lvd_EditFixedInFramePointGUI_OpeningFcn(hObject, eventdata, handles, va
     point = varargin{1};
     setappdata(hObject, 'point', point);
     
+    lvdData = varargin{2};
+    setappdata(hObject, 'lvdData', lvdData);
+    
 	populateGUI(handles, point);
     
     % Update handles structure
@@ -404,6 +407,8 @@ function refFrameTypeCombo_Callback(hObject, eventdata, handles)
 
     
 function frameUpdated(handles)
+    lvdData = getappdata(handles.lvd_EditFixedInFramePointGUI, 'lvdData');
+    
     curElemSet = getappdata(handles.lvd_EditFixedInFramePointGUI,'curElemSet');
     bodyInfo = curElemSet.frame.getOriginBody();   
     
@@ -434,8 +439,24 @@ function frameUpdated(handles)
                 
                 newFrame = TwoBodyRotatingFrame(primaryBody, secondaryBody, originPt, bodyInfo.celBodyData);
             end
+            
+        case ReferenceFrameEnum.UserDefined
+            numFrames = lvdData.geometry.refFrames.getNumRefFrames();
+            if(numFrames >= 1)
+                geometricFrame = lvdData.geometry.refFrames.getRefFrameAtInd(1);
+                newFrame = UserDefinedGeometricFrame(geometricFrame, lvdData);
+            else
+                newFrame = bodyInfo.getBodyCenteredInertialFrame();
+                warndlg('There are no geometric frames available.  A body-centered inertial frame will be selected instead.');
+            end
+            
         otherwise
-            error('Unknown reference frame type: %s', class(refFrameEnum));                
+            error('Unknown reference frame type: %s', string(refFrameEnum));                
+    end
+    
+    if(not(isempty(newFrame)) && newFrame.typeEnum ~= refFrameEnum)
+        refFrameEnum = newFrame.typeEnum;
+        handles.refFrameTypeCombo.Value = ReferenceFrameEnum.getIndForName(refFrameEnum.name);
     end
     
     curElemSet.frame = newFrame;
@@ -463,7 +484,7 @@ function setFrameOptionsButton_Callback(hObject, eventdata, handles)
     curElemSet = getappdata(handles.lvd_EditFixedInFramePointGUI,'curElemSet');
 
     frame = curElemSet.frame;
-    newFrame = frame.editFrameDialogUI();
+    newFrame = frame.editFrameDialogUI(EditReferenceFrameContextEnum.ForGeometry);
     curElemSet.frame = newFrame;
     
     setappdata(handles.lvd_EditFixedInFramePointGUI,'curElemSet',curElemSet);

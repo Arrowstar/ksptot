@@ -17,6 +17,8 @@ classdef AbstractGeometricVector < matlab.mixin.SetGet & matlab.mixin.Heterogene
         
         useTf = openEditDialog(obj)
         
+        tf = isVehDependent(obj)
+        
         tf = usesGeometricPoint(obj, point)
         
         tf = usesGeometricVector(obj, vector)

@@ -17,7 +17,7 @@ classdef BodyFixedFrame < AbstractReferenceFrame
             obj.celBodyData = celBodyData;
         end
         
-        function [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = getOffsetsWrtInertialOrigin(obj, time)
+        function [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = getOffsetsWrtInertialOrigin(obj, time, ~)
             [rVectSunToBody, vVectSunToBody] = getPositOfBodyWRTSun(time, obj.bodyInfo, obj.celBodyData);
             
             spinAngle = getBodySpinAngle(obj.bodyInfo, time);
@@ -45,7 +45,7 @@ classdef BodyFixedFrame < AbstractReferenceFrame
             nameStr = sprintf('Body-Fixed Frame (Origin: %s)', obj.bodyInfo.name);
         end
         
-        function newFrame = editFrameDialogUI(obj)
+        function newFrame = editFrameDialogUI(obj, ~)
             if(isempty(obj.celBodyData))
                 obj.celBodyData = obj.bodyInfo.celBodyData;
             end

@@ -22,7 +22,7 @@ function varargout = lvd_EditVehiclePointGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditVehiclePointGUI
 
-% Last Modified by GUIDE v2.5 11-Jan-2021 17:03:06
+% Last Modified by GUIDE v2.5 12-Jan-2021 17:14:15
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -68,19 +68,6 @@ function lvd_EditVehiclePointGUI_OpeningFcn(hObject, eventdata, handles, varargi
 
 function populateGUI(handles, point)
     set(handles.pointNameText,'String',point.getName());
-        
-    handles.pointColorCombo.String = ColorSpecEnum.getListboxStr();
-    handles.pointColorCombo.Value = ColorSpecEnum.getIndForName(point.markerColor.name);
-
-    handles.pointMarkerShapeCombo.String = MarkerStyleEnum.getListboxStr();
-    handles.pointMarkerShapeCombo.Value = MarkerStyleEnum.getIndForName(point.markerShape.name);
-
-    handles.pointLineColorCombo.String = ColorSpecEnum.getListboxStr();
-    handles.pointLineColorCombo.Value = ColorSpecEnum.getIndForName(point.trkLineColor.name);
-
-    handles.pointLineSpecCombo.String = LineSpecEnum.getListboxStr();
-    handles.pointLineSpecCombo.Value = LineSpecEnum.getIndForName(point.trkLineSpec.name);
-
 
 % --- Outputs from this function are returned to the command line.
 function varargout = lvd_EditVehiclePointGUI_OutputFcn(hObject, eventdata, handles) 
@@ -96,18 +83,6 @@ function varargout = lvd_EditVehiclePointGUI_OutputFcn(hObject, eventdata, handl
         point = getappdata(hObject, 'point');
         
         point.setName(handles.pointNameText.String);
-        
-        str = handles.pointColorCombo.String{handles.pointColorCombo.Value};
-        point.markerColor = ColorSpecEnum.getEnumForListboxStr(str);
-        
-        str = handles.pointMarkerShapeCombo.String{handles.pointMarkerShapeCombo.Value};
-        point.markerShape = MarkerStyleEnum.getEnumForListboxStr(str);
-        
-        str = handles.pointLineColorCombo.String{handles.pointLineColorCombo.Value};
-        point.trkLineColor = ColorSpecEnum.getEnumForListboxStr(str);
-        
-        str = handles.pointLineSpecCombo.String{handles.pointLineSpecCombo.Value};
-        point.trkLineSpec = LineSpecEnum.getEnumForListboxStr(str);
         
         varargout{1} = true;
         close(handles.lvd_EditVehiclePointGUI);
@@ -183,95 +158,3 @@ function lvd_EditVehiclePointGUI_WindowKeyPressFcn(hObject, eventdata, handles)
         case 'escape'
             close(handles.lvd_EditVehiclePointGUI);
     end
-
-    
-% --- Executes on selection change in pointColorCombo.
-function pointColorCombo_Callback(hObject, eventdata, handles)
-% hObject    handle to pointColorCombo (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: contents = cellstr(get(hObject,'String')) returns pointColorCombo contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from pointColorCombo
-
-
-% --- Executes during object creation, after setting all properties.
-function pointColorCombo_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to pointColorCombo (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: popupmenu controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
-% --- Executes on selection change in pointLineSpecCombo.
-function pointLineSpecCombo_Callback(hObject, eventdata, handles)
-% hObject    handle to pointLineSpecCombo (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: contents = cellstr(get(hObject,'String')) returns pointLineSpecCombo contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from pointLineSpecCombo
-
-
-% --- Executes during object creation, after setting all properties.
-function pointLineSpecCombo_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to pointLineSpecCombo (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: popupmenu controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
-% --- Executes on selection change in pointLineColorCombo.
-function pointLineColorCombo_Callback(hObject, eventdata, handles)
-% hObject    handle to pointLineColorCombo (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: contents = cellstr(get(hObject,'String')) returns pointLineColorCombo contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from pointLineColorCombo
-
-
-% --- Executes during object creation, after setting all properties.
-function pointLineColorCombo_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to pointLineColorCombo (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: popupmenu controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
-% --- Executes on selection change in pointMarkerShapeCombo.
-function pointMarkerShapeCombo_Callback(hObject, eventdata, handles)
-% hObject    handle to pointMarkerShapeCombo (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: contents = cellstr(get(hObject,'String')) returns pointMarkerShapeCombo contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from pointMarkerShapeCombo
-
-
-% --- Executes during object creation, after setting all properties.
-function pointMarkerShapeCombo_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to pointMarkerShapeCombo (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: popupmenu controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end

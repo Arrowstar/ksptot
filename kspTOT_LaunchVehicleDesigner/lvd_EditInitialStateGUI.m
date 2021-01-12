@@ -73,11 +73,6 @@ function populateGUI(handles, lvdData)
     initStateModel = lvdData.initStateModel;
     setappdata(handles.lvd_EditInitialStateGUI,'curElemSet',initStateModel.orbitModel);
     
-%     bodyInfo = initStateModel.centralBody;
-%     populateBodiesCombo(lvdData.celBodyData, handles.centralBodyCombo, false);
-%     value = findValueFromComboBox(bodyInfo.name, handles.centralBodyCombo);
-% 	  handles.centralBodyCombo.Value = value;
-    
     handles.refFrameTypeCombo.String = ReferenceFrameEnum.getListBoxStr();
     handles.refFrameTypeCombo.Value = ReferenceFrameEnum.getIndForName(initStateModel.orbitModel.frame.typeEnum.name);
     handles.setFrameOptionsButton.TooltipString = sprintf('Current Frame: %s', initStateModel.orbitModel.frame.getNameStr());   
@@ -535,6 +530,11 @@ function updateStateDueToFrameChange(handles, newFrame)
     selFrameType = contents{get(handles.refFrameTypeCombo,'Value')};
     refFrameEnum = ReferenceFrameEnum.getEnumForListboxStr(selFrameType);
     
+    if(not(isempty(newFrame)) && newFrame.typeEnum ~= refFrameEnum)
+        refFrameEnum = newFrame.typeEnum;
+        handles.refFrameTypeCombo.Value = ReferenceFrameEnum.getIndForName(refFrameEnum.name);
+    end
+    
     switch refFrameEnum
         case ReferenceFrameEnum.BodyCenteredInertial
             if(isempty(newFrame))
@@ -571,9 +571,46 @@ function updateStateDueToFrameChange(handles, newFrame)
             else
                 newFrame = TwoBodyRotatingFrame(newFrame.primaryBodyInfo, newFrame.secondaryBodyInfo, newFrame.originPt, celBodyData);
             end
+            
+        case ReferenceFrameEnum.UserDefined
+            if(isempty(newFrame))
+                numFrames = lvdData.geometry.refFrames.getNumRefFrames();
+                if(numFrames >= 1)
+                    geometricFrame = AbstractGeometricRefFrame.empty(1,0);
+                    for(i=1:length(numFrames))
+                        frame = lvdData.geometry.refFrames.getRefFrameAtInd(i);
+                        if(frame.isVehDependent() == false)
+                            geometricFrame = frame;
+                            break;
+                        end
+                    end
+
+                    if(not(isempty(geometricFrame)))
+                        newFrame = UserDefinedGeometricFrame(geometricFrame, lvdData);
+                    else
+                        bodyInfo = getSelectedBodyInfo(handles);
+                        newFrame = bodyInfo.getBodyCenteredInertialFrame();
+                        
+                        warndlg('There are no geometric frames available which are not dependent on vehicle properties.  A body-centered inertial frame will be selected instead.');
+                    end
+                else
+                    bodyInfo = getSelectedBodyInfo(handles);
+                    newFrame = bodyInfo.getBodyCenteredInertialFrame();
+                    
+                    warndlg('There are no geometric frames available which are not dependent on vehicle properties.  A body-centered inertial frame will be selected instead.');
+                end
+                
+            else
+                newFrame = UserDefinedGeometricFrame(newFrame.geometricFrame, lvdData);
+            end
 
         otherwise
-            error('Unknown reference frame type: %s', class(refFrameEnum));                
+            error('Unknown reference frame type: %s', string(refFrameEnum));                
+    end
+    
+    if(not(isempty(newFrame)) && newFrame.typeEnum ~= refFrameEnum)
+        refFrameEnum = newFrame.typeEnum;
+        handles.refFrameTypeCombo.Value = ReferenceFrameEnum.getIndForName(refFrameEnum.name);
     end
     
     try
@@ -1802,6 +1839,6 @@ function setFrameOptionsButton_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
     curElemSet = getappdata(handles.lvd_EditInitialStateGUI,'curElemSet');
     frame = curElemSet.frame;
-    newFrame = frame.editFrameDialogUI();
+    newFrame = frame.editFrameDialogUI(EditReferenceFrameContextEnum.ForState);
     
     updateStateDueToFrameChange(handles, newFrame);

@@ -22,7 +22,7 @@ function varargout = lvd_EditFixedInFrameVectorGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditFixedInFrameVectorGUI
 
-% Last Modified by GUIDE v2.5 11-Jan-2021 08:46:00
+% Last Modified by GUIDE v2.5 12-Jan-2021 12:32:12
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -58,17 +58,20 @@ function lvd_EditFixedInFrameVectorGUI_OpeningFcn(hObject, eventdata, handles, v
     vector = varargin{1};
     setappdata(hObject, 'vector', vector);
     
+    lvdData = varargin{2};
+    setappdata(hObject, 'lvdData', lvdData);
+    
 	populateGUI(handles, vector);
     
     % Update handles structure
     guidata(hObject, handles);
 
     % UIWAIT makes lvd_EditFixedInFrameVectorGUI wait for user response (see UIRESUME)
-    uiwait(handles.lvd_EditFixedInFramePointGUI);
+    uiwait(handles.lvd_EditFixedInFrameVectorGUI);
 
 function populateGUI(handles, vector)
     set(handles.vectorNameText,'String',vector.getName());
-    setappdata(handles.lvd_EditFixedInFramePointGUI,'curElemSet',vector.cartElem);
+    setappdata(handles.lvd_EditFixedInFrameVectorGUI,'frame',vector.frame);
     
     frame = vector.getFrame();
     handles.refFrameTypeCombo.String = ReferenceFrameEnum.getListBoxStr();
@@ -114,7 +117,7 @@ function varargout = lvd_EditFixedInFrameVectorGUI_OutputFcn(hObject, eventdata,
         vector.lineSpec = LineSpecEnum.getEnumForListboxStr(str);
         
         varargout{1} = true;
-        close(handles.lvd_EditFixedInFramePointGUI);
+        close(handles.lvd_EditFixedInFrameVectorGUI);
     end
 
 
@@ -126,7 +129,7 @@ function saveAndCloseButton_Callback(hObject, eventdata, handles)
     errMsg = validateInputs(handles);
     
     if(isempty(errMsg))
-        uiresume(handles.lvd_EditFixedInFramePointGUI);
+        uiresume(handles.lvd_EditFixedInFrameVectorGUI);
     else
         msgbox(errMsg,'Invalid Point Inputs','error');
     end
@@ -172,7 +175,7 @@ function cancelButton_Callback(hObject, eventdata, handles)
 % hObject    handle to cancelButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-    close(handles.lvd_EditFixedInFramePointGUI);
+    close(handles.lvd_EditFixedInFrameVectorGUI);
 
 
 function vectorNameText_Callback(hObject, eventdata, handles)
@@ -223,7 +226,7 @@ end
 
 
 % --- Executes on key press with focus on lvd_EditFixedInFrameVectorGUI or any of its controls.
-function lvd_EditFixedInFramePointGUI_WindowKeyPressFcn(hObject, eventdata, handles)
+function lvd_EditFixedInFrameVectorGUI_WindowKeyPressFcn(hObject, eventdata, handles)
 % hObject    handle to lvd_EditFixedInFrameVectorGUI (see GCBO)
 % eventdata  structure with the following fields (see MATLAB.UI.FIGURE)
 %	Key: name of the key that was pressed, in lower case
@@ -236,7 +239,7 @@ function lvd_EditFixedInFramePointGUI_WindowKeyPressFcn(hObject, eventdata, hand
         case 'enter'
             saveAndCloseButton_Callback(handles.saveAndCloseButton, [], handles);
         case 'escape'
-            close(handles.lvd_EditFixedInFramePointGUI);
+            close(handles.lvd_EditFixedInFrameVectorGUI);
     end
 
 
@@ -350,8 +353,10 @@ function refFrameTypeCombo_Callback(hObject, eventdata, handles)
 
     
 function frameUpdated(handles)
-    curElemSet = getappdata(handles.lvd_EditFixedInFramePointGUI,'curElemSet');
-    bodyInfo = curElemSet.frame.getOriginBody();   
+    lvdData = getappdata(handles.lvd_EditFixedInFrameVectorGUI, 'lvdData');
+    
+    frame = getappdata(handles.lvd_EditFixedInFrameVectorGUI,'frame'); %curElemSet
+    bodyInfo = frame.getOriginBody();    
     
     contents = cellstr(get(handles.refFrameTypeCombo,'String'));
     selFrameType = contents{get(handles.refFrameTypeCombo,'Value')};
@@ -365,8 +370,8 @@ function frameUpdated(handles)
             newFrame = bodyInfo.getBodyFixedFrame();
             
         case ReferenceFrameEnum.TwoBodyRotating       
-            if(curElemSet.frame.typeEnum == ReferenceFrameEnum.TwoBodyRotating)
-                newFrame = curElemSet.frame;
+            if(frame.typeEnum == ReferenceFrameEnum.TwoBodyRotating)
+                newFrame = frame;
             else
                 if(not(isempty(bodyInfo.childrenBodyInfo)))
                     primaryBody = bodyInfo;
@@ -380,11 +385,27 @@ function frameUpdated(handles)
                 
                 newFrame = TwoBodyRotatingFrame(primaryBody, secondaryBody, originPt, bodyInfo.celBodyData);
             end
+            
+        case ReferenceFrameEnum.UserDefined
+            numFrames = lvdData.geometry.refFrames.getNumRefFrames();
+            if(numFrames >= 1)
+                geometricFrame = lvdData.geometry.refFrames.getRefFrameAtInd(1);
+                newFrame = UserDefinedGeometricFrame(geometricFrame, lvdData);
+            else
+                newFrame = bodyInfo.getBodyCenteredInertialFrame();
+                warndlg('There are no geometric frames available.  A body-centered inertial frame will be selected instead.');
+            end
+            
         otherwise
-            error('Unknown reference frame type: %s', class(refFrameEnum));                
+            error('Unknown reference frame type: %s', string(refFrameEnum));                
     end
     
-    curElemSet.frame = newFrame;
+    if(not(isempty(newFrame)) && newFrame.typeEnum ~= refFrameEnum)
+        refFrameEnum = newFrame.typeEnum;
+        handles.refFrameTypeCombo.Value = ReferenceFrameEnum.getIndForName(refFrameEnum.name);
+    end
+    
+    setappdata(handles.lvd_EditFixedInFrameVectorGUI,'frame',newFrame);
     handles.setFrameOptionsButton.TooltipString = sprintf('Current Frame: %s', newFrame.getNameStr()); 
     
 
@@ -406,12 +427,10 @@ function setFrameOptionsButton_Callback(hObject, eventdata, handles)
 % hObject    handle to setFrameOptionsButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-    curElemSet = getappdata(handles.lvd_EditFixedInFramePointGUI,'curElemSet');
+    frame = getappdata(handles.lvd_EditFixedInFrameVectorGUI,'frame');
 
-    frame = curElemSet.frame;
-    newFrame = frame.editFrameDialogUI();
-    curElemSet.frame = newFrame;
+    newFrame = frame.editFrameDialogUI(EditReferenceFrameContextEnum.ForGeometry);
     
-    setappdata(handles.lvd_EditFixedInFramePointGUI,'curElemSet',curElemSet);
+    setappdata(handles.lvd_EditFixedInFrameVectorGUI,'frame',newFrame);
     
     frameUpdated(handles);

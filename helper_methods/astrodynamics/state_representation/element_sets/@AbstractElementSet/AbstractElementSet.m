@@ -32,11 +32,11 @@ classdef (Abstract) AbstractElementSet < matlab.mixin.SetGet & matlab.mixin.Cust
             rVect1 = cartElemSet.rVect;
             vVect1 = cartElemSet.vVect;
             
-            [posOffsetOrigin12, velOffsetOrigin12, angVelWrtOrigin12, rotMatToInertial12] = obj.frame.getOffsetsWrtInertialOrigin(obj.time);
+            [posOffsetOrigin12, velOffsetOrigin12, angVelWrtOrigin12, rotMatToInertial12] = obj.frame.getOffsetsWrtInertialOrigin(obj.time, cartElemSet);
             rVect2 = posOffsetOrigin12 + rotMatToInertial12*rVect1;
             vVect2 = velOffsetOrigin12 + rotMatToInertial12*(vVect1 + crossARH(angVelWrtOrigin12, rVect1));
             
-            [posOffsetOrigin32, velOffsetOrigin32, angVelWrtOrigin32, rotMatToInertial32] = toFrame.getOffsetsWrtInertialOrigin(obj.time);
+            [posOffsetOrigin32, velOffsetOrigin32, angVelWrtOrigin32, rotMatToInertial32] = toFrame.getOffsetsWrtInertialOrigin(obj.time, cartElemSet);
             rVect3 = rotMatToInertial32'*(rVect2 - posOffsetOrigin32);
             vVect3 = rotMatToInertial32'*(vVect2 - velOffsetOrigin32) - crossARH(angVelWrtOrigin32, rVect3);
             

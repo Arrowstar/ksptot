@@ -34,6 +34,10 @@ classdef CelestialBodyPoint < AbstractGeometricPoint
             useTf = lvd_EditCelestialBodyPointGUI(obj);
         end
         
+        function tf = isVehDependent(obj)
+            tf = false;
+        end
+        
         function bodyInfo = getOriginBody(obj)
             bodyInfo = obj.bodyInfo;
         end

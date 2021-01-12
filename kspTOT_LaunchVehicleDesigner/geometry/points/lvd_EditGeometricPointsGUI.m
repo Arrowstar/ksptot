@@ -161,7 +161,7 @@ function addPointButton_Callback(hObject, eventdata, handles)
         switch enum
             case GeometricPointEnum.FixedInFrame
                 frame = lvdData.getDefaultInitialBodyInfo(lvdData.celBodyData).getBodyCenteredInertialFrame();
-                newPoint = FixedPointInFrame([0;0;0], frame, 'New Point');
+                newPoint = FixedPointInFrame([0;0;0], frame, 'New Point', lvdData);
                 
             case GeometricPointEnum.CelestialBody
                 bodyInfo = lvdData.getDefaultInitialBodyInfo(lvdData.celBodyData);
@@ -204,7 +204,7 @@ function removePointButton_Callback(hObject, eventdata, handles)
     selPtInd = handles.pointsListBox.Value;
     selPt = lvdData.geometry.points.getPointAtInd(selPtInd);
 
-    tf = selPt.isInUse();
+    tf = selPt.isInUse(lvdData);
 
     if(tf == false)
         lvdData.geometry.points.removePoint(selPt);

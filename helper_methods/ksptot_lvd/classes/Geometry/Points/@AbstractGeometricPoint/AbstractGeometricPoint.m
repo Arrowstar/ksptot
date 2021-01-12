@@ -23,6 +23,8 @@ classdef AbstractGeometricPoint < matlab.mixin.SetGet & matlab.mixin.Heterogeneo
         
         useTf = openEditDialog(obj)
         
+        tf = isVehDependent(obj)
+        
         bodyInfo = getOriginBody(obj)
         
         tf = usesGroundObj(obj, groundObj)

@@ -46,11 +46,13 @@ classdef GenericQuatInterpSteeringModel < AbstractSteeringModel
             end
             
             elemSet = CartesianElementSet(ut, rVect(:), vVect(:), bodyInfo.getBodyCenteredInertialFrame());
-            elemSet = elemSet.convertToFrame(obj.refFrame);
+            if(not(isempty(obj.refFrame.getOriginBody())))
+                elemSet = elemSet.convertToFrame(obj.refFrame);
+            end
             
             [alphaAng, betaAng, gammaAng] = quat2angle(q, 'ZYX');
             
-            dcm = obj.controlFrame.computeDcmToInertialFrame(elemSet.time, elemSet.rVect, elemSet.vVect, elemSet.frame.getOriginBody(), gammaAng, betaAng, alphaAng, obj.refFrame);
+            dcm = obj.controlFrame.computeDcmToInertialFrame(elemSet.time, elemSet.rVect, elemSet.vVect, elemSet.frame, gammaAng, betaAng, alphaAng, obj.refFrame);
             dcm = real(dcm);
         end
         

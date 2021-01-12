@@ -31,9 +31,13 @@ classdef VehiclePoint < AbstractGeometricPoint
             useTf = lvd_EditVehiclePointGUI(obj);
         end
         
+        function tf = isVehDependent(obj)
+            tf = true;
+        end
+        
         function bodyInfo = getOriginBody(obj)
-%             bodyInfo = KSPTOT_BodyInfo.empty(1,0); %this may be a problem later
-            error("Can't do this.")
+            bodyInfo = KSPTOT_BodyInfo.empty(1,0); %this may be a problem later
+%             warning("Request for vehicle point origin body.")
         end
         
         function tf = usesGroundObj(~, ~)

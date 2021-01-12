@@ -17,6 +17,8 @@ classdef AbstractGeometricCoordSystem < matlab.mixin.SetGet & matlab.mixin.Heter
         
         useTf = openEditDialog(obj)
         
+        tf = isVehDependent(obj)
+        
         tf = usesGeometricPoint(obj, point)
         
         tf = usesGeometricVector(obj, vector)

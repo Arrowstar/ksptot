@@ -160,7 +160,7 @@ function addVectorButton_Callback(hObject, eventdata, handles)
         switch enum
             case GeometricVectorEnum.FixedInFrame
                 frame = lvdData.getDefaultInitialBodyInfo(lvdData.celBodyData).getBodyCenteredInertialFrame();
-                newVector = FixedVectorInFrame([1;0;0], frame, 'New Vector');
+                newVector = FixedVectorInFrame([1;0;0], frame, 'New Vector', lvdData);
                 
             case GeometricVectorEnum.TwoPoint
                 numPoints = lvdData.geometry.points.getNumPoints();

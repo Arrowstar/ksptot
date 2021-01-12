@@ -49,11 +49,11 @@ classdef LaunchVehicleViewProfileRefFrameData < matlab.mixin.SetGet
                     z = zInterp(time);
                     
                     vehElemSet = CartesianElementSet(time, [x;y;z], [0;0;0], obj.viewFrame);
-                    [posOffsetOrigin, ~, rotMatToInertial] = obj.refFrame.getRefFrameAtTime(time, vehElemSet, obj.viewFrame);
+                    [posOffsetOrigin, ~, ~, rotMatToInertial] = obj.refFrame.getRefFrameAtTime(time, vehElemSet, obj.viewFrame);
                     
-                    xAxis = [posOffsetOrigin(:), posOffsetOrigin(:) + rotMatToInertial(1,:)'*100];
-                    yAxis = [posOffsetOrigin(:), posOffsetOrigin(:) + rotMatToInertial(2,:)'*100];
-                    zAxis = [posOffsetOrigin(:), posOffsetOrigin(:) + rotMatToInertial(3,:)'*100];
+                    xAxis = [posOffsetOrigin(:), posOffsetOrigin(:) + rotMatToInertial(:,1)*100];
+                    yAxis = [posOffsetOrigin(:), posOffsetOrigin(:) + rotMatToInertial(:,2)*100];
+                    zAxis = [posOffsetOrigin(:), posOffsetOrigin(:) + rotMatToInertial(:,3)*100];
                     
                     hold(hAx,'on');
                     obj.markerPlot(end+1) = plot3(hAx, xAxis(1,:), xAxis(2,:), xAxis(3,:), 'r-');

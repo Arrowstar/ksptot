@@ -10,7 +10,8 @@ classdef NedControlFrame < AbstractControlFrame
             
         end
         
-        function dcm = computeDcmToInertialFrame(~, ut, rVect, vVect, bodyInfo, gammaAng, betaAng, alphaAng, ~)
+        function dcm = computeDcmToInertialFrame(~, ut, rVect, vVect, frame, gammaAng, betaAng, alphaAng, ~)
+            bodyInfo = frame.getOriginBody();
             [~, ~, ~, dcm] = computeBodyAxesFromEuler(ut, rVect, vVect, bodyInfo, gammaAng, betaAng, alphaAng);
         end
         

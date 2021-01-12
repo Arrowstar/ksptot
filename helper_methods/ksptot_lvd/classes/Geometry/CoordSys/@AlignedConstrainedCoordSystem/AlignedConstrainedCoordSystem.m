@@ -26,10 +26,22 @@ classdef AlignedConstrainedCoordSystem < AbstractGeometricCoordSystem
         end
         
         function [rotMatToInertial] = getCoordSysAtTime(obj, time, vehElemSet, inFrame)
-            aVect = normVector(obj.aVector.getVectorAtTime(time, vehElemSet, inFrame));
+            aVect = obj.aVector.getVectorAtTime(time, vehElemSet, inFrame);
+            if(norm(aVect) == 0)
+                aVect = [1;0;0];
+            else
+                aVect = normVector(aVect);
+            end
+            
             aVectAxis = obj.aVectorAxis.vect;
             
-            cVect = normVector(obj.cVector.getVectorAtTime(time, vehElemSet, inFrame));
+            cVect = obj.cVector.getVectorAtTime(time, vehElemSet, inFrame);
+            if(norm(cVect) == 0)
+                cVect = [0;0;1];
+            else
+                cVect = normVector(cVect);
+            end
+            
             cVectAxis = obj.cVectorAxis.vect;
             
             cVectAA = vrrotvec(cVect,cVectAxis);
@@ -39,7 +51,7 @@ classdef AlignedConstrainedCoordSystem < AbstractGeometricCoordSystem
             aVectAA = vrrotvec(aVectAR,aVectAxis);
             aVectR = axang2rotm(aVectAA);
 
-            rotMatToInertial = aVectR * cVectR;
+            rotMatToInertial = (aVectR * cVectR)';
         end
         
         function name = getName(obj)
@@ -56,6 +68,11 @@ classdef AlignedConstrainedCoordSystem < AbstractGeometricCoordSystem
         
         function useTf = openEditDialog(obj)
             useTf = lvd_EditAlignedConstrainedCoordSysGUI(obj, obj.lvdData);
+        end
+        
+        function tf = isVehDependent(obj)
+            tf = obj.aVector.isVehDependent() || ...
+                 obj.cVector.isVehDependent();
         end
         
         function tf = usesGeometricPoint(~, ~)

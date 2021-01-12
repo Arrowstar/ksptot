@@ -34,6 +34,10 @@ classdef GroundObjectPoint < AbstractGeometricPoint
             useTf = lvd_EditGroundObjPointGUI(obj);
         end
         
+        function tf = isVehDependent(obj)
+            tf = false;
+        end
+        
         function bodyInfo = getOriginBody(obj)
             bodyInfo = obj.groundObj.centralBodyInfo;
         end

@@ -43,6 +43,10 @@ classdef ScaledVector < AbstractGeometricVector
             useTf = lvd_EditScaledVectorGUI(obj, obj.lvdData);
         end
         
+        function tf = isVehDependent(obj)
+            tf = obj.vector.isVehDependent();
+        end
+        
         function tf = usesGeometricPoint(~, ~)
             tf = false;
         end

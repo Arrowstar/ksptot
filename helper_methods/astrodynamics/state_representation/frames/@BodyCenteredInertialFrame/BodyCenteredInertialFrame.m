@@ -17,7 +17,7 @@ classdef BodyCenteredInertialFrame < AbstractReferenceFrame
             obj.celBodyData = celBodyData;
         end
         
-        function [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = getOffsetsWrtInertialOrigin(obj, time)
+        function [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = getOffsetsWrtInertialOrigin(obj, time, ~)
             [rVectB, vVectB] = getPositOfBodyWRTSun(time, obj.bodyInfo, obj.celBodyData);
             
             posOffsetOrigin = rVectB;
@@ -38,7 +38,7 @@ classdef BodyCenteredInertialFrame < AbstractReferenceFrame
             nameStr = sprintf('Inertial Frame (Origin: %s)', obj.bodyInfo.name);
         end
         
-        function newFrame = editFrameDialogUI(obj)
+        function newFrame = editFrameDialogUI(obj, ~)
             if(isempty(obj.celBodyData))
                 obj.celBodyData = obj.bodyInfo.celBodyData;
             end

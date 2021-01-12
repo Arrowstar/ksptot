@@ -3,7 +3,7 @@ classdef GeometricRefFrameSet < matlab.mixin.SetGet
     %   Detailed explanation goes here
     
     properties
-        refFrames(1,:) CoordSysPointRefFrame = CoordSysPointRefFrame.empty(1,0);
+        refFrames(1,:) AbstractGeometricRefFrame = AbstractGeometricRefFrame.empty(1,0);
         
         lvdData LvdData
     end
@@ -35,7 +35,7 @@ classdef GeometricRefFrameSet < matlab.mixin.SetGet
             indCoordSyses = obj.refFrames(inds);
         end
         
-        function inds = getIndsForCoordSyses(obj, indRefFrames)
+        function inds = getIndsForRefFrames(obj, indRefFrames)
             inds = find(ismember(obj.refFrames, indRefFrames));
         end
         

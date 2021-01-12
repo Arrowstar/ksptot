@@ -49,6 +49,11 @@ classdef TwoPointVector < AbstractGeometricVector
             useTf = lvd_EditTwoPointVectorGUI(obj, obj.lvdData);
         end
         
+        function tf = isVehDependent(obj)
+            tf = obj.point1.isVehDependent() || ...
+                 obj.point2.isVehDependent();
+        end
+        
         function tf = usesGeometricPoint(obj, point)
             tf = point == obj.point1 || ...
                  point == obj.point2;
