@@ -576,7 +576,7 @@ function trajViewFrameCombo_Callback(hObject, eventdata, handles)
             numFrames = lvdData.geometry.refFrames.getNumRefFrames();
             if(numFrames >= 1)
                 geometricFrame = AbstractGeometricRefFrame.empty(1,0);
-                for(i=1:length(numFrames))
+                for(i=1:numFrames)
                     frame = lvdData.geometry.refFrames.getRefFrameAtInd(i);
                     if(frame.isVehDependent() == false)
                         geometricFrame = frame;
@@ -587,7 +587,6 @@ function trajViewFrameCombo_Callback(hObject, eventdata, handles)
                 if(not(isempty(geometricFrame)))
                     newFrame = UserDefinedGeometricFrame(geometricFrame, lvdData);
                 else
-                    bodyInfo = getSelectedBodyInfo(handles);
                     newFrame = bodyInfo.getBodyCenteredInertialFrame();
 
                     warndlg('There are no geometric frames available which are not dependent on vehicle properties.  A body-centered inertial frame will be selected instead.');

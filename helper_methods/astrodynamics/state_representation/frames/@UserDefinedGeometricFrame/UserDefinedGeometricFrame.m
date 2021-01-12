@@ -41,7 +41,8 @@ classdef UserDefinedGeometricFrame < AbstractReferenceFrame
             if(numFrames >= 1)
                 [listBoxStr, frames] = obj.lvdData.geometry.refFrames.getListboxStr();
                 
-                if(context == EditReferenceFrameContextEnum.ForState) %can't have vehicle dependent frames for states
+                if(context == EditReferenceFrameContextEnum.ForState || ...
+                   context == EditReferenceFrameContextEnum.ForView)    %can't have vehicle dependent frames for states
                     goodInds = [];
                     for(i=1:length(frames))
                         if(frames(i).isVehDependent() == false)

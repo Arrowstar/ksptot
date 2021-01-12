@@ -926,7 +926,7 @@ function updateStateDueToFrameChange(handles, newFrame)
                 numFrames = lvdData.geometry.refFrames.getNumRefFrames();
                 if(numFrames >= 1)
                     geometricFrame = AbstractGeometricRefFrame.empty(1,0);
-                    for(i=1:length(numFrames))
+                    for(i=1:numFrames)
                         frame = lvdData.geometry.refFrames.getRefFrameAtInd(i);
                         if(frame.isVehDependent() == false)
                             geometricFrame = frame;
