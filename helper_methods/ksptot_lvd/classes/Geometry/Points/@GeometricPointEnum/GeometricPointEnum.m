@@ -7,6 +7,7 @@ classdef GeometricPointEnum < matlab.mixin.SetGet
         GroundObj('Ground Object Point');
         CelestialBody('Celestial Body Point');
         Vehicle('Vehicle Point');
+        TwoBody('Two Body Point');
     end
     
     properties

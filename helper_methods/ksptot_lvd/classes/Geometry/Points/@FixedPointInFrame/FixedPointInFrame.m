@@ -8,6 +8,14 @@ classdef FixedPointInFrame < AbstractGeometricPoint
         name(1,:) char
         
         lvdData LvdData
+        
+        %marker
+        markerColor(1,1) ColorSpecEnum = ColorSpecEnum.Red;
+        markerShape(1,1) MarkerStyleEnum = MarkerStyleEnum.RightTriangle;
+        
+        %track line
+        trkLineColor(1,1) ColorSpecEnum = ColorSpecEnum.Black;
+        trkLineSpec(1,1) LineSpecEnum = LineSpecEnum.DottedLine;
     end
     
     methods
@@ -34,7 +42,7 @@ classdef FixedPointInFrame < AbstractGeometricPoint
             listboxStr = sprintf('%s (Fixed in Frame: %s)', obj.getName(), obj.cartElem.frame.getNameStr());
         end
         
-        function useTf = openEditDialog(obj)
+        function useTf = openEditDialog(obj, ~)
             useTf = lvd_EditFixedInFramePointGUI(obj, obj.lvdData);
         end
         

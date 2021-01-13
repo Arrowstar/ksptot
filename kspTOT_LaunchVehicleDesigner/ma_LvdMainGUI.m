@@ -2635,9 +2635,10 @@ function editPointsMenu_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
     lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    hKsptotMainGUI = getappdata(hObject,'ksptotMainGUI');
     
     addUndoState(handles,'Edit Points');
-    lvd_EditGeometricPointsGUI(lvdData);
+    lvd_EditGeometricPointsGUI(lvdData, hKsptotMainGUI);
     
     runScript(handles, lvdData, 1);
     lvd_processData(handles);

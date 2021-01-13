@@ -30,7 +30,7 @@ classdef CelestialBodyPoint < AbstractGeometricPoint
             listboxStr = sprintf('%s (Celestial Body: %s)', obj.getName(), obj.bodyInfo.name);
         end
         
-        function useTf = openEditDialog(obj)
+        function useTf = openEditDialog(obj, ~)
             useTf = lvd_EditCelestialBodyPointGUI(obj);
         end
         

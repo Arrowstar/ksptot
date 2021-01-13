@@ -283,7 +283,7 @@ function varargout = lvd_EditInitialStateGUI_OutputFcn(hObject, eventdata, handl
                 ub(4:6) = deg2rad(ub(4:6));
 
             otherwise
-                error('Unknown element set type: %s', class(elemSetEnum));
+                error('Unknown element set type: %s', string(elemSetEnum));
         end
         
         optVar.setBndsForVariable(lb, ub);
@@ -1503,8 +1503,6 @@ function getOrbitFromSFSFileContextMenu_Callback(hObject, eventdata, handles)
         
         curElemSet.frame.setOriginBody(bodyInfo);
         updateStateDueToFrameChange(handles, AbstractReferenceFrame.empty(1,0));
-%         value = findValueFromComboBox(bodyInfo.name, handles.centralBodyCombo);
-%         set(handles.centralBodyCombo,'Value',value);
     end
 
 % --------------------------------------------------------------------
@@ -1544,12 +1542,8 @@ function getOrbitFromKSPTOTConnectContextMenu_Callback(hObject, eventdata, handl
         curElemSet = getCurrentElemSetFromExistingValues(handles);
         setappdata(handles.lvd_EditInitialStateGUI,'curElemSet',curElemSet);
         
-%         curElemSet = getappdata(handles.lvd_EditInitialStateGUI,'curElemSet');
         curElemSet.frame.setOriginBody(bodyInfo);
         updateStateDueToFrameChange(handles, AbstractReferenceFrame.empty(1,0));
-        
-%         value = findValueFromComboBox(bodyInfo.name, handles.centralBodyCombo);
-%         set(handles.centralBodyCombo,'Value',value);
     end
 
 
@@ -1590,12 +1584,8 @@ function getOrbitFromKSPActiveVesselMenu_Callback(hObject, eventdata, handles)
         curElemSet = getCurrentElemSetFromExistingValues(handles);
         setappdata(handles.lvd_EditInitialStateGUI,'curElemSet',curElemSet);
         
-%         curElemSet = getappdata(handles.lvd_EditInitialStateGUI,'curElemSet');
         curElemSet.frame.setOriginBody(bodyInfo);
         updateStateDueToFrameChange(handles, AbstractReferenceFrame.empty(1,0));
-        
-%         value = findValueFromComboBox(bodyInfo.name, handles.centralBodyCombo);
-%         set(handles.centralBodyCombo,'Value',value);
     end
 
 % --------------------------------------------------------------------
@@ -1603,12 +1593,6 @@ function copyOrbitToClipboardMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to copyOrbitToClipboardMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-% 	  lvdData = getappdata(handles.lvd_EditInitialStateGUI,'lvdData');
-%     celBodyData = lvdData.celBodyData;
-    
-%     contents = cellstr(get(handles.centralBodyCombo,'String'));
-%     selected = strtrim(contents{get(handles.centralBodyCombo,'Value')});
-%     bodyInfo = celBodyData.(lower(selected));
     bodyInfo = getSelectedBodyInfo(handles);
 
     o1V = handles.orbit1Text.String;

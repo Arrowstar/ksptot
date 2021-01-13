@@ -3,13 +3,7 @@ classdef AbstractGeometricPoint < matlab.mixin.SetGet & matlab.mixin.Heterogeneo
     %   Detailed explanation goes here
     
     properties
-        %marker
-        markerColor(1,1) ColorSpecEnum = ColorSpecEnum.Red;
-        markerShape(1,1) MarkerStyleEnum = MarkerStyleEnum.RightTriangle;
-        
-        %track line
-        trkLineColor(1,1) ColorSpecEnum = ColorSpecEnum.Black;
-        trkLineSpec(1,1) LineSpecEnum = LineSpecEnum.DottedLine;
+
     end
     
     methods        
@@ -21,7 +15,7 @@ classdef AbstractGeometricPoint < matlab.mixin.SetGet & matlab.mixin.Heterogeneo
         
         listboxStr = getListboxStr(obj)
         
-        useTf = openEditDialog(obj)
+        useTf = openEditDialog(obj, hKsptotMainGUI)
         
         tf = isVehDependent(obj)
         

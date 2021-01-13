@@ -51,14 +51,15 @@ classdef LaunchVehicleViewProfileRefFrameData < matlab.mixin.SetGet
                     vehElemSet = CartesianElementSet(time, [x;y;z], [0;0;0], obj.viewFrame);
                     [posOffsetOrigin, ~, ~, rotMatToInertial] = obj.refFrame.getRefFrameAtTime(time, vehElemSet, obj.viewFrame);
                     
-                    xAxis = [posOffsetOrigin(:), posOffsetOrigin(:) + rotMatToInertial(:,1)*100];
-                    yAxis = [posOffsetOrigin(:), posOffsetOrigin(:) + rotMatToInertial(:,2)*100];
-                    zAxis = [posOffsetOrigin(:), posOffsetOrigin(:) + rotMatToInertial(:,3)*100];
+                    scaleFactor = obj.refFrame.scaleFactor;
+                    xAxis = [posOffsetOrigin(:), posOffsetOrigin(:) + rotMatToInertial(:,1)*scaleFactor];
+                    yAxis = [posOffsetOrigin(:), posOffsetOrigin(:) + rotMatToInertial(:,2)*scaleFactor];
+                    zAxis = [posOffsetOrigin(:), posOffsetOrigin(:) + rotMatToInertial(:,3)*scaleFactor];
                     
                     hold(hAx,'on');
-                    obj.markerPlot(end+1) = plot3(hAx, xAxis(1,:), xAxis(2,:), xAxis(3,:), 'r-');
-                    obj.markerPlot(end+1) = plot3(hAx, yAxis(1,:), yAxis(2,:), yAxis(3,:), 'g-');
-                    obj.markerPlot(end+1) = plot3(hAx, zAxis(1,:), zAxis(2,:), zAxis(3,:), 'b-');
+                    obj.markerPlot(end+1) = plot3(hAx, xAxis(1,:), xAxis(2,:), xAxis(3,:), 'Color',obj.refFrame.xAxisColor.color, 'LineWidth',obj.refFrame.xAxisLineWidth, 'LineStyle',obj.refFrame.xAxisLineSpec.linespec);
+                    obj.markerPlot(end+1) = plot3(hAx, yAxis(1,:), yAxis(2,:), yAxis(3,:), 'Color',obj.refFrame.yAxisColor.color, 'LineWidth',obj.refFrame.yAxisLineWidth, 'LineStyle',obj.refFrame.yAxisLineSpec.linespec);
+                    obj.markerPlot(end+1) = plot3(hAx, zAxis(1,:), zAxis(2,:), zAxis(3,:), 'Color',obj.refFrame.zAxisColor.color, 'LineWidth',obj.refFrame.zAxisLineWidth, 'LineStyle',obj.refFrame.zAxisLineSpec.linespec);
                     hold(hAx,'off');
                 end
             end

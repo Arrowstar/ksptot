@@ -27,7 +27,7 @@ classdef VehiclePoint < AbstractGeometricPoint
             listboxStr = sprintf('%s (Vehicle)', obj.getName());
         end
         
-        function useTf = openEditDialog(obj)
+        function useTf = openEditDialog(obj, ~)
             useTf = lvd_EditVehiclePointGUI(obj);
         end
         

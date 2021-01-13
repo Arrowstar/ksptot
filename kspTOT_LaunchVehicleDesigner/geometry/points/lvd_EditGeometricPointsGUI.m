@@ -58,6 +58,8 @@ function lvd_EditGeometricPointsGUI_OpeningFcn(hObject, eventdata, handles, vara
     lvdData = varargin{1};
     setappdata(hObject,'lvdData',lvdData);
     
+    handles.hKsptotMainGUI = varargin{2};
+    
     populateGUI(handles, lvdData);
     
     % Update handles structure
@@ -121,7 +123,7 @@ function pointsListBox_Callback(hObject, eventdata, handles)
         selPtInd = hObject.Value;
         selPt = lvdData.geometry.points.getPointAtInd(selPtInd);
         
-        selPt.openEditDialog();
+        selPt.openEditDialog(handles.hKsptotMainGUI);
         
         populateGUI(handles, lvdData);
     end
@@ -180,11 +182,16 @@ function addPointButton_Callback(hObject, eventdata, handles)
             case GeometricPointEnum.Vehicle
                 newPoint = VehiclePoint('New Point');
                 
+            case GeometricPointEnum.TwoBody
+                bodyInfo = lvdData.getDefaultInitialBodyInfo(lvdData.celBodyData);
+                elemSet = KeplerianElementSet(0, bodyInfo.radius+100, 0, 0, 0, 0, 0, bodyInfo.getBodyCenteredInertialFrame());
+                newPoint = TwoBodyPoint(elemSet, 'New Point', lvdData);
+                
             otherwise
-                error('Unknown Point Type Type: %s', enum.name)
+                error('Unknown Point Type Type: %s', string(enum))
         end
         
-        useTF = newPoint.openEditDialog();
+        useTF = newPoint.openEditDialog(handles.hKsptotMainGUI);
         
         if(useTF)
             lvdData.geometry.points.addPoint(newPoint);
