@@ -28,6 +28,8 @@ classdef TwoBodyPoint < AbstractGeometricPoint
         vzInterps(1,:) cell = {};
         cbArr(1,:) KSPTOT_BodyInfo = KSPTOT_BodyInfo.empty(1,0);
         
+        rVectArr(1,:) cell = {};
+        
         markerPlot = matlab.graphics.GraphicsPlaceholder.empty(1,0);
     end
     
@@ -159,7 +161,11 @@ classdef TwoBodyPoint < AbstractGeometricPoint
         end
         
         function tf = isVehDependent(~)
-            tf = false; %maybe need to set this to true
+            tf = true; %maybe need to set this to true
+        end
+        
+        function tf = canBePlotted(obj)
+            tf = true;
         end
         
         function bodyInfo = getOriginBody(obj)
@@ -195,7 +201,7 @@ classdef TwoBodyPoint < AbstractGeometricPoint
         function newStateLogEntries = doTwoBodyProp(obj, initState, evt, propToTime)
             evtDur = propToTime - initState.time;
             evt.termCond = EventDurationTermCondition(abs(evtDur));
-            evt.integratorObj = evt.ode45Integrator;
+            evt.integratorObj = evt.ode113Integrator;
             evt.integratorObj.getOptions().integratorStepSize = evtDur/1000;
             evt.propagatorObj = evt.twoBodyPropagator;
             
@@ -224,8 +230,9 @@ classdef TwoBodyPoint < AbstractGeometricPoint
         end
         
         function addDataToCache(obj, times, rVects, vVects, bodyInfo)
-            obj.timesArr(end+1) = {times};
+            obj.timesArr{end+1} = times;
             obj.cbArr(end+1) = bodyInfo;
+            obj.rVectArr{end+1} = rVects;
             
             if(length(times) >= 3)
                 method = 'spline';

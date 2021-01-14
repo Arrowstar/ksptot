@@ -35,6 +35,10 @@ classdef VehiclePoint < AbstractGeometricPoint
             tf = true;
         end
         
+        function tf = canBePlotted(obj)
+            tf = false;
+        end
+        
         function bodyInfo = getOriginBody(obj)
             bodyInfo = KSPTOT_BodyInfo.empty(1,0); %this may be a problem later
 %             warning("Request for vehicle point origin body.")

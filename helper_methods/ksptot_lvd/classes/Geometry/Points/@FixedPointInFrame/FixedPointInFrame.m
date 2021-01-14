@@ -50,6 +50,10 @@ classdef FixedPointInFrame < AbstractGeometricPoint
             tf = false;
         end
         
+        function tf = canBePlotted(obj)
+            tf = true;
+        end
+        
         function bodyInfo = getOriginBody(obj)
             bodyInfo = obj.cartElem.frame.getOriginBody();
         end

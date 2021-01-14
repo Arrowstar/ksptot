@@ -200,6 +200,8 @@ function removeRefFrameButton_Callback(hObject, eventdata, handles)
     if(tf == false)
         lvdData.geometry.refFrames.removeRefFrame(selRefFrame);
         
+        lvdData.viewSettings.removeGeoRefFrameFromList(selRefFrame);
+        
         populateGUI(handles, lvdData);
 
         numRefFrames = lvdData.geometry.refFrames.getNumRefFrames();

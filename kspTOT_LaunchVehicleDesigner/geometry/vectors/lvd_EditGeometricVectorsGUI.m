@@ -223,6 +223,8 @@ function removeVectorButton_Callback(hObject, eventdata, handles)
     if(tf == false)
         lvdData.geometry.vectors.removeVector(selVector);
         
+        lvdData.viewSettings.removeGeoVectorFromList(selVector);
+        
         populateGUI(handles, lvdData);
 
         numVectors = lvdData.geometry.vectors.getNumVectors();

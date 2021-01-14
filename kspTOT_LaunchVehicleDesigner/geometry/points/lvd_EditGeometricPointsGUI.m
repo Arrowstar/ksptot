@@ -216,6 +216,8 @@ function removePointButton_Callback(hObject, eventdata, handles)
     if(tf == false)
         lvdData.geometry.points.removePoint(selPt);
         
+        lvdData.viewSettings.removeGeoPointFromViewProfiles(selPt);
+        
         populateGUI(handles, lvdData);
 
         numPoints = lvdData.geometry.points.getNumPoints();

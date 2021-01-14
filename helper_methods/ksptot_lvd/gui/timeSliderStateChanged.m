@@ -13,6 +13,7 @@ function timeSliderStateChanged(src,evt, lvdData, handles)
         markerBodyAxesData = lvdData.viewSettings.selViewProfile.markerTrajAxesData;
         markerGrdObjData = lvdData.viewSettings.selViewProfile.markerGrdObjData;
         centralBodyData = lvdData.viewSettings.selViewProfile.centralBodyData;
+        pointData = lvdData.viewSettings.selViewProfile.pointData;
         refFrameData = lvdData.viewSettings.selViewProfile.refFrameData;
         
         markerTrajData.plotBodyMarkerAtTime(time, hAx);
@@ -25,6 +26,10 @@ function timeSliderStateChanged(src,evt, lvdData, handles)
         
         for(i=1:length(markerGrdObjData))
             markerGrdObjData(i).plotBodyMarkerAtTime(time, hAx);
+        end
+        
+        for(i=1:length(pointData))
+            pointData(i).plotPointAtTime(time, hAx);
         end
         
         for(i=1:length(refFrameData))

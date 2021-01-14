@@ -38,6 +38,10 @@ classdef GroundObjectPoint < AbstractGeometricPoint
             tf = false;
         end
         
+        function tf = canBePlotted(obj)
+            tf = false;
+        end
+        
         function bodyInfo = getOriginBody(obj)
             bodyInfo = obj.groundObj.centralBodyInfo;
         end

@@ -19,6 +19,8 @@ classdef AbstractGeometricPoint < matlab.mixin.SetGet & matlab.mixin.Heterogeneo
         
         tf = isVehDependent(obj)
         
+        tf = canBePlotted(obj)
+        
         bodyInfo = getOriginBody(obj)
         
         tf = usesGroundObj(obj, groundObj)
@@ -37,6 +39,10 @@ classdef AbstractGeometricPoint < matlab.mixin.SetGet & matlab.mixin.Heterogeneo
     methods(Sealed)
         function tf = eq(a,b)
             tf = eq@handle(a,b);
+        end
+        
+        function tf = ne(a,b)
+            tf = ne@handle(a,b);
         end
     end
 end

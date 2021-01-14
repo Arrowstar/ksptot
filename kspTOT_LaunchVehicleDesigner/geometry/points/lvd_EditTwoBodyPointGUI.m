@@ -119,7 +119,7 @@ function varargout = lvd_EditTwoBodyPointGUI_OutputFcn(hObject, eventdata, handl
     if(isempty(handles))
         varargout{1} = false;
     else
-%         lvdData = getappdata(hObject,'lvdData');
+        lvdData = getappdata(hObject,'lvdData');
         point = getappdata(hObject, 'point');
         
         point.setName(handles.pointNameText.String);
@@ -138,6 +138,29 @@ function varargout = lvd_EditTwoBodyPointGUI_OutputFcn(hObject, eventdata, handl
         
         str = handles.pointLineSpecCombo.String{handles.pointLineSpecCombo.Value};
         point.trkLineSpec = LineSpecEnum.getEnumForListboxStr(str);
+        
+        maStateLog = lvdData.stateLog.getMAFormattedStateLogMatrix(false);
+        
+        stateLogMinTime = min(maStateLog(:,1));
+        if(stateLogMinTime > 0)
+            minTime = 0;
+        else
+            minTime = stateLogMinTime;
+        end
+        
+        simMaxDur = lvdData.settings.simMaxDur;
+        stateLogMaxTime = max(maStateLog(:,1));
+        if(stateLogMinTime + simMaxDur > stateLogMaxTime)
+            maxTime = stateLogMinTime + simMaxDur;
+        else
+            maxTime = stateLogMaxTime;
+        end
+        
+        hHelpDlg = helpdlg('The two body point is (re-)generating its internal state cache.  Please wait.','Creating Cache');
+        point.refeshTrajCache(minTime, maxTime);
+        if(isvalid(hHelpDlg))
+            close(hHelpDlg);
+        end
         
         varargout{1} = true;
         close(handles.lvd_EditTwoBodyPointGUI);

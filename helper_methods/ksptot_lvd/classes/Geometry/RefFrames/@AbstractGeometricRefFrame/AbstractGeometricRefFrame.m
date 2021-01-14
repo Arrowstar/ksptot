@@ -52,5 +52,9 @@ classdef AbstractGeometricRefFrame < matlab.mixin.SetGet & matlab.mixin.Heteroge
         function tf = eq(a,b)
             tf = eq@handle(a,b);
         end
+        
+        function tf = ne(a,b)
+            tf = ne@handle(a,b);
+        end
     end
 end

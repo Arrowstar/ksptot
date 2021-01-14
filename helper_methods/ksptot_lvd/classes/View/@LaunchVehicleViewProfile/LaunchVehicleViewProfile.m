@@ -57,6 +57,15 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         groundObjsToPlot(1,:) LaunchVehicleGroundObject
         showGndTracks(1,1) logical = true;
         showGrdObjLoS(1,1) logical = true;
+
+        %geometric points
+        pointsToPlot(1,:) AbstractGeometricPoint
+        
+        %geometric vectors
+        vectorsToPlot(1,:) AbstractGeometricVector
+        
+        %geometric reference frames
+        refFramesToPlot(1,:) AbstractGeometricRefFrame
         
         %central body transform
         hCBodySurfXForm = matlab.graphics.GraphicsPlaceholder();
@@ -79,6 +88,7 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         markerGrdObjData(1,:) LaunchVehicleViewProfileGroundObjData = LaunchVehicleViewProfileGroundObjData.empty(1,0);
         sunLighting(1,:) LaunchVehicleViewProfileSunLighting = LaunchVehicleViewProfileSunLighting.empty(1,0);
         centralBodyData(1,:) LaunchVehicleViewProfileCentralBodyData = LaunchVehicleViewProfileCentralBodyData.empty(1,0);
+        pointData(1,:) LaunchVehicleViewProfilePointData = LaunchVehicleViewProfilePointData.empty(1,0);
         refFrameData(1,:) LaunchVehicleViewProfileRefFrameData = LaunchVehicleViewProfileRefFrameData.empty(1,0);
         userDefinedRefFrames(1,:) 
     end
@@ -94,6 +104,18 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         
         function removeGrdObjFromList(obj, grdObj)
             obj.groundObjsToPlot([obj.groundObjsToPlot] == grdObj) = [];
+        end
+        
+        function removeGeoPointFromList(obj, point)
+            obj.pointsToPlot([obj.pointsToPlot] == point) = [];
+        end
+        
+        function removeGeoVectorFromList(obj, vector)
+            obj.vectorsToPlot([obj.vectorsToPlot] == vector) = [];
+        end
+        
+        function removeGeoRefFrameFromList(obj, refFrame)
+            obj.refFramesToPlot([obj.refFramesToPlot] == refFrame) = [];
         end
         
         function plotTrajectory(obj, lvdData, handles)
@@ -423,9 +445,30 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
             obj.markerBodyData(end+1) = bodyData;
         end
         
-        function createRefFrameData(obj, refFrameSet, viewFrame, subStateLogs, evts)
+        function createPointData(obj, viewFrame, subStateLogs, evts)
+            obj.clearPointData();
+            points = obj.pointsToPlot;
+            
+            for(i=1:length(points))
+                obj.pointData(end+1) = LaunchVehicleViewProfilePointData(points(i), viewFrame);
+            end
+            
+            for(i=1:length(subStateLogs))
+                if(size(subStateLogs{i},1) > 0)
+                    [times, rVects, ~] = LaunchVehicleViewProfile.parseTrajDataFromSubStateLogs(subStateLogs, i, evts);
+                    
+                    if(length(unique(times)) > 1)
+                        for(j=1:length(obj.pointData))
+                            obj.pointData(j).addData(times, rVects);
+                        end
+                    end
+                end
+            end
+        end
+        
+        function createRefFrameData(obj, viewFrame, subStateLogs, evts)
             obj.clearRefFrameData();
-            refFrames = refFrameSet.refFrames;
+            refFrames = obj.refFramesToPlot;
             
             for(i=1:length(refFrames))
                 obj.refFrameData(end+1) = LaunchVehicleViewProfileRefFrameData(refFrames(i), viewFrame);
@@ -443,7 +486,7 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                 end
             end
         end
-        
+               
         function clearAllTrajData(obj)
             obj.markerTrajData = LaunchVehicleViewProfileTrajectoryData.empty(1,0);
         end
@@ -458,6 +501,10 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         
         function clearAllGrdObjData(obj)
             obj.markerGrdObjData = LaunchVehicleViewProfileGroundObjData.empty(1,0);
+        end
+        
+        function clearPointData(obj)
+            obj.pointData = LaunchVehicleViewProfilePointData.empty(1,0);
         end
         
         function clearRefFrameData(obj)

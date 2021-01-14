@@ -37,15 +37,6 @@ classdef GeometricVectorSet < matlab.mixin.SetGet
         
         function inds = getIndsForVectors(obj, indVectors)
             inds = find(ismember(obj.vectors, indVectors));
-%             inds = [];
-%             for(i=1:length(indVectors))
-%                 for(j=1:length(obj.vectors))
-%                     if(indVectors(i) == obj.vectors(j))
-%                         inds(end+1) = j; %#ok<AGROW>
-%                         break;
-%                     end
-%                 end
-%             end
         end
         
         function indVector = getVectorAtInd(obj, ind)

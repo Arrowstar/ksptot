@@ -22,7 +22,7 @@ function varargout = lvd_viewSettingsGUI(varargin)
     
     % Edit the above text to modify the response to help lvd_viewSettingsGUI
     
-    % Last Modified by GUIDE v2.5 10-Dec-2020 17:54:43
+    % Last Modified by GUIDE v2.5 13-Jan-2021 15:25:11
     
     % Begin initialization code - DO NOT EDIT
     gui_Singleton = 1;
@@ -75,6 +75,12 @@ function handles = populateGUI(viewSettings, handles)
     
     grdObjSet = viewSettings.lvdData.groundObjs;
     handles.grdObjsListbox.String = grdObjSet.getListboxStr();
+    
+    geometry = viewSettings.lvdData.geometry;
+	[~, plotPointsListBoxStr] = geometry.points.getPlottablePoints();
+    handles.pointsToPlotListbox.String = plotPointsListBoxStr;
+    handles.vectorsToPlotListbox.String = geometry.vectors.getListboxStr();
+    handles.refFramessToPlotListbox.String = geometry.refFrames.getListboxStr();
     
     profile = getSelectedProfile(handles);
     updateGuiForProfile(profile, handles);
@@ -158,6 +164,11 @@ function updateGuiForProfile(profile, handles)
     handles.updateViewAxesCheckbox.Value = double(profile.updateViewAxesLimits);
     
     handles.showCbAtmo.Value = double(profile.showAtmosphere);
+    
+    geometry = viewSettings.lvdData.geometry;
+    handles.pointsToPlotListbox.Value = geometry.points.getIndsForPoints(profile.pointsToPlot);
+    handles.vectorsToPlotListbox.Value = geometry.vectors.getIndsForVectors(profile.vectorsToPlot);
+    handles.refFramessToPlotListbox.Value = geometry.refFrames.getIndsForRefFrames(profile.refFramesToPlot);
     
     setDeleteButtonEnable(handles);
     
@@ -1180,3 +1191,104 @@ function showCbAtmo_Callback(hObject, eventdata, handles)
 % Hint: get(hObject,'Value') returns toggle state of showCbAtmo
     profile = getSelectedProfile(handles);
     profile.showAtmosphere = logical(get(hObject,'Value'));
+
+
+% --- Executes on selection change in pointsToPlotListbox.
+function pointsToPlotListbox_Callback(hObject, eventdata, handles)
+% hObject    handle to pointsToPlotListbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns pointsToPlotListbox contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from pointsToPlotListbox
+    viewSettings = getappdata(handles.lvd_viewSettingsGUI,'viewSettings');
+    pointSet = viewSettings.lvdData.geometry.points;
+
+    profile = getSelectedProfile(handles);
+    
+    inds = hObject.Value;
+    if(not(isempty(inds)))
+        [plotPoints, ~] = pointSet.getPlottablePoints();
+        profile.pointsToPlot = plotPoints(inds);
+    else
+        profile.pointsToPlot = AbstractGeometricPoint.empty(1,0);
+    end
+
+
+% --- Executes during object creation, after setting all properties.
+function pointsToPlotListbox_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to pointsToPlotListbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: listbox controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in vectorsToPlotListbox.
+function vectorsToPlotListbox_Callback(hObject, eventdata, handles)
+% hObject    handle to vectorsToPlotListbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns vectorsToPlotListbox contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from vectorsToPlotListbox
+    viewSettings = getappdata(handles.lvd_viewSettingsGUI,'viewSettings');
+    vectorSet = viewSettings.lvdData.geometry.vectors;
+
+    profile = getSelectedProfile(handles);
+    
+    inds = hObject.Value;
+    if(not(isempty(inds)))
+        profile.vectorsToPlot = vectorSet.getVectorsForInds(inds);
+    else
+        profile.vectorsToPlot = AbstractGeometricVector.empty(1,0);
+    end
+
+% --- Executes during object creation, after setting all properties.
+function vectorsToPlotListbox_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to vectorsToPlotListbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: listbox controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in refFramessToPlotListbox.
+function refFramessToPlotListbox_Callback(hObject, eventdata, handles)
+% hObject    handle to refFramessToPlotListbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns refFramessToPlotListbox contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from refFramessToPlotListbox
+    viewSettings = getappdata(handles.lvd_viewSettingsGUI,'viewSettings');
+    refFrameSet = viewSettings.lvdData.geometry.refFrames;
+
+    profile = getSelectedProfile(handles);
+    
+    inds = hObject.Value;
+    if(not(isempty(inds)))
+        profile.refFramesToPlot = refFrameSet.getRefFramesForInds(inds);
+    else
+        profile.refFramesToPlot = AbstractGeometricRefFrame.empty(1,0);
+    end
+
+% --- Executes during object creation, after setting all properties.
+function refFramessToPlotListbox_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to refFramessToPlotListbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: listbox controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

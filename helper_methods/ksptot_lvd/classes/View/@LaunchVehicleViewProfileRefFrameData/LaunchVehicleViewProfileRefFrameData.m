@@ -34,7 +34,6 @@ classdef LaunchVehicleViewProfileRefFrameData < matlab.mixin.SetGet
         end
         
         function plotRefFrameAtTime(obj, time, hAx)   
-            delete(obj.markerPlot);
             for(i=1:length(obj.timesArr))
                 times = obj.timesArr{i};
                 
@@ -56,11 +55,25 @@ classdef LaunchVehicleViewProfileRefFrameData < matlab.mixin.SetGet
                     yAxis = [posOffsetOrigin(:), posOffsetOrigin(:) + rotMatToInertial(:,2)*scaleFactor];
                     zAxis = [posOffsetOrigin(:), posOffsetOrigin(:) + rotMatToInertial(:,3)*scaleFactor];
                     
-                    hold(hAx,'on');
-                    obj.markerPlot(end+1) = plot3(hAx, xAxis(1,:), xAxis(2,:), xAxis(3,:), 'Color',obj.refFrame.xAxisColor.color, 'LineWidth',obj.refFrame.xAxisLineWidth, 'LineStyle',obj.refFrame.xAxisLineSpec.linespec);
-                    obj.markerPlot(end+1) = plot3(hAx, yAxis(1,:), yAxis(2,:), yAxis(3,:), 'Color',obj.refFrame.yAxisColor.color, 'LineWidth',obj.refFrame.yAxisLineWidth, 'LineStyle',obj.refFrame.yAxisLineSpec.linespec);
-                    obj.markerPlot(end+1) = plot3(hAx, zAxis(1,:), zAxis(2,:), zAxis(3,:), 'Color',obj.refFrame.zAxisColor.color, 'LineWidth',obj.refFrame.zAxisLineWidth, 'LineStyle',obj.refFrame.zAxisLineSpec.linespec);
-                    hold(hAx,'off');
+                    if(isempty(obj.markerPlot))
+                        hold(hAx,'on');
+                        obj.markerPlot(end+1) = plot3(hAx, xAxis(1,:), xAxis(2,:), xAxis(3,:), 'Color',obj.refFrame.xAxisColor.color, 'LineWidth',obj.refFrame.xAxisLineWidth, 'LineStyle',obj.refFrame.xAxisLineSpec.linespec);
+                        obj.markerPlot(end+1) = plot3(hAx, yAxis(1,:), yAxis(2,:), yAxis(3,:), 'Color',obj.refFrame.yAxisColor.color, 'LineWidth',obj.refFrame.yAxisLineWidth, 'LineStyle',obj.refFrame.yAxisLineSpec.linespec);
+                        obj.markerPlot(end+1) = plot3(hAx, zAxis(1,:), zAxis(2,:), zAxis(3,:), 'Color',obj.refFrame.zAxisColor.color, 'LineWidth',obj.refFrame.zAxisLineWidth, 'LineStyle',obj.refFrame.zAxisLineSpec.linespec);
+                        hold(hAx,'off');
+                    else
+                        obj.markerPlot(1).XData = xAxis(1,:);
+                        obj.markerPlot(1).YData = xAxis(2,:);
+                        obj.markerPlot(1).ZData = xAxis(3,:);
+                        
+                        obj.markerPlot(2).XData = yAxis(1,:);
+                        obj.markerPlot(2).YData = yAxis(2,:);
+                        obj.markerPlot(2).ZData = yAxis(3,:);
+                        
+                        obj.markerPlot(3).XData = zAxis(1,:);
+                        obj.markerPlot(3).YData = zAxis(2,:);
+                        obj.markerPlot(3).ZData = zAxis(3,:);
+                    end
                 end
             end
         end

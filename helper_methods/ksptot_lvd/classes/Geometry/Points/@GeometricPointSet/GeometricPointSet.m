@@ -53,6 +53,17 @@ classdef GeometricPointSet < matlab.mixin.SetGet
             end
         end
         
+        function [plotPoints, listBoxStr] = getPlottablePoints(obj)
+            plotPoints = AbstractGeometricPoint.empty(1,0);
+            listBoxStr = {};
+            for(i=1:length(obj.points))
+                if(obj.points(i).canBePlotted())
+                    plotPoints(end+1) = obj.points(i); %#ok<AGROW>
+                    listBoxStr{end+1} = obj.points(i).getListboxStr(); %#ok<AGROW>
+                end
+            end
+        end
+        
         function numPoints = getNumPoints(obj)
             numPoints = length(obj.points);
         end

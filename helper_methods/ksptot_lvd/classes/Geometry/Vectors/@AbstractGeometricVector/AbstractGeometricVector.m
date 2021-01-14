@@ -34,5 +34,9 @@ classdef AbstractGeometricVector < matlab.mixin.SetGet & matlab.mixin.Heterogene
         function tf = eq(a,b)
             tf = eq@handle(a,b);
         end
+        
+        function tf = ne(a,b)
+            tf = ne@handle(a,b);
+        end
     end
 end
