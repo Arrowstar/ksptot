@@ -109,6 +109,8 @@ function varargout = lvd_EditFixedInFrameVectorGUI_OutputFcn(hObject, eventdata,
         y = str2double(get(handles.yCoordText,'String'));
         z = str2double(get(handles.zCoordText,'String'));
         vector.setRVect([x;y;z]);
+        
+        vector.frame = getappdata(hObject,'frame');
                 
         str = handles.vectorLineColorCombo.String{handles.vectorLineColorCombo.Value};
         vector.lineColor = ColorSpecEnum.getEnumForListboxStr(str);

@@ -24,10 +24,10 @@ classdef CoordSysPointRefFrame < AbstractGeometricRefFrame
                
         function [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = getRefFrameAtTime(obj, time, vehElemSet, inFrame)
             ce = obj.origin.getPositionAtTime(time, vehElemSet, inFrame);
-            posOffsetOrigin = ce.rVect;
-            velOffsetOrigin = ce.vVect;
+            posOffsetOrigin = [ce.rVect];
+            velOffsetOrigin = [ce.vVect];
             
-            angVelWrtOrigin = [0;0;0];
+            angVelWrtOrigin = repmat([0;0;0], [1, length(time)]);
             
             rotMatToInertial = obj.coordSys.getCoordSysAtTime(time, vehElemSet, inFrame);
         end

@@ -1702,13 +1702,12 @@ function runScriptMenu_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
     lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
-
-    propagateScript(handles, lvdData, 1);
     
     if(not(isdeployed))
 %         profile off; profile on;
     end
     
+    propagateScript(handles, lvdData, 1);
     lvd_processData(handles);
     
     if(not(isdeployed))

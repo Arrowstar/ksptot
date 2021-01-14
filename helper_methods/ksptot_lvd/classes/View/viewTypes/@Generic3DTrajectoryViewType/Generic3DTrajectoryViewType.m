@@ -66,13 +66,17 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                         bodyId = subStateLog(1,8);
                         bodyInfo = celBodyData.getBodyInfoById(bodyId);
                         inertialFrame = bodyInfo.getBodyCenteredInertialFrame();
-                        for(j=1:size(subStateLog,1))
-                            elemSet = CartesianElementSet(subStateLog(j,1), subStateLog(j,2:4)', subStateLog(5:7)', inertialFrame);
-                            elemSet = elemSet.convertToFrame(viewInFrame);
-                            
-                            subStateLog(j,2:4) = elemSet.rVect';
-                            subStateLog(j,5:7) = elemSet.vVect';
-                        end
+                        
+                        elemSet = CartesianElementSet(subStateLog(:,1), subStateLog(:,2:4)', subStateLog(:,5:7)', inertialFrame);
+%                         elemSet = repmat(CartesianElementSet.getDefaultElements(), [1, size(subStateLog,1)]);
+%                         for(j=1:size(subStateLog,1))
+%                             elemSet(j) = CartesianElementSet(subStateLog(j,1), subStateLog(j,2:4)', subStateLog(j,5:7)', inertialFrame);
+%                         end
+                        elemSet = convertToFrame(elemSet, viewInFrame);
+
+                        subStateLog(:,2:4) = [elemSet.rVect]';
+                        subStateLog(:,5:7) = [elemSet.vVect]';
+                        
                         evtIds = [evtIds, unique(subStateLog(:,13))']; %#ok<AGROW>
                         
                         subStateLogs{i} = subStateLog;

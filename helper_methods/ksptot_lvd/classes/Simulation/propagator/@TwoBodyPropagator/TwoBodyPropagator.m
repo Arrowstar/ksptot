@@ -42,6 +42,7 @@ classdef TwoBodyPropagator < AbstractPropagator
                 t0 = t(1);
                 rVect0 = rVect(:,1);
                 vVect0 = vVect(:,1);
+                bodyInfo = eventInitStateLogEntry.centralBody;
                 
                 [rVectECEF, vVectECEF] = getFixedFrameVectFromInertialVect(t0, rVect0, bodyInfo, vVect0);
                 rVectECEF = repmat(rVectECEF,1,length(t));

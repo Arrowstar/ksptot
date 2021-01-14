@@ -31,32 +31,54 @@ classdef KeplerianElementSet < AbstractElementSet
             end
         end
         
+        %vectorized
         function cartElemSet = convertToCartesianElementSet(obj)
-            gmu = obj.frame.getOriginBody().gm;
-            [rVect, vVect] = getStatefromKepler(obj.sma, obj.ecc, obj.inc, obj.raan, obj.arg, obj.tru, gmu);
+%             gmu = obj.frame.getOriginBody().gm;
+            gmu = NaN(length(obj), 1);
+            for(i=1:length(obj))
+                gmu(i) = obj(i).frame.getOriginBody().gm;
+            end
+
+%             [rVect, vVect] = getStatefromKepler(obj.sma, obj.ecc, obj.inc, obj.raan, obj.arg, obj.tru, gmu);
+            [rVect, vVect] = vect_getStatefromKepler([obj.sma], [obj.ecc], [obj.inc], [obj.raan], [obj.arg], [obj.tru], gmu);
             
-            cartElemSet = CartesianElementSet(obj.time, rVect, vVect, obj.frame);
+%             cartElemSet = CartesianElementSet(obj.time, rVect, vVect, obj.frame);
+            cartElemSet = repmat(CartesianElementSet.getDefaultElements(), size(obj));
+            for(i=1:length(obj))
+                cartElemSet(i) = CartesianElementSet(obj(i).time, rVect(:,i), vVect(:,i), obj(i).frame);
+            end
         end
         
+        %vectorized
         function kepElemSet = convertToKeplerianElementSet(obj)
             kepElemSet = obj;
         end
         
+        %vectorized
         function geoElemSet = convertToGeographicElementSet(obj)
-            geoElemSet = obj.convertToCartesianElementSet().convertToGeographicElementSet();
+            geoElemSet = convertToGeographicElementSet(convertToCartesianElementSet(obj));
         end
         
+        %vectorized
         function univElemSet = convertToUniversalElementSet(obj)
-            gmu = obj.frame.getOriginBody().gm;
+%             gmu = obj.frame.getOriginBody().gm;
+            gmu = NaN(length(obj), 1);
+            for(i=1:length(obj))
+                gmu(i) = obj(i).frame.getOriginBody().gm;
+            end
             
-            c3 = -gmu./obj.sma;
-            rP = (1-obj.ecc) .* obj.sma;
+            c3 = -gmu./[obj.sma];
+            rP = (1-[obj.ecc]) .* [obj.sma];
             
-            n = computeMeanMotion(obj.sma, gmu);
-            mean = computeMeanFromTrueAnom(obj.tru, obj.ecc);
+            n = computeMeanMotion([obj.sma], gmu);             
+            mean = computeMeanFromTrueAnom([obj.tru], [obj.ecc]);
             tau = mean ./ n;
             
-            univElemSet = UniversalElementSet(obj.time, c3, rP, obj.inc, obj.raan, obj.arg, tau, obj.frame);
+%             univElemSet = UniversalElementSet(obj.time, c3, rP, obj.inc, obj.raan, obj.arg, tau, obj.frame);
+            univElemSet = repmat(UniversalElementSet.getDefaultElements(), size(obj));
+            for(i=1:length(obj))
+                univElemSet(i) = UniversalElementSet(obj(i).time, c3(i), rP(i), obj(i).inc, obj(i).raan, obj(i).arg, tau(i), obj(i).frame);
+            end
         end
         
         function elemVect = getElementVector(obj)

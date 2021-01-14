@@ -25,12 +25,12 @@ classdef TwoPointVector < AbstractGeometricVector
         
         function vect = getVectorAtTime(obj, time, vehElemSet, inFrame)
             point1CartElem = obj.point1.getPositionAtTime(time, vehElemSet, inFrame);
-            rVect1 = point1CartElem.rVect;
+            rVect1 = [point1CartElem.rVect];
             
             point2CartElem = obj.point2.getPositionAtTime(time, vehElemSet, inFrame);
-            rVect2 = point2CartElem.rVect;
+            rVect2 = [point2CartElem.rVect];
             
-            vect = rVect2(:) - rVect1(:);
+            vect = rVect2 - rVect1;
         end
         
         function name = getName(obj)

@@ -31,39 +31,48 @@ classdef GeographicElementSet < AbstractElementSet
             end
         end
         
+        %vectorized
         function cartElemSet = convertToCartesianElementSet(obj)
-            r = obj.frame.getOriginBody().radius + obj.alt;
+            radius = NaN(1, length(obj));
+            for(i=1:length(obj))
+                radius(i) = obj(i).frame.getOriginBody().radius;
+            end
+            r = radius + [obj.alt];
 
-            x = r.*cos(obj.lat).*cos(obj.long);
-            y = r.*cos(obj.lat).*sin(obj.long);
-            z = r.*sin(obj.lat);
+            x = r.*cos([obj.lat]).*cos([obj.long]);
+            y = r.*cos([obj.lat]).*sin([obj.long]);
+            z = r.*sin([obj.lat]);
 
             rVect = [x;y;z];
             
-            sezVVectAz = pi - obj.velAz;
-            sezVVectEl = obj.velEl;
-            sezVVectMag = obj.velMag;
+            sezVVectAz = pi - [obj.velAz];
+            sezVVectEl = [obj.velEl];
+            sezVVectMag = [obj.velMag];
 
             [x,y,z] = sph2cart(sezVVectAz, sezVVectEl, sezVVectMag);
             vectorSez = [x;y;z];
             vVect = rotSEZVectToECEFCoords(rVect, vectorSez); %not necessarily ECEF coords here but the transform holds
             
-%             [vx,vy,vz] = sph2cart(obj.velAz, obj.velEl, obj.velMag);
-%             vVect = [vx;vy;vz];
-            
-            cartElemSet = CartesianElementSet(obj.time, rVect, vVect, obj.frame);
+%             cartElemSet = CartesianElementSet(obj.time, rVect, vVect, obj.frame);
+            cartElemSet = repmat(CartesianElementSet.getDefaultElements(), size(obj));
+            for(i=1:length(obj))
+                cartElemSet(i) = CartesianElementSet(obj(i).time, rVect(:,i), vVect(:,i), obj(i).frame);
+            end
         end
         
+        %vectorized
         function kepElemSet = convertToKeplerianElementSet(obj)
-            kepElemSet = obj.convertToCartesianElementSet().convertToKeplerianElementSet();
+            kepElemSet = convertToKeplerianElementSet(convertToCartesianElementSet(obj));
         end
         
+        %vectorized
         function geoElemSet = convertToGeographicElementSet(obj)
             geoElemSet = obj;
         end
         
+        %vectorized
         function univElemSet = convertToUniversalElementSet(obj)
-            univElemSet = obj.convertToKeplerianElementSet().convertToUniversalElementSet();
+            univElemSet = convertToUniversalElementSet(convertToKeplerianElementSet(obj));
         end
         
         function elemVect = getElementVector(obj)

@@ -197,9 +197,10 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
 
                 [rVects, vVects] = getStateAtTime(obj, times, gmu);
 
-                for(i=1:length(times))
-                    states(i) = CartesianElementSet(times(i), rVects(:,i), vVects(:,i), frame); %#ok<AGROW>
-                end
+                states = CartesianElementSet(times, rVects, vVects, frame);
+%                 for(i=1:length(times))
+%                     states(i) = CartesianElementSet(times(i), rVects(:,i), vVects(:,i), frame); %#ok<AGROW>
+%                 end
             else
                 frame = obj.getBodyCenteredInertialFrame();
                 

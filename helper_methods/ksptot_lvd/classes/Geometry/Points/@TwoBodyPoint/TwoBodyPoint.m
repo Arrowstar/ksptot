@@ -40,39 +40,49 @@ classdef TwoBodyPoint < AbstractGeometricPoint
             obj.lvdData = lvdData;
         end
         
-        function newCartElem = getPositionAtTime(obj, time, vehElemSet, inFrame)
-            newCartElem = CartesianElementSet.empty(1,0);
+        function newCartElems = getPositionAtTime(obj, time, vehElemSet, inFrame)
+            newCartElems = repmat(CartesianElementSet.empty(0,1), [1, length(time)]);
             for(i=1:length(obj.timesArr))
                 times = obj.timesArr{i};
                 
-                if(time >= min(floor(times)) && time <= max(ceil(times)))         
+                bool = time >= min(floor(times)) & time <= max(ceil(times));
+                if(any(bool))  
+                    boolTimes = time(bool);
+                    
                     xInterp = obj.xInterps{i};
-                    x = xInterp(time);
+                    x = xInterp(boolTimes);
                     
                     yInterp = obj.yInterps{i};
-                    y = yInterp(time);
+                    y = yInterp(boolTimes);
                     
                     zInterp = obj.zInterps{i};
-                    z = zInterp(time);
+                    z = zInterp(boolTimes);
                     
                     vxInterp = obj.vxInterps{i};
-                    vx = vxInterp(time);
+                    vx = vxInterp(boolTimes);
                     
                     vyInterp = obj.vyInterps{i};
-                    vy = vyInterp(time);
+                    vy = vyInterp(boolTimes);
                     
                     vzInterp = obj.vzInterps{i};
-                    vz = vzInterp(time);
+                    vz = vzInterp(boolTimes);
                     
                     bodyInfo = obj.cbArr(i);
                     
-                    newCartElem = CartesianElementSet(time, [x;y;z], [vx;vy;vz], bodyInfo.getBodyCenteredInertialFrame());
-                    break;
+                    rVect = [x(:)'; y(:)'; z(:)'];
+                    vVect = [vx(:)'; vy(:)'; vz(:)'];
+                    
+                    subCartElems = CartesianElementSet(boolTimes, rVect, vVect, bodyInfo.getBodyCenteredInertialFrame());
+%                     subCartElems = repmat(CartesianElementSet.getDefaultElements(), [1, length(boolTimes)]);
+%                     for(j=1:length(boolTimes))
+%                         subCartElems(j) = CartesianElementSet(boolTimes(j), [x(j);y(j);z(j)], [vx(j);vy(j);vz(j)], bodyInfo.getBodyCenteredInertialFrame());
+%                     end
+                    newCartElems(bool) = subCartElems;
                 end
             end
             
-            if(not(isempty(newCartElem)))
-                newCartElem = newCartElem.convertToFrame(inFrame);
+            if(not(isempty(newCartElems)))
+                newCartElems = convertToFrame(newCartElems, inFrame);
             else
                 [minTime, maxTime] = obj.getCacheMinMaxTimes();
                 if(time < minTime)
@@ -86,14 +96,15 @@ classdef TwoBodyPoint < AbstractGeometricPoint
                     obj.refeshTrajCache(minTime, newMaxTime);
                 end
                 
-                newCartElem = obj.getPositionAtTime(time, vehElemSet, inFrame);
+                newCartElems = obj.getPositionAtTime(time, vehElemSet, inFrame);
             end
         end
         
         function refeshTrajCache(obj, minTime, maxTime)
             obj.clearCache();
+            dummyLvdData = LvdData.getDefaultLvdData(obj.lvdData.celBodyData);
             
-            initState = obj.lvdData.initialState;
+            initState = dummyLvdData.initialState;
             
             ce = obj.elemSet.convertToCartesianElementSet();
             origBodyInfo = ce.frame.getOriginBody();
@@ -103,8 +114,9 @@ classdef TwoBodyPoint < AbstractGeometricPoint
             initState.position = ce.rVect;
             initState.velocity = ce.vVect;
             initState.centralBody = origBodyInfo;
+            initState.lvState.holdDownEnabled = false;
             
-            evt = LaunchVehicleEvent(obj.lvdData.script);
+            evt = LaunchVehicleEvent(dummyLvdData.script);
             initState.event = evt;
             
             if(initState.time >= minTime && initState.time <= maxTime)
@@ -120,7 +132,7 @@ classdef TwoBodyPoint < AbstractGeometricPoint
                 newStateLogEntries = obj.doTwoBodyProp(initState, evt, minTime);
                 
             end
-
+            
             maStateLog = NaN(length(newStateLogEntries), 13);
             for(i=1:length(newStateLogEntries))
                  maStateLog(i,:) = newStateLogEntries(i).getMAFormattedStateLogMatrix(false);
@@ -138,7 +150,7 @@ classdef TwoBodyPoint < AbstractGeometricPoint
                 times = subStateLog(:,1);
                 rVects = subStateLog(:,2:4);
                 vVects = subStateLog(:,5:7);
-                bodyInfo = obj.lvdData.celBodyData.getBodyInfoById(subStateLog(1,8));
+                bodyInfo = dummyLvdData.celBodyData.getBodyInfoById(subStateLog(1,8));
                 
                 obj.addDataToCache(times, rVects, vVects, bodyInfo);
             end

@@ -15,7 +15,10 @@ classdef GroundObjectPoint < AbstractGeometricPoint
         end
         
         function cartElem = getPositionAtTime(obj, time, ~, inFrame)
-            cartElem = obj.groundObj.getStateAtTime(time).convertToCartesianElementSet().convertToFrame(inFrame);
+            cartElem = repmat(CartesianElementSet.getDefaultElements(), [1 length(time)]);
+            for(i=1:length(time))
+                cartElem(i) = obj.groundObj.getStateAtTime(time(i)).convertToCartesianElementSet().convertToFrame(inFrame);
+            end
         end
         
         function name = getName(obj)

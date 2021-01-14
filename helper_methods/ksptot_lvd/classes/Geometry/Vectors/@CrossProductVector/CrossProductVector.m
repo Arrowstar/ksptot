@@ -27,7 +27,7 @@ classdef CrossProductVector < AbstractGeometricVector
             vect1 = obj.vector1.getVectorAtTime(time, vehElemSet, inFrame);
             vect2 = obj.vector2.getVectorAtTime(time, vehElemSet, inFrame);
             
-            vect = crossARH(vect1(:), vect2(:));
+            vect = cross(vect1, vect2);
         end
         
         function name = getName(obj)

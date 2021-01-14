@@ -16,40 +16,72 @@ classdef CartesianElementSet < AbstractElementSet
     methods
         function obj = CartesianElementSet(time, rVect, vVect, frame)
             if(nargin > 0)
-                obj.time = time;
-                obj.rVect = reshape(rVect,3,numel(rVect)/3);
-                obj.vVect = reshape(vVect,3,numel(vVect)/3);
-                obj.frame = frame;
+                num = length(time);
+                obj(num) = obj;
+                
+                if(numel(time) > 1)
+                    obj(1) = CartesianElementSet();
+                    
+                    if(numel(frame) == 1)
+                        frame = repmat(frame, size(time));
+                    end
+                end
+                
+                for(i=1:num)
+                    obj(i).time = time(i);
+                    obj(i).rVect = rVect(:,i);
+                    obj(i).vVect = vVect(:,i);
+                    obj(i).frame = frame(i);
+                end
             end
         end
         
+        %vectorized
         function cartElemSet = convertToCartesianElementSet(obj)
             cartElemSet = obj;
         end
         
+        %vectorized
         function kepElemSet = convertToKeplerianElementSet(obj)
-            gmu = obj.frame.getOriginBody().gm;
-            [sma, ecc, inc, raan, arg, tru] = getKeplerFromState(obj.rVect, obj.vVect, gmu);
+%             gmu = obj.frame.getOriginBody().gm;
+            gmu = NaN(length(obj), 1);
+            for(i=1:length(obj))
+                gmu(i) = obj(i).frame.getOriginBody().gm;
+            end
+%             [sma, ecc, inc, raan, arg, tru] = getKeplerFromState(obj.rVect, obj.vVect, gmu);
+            [sma, ecc, inc, raan, arg, tru] = vect_getKeplerFromState([obj.rVect], [obj.vVect], gmu);
             
-            kepElemSet = KeplerianElementSet(obj.time, sma, ecc, inc, raan, arg, tru, obj.frame);
+            kepElemSet = repmat(KeplerianElementSet.getDefaultElements(), size(obj));
+            for(i=1:length(obj))
+                kepElemSet(i) = KeplerianElementSet(obj(i).time, sma(i), ecc(i), inc(i), raan(i), arg(i), tru(i), obj(i).frame);
+            end
         end
         
+        %vectorized
         function geoElemSet = convertToGeographicElementSet(obj)
-            rNorm = norm(obj.rVect);
+            rVects = [obj.rVect];
+            vVects = [obj.vVect];
+            bodyInfos = getOriginBody([obj.frame]);
             
-            long = AngleZero2Pi(atan2(obj.rVect(2),obj.rVect(1)));
-            lat = pi/2 - acos(obj.rVect(3)/rNorm);
-            alt = rNorm - obj.frame.getOriginBody().radius;
+            rNorm = vecNormARH(rVects);
             
-            vectorSez = rotVectToSEZCoords(obj.rVect, obj.vVect);
-            [velAz, velEl, velMag] = cart2sph(vectorSez(1), vectorSez(2), vectorSez(3));
+            long = AngleZero2Pi(atan2(rVects(2,:),rVects(1,:)));
+            lat = pi/2 - acos(rVects(3,:)./rNorm);
+            alt = rNorm - [bodyInfos.radius];
+            
+            vectorSez = rotVectToSEZCoords(rVects, vVects);
+            [velAz, velEl, velMag] = cart2sph(vectorSez(1,:), vectorSez(2,:), vectorSez(3,:));
             velAz = pi - velAz;
             
-            geoElemSet = GeographicElementSet(obj.time, lat, long, alt, velAz, velEl, velMag, obj.frame);
+            geoElemSet = repmat(GeographicElementSet.getDefaultElements(), size(obj));
+            for(i=1:length(obj))
+                geoElemSet(i) = GeographicElementSet(obj(i).time, lat(i), long(i), alt(i), velAz(i), velEl(i), velMag(i), obj(i).frame);
+            end
         end
         
+        %vectorized
         function univElemSet = convertToUniversalElementSet(obj)
-            univElemSet = obj.convertToKeplerianElementSet().convertToUniversalElementSet();
+            univElemSet = convertToUniversalElementSet(convertToKeplerianElementSet(obj));
         end
         
         function elemVect = getElementVector(obj)

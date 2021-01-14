@@ -26,8 +26,12 @@ classdef FixedPointInFrame < AbstractGeometricPoint
         end
         
         function newCartElem = getPositionAtTime(obj, time, ~, inFrame)
-            obj.cartElem.time = time;
-            newCartElem = obj.cartElem.convertToFrame(inFrame);
+            newCartElem = repmat(CartesianElementSet.getDefaultElements(), [1 length(time)]);
+            for(i=1:length(time))
+                newCartElem(i) = copy(obj.cartElem);
+                newCartElem(i).time = time(i);
+            end
+            newCartElem = convertToFrame(newCartElem, inFrame);
         end
         
         function name = getName(obj)

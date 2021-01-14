@@ -11,8 +11,8 @@ classdef VehiclePoint < AbstractGeometricPoint
             obj.name = name;
         end
         
-        function cartElem = getPositionAtTime(obj, time, vehElemSet, inFrame)
-            cartElem = vehElemSet.convertToCartesianElementSet().convertToFrame(inFrame);
+        function cartElem = getPositionAtTime(~, ~, vehElemSet, inFrame)
+            cartElem = convertToFrame(convertToCartesianElementSet(vehElemSet), inFrame);
         end
         
         function name = getName(obj)

@@ -21,12 +21,16 @@ classdef BodyFixedFrame < AbstractReferenceFrame
             [rVectSunToBody, vVectSunToBody] = getPositOfBodyWRTSun(time, obj.bodyInfo, obj.celBodyData);
             
             spinAngle = getBodySpinAngle(obj.bodyInfo, time);
-            rotMatToInertial = [cos(spinAngle) -sin(spinAngle) 0;
-                                sin(spinAngle) cos(spinAngle) 0;
-                                0 0 1] * obj.bodyInfo.bodyRotMatFromGlobalInertialToBodyInertial;
+            spinAngle = spinAngle(:)';
+            
+            zero = permute(zeros(size(spinAngle)), [1 3 2]);
+            one  = zero + 1;
+            c = permute(cos(spinAngle), [1 3 2]);
+            s = permute(sin(spinAngle), [1 3 2]);
+            rotMatToInertial = mtimesx([c -s zero;  s c zero;  zero zero one], repmat(obj.bodyInfo.bodyRotMatFromGlobalInertialToBodyInertial, [1 1 length(time)]));
             
             rotRateRadSec = 2*pi/obj.bodyInfo.rotperiod;
-            omegaRI = [0;0;rotRateRadSec];
+            omegaRI = repmat([0;0;rotRateRadSec], [1 length(time)]);
             
             posOffsetOrigin = rVectSunToBody;
             velOffsetOrigin = vVectSunToBody;
@@ -34,7 +38,7 @@ classdef BodyFixedFrame < AbstractReferenceFrame
         end
         
         function bodyInfo = getOriginBody(obj)
-            bodyInfo = obj.bodyInfo;
+            bodyInfo = [obj.bodyInfo];
         end
         
         function setOriginBody(obj, newBodyInfo)
