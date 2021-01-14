@@ -166,7 +166,8 @@ function updateGuiForProfile(profile, handles)
     handles.showCbAtmo.Value = double(profile.showAtmosphere);
     
     geometry = viewSettings.lvdData.geometry;
-    handles.pointsToPlotListbox.Value = geometry.points.getIndsForPoints(profile.pointsToPlot);
+    [plotPoints, ~] = geometry.points.getPlottablePoints();
+    handles.pointsToPlotListbox.Value = find(ismember(plotPoints, profile.pointsToPlot));
     handles.vectorsToPlotListbox.Value = geometry.vectors.getIndsForVectors(profile.vectorsToPlot);
     handles.refFramessToPlotListbox.Value = geometry.refFrames.getIndsForRefFrames(profile.refFramesToPlot);
     

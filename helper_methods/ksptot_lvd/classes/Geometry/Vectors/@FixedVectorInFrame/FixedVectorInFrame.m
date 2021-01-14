@@ -51,6 +51,10 @@ classdef FixedVectorInFrame < AbstractGeometricVector
             tf = false;
         end
         
+        function origin = getOriginPointInViewFrame(obj, time, vehElemSet, viewFrame)
+            origin = [0;0;0];
+        end
+        
         function tf = usesGeometricPoint(~, ~)
             tf = false;
         end

@@ -54,6 +54,11 @@ classdef TwoPointVector < AbstractGeometricVector
                  obj.point2.isVehDependent();
         end
         
+        function origin = getOriginPointInViewFrame(obj, time, vehElemSet, viewFrame)
+            elemSet = obj.point1.getPositionAtTime(time, vehElemSet, viewFrame);
+            origin = elemSet.rVect;
+        end
+        
         function tf = usesGeometricPoint(obj, point)
             tf = point == obj.point1 || ...
                  point == obj.point2;

@@ -89,6 +89,7 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         sunLighting(1,:) LaunchVehicleViewProfileSunLighting = LaunchVehicleViewProfileSunLighting.empty(1,0);
         centralBodyData(1,:) LaunchVehicleViewProfileCentralBodyData = LaunchVehicleViewProfileCentralBodyData.empty(1,0);
         pointData(1,:) LaunchVehicleViewProfilePointData = LaunchVehicleViewProfilePointData.empty(1,0);
+        vectorData(1,:) LaunchVehicleViewProfileVectorData = LaunchVehicleViewProfileVectorData.empty(1,0);
         refFrameData(1,:) LaunchVehicleViewProfileRefFrameData = LaunchVehicleViewProfileRefFrameData.empty(1,0);
         userDefinedRefFrames(1,:) 
     end
@@ -466,6 +467,27 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
             end
         end
         
+        function createVectorData(obj, viewFrame, subStateLogs, evts)
+            obj.clearVectorData();
+            vectors = obj.vectorsToPlot;
+            
+            for(i=1:length(vectors))
+                obj.vectorData(end+1) = LaunchVehicleViewProfileVectorData(vectors(i), viewFrame);
+            end
+            
+            for(i=1:length(subStateLogs))
+                if(size(subStateLogs{i},1) > 0)
+                    [times, rVects, ~] = LaunchVehicleViewProfile.parseTrajDataFromSubStateLogs(subStateLogs, i, evts);
+                    
+                    if(length(unique(times)) > 1)
+                        for(j=1:length(obj.vectorData))
+                            obj.vectorData(j).addData(times, rVects);
+                        end
+                    end
+                end
+            end
+        end
+        
         function createRefFrameData(obj, viewFrame, subStateLogs, evts)
             obj.clearRefFrameData();
             refFrames = obj.refFramesToPlot;
@@ -505,6 +527,10 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         
         function clearPointData(obj)
             obj.pointData = LaunchVehicleViewProfilePointData.empty(1,0);
+        end
+        
+        function clearVectorData(obj)
+            obj.vectorData = LaunchVehicleViewProfileVectorData.empty(1,0);
         end
         
         function clearRefFrameData(obj)

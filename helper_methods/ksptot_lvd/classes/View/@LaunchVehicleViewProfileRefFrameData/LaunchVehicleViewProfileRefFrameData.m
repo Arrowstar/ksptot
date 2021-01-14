@@ -3,6 +3,7 @@ classdef LaunchVehicleViewProfileRefFrameData < matlab.mixin.SetGet
     %   Detailed explanation goes here
     
     properties
+        %these are for vehicle trajectory data and not the point itself!
         timesArr(1,:) cell = {};
         xInterps(1,:) cell = {};
         yInterps(1,:) cell = {};
