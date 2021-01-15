@@ -8,6 +8,9 @@ classdef LaunchVehicleViewProfileVectorData < matlab.mixin.SetGet
         xInterps(1,:) cell = {};
         yInterps(1,:) cell = {};
         zInterps(1,:) cell = {};
+        vxInterps(1,:) cell = {};
+        vyInterps(1,:) cell = {};
+        vzInterps(1,:) cell = {};
         
         markerPlot = matlab.graphics.GraphicsPlaceholder.empty(1,0)
         vector AbstractGeometricVector
@@ -20,7 +23,7 @@ classdef LaunchVehicleViewProfileVectorData < matlab.mixin.SetGet
             obj.viewFrame = viewFrame;
         end
         
-        function addData(obj, times, rVects)
+        function addData(obj, times, rVects, vVects)
             obj.timesArr{end+1} = times;
             
             if(length(times) >= 3)
@@ -32,11 +35,13 @@ classdef LaunchVehicleViewProfileVectorData < matlab.mixin.SetGet
             obj.xInterps{end+1} = griddedInterpolant(times, rVects(:,1), method, 'linear');
             obj.yInterps{end+1} = griddedInterpolant(times, rVects(:,2), method, 'linear');
             obj.zInterps{end+1} = griddedInterpolant(times, rVects(:,3), method, 'linear');
+            obj.vxInterps{end+1} = griddedInterpolant(times, vVects(:,1), method, 'linear');
+            obj.vyInterps{end+1} = griddedInterpolant(times, vVects(:,2), method, 'linear');
+            obj.vzInterps{end+1} = griddedInterpolant(times, vVects(:,3), method, 'linear');
         end
         
         function plotVectorAtTime(obj, time, hAx)   
             [origin, vect] = obj.getVectorAtTime(time);
-            vect = 1 * vect;
             
             if(isempty(obj.markerPlot))
                 hold(hAx,'on');       
@@ -71,7 +76,16 @@ classdef LaunchVehicleViewProfileVectorData < matlab.mixin.SetGet
                     zInterp = obj.zInterps{i};
                     z = zInterp(time);
                     
-                    vehElemSet = CartesianElementSet(time, [x;y;z], [0;0;0], obj.viewFrame);
+                    vxInterp = obj.vxInterps{i};
+                    vx = vxInterp(time);
+                    
+                    vyInterp = obj.vyInterps{i};
+                    vy = vyInterp(time);
+                    
+                    vzInterp = obj.vzInterps{i};
+                    vz = vzInterp(time);
+                    
+                    vehElemSet = CartesianElementSet(time, [x;y;z], [vx;vy;vz], obj.viewFrame);
                     vect = obj.vector.getVectorAtTime(time, vehElemSet, obj.viewFrame);
                     
                     origin = obj.vector.getOriginPointInViewFrame(time, vehElemSet, obj.viewFrame);

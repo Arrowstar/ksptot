@@ -456,11 +456,11 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
             
             for(i=1:length(subStateLogs))
                 if(size(subStateLogs{i},1) > 0)
-                    [times, rVects, ~] = LaunchVehicleViewProfile.parseTrajDataFromSubStateLogs(subStateLogs, i, evts);
+                    [times, rVects, ~, vVects] = LaunchVehicleViewProfile.parseTrajDataFromSubStateLogs(subStateLogs, i, evts);
                     
                     if(length(unique(times)) > 1)
                         for(j=1:length(obj.pointData))
-                            obj.pointData(j).addData(times, rVects);
+                            obj.pointData(j).addData(times, rVects, vVects);
                         end
                     end
                 end
@@ -477,11 +477,11 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
             
             for(i=1:length(subStateLogs))
                 if(size(subStateLogs{i},1) > 0)
-                    [times, rVects, ~] = LaunchVehicleViewProfile.parseTrajDataFromSubStateLogs(subStateLogs, i, evts);
+                    [times, rVects, ~, vVects] = LaunchVehicleViewProfile.parseTrajDataFromSubStateLogs(subStateLogs, i, evts);
                     
                     if(length(unique(times)) > 1)
                         for(j=1:length(obj.vectorData))
-                            obj.vectorData(j).addData(times, rVects);
+                            obj.vectorData(j).addData(times, rVects, vVects);
                         end
                     end
                 end
@@ -498,11 +498,11 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
             
             for(i=1:length(subStateLogs))
                 if(size(subStateLogs{i},1) > 0)
-                    [times, rVects, ~] = LaunchVehicleViewProfile.parseTrajDataFromSubStateLogs(subStateLogs, i, evts);
+                    [times, rVects, ~, vVects] = LaunchVehicleViewProfile.parseTrajDataFromSubStateLogs(subStateLogs, i, evts);
                     
                     if(length(unique(times)) > 1)
                         for(j=1:length(obj.refFrameData))
-                            obj.refFrameData(j).addData(times, rVects);
+                            obj.refFrameData(j).addData(times, rVects, vVects);
                         end
                     end
                 end
@@ -539,9 +539,10 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
     end
     
     methods(Static, Access=private)
-        function [times, rVects, evtColor] = parseTrajDataFromSubStateLogs(subStateLogs, j, evts)
+        function [times, rVects, evtColor, vVects] = parseTrajDataFromSubStateLogs(subStateLogs, j, evts)
             times = subStateLogs{j}(:,1);
             rVects = subStateLogs{j}(:,2:4);
+            vVects = subStateLogs{j}(:,5:7);
 
             evtNum = subStateLogs{j}(1,13);
             evt = evts(evtNum);
@@ -554,10 +555,12 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                 case EventPlottingMethodEnum.SkipFirstState
                     times = times(2:end);
                     rVects = rVects(2:end,:);
+                    vVects = vVects(2:end,:);
 
                 case EventPlottingMethodEnum.DoNotPlot
                     times = [];
                     rVects = [];
+                    vVects = [];
 
                 otherwise
                     error('Unknown event plotting method: %s', EventPlottingMethodEnum.DoNotPlot.name);
@@ -565,9 +568,11 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
 
             [times,ia,~] = unique(times,'stable','rows');
             rVects = rVects(ia,:);
+            vVects = vVects(ia,:);
 
             [times,I] = sort(times);
             rVects = rVects(I,:);
+            vVects = vVects(I,:);
         end
     end
 end

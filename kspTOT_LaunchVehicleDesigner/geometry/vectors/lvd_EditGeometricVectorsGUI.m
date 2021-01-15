@@ -194,8 +194,11 @@ function addVectorButton_Callback(hObject, eventdata, handles)
                     return;
                 end
                 
+            case GeometricVectorEnum.VehicleState
+                newVector = VehicleStateVector(VehicleStateVectorTypeEnum.Velocity, 1, 'New Vector', lvdData);
+                
             otherwise
-                error('Unknown Vector Type Type: %s', enum.name)
+                error('Unknown Vector Type Type: %s', string(enum))
         end
         
         useTF = newVector.openEditDialog();

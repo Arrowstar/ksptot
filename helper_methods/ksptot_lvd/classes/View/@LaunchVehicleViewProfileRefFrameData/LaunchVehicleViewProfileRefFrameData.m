@@ -8,6 +8,9 @@ classdef LaunchVehicleViewProfileRefFrameData < matlab.mixin.SetGet
         xInterps(1,:) cell = {};
         yInterps(1,:) cell = {};
         zInterps(1,:) cell = {};
+        vxInterps(1,:) cell = {};
+        vyInterps(1,:) cell = {};
+        vzInterps(1,:) cell = {};
         
         markerPlot = matlab.graphics.GraphicsPlaceholder.empty(1,0)
         refFrame AbstractGeometricRefFrame
@@ -20,7 +23,7 @@ classdef LaunchVehicleViewProfileRefFrameData < matlab.mixin.SetGet
             obj.viewFrame = viewFrame;
         end
         
-        function addData(obj, times, rVects)
+        function addData(obj, times, rVects, vVects)
             obj.timesArr(end+1) = {times};
             
             if(length(times) >= 3)
@@ -32,6 +35,9 @@ classdef LaunchVehicleViewProfileRefFrameData < matlab.mixin.SetGet
             obj.xInterps{end+1} = griddedInterpolant(times, rVects(:,1), method, 'linear');
             obj.yInterps{end+1} = griddedInterpolant(times, rVects(:,2), method, 'linear');
             obj.zInterps{end+1} = griddedInterpolant(times, rVects(:,3), method, 'linear');
+            obj.vxInterps{end+1} = griddedInterpolant(times, vVects(:,1), method, 'linear');
+            obj.vyInterps{end+1} = griddedInterpolant(times, vVects(:,2), method, 'linear');
+            obj.vzInterps{end+1} = griddedInterpolant(times, vVects(:,3), method, 'linear');
         end
         
         function plotRefFrameAtTime(obj, time, hAx)   
@@ -48,7 +54,16 @@ classdef LaunchVehicleViewProfileRefFrameData < matlab.mixin.SetGet
                     zInterp = obj.zInterps{i};
                     z = zInterp(time);
                     
-                    vehElemSet = CartesianElementSet(time, [x;y;z], [0;0;0], obj.viewFrame);
+                    vxInterp = obj.vxInterps{i};
+                    vx = vxInterp(time);
+                    
+                    vyInterp = obj.vyInterps{i};
+                    vy = vyInterp(time);
+                    
+                    vzInterp = obj.vzInterps{i};
+                    vz = vzInterp(time);
+                    
+                    vehElemSet = CartesianElementSet(time, [x;y;z], [vx;vy;vz], obj.viewFrame);
                     [posOffsetOrigin, ~, ~, rotMatToInertial] = obj.refFrame.getRefFrameAtTime(time, vehElemSet, obj.viewFrame);
                     
                     scaleFactor = obj.refFrame.scaleFactor;

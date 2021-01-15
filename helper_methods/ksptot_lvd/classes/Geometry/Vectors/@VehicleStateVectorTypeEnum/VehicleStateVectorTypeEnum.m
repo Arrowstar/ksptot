@@ -1,13 +1,13 @@
-classdef GeometricVectorEnum < matlab.mixin.SetGet
-    %GeometricVectorEnum Summary of this class goes here
+classdef VehicleStateVectorTypeEnum < matlab.mixin.SetGet
+    %VehicleStateVectorTypeEnum Summary of this class goes here
     %   Detailed explanation goes here
     
     enumeration
-        FixedInFrame('Fixed in Frame');
-        TwoPoint('Two Point Vector');
-        Scaled('Scaled Vector');
-        CrossProd('Cross Product Vector');
-        VehicleState('Vector State Vector');
+        Radial('Radial Vector');
+        Velocity('Velocity Vector');
+        AngularMomentum('Angular Momentum Vector');
+        North('North Vector');
+        East('East Vector');
     end
     
     properties
@@ -15,20 +15,20 @@ classdef GeometricVectorEnum < matlab.mixin.SetGet
     end
     
     methods
-        function obj = GeometricVectorEnum(name)
+        function obj = VehicleStateVectorTypeEnum(name)
             obj.name = name;
         end
     end
     
     methods(Static)
         function listBoxStr = getListBoxStr()
-            m = enumeration('GeometricVectorEnum');
+            m = enumeration('VehicleStateVectorTypeEnum');
             [~,I] = sort({m.name});
             listBoxStr = {m(I).name};
         end
         
         function [ind, enum] = getIndForName(name)
-            m = enumeration('GeometricVectorEnum');
+            m = enumeration('VehicleStateVectorTypeEnum');
             [~,I] = sort({m.name});
             m = m(I);
             ind = find(ismember({m.name},name),1,'first');
@@ -36,7 +36,7 @@ classdef GeometricVectorEnum < matlab.mixin.SetGet
         end
         
         function [enum, ind] = getEnumForListboxStr(nameStr)
-            m = enumeration('GeometricVectorEnum');
+            m = enumeration('VehicleStateVectorTypeEnum');
             ind = find(ismember({m.name},nameStr),1,'first');
             enum = m(ind);
         end
