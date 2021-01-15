@@ -170,6 +170,11 @@ function addCoordSysButton_Callback(hObject, eventdata, handles)
                     return;
                 end
                 
+            case GeometricCoordSysEnum.ParallelToFrame
+                bodyInfo = lvdData.getDefaultInitialBodyInfo(lvdData.celBodyData);
+                frame = bodyInfo.getBodyCenteredInertialFrame();
+                newCoordSys = ParallelToFrameCoordSystem(frame, 'New Coordinate System', lvdData);
+                
             otherwise
                 error('Unknown Coordinate System Type: %s', enum.name)
         end

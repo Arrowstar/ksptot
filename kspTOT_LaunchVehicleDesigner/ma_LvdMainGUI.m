@@ -196,6 +196,11 @@ function setResizeData(hObject, handles)
     incrOrbitToPlotNumOffsetFromRight = origWidth - (incrOrbitToPlotNumPos(1) + incrOrbitToPlotNumPos(3));
     setappdata(hObject,'incrOrbitToPlotNumOffsetFromRight',incrOrbitToPlotNumOffsetFromRight);
     
+    %timeSliderValueLabel
+    timeSliderValueLabelPos = handles.timeSliderValueLabel.Position;
+    timeSliderValueLabelOffsetFromRight = origWidth - (timeSliderValueLabelPos(1) + timeSliderValueLabelPos(3));
+    setappdata(hObject,'timeSliderValueLabelOffsetFromRight',timeSliderValueLabelOffsetFromRight);
+    
     %timeSliderPanel
     timeSliderPanelPos = handles.timeSliderPanel.Position;
     timeSliderPanelOffsetFromRight = origWidth - (timeSliderPanelPos(1) + timeSliderPanelPos(3));
@@ -2286,6 +2291,12 @@ function ma_LvdMainGUI_SizeChangedFcn(hObject, eventdata, handles)
     insertEventButtonPos = handles.insertEventButton.Position;
     insertEventButtonPos(2) = updatedFigPos(4) - (insertEventButtonPos(4) + insertEventButtonOffsetFromTop);
     handles.insertEventButton.Position = insertEventButtonPos;
+    
+    %timeSliderValueLabel
+    timeSliderValueLabelOffsetFromRight = getappdata(hObject,'timeSliderValueLabelOffsetFromRight');
+    timeSliderValueLabelPos = handles.timeSliderValueLabel.Position;
+    timeSliderValueLabelPos(3) = (updatedFigPos(3) - timeSliderValueLabelOffsetFromRight) - timeSliderValueLabelPos(1);
+    handles.timeSliderValueLabel.Position = timeSliderValueLabelPos;
     
     %script listbox
     scriptListboxOffsetFromTop = getappdata(hObject,'scriptListboxOffsetFromTop');

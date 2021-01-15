@@ -83,22 +83,41 @@ function [depVarValue, depVarUnit, taskStr, refBodyInfo] = lvd_getDepVarValueUni
         otherwise %is a programmatically generated string that we'll handle here
             tankMassPattern = '^Tank (\d+?) Mass - ".*"';
             tankMassDotPattern = '^Tank (\d+?) Mass Flow Rate - ".*"';
+            
             stageDryMassPattern = '^Stage (\d+?) Dry Mass - ".*"';
             stageActivePattern = '^Stage (\d+?) Active State - ".*"';
+            
             engineActivePattern = '^Engine (\d+?) Active State - ".*"';
+            
             stopwatchValuePattern = '^Stopwatch (\d+?) Value - ".*"';
+            
             extremaValuePattern = '^Extrema (\d+?) Value - ".*"';
+           
             grdObjAzValuePattern = '^Ground Object (\d+?) Azimuth to S/C - ".*"';
             grdObjElValuePattern = '^Ground Object (\d+?) Elevation to S/C - ".*"';
             grdObjRngValuePattern = '^Ground Object (\d+?) Range to S/C - ".*"';
             grdObjLoSValuePattern = '^Ground Object (\d+?) Line of Sight to S/C - ".*"';
+            
             calcObjValuePattern = '^Calculus (\d+?) Value - ".*"';
+            
             pwrStorageActivePattern = '^Power Storage (\d+?) Active State - ".*"';
             pwrStorageSoCPattern = '^Power Storage (\d+?) State of Charge - ".*"';
             pwrSinkActivePattern = '^Power Sink (\d+?) Active State - ".*"';
             pwrSinkDischargeRatePattern = '^Power Sink (\d+?) Discharge Rate - ".*"';
             pwrSrcActivePattern = '^Power Source (\d+?) Active State - ".*"';
             pwrSrcChargeRatePattern = '^Power Source (\d+?) Charge Rate - ".*"';
+            
+            geoPtPosXPattern = '^Point (\d+?) Position \(X\) - ".*"';
+            geoPtPosYPattern = '^Point (\d+?) Position \(Y\) - ".*"';
+            geoPtPosZPattern = '^Point (\d+?) Position \(Z\) - ".*"';
+            
+            geoVectXPattern = '^Vector (\d+?) X Component - ".*"';
+            geoVectYPattern = '^Vector (\d+?) Y Component - ".*"';
+            geoVectZPattern = '^Vector (\d+?) Z Component - ".*"';
+            geoVectMagPattern = '^Vector (\d+?) Magnitude - ".*"';
+            geoVectOriginXPattern = '^Vector (\d+?) Origin Position \(X\) - ".*"';
+            geoVectOriginYPattern = '^Vector (\d+?) Origin Position \(Y\) - ".*"';
+            geoVectOriginZPattern = '^Vector (\d+?) Origin Position \(Z\) - ".*"';
             
             if(not(isempty(regexpi(taskStr, tankMassPattern))))
                 tokens = regexpi(taskStr, tankMassPattern, 'tokens');
@@ -303,6 +322,116 @@ function [depVarValue, depVarUnit, taskStr, refBodyInfo] = lvd_getDepVarValueUni
                 powerSrc = powerSrcs(pwrSrcObjInd);
                 
                 [depVarValue, depVarUnit] = lvd_ElectricalPowerSrcTasks(subLog(i), 'chargeRate', powerSrc);
+                
+            elseif(not(isempty(regexpi(taskStr, geoPtPosXPattern))))
+                tokens = regexpi(taskStr, geoPtPosXPattern, 'tokens');
+                tokens = tokens{1};
+                tokens = tokens{1};
+                pointInd = str2double(tokens);
+                
+                [~, points] = subLog(i).lvdData.geometry.points.getPointPositionXGraphAnalysisTaskStrs();
+                point = points(pointInd);
+                
+                [depVarValue, depVarUnit] = lvd_GeometricPointTasks(subLog(i), 'PosX', point);
+                
+            elseif(not(isempty(regexpi(taskStr, geoPtPosYPattern))))
+                tokens = regexpi(taskStr, geoPtPosYPattern, 'tokens');
+                tokens = tokens{1};
+                tokens = tokens{1};
+                pointInd = str2double(tokens);
+                
+                [~, points] = subLog(i).lvdData.geometry.points.getPointPositionXGraphAnalysisTaskStrs();
+                point = points(pointInd);
+                
+                [depVarValue, depVarUnit] = lvd_GeometricPointTasks(subLog(i), 'PosY', point);
+                
+            elseif(not(isempty(regexpi(taskStr, geoPtPosZPattern))))
+                tokens = regexpi(taskStr, geoPtPosZPattern, 'tokens');
+                tokens = tokens{1};
+                tokens = tokens{1};
+                pointInd = str2double(tokens);
+                
+                [~, points] = subLog(i).lvdData.geometry.points.getPointPositionXGraphAnalysisTaskStrs();
+                point = points(pointInd);
+                
+                [depVarValue, depVarUnit] = lvd_GeometricPointTasks(subLog(i), 'PosZ', point);
+                
+            elseif(not(isempty(regexpi(taskStr, geoVectXPattern))))
+                tokens = regexpi(taskStr, geoVectXPattern, 'tokens');
+                tokens = tokens{1};
+                tokens = tokens{1};
+                vectInd = str2double(tokens);
+                
+                [~, vectors] = subLog(i).lvdData.geometry.vectors.getVectorXComponentGraphAnalysisTaskStrs();
+                vector = vectors(vectInd);
+                
+                [depVarValue, depVarUnit] = lvd_GeometricVectorTasks(subLog(i), 'VectorX', vector);
+                
+            elseif(not(isempty(regexpi(taskStr, geoVectYPattern))))
+                tokens = regexpi(taskStr, geoVectYPattern, 'tokens');
+                tokens = tokens{1};
+                tokens = tokens{1};
+                vectInd = str2double(tokens);
+                
+                [~, vectors] = subLog(i).lvdData.geometry.vectors.getVectorYComponentGraphAnalysisTaskStrs();
+                vector = vectors(vectInd);
+                
+                [depVarValue, depVarUnit] = lvd_GeometricVectorTasks(subLog(i), 'VectorY', vector);
+                
+            elseif(not(isempty(regexpi(taskStr, geoVectZPattern))))
+                tokens = regexpi(taskStr, geoVectZPattern, 'tokens');
+                tokens = tokens{1};
+                tokens = tokens{1};
+                vectInd = str2double(tokens);
+                
+                [~, vectors] = subLog(i).lvdData.geometry.vectors.getVectorZComponentGraphAnalysisTaskStrs();
+                vector = vectors(vectInd);
+                
+                [depVarValue, depVarUnit] = lvd_GeometricVectorTasks(subLog(i), 'VectorZ', vector);
+                
+            elseif(not(isempty(regexpi(taskStr, geoVectMagPattern))))
+                tokens = regexpi(taskStr, geoVectMagPattern, 'tokens');
+                tokens = tokens{1};
+                tokens = tokens{1};
+                vectInd = str2double(tokens);
+                
+                [~, vectors] = subLog(i).lvdData.geometry.vectors.getVectorMagComponentGraphAnalysisTaskStrs();
+                vector = vectors(vectInd);
+                
+                [depVarValue, depVarUnit] = lvd_GeometricVectorTasks(subLog(i), 'VectMag', vector);
+                
+            elseif(not(isempty(regexpi(taskStr, geoVectOriginXPattern))))
+                tokens = regexpi(taskStr, geoVectOriginXPattern, 'tokens');
+                tokens = tokens{1};
+                tokens = tokens{1};
+                vectInd = str2double(tokens);
+                
+                [~, vectors] = subLog(i).lvdData.geometry.vectors.getOriginPosXComponentGraphAnalysisTaskStrs();
+                vector = vectors(vectInd);
+                
+                [depVarValue, depVarUnit] = lvd_GeometricVectorTasks(subLog(i), 'OriginX', vector);
+                
+            elseif(not(isempty(regexpi(taskStr, geoVectOriginYPattern))))
+                tokens = regexpi(taskStr, geoVectOriginYPattern, 'tokens');
+                tokens = tokens{1};
+                tokens = tokens{1};
+                vectInd = str2double(tokens);
+                
+                [~, vectors] = subLog(i).lvdData.geometry.vectors.getOriginPosYComponentGraphAnalysisTaskStrs();
+                vector = vectors(vectInd);
+                
+                [depVarValue, depVarUnit] = lvd_GeometricVectorTasks(subLog(i), 'OriginY', vector);
+                
+            elseif(not(isempty(regexpi(taskStr, geoVectOriginZPattern))))
+                tokens = regexpi(taskStr, geoVectOriginZPattern, 'tokens');
+                tokens = tokens{1};
+                tokens = tokens{1};
+                vectInd = str2double(tokens);
+                
+                [~, vectors] = subLog(i).lvdData.geometry.vectors.getOriginPosZComponentGraphAnalysisTaskStrs();
+                vector = vectors(vectInd);
+                
+                [depVarValue, depVarUnit] = lvd_GeometricVectorTasks(subLog(i), 'OriginZ', vector);
                 
             else
                 error('Unknown LVD task string: "%s"', taskStr);                

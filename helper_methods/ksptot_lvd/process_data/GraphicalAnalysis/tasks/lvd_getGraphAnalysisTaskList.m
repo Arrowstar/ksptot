@@ -65,5 +65,11 @@ function [taskList] = lvd_getGraphAnalysisTaskList(lvdData, excludeList)
     [powerSrcsGAStr, ~] = lvdData.launchVehicle.getPowerSrcsGraphAnalysisTaskStrs();
     taskList = horzcat(taskList, powerSrcsGAStr);
     
+    ptGAStr = lvdData.geometry.points.getAllPointGraphAnalysisTaskStrs();
+    taskList = horzcat(taskList, ptGAStr);
+    
+    vectGAStr = lvdData.geometry.vectors.getAllVectorGraphAnalysisTaskStrs();
+    taskList = horzcat(taskList, vectGAStr);
+    
     taskList = setdiff(taskList,excludeList);
 end

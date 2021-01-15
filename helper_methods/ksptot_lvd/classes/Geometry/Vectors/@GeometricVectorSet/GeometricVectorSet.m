@@ -85,5 +85,93 @@ classdef GeometricVectorSet < matlab.mixin.SetGet
                 tf = tf || obj.vectors(i).usesGeometricRefFrame(refFrame);
             end
         end
+        
+        %%% Graphical Analysis Task String methods %%%
+        function vectGAStr = getAllVectorGraphAnalysisTaskStrs(obj)
+            vectGAStr = horzcat(obj.getVectorXComponentGraphAnalysisTaskStrs(), ...
+                                obj.getVectorYComponentGraphAnalysisTaskStrs(), ... 
+                                obj.getVectorZComponentGraphAnalysisTaskStrs(), ...
+                                obj.getVectorMagComponentGraphAnalysisTaskStrs(), ...
+                                obj.getOriginPosXComponentGraphAnalysisTaskStrs(), ...
+                                obj.getOriginPosYComponentGraphAnalysisTaskStrs(), ...
+                                obj.getOriginPosZComponentGraphAnalysisTaskStrs());
+        end
+        
+        function [vectXGAStr, vectors] = getVectorXComponentGraphAnalysisTaskStrs(obj)
+            vectors = obj.vectors;
+            
+            vectXGAStr = cell(1,length(vectors));
+            A = length(vectors);
+            formSpec = sprintf('%%0%uu',floor(log10(abs(A)+1)) + 1);
+            for(i=1:length(vectors))
+                vectXGAStr{i} = sprintf(sprintf('Vector %s X Component - "%s"',formSpec, vectors(i).getName()), i);
+            end
+        end
+        
+        function [vectYGAStr, vectors] = getVectorYComponentGraphAnalysisTaskStrs(obj)
+            vectors = obj.vectors;
+            
+            vectYGAStr = cell(1,length(vectors));
+            A = length(vectors);
+            formSpec = sprintf('%%0%uu',floor(log10(abs(A)+1)) + 1);
+            for(i=1:length(vectors))
+                vectYGAStr{i} = sprintf(sprintf('Vector %s Y Component - "%s"',formSpec, vectors(i).getName()), i);
+            end
+        end
+        
+        function [vectZGAStr, vectors] = getVectorZComponentGraphAnalysisTaskStrs(obj)
+            vectors = obj.vectors;
+            
+            vectZGAStr = cell(1,length(vectors));
+            A = length(vectors);
+            formSpec = sprintf('%%0%uu',floor(log10(abs(A)+1)) + 1);
+            for(i=1:length(vectors))
+                vectZGAStr{i} = sprintf(sprintf('Vector %s Z Component - "%s"',formSpec, vectors(i).getName()), i);
+            end
+        end
+        
+        function [vectMagGAStr, vectors] = getVectorMagComponentGraphAnalysisTaskStrs(obj)
+            vectors = obj.vectors;
+            
+            vectMagGAStr = cell(1,length(vectors));
+            A = length(vectors);
+            formSpec = sprintf('%%0%uu',floor(log10(abs(A)+1)) + 1);
+            for(i=1:length(vectors))
+                vectMagGAStr{i} = sprintf(sprintf('Vector %s Magnitude - "%s"',formSpec, vectors(i).getName()), i);
+            end
+        end
+        
+        function [originPosXGAStr, vectors] = getOriginPosXComponentGraphAnalysisTaskStrs(obj)
+            vectors = obj.vectors;
+            
+            originPosXGAStr = cell(1,length(vectors));
+            A = length(vectors);
+            formSpec = sprintf('%%0%uu',floor(log10(abs(A)+1)) + 1);
+            for(i=1:length(vectors))
+                originPosXGAStr{i} = sprintf(sprintf('Vector %s Origin Position (X) - "%s"',formSpec, vectors(i).getName()), i);
+            end
+        end
+        
+        function [originPosYGAStr, vectors] = getOriginPosYComponentGraphAnalysisTaskStrs(obj)
+            vectors = obj.vectors;
+            
+            originPosYGAStr = cell(1,length(vectors));
+            A = length(vectors);
+            formSpec = sprintf('%%0%uu',floor(log10(abs(A)+1)) + 1);
+            for(i=1:length(vectors))
+                originPosYGAStr{i} = sprintf(sprintf('Vector %s Origin Position (Y) - "%s"',formSpec, vectors(i).getName()), i);
+            end
+        end
+        
+        function [originPosZGAStr, vectors] = getOriginPosZComponentGraphAnalysisTaskStrs(obj)
+            vectors = obj.vectors;
+            
+            originPosZGAStr = cell(1,length(vectors));
+            A = length(vectors);
+            formSpec = sprintf('%%0%uu',floor(log10(abs(A)+1)) + 1);
+            for(i=1:length(vectors))
+                originPosZGAStr{i} = sprintf(sprintf('Vector %s Origin Position (Z) - "%s"',formSpec, vectors(i).getName()), i);
+            end
+        end
     end
 end

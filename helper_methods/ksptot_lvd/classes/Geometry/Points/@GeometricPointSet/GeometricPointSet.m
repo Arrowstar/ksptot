@@ -102,5 +102,44 @@ classdef GeometricPointSet < matlab.mixin.SetGet
                 tf = tf || obj.points(i).usesGeometricRefFrame(refFrame);
             end
         end
+        
+        function ptGAStr = getAllPointGraphAnalysisTaskStrs(obj)
+            ptGAStr = horzcat(obj.getPointPositionXGraphAnalysisTaskStrs(), ...
+                              obj.getPointPositionYGraphAnalysisTaskStrs(), ... 
+                              obj.getPointPositionZGraphAnalysisTaskStrs()); 
+        end
+        
+        function [ptPosXGAStr, points] = getPointPositionXGraphAnalysisTaskStrs(obj)
+            points = obj.points;
+            
+            ptPosXGAStr = cell(1,length(points));
+            A = length(points);
+            formSpec = sprintf('%%0%uu',floor(log10(abs(A)+1)) + 1);
+            for(i=1:length(points))
+                ptPosXGAStr{i} = sprintf(sprintf('Point %s Position (X) - "%s"',formSpec, points(i).getName()), i);
+            end
+        end
+        
+        function [ptPosXGAStr, points] = getPointPositionYGraphAnalysisTaskStrs(obj)
+            points = obj.points;
+            
+            ptPosXGAStr = cell(1,length(points));
+            A = length(points);
+            formSpec = sprintf('%%0%uu',floor(log10(abs(A)+1)) + 1);
+            for(i=1:length(points))
+                ptPosXGAStr{i} = sprintf(sprintf('Point %s Position (Y) - "%s"',formSpec, points(i).getName()), i);
+            end
+        end
+        
+        function [ptPosXGAStr, points] = getPointPositionZGraphAnalysisTaskStrs(obj)
+            points = obj.points;
+            
+            ptPosXGAStr = cell(1,length(points));
+            A = length(points);
+            formSpec = sprintf('%%0%uu',floor(log10(abs(A)+1)) + 1);
+            for(i=1:length(points))
+                ptPosXGAStr{i} = sprintf(sprintf('Point %s Position (Z) - "%s"',formSpec, points(i).getName()), i);
+            end
+        end
     end
 end
