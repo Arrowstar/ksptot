@@ -86,7 +86,8 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                     for(i=1:length(entries))
                         entry = entries(i);
                         
-                        if(ismember(entry.event.getEventNum(), evtIds) && ...
+                        if(not(isempty(entry.event.getEventNum())) && ...
+                           ismember(entry.event.getEventNum(), evtIds) && ...
                            entry.centralBody == bodyInfo)
                             lvdStateLogEntries(end+1) = entry; %#ok<AGROW>
                         end
@@ -359,6 +360,11 @@ function [childrenHGs] = plotSubStateLog(subStateLog, prevSubStateLog, lvdData, 
 
     eventNum = subStateLog(1,13);
     event = lvdData.script.getEventForInd(eventNum);
+    if(isempty(event))
+        childrenHGs = [];
+        return;
+    end
+    
     plotLineColor = event.colorLineSpec.color.color;
     plotLineStyle = event.colorLineSpec.lineSpec.linespec;
     plotLineWidth = event.colorLineSpec.lineWidth;

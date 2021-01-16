@@ -395,7 +395,7 @@ function insertEventButton_Callback(hObject, eventdata, handles)
 	setDeleteButtonEnable(lvdData, handles);
 
     runScript(handles, lvdData, 1);
-    lvd_processData(handles);
+	lvd_processData(handles);
 
 % --- Executes on button press in moveEventDown.
 function moveEventDown_Callback(hObject, eventdata, handles)

@@ -24,7 +24,7 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         dispZAxis(1,1) logical = false;
         
         %trajectory view options
-        trajEvtsViewType(1,1) ViewEventsTypeEnum = ViewEventsTypeEnum.SoIChunk %either chunked by event/SoI or all
+        trajEvtsViewType(1,1) ViewEventsTypeEnum = ViewEventsTypeEnum.All %either chunked by event/SoI or all
         frame AbstractReferenceFrame
         
         %body fixed options
@@ -545,6 +545,14 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
             vVects = subStateLogs{j}(:,5:7);
 
             evtNum = subStateLogs{j}(1,13);
+            if(isempty(evtNum) || isnan(evtNum))
+                times = [];
+                rVects = [];
+                evtColor = [];
+                vVects = [];
+                
+                return;
+            end
             evt = evts(evtNum);
             evtColor = evt.colorLineSpec.color;
 
