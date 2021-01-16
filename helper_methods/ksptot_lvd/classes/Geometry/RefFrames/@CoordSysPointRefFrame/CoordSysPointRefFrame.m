@@ -27,9 +27,25 @@ classdef CoordSysPointRefFrame < AbstractGeometricRefFrame
             posOffsetOrigin = [ce.rVect];
             velOffsetOrigin = [ce.vVect];
             
-            angVelWrtOrigin = repmat([0;0;0], [1, length(time)]);
-            
             rotMatToInertial = obj.coordSys.getCoordSysAtTime(time, vehElemSet, inFrame);
+            
+            if(obj.coordSys.isVehDependent() == false)
+                h = 0.01;
+                rotMatToInertial12 = rotMatToInertial;
+                rotMatToInertial32 = obj.coordSys.getCoordSysAtTime(time + h, vehElemSet, inFrame);
+                rotMatToInertial23 = permute(rotMatToInertial32, [2 1 3]);
+                rotMatToInertial13 = mtimesx(rotMatToInertial23,rotMatToInertial12);
+                
+                axang = rotm2axang(rotMatToInertial13);
+                axang = axang';
+                rotAxes = vect_normVector(axang(1:3,:));
+                angleVel = axang(4,:)/h;
+                
+                angVelWrtOrigin = bsxfun(@times, rotAxes, angleVel);
+                
+            else
+                angVelWrtOrigin = repmat([0;0;0], [1, length(time)]);
+            end
         end
         
         function name = getName(obj)
