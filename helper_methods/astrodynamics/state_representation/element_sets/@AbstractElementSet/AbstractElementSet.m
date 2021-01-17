@@ -4,7 +4,7 @@ classdef (Abstract) AbstractElementSet < matlab.mixin.SetGet & matlab.mixin.Cust
     
     properties
         time%(1,1) double %UT sec
-        frame AbstractReferenceFrame = AbstractReferenceFrame.empty(1,0);
+        frame  = AbstractReferenceFrame.empty(1,0);
     end
     
     properties(Abstract, Constant)
