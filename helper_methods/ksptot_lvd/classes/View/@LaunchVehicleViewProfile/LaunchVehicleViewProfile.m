@@ -283,23 +283,27 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                 for(i=1:length(evts))
                     evt = evts(i);
                     evtStateLogEntries = lvdStateLogEntries([lvdStateLogEntries.event] == evt);
-                                                            
+                    evtStateLogEntries = evtStateLogEntries(:)';           
+                    
+                    cartElem = convertToFrame(getCartesianElementSetRepresentation(evtStateLogEntries), viewInFrame);
+                    
                     times = [evtStateLogEntries.time];
-                    rVects = NaN(3, length(evtStateLogEntries));
+%                     rVects = NaN(3, length(evtStateLogEntries));
+                    rVects = [cartElem.rVect];
                     rotMatsBodyToView = NaN(3, 3, length(evtStateLogEntries));
                     for(j=1:length(evtStateLogEntries))
                         %get body position in view frame
                         entry = evtStateLogEntries(j);
-                        cartElem = entry.getCartesianElementSetRepresentation();
-                        cartElem = cartElem.convertToFrame(viewInFrame);
+%                         cartElem = entry.getCartesianElementSetRepresentation();
+%                         cartElem = cartElem.convertToFrame(viewInFrame);
 
-                        rVects(:,j) = cartElem.rVect;
+%                         rVects(:,j) = cartElem.rVect;
 
                         %get body axes in view frame
                         rotMatBodyToInertial = entry.steeringModel.getBody2InertialDcmAtTime(entry.time, entry.position, entry.velocity, entry.centralBody);
 
-                        [~, ~, ~, rotMatToInertial12] = viewInFrame.getOffsetsWrtInertialOrigin(entry.time, cartElem);
-                        [~, ~, ~, rotMatToInertial32] = entry.centralBody.getBodyCenteredInertialFrame().getOffsetsWrtInertialOrigin(entry.time, cartElem);
+                        [~, ~, ~, rotMatToInertial12] = viewInFrame.getOffsetsWrtInertialOrigin(entry.time, cartElem(j));
+                        [~, ~, ~, rotMatToInertial32] = entry.centralBody.getBodyCenteredInertialFrame().getOffsetsWrtInertialOrigin(entry.time, cartElem(j));
 
                         rotMatsBodyToView(:,:,j) = rotMatToInertial12' * rotMatToInertial32 * rotMatBodyToInertial; %body to inertial -> inertial to inertial -> inertial to view frame
                     end
