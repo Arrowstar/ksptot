@@ -348,26 +348,37 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                     for(j=1:length(evts))
                         evt = evts(j);
                         evtStateLogEntries = lvdStateLogEntries([lvdStateLogEntries.event] == evt);
+                        numEntries = length(evtStateLogEntries);
                         
-                        times = [];
-                        rVectsGrdObj = [];
-                        rVectsSc = [];
-                        for(k=1:length(evtStateLogEntries))
-                            entry = evtStateLogEntries(k);
-                            scCartElem = entry.getCartesianElementSetRepresentation();
-                            scCartElem = scCartElem.convertToFrame(viewInFrame);
+                        scCartElem = convertToFrame(getCartesianElementSetRepresentation(evtStateLogEntries), viewInFrame);
+                        allTimes = [scCartElem.time];
+                        
+                        elemSet = GeographicElementSet.empty(1,0);
+                        
+                        for(k=1:numEntries)
+%                             entry = evtStateLogEntries(k);
+%                             scCartElem = entry.getCartesianElementSetRepresentation();
+%                             scCartElem = scCartElem.convertToFrame(viewInFrame);
                             
-                            time = entry.time;
+%                             time = entry.time;
                             
-                            elemSet = grdObj.getStateAtTime(time);
-                            if(not(isempty(elemSet)))
-                                elemSet = elemSet.convertToCartesianElementSet().convertToFrame(viewInFrame);
-                                
-                                times(end+1) = time;
-                                rVectsGrdObj(:,end+1) = elemSet.rVect;
-                                rVectsSc(:,end+1) = scCartElem.rVect;
+                            ge = grdObj.getStateAtTime(allTimes(k));
+                            if(not(isempty(ge)))
+                                elemSet(end+1) = ge; %#ok<AGROW>
                             end
+%                             if(not(isempty(elemSet)))
+%                                 elemSet = elemSet.convertToCartesianElementSet().convertToFrame(viewInFrame);
+%                                 
+%                                 times(end+1) = allTimes(i);
+%                                 rVectsGrdObj(:,end+1) = elemSet.rVect;
+%                                 rVectsSc(:,end+1) = scCartElem(i).rVect;
+%                             end
                         end
+                        elemSet = convertToFrame(convertToCartesianElementSet(elemSet), viewInFrame);
+
+                        times = [elemSet.time];
+                        rVectsGrdObj = [elemSet.rVect];
+                        rVectsSc= [scCartElem.rVect];
                         
                         [times,ia,~] = unique(times);
                         rVectsGrdObj = rVectsGrdObj(:,ia);

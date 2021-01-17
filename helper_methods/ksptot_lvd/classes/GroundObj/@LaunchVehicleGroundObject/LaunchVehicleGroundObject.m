@@ -23,6 +23,10 @@ classdef LaunchVehicleGroundObject < matlab.mixin.SetGet
         groundObjs LaunchVehicleGroundObjectSet
     end
     
+    properties(Constant)
+        emptyGeoElemSet = GeographicElementSet.empty(1,0);
+    end
+    
     properties(Dependent)
         centralBodyInfo
         lvdData
@@ -147,8 +151,8 @@ classdef LaunchVehicleGroundObject < matlab.mixin.SetGet
                     timeFrac = (time - obj.initialTime)/totalWayPtDuration;
                     
                     if(timeFrac < 0 || timeFrac > 1.0)
-                        elemSet = GeographicElementSet.empty(1,0);
-                        
+                        elemSet = obj.emptyGeoElemSet;
+
                         return;
                     end
                     

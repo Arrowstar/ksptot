@@ -54,10 +54,13 @@ classdef GeographicElementSet < AbstractElementSet
             vVect = rotSEZVectToECEFCoords(rVect, vectorSez); %not necessarily ECEF coords here but the transform holds
             
 %             cartElemSet = CartesianElementSet(obj.time, rVect, vVect, obj.frame);
-            cartElemSet = repmat(CartesianElementSet.getDefaultElements(), size(obj));
-            for(i=1:length(obj))
-                cartElemSet(i) = CartesianElementSet(obj(i).time, rVect(:,i), vVect(:,i), obj(i).frame);
-            end
+%             cartElemSet = repmat(CartesianElementSet.getDefaultElements(), size(obj));
+%             for(i=1:length(obj))
+%                 cartElemSet(i) = CartesianElementSet(obj(i).time, rVect(:,i), vVect(:,i), obj(i).frame);
+%             end
+
+            obj = obj(:)';
+            cartElemSet = CartesianElementSet([obj.time], rVect, vVect, [obj.frame]);
         end
         
         %vectorized

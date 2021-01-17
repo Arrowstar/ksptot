@@ -43,10 +43,13 @@ classdef KeplerianElementSet < AbstractElementSet
             [rVect, vVect] = vect_getStatefromKepler([obj.sma], [obj.ecc], [obj.inc], [obj.raan], [obj.arg], [obj.tru], gmu);
             
 %             cartElemSet = CartesianElementSet(obj.time, rVect, vVect, obj.frame);
-            cartElemSet = repmat(CartesianElementSet.getDefaultElements(), size(obj));
-            for(i=1:length(obj))
-                cartElemSet(i) = CartesianElementSet(obj(i).time, rVect(:,i), vVect(:,i), obj(i).frame);
-            end
+%             cartElemSet = repmat(CartesianElementSet.getDefaultElements(), size(obj));
+%             for(i=1:length(obj))
+%                 cartElemSet(i) = CartesianElementSet(obj(i).time, rVect(:,i), vVect(:,i), obj(i).frame);
+%             end
+
+            obj = obj(:)';
+            cartElemSet = CartesianElementSet([obj.time], rVect, vVect, [obj.frame]);
         end
         
         %vectorized
