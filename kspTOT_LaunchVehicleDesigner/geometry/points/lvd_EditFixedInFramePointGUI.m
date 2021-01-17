@@ -22,7 +22,7 @@ function varargout = lvd_EditFixedInFramePointGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditFixedInFramePointGUI
 
-% Last Modified by GUIDE v2.5 10-Jan-2021 16:21:21
+% Last Modified by GUIDE v2.5 17-Jan-2021 11:18:36
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -94,6 +94,8 @@ function populateGUI(handles, point)
 
     handles.pointLineSpecCombo.String = LineSpecEnum.getListboxStr();
     handles.pointLineSpecCombo.Value = LineSpecEnum.getIndForName(point.trkLineSpec.name);
+    
+    handles.dispTrajCheckbox.Value = double(point.plotTrkLine);
 
 
 % --- Outputs from this function are returned to the command line.
@@ -127,6 +129,8 @@ function varargout = lvd_EditFixedInFramePointGUI_OutputFcn(hObject, eventdata, 
         
         str = handles.pointLineSpecCombo.String{handles.pointLineSpecCombo.Value};
         point.trkLineSpec = LineSpecEnum.getEnumForListboxStr(str);
+        
+        point.plotTrkLine = logical(handles.dispTrajCheckbox.Value);
         
         varargout{1} = true;
         close(handles.lvd_EditFixedInFramePointGUI);
@@ -490,3 +494,12 @@ function setFrameOptionsButton_Callback(hObject, eventdata, handles)
     setappdata(handles.lvd_EditFixedInFramePointGUI,'curElemSet',curElemSet);
     
     frameUpdated(handles);
+
+
+% --- Executes on button press in dispTrajCheckbox.
+function dispTrajCheckbox_Callback(hObject, eventdata, handles)
+% hObject    handle to dispTrajCheckbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of dispTrajCheckbox

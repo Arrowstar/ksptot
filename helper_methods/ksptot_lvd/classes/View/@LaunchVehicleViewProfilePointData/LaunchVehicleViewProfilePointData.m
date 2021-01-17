@@ -45,8 +45,10 @@ classdef LaunchVehicleViewProfilePointData < matlab.mixin.SetGet
             rVect = obj.getPositionAtTime(time);
             if(isempty(obj.markerPlot))
                 hold(hAx,'on');
-                rVectsToPlot = obj.getAllRVectsToPlot();
-                obj.trajLine = plot3(hAx, rVectsToPlot(1,:), rVectsToPlot(2,:), rVectsToPlot(3,:), 'Color',obj.point.trkLineColor.color, 'LineStyle',obj.point.trkLineSpec.linespec);
+                if(obj.point.plotTrkLine)
+                    rVectsToPlot = obj.getAllRVectsToPlot();
+                    obj.trajLine = plot3(hAx, rVectsToPlot(1,:), rVectsToPlot(2,:), rVectsToPlot(3,:), 'Color',obj.point.trkLineColor.color, 'LineStyle',obj.point.trkLineSpec.linespec);
+                end
                 
                 obj.markerPlot = plot3(hAx, rVect(1), rVect(2), rVect(3), 'MarkerFaceColor',obj.point.markerColor.color, 'Marker',obj.point.markerShape.shape, 'MarkerEdgeColor','k');
                 hold(hAx,'off');

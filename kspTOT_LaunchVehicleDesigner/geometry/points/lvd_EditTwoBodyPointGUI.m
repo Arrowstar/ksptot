@@ -22,7 +22,7 @@ function varargout = lvd_EditTwoBodyPointGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditTwoBodyPointGUI
 
-% Last Modified by GUIDE v2.5 13-Jan-2021 13:50:09
+% Last Modified by GUIDE v2.5 17-Jan-2021 11:22:18
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -107,6 +107,7 @@ function populateGUI(handles, point)
     handles.pointLineSpecCombo.String = LineSpecEnum.getListboxStr();
     handles.pointLineSpecCombo.Value = LineSpecEnum.getIndForName(point.trkLineSpec.name);
 
+    handles.dispTrajCheckbox.Value = double(point.plotTrkLine);
 
 % --- Outputs from this function are returned to the command line.
 function varargout = lvd_EditTwoBodyPointGUI_OutputFcn(hObject, eventdata, handles) 
@@ -138,6 +139,8 @@ function varargout = lvd_EditTwoBodyPointGUI_OutputFcn(hObject, eventdata, handl
         
         str = handles.pointLineSpecCombo.String{handles.pointLineSpecCombo.Value};
         point.trkLineSpec = LineSpecEnum.getEnumForListboxStr(str);
+        
+         point.plotTrkLine = logical(handles.dispTrajCheckbox.Value);
         
         maStateLog = lvdData.stateLog.getMAFormattedStateLogMatrix(false);
         
@@ -1071,3 +1074,12 @@ function orbitPanelContextMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to orbitPanelContextMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on button press in dispTrajCheckbox.
+function dispTrajCheckbox_Callback(hObject, eventdata, handles)
+% hObject    handle to dispTrajCheckbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of dispTrajCheckbox

@@ -14,6 +14,7 @@ classdef TwoBodyPoint < AbstractGeometricPoint
         markerShape(1,1) MarkerStyleEnum = MarkerStyleEnum.RightTriangle;
         
         %track line
+        plotTrkLine(1,1) logical = true;
         trkLineColor(1,1) ColorSpecEnum = ColorSpecEnum.Black;
         trkLineSpec(1,1) LineSpecEnum = LineSpecEnum.DottedLine;
     end

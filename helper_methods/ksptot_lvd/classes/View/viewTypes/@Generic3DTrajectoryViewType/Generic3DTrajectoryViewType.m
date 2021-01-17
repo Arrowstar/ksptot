@@ -107,15 +107,24 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                     end
                 case ViewEventsTypeEnum.All
                     entries = stateLog.getAllEntries();
-                    subStateLogsMat = NaN(length(entries), 13);
-                    for(i=1:length(entries))
-                        tempMaMatrix = entries(i).getMAFormattedStateLogMatrix(false);
-
-                        cartesianEntry = entries(i).getCartesianElementSetRepresentation();
-                        cartesianEntry = cartesianEntry.convertToFrame(viewInFrame); 
-
-                        subStateLogsMat(i,:) = [entries(i).time, cartesianEntry.rVect', cartesianEntry.vVect', viewCentralBody.id, tempMaMatrix(9:13)];
-                    end
+                    maStateLogMatrix = stateLog.getMAFormattedStateLogMatrix(false);
+                    numRows = size(maStateLogMatrix,1);
+%                     subStateLogsMat = NaN(numRows, 13);
+                    
+                    cartesianEntry = convertToFrame(getCartesianElementSetRepresentation(entries),viewInFrame);
+                    times = [cartesianEntry.time]';
+                    rVect = [cartesianEntry.rVect]';
+                    vVect = [cartesianEntry.vVect]';
+                    bodyId = viewCentralBody.id + zeros(numRows,1);
+                    subStateLogsMat = [times, rVect, vVect, bodyId, maStateLogMatrix(:,9:13)];
+%                     for(i=1:numRows)
+%                         tempMaMatrix = entries(i).getMAFormattedStateLogMatrix(false);
+% 
+%                         cartesianEntry = 
+%                         cartesianEntry = cartesianEntry.convertToFrame(viewInFrame); 
+% 
+%                         subStateLogsMat(i,:) = [entries(i).time, cartesianEntry.rVect', cartesianEntry.vVect', viewCentralBody.id, maStateLogMatrix(i,9:13)];
+%                     end
 
                     subStateLogs = {};
                     for(evtNum=1:max(subStateLogsMat(:,13)))
