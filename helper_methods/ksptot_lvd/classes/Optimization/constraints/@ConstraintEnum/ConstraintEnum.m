@@ -88,6 +88,10 @@ classdef ConstraintEnum < matlab.mixin.SetGet
         CalculusCalculation('Calculus Calculation','CalculusCalculationValueConstraint',[]);
         
         CumulativePwrStorageStateOfCharge('Electrical Power Cumulative Storage State of Charge', 'CumPwrStorageStateOfChargeConstraint', []);
+        
+        GroundObjAz('Ground Object Azimuth', 'GroundObjAzConstraint', []);
+        GroundObjEl('Ground Object Elevation', 'GroundObjElConstraint', []);
+        GroundObjRng('Ground Object Range', 'GroundObjRangeConstraint', []);
     end
     
     properties

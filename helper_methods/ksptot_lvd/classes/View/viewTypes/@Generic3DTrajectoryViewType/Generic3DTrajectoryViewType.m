@@ -173,15 +173,19 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                 color = viewProfile.thrustVectColor.color;
                 lineStyle = viewProfile.thrustVectLineType.linespec;
                 
-                rVects = [];
+                subsetLvdStateLogEntries = lvdStateLogEntries(1:entryInc:length(lvdStateLogEntries));
+                subsetLvdStateLogEntries = subsetLvdStateLogEntries(:)';
+                cartesianEntries = convertToFrame(getCartesianElementSetRepresentation(subsetLvdStateLogEntries), viewInFrame);
+                
+                rVects = [cartesianEntries.rVect];
                 tVects = [];
-                for(i=1:entryInc:length(lvdStateLogEntries)) %#ok<*NO4LP>
-                    entry = lvdStateLogEntries(i);
+                
+                [~, ~, ~, rotMatToInertial12] = viewInFrame.getOffsetsWrtInertialOrigin([cartesianEntries.time], cartesianEntries);
+                for(i=1:length(subsetLvdStateLogEntries)) %#ok<*NO4LP>
+                    entry = subsetLvdStateLogEntries(i);
+                    cartesianEntry = cartesianEntries(i);       
                     
-                    cartesianEntry = entry.getCartesianElementSetRepresentation();                   
-                    cartesianEntry = cartesianEntry.convertToFrame(viewInFrame); 
-                    
-                    rVects = [rVects, cartesianEntry.rVect]; %#ok<AGROW>
+%                     rVects = [rVects, cartesianEntry.rVect]; %#ok<AGROW>
                                         
 %                     tX = lvd_ThrottleTask(entry, 'thrust_x');
 %                     tY = lvd_ThrottleTask(entry, 'thrust_y');
@@ -190,10 +194,9 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                     tVect = lvd_ThrottleTask(entry, 'thrust_vector');
                     
                     if(norm(tVect) > 0)                       
-                        [~, ~, ~, rotMatToInertial12] = viewInFrame.getOffsetsWrtInertialOrigin(entry.time, cartesianEntry);
                         [~, ~, ~, rotMatToInertial32] = entry.centralBody.getBodyCenteredInertialFrame().getOffsetsWrtInertialOrigin(entry.time, cartesianEntry);
                         
-                        tVectNew = rotMatToInertial32 * rotMatToInertial12' * tVect;
+                        tVectNew = rotMatToInertial32 * rotMatToInertial12(:,:,i)' * tVect;
                     else
                         tVectNew = [0;0;0];
                     end

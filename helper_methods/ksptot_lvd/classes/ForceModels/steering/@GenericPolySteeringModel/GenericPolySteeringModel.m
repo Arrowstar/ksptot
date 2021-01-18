@@ -94,7 +94,10 @@ classdef GenericPolySteeringModel < AbstractAnglePolySteeringModel
         function setConstsFromDcmAndContinuitySettings(obj, dcm, ut, rVect, vVect, bodyInfo)
             if(obj.gammaContinuity || obj.betaContinuity || obj.alphaContinuity)
                 elemSet = CartesianElementSet(ut, rVect(:), vVect(:), bodyInfo.getBodyCenteredInertialFrame());
-                elemSet = elemSet.convertToFrame(obj.refFrame);
+                
+                if(not(isempty(obj.refFrame.getOriginBody())))
+                    elemSet = elemSet.convertToFrame(obj.refFrame);
+                end
                 
                 [gammaAngle, betaAngle, alphaAngle] = obj.controlFrame.getAnglesFromInertialBodyAxes(dcm, elemSet.time, elemSet.rVect(:), elemSet.vVect(:), elemSet.frame.getOriginBody(), obj.refFrame);
              
