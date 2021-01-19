@@ -327,7 +327,11 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
     end
     
 	methods(Static)
-        function obj = loadobj(obj)            
+        function obj = loadobj(obj)   
+            if(isempty(obj.epoch))
+                return; %this should only happen if something is bugged out
+            end
+            
             obj.doNotUseAtmoTempSunMultCurve = isa(obj.atmotempsunmultcurve,'griddedInterpolant') && all(obj.atmotempsunmultcurve.Values == 0);
             obj.doNotUseLatTempSunMultCurve = isa(obj.lattempsunmultcurve,'griddedInterpolant') && all(obj.lattempsunmultcurve.Values == 0);
             obj.doNotUseAxialTempSunMultCurve = isa(obj.axialtempsunmultcurve,'griddedInterpolant') && all(obj.axialtempsunmultcurve.Values == 0);

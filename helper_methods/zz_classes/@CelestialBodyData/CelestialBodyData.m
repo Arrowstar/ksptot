@@ -12,6 +12,10 @@ classdef CelestialBodyData < matlab.mixin.SetGet & dynamicprops
         topLvlBodyCache KSPTOT_BodyInfo
     end
     
+    properties(Constant)
+        emptyBodyInfo KSPTOT_BodyInfo = KSPTOT_BodyInfo.empty(1,0);
+    end
+    
     methods
         function obj = CelestialBodyData(celBodyData)
             if(isstruct(celBodyData))

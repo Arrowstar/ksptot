@@ -100,7 +100,8 @@ classdef LvdData < matlab.mixin.SetGet
         end
         
         function baseFrame = getBaseFrame(obj)
-            topLevelBody = getTopLevelCentralBody(obj.celBodyData);
+%             topLevelBody = getTopLevelCentralBody(obj.celBodyData);
+            topLevelBody = obj.celBodyData.getTopLevelBody();
             baseFrame = topLevelBody.getBodyCenteredInertialFrame();
         end
     end

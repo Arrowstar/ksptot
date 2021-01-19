@@ -5,6 +5,10 @@ classdef VehiclePoint < AbstractGeometricPoint
     properties         
          name(1,:) char
     end
+
+    properties(Constant)
+        emptyBodyInfo KSPTOT_BodyInfo = KSPTOT_BodyInfo.empty(1,0);
+    end
     
     methods
         function obj = VehiclePoint(name)
@@ -40,7 +44,7 @@ classdef VehiclePoint < AbstractGeometricPoint
         end
         
         function bodyInfo = getOriginBody(obj)
-            bodyInfo = KSPTOT_BodyInfo.empty(1,0); %this may be a problem later
+            bodyInfo = obj.emptyBodyInfo;
 %             warning("Request for vehicle point origin body.")
         end
         
