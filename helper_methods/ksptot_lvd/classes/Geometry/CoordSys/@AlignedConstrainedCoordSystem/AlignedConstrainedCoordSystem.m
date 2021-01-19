@@ -60,7 +60,7 @@ classdef AlignedConstrainedCoordSystem < AbstractGeometricCoordSystem
             for(i=1:length(time))
                 cVectAA(i,:) = vrrotvec(cVect(:,i),cVectAxis(:,i));
             end
-            cVectR = axang2rotm(cVectAA);
+            cVectR = axang2rotmARH(cVectAA);
 
             aVectAR = squeeze(mtimesx(cVectR, permute(aVect, [1 3 2])));
             
@@ -68,7 +68,7 @@ classdef AlignedConstrainedCoordSystem < AbstractGeometricCoordSystem
             for(i=1:length(time))
                 aVectAA(i,:) = vrrotvec(aVectAR(:,i),aVectAxis(:,i));
             end
-            aVectR = axang2rotm(aVectAA);
+            aVectR = axang2rotmARH(aVectAA);
 
             rotMatToInertial = permute(mtimesx(aVectR, cVectR), [2 1 3]);
         end
