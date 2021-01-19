@@ -36,7 +36,7 @@ classdef CoordSysPointRefFrame < AbstractGeometricRefFrame
                 rotMatToInertial23 = permute(rotMatToInertial32, [2 1 3]);
                 rotMatToInertial13 = mtimesx(rotMatToInertial23,rotMatToInertial12);
                 
-                axang = rotm2axang(rotMatToInertial13);
+                axang = rotm2axangARH(rotMatToInertial13);
                 axang = axang';
                 rotAxes = vect_normVector(axang(1:3,:));
                 angleVel = axang(4,:)/h;

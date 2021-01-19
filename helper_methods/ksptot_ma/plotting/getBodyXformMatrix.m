@@ -9,7 +9,7 @@ function M = getBodyXformMatrix(time, bodyInfo, viewFrame)
     rotMatZOffset = [cosd(zRotOffset) -sind(zRotOffset) 0; sind(zRotOffset) cosd(zRotOffset) 0; 0 0 1];
     
     M33 = rotMatToInertial32' * rotMatToInertial12 * rotMatZOffset;
-    axang = rotm2axang(M33);
+    axang = rotm2axangARH(M33);
     
     ce = bodyInfo.getElementSetsForTimes(time);
     ce = ce.convertToCartesianElementSet().convertToFrame(viewFrame);

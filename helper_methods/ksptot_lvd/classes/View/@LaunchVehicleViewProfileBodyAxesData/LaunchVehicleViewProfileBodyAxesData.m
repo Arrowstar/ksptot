@@ -70,7 +70,7 @@ classdef LaunchVehicleViewProfileBodyAxesData < matlab.mixin.SetGet
                     
                     if(not(isempty(obj.markerPlot{i})) && isvalid(obj.markerPlot{i}) && isa(obj.markerPlot{i}, 'matlab.graphics.primitive.Transform'))
 %                         [r1, r2, r3] = dcm2angle(dcm, 'XYZ');
-                        axang = rotm2axang(dcm);
+                        axang = rotm2axangARH(dcm);
                         
                         M = makehgtform('translate',pos, 'axisrotate',axang(1:3),axang(4));
 %                         M = makehgtform('translate',pos, 'xrotate',r1, 'yrotate',r2, 'zrotate',r3);
@@ -90,7 +90,7 @@ classdef LaunchVehicleViewProfileBodyAxesData < matlab.mixin.SetGet
                         set(zAxis,'Parent',obj.markerPlot{i});
                         
 %                         [r1, r2, r3] = dcm2angle(dcm, 'XYZ');
-                        axang = rotm2axang(dcm);
+                        axang = rotm2axangARH(dcm);
                         
 %                         M = makehgtform('translate',pos, 'xrotate',r1, 'yrotate',r2, 'zrotate',r3);
                         M = makehgtform('translate',pos, 'axisrotate',axang(1:3),axang(4));
