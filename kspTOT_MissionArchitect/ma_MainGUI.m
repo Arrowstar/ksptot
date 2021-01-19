@@ -658,16 +658,6 @@ function openMissionPlanMenu_Callback(hObject, eventdata, handles)
             setappdata(handles.ma_MainGUI,'undo_states',{});
             setappdata(handles.ma_MainGUI,'undo_pointer',0);
                        
-            topLevelBodyInfo = getTopLevelCentralBody(celBodyData);
-            maDataTopLevelBodyInfo = getTopLevelCentralBody(maData.celBodyData);
-            if(isfield(maData,'celBodyData') && ...
-               length(fields(topLevelBodyInfo)) == length(fields(maDataTopLevelBodyInfo)))
-                celBodyData = maData.celBodyData;
-                setappdata(handles.ma_MainGUI,'celBodyData',celBodyData);
-            else
-                maData.celBodyData = celBodyData;
-            end
-            
             if(isfield(maData,'celBodyData')) %#ok<NODEF>
                 maData.celBodyData = CelestialBodyData(maData.celBodyData);
                 names = fieldnames(maData.celBodyData);
@@ -677,6 +667,16 @@ function openMissionPlanMenu_Callback(hObject, eventdata, handles)
                         maData.celBodyData.(name).celBodyData = celBodyData;
                     end
                 end
+            end
+            
+            topLevelBodyInfo = getTopLevelCentralBody(celBodyData);
+            maDataTopLevelBodyInfo = getTopLevelCentralBody(maData.celBodyData);
+            if(isfield(maData,'celBodyData') && ...
+               length(fields(topLevelBodyInfo)) == length(fields(maDataTopLevelBodyInfo)))
+                celBodyData = maData.celBodyData;
+                setappdata(handles.ma_MainGUI,'celBodyData',celBodyData);
+            else
+                maData.celBodyData = celBodyData;
             end
             
             set(handles.ma_MainGUI,'Name',[application_title, ' - ', FileName]);

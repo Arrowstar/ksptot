@@ -2,7 +2,7 @@ function plotOneFrame(handles)
     if(strcmpi(get(handles.ma_MissionAnimatorGUI,'Visible'),'on'))
         maData = getappdata(handles.ma_MainGUI,'ma_data');
         stateLog = maData.stateLog;  
-        celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
+        celBodyData = maData.celBodyData;
 
         time = get(handles.movieFrameSlider,'Value');
         orbitToPlot = ma_getOrbitToPlot(stateLog, time);
