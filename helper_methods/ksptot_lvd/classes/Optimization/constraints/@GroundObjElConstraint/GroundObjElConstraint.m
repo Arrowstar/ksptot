@@ -111,7 +111,13 @@ classdef GroundObjElConstraint < AbstractConstraint
         end
         
         function addConstraintTf = openEditConstraintUI(obj, lvdData)
-            addConstraintTf = lvd_EditGroundObjConstraintGUI(obj, lvdData);
+            if(lvdData.groundObjs.getNumGroundObj() >= 1)
+                addConstraintTf = lvd_EditGroundObjConstraintGUI(obj, lvdData);
+            else
+                errordlg('There are currently no ground objects in this scenario.  Add at least one new ground object first.');
+                
+                addConstraintTf = false;
+            end
         end
     end
     

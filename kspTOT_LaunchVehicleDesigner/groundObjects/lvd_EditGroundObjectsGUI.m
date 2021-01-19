@@ -312,7 +312,7 @@ function removeGroundObjButton_Callback(hObject, eventdata, handles)
         updateGuiForGroundObj(grndObj, handles);
         setGrndObjDeleteButtonEnable(handles);
     else
-        errordlg('The selected ground object could not be deleted.  It is in use as a geometric point.  Remove ground object dependecies first.','Could Not Delete Ground Object');
+        errordlg('The selected ground object could not be deleted.  It is in use as a constraint or geometric point.  Remove ground object dependecies first.','Could Not Delete Ground Object');
     end
     
     
