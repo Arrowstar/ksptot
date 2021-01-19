@@ -50,7 +50,7 @@ end
 % Extract final values
 theta = reshape(theta,[numel(theta) 1]);
 v = reshape(v,[3, numel(v)/3]).';
-v = robotics.internal.normalizeRows(v);
+v = normalizeRowsARH(v);
 
 axang = cat(2, v, theta);
 
