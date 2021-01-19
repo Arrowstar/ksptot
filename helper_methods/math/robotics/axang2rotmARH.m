@@ -19,8 +19,7 @@ function R = axang2rotmARH( axang )
 
 %#codegen
 
-robotics.internal.validation.validateNumericMatrix(axang, 'axang2rotm', 'axang', ...
-    'ncols', 4);
+% robotics.internal.validation.validateNumericMatrix(axang, 'axang2rotm', 'axang', 'ncols', 4);
 
 % For a single axis-angle vector [ax ay az theta] the output rotation
 % matrix R can be computed as follows:
