@@ -197,6 +197,17 @@ function addVectorButton_Callback(hObject, eventdata, handles)
             case GeometricVectorEnum.VehicleState
                 newVector = VehicleStateVector(VehicleStateVectorTypeEnum.Velocity, 1, 'New Vector', lvdData);
                 
+            case GeometricVectorEnum.Projected
+                numVectors = lvdData.geometry.vectors.getNumVectors();
+                if(numVectors >= 2)
+                    vector1 = lvdData.geometry.vectors.getVectorAtInd(1);
+                    vector2 = lvdData.geometry.vectors.getVectorAtInd(2);
+                    newVector = ProjectedVector(vector1, vector2, 'New Vector', lvdData);
+                else
+                    errordlg('Cannot create Projected Vector: There must be at least two unique geometric vectors available.','Cannot Create Vector');
+                    return;
+                end
+                
             otherwise
                 error('Unknown Vector Type Type: %s', string(enum))
         end

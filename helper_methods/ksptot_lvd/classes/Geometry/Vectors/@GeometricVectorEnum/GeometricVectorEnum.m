@@ -7,7 +7,8 @@ classdef GeometricVectorEnum < matlab.mixin.SetGet
         TwoPoint('Two Point Vector');
         Scaled('Scaled Vector');
         CrossProd('Cross Product Vector');
-        VehicleState('Vector State Vector');
+        VehicleState('Vehicle State Vector');
+        Projected('Projected Vector');
     end
     
     properties
