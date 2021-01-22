@@ -45,6 +45,42 @@ classdef VehicleStateVector < AbstractGeometricVector
                 case VehicleStateVectorTypeEnum.Velocity
                     vect = [vehElemSet.vVect];
                     
+                case VehicleStateVectorTypeEnum.AscNode
+                    rVect = [vehElemSet.rVect];
+                    vVect = [vehElemSet.vVect];
+                    hVect = cross(rVect, vVect);
+                    kHat = [zeros(2, size(hVect,2));
+                            ones(1, size(hVect,2))];
+                        
+                    vehElemSetKep = convertToKeplerianElementSet(vehElemSet);
+                    sma = [vehElemSetKep.sma];
+                    ecc = [vehElemSetKep.ecc];
+                    
+                    nHat = vect_normVector(cross(kHat, hVect));
+                    RAANVectLength = abs(sma.*(1+ecc));
+                    nVect = bsxfun(@times, nHat, RAANVectLength);
+                    
+                    vect = nVect;
+                    
+                case VehicleStateVectorTypeEnum.Periapsis
+                    bodies = getOriginBody(vehElemSet.frame);
+                    gmu = [bodies.gm];
+                    
+                    rVect = [vehElemSet.rVect];
+                    vVect = [vehElemSet.vVect];
+                    hVect = cross(rVect, vVect);
+                    
+                    eVect = bsxfun(@rdivide, cross(vVect, hVect), gmu) - vect_normVector(rVect);
+                    eHat = vect_normVector(eVect);
+                    
+                    vehElemSetKep = convertToKeplerianElementSet(vehElemSet);
+                    sma = [vehElemSetKep.sma];
+                    ecc = [vehElemSetKep.ecc];
+                    
+                    rP = sma .* (1-ecc);
+                    
+                    vect = bsxfun(@times, eHat, rP);
+                    
                 otherwise
                     error('Unknown vehicle state vector type: %s', string(obj.type));
             end
@@ -72,9 +108,19 @@ classdef VehicleStateVector < AbstractGeometricVector
             tf = true;
         end
         
-        function origin = getOriginPointInViewFrame(~, ~, vehElemSet, viewFrame)
-            vehElemSet = vehElemSet.convertToFrame(viewFrame);
-            origin = vehElemSet.rVect;
+        function origin = getOriginPointInViewFrame(obj, time, vehElemSet, viewFrame)
+            switch obj.type
+                case {VehicleStateVectorTypeEnum.AngularMomentum, VehicleStateVectorTypeEnum.East, VehicleStateVectorTypeEnum.North, ...
+                      VehicleStateVectorTypeEnum.Velocity}
+                    vehElemSet = vehElemSet.convertToFrame(viewFrame);
+                    origin = [vehElemSet.rVect];
+                    
+                case {VehicleStateVectorTypeEnum.AscNode, VehicleStateVectorTypeEnum.Radial, VehicleStateVectorTypeEnum.Periapsis}
+                    origin = zeros(3,length(time));
+                    
+                otherwise
+                    error('Unknown vehicle state vector type: %s', string(obj.type));
+            end
         end
         
         function tf = usesGeometricPoint(~, ~)

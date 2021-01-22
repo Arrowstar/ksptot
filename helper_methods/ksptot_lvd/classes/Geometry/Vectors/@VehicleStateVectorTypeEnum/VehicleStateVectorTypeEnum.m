@@ -8,6 +8,8 @@ classdef VehicleStateVectorTypeEnum < matlab.mixin.SetGet
         AngularMomentum('Angular Momentum Vector');
         North('North Vector');
         East('East Vector');
+        AscNode('Ascending Node Vector');
+        Periapsis('Periapsis Vector');
     end
     
     properties
