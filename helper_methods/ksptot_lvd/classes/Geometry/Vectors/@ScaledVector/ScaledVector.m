@@ -48,7 +48,7 @@ classdef ScaledVector < AbstractGeometricVector
         end
         
         function origin = getOriginPointInViewFrame(obj, time, vehElemSet, viewFrame)
-            origin = [0;0;0];
+            origin = obj.vector.getOriginPointInViewFrame(time, vehElemSet, viewFrame);
         end
         
         function tf = usesGeometricPoint(~, ~)
