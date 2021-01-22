@@ -44,25 +44,29 @@ classdef LaunchVehicleViewProfileVectorData < matlab.mixin.SetGet
             [origin, vect] = obj.getVectorAtTime(time);
             
             if(isempty(obj.markerPlot))
-                hold(hAx,'on');       
-                obj.markerPlot = quiver3(origin(1),origin(2),origin(3), vect(1),vect(2),vect(3), 'AutoScale','off', 'Color',obj.vector.lineColor.color, 'LineStyle',obj.vector.lineSpec.linespec);
-                hold(hAx,'off');
+                for(i=1:size(vect,2))
+                    hold(hAx,'on');       
+                    obj.markerPlot(i) = quiver3(origin(1,i),origin(2,i),origin(3,i), vect(1,i),vect(2,i),vect(3,i), 'AutoScale','off', 'Color',obj.vector.lineColor.color, 'LineStyle',obj.vector.lineSpec.linespec);
+                    hold(hAx,'off');
+                end
             else
-                obj.markerPlot.XData = origin(1);
-                obj.markerPlot.YData = origin(2);
-                obj.markerPlot.ZData = origin(3);
-                
-                obj.markerPlot.UData = vect(1);
-                obj.markerPlot.VData = vect(2);
-                obj.markerPlot.WData = vect(3);
+                for(i=1:size(vect,2))
+                    obj.markerPlot(i).XData = origin(1,i);
+                    obj.markerPlot(i).YData = origin(2,i);
+                    obj.markerPlot(i).ZData = origin(3,i);
+
+                    obj.markerPlot(i).UData = vect(1,i);
+                    obj.markerPlot(i).VData = vect(2,i);
+                    obj.markerPlot(i).WData = vect(3,i);
+                end
             end
         end
     end
     
     methods(Access=private)
         function [origin, vect] = getVectorAtTime(obj, time)
-            origin = NaN(3,1);
-            vect = NaN(3,1);
+            origin = [];
+            vect = [];
             for(i=1:length(obj.timesArr))
                 times = obj.timesArr{i};
                 
@@ -86,11 +90,9 @@ classdef LaunchVehicleViewProfileVectorData < matlab.mixin.SetGet
                     vz = vzInterp(time);
                     
                     vehElemSet = CartesianElementSet(time, [x;y;z], [vx;vy;vz], obj.viewFrame);
-                    vect = obj.vector.getVectorAtTime(time, vehElemSet, obj.viewFrame);
+                    vect(:,end+1) = obj.vector.getVectorAtTime(time, vehElemSet, obj.viewFrame);
                     
-                    origin = obj.vector.getOriginPointInViewFrame(time, vehElemSet, obj.viewFrame);
-                    
-                    break;
+                    origin(:,end+1) = obj.vector.getOriginPointInViewFrame(time, vehElemSet, obj.viewFrame);
                 end
             end
         end
