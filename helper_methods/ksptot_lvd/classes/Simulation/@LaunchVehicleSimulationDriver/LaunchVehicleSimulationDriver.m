@@ -171,6 +171,10 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
             [t,y,~,~,ie] = propagator.propagate(integrator, tspan, eventInitStateLogEntry, ...
                                                 eventTermCondFuncHandle, termCondDir, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, obj.minAltitude, obj.celBodyData, ...
                                                 tStartPropTime, obj.maxPropTime);
+                                            
+            if(isempty(ie))
+                warning('The propagation did not return an event termination index (ie).  This generally happens when the integration is numerically unstable.  Consider switching to the ODE5 integrator.');
+            end
             
             if(isSparseOutput)
                 t = [t(end)];
