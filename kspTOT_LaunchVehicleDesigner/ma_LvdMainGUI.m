@@ -359,7 +359,7 @@ function scriptListbox_Callback(hObject, eventdata, handles)
         lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
         
         event = lvdData.script.getEventForInd(eventNum);
-        lvd_editEventGUI(event);   
+        lvd_editEventGUI(event, false);   
 
         runScript(handles, lvdData, 1);
         lvd_processData(handles);
@@ -390,7 +390,7 @@ function insertEventButton_Callback(hObject, eventdata, handles)
     selEvtNum = get(handles.scriptListbox,'Value');
     event = LaunchVehicleEvent.getDefaultEvent(lvdData.script);
     lvdData.script.addEventAtInd(event,selEvtNum);
-    lvd_editEventGUI(event);
+    lvd_editEventGUI(event, false);
     
 	setDeleteButtonEnable(lvdData, handles);
 
@@ -1713,11 +1713,12 @@ function runScriptMenu_Callback(hObject, eventdata, handles)
     end
     
     propagateScript(handles, lvdData, 1);
-    lvd_processData(handles);
     
     if(not(isdeployed))
 %         profile viewer;
     end
+    
+    lvd_processData(handles);
     
     
     

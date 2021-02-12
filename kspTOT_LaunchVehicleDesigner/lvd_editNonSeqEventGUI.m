@@ -236,6 +236,6 @@ function editEventButton_Callback(hObject, eventdata, handles)
     nonSeqEvt = getappdata(handles.lvd_editNonSeqEventGUI, 'nonSeqEvt');
     event = nonSeqEvt.evt;
     
-    lvd_editEventGUI(event);
+    lvd_editEventGUI(event, true);
     
     handles.eventNameLabel.String = nonSeqEvt.evt.name;

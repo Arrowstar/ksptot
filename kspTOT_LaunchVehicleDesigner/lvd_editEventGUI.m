@@ -58,8 +58,11 @@ function lvd_editEventGUI_OpeningFcn(hObject, eventdata, handles, varargin)
     event = varargin{1};
     setappdata(hObject,'event',event);
     event.clearActiveOptVarsCache();
+    
+    isNonSeq = varargin{2};
+    setappdata(hObject,'isNonSeq',isNonSeq);
 
-    populateGUI(handles, event);
+    populateGUI(handles, event, isNonSeq);
     
     % Update handles structure
     guidata(hObject, handles);
@@ -68,7 +71,7 @@ function lvd_editEventGUI_OpeningFcn(hObject, eventdata, handles, varargin)
     uiwait(handles.lvd_editEventGUI);
 
 
-function populateGUI(handles, event)
+function populateGUI(handles, event, isNonSeq)
     set(handles.eventNameText,'String',event.name);
     
     termCond = event.termCond;
@@ -113,6 +116,19 @@ function populateGUI(handles, event)
     handles.propDirCombo.Value = PropagationDirectionEnum.getIndForName(event.propDir.name);
     
     handles.checkSoITransCheckbox.Value = double(event.checkForSoITrans);
+    
+    if(isNonSeq)
+        handles.colorSpecCombo.Enable = 'off';
+        handles.lineSpecCombo.Enable = 'off';
+        handles.lineWidthCombo.Enable = 'off';
+        handles.plotMethodCombo.Enable = 'off';
+        handles.propagatorCombo.Enable = 'off';
+        handles.propagatorOptionsButton.Enable = 'off';
+        handles.integratorCombo.Enable = 'off';
+        handles.integratorOptionsButton.Enable = 'off';
+        handles.propDirCombo.Enable = 'off';
+        handles.checkSoITransCheckbox.Enable = 'off';
+    end
 
 % --- Outputs from this function are returned to the command line.
 function varargout = lvd_editEventGUI_OutputFcn(hObject, eventdata, handles) 
