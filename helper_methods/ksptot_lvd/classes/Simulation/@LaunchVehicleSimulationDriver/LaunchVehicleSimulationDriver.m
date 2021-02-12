@@ -173,7 +173,8 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
                                                 tStartPropTime, obj.maxPropTime);
                                             
             if(isempty(ie))
-                warning('The propagation did not return an event termination index (ie).  This generally happens when the integration is numerically unstable.  Consider switching to the ODE5 integrator.');
+                str = sprintf('Event %u propagation did not return an event termination index (ie).\n\nThis generally happens when the integration is numerically unstable.  Consider loosening integration tolerances or switching to the ODE5 integrator.', event.getEventNum());
+                obj.lvdData.validation.outputs(end+1) = LaunchVehicleDataValidationError(str);
             end
             
             if(isSparseOutput)
