@@ -93,6 +93,11 @@ classdef AlignedConstrainedCoordSystem < AbstractGeometricCoordSystem
             tf = obj.aVector.isVehDependent() || ...
                  obj.cVector.isVehDependent();
         end
+
+        function tf = usesGroundObj(obj, groundObj)
+            tf = obj.aVector.usesGroundObj(groundObj) || ...
+                 obj.cVector.usesGroundObj(groundObj);
+        end
         
         function tf = usesGeometricPoint(~, ~)
             tf = false;

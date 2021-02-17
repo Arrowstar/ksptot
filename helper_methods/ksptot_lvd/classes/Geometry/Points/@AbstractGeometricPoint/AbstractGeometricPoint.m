@@ -33,6 +33,10 @@ classdef AbstractGeometricPoint < matlab.mixin.SetGet & matlab.mixin.Heterogeneo
         
         tf = usesGeometricRefFrame(obj, refFrame)
         
+        function tf = usesGeometricAngle(~, ~)
+            tf = false;
+        end
+        
         tf = isInUse(obj, lvdData)
     end
     

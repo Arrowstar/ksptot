@@ -37,6 +37,8 @@ classdef AbstractGeometricRefFrame < matlab.mixin.SetGet & matlab.mixin.Heteroge
         
         tf = originIsVehDependent(obj)
         
+        tf = usesGroundObj(obj, groundObj)
+        
         tf = usesGeometricPoint(obj, point)
         
         tf = usesGeometricVector(obj, vector)
@@ -44,6 +46,10 @@ classdef AbstractGeometricRefFrame < matlab.mixin.SetGet & matlab.mixin.Heteroge
         tf = usesGeometricCoordSys(obj, coordSys)
         
         tf = usesGeometricRefFrame(obj, refFrame)
+        
+        function tf = usesGeometricAngle(~, ~)
+            tf = false;
+        end
         
         tf = isInUse(obj, lvdData)
     end

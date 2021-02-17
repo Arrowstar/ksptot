@@ -55,6 +55,11 @@ classdef CrossProductVector < AbstractGeometricVector
             origin = [0;0;0];
         end
         
+        function tf = usesGroundObj(obj, groundObj)
+            tf = obj.vector1.usesGroundObj(groundObj) || ...
+                 obj.vector2.usesGroundObj(groundObj);
+        end
+        
         function tf = usesGeometricPoint(~, ~)
             tf = false;
         end

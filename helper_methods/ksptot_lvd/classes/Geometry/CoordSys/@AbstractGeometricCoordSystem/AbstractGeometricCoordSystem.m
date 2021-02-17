@@ -19,6 +19,8 @@ classdef AbstractGeometricCoordSystem < matlab.mixin.SetGet & matlab.mixin.Heter
         
         tf = isVehDependent(obj)
         
+        tf = usesGroundObj(obj, groundObj)
+        
         tf = usesGeometricPoint(obj, point)
         
         tf = usesGeometricVector(obj, vector)
@@ -26,6 +28,10 @@ classdef AbstractGeometricCoordSystem < matlab.mixin.SetGet & matlab.mixin.Heter
         tf = usesGeometricCoordSys(obj, coordSys)
         
         tf = usesGeometricRefFrame(obj, refFrame)
+        
+        function tf = usesGeometricAngle(~, ~)
+            tf = false;
+        end
         
         tf = isInUse(obj, lvdData)
     end

@@ -103,6 +103,13 @@ classdef GeometricPointSet < matlab.mixin.SetGet
             end
         end
         
+        function tf = usesGeometricAngle(obj, angle)
+            tf = false;
+            for(i=1:length(obj.points))
+                tf = tf || obj.points(i).usesGeometricAngle(angle);
+            end
+        end
+        
         function ptGAStr = getAllPointGraphAnalysisTaskStrs(obj)
             ptGAStr = horzcat(obj.getPointPositionXGraphAnalysisTaskStrs(), ...
                               obj.getPointPositionYGraphAnalysisTaskStrs(), ... 

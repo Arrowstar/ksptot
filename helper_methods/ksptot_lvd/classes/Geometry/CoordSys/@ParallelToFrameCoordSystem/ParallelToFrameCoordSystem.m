@@ -45,6 +45,10 @@ classdef ParallelToFrameCoordSystem < AbstractGeometricCoordSystem
             end
         end
         
+        function tf = usesGroundObj(obj, groundObj)
+            tf = obj.frame.usesGroundObj(groundObj);
+        end
+        
         function tf = usesGeometricPoint(obj, point)
             if(obj.frame.typeEnum == ReferenceFrameEnum.UserDefined)
                 tf = obj.frame.geometricFrame.usesGeometricPoint(point);

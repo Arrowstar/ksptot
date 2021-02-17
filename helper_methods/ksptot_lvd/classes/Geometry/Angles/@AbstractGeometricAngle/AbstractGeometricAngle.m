@@ -19,6 +19,8 @@ classdef AbstractGeometricAngle < matlab.mixin.SetGet & matlab.mixin.Heterogeneo
         
         tf = isVehDependent(obj)
         
+        tf = usesGroundObj(obj, groundObj)
+        
         tf = usesGeometricPoint(obj, point)
         
         tf = usesGeometricVector(obj, vector)

@@ -85,5 +85,12 @@ classdef GeometricCoordSysSet < matlab.mixin.SetGet
                 tf = tf || obj.coordSyses(i).usesGeometricRefFrame(refFrame);
             end
         end
+        
+        function tf = usesGeometricAngle(obj, angle)
+            tf = false;
+            for(i=1:length(obj.coordSyses))
+                tf = tf || obj.coordSyses(i).usesGeometricAngle(angle);
+            end
+        end
     end
 end

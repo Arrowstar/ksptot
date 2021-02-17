@@ -59,6 +59,11 @@ classdef TwoPointVector < AbstractGeometricVector
             origin = elemSet.rVect;
         end
         
+        function tf = usesGroundObj(obj, groundObj)
+            tf = obj.point1.usesGroundObj(groundObj) || ...
+                 obj.point2.usesGroundObj(groundObj);
+        end
+        
         function tf = usesGeometricPoint(obj, point)
             tf = point == obj.point1 || ...
                  point == obj.point2;

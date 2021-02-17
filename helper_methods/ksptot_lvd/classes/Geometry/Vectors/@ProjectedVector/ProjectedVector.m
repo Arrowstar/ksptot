@@ -58,6 +58,11 @@ classdef ProjectedVector < AbstractGeometricVector
             origin = [0;0;0];
         end
         
+        function tf = usesGroundObj(obj, groundObj)
+            tf = obj.projVect.usesGroundObj(groundObj) || ...
+                 obj.normVect.usesGroundObj(groundObj);
+        end
+        
         function tf = usesGeometricPoint(~, ~)
             tf = false;
         end

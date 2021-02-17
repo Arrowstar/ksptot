@@ -1,4 +1,4 @@
-classdef TwoVectorAngle < AbstractGeometricVector
+classdef TwoVectorAngle < AbstractGeometricAngle
     %TwoVectorAngle Output is the cross product of two input vectors
     %   Detailed explanation goes here
     
@@ -55,6 +55,11 @@ classdef TwoVectorAngle < AbstractGeometricVector
         function tf = isVehDependent(obj)
             tf = obj.vector1.isVehDependent() || ...
                  obj.vector2.isVehDependent();
+        end
+        
+        function tf = usesGroundObj(obj, groundObj)
+            tf = obj.vector1.usesGroundObj(groundObj) || ...
+                 obj.vector2.usesGroundObj(groundObj);
         end
         
         function tf = usesGeometricPoint(~, ~)

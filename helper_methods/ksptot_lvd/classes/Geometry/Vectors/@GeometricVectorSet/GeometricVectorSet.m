@@ -86,6 +86,13 @@ classdef GeometricVectorSet < matlab.mixin.SetGet
             end
         end
         
+        function tf = usesGeometricAngle(obj, angle)
+            tf = false;
+            for(i=1:length(obj.vectors))
+                tf = tf || obj.vectors(i).usesGeometricAngle(angle);
+            end
+        end
+        
         %%% Graphical Analysis Task String methods %%%
         function vectGAStr = getAllVectorGraphAnalysisTaskStrs(obj)
             vectGAStr = horzcat(obj.getVectorXComponentGraphAnalysisTaskStrs(), ...

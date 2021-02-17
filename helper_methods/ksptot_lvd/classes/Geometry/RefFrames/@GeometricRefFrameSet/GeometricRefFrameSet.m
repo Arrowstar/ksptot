@@ -85,5 +85,12 @@ classdef GeometricRefFrameSet < matlab.mixin.SetGet
                 tf = tf || obj.refFrames(i).usesGeometricRefFrame(refFrame);
             end
         end
+        
+        function tf = usesGeometricAngle(obj, angle)
+            tf = false;
+            for(i=1:length(obj.refFrames))
+                tf = tf || obj.refFrames(i).usesGeometricAngle(angle);
+            end
+        end
     end
 end

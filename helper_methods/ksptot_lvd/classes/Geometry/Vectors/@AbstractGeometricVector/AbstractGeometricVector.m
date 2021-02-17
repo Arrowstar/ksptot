@@ -21,6 +21,8 @@ classdef AbstractGeometricVector < matlab.mixin.SetGet & matlab.mixin.Heterogene
         
         origin = getOriginPointInViewFrame(obj, time, vehElemSet, viewFrame)
         
+        tf = usesGroundObj(obj, groundObj)
+        
         tf = usesGeometricPoint(obj, point)
         
         tf = usesGeometricVector(obj, vector)
@@ -28,6 +30,10 @@ classdef AbstractGeometricVector < matlab.mixin.SetGet & matlab.mixin.Heterogene
         tf = usesGeometricCoordSys(obj, coordSys)
         
         tf = usesGeometricRefFrame(obj, refFrame)
+        
+        function tf = usesGeometricAngle(~, ~)
+            tf = false;
+        end
         
         tf = isInUse(obj, lvdData)
     end

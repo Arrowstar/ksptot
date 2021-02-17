@@ -72,6 +72,11 @@ classdef CoordSysPointRefFrame < AbstractGeometricRefFrame
         function tf = originIsVehDependent(obj)
             tf = obj.origin.isVehDependent();
         end
+        
+        function tf = usesGroundObj(obj, groundObj)
+            tf = obj.coordSys.usesGroundObj(groundObj) || ...
+                 obj.origin.usesGroundObj(groundObj);
+        end
                 
         function tf = usesGeometricPoint(obj, point)
             tf = obj.origin == point;
