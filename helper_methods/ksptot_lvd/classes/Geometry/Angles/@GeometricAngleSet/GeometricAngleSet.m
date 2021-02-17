@@ -97,5 +97,16 @@ classdef GeometricAngleSet < matlab.mixin.SetGet
 %         function vectGAStr = getAllVectorGraphAnalysisTaskStrs(obj)
 %             vectGAStr = horzcat(obj.getVectorXComponentGraphAnalysisTaskStrs());
 %         end
+% 
+%         function [vectXGAStr, vectors] = getVectorXComponentGraphAnalysisTaskStrs(obj)
+%             vectors = obj.vectors;
+%             
+%             vectXGAStr = cell(1,length(vectors));
+%             A = length(vectors);
+%             formSpec = sprintf('%%0%uu',floor(log10(abs(A)+1)) + 1);
+%             for(i=1:length(vectors))
+%                 vectXGAStr{i} = sprintf(sprintf('Vector %s X Component - "%s"',formSpec, vectors(i).getName()), i);
+%             end
+%         end
     end
 end
