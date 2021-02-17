@@ -110,6 +110,14 @@ classdef GeometricPointSet < matlab.mixin.SetGet
             end
         end
         
+        function tf = usesGeometricPlane(obj, plane)
+            tf = false;
+            for(i=1:length(obj.points))
+                tf = tf || obj.points(i).usesGeometricPlane(plane);
+            end
+        end
+        
+        %graphical analysis tasks
         function ptGAStr = getAllPointGraphAnalysisTaskStrs(obj)
             ptGAStr = horzcat(obj.getPointPositionXGraphAnalysisTaskStrs(), ...
                               obj.getPointPositionYGraphAnalysisTaskStrs(), ... 

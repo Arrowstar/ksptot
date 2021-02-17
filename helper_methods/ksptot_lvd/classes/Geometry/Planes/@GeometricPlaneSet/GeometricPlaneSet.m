@@ -1,102 +1,102 @@
-classdef GeometricAngleSet < matlab.mixin.SetGet
-    %GeometricAngleSet Summary of this class goes here
+classdef GeometricPlaneSet < matlab.mixin.SetGet
+    %GeometricPlaneSet Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
-        angles(1,:) AbstractGeometricAngle
+        planes(1,:) AbstractGeometricPlane
         
         lvdData LvdData
     end
     
     methods        
-        function obj = GeometricAngleSet(lvdData)
+        function obj = GeometricPlaneSet(lvdData)
             obj.lvdData = lvdData;
         end
         
-        function addAngle(obj, angle)
-            obj.angles(end+1) = angle;
+        function addPlane(obj, plane)
+            obj.planes(end+1) = plane;
         end
         
-        function removeAngle(obj, angle)
-            obj.angles([obj.angles] == angle) = [];
+        function removePlane(obj, plane)
+            obj.planes([obj.planes] == plane) = [];
         end
         
-        function [listBoxStr, angles] = getListboxStr(obj)
+        function [listBoxStr, planes] = getListboxStr(obj)
             listBoxStr = {};
             
-            for(i=1:length(obj.angles))
-                listBoxStr{end+1} = obj.angles(i).getListboxStr(); %#ok<AGROW>
+            for(i=1:length(obj.planes))
+                listBoxStr{end+1} = obj.planes(i).getListboxStr(); %#ok<AGROW>
             end
             
-            angles = obj.angles;
+            planes = obj.planes;
         end
         
-        function indAngles = getAnglesForInds(obj, inds)
-            indAngles = obj.angles(inds);
+        function indPlanes = getPlanesForInds(obj, inds)
+            indPlanes = obj.planes(inds);
         end
         
-        function inds = getIndsForAngles(obj, indAngles)
-            inds = find(ismember(obj.angles, indAngles));
+        function inds = getIndsForPlanes(obj, indPlanes)
+            inds = find(ismember(obj.planes, indPlanes));
         end
         
-        function indAngle = getAngleAtInd(obj, ind)
-            if(ind > 0 && ind <= length(obj.angles))
-                indAngle = obj.angles(ind);
+        function indPlane = getPlaneAtInd(obj, ind)
+            if(ind > 0 && ind <= length(obj.planes))
+                indPlane = obj.planes(ind);
             else
-                indAngle = AbstractGeometricAngle.empty(1,0);
+                indPlane = AbstractGeometricPlane.empty(1,0);
             end
         end
         
-        function numAngles = getNumAngles(obj)
-            numAngles = length(obj.angles);
+        function numPlanes = getNumPlanes(obj)
+            numPlanes = length(obj.planes);
         end
         
         function tf = usesGroundObj(obj, groundObj)
             tf = false;
-            for(i=1:length(obj.angles))
-                tf = tf || obj.angles(i).usesGroundObj(groundObj);
+            for(i=1:length(obj.planes))
+                tf = tf || obj.planes(i).usesGroundObj(groundObj);
             end
         end
         
         function tf = usesGeometricPoint(obj, point)
             tf = false;
-            for(i=1:length(obj.angles))
-                tf = tf || obj.angles(i).usesGeometricPoint(point);
+            for(i=1:length(obj.planes))
+                tf = tf || obj.planes(i).usesGeometricPoint(point);
             end
         end
         
         function tf = usesGeometricVector(obj, vector)
             tf = false;
-            for(i=1:length(obj.angles))
-                tf = tf || obj.angles(i).usesGeometricVector(vector);
+            for(i=1:length(obj.planes))
+                tf = tf || obj.planes(i).usesGeometricVector(vector);
             end
         end
         
         function tf = usesGeometricCoordSys(obj, coordSys)
             tf = false;
-            for(i=1:length(obj.angles))
-                tf = tf || obj.angles(i).usesGeometricCoordSys(coordSys);
+            for(i=1:length(obj.planes))
+                tf = tf || obj.planes(i).usesGeometricCoordSys(coordSys);
             end
         end
         
         function tf = usesGeometricRefFrame(obj, refFrame)
             tf = false;
-            for(i=1:length(obj.angles))
-                tf = tf || obj.angles(i).usesGeometricRefFrame(refFrame);
+            for(i=1:length(obj.planes))
+                tf = tf || obj.planes(i).usesGeometricRefFrame(refFrame);
             end
         end
         
         function tf = usesGeometricAngle(obj, angle)
             tf = false;
-            for(i=1:length(obj.angles))
-                tf = tf || obj.angles(i).usesGeometricAngle(angle);
+            for(i=1:length(obj.planes))
+                tf = tf || obj.planes(i).usesGeometricAngle(angle);
             end
         end
         
         function tf = usesGeometricPlane(obj, plane)
             tf = false;
-            for(i=1:length(obj.angles))
-                tf = tf || obj.angles(i).usesGeometricPlane(plane);
+            for(i=1:length(obj.planes))
+                tf = tf || obj.planes(i).usesGeometricPlane(plane);
             end
         end
         

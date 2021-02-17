@@ -31,6 +31,8 @@ classdef AbstractGeometricAngle < matlab.mixin.SetGet & matlab.mixin.Heterogeneo
         
         tf = usesGeometricAngle(obj, angle)
         
+        tf = usesGeometricPlane(~, ~)
+        
         tf = isInUse(obj, lvdData)
     end
     

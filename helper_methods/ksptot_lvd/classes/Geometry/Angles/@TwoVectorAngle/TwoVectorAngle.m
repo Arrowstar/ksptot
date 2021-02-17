@@ -1,5 +1,5 @@
 classdef TwoVectorAngle < AbstractGeometricAngle
-    %TwoVectorAngle Output is the cross product of two input vectors
+    %TwoVectorAngle Output is the angle between two input vectors
     %   Detailed explanation goes here
     
     properties
@@ -83,8 +83,12 @@ classdef TwoVectorAngle < AbstractGeometricAngle
             tf = false;
         end
         
+        function tf = usesGeometricPlane(~, ~)
+            tf = false;
+        end 
+        
         function tf = isInUse(obj, lvdData)
-%             tf = lvdData.geometry.usesGeometricVector(obj);
+            tf = lvdData.geometry.usesGeometricAngle(obj);
         end
     end
 end

@@ -92,5 +92,12 @@ classdef GeometricCoordSysSet < matlab.mixin.SetGet
                 tf = tf || obj.coordSyses(i).usesGeometricAngle(angle);
             end
         end
+        
+        function tf = usesGeometricPlane(obj, plane)
+            tf = false;
+            for(i=1:length(obj.coordSyses))
+                tf = tf || obj.coordSyses(i).usesGeometricPlane(plane);
+            end
+        end
     end
 end

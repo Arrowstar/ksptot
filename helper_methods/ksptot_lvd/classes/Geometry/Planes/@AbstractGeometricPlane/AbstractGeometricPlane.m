@@ -1,5 +1,5 @@
-classdef AbstractGeometricCoordSystem < matlab.mixin.SetGet & matlab.mixin.Heterogeneous
-    %AbstractGeometricCoordSystem Summary of this class goes here
+classdef AbstractGeometricPlane < matlab.mixin.SetGet & matlab.mixin.Heterogeneous
+    %AbstractGeometricPlane Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
@@ -7,7 +7,9 @@ classdef AbstractGeometricCoordSystem < matlab.mixin.SetGet & matlab.mixin.Heter
     end
     
     methods        
-        [rotMatToInertial] = getCoordSysAtTime(obj, time, vehElemSet, inFrame)
+        normvect = getPlaneNormVectAtTime(obj, time, vehElemSet, inFrame)
+        
+        originPt = getPlaneOriginPtAtTime(obj, time, vehElemSet, inFrame)
         
         name = getName(obj)
         
@@ -29,7 +31,7 @@ classdef AbstractGeometricCoordSystem < matlab.mixin.SetGet & matlab.mixin.Heter
         
         tf = usesGeometricRefFrame(obj, refFrame)
         
-        tf = usesGeometricAngle(~, ~)
+        tf = usesGeometricAngle(obj, angle)
         
         tf = usesGeometricPlane(~, ~)
         

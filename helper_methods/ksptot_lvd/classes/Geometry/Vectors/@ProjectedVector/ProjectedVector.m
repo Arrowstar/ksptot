@@ -80,6 +80,14 @@ classdef ProjectedVector < AbstractGeometricVector
             tf = false;
         end
         
+        function tf = usesGeometricAngle(~, ~)
+            tf = false;
+        end
+        
+        function tf = usesGeometricPlane(~, ~)
+            tf = false;
+        end 
+        
         function tf = isInUse(obj, lvdData)
             tf = lvdData.geometry.usesGeometricVector(obj);
         end

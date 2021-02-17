@@ -81,6 +81,22 @@ classdef ParallelToFrameCoordSystem < AbstractGeometricCoordSystem
             end
         end
         
+        function tf = usesGeometricAngle(obj, angle)
+            if(obj.frame.typeEnum == ReferenceFrameEnum.UserDefined)
+                tf = obj.frame.geometricFrame.usesGeometricAngle(angle);
+            else
+                tf = false;
+            end
+        end 
+        
+        function tf = usesGeometricPlane(obj, plane)
+            if(obj.frame.typeEnum == ReferenceFrameEnum.UserDefined)
+                tf = obj.frame.geometricFrame.usesGeometricPlane(plane);
+            else
+                tf = false;
+            end
+        end 
+        
         function tf = isInUse(obj, lvdData)
             tf = lvdData.geometry.usesGeometricCoordSys(obj);
         end

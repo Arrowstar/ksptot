@@ -31,9 +31,9 @@ classdef AbstractGeometricVector < matlab.mixin.SetGet & matlab.mixin.Heterogene
         
         tf = usesGeometricRefFrame(obj, refFrame)
         
-        function tf = usesGeometricAngle(~, ~)
-            tf = false;
-        end
+        tf = usesGeometricAngle(~, ~)
+        
+        tf = usesGeometricPlane(~, ~)
         
         tf = isInUse(obj, lvdData)
     end

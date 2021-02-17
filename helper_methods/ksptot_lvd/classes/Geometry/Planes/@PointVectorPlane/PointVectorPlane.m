@@ -1,30 +1,34 @@
-classdef ScaledVector < AbstractGeometricVector
-    %ScaledVector Scales a vector by a constant
+classdef PointVectorPlane < AbstractGeometricPlane
+    %PointVectorPlane Output is the angle between two input vectors
     %   Detailed explanation goes here
     
     properties
+        point(1,1) AbstractGeometricPoint
         vector(1,1) AbstractGeometricVector
-        scaleFactor(1,1) double = 1;
         
         name(1,:) char
         lvdData LvdData
         
-        %vector line
-        lineColor(1,1) ColorSpecEnum = ColorSpecEnum.Black;
-        lineSpec(1,1) LineSpecEnum = LineSpecEnum.DottedLine;
+%         %
+%         lineColor(1,1) ColorSpecEnum = ColorSpecEnum.Black;
+%         lineSpec(1,1) LineSpecEnum = LineSpecEnum.DottedLine;
     end
     
     methods        
-        function obj = ScaledVector(vector, scaleFactor, name, lvdData) 
+        function obj = PointVectorPlane(point, vector, name, lvdData) 
+            obj.point = point;
             obj.vector = vector;
-            obj.scaleFactor = scaleFactor;
             
             obj.name = name;
             obj.lvdData = lvdData;
         end
         
-        function vect = getVectorAtTime(obj, time, vehElemSet, inFrame)
-            vect = obj.scaleFactor * obj.vector.getVectorAtTime(time, vehElemSet, inFrame);
+        function normvect = getPlaneNormVectAtTime(obj, time, vehElemSet, inFrame)
+            normvect = obj.vector.getVectorAtTime(time, vehElemSet, inFrame);
+        end
+        
+        function originPt = getPlaneOriginPtAtTime(obj, time, vehElemSet, inFrame)
+            originPt = obj.point.getPositionAtTime(time, vehElemSet, inFrame);
         end
         
         function name = getName(obj)
@@ -36,27 +40,25 @@ classdef ScaledVector < AbstractGeometricVector
         end
         
         function listboxStr = getListboxStr(obj)
-            listboxStr = sprintf('%s ("%s" scaled by %0.3f)', obj.getName(), obj.vector.getName(), obj.scaleFactor);
+            listboxStr = sprintf('%s (Normal: "%s", Origin: "%s")', obj.getName(), obj.vector.getName(), obj.point.getName());
         end
         
         function useTf = openEditDialog(obj)
-            useTf = lvd_EditScaledVectorGUI(obj, obj.lvdData);
+%             useTf = lvd_EditCrossProductVectorGUI(obj, obj.lvdData);
         end
         
         function tf = isVehDependent(obj)
-            tf = obj.vector.isVehDependent();
-        end
-        
-        function origin = getOriginPointInViewFrame(obj, time, vehElemSet, viewFrame)
-            origin = obj.vector.getOriginPointInViewFrame(time, vehElemSet, viewFrame);
+            tf = obj.point.isVehDependent() || ...
+                 obj.vector.isVehDependent();
         end
         
         function tf = usesGroundObj(obj, groundObj)
-            tf = obj.vector.usesGroundObj(groundObj);
+            tf = obj.point.usesGroundObj(groundObj) || ...
+                 obj.vector.usesGroundObj(groundObj);
         end
         
-        function tf = usesGeometricPoint(~, ~)
-            tf = false;
+        function tf = usesGeometricPoint(obj, point)
+            tf = obj.point == point;
         end
         
         function tf = usesGeometricVector(obj, vector)
@@ -77,10 +79,10 @@ classdef ScaledVector < AbstractGeometricVector
         
         function tf = usesGeometricPlane(~, ~)
             tf = false;
-        end 
+        end     
         
         function tf = isInUse(obj, lvdData)
-            tf = lvdData.geometry.usesGeometricVector(obj);
+%             tf = lvdData.geometry.usesGeometricAngle(obj);
         end
     end
 end

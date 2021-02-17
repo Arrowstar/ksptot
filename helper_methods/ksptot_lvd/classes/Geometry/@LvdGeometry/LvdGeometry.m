@@ -8,6 +8,7 @@ classdef LvdGeometry < matlab.mixin.SetGet
         coordSyses GeometricCoordSysSet = GeometricCoordSysSet.empty(1,0)
         refFrames GeometricRefFrameSet = GeometricRefFrameSet.empty(1,0)
         angles GeometricAngleSet = GeometricAngleSet.empty(1,0);
+        planes GeometricPlaneSet = GeometricPlaneSet.empty(1,0);
         
         lvdData LvdData
     end
@@ -98,7 +99,11 @@ classdef LvdGeometry < matlab.mixin.SetGet
             
             if(isempty(obj.angles))
                 obj.angles = GeometricAngleSet(obj.lvdData);
-            end      
+            end   
+            
+            if(isempty(obj.planes))
+                obj.planes = GeometricPlaneSet(obj.lvdData);
+            end
         end
     end
 end
