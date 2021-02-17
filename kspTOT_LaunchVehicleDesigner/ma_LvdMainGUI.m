@@ -22,7 +22,7 @@ function varargout = ma_LvdMainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_LvdMainGUI
 
-% Last Modified by GUIDE v2.5 17-Jan-2021 11:25:50
+% Last Modified by GUIDE v2.5 17-Feb-2021 13:44:22
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -2691,6 +2691,33 @@ function editRefRamesMenu_Callback(hObject, eventdata, handles)
     
     addUndoState(handles,'Edit Reference Frames');
     lvd_EditGeometricRefFramesGUI(lvdData);
+    
+    runScript(handles, lvdData, 1);
+    lvd_processData(handles);
+
+
+% --------------------------------------------------------------------
+function editAnglesMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to editAnglesMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    
+    addUndoState(handles,'Edit Angles');
+    lvd_EditGeometricAnglesGUI(lvdData);
+    
+    runScript(handles, lvdData, 1);
+    lvd_processData(handles);
+
+% --------------------------------------------------------------------
+function editPlanesMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to editPlanesMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    
+    addUndoState(handles,'Edit Planes');
+    lvd_EditGeometricPlanesGUI(lvdData);
     
     runScript(handles, lvdData, 1);
     lvd_processData(handles);

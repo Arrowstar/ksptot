@@ -22,6 +22,7 @@ classdef LvdGeometry < matlab.mixin.SetGet
             obj.coordSyses = GeometricCoordSysSet(lvdData);
             obj.refFrames = GeometricRefFrameSet(lvdData);
             obj.angles = GeometricAngleSet(lvdData);
+            obj.planes = GeometricPlaneSet(lvdData);
         end
         
         function tf = usesGroundObj(obj, groundObj)
