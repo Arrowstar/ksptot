@@ -10,8 +10,8 @@ classdef TwoVectorAngle < AbstractGeometricAngle
         lvdData LvdData
         
 %         %
-%         lineColor(1,1) ColorSpecEnum = ColorSpecEnum.Black;
-%         lineSpec(1,1) LineSpecEnum = LineSpecEnum.DottedLine;
+        lineColor(1,1) ColorSpecEnum = ColorSpecEnum.Red;
+        lineSpec(1,1) LineSpecEnum = LineSpecEnum.SolidLine;
     end
     
     methods        
@@ -26,14 +26,32 @@ classdef TwoVectorAngle < AbstractGeometricAngle
         function angle = getAngleAtTime(obj, time, vehElemSet, inFrame)
             vect1 = obj.vector1.getVectorAtTime(time, vehElemSet, inFrame);
             vect2 = obj.vector2.getVectorAtTime(time, vehElemSet, inFrame);
-            vn = repmat([0;0;1], 1, numel(time));
             
             vect1Hat = vect_normVector(vect1);
             vect2Hat = vect_normVector(vect2);
             
-            angle = acos(dot(vect1Hat, vect2Hat));
+            vn = repmat([0;0;1], 1, numel(time));
             vecCrossProd = cross(vect1, vect2);
+            bool = all(vn - vect1Hat == 0,1) | all(vn - vect2Hat == 0);
+            if(any(bool))
+                vn(:,bool) = vect_normVector(vecCrossProd(:,bool));
+                disp('any');
+            end
+            
+            angle = acos(dot(vect1Hat, vect2Hat));
+            
             angle = angle.*sign(dot(vn,vecCrossProd));
+        end
+        
+        function startPt = getAngleStartPointAtTime(obj, time, vehElemSet, inFrame)
+            startPt = obj.vector1.getVectorAtTime(time, vehElemSet, inFrame);
+        end
+        
+        function anglePlaneNorm = getAnglePlaneNormalAtTime(obj, time, vehElemSet, inFrame)
+            vect1 = obj.vector1.getVectorAtTime(time, vehElemSet, inFrame);
+            vect2 = obj.vector2.getVectorAtTime(time, vehElemSet, inFrame);
+            
+            anglePlaneNorm = cross(vect1, vect2);
         end
         
         function name = getName(obj)
@@ -49,7 +67,7 @@ classdef TwoVectorAngle < AbstractGeometricAngle
         end
         
         function useTf = openEditDialog(obj)
-%             useTf = lvd_EditCrossProductVectorGUI(obj, obj.lvdData);
+            useTf = lvd_EditTwoVectorAngleGUI(obj, obj.lvdData);
         end
         
         function tf = isVehDependent(obj)

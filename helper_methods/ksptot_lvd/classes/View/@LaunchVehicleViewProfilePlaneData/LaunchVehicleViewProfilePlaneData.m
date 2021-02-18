@@ -1,5 +1,5 @@
-classdef LaunchVehicleViewProfileVectorData < matlab.mixin.SetGet
-    %LaunchVehicleViewProfileVectorData Summary of this class goes here
+classdef LaunchVehicleViewProfilePlaneData < matlab.mixin.SetGet
+    %LaunchVehicleViewProfilePlaneData Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
@@ -13,13 +13,13 @@ classdef LaunchVehicleViewProfileVectorData < matlab.mixin.SetGet
         vzInterps(1,:) cell = {};
         
         markerPlot = matlab.graphics.GraphicsPlaceholder.empty(1,0)
-        vector AbstractGeometricVector
+        plane AbstractGeometricPlane
         viewFrame AbstractReferenceFrame
     end
     
     methods
-        function obj = LaunchVehicleViewProfileVectorData(vector, viewFrame)
-            obj.vector = vector;
+        function obj = LaunchVehicleViewProfilePlaneData(plane, viewFrame)
+            obj.plane = plane;
             obj.viewFrame = viewFrame;
         end
         
@@ -40,33 +40,44 @@ classdef LaunchVehicleViewProfileVectorData < matlab.mixin.SetGet
             obj.vzInterps{end+1} = griddedInterpolant(times, vVects(:,3), method, 'linear');
         end
         
-        function plotVectorAtTime(obj, time, hAx)   
-            [origin, vect] = obj.getVectorAtTime(time);
+        function plotPlaneAtTime(obj, time, hAx)
+            [origin, normvect] = obj.getPlaneAtTime(time);
             
             if(isempty(obj.markerPlot))
                 hold(hAx,'on'); 
-                for(i=1:size(vect,2))
-                    obj.markerPlot(i) = quiver3(hAx, origin(1,i),origin(2,i),origin(3,i), vect(1,i),vect(2,i),vect(3,i), 'AutoScale','off', 'Color',obj.vector.lineColor.color, 'LineStyle',obj.vector.lineSpec.linespec);
+                for(i=1:size(normvect,2))
+                    xform = hgtransform(hAx);
+                    obj.markerPlot(i) = xform;
+                    
+                    edgeLength = obj.plane.edgeLength;
+                    p1 = [edgeLength/2,   edgeLength/2, 0];
+                    p2 = [edgeLength/2,  -edgeLength/2, 0];
+                    p3 = [-edgeLength/2, -edgeLength/2, 0];
+                    p4 = [-edgeLength/2   edgeLength/2, 0];
+                    
+                    color = obj.plane.lineColor.color;
+                    alpha = obj.plane.alpha;
+                    linestyle = obj.plane.lineSpec.linespec;
+                    patch('Faces',1:4,'Vertices',[p1;p2;p3;p4], 'Parent',xform, 'FaceColor',color, 'EdgeColor',color, 'FaceAlpha',alpha, 'LineStyle',linestyle);
                 end
                 hold(hAx,'off');
-            else
-                for(i=1:size(vect,2))
-                    obj.markerPlot(i).XData = origin(1,i);
-                    obj.markerPlot(i).YData = origin(2,i);
-                    obj.markerPlot(i).ZData = origin(3,i);
-
-                    obj.markerPlot(i).UData = vect(1,i);
-                    obj.markerPlot(i).VData = vect(2,i);
-                    obj.markerPlot(i).WData = vect(3,i);
-                end
+            end
+            
+            for(i=1:length(obj.markerPlot))
+                a = [0;0;1];
+                b = normvect(:,i);
+                r = vrrotvec(a,b);
+                t = origin(:,i);
+                M = makehgtform('translate',t, 'axisrotate',r(1:3),r(4));
+                obj.markerPlot(i).Matrix = M;
             end
         end
     end
     
     methods(Access=private)
-        function [origin, vect] = getVectorAtTime(obj, time)
+        function [origin, normvect] = getPlaneAtTime(obj, time)
             origin = [];
-            vect = [];
+            normvect = [];
             for(i=1:length(obj.timesArr))
                 times = obj.timesArr{i};
                 
@@ -90,9 +101,11 @@ classdef LaunchVehicleViewProfileVectorData < matlab.mixin.SetGet
                     vz = vzInterp(time);
                     
                     vehElemSet = CartesianElementSet(time, [x;y;z], [vx;vy;vz], obj.viewFrame);
-                    vect(:,end+1) = obj.vector.getVectorAtTime(time, vehElemSet, obj.viewFrame); %#ok<AGROW>
                     
-                    origin(:,end+1) = obj.vector.getOriginPointInViewFrame(time, vehElemSet, obj.viewFrame); %#ok<AGROW>
+                    normvect(:,end+1) = obj.plane.getPlaneNormVectAtTime(time, vehElemSet, obj.viewFrame); %#ok<AGROW>
+                    
+                    oCart = obj.plane.getPlaneOriginPtAtTime(time, vehElemSet, obj.viewFrame);
+                    origin(:,end+1) = oCart.rVect; %#ok<AGROW>
                 end
             end
         end

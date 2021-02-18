@@ -78,6 +78,16 @@ classdef LvdGeometry < matlab.mixin.SetGet
             tf = tf || obj.refFrames.usesGeometricAngle(angle);
             tf = tf || obj.angles.usesGeometricAngle(angle);
         end
+        
+        function tf = usesGeometricPlane(obj, plane)
+            tf = false;
+            tf = tf || obj.points.usesGeometricPlane(plane);
+            tf = tf || obj.vectors.usesGeometricPlane(plane);
+            tf = tf || obj.coordSyses.usesGeometricPlane(plane);
+            tf = tf || obj.refFrames.usesGeometricPlane(plane);
+            tf = tf || obj.angles.usesGeometricPlane(plane);
+            tf = tf || obj.planes.usesGeometricPlane(plane);
+        end
     end
     
     methods(Static)

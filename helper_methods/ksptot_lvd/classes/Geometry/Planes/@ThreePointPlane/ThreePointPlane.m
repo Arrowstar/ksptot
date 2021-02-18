@@ -10,9 +10,11 @@ classdef ThreePointPlane < AbstractGeometricPlane
         name(1,:) char
         lvdData LvdData
         
-%         %
-%         lineColor(1,1) ColorSpecEnum = ColorSpecEnum.Black;
-%         lineSpec(1,1) LineSpecEnum = LineSpecEnum.DottedLine;
+        %display
+        lineColor(1,1) ColorSpecEnum = ColorSpecEnum.Green;
+        lineSpec(1,1) LineSpecEnum = LineSpecEnum.DashedLine;
+        edgeLength(1,1) double = 100; %km
+        alpha(1,1) double = 0.5;
     end
     
     methods        
@@ -30,9 +32,17 @@ classdef ThreePointPlane < AbstractGeometricPlane
             point2Pos = obj.point2.getPositionAtTime(time, vehElemSet, inFrame);
             point3Pos = obj.point3.getPositionAtTime(time, vehElemSet, inFrame);
             
-            vect12 = point2Pos - point1Pos;
-            vect13 = point3Pos - point1Pos;
+            vect12 = [point2Pos.rVect] - [point1Pos.rVect];
+            vect13 = [point3Pos.rVect] - [point1Pos.rVect];
             normvect = cross(vect12, vect13);
+            
+            vecNorms = vecNormARH(normvect);
+            bool = vecNorms == 0;
+            if(any(bool))
+                normvect(:,bool) = [0;0;1];
+            end
+            
+            normvect = vect_normVector(normvect);
         end
         
         function originPt = getPlaneOriginPtAtTime(obj, time, vehElemSet, inFrame)
@@ -52,7 +62,7 @@ classdef ThreePointPlane < AbstractGeometricPlane
         end
         
         function useTf = openEditDialog(obj)
-%             useTf = lvd_EditCrossProductVectorGUI(obj, obj.lvdData);
+            useTf = lvd_EditThreePointPlaneGUI(obj, obj.lvdData);
         end
         
         function tf = isVehDependent(obj)
@@ -94,7 +104,7 @@ classdef ThreePointPlane < AbstractGeometricPlane
         end 
         
         function tf = isInUse(obj, lvdData)
-%             tf = lvdData.geometry.usesGeometricAngle(obj);
+            tf = lvdData.geometry.usesGeometricPlane(obj);
         end
     end
 end

@@ -136,7 +136,7 @@ function saveAndCloseButton_Callback(hObject, eventdata, handles)
     if(isempty(errMsg))
         uiresume(handles.lvd_EditScaledVectorGUI);
     else
-        msgbox(errMsg,'Invalid Point Inputs','error');
+        msgbox(errMsg,'Invalid Vector Inputs','error');
     end
 
 

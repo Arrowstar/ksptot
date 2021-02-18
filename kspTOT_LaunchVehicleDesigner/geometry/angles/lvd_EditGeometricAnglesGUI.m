@@ -116,7 +116,7 @@ function anglesListBox_Callback(hObject, eventdata, handles)
 %        contents{get(hObject,'Value')} returns selected item from anglesListBox
     lvdData = getappdata(handles.lvd_EditGeometricAnglesGUI,'lvdData');
     if(strcmpi(get(handles.lvd_EditGeometricAnglesGUI,'SelectionType'),'open') && ...
-       lvdData.geometry.refFrames.getNumRefFrames() > 0)
+       lvdData.geometry.angles.getNumAngles() > 0)
         selAngleInd = hObject.Value;
         selAngle = lvdData.geometry.angles.getAngleAtInd(selAngleInd);
         
@@ -199,7 +199,7 @@ function removeAngleButton_Callback(hObject, eventdata, handles)
     if(tf == false)
         lvdData.geometry.angles.removeAngle(selAngle);
         
-%         lvdData.viewSettings.removeGeoRefFrameFromViewProfiles(selAngle);
+        lvdData.viewSettings.removeGeoAngleFromViewProfiles(selAngle);
         
         populateGUI(handles, lvdData);
 

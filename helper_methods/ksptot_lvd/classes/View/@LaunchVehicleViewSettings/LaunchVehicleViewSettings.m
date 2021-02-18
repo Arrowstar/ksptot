@@ -112,6 +112,18 @@ classdef LaunchVehicleViewSettings < matlab.mixin.SetGet
                 obj.viewProfiles(i).removeGeoRefFrameFromList(refFrame);
             end
         end
+        
+        function removeGeoAngleFromViewProfiles(obj, angle)
+            for(i=1:length(obj.viewProfiles))
+                obj.viewProfiles(i).removeGeoAngleFromList(angle);
+            end
+        end
+        
+        function removeGeoPlaneFromViewProfiles(obj, plane)
+            for(i=1:length(obj.viewProfiles))
+                obj.viewProfiles(i).removeGeoPlaneFromList(plane);
+            end
+        end
     end
     
     methods(Static)

@@ -116,7 +116,7 @@ function planesListBox_Callback(hObject, eventdata, handles)
 %        contents{get(hObject,'Value')} returns selected item from planesListBox
     lvdData = getappdata(handles.lvd_EditGeometricPlanesGUI,'lvdData');
     if(strcmpi(get(handles.lvd_EditGeometricPlanesGUI,'SelectionType'),'open') && ...
-       lvdData.geometry.refFrames.getNumRefFrames() > 0)
+       lvdData.geometry.planes.getNumPlanes() > 0)
         selPlaneInd = hObject.Value;
         selPlane = lvdData.geometry.planes.getPlaneAtInd(selPlaneInd);
         
@@ -213,7 +213,7 @@ function removePlaneButton_Callback(hObject, eventdata, handles)
     if(tf == false)
         lvdData.geometry.planes.removePlane(selPlane);
         
-%         lvdData.viewSettings.removeGeoRefFrameFromViewProfiles(selPlane);
+        lvdData.viewSettings.removeGeoPlaneFromViewProfiles(selPlane);
         
         populateGUI(handles, lvdData);
 

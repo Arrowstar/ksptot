@@ -127,7 +127,7 @@ function saveAndCloseButton_Callback(hObject, eventdata, handles)
     if(isempty(errMsg))
         uiresume(handles.lvd_EditTwoPointVectorGUI);
     else
-        msgbox(errMsg,'Invalid Point Inputs','error');
+        msgbox(errMsg,'Invalid Vector Inputs','error');
     end
 
 
@@ -139,7 +139,7 @@ function errMsg = validateInputs(handles)
     end
     
     if(isempty(strtrim(handles.vectorNameText.String)))
-        errMsg{end+1} = 'Point name must contain more than white space and must not be empty.';
+        errMsg{end+1} = 'Vector name must contain more than white space and must not be empty.';
     end
 
     

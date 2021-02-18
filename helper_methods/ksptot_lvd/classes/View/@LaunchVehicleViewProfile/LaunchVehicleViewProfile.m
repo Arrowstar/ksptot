@@ -67,6 +67,12 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         %geometric reference frames
         refFramesToPlot(1,:) AbstractGeometricRefFrame
         
+        %geometric angles
+        anglesToPlot(1,:) AbstractGeometricAngle
+        
+        %geometric planes
+        planesToPlot(1,:) AbstractGeometricPlane
+        
         %central body transform
         hCBodySurfXForm = matlab.graphics.GraphicsPlaceholder();
         
@@ -88,9 +94,13 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         markerGrdObjData(1,:) LaunchVehicleViewProfileGroundObjData = LaunchVehicleViewProfileGroundObjData.empty(1,0);
         sunLighting(1,:) LaunchVehicleViewProfileSunLighting = LaunchVehicleViewProfileSunLighting.empty(1,0);
         centralBodyData(1,:) LaunchVehicleViewProfileCentralBodyData = LaunchVehicleViewProfileCentralBodyData.empty(1,0);
+        
         pointData(1,:) LaunchVehicleViewProfilePointData = LaunchVehicleViewProfilePointData.empty(1,0);
         vectorData(1,:) LaunchVehicleViewProfileVectorData = LaunchVehicleViewProfileVectorData.empty(1,0);
         refFrameData(1,:) LaunchVehicleViewProfileRefFrameData = LaunchVehicleViewProfileRefFrameData.empty(1,0);
+        angleData(1,:) LaunchVehicleViewProfileAngleData = LaunchVehicleViewProfileAngleData.empty(1,0);
+        planeData(1,:) LaunchVehicleViewProfilePlaneData = LaunchVehicleViewProfilePlaneData.empty(1,0);
+        
         userDefinedRefFrames(1,:) 
     end
     
@@ -117,6 +127,14 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         
         function removeGeoRefFrameFromList(obj, refFrame)
             obj.refFramesToPlot([obj.refFramesToPlot] == refFrame) = [];
+        end
+        
+        function removeGeoAngleFromList(obj, angle)
+            obj.anglesToPlot([obj.anglesToPlot] == angle) = [];
+        end
+        
+        function removeGeoPlaneFromList(obj, plane)
+            obj.planesToPlot([obj.planesToPlot] == plane) = [];
         end
         
         function plotTrajectory(obj, lvdData, handles)
@@ -523,6 +541,52 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                 end
             end
         end
+        
+        function createAngleData(obj, viewFrame, subStateLogs, evts)
+            obj.clearAngleData();
+            angles = obj.anglesToPlot;
+            
+            for(i=1:length(angles))
+                obj.angleData(end+1) = LaunchVehicleViewProfileAngleData(angles(i), viewFrame);
+            end
+            
+            for(i=1:length(subStateLogs))
+                if(size(subStateLogs{i},1) > 0)
+                    [times, rVects, ~, vVects] = LaunchVehicleViewProfile.parseTrajDataFromSubStateLogs(subStateLogs, i, evts);
+                    
+                    if(length(unique(times)) > 1)
+                        for(j=1:length(obj.angleData))
+                            obj.angleData(j).addData(times, rVects, vVects);
+                        end
+                    end
+                end
+            end
+        end
+        
+        function createPlaneData(obj, viewFrame, subStateLogs, evts)
+            obj.clearPlaneData();
+            planes = obj.planesToPlot;
+
+%             h = findobj('Tag','ma_LvdMainGUI');
+%             lvdData = getappdata(h,'lvdData');
+%             planes = lvdData.geometry.planes.planes;
+            
+            for(i=1:length(planes))
+                obj.planeData(end+1) = LaunchVehicleViewProfilePlaneData(planes(i), viewFrame);
+            end
+            
+            for(i=1:length(subStateLogs))
+                if(size(subStateLogs{i},1) > 0)
+                    [times, rVects, ~, vVects] = LaunchVehicleViewProfile.parseTrajDataFromSubStateLogs(subStateLogs, i, evts);
+                    
+                    if(length(unique(times)) > 1)
+                        for(j=1:length(obj.planeData))
+                            obj.planeData(j).addData(times, rVects, vVects);
+                        end
+                    end
+                end
+            end
+        end
                
         function clearAllTrajData(obj)
             obj.markerTrajData = LaunchVehicleViewProfileTrajectoryData.empty(1,0);
@@ -550,6 +614,14 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         
         function clearRefFrameData(obj)
             obj.refFrameData = LaunchVehicleViewProfileRefFrameData.empty(1,0);
+        end
+        
+        function clearAngleData(obj)
+            obj.angleData = LaunchVehicleViewProfileAngleData.empty(1,0);
+        end
+        
+        function clearPlaneData(obj)
+            obj.planeData = LaunchVehicleViewProfilePlaneData.empty(1,0);
         end
     end
     

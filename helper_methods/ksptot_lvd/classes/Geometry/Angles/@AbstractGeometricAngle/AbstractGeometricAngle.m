@@ -9,6 +9,8 @@ classdef AbstractGeometricAngle < matlab.mixin.SetGet & matlab.mixin.Heterogeneo
     methods        
         angle = getAngleAtTime(obj, time, vehElemSet, inFrame)
         
+        startPt = getAngleStartPointAtTime(obj, time, vehElemSet, inFrame)
+        
         name = getName(obj)
         
         setName(obj, name)

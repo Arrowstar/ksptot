@@ -9,9 +9,11 @@ classdef PointVectorPlane < AbstractGeometricPlane
         name(1,:) char
         lvdData LvdData
         
-%         %
-%         lineColor(1,1) ColorSpecEnum = ColorSpecEnum.Black;
-%         lineSpec(1,1) LineSpecEnum = LineSpecEnum.DottedLine;
+        %display
+        lineColor(1,1) ColorSpecEnum = ColorSpecEnum.Green;
+        lineSpec(1,1) LineSpecEnum = LineSpecEnum.DashedLine;
+        edgeLength(1,1) double = 100; %km
+        alpha(1,1) double = 0.5;
     end
     
     methods        
@@ -25,6 +27,14 @@ classdef PointVectorPlane < AbstractGeometricPlane
         
         function normvect = getPlaneNormVectAtTime(obj, time, vehElemSet, inFrame)
             normvect = obj.vector.getVectorAtTime(time, vehElemSet, inFrame);
+            
+            vecNorms = vecNormARH(normvect);
+            bool = vecNorms == 0;
+            if(any(bool))
+                normvect(:,bool) = [0;0;1];
+            end
+            
+            normvect = vect_normVector(normvect);
         end
         
         function originPt = getPlaneOriginPtAtTime(obj, time, vehElemSet, inFrame)
@@ -44,7 +54,7 @@ classdef PointVectorPlane < AbstractGeometricPlane
         end
         
         function useTf = openEditDialog(obj)
-%             useTf = lvd_EditCrossProductVectorGUI(obj, obj.lvdData);
+            useTf = lvd_EditPointVectorPlaneGUI(obj, obj.lvdData);
         end
         
         function tf = isVehDependent(obj)
@@ -82,7 +92,7 @@ classdef PointVectorPlane < AbstractGeometricPlane
         end     
         
         function tf = isInUse(obj, lvdData)
-%             tf = lvdData.geometry.usesGeometricAngle(obj);
+            tf = lvdData.geometry.usesGeometricPlane(obj);
         end
     end
 end

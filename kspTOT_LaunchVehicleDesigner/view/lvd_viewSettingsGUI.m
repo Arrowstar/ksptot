@@ -22,7 +22,7 @@ function varargout = lvd_viewSettingsGUI(varargin)
     
     % Edit the above text to modify the response to help lvd_viewSettingsGUI
     
-    % Last Modified by GUIDE v2.5 13-Jan-2021 15:25:11
+    % Last Modified by GUIDE v2.5 18-Feb-2021 10:06:40
     
     % Begin initialization code - DO NOT EDIT
     gui_Singleton = 1;
@@ -81,6 +81,8 @@ function handles = populateGUI(viewSettings, handles)
     handles.pointsToPlotListbox.String = plotPointsListBoxStr;
     handles.vectorsToPlotListbox.String = geometry.vectors.getListboxStr();
     handles.refFramessToPlotListbox.String = geometry.refFrames.getListboxStr();
+    handles.anglesToPlotListbox.String = geometry.angles.getListboxStr();
+    handles.planesToPlotListbox.String = geometry.planes.getListboxStr();
     
     profile = getSelectedProfile(handles);
     updateGuiForProfile(profile, handles);
@@ -170,10 +172,12 @@ function updateGuiForProfile(profile, handles)
     handles.pointsToPlotListbox.Value = find(ismember(plotPoints, profile.pointsToPlot));
     handles.vectorsToPlotListbox.Value = geometry.vectors.getIndsForVectors(profile.vectorsToPlot);
     handles.refFramessToPlotListbox.Value = geometry.refFrames.getIndsForRefFrames(profile.refFramesToPlot);
+    handles.anglesToPlotListbox.Value = geometry.angles.getIndsForAngles(profile.anglesToPlot);
+    handles.planesToPlotListbox.Value = geometry.planes.getIndsForPlanes(profile.planesToPlot);
     
     setDeleteButtonEnable(handles);
-    
-    
+
+
 function profile = getSelectedProfile(handles)
     viewSettings = getappdata(handles.lvd_viewSettingsGUI,'viewSettings');
     
@@ -1285,6 +1289,72 @@ function refFramessToPlotListbox_Callback(hObject, eventdata, handles)
 % --- Executes during object creation, after setting all properties.
 function refFramessToPlotListbox_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to refFramessToPlotListbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: listbox controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in anglesToPlotListbox.
+function anglesToPlotListbox_Callback(hObject, eventdata, handles)
+% hObject    handle to anglesToPlotListbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns anglesToPlotListbox contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from anglesToPlotListbox
+    viewSettings = getappdata(handles.lvd_viewSettingsGUI,'viewSettings');
+    angleSet = viewSettings.lvdData.geometry.angles;
+
+    profile = getSelectedProfile(handles);
+    
+    inds = hObject.Value;
+    if(not(isempty(inds)))
+        profile.anglesToPlot = angleSet.getAnglesForInds(inds);
+    else
+        profile.anglesToPlot = AbstractGeometricAngle.empty(1,0);
+    end
+
+% --- Executes during object creation, after setting all properties.
+function anglesToPlotListbox_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to anglesToPlotListbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: listbox controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in planesToPlotListbox.
+function planesToPlotListbox_Callback(hObject, eventdata, handles)
+% hObject    handle to planesToPlotListbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns planesToPlotListbox contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from planesToPlotListbox
+    viewSettings = getappdata(handles.lvd_viewSettingsGUI,'viewSettings');
+    planeSet = viewSettings.lvdData.geometry.planes;
+
+    profile = getSelectedProfile(handles);
+    
+    inds = hObject.Value;
+    if(not(isempty(inds)))
+        profile.planesToPlot = planeSet.getPlanesForInds(inds);
+    else
+        profile.planesToPlot = AbstractGeometricPlane.empty(1,0);
+    end
+
+% --- Executes during object creation, after setting all properties.
+function planesToPlotListbox_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to planesToPlotListbox (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 

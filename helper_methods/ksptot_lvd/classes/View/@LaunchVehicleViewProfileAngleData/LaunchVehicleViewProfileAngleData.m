@@ -1,5 +1,5 @@
-classdef LaunchVehicleViewProfileVectorData < matlab.mixin.SetGet
-    %LaunchVehicleViewProfileVectorData Summary of this class goes here
+classdef LaunchVehicleViewProfileAngleData < matlab.mixin.SetGet
+    %LaunchVehicleViewProfileAngleData Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
@@ -13,13 +13,13 @@ classdef LaunchVehicleViewProfileVectorData < matlab.mixin.SetGet
         vzInterps(1,:) cell = {};
         
         markerPlot = matlab.graphics.GraphicsPlaceholder.empty(1,0)
-        vector AbstractGeometricVector
+        angle AbstractGeometricAngle
         viewFrame AbstractReferenceFrame
     end
     
     methods
-        function obj = LaunchVehicleViewProfileVectorData(vector, viewFrame)
-            obj.vector = vector;
+        function obj = LaunchVehicleViewProfileAngleData(angle, viewFrame)
+            obj.angle = angle;
             obj.viewFrame = viewFrame;
         end
         
@@ -40,33 +40,43 @@ classdef LaunchVehicleViewProfileVectorData < matlab.mixin.SetGet
             obj.vzInterps{end+1} = griddedInterpolant(times, vVects(:,3), method, 'linear');
         end
         
-        function plotVectorAtTime(obj, time, hAx)   
-            [origin, vect] = obj.getVectorAtTime(time);
+        function plotAngleAtTime(obj, time, hAx)
+            [startPts, angleMags, anglePlaneNorms] = obj.getAngleAtTime(time);
             
+            numPtsPerAngle = 100;
             if(isempty(obj.markerPlot))
                 hold(hAx,'on'); 
-                for(i=1:size(vect,2))
-                    obj.markerPlot(i) = quiver3(hAx, origin(1,i),origin(2,i),origin(3,i), vect(1,i),vect(2,i),vect(3,i), 'AutoScale','off', 'Color',obj.vector.lineColor.color, 'LineStyle',obj.vector.lineSpec.linespec);
+                for(i=1:size(angleMags,2))
+                    angleMag = angleMags(i);
+                    startPt = startPts(:,i);
+                    anglePlaneNorm = anglePlaneNorms(:,i);
+                    
+                    anglePts = obj.getAnglePts(angleMag, startPt, anglePlaneNorm, numPtsPerAngle);
+                    
+                    obj.markerPlot(i) = plot3(anglePts(1,:), anglePts(2,:), anglePts(3,:), 'Color',obj.angle.lineColor.color, 'LineStyle', obj.angle.lineSpec.linespec);
                 end
                 hold(hAx,'off');
             else
-                for(i=1:size(vect,2))
-                    obj.markerPlot(i).XData = origin(1,i);
-                    obj.markerPlot(i).YData = origin(2,i);
-                    obj.markerPlot(i).ZData = origin(3,i);
-
-                    obj.markerPlot(i).UData = vect(1,i);
-                    obj.markerPlot(i).VData = vect(2,i);
-                    obj.markerPlot(i).WData = vect(3,i);
+                for(i=1:length(obj.markerPlot))
+                    angleMag = abs(angleMags(i));
+                    startPt = startPts(:,i);
+                    anglePlaneNorm = anglePlaneNorms(:,i);
+                    
+                    anglePts = obj.getAnglePts(angleMag, startPt, anglePlaneNorm, numPtsPerAngle);
+                    
+                    obj.markerPlot(i).XData = anglePts(1,:);
+                    obj.markerPlot(i).YData = anglePts(2,:);
+                    obj.markerPlot(i).ZData = anglePts(3,:);
                 end
             end
         end
     end
     
     methods(Access=private)
-        function [origin, vect] = getVectorAtTime(obj, time)
-            origin = [];
-            vect = [];
+        function [startPt, angleMag, anglePlaneNorm] = getAngleAtTime(obj, time)
+            startPt = [];
+            angleMag = [];
+            anglePlaneNorm = [];
             for(i=1:length(obj.timesArr))
                 times = obj.timesArr{i};
                 
@@ -90,11 +100,24 @@ classdef LaunchVehicleViewProfileVectorData < matlab.mixin.SetGet
                     vz = vzInterp(time);
                     
                     vehElemSet = CartesianElementSet(time, [x;y;z], [vx;vy;vz], obj.viewFrame);
-                    vect(:,end+1) = obj.vector.getVectorAtTime(time, vehElemSet, obj.viewFrame); %#ok<AGROW>
                     
-                    origin(:,end+1) = obj.vector.getOriginPointInViewFrame(time, vehElemSet, obj.viewFrame); %#ok<AGROW>
+                    angleMag(end+1) = obj.angle.getAngleAtTime(time, vehElemSet, obj.viewFrame); %#ok<AGROW>
+                    startPt(:,end+1) = obj.angle.getAngleStartPointAtTime(time, vehElemSet, obj.viewFrame); %#ok<AGROW>
+                    anglePlaneNorm(:,end+1) = obj.angle.getAnglePlaneNormalAtTime(time, vehElemSet, obj.viewFrame); %#ok<AGROW>
                 end
             end
+        end
+        
+        function anglePts = getAnglePts(~, angleMag, startPt, anglePlaneNorm, numPtsPerAngle)
+            r = [anglePlaneNorm(:)', 0];
+            r = repmat(r,numPtsPerAngle,1);
+
+            thetas = linspace(0, angleMag, numPtsPerAngle);
+            r(:,4) = thetas(:);
+            M = axang2rotmARH(r);
+
+            startPt = repmat(startPt,1,1,numPtsPerAngle);
+            anglePts = squeeze(mtimesx(M,startPt));
         end
     end
 end
