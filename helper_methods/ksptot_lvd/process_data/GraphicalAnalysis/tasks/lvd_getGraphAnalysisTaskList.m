@@ -71,5 +71,11 @@ function [taskList] = lvd_getGraphAnalysisTaskList(lvdData, excludeList)
     vectGAStr = lvdData.geometry.vectors.getAllVectorGraphAnalysisTaskStrs();
     taskList = horzcat(taskList, vectGAStr);
     
+    angleGAStr = lvdData.geometry.angles.getAllAngleGraphAnalysisTaskStrs();
+    taskList = horzcat(taskList, angleGAStr);
+    
+    planeGAStr = lvdData.geometry.planes.getAllPlaneGraphAnalysisTaskStrs();
+    taskList = horzcat(taskList, planeGAStr);
+    
     taskList = setdiff(taskList,excludeList);
 end

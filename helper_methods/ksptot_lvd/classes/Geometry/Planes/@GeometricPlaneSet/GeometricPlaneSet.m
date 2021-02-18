@@ -101,19 +101,43 @@ classdef GeometricPlaneSet < matlab.mixin.SetGet
         end
         
         %%% Graphical Analysis Task String methods %%%
-%         function vectGAStr = getAllVectorGraphAnalysisTaskStrs(obj)
-%             vectGAStr = horzcat(obj.getVectorXComponentGraphAnalysisTaskStrs());
-%         end
-% 
-%         function [vectXGAStr, vectors] = getVectorXComponentGraphAnalysisTaskStrs(obj)
-%             vectors = obj.vectors;
-%             
-%             vectXGAStr = cell(1,length(vectors));
-%             A = length(vectors);
-%             formSpec = sprintf('%%0%uu',floor(log10(abs(A)+1)) + 1);
-%             for(i=1:length(vectors))
-%                 vectXGAStr{i} = sprintf(sprintf('Vector %s X Component - "%s"',formSpec, vectors(i).getName()), i);
-%             end
-%         end
+        function gAStr = getAllPlaneGraphAnalysisTaskStrs(obj)
+            gAStr = horzcat(obj.getPlaneNormalXComponentGraphAnalysisTaskStrs(), ...
+                            obj.getPlaneNormalYComponentGraphAnalysisTaskStrs(), ...
+                            obj.getPlaneNormalZComponentGraphAnalysisTaskStrs());
+        end
+
+        function [gAStr, planes] = getPlaneNormalXComponentGraphAnalysisTaskStrs(obj)
+            planes = obj.planes;
+            
+            gAStr = cell(1,length(planes));
+            A = length(planes);
+            formSpec = sprintf('%%0%uu',floor(log10(abs(A)+1)) + 1);
+            for(i=1:length(planes))
+                gAStr{i} = sprintf(sprintf('Plane %s Normal Vector X Component - "%s"',formSpec, planes(i).getName()), i);
+            end
+        end
+        
+        function [gAStr, planes] = getPlaneNormalYComponentGraphAnalysisTaskStrs(obj)
+            planes = obj.planes;
+            
+            gAStr = cell(1,length(planes));
+            A = length(planes);
+            formSpec = sprintf('%%0%uu',floor(log10(abs(A)+1)) + 1);
+            for(i=1:length(planes))
+                gAStr{i} = sprintf(sprintf('Plane %s Normal Vector Y Component - "%s"',formSpec, planes(i).getName()), i);
+            end
+        end
+        
+        function [gAStr, planes] = getPlaneNormalZComponentGraphAnalysisTaskStrs(obj)
+            planes = obj.planes;
+            
+            gAStr = cell(1,length(planes));
+            A = length(planes);
+            formSpec = sprintf('%%0%uu',floor(log10(abs(A)+1)) + 1);
+            for(i=1:length(planes))
+                gAStr{i} = sprintf(sprintf('Plane %s Normal Vector Z Component - "%s"',formSpec, planes(i).getName()), i);
+            end
+        end
     end
 end

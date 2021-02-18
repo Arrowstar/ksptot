@@ -101,19 +101,19 @@ classdef GeometricAngleSet < matlab.mixin.SetGet
         end
         
         %%% Graphical Analysis Task String methods %%%
-%         function vectGAStr = getAllVectorGraphAnalysisTaskStrs(obj)
-%             vectGAStr = horzcat(obj.getVectorXComponentGraphAnalysisTaskStrs());
-%         end
-% 
-%         function [vectXGAStr, vectors] = getVectorXComponentGraphAnalysisTaskStrs(obj)
-%             vectors = obj.vectors;
-%             
-%             vectXGAStr = cell(1,length(vectors));
-%             A = length(vectors);
-%             formSpec = sprintf('%%0%uu',floor(log10(abs(A)+1)) + 1);
-%             for(i=1:length(vectors))
-%                 vectXGAStr{i} = sprintf(sprintf('Vector %s X Component - "%s"',formSpec, vectors(i).getName()), i);
-%             end
-%         end
+        function gAStr = getAllAngleGraphAnalysisTaskStrs(obj)
+            gAStr = horzcat(obj.getAngleMagGraphAnalysisTaskStrs());
+        end
+
+        function [gAStr, angles] = getAngleMagGraphAnalysisTaskStrs(obj)
+            angles = obj.angles;
+            
+            gAStr = cell(1,length(angles));
+            A = length(angles);
+            formSpec = sprintf('%%0%uu',floor(log10(abs(A)+1)) + 1);
+            for(i=1:length(angles))
+                gAStr{i} = sprintf(sprintf('Angle %s Magnitude - "%s"',formSpec, angles(i).getName()), i);
+            end
+        end
     end
 end

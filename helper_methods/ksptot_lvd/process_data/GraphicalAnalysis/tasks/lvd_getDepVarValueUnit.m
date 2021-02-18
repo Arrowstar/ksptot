@@ -119,6 +119,12 @@ function [depVarValue, depVarUnit, taskStr, refBodyInfo] = lvd_getDepVarValueUni
             geoVectOriginYPattern = '^Vector (\d+?) Origin Position \(Y\) - ".*"';
             geoVectOriginZPattern = '^Vector (\d+?) Origin Position \(Z\) - ".*"';
             
+            geoAngleMagPattern = '^Angle (\d+?) Magnitude - ".*"';
+            
+            geoPlaneNormXPattern = '^Plane (\d+?) Normal Vector X Component - ".*"';
+            geoPlaneNormYPattern = '^Plane (\d+?) Normal Vector Y Component - ".*"';
+            geoPlaneNormZPattern = '^Plane (\d+?) Normal Vector Z Component - ".*"';
+            
             if(not(isempty(regexpi(taskStr, tankMassPattern))))
                 tokens = regexpi(taskStr, tankMassPattern, 'tokens');
                 tokens = tokens{1};
@@ -432,6 +438,50 @@ function [depVarValue, depVarUnit, taskStr, refBodyInfo] = lvd_getDepVarValueUni
                 vector = vectors(vectInd);
                 
                 [depVarValue, depVarUnit] = lvd_GeometricVectorTasks(subLog(i), 'OriginZ', vector);
+                
+            elseif(not(isempty(regexpi(taskStr, geoAngleMagPattern))))
+                tokens = regexpi(taskStr, geoAngleMagPattern, 'tokens');
+                tokens = tokens{1};
+                tokens = tokens{1};
+                angleInd = str2double(tokens);
+                
+                [~, angles] = subLog(i).lvdData.geometry.angles.getAngleMagGraphAnalysisTaskStrs();
+                angle = angles(angleInd);
+                
+                [depVarValue, depVarUnit] = lvd_GeometricAngleTasks(subLog(i), 'Mag', angle);
+                
+            elseif(not(isempty(regexpi(taskStr, geoPlaneNormXPattern))))
+                tokens = regexpi(taskStr, geoPlaneNormXPattern, 'tokens');
+                tokens = tokens{1};
+                tokens = tokens{1};
+                planeInd = str2double(tokens);
+                
+                [~, planes] = subLog(i).lvdData.geometry.planes.getPlaneNormalXComponentGraphAnalysisTaskStrs();
+                plane = planes(planeInd);
+                
+                [depVarValue, depVarUnit] = lvd_GeometricPlaneTasks(subLog(i), 'NormVectorX', plane);
+                
+            elseif(not(isempty(regexpi(taskStr, geoPlaneNormYPattern))))
+                tokens = regexpi(taskStr, geoPlaneNormYPattern, 'tokens');
+                tokens = tokens{1};
+                tokens = tokens{1};
+                planeInd = str2double(tokens);
+                
+                [~, planes] = subLog(i).lvdData.geometry.planes.getPlaneNormalYComponentGraphAnalysisTaskStrs();
+                plane = planes(planeInd);
+                
+                [depVarValue, depVarUnit] = lvd_GeometricPlaneTasks(subLog(i), 'NormVectorY', plane);
+                
+            elseif(not(isempty(regexpi(taskStr, geoPlaneNormZPattern))))
+                tokens = regexpi(taskStr, geoPlaneNormZPattern, 'tokens');
+                tokens = tokens{1};
+                tokens = tokens{1};
+                planeInd = str2double(tokens);
+                
+                [~, planes] = subLog(i).lvdData.geometry.planes.getPlaneNormalZComponentGraphAnalysisTaskStrs();
+                plane = planes(planeInd);
+                
+                [depVarValue, depVarUnit] = lvd_GeometricPlaneTasks(subLog(i), 'NormVectorZ', plane);
                 
             else
                 error('Unknown LVD task string: "%s"', taskStr);                
