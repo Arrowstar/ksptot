@@ -881,7 +881,7 @@ function thrustVectIncrText_Callback(hObject, eventdata, handles)
     
     incr = str2double(get(hObject,'String'));
     enteredStr = get(hObject,'String');
-    numberName = 'Thrust Vector Data Point Incrememnt';
+    numberName = 'Thrust Vector Data Point Increment';
     lb = 1;
     ub = Inf;
     isInt = true;

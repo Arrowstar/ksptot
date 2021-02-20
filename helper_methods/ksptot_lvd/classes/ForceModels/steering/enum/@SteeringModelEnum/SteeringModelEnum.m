@@ -9,8 +9,8 @@ classdef SteeringModelEnum < matlab.mixin.SetGet
         GenericPoly('Generic Angles Steering','GenericPolySteeringModel', true);
         
         GenericLinTan('Generic Linear Tangent Angles Steering','GenericLinearTangentSteeringModel', false);
-        
         GenericQuatInterp('Generic Angles Quaternion Interp','GenericQuatInterpSteeringModel', false);
+        GenericSumOfSines('Generic Sum of Sines Angles Steering','GenericSumOfSinesSteeringModel', false);
     end
     
     properties
