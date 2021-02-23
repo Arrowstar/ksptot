@@ -3,9 +3,9 @@ classdef GenericSumOfSinesSteeringModel < AbstractSteeringModel
     %   Detailed explanation goes here
     
     properties
-        gammaAngleModel(1,1) SumOfSinesModel = SumOfSinesModel(0,0,0,0);
-        betaAngleModel(1,1) SumOfSinesModel = SumOfSinesModel(0,0,0,0);
-        alphaAngleModel(1,1) SumOfSinesModel = SumOfSinesModel(0,0,0,0);
+        gammaAngleModel(1,1) SumOfSinesModel = SumOfSinesModel(0);
+        betaAngleModel(1,1) SumOfSinesModel = SumOfSinesModel(0);
+        alphaAngleModel(1,1) SumOfSinesModel = SumOfSinesModel(0);
         
         gammaContinuity(1,1) logical = false;
         betaContinuity(1,1) logical = false;
@@ -158,6 +158,10 @@ classdef GenericSumOfSinesSteeringModel < AbstractSteeringModel
         function tf = requiresReInitAfterSoIChange(~)
             tf = false;
         end
+        
+        function enum = getSteeringModelTypeEnum(~)
+            enum = SteerModelTypeEnum.SumOfSinesAngles;
+        end
     end
     
     methods(Access=private)
@@ -172,9 +176,9 @@ classdef GenericSumOfSinesSteeringModel < AbstractSteeringModel
     
     methods(Static)
         function model = getDefaultSteeringModel()
-            gammaAngleModel = SumOfSinesModel(0,1,2*pi,0);
-            betaAngleModel = SumOfSinesModel(0,1,2*pi,0);
-            alphaAngleModel = SumOfSinesModel(0,1,2*pi,0);
+            gammaAngleModel = SumOfSinesModel(0);
+            betaAngleModel = SumOfSinesModel(0);
+            alphaAngleModel = SumOfSinesModel(0);
             
             model = GenericSumOfSinesSteeringModel(gammaAngleModel, betaAngleModel, alphaAngleModel);
         end

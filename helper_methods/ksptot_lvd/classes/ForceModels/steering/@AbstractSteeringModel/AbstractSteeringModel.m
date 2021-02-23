@@ -44,7 +44,7 @@ classdef(Abstract) AbstractSteeringModel < matlab.mixin.SetGet
                     addActionTf = lvd_EditActionSetLinearTangentSteeringModelGUI(fakeAction, lv, useContinuity);
                     
                 case SteerModelTypeEnum.SumOfSinesAngles
-                    error('not yet implemented');
+                    addActionTf = lvd_EditActionSetSumOfSinesSteeringModelGUI(fakeAction, lv, useContinuity);
 
                 otherwise
                     error('Unknown steering model type: %s', enum.name);

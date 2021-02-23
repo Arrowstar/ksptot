@@ -14,6 +14,8 @@ classdef SumOfSinesModel < matlab.mixin.SetGet
     methods
         function obj = SumOfSinesModel(const)
             obj.const = const;
+            
+            obj.sines = SineModel(0,1,2*pi,0);
         end
         
         function addSine(obj, sine)
@@ -33,6 +35,16 @@ classdef SumOfSinesModel < matlab.mixin.SetGet
             
             for(i=1:length(obj.sines))
                 value = value + obj.sines(i).getValueAtTime(ut);
+            end
+        end
+        
+        function period = getLongestPeriod(obj)
+            period = 0;
+            
+            for(i=1:length(obj.sines))
+                if(period < obj.sines(i).period)
+                    period = obj.sines(i).period;
+                end
             end
         end
         
@@ -172,7 +184,7 @@ classdef SumOfSinesModel < matlab.mixin.SetGet
         end
         
         function useTf = getUseTfForVariable(obj)
-            useTf = [obj.const];
+            useTf = [obj.varConst];
             
             for(i=1:length(obj.sines))
                 useTf = [useTf, obj.sines(i).getUseTfForVariable()]; %#ok<AGROW>
@@ -196,7 +208,12 @@ classdef SumOfSinesModel < matlab.mixin.SetGet
             nameStrs = {'Constant Offset'};
             
             for(i=1:length(obj.sines))
-                nameStrs = horzcat(nameStrs, obj.sines(i).getStrNamesOfVars()); %#ok<AGROW>
+                varNames = obj.sines(i).getStrNamesOfVars();
+                for(j=1:length(varNames))
+                    varNames{j} = sprintf('Sine %u %s', i, varNames{j});
+                end
+                
+                nameStrs = horzcat(nameStrs, varNames); %#ok<AGROW>
             end
         end
     end

@@ -22,7 +22,7 @@ function varargout = lvd_EditSumOfSinesModelGUI(varargin)
     
     % Edit the above text to modify the response to help lvd_EditSumOfSinesModelGUI
     
-    % Last Modified by GUIDE v2.5 19-Feb-2021 19:52:12
+    % Last Modified by GUIDE v2.5 22-Feb-2021 08:38:23
     
     % Begin initialization code - DO NOT EDIT
     gui_Singleton = 1;
@@ -67,10 +67,10 @@ function lvd_EditSumOfSinesModelGUI_OpeningFcn(hObject, eventdata, handles, vara
     uiwait(handles.lvd_EditSumOfSinesModelGUI);
     
 function populateGUI(handles, sumOfSines)
-    handles.constText.String = fullAccNum2Str(sumOfSines.const);
+    handles.constText.String = fullAccNum2Str(rad2deg(sumOfSines.const));
     handles.constOptCheckbox.Value = double(sumOfSines.varConst);
-    handles.constLbText.String = fullAccNum2Str(sumOfSines.constLb);
-    handles.constUbText.String = fullAccNum2Str(sumOfSines.constUb);
+    handles.constLbText.String = fullAccNum2Str(rad2deg(sumOfSines.constLb));
+    handles.constUbText.String = fullAccNum2Str(rad2deg(sumOfSines.constUb));
     
     constOptCheckbox_Callback(handles.constOptCheckbox, [], handles);
     
@@ -88,17 +88,17 @@ function populateSineDefinition(handles, sumOfSines)
     if(not(isempty(sineModel)))
         setSineModelWidgetsEnable(handles, 'on');
         
-        handles.ampText.String = fullAccNum2Str(sineModel.amp);
+        handles.ampText.String = fullAccNum2Str(rad2deg(sineModel.amp));
         handles.ampOptCheckbox.Value = double(sineModel.varAmp);
-        handles.ampLbText.String = fullAccNum2Str(sineModel.ampLb);
-        handles.ampUbText.String = fullAccNum2Str(sineModel.ampUb);
+        handles.ampLbText.String = fullAccNum2Str(rad2deg(sineModel.ampLb));
+        handles.ampUbText.String = fullAccNum2Str(rad2deg(sineModel.ampUb));
         ampOptCheckbox_Callback(handles.ampOptCheckbox, [], handles);
         
-        handles.freqText.String = fullAccNum2Str(sineModel.freq);
-        handles.freqOptCheckbox.Value = double(sineModel.varFreq);
-        handles.freqLbText.String = fullAccNum2Str(sineModel.freqLb);
-        handles.freqUbText.String = fullAccNum2Str(sineModel.freqUb);
-        freqOptCheckbox_Callback(handles.freqOptCheckbox, [], handles);
+        handles.periodText.String = fullAccNum2Str(sineModel.period);
+        handles.periodOptCheckbox.Value = double(sineModel.varPeriod);
+        handles.periodLbText.String = fullAccNum2Str(sineModel.periodLb);
+        handles.periodUbText.String = fullAccNum2Str(sineModel.periodUb);
+        periodOptCheckbox_Callback(handles.periodOptCheckbox, [], handles);
         
         handles.phaseText.String = fullAccNum2Str(sineModel.phase);
         handles.phaseOptCheckbox.Value = double(sineModel.varPhase);
@@ -116,10 +116,10 @@ function setSineModelWidgetsEnable(handles, enableStr)
     handles.ampLbText.Enable = enableStr;
     handles.ampUbText.Enable = enableStr;
     
-    handles.freqText.Enable = enableStr;
-    handles.freqOptCheckbox.Enable = enableStr;
-    handles.freqLbText.Enable = enableStr;
-    handles.freqUbText.Enable = enableStr;
+    handles.periodText.Enable = enableStr;
+    handles.periodOptCheckbox.Enable = enableStr;
+    handles.periodLbText.Enable = enableStr;
+    handles.periodUbText.Enable = enableStr;
     
     handles.phaseText.Enable = enableStr;
     handles.phaseOptCheckbox.Enable = enableStr;
@@ -216,7 +216,7 @@ function constText_Callback(hObject, eventdata, handles)
     errMsg = validateNumber(value, numberName, lb, ub, isInt, errMsg, enteredStr);
     
     if(isempty(errMsg))
-        sumOfSines.const = value;
+        sumOfSines.const = deg2rad(value);
     else
         hObject.String = fullAccNum2Str(sumOfSines.const);
         
@@ -279,7 +279,7 @@ function constLbText_Callback(hObject, eventdata, handles)
     errMsg = validateNumber(value, numberName, lb, ub, isInt, errMsg, enteredStr);
     
     if(isempty(errMsg))
-        sumOfSines.constLb = value;
+        sumOfSines.constLb = deg2rad(value);
     else
         hObject.String = fullAccNum2Str(sumOfSines.constLb);
         
@@ -324,7 +324,7 @@ function constUbText_Callback(hObject, eventdata, handles)
     errMsg = validateNumber(value, numberName, lb, ub, isInt, errMsg, enteredStr);
     
     if(isempty(errMsg))
-        sumOfSines.constUb = value;
+        sumOfSines.constUb = deg2rad(value);
     else
         hObject.String = fullAccNum2Str(sumOfSines.constUb);
         
@@ -370,7 +370,7 @@ function ampText_Callback(hObject, eventdata, handles)
     errMsg = validateNumber(value, numberName, lb, ub, isInt, errMsg, enteredStr);
     
     if(isempty(errMsg))
-        sineModel.amp = value;
+        sineModel.amp = deg2rad(value);
         
         handles.sineListbox.String = sumOfSines.getListboxStr();
     else
@@ -437,7 +437,7 @@ function ampLbText_Callback(hObject, eventdata, handles)
     errMsg = validateNumber(value, numberName, lb, ub, isInt, errMsg, enteredStr);
     
     if(isempty(errMsg))
-        sineModel.ampLb = value;
+        sineModel.ampLb = deg2rad(value);
     else
         hObject.String = fullAccNum2Str(sineModel.ampLb);
         
@@ -483,7 +483,7 @@ function ampUbText_Callback(hObject, eventdata, handles)
     errMsg = validateNumber(value, numberName, lb, ub, isInt, errMsg, enteredStr);
     
     if(isempty(errMsg))
-        sineModel.ampUb = value;
+        sineModel.ampUb = deg2rad(value);
     else
         hObject.String = fullAccNum2Str(sineModel.ampUb);
         
@@ -504,13 +504,13 @@ function ampUbText_CreateFcn(hObject, eventdata, handles)
     
     
     
-function freqText_Callback(hObject, eventdata, handles)
-    % hObject    handle to freqText (see GCBO)
+function periodText_Callback(hObject, eventdata, handles)
+    % hObject    handle to periodText (see GCBO)
     % eventdata  reserved - to be defined in a future version of MATLAB
     % handles    structure with handles and user data (see GUIDATA)
     
-    % Hints: get(hObject,'String') returns contents of freqText as text
-    %        str2double(get(hObject,'String')) returns contents of freqText as a double
+    % Hints: get(hObject,'String') returns contents of periodText as text
+    %        str2double(get(hObject,'String')) returns contents of periodText as a double
     newInput = get(hObject,'String');
     newInput = attemptStrEval(newInput);
     set(hObject,'String', newInput);
@@ -522,25 +522,25 @@ function freqText_Callback(hObject, eventdata, handles)
     
     value = str2double(get(hObject,'String'));
     enteredStr = get(hObject,'String');
-    numberName = 'Sine Frequency';
-    lb = -Inf;
+    numberName = 'Sine Period';
+    lb = 1E-10;
     ub = Inf;
     isInt = false;
     errMsg = validateNumber(value, numberName, lb, ub, isInt, errMsg, enteredStr);
     
     if(isempty(errMsg))
-        sineModel.freq = value;
+        sineModel.period = value;
         
         handles.sineListbox.String = sumOfSines.getListboxStr();
     else
-        hObject.String = fullAccNum2Str(sineModel.freq);
+        hObject.String = fullAccNum2Str(sineModel.period);
         
-        msgbox(errMsg,'Invalid Sine Frequency','error');
+        msgbox(errMsg,'Invalid Sine Period','error');
     end
     
     % --- Executes during object creation, after setting all properties.
-function freqText_CreateFcn(hObject, eventdata, handles)
-    % hObject    handle to freqText (see GCBO)
+function periodText_CreateFcn(hObject, eventdata, handles)
+    % hObject    handle to periodText (see GCBO)
     % eventdata  reserved - to be defined in a future version of MATLAB
     % handles    empty - handles not created until after all CreateFcns called
     
@@ -551,33 +551,33 @@ function freqText_CreateFcn(hObject, eventdata, handles)
     end
     
     
-    % --- Executes on button press in freqOptCheckbox.
-function freqOptCheckbox_Callback(hObject, eventdata, handles)
-    % hObject    handle to freqOptCheckbox (see GCBO)
+    % --- Executes on button press in periodOptCheckbox.
+function periodOptCheckbox_Callback(hObject, eventdata, handles)
+    % hObject    handle to periodOptCheckbox (see GCBO)
     % eventdata  reserved - to be defined in a future version of MATLAB
     % handles    structure with handles and user data (see GUIDATA)
     
-    % Hint: get(hObject,'Value') returns toggle state of freqOptCheckbox
+    % Hint: get(hObject,'Value') returns toggle state of periodOptCheckbox
     sumOfSines = getappdata(handles.lvd_EditSumOfSinesModelGUI,'sumOfSines');
     sineModel = getSelectedSineModel(handles, sumOfSines);
-    sineModel.varFreq = logical(hObject.Value);
+    sineModel.varPeriod = logical(hObject.Value);
     
     if(hObject.Value)
-        handles.freqLbText.Enable = 'on';
-        handles.freqUbText.Enable = 'on';
+        handles.periodLbText.Enable = 'on';
+        handles.periodUbText.Enable = 'on';
     else
-        handles.freqLbText.Enable = 'off';
-        handles.freqUbText.Enable = 'off';
+        handles.periodLbText.Enable = 'off';
+        handles.periodUbText.Enable = 'off';
     end
     
     
-function freqLbText_Callback(hObject, eventdata, handles)
-    % hObject    handle to freqLbText (see GCBO)
+function periodLbText_Callback(hObject, eventdata, handles)
+    % hObject    handle to periodLbText (see GCBO)
     % eventdata  reserved - to be defined in a future version of MATLAB
     % handles    structure with handles and user data (see GUIDATA)
     
-    % Hints: get(hObject,'String') returns contents of freqLbText as text
-    %        str2double(get(hObject,'String')) returns contents of freqLbText as a double
+    % Hints: get(hObject,'String') returns contents of periodLbText as text
+    %        str2double(get(hObject,'String')) returns contents of periodLbText as a double
     newInput = get(hObject,'String');
     newInput = attemptStrEval(newInput);
     set(hObject,'String', newInput);
@@ -589,23 +589,23 @@ function freqLbText_Callback(hObject, eventdata, handles)
     
     value = str2double(get(hObject,'String'));
     enteredStr = get(hObject,'String');
-    numberName = 'Sine Frequency Lower Bound';
-    lb = -Inf;
+    numberName = 'Sine Period Lower Bound';
+    lb = 1E-10;
     ub = Inf;
     isInt = false;
     errMsg = validateNumber(value, numberName, lb, ub, isInt, errMsg, enteredStr);
     
     if(isempty(errMsg))
-        sineModel.freqLb = value;
+        sineModel.periodLb = value;
     else
-        hObject.String = fullAccNum2Str(sineModel.freqLb);
+        hObject.String = fullAccNum2Str(sineModel.periodLb);
         
-        msgbox(errMsg,'Invalid Sine Frequency Lower Bound','error');
+        msgbox(errMsg,'Invalid Sine Period Lower Bound','error');
     end
     
     % --- Executes during object creation, after setting all properties.
-function freqLbText_CreateFcn(hObject, eventdata, handles)
-    % hObject    handle to freqLbText (see GCBO)
+function periodLbText_CreateFcn(hObject, eventdata, handles)
+    % hObject    handle to periodLbText (see GCBO)
     % eventdata  reserved - to be defined in a future version of MATLAB
     % handles    empty - handles not created until after all CreateFcns called
     
@@ -617,13 +617,13 @@ function freqLbText_CreateFcn(hObject, eventdata, handles)
     
     
     
-function freqUbText_Callback(hObject, eventdata, handles)
-    % hObject    handle to freqUbText (see GCBO)
+function periodUbText_Callback(hObject, eventdata, handles)
+    % hObject    handle to periodUbText (see GCBO)
     % eventdata  reserved - to be defined in a future version of MATLAB
     % handles    structure with handles and user data (see GUIDATA)
     
-    % Hints: get(hObject,'String') returns contents of freqUbText as text
-    %        str2double(get(hObject,'String')) returns contents of freqUbText as a double
+    % Hints: get(hObject,'String') returns contents of periodUbText as text
+    %        str2double(get(hObject,'String')) returns contents of periodUbText as a double
     newInput = get(hObject,'String');
     newInput = attemptStrEval(newInput);
     set(hObject,'String', newInput);
@@ -635,23 +635,23 @@ function freqUbText_Callback(hObject, eventdata, handles)
     
     value = str2double(get(hObject,'String'));
     enteredStr = get(hObject,'String');
-    numberName = 'Sine Frequency Upper Bound';
-    lb = sineModel.freqLb;
+    numberName = 'Sine Period Upper Bound';
+    lb = sineModel.periodLb;
     ub = Inf;
     isInt = false;
     errMsg = validateNumber(value, numberName, lb, ub, isInt, errMsg, enteredStr);
     
     if(isempty(errMsg))
-        sineModel.freqUb = value;
+        sineModel.periodUb = value;
     else
-        hObject.String = fullAccNum2Str(sineModel.freqUb);
+        hObject.String = fullAccNum2Str(sineModel.periodUb);
         
-        msgbox(errMsg,'Invalid Sine Frequency Upper Bound','error');
+        msgbox(errMsg,'Invalid Sine Period Upper Bound','error');
     end
     
     % --- Executes during object creation, after setting all properties.
-function freqUbText_CreateFcn(hObject, eventdata, handles)
-    % hObject    handle to freqUbText (see GCBO)
+function periodUbText_CreateFcn(hObject, eventdata, handles)
+    % hObject    handle to periodUbText (see GCBO)
     % eventdata  reserved - to be defined in a future version of MATLAB
     % handles    empty - handles not created until after all CreateFcns called
     
@@ -858,3 +858,54 @@ function removeSineButton_Callback(hObject, eventdata, handles)
     
     populateSineDefinition(handles, sumOfSines);
     
+
+
+% --- Executes on button press in plotOnePeriodButton.
+function plotOnePeriodButton_Callback(hObject, eventdata, handles)
+% hObject    handle to plotOnePeriodButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    sumOfSines = getappdata(handles.lvd_EditSumOfSinesModelGUI,'sumOfSines');
+    period = sumOfSines.getLongestPeriod();
+    
+    if(period == 0)
+        period = 1;
+    end
+    
+    t = linspace(0,period,500);
+    y = NaN(1,length(t));
+    
+    for(i=1:length(t))
+        y(i) = rad2deg(sumOfSines.getValueAtTime(t(i)));
+    end
+
+    hAx = axes(figure());
+    plot(hAx, t, y);
+    grid(hAx,'minor');
+    xlabel('DT [sec]');
+    ylabel('Sum of Sines Value [deg]');
+    
+
+
+% --------------------------------------------------------------------
+function copySineWaveMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to copySineWaveMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    sumOfSines = getappdata(handles.lvd_EditSumOfSinesModelGUI,'sumOfSines');
+    sineModel = getSelectedSineModel(handles, sumOfSines);
+    
+    newSineModel = sineModel.deepCopy();
+    sumOfSines.addSine(newSineModel);
+    
+    listBoxStr = sumOfSines.getListboxStr();
+    handles.sineListbox.String = listBoxStr;
+    handles.sineListbox.Value = length(listBoxStr);
+    
+    populateSineDefinition(handles, sumOfSines);
+    
+% --------------------------------------------------------------------
+function sineListboxMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to sineListboxMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
