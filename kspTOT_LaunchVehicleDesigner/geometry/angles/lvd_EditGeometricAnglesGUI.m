@@ -161,12 +161,25 @@ function addAngleButton_Callback(hObject, eventdata, handles)
             case GeometricAngleEnum.AngleBetweenVectors
                 numVectors = lvdData.geometry.vectors.getNumVectors();
                 if(numVectors >= 2)
-                    vector1 = lvdData.geometry.vectors.getVectorAtInd(1);
-                    vector2 = lvdData.geometry.vectors.getVectorAtInd(2);
-                    newAngle = TwoVectorAngle(vector1, vector2, 'New Angle', lvdData);
+                    vector = lvdData.geometry.vectors.getVectorAtInd(1);
+                    plane = lvdData.geometry.vectors.getVectorAtInd(2);
+                    newAngle = TwoVectorAngle(vector, plane, 'New Angle', lvdData);
                     
                 else
                     errordlg('Cannot create angle between vectors: There must be at least two geometric vectors available.','Cannot Create Angle');
+                    return;
+                end
+                
+            case GeometricAngleEnum.AngleBetweenVectorPlane
+                numVectors = lvdData.geometry.vectors.getNumVectors();
+                numPlanes = lvdData.geometry.planes.getNumPlanes();
+                if(numVectors >= 1 && numPlanes >= 1)
+                    vector = lvdData.geometry.vectors.getVectorAtInd(1);
+                    plane = lvdData.geometry.planes.getPlaneAtInd(1);
+                    newAngle = VectorPlaneAngle(vector, plane, 'New Angle', lvdData);
+                    
+                else
+                    errordlg('Cannot create angle between vector and plane: There must be at least one geometric vector and one geometric plane available.','Cannot Create Angle');
                     return;
                 end
                 

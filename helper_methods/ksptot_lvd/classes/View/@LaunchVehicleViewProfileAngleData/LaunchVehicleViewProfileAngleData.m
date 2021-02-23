@@ -54,6 +54,8 @@ classdef LaunchVehicleViewProfileAngleData < matlab.mixin.SetGet
                     anglePts = obj.getAnglePts(angleMag, startPt, anglePlaneNorm, numPtsPerAngle);
                     
                     obj.markerPlot(i) = plot3(anglePts(1,:), anglePts(2,:), anglePts(3,:), 'Color',obj.angle.lineColor.color, 'LineStyle', obj.angle.lineSpec.linespec);
+                    
+%                     quiver3(startPt(1), startPt(2), startPt(3), anglePlaneNorm(1), anglePlaneNorm(2), anglePlaneNorm(3));
                 end
                 hold(hAx,'off');
             else

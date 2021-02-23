@@ -4,6 +4,7 @@ classdef GeometricAngleEnum < matlab.mixin.SetGet
     
     enumeration
         AngleBetweenVectors('Angle Between Vectors');
+        AngleBetweenVectorPlane('Angle Between Vector and Plane');
     end
     
     properties
