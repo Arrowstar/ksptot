@@ -165,9 +165,9 @@ function addVectorButton_Callback(hObject, eventdata, handles)
             case GeometricVectorEnum.TwoPoint
                 numPoints = lvdData.geometry.points.getNumPoints();
                 if(numPoints >= 2)
-                    point1 = lvdData.geometry.points.getPointAtInd(1);
-                    point2 = lvdData.geometry.points.getPointAtInd(2);
-                    newVector = TwoPointVector(point1, point2, 'New Vector', lvdData);
+                    plane = lvdData.geometry.points.getPointAtInd(1);
+                    point = lvdData.geometry.points.getPointAtInd(2);
+                    newVector = TwoPointVector(plane, point, 'New Vector', lvdData);
                 else
                     errordlg('Cannot create Two Point Vector: There must be at least two unique geometric points available.','Cannot Create Vector');
                     return;
@@ -205,6 +205,18 @@ function addVectorButton_Callback(hObject, eventdata, handles)
                     newVector = ProjectedVector(vector1, vector2, 'New Vector', lvdData);
                 else
                     errordlg('Cannot create Projected Vector: There must be at least two unique geometric vectors available.','Cannot Create Vector');
+                    return;
+                end
+                
+            case GeometricVectorEnum.PlaneToPoint
+                numPoints = lvdData.geometry.points.getNumPoints();
+                numPlanes = lvdData.geometry.planes.getNumPlanes();
+                if(numPoints >= 1 && numPlanes >= 1)
+                    plane = lvdData.geometry.planes.getPlaneAtInd(1);
+                    point = lvdData.geometry.points.getPointAtInd(1);
+                    newVector = PlaneToPointVector(point, plane, 'New Vector', lvdData);
+                else
+                    errordlg('Cannot create Plane to Point Vector: There must be at least one unique geometric point and one unique geometric plane available.','Cannot Create Vector');
                     return;
                 end
                 
