@@ -30,26 +30,11 @@ classdef VectorPlaneAngle < AbstractGeometricAngle
             vectHat = vect_normVector(vect);
             normVect = vect_normVector(normVect);
             
-            vn = repmat([0;0;1], 1, numel(time));
-            vecCrossProd = cross(vectHat, normVect);
-            bool = all(vn - vectHat == 0,1) | all(vn - normVect == 0);
-            if(any(bool))
-                vn(:,bool) = vect_normVector(vecCrossProd(:,bool));
-                disp('any');
-            end
-            
             angle = asin(abs(dot(vectHat, normVect)));
-            angle = angle.*sign(dot(vn,normVect));
         end
         
         function startPt = getAngleStartPointAtTime(obj, time, vehElemSet, inFrame)
             vect = obj.vector.getVectorAtTime(time, vehElemSet, inFrame);
-%             normVect = obj.plane.getPlaneNormVectAtTime(time, vehElemSet, inFrame);
-%             
-%             normVectorNormSqr = vecNormARH(normVect).^2;
-%             normVectFactor = (dot(vect,normVect)./normVectorNormSqr);
-%             
-%             projVect = (vect - bsxfun(@times, normVectFactor, normVect));
             
             d = vect_normVector(vect);
             o = obj.vector.getOriginPointInViewFrame(time, vehElemSet, inFrame);
