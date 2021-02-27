@@ -35,13 +35,37 @@ classdef(Abstract) AbstractConstraint < matlab.mixin.SetGet & matlab.mixin.Heter
         
         tf = usesExtremum(obj, extremum);
         
-        function tf = usesGroundObj(obj, grdObj)
+        function tf = usesGroundObj(~, ~)
             tf = false;
         end
         
-        function tf = usesCalculusCalc(obj, calculusCalc)
+        function tf = usesCalculusCalc(~, ~)
             tf = false;
         end
+        
+        function tf = usesGeometricPoint(~, ~)
+            tf = false;
+        end
+        
+        function tf = usesGeometricVector(~, ~)
+            tf = false;
+        end
+        
+        function tf = usesGeometricCoordSys(~, ~)
+            tf = false;
+        end
+        
+        function tf = usesGeometricRefFrame(~, ~)
+            tf = false;
+        end
+        
+        function tf = usesGeometricAngle(~, ~)
+            tf = false;
+        end
+        
+        function tf = usesGeometricPlane(~, ~)
+            tf = false;
+        end 
         
         tf = canUseSparseOutput(obj);
         

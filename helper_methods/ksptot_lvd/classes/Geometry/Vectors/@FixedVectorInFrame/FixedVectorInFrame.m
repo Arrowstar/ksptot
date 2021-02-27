@@ -85,7 +85,7 @@ classdef FixedVectorInFrame < AbstractGeometricVector
         end 
         
         function tf = isInUse(obj, lvdData)
-            tf = lvdData.geometry.usesGeometricVector(obj);
+            tf = lvdData.usesGeometricVector(obj);
         end
         
         function vect = getRVect(obj)

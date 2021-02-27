@@ -214,7 +214,7 @@ classdef TwoBodyPoint < AbstractGeometricPoint
         end 
         
         function tf = isInUse(obj, lvdData)
-            tf = lvdData.geometry.usesGeometricPoint(obj);
+            tf = lvdData.usesGeometricPoint(obj);
         end
     end
     

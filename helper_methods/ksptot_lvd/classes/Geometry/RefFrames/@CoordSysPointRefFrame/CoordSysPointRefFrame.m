@@ -103,7 +103,7 @@ classdef CoordSysPointRefFrame < AbstractGeometricRefFrame
         end 
         
         function tf = isInUse(obj, lvdData)
-            tf = lvdData.geometry.usesGeometricRefFrame(obj);
+            tf = lvdData.usesGeometricRefFrame(obj);
         end
     end
 end

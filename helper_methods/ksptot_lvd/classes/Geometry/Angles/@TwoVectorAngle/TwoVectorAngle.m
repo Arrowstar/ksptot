@@ -106,7 +106,7 @@ classdef TwoVectorAngle < AbstractGeometricAngle
         end 
         
         function tf = isInUse(obj, lvdData)
-            tf = lvdData.geometry.usesGeometricAngle(obj);
+            tf = lvdData.usesGeometricAngle(obj);
         end
     end
 end

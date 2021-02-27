@@ -98,7 +98,7 @@ classdef ParallelToFrameCoordSystem < AbstractGeometricCoordSystem
         end 
         
         function tf = isInUse(obj, lvdData)
-            tf = lvdData.geometry.usesGeometricCoordSys(obj);
+            tf = lvdData.usesGeometricCoordSys(obj);
         end
     end
 end

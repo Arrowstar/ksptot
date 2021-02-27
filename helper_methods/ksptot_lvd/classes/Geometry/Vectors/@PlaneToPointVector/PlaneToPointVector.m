@@ -82,7 +82,7 @@ classdef PlaneToPointVector < AbstractGeometricVector
         end 
         
         function tf = isInUse(obj, lvdData)
-            tf = lvdData.geometry.usesGeometricVector(obj);
+            tf = lvdData.usesGeometricVector(obj);
         end
     end
     

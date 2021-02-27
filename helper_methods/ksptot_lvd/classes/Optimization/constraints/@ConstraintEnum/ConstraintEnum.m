@@ -92,6 +92,8 @@ classdef ConstraintEnum < matlab.mixin.SetGet
         GroundObjAz('Ground Object Azimuth', 'GroundObjAzConstraint', []);
         GroundObjEl('Ground Object Elevation', 'GroundObjElConstraint', []);
         GroundObjRng('Ground Object Range', 'GroundObjRangeConstraint', []);
+        
+        GeoVectorMagntide('Geometric Vector Magnitude', 'GeometricVectorMagConstraint', []);
     end
     
     properties

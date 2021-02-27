@@ -136,6 +136,30 @@ classdef LvdOptimization < matlab.mixin.SetGet
             
             tf = tf || obj.constraints.usesCalculusCalc(calculusCalc);
         end
+        
+        function tf = usesGeometricPoint(obj, point)
+            tf = obj.constraints.usesGeometricPoint(point);
+        end
+        
+        function tf = usesGeometricVector(obj, vector)
+            tf = obj.constraints.usesGeometricVector(vector);
+        end
+        
+        function tf = usesGeometricCoordSys(obj, coordSys)
+            tf = obj.constraints.usesGeometricCoordSys(coordSys);
+        end
+        
+        function tf = usesGeometricRefFrame(obj, refFrame)
+            tf = obj.constraints.usesGeometricRefFrame(refFrame);
+        end
+        
+        function tf = usesGeometricAngle(obj, angle)
+            tf = obj.constraints.usesGeometricAngle(angle);
+        end
+        
+        function tf = usesGeometricPlane(obj, plane)
+            tf = obj.constraints.usesGeometricPlane(plane);
+        end 
     end
     
     methods(Static)

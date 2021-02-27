@@ -99,8 +99,37 @@ classdef LvdData < matlab.mixin.SetGet
 %             tf = tf || obj.optimizer.usesPwrStorage(powerStorage);
         end
         
+        function tf = usesGeometricPoint(obj, point)
+            tf = obj.optimizer.usesGeometricPoint(point);
+            tf = tf || obj.geometry.usesGeometricPoint(point);
+        end
+        
+        function tf = usesGeometricVector(obj, vector)
+            tf = obj.optimizer.usesGeometricVector(vector);
+            tf = tf || obj.geometry.usesGeometricVector(vector);
+        end
+        
+        function tf = usesGeometricCoordSys(obj, coordSys)
+            tf = obj.optimizer.usesGeometricCoordSys(coordSys);
+            tf = tf || obj.geometry.usesGeometricCoordSys(coordSys);
+        end
+        
+        function tf = usesGeometricRefFrame(obj, refFrame)
+            tf = obj.optimizer.usesGeometricRefFrame(refFrame);
+            tf = tf || obj.geometry.usesGeometricRefFrame(refFrame);
+        end
+        
+        function tf = usesGeometricAngle(obj, angle)
+            tf = obj.optimizer.usesGeometricAngle(angle);
+            tf = tf || obj.geometry.usesGeometricAngle(angle);
+        end
+        
+        function tf = usesGeometricPlane(obj, plane)
+            tf = obj.optimizer.usesGeometricPlane(plane);
+            tf = tf || obj.geometry.usesGeometricPlane(plane);
+        end 
+        
         function baseFrame = getBaseFrame(obj)
-%             topLevelBody = getTopLevelCentralBody(obj.celBodyData);
             topLevelBody = obj.celBodyData.getTopLevelBody();
             baseFrame = topLevelBody.getBodyCenteredInertialFrame();
         end

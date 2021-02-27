@@ -195,6 +195,54 @@ classdef ConstraintSet < matlab.mixin.SetGet
             end
         end
         
+        function tf = usesGeometricPoint(obj, point)
+            tf = false;
+            
+            for(i=1:length(obj.consts))
+                tf = tf || obj.consts(i).usesGeometricPoint(point);
+            end
+        end
+        
+        function tf = usesGeometricVector(obj, vector)
+            tf = false;
+            
+            for(i=1:length(obj.consts))
+                tf = tf || obj.consts(i).usesGeometricVector(vector);
+            end
+        end
+        
+        function tf = usesGeometricCoordSys(obj, coordSys)
+            tf = false;
+            
+            for(i=1:length(obj.consts))
+                tf = tf || obj.consts(i).usesGeometricCoordSys(coordSys);
+            end
+        end
+        
+        function tf = usesGeometricRefFrame(obj, refFrame)
+            tf = false;
+            
+            for(i=1:length(obj.consts))
+                tf = tf || obj.consts(i).usesGeometricRefFrame(refFrame);
+            end
+        end
+        
+        function tf = usesGeometricAngle(obj, angle)
+            tf = false;
+            
+            for(i=1:length(obj.consts))
+                tf = tf || obj.consts(i).usesGeometricAngle(angle);
+            end
+        end
+        
+        function tf = usesGeometricPlane(obj, plane)
+            tf = false;
+            
+            for(i=1:length(obj.consts))
+                tf = tf || obj.consts(i).usesGeometricPlane(plane);
+            end
+        end 
+        
         function removeConstraintsThatUseEvent(obj, event)
             indsToRemove = [];
             for(i=1:length(obj.consts))

@@ -104,7 +104,7 @@ classdef ThreePointPlane < AbstractGeometricPlane
         end 
         
         function tf = isInUse(obj, lvdData)
-            tf = lvdData.geometry.usesGeometricPlane(obj);
+            tf = lvdData.usesGeometricPlane(obj);
         end
     end
 end

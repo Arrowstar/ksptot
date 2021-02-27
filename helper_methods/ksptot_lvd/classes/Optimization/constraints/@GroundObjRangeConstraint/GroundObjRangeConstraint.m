@@ -1,5 +1,5 @@
 classdef GroundObjRangeConstraint < AbstractConstraint
-    %GroundObjElConstraint Summary of this class goes here
+    %GroundObjRangeConstraint Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
