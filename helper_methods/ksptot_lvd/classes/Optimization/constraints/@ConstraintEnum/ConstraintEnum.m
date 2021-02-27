@@ -94,6 +94,7 @@ classdef ConstraintEnum < matlab.mixin.SetGet
         GroundObjRng('Ground Object Range', 'GroundObjRangeConstraint', []);
         
         GeoVectorMagntide('Geometric Vector Magnitude', 'GeometricVectorMagConstraint', []);
+        GeoAngleMagnitude('Geometric Angle Magnitude', 'GeometricAngleMagConstraint', []);
     end
     
     properties
