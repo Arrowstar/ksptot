@@ -45,9 +45,7 @@ classdef LvdOptimization < matlab.mixin.SetGet
             obj.customFiniteDiffsCalcMethod = CustomFiniteDiffsCalculationMethod();
         end
         
-        function optimize(obj, writeOutput, callOutputFcn)  
-            disp(obj.getEvtNumToEndScriptExecAt());
-            
+        function optimize(obj, writeOutput, callOutputFcn)              
             obj.vars.sortVarsByEvtNum();
             optimizer = obj.getSelectedOptimizer();
             optimizer.optimize(obj, writeOutput, callOutputFcn);
