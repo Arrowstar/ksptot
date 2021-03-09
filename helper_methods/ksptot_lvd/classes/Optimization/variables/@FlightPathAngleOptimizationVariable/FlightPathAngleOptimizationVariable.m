@@ -23,7 +23,7 @@ classdef FlightPathAngleOptimizationVariable < AbstractOptimizationVariable
             x = [];
             
             if(obj.useTf)
-                x = obj.varObj.altitude;
+                x = obj.varObj.fpa;
             end
         end
         
@@ -51,7 +51,7 @@ classdef FlightPathAngleOptimizationVariable < AbstractOptimizationVariable
         end
         
         function updateObjWithVarValue(obj, x)
-            obj.varObj.altitude = x;
+            obj.varObj.fpa = x;
         end
         
         function nameStrs = getStrNamesOfVars(obj, evtNum, varLocType)
