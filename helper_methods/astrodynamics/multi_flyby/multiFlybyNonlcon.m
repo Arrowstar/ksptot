@@ -15,10 +15,10 @@ function [c, ceq ] = multiFlybyNonlcon(x, fitnessfcn, minRadiiSingle, maxRadiiSi
     end
     
     [~, rp, ~, ~, ~, vInfDNorm, ~, vInfArrive, ~, ~, ~, ~, ~, xferRp] = fitnessfcn(x);
-    if(size(rp,2) < size(minRadii,2))
-        c = 0;
-        return;
-    end
+%     if(size(rp,2) < size(minRadii,2))
+%         c = 0;
+%         return;
+%     end
     
     c = (minRadii(1:length(rp)) - rp)';
     c = reshape(c,numPop,size(c,1)/numPop);
