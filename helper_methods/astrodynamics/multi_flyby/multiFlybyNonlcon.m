@@ -1,9 +1,18 @@
-function [c, ceq ] = multiFlybyNonlcon(x, fitnessfcn, minRadii, maxRadii, minXferRad, maxDepartVInf, maxArriveVInf)
+function [c, ceq ] = multiFlybyNonlcon(x, fitnessfcn, minRadiiSingle, maxRadiiSingle, minXferRad, maxDepartVInf, maxArriveVInf)
 %multiFlybyNonlcon Summary of this function goes here
 %   Detailed explanation goes here
     ceq = [];
 
     numPop = size(x,1);
+    
+    minRadii = [];
+    maxRadii = [];
+%     minRadii = NaN(1, numPop*numel(minRadiiSingle));
+%     maxRadii = NaN(1, numPop*numel(maxRadiiSingle));
+    for(i=1:length(minRadiiSingle))
+        minRadii = [minRadii, minRadiiSingle(i) * ones(1, numPop)]; %#ok<AGROW>
+        maxRadii = [maxRadii, maxRadiiSingle(i) * ones(1, numPop)]; %#ok<AGROW>
+    end
     
     [~, rp, ~, ~, ~, vInfDNorm, ~, vInfArrive, ~, ~, ~, ~, ~, xferRp] = fitnessfcn(x);
     if(size(rp,2) < size(minRadii,2))
