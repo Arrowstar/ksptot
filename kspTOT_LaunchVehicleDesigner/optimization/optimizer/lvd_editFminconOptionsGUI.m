@@ -96,8 +96,8 @@ function handles = populateGUI(handles, fminconOpt)
     handles.useParallelCombo.Value = FminconUseParallelEnum.getIndForName(options.useParallel.name);
     
     setOptsDoubleValueStrInGUI(handles, options, 'optTol', 'optTolText');
-    setOptsDoubleValueStrInGUI(handles, options, 'stepTol', 'conTolText');
-    setOptsDoubleValueStrInGUI(handles, options, 'tolCon', 'stepTolText');
+    setOptsDoubleValueStrInGUI(handles, options, 'tolCon', 'conTolText');
+    setOptsDoubleValueStrInGUI(handles, options, 'stepTol', 'stepTolText');
     
     setOptsDoubleValueStrInGUI(handles, options, 'maxIter', 'maxItersText');
     setOptsDoubleValueStrInGUI(handles, options, 'maxFuncEvals', 'maxFuncEvalsText');

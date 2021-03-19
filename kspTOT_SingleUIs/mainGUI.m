@@ -113,8 +113,8 @@ departBodyCombo_Callback(handles.departBodyCombo, eventdata, handles);
 arrivalBodyCombo_Callback(handles.arrivalBodyCombo, eventdata, handles);
 
 %Set up status text box
-hStatusBox = findobj(hObject,'Tag','statusText');
-set(hStatusBox, 'String', setINIStatusBoxMsg());
+% hStatusBox = findobj(hObject,'Tag','statusText');
+set(handles.statusText, 'String', setINIStatusBoxMsg());
 
 % UIWAIT makes mainGUI wait for user response (see UIRESUME)
 % uiwait(handles.mainGUIFigure); 
@@ -437,9 +437,9 @@ function enterUTAsDateTime_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-secUT = enterUTAsDateTimeGUI(str2double(get(gco, 'String')));
+secUT = enterUTAsDateTimeGUI(str2double(get(hObject, 'String')));
 if(secUT >= 0)
-    set(gco, 'String', num2str(secUT));
+    set(hObject, 'String', num2str(secUT));
     departBodyEarliestTimeText_Callback(handles.departBodyEarliestTimeText, eventdata, handles);
     arrivalBodyEarliestTimeText_Callback(handles.arrivalBodyEarliestTimeText, eventdata, handles);
 end
@@ -463,8 +463,8 @@ function resetStatusBox_Callback(hObject, eventdata, handles)
 % hObject    handle to resetStatusBox (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-hStatusBox = findobj(handles.mainGUIFigure,'Tag','statusText');
-set(hStatusBox, 'String', setINIStatusBoxMsg());
+% hStatusBox = findobj(handles.mainGUIFigure,'Tag','statusText');
+set(handles.statusText, 'String', setINIStatusBoxMsg());
 
 % --------------------------------------------------------------------
 function statusBoxMenu_Callback(hObject, eventdata, handles)
@@ -533,12 +533,14 @@ function recenterPlotAt_Callback(hObject, eventdata, handles)
     
     [~, ~, secInDay, ~] = getSecondsInVariousTimeUnits();
     
-    hEarlyDepartTime = findobj(handles.mainGUIFigure,'Tag','departBodyEarliestTimeText');
+%     hEarlyDepartTime = findobj(handles.mainGUIFigure,'Tag','departBodyEarliestTimeText');
+    hEarlyDepartTime = handles.departBodyEarliestTimeText;
     earlyDepartTime = max((departDayCenter*(secInDay)) - synPeriod/2, 0);
     set(hEarlyDepartTime, 'String', num2str(earlyDepartTime));
     departBodyEarliestTimeText_Callback(hEarlyDepartTime, [], handles);
     
-    hEarlyArrivalTime = findobj(handles.mainGUIFigure,'Tag','arrivalBodyEarliestTimeText');
+%     hEarlyArrivalTime = findobj(handles.mainGUIFigure,'Tag','arrivalBodyEarliestTimeText');
+    hEarlyArrivalTime = handles.arrivalBodyEarliestTimeText;
     earlyArrivalTime = max((arriveDayCenter*(secInDay)) - synPeriod/2, 0);
     set(hEarlyArrivalTime, 'String', num2str(earlyArrivalTime));
     arrivalBodyEarliestTimeText_Callback(hEarlyArrivalTime, [], handles);
@@ -636,7 +638,7 @@ function getUTFromKSP_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 secUT = readDoublesFromKSPTOTConnect('GetUT', '', true);
 if(secUT >= 0)
-    set(gco, 'String', num2str(secUT));
+    set(hObject, 'String', num2str(secUT));
     departBodyEarliestTimeText_Callback(handles.departBodyEarliestTimeText, eventdata, handles);
     arrivalBodyEarliestTimeText_Callback(handles.arrivalBodyEarliestTimeText, eventdata, handles);
 end
@@ -914,7 +916,7 @@ function launchVehicleDesignerMenu_Callback(hObject, eventdata, handles)
     else
         hMsg = helpdlg('Starting Launch Vehicle Designer.  Please wait...','Launch Vehicle Designer');
         hFig = ma_LvdMainGUI(celBodyData,handles.mainGUIFigure);
-
+        
         openToolWindows = getappdata(handles.mainGUIFigure,'openToolWindows');
         openToolWindows = cleanOpenToolWindowsArr(openToolWindows);
         openToolWindows(end+1) = hFig;

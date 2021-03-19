@@ -1567,7 +1567,7 @@ function ma_LvdMainGUI_WindowKeyPressFcn(hObject, eventdata, handles)
     key = eventdata.Key;
     mod = eventdata.Modifier;
 
-    if(gco == handles.scriptListbox && ...
+    if(hObject == handles.scriptListbox && ...
        strcmpi(key,'f') && ...
        length(mod) == 1 && ...
        strcmpi(mod{1},'control'))
@@ -1709,13 +1709,13 @@ function runScriptMenu_Callback(hObject, eventdata, handles)
     lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
     
     if(not(isdeployed))
-%         profile off; profile on;
+        profile off; profile on;
     end
     
     propagateScript(handles, lvdData, 1);
     
     if(not(isdeployed))
-%         profile viewer;
+        profile viewer;
     end
     
     lvd_processData(handles);

@@ -34,6 +34,9 @@ function lvd_executeOptimProblem(celBodyData, writeOutput, problem, recorder, ca
     elseif(strcmpi(problem.solver,'ipopt'))
         [x,info] = ipopt(problem.x0, problem.funcs, problem.options);
         exitflag = info.status;
+        
+    elseif(strcmpi(problem.solver,'surrogateopt'))
+        [x,fval,exitflag,output,trials] = surrogateopt(problem);
 
     else
         error('Unknown optimizer function: %s', problem.solver);
