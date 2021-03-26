@@ -8,7 +8,7 @@
       <file>${PROJECT_ROOT}\KSPTrajectoryOptimizationTool_resources\icon_24.png</file>
       <file>${PROJECT_ROOT}\KSPTrajectoryOptimizationTool_resources\icon_16.png</file>
     </param.icons>
-    <param.version>1.68</param.version>
+    <param.version>1.6.8.5</param.version>
     <param.authnamewatermark>Arrowstar</param.authnamewatermark>
     <param.email />
     <param.company />
@@ -41,8 +41,14 @@
     <param.native.matlab>false</param.native.matlab>
     <param.checkbox>false</param.checkbox>
     <param.example />
-    <param.help.text />
+    <param.help.text>Syntax 
+	  -? 
+	 
+ Input Arguments 
+	 -?  print help on how to use the application 
+	 input arguments</param.help.text>
     <unset>
+      <param.authnamewatermark />
       <param.email />
       <param.company />
       <param.description />
@@ -50,6 +56,7 @@
       <param.installpath.string />
       <param.installpath.combo />
       <param.logo />
+      <param.install.notes />
       <param.target.install.notes />
       <param.logdir />
       <param.enable.clean.build />
@@ -64,7 +71,6 @@
       <param.native.matlab />
       <param.checkbox />
       <param.example />
-      <param.help.text />
     </unset>
     <fileset.main>
       <file>${PROJECT_ROOT}\projectMain.m</file>
@@ -84,15 +90,6 @@
       <file>${PROJECT_ROOT}\projectMain.m</file>
     </fileset.resources>
     <fileset.package />
-    <fileset.depfun>
-      <file>${MATLAB_ROOT}\toolbox\local\+matlab\+internal\+addons\addEnabledAddonsToPath.m</file>
-      <file>${MATLAB_ROOT}\toolbox\local\+matlab\+internal\+addons\addFoldersToPathFrom.m</file>
-      <file>${MATLAB_ROOT}\toolbox\local\+matlab\+internal\+addons\private\addFilesFrom.m</file>
-      <file>${MATLAB_ROOT}\toolbox\local\+matlab\+internal\+supportPackages\addInstalledSupportPackagesToPath.m</file>
-      <file>${MATLAB_ROOT}\toolbox\local\initprefs.m</file>
-      <file>${MATLAB_ROOT}\toolbox\local\matlabrc.m</file>
-      <file>C:\Users\Adam\Dropbox\Documents\MATLAB\uiinspect.m</file>
-    </fileset.depfun>
     <build-deliverables>
       <file location="${PROJECT_ROOT}\deploy\KSPTrajectoryOptimizationTool\for_testing" name="readme.txt" optional="true">C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\deploy\KSPTrajectoryOptimizationTool\for_testing\readme.txt</file>
       <file location="${PROJECT_ROOT}\deploy\KSPTrajectoryOptimizationTool\for_testing" name="KSPTrajectoryOptimizationTool.exe" optional="false">C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\deploy\KSPTrajectoryOptimizationTool\for_testing\KSPTrajectoryOptimizationTool.exe</file>
@@ -100,29 +97,20 @@
     </build-deliverables>
     <workflow />
     <matlab>
-      <root>C:\Program Files\MATLAB\R2017b</root>
+      <root>C:\Program Files\MATLAB\R2021a</root>
       <toolboxes>
-        <toolbox name="fixedpoint" />
         <toolbox name="matlabcoder" />
-        <toolbox name="matlabhdlcoder" />
         <toolbox name="embeddedcoder" />
         <toolbox name="gpucoder" />
+        <toolbox name="fixedpoint" />
+        <toolbox name="matlabhdlcoder" />
+        <toolbox name="neuralnetwork" />
         <toolbox name="polyspacebugfinder" />
       </toolboxes>
-      <toolbox>
-        <fixedpoint>
-          <enabled>true</enabled>
-        </fixedpoint>
-      </toolbox>
       <toolbox>
         <matlabcoder>
           <enabled>true</enabled>
         </matlabcoder>
-      </toolbox>
-      <toolbox>
-        <matlabhdlcoder>
-          <enabled>true</enabled>
-        </matlabhdlcoder>
       </toolbox>
       <toolbox>
         <embeddedcoder>
@@ -133,6 +121,21 @@
         <gpucoder>
           <enabled>true</enabled>
         </gpucoder>
+      </toolbox>
+      <toolbox>
+        <fixedpoint>
+          <enabled>true</enabled>
+        </fixedpoint>
+      </toolbox>
+      <toolbox>
+        <matlabhdlcoder>
+          <enabled>true</enabled>
+        </matlabhdlcoder>
+      </toolbox>
+      <toolbox>
+        <neuralnetwork>
+          <enabled>true</enabled>
+        </neuralnetwork>
       </toolbox>
       <toolbox>
         <polyspacebugfinder>
