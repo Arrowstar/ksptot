@@ -131,7 +131,7 @@ function generatePlots(x, optimValues, state, handles, lb, ub, varLabels, lbUsAl
         set(h,'yscale','linear');
     end
     if(not(isfield(optimValues,'meshsize')))
-        optimplotfval(x, optimValues, state);
+        optimplotfvalKsptot(x, optimValues, state);
     else
         psplotbestf(optimValues, state);
     end

@@ -79,7 +79,7 @@ classdef FminconOptimizer < AbstractGradientOptimizer
                 optimStartTic = tic();
                 
                 outputFnc = @(x, optimValues, state) FminconOptimizer.getOutputFunction(x, optimValues, state, hOptimStatusLabel, hFinalStateOptimLabel, hDispAxes, hCancelButton, ...
-                                                                                        problem.objective, problem.lb, problem.ub, celBodyData, recorder, propNames, writeOutput, varNameStrs, lbUsAll, ubUsAll, optimStartTic);
+                                                                                        objFuncWrapper, problem.lb, problem.ub, celBodyData, recorder, propNames, writeOutput, varNameStrs, lbUsAll, ubUsAll, optimStartTic);
                 problem.options.OutputFcn = outputFnc;
             end
             
@@ -123,7 +123,7 @@ classdef FminconOptimizer < AbstractGradientOptimizer
     
     methods(Static, Access=private)
         function stop = getOutputFunction(x, optimValues, state, hOptimStatusLabel, hFinalStateOptimLabel, hDispAxes, hCancelButton, ...
-                                                               objFcn, lb, ub, celBodyData, recorder, propNames, writeOutput, varLabels, lbUsAll, ubUsAll, optimStartTic)
+                                          objFcn, lb, ub, celBodyData, recorder, propNames, writeOutput, varLabels, lbUsAll, ubUsAll, optimStartTic)
             switch state
                 case 'iter'
                     stop = get(hCancelButton,'Value');
@@ -190,7 +190,7 @@ classdef FminconOptimizer < AbstractGradientOptimizer
         end
         
         function generatePlots(x, optimValues, state, hDispAxes, lb, ub, varLabels, lbUsAll, ubUsAll)
-            persistent fValPlotIsLog
+            persistent fValPlotIsLog hPlot1 hPlot2 hPlot3
 
             if(isempty(fValPlotIsLog))
                 fValPlotIsLog = true;
@@ -198,20 +198,33 @@ classdef FminconOptimizer < AbstractGradientOptimizer
 
             switch state
                 case 'init'
-                    set(hDispAxes,'Visible','on');
-                    subplot(hDispAxes);
+                    if(isvalid(hDispAxes))
+                        set(hDispAxes,'Visible','on');
+                        subplot(hDispAxes);
+                        axes(hDispAxes);
+                    end
                     fValPlotIsLog = true;
             end
 
-            subplot(3,1,1);
+            if(strcmpi(state,'init'))
+                hPlot1 = subplot(3,1,1);
+            else
+                axes(hPlot1);
+            end
             optimplotxKsptot(x, optimValues, state, lb, ub, varLabels, lbUsAll, ubUsAll);
 
-            h=subplot(3,1,2);
+            if(strcmpi(state,'init'))
+                hPlot2 = subplot(3,1,2);
+                h = hPlot2;
+            else
+                h = hPlot2;
+                axes(hPlot2);
+            end
             if(optimValues.fval<=0)
                 fValPlotIsLog = false;
                 set(h,'yscale','linear');
             end
-            optimplotfval(x, optimValues, state);
+            optimplotfvalKsptot(x, optimValues, state);
             if(fValPlotIsLog)
                 set(h,'yscale','log');
             else
@@ -220,8 +233,14 @@ classdef FminconOptimizer < AbstractGradientOptimizer
             grid on;
             grid minor;
 
-            h = subplot(3,1,3);
-            optimplotconstrviolation(x, optimValues, state);
+            if(strcmpi(state,'init'))
+                hPlot3 = subplot(3,1,3);
+                h = hPlot3;
+            else
+                h = hPlot3;
+                axes(hPlot3);
+            end
+            optimplotconstrviolationKsptot(x, optimValues, state);
 
             if(not(isempty(h.Children)))
                 hLine = h.Children(1);

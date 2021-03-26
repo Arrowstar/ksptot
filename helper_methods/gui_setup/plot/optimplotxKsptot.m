@@ -13,6 +13,7 @@ function stop = optimplotxKsptot(x,optimValues,state,lb,ub,varLabels,lbUsAll,ubU
 %       fminbnd(@sin,3,10,options)
 
 %   Copyright 2006-2010 The MathWorks, Inc.
+    persistent plotx plotxParent
 
     stop = false;
     switch state
@@ -41,20 +42,21 @@ function stop = optimplotxKsptot(x,optimValues,state,lb,ub,varLabels,lbUsAll,ubU
                 % but it now has values that were empty during the 'init' case
 
                 plotx = bar(x);
+                plotxParent = plotx.Parent;
                 title(getString(message('MATLAB:optimfun:funfun:optimplots:TitleCurrentPoint')),'interp','none');
                 ylabel(getString(message('MATLAB:optimfun:funfun:optimplots:LabelCurrentPoint')),'interp','none');
                 xlabel(xlabelText,'interp','none');
                 set(plotx,'edgecolor','none')
-                set(gca,'xlim',[0,1 + xLength])
+                set(plotxParent,'xlim',[0,1 + xLength])
                 set(plotx,'Tag','optimplotxksptot');
 
-                ylim(gca,[0, 1]);
-                set(gca,'YTickLabel',{'Lwr Bnd','Upr Bnd'});
-                yticks(gca,[0 1]);
+                ylim(plotxParent,[0, 1]);
+                set(plotxParent,'YTickLabel',{'Lwr Bnd','Upr Bnd'});
+                yticks(plotxParent,[0 1]);
 
                 rectWidth = plotx.BarWidth;
                 for(i=1:length(x))
-                    rects(i) = rectangle('Position',[i-rectWidth/2, 0, rectWidth, 1],'Curvature',0,'LineStyle','none'); %#ok<AGROW>
+                    rects(i) = rectangle(plotxParent, 'Position',[i-rectWidth/2, 0, rectWidth, 1],'Curvature',0,'LineStyle','none'); %#ok<AGROW>
                     if(not(isempty(varLabels)) && length(varLabels) == length(x))
                         labels{i} = varLabels{i}; %#ok<AGROW>
                     else
@@ -82,12 +84,13 @@ function stop = optimplotxKsptot(x,optimValues,state,lb,ub,varLabels,lbUsAll,ubU
                 
                 setappdata(hAxes,'x',x);
             else
-                plotx = findobj(get(gca,'Children'),'Tag','optimplotxksptot');
+%                 plotx = findobj(get(gca,'Children'),'Tag','optimplotxksptot');
+%                 set(plotx,'Parent',plotxParent);
                 set(plotx,'Ydata',x);
 
-                ylim(gca,[0, 1]);
-                set(gca,'YTickLabel',{'Lwr Bnd','Upr Bnd'});
-                yticks(gca,[0 1]);
+                ylim(plotxParent,[0, 1]);
+                set(plotxParent,'YTickLabel',{'Lwr Bnd','Upr Bnd'});
+                yticks(plotxParent,[0 1]);
                 
                 hAxes = ancestor(plotx,'axes');
                 setappdata(hAxes,'x',x);
