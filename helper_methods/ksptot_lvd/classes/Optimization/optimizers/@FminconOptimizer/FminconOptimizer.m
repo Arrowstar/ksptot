@@ -68,10 +68,18 @@ classdef FminconOptimizer < AbstractGradientOptimizer
             celBodyData = lvdOpt.lvdData.celBodyData;
             
             if(callOutputFcn)
-                propNames = {'Liquid Fuel/Ox','Monopropellant','Xenon'};
+                propNames = lvdOpt.lvdData.launchVehicle.tankTypes.getFirstThreeTypesCellArr();
                 handlesObsOptimGui = ma_ObserveOptimGUI(celBodyData, problem, true, writeOutput, [], varNameStrs, lbUsAll, ubUsAll);
 
-                outputFnc = @(x, optimValues, state) ma_OptimOutputFunc(x, optimValues, state, handlesObsOptimGui, problem.objective, problem.lb, problem.ub, celBodyData, recorder, propNames, writeOutput, varNameStrs, lbUsAll, ubUsAll);
+%                 outputFnc = @(x, optimValues, state) ma_OptimOutputFunc(x, optimValues, state, handlesObsOptimGui, problem.objective, problem.lb, problem.ub, celBodyData, recorder, propNames, writeOutput, varNameStrs, lbUsAll, ubUsAll);
+                hOptimStatusLabel = handlesObsOptimGui.optimStatusLabel;
+                hFinalStateOptimLabel = handlesObsOptimGui.finalStateOptimLabel;
+                hDispAxes = handlesObsOptimGui.dispAxes;
+                hCancelButton = handlesObsOptimGui.cancelButton;
+                optimStartTic = tic();
+                
+                outputFnc = @(x, optimValues, state) FminconOptimizer.getOutputFunction(x, optimValues, state, hOptimStatusLabel, hFinalStateOptimLabel, hDispAxes, hCancelButton, ...
+                                                                                        problem.objective, problem.lb, problem.ub, celBodyData, recorder, propNames, writeOutput, varNameStrs, lbUsAll, ubUsAll, optimStartTic);
                 problem.options.OutputFcn = outputFnc;
             end
             
@@ -110,6 +118,127 @@ classdef FminconOptimizer < AbstractGradientOptimizer
             if(nargout >= 2)
                 g = gradCalcMethod.computeGrad(objFun, x, f, useParallel);
             end
+        end
+    end
+    
+    methods(Static, Access=private)
+        function stop = getOutputFunction(x, optimValues, state, hOptimStatusLabel, hFinalStateOptimLabel, hDispAxes, hCancelButton, ...
+                                                               objFcn, lb, ub, celBodyData, recorder, propNames, writeOutput, varLabels, lbUsAll, ubUsAll, optimStartTic)
+            switch state
+                case 'iter'
+                    stop = get(hCancelButton,'Value');
+
+                    recorder.iterNums(end+1) = optimValues.iteration;
+                    recorder.xVals(end+1) = {x};
+                    recorder.fVals(end+1) = optimValues.fval;            
+                    recorder.maxCVal(end+1) = optimValues.constrviolation;
+                case {'init','interrupt','done'}
+                    stop = get(hCancelButton,'Value');
+            end
+            
+            if(stop == true)
+                return;
+            end
+            
+            [~, stateLog] = objFcn(x);
+            
+            finalStateLogEntry = stateLog.getFinalStateLogEntry();
+            finalStateLogEntryMA = finalStateLogEntry.getMAFormattedStateLogMatrix(true);
+            
+            if(strcmpi(state,'init') || strcmpi(state,'iter'))
+                FminconOptimizer.writeOptimStatus(hOptimStatusLabel, optimValues, state, writeOutput, optimStartTic);
+                ma_UpdateStateReadout(hFinalStateOptimLabel, 'final', propNames, finalStateLogEntryMA, celBodyData);
+                FminconOptimizer.generatePlots(x, optimValues, state, hDispAxes, lb, ub, varLabels, lbUsAll, ubUsAll);
+                drawnow;
+            end
+        end
+        
+        function writeOptimStatus(hOptimStatusLabel, optimValues, state, writeOutput, timer)
+            elapTime = toc(timer);
+
+            outStr = {};
+            outStr{end+1} = ['State                = ', state];
+            outStr{end+1} = '                        ';
+            outStr{end+1} = ['Iterations           = ', num2str(optimValues.iteration)];
+            outStr{end+1} = ['Function Evals       = ', num2str(optimValues.funccount)];
+            outStr{end+1} = ['Objective Value      = ', num2str(optimValues.fval)];
+            outStr{end+1} = ['Constraint Violation = ', num2str(optimValues.constrviolation)];
+            outStr{end+1} = ['Optimality           = ', num2str(optimValues.firstorderopt)];
+            outStr{end+1} = ['Step Size            = ', num2str(optimValues.stepsize)];
+            outStr{end+1} = '                       ';
+            outStr{end+1} = ['Elapsed Time         = ', num2str(elapTime), ' sec'];
+            
+            set(hOptimStatusLabel, 'String', outStr);
+            
+            switch state
+                case 'iter'
+                    formatstr = ' %- 12.1i %- 12.0i %- 12.6g %- 12.3g %- 12.3g %- 12.3g';
+
+                    iter = optimValues.iteration;
+                    fcnt = optimValues.funccount;
+                    val  = optimValues.fval;
+                    feas = optimValues.constrviolation;
+                    optm = optimValues.firstorderopt;
+                    step = optimValues.stepsize;
+
+                    hRow = sprintf(formatstr,iter,fcnt,val,feas,optm,step);
+                    writeOutput(hRow,'append');
+                case 'init'
+                    hdrStr = sprintf('%- 13s%- 13s%- 13s%- 13s%- 13s%- 13s', 'Iteration','Fcn-Count','f(x)-Value', 'Feasibility', 'Optimality', 'Norm. Step');
+                    writeOutput(hdrStr,'append');
+            end
+        end
+        
+        function generatePlots(x, optimValues, state, hDispAxes, lb, ub, varLabels, lbUsAll, ubUsAll)
+            persistent fValPlotIsLog
+
+            if(isempty(fValPlotIsLog))
+                fValPlotIsLog = true;
+            end
+
+            switch state
+                case 'init'
+                    set(hDispAxes,'Visible','on');
+                    subplot(hDispAxes);
+                    fValPlotIsLog = true;
+            end
+
+            subplot(3,1,1);
+            optimplotxKsptot(x, optimValues, state, lb, ub, varLabels, lbUsAll, ubUsAll);
+
+            h=subplot(3,1,2);
+            if(optimValues.fval<=0)
+                fValPlotIsLog = false;
+                set(h,'yscale','linear');
+            end
+            optimplotfval(x, optimValues, state);
+            if(fValPlotIsLog)
+                set(h,'yscale','log');
+            else
+                set(h,'yscale','linear');
+            end
+            grid on;
+            grid minor;
+
+            h = subplot(3,1,3);
+            optimplotconstrviolation(x, optimValues, state);
+
+            if(not(isempty(h.Children)))
+                hLine = h.Children(1);
+                if(isa(hLine,'matlab.graphics.chart.primitive.Line'))
+                    yDataLine = hLine.YData;
+                    if(abs(max(yDataLine) / min(yDataLine)) >= 10 && all(yDataLine > 0))
+                        set(h,'yscale','log');
+                    else
+                        set(h,'yscale','linear');
+                    end
+                else
+                    set(h,'yscale','linear');
+                end
+            end
+
+            grid on;
+            grid minor;
         end
     end
 end
