@@ -198,7 +198,7 @@ set(fig, 'Visible','on'); drawnow;
 try
     % Give default focus to the listbox *after* the figure is made visible
     uicontrol(listbox);
-    c = matlab.ui.internal.dialog.DialogUtils.disableAllWindowsSafely();
+    c = matlab.ui.internal.dialog.DialogUtils.disableAllWindowsSafely(true);
     uiwait(fig);
     delete(c);
 catch
