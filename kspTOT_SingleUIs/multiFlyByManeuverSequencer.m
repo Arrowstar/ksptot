@@ -22,7 +22,7 @@ function varargout = multiFlyByManeuverSequencer(varargin)
 
 % Edit the above text to modify the response to help multiFlyByManeuverSequencer
 
-% Last Modified by GUIDE v2.5 11-Apr-2019 17:25:36
+% Last Modified by GUIDE v2.5 30-Mar-2021 21:36:13
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -591,6 +591,22 @@ function computeFlybyManSeqButton_Callback(hObject, eventdata, handles)
     isInt = false;
     errMsg = validateNumber(maxArriveVInf, numberName, lb, ub, isInt, errMsg, enteredStr);
     
+    popSize = str2double(get(handles.popSizeText, 'String'));
+    enteredStr = get(handles.popSizeText,'String');
+    numberName = 'Population Size';
+    lb = 50;
+    ub = realmax;
+    isInt = true;
+    errMsg = validateNumber(popSize, numberName, lb, ub, isInt, errMsg, enteredStr);
+    
+    numGen = str2double(get(handles.maxIterText, 'String'));
+    enteredStr = get(handles.maxIterText,'String');
+    numberName = 'Maximum Iterations';
+    lb = 1;
+    ub = realmax;
+    isInt = true;
+    errMsg = validateNumber(numGen, numberName, lb, ub, isInt, errMsg, enteredStr);
+    
     if(isempty(errMsg))
         contents = cellstr(get(handles.centralBodyCombo,'String'));
         cbName = contents{get(handles.centralBodyCombo,'Value')};
@@ -598,9 +614,9 @@ function computeFlybyManSeqButton_Callback(hObject, eventdata, handles)
 
         lWindDef = [lWindOpen, lWindClse-lWindOpen];
 
-        popSize = 750;
-%         popSize = 100000;
-        numGen = 1000;
+%         popSize = 750;
+%         popSize = 10000;
+%         numGen = 1000;
 %         numGen = 100;
 
         bnds = get(handles.flightTimeBndsPanel,'UserData');
@@ -1344,6 +1360,54 @@ function maxArriveVInfText_Callback(hObject, eventdata, handles)
 % --- Executes during object creation, after setting all properties.
 function maxArriveVInfText_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to maxArriveVInfText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function popSizeText_Callback(hObject, eventdata, handles)
+% hObject    handle to popSizeText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of popSizeText as text
+%        str2double(get(hObject,'String')) returns contents of popSizeText as a double
+    newInput = attemptStrEval(get(hObject,'String'));
+    set(hObject, 'String', newInput);
+
+% --- Executes during object creation, after setting all properties.
+function popSizeText_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to popSizeText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function maxIterText_Callback(hObject, eventdata, handles)
+% hObject    handle to maxIterText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of maxIterText as text
+%        str2double(get(hObject,'String')) returns contents of maxIterText as a double
+    newInput = attemptStrEval(get(hObject,'String'));
+    set(hObject, 'String', newInput);
+
+% --- Executes during object creation, after setting all properties.
+function maxIterText_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to maxIterText (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 

@@ -20,6 +20,12 @@ classdef FminconOptimizer < AbstractGradientOptimizer
                 return;
             end
             
+            bool = x0All < lbAll;
+            x0All(bool) = lbAll(bool);
+            
+            bool = x0All > ubAll;
+            x0All(bool) = ubAll(bool);
+            
             evtNumToStartScriptExecAt = obj.getEvtNumToStartScriptExecAt(lvdOpt, actVars);
             evtToStartScriptExecAt = lvdOpt.lvdData.script.getEventForInd(evtNumToStartScriptExecAt);
             

@@ -36,4 +36,6 @@ function [c, ceq ] = multiFlybyNonlcon(x, fitnessfcn, minRadiiSingle, maxRadiiSi
     c = horzcat(c,c2,c3,c4,c5);
     
     c(isnan(c)) = 1;
+    c(c == -Inf) = -realmax;
+    c(c == Inf) = realmax;
 end
