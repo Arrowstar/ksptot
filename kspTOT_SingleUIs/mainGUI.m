@@ -437,7 +437,7 @@ function enterUTAsDateTime_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-secUT = enterUTAsDateTimeGUI(str2double(get(hObject, 'String')));
+secUT = enterUTAsDateTimeGUI(str2double(get(gco, 'String')));
 if(secUT >= 0)
     set(hObject, 'String', num2str(secUT));
     departBodyEarliestTimeText_Callback(handles.departBodyEarliestTimeText, eventdata, handles);
