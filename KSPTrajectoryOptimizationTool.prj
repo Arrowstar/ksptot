@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.ezdeploy" plugin-version="1.0">
-  <configuration build-checksum="37379783" file="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\KSPTrajectoryOptimizationTool.prj" location="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool" name="KSPTrajectoryOptimizationTool" preferred-package-location="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\deploy\KSPTrajectoryOptimizationTool\for_redistribution" preferred-package-type="package.type.exe" target="target.ezdeploy.standalone" target-name="Application Compiler">
+  <configuration build-checksum="494385131" file="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\KSPTrajectoryOptimizationTool.prj" location="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool" name="KSPTrajectoryOptimizationTool" preferred-package-location="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\deploy\KSPTrajectoryOptimizationTool\for_redistribution" preferred-package-type="package.type.exe" target="target.ezdeploy.standalone" target-name="Application Compiler">
     <param.appname>KSPTrajectoryOptimizationTool</param.appname>
     <param.icon>${PROJECT_ROOT}\KSPTrajectoryOptimizationTool_resources\icon.ico</param.icon>
     <param.icons>
@@ -21,10 +21,10 @@
     <param.logo />
     <param.install.notes />
     <param.target.install.notes />
-    <param.intermediate>C:\Users\Adam\Desktop\test</param.intermediate>
-    <param.files.only>${PROJECT_ROOT}\KSPTrajectoryOptimizationTool\for_redistribution_files_only</param.files.only>
-    <param.output>${PROJECT_ROOT}\KSPTrajectoryOptimizationTool\for_redistribution</param.output>
-    <param.logdir>${PROJECT_ROOT}\KSPTrajectoryOptimizationTool</param.logdir>
+    <param.intermediate>C:\Users\Adam\Desktop\test\for_testing</param.intermediate>
+    <param.files.only>${PROJECT_ROOT}\deploy\KSPTrajectoryOptimizationTool\for_redistribution_files_only</param.files.only>
+    <param.output>${PROJECT_ROOT}\deploy\KSPTrajectoryOptimizationTool\for_redistribution</param.output>
+    <param.logdir>${PROJECT_ROOT}\deploy\KSPTrajectoryOptimizationTool</param.logdir>
     <param.enable.clean.build>false</param.enable.clean.build>
     <param.user.defined.mcr.options />
     <param.target.type>subtarget.standalone</param.target.type>
@@ -58,9 +58,6 @@
       <param.logo />
       <param.install.notes />
       <param.target.install.notes />
-      <param.files.only />
-      <param.output />
-      <param.logdir />
       <param.enable.clean.build />
       <param.target.type />
       <param.support.packages />
@@ -97,9 +94,9 @@
       <file>C:\Users\Adam\Dropbox\Documents\MATLAB\uiinspect.m</file>
     </fileset.depfun>
     <build-deliverables>
-      <file location="C:\Users\Adam\Desktop\test" name="splash.png" optional="false">C:\Users\Adam\Desktop\test\splash.png</file>
-      <file location="C:\Users\Adam\Desktop\test" name="KSPTrajectoryOptimizationTool.exe" optional="false">C:\Users\Adam\Desktop\test\KSPTrajectoryOptimizationTool.exe</file>
-      <file location="C:\Users\Adam\Desktop\test" name="readme.txt" optional="true">C:\Users\Adam\Desktop\test\readme.txt</file>
+      <file location="C:\Users\Adam\Desktop\test\for_testing" name="readme.txt" optional="true">C:\Users\Adam\Desktop\test\for_testing\readme.txt</file>
+      <file location="C:\Users\Adam\Desktop\test\for_testing" name="KSPTrajectoryOptimizationTool.exe" optional="false">C:\Users\Adam\Desktop\test\for_testing\KSPTrajectoryOptimizationTool.exe</file>
+      <file location="C:\Users\Adam\Desktop\test\for_testing" name="splash.png" optional="false">C:\Users\Adam\Desktop\test\for_testing\splash.png</file>
     </build-deliverables>
     <workflow />
     <matlab>
