@@ -439,7 +439,7 @@ function enterUTAsDateTime_Callback(hObject, eventdata, handles)
 
 secUT = enterUTAsDateTimeGUI(str2double(get(gco, 'String')));
 if(secUT >= 0)
-    set(hObject, 'String', num2str(secUT));
+    set(gco, 'String', num2str(secUT));
     departBodyEarliestTimeText_Callback(handles.departBodyEarliestTimeText, eventdata, handles);
     arrivalBodyEarliestTimeText_Callback(handles.arrivalBodyEarliestTimeText, eventdata, handles);
 end
