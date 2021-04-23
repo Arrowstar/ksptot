@@ -872,7 +872,8 @@ function plotOnePeriodButton_Callback(hObject, eventdata, handles)
         period = 1;
     end
     
-    t = linspace(0,period,500);
+    t0 = sumOfSines.getT0();
+    t = linspace(t0,t0+period,500);
     y = NaN(1,length(t));
     
     for(i=1:length(t))
