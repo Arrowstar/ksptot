@@ -61,6 +61,11 @@ classdef SumOfSinesModel < matlab.mixin.SetGet
         function newSumOfSineModel = deepCopy(obj)
             newSumOfSineModel = SumOfSinesModel(obj.const);
             
+            newSumOfSineModel.const = obj.const;
+            newSumOfSineModel.varConst = obj.varConst;
+            newSumOfSineModel.constUb = obj.constUb;
+            newSumOfSineModel.constLb = obj.constLb;
+            
             for(i=1:length(obj.sines))
                 newSumOfSineModel.sines(i) = obj.sines(i).deepCopy();
             end
