@@ -1,4 +1,4 @@
-classdef SumOfSinesModel < matlab.mixin.SetGet
+classdef SumOfSinesModel < AbstractSteeringMathModel
     %SumOfSinesModel Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -223,4 +223,3 @@ classdef SumOfSinesModel < matlab.mixin.SetGet
         end
     end
 end
-

@@ -1,13 +1,11 @@
-classdef SteerModelTypeEnum < matlab.mixin.SetGet
-    %SteerModelTypeEnum Summary of this class goes here
+classdef SteerMathModelTypeEnum < matlab.mixin.SetGet
+    %SteerMathModelTypeEnum Summary of this class goes here
     %   Detailed explanation goes here
     
     enumeration
-        PolyAngles('Polynomial Euler Angles');
-        QuaterionInterp('Attitude Interpolation');
-        LinearTangentAngles('Linear Tangent Euler Angles')
-        SumOfSinesAngles('Sum of Sines Euler Angles');
-        SelectableModelAngles('Selectable Model Euler Angles');
+        GenericPoly('Polynomial Euler Angles');
+        SumOfSines('Sum of Sines');
+        LinearTangent('Linear Tangent');
     end
     
     properties
@@ -15,21 +13,21 @@ classdef SteerModelTypeEnum < matlab.mixin.SetGet
     end
     
     methods
-        function obj = SteerModelTypeEnum(name)
+        function obj = SteerMathModelTypeEnum(name)
             obj.name = name;
         end
     end
     
     methods(Static)
         function [listBoxStr, enums] = getListBoxStr()
-            m = enumeration('SteerModelTypeEnum');
+            m = enumeration('SteerMathModelTypeEnum');
             [~,I] = sort({m.name});
             listBoxStr = {m(I).name};
             enums = m(I);
         end
         
         function [ind, enum] = getIndForName(name)
-            m = enumeration('SteerModelTypeEnum');
+            m = enumeration('SteerMathModelTypeEnum');
             [~,I] = sort({m.name});
             m = m(I);
             ind = find(ismember({m.name},name),1,'first');
@@ -37,10 +35,9 @@ classdef SteerModelTypeEnum < matlab.mixin.SetGet
         end
         
         function [enum, ind] = getEnumForListboxStr(nameStr)
-            m = enumeration('SteerModelTypeEnum');
+            m = enumeration('SteerMathModelTypeEnum');
             ind = find(ismember({m.name},nameStr),1,'first');
             enum = m(ind);
         end
     end
 end
-

@@ -1,4 +1,4 @@
-classdef SumOfPolyTermsModel < matlab.mixin.SetGet
+classdef SumOfPolyTermsModel < AbstractSteeringMathModel
     %SumOfPolyTermsModel Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -15,7 +15,7 @@ classdef SumOfPolyTermsModel < matlab.mixin.SetGet
         function obj = SumOfPolyTermsModel(const)
             obj.const = const;
             
-            obj.terms = PolynominalTermModel(0,1,1);
+            obj.terms = PolynominalTermModel(0,deg2rad(1),1);
         end
         
         function addTerm(obj, term)

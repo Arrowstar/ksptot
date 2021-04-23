@@ -430,7 +430,7 @@ function coeffLbText_Callback(hObject, eventdata, handles)
     if(isempty(errMsg))
         termModel.coeffLb = deg2rad(value);
     else
-        hObject.String = fullAccNum2Str(termModel.coeffLb);
+        hObject.String = fullAccNum2Str(rad2deg(termModel.coeffLb));
         
         msgbox(errMsg,'Invalid Term Coefficient Lower Bound','error');
     end
@@ -476,7 +476,7 @@ function coeffUbText_Callback(hObject, eventdata, handles)
     if(isempty(errMsg))
         termModel.coeffUb = deg2rad(value);
     else
-        hObject.String = fullAccNum2Str(termModel.coeffUb);
+        hObject.String = fullAccNum2Str(rad2deg(termModel.coeffUb));
         
         msgbox(errMsg,'Invalid Term Coefficient Upper Bound','error');
     end

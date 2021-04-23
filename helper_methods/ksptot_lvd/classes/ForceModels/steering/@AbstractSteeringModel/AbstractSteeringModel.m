@@ -45,6 +45,9 @@ classdef(Abstract) AbstractSteeringModel < matlab.mixin.SetGet
                     
                 case SteerModelTypeEnum.SumOfSinesAngles
                     addActionTf = lvd_EditActionSetSumOfSinesSteeringModelGUI(fakeAction, lv, useContinuity);
+                    
+                case SteerModelTypeEnum.SelectableModelAngles
+                    addActionTf = lvd_EditActionSetSelectableSteeringModelGUI(fakeAction, lv, useContinuity);
 
                 otherwise
                     error('Unknown steering model type: %s', enum.name);

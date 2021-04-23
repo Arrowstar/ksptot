@@ -4,14 +4,13 @@ classdef LinearTangentModel < matlab.mixin.SetGet
     
     properties
         t0(1,1) double = 0;
-        
+        tOffset(1,1) double = 0;
+
         a(1,1) double = 0;
         a_dot(1,1) double = 0;
         
         b(1,1) double = 0;
         b_dot(1,1) double = 0;
-        
-        tOffset(1,1) double = 0;
     end
     
     methods

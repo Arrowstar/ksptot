@@ -34,7 +34,7 @@ classdef PolynominalTermModel < matlab.mixin.SetGet
         end
         
         function listBoxStr = getListboxStr(obj)
-            listBoxStr = sprintf('%0.3f * (t-t0) ^ %0.3f', obj.coeff, obj.exponent);
+            listBoxStr = sprintf('%0.3f * (t-t0) ^ %0.3f', rad2deg(obj.coeff), obj.exponent);
         end
         
         function newPolyTermModel = deepCopy(obj)
@@ -55,7 +55,7 @@ classdef PolynominalTermModel < matlab.mixin.SetGet
         end
         
         function numVars = getNumVars(~)
-            numVars = 1;
+            numVars = 2;
         end
         
         function x = getXsForVariable(obj)
