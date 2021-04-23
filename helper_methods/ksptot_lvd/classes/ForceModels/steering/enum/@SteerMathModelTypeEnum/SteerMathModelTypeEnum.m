@@ -3,7 +3,7 @@ classdef SteerMathModelTypeEnum < matlab.mixin.SetGet
     %   Detailed explanation goes here
     
     enumeration
-        GenericPoly('Polynomial Euler Angles');
+        GenericPoly('Polynomial');
         SumOfSines('Sum of Sines');
         LinearTangent('Linear Tangent');
     end
