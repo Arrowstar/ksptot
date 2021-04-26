@@ -638,7 +638,7 @@ function getUTFromKSP_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 secUT = readDoublesFromKSPTOTConnect('GetUT', '', true);
 if(secUT >= 0)
-    set(hObject, 'String', num2str(secUT));
+    set(gco, 'String', num2str(secUT));
     departBodyEarliestTimeText_Callback(handles.departBodyEarliestTimeText, eventdata, handles);
     arrivalBodyEarliestTimeText_Callback(handles.arrivalBodyEarliestTimeText, eventdata, handles);
 end
