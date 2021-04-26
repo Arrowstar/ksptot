@@ -88,11 +88,11 @@ classdef(Abstract) AbstractConstraint < matlab.mixin.SetGet & matlab.mixin.Heter
                           
             elseif(obj.evalType == ConstraintEvalTypeEnum.StateComparison)
                 symbol = obj.stateCompType.symbol;
-                compEvent = obj.stateCompEvent;
-                compEventNum = compEvent.getEventNum();
+                eventNum = obj.event.getEventNum();
+                compEventNum = obj.stateCompEvent.getEventNum();
                 
-                str = sprintf('%s\n\t%s Event %u %s\n\tScale factor: %0.3g', ...
-                              type, symbol, compEventNum, type, sF);
+                str = sprintf('%s\n\tEvent %u %s %s Event %u %s\n\tScale factor: %0.3g', ...
+                              type, eventNum, type, symbol, compEventNum, type, sF);
                 
             else
                 error('Unknown constraint evaluation type.');

@@ -73,6 +73,8 @@ function populateGUI(handles, lvdData)
 
     
 function setTooltipStrings(handles, lvdData)
+    warning('off','MATLAB:ui:javaframe:PropertyToBeRemoved');
+    
     hListbox = handles.constraintsListBox;
     jScrollPane = findjobj(hListbox);
     jListbox = jScrollPane.getViewport.getComponent(0);
@@ -80,6 +82,8 @@ function setTooltipStrings(handles, lvdData)
     
     tooltipStrs = lvdData.optimizer.constraints.getToolboxStrs();
     set(jListbox, 'MouseMovedCallback', @(src, evt) mouseMovedCallback(src, evt, hListbox, tooltipStrs));
+    
+    warning('on','MATLAB:ui:javaframe:PropertyToBeRemoved');
     
     
 % --- Outputs from this function are returned to the command line.

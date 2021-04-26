@@ -34,7 +34,8 @@ classdef GenericMAConstraint < AbstractConstraint
         end
         
         function [c, ceq, value, lwrBnd, uprBnd, type, eventNum, valueStateComp] = evalConstraint(obj, stateLog, celBodyData)           
-            stateLogEntry = stateLog.getLastStateLogForEvent(obj.event).getMAFormattedStateLogMatrix(true);
+            stateLogEntry = stateLog.getLastStateLogForEvent(obj.event);
+            stateLogEntryMA = stateLogEntry.getMAFormattedStateLogMatrix(true);
             type = obj.constraintType;
             
             if(not(isempty(obj.refBodyInfo)))
@@ -55,16 +56,17 @@ classdef GenericMAConstraint < AbstractConstraint
             
             maData.spacecraft = struct();
             propNames = obj.event.lvdData.launchVehicle.tankTypes.getFirstThreeTypesCellArr();
-            value = ma_getDepVarValueUnit(1, stateLogEntry, type, 0, refBodyId, oscId, stnId, propNames, maData, celBodyData, false);
+            value = ma_getDepVarValueUnit(1, stateLogEntryMA, type, 0, refBodyId, oscId, stnId, propNames, maData, celBodyData, false);
                     
             if(obj.evalType == ConstraintEvalTypeEnum.StateComparison)
                 stateLogEntryStateComp = stateLog.getLastStateLogForEvent(obj.stateCompEvent).deepCopy();
+                stateLogEntryStateCompMA = stateLogEntryStateComp.getMAFormattedStateLogMatrix(true);
                 
                 cartElem = stateLogEntryStateComp.getCartesianElementSetRepresentation();
                 cartElem = cartElem.convertToFrame(stateLogEntry.centralBody.getBodyCenteredInertialFrame());
                 stateLogEntryStateComp.setCartesianElementSet(cartElem);
                 
-                valueStateComp = ma_getDepVarValueUnit(1, stateLogEntryStateComp, type, 0, refBodyId, oscId, stnId, propNames, maData, celBodyData, false);
+                valueStateComp = ma_getDepVarValueUnit(1, stateLogEntryStateCompMA, type, 0, refBodyId, oscId, stnId, propNames, maData, celBodyData, false);
             else
                 valueStateComp = NaN;
             end

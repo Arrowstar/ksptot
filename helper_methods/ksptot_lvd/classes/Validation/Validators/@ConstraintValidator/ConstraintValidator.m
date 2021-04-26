@@ -39,7 +39,7 @@ classdef ConstraintValidator < AbstractLaunchVehicleDataValidator
                         compEventNum = compEvent.getEventNum();
                         
                         valueStateComp = valueStateComps(i);
-                        if(not(isnan(valueStateComps)))
+                        if(not(isnan(valueStateComp)))
                             valueStateCompStr = sprintf(', Value = %f %s', valueStateComp, unit);
                         else
                             valueStateCompStr = '';
