@@ -38,11 +38,12 @@ classdef StopwatchValueConstraint < AbstractConstraint
             value = stopWatchState.value;
                        
             if(obj.evalType == ConstraintEvalTypeEnum.StateComparison)
-                stateLogEntryStateComp = stateLog.getLastStateLogForEvent(obj.stateCompEvent).deepCopy();
+%                 stateLogEntryStateComp = stateLog.getLastStateLogForEvent(obj.stateCompEvent).deepCopy();
+                stateLogEntryStateComp = stateLog.getLastStateLogForEvent(obj.stateCompEvent);
                 
-                cartElem = stateLogEntryStateComp.getCartesianElementSetRepresentation();
-                cartElem = cartElem.convertToFrame(stateLogEntry.centralBody.getBodyCenteredInertialFrame());
-                stateLogEntryStateComp.setCartesianElementSet(cartElem);
+%                 cartElem = stateLogEntryStateComp.getCartesianElementSetRepresentation();
+%                 cartElem = cartElem.convertToFrame(stateLogEntry.centralBody.getBodyCenteredInertialFrame());
+%                 stateLogEntryStateComp.setCartesianElementSet(cartElem);
 
                 stopWatchStates = stateLogEntryStateComp.getAllStopwatchStates();
                 stopWatchState = stopWatchStates(stopWatchStates.stopwatch == obj.stopwatch);

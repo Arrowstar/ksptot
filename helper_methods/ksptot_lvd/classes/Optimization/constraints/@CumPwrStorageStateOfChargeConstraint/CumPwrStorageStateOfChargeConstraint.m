@@ -35,11 +35,12 @@ classdef CumPwrStorageStateOfChargeConstraint < AbstractConstraint
             [value, ~] = lvd_ElectricalPowerGlobalTasks(stateLogEntry, 'cumStorageSoC');
                        
             if(obj.evalType == ConstraintEvalTypeEnum.StateComparison)
-                stateLogEntryStateComp = stateLog.getLastStateLogForEvent(obj.stateCompEvent).deepCopy();
+%                 stateLogEntryStateComp = stateLog.getLastStateLogForEvent(obj.stateCompEvent).deepCopy();
+                stateLogEntryStateComp = stateLog.getLastStateLogForEvent(obj.stateCompEvent);
                 
-                cartElem = stateLogEntryStateComp.getCartesianElementSetRepresentation();
-                cartElem = cartElem.convertToFrame(stateLogEntry.centralBody.getBodyCenteredInertialFrame());
-                stateLogEntryStateComp.setCartesianElementSet(cartElem);
+%                 cartElem = stateLogEntryStateComp.getCartesianElementSetRepresentation();
+%                 cartElem = cartElem.convertToFrame(stateLogEntry.centralBody.getBodyCenteredInertialFrame());
+%                 stateLogEntryStateComp.setCartesianElementSet(cartElem);
                 
                 [valueStateComp, ~] = lvd_ElectricalPowerGlobalTasks(stateLogEntryStateComp, 'cumStorageSoC');
             else

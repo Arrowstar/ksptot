@@ -38,11 +38,12 @@ classdef ExtremumValueConstraint < AbstractConstraint
             value = extremaState.value;
                        
             if(obj.evalType == ConstraintEvalTypeEnum.StateComparison)
-                stateLogEntryStateComp = stateLog.getLastStateLogForEvent(obj.stateCompEvent).deepCopy();
+%                 stateLogEntryStateComp = stateLog.getLastStateLogForEvent(obj.stateCompEvent).deepCopy();
+                stateLogEntryStateComp = stateLog.getLastStateLogForEvent(obj.stateCompEvent);
                 
-                cartElem = stateLogEntryStateComp.getCartesianElementSetRepresentation();
-                cartElem = cartElem.convertToFrame(stateLogEntry.centralBody.getBodyCenteredInertialFrame());
-                stateLogEntryStateComp.setCartesianElementSet(cartElem);
+%                 cartElem = stateLogEntryStateComp.getCartesianElementSetRepresentation();
+%                 cartElem = cartElem.convertToFrame(stateLogEntry.centralBody.getBodyCenteredInertialFrame());
+%                 stateLogEntryStateComp.setCartesianElementSet(cartElem);
                 
                 extremaStates = stateLogEntryStateComp.getAllExtremaStates();
                 extremaState = extremaStates(extremaStates.extrema == obj.extremum);

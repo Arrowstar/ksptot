@@ -39,11 +39,12 @@ classdef CalculusCalculationValueConstraint < AbstractConstraint
             value = cObjState.getValueAtTime(time);
                        
             if(obj.evalType == ConstraintEvalTypeEnum.StateComparison)
-                stateLogEntryStateComp = stateLog.getLastStateLogForEvent(obj.stateCompEvent).deepCopy();
-                
-                cartElem = stateLogEntryStateComp.getCartesianElementSetRepresentation();
-                cartElem = cartElem.convertToFrame(stateLogEntry.centralBody.getBodyCenteredInertialFrame());
-                stateLogEntryStateComp.setCartesianElementSet(cartElem);
+%                 stateLogEntryStateComp = stateLog.getLastStateLogForEvent(obj.stateCompEvent).deepCopy();
+                stateLogEntryStateComp = stateLog.getLastStateLogForEvent(obj.stateCompEvent);
+
+%                 cartElem = stateLogEntryStateComp.getCartesianElementSetRepresentation();
+%                 cartElem = cartElem.convertToFrame(stateLogEntry.centralBody.getBodyCenteredInertialFrame());
+%                 stateLogEntryStateComp.setCartesianElementSet(cartElem);
                 
                 time = stateLogEntryStateComp.time;
                 valueStateComp = cObjState.getValueAtTime(time);
