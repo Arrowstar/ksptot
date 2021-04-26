@@ -24,7 +24,7 @@ classdef PositionContinuityConstraintZ < AbstractConstraint
             ub = obj.ub;
         end
         
-        function [c, ceq, value, lwrBnd, uprBnd, type, eventNum] = evalConstraint(obj, stateLog, celBodyData)           
+        function [c, ceq, value, lwrBnd, uprBnd, type, eventNum, valueStateComp] = evalConstraint(obj, stateLog, celBodyData)           
             type = obj.getConstraintType();
             
             if(not(isempty(obj.event)) && not(isempty(obj.constraintEvent)))
@@ -53,6 +53,8 @@ classdef PositionContinuityConstraintZ < AbstractConstraint
             
             lwrBnd = obj.lb;
             uprBnd = obj.ub;
+            
+            valueStateComp = NaN;
             
             eventNum = obj.event.getEventNum();
         end
