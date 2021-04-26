@@ -10,6 +10,10 @@ classdef GeometricAngleMagConstraint < AbstractConstraint
         
         lb(1,1) double = 0;
         ub(1,1) double = 0;
+
+        evalType(1,1) ConstraintEvalTypeEnum = ConstraintEvalTypeEnum.FixedBounds;
+        stateCompType(1,1) ConstraintStateComparisonTypeEnum = ConstraintStateComparisonTypeEnum.Equals;
+        stateCompEvent LaunchVehicleEvent
     end
     
     methods
@@ -27,7 +31,7 @@ classdef GeometricAngleMagConstraint < AbstractConstraint
             ub = obj.ub;
         end
         
-        function [c, ceq, value, lwrBnd, uprBnd, type, eventNum] = evalConstraint(obj, stateLog, celBodyData)           
+        function [c, ceq, value, lwrBnd, uprBnd, type, eventNum, valueStateComp] = evalConstraint(obj, stateLog, celBodyData)           
             type = obj.getConstraintType();
             stateLogEntry = stateLog.getLastStateLogForEvent(obj.event);
 
@@ -36,16 +40,22 @@ classdef GeometricAngleMagConstraint < AbstractConstraint
                 value = abs(value);
             end
             
-            if(obj.lb == obj.ub)
-                c = [];
-                ceq(1) = value - obj.ub;
+            if(obj.evalType == ConstraintEvalTypeEnum.StateComparison)
+                stateLogEntryStateComp = stateLog.getLastStateLogForEvent(obj.stateCompEvent).deepCopy();
+                
+                cartElem = stateLogEntryStateComp.getCartesianElementSetRepresentation();
+                cartElem = cartElem.convertToFrame(stateLogEntry.centralBody.getBodyCenteredInertialFrame());
+                stateLogEntryStateComp.setCartesianElementSet(cartElem);
+
+                valueStateComp = lvd_GeometricAngleTasks(stateLogEntryStateComp, 'Mag', obj.angle);
+                if(obj.useAbsValue)
+                    valueStateComp = abs(valueStateComp);
+                end
             else
-                c(1) = obj.lb - value;
-                c(2) = value - obj.ub;
-                ceq = [];
+                valueStateComp = NaN;
             end
-            c = c/obj.normFact;
-            ceq = ceq/obj.normFact;  
+            
+            [c, ceq] = obj.computeCAndCeqValues(value, valueStateComp); 
             
             lwrBnd = obj.lb;
             uprBnd = obj.ub;
@@ -79,6 +89,9 @@ classdef GeometricAngleMagConstraint < AbstractConstraint
         
         function tf = usesEvent(obj, event)
             tf = obj.event == event;
+            if(obj.evalType == ConstraintEvalTypeEnum.StateComparison)
+                tf = tf || obj.stateCompEvent == event;
+            end
         end
         
         function tf = usesStopwatch(~, ~)

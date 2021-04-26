@@ -336,17 +336,17 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
             
             if(evalConstraints)
                 x=obj.lvdData.optimizer.vars.getTotalScaledXVector();
-                [c, ceq, values, lb, ub, type, eventNum, cEventInds, ceqEventInds] = obj.lvdData.optimizer.constraints.evalConstraints(x, false, evtToStartScriptExecAt, allowInterrupt, []);
+                [c, ceq, values, lb, ub, type, eventNum, cEventInds, ceqEventInds, ~, consts, cCInds, cCeqInds, valueStateComps] = obj.lvdData.optimizer.constraints.evalConstraints(x, false, evtToStartScriptExecAt, allowInterrupt, []);
 
                 if(isempty(obj.lvdData.optimizer.constraints.lastRunValues))
                     obj.lvdData.optimizer.constraints.lastRunValues = ConstraintValues();
                 end
 
-                obj.lvdData.optimizer.constraints.lastRunValues.updateValues(c, ceq, values, lb, ub, type, eventNum, cEventInds, ceqEventInds);
+                obj.lvdData.optimizer.constraints.lastRunValues.updateValues(c, ceq, values, lb, ub, type, eventNum, cEventInds, ceqEventInds, consts, cCInds, cCeqInds, valueStateComps);
             end
         end
     end
-    
+
    methods (Static)
       function s = loadobj(s)
          if(isempty(s.nonSeqEvts))

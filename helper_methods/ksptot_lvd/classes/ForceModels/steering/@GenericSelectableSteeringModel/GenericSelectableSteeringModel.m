@@ -9,18 +9,21 @@ classdef GenericSelectableSteeringModel < AbstractSteeringModel
         gammaAngleSumPoly(1,1) SumOfPolyTermsModel = SumOfPolyTermsModel(0);
         gammaAngleSumSines(1,1) SumOfSinesModel = SumOfSinesModel(0);
         gammaAngleLinearTan(1,1) LinearTangentSelectableModel = LinearTangentSelectableModel(0,0,0,0,0);
+        gammaAngleFitNet(1,1) FitNetModel = FitNetModel([]);
         
         % Beta
         betaSelModel(1,1) SteerMathModelTypeEnum = SteerMathModelTypeEnum.GenericPoly
         betaAngleSumPoly(1,1) SumOfPolyTermsModel = SumOfPolyTermsModel(0);
         betaAngleSumSines(1,1) SumOfSinesModel = SumOfSinesModel(0);
         betaAngleLinearTan(1,1) LinearTangentSelectableModel = LinearTangentSelectableModel(0,0,0,0,0);
+        betaAngleFitNet(1,1) FitNetModel = FitNetModel([]);
         
         % Alpha
         alphaSelModel(1,1) SteerMathModelTypeEnum = SteerMathModelTypeEnum.GenericPoly
         alphaAngleSumPoly(1,1) SumOfPolyTermsModel = SumOfPolyTermsModel(0);
         alphaAngleSumSines(1,1) SumOfSinesModel = SumOfSinesModel(0);
         alphaAngleLinearTan(1,1) LinearTangentSelectableModel = LinearTangentSelectableModel(0,0,0,0,0);
+        alphaAngleFitNet(1,1) FitNetModel = FitNetModel([]);
 
         %Continuity
         gammaContinuity(1,1) logical = false;
@@ -50,6 +53,9 @@ classdef GenericSelectableSteeringModel < AbstractSteeringModel
                 case SteerMathModelTypeEnum.LinearTangent
                     model = obj.gammaAngleLinearTan;
                     
+                case SteerMathModelTypeEnum.FitNet
+                    model = obj.gammaAngleFitNet;
+                    
                 otherwise
                     error('Unknown Gamma angle steering model');
             end
@@ -65,6 +71,9 @@ classdef GenericSelectableSteeringModel < AbstractSteeringModel
                     
                 case SteerMathModelTypeEnum.LinearTangent
                     model = obj.betaAngleLinearTan;
+                    
+                case SteerMathModelTypeEnum.FitNet
+                    model = obj.betaAngleFitNet;
                     
                 otherwise
                     error('Unknown Beta angle steering model');
@@ -82,6 +91,9 @@ classdef GenericSelectableSteeringModel < AbstractSteeringModel
                 case SteerMathModelTypeEnum.LinearTangent
                     model = obj.alphaAngleLinearTan;
                     
+                case SteerMathModelTypeEnum.FitNet
+                    model = obj.alphaAngleFitNet;
+                    
                 otherwise
                     error('Unknown Alpha angle steering model');
             end
@@ -97,6 +109,9 @@ classdef GenericSelectableSteeringModel < AbstractSteeringModel
                     
                 case 'LinearTangentSelectableModel'
                     obj.gammaAngleLinearTan = newModel;
+                    
+                case 'FitNetModel'
+                    obj.gammaAngleFitNet = newModel;
                     
                 otherwise
                     error('Unknown Gamma angle steering model class');
@@ -114,6 +129,9 @@ classdef GenericSelectableSteeringModel < AbstractSteeringModel
                 case 'LinearTangentSelectableModel'
                     obj.betaAngleLinearTan = newModel;
                     
+                case 'FitNetModel'
+                    obj.betaAngleFitNet = newModel;
+                    
                 otherwise
                     error('Unknown Beta angle steering model class');
             end
@@ -129,6 +147,9 @@ classdef GenericSelectableSteeringModel < AbstractSteeringModel
                     
                 case 'LinearTangentSelectableModel'
                     obj.alphaAngleLinearTan = newModel;
+                    
+                case 'FitNetModel'
+                    obj.alphaAngleFitNet = newModel;
                     
                 otherwise
                     error('Unknown Alpha angle steering model class');

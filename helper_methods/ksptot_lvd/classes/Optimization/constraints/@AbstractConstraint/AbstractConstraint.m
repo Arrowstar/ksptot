@@ -13,7 +13,7 @@ classdef(Abstract) AbstractConstraint < matlab.mixin.SetGet & matlab.mixin.Heter
     end
     
     methods
-        [c, ceq, value, lb, ub, type, eventNum] = evalConstraint(obj, stateLog, celBodyData);
+        [c, ceq, value, lb, ub, type, eventNum, valueStateComp] = evalConstraint(obj, stateLog, celBodyData);
         
         [lb, ub] = getBounds(obj);
         
@@ -80,10 +80,23 @@ classdef(Abstract) AbstractConstraint < matlab.mixin.SetGet & matlab.mixin.Heter
         function str = getListboxTooltipStr(obj)
             type = obj.getConstraintType();
             [lb, ub] = obj.getBounds();
-            sF =obj.getScaleFactor();
+            sF = obj.getScaleFactor();
             
-            str = sprintf('%s\n\tBounds: [%0.3g, %0.3g]\n\tScale factor: %0.3g', ...
-                          type, lb, ub, sF);
+            if(obj.evalType == ConstraintEvalTypeEnum.FixedBounds)
+                str = sprintf('%s\n\tBounds: [%0.3g, %0.3g]\n\tScale factor: %0.3g', ...
+                              type, lb, ub, sF);
+                          
+            elseif(obj.evalType == ConstraintEvalTypeEnum.StateComparison)
+                symbol = obj.stateCompType.symbol;
+                compEvent = obj.stateCompEvent;
+                compEventNum = compEvent.getEventNum();
+                
+                str = sprintf('%s\n\t%s Event %u %s\n\tScale factor: %0.3g', ...
+                              type, symbol, compEventNum, type, sF);
+                
+            else
+                error('Unknown constraint evaluation type.');
+            end
         end
         
         [unit, lbLim, ubLim, usesLbUb, usesCelBody, usesRefSc] = getConstraintStaticDetails(obj)
@@ -92,6 +105,45 @@ classdef(Abstract) AbstractConstraint < matlab.mixin.SetGet & matlab.mixin.Heter
         
         function setupForUseAsObjectiveFcn(~,~)
             return; %nothing
+        end
+    end
+    
+    methods(Access=protected)
+        function [c, ceq] = computeCAndCeqValues(obj, value, valueStateComp)
+            if(obj.evalType == ConstraintEvalTypeEnum.FixedBounds)
+                if(obj.lb == obj.ub)
+                    c = [];
+                    ceq(1) = value - obj.ub;
+                else
+                    c(1) = obj.lb - value;
+                    c(2) = value - obj.ub;
+                    ceq = [];
+                end
+                
+            elseif(obj.evalType == ConstraintEvalTypeEnum.StateComparison)
+                switch obj.stateCompType
+                    case ConstraintStateComparisonTypeEnum.Equals
+                        c = [];
+                        ceq = value - valueStateComp;
+                        
+                    case ConstraintStateComparisonTypeEnum.GreaterThan
+                        c = valueStateComp - value;
+                        ceq = [];
+                        
+                    case ConstraintStateComparisonTypeEnum.LessThan
+                        c = value - valueStateComp;
+                        ceq = [];
+                        
+                    otherwise
+                        error('Unknown constraint state comparison type.');
+                end
+                
+            else
+                error('Unknown constraint evaluation type.');
+            end
+            
+            c = c/obj.normFact;
+            ceq = ceq/obj.normFact; 
         end
     end
     

@@ -22,7 +22,7 @@ function varargout = lvd_EditGeometricAngleConstraintGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditGeometricAngleConstraintGUI
 
-% Last Modified by GUIDE v2.5 27-Feb-2021 15:21:27
+% Last Modified by GUIDE v2.5 26-Apr-2021 12:44:47
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -107,6 +107,21 @@ function populateGUI(handles, constraint, lvdData)
     end
     handles.angleCombo.Value = angleInd;
     
+    handles.constraintEvalTypeCombo.String = ConstraintEvalTypeEnum.getListBoxStr();
+    handles.constraintEvalTypeCombo.Value = ConstraintEvalTypeEnum.getIndForName(constraint.evalType.name);
+    constraintEvalTypeCombo_Callback(handles.constraintEvalTypeCombo, [], handles);
+    
+    evtNum = lvdData.script.getNumOfEvent(constraint.stateCompEvent);
+    handles.compEventCombo.String = lvdData.script.getListboxStr();
+    if(not(isempty(evtNum)))
+        handles.compEventCombo.Value = evtNum;
+    else
+        handles.compEventCombo.Value = 1;
+    end
+    
+    handles.comparisonTypeCombo.String = ConstraintStateComparisonTypeEnum.getListBoxStr();
+    handles.comparisonTypeCombo.Value = ConstraintStateComparisonTypeEnum.getIndForName(constraint.stateCompType.name);
+    
     handles.useAbsValueCheckbox.Value = double(constraint.useAbsValue);
     handles.constActiveCheckbox.Value = constraint.active;
     
@@ -131,12 +146,26 @@ function varargout = lvd_EditGeometricAngleConstraintGUI_OutputFcn(hObject, even
         
         constraint.angle = lvdData.geometry.angles.getAngleAtInd(handles.angleCombo.Value);
         
+        [~, enums] = ConstraintEvalTypeEnum.getListBoxStr();
+        constraint.evalType = enums(handles.constraintEvalTypeCombo.Value);
+        
+        [~, enums] = ConstraintStateComparisonTypeEnum.getListBoxStr();
+        constraint.stateCompType = enums(handles.comparisonTypeCombo.Value);
+        
         numEvents = lvdData.script.getTotalNumOfEvents();
         if(numEvents > 0)
             eventNum = handles.eventCombo.Value;
             constraint.event = lvdData.script.getEventForInd(eventNum);
+            
+            if(constraint.evalType == ConstraintEvalTypeEnum.StateComparison)
+                eventNum = handles.compEventCombo.Value;
+                constraint.stateCompEvent = lvdData.script.getEventForInd(eventNum);
+            else
+                constraint.stateCompEvent = LaunchVehicleEvent.empty(1,0);
+            end
         else
             constraint.event = LaunchVehicleEvent.empty(1,0);
+            constraint.stateCompEvent = LaunchVehicleEvent.empty(1,0);
         end
         
         constraint.active = logical(handles.constActiveCheckbox.Value);
@@ -202,6 +231,13 @@ function errMsg = validateInputs(handles)
     ub = Inf;
     isInt = false;
     errMsg = validateNumber(sf, numberName, lb, ub, isInt, errMsg, enteredStr);
+    
+    [~, enums] = ConstraintEvalTypeEnum.getListBoxStr();
+    evalTypeEnum = enums(handles.constraintEvalTypeCombo.Value);
+    if(evalTypeEnum == ConstraintEvalTypeEnum.StateComparison && ...
+       handles.eventCombo.Value == handles.compEventCombo.Value)
+        errMsg{end+1} = 'When using the state comparison evaluation type, the Applicable Event and Comparison Event must be different.'; 
+    end
 
     
 % --- Executes on button press in cancelButton.
@@ -210,29 +246,6 @@ function cancelButton_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
     close(handles.lvd_EditGeometricAngleConstraintGUI);
-
-
-function engineNameText_Callback(hObject, eventdata, handles)
-% hObject    handle to engineNameText (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of engineNameText as text
-%        str2double(get(hObject,'String')) returns contents of engineNameText as a double
-
-
-% --- Executes during object creation, after setting all properties.
-function engineNameText_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to engineNameText see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
 
 
 function lbText_Callback(hObject, eventdata, handles)
@@ -257,31 +270,6 @@ function lbText_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-
-% --- Executes on selection change in stageCombo.
-function stageCombo_Callback(hObject, eventdata, handles)
-% hObject    handle to stageCombo (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: contents = cellstr(get(hObject,'String')) returns stageCombo contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from stageCombo
-
-
-% --- Executes during object creation, after setting all properties.
-function stageCombo_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to stageCombo (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: popupmenu controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
 
 % --- Executes during object creation, after setting all properties.
 function constraintTypeLabel_CreateFcn(hObject, eventdata, handles)
@@ -420,3 +408,91 @@ function useAbsValueCheckbox_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of useAbsValueCheckbox
+
+
+% --- Executes on selection change in constraintEvalTypeCombo.
+function constraintEvalTypeCombo_Callback(hObject, eventdata, handles)
+% hObject    handle to constraintEvalTypeCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns constraintEvalTypeCombo contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from constraintEvalTypeCombo
+    contents = cellstr(get(hObject,'String'));
+    name = contents{get(hObject,'Value')};
+
+    enum = ConstraintEvalTypeEnum.getEnumForListboxStr(name);
+    switch enum
+        case ConstraintEvalTypeEnum.FixedBounds
+            handles.ubText.Enable = 'on';
+            handles.lbText.Enable = 'on';
+            handles.compEventCombo.Enable = 'off';
+            handles.comparisonTypeCombo.Enable = 'off';
+            
+        case ConstraintEvalTypeEnum.StateComparison
+            handles.ubText.Enable = 'off';
+            handles.lbText.Enable = 'off';
+            handles.compEventCombo.Enable = 'on';
+            handles.comparisonTypeCombo.Enable = 'on';
+            
+        otherwise
+            error('Unknown constraint evaluation type.');
+    end
+
+% --- Executes during object creation, after setting all properties.
+function constraintEvalTypeCombo_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to constraintEvalTypeCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in compEventCombo.
+function compEventCombo_Callback(hObject, eventdata, handles)
+% hObject    handle to compEventCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns compEventCombo contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from compEventCombo
+
+
+% --- Executes during object creation, after setting all properties.
+function compEventCombo_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to compEventCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in comparisonTypeCombo.
+function comparisonTypeCombo_Callback(hObject, eventdata, handles)
+% hObject    handle to comparisonTypeCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns comparisonTypeCombo contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from comparisonTypeCombo
+
+
+% --- Executes during object creation, after setting all properties.
+function comparisonTypeCombo_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to comparisonTypeCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

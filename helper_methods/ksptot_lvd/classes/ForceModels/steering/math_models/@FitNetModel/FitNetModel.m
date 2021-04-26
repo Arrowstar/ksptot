@@ -18,7 +18,8 @@ classdef FitNetModel < matlab.mixin.SetGet
         varNetWB logical;
         netWbUb double = 0;
         netWbLb double = 0;
-        hiddenSizes double = 10;
+        hiddenSizes double = 5;
+        gpuAvail(1,1) double = gpuDeviceCount("available");
     end
     
     methods
@@ -30,11 +31,34 @@ classdef FitNetModel < matlab.mixin.SetGet
             obj.netWbUb = 100 * netWb;
             obj.netWbLb = 100 * (-netWb);
             obj.varNetWB = false(size(netWb));
+            
+            obj.gpuAvail = gpuDeviceCount("available");
         end
         
         function value = getValueAtTime(obj,ut)
+            if(obj.gpuAvail > 0)
+                gpuStr = 'yes';
+            else
+                gpuStr = 'no';
+            end
+            
             dt = (ut - obj.t0) + obj.tOffset;
-            value = obj.net(dt);
+            value = sim(obj.net,dt, 'UseGPU',gpuStr);
+        end
+        
+        function wbParams = getWbParams(obj)
+            wbParams = getwb(obj.net);
+        end
+        
+        function value = getWbParamAtInd(obj, ind)
+            wbParams = obj.getWbParams();
+            value = wbParams(ind);
+        end
+        
+        function setWbParamAtInd(obj, newVal, ind)
+            wbParams = obj.getWbParams();
+            wbParams(ind) = newVal;
+            obj.net = setwb(obj.net, wbParams);
         end
         
         function listBoxStr = getListboxStr(obj)
@@ -97,15 +121,16 @@ classdef FitNetModel < matlab.mixin.SetGet
             if(obj.varConst)
                 x = [obj.const, x(:)'];
             end
+            
+            x = x(:)';
         end
         
         function updateObjWithVarValue(obj, x)
             if(obj.varConst)
                 obj.const = x(1);
-                
-                x = x(2:end);
             end
             
+            x = x(2:end);
             if(any(obj.varNetWB))
                 wb = getwb(obj.net);
                 wb(obj.varNetWB) = x;
@@ -157,6 +182,12 @@ classdef FitNetModel < matlab.mixin.SetGet
             net = fitnet(hiddenSizes);
             net = init(net);
             net = configure(net,x,t);
+        end
+    end
+    
+    methods(Static)
+        function obj = loadobj(obj)
+            obj.gpuAvail = gpuDeviceCount("available");
         end
     end
 end

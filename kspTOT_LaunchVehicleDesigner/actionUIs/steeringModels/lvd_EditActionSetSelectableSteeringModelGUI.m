@@ -597,6 +597,9 @@ function editMathModel(model)
             
         case 'LinearTangentSelectableModel'
             lvd_EditLinearTangentModelGUI(model);
+            
+        case 'FitNetModel'
+            lvd_EditFitNetModelGUI(model);
 
         otherwise
             error('Unknown angle steering model class');
@@ -623,6 +626,9 @@ function editAngle1ModelButton_Callback(hObject, eventdata, handles)
             
         case SteerMathModelTypeEnum.LinearTangent
             model = steeringModel.gammaAngleLinearTan;
+            
+        case SteerMathModelTypeEnum.FitNet
+            model = steeringModel.gammaAngleFitNet;
             
         otherwise
             error('Unknown Gamma angle steering model');
@@ -652,6 +658,9 @@ function editAngle2ModelButton_Callback(hObject, eventdata, handles)
         case SteerMathModelTypeEnum.LinearTangent
             model = steeringModel.betaAngleLinearTan;
             
+        case SteerMathModelTypeEnum.FitNet
+            model = steeringModel.betaAngleFitNet;
+            
         otherwise
             error('Unknown Beta angle steering model');
     end
@@ -678,6 +687,9 @@ function editAngle3ModelButton_Callback(hObject, eventdata, handles)
             
         case SteerMathModelTypeEnum.LinearTangent
             model = steeringModel.alphaAngleLinearTan;
+            
+        case SteerMathModelTypeEnum.FitNet
+            model = steeringModel.alphaAngleFitNet;
             
         otherwise
             error('Unknown Alpha angle steering model');

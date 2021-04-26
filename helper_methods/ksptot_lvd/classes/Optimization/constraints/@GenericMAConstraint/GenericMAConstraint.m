@@ -9,6 +9,10 @@ classdef GenericMAConstraint < AbstractConstraint
         
         lb(1,1) double = 0;
         ub(1,1) double = 0;
+        
+        evalType(1,1) ConstraintEvalTypeEnum = ConstraintEvalTypeEnum.FixedBounds;
+        stateCompType(1,1) ConstraintStateComparisonTypeEnum = ConstraintStateComparisonTypeEnum.Equals;
+        stateCompEvent LaunchVehicleEvent
     end
     
     methods
@@ -29,7 +33,7 @@ classdef GenericMAConstraint < AbstractConstraint
             ub = obj.ub;
         end
         
-        function [c, ceq, value, lwrBnd, uprBnd, type, eventNum] = evalConstraint(obj, stateLog, celBodyData)           
+        function [c, ceq, value, lwrBnd, uprBnd, type, eventNum, valueStateComp] = evalConstraint(obj, stateLog, celBodyData)           
             stateLogEntry = stateLog.getLastStateLogForEvent(obj.event).getMAFormattedStateLogMatrix(true);
             type = obj.constraintType;
             
@@ -52,17 +56,20 @@ classdef GenericMAConstraint < AbstractConstraint
             maData.spacecraft = struct();
             propNames = obj.event.lvdData.launchVehicle.tankTypes.getFirstThreeTypesCellArr();
             value = ma_getDepVarValueUnit(1, stateLogEntry, type, 0, refBodyId, oscId, stnId, propNames, maData, celBodyData, false);
-                       
-            if(obj.lb == obj.ub)
-                c = [];
-                ceq(1) = value - obj.ub;
+                    
+            if(obj.evalType == ConstraintEvalTypeEnum.StateComparison)
+                stateLogEntryStateComp = stateLog.getLastStateLogForEvent(obj.stateCompEvent).deepCopy();
+                
+                cartElem = stateLogEntryStateComp.getCartesianElementSetRepresentation();
+                cartElem = cartElem.convertToFrame(stateLogEntry.centralBody.getBodyCenteredInertialFrame());
+                stateLogEntryStateComp.setCartesianElementSet(cartElem);
+                
+                valueStateComp = ma_getDepVarValueUnit(1, stateLogEntryStateComp, type, 0, refBodyId, oscId, stnId, propNames, maData, celBodyData, false);
             else
-                c(1) = obj.lb - value;
-                c(2) = value - obj.ub;
-                ceq = [];
+                valueStateComp = NaN;
             end
-            c = c/obj.normFact;
-            ceq = ceq/obj.normFact;  
+            
+            [c, ceq] = obj.computeCAndCeqValues(value, valueStateComp);
             
             lwrBnd = obj.lb;
             uprBnd = obj.ub;
@@ -96,6 +103,9 @@ classdef GenericMAConstraint < AbstractConstraint
         
         function tf = usesEvent(obj, event)
             tf = obj.event == event;
+            if(obj.evalType == ConstraintEvalTypeEnum.StateComparison)
+                tf = tf || obj.stateCompEvent == event;
+            end
         end
         
         function tf = usesStopwatch(obj, stopwatch)

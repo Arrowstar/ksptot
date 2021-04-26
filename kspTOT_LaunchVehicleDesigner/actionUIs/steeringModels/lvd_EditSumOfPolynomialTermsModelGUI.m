@@ -200,7 +200,7 @@ function constText_Callback(hObject, eventdata, handles)
     
     value = str2double(get(hObject,'String'));
     enteredStr = get(hObject,'String');
-    numberName = 'Sine Constant Offset';
+    numberName = 'Constant Offset';
     lb = -Inf;
     ub = Inf;
     isInt = false;
@@ -209,9 +209,9 @@ function constText_Callback(hObject, eventdata, handles)
     if(isempty(errMsg))
         sumOfPolyTerms.const = deg2rad(value);
     else
-        hObject.String = fullAccNum2Str(sumOfPolyTerms.const);
+        hObject.String = fullAccNum2Str(rad2deg(sumOfPolyTerms.const));
         
-        msgbox(errMsg,'Invalid Sine Constant Offset','error');
+        msgbox(errMsg,'Invalid Constant Offset','error');
     end
     
     % --- Executes during object creation, after setting all properties.

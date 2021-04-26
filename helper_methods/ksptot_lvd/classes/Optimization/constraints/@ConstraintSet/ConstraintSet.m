@@ -72,7 +72,7 @@ classdef ConstraintSet < matlab.mixin.SetGet
             end
         end
         
-        function [c, ceq, value, lb, ub, type, eventNum, cEventInds, ceqEventInds, typeNumConstrArr] = evalConstraints(obj, x, tfRunScript, evtToStartScriptExecAt, allowInterrupt, stateLogToEval)
+        function [c, ceq, value, lb, ub, type, eventNum, cEventInds, ceqEventInds, typeNumConstrArr, constraints, cCInds, cCeqInds, valueStateComps] = evalConstraints(obj, x, tfRunScript, evtToStartScriptExecAt, allowInterrupt, stateLogToEval)
             c = [];
             ceq = [];
             value = [];
@@ -83,6 +83,10 @@ classdef ConstraintSet < matlab.mixin.SetGet
             cEventInds = [];
             ceqEventInds = [];
             typeNumConstrArr = {};
+            constraints = AbstractConstraint.empty(1,0);
+            cCInds = [];
+            cCeqInds = [];
+            valueStateComps = [];
             
             celBodyData = obj.lvdData.celBodyData;
             
@@ -104,7 +108,7 @@ classdef ConstraintSet < matlab.mixin.SetGet
                         continue;
                     end
                     
-                    [c1, ceq1, value1, lb1, ub1, type1, eventNum1] = constraint.evalConstraint(stateLog, celBodyData);
+                    [c1, ceq1, value1, lb1, ub1, type1, eventNum1, valueStateComp1] = constraint.evalConstraint(stateLog, celBodyData);
                     c1 = c1(:)';
                     ceq1 = ceq1(:)';
                     value1 = value1(:)';
@@ -113,10 +117,12 @@ classdef ConstraintSet < matlab.mixin.SetGet
                     
                     for(j=1:length(c1))
                         cEventInds(end+1) = eventNum1; %#ok<AGROW>
+                        cCInds(end+1) = i; %#ok<AGROW>
                     end
                     
                     for(j=1:length(ceq1))
                         ceqEventInds(end+1) = eventNum1; %#ok<AGROW>
+                        cCeqInds(end+1) = i; %#ok<AGROW>
                     end
                     
                     c   = [c, c1]; %#ok<AGROW>
@@ -127,6 +133,8 @@ classdef ConstraintSet < matlab.mixin.SetGet
                     type = horzcat(type, type1); %#ok<AGROW>
                     typeNumConstrArr = horzcat(typeNumConstrArr, repmat({type1}, 1, numel(c1)+numel(ceq1))); %#ok<AGROW>
                     eventNum = [eventNum, eventNum1]; %#ok<AGROW>
+                    constraints = [constraints, constraint]; %#ok<AGROW>
+                    valueStateComps = [valueStateComps, valueStateComp1];
                 end
             end
         end

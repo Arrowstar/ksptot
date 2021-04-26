@@ -8,6 +8,10 @@ classdef TwoBodyImpactPointTime < AbstractConstraint
         
         lb(1,1) double = 0;
         ub(1,1) double = 0;
+        
+        evalType(1,1) ConstraintEvalTypeEnum = ConstraintEvalTypeEnum.FixedBounds;
+        stateCompType(1,1) ConstraintStateComparisonTypeEnum = ConstraintStateComparisonTypeEnum.Equals;
+        stateCompEvent LaunchVehicleEvent
     end
     
     methods
@@ -24,26 +28,33 @@ classdef TwoBodyImpactPointTime < AbstractConstraint
             ub = obj.ub;
         end
         
-        function [c, ceq, value, lwrBnd, uprBnd, type, eventNum] = evalConstraint(obj, stateLog, celBodyData)           
+        function [c, ceq, value, lwrBnd, uprBnd, type, eventNum, valueStateComp] = evalConstraint(obj, stateLog, celBodyData)           
             type = obj.getConstraintType();
             stateLogEntry = stateLog.getLastStateLogForEvent(obj.event);
 
             value = lvd_TwoBodyImpactPointTasks(stateLogEntry, 'timeToImpact');
                   
             if(isnan(value))
-                value = obj.ub*10; %need to throw in a real number
+                value = 1E99; %need to throw in a real number
             end
             
-            if(obj.lb == obj.ub)
-                c = [];
-                ceq(1) = value - obj.ub;
+            if(obj.evalType == ConstraintEvalTypeEnum.StateComparison)
+                stateLogEntryStateComp = stateLog.getLastStateLogForEvent(obj.stateCompEvent).deepCopy();
+                
+                cartElem = stateLogEntryStateComp.getCartesianElementSetRepresentation();
+                cartElem = cartElem.convertToFrame(stateLogEntry.centralBody.getBodyCenteredInertialFrame());
+                stateLogEntryStateComp.setCartesianElementSet(cartElem);
+
+                valueStateComp = lvd_TwoBodyImpactPointTasks(stateLogEntryStateComp, 'timeToImpact');
+
+                if(isnan(valueStateComp))
+                    valueStateComp = 1E99; %need to throw in a real number
+                end
             else
-                c(1) = obj.lb - value;
-                c(2) = value - obj.ub;
-                ceq = [];
+                valueStateComp = NaN;
             end
-            c = c/obj.normFact;
-            ceq = ceq/obj.normFact;  
+            
+            [c, ceq] = obj.computeCAndCeqValues(value, valueStateComp); 
             
             lwrBnd = obj.lb;
             uprBnd = obj.ub;
@@ -77,6 +88,9 @@ classdef TwoBodyImpactPointTime < AbstractConstraint
         
         function tf = usesEvent(obj, event)
             tf = obj.event == event;
+            if(obj.evalType == ConstraintEvalTypeEnum.StateComparison)
+                tf = tf || obj.stateCompEvent == event;
+            end
         end
         
         function tf = usesStopwatch(obj, stopwatch)

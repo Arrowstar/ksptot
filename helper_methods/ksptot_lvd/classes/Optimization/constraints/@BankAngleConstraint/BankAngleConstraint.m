@@ -8,6 +8,10 @@ classdef BankAngleConstraint < AbstractConstraint
         
         lb(1,1) double = 0;
         ub(1,1) double = 0;
+        
+        evalType(1,1) ConstraintEvalTypeEnum = ConstraintEvalTypeEnum.FixedBounds;
+        stateCompType(1,1) ConstraintStateComparisonTypeEnum = ConstraintStateComparisonTypeEnum.Equals;
+        stateCompEvent LaunchVehicleEvent
     end
     
     methods
@@ -24,7 +28,7 @@ classdef BankAngleConstraint < AbstractConstraint
             ub = obj.ub;
         end
         
-        function [c, ceq, value, lwrBnd, uprBnd, type, eventNum] = evalConstraint(obj, stateLog, celBodyData)           
+        function [c, ceq, value, lwrBnd, uprBnd, type, eventNum, valueStateComp] = evalConstraint(obj, stateLog, celBodyData)           
             type = obj.getConstraintType();
             stateLogEntry = stateLog.getLastStateLogForEvent(obj.event);
             
@@ -33,20 +37,28 @@ classdef BankAngleConstraint < AbstractConstraint
             vVect = stateLogEntry.velocity;
             bodyInfo = stateLogEntry.centralBody;
             
-            [bankAng,angOfAttack,angOfSideslip] = stateLogEntry.attitude.getAeroAngles(ut, rVect, vVect, bodyInfo);
-            
+            [bankAng,~,~] = stateLogEntry.attitude.getAeroAngles(ut, rVect, vVect, bodyInfo);
             value = rad2deg(bankAng);
                        
-            if(obj.lb == obj.ub)
-                c = [];
-                ceq(1) = value - obj.ub;
+            if(obj.evalType == ConstraintEvalTypeEnum.StateComparison)
+                stateLogEntryStateComp = stateLog.getLastStateLogForEvent(obj.stateCompEvent).deepCopy();
+                
+                cartElem = stateLogEntryStateComp.getCartesianElementSetRepresentation();
+                cartElem = cartElem.convertToFrame(stateLogEntry.centralBody.getBodyCenteredInertialFrame());
+                stateLogEntryStateComp.setCartesianElementSet(cartElem);
+                
+                ut = stateLogEntryStateComp.time;
+                rVect = stateLogEntryStateComp.position;
+                vVect = stateLogEntryStateComp.velocity;
+                bodyInfo = stateLogEntryStateComp.centralBody;
+
+                [bankAng,~,~] = stateLogEntryStateComp.attitude.getAeroAngles(ut, rVect, vVect, bodyInfo);
+                valueStateComp = rad2deg(bankAng);
             else
-                c(1) = obj.lb - value;
-                c(2) = value - obj.ub;
-                ceq = [];
+                valueStateComp = NaN;
             end
-            c = c/obj.normFact;
-            ceq = ceq/obj.normFact;  
+            
+            [c, ceq] = obj.computeCAndCeqValues(value, valueStateComp); 
             
             lwrBnd = obj.lb;
             uprBnd = obj.ub;
@@ -80,6 +92,9 @@ classdef BankAngleConstraint < AbstractConstraint
         
         function tf = usesEvent(obj, event)
             tf = obj.event == event;
+            if(obj.evalType == ConstraintEvalTypeEnum.StateComparison)
+                tf = tf || obj.stateCompEvent == event;
+            end
         end
         
         function tf = usesStopwatch(obj, stopwatch)

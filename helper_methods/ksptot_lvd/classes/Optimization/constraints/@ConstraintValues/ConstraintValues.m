@@ -12,6 +12,10 @@ classdef ConstraintValues < matlab.mixin.SetGet
         eventNum = [];
         cEventInds = [];
         ceqEventInds = [];
+        consts AbstractConstraint = AbstractConstraint.empty(1,0);
+        cCInds = [];
+        cCeqInds = [];
+        valueStateComps = [];
     end
     
     methods
@@ -19,7 +23,7 @@ classdef ConstraintValues < matlab.mixin.SetGet
 
         end
         
-        function updateValues(obj, c, ceq, value, lb, ub, type, eventNum, cEventInds, ceqEventInds)
+        function updateValues(obj, c, ceq, value, lb, ub, type, eventNum, cEventInds, ceqEventInds, consts, cCInds, cCeqInds, valueStateComps)
             obj.c = c;
             obj.ceq = ceq;
             obj.value = value;
@@ -29,9 +33,13 @@ classdef ConstraintValues < matlab.mixin.SetGet
             obj.eventNum = eventNum;
             obj.cEventInds = cEventInds;
             obj.ceqEventInds = ceqEventInds;
+            obj.consts = consts;
+            obj.cCInds = cCInds;
+            obj.cCeqInds = cCeqInds;
+            obj.valueStateComps = valueStateComps;
         end
         
-        function [c, ceq, value, lb, ub, type, eventNum, cEventInds, ceqEventInds] = getValues(obj)
+        function [c, ceq, value, lb, ub, type, eventNum, cEventInds, ceqEventInds, consts, cCInds, cCeqInds, valueStateComps] = getValues(obj)
             c = obj.c;
             ceq = obj.ceq;
             value = obj.value;
@@ -41,6 +49,10 @@ classdef ConstraintValues < matlab.mixin.SetGet
             eventNum = obj.eventNum;
             cEventInds = obj.cEventInds;
             ceqEventInds = obj.ceqEventInds;
+            consts = obj.consts;
+            cCInds = obj.cCInds;
+            cCeqInds = obj.cCeqInds;
+            valueStateComps = obj.valueStateComps;
         end
     end
 end

@@ -69,6 +69,10 @@ function lvd_EditConstraintsGUI_OpeningFcn(hObject, eventdata, handles, varargin
 function populateGUI(handles, lvdData)
     set(handles.constraintsListBox,'String',lvdData.optimizer.constraints.getListboxStr());
     
+    setTooltipStrings(handles, lvdData);
+
+    
+function setTooltipStrings(handles, lvdData)
     hListbox = handles.constraintsListBox;
     jScrollPane = findjobj(hListbox);
     jListbox = jScrollPane.getViewport.getComponent(0);
@@ -76,7 +80,7 @@ function populateGUI(handles, lvdData)
     
     tooltipStrs = lvdData.optimizer.constraints.getToolboxStrs();
     set(jListbox, 'MouseMovedCallback', @(src, evt) mouseMovedCallback(src, evt, hListbox, tooltipStrs));
-
+    
     
 % --- Outputs from this function are returned to the command line.
 function varargout = lvd_EditConstraintsGUI_OutputFcn(hObject, eventdata, handles) 
@@ -120,6 +124,8 @@ function constraintsListBox_Callback(hObject, eventdata, handles)
 
         listBoxStr = constraintSet.getListboxStr();
         set(handles.constraintsListBox,'String',listBoxStr);
+        
+        setTooltipStrings(handles, lvdData);
     end
 
 % --- Executes during object creation, after setting all properties.
@@ -174,6 +180,8 @@ function addConstraintButton_Callback(hObject, eventdata, handles)
         end
     end
     
+    setTooltipStrings(handles, lvdData);
+    
 % --- Executes on button press in removeConstraintButton.
 function removeConstraintButton_Callback(hObject, eventdata, handles)
 % hObject    handle to removeConstraintButton (see GCBO)
@@ -194,6 +202,8 @@ function removeConstraintButton_Callback(hObject, eventdata, handles)
     if(selConstraint > numConstraints)
         set(handles.constraintsListBox,'Value',numConstraints);
     end
+    
+    setTooltipStrings(handles, lvdData);
 
 
 % --- Executes on key press with focus on lvd_EditConstraintsGUI or any of its controls.
