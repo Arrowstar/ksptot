@@ -593,8 +593,12 @@ function plotData(hFig, indepVarValues, data, lineColor, useEvtLineColor, evts, 
             case EventPlottingMethodEnum.SkipFirstState
                 subIndVal = subIndVal(2:end);
                 subData = subData(2:end);
+                
+%                 maStateLog = 
 
             case EventPlottingMethodEnum.DoNotPlot
+                maStateLog(maStateLog(:,13) == eventNum,:) = [];
+                
                 continue;
 
             otherwise
@@ -640,6 +644,9 @@ function plotData(hFig, indepVarValues, data, lineColor, useEvtLineColor, evts, 
     end
     
     subLog = maStateLog(maStateLog(:,1) >= startTimeUT & maStateLog(:,1) <= endTimeUT,:);
+    subLogUnsorted = subLog;
+    subLog = sortrows(subLog,[1]);
+    subLog = unique(subLog,'rows');
     
     hShowMan = findobj('Tag','showEventTerminationCheckbox');
     if(get(hShowMan,'Value') && strcmpi(get(hShowMan,'Enable'), 'on'))
@@ -649,10 +656,11 @@ function plotData(hFig, indepVarValues, data, lineColor, useEvtLineColor, evts, 
             evtEndLineColor = 'r';
         end
         
-        allEventNums = subLog(:,13);
+        allEventNums = subLogUnsorted(:,13);
         x = diff(allEventNums)~=0;
         inds = find(x);
-
+        inds = [inds; length(allEventNums)];
+        
         minData = min(data);
         maxData = max(data);
         if(minData == maxData)
@@ -663,12 +671,14 @@ function plotData(hFig, indepVarValues, data, lineColor, useEvtLineColor, evts, 
         for(i=1:length(inds))
             ind = inds(i);
             
-            eventTime = subLog(ind,1)*indepTimeUnitMult;
+            eventTime = subLogUnsorted(ind,1)*indepTimeUnitMult;
             indepVarEventLoc = indepVarValues(indepVarValues(:,2)==eventTime,1);
             indepVarEventLoc = indepVarEventLoc(1);
             
+            evtNum = subLogUnsorted(ind,13);
+            
             plot([indepVarEventLoc indepVarEventLoc], [minData, maxData],evtEndLineColor,'LineWidth',0.25);
-            text(indepVarEventLoc,maxData-8*onePercData,sprintf(' Event %u End ',i),'Color',evtEndLineColor);
+            text(indepVarEventLoc,maxData-8*onePercData,sprintf(' Event %u End ',evtNum),'Color',evtEndLineColor);
         
         end
     end
