@@ -195,7 +195,7 @@ function varargout = lvd_EditInitialStateGUI_OutputFcn(hObject, eventdata, handl
 %         
 %         switch elemSetEnum
 %             case ElementSetEnum.CartesianElements
-%                 orbitModel = CartesianElementSet(time, [orbit1Elem, orbit2Elem, orbit3Elem], [orbit4Elem, orbit5Elem, orbit6Elem], frame);
+%                 orbitModel = CartesianElementSet(time, [orbit1Elem; orbit2Elem; orbit3Elem], [orbit4Elem; orbit5Elem; orbit6Elem], frame);
 %                 
 %             case ElementSetEnum.KeplerianElements
 %                 orbitModel = KeplerianElementSet(time, orbit1Elem, orbit2Elem, deg2rad(orbit3Elem), deg2rad(orbit4Elem), deg2rad(orbit5Elem), deg2rad(orbit6Elem), frame);
@@ -311,7 +311,7 @@ function [orbitModel, elemSetEnum] = getCurrentElemSetFromExistingValues(handles
         
         switch elemSetEnum
             case ElementSetEnum.CartesianElements
-                orbitModel = CartesianElementSet(time, [orbit1Elem, orbit2Elem, orbit3Elem], [orbit4Elem, orbit5Elem, orbit6Elem], frame);
+                orbitModel = CartesianElementSet(time, [orbit1Elem; orbit2Elem; orbit3Elem], [orbit4Elem; orbit5Elem; orbit6Elem], frame);
                 
             case ElementSetEnum.KeplerianElements
                 orbitModel = KeplerianElementSet(time, orbit1Elem, orbit2Elem, deg2rad(orbit3Elem), deg2rad(orbit4Elem), deg2rad(orbit5Elem), deg2rad(orbit6Elem), frame);
@@ -653,7 +653,7 @@ function updateValuesInState(handles)
     frame = newElemSet.frame;
 	switch newElemSet.typeEnum
         case ElementSetEnum.CartesianElements
-            newElemSet = CartesianElementSet(time, [orbit1Elem, orbit2Elem, orbit3Elem], [orbit4Elem, orbit5Elem, orbit6Elem], frame);
+            newElemSet = CartesianElementSet(time, [orbit1Elem; orbit2Elem; orbit3Elem], [orbit4Elem; orbit5Elem; orbit6Elem], frame);
 
         case ElementSetEnum.KeplerianElements
             newElemSet = KeplerianElementSet(time, orbit1Elem, orbit2Elem, deg2rad(orbit3Elem), deg2rad(orbit4Elem), deg2rad(orbit5Elem), deg2rad(orbit6Elem), frame);
