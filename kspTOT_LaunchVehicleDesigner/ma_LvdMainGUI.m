@@ -1443,7 +1443,8 @@ function graphicalAnalysisMenu_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
     lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
-    lvd_GraphicalAnalysisGUI(lvdData, handles.ma_LvdMainGUI);
+%     lvd_GraphicalAnalysisGUI(lvdData, handles.ma_LvdMainGUI);
+    lvd_GraphicalAnalysisGUI_App(lvdData, handles.ma_LvdMainGUI);
 
 
 % --------------------------------------------------------------------
