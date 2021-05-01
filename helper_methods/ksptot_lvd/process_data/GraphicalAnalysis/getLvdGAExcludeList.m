@@ -17,4 +17,7 @@ function exclude = getLvdGAExcludeList()
     exclude{end+1} = 'Elevation Angle w.r.t. Ref. Station';
     exclude{end+1} = 'Line of Sight to Ref. Spacecraft';
     exclude{end+1} = 'Line of Sight to Ref. Station';
+    exclude{end+1} = 'Sun-centric Position (X)';
+    exclude{end+1} = 'Sun-centric Position (Y)';
+    exclude{end+1} = 'Sun-centric Position (Z)';
 end
