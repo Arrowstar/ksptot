@@ -1,5 +1,5 @@
 function [taskList] = lvd_getGraphAnalysisTaskList(lvdData, excludeList)
-%ma_getGraphAnalysisTaskList Summary of this function goes here
+%lvd_getGraphAnalysisTaskList Summary of this function goes here
 %   Detailed explanation goes here
     taskList = ma_getGraphAnalysisTaskList(excludeList);
 
@@ -25,6 +25,47 @@ function [taskList] = lvd_getGraphAnalysisTaskList(lvdData, excludeList)
     taskList{end+1} = 'Power Net Charge Rate';
     taskList{end+1} = 'Power Cumulative Storage State of Charge';
     taskList{end+1} = 'Power Maximum Available Storage';
+    taskList{end+1} = 'Position Vector (X)';
+    taskList{end+1} = 'Position Vector (Y)';
+    taskList{end+1} = 'Position Vector (Z)';
+    taskList{end+1} = 'Velocity Vector (X)';
+    taskList{end+1} = 'Velocity Vector (Y)';
+    taskList{end+1} = 'Velocity Vector (Z)';
+    taskList{end+1} = 'Position Vector Magnitude';
+    taskList{end+1} = 'Velocity Vector Magnitude';
+    taskList{end+1} = 'Surface Velocity';
+    taskList{end+1} = 'Vertical Velocity';
+    taskList{end+1} = 'Semi-major Axis';
+    taskList{end+1} = 'Eccentricity';
+    taskList{end+1} = 'Inclination';
+    taskList{end+1} = 'Right Asc. of the Asc. Node';
+    taskList{end+1} = 'Argument of Periapsis';
+    taskList{end+1} = 'True Anomaly';
+    taskList{end+1} = 'Mean Anomaly';
+    taskList{end+1} = 'Orbital Period';
+    taskList{end+1} = 'Radius of Periapsis';
+    taskList{end+1} = 'Radius of Apoapsis';
+    taskList{end+1} = 'Altitude of Apoapsis';
+    taskList{end+1} = 'Altitude of Periapsis';
+    taskList{end+1} = 'Equinoctial H1';
+    taskList{end+1} = 'Equinoctial K1';
+    taskList{end+1} = 'Equinoctial H2';
+    taskList{end+1} = 'Equinoctial K2';
+    taskList{end+1} = 'Flight Path Angle';
+    taskList{end+1} = 'Altitude';
+    taskList{end+1} = 'Longitude (East)';
+    taskList{end+1} = 'Latitude (North)';
+    taskList{end+1} = 'Velocity Azimuth';
+    taskList{end+1} = 'Velocity Elevation';
+    taskList{end+1} = 'Longitudinal Drift Rate';
+    taskList{end+1} = 'Seconds Past Periapsis';
+    taskList{end+1} = 'Central Body ID';
+    taskList{end+1} = 'Hyperbolic Velocity Unit Vector X';
+    taskList{end+1} = 'Hyperbolic Velocity Unit Vector Y';
+    taskList{end+1} = 'Hyperbolic Velocity Unit Vector Z';
+    taskList{end+1} = 'Hyperbolic Velocity Vector Right Ascension';
+    taskList{end+1} = 'Hyperbolic Velocity Vector Declination';
+    taskList{end+1} = 'Hyperbolic Velocity Magnitude';
     
     [tanksGAStr, ~] = lvdData.launchVehicle.getTanksGraphAnalysisTaskStrs();
     taskList = horzcat(taskList, tanksGAStr);

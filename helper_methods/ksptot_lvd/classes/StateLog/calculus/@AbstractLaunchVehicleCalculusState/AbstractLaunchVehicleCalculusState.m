@@ -39,7 +39,7 @@ classdef(Abstract) AbstractLaunchVehicleCalculusState < matlab.mixin.SetGet & ma
                     maSubLog = stateLogEntries(i).getMAFormattedStateLogMatrix(true);
                     [newDepVarValues(i), depVarUnits, prevDistTraveled] = ma_getDepVarValueUnit(1, maSubLog, taskStr, prevDistTraveled, refBodyId, [], [], propNames, [], obj.celBodyData, false);
                 else
-                    [newDepVarValues(i), depVarUnits] = lvd_getDepVarValueUnit(i, stateLogEntries, taskStr, refBodyId, obj.celBodyData, false);
+                    [newDepVarValues(i), depVarUnits] = lvd_getDepVarValueUnit(i, stateLogEntries, taskStr, refBodyId, obj.celBodyData, false, obj.calcObj.refBody.getBodyCenteredInertialFrame()); %Need to update frame input!
                 end
             end
             

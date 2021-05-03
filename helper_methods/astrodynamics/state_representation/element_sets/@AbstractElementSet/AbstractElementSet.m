@@ -85,6 +85,10 @@ classdef (Abstract) AbstractElementSet < matlab.mixin.SetGet & matlab.mixin.Cust
                     error('Unknown element set: %s', string(obj(1).typeEnum));
             end
         end
+        
+        function gmu = getOriginBodyGM(obj)
+            gmu = obj.frame.getOriginBody().gm;
+        end
     end
     
     methods(Static)

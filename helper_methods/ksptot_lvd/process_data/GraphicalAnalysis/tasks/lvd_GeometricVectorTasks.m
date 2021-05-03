@@ -1,12 +1,12 @@
-function [datapt, unitStr] = lvd_GeometricVectorTasks(stateLogEntry, subTask, vector)
+function [datapt, unitStr] = lvd_GeometricVectorTasks(stateLogEntry, subTask, vector, inFrame)
 %lvd_GeometricPointTasks Summary of this function goes here
 %   Detailed explanation goes here
 
     stateLogCartElem = stateLogEntry.getCartesianElementSetRepresentation();
     time = stateLogCartElem.time;
-    frame = stateLogCartElem.frame;
-    origin = vector.getOriginPointInViewFrame(time, stateLogCartElem, frame);
-    vect = vector.getVectorAtTime(time, stateLogCartElem, frame);
+%     frame = stateLogCartElem.frame;
+    origin = vector.getOriginPointInViewFrame(time, stateLogCartElem, inFrame);
+    vect = vector.getVectorAtTime(time, stateLogCartElem, inFrame);
     
     switch subTask
         case 'VectorX'

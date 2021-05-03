@@ -1,6 +1,10 @@
-function datapt = lvd_SteeringAngleTask(stateLogEntry, subTask)
+function datapt = lvd_SteeringAngleTask(stateLogEntry, subTask, inFrame)
 %lvd_SteeringAngleTask Summary of this function goes here
 %   Detailed explanation goes here
+
+    stateLogEntry = stateLogEntry.deepCopy();
+    cartElem = stateLogEntry.getCartesianElementSetRepresentation().convertToFrame(inFrame);
+    stateLogEntry.setCartesianElementSet(cartElem);
 
     ut = stateLogEntry.time;
     rVect = stateLogEntry.position;

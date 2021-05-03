@@ -84,6 +84,21 @@ classdef CartesianElementSet < AbstractElementSet
             univElemSet = convertToUniversalElementSet(convertToKeplerianElementSet(obj));
         end
         
+        function rMag = getRadiusMagnitude(obj)
+            rMag = vecNormARH(obj.rVect);
+        end
+        
+        function vMag = getVelocityMagnitude(obj)
+            vMag = vecNormARH(obj.vVect);
+        end
+        
+        function [horzVel, vertVel] = getHorzVertVelocities(obj)
+            vVectSez = rotVectToSEZCoords(obj.rVect, obj.vVect);
+            
+            horzVel = sqrt(vVectSez(1)^2 + vVectSez(2)^2);
+            vertVel = vVectSez(3);
+        end
+        
         function elemVect = getElementVector(obj)
             elemVect = [obj.rVect(1),obj.rVect(2),obj.rVect(3),obj.vVect(1),obj.vVect(2),obj.vVect(3)];
         end

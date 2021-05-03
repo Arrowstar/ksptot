@@ -1,6 +1,10 @@
-function [datapt, unitStr] = lvd_GrdObjTasks(stateLogEntry, subTask, grdObj)
+function [datapt, unitStr] = lvd_GrdObjTasks(stateLogEntry, subTask, grdObj, inFrame)
 %lvd_GrdObjTasks Summary of this function goes here
 %   Detailed explanation goes here
+
+    stateLogEntry = stateLogEntry.deepCopy();
+    cartElem = stateLogEntry.getCartesianElementSetRepresentation().convertToFrame(inFrame);
+    stateLogEntry.setCartesianElementSet(cartElem);
 
     switch subTask
         case 'azimuth'

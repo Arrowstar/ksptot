@@ -1,5 +1,5 @@
-function datapt = lvd_ThrottleTask(stateLogEntry, subTask)
-%lvd_SteeringAngleTask Summary of this function goes here
+function datapt = lvd_ThrottleTask(stateLogEntry, subTask, inFrame)
+%lvd_ThrottleTask Summary of this function goes here
 %   Detailed explanation goes here
 
     switch subTask
@@ -28,21 +28,39 @@ function datapt = lvd_ThrottleTask(stateLogEntry, subTask)
             datapt = totalThrust;
             
         case 'thrust_x'
+            vehElemSet = stateLogEntry.getCartesianElementSetRepresentation();
+            [~, ~, ~, rotMat] = inFrame.getOffsetsWrtInertialOrigin(stateLogEntry.time, vehElemSet);
+            
             [~, thrustForceVector] = getThrustParameters(stateLogEntry);
+            thrustForceVector = thrustForceVector(:);
+            thrustForceVector = rotMat * thrustForceVector;
+            
             datapt = thrustForceVector(1);
             if(isnan(datapt))
                 datapt = 0;
             end
             
         case 'thrust_y'
+            vehElemSet = stateLogEntry.getCartesianElementSetRepresentation();
+            [~, ~, ~, rotMat] = inFrame.getOffsetsWrtInertialOrigin(stateLogEntry.time, vehElemSet);
+            
             [~, thrustForceVector] = getThrustParameters(stateLogEntry);
+            thrustForceVector = thrustForceVector(:);
+            thrustForceVector = rotMat * thrustForceVector;
+            
             datapt = thrustForceVector(2);
             if(isnan(datapt))
                 datapt = 0;
             end
             
         case 'thrust_z'
+            vehElemSet = stateLogEntry.getCartesianElementSetRepresentation();
+            [~, ~, ~, rotMat] = inFrame.getOffsetsWrtInertialOrigin(stateLogEntry.time, vehElemSet);
+            
             [~, thrustForceVector] = getThrustParameters(stateLogEntry);
+            thrustForceVector = thrustForceVector(:);
+            thrustForceVector = rotMat * thrustForceVector;
+            
             datapt = thrustForceVector(3);
             if(isnan(datapt))
                 datapt = 0;
@@ -50,6 +68,7 @@ function datapt = lvd_ThrottleTask(stateLogEntry, subTask)
 
         case 'thrust_vector'
             [~, thrustForceVector] = getThrustParameters(stateLogEntry);
+            
             datapt = thrustForceVector(:);
             if(any(isnan(datapt)))
                 datapt = [0;0;0];

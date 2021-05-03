@@ -191,7 +191,7 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
 %                     tY = lvd_ThrottleTask(entry, 'thrust_y');
 %                     tZ = lvd_ThrottleTask(entry, 'thrust_z');
 %                     tVect = [tX;tY;tZ];
-                    tVect = lvd_ThrottleTask(entry, 'thrust_vector');
+                    tVect = lvd_ThrottleTask(entry, 'thrust_vector', cartesianEntry.frame);
                     
                     if(norm(tVect) > 0)                       
                         [~, ~, ~, rotMatToInertial32] = entry.centralBody.getBodyCenteredInertialFrame().getOffsetsWrtInertialOrigin(entry.time, cartesianEntry);
