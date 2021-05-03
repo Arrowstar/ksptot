@@ -2,6 +2,7 @@ function [taskList] = lvd_getGraphAnalysisTaskList(lvdData, excludeList)
 %lvd_getGraphAnalysisTaskList Summary of this function goes here
 %   Detailed explanation goes here
     taskList = ma_getGraphAnalysisTaskList(excludeList);
+    taskList = setdiff(taskList,excludeList);
 
     taskList{end+1} = 'Yaw Angle';
     taskList{end+1} = 'Pitch Angle';
@@ -25,6 +26,7 @@ function [taskList] = lvd_getGraphAnalysisTaskList(lvdData, excludeList)
     taskList{end+1} = 'Power Net Charge Rate';
     taskList{end+1} = 'Power Cumulative Storage State of Charge';
     taskList{end+1} = 'Power Maximum Available Storage';
+    
     taskList{end+1} = 'Position Vector (X)';
     taskList{end+1} = 'Position Vector (Y)';
     taskList{end+1} = 'Position Vector (Z)';
@@ -58,6 +60,7 @@ function [taskList] = lvd_getGraphAnalysisTaskList(lvdData, excludeList)
     taskList{end+1} = 'Velocity Azimuth';
     taskList{end+1} = 'Velocity Elevation';
     taskList{end+1} = 'Longitudinal Drift Rate';
+    taskList{end+1} = 'C3 Energy';
     taskList{end+1} = 'Seconds Past Periapsis';
     taskList{end+1} = 'Central Body ID';
     taskList{end+1} = 'Hyperbolic Velocity Unit Vector X';
@@ -118,5 +121,5 @@ function [taskList] = lvd_getGraphAnalysisTaskList(lvdData, excludeList)
     planeGAStr = lvdData.geometry.planes.getAllPlaneGraphAnalysisTaskStrs();
     taskList = horzcat(taskList, planeGAStr);
     
-    taskList = setdiff(taskList,excludeList);
+    taskList = sort(taskList);
 end

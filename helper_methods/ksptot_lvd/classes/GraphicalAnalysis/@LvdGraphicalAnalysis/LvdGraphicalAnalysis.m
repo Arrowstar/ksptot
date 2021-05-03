@@ -49,7 +49,7 @@ classdef LvdGraphicalAnalysis < matlab.mixin.SetGet
             
             hWaitBar = uiprogressdlg(hFig, 'Value',0, 'Message','Computing Dependent Variables...', 'Title','Computing Dependent Variables');
             
-            maTaskList = ma_getGraphAnalysisTaskList({});
+            maTaskList = ma_getGraphAnalysisTaskList(getLvdGAExcludeList());
             
             dataEvtNums = [];
             prevDistTraveled = 0;

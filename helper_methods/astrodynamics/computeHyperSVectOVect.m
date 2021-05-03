@@ -13,6 +13,9 @@ function [sUnitVector, OUnitVector, vInfMag] = computeHyperSVectOVect(hSMA, hEcc
     BUnitVector=cross(sUnitVector,hUnitVector)/norm(cross(sUnitVector,hUnitVector));
     OUnitVector=cos(flyByAngle)*sUnitVector - sin(flyByAngle)*BUnitVector;
     
+    sUnitVector = real(sUnitVector);
+    OUnitVector = real(OUnitVector);
+    
     vInfMag = sqrt(-gmu/hSMA);
 end
 

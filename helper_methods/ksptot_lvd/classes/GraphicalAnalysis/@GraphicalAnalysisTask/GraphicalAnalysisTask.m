@@ -21,11 +21,7 @@ classdef GraphicalAnalysisTask < matlab.mixin.SetGet
             lblStr = {sprintf(obj.taskStr), obj.frame.getNameStr()};
         end
         
-        function [depVarValue, depVarUnit, prevDistTraveled] = executeTask(obj, lvdStateLogEntry, maTaskList, prevDistTraveled, otherSCId, stationID, propNames, celBodyData)            
-            cartElem = lvdStateLogEntry.getCartesianElementSetRepresentation();
-            cartElem = cartElem.convertToFrame(obj.frame);
-            lvdStateLogEntry.setCartesianElementSet(cartElem);
-            
+        function [depVarValue, depVarUnit, prevDistTraveled] = executeTask(obj, lvdStateLogEntry, maTaskList, prevDistTraveled, otherSCId, stationID, propNames, celBodyData)                        
             refBodyId = obj.frame.getOriginBody().id;
             
             maStateLogEntry = lvdStateLogEntry.getMAFormattedStateLogMatrix(true);

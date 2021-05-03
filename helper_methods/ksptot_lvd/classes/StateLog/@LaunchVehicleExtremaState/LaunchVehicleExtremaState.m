@@ -36,7 +36,7 @@ classdef LaunchVehicleExtremaState < matlab.mixin.SetGet & matlab.mixin.Copyable
                 if(ismember(taskStr,maTaskList))
                     [depVarValue, depVarUnit, ~] = ma_getDepVarValueUnit(1, maSubLog, taskStr, prevDistTraveled, refBodyId, [], [], propNames, [], celBodyData, false);
                 else
-                    [depVarValue, depVarUnit] = lvd_getDepVarValueUnit(1, stateLogEntry, taskStr, refBodyId, celBodyData, false);
+                    [depVarValue, depVarUnit] = lvd_getDepVarValueUnit(1, stateLogEntry, taskStr, refBodyId, celBodyData, false, obj.calcObj.refBody.getBodyCenteredInertialFrame()); %Need to update frame input!
                 end
                 
                 if(isempty(obj.value))
