@@ -213,6 +213,8 @@ function [depVarValue, depVarUnit, taskStr, refBodyInfo] = lvd_getDepVarValueUni
             depVarUnit = 'km/s';
  
         otherwise %is a programmatically generated string that we'll handle here
+            fluidTypeMassPattern = '^Fluid Type (\d+?) Mass - ".*"';
+            
             tankMassPattern = '^Tank (\d+?) Mass - ".*"';
             tankMassDotPattern = '^Tank (\d+?) Mass Flow Rate - ".*"';
             
@@ -257,7 +259,19 @@ function [depVarValue, depVarUnit, taskStr, refBodyInfo] = lvd_getDepVarValueUni
             geoPlaneNormYPattern = '^Plane (\d+?) Normal Vector Y Component - ".*"';
             geoPlaneNormZPattern = '^Plane (\d+?) Normal Vector Z Component - ".*"';
             
-            if(not(isempty(regexpi(taskStr, tankMassPattern))))
+            if(not(isempty(regexpi(taskStr, fluidTypeMassPattern))))
+                tokens = regexpi(taskStr, fluidTypeMassPattern, 'tokens');
+                tokens = tokens{1};
+                tokens = tokens{1};
+                fluidTypeInd = str2double(tokens);
+                
+                [~,fluidTypes] = subLog(i).launchVehicle.tankTypes.getFluidTypesGraphAnalysisTaskStrs();
+                fluidType = fluidTypes(fluidTypeInd);
+                
+                depVarValue = lvd_FluidTypeMassTasks(subLog(i), 'totalFluidTypeMass', fluidType);
+                depVarUnit = 'mT';
+                
+            elseif(not(isempty(regexpi(taskStr, tankMassPattern))))
                 tokens = regexpi(taskStr, tankMassPattern, 'tokens');
                 tokens = tokens{1};
                 tokens = tokens{1};

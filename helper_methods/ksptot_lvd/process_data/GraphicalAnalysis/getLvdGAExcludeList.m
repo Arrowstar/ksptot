@@ -65,4 +65,7 @@ function exclude = getLvdGAExcludeList()
     exclude{end+1} = 'Hyperbolic Velocity Magnitude';
     exclude{end+1} = 'Distance to Ref. Celestial Body';
     exclude{end+1} = 'Elevation Angle of Ref. Celestial Body';
+    exclude{end+1} = 'Liquid Fuel/Ox Mass';
+    exclude{end+1} = 'Monopropellant Mass';
+    exclude{end+1} = 'Xenon Mass';
 end

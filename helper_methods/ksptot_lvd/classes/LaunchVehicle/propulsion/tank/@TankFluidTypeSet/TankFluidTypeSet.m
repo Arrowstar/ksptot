@@ -51,6 +51,15 @@ classdef TankFluidTypeSet < matlab.mixin.SetGet & matlab.mixin.Copyable
                 obj.types(ind:ind+1) = obj.types(ind+1:-1:ind);
             end
         end
+        
+        function [fluidTypesGAStr, fluidTypes] = getFluidTypesGraphAnalysisTaskStrs(obj)
+            fluidTypesGAStr = {};
+            for(i=1:length(obj.types))
+                fluidTypesGAStr{end+1} = sprintf('Fluid Type %u Mass - "%s"', i, obj.types(i).name); %#ok<AGROW>
+            end
+            
+            fluidTypes = obj.types;
+        end
     end
     
     methods(Static)

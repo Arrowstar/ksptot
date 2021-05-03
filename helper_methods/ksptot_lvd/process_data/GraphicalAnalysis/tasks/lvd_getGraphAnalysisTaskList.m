@@ -70,6 +70,9 @@ function [taskList] = lvd_getGraphAnalysisTaskList(lvdData, excludeList)
     taskList{end+1} = 'Hyperbolic Velocity Vector Declination';
     taskList{end+1} = 'Hyperbolic Velocity Magnitude';
     
+    [fluidTypesGAStr, ~] = lvdData.launchVehicle.tankTypes.getFluidTypesGraphAnalysisTaskStrs();
+    taskList = horzcat(taskList, fluidTypesGAStr);
+    
     [tanksGAStr, ~] = lvdData.launchVehicle.getTanksGraphAnalysisTaskStrs();
     taskList = horzcat(taskList, tanksGAStr);
     
