@@ -14,11 +14,34 @@ classdef GraphicalAnalysisTask < matlab.mixin.SetGet
         end
         
         function listboxStr = getListBoxStr(obj)
-            listboxStr = sprintf('%s [%s]', obj.taskStr, obj.frame.getNameStr());
+            startInd = regexp(obj.taskStr, '^.+ \[.+]', 'once');
+            if(not(isempty(startInd)))
+                listboxStr = sprintf('%s', obj.taskStr);
+            else
+                listboxStr = sprintf('%s [%s]', obj.taskStr, obj.frame.getNameStr());
+            end
         end
         
         function lblStr = getAxisLabel(obj)
-            lblStr = {sprintf(obj.taskStr), obj.frame.getNameStr()};
+            tokens = regexp(obj.taskStr, '^.+ (\[.+\])', 'tokens');
+            if(not(isempty(tokens)))
+                tokens = tokens{1}{1};
+            else
+                tokens = [];
+            end
+            
+            if(not(isempty(tokens)))
+                newTaskStr = strrep(obj.taskStr,tokens,'');
+                
+                startInd = regexp(newTaskStr,' \"$');
+                if(not(isempty(startInd)))
+                    newTaskStr(startInd) = '';
+                end
+                
+                lblStr = {newTaskStr, tokens};
+            else
+                lblStr = {sprintf(obj.taskStr), obj.frame.getNameStr()};
+            end
         end
         
         function [depVarValue, depVarUnit, prevDistTraveled] = executeTask(obj, lvdStateLogEntry, maTaskList, prevDistTraveled, otherSCId, stationID, propNames, celBodyData)                        
