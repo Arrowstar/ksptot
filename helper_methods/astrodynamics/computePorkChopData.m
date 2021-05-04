@@ -1,4 +1,4 @@
-function [departDV, arrivalDV, totalDV, departTimeArr, arrivalTimeArr, numSynPeriods] = computePorkChopData(celBodyData, departBody, earlyDepartTime, arrivalBody, earlyArrivalTime, gmu, options)
+function [departDV, arrivalDV, totalDV, departTimeArr, arrivalTimeArr, numSynPeriods] = computePorkChopData(celBodyData, departBody, earlyDepartTime, arrivalBody, earlyArrivalTime, gmu, options, mainGUIHandle)
 %computePorkChopData Summary of this function goes here
 %   Detailed explanation goes here
     axesResPts = options.porkchopptsaxes;
@@ -33,7 +33,8 @@ function [departDV, arrivalDV, totalDV, departTimeArr, arrivalTimeArr, numSynPer
 %     arrivalDV = zeros(length(departTimeArr), length(arrivalTimeArr));
 %     totalDV = zeros(length(departTimeArr), length(arrivalTimeArr));
     
-    hWaitBar = waitbar(0,'Computing Porkchop Plot...'); 
+    hWaitBar = uiprogressdlg(mainGUIHandle,'Message','Computing Porkchop Plot...');
+%     hWaitBar = waitbar(0,'Computing Porkchop Plot...'); 
 %     totalSteps = length(departTimeArr)*length(arrivalTimeArr);
     
     step=0;
@@ -75,7 +76,8 @@ function [departDV, arrivalDV, totalDV, departTimeArr, arrivalTimeArr, numSynPer
 
         % Compute Lambert solutions in the forward direction
         [departVelocity, arrivalVelocity] = lambert_vector(rVecD, rVecA, timeOfFlight, 0, gmu);
-        waitbar(0.5,hWaitBar);
+%         waitbar(0.5,hWaitBar);
+        hWaitBar.Value = 0.5;
         
         % Any velocities that are NaN, put at infinite 
         departVelocity(isnan(departVelocity)) = inf;
@@ -109,7 +111,8 @@ function [departDV, arrivalDV, totalDV, departTimeArr, arrivalTimeArr, numSynPer
         departDV  = squeeze(bsxfun(@min, departDVT1,  departDVT2 ));
         arrivalDV = squeeze(bsxfun(@min, arrivalDVT1, arrivalDVT2));
         totalDV   = squeeze(bsxfun(@min, totalDVT1,   totalDVT2  ));
-        waitbar(1.0,hWaitBar);
+%         waitbar(1.0,hWaitBar);
+        hWaitBar.Value = 1.0;
     else
         % Linear lambert solver
         

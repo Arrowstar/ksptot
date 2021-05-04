@@ -69,7 +69,8 @@ while(toc(t) < 1)
 end
 
 %Set up the GUI for use
-mainGUIHandle = mainGUI(celBodyData, bodyNames, hS, appOptions);
+% mainGUIHandle = mainGUI(celBodyData, bodyNames, hS, appOptions);
+mainGUIHandle = mainGUI_App(celBodyData, bodyNames, hS, appOptions);
 if(isgraphics(hS))
     close(hS);
 end

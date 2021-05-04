@@ -109,7 +109,12 @@ function plotPorkChopPlot(mainGUIHandle)
     hX = xlabel(hAxes,[cap1stLetter(lower(departName)),' Departure Time (UT) [day]']);
     hY = ylabel(hAxes,[cap1stLetter(lower(arrivalName)),' Arrival Time (UT) [day]']);
     grid minor;
-    uistack(hAxes, 'top');
+    
+    try
+        uistack(hAxes, 'top');
+    catch 
+        %nothing, doesn't work with AppDesigner uifigures
+    end
     
     hold(hAxes,'off'); 
 end
