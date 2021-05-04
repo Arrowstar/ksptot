@@ -14,7 +14,7 @@ classdef LaunchVehicleDerivativeCalc < AbstractLaunchVehicleCalculusCalc
         end
         
         function nameStr = getNameStr(obj)
-            nameStr = sprintf('%s Derivative', obj.quantStr);
+            nameStr = sprintf('%s Derivative [%s]', obj.quantStr, obj.frame.getNameStr());
         end
         
         function initState = createInitialState(obj)

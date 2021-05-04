@@ -33,5 +33,13 @@ classdef GraphicalAnalysisTask < matlab.mixin.SetGet
                 [depVarValue, depVarUnit] = lvd_getDepVarValueUnit(1, lvdStateLogEntry, obj.taskStr, refBodyId, celBodyData, false, obj.frame);
             end
         end
+        
+        function tf = usesGeometricRefFrame(obj, refFrame)
+            if(obj.frame.typeEnum == ReferenceFrameEnum.UserDefined)
+                tf = obj.frame.geometricFrame.usesGeometricRefFrame(refFrame);
+            else
+                tf = false;
+            end
+        end
     end
 end

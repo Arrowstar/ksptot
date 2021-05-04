@@ -119,6 +119,7 @@ classdef LvdData < matlab.mixin.SetGet
         function tf = usesGeometricRefFrame(obj, refFrame)
             tf = obj.optimizer.usesGeometricRefFrame(refFrame);
             tf = tf || obj.geometry.usesGeometricRefFrame(refFrame);
+            tf = tf || obj.graphAnalysis.usesGeometricRefFrame(refFrame);
         end
         
         function tf = usesGeometricAngle(obj, angle)

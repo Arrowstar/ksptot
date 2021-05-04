@@ -14,7 +14,7 @@ classdef LaunchVehicleIntegralCalc < AbstractLaunchVehicleCalculusCalc
         end
         
         function nameStr = getNameStr(obj)
-            nameStr = sprintf('%s Integral', obj.quantStr);
+            nameStr = sprintf('%s Integral [%s]', obj.quantStr, obj.frame.getNameStr());
         end
         
         function initState = createInitialState(obj)

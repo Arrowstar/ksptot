@@ -28,7 +28,7 @@ classdef LaunchVehicleExtremaState < matlab.mixin.SetGet & matlab.mixin.Copyable
                 maSubLog = stateLogEntry.getMAFormattedStateLogMatrix(true);
                 taskStr = obj.extrema.quantStr;
                 prevDistTraveled = 0;
-                refBodyId = obj.extrema.refBody.id;
+                refBodyId = obj.extrema.frame.getOriginBody().id;
                 propNames = obj.extrema.lvdData.launchVehicle.tankTypes.getFirstThreeTypesCellArr();
 
                 celBodyData = obj.extrema.lvdData.celBodyData;
@@ -36,7 +36,7 @@ classdef LaunchVehicleExtremaState < matlab.mixin.SetGet & matlab.mixin.Copyable
                 if(ismember(taskStr,maTaskList))
                     [depVarValue, depVarUnit, ~] = ma_getDepVarValueUnit(1, maSubLog, taskStr, prevDistTraveled, refBodyId, [], [], propNames, [], celBodyData, false);
                 else
-                    [depVarValue, depVarUnit] = lvd_getDepVarValueUnit(1, stateLogEntry, taskStr, refBodyId, celBodyData, false, obj.calcObj.refBody.getBodyCenteredInertialFrame()); %Need to update frame input!
+                    [depVarValue, depVarUnit] = lvd_getDepVarValueUnit(1, stateLogEntry, taskStr, refBodyId, celBodyData, false, obj.extrema.frame);
                 end
                 
                 if(isempty(obj.value))

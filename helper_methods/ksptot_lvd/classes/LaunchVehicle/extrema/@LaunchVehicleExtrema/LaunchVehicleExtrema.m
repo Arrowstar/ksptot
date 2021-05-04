@@ -7,12 +7,14 @@ classdef LaunchVehicleExtrema < matlab.mixin.SetGet
         
         quantStr char 
         type(1,1) LaunchVehicleExtremaTypeEnum = LaunchVehicleExtremaTypeEnum.Maximum;
-        refBody KSPTOT_BodyInfo
         startingState(1,1) LaunchVehicleExtremaRecordingEnum = LaunchVehicleExtremaRecordingEnum.Recording;
-        
+        frame AbstractReferenceFrame
         unitStr char
         
         id(1,1) double = 0;
+        
+        %deprecated
+        refBody KSPTOT_BodyInfo
     end
     
     methods
@@ -23,7 +25,7 @@ classdef LaunchVehicleExtrema < matlab.mixin.SetGet
         end
         
         function nameStr = getNameStr(obj)
-            nameStr = sprintf('%s %s', obj.type.nameStr, obj.quantStr);
+            nameStr = sprintf('%s %s [%s]', obj.type.nameStr, obj.quantStr, obj.frame.getNameStr());
         end
         
         function initState = createInitialState(obj)
@@ -34,6 +36,18 @@ classdef LaunchVehicleExtrema < matlab.mixin.SetGet
         
         function tf = isInUse(obj)
             tf = obj.lvdData.usesExtremum(obj);
+        end
+    end
+    
+    methods(Static)
+        function obj = loadobj(obj)
+            if(isempty(obj.frame))
+                if(not(isempty(obj.refBody)))
+                    obj.frame = obj.refBody.getBodyCenteredInertialFrame();
+                else
+                    obj.frame = LvdData.getDefaultInitialBodyInfo(obj.lvdData.celBodyData).getBodyCenteredInertialFrame();
+                end
+            end
         end
     end
 end

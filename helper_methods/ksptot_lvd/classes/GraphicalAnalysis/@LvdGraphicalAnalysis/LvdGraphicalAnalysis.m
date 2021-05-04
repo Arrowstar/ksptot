@@ -71,5 +71,12 @@ classdef LvdGraphicalAnalysis < matlab.mixin.SetGet
             end
             close(hWaitBar);
         end
+        
+        function tf = usesGeometricRefFrame(obj, refFrame)
+            tf = false;
+            for(i=1:length(obj.tasks))
+                tf = tf || obj.tasks(i).usesGeometricRefFrame(refFrame);
+            end
+        end
     end
 end

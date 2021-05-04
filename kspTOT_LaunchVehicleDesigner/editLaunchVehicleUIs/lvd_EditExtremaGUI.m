@@ -22,7 +22,7 @@ function varargout = lvd_EditExtremaGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditExtremaGUI
 
-% Last Modified by GUIDE v2.5 14-Jan-2019 11:51:27
+% Last Modified by GUIDE v2.5 03-May-2021 19:39:25
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -87,13 +87,25 @@ function populateGUI(handles, extrema, lvdData)
     handles.typeCombo.String = LaunchVehicleExtremaTypeEnum.getNameStrs();
     handles.typeCombo.Value = LaunchVehicleExtremaTypeEnum.getIndOfListboxStrs(extrema.type);
     
-    populateBodiesCombo(lvdData.celBodyData, handles.refCelBodyCombo);
-    if(isempty(extrema.refBody))
-        value = 1;
-    else
-        value = findValueFromComboBox(extrema.refBody.name, handles.refCelBodyCombo);
+%     populateBodiesCombo(lvdData.celBodyData, handles.refFrameTypeCombo);
+%     if(isempty(extrema.refBody))
+%         value = 1;
+%     else
+%         value = findValueFromComboBox(extrema.refBody.name, handles.refFrameTypeCombo);
+%     end
+%     handles.refFrameTypeCombo.Value = value;
+
+    frame = extrema.frame;
+    if(isempty(frame))
+        frame = LvdData.getDefaultInitialBodyInfo(lvdData.celBodyData).getBodyCenteredInertialFrame();
+        extrema.frame = frame;
     end
-    handles.refCelBodyCombo.Value = value;
+    setappdata(handles.lvd_EditExtremaGUI,'frame',frame);
+    
+    handles.refFrameTypeCombo.String = ReferenceFrameEnum.getListBoxStr();
+    [ind, ~] = ReferenceFrameEnum.getIndForName(frame.typeEnum.name);
+    handles.refFrameTypeCombo.Value = ind;
+    handles.setFrameOptionsButton.TooltipString = sprintf('Current Frame: %s', frame.getNameStr());
     
     handles.startRecordingCombo.String = LaunchVehicleExtremaRecordingEnum.getNameStrs();
     handles.startRecordingCombo.Value = LaunchVehicleExtremaRecordingEnum.getIndOfListboxStrs(extrema.startingState);
@@ -120,9 +132,12 @@ function varargout = lvd_EditExtremaGUI_OutputFcn(hObject, eventdata, handles)
         mI = m(handles.typeCombo.Value);
         extremum.type = mI;
         
-        celBodyStrs = handles.refCelBodyCombo.String;
-        celBodyStr = celBodyStrs{handles.refCelBodyCombo.Value};
-        extremum.refBody = lvdData.celBodyData.(strtrim(lower(celBodyStr)));
+%         celBodyStrs = handles.refFrameTypeCombo.String;
+%         celBodyStr = celBodyStrs{handles.refFrameTypeCombo.Value};
+%         extremum.refBody = lvdData.celBodyData.(strtrim(lower(celBodyStr)));
+
+        frame = getappdata(handles.lvd_EditExtremaGUI,'frame');
+        extremum.frame = frame;
         
         m = enumeration('LaunchVehicleExtremaRecordingEnum');
         mI = m(handles.startRecordingCombo.Value);
@@ -238,19 +253,19 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes on selection change in refCelBodyCombo.
-function refCelBodyCombo_Callback(hObject, eventdata, handles)
-% hObject    handle to refCelBodyCombo (see GCBO)
+% --- Executes on selection change in refFrameTypeCombo.
+function refFrameTypeCombo_Callback(hObject, eventdata, handles)
+% hObject    handle to refFrameTypeCombo (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: contents = cellstr(get(hObject,'String')) returns refCelBodyCombo contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from refCelBodyCombo
-
+% Hints: contents = cellstr(get(hObject,'String')) returns refFrameTypeCombo contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from refFrameTypeCombo
+    updateFrameChange(handles);
 
 % --- Executes during object creation, after setting all properties.
-function refCelBodyCombo_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to refCelBodyCombo (see GCBO)
+function refFrameTypeCombo_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to refFrameTypeCombo (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -259,3 +274,99 @@ function refCelBodyCombo_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on button press in setFrameOptionsButton.
+function setFrameOptionsButton_Callback(hObject, eventdata, handles)
+% hObject    handle to setFrameOptionsButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    curFrame = getappdata(handles.lvd_EditExtremaGUI,'frame');
+    curFrame = curFrame.editFrameDialogUI(EditReferenceFrameContextEnum.ForState);
+    
+    setappdata(handles.lvd_EditExtremaGUI,'frame',curFrame);
+    
+    handles.setFrameOptionsButton.Tooltip = sprintf('Current Frame: %s', curFrame.getNameStr());
+
+
+function updateFrameChange(handles)
+    lvdData = getappdata(handles.lvd_EditExtremaGUI,'lvdData');
+    celBodyData = lvdData.celBodyData;
+
+    refEnumListBoxStr = ReferenceFrameEnum.getListBoxStr();
+    selFrameTypeInd = handles.refFrameTypeCombo.Value;
+    refFrameEnum = ReferenceFrameEnum.getEnumForListboxStr(refEnumListBoxStr{selFrameTypeInd});
+
+%             if(not(isempty(newFrame)) && newFrame.typeEnum ~= refFrameEnum)
+%                 refFrameEnum = newFrame.typeEnum;
+%                 app.refFrameTypeCombo.Value = ReferenceFrameEnum.getIndForName(refFrameEnum.name);
+%             end
+
+    switch refFrameEnum
+        case ReferenceFrameEnum.BodyCenteredInertial
+            bodyInfo = getSelectedBodyInfo(handles);            
+
+            newFrame = bodyInfo.getBodyCenteredInertialFrame();
+
+        case ReferenceFrameEnum.BodyFixedRotating
+            bodyInfo = getSelectedBodyInfo(handles);
+
+            newFrame = bodyInfo.getBodyFixedFrame();
+
+        case ReferenceFrameEnum.TwoBodyRotating            
+            bodyInfo = getSelectedBodyInfo(handles);
+            if(not(isempty(bodyInfo.childrenBodyInfo)))
+                primaryBody = bodyInfo;
+                secondaryBody = bodyInfo.childrenBodyInfo(1);
+            else
+                primaryBody = bodyInfo.getParBodyInfo();
+                secondaryBody = bodyInfo;
+            end
+
+            originPt = TwoBodyRotatingFrameOriginEnum.Primary;
+
+            newFrame = TwoBodyRotatingFrame(primaryBody, secondaryBody, originPt, celBodyData);
+
+        case ReferenceFrameEnum.UserDefined
+            numFrames = lvdData.geometry.refFrames.getNumRefFrames();
+            if(numFrames >= 1)
+                geometricFrame = AbstractGeometricRefFrame.empty(1,0);
+                for(i=1:numFrames)
+                    frame = lvdData.geometry.refFrames.getRefFrameAtInd(i);
+                    if(frame.isVehDependent() == false)
+                        geometricFrame = frame;
+                        break;
+                    end
+                end
+
+                if(not(isempty(geometricFrame)))
+                    newFrame = UserDefinedGeometricFrame(geometricFrame, lvdData);
+                else
+                    bodyInfo = getSelectedBodyInfo(handles);
+                    newFrame = bodyInfo.getBodyCenteredInertialFrame();
+
+                    warndlg('There are no geometric frames available which are not dependent on vehicle properties.  A body-centered inertial frame will be selected instead.');
+                end
+            else
+                bodyInfo = getSelectedBodyInfo(handles);
+                newFrame = bodyInfo.getBodyCenteredInertialFrame();
+
+                warndlg('There are no geometric frames available which are not dependent on vehicle properties.  A body-centered inertial frame will be selected instead.');
+            end
+
+        otherwise
+            error('Unknown reference frame type: %s', string(refFrameEnum));                
+    end
+
+    if(not(isempty(newFrame)) && newFrame.typeEnum ~= refFrameEnum)
+        refFrameEnum = newFrame.typeEnum;
+        handles.refFrameTypeCombo.Value = ReferenceFrameEnum.getIndForName(refFrameEnum.name);
+    end
+
+    setappdata(handles.lvd_EditExtremaGUI,'frame', newFrame);
+    handles.setFrameOptionsButton.TooltipString = sprintf('Current Frame: %s', newFrame.getNameStr());
+    
+function bodyInfo = getSelectedBodyInfo(handles)
+    curFrame = getappdata(handles.lvd_EditExtremaGUI,'frame');
+    bodyInfo = curFrame.getOriginBody();
+    
