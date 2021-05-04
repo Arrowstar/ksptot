@@ -34,16 +34,22 @@ classdef GroundObjRangeConstraint < AbstractConstraint
             type = obj.getConstraintType();
             stateLogEntry = stateLog.getLastStateLogForEvent(obj.event);
             
-            [value, ~] = lvd_GrdObjTasks(stateLogEntry, 'range', obj.groundObj);         
+            if(not(isempty(obj.frame)))
+                frame = obj.frame;
+            else
+                frame = stateLogEntry.centralBody.getBodyCenteredInertialFrame();
+            end
+            
+            [value, ~] = lvd_GrdObjTasks(stateLogEntry, 'range', obj.groundObj, frame);         
             
             if(obj.evalType == ConstraintEvalTypeEnum.StateComparison)
-                stateLogEntryStateComp = stateLog.getLastStateLogForEvent(obj.stateCompEvent).deepCopy();
+                stateLogEntryStateComp = stateLog.getLastStateLogForEvent(obj.stateCompEvent); %.deepCopy()
                 
-                cartElem = stateLogEntryStateComp.getCartesianElementSetRepresentation();
-                cartElem = cartElem.convertToFrame(stateLogEntry.centralBody.getBodyCenteredInertialFrame());
-                stateLogEntryStateComp.setCartesianElementSet(cartElem);
+%                 cartElem = stateLogEntryStateComp.getCartesianElementSetRepresentation();
+%                 cartElem = cartElem.convertToFrame(stateLogEntry.centralBody.getBodyCenteredInertialFrame());
+%                 stateLogEntryStateComp.setCartesianElementSet(cartElem);
 
-                [valueStateComp, ~] = lvd_GrdObjTasks(stateLogEntryStateComp, 'range', obj.groundObj); 
+                [valueStateComp, ~] = lvd_GrdObjTasks(stateLogEntryStateComp, 'range', obj.groundObj, frame); 
             else
                 valueStateComp = NaN;
             end

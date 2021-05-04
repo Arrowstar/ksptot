@@ -1444,7 +1444,10 @@ function graphicalAnalysisMenu_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
     lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
 %     lvd_GraphicalAnalysisGUI(lvdData, handles.ma_LvdMainGUI);
+    
+    hFig = msgbox('Starting Graphical Analysis, please wait...', 'Graphical Analysis', 'help');
     lvd_GraphicalAnalysisGUI_App(lvdData, handles.ma_LvdMainGUI);
+    close(hFig);
 
 
 % --------------------------------------------------------------------

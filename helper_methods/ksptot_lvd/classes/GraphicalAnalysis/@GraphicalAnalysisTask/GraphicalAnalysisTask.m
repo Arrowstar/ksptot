@@ -47,9 +47,8 @@ classdef GraphicalAnalysisTask < matlab.mixin.SetGet
         function [depVarValue, depVarUnit, prevDistTraveled] = executeTask(obj, lvdStateLogEntry, maTaskList, prevDistTraveled, otherSCId, stationID, propNames, celBodyData)                        
             refBodyId = obj.frame.getOriginBody().id;
             
-            maStateLogEntry = lvdStateLogEntry.getMAFormattedStateLogMatrix(true);
-            
             if(ismember(obj.taskStr,maTaskList))
+                maStateLogEntry = lvdStateLogEntry.getMAFormattedStateLogMatrix(true);
                 [depVarValue, depVarUnit, prevDistTraveled] = ma_getDepVarValueUnit(1, maStateLogEntry, obj.taskStr, prevDistTraveled, refBodyId, otherSCId, stationID, propNames, [], celBodyData, false);
                 
             else

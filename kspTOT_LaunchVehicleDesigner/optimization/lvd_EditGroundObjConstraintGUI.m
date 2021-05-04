@@ -22,7 +22,7 @@ function varargout = lvd_EditGroundObjConstraintGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditGroundObjConstraintGUI
 
-% Last Modified by GUIDE v2.5 26-Apr-2021 14:05:52
+% Last Modified by GUIDE v2.5 04-May-2021 14:54:05
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -107,6 +107,20 @@ function populateGUI(handles, constraint, lvdData)
     end
     handles.groundObjCombo.Value = grdObjInd;
     
+    frame = constraint.frame;
+    if(isempty(frame))
+        frame = LvdData.getDefaultInitialBodyInfo(lvdData.celBodyData).getBodyCenteredInertialFrame();
+        constraint.frame = frame;
+    end
+    setappdata(handles.lvd_EditGroundObjConstraintGUI,'frame',frame);
+    
+    handles.refFrameTypeCombo.String = ReferenceFrameEnum.getListBoxStr();
+    [ind, ~] = ReferenceFrameEnum.getIndForName(frame.typeEnum.name);
+    handles.refFrameTypeCombo.Value = ind;
+    handles.setFrameOptionsButton.TooltipString = sprintf('Current Frame: %s', frame.getNameStr());
+    handles.refFrameNameLabel.String = sprintf('%s', frame.getNameStr());
+    handles.refFrameNameLabel.TooltipString = sprintf('%s', frame.getNameStr());    
+    
     handles.constraintEvalTypeCombo.String = ConstraintEvalTypeEnum.getListBoxStr();
     handles.constraintEvalTypeCombo.Value = ConstraintEvalTypeEnum.getIndForName(constraint.evalType.name);
     constraintEvalTypeCombo_Callback(handles.constraintEvalTypeCombo, [], handles);
@@ -144,6 +158,9 @@ function varargout = lvd_EditGroundObjConstraintGUI_OutputFcn(hObject, eventdata
         constraint.setScaleFactor(str2double(handles.scaleFactorText.String));
         
         constraint.groundObj = lvdData.groundObjs.getGroundObjAtInd(handles.groundObjCombo.Value);
+        
+        frame = getappdata(hObject,'frame');
+        constraint.frame = frame;
         
         [~, enums] = ConstraintEvalTypeEnum.getListBoxStr();
         constraint.evalType = enums(handles.constraintEvalTypeCombo.Value);
@@ -486,3 +503,124 @@ function comparisonTypeCombo_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on selection change in refFrameTypeCombo.
+function refFrameTypeCombo_Callback(hObject, eventdata, handles)
+% hObject    handle to refFrameTypeCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns refFrameTypeCombo contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from refFrameTypeCombo
+    updateFrameChange(handles);
+
+% --- Executes during object creation, after setting all properties.
+function refFrameTypeCombo_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to refFrameTypeCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in setFrameOptionsButton.
+function setFrameOptionsButton_Callback(hObject, eventdata, handles)
+% hObject    handle to setFrameOptionsButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    curFrame = getappdata(handles.lvd_EditGroundObjConstraintGUI,'frame');
+    curFrame = curFrame.editFrameDialogUI(EditReferenceFrameContextEnum.ForState);
+    
+    setappdata(handles.lvd_EditGroundObjConstraintGUI,'frame',curFrame);
+    
+    handles.setFrameOptionsButton.Tooltip = sprintf('Current Frame: %s', curFrame.getNameStr());
+    handles.refFrameNameLabel.String = sprintf('%s', curFrame.getNameStr());
+    handles.refFrameNameLabel.TooltipString = sprintf('%s', curFrame.getNameStr());
+
+function updateFrameChange(handles)
+    lvdData = getappdata(handles.lvd_EditGroundObjConstraintGUI,'lvdData');
+    celBodyData = lvdData.celBodyData;
+
+    refEnumListBoxStr = ReferenceFrameEnum.getListBoxStr();
+    selFrameTypeInd = handles.refFrameTypeCombo.Value;
+    refFrameEnum = ReferenceFrameEnum.getEnumForListboxStr(refEnumListBoxStr{selFrameTypeInd});
+
+%             if(not(isempty(newFrame)) && newFrame.typeEnum ~= refFrameEnum)
+%                 refFrameEnum = newFrame.typeEnum;
+%                 app.refFrameTypeCombo.Value = ReferenceFrameEnum.getIndForName(refFrameEnum.name);
+%             end
+
+    switch refFrameEnum
+        case ReferenceFrameEnum.BodyCenteredInertial
+            bodyInfo = getSelectedBodyInfo(handles);            
+
+            newFrame = bodyInfo.getBodyCenteredInertialFrame();
+
+        case ReferenceFrameEnum.BodyFixedRotating
+            bodyInfo = getSelectedBodyInfo(handles);
+
+            newFrame = bodyInfo.getBodyFixedFrame();
+
+        case ReferenceFrameEnum.TwoBodyRotating            
+            bodyInfo = getSelectedBodyInfo(handles);
+            if(not(isempty(bodyInfo.childrenBodyInfo)))
+                primaryBody = bodyInfo;
+                secondaryBody = bodyInfo.childrenBodyInfo(1);
+            else
+                primaryBody = bodyInfo.getParBodyInfo();
+                secondaryBody = bodyInfo;
+            end
+
+            originPt = TwoBodyRotatingFrameOriginEnum.Primary;
+
+            newFrame = TwoBodyRotatingFrame(primaryBody, secondaryBody, originPt, celBodyData);
+
+        case ReferenceFrameEnum.UserDefined
+            numFrames = lvdData.geometry.refFrames.getNumRefFrames();
+            if(numFrames >= 1)
+                geometricFrame = AbstractGeometricRefFrame.empty(1,0);
+                for(i=1:numFrames)
+                    frame = lvdData.geometry.refFrames.getRefFrameAtInd(i);
+                    if(frame.isVehDependent() == false)
+                        geometricFrame = frame;
+                        break;
+                    end
+                end
+
+                if(not(isempty(geometricFrame)))
+                    newFrame = UserDefinedGeometricFrame(geometricFrame, lvdData);
+                else
+                    bodyInfo = getSelectedBodyInfo(handles);
+                    newFrame = bodyInfo.getBodyCenteredInertialFrame();
+
+                    warndlg('There are no geometric frames available which are not dependent on vehicle properties.  A body-centered inertial frame will be selected instead.');
+                end
+            else
+                bodyInfo = getSelectedBodyInfo(handles);
+                newFrame = bodyInfo.getBodyCenteredInertialFrame();
+
+                warndlg('There are no geometric frames available which are not dependent on vehicle properties.  A body-centered inertial frame will be selected instead.');
+            end
+
+        otherwise
+            error('Unknown reference frame type: %s', string(refFrameEnum));                
+    end
+
+    if(not(isempty(newFrame)) && newFrame.typeEnum ~= refFrameEnum)
+        refFrameEnum = newFrame.typeEnum;
+        handles.refFrameTypeCombo.Value = ReferenceFrameEnum.getIndForName(refFrameEnum.name);
+    end
+
+    setappdata(handles.lvd_EditGroundObjConstraintGUI,'frame', newFrame);
+    handles.setFrameOptionsButton.TooltipString = sprintf('Current Frame: %s', newFrame.getNameStr());
+    handles.refFrameNameLabel.String = sprintf('%s', newFrame.getNameStr());
+    handles.refFrameNameLabel.TooltipString = sprintf('%s', newFrame.getNameStr());
+    
+function bodyInfo = getSelectedBodyInfo(handles)
+    curFrame = getappdata(handles.lvd_EditGroundObjConstraintGUI,'frame');
+    bodyInfo = curFrame.getOriginBody();

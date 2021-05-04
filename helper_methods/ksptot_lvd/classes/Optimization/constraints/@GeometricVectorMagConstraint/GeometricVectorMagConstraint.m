@@ -34,16 +34,22 @@ classdef GeometricVectorMagConstraint < AbstractConstraint
             type = obj.getConstraintType();
             stateLogEntry = stateLog.getLastStateLogForEvent(obj.event);
 
-            value = lvd_GeometricVectorTasks(stateLogEntry, 'VectMag', obj.vector);
+            if(not(isempty(obj.frame)))
+                frame = obj.frame;
+            else
+                frame = stateLogEntry.centralBody.getBodyCenteredInertialFrame();
+            end
+            
+            value = lvd_GeometricVectorTasks(stateLogEntry, 'VectMag', obj.vector, frame);
             
             if(obj.evalType == ConstraintEvalTypeEnum.StateComparison)
-                stateLogEntryStateComp = stateLog.getLastStateLogForEvent(obj.stateCompEvent).deepCopy();
+                stateLogEntryStateComp = stateLog.getLastStateLogForEvent(obj.stateCompEvent); %.deepCopy()
                 
-                cartElem = stateLogEntryStateComp.getCartesianElementSetRepresentation();
-                cartElem = cartElem.convertToFrame(stateLogEntry.centralBody.getBodyCenteredInertialFrame());
-                stateLogEntryStateComp.setCartesianElementSet(cartElem);
+%                 cartElem = stateLogEntryStateComp.getCartesianElementSetRepresentation();
+%                 cartElem = cartElem.convertToFrame(stateLogEntry.centralBody.getBodyCenteredInertialFrame());
+%                 stateLogEntryStateComp.setCartesianElementSet(cartElem);
 
-                valueStateComp = lvd_GeometricVectorTasks(stateLogEntryStateComp, 'VectMag', obj.vector);
+                valueStateComp = lvd_GeometricVectorTasks(stateLogEntryStateComp, 'VectMag', obj.vector, frame);
             else
                 valueStateComp = NaN;
             end

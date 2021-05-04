@@ -35,19 +35,25 @@ classdef GeometricAngleMagConstraint < AbstractConstraint
             type = obj.getConstraintType();
             stateLogEntry = stateLog.getLastStateLogForEvent(obj.event);
 
-            value = lvd_GeometricAngleTasks(stateLogEntry, 'Mag', obj.angle);
+            if(not(isempty(obj.frame)))
+                frame = obj.frame;
+            else
+                frame = stateLogEntry.centralBody.getBodyCenteredInertialFrame();
+            end
+            
+            value = lvd_GeometricAngleTasks(stateLogEntry, 'Mag', obj.angle, frame);
             if(obj.useAbsValue)
                 value = abs(value);
             end
             
             if(obj.evalType == ConstraintEvalTypeEnum.StateComparison)
-                stateLogEntryStateComp = stateLog.getLastStateLogForEvent(obj.stateCompEvent).deepCopy();
+                stateLogEntryStateComp = stateLog.getLastStateLogForEvent(obj.stateCompEvent); %.deepCopy()
                 
-                cartElem = stateLogEntryStateComp.getCartesianElementSetRepresentation();
-                cartElem = cartElem.convertToFrame(stateLogEntry.centralBody.getBodyCenteredInertialFrame());
-                stateLogEntryStateComp.setCartesianElementSet(cartElem);
+%                 cartElem = stateLogEntryStateComp.getCartesianElementSetRepresentation();
+%                 cartElem = cartElem.convertToFrame(stateLogEntry.centralBody.getBodyCenteredInertialFrame());
+%                 stateLogEntryStateComp.setCartesianElementSet(cartElem);
 
-                valueStateComp = lvd_GeometricAngleTasks(stateLogEntryStateComp, 'Mag', obj.angle);
+                valueStateComp = lvd_GeometricAngleTasks(stateLogEntryStateComp, 'Mag', obj.angle, frame);
                 if(obj.useAbsValue)
                     valueStateComp = abs(valueStateComp);
                 end

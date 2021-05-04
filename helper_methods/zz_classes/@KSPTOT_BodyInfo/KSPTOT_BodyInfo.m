@@ -119,7 +119,7 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
         
         function parentBodyInfo = getParBodyInfo(obj, celBodyData)
             if(obj.parentBodyInfoNeedsUpdate || (obj.parentid > 0 && isempty(obj.parentBodyInfo)))
-                pBodyInfo = getParentBodyInfo(obj, celBodyData);
+                pBodyInfo = getParentBodyInfo(obj, obj.celBodyData);
                 
                 if(not(isempty(pBodyInfo)))
                     obj.parentBodyInfo = pBodyInfo;

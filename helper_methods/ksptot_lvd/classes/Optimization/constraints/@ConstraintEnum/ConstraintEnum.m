@@ -4,15 +4,17 @@ classdef ConstraintEnum < matlab.mixin.SetGet
     
     enumeration
         UniversalTime('Universal Time','GenericMAConstraint','Universal Time')
-        BodyCentricPositionX('Body-centric Position (X)','GenericMAConstraint','Body-centric Position (X)')
-        BodyCentricPositionY('Body-centric Position (Y)','GenericMAConstraint','Body-centric Position (Y)')
-        BodyCentricPositionZ('Body-centric Position (Z)','GenericMAConstraint','Body-centric Position (Z)')
-        BodyCentricVelocityX('Body-centric Velocity (X)','GenericMAConstraint','Body-centric Velocity (X)')
-        BodyCentricVelocityY('Body-centric Velocity (Y)','GenericMAConstraint','Body-centric Velocity (Y)')
-        BodyCentricVelocityZ('Body-centric Velocity (Z)','GenericMAConstraint','Body-centric Velocity (Z)')
-        SunCentricPositionX('Sun-centric Position (X)','GenericMAConstraint','Sun-centric Position (X)')
-        SunCentricPositionY('Sun-centric Position (Y)','GenericMAConstraint','Sun-centric Position (Y)')
-        SunCentricpositionZ('Sun-centric Position (Z)','GenericMAConstraint','Sun-centric Position (Z)')
+
+        PosX('Position Vector (X)','GenericMAConstraint','Position Vector (X)')
+        PosY('Position Vector (Y)','GenericMAConstraint','Position Vector (Y)')
+        PosZ('Position Vector (Z)','GenericMAConstraint','Position Vector (Z)')
+        VelX('Velocity Vector (X)','GenericMAConstraint','Velocity Vector (X)')
+        VelY('Velocity Vector (Y)','GenericMAConstraint','Velocity Vector (Y)')
+        VelZ('Velocity Vector (Z)','GenericMAConstraint','Velocity Vector (Z)')
+        
+        PosVectMag('Position Vector Magnitude','GenericMAConstraint','Position Vector Magnitude')
+        VelVectMag('Velocity Vector Magnitude','GenericMAConstraint','Velocity Vector Magnitude')
+        
         SMA('Semi-major Axis','GenericMAConstraint','Semi-major Axis')
         Ecc('Eccentricity','GenericMAConstraint','Eccentricity')
         Inc('Inclination','GenericMAConstraint','Inclination')
@@ -21,37 +23,40 @@ classdef ConstraintEnum < matlab.mixin.SetGet
         TrueAnom('True Anomaly','GenericMAConstraint','True Anomaly')
         MeanAnom('Mean Anomaly','GenericMAConstraint','Mean Anomaly')
         OrbitPeriod('Orbital Period','GenericMAConstraint','Orbital Period')
+        
         RadiusPeriapsis('Radius of Periapsis','GenericMAConstraint','Radius of Periapsis')
         RadiusApoapsis('Radius of Apoapsis','GenericMAConstraint','Radius of Apoapsis')
-        RadiusSpacecraft('Radius of Spacecraft','GenericMAConstraint','Radius of Spacecraft')
         AltitudeApoapsis('Altitude of Apoapsis','GenericMAConstraint','Altitude of Apoapsis')
         AltitudePeriapsis('Altitude of Periapsis','GenericMAConstraint','Altitude of Periapsis')
-        SpeedOfSpacecraft('Speed of Spacecraft','GenericMAConstraint','Speed of Spacecraft')
-        FlightPathAngle('Flight Path Angle','GenericMAConstraint','Flight Path Angle');
-        Longitude('Longitude (East)','GenericMAConstraint','Longitude (East)')
-        Latitude('Latitude (North)','GenericMAConstraint','Latitude (North)')
-        LongitudeDriftRate('Longitudinal Drift Rate','GenericMAConstraint','Longitudinal Drift Rate')
-        Altitude('Altitude','GenericMAConstraint','Altitude')
-        SurfaceVelocity('Surface Velocity','GenericMAConstraint','Surface Velocity')
-        VerticalVel('Vertical Velocity','GenericMAConstraint','Vertical Velocity')
-        SolarBetaAngle('Solar Beta Angle','GenericMAConstraint','Solar Beta Angle')
-        DistToRefCelBody('Distance to Ref. Celestial Body','GenericMAConstraint','Distance to Ref. Celestial Body')
+        
         H1('Equinoctial H1','GenericMAConstraint','Equinoctial H1')
         K1('Equinoctial K1','GenericMAConstraint','Equinoctial K1')
         H2('Equinoctial H2','GenericMAConstraint','Equinoctial H2')
         K2('Equinoctial K2','GenericMAConstraint','Equinoctial K2')
-        CentralBodyId('Central Body ID','GenericMAConstraint','Central Body ID')
-        FuelOxMass('Liquid Fuel/Ox Mass','GenericMAConstraint','Liquid Fuel/Ox Mass')
-        MonopropMass('Monopropellant Mass','GenericMAConstraint','Monopropellant Mass')
-        XenonMass('Xenon Mass','GenericMAConstraint','Xenon Mass')
-        TotalScMass('Total Spacecraft Mass','GenericMAConstraint','Total Spacecraft Mass')
+        
+        FlightPathAngle('Flight Path Angle','GenericMAConstraint','Flight Path Angle');
+        Longitude('Longitude (East)','GenericMAConstraint','Longitude (East)')
+        Latitude('Latitude (North)','GenericMAConstraint','Latitude (North)')
+        Altitude('Altitude','GenericMAConstraint','Altitude')
+        VelAz('Velocity Azimuth','GenericMAConstraint','Velocity Azimuth')
+        VelEl('Velocity Elevation','GenericMAConstraint','Velocity Elevation')
+        LongitudeDriftRate('Longitudinal Drift Rate','GenericMAConstraint','Longitudinal Drift Rate')
+        
+        C3Energy('C3 Energy','GenericMAConstraint','C3 Energy');
+        SecPastPeri('Seconds Past Periapsis','GenericMAConstraint','Seconds Past Periapsis');
+        
+        SurfaceVelocity('Surface Velocity','GenericMAConstraint','Surface Velocity')
+        VerticalVel('Vertical Velocity','GenericMAConstraint','Vertical Velocity')
+        
         HyperVelUnitX('Hyperbolic Velocity Unit Vector X','GenericMAConstraint','Hyperbolic Velocity Unit Vector X')
         HyperVelUnitY('Hyperbolic Velocity Unit Vector Y','GenericMAConstraint','Hyperbolic Velocity Unit Vector Y')
         HyperVelUnitZ('Hyperbolic Velocity Unit Vector Z','GenericMAConstraint','Hyperbolic Velocity Unit Vector Z')
         HyperVelRA('Hyperbolic Velocity Vector Right Ascension','GenericMAConstraint','Hyperbolic Velocity Vector Right Ascension')
         HyperVelDec('Hyperbolic Velocity Vector Declination','GenericMAConstraint','Hyperbolic Velocity Vector Declination')
         HyperVelMag('Hyperbolic Velocity Magnitude','GenericMAConstraint','Hyperbolic Velocity Magnitude')
-        C3Energy('C3 Energy','GenericMAConstraint','C3 Energy');
+        
+        SolarBetaAngle('Solar Beta Angle','GenericMAConstraint','Solar Beta Angle')
+        TotalScMass('Total Spacecraft Mass','GenericMAConstraint','Total Spacecraft Mass')        
         
         PitchAngle('Pitch Angle','PitchAngleConstraint',[]);
         RollAngle('Roll Angle','RollAngleConstraint',[]);
@@ -95,6 +100,28 @@ classdef ConstraintEnum < matlab.mixin.SetGet
         
         GeoVectorMagntide('Geometric Vector Magnitude', 'GeometricVectorMagConstraint', []);
         GeoAngleMagnitude('Geometric Angle Magnitude', 'GeometricAngleMagConstraint', []);
+    end
+    
+    enumeration(Hidden)
+        BodyCentricPositionX('Body-centric Position (X)','GenericMAConstraint','Body-centric Position (X)')
+        BodyCentricPositionY('Body-centric Position (Y)','GenericMAConstraint','Body-centric Position (Y)')
+        BodyCentricPositionZ('Body-centric Position (Z)','GenericMAConstraint','Body-centric Position (Z)')
+        BodyCentricVelocityX('Body-centric Velocity (X)','GenericMAConstraint','Body-centric Velocity (X)')
+        BodyCentricVelocityY('Body-centric Velocity (Y)','GenericMAConstraint','Body-centric Velocity (Y)')
+        BodyCentricVelocityZ('Body-centric Velocity (Z)','GenericMAConstraint','Body-centric Velocity (Z)')
+        SunCentricPositionX('Sun-centric Position (X)','GenericMAConstraint','Sun-centric Position (X)')
+        SunCentricPositionY('Sun-centric Position (Y)','GenericMAConstraint','Sun-centric Position (Y)')
+        SunCentricpositionZ('Sun-centric Position (Z)','GenericMAConstraint','Sun-centric Position (Z)')
+        
+        RadiusSpacecraft('Radius of Spacecraft','GenericMAConstraint','Radius of Spacecraft')
+        SpeedOfSpacecraft('Speed of Spacecraft','GenericMAConstraint','Speed of Spacecraft')
+        
+        DistToRefCelBody('Distance to Ref. Celestial Body','GenericMAConstraint','Distance to Ref. Celestial Body')
+        
+        CentralBodyId('Central Body ID','GenericMAConstraint','Central Body ID')
+        FuelOxMass('Liquid Fuel/Ox Mass','GenericMAConstraint','Liquid Fuel/Ox Mass')
+        MonopropMass('Monopropellant Mass','GenericMAConstraint','Monopropellant Mass')
+        XenonMass('Xenon Mass','GenericMAConstraint','Xenon Mass')        
     end
     
     properties

@@ -898,6 +898,150 @@ function [unit, lbLim, ubLim, lbVal, ubVal, body, othersc, usesLbUb, usesCelBody
             usesCelBody = true;
             usesRefSc = false;
             
+        %Start new LVD Constraints
+        case 'Position Vector (X)'
+            unit = 'km';
+            lbLim = -Inf;
+            ubLim = Inf;
+            lbVal = 0;
+            ubVal = 0;
+            body = -1;
+            othersc = -1;
+            
+            usesLbUb = true;
+            usesCelBody = false;
+            usesRefSc = false;
+            
+        case 'Position Vector (Y)'
+            unit = 'km';
+            lbLim = -Inf;
+            ubLim = Inf;
+            lbVal = 0;
+            ubVal = 0;
+            body = -1;
+            othersc = -1;
+            
+            usesLbUb = true;
+            usesCelBody = false;
+            usesRefSc = false;
+            
+        case 'Position Vector (Z)'
+            unit = 'km';
+            lbLim = -Inf;
+            ubLim = Inf;
+            lbVal = 0;
+            ubVal = 0;
+            body = -1;
+            othersc = -1;
+            
+            usesLbUb = true;
+            usesCelBody = false;
+            usesRefSc = false;
+            
+        case 'Velocity Vector (X)'
+            unit = 'km/s';
+            lbLim = -Inf;
+            ubLim = Inf;
+            lbVal = 0;
+            ubVal = 0;
+            body = -1;
+            othersc = -1;
+            
+            usesLbUb = true;
+            usesCelBody = false;
+            usesRefSc = false;
+            
+        case 'Velocity Vector (Y)'
+            unit = 'km/s';
+            lbLim = -Inf;
+            ubLim = Inf;
+            lbVal = 0;
+            ubVal = 0;
+            body = -1;
+            othersc = -1;
+            
+            usesLbUb = true;
+            usesCelBody = false;
+            usesRefSc = false;
+            
+        case 'Velocity Vector (Z)'
+            unit = 'km/s';
+            lbLim = -Inf;
+            ubLim = Inf;
+            lbVal = 0;
+            ubVal = 0;
+            body = -1;
+            othersc = -1;
+            
+            usesLbUb = true;
+            usesCelBody = false;
+            usesRefSc = false;
+            
+        case 'Position Vector Magnitude'
+            unit = 'km';
+            lbLim = -Inf;
+            ubLim = Inf;
+            lbVal = 0;
+            ubVal = 0;
+            body = -1;
+            othersc = -1;
+            
+            usesLbUb = true;
+            usesCelBody = false;
+            usesRefSc = false;
+            
+        case 'Velocity Vector Magnitude'
+            unit = 'km/s';
+            lbLim = -Inf;
+            ubLim = Inf;
+            lbVal = 0;
+            ubVal = 0;
+            body = -1;
+            othersc = -1;
+            
+            usesLbUb = true;
+            usesCelBody = false;
+            usesRefSc = false;
+            
+        case 'Velocity Azimuth'
+            unit = 'deg';
+            lbLim = -360;
+            ubLim = 360;
+            lbVal = 0;
+            ubVal = 0;
+            body = -1;
+            othersc = -1;
+            
+            usesLbUb = true;
+            usesCelBody = false;
+            usesRefSc = false;
+            
+        case 'Velocity Elevation'
+            unit = 'deg';
+            lbLim = -90;
+            ubLim = 90;
+            lbVal = 0;
+            ubVal = 0;
+            body = -1;
+            othersc = -1;
+            
+            usesLbUb = true;
+            usesCelBody = false;
+            usesRefSc = false;
+            
+        case 'Seconds Past Periapsis'
+            unit = 'sec';
+            lbLim = -Inf;
+            ubLim = Inf;
+            lbVal = 0;
+            ubVal = 0;
+            body = -1;
+            othersc = -1;
+            
+            usesLbUb = true;
+            usesCelBody = false;
+            usesRefSc = false;
+            
         otherwise
             error(['Unrecongized Constraint Type: ', type]);
 	end

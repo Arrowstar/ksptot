@@ -33,40 +33,54 @@ classdef GenericMAConstraint < AbstractConstraint
             ub = obj.ub;
         end
         
-        function [c, ceq, value, lwrBnd, uprBnd, type, eventNum, valueStateComp] = evalConstraint(obj, stateLog, celBodyData)           
+        function [c, ceq, value, lwrBnd, uprBnd, type, eventNum, valueStateComp] = evalConstraint(obj, stateLog, celBodyData)   
+            maTaskList = ma_getGraphAnalysisTaskList(getLvdGAExcludeList());
+            
             stateLogEntry = stateLog.getLastStateLogForEvent(obj.event);
-            stateLogEntryMA = stateLogEntry.getMAFormattedStateLogMatrix(true);
             type = obj.constraintType;
+            
+            if(not(isempty(obj.frame)))
+                frame = obj.frame;
+            else
+                frame = stateLogEntry.centralBody.getBodyCenteredInertialFrame();
+            end
             
             if(not(isempty(obj.refBodyInfo)))
                 refBodyId = obj.refBodyInfo.id;
             else
                 refBodyId = [];
             end
-            
-            oscId = -1;
-            if(not(isempty(obj.refOtherSC)))
-                oscId = obj.refOtherSC.id;
+                                   
+            if(ismember(type,maTaskList))
+                oscId = -1;
+                if(not(isempty(obj.refOtherSC)))
+                    oscId = obj.refOtherSC.id;
+                end
+
+                stnId = -1;
+                if(not(isempty(obj.refStation)))
+                    stnId = obj.refStation.id;
+                end
+                
+                maData.spacecraft = struct();
+                propNames = obj.event.lvdData.launchVehicle.tankTypes.getFirstThreeTypesCellArr();
+                
+                stateLogEntryMA = stateLogEntry.getMAFormattedStateLogMatrix(true);
+                value = ma_getDepVarValueUnit(1, stateLogEntryMA, type, 0, refBodyId, oscId, stnId, propNames, maData, celBodyData, false);
+                
+            else
+                [value, ~] = lvd_getDepVarValueUnit(1, stateLogEntry, type, refBodyId, celBodyData, false, frame); %need to update!
             end
-            
-            stnId = -1;
-            if(not(isempty(obj.refStation)))
-                stnId = obj.refStation.id;
-            end
-            
-            maData.spacecraft = struct();
-            propNames = obj.event.lvdData.launchVehicle.tankTypes.getFirstThreeTypesCellArr();
-            value = ma_getDepVarValueUnit(1, stateLogEntryMA, type, 0, refBodyId, oscId, stnId, propNames, maData, celBodyData, false);
                     
             if(obj.evalType == ConstraintEvalTypeEnum.StateComparison)
                 stateLogEntryStateComp = stateLog.getLastStateLogForEvent(obj.stateCompEvent).deepCopy();
-                stateLogEntryStateCompMA = stateLogEntryStateComp.getMAFormattedStateLogMatrix(true);
-                
-                cartElem = stateLogEntryStateComp.getCartesianElementSetRepresentation();
-                cartElem = cartElem.convertToFrame(stateLogEntry.centralBody.getBodyCenteredInertialFrame());
+                cartElem = stateLogEntryStateComp.getCartesianElementSetRepresentation().convertToFrame(frame);
                 stateLogEntryStateComp.setCartesianElementSet(cartElem);
                 
-                valueStateComp = ma_getDepVarValueUnit(1, stateLogEntryStateCompMA, type, 0, refBodyId, oscId, stnId, propNames, maData, celBodyData, false);
+%                 stateLogEntryStateCompMA = stateLogEntryStateComp.getMAFormattedStateLogMatrix(true);
+%                 valueStateComp = ma_getDepVarValueUnit(1, stateLogEntryStateCompMA, type, 0, refBodyId, oscId, stnId, propNames, maData, celBodyData, false);
+
+                valueStateComp = obj.getValueForConstraint(stateLogEntryStateComp, type, maTaskList, refBodyId, celBodyData, frame);
             else
                 valueStateComp = NaN;
             end
@@ -140,6 +154,29 @@ classdef GenericMAConstraint < AbstractConstraint
         
         function addConstraintTf = openEditConstraintUI(obj, lvdData)
             addConstraintTf = lvd_EditGenericMAConstraintGUI(obj, lvdData);
+        end
+        
+        function value = getValueForConstraint(obj, stateLogEntry, type, maTaskList, refBodyId, celBodyData, frame)
+            if(ismember(type,maTaskList))
+                oscId = -1;
+                if(not(isempty(obj.refOtherSC)))
+                    oscId = obj.refOtherSC.id;
+                end
+
+                stnId = -1;
+                if(not(isempty(obj.refStation)))
+                    stnId = obj.refStation.id;
+                end
+                
+                maData.spacecraft = struct();
+                propNames = obj.event.lvdData.launchVehicle.tankTypes.getFirstThreeTypesCellArr();
+                
+                stateLogEntryMA = stateLogEntry.getMAFormattedStateLogMatrix(true);
+                value = ma_getDepVarValueUnit(1, stateLogEntryMA, type, 0, refBodyId, oscId, stnId, propNames, maData, celBodyData, false);
+                
+            else
+                [value, ~] = lvd_getDepVarValueUnit(1, stateLogEntry, type, refBodyId, celBodyData, false, frame); %need to update!
+            end
         end
     end
     

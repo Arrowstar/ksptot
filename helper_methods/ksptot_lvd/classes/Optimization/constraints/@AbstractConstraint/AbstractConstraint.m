@@ -5,11 +5,14 @@ classdef(Abstract) AbstractConstraint < matlab.mixin.SetGet & matlab.mixin.Heter
     properties
         refStation struct
         refOtherSC struct
-        refBodyInfo KSPTOT_BodyInfo
+        frame AbstractReferenceFrame
         
         active(1,1) logical = true
         
         id(1,1) double = 0;
+        
+        %deprecated
+        refBodyInfo KSPTOT_BodyInfo
     end
     
     methods
@@ -82,9 +85,15 @@ classdef(Abstract) AbstractConstraint < matlab.mixin.SetGet & matlab.mixin.Heter
             [lb, ub] = obj.getBounds();
             sF = obj.getScaleFactor();
             
+            if(not(isempty(obj.frame)))
+                frameStr = sprintf('\n\tFrame: %s', obj.frame.getNameStr());
+            else
+                frameStr = '';
+            end
+            
             if(obj.evalType == ConstraintEvalTypeEnum.FixedBounds)
-                str = sprintf('%s\n\tBounds: [%0.3g, %0.3g]\n\tScale factor: %0.3g', ...
-                              type, lb, ub, sF);
+                str = sprintf('%s\n\tBounds: [%0.3g, %0.3g]\n\tScale factor: %0.3g%s', ...
+                              type, lb, ub, sF, frameStr);
                           
             elseif(obj.evalType == ConstraintEvalTypeEnum.StateComparison)
                 symbol = obj.stateCompType.symbol;
@@ -150,9 +159,15 @@ classdef(Abstract) AbstractConstraint < matlab.mixin.SetGet & matlab.mixin.Heter
     methods(Static)
         constraint = getDefaultConstraint(input1) 
         
-        function s = loadobj(s)
-            if(s.id == 0)
-                s.id = rand();
+        function obj = loadobj(obj)
+            if(obj.id == 0)
+                obj.id = rand();
+            end
+
+            if(isempty(obj.frame))
+                if(not(isempty(obj.refBody)))
+                    obj.frame = obj.refBody.getBodyCenteredInertialFrame();
+                end
             end
         end
     end

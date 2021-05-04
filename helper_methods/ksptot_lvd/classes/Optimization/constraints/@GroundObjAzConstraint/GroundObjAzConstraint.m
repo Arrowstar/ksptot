@@ -34,16 +34,22 @@ classdef GroundObjAzConstraint < AbstractConstraint
             type = obj.getConstraintType();
             stateLogEntry = stateLog.getLastStateLogForEvent(obj.event);
             
-            [value, ~] = lvd_GrdObjTasks(stateLogEntry, 'azimuth', obj.groundObj);         
+            if(not(isempty(obj.frame)))
+                frame = obj.frame;
+            else
+                frame = stateLogEntry.centralBody.getBodyCenteredInertialFrame();
+            end
+            
+            [value, ~] = lvd_GrdObjTasks(stateLogEntry, 'azimuth', obj.groundObj, frame);         
             
             if(obj.evalType == ConstraintEvalTypeEnum.StateComparison)
-                stateLogEntryStateComp = stateLog.getLastStateLogForEvent(obj.stateCompEvent).deepCopy();
-                
-                cartElem = stateLogEntryStateComp.getCartesianElementSetRepresentation();
-                cartElem = cartElem.convertToFrame(stateLogEntry.centralBody.getBodyCenteredInertialFrame());
-                stateLogEntryStateComp.setCartesianElementSet(cartElem);
+                stateLogEntryStateComp = stateLog.getLastStateLogForEvent(obj.stateCompEvent); %.deepCopy()
+%                 
+%                 cartElem = stateLogEntryStateComp.getCartesianElementSetRepresentation();
+%                 cartElem = cartElem.convertToFrame(stateLogEntry.centralBody.getBodyCenteredInertialFrame());
+%                 stateLogEntryStateComp.setCartesianElementSet(cartElem);
 
-                [valueStateComp, ~] = lvd_GrdObjTasks(stateLogEntryStateComp, 'azimuth', obj.groundObj);
+                [valueStateComp, ~] = lvd_GrdObjTasks(stateLogEntryStateComp, 'azimuth', obj.groundObj, frame);
             else
                 valueStateComp = NaN;
             end

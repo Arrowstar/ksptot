@@ -35,7 +35,6 @@ classdef TwoVectorAngle < AbstractGeometricAngle
             bool = all(vn - vect1Hat == 0,1) | all(vn - vect2Hat == 0);
             if(any(bool))
                 vn(:,bool) = vect_normVector(vecCrossProd(:,bool));
-                disp('any');
             end
             
             angle = acos(dot(vect1Hat, vect2Hat));
