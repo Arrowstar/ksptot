@@ -22,7 +22,7 @@ function varargout = lvd_EditCompositeObjectiveFunctionGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditCompositeObjectiveFunctionGUI
 
-% Last Modified by GUIDE v2.5 21-Dec-2019 15:48:04
+% Last Modified by GUIDE v2.5 05-May-2021 15:18:51
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -75,7 +75,7 @@ function populateGUI(handles, lvdData)
     lvdOptim.objFcn = compObjFcn;
     
     handles.eventCombo.String = lvdData.script.getListboxStr();
-    populateBodiesCombo(lvdData.celBodyData, handles.refCelBodyCombo, false);
+%     populateBodiesCombo(lvdData.celBodyData, handles.refCelBodyCombo, false);
        
     objFuncListbox_Callback(handles.objFuncListbox, [], handles);
     
@@ -158,7 +158,7 @@ function objFuncListbox_Callback(hObject, eventdata, handles)
     compObjFcn = lvdOpt.objFcn;
     
     handles.eventCombo.String = lvdData.script.getListboxStr();
-    populateBodiesCombo(lvdData.celBodyData, handles.refCelBodyCombo, false);
+%     populateBodiesCombo(lvdData.celBodyData, handles.refCelBodyCombo, false);
     
     if(isempty(compObjFcn.objFcns))
         handles.removeObjFuncButton.Enable = 'off';
@@ -168,41 +168,63 @@ function objFuncListbox_Callback(hObject, eventdata, handles)
         
         handles.objFuncTypeLabel.String = 'None';
         handles.eventCombo.Enable = 'off';
-        handles.refCelBodyCombo.Enable = 'off';
+%         handles.refCelBodyCombo.Enable = 'off';
+        handles.refFrameTypeCombo.Enable = 'off';
+        handles.setFrameOptionsButton.Enable = 'off';
+        handles.refFrameNameLabel.String = '';
         handles.scaleFactorText.Enable = 'off';
+        
+        frame = LvdData.getDefaultInitialBodyInfo(lvdData.celBodyData).getBodyCenteredInertialFrame();
+        setappdata(handles.lvd_EditCompositeObjectiveFunctionGUI,'frame',frame);
     else
         handles.removeObjFuncButton.Enable = 'on';
         handles.eventCombo.Enable = 'on';
-        handles.refCelBodyCombo.Enable = 'on';
+%         handles.refCelBodyCombo.Enable = 'on';
+        handles.refFrameTypeCombo.Enable = 'on';
+        handles.setFrameOptionsButton.Enable = 'on';
         handles.scaleFactorText.Enable = 'on';
         
         value = get(hObject,'Value');
         handles.objFuncListbox.String = compObjFcn.getListBoxStr();
         
         objFun = compObjFcn.objFcns(value);
-        [~, ~, ~, ~, usesCelBody, ~] = objFun.fcn.getConstraintStaticDetails();
+%         [~, ~, ~, ~, usesCelBody, ~] = objFun.fcn.getConstraintStaticDetails();
         handles.objFuncTypeLabel.String = objFun.fcn.getConstraintType();
         handles.objFuncTypeLabel.TooltipString = objFun.fcn.getConstraintType();
 
         eventNum = objFun.event.getEventNum();
         handles.eventCombo.Value = eventNum;
         
-        if(usesCelBody)
-            handles.refCelBodyCombo.Enable = 'on';
-            
-            bodyInfo = objFun.getRefBody();
-            if(isempty(bodyInfo))
-                value = 1;
-            else
-                value = findValueFromComboBox(bodyInfo.name, handles.refCelBodyCombo);
-            end
-            
-            handles.refCelBodyCombo.Value = value;
-        else
-            handles.refCelBodyCombo.Value = 1;
-            handles.refCelBodyCombo.Enable = 'off';
+%         if(usesCelBody)
+%             handles.refCelBodyCombo.Enable = 'on';
+%             
+%             bodyInfo = objFun.getRefBody();
+%             if(isempty(bodyInfo))
+%                 value = 1;
+%             else
+%                 value = findValueFromComboBox(bodyInfo.name, handles.refCelBodyCombo);
+%             end
+%             
+%             handles.refCelBodyCombo.Value = value;
+%         else
+%             handles.refCelBodyCombo.Value = 1;
+%             handles.refCelBodyCombo.Enable = 'off';
+%         end
+
+        frame = objFun.frame;
+        if(isempty(frame))
+            frame = LvdData.getDefaultInitialBodyInfo(lvdData.celBodyData).getBodyCenteredInertialFrame();
+            objFun.frame = frame;
         end
-        
+        setappdata(handles.lvd_EditCompositeObjectiveFunctionGUI,'frame',frame);
+
+        handles.refFrameTypeCombo.String = ReferenceFrameEnum.getListBoxStr();
+        [ind, ~] = ReferenceFrameEnum.getIndForName(frame.typeEnum.name);
+        handles.refFrameTypeCombo.Value = ind;
+        handles.setFrameOptionsButton.TooltipString = sprintf('Current Frame: %s', frame.getNameStr());
+        handles.refFrameNameLabel.String = sprintf('%s', frame.getNameStr());
+        handles.refFrameNameLabel.TooltipString = sprintf('%s', frame.getNameStr());
+            
         handles.scaleFactorText.String = fullAccNum2Str(objFun.scaleFactor);
     end
     
@@ -249,16 +271,17 @@ function addObjFuncButton_Callback(hObject, eventdata, handles)
             
             event = lvdData.script.getEventForInd(lvdData.script.getTotalNumOfEvents());
 
-            if(handles.refCelBodyCombo.Value > 1)
-                bodyNameCell = handles.refCelBodyCombo.String(handles.refCelBodyCombo.Value);
-                bodyName = lower(strtrim(bodyNameCell{1}));
-                bodyInfo = celBodyData.(bodyName);
-            else
-                bodyInfo = KSPTOT_BodyInfo.empty(1,0);
-            end
-
+%             if(handles.refCelBodyCombo.Value > 1)
+%                 bodyNameCell = handles.refCelBodyCombo.String(handles.refCelBodyCombo.Value);
+%                 bodyName = lower(strtrim(bodyNameCell{1}));
+%                 bodyInfo = celBodyData.(bodyName);
+%             else
+%                 bodyInfo = KSPTOT_BodyInfo.empty(1,0);
+%             end
+            
+            someFrame = LvdData.getDefaultInitialBodyInfo(lvdData.celBodyData).getBodyCenteredInertialFrame();
             newObjFunc.event = event;
-            genObjFunc = GenericObjectiveFcn(event, bodyInfo, newObjFunc, 1, lvdOptim, lvdData);
+            genObjFunc = GenericObjectiveFcn(event, someFrame, newObjFunc, 1, lvdOptim, lvdData);
 
             lvdOptim.objFcn.addObjFunc(genObjFunc);
             handles.objFuncListbox.String = lvdOptim.objFcn.getListBoxStr();
@@ -474,3 +497,135 @@ function lvd_EditCompositeObjectiveFunctionGUI_WindowKeyPressFcn(hObject, eventd
         case 'escape'
             close(handles.lvd_EditCompositeObjectiveFunctionGUI);
     end
+
+
+% --- Executes on selection change in refFrameTypeCombo.
+function refFrameTypeCombo_Callback(hObject, eventdata, handles)
+% hObject    handle to refFrameTypeCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns refFrameTypeCombo contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from refFrameTypeCombo
+    updateFrameChange(handles);
+    
+    genObjFunc = getCurrentlySelectedObjFunc(handles);
+    frame = getappdata(handles.lvd_EditCompositeObjectiveFunctionGUI,'frame');
+    genObjFunc.frame = frame;
+    
+    updateValueLabels(handles);
+
+% --- Executes during object creation, after setting all properties.
+function refFrameTypeCombo_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to refFrameTypeCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in setFrameOptionsButton.
+function setFrameOptionsButton_Callback(hObject, eventdata, handles)
+% hObject    handle to setFrameOptionsButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    curFrame = getappdata(handles.lvd_EditCompositeObjectiveFunctionGUI,'frame');
+    curFrame = curFrame.editFrameDialogUI(EditReferenceFrameContextEnum.ForState);
+    
+    genObjFunc = getCurrentlySelectedObjFunc(handles);
+    genObjFunc.frame = curFrame;
+    
+    setappdata(handles.lvd_EditCompositeObjectiveFunctionGUI,'frame',curFrame);
+    
+    handles.setFrameOptionsButton.Tooltip = sprintf('Current Frame: %s', curFrame.getNameStr());
+    handles.refFrameNameLabel.String = sprintf('%s', curFrame.getNameStr());
+    handles.refFrameNameLabel.TooltipString = sprintf('%s', curFrame.getNameStr());
+    
+    updateValueLabels(handles);
+    
+function updateFrameChange(handles)
+    lvdData = getappdata(handles.lvd_EditCompositeObjectiveFunctionGUI,'lvdData');
+    celBodyData = lvdData.celBodyData;
+
+    refEnumListBoxStr = ReferenceFrameEnum.getListBoxStr();
+    selFrameTypeInd = handles.refFrameTypeCombo.Value;
+    refFrameEnum = ReferenceFrameEnum.getEnumForListboxStr(refEnumListBoxStr{selFrameTypeInd});
+
+%             if(not(isempty(newFrame)) && newFrame.typeEnum ~= refFrameEnum)
+%                 refFrameEnum = newFrame.typeEnum;
+%                 app.refFrameTypeCombo.Value = ReferenceFrameEnum.getIndForName(refFrameEnum.name);
+%             end
+
+    switch refFrameEnum
+        case ReferenceFrameEnum.BodyCenteredInertial
+            bodyInfo = getSelectedBodyInfo(handles);            
+
+            newFrame = bodyInfo.getBodyCenteredInertialFrame();
+
+        case ReferenceFrameEnum.BodyFixedRotating
+            bodyInfo = getSelectedBodyInfo(handles);
+
+            newFrame = bodyInfo.getBodyFixedFrame();
+
+        case ReferenceFrameEnum.TwoBodyRotating            
+            bodyInfo = getSelectedBodyInfo(handles);
+            if(not(isempty(bodyInfo.childrenBodyInfo)))
+                primaryBody = bodyInfo;
+                secondaryBody = bodyInfo.childrenBodyInfo(1);
+            else
+                primaryBody = bodyInfo.getParBodyInfo();
+                secondaryBody = bodyInfo;
+            end
+
+            originPt = TwoBodyRotatingFrameOriginEnum.Primary;
+
+            newFrame = TwoBodyRotatingFrame(primaryBody, secondaryBody, originPt, celBodyData);
+
+        case ReferenceFrameEnum.UserDefined
+            numFrames = lvdData.geometry.refFrames.getNumRefFrames();
+            if(numFrames >= 1)
+                geometricFrame = AbstractGeometricRefFrame.empty(1,0);
+                for(i=1:numFrames)
+                    frame = lvdData.geometry.refFrames.getRefFrameAtInd(i);
+                    if(frame.isVehDependent() == false)
+                        geometricFrame = frame;
+                        break;
+                    end
+                end
+
+                if(not(isempty(geometricFrame)))
+                    newFrame = UserDefinedGeometricFrame(geometricFrame, lvdData);
+                else
+                    bodyInfo = getSelectedBodyInfo(handles);
+                    newFrame = bodyInfo.getBodyCenteredInertialFrame();
+
+                    warndlg('There are no geometric frames available which are not dependent on vehicle properties.  A body-centered inertial frame will be selected instead.');
+                end
+            else
+                bodyInfo = getSelectedBodyInfo(handles);
+                newFrame = bodyInfo.getBodyCenteredInertialFrame();
+
+                warndlg('There are no geometric frames available which are not dependent on vehicle properties.  A body-centered inertial frame will be selected instead.');
+            end
+
+        otherwise
+            error('Unknown reference frame type: %s', string(refFrameEnum));                
+    end
+
+    if(not(isempty(newFrame)) && newFrame.typeEnum ~= refFrameEnum)
+        refFrameEnum = newFrame.typeEnum;
+        handles.refFrameTypeCombo.Value = ReferenceFrameEnum.getIndForName(refFrameEnum.name);
+    end
+
+    setappdata(handles.lvd_EditCompositeObjectiveFunctionGUI,'frame', newFrame);
+    handles.setFrameOptionsButton.TooltipString = sprintf('Current Frame: %s', newFrame.getNameStr());
+    handles.refFrameNameLabel.String = sprintf('%s', newFrame.getNameStr());
+    handles.refFrameNameLabel.TooltipString = sprintf('%s', newFrame.getNameStr());
+    
+function bodyInfo = getSelectedBodyInfo(handles)
+    curFrame = getappdata(handles.lvd_EditCompositeObjectiveFunctionGUI,'frame');
+    bodyInfo = curFrame.getOriginBody();
