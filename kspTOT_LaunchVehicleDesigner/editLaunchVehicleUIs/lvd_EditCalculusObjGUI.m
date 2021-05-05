@@ -103,7 +103,9 @@ function populateGUI(handles, calcObj, lvdData)
     [ind, ~] = ReferenceFrameEnum.getIndForName(frame.typeEnum.name);
     handles.refFrameTypeCombo.Value = ind;
     handles.setFrameOptionsButton.TooltipString = sprintf('Current Frame: %s', frame.getNameStr());
-
+    handles.refFrameNameLabel.String = sprintf('%s', frame.getNameStr());
+    handles.refFrameNameLabel.TooltipString = sprintf('%s', frame.getNameStr());
+    
 % --- Outputs from this function are returned to the command line.
 function varargout = lvd_EditCalculusObjGUI_OutputFcn(hObject, eventdata, handles) 
 % varargout  cell array for returning output args (see VARARGOUT);
@@ -224,7 +226,8 @@ function setFrameOptionsButton_Callback(hObject, eventdata, handles)
     setappdata(handles.lvd_EditCalculusObjGUI,'frame',curFrame);
     
     handles.setFrameOptionsButton.Tooltip = sprintf('Current Frame: %s', curFrame.getNameStr());
-
+    handles.refFrameNameLabel.String = sprintf('%s', curFrame.getNameStr());
+    handles.refFrameNameLabel.TooltipString = sprintf('%s', curFrame.getNameStr());
 
 
 function updateFrameChange(handles)
@@ -303,6 +306,8 @@ function updateFrameChange(handles)
 
     setappdata(handles.lvd_EditCalculusObjGUI,'frame', newFrame);
     handles.setFrameOptionsButton.TooltipString = sprintf('Current Frame: %s', newFrame.getNameStr());
+    handles.refFrameNameLabel.String = sprintf('%s', newFrame.getNameStr());
+    handles.refFrameNameLabel.TooltipString = sprintf('%s', newFrame.getNameStr());
     
 function bodyInfo = getSelectedBodyInfo(handles)
     curFrame = getappdata(handles.lvd_EditCalculusObjGUI,'frame');

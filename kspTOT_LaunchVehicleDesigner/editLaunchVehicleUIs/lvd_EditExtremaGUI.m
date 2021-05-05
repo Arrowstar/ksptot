@@ -22,7 +22,7 @@ function varargout = lvd_EditExtremaGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditExtremaGUI
 
-% Last Modified by GUIDE v2.5 03-May-2021 19:39:25
+% Last Modified by GUIDE v2.5 04-May-2021 20:58:39
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -106,6 +106,8 @@ function populateGUI(handles, extrema, lvdData)
     [ind, ~] = ReferenceFrameEnum.getIndForName(frame.typeEnum.name);
     handles.refFrameTypeCombo.Value = ind;
     handles.setFrameOptionsButton.TooltipString = sprintf('Current Frame: %s', frame.getNameStr());
+    handles.refFrameNameLabel.String = sprintf('%s', frame.getNameStr());
+    handles.refFrameNameLabel.TooltipString = sprintf('%s', frame.getNameStr());
     
     handles.startRecordingCombo.String = LaunchVehicleExtremaRecordingEnum.getNameStrs();
     handles.startRecordingCombo.Value = LaunchVehicleExtremaRecordingEnum.getIndOfListboxStrs(extrema.startingState);
@@ -287,7 +289,8 @@ function setFrameOptionsButton_Callback(hObject, eventdata, handles)
     setappdata(handles.lvd_EditExtremaGUI,'frame',curFrame);
     
     handles.setFrameOptionsButton.Tooltip = sprintf('Current Frame: %s', curFrame.getNameStr());
-
+    handles.refFrameNameLabel.String = sprintf('%s', curFrame.getNameStr());
+    handles.refFrameNameLabel.TooltipString = sprintf('%s', curFrame.getNameStr());
 
 function updateFrameChange(handles)
     lvdData = getappdata(handles.lvd_EditExtremaGUI,'lvdData');
@@ -365,6 +368,8 @@ function updateFrameChange(handles)
 
     setappdata(handles.lvd_EditExtremaGUI,'frame', newFrame);
     handles.setFrameOptionsButton.TooltipString = sprintf('Current Frame: %s', newFrame.getNameStr());
+    handles.refFrameNameLabel.String = sprintf('%s', newFrame.getNameStr());
+    handles.refFrameNameLabel.TooltipString = sprintf('%s', newFrame.getNameStr());
     
 function bodyInfo = getSelectedBodyInfo(handles)
     curFrame = getappdata(handles.lvd_EditExtremaGUI,'frame');
