@@ -100,8 +100,8 @@ classdef(Abstract) AbstractConstraint < matlab.mixin.SetGet & matlab.mixin.Heter
                 eventNum = obj.event.getEventNum();
                 compEventNum = obj.stateCompEvent.getEventNum();
                 
-                str = sprintf('%s\n\tEvent %u %s %s Event %u %s\n\tScale factor: %0.3g', ...
-                              type, eventNum, type, symbol, compEventNum, type, sF);
+                str = sprintf('%s\n\tEvent %u %s %s Event %u %s\n\tScale factor: %0.3g%s', ...
+                              type, eventNum, type, symbol, compEventNum, type, sF, frameStr);
                 
             else
                 error('Unknown constraint evaluation type.');
