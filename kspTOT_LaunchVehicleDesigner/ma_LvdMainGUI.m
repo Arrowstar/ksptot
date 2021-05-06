@@ -1996,7 +1996,8 @@ function editViewSettingsMenu_Callback(hObject, eventdata, handles)
     addUndoState(handles,'Edit View Settings');
     
 %     lvd_viewSettingsGUI(lvdData.viewSettings);
-    lvd_viewSettingsGUI_App(lvdData.viewSettings);
+    hFig = lvd_viewSettingsGUI_App(lvdData.viewSettings);
+    delete(hFig);
     
     setappdata(handles.hDispAxesTimeSlider,'lastTime',NaN);
        
