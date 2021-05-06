@@ -165,8 +165,8 @@ classdef(Abstract) AbstractConstraint < matlab.mixin.SetGet & matlab.mixin.Heter
             end
 
             if(isempty(obj.frame))
-                if(not(isempty(obj.refBody)))
-                    obj.frame = obj.refBody.getBodyCenteredInertialFrame();
+                if(not(isempty(obj.refBodyInfo)))
+                    obj.frame = obj.refBodyInfo.getBodyCenteredInertialFrame();
                 end
             end
         end

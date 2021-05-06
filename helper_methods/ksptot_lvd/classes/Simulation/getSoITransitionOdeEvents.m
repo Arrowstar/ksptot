@@ -20,7 +20,7 @@ function [value, isterminal, direction, causes] = getSoITransitionOdeEvents(ut, 
         causes(1) = SoITransitionUpIntTermCause(bodyInfo, parentBodyInfo, celBodyData);    
 
         %Leave SoI Downwards
-        [sma, ecc, ~, ~, ~, ~] = getKeplerFromState(rVect, vVect, bodyInfo.gm);
+        [sma, ecc, ~, ~, ~, ~] = getKeplerFromState(rVect, vVect, bodyInfo.gm, false);
         [rApSC, rPeSC] = computeApogeePerigee(sma, ecc);
         
         if(ecc >= 1)

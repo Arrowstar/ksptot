@@ -63,6 +63,8 @@ function lvd_viewSettingsGUI_OpeningFcn(hObject, eventdata, handles, varargin)
     % Update handles structure
     guidata(hObject, handles);
     
+    disp(double(handles.moveViewProfileUpButton.String));
+    
     % UIWAIT makes lvd_viewSettingsGUI wait for user response (see UIRESUME)
     uiwait(handles.lvd_viewSettingsGUI);
     
