@@ -5,6 +5,8 @@ classdef BodyCenteredInertialFrame < AbstractReferenceFrame
     properties
         bodyInfo KSPTOT_BodyInfo
         celBodyData
+        
+        bodyRotMatFromGlobalInertialToBodyInertial(3,3) double
     end
     
     properties(Constant)
@@ -15,6 +17,7 @@ classdef BodyCenteredInertialFrame < AbstractReferenceFrame
         function obj = BodyCenteredInertialFrame(bodyInfo, celBodyData)
             obj.bodyInfo = bodyInfo;
             obj.celBodyData = celBodyData;
+            obj.bodyRotMatFromGlobalInertialToBodyInertial = obj.bodyInfo.bodyRotMatFromGlobalInertialToBodyInertial;
         end
         
         function [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = getOffsetsWrtInertialOrigin(obj, time, ~)
@@ -23,7 +26,7 @@ classdef BodyCenteredInertialFrame < AbstractReferenceFrame
             posOffsetOrigin = rVectB;
             velOffsetOrigin = vVectB;
             angVelWrtOrigin = repmat([0;0;0], [1, length(time)]);
-            rotMatToInertial = repmat(obj.bodyInfo.bodyRotMatFromGlobalInertialToBodyInertial, [1, 1, length(time)]);
+            rotMatToInertial = repmat(obj.bodyRotMatFromGlobalInertialToBodyInertial, [1, 1, length(time)]);
         end
         
         function bodyInfo = getOriginBody(obj)
@@ -81,6 +84,12 @@ classdef BodyCenteredInertialFrame < AbstractReferenceFrame
         
         function bool = ne(A,B)
             bool = not(eq(A,B));
+        end
+    end
+    
+    methods(Static)
+        function obj = loadobj(obj)
+            obj.bodyRotMatFromGlobalInertialToBodyInertial = obj.bodyInfo.bodyRotMatFromGlobalInertialToBodyInertial;
         end
     end
 end

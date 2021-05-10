@@ -1,7 +1,19 @@
 function [rVectB, vVectB] = getPositOfBodyWRTSun(time, bodyInfo, celBodyData)  
     try %try new way
-        chain = bodyInfo.getOrbitElemsChain();
-        [rVectB, vVectB] = getPositOfBodyWRTSun_alg(time, chain{:});
+%         fprintf('%s - %0.14f s\n', bodyInfo.name, time(1));
+        if(numel(time) == 1 && bodyInfo.lastComputedTime == time)
+            rVectB = bodyInfo.lastComputedRVect;
+            vVectB = bodyInfo.lastComputedVVect;
+        else
+            chain = bodyInfo.getOrbitElemsChain();
+            [rVectB, vVectB] = getPositOfBodyWRTSun_alg(time, chain{:});
+            
+            if(numel(time) == 1)
+                bodyInfo.lastComputedTime = time;
+                bodyInfo.lastComputedRVect = rVectB;
+                bodyInfo.lastComputedVVect = vVectB;
+            end
+        end
     catch ME %if bad then use old way
         numTimes = length(time);
         loop = true;

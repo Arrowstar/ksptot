@@ -65,6 +65,10 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
         fixedFrameFromInertialFrameCache cell = {};
         
         surfTextureCache uint8 = [];
+        
+        lastComputedTime(1,1) double = NaN;
+        lastComputedRVect(3,1) double = NaN(3,1);
+        lastComputedVVect(3,1) double = NaN(3,1);
     end
     
     properties(Access=private)

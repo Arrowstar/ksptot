@@ -32,7 +32,11 @@ classdef (Abstract) AbstractElementSet < matlab.mixin.SetGet & matlab.mixin.Cust
             vVect1 = [convertCartElemSet.vVect];
             
             frames = [obj.frame];
-            framesBool = frames(1) == frames;
+            if(numel(frames) == 1)
+                framesBool = true;
+            else
+                framesBool = frames(1) == frames;
+            end
             times = [obj.time];
             
             if(all(framesBool))
@@ -50,19 +54,12 @@ classdef (Abstract) AbstractElementSet < matlab.mixin.SetGet & matlab.mixin.Cust
             rVect2 = posOffsetOrigin12 + squeeze(mtimesx(rotMatToInertial12, permute(rVect1, [1 3 2])));
             vVect2 = velOffsetOrigin12 + squeeze(mtimesx(rotMatToInertial12, (permute(vVect1 + cross(angVelWrtOrigin12, rVect1), [1 3 2]))));
             
-%             posOffsetOrigin32 = NaN(3,num);
-%             velOffsetOrigin32 = NaN(3,num);
-%             angVelWrtOrigin32 = NaN(3,num);
-%             rotMatToInertial32 = NaN(3,3,num);
-%             for(i=1:num)
-%                 [posOffsetOrigin32(:,i), velOffsetOrigin32(:,i), angVelWrtOrigin32(:,i), rotMatToInertial32(:,:,i)] = toFrame.getOffsetsWrtInertialOrigin(obj(i).time, convertCartElemSet(i));
-%             end
             [posOffsetOrigin32, velOffsetOrigin32, angVelWrtOrigin32, rotMatToInertial32] = getOffsetsWrtInertialOrigin(toFrame, times, convertCartElemSet);
             
             rVect3 = squeeze(mtimesx(permute(rotMatToInertial32, [2 1 3]), permute(rVect2 - posOffsetOrigin32, [1 3 2])));
             vVect3 = squeeze(mtimesx(permute(rotMatToInertial32, [2 1 3]), permute(vVect2 - velOffsetOrigin32, [1 3 2]))) - cross(angVelWrtOrigin32, rVect3);
             
-            convertCartElemSet = CartesianElementSet([obj.time], rVect3, vVect3, toFrame);
+            convertCartElemSet = CartesianElementSet(times, rVect3, vVect3, toFrame);
 %             convertCartElemSet = repmat(CartesianElementSet.getDefaultElements(), size(obj));
 %             for(i=1:length(obj))
 %                 convertCartElemSet(i) = CartesianElementSet(obj(i).time, rVect3(:,i), vVect3(:,i), toFrame);
