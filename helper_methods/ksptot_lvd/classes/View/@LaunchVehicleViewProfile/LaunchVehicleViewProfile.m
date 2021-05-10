@@ -203,9 +203,6 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                     if(size(subStateLogs{j},1) > 0)
                         times = subStateLogs{j}(:,1);
                         
-                        evtNum = subStateLogs{j}(1,13);
-                        evt = evts(evtNum);
-                        
                         if(isfinite(bodyOrbitPeriod))
                             numPeriods = (max(times) - min(times))/bodyOrbitPeriod;
                             times = linspace(min(times), max(times), max(10*numPeriods,length(times)));
@@ -250,16 +247,16 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                         [times,I] = sort(times);
                         rVects = rVects(:,I);
                         
-                        timesInner{j} = times;
-                        rVectsInner{j} = rVects;
+                        timesInner{j} = times; %#ok<AGROW>
+                        rVectsInner{j} = rVects; %#ok<AGROW>
                     end
                 end
 
-                timesArr{i} = timesInner;
-                rVectArr{i} = rVectsInner;
+                timesArr{i} = timesInner; %#ok<AGROW>
+                rVectArr{i} = rVectsInner; %#ok<AGROW>
                 
-                bodyColorsArr{i} = bColorRGB;
-                bodyMarkerDataObjs{i} = bodyMarkerData;
+                bodyColorsArr{i} = bColorRGB; %#ok<AGROW>
+                bodyMarkerDataObjs{i} = bodyMarkerData; %#ok<AGROW>
             end
 %             profile viewer;
             
