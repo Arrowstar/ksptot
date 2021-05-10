@@ -228,21 +228,21 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                         
                         rVects = [states.rVect];
                         
-                        switch(evt.plotMethod)
-                            case EventPlottingMethodEnum.PlotContinuous
-                                %nothing
-
-                            case EventPlottingMethodEnum.SkipFirstState
-                                times = times(2:end);
-                                rVects = rVects(2:end,:);
-
-                            case EventPlottingMethodEnum.DoNotPlot
-                                times = [];
-                                rVects = [];
-
-                            otherwise
-                                error('Unknown event plotting method: %s', evt.plotMethod.name);
-                        end
+%                         switch(evt.plotMethod)
+%                             case EventPlottingMethodEnum.PlotContinuous
+%                                 %nothing
+% 
+%                             case EventPlottingMethodEnum.SkipFirstState
+%                                 times = times(2:end);
+%                                 rVects = rVects(2:end,:);
+% 
+%                             case EventPlottingMethodEnum.DoNotPlot
+%                                 times = [];
+%                                 rVects = [];
+% 
+%                             otherwise
+%                                 error('Unknown event plotting method: %s', evt.plotMethod.name);
+%                         end
                         
                         [times,ia,~] = unique(times,'stable');
                         rVects = rVects(:,ia);

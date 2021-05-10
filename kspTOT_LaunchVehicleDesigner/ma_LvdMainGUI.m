@@ -22,7 +22,7 @@ function varargout = ma_LvdMainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_LvdMainGUI
 
-% Last Modified by GUIDE v2.5 17-Feb-2021 13:44:22
+% Last Modified by GUIDE v2.5 09-May-2021 21:10:31
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -2727,3 +2727,13 @@ function editPlanesMenu_Callback(hObject, eventdata, handles)
     
     runScript(handles, lvdData, 1);
     lvd_processData(handles);
+
+
+% --------------------------------------------------------------------
+function haloOrbitConstructorMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to haloOrbitConstructorMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    
+    lvd_HaloOrbitConstructor_App(lvdData.celBodyData);

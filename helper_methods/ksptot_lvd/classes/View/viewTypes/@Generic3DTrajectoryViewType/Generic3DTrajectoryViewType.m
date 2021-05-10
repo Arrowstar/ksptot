@@ -278,7 +278,7 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             end
             
             hDispAxisTitleLabel = handles.dispAxisTitleLabel;
-            titleStr = {[viewCentralBody.name, ' Orbit - ', 'Mission Segment ', curMissionSegStr, '/', totalMissionSegStr], eventStr};
+            titleStr = {[viewCentralBody.name, ' Orbit - ', 'Mission Segment ', curMissionSegStr, '/', totalMissionSegStr], eventStr, viewInFrame.getNameStr()};
             set(hDispAxisTitleLabel, 'String', titleStr);
             hDispAxisTitleLabel.TooltipString = sprintf('Frame: %s', viewInFrame.getNameStr());
             

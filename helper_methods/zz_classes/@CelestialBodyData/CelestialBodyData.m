@@ -97,6 +97,18 @@ classdef CelestialBodyData < matlab.mixin.SetGet & dynamicprops
             
             topLvlBody = obj.topLvlBodyCache;
         end
+        
+        function bodies = getAllBodiesWithChildren(obj)
+            bodies = KSPTOT_BodyInfo.empty(1,0);
+            for(i=1:length(obj.bodies))
+                bodyInfo = obj.bodies(i);
+                
+                cBodies = bodyInfo.getChildrenBodyInfo(obj);
+                if(not(isempty(cBodies)))
+                    bodies(end+1) = bodyInfo;
+                end
+            end
+        end
     end
     
     methods(Static)
