@@ -100,6 +100,9 @@ classdef ConstraintEnum < matlab.mixin.SetGet
         
         GeoVectorMagntide('Geometric Vector Magnitude', 'GeometricVectorMagConstraint', []);
         GeoAngleMagnitude('Geometric Angle Magnitude', 'GeometricAngleMagConstraint', []);
+        
+        TankMass('Tank Mass', 'TankMassConstraint', []);
+        TankMassFlowRate('Tank Mass Flow Rate', 'TankMassFlowRateConstraint', []);
     end
     
     enumeration(Hidden)
