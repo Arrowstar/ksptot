@@ -67,9 +67,13 @@ classdef GenericMAConstraint < AbstractConstraint
                 
                 stateLogEntryMA = stateLogEntry.getMAFormattedStateLogMatrix(true);
                 value = ma_getDepVarValueUnit(1, stateLogEntryMA, type, 0, refBodyId, oscId, stnId, propNames, maData, celBodyData, false);
-                
             else
-                [value, ~] = lvd_getDepVarValueUnit(1, stateLogEntry, type, refBodyId, celBodyData, false, frame); %need to update!
+                try
+                    [value, ~] = lvd_getDepVarValueUnit(1, stateLogEntry, type, refBodyId, celBodyData, false, frame);
+                catch ME
+                    warning('Could not evaluate constraint of type: %s', obj.constraintType);
+                    value = 0;
+                end
             end
                     
             if(obj.evalType == ConstraintEvalTypeEnum.StateComparison)

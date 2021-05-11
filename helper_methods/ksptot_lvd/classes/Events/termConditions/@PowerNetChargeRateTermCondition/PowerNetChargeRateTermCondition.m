@@ -13,7 +13,7 @@ classdef PowerNetChargeRateTermCondition < AbstractEventTerminationCondition
         end
         
         function evtTermCondFcnHndl = getEventTermCondFuncHandle(obj)            
-            evtTermCondFcnHndl = @(t,y) obj.eventTermCond(t,y, obj.netChargeRate, obj.initialStateLogEntry);
+            evtTermCondFcnHndl = @(t,y) obj.eventTermCond(t,y);
         end
         
         function initTermCondition(obj, initialStateLogEntry)
@@ -81,27 +81,29 @@ classdef PowerNetChargeRateTermCondition < AbstractEventTerminationCondition
         end
     end
     
-    methods(Static, Access=private)
-        function [value,isterminal,direction] = eventTermCond(t,y, tgtNetChargeRate, initialStateLogEntry)
-            powerStorageStates = initialStateLogEntry.getAllActivePwrStorageStates();
+    methods(Access=private)
+        function [value,isterminal,direction] = eventTermCond(obj, t,y)
+            initStateLogEntry = obj.initialStateLogEntry;
+            
+            powerStorageStates = initStateLogEntry.getAllActivePwrStorageStates();
 
-            numTankStates = initialStateLogEntry.getNumActiveTankStates();
-            numPwrStorageStates = initialStateLogEntry.getNumActivePwrStorageStates();
+            numTankStates = initStateLogEntry.getNumActiveTankStates();
+            numPwrStorageStates = initStateLogEntry.getNumActivePwrStorageStates();
             [~, ~, ~, ~, storageSoCs] = AbstractPropagator.decomposeIntegratorTandY(t,y, numTankStates, numPwrStorageStates);
             
-            stgStates = initialStateLogEntry.stageStates;
+            stgStates = initStateLogEntry.stageStates;
             
-            ut = initialStateLogEntry.time;
-            rVect = initialStateLogEntry.position(:);
-            vVect = initialStateLogEntry.velocity(:);
-            bodyInfo = initialStateLogEntry.centralBody;
+            ut = initStateLogEntry.time;
+            rVect = initStateLogEntry.position(:);
+            vVect = initStateLogEntry.velocity(:);
+            bodyInfo = initStateLogEntry.centralBody;
             
-            steeringModel = initialStateLogEntry.steeringModel;
+            steeringModel = initStateLogEntry.steeringModel;
             
             storageRates = LaunchVehicleStateLogEntry.getStorageChargeRatesDueToSourcesSinks(storageSoCs, powerStorageStates, stgStates, ut, rVect, vVect, bodyInfo, steeringModel);
             actualNetStorageRate = sum(storageRates);
             
-            value = actualNetStorageRate - tgtNetChargeRate;
+            value = actualNetStorageRate - obj.netChargeRate;
             isterminal = 1;
             direction = 0;
         end

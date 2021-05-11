@@ -13,7 +13,7 @@ classdef TotalVehicleEpsStateOfChargeTermCondition < AbstractEventTerminationCon
         end
         
         function evtTermCondFcnHndl = getEventTermCondFuncHandle(obj)            
-            evtTermCondFcnHndl = @(t,y) obj.eventTermCond(t,y, obj.totalStateOfCharge, obj.initialStateLogEntry);
+            evtTermCondFcnHndl = @(t,y) obj.eventTermCond(t,y);
         end
         
         function initTermCondition(obj, initialStateLogEntry)
@@ -81,15 +81,15 @@ classdef TotalVehicleEpsStateOfChargeTermCondition < AbstractEventTerminationCon
         end
     end
     
-    methods(Static, Access=private)
-        function [value,isterminal,direction] = eventTermCond(t,y, targetSoC, initialStateLogEntry)
-            numTankStates = initialStateLogEntry.getNumActiveTankStates();
-            numPwrStorageStates = initialStateLogEntry.getNumActivePwrStorageStates();
+    methods(Access=private)
+        function [value,isterminal,direction] = eventTermCond(obj, t,y)
+            numTankStates = obj.initialStateLogEntry.getNumActiveTankStates();
+            numPwrStorageStates = obj.initialStateLogEntry.getNumActivePwrStorageStates();
             [~, ~, ~, ~, pwrStorageStates] = AbstractPropagator.decomposeIntegratorTandY(t,y, numTankStates, numPwrStorageStates);
             
             totalActualSoC = sum(pwrStorageStates);
             
-            value = totalActualSoC - targetSoC;
+            value = totalActualSoC - obj.totalStateOfCharge;
             isterminal = 1;
             direction = 0;
         end

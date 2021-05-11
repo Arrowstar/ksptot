@@ -13,7 +13,7 @@ classdef FlightPathAngleTermCondition < AbstractEventTerminationCondition
         end
         
         function evtTermCondFcnHndl = getEventTermCondFuncHandle(obj)            
-            evtTermCondFcnHndl = @(t,y) obj.eventTermCond(t,y, obj.fpa, obj.bodyInfo);
+            evtTermCondFcnHndl = @(t,y) obj.eventTermCond(t,y);
         end
         
         function initTermCondition(obj, initialStateLogEntry)
@@ -81,14 +81,14 @@ classdef FlightPathAngleTermCondition < AbstractEventTerminationCondition
         end
     end
     
-    methods(Static, Access=private)
-        function [value,isterminal,direction] = eventTermCond(~,y, targetFpa, bodyInfo)
+    methods(Access=private)
+        function [value,isterminal,direction] = eventTermCond(obj, t,y)
             rVect = y(1:3);
             vVect = y(4:6);
-
-            fpa = asind(dotARH(rVect,vVect)/(norm(rVect) * norm(vVect)));
+            cartElem = CartesianElementSet(t, rVect(:), vVect(:), obj.bodyInfo.getBodyCenteredInertialFrame());
+            kepElem = cartElem.convertToFrame(obj.frame).convertToKeplerianElementSet();
             
-            value = fpa - targetFpa;
+            value = kepElem.getFlightPathAngle() - obj.fpa;
             isterminal = 1;
             direction = 0;
         end

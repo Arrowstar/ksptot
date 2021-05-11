@@ -3,6 +3,8 @@ classdef(Abstract) AbstractEventTerminationCondition < matlab.mixin.SetGet & mat
     %   Detailed explanation goes here
     
     properties
+        frame AbstractReferenceFrame
+        
         optVar
     end
     
@@ -46,5 +48,13 @@ classdef(Abstract) AbstractEventTerminationCondition < matlab.mixin.SetGet & mat
     
     methods(Static)
         termCond = getTermCondForParams(paramValue, stage, tank, engine)
+        
+        function obj = loadobj(obj)
+            if(isempty(obj.frame))
+                if(isprop(obj,'bodyInfo') && not(isempty(obj.bodyInfo)))
+                    obj.frame = obj.bodyInfo.getBodyCenteredInertialFrame();
+                end
+            end
+        end
     end
 end

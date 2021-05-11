@@ -17,7 +17,7 @@ classdef StopwatchValueTermCondition < AbstractEventTerminationCondition
         end
         
         function evtTermCondFcnHndl = getEventTermCondFuncHandle(obj)
-            evtTermCondFcnHndl = @(t,y) obj.eventTermCond(t,y, obj.value, obj.t0, obj.initStopwatchState);
+            evtTermCondFcnHndl = @(t,y) obj.eventTermCond(t,y);
         end
         
         function initTermCondition(obj, initialStateLogEntry)
@@ -90,14 +90,16 @@ classdef StopwatchValueTermCondition < AbstractEventTerminationCondition
         end
     end
     
-    methods(Static, Access=private)
-        function [value,isterminal,direction] = eventTermCond(t,~, swValue, t0, initStopwatchState)
-            if(not(isempty(initStopwatchState)))
-                if(initStopwatchState.running == StopwatchRunningEnum.NotRunning)
-                    value = swValue - initStopwatchState.value;
+    methods(Access=private)
+        function [value,isterminal,direction] = eventTermCond(obj, t,y)
+            swValue = obj.value;
+            
+            if(not(isempty(obj.initStopwatchState)))
+                if(obj.initStopwatchState.running == StopwatchRunningEnum.NotRunning)
+                    value = swValue - obj.initStopwatchState.value;
                 else
-                    deltaT = t - t0;
-                    curTimerValue = initStopwatchState.value + deltaT;
+                    deltaT = t - obj.t0;
+                    curTimerValue = obj.initStopwatchState.value + deltaT;
                     value = swValue - curTimerValue;
                 end
 

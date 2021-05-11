@@ -13,7 +13,7 @@ classdef ApoapsisAltitudeTermCondition < AbstractEventTerminationCondition
         end
         
         function evtTermCondFcnHndl = getEventTermCondFuncHandle(obj)            
-            evtTermCondFcnHndl = @(t,y) obj.eventTermCond(t,y, obj.apoalt, obj.bodyInfo);
+            evtTermCondFcnHndl = @(t,y) obj.eventTermCond(t,y);
         end
         
         function initTermCondition(obj, initialStateLogEntry)
@@ -81,20 +81,14 @@ classdef ApoapsisAltitudeTermCondition < AbstractEventTerminationCondition
         end
     end
     
-    methods(Static, Access=private)
-        function [value,isterminal,direction] = eventTermCond(~,y, targetapoalt, bodyInfo)
+    methods(Access=private)
+        function [value,isterminal,direction] = eventTermCond(obj, t,y)            
             rVect = y(1:3);
             vVect = y(4:6);
+            cartElem = CartesianElementSet(t, rVect(:), vVect(:), obj.bodyInfo.getBodyCenteredInertialFrame());
+            kepElem = cartElem.convertToFrame(obj.frame).convertToKeplerianElementSet();
             
-            gmu = bodyInfo.gm;
-            [sma, ecc, ~, ~, ~, ~] = getKeplerFromState(rVect,vVect,gmu);
-            
-            [rAp, ~] = computeApogeePerigee(sma, ecc);
-            
-            bRadius = bodyInfo.radius;
-            apoaltitude = rAp - bRadius;
-            
-            value = apoaltitude - targetapoalt;
+            value =  kepElem.getAltitudeApoapsis() - obj.apoalt;
             isterminal = 1;
             direction = 0;
         end

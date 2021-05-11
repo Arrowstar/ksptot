@@ -15,7 +15,7 @@ classdef TankMassTermCondition < AbstractEventTerminationCondition
         end
         
         function evtTermCondFcnHndl = getEventTermCondFuncHandle(obj)
-            evtTermCondFcnHndl = @(t,y) obj.eventTermCond(t,y, obj.tankStateInd, obj.targetMass);
+            evtTermCondFcnHndl = @(t,y) obj.eventTermCond(t,y);
         end
         
         function initTermCondition(obj, initialStateLogEntry)
@@ -91,10 +91,10 @@ classdef TankMassTermCondition < AbstractEventTerminationCondition
         end
     end
     
-    methods(Static, Access=private)
-        function [value,isterminal,direction] = eventTermCond(t,y, tankStateInd, targetMass)
-            if(not(isnan(tankStateInd)))
-                value = y(6+tankStateInd) - targetMass;
+    methods(Access=private)
+        function [value,isterminal,direction] = eventTermCond(obj, t,y)
+            if(not(isnan(obj.tankStateInd)))
+                value = y(6+obj.tankStateInd) - obj.targetMass;
             else
                 value = -Inf;
             end

@@ -14,7 +14,7 @@ classdef LatitudeTermCondition < AbstractEventTerminationCondition
         end
         
         function evtTermCondFcnHndl = getEventTermCondFuncHandle(obj)            
-            evtTermCondFcnHndl = @(t,y) obj.eventTermCond(t,y, obj.lat, obj.bodyInfo, obj.direction);
+            evtTermCondFcnHndl = @(t,y) obj.eventTermCond(t,y);
         end
         
         function initTermCondition(obj, initialStateLogEntry)
@@ -82,16 +82,16 @@ classdef LatitudeTermCondition < AbstractEventTerminationCondition
         end
     end
     
-    methods(Static, Access=protected)
-        function [value,isterminal,direction] = eventTermCond(t,y, targetLat, bodyInfo, inputDirection)
-            ut = t;
+    methods(Access=protected)
+        function [value,isterminal,direction] = eventTermCond(obj, t,y)            
             rVect = y(1:3);
+            vVect = y(4:6);
+            cartElem = CartesianElementSet(t, rVect(:), vVect(:), obj.bodyInfo.getBodyCenteredInertialFrame());
+            geoElem = cartElem.convertToFrame(obj.frame).convertToGeographicElementSet();
             
-            [lat, ~] = getLatLongAltFromInertialVect(ut, rVect, bodyInfo);
-            
-            value = lat - targetLat;
+            value = geoElem.lat - obj.lat;
             isterminal = 1;
-            direction = inputDirection;
+            direction = obj.direction;
         end
     end
 end
