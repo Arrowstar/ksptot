@@ -2144,23 +2144,40 @@ function createContConstraintsWithSelEvtMenu_Callback(hObject, eventdata, handle
                 constrEvt = evt;
             end
             
-            c = AbstractConstraint.empty(1,0);
+            stateLogEntry = lvdData.stateLog.getLastStateLogForEvent(refEvt);
+            refBodyInfo = stateLogEntry.centralBody;
+            frame = refBodyInfo.getBodyCenteredInertialFrame();
+            
+            cs = AbstractConstraint.empty(1,0);
             
             %position
-            c(end+1) = PositionContinuityConstraintX(refEvt, constrEvt);
-            c(end+1) = PositionContinuityConstraintY(refEvt, constrEvt);
-            c(end+1) = PositionContinuityConstraintZ(refEvt, constrEvt);
+%             c(end+1) = PositionContinuityConstraintX(refEvt, constrEvt);
+%             c(end+1) = PositionContinuityConstraintY(refEvt, constrEvt);
+%             c(end+1) = PositionContinuityConstraintZ(refEvt, constrEvt);
+            cs(end+1) = GenericMAConstraint('Position Vector (X)', refEvt, 0, 0, [], [], refBodyInfo);
+            cs(end+1) = GenericMAConstraint('Position Vector (Y)', refEvt, 0, 0, [], [], refBodyInfo);
+            cs(end+1) = GenericMAConstraint('Position Vector (Z)', refEvt, 0, 0, [], [], refBodyInfo);
             
             %velocity
-            c(end+1) = VelocityContinuityConstraintX(refEvt, constrEvt);
-            c(end+1) = VelocityContinuityConstraintY(refEvt, constrEvt);
-            c(end+1) = VelocityContinuityConstraintZ(refEvt, constrEvt);
+%             c(end+1) = VelocityContinuityConstraintX(refEvt, constrEvt);
+%             c(end+1) = VelocityContinuityConstraintY(refEvt, constrEvt);
+%             c(end+1) = VelocityContinuityConstraintZ(refEvt, constrEvt);
+            cs(end+1) = GenericMAConstraint('Velocity Vector (X)', refEvt, 0, 0, [], [], refBodyInfo);
+            cs(end+1) = GenericMAConstraint('Velocity Vector (Y)', refEvt, 0, 0, [], [], refBodyInfo);
+            cs(end+1) = GenericMAConstraint('Velocity Vector (Z)', refEvt, 0, 0, [], [], refBodyInfo);
             
             %time
-            c(end+1) = TimeContinuityConstraint(refEvt, constrEvt);
+%             c(end+1) = TimeContinuityConstraint(refEvt, constrEvt);
+            cs(end+1) = GenericMAConstraint('Universal Time', refEvt, 0, 0, [], [], refBodyInfo);
             
-            for(i=1:length(c))
-                lvdData.optimizer.constraints.addConstraint(c(i));
+            for(i=1:length(cs))
+                c = cs(i);
+                c.evalType = ConstraintEvalTypeEnum.StateComparison;
+                c.stateCompType = ConstraintStateComparisonTypeEnum.Equals;
+                c.stateCompEvent = constrEvt;
+                c.frame = frame;
+                
+                lvdData.optimizer.constraints.addConstraint(c);
             end
             
             msgbox('Position, velocity, and time continuity constraints added successfully.');

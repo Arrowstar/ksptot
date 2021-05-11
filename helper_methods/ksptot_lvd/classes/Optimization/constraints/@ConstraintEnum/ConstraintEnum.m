@@ -81,15 +81,7 @@ classdef ConstraintEnum < matlab.mixin.SetGet
         TwoBodyImpactLat('Two-Body Impact Latitude','TwoBodyImpactPointLatitude',[]);
         
         EventDeltaVExpended('Event Delta-V Expended','EventDeltaVExpendedConstraint',[]);
-        
-        TimeContinuity('Time Continuity','TimeContinuityConstraint',[]);
-        PositionContinuityX('Position Continuity (X)','PositionContinuityConstraintX',[]);
-        PositionContinuityY('Position Continuity (Y)','PositionContinuityConstraintY',[]);
-        PositionContinuityZ('Position Continuity (Z)','PositionContinuityConstraintZ',[]);
-        VelocityContinuityX('Velocity Continuity (X)','VelocityContinuityConstraintX',[]);
-        VelocityContinuityY('Velocity Continuity (Y)','VelocityContinuityConstraintY',[]);
-        VelocityContinuityZ('Velocity Continuity (Z)','VelocityContinuityConstraintZ',[]);
-        
+               
         CalculusCalculation('Calculus Calculation','CalculusCalculationValueConstraint',[]);
         
         CumulativePwrStorageStateOfCharge('Electrical Power Cumulative Storage State of Charge', 'CumPwrStorageStateOfChargeConstraint', []);
@@ -124,7 +116,15 @@ classdef ConstraintEnum < matlab.mixin.SetGet
         CentralBodyId('Central Body ID','GenericMAConstraint','Central Body ID')
         FuelOxMass('Liquid Fuel/Ox Mass','GenericMAConstraint','Liquid Fuel/Ox Mass')
         MonopropMass('Monopropellant Mass','GenericMAConstraint','Monopropellant Mass')
-        XenonMass('Xenon Mass','GenericMAConstraint','Xenon Mass')        
+        XenonMass('Xenon Mass','GenericMAConstraint','Xenon Mass') 
+        
+        TimeContinuity('Time Continuity','TimeContinuityConstraint',[]);
+        PositionContinuityX('Position Continuity (X)','PositionContinuityConstraintX',[]);
+        PositionContinuityY('Position Continuity (Y)','PositionContinuityConstraintY',[]);
+        PositionContinuityZ('Position Continuity (Z)','PositionContinuityConstraintZ',[]);
+        VelocityContinuityX('Velocity Continuity (X)','VelocityContinuityConstraintX',[]);
+        VelocityContinuityY('Velocity Continuity (Y)','VelocityContinuityConstraintY',[]);
+        VelocityContinuityZ('Velocity Continuity (Z)','VelocityContinuityConstraintZ',[]);
     end
     
     properties
