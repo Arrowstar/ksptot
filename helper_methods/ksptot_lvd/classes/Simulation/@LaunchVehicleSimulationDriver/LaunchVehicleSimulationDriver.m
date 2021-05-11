@@ -67,7 +67,13 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
             
             if(propagationDir == PropagationDirectionEnum.Forward) 
             %set max integration time
-                maxT = tStartSimTime+obj.simMaxDur;
+                if(not(isfinite(obj.simMaxDur)))
+                    maxSimDuration = abs(1E6*integrationStep);
+                else
+                    maxSimDuration = obj.simMaxDur;
+                end
+                
+                maxT = tStartSimTime + maxSimDuration;
                 if(t0 > maxT)
                     maxT = t0;
                 end
@@ -87,7 +93,13 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
                 end
                 
             elseif(propagationDir == PropagationDirectionEnum.Backward) 
-                maxT = tStartSimTime-obj.simMaxDur;
+                if(not(isfinite(obj.simMaxDur)))
+                    maxSimDuration = abs(1E6*integrationStep);
+                else
+                    maxSimDuration = obj.simMaxDur;
+                end
+                
+                maxT = tStartSimTime - maxSimDuration;
                 if(t0 < maxT)
                     maxT = t0;
                 end                

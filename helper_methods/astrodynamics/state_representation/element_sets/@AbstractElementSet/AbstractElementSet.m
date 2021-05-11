@@ -31,16 +31,18 @@ classdef (Abstract) AbstractElementSet < matlab.mixin.SetGet & matlab.mixin.Cust
             rVect1 = [convertCartElemSet.rVect];
             vVect1 = [convertCartElemSet.vVect];
             
-            frames = [obj.frame];
-            if(numel(frames) == 1)
+            if(numel(obj) == 1)
                 framesBool = true;
+                frameToUse = obj.frame;
             else
+                frames = [obj.frame];
                 framesBool = frames(1) == frames;
+                frameToUse = frames(1);
             end
             times = [obj.time];
             
             if(all(framesBool))
-                [posOffsetOrigin12, velOffsetOrigin12, angVelWrtOrigin12, rotMatToInertial12] = getOffsetsWrtInertialOrigin(frames(1), times, convertCartElemSet);
+                [posOffsetOrigin12, velOffsetOrigin12, angVelWrtOrigin12, rotMatToInertial12] = getOffsetsWrtInertialOrigin(frameToUse, times, convertCartElemSet);
             else
                 posOffsetOrigin12 = NaN(3,num);
                 velOffsetOrigin12 = NaN(3,num);
