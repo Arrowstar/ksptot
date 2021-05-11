@@ -177,8 +177,6 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
 %             parfor(i=1:length(obj.bodiesToPlot), M)
             for(i=1:length(obj.bodiesToPlot))
                 bodyToPlot = obj.bodiesToPlot(i); 
-                timesInner = {};
-                rVectsInner = {};
                 
                 if(bodyToPlot == viewInFrame.getOriginBody()) 
                     continue;
@@ -199,59 +197,42 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                 
                 bodyMarkerData = obj.createBodyData(bodyToPlot, viewInFrame, obj.bodyPlotStyle, showSoI, meshEdgeAlpha);
                 
+                times = [];
                 for(j=1:length(subStateLogs))
                     if(size(subStateLogs{j},1) > 0)
-                        times = subStateLogs{j}(:,1);
-                        
-                        if(isfinite(bodyOrbitPeriod))
-                            numPeriods = (max(times) - min(times))/bodyOrbitPeriod;
-                            times = linspace(min(times), max(times), max(10*numPeriods,length(times)));
-                        else
-                            times = linspace(min(times), max(times), length(times));
-                        end
-                        
-                        states = bodyToPlot.getElementSetsForTimes(times);
-                        if(numel(states) >= 1)
-                            doConversion = states(1).frame ~= viewInFrame;
-                        else
-                            doConversion = true;
-                        end
-                        
-                        for(k=1:length(states))
-                            if(doConversion)
-                                states(k) = states(k).convertToFrame(viewInFrame);
-                            end
-                        end
-                        
-                        rVects = [states.rVect];
-                        
-%                         switch(evt.plotMethod)
-%                             case EventPlottingMethodEnum.PlotContinuous
-%                                 %nothing
-% 
-%                             case EventPlottingMethodEnum.SkipFirstState
-%                                 times = times(2:end);
-%                                 rVects = rVects(2:end,:);
-% 
-%                             case EventPlottingMethodEnum.DoNotPlot
-%                                 times = [];
-%                                 rVects = [];
-% 
-%                             otherwise
-%                                 error('Unknown event plotting method: %s', evt.plotMethod.name);
-%                         end
-                        
-                        [times,ia,~] = unique(times,'stable');
-                        rVects = rVects(:,ia);
-
-                        [times,I] = sort(times);
-                        rVects = rVects(:,I);
-                        
-                        timesInner{j} = times; %#ok<AGROW>
-                        rVectsInner{j} = rVects; %#ok<AGROW>
+                        times = [times; subStateLogs{j}(:,1)]; %#ok<AGROW>
                     end
                 end
+                
+                if(isfinite(bodyOrbitPeriod))
+                    numPeriods = (max(times) - min(times))/bodyOrbitPeriod;
+                    times = linspace(min(times), max(times), max(10*numPeriods,length(times)));
+                else
+                    times = linspace(min(times), max(times), length(times));
+                end
 
+                states = bodyToPlot.getElementSetsForTimes(times);
+                if(numel(states) >= 1)
+                    doConversion = states(1).frame ~= viewInFrame;
+                else
+                    doConversion = true;
+                end
+
+                if(doConversion)
+                    states = convertToFrame(states, viewInFrame);
+                end
+
+                rVects = [states.rVect];
+
+                [times,ia,~] = unique(times,'stable');
+                rVects = rVects(:,ia);
+
+                [times,I] = sort(times);
+                rVects = rVects(:,I);
+
+                timesInner = times; 
+                rVectsInner = rVects; 
+                
                 timesArr{i} = timesInner; %#ok<AGROW>
                 rVectArr{i} = rVectsInner; %#ok<AGROW>
                 
@@ -269,14 +250,12 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                 if(not(isempty(timesInner)))
                     obj.markerBodyData(end+1) = bodyMarkerData;
                     
-                    for(j=1:length(timesInner))
-                        times = timesInner{j};
-                        rVects = rVectsInner{j};
+                    times = timesInner;
+                    rVects = rVectsInner;
 
-                        if(length(unique(times)) > 1)
-                            plot3(dAxes, rVects(1,:), rVects(2,:), rVects(3,:), '-', 'Color',bColorRGB, 'LineWidth',1.5);
-                            bodyMarkerData.addData(times, rVects);
-                        end
+                    if(length(unique(times)) > 1)
+                        plot3(dAxes, rVects(1,:), rVects(2,:), rVects(3,:), '-', 'Color',bColorRGB, 'LineWidth',1.5);
+                        bodyMarkerData.addData(times, rVects);
                     end
                 end
             end
