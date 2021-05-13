@@ -22,6 +22,8 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
         
         disableOptim(1,1) logical = false;
         
+        execActionsNode(1,1) ActionExecNodeEnum = ActionExecNodeEnum.AfterProp;
+        
         %%%%%
         %Propagators
         %%%%%

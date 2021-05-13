@@ -22,7 +22,7 @@ function varargout = lvd_editEventGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_editEventGUI
 
-% Last Modified by GUIDE v2.5 20-Aug-2020 09:59:48
+% Last Modified by GUIDE v2.5 13-May-2021 09:08:26
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -117,6 +117,9 @@ function populateGUI(handles, event, isNonSeq)
     
     handles.checkSoITransCheckbox.Value = double(event.checkForSoITrans);
     
+    handles.actionExecNodeCombo.String = ActionExecNodeEnum.getListBoxStr();
+    handles.actionExecNodeCombo.Value = ActionExecNodeEnum.getIndForName(event.execActionsNode.name);
+    
     if(isNonSeq)
         handles.colorSpecCombo.Enable = 'off';
         handles.lineSpecCombo.Enable = 'off';
@@ -179,6 +182,10 @@ function varargout = lvd_editEventGUI_OutputFcn(hObject, eventdata, handles)
         event.propDir = enum;
         
         event.checkForSoITrans = logical(handles.checkSoITransCheckbox.Value);
+        
+        nameStr = handles.actionExecNodeCombo.String(handles.actionExecNodeCombo.Value);
+        [enum,~] = ActionExecNodeEnum.getEnumForListboxStr(nameStr);
+    	event.execActionsNode = enum;
         
         event.clearActiveOptVarsCache();
         
@@ -794,6 +801,29 @@ function propDirCombo_Callback(hObject, eventdata, handles)
 % --- Executes during object creation, after setting all properties.
 function propDirCombo_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to propDirCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in actionExecNodeCombo.
+function actionExecNodeCombo_Callback(hObject, eventdata, handles)
+% hObject    handle to actionExecNodeCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns actionExecNodeCombo contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from actionExecNodeCombo
+
+
+% --- Executes during object creation, after setting all properties.
+function actionExecNodeCombo_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to actionExecNodeCombo (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 

@@ -298,19 +298,33 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
                     for(j=1:length(activeNonSeqEvts))
                         activeNonSeqEvts(j).initEvent(initStateLogEntry);
                     end
+                    
+                    if(evt.execActionsNode == ActionExecNodeEnum.BeforeProp)
+                        %Execute Actions
+                        initStateLogEntry = initStateLogEntry.deepCopy(); %this state log entry must be copied or the answers will change
+                        actionStateLogEntries = evt.cleanupEvent(initStateLogEntry);
+
+                        %Add state log entries to state log
+                        if(not(isempty(actionStateLogEntries)))
+                            stateLog.appendStateLogEntries(actionStateLogEntries);
+                            initStateLogEntry = actionStateLogEntries(end).deepCopy(); %this state log entry must be copied or the answers will change;
+                        end
+                    end
                                         
-                    %Execute Event
+                    %Execute Event (propagation)
                     newStateLogEntries = evt.executeEvent(initStateLogEntry, obj.simDriver, tStartPropTime, tStartSimTime, isSparseOutput, activeNonSeqEvts);
                     stateLog.appendStateLogEntries(newStateLogEntries);
                     
-                    %Clean Up Event
-                    initStateLogEntry = newStateLogEntries(end).deepCopy(); %this state log entry must be copied or the answers will change
-                    actionStateLogEntries = evt.cleanupEvent(initStateLogEntry);
-                    
-                    %Add state log entries to state log
-                    if(not(isempty(actionStateLogEntries)))
-                        stateLog.appendStateLogEntries(actionStateLogEntries);
-                        initStateLogEntry = actionStateLogEntries(end).deepCopy(); %this state log entry must be copied or the answers will change;
+                    initStateLogEntry = newStateLogEntries(end).deepCopy();  %this state log entry must be copied or the answers will change
+                    if(evt.execActionsNode == ActionExecNodeEnum.AfterProp)
+                        %Execute Actions
+                        actionStateLogEntries = evt.cleanupEvent(initStateLogEntry);
+
+                        %Add state log entries to state log
+                        if(not(isempty(actionStateLogEntries)))
+                            stateLog.appendStateLogEntries(actionStateLogEntries);
+                            initStateLogEntry = actionStateLogEntries(end).deepCopy(); %this state log entry must be copied or the answers will change;
+                        end
                     end
                     
                     stateLog.appendNonSeqEvtsState(obj.nonSeqEvts.copy(), evt);
