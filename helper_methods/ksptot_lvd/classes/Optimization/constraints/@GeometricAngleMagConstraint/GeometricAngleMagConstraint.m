@@ -7,6 +7,7 @@ classdef GeometricAngleMagConstraint < AbstractConstraint
         angle AbstractGeometricAngle
         useAbsValue(1,1) logical = false;
         event LaunchVehicleEvent
+        eventNode(1,1) ConstraintStateComparisonNodeEnum = ConstraintStateComparisonNodeEnum.FinalState;
         
         lb(1,1) double = 0;
         ub(1,1) double = 0;
@@ -14,6 +15,7 @@ classdef GeometricAngleMagConstraint < AbstractConstraint
         evalType(1,1) ConstraintEvalTypeEnum = ConstraintEvalTypeEnum.FixedBounds;
         stateCompType(1,1) ConstraintStateComparisonTypeEnum = ConstraintStateComparisonTypeEnum.Equals;
         stateCompEvent LaunchVehicleEvent
+        stateCompNode(1,1) ConstraintStateComparisonNodeEnum = ConstraintStateComparisonNodeEnum.FinalState;
     end
     
     methods
@@ -33,7 +35,17 @@ classdef GeometricAngleMagConstraint < AbstractConstraint
         
         function [c, ceq, value, lwrBnd, uprBnd, type, eventNum, valueStateComp] = evalConstraint(obj, stateLog, celBodyData)           
             type = obj.getConstraintType();
-            stateLogEntry = stateLog.getLastStateLogForEvent(obj.event);
+            
+            switch obj.eventNode
+                case ConstraintStateComparisonNodeEnum.FinalState
+                    stateLogEntry = stateLog.getLastStateLogForEvent(obj.event);
+                    
+                case ConstraintStateComparisonNodeEnum.InitialState
+                    stateLogEntry = stateLog.getFirstStateLogForEvent(obj.event);
+                
+                otherwise
+                    error('Unknown event node.');
+            end
 
             if(not(isempty(obj.frame)))
                 frame = obj.frame;
@@ -47,11 +59,16 @@ classdef GeometricAngleMagConstraint < AbstractConstraint
             end
             
             if(obj.evalType == ConstraintEvalTypeEnum.StateComparison)
-                stateLogEntryStateComp = stateLog.getLastStateLogForEvent(obj.stateCompEvent); %.deepCopy()
-                
-%                 cartElem = stateLogEntryStateComp.getCartesianElementSetRepresentation();
-%                 cartElem = cartElem.convertToFrame(stateLogEntry.centralBody.getBodyCenteredInertialFrame());
-%                 stateLogEntryStateComp.setCartesianElementSet(cartElem);
+                switch obj.stateCompNode
+                    case ConstraintStateComparisonNodeEnum.FinalState
+                        stateLogEntryStateComp = stateLog.getLastStateLogForEvent(obj.stateCompEvent);
+
+                    case ConstraintStateComparisonNodeEnum.InitialState
+                        stateLogEntryStateComp = stateLog.getFirstStateLogForEvent(obj.stateCompEvent);
+
+                    otherwise
+                        error('Unknown event node.');
+                end
 
                 valueStateComp = lvd_GeometricAngleTasks(stateLogEntryStateComp, 'Mag', obj.angle, frame);
                 if(obj.useAbsValue)

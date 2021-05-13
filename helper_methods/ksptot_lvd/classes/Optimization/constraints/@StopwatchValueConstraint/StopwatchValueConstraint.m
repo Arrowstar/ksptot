@@ -5,6 +5,7 @@ classdef StopwatchValueConstraint < AbstractConstraint
     properties
         normFact = 1;
         event LaunchVehicleEvent
+        eventNode(1,1) ConstraintStateComparisonNodeEnum = ConstraintStateComparisonNodeEnum.FinalState;
         stopwatch LaunchVehicleStopwatch
         
         lb(1,1) double = 0;
@@ -13,6 +14,7 @@ classdef StopwatchValueConstraint < AbstractConstraint
         evalType(1,1) ConstraintEvalTypeEnum = ConstraintEvalTypeEnum.FixedBounds;
         stateCompType(1,1) ConstraintStateComparisonTypeEnum = ConstraintStateComparisonTypeEnum.Equals;
         stateCompEvent LaunchVehicleEvent
+        stateCompNode(1,1) ConstraintStateComparisonNodeEnum = ConstraintStateComparisonNodeEnum.FinalState;
     end
     
     methods
@@ -31,19 +33,34 @@ classdef StopwatchValueConstraint < AbstractConstraint
         
         function [c, ceq, value, lwrBnd, uprBnd, type, eventNum, valueStateComp] = evalConstraint(obj, stateLog, celBodyData)           
             type = obj.getConstraintType();
-            stateLogEntry = stateLog.getLastStateLogForEvent(obj.event);
+            
+            switch obj.eventNode
+                case ConstraintStateComparisonNodeEnum.FinalState
+                    stateLogEntry = stateLog.getLastStateLogForEvent(obj.event);
+                    
+                case ConstraintStateComparisonNodeEnum.InitialState
+                    stateLogEntry = stateLog.getFirstStateLogForEvent(obj.event);
+                
+                otherwise
+                    error('Unknown event node.');
+            end
+            
             stopWatchStates = stateLogEntry.getAllStopwatchStates();
             stopWatchState = stopWatchStates(stopWatchStates.stopwatch == obj.stopwatch);
             
             value = stopWatchState.value;
                        
             if(obj.evalType == ConstraintEvalTypeEnum.StateComparison)
-%                 stateLogEntryStateComp = stateLog.getLastStateLogForEvent(obj.stateCompEvent).deepCopy();
-                stateLogEntryStateComp = stateLog.getLastStateLogForEvent(obj.stateCompEvent);
-                
-%                 cartElem = stateLogEntryStateComp.getCartesianElementSetRepresentation();
-%                 cartElem = cartElem.convertToFrame(stateLogEntry.centralBody.getBodyCenteredInertialFrame());
-%                 stateLogEntryStateComp.setCartesianElementSet(cartElem);
+                switch obj.stateCompNode
+                    case ConstraintStateComparisonNodeEnum.FinalState
+                        stateLogEntryStateComp = stateLog.getLastStateLogForEvent(obj.stateCompEvent);
+
+                    case ConstraintStateComparisonNodeEnum.InitialState
+                        stateLogEntryStateComp = stateLog.getFirstStateLogForEvent(obj.stateCompEvent);
+
+                    otherwise
+                        error('Unknown event node.');
+                end
 
                 stopWatchStates = stateLogEntryStateComp.getAllStopwatchStates();
                 stopWatchState = stopWatchStates(stopWatchStates.stopwatch == obj.stopwatch);

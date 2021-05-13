@@ -5,6 +5,7 @@ classdef TotalThrustConstraint < AbstractConstraint
     properties
         normFact = 1;
         event LaunchVehicleEvent
+        eventNode(1,1) ConstraintStateComparisonNodeEnum = ConstraintStateComparisonNodeEnum.FinalState;
         
         lb(1,1) double = 0;
         ub(1,1) double = 0;
@@ -12,6 +13,7 @@ classdef TotalThrustConstraint < AbstractConstraint
         evalType(1,1) ConstraintEvalTypeEnum = ConstraintEvalTypeEnum.FixedBounds;
         stateCompType(1,1) ConstraintStateComparisonTypeEnum = ConstraintStateComparisonTypeEnum.Equals;
         stateCompEvent LaunchVehicleEvent
+        stateCompNode(1,1) ConstraintStateComparisonNodeEnum = ConstraintStateComparisonNodeEnum.FinalState;
     end
     
     methods
@@ -30,13 +32,32 @@ classdef TotalThrustConstraint < AbstractConstraint
         
         function [c, ceq, value, lwrBnd, uprBnd, type, eventNum, valueStateComp] = evalConstraint(obj, stateLog, celBodyData)           
             type = obj.getConstraintType();
-            stateLogEntry = stateLog.getLastStateLogForEvent(obj.event);
+            
+            switch obj.eventNode
+                case ConstraintStateComparisonNodeEnum.FinalState
+                    stateLogEntry = stateLog.getLastStateLogForEvent(obj.event);
+                    
+                case ConstraintStateComparisonNodeEnum.InitialState
+                    stateLogEntry = stateLog.getFirstStateLogForEvent(obj.event);
+                
+                otherwise
+                    error('Unknown event node.');
+            end
             
             totalThrust = TotalThrustConstraint.getTotalThrust(stateLogEntry);
             value = totalThrust;
                        
             if(obj.evalType == ConstraintEvalTypeEnum.StateComparison)
-                stateLogEntryStateComp = stateLog.getLastStateLogForEvent(obj.stateCompEvent);
+                switch obj.stateCompNode
+                    case ConstraintStateComparisonNodeEnum.FinalState
+                        stateLogEntryStateComp = stateLog.getLastStateLogForEvent(obj.stateCompEvent);
+
+                    case ConstraintStateComparisonNodeEnum.InitialState
+                        stateLogEntryStateComp = stateLog.getFirstStateLogForEvent(obj.stateCompEvent);
+
+                    otherwise
+                        error('Unknown event node.');
+                end
 
                 valueStateComp = TotalThrustConstraint.getTotalThrust(stateLogEntryStateComp); %it's probably not a bad idea to leave the state here in the original reference frame.
             else

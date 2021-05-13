@@ -6,6 +6,7 @@ classdef GenericMAConstraint < AbstractConstraint
         constraintType char = '';
         normFact = 1;
         event LaunchVehicleEvent
+        eventNode(1,1) ConstraintStateComparisonNodeEnum = ConstraintStateComparisonNodeEnum.FinalState;
         
         lb(1,1) double = 0;
         ub(1,1) double = 0;
@@ -13,6 +14,7 @@ classdef GenericMAConstraint < AbstractConstraint
         evalType(1,1) ConstraintEvalTypeEnum = ConstraintEvalTypeEnum.FixedBounds;
         stateCompType(1,1) ConstraintStateComparisonTypeEnum = ConstraintStateComparisonTypeEnum.Equals;
         stateCompEvent LaunchVehicleEvent
+        stateCompNode(1,1) ConstraintStateComparisonNodeEnum = ConstraintStateComparisonNodeEnum.FinalState;
     end
     
     methods
@@ -35,10 +37,19 @@ classdef GenericMAConstraint < AbstractConstraint
         
         function [c, ceq, value, lwrBnd, uprBnd, type, eventNum, valueStateComp] = evalConstraint(obj, stateLog, celBodyData)   
             maTaskList = ma_getGraphAnalysisTaskList(getLvdGAExcludeList());
-            
-            stateLogEntry = stateLog.getLastStateLogForEvent(obj.event);
             type = obj.constraintType;
             
+            switch obj.eventNode
+                case ConstraintStateComparisonNodeEnum.FinalState
+                    stateLogEntry = stateLog.getLastStateLogForEvent(obj.event);
+                    
+                case ConstraintStateComparisonNodeEnum.InitialState
+                    stateLogEntry = stateLog.getFirstStateLogForEvent(obj.event);
+                
+                otherwise
+                    error('Unknown event node.');
+            end
+                       
             if(not(isempty(obj.frame)))
                 frame = obj.frame;
             else
@@ -51,38 +62,22 @@ classdef GenericMAConstraint < AbstractConstraint
                 refBodyId = [];
             end
                                    
-            if(ismember(type,maTaskList))
-                oscId = -1;
-                if(not(isempty(obj.refOtherSC)))
-                    oscId = obj.refOtherSC.id;
-                end
-
-                stnId = -1;
-                if(not(isempty(obj.refStation)))
-                    stnId = obj.refStation.id;
-                end
-                
-                maData.spacecraft = struct();
-                propNames = obj.event.lvdData.launchVehicle.tankTypes.getFirstThreeTypesCellArr();
-                
-                stateLogEntryMA = stateLogEntry.getMAFormattedStateLogMatrix(true);
-                value = ma_getDepVarValueUnit(1, stateLogEntryMA, type, 0, refBodyId, oscId, stnId, propNames, maData, celBodyData, false);
-            else
-                try
-                    [value, ~] = lvd_getDepVarValueUnit(1, stateLogEntry, type, refBodyId, celBodyData, false, frame);
-                catch ME
-                    warning('Could not evaluate constraint of type: %s', obj.constraintType);
-                    value = 0;
-                end
-            end
+            value = obj.getValueForConstraint(stateLogEntry, type, maTaskList, refBodyId, celBodyData, frame);
                     
             if(obj.evalType == ConstraintEvalTypeEnum.StateComparison)
-                stateLogEntryStateComp = stateLog.getLastStateLogForEvent(obj.stateCompEvent).deepCopy();
+                switch obj.stateCompNode
+                    case ConstraintStateComparisonNodeEnum.FinalState
+                        stateLogEntryStateComp = stateLog.getLastStateLogForEvent(obj.stateCompEvent).deepCopy();
+
+                    case ConstraintStateComparisonNodeEnum.InitialState
+                        stateLogEntryStateComp = stateLog.getFirstStateLogForEvent(obj.stateCompEvent).deepCopy();
+
+                    otherwise
+                        error('Unknown event node.');
+                end
+                
                 cartElem = stateLogEntryStateComp.getCartesianElementSetRepresentation().convertToFrame(frame);
                 stateLogEntryStateComp.setCartesianElementSet(cartElem);
-                
-%                 stateLogEntryStateCompMA = stateLogEntryStateComp.getMAFormattedStateLogMatrix(true);
-%                 valueStateComp = ma_getDepVarValueUnit(1, stateLogEntryStateCompMA, type, 0, refBodyId, oscId, stnId, propNames, maData, celBodyData, false);
 
                 valueStateComp = obj.getValueForConstraint(stateLogEntryStateComp, type, maTaskList, refBodyId, celBodyData, frame);
             else
@@ -179,7 +174,13 @@ classdef GenericMAConstraint < AbstractConstraint
                 value = ma_getDepVarValueUnit(1, stateLogEntryMA, type, 0, refBodyId, oscId, stnId, propNames, maData, celBodyData, false);
                 
             else
-                [value, ~] = lvd_getDepVarValueUnit(1, stateLogEntry, type, refBodyId, celBodyData, false, frame); %need to update!
+                try
+                    [value, ~] = lvd_getDepVarValueUnit(1, stateLogEntry, type, refBodyId, celBodyData, false, frame);
+                catch ME
+                    warning('Could not evaluate constraint of type: %s', obj.constraintType);
+                    value = 0;
+                end
+
             end
         end
     end

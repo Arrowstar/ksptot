@@ -5,6 +5,7 @@ classdef EventDeltaVExpendedConstraint < AbstractConstraint
     properties
         normFact = 1;
         event LaunchVehicleEvent
+        eventNode(1,1) ConstraintStateComparisonNodeEnum = ConstraintStateComparisonNodeEnum.FinalState;
         
         lb(1,1) double = 0;
         ub(1,1) double = 0;
@@ -12,6 +13,7 @@ classdef EventDeltaVExpendedConstraint < AbstractConstraint
         evalType(1,1) ConstraintEvalTypeEnum = ConstraintEvalTypeEnum.FixedBounds;
         stateCompType(1,1) ConstraintStateComparisonTypeEnum = ConstraintStateComparisonTypeEnum.Equals;
         stateCompEvent LaunchVehicleEvent
+        stateCompNode(1,1) ConstraintStateComparisonNodeEnum = ConstraintStateComparisonNodeEnum.FinalState;
     end
     
     methods
@@ -20,7 +22,7 @@ classdef EventDeltaVExpendedConstraint < AbstractConstraint
             obj.lb = lb;
             obj.ub = ub;   
             
-             obj.id = rand();
+            obj.id = rand();
         end
         
         function [lb, ub] = getBounds(obj)

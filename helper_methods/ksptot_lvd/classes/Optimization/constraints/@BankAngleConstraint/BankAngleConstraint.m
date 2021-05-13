@@ -5,6 +5,7 @@ classdef BankAngleConstraint < AbstractConstraint
     properties
         normFact = 1;
         event LaunchVehicleEvent
+        eventNode(1,1) ConstraintStateComparisonNodeEnum = ConstraintStateComparisonNodeEnum.FinalState;
         
         lb(1,1) double = 0;
         ub(1,1) double = 0;
@@ -12,6 +13,7 @@ classdef BankAngleConstraint < AbstractConstraint
         evalType(1,1) ConstraintEvalTypeEnum = ConstraintEvalTypeEnum.FixedBounds;
         stateCompType(1,1) ConstraintStateComparisonTypeEnum = ConstraintStateComparisonTypeEnum.Equals;
         stateCompEvent LaunchVehicleEvent
+        stateCompNode(1,1) ConstraintStateComparisonNodeEnum = ConstraintStateComparisonNodeEnum.FinalState;
     end
     
     methods
@@ -30,7 +32,17 @@ classdef BankAngleConstraint < AbstractConstraint
         
         function [c, ceq, value, lwrBnd, uprBnd, type, eventNum, valueStateComp] = evalConstraint(obj, stateLog, celBodyData)           
             type = obj.getConstraintType();
-            stateLogEntry = stateLog.getLastStateLogForEvent(obj.event);
+            
+            switch obj.eventNode
+                case ConstraintStateComparisonNodeEnum.FinalState
+                    stateLogEntry = stateLog.getLastStateLogForEvent(obj.event);
+                    
+                case ConstraintStateComparisonNodeEnum.InitialState
+                    stateLogEntry = stateLog.getFirstStateLogForEvent(obj.event);
+                
+                otherwise
+                    error('Unknown event node.');
+            end
             
             ut = stateLogEntry.time;
             rVect = stateLogEntry.position;
@@ -41,7 +53,16 @@ classdef BankAngleConstraint < AbstractConstraint
             value = rad2deg(bankAng);
                        
             if(obj.evalType == ConstraintEvalTypeEnum.StateComparison)
-                stateLogEntryStateComp = stateLog.getLastStateLogForEvent(obj.stateCompEvent).deepCopy();
+                switch obj.stateCompNode
+                    case ConstraintStateComparisonNodeEnum.FinalState
+                        stateLogEntryStateComp = stateLog.getLastStateLogForEvent(obj.stateCompEvent).deepCopy();
+
+                    case ConstraintStateComparisonNodeEnum.InitialState
+                        stateLogEntryStateComp = stateLog.getFirstStateLogForEvent(obj.stateCompEvent).deepCopy();
+
+                    otherwise
+                        error('Unknown event node.');
+                end
                 
                 cartElem = stateLogEntryStateComp.getCartesianElementSetRepresentation();
                 cartElem = cartElem.convertToFrame(stateLogEntry.centralBody.getBodyCenteredInertialFrame());

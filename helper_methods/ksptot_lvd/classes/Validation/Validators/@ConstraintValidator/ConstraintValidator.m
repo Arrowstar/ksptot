@@ -22,13 +22,17 @@ classdef ConstraintValidator < AbstractLaunchVehicleDataValidator
             for(i=1:length(values)) %#ok<NO4LP>
                 const = consts(i);
                 [unit, ~, ~, ~, ~, ~] = const.getConstraintStaticDetails();
+                constEvtNodeStr = const.eventNode.name;
+                
                 if(const.evalType == ConstraintEvalTypeEnum.FixedBounds)
                     if(values(i) <= lb(i) || values(i) >= ub(i))
                         eventNums(end+1) = eventNum(i); %#ok<AGROW>
-                        detailStrs{end+1} = sprintf('%s Constraint (Event %u) - Value = %f %s, Bounds: [%f %s, %f %s]',type{i},eventNum(i), values(i), unit, lb(i), unit, ub(i), unit); %#ok<AGROW>
+                        detailStrs{end+1} = sprintf('%s Constraint (Event %u %s) - Value = %f %s, Bounds: [%f %s, %f %s]',type{i}, eventNum(i), constEvtNodeStr, values(i), unit, lb(i), unit, ub(i), unit); %#ok<AGROW>
                     end
                     
                 elseif(const.evalType == ConstraintEvalTypeEnum.StateComparison)
+                    constStateCompNodeStr = const.stateCompNode.name;
+                    
                     subC = c(cCInds == i);
                     subCeq = ceq(cCeqInds == i);
                     if(any(subC > 0) || any(subCeq ~= 0))
@@ -45,7 +49,7 @@ classdef ConstraintValidator < AbstractLaunchVehicleDataValidator
                             valueStateCompStr = '';
                         end
                         
-                        detailStrs{end+1} = sprintf('%s Constraint (Event %u) - Value = %f %s, (%s Event %u %s%s)',type{i},eventNum(i), values(i), unit, symbol, compEventNum, type{i}, valueStateCompStr); %#ok<AGROW>
+                        detailStrs{end+1} = sprintf('%s Constraint (Event %u %s) - Value = %f %s, (%s Event %u %s %s%s)',type{i}, eventNum(i), constEvtNodeStr, values(i), unit, symbol, compEventNum, constStateCompNodeStr, type{i}, valueStateCompStr); %#ok<AGROW>
                     end
                     
                 else

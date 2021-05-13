@@ -5,6 +5,7 @@ classdef CalculusCalculationValueConstraint < AbstractConstraint
     properties
         normFact = 1;
         event LaunchVehicleEvent
+        eventNode(1,1) ConstraintStateComparisonNodeEnum = ConstraintStateComparisonNodeEnum.FinalState;
         calculusCalc AbstractLaunchVehicleCalculusCalc
         
         lb(1,1) double = 0;
@@ -13,6 +14,7 @@ classdef CalculusCalculationValueConstraint < AbstractConstraint
         evalType(1,1) ConstraintEvalTypeEnum = ConstraintEvalTypeEnum.FixedBounds;
         stateCompType(1,1) ConstraintStateComparisonTypeEnum = ConstraintStateComparisonTypeEnum.Equals;
         stateCompEvent LaunchVehicleEvent
+        stateCompNode(1,1) ConstraintStateComparisonNodeEnum = ConstraintStateComparisonNodeEnum.FinalState;
     end
     
     methods
@@ -31,7 +33,18 @@ classdef CalculusCalculationValueConstraint < AbstractConstraint
         
         function [c, ceq, value, lwrBnd, uprBnd, type, eventNum, valueStateComp] = evalConstraint(obj, stateLog, celBodyData)           
             type = obj.getConstraintType();
-            stateLogEntry = stateLog.getLastStateLogForEvent(obj.event);
+            
+            switch obj.eventNode
+                case ConstraintStateComparisonNodeEnum.FinalState
+                    stateLogEntry = stateLog.getLastStateLogForEvent(obj.event);
+                    
+                case ConstraintStateComparisonNodeEnum.InitialState
+                    stateLogEntry = stateLog.getFirstStateLogForEvent(obj.event);
+                
+                otherwise
+                    error('Unknown event node.');
+            end
+            
             cObjStates = stateLogEntry.getAllCalculusObjStates();
             cObjState = cObjStates([cObjStates.calcObj] == obj.calculusCalc);
             
@@ -39,12 +52,16 @@ classdef CalculusCalculationValueConstraint < AbstractConstraint
             value = cObjState.getValueAtTime(time);
                        
             if(obj.evalType == ConstraintEvalTypeEnum.StateComparison)
-%                 stateLogEntryStateComp = stateLog.getLastStateLogForEvent(obj.stateCompEvent).deepCopy();
-                stateLogEntryStateComp = stateLog.getLastStateLogForEvent(obj.stateCompEvent);
+                switch obj.stateCompNode
+                    case ConstraintStateComparisonNodeEnum.FinalState
+                        stateLogEntryStateComp = stateLog.getLastStateLogForEvent(obj.stateCompEvent);
 
-%                 cartElem = stateLogEntryStateComp.getCartesianElementSetRepresentation();
-%                 cartElem = cartElem.convertToFrame(stateLogEntry.centralBody.getBodyCenteredInertialFrame());
-%                 stateLogEntryStateComp.setCartesianElementSet(cartElem);
+                    case ConstraintStateComparisonNodeEnum.InitialState
+                        stateLogEntryStateComp = stateLog.getFirstStateLogForEvent(obj.stateCompEvent);
+
+                    otherwise
+                        error('Unknown event node.');
+                end
                 
                 time = stateLogEntryStateComp.time;
                 valueStateComp = cObjState.getValueAtTime(time);

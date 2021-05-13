@@ -22,7 +22,7 @@ function varargout = lvd_EditGeometricVectorConstraintGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditGeometricVectorConstraintGUI
 
-% Last Modified by GUIDE v2.5 04-May-2021 14:41:39
+% Last Modified by GUIDE v2.5 13-May-2021 10:35:04
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -133,6 +133,12 @@ function populateGUI(handles, constraint, lvdData)
         handles.compEventCombo.Value = 1;
     end
     
+    handles.eventNodeCombo.String = ConstraintStateComparisonNodeEnum.getListBoxStr();
+    handles.eventNodeCombo.Value = ConstraintStateComparisonNodeEnum.getIndForName(constraint.eventNode.name);
+    
+    handles.stateComparisonNodeCombo.String = ConstraintStateComparisonNodeEnum.getListBoxStr();
+    handles.stateComparisonNodeCombo.Value = ConstraintStateComparisonNodeEnum.getIndForName(constraint.stateCompNode.name);
+    
     handles.comparisonTypeCombo.String = ConstraintStateComparisonTypeEnum.getListBoxStr();
     handles.comparisonTypeCombo.Value = ConstraintStateComparisonTypeEnum.getIndForName(constraint.stateCompType.name);
     
@@ -167,6 +173,12 @@ function varargout = lvd_EditGeometricVectorConstraintGUI_OutputFcn(hObject, eve
         
         [~, enums] = ConstraintStateComparisonTypeEnum.getListBoxStr();
         constraint.stateCompType = enums(handles.comparisonTypeCombo.Value);
+        
+        [~, enums] = ConstraintStateComparisonNodeEnum.getListBoxStr();
+        constraint.eventNode = enums(handles.eventNodeCombo.Value);
+        
+        [~, enums] = ConstraintStateComparisonNodeEnum.getListBoxStr();
+        constraint.stateCompNode = enums(handles.stateComparisonNodeCombo.Value);
         
         numEvents = lvdData.script.getTotalNumOfEvents();
         if(numEvents > 0)
@@ -250,8 +262,9 @@ function errMsg = validateInputs(handles)
     [~, enums] = ConstraintEvalTypeEnum.getListBoxStr();
     evalTypeEnum = enums(handles.constraintEvalTypeCombo.Value);
     if(evalTypeEnum == ConstraintEvalTypeEnum.StateComparison && ...
-       handles.eventCombo.Value == handles.compEventCombo.Value)
-        errMsg{end+1} = 'When using the state comparison evaluation type, the Applicable Event and Comparison Event must be different.'; 
+       handles.eventCombo.Value == handles.compEventCombo.Value && ...
+       handles.eventNodeCombo.Value == handles.stateComparisonNodeCombo.Value)
+        errMsg{end+1} = 'When using the state comparison evaluation type, the Applicable Event and Node and Comparison Event and Node must be different.'; 
     end
 
     
@@ -435,12 +448,14 @@ function constraintEvalTypeCombo_Callback(hObject, eventdata, handles)
             handles.lbText.Enable = 'on';
             handles.compEventCombo.Enable = 'off';
             handles.comparisonTypeCombo.Enable = 'off';
+            handles.stateComparisonNodeCombo.Enable = 'off';
             
         case ConstraintEvalTypeEnum.StateComparison
             handles.ubText.Enable = 'off';
             handles.lbText.Enable = 'off';
             handles.compEventCombo.Enable = 'on';
             handles.comparisonTypeCombo.Enable = 'on';
+            handles.stateComparisonNodeCombo.Enable = 'on';
             
         otherwise
             error('Unknown constraint evaluation type.');
@@ -625,3 +640,49 @@ function updateFrameChange(handles)
 function bodyInfo = getSelectedBodyInfo(handles)
     curFrame = getappdata(handles.lvd_EditGeometricVectorConstraintGUI,'frame');
     bodyInfo = curFrame.getOriginBody();
+
+
+% --- Executes on selection change in eventNodeCombo.
+function eventNodeCombo_Callback(hObject, eventdata, handles)
+% hObject    handle to eventNodeCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns eventNodeCombo contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from eventNodeCombo
+
+
+% --- Executes during object creation, after setting all properties.
+function eventNodeCombo_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to eventNodeCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in stateComparisonNodeCombo.
+function stateComparisonNodeCombo_Callback(hObject, eventdata, handles)
+% hObject    handle to stateComparisonNodeCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns stateComparisonNodeCombo contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from stateComparisonNodeCombo
+
+
+% --- Executes during object creation, after setting all properties.
+function stateComparisonNodeCombo_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to stateComparisonNodeCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
