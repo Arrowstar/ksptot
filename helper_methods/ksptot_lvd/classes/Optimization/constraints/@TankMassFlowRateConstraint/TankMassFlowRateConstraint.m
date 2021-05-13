@@ -39,7 +39,7 @@ classdef TankMassFlowRateConstraint < AbstractConstraint
             if(obj.evalType == ConstraintEvalTypeEnum.StateComparison)
                 stateLogEntryStateComp = stateLog.getLastStateLogForEvent(obj.stateCompEvent); %.deepCopy()
 
-                value = lvd_TankMassTasks(stateLogEntryStateComp, 'tankMDot', obj.tank);
+                valueStateComp = lvd_TankMassTasks(stateLogEntryStateComp, 'tankMDot', obj.tank);
             else
                 valueStateComp = NaN;
             end

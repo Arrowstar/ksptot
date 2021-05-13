@@ -65,7 +65,7 @@ classdef AddDeltaVAction < AbstractEventAction
                     totalMDotKgS = sum(tankMDotsKgS);
                     totalThrustN = totalThrust * 1000;
                     effIsp = totalThrustN / (getG0() * abs(totalMDotKgS)); %sec
-
+                    
                     dvVectMag = norm(dvKmsVect);
                     m0 = newStateLogEntry.getTotalVehicleMass();
                     m1 = revRocketEqn(m0, effIsp, dvVectMag);

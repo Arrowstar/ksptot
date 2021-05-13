@@ -3,10 +3,10 @@ classdef HaloOrbitApproximator < matlab.mixin.SetGet
     %   Detailed explanation goes here
     
     properties
-%         frame TwoBodyRotatingFrame
         gm1(1,1) double
         gm2(1,1) double
         sma2(1,1) double
+        radius1(1,1) double
         radius2(1,1) double
         AzUnscaled(1,1) double
         LPt(1,1) string = "L1"
@@ -27,15 +27,23 @@ classdef HaloOrbitApproximator < matlab.mixin.SetGet
         AzScaled(1,1) double
     end
     
+    properties(Transient)
+        corrSol
+        manifoldLine(1,1)
+        rVectCR3BP_Prim_Manifold(3,1) double
+        vVectCR3BP_Prim_Manifold(3,1) double
+    end
+    
     events
         UpdateCalcWaitbar
     end
     
     methods
-        function obj = HaloOrbitApproximator(gm1, gm2, sma2, radius2, AzUnscaled, LPt, side)
+        function obj = HaloOrbitApproximator(gm1, gm2, sma2, radius1, radius2, AzUnscaled, LPt, side)
             obj.gm1 = gm1;
             obj.gm2 = gm2;
             obj.sma2 = sma2;
+            obj.radius1 = radius1;
             obj.radius2 = radius2;
             obj.AzUnscaled = AzUnscaled;
             obj.LPt = string(upper(LPt));
@@ -64,7 +72,7 @@ classdef HaloOrbitApproximator < matlab.mixin.SetGet
         
         function val = get.gL(obj)
             LP = HaloOrbitApproximator.lagrangePoints(obj.mu);
-
+            
             switch obj.LPt
                 case "L1"
                     val = abs(1 - obj.mu - LP(1,1));
@@ -76,30 +84,85 @@ classdef HaloOrbitApproximator < matlab.mixin.SetGet
         end
         
         function val = get.AzScaled(obj)
-            val = (obj.AzUnscaled/obj.LU)/obj.gL;            
+            val = (obj.AzUnscaled/obj.LU)/obj.gL;
         end
         
-        function [rVectCR3BP_Prim, vVectCR3BP_Prim, period, approxAzAchieved, corrAzAchieved] = computeCorrectedInitialState(obj, hAx)            
-            [~,~,~,~,~,~, statesND_approx, ~, Tapprox] = obj.getApproxHaloOrbitInitState(0);           
+        function computeManifold(obj, tFrac, whichManifold, propDurDimensioned, hAx)
+            sol = obj.corrSol;
+            if(not(isempty(sol)))                
+                T = sol.x';
+                Y = sol.y';
+                
+                stateF_Monodromy = reshape(Y(end,7:end),6,6);
+                [V,D] = eig(stateF_Monodromy);
+                eigvalues = diag(D,0);
+                [~, IMaxEig] = max(real(eigvalues));
+                [~, IMinEig] = min(real(eigvalues));
+                
+                Vs = V(:, IMinEig);
+                Vu = V(:, IMaxEig);
+                
+                tFracActual = tFrac * (T(end) - T(1));
+                Ynd_corr_Tfrac = deval(sol,tFracActual)';
+                stateF_STM = reshape(Ynd_corr_Tfrac(1,7:end),6,6);
+                
+                Vs_i = stateF_STM * Vs;
+                Vu_i = stateF_STM * Vu;
+                
+                epsilson = [0; 0; 0; 1E-4; 1E-4; 1E-4];
+                Xi = Ynd_corr_Tfrac(1,1:6);
+                XiS = Xi(:) + epsilson .* normVector(Vs_i);
+                XiU = Xi(:) + epsilson .* normVector(Vu_i);
+                
+                propDur = propDurDimensioned / obj.TU;
+                if(propDur > 0)
+                    switch whichManifold
+                        case HaloArriveDepartManifoldEnum.Arrive
+                            [T_manifold, Y_manifold] = obj.simulateOrbit(XiU(:)', propDur, false);
+                            
+                        case HaloArriveDepartManifoldEnum.Depart
+                            [T_manifold, Y_manifold] = obj.simulateOrbit(XiS(:)', -propDur, false);
+                            
+                        otherwise
+                            error('Unknown manifold type.');
+                    end
+                    
+                else
+                    T_manifold = 0;
+                    Y_manifold = XiS(:)';
+                end
+                
+                Y_manifold_Pos_Dim = Y_manifold(:,1:3) * obj.LU;
+                if(isempty(obj.manifoldLine) || not(isgraphics(obj.manifoldLine, 'Line')))
+                    obj.manifoldLine = plot3(hAx, Y_manifold_Pos_Dim(:,1), Y_manifold_Pos_Dim(:,2), Y_manifold_Pos_Dim(:,3));
+                    obj.manifoldLine.DisplayName = 'Arrival/Departure Orbit';
+                else
+                    obj.manifoldLine.XData = Y_manifold_Pos_Dim(:,1);
+                    obj.manifoldLine.YData = Y_manifold_Pos_Dim(:,2);
+                    obj.manifoldLine.ZData = Y_manifold_Pos_Dim(:,3);
+                end
+                
+                primary = [-obj.mu, 0, 0];
+
+                obj.rVectCR3BP_Prim_Manifold = (Y_manifold(1,1:3)-primary)' * obj.LU;
+                obj.vVectCR3BP_Prim_Manifold = Y_manifold(1,4:6)' * obj.VU;
+            end
+        end
+        
+        function [rVectCR3BP_Prim, vVectCR3BP_Prim, period, approxAzAchieved, corrAzAchieved] = computeCorrectedInitialState(obj, hAx, dispPrimBody, dispSecBody)
+            [~,~,~,~,~,~, statesND_approx, ~, Tapprox] = obj.getApproxHaloOrbitInitState(0);
             state0ND_diffCor = obj.differentialCorrector(statesND_approx(1,:), Tapprox);
             
             [Tnd_uncorr,Ynd_uncorr] = obj.simulateOrbit(statesND_approx(1,:), Tapprox, false);
-            [Tnd_corr,Ynd_corr] = obj.simulateOrbit(state0ND_diffCor, 2*Tapprox, false);
+            [Tnd_corr,Ynd_corr, ~,~,~, sol_corr] = obj.simulateOrbit(state0ND_diffCor, 2*Tapprox, false);
+            obj.corrSol = sol_corr;
             
             approxAzAchieved = max(abs(statesND_approx(:,3))*obj.LU);
             corrAzAchieved = max(abs(Ynd_corr(:,3))*obj.LU);
             
             fprintf('Approx Az Achieved: %0.3f km\n', approxAzAchieved);
             fprintf('Corrected Az Achieved: %0.3f km\n', corrAzAchieved);
-            
-%             stateF_STM = reshape(Ynd_corr(end,7:end),6,6);
-%             [~,D] = eig(stateF_STM);
-%             eigvalues = diag(D,0);
-%             maxeig = max(real(eigvalues));
-% 
-%             stabilityIndex = (1/2)*(maxeig + maxeig^-1);
-%             fprintf('Stability Index: %0.3f\n', stabilityIndex);
-            
+                        
             if(isempty(hAx))
                 hAx = axes(figure());
             else
@@ -110,15 +173,36 @@ classdef HaloOrbitApproximator < matlab.mixin.SetGet
             [hTrajUnCorr, ~] = obj.plotHaloOrbit(hAx, Ynd_uncorr);
             [hTrajCorr,   ~] = obj.plotHaloOrbit(hAx, Ynd_corr);
             
+            legendObjs = [hTrajApprox, hTrajUnCorr, hTrajCorr];
+            
+            hTrajApprox.DisplayName = 'Approx Halo';
+            hTrajUnCorr.DisplayName = 'Uncorrected Halo';
+            hTrajCorr.DisplayName   = 'Corrected Halo';
+            hLPts.DisplayName = 'L Points';
+            
             axis(hAx,'equal');
             hold(hAx,'on');
-            dRad = obj.radius2;
-            [X,Y,Z] = sphere(30);
-            X = dRad*X + (1-obj.mu)*obj.LU;
-            CData = getCDataForSphereWithColormap(Z, 'gray');
-            hCBodySurf = surf(hAx, X,dRad*Y,dRad*Z, 'CData',CData, 'BackFaceLighting','lit', 'FaceLighting','gouraud', 'EdgeLighting','gouraud', 'LineWidth',0.1, 'EdgeAlpha',0.1);
             
-            legend([hTrajApprox, hTrajUnCorr, hTrajCorr, hCBodySurf, hLPts], {'Approx Halo', 'Uncorrected Halo', 'Corrected Halo', 'Secondary Body', 'L Points'}, 'Location','best');
+            %Plot secondary
+            if(dispSecBody)
+                dRad = obj.radius2;
+                [X,Y,Z] = sphere(30);
+                X = dRad*X + (1-obj.mu)*obj.LU;
+                CData = getCDataForSphereWithColormap(Z, 'gray');
+                legendObjs(end+1) = surf(hAx, X,dRad*Y,dRad*Z, 'CData',CData, 'BackFaceLighting','lit', 'FaceLighting','gouraud', 'EdgeLighting','gouraud', 'LineWidth',0.1, 'EdgeAlpha',0.1, 'DisplayName','Primary Body');
+            end
+            
+            %Plot primary
+            if(dispPrimBody)
+                dRad = obj.radius1;
+                [X,Y,Z] = sphere(30);
+                X = dRad*X + (-obj.mu)*obj.LU;
+                CData = getCDataForSphereWithColormap(Z, 'gray');
+                legendObjs(end+1) = surf(hAx, X,dRad*Y,dRad*Z, 'CData',CData, 'BackFaceLighting','lit', 'FaceLighting','gouraud', 'EdgeLighting','gouraud', 'LineWidth',0.1, 'EdgeAlpha',0.1, 'DisplayName','Primary Body');
+            end
+            
+%             {'Approx Halo', 'Uncorrected Halo', 'Corrected Halo', 'Primary Body', 'Secondary Body', 'L Points'};
+            legend(legendObjs, 'Location','best');
             
             primary = [-obj.mu, 0, 0];
             
@@ -127,7 +211,7 @@ classdef HaloOrbitApproximator < matlab.mixin.SetGet
             period = Tapprox * obj.TU;
         end
         
-        function state0ND_approx = differentialCorrector(obj, state0ND_approx, Tapprox)            
+        function state0ND_approx = differentialCorrector(obj, state0ND_approx, Tapprox)
             MU = obj.mu;
             adjustInd = obj.adjustIndEnum.adjustInd;
             
@@ -135,7 +219,7 @@ classdef HaloOrbitApproximator < matlab.mixin.SetGet
             deltaZDot = Inf;
             tol = 1E-12;
             while(abs(deltaXDot) > tol || ...
-                  abs(deltaZDot) > tol)
+                    abs(deltaZDot) > tol)
                 % 1. Propagate the initial state vector using an ODE solver, such as ode45 in Matlab,
                 % until the position in y is equal to zero again (T/2).
                 [Tnd_uncorr,Ynd_uncorr, te,ye,ie] = obj.simulateOrbit(state0ND_approx, 10*Tapprox, true);
@@ -144,9 +228,9 @@ classdef HaloOrbitApproximator < matlab.mixin.SetGet
                 % 2. Find the error in x and z velocities at T/2 (x_ and z_).
                 deltaXDot = -stateF(4);
                 deltaZDot = -stateF(6);
-                deltaVect = [deltaXDot; 
-                             deltaZDot];
-
+                deltaVect = [deltaXDot;
+                    deltaZDot];
+                
                 % 3. Calculate the change in the initial state required to reduce the error. It is only
                 % necessary to change two of the initial states. Since all the zero terms are correct
                 % those are left alone, and x and y_ are the only terms that will need to be altered.
@@ -155,22 +239,22 @@ classdef HaloOrbitApproximator < matlab.mixin.SetGet
                 stateF_kinematic = stateF(1:6);
                 stateF_STM = stateF(7:end);
                 stateF_STM = reshape(stateF_STM,6,6);
-
+                
                 A = [stateF_STM(4,adjustInd), stateF_STM(4,5);
-                     stateF_STM(6,adjustInd), stateF_STM(6,5)];
-
+                    stateF_STM(6,adjustInd), stateF_STM(6,5)];
+                
                 b = [stateF_STM(2,adjustInd), stateF_STM(2,5)];
-
+                
                 accelVec = HaloOrbitApproximator.cr3bpODE(Tnd_uncorr(end),stateF_kinematic,MU);
                 accelVec = [accelVec(4); accelVec(6)];
-
+                
                 vy = stateF_kinematic(5);
-
+                
                 RHS = (A - (1/vy)*accelVec*b);
-                deltas = RHS \ deltaVect; 
+                deltas = RHS \ deltaVect;
                 deltas = deltas * obj.diffCorAlpha;
-                        
-                % 4. Now, a new initial state is calculated by adding x0 and y_0 to the original 
+                
+                % 4. Now, a new initial state is calculated by adding x0 and y_0 to the original
                 %initial state as in Equation 3.59 and Equation 3.60.
                 r0_new = state0ND_approx(adjustInd) + deltas(1);
                 ydot0_new = state0ND_approx(5) + deltas(2);
@@ -182,22 +266,21 @@ classdef HaloOrbitApproximator < matlab.mixin.SetGet
                 curVal = log10(max(abs(deltaVect)));
                 evtData = matlab.ui.eventdata.ValueChangedData(curVal, log10(tol));
                 notify(obj, 'UpdateCalcWaitbar', evtData);
-%                 disp( [log10(max(abs(deltaVect))), max(abs(Ynd_uncorr(:,3))) ]);
             end
         end
-                      
+        
         function [x,y,z,xdot,ydot,zdot, statesND, statesDim, Tapprox] = getApproxHaloOrbitInitState(obj, phi0)
             [k, wp, nu, ...
-             a21, a22, a23, a24, a31, a32, ...
-             b21, b22, b31, b32, ...
-             d21, d31, d32, Ax, Az] = obj.getRichardsonConstants();
-
+                a21, a22, a23, a24, a31, a32, ...
+                b21, b22, b31, b32, ...
+                d21, d31, d32, Ax, Az] = obj.getRichardsonConstants();
+            
             if(obj.side == "northern")
                 m = 1;
             elseif(obj.side == "southern")
                 m = 3;
             else
-                error('Unknown side parameter');                
+                error('Unknown side parameter');
             end
             
             Tapprox = (2*pi)/(wp*nu);
@@ -209,8 +292,8 @@ classdef HaloOrbitApproximator < matlab.mixin.SetGet
             g = obj.gL;
             
             x = g*(a21*Ax^2 + a22*Az - Ax*cos(tau1) + (a23*Ax^2 - a24*Az^2)*cos(2*tau1) + ...
-                   (a31*Ax^3 - a32*Ax*(Az^2)*cos(3*tau1)));
-               
+                (a31*Ax^3 - a32*Ax*(Az^2)*cos(3*tau1)));
+            
             y = g*(k*Ax*sin(tau1) + (b21*Ax^2 - b22*Az^2)*sin(2*tau1) + (b31*Ax^3 - b32*Ax*Az^2)*sin(3*tau1));
             
             z = g*(deltaM*Az*cos(tau1) + deltaM*d21*Ax*Az*(cos(2*tau1) - 3) + deltaM*(d32*Az*Ax^2 - d31*Az^3)*cos(3*tau1));
@@ -235,14 +318,14 @@ classdef HaloOrbitApproximator < matlab.mixin.SetGet
             
             statesND = [x(:), y(:), z(:), xdot(:), ydot(:), zdot(:)];
             statesDim = [x(:)*obj.LU, ...
-                         y(:)*obj.LU, ...
-                         z(:)*obj.LU, ...
-                         xdot(:)*obj.VU, ...
-                         ydot(:)*obj.VU, ...
-                         zdot(:)*obj.VU];
+                y(:)*obj.LU, ...
+                z(:)*obj.LU, ...
+                xdot(:)*obj.VU, ...
+                ydot(:)*obj.VU, ...
+                zdot(:)*obj.VU];
         end
         
-        function [hTraj, hLPts] = plotHaloOrbit(obj, hAx, statesND)            
+        function [hTraj, hLPts] = plotHaloOrbit(obj, hAx, statesND)
             LP = HaloOrbitApproximator.lagrangePoints(obj.mu);
             LP = LP * obj.LU;
             
@@ -252,11 +335,11 @@ classdef HaloOrbitApproximator < matlab.mixin.SetGet
             hTraj = plot3(hAx, statesDim(:,1), statesDim(:,2), statesDim(:,3));
             grid(hAx, 'off');
             grid(hAx, 'minor');
-%             plot3(-obj.mu, 0, 0, 'ko');
-%             hSecBody = plot3(hAx, (1-obj.mu)*obj.LU, 0, 0, 'ko');
-%             hSecBody = obj.plotBody(hAx);
-            hLPts = plot3(hAx, LP(1:2,1), LP(1:2,2), LP(1:2,3), 'bo'); 
-%             axis(hAx,'equal');
+            %             plot3(-obj.mu, 0, 0, 'ko');
+            %             hSecBody = plot3(hAx, (1-obj.mu)*obj.LU, 0, 0, 'ko');
+            %             hSecBody = obj.plotBody(hAx);
+            hLPts = plot3(hAx, LP(1:2,1), LP(1:2,2), LP(1:2,3), 'bo');
+            %             axis(hAx,'equal');
             hold(hAx, 'off');
             xlabel(hAx,'X [km]');
             ylabel(hAx,'Y [km]');
@@ -266,13 +349,13 @@ classdef HaloOrbitApproximator < matlab.mixin.SetGet
         function hCBodySurf = plotBody(obj, hAx)
             dRad = obj.radius2 / obj.LU;
             [X,Y,Z] = sphere(50);
-
+            
             CData = getCDataForSphereWithColormap(Z, 'gray');
             hCBodySurf = surf(hAx, dRad*X,dRad*Y,dRad*Z, 'CData',CData, 'BackFaceLighting','lit', 'FaceLighting','gouraud', 'EdgeLighting','gouraud', 'LineWidth',0.1, 'EdgeAlpha',0.1);
             material(hCBodySurf,'dull');
         end
         
-        function [T,Y, te,ye,ie] = simulateOrbit(obj, y0, tf, stopOnYCrossing)           
+        function [T,Y, te,ye,ie, sol] = simulateOrbit(obj, y0, tf, stopOnYCrossing)
             tspan=[0 tf];
             
             if(numel(y0) == 6)
@@ -284,11 +367,17 @@ classdef HaloOrbitApproximator < matlab.mixin.SetGet
             evtFcn = @(t,y) HaloOrbitApproximator.odeEvents(t,y, stopOnYCrossing);
             options=odeset('RelTol',1e-12,'AbsTol',1e-12,'Events',evtFcn);
             
-            [T,Y, te,ye,ie]=ode113(odefun, tspan, y0, options);
+            sol = ode113(odefun, tspan, y0, options);
+            
+            T = sol.x';
+            Y = sol.y';
+            te = sol.xe';
+            ye = sol.ye';
+            ie = sol.ie';
         end
     end
     
-    methods(Access=private)     
+    methods(Access=private)
         function f = correctedHaloOrbitObjFun(obj, x, state0ND_approx, Tapprox)
             xNew = x(1);
             zNew = x(2);
@@ -316,16 +405,16 @@ classdef HaloOrbitApproximator < matlab.mixin.SetGet
         end
         
         function [k, wp, nu, ...
-                  a21, a22, a23, a24, a31, a32, ...
-                  b21, b22, b31, b32, ...
-                  d21, d31, d32, Ax, Az] = getRichardsonConstants(obj)
-
-%             c2 = (1/obj.gL^3) * (obj.mu + ((1-obj.mu)*obj.gL^3)/(1-obj.gL)^3);
-%             c3 = (1/obj.gL^3) * (obj.mu - ((1-obj.mu)*obj.gL^4)/(1-obj.gL)^4);
-%             c4 = (1/obj.gL^3) * (obj.mu + ((1-obj.mu)*obj.gL^5)/(1-obj.gL)^5);
-
+                a21, a22, a23, a24, a31, a32, ...
+                b21, b22, b31, b32, ...
+                d21, d31, d32, Ax, Az] = getRichardsonConstants(obj)
+            
+            %             c2 = (1/obj.gL^3) * (obj.mu + ((1-obj.mu)*obj.gL^3)/(1-obj.gL)^3);
+            %             c3 = (1/obj.gL^3) * (obj.mu - ((1-obj.mu)*obj.gL^4)/(1-obj.gL)^4);
+            %             c4 = (1/obj.gL^3) * (obj.mu + ((1-obj.mu)*obj.gL^5)/(1-obj.gL)^5);
+            
             [~, c2, c3, c4] = obj.computeCCoeff();
-                        
+            
             wp = sqrt(2 - c2 + ((9*c2^2 - 8*c2)/2)^(1/2));
             k = (wp^2 + 1 + 2*c2)/(2*wp);
             
@@ -344,20 +433,20 @@ classdef HaloOrbitApproximator < matlab.mixin.SetGet
             b21 = ((-3*c3*wp)/(2*d1))*(3*k*wp - 4);
             b22 = (3*c3*wp)/d1;
             b31 = (3/(8*d2)) * (8*wp*(3*c3*(k*b21 - 2*a23) - c4*(2+3*k^2)) + ...
-                                         (9*wp^2 + 1 + 2*c2)*(4*c3*(k*a23-b21)+(k*c4*(4+k^2)))); 
+                (9*wp^2 + 1 + 2*c2)*(4*c3*(k*a23-b21)+(k*c4*(4+k^2))));
             b32 = (1/d2) * (9*wp*(c3*(k*b22 + d21 - 2*a24) - c4) + ...
-                                         (3/8)*(9*wp^2 + 1 + 2*c2)*(4*c3*(k*a24-b22)+(k*c4))); 
-                                     
+                (3/8)*(9*wp^2 + 1 + 2*c2)*(4*c3*(k*a24-b22)+(k*c4)));
+            
             a31 = (-9*wp/(4*d2)) * (4*c3*(k*a23 - b21) + k*c4*(4+k^2)) + ...
-                                         ((9*wp^2 + 1 - c2)/(2*d2))*(3*c3*(2*a23-k*b21)+(c4*(2+3*k^2)));
+                ((9*wp^2 + 1 - c2)/(2*d2))*(3*c3*(2*a23-k*b21)+(c4*(2+3*k^2)));
             a32 = (-1/d2) * ((9/4)*wp*(4*c3*(k*a24 - b22) + k*c4) + ...
-                                          (3/2)*(9*wp^2 + 1 - c2)*(c3*(k*b22 + d21 - 2*a24) - c4));
-                                      
+                (3/2)*(9*wp^2 + 1 - c2)*(c3*(k*b22 + d21 - 2*a24) - c4));
+            
             s1 = (1/(2*wp*(wp*(1+k^2)-2*k))) * ((3/2)*c3*(2*a21*(k^2-2) - a23*(k^2+2) - 2*k*b21) - ...
-                                                        (3/8)*c4*(3*k^4 - 8*k^2 + 8));
+                (3/8)*c4*(3*k^4 - 8*k^2 + 8));
             s2 = (1/(2*wp*(wp*(1+k^2)-2*k))) * ((3/2)*c3*(2*a22*(k^2-2) + a24*(k^2+2) + 2*k*b22 + 5*d21) + ...
-                                                        (3/8)*c4*(12 - k^2));        
-                                                    
+                (3/8)*c4*(12 - k^2));
+            
             a1 = (-3/2)*c3*(2*a21 + a23 + 5*d21) - (3/8)*c4*(12-k^2);
             a2 = (3/2)*c3*(a24 - 2*a22) + (9/8)*c4;
             
@@ -394,10 +483,10 @@ classdef HaloOrbitApproximator < matlab.mixin.SetGet
             c2 = c(2);
             c3 = c(3);
             c4 = c(4);
-        end 
+        end
     end
     
-    methods(Static)              
+    methods(Static)
         function [value,isterminal,direction] = odeEvents(~,y, stopOnYCrossing)
             value = y(2); %when y=0
             direction = 0;
@@ -422,7 +511,7 @@ classdef HaloOrbitApproximator < matlab.mixin.SetGet
             l=1-mu;
             
             LP = zeros(5,3);
-
+            
             %L1
             p_L1=[1, 2*(mu-l), l^2-4*l*mu+mu^2, 2*mu*l*(l-mu)+mu-l, mu^2*l^2+2*(l^2+mu^2), mu^3-l^3];
             L1roots=roots(p_L1);
@@ -475,41 +564,41 @@ classdef HaloOrbitApproximator < matlab.mixin.SetGet
         function xdot = stateTransMatrixODE(t,xinput,mu)
             xstate = xinput(1:6);
             xstatedot = HaloOrbitApproximator.cr3bpODE(t,xstate,mu);
-
+            
             PHI = reshape(xinput(7:6*6+6),6,6);
-
+            
             x=xstate(1);
             y=xstate(2);
             z=xstate(3);
-
+            
             x1 = -mu;
             x2 = 1-mu;
-
+            
             r1 = sqrt((x-x1)^2 + y^2 + z^2);
             r2 = sqrt((x-x2)^2 + y^2 + z^2);
-
+            
             OMEGA_XX = 1 + (1-mu)*((3*(x-x1)^2/r1^5) - 1/r1^3) ...
-                         + mu*((3*(x-x2)^2/r2^5) - 1/r2^3);
-
+                + mu*((3*(x-x2)^2/r2^5) - 1/r2^3);
+            
             OMEGA_YY = 1 + (1-mu)*((3*y^2/r1^5) - 1/r1^3) ...
-                         + mu*((3*y^2/r2^5) - 1/r2^3);
-
+                + mu*((3*y^2/r2^5) - 1/r2^3);
+            
             OMEGA_XY = 3*(1-mu)*(x-x1)*y/r1^5 + 3*mu*(x-x2)*y/r2^5;
-
+            
             OMEGA_XZ = 3*(1-mu)*z*(x-x1)/r1^5 + 3*mu*z*(x-x2)/r2^5;
-
+            
             OMEGA_YZ = 3*(1-mu)*y*z/r1^5 + 3*mu*y*z/r2^5;
-
+            
             OMEGA_ZZ = 3*(1-mu)*z^2/r1^5 - (1-mu)/r1^3 + 3*mu*z^2/r2^5 - mu/r2^3;
-
+            
             A  = [0 0 0 1 0 0;
-                  0 0 0 0 1 0;
-                  0 0 0 0 0 1;
-                  OMEGA_XX OMEGA_XY OMEGA_XZ 0 2 0;
-                  OMEGA_XY OMEGA_YY OMEGA_YZ -2 0 0;
-                  OMEGA_XZ OMEGA_YZ OMEGA_ZZ 0 0 0];
+                0 0 0 0 1 0;
+                0 0 0 0 0 1;
+                OMEGA_XX OMEGA_XY OMEGA_XZ 0 2 0;
+                OMEGA_XY OMEGA_YY OMEGA_YZ -2 0 0;
+                OMEGA_XZ OMEGA_YZ OMEGA_ZZ 0 0 0];
             PHIdot = A * PHI;
-
+            
             xdot = [xstatedot;reshape(PHIdot,6*6,1)];
         end
         
@@ -517,18 +606,18 @@ classdef HaloOrbitApproximator < matlab.mixin.SetGet
             %Define the distances from 1 and 2 to the s/c
             r1 = sqrt((y(1)+mu)^2 + y(2)^2 + y(3)^2);
             r2 = sqrt((y(1)-(1-mu))^2 + y(2)^2 + y(3)^2);
-
+            
             %the deriative functions here
             %velocities
             ydot(1) = y(4);
             ydot(2) = y(5);
             ydot(3) = y(6);
-
+            
             %accelerations
             ydot(4) = 2*y(5) + y(1) - ((1-mu)*(y(1)+mu))/r1^3 - (mu*(y(1)-1+mu))/r2^3;
             ydot(5) = -2*y(4) + y(2) - ((1-mu)*y(2))/r1^3 - mu*y(2)/r2^3;
             ydot(6) = (-(1-mu)*y(3))/r1^3 - (mu*y(3))/r2^3;
-
+            
             ydot=ydot';
         end
     end
@@ -539,57 +628,57 @@ end
 %                   a21, a22, a23, a24, a31, a32, ...
 %                   b21, b22, b31, b32, ...
 %                   d21, d31, d32, Ax, Ay, Az] = getRichardsonConstants(obj)
-% 
+%
 %             c2 = (1/obj.gL^3) * (obj.mu + ((1-obj.mu)*obj.gL^3)/(1-obj.gL)^3);
 %             c3 = (1/obj.gL^3) * (obj.mu - ((1-obj.mu)*obj.gL^4)/(1-obj.gL)^4);
 %             c4 = (1/obj.gL^3) * (obj.mu + ((1-obj.mu)*obj.gL^5)/(1-obj.gL)^5);
-%             
+%
 %             p = [1, 0, (c2-2), 0, -(c2-1)*(1+2*c2)];
 %             p_roots = roots(p);
 %             lambda = real(p_roots(real(p_roots) > 0 & imag(p_roots) == 0));
-%             
+%
 %             k = 2*lambda/(lambda^2 + 1 - c2);
-%             
+%
 %             d1 = ((3*lambda^2)/k) * (k*(6*lambda^2-1)-2*lambda);
 %             d2 = ((8*lambda^2)/k) * (k*(11*lambda^2-1)-2*lambda);
-%             
+%
 %             a21 = (3*c3*(k^2-2))/(4*(1+2*c2));
 %             a22 = (3*c3)/(4*(1+2*c2));
 %             a23 = ((-3*c3*lambda)/(4*k*d1))*(3*(k^3)*lambda - 6*k*(k-lambda) + 4);
 %             a24 = ((-3*c3*lambda)/(4*k*d1))*(2+3*k*lambda);
-%             
+%
 %             d21 = -c3/(2*lambda^2);
 %             d31 = (3/(64*lambda^2)) * (4*c3*a24 + c4);
 %             d32 = (3/(64*lambda^2)) * (4*c3*(a23 - d21) + c4*(4+k^2));
-%             
+%
 %             b21 = ((-3*c3*lambda)/(2*d1))*(3*k*lambda - 4);
 %             b22 = (3*c3*lambda)/d1;
 %             b31 = (3/(8*d2)) * (8*lambda*(3*c3*(k*b21 - 2*a23) - c4*(2+3*k^2)) + ...
-%                                          (9*lambda^2 + 1 + 2*c2)*(4*c3*(k*a23-b21)+(k*c4*(4+k^2)))); 
+%                                          (9*lambda^2 + 1 + 2*c2)*(4*c3*(k*a23-b21)+(k*c4*(4+k^2))));
 %             b32 = (1/d2) * (9*lambda*(c3*(k*b22 + d21 - 2*a24) - c4) + ...
-%                                          (3/8)*(9*lambda^2 + 1 + 2*c2)*(4*c3*(k*a24-b22)+(k*c4))); 
-%                                      
+%                                          (3/8)*(9*lambda^2 + 1 + 2*c2)*(4*c3*(k*a24-b22)+(k*c4)));
+%
 %             a31 = (-9*lambda/(4*d2)) * (4*c3*(k*a23 - b21) + k*c4*(4+k^2)) + ...
 %                                          ((9*lambda^2 + 1 - c2)/(2*d2))*(3*c3*(2*a23-k*b21)+(c4*(2+3*k^2)));
 %             a32 = (-1/d2) * ((9/4)*lambda*(4*c3*(k*a24 - b22) + k*c4) + ...
 %                                           (3/2)*(9*lambda^2 + 1 - c2)*(c3*(k*b22 + d21 - 2*a24) - c4));
-%                                       
+%
 %             s1 = (1/(2*lambda*(lambda*(1+k^2)-2*k))) * ((3/2)*c3*(2*a21*(k^2-2) - a23*(k^2+2) - 2*k*b21) - ...
 %                                                         (3/8)*c4*(3*k^4 - 8*k^2 + 8));
 %             s2 = (1/(2*lambda*(lambda*(1+k^2)-2*k))) * ((3/2)*c3*(2*a22*(k^2-2) + a24*(k^2+2) + 2*k*b22 + 5*d21) + ...
-%                                                         (3/8)*c4*(12 - k^2));        
-%                                                     
+%                                                         (3/8)*c4*(12 - k^2));
+%
 %             a1 = (-3/2)*c3*(2*a21 + a23 + 5*d21) - (3/8)*c4*(12-k^2);
 %             a2 = (3/2)*c3*(a24 - 2*a22) + (9/8)*c4;
-%             
+%
 %             l1 = a1 + 2*(lambda^2)*s1;
 %             l2 = a2 + 2*(lambda^2)*s2;
-%             
+%
 %             delta = lambda^2 - c2;
-%             
+%
 %             Az = (obj.AzUnscaled/obj.LU)*obj.gL;
 %             Ay = Az/obj.gL;
 %             Ax = sqrt((-l2 * Az^2 - delta)/l1);
-%             
+%
 %             omega = 1 + s1*Ax^2 + s2*Az^2;
 %         end

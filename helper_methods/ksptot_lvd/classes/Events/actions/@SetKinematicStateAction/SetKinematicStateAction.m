@@ -72,6 +72,7 @@ classdef SetKinematicStateAction < AbstractEventAction
                     timeEvtStateLog = obj.stateLog.getLastStateLogForEvent(obj.inheritTimeFromEvent);
                     if(not(isempty(timeEvtStateLog)))
                         newStateLogEntry.time = timeEvtStateLog(end).time;
+                        obj.orbitModel.time = newStateLogEntry.time;
                     end
                 end
             else
@@ -97,9 +98,10 @@ classdef SetKinematicStateAction < AbstractEventAction
                 vVect = cartElemSet.vVect;
                 bodyInfo = cartElemSet.frame.getOriginBody();
                 
-                newStateLogEntry.position = rVect;
-                newStateLogEntry.velocity = vVect;
-                newStateLogEntry.centralBody = bodyInfo;
+                newStateLogEntry.setCartesianElementSet(cartElemSet);
+%                 newStateLogEntry.position = rVect;
+%                 newStateLogEntry.velocity = vVect;
+%                 newStateLogEntry.centralBody = bodyInfo;
             end
             
             if(obj.inheritStageStates)

@@ -101,6 +101,7 @@ classdef ConstraintSet < matlab.mixin.SetGet
                     stateLog = obj.lvdData.stateLog;
                 end
 
+                constCnt = 1;
                 for(i=1:length(obj.consts)) %#ok<*NO4LP>
                     constraint = obj.consts(i);
                     
@@ -117,12 +118,12 @@ classdef ConstraintSet < matlab.mixin.SetGet
                     
                     for(j=1:length(c1))
                         cEventInds(end+1) = eventNum1; %#ok<AGROW>
-                        cCInds(end+1) = i; %#ok<AGROW>
+                        cCInds(end+1) = constCnt; %#ok<AGROW>
                     end
                     
                     for(j=1:length(ceq1))
                         ceqEventInds(end+1) = eventNum1; %#ok<AGROW>
-                        cCeqInds(end+1) = i; %#ok<AGROW>
+                        cCeqInds(end+1) = constCnt; %#ok<AGROW>
                     end
                     
                     c   = [c, c1]; %#ok<AGROW>
@@ -134,7 +135,9 @@ classdef ConstraintSet < matlab.mixin.SetGet
                     typeNumConstrArr = horzcat(typeNumConstrArr, repmat({type1}, 1, numel(c1)+numel(ceq1))); %#ok<AGROW>
                     eventNum = [eventNum, eventNum1]; %#ok<AGROW>
                     constraints = [constraints, constraint]; %#ok<AGROW>
-                    valueStateComps = [valueStateComps, valueStateComp1];
+                    valueStateComps = [valueStateComps, valueStateComp1]; %#ok<AGROW>
+                    
+                    constCnt = constCnt+1;
                 end
             end
         end
