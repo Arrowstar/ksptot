@@ -8,6 +8,11 @@ function plotRendezvous(hAxis, timeArr, bodyInfo, iniOrbit, finOrbit, xfrOrbit, 
 
     iniOrbBodyInfo = getBodyInfoStructFromOrbit(iniOrbit);
     finOrbBodyInfo = getBodyInfoStructFromOrbit(finOrbit);
+    
+    xfrOrbit2 = xfrOrbit;
+    xfrOrbit2(7) = timeArr(1);
+    xfrOrbit2(6) = computeMeanFromTrueAnom(xfrOrbit(6), xfrOrbit(2));
+    xfrOrbBodyInfo = getBodyInfoStructFromOrbit(xfrOrbit2);
 
     axes(hAxis);
     hold on;
