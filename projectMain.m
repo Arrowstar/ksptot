@@ -29,7 +29,7 @@ if(isdeployed)
 end
 
 %display splashscreen
-hS = splashScreenGUI(); drawnow;
+hS = splashScreenGUI_App(); drawnow;
 t = tic;
 
 %Initialize KSPTOT options
@@ -71,6 +71,6 @@ end
 %Set up the GUI for use
 % mainGUIHandle = mainGUI(celBodyData, bodyNames, hS, appOptions);
 mainGUIHandle = mainGUI_App(celBodyData, bodyNames, hS, appOptions);
-if(isgraphics(hS))
+if(isvalid(hS))
     close(hS);
 end
