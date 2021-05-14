@@ -59,7 +59,7 @@ handles.output = hObject;
 guidata(hObject, handles);
 
 %Possible fix for people with display issues.
-checkForCharUnitsInGUI(hObject);
+% checkForCharUnitsInGUI(hObject);
 
 % UIWAIT makes departDisplayGUI wait for user response (see UIRESUME)
 % uiwait(handles.departDispGUI);
