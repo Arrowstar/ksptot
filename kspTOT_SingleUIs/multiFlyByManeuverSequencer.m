@@ -59,7 +59,7 @@ handles.output = hObject;
 guidata(hObject, handles);
 
 %Possible fix for people with display issues.
-checkForCharUnitsInGUI(hObject);
+% checkForCharUnitsInGUI(hObject);
 
 % mainGUIHandle = varargin{1};
 % mainGUIUserData = get(mainGUIHandle,'UserData');
