@@ -40,9 +40,24 @@ classdef (Abstract) AbstractElementSet < matlab.mixin.SetGet & matlab.mixin.Cust
                 frameToUse = frames(1);
             end
             times = [obj.time];
-            
+                       
             if(all(framesBool))
-                [posOffsetOrigin12, velOffsetOrigin12, angVelWrtOrigin12, rotMatToInertial12] = getOffsetsWrtInertialOrigin(frameToUse, times, convertCartElemSet);
+                if(numel(times) == 1 && frameToUse.timeCache == times) %#ok<BDSCI>
+                    posOffsetOrigin12 = frameToUse.posOffsetOriginCache;
+                    velOffsetOrigin12 = frameToUse.velOffsetOriginCache;
+                    angVelWrtOrigin12 = frameToUse.angVelWrtOriginCache;
+                    rotMatToInertial12 = frameToUse.rotMatToInertialCache;
+                else
+                    [posOffsetOrigin12, velOffsetOrigin12, angVelWrtOrigin12, rotMatToInertial12] = getOffsetsWrtInertialOrigin(frameToUse, times, convertCartElemSet);
+                    
+                    if(numel(times) == 1)
+                        frameToUse.timeCache = times;
+                        frameToUse.posOffsetOriginCache = posOffsetOrigin12;
+                        frameToUse.velOffsetOriginCache = velOffsetOrigin12;
+                        frameToUse.angVelWrtOriginCache = angVelWrtOrigin12;
+                        frameToUse.rotMatToInertialCache = rotMatToInertial12;                        
+                    end
+                end
             else
                 posOffsetOrigin12 = NaN(3,num);
                 velOffsetOrigin12 = NaN(3,num);
@@ -56,16 +71,27 @@ classdef (Abstract) AbstractElementSet < matlab.mixin.SetGet & matlab.mixin.Cust
             rVect2 = posOffsetOrigin12 + squeeze(mtimesx(rotMatToInertial12, permute(rVect1, [1 3 2])));
             vVect2 = velOffsetOrigin12 + squeeze(mtimesx(rotMatToInertial12, (permute(vVect1 + cross(angVelWrtOrigin12, rVect1), [1 3 2]))));
             
-            [posOffsetOrigin32, velOffsetOrigin32, angVelWrtOrigin32, rotMatToInertial32] = getOffsetsWrtInertialOrigin(toFrame, times, convertCartElemSet);
+            if(numel(times) == 1 && toFrame.timeCache == times) %#ok<BDSCI>
+                posOffsetOrigin32 = toFrame.posOffsetOriginCache;
+                velOffsetOrigin32 = toFrame.velOffsetOriginCache;
+                angVelWrtOrigin32 = toFrame.angVelWrtOriginCache;
+                rotMatToInertial32 = toFrame.rotMatToInertialCache;
+            else
+                [posOffsetOrigin32, velOffsetOrigin32, angVelWrtOrigin32, rotMatToInertial32] = getOffsetsWrtInertialOrigin(toFrame, times, convertCartElemSet);
+                
+                if(numel(times) == 1)
+                    toFrame.timeCache = times;
+                    toFrame.posOffsetOriginCache = posOffsetOrigin32;
+                    toFrame.velOffsetOriginCache = velOffsetOrigin32;
+                    toFrame.angVelWrtOriginCache = angVelWrtOrigin32;
+                    toFrame.rotMatToInertialCache = rotMatToInertial32;                        
+                end
+            end
             
             rVect3 = squeeze(mtimesx(permute(rotMatToInertial32, [2 1 3]), permute(rVect2 - posOffsetOrigin32, [1 3 2])));
             vVect3 = squeeze(mtimesx(permute(rotMatToInertial32, [2 1 3]), permute(vVect2 - velOffsetOrigin32, [1 3 2]))) - cross(angVelWrtOrigin32, rVect3);
             
-            convertCartElemSet = CartesianElementSet(times, rVect3, vVect3, toFrame);
-%             convertCartElemSet = repmat(CartesianElementSet.getDefaultElements(), size(obj));
-%             for(i=1:length(obj))
-%                 convertCartElemSet(i) = CartesianElementSet(obj(i).time, rVect3(:,i), vVect3(:,i), toFrame);
-%             end            
+            convertCartElemSet = CartesianElementSet(times, rVect3, vVect3, toFrame);            
             
             switch obj(1).typeEnum
                 case ElementSetEnum.CartesianElements

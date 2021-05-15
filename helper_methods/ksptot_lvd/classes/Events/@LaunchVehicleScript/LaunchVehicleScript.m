@@ -286,23 +286,17 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
                         drawnow;
                     end
                     
-                    %Init Event
-                    evt.initEvent(initStateLogEntry);
+                    %Set event correctly
                     initStateLogEntry.event = evt;
 
                     %execute plugins that occur before event
                     obj.lvdData.plugins.executePluginsBeforeEvent(stateLog, evt);
-                    
-                    %Get applicable non sequential events and initialize
-                    activeNonSeqEvts = obj.nonSeqEvts.getNonSeqEventsForScriptEvent(evt);
-                    for(j=1:length(activeNonSeqEvts))
-                        activeNonSeqEvts(j).initEvent(initStateLogEntry);
-                    end
-                    
+                                       
                     if(evt.execActionsNode == ActionExecNodeEnum.BeforeProp)
                         %Execute Actions
                         initStateLogEntry = initStateLogEntry.deepCopy(); %this state log entry must be copied or the answers will change
-                        actionStateLogEntries = evt.cleanupEvent(initStateLogEntry);
+                        stateLog.appendStateLogEntries(initStateLogEntry);
+                        actionStateLogEntries = evt.cleanupEvent(initStateLogEntry); %this executes the actions
 
                         %Add state log entries to state log
                         if(not(isempty(actionStateLogEntries)))
@@ -310,6 +304,15 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
                             initStateLogEntry = actionStateLogEntries(end).deepCopy(); %this state log entry must be copied or the answers will change;
                         end
                     end
+                    
+                    %Get applicable non sequential events and initialize
+                    activeNonSeqEvts = obj.nonSeqEvts.getNonSeqEventsForScriptEvent(evt);
+                    for(j=1:length(activeNonSeqEvts))
+                        activeNonSeqEvts(j).initEvent(initStateLogEntry);
+                    end
+                    
+                    %Init Event
+                    evt.initEvent(initStateLogEntry);
                                         
                     %Execute Event (propagation)
                     newStateLogEntries = evt.executeEvent(initStateLogEntry, obj.simDriver, tStartPropTime, tStartSimTime, isSparseOutput, activeNonSeqEvts);
