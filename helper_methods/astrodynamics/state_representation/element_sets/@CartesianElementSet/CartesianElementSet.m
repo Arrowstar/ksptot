@@ -14,24 +14,45 @@ classdef CartesianElementSet < AbstractElementSet
     end
     
     methods
-        function obj = CartesianElementSet(time, rVect, vVect, frame)
+        function obj = CartesianElementSet(time, rVect, vVect, frame, createObjOfArray)
+            arguments
+                time = 0
+                rVect = [0;0;0]
+                vVect = [0;0;0]
+                frame = AbstractReferenceFrame.empty(1,0);
+                createObjOfArray(1,1) logical = false;
+            end
+            
             if(nargin > 0)
-                num = length(time);
-                obj(num) = obj;
-                
-                if(numel(time) > 1)
-                    obj(1) = CartesianElementSet();
-                    
-                    if(numel(frame) == 1)
-                        frame = repmat(frame, size(time));
+                if(createObjOfArray == false)
+                    num = length(time);
+                    obj(num) = obj;
+
+                    if(numel(time) > 1)
+                        obj(1) = CartesianElementSet();
                     end
-                end
-                
-                for(i=1:num)
-                    obj(i).time = time(i);
-                    obj(i).rVect = rVect(:,i);
-                    obj(i).vVect = vVect(:,i);
-                    obj(i).frame = frame(i);
+
+                    bool = numel(frame) > 1;
+                    for(i=1:num)
+                        obj(i).time = time(i);
+                        obj(i).rVect = rVect(:,i);
+                        obj(i).vVect = vVect(:,i);
+                        obj(i).createObjOfArray = createObjOfArray;
+
+                        if(bool)
+                            obj(i).frame = frame(i);
+                        end
+                    end
+
+                    if(numel(frame) == 1)
+                        [obj.frame] = deal(frame);
+                    end
+                else
+                    obj.time = time;
+                    obj.rVect = rVect;
+                    obj.vVect = vVect;
+                    obj.frame = frame;
+                    obj.createObjOfArray = createObjOfArray;
                 end
             end
         end

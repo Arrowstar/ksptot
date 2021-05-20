@@ -6,6 +6,8 @@ classdef CelestialBodyData < matlab.mixin.SetGet & dynamicprops
         bodies(1,:) KSPTOT_BodyInfo
         
         bodyIdCacheArr(1,:) double = [];
+        
+        ci CelestialBodyIntegration
     end
     
     properties(Transient,Access=private)
@@ -14,6 +16,8 @@ classdef CelestialBodyData < matlab.mixin.SetGet & dynamicprops
     
     properties(Constant)
         emptyBodyInfo KSPTOT_BodyInfo = KSPTOT_BodyInfo.empty(1,0);
+        globalBaseFrame GlobalBaseInertialFrame = GlobalBaseInertialFrame();
+        numIntBlockSize(1,1) double = 1000*86400;
     end
     
     methods
@@ -49,6 +53,9 @@ classdef CelestialBodyData < matlab.mixin.SetGet & dynamicprops
             end
             
             obj.bodyIdCacheArr = [obj.bodies.id];
+            
+            obj.ci = CelestialBodyIntegration(obj);
+            obj.ci.integrateCelestialBodies(0, obj.numIntBlockSize);
         end
         
         function resetAllParentNeedsUpdateFlags(obj)
@@ -64,6 +71,25 @@ classdef CelestialBodyData < matlab.mixin.SetGet & dynamicprops
             if(numel(bodyInfo) > 1)
                 bodyInfo = bodyInfo(1);
             end
+        end
+        
+        function [minUt, maxUt] = getStateCacheMinUtMaxUt(obj)
+            bool = [obj.bodies.propTypeEnum] == BodyPropagationTypeEnum.Numerical;
+            numericBodies = obj.bodies(bool);
+            
+            if(numel(numericBodies) >= 1)
+                numericBody = numericBodies(1);
+                times = numericBody.numIntStateCache.times;
+                minUt = min(times);
+                maxUt = max(times);
+            else
+                minUt = 0;
+                maxUt = 0;
+            end
+        end
+        
+        function updateCelestialBodyStateCache(obj, minUT, maxUT)
+            obj.ci.integrateCelestialBodies(minUT, maxUT);
         end
         
         %Override the following structure methods for backwards
@@ -117,6 +143,11 @@ classdef CelestialBodyData < matlab.mixin.SetGet & dynamicprops
             
             if(isprop(obj,'sun'))
                 obj.topLvlBodyCache = getTopLevelCentralBody(obj);
+            end
+            
+            if(isempty(obj.ci))
+                obj.ci = CelestialBodyIntegration(obj);
+                obj.ci.integrateCelestialBodies(0, obj.numIntBlockSize);
             end
         end
     end

@@ -12,5 +12,6 @@ function [bodyInfo] = getBodyInfoStructFromOrbit(inputOrbit)
     bodyInfo.arg = rad2deg(inputOrbit(5));
     bodyInfo.mean = rad2deg(inputOrbit(6));
     bodyInfo.id = rand();
+    bodyInfo.propTypeEnum = BodyPropagationTypeEnum.TwoBody;
 end
 

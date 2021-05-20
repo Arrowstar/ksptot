@@ -89,6 +89,9 @@ function [celBodyData] = processINIBodyInfo(celBodyDataFromINI, varargin)
             celBodyData.(name).celBodyData = celBodyData;
             [~] = celBodyData.(name).getParBodyInfo(celBodyData); %set that parent info now so that we don't have to handle it later
             [~] = celBodyData.(name).getChildrenBodyInfo(celBodyData); 
+            
+            celBodyData.(name).setPropTypeEnum();
+            celBodyData.(name).setBaseBodySurfaceTexture();
         end
     end
     

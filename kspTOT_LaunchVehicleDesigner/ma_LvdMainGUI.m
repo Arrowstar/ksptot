@@ -22,7 +22,7 @@ function varargout = ma_LvdMainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_LvdMainGUI
 
-% Last Modified by GUIDE v2.5 11-May-2021 09:41:11
+% Last Modified by GUIDE v2.5 20-May-2021 13:03:46
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -61,7 +61,9 @@ function ma_LvdMainGUI_OpeningFcn(hObject, eventdata, handles, varargin)
         [hManager.WindowListenerHandles.Enabled] = deal(false); 
 
         celBodyData = varargin{1};
-        celBodyData = CelestialBodyData(celBodyData);
+        if(not(isa(celBodyData,'CelestialBodyData')))
+            celBodyData = CelestialBodyData(celBodyData);
+        end
         setappdata(hObject,'celBodyData',celBodyData);
 
         hKsptotMainGUI = varargin{2};
@@ -925,7 +927,9 @@ function openMissionPlanMenu_Callback(hObject, eventdata, handles)
             end
             
             if(isprop(lvdData,'celBodyData'))
-                lvdData.celBodyData = CelestialBodyData(lvdData.celBodyData);
+                if(not(isa(lvdData.celBodyData,'CelestialBodyData')))
+                    lvdData.celBodyData = CelestialBodyData(lvdData.celBodyData);
+                end
                 
                 names = fieldnames(lvdData.celBodyData);
                 for(i=1:length(names))
@@ -2755,3 +2759,12 @@ function haloOrbitConstructorMenu_Callback(hObject, eventdata, handles)
     lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
     
     lvd_HaloOrbitConstructor_App(lvdData.celBodyData);
+
+
+% --------------------------------------------------------------------
+function configureCelestialBodyStateCacheMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to configureCelestialBodyStateCacheMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    configureCelBodyStateCacheGUI_App(lvdData.celBodyData);

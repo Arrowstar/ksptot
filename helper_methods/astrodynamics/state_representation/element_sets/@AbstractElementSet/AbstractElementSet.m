@@ -5,6 +5,7 @@ classdef (Abstract) AbstractElementSet < matlab.mixin.SetGet & matlab.mixin.Cust
     properties
         time%(1,1) double %UT sec
         frame  = AbstractReferenceFrame.empty(1,0);
+        createObjOfArray = false;
     end
     
     properties(Abstract, Constant)
@@ -91,7 +92,12 @@ classdef (Abstract) AbstractElementSet < matlab.mixin.SetGet & matlab.mixin.Cust
             rVect3 = squeeze(mtimesx(permute(rotMatToInertial32, [2 1 3]), permute(rVect2 - posOffsetOrigin32, [1 3 2])));
             vVect3 = squeeze(mtimesx(permute(rotMatToInertial32, [2 1 3]), permute(vVect2 - velOffsetOrigin32, [1 3 2]))) - cross(angVelWrtOrigin32, rVect3);
             
-            convertCartElemSet = CartesianElementSet(times, rVect3, vVect3, toFrame);            
+            createObjOfArrayVal = false;
+            if(numel(obj) == 1 && obj.createObjOfArray == true && obj.typeEnum == ElementSetEnum.CartesianElements) %#ok<BDSCI>
+                createObjOfArrayVal = true;
+            end
+            
+            convertCartElemSet = CartesianElementSet(times, rVect3, vVect3, toFrame, createObjOfArrayVal);            
             
             switch obj(1).typeEnum
                 case ElementSetEnum.CartesianElements

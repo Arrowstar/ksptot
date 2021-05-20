@@ -1,18 +1,32 @@
 function [rVectB, vVectB] = getPositOfBodyWRTSun(time, bodyInfo, celBodyData)  
     try %try new way
-%         fprintf('%s - %0.14f s\n', bodyInfo.name, time(1));
-        if(numel(time) == 1 && bodyInfo.lastComputedTime == time)
-            rVectB = bodyInfo.lastComputedRVect;
-            vVectB = bodyInfo.lastComputedVVect;
-        else
-            chain = bodyInfo.getOrbitElemsChain();
-            [rVectB, vVectB] = getPositOfBodyWRTSun_alg(time, chain{:});
-            
-            if(numel(time) == 1)
-                bodyInfo.lastComputedTime = time;
-                bodyInfo.lastComputedRVect = rVectB;
-                bodyInfo.lastComputedVVect = vVectB;
+        if(bodyInfo.propTypeEnum == BodyPropagationTypeEnum.TwoBody || (numel(time) == 1 && time == bodyInfo.epoch))
+            if(numel(time) == 1 && bodyInfo.lastComputedTime == time)
+                rVectB = bodyInfo.lastComputedRVect;
+                vVectB = bodyInfo.lastComputedVVect;
+            else
+                chain = bodyInfo.getOrbitElemsChain();
+                [rVectB, vVectB] = getPositOfBodyWRTSun_alg(time, chain{:});
+
+                if(numel(time) == 1)
+                    bodyInfo.lastComputedTime = time;
+                    bodyInfo.lastComputedRVect = rVectB;
+                    bodyInfo.lastComputedVVect = vVectB;
+                end
             end
+            
+        elseif(bodyInfo.propTypeEnum == BodyPropagationTypeEnum.Numerical)
+            parentBodyInfo = bodyInfo.getParBodyInfo(celBodyData);
+            
+            [rVect, vVect] = getStateAtTime(bodyInfo, time, []);
+            cartElem = CartesianElementSet(time, rVect, vVect, parentBodyInfo.getBodyCenteredInertialFrame(), true);
+            cartElem = convertToFrame(cartElem, celBodyData.getTopLevelBody().getBodyCenteredInertialFrame());
+            
+            rVectB = [cartElem.rVect];
+            vVectB = [cartElem.vVect];
+            
+        else
+            error('Unknown celestial body prop sim type.');
         end
     catch ME %if bad then use old way
         numTimes = length(time);
