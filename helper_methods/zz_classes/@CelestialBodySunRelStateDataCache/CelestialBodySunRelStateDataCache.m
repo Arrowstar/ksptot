@@ -27,8 +27,29 @@ classdef CelestialBodySunRelStateDataCache < matlab.mixin.SetGet
         
         function [rVect, vVect] = getCachedBodyStateAtTime(obj, time)
             if(numel(obj.times) <= 1 || any(time > max(obj.times)) || any(time < min(obj.times)))
-                error('At least one of the points in time queried are out of the bounds of the numerical integration: %0.3f sec to %0.3f sec', min(obj.times), max(obj.times));
+                maxUT = max(obj.times);
+                boolMaxUT = maxUT - time < 0;
+                worstMaxUTViolation = max(time(boolMaxUT));
                 
+                minUT = min(obj.times);
+                boolMinUT = time - minUT < 0;
+                worstMinUTViolation = min(time(boolMinUT));
+                
+                if(not(isempty(worstMaxUTViolation)) && not(isempty(worstMinUTViolation)))
+                    str = sprintf('Adjust the minimum cache UT to below %0.3f sec and the maximum cache UT to above %0.3f sec.', worstMinUTViolation, worstMaxUTViolation);
+                    
+                elseif(not(isempty(worstMaxUTViolation)))
+                    str = sprintf('Adjust the maximum cache UT to above %0.3f sec.', worstMaxUTViolation);
+                    
+                elseif(not(isempty(worstMinUTViolation)))
+                    str = sprintf('Adjust the minimum cache UT to below %0.3f sec.', worstMinUTViolation);
+                    
+                end
+                
+                msg = sprintf('At least one of the points in time queried are out of the bounds of the numerical integration (%0.3f sec to %0.3f sec).  %s', min(obj.times), max(obj.times), str);
+                
+                errordlg(msg, 'Body State Cache Bounds', 'modal');
+                error(msg);
             else
                 vq = obj.gi(time);
                 

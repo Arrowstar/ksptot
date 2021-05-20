@@ -302,13 +302,18 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             end
         end
         
-        function cartElemSet = getCartesianElementSetRepresentation(obj)
+        function cartElemSet = getCartesianElementSetRepresentation(obj, createObjOfArray)
+            arguments
+                obj
+                createObjOfArray(1,1) logical = false;
+            end
+            
             obj = obj(:)';
             
             for(i=1:length(obj))
                 frame(i) = obj(i).centralBody.getBodyCenteredInertialFrame(); %#ok<AGROW>
             end
-            cartElemSet = CartesianElementSet([obj.time], [obj.position], [obj.velocity], frame);
+            cartElemSet = CartesianElementSet([obj.time], [obj.position], [obj.velocity], frame, createObjOfArray);
         end
         
         function setCartesianElementSet(obj, elemSet)

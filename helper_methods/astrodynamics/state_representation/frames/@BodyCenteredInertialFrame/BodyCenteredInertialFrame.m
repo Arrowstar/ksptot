@@ -21,12 +21,27 @@ classdef BodyCenteredInertialFrame < AbstractReferenceFrame
         end
         
         function [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = getOffsetsWrtInertialOrigin(obj, time, ~)
-            [rVectB, vVectB] = getPositOfBodyWRTSun(time, obj.bodyInfo, obj.celBodyData);
+            [rVectB, vVectB] = getPositOfBodyWRTSun(time, [obj.bodyInfo], obj(1).celBodyData);
             
             posOffsetOrigin = rVectB;
             velOffsetOrigin = vVectB;
             angVelWrtOrigin = repmat([0;0;0], [1, length(time)]);
-            rotMatToInertial = repmat(obj.bodyRotMatFromGlobalInertialToBodyInertial, [1, 1, length(time)]);
+            
+            if(numel(obj) == 1)
+                rotMatToInertial = repmat(obj.bodyRotMatFromGlobalInertialToBodyInertial, [1, 1, length(time)]);
+                
+            else
+                rotMatToInertial = NaN([3, 3, length(time)]);
+                
+                [uniObj,~,ic] = unique(obj,'stable');
+                for(i=1:length(uniObj))
+                    subObj = uniObj(i);
+                    bool = i == ic;
+                    subTimes = time(bool);
+                    
+                    rotMatToInertial(:,:,bool) = repmat(subObj.bodyRotMatFromGlobalInertialToBodyInertial, [1, 1, numel(subTimes)]);
+                end
+            end
         end
         
         function bodyInfo = getOriginBody(obj)

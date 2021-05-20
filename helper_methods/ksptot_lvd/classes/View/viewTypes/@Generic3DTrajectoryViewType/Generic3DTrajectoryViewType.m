@@ -111,7 +111,7 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                     numRows = size(maStateLogMatrix,1);
 %                     subStateLogsMat = NaN(numRows, 13);
                     
-                    cartesianEntry = convertToFrame(getCartesianElementSetRepresentation(entries),viewInFrame);
+                    cartesianEntry = convertToFrame(getCartesianElementSetRepresentation(entries, true),viewInFrame);
                     times = [cartesianEntry.time]';
                     rVect = [cartesianEntry.rVect]';
                     vVect = [cartesianEntry.vVect]';
