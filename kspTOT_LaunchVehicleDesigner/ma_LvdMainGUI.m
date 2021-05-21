@@ -22,7 +22,7 @@ function varargout = ma_LvdMainGUI(varargin)
 
 % Edit the above text to modify the response to help ma_LvdMainGUI
 
-% Last Modified by GUIDE v2.5 20-May-2021 13:03:46
+% Last Modified by GUIDE v2.5 21-May-2021 08:42:52
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -782,7 +782,35 @@ function fileMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to fileMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
+    appOptions = getAppOptionsFromFile();
+    recentMsnCaseFilesStr = appOptions.ksptot.lvdrecentmsncasefiles;
+    recentMissions = strsplit(recentMsnCaseFilesStr, ';');
+    
+    delete(handles.openRecentMissionPlansMenu.Children);
+    
+    if(numel(recentMsnCaseFilesStr) > 0)
+        for(i=1:numel(recentMissions))
+            missionFileName = recentMissions{i};
+            if(isempty(missionFileName))
+                continue;
+            end
+            [path,name,ext] = fileparts(missionFileName);
+            
+            if(length(path) > 33)
+                subPath = sprintf('%s...%s',path(1:30),filesep);
+            else
+                subPath = spritnf('%s%s', path, filesep);
+            end
+            
+            menuName = sprintf('%s%s%s', subPath, name, ext);
+            
+            callback = @(src,evt) recentMissionCallback(src,evt, missionFileName, handles);
+            uimenu(handles.openRecentMissionPlansMenu, 'Text',menuName, 'MenuSelectedFcn', callback);
+        end
+        
+    else
+        uimenu(handles.openRecentMissionPlansMenu, 'Text','No Recent Missions', 'Enable','off');
+    end
 
 function saved = isMissionPlanSaved(handles)
     application_title = get(handles.ma_LvdMainGUI,'Name');
@@ -893,93 +921,104 @@ function openMissionPlanMenu_Callback(hObject, eventdata, handles)
 	filePath = [PathName,FileName];
     
     if(ischar(filePath))
-        write_to_output_func(['Loading mission case from "', filePath,'"... '],'append');
-        
-        hMsg = helpdlg('Loading LVD Case File.  Please wait...','Launch Vehicle Designer');
-        
-        try
-            load(filePath); %#ok<LOAD>
-        catch ME
-            write_to_output_func(['There was a problem loading the case file from disk: ',filePath,'.  Case not loaded.'],'append'); 
-            
-            if(isvalid(hMsg))
-                close(hMsg);
-            end
-            
-            return;
-        end
-        
-        if(isvalid(hMsg))
-            close(hMsg);
-        end
-        
-        if(exist('lvdData','var'))
-            setappdata(handles.ma_LvdMainGUI,'undoRedo',LVD_UndoRedoStateSet());
-           
-            topLevelBodyInfo = getTopLevelCentralBody(celBodyData);
-            ldvDataTopLevelBodyInfo = getTopLevelCentralBody(lvdData.celBodyData);
-            if(isprop(lvdData,'celBodyData') && ...
-               length(fields(topLevelBodyInfo)) == length(fields(ldvDataTopLevelBodyInfo)))
-                celBodyData = lvdData.celBodyData;
-                setappdata(handles.ma_LvdMainGUI,'celBodyData',celBodyData);
-            else
-                lvdData.celBodyData = celBodyData;
-            end
-            
-            if(isprop(lvdData,'celBodyData'))
-                if(not(isa(lvdData.celBodyData,'CelestialBodyData')))
-                    lvdData.celBodyData = CelestialBodyData(lvdData.celBodyData);
-                end
-                
-                names = fieldnames(lvdData.celBodyData);
-                for(i=1:length(names))
-                    name = names{i};
-                    lvdData.celBodyData.(name).celBodyData = celBodyData;
-                    lvdData.celBodyData.(name).getParBodyInfo(lvdData.celBodyData);
-                end
-            end
-            
-            set(handles.ma_LvdMainGUI,'Name',[application_title, ' - ', FileName]);
-            write_to_output_func(['Done.'],'appendSameLine');
-            
-            setappdata(handles.ma_LvdMainGUI,'lvdData',lvdData);
-            setappdata(handles.ma_LvdMainGUI,'current_save_location',filePath);
-            
-            setDeleteButtonEnable(lvdData, handles);
-            setNonSeqDeleteButtonEnable(lvdData, handles)
-            
-            setappdata(handles.hDispAxesTimeSlider,'lastTime',NaN);
-            timeSliderCb = @(src,evt) timeSliderStateChanged(src,evt, lvdData, handles);
-            set(handles.hDispAxesTimeSlider, 'StateChangedCallback', timeSliderCb);
-            
-            enableDisableArrowButtons(lvdData, handles);
-            
-            if(lvdData.optimizer.usesParallel())
-                numWorkers = lvdData.optimizer.getSelectedOptimizer().getNumParaWorkers();
-                startParallelPool(write_to_output_func, numWorkers);
-            end
-            
-            propagateScript(handles, lvdData, 1);
-            lvd_processData(handles);
-            
-%             if(~strcmpi(maData.settings.gravParamType,options_gravParamType))
-%                 warndlg(sprintf(['Warning!  It appears this mission plan file was created with a different Gravitational Paramter mode than is currently in use in KSPTOT.  This may cause your misson to fail to propagate properly.\n\n', ...
-%                                  'The expected GM type is "%s". \n\n', ...
-%                                  'The GM type actually in use now is "%s".\n\n', ...
-%                                  'Switch your GM type back to "%s" on the main KSPTOT UI if needed (Edit -> Gravitational Parameter).'], ...
-%                                  maData.settings.gravParamType, ...
-%                                  options_gravParamType, ...
-%                                  maData.settings.gravParamType),'GM Type Warning','modal');
-%             end
-        else
-            write_to_output_func(['There was a problem loading the case file from disk: ',filePath,'.  Case not loaded.'],'append');           
-        end
+        openMissionPlanFile(filePath, write_to_output_func, application_title, celBodyData, FileName, handles);
     end
     
     set(handles.newMissionPlanToolbar,'Enable','on');
     set(handles.openMissionPlanToolbar,'Enable','on');
     set(handles.saveMissionPlanToolbar,'Enable','on');
 
+function openMissionPlanFile(filePath, write_to_output_func, application_title, celBodyData, FileName, handles)
+    write_to_output_func(['Loading mission case from "', filePath,'"... '],'append');
+
+    hMsg = helpdlg('Loading LVD Case File.  Please wait...','Launch Vehicle Designer');
+
+    try
+        load(filePath); %#ok<LOAD>
+    catch ME
+        write_to_output_func(['There was a problem loading the case file from disk: ',filePath,'.  Case not loaded.'],'append'); 
+
+        if(isvalid(hMsg))
+            close(hMsg);
+        end
+
+        return;
+    end
+
+    if(isvalid(hMsg))
+        close(hMsg);
+    end
+
+    if(exist('lvdData','var'))
+        setappdata(handles.ma_LvdMainGUI,'undoRedo',LVD_UndoRedoStateSet());
+
+        appOptions = getAppOptionsFromFile();
+        recentMsnCaseFilesStr = appOptions.ksptot.lvdrecentmsncasefiles;
+        recentMsnCaseFilesStr = [recentMsnCaseFilesStr,';',filePath];
+
+        cases = strsplit(recentMsnCaseFilesStr,';');
+        cases = cases(~cellfun('isempty',cases));
+        if(numel(cases) > 5)
+            cases = cases(1:5);
+        end
+        cases = unique(cases);
+        recentMsnCaseFilesStr = strjoin(cases,';');
+
+        hKsptotMainGUI = getappdata(handles.ma_LvdMainGUI,'ksptotMainGUI');
+        updateAppOptions(hKsptotMainGUI, 'ksptot', 'lvdrecentmsncasefiles', recentMsnCaseFilesStr);
+
+        topLevelBodyInfo = getTopLevelCentralBody(celBodyData);
+        ldvDataTopLevelBodyInfo = getTopLevelCentralBody(lvdData.celBodyData);
+        if(isprop(lvdData,'celBodyData') && ...
+           length(fields(topLevelBodyInfo)) == length(fields(ldvDataTopLevelBodyInfo)))
+            celBodyData = lvdData.celBodyData;
+            setappdata(handles.ma_LvdMainGUI,'celBodyData',celBodyData);
+        else
+            lvdData.celBodyData = celBodyData;
+        end
+
+        if(isprop(lvdData,'celBodyData'))
+            if(not(isa(lvdData.celBodyData,'CelestialBodyData')))
+                lvdData.celBodyData = CelestialBodyData(lvdData.celBodyData);
+            end
+
+            names = fieldnames(lvdData.celBodyData);
+            for(i=1:length(names))
+                name = names{i};
+                lvdData.celBodyData.(name).celBodyData = celBodyData;
+                lvdData.celBodyData.(name).getParBodyInfo(lvdData.celBodyData);
+            end
+        end
+
+        set(handles.ma_LvdMainGUI,'Name',[application_title, ' - ', FileName]);
+        write_to_output_func(['Done.'],'appendSameLine');
+
+        setappdata(handles.ma_LvdMainGUI,'lvdData',lvdData);
+        setappdata(handles.ma_LvdMainGUI,'current_save_location',filePath);
+
+        setDeleteButtonEnable(lvdData, handles);
+        setNonSeqDeleteButtonEnable(lvdData, handles)
+
+        setappdata(handles.hDispAxesTimeSlider,'lastTime',NaN);
+        timeSliderCb = @(src,evt) timeSliderStateChanged(src,evt, lvdData, handles);
+        set(handles.hDispAxesTimeSlider, 'StateChangedCallback', timeSliderCb);
+
+        enableDisableArrowButtons(lvdData, handles);
+
+        if(lvdData.optimizer.usesParallel())
+            numWorkers = lvdData.optimizer.getSelectedOptimizer().getNumParaWorkers();
+            startParallelPool(write_to_output_func, numWorkers);
+        end
+
+        propagateScript(handles, lvdData, 1);
+        lvd_processData(handles);
+
+
+    else
+        write_to_output_func(['There was a problem loading the case file from disk: ',filePath,'.  Case not loaded.'],'append');           
+    end
+    
+    
 % --------------------------------------------------------------------
 function saveMissionPlanMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to saveMissionPlanMenu (see GCBO)
@@ -1722,13 +1761,11 @@ function runScriptMenu_Callback(hObject, eventdata, handles)
     end
     
     propagateScript(handles, lvdData, 1);
+    lvd_processData(handles);
     
     if(not(isdeployed))
 %         profile viewer;
     end
-    
-    lvd_processData(handles);
-    
     
     
 % --------------------------------------------------------------------
@@ -2768,3 +2805,21 @@ function configureCelestialBodyStateCacheMenu_Callback(hObject, eventdata, handl
 % handles    structure with handles and user data (see GUIDATA)
     lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
     configureCelBodyStateCacheGUI_App(lvdData.celBodyData);
+
+
+% --------------------------------------------------------------------
+function openRecentMissionPlansMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to openRecentMissionPlansMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+    
+function recentMissionCallback(src,evt, missionFileName, handles)
+    celBodyData = getappdata(handles.ma_LvdMainGUI,'celBodyData');
+    write_to_output_func = getappdata(handles.ma_LvdMainGUI,'write_to_output_func');
+    application_title = getappdata(handles.ma_LvdMainGUI,'application_title');
+    
+    [~,name,ext] = fileparts(missionFileName);
+    FileName = [name,ext];
+    
+    openMissionPlanFile(missionFileName, write_to_output_func, application_title, celBodyData, FileName, handles);

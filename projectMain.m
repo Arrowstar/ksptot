@@ -33,15 +33,7 @@ hS = splashScreenGUI_App(); drawnow;
 t = tic;
 
 %Initialize KSPTOT options
-doesAppOptionsFileExist = exist('appOptions.ini','file');
-if(doesAppOptionsFileExist)
-    [appOptionsFromINI,~,~] = inifile('appOptions.ini','readall');
-    appOptionsFromINI = addMissingAppOptionsRows(appOptionsFromINI);
-else
-    appOptionsFromINI = createDefaultKsptotOptions();
-    inifile('appOptions.ini','write',appOptionsFromINI);
-end
-appOptions = processINIBodyInfo(appOptionsFromINI, false, 'appOptions'); %turns out this function works for other ini files too lol!
+appOptions = getAppOptionsFromFile();
 
 %Initalize KSP celestial body data
 if(isprop(appOptions.ksptot,'bodiesinifile') && ~isempty(appOptions.ksptot.bodiesinifile) && exist(appOptions.ksptot.bodiesinifile,'file'))
