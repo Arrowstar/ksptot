@@ -1,11 +1,15 @@
-function timeSliderStateChanged(src,evt, lvdData, handles)
+function timeSliderStateChanged(src,evt, lvdData, handles, app)
     s = dbstack;
     matches = strfind({s.name},'timeSliderStateChanged');
     matches = cell2mat(matches(2:end));
     tf = any(matches == 1);
     
-    if(not(tf)) %getappdata(handles.hDispAxesTimeSlider,'lastTime') ~= javaMethodEDT('getValue',src) && 
-        time = javaMethodEDT('getValue',src);
+    if(not(tf))
+        try
+            time = evt.Value;
+        catch
+            time = src.Value;
+        end
         hAx = handles.dispAxes;        
 
         markerTrajData = lvdData.viewSettings.selViewProfile.markerTrajData;
@@ -75,7 +79,7 @@ function timeSliderStateChanged(src,evt, lvdData, handles)
         handles.timeSliderValueLabel.String = epochStr;
         handles.timeSliderValueLabel.TooltipString = tooltipStr;
         
-        setappdata(handles.hDispAxesTimeSlider,'lastTime',time);
+        setappdata(app.DispAxesTimeSlider,'lastTime',time);
         drawnow limitrate;
     end
 end

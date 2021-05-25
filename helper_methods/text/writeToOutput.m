@@ -52,8 +52,16 @@ function writeToOutput(handle,str,msgType, varargin)
     try
         lblStrCell = textwrap(handle,strToWriteStr);
         set(handle,'String',lblStrCell);
-    catch 
-        handle.Value = strToWriteStr;
+    catch ME
+        try
+            set(handle,'String',strToWriteStr);
+        catch
+            try
+                handle.Value = strToWriteStr;
+            catch ME
+                a=1;
+            end
+        end
     end
     
     drawnow;

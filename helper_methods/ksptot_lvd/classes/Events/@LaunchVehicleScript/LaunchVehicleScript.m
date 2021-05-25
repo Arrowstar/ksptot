@@ -128,12 +128,14 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
             end
         end
         
-        function listboxStr = getListboxStr(obj)
+        function [listboxStr, events] = getListboxStr(obj)
             listboxStr = cell(length(obj.evts),1);
             
             for(i=1:length(obj.evts))
                 listboxStr{i} = obj.evts(i).getListboxStr();
             end
+            
+            events = obj.evts;
         end
         
         function tf = usesStage(obj, stage)

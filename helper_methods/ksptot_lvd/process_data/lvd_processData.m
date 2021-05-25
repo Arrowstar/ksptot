@@ -1,4 +1,4 @@
-function lvd_processData(handles)
+function lvd_processData(handles, app)
     %lvd_processData Summary of this function goes here
     %   Detailed explanation goes here
     set(handles.plotWorkingLbl,'Visible','on'); drawnow;
@@ -6,18 +6,14 @@ function lvd_processData(handles)
     celBodyData = lvdData.celBodyData;
     
     maStateLog = lvdData.stateLog.getMAFormattedStateLogMatrix(true);
-    
-    %%%%%%%%%%
-    % Redraw plots
-    %%%%%%%%%%
-    drawnow;
-    lvdData.viewSettings.plotTrajectoryWithActiveViewProfile(handles);
-    
+       
     %%%%%%%%%%
     % Update script listbox
     %%%%%%%%%%    
-    evtListboxStr = lvdData.script.getListboxStr();
-    set(handles.scriptListbox,'String',evtListboxStr);
+    [evtListboxStr, events] = lvdData.script.getListboxStr();
+%     set(handles.scriptListbox,'String',evtListboxStr);
+    app.scriptListbox.Items = evtListboxStr;
+    app.scriptListbox.ItemsData = events;
     
     scriptListVal = get(handles.scriptListbox,'Value');
     if(isempty(scriptListVal) || scriptListVal <= 0)
@@ -28,14 +24,21 @@ function lvd_processData(handles)
     drawnow;
     
     %%%%%%%%%%
+    % Redraw plots
+    %%%%%%%%%%
+    lvdData.viewSettings.plotTrajectoryWithActiveViewProfile(handles, app);
+    drawnow;
+    
+    %%%%%%%%%%
     % Update Non-Sequential Events listbox
     %%%%%%%%%%   
-    nonSeqEvtsListboxStr = lvdData.script.nonSeqEvts.getListboxStr();
+    [nonSeqEvtsListboxStr, nonSeqEvents] = lvdData.script.nonSeqEvts.getListboxStr();
     
     if(isempty(nonSeqEvtsListboxStr))
         set(handles.nonSeqEventsListbox,'String','');
     else
-        set(handles.nonSeqEventsListbox,'String',nonSeqEvtsListboxStr);
+        app.nonSeqEventsListbox.Items = nonSeqEvtsListboxStr;
+        app.nonSeqEventsListbox.ItemsData = nonSeqEvents;
     end
     
     scriptListVal = get(handles.nonSeqEventsListbox,'Value');
@@ -49,7 +52,6 @@ function lvd_processData(handles)
     %%%%%%%%%%
     % Update State Readouts
     %%%%%%%%%%
-%     propNames = {'Liquid Fuel/Ox','Monopropellant','Xenon'};
     propNames = lvdData.launchVehicle.tankTypes.getFirstThreeTypesCellArr();
     ma_UpdateStateReadout(handles.initialStateReadoutLabel, 'initial', propNames, maStateLog, celBodyData);
     ma_UpdateStateReadout(handles.finalStateReadoutLabel, 'final', propNames, maStateLog, celBodyData);

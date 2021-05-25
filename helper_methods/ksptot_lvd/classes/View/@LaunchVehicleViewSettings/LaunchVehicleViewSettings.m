@@ -21,8 +21,8 @@ classdef LaunchVehicleViewSettings < matlab.mixin.SetGet
             obj.selViewProfile = newProfile;
         end
         
-        function plotTrajectoryWithActiveViewProfile(obj, handles)
-            obj.selViewProfile.plotTrajectory(obj.lvdData, handles);
+        function plotTrajectoryWithActiveViewProfile(obj, handles, app)
+            obj.selViewProfile.plotTrajectory(obj.lvdData, handles, app);
         end
         
         function addViewProfile(obj, newProfile)

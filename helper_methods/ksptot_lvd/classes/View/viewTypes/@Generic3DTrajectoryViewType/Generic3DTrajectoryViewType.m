@@ -11,7 +11,7 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             
         end
         
-        function [hCBodySurf, childrenHGs] = plotStateLog(obj, orbitNumToPlot, lvdData, viewProfile, handles)
+        function [hCBodySurf, childrenHGs] = plotStateLog(obj, orbitNumToPlot, lvdData, viewProfile, handles, app)
             dAxes = handles.dispAxes;
             hFig = handles.ma_LvdMainGUI;
             celBodyData = lvdData.celBodyData;
@@ -278,8 +278,8 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             end
             
             hDispAxisTitleLabel = handles.dispAxisTitleLabel;
-            titleStr = {[viewCentralBody.name, ' Orbit - ', 'Mission Segment ', curMissionSegStr, '/', totalMissionSegStr], eventStr, viewInFrame.getNameStr()};
-            set(hDispAxisTitleLabel, 'String', titleStr);
+            titleStr = sprintf('%s Orbit -- %s\n%s', viewCentralBody.name, eventStr, viewInFrame.getNameStr());
+            hDispAxisTitleLabel.String = titleStr;
             hDispAxisTitleLabel.TooltipString = sprintf('Frame: %s', viewInFrame.getNameStr());
             
             set(dAxes,'LineWidth',1);
@@ -354,11 +354,11 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             viewProfile.createRefFrameData(viewInFrame, subStateLogs, lvdData.script.evts);
             viewProfile.createAngleData(viewInFrame, subStateLogs, lvdData.script.evts);
             viewProfile.createPlaneData(viewInFrame, subStateLogs, lvdData.script.evts);
-            viewProfile.configureTimeSlider(minTime, maxTime, subStateLogs, handles);
+            viewProfile.configureTimeSlider(minTime, maxTime, subStateLogs, handles, app);
             hold(dAxes,'off');
             
-            sliderCB = handles.hDispAxesTimeSlider.StateChangedCallback;
-            sliderCB(handles.hDispAxesTimeSlider,[]);
+            sliderCB = app.DispAxesTimeSlider.ValueChangingFcn;
+            sliderCB(app.DispAxesTimeSlider,[]);
         end
     end
 end

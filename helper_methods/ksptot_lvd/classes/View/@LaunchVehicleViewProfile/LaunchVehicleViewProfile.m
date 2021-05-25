@@ -137,9 +137,9 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
             obj.planesToPlot([obj.planesToPlot] == plane) = [];
         end
         
-        function plotTrajectory(obj, lvdData, handles)
+        function plotTrajectory(obj, lvdData, handles, app)
 %             profile on;
-            obj.generic3DTrajView.plotStateLog(obj.orbitNumToPlot, lvdData, obj, handles);
+            obj.generic3DTrajView.plotStateLog(obj.orbitNumToPlot, lvdData, obj, handles, app);
 %             profile viewer;
         end
         
@@ -414,31 +414,33 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
             end
         end
         
-        function configureTimeSlider(obj, minTime, maxTime, subStateLogs, handles)
-            timeSlider = handles.jDispAxesTimeSlider;
-            curSliderTime = timeSlider.getValue();
+        function configureTimeSlider(obj, minTime, maxTime, subStateLogs, handles, app)
+            timeSlider = app.DispAxesTimeSlider;
+            curSliderTime = timeSlider.Value;
             if(not(isfinite(minTime) && isfinite(maxTime)))
                 onlyTime = subStateLogs{1}(1,1);
                 
                 minTime = onlyTime;
                 maxTime = onlyTime + 1;
             end
-            timeSlider.setMinimum(minTime);
-            timeSlider.setMaximum(maxTime);
-            timeSlider.setMajorTickSpacing((maxTime - minTime)/10);
-            timeSlider.setMinorTickSpacing((maxTime - minTime)/100);
+            timeSlider.Limits = [minTime maxTime];
+            timeSlider.MajorTicks = linspace(minTime, maxTime, 10);
+            timeSlider.MinorTicks = linspace(minTime, maxTime, 100);
+            timeSlider.MajorTickLabels = "";
+%             timeSlider.setMajorTickSpacing((maxTime - minTime)/10);
+%             timeSlider.setMinorTickSpacing((maxTime - minTime)/100);
             
             if(curSliderTime > maxTime)
-                timeSlider.setValue(maxTime);
+                timeSlider.Value = maxTime;
             elseif(curSliderTime < minTime)
-                timeSlider.setValue(minTime);
+                timeSlider.Value = minTime;
             end
                        
             lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
-            timeSliderCb = @(src,evt) timeSliderStateChanged(src,evt, lvdData, handles);
-            set(handles.hDispAxesTimeSlider, 'StateChangedCallback', timeSliderCb); 
+            timeSliderCb = @(src,evt) timeSliderStateChanged(src,evt, lvdData, handles, app);
+            timeSlider.ValueChangingFcn = timeSliderCb; 
             
-            handles.hDispAxesTimeSlider.StateChangedCallback(timeSlider, true);
+            timeSlider.ValueChangingFcn(timeSlider, true);
         end
         
         function trajData = createTrajData(obj)
@@ -453,7 +455,7 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         function bodyData = createBodyData(obj, bodyInfo, viewInFrame, bodyPlotStyle, showSoI,meshEdgeAlpha)
             bodyData = LaunchVehicleViewProfileBodyData(bodyInfo, viewInFrame, bodyPlotStyle, showSoI, meshEdgeAlpha);
             obj.markerBodyData(end+1) = bodyData;
-        end
+       end
         
         function createPointData(obj, viewFrame, subStateLogs, evts)
             obj.clearPointData();
