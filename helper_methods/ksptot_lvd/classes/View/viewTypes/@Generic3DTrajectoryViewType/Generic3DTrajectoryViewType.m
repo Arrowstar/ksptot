@@ -12,8 +12,8 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
         end
         
         function [hCBodySurf, childrenHGs] = plotStateLog(obj, orbitNumToPlot, lvdData, viewProfile, handles, app)
-            dAxes = handles.dispAxes;
-            hFig = handles.ma_LvdMainGUI;
+            dAxes = app.dispAxes;
+            hFig = app.ma_LvdMainGUI;
             celBodyData = lvdData.celBodyData;
             stateLog = lvdData.stateLog;
             
@@ -99,11 +99,11 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                     totalMissionSegStr = num2str(numTotMissionSegs);
                 
                     if(numTotMissionSegs <= 1)
-                        handles.decrOrbitToPlotNum.Enable = 'off';
-                        handles.incrOrbitToPlotNum.Enable = 'off';
+                        app.decrOrbitToPlotNum.Enable = 'off';
+                        app.incrOrbitToPlotNum.Enable = 'off';
                     else
-                        handles.decrOrbitToPlotNum.Enable = 'on';
-                        handles.incrOrbitToPlotNum.Enable = 'on';
+                        app.decrOrbitToPlotNum.Enable = 'on';
+                        app.incrOrbitToPlotNum.Enable = 'on';
                     end
                 case ViewEventsTypeEnum.All
                     entries = stateLog.getAllEntries();
