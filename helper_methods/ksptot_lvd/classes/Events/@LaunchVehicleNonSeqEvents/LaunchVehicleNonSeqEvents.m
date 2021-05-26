@@ -194,6 +194,14 @@ classdef LaunchVehicleNonSeqEvents < matlab.mixin.SetGet & matlab.mixin.Copyable
                 tf = tf || obj.evts(i).usesPwrStorage(powerStorage);
             end
         end
+        
+        function tf = usesTankToTankConn(obj, tankToTank)
+            tf = false;
+            
+            for(i=1:length(obj.nonSeqEvts))
+                tf = tf || obj.nonSeqEvts(i).usesTankToTankConn(tankToTank);
+            end
+        end
     end
     
 	methods(Access = protected)

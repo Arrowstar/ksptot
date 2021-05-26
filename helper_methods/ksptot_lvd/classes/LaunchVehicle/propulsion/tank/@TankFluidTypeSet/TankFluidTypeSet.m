@@ -24,8 +24,9 @@ classdef TankFluidTypeSet < matlab.mixin.SetGet & matlab.mixin.Copyable
             threeTypesCell = {threeTypes.name};
         end
         
-        function listboxStr = getListboxStr(obj)
+        function [listboxStr, tankTypes] = getListboxStr(obj)
             listboxStr = {obj.types.name};
+            tankTypes = obj.types;
         end
         
         function fType = getTypeForInd(obj, ind)
