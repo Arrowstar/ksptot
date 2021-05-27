@@ -21,12 +21,14 @@ classdef GeometricPointSet < matlab.mixin.SetGet
             obj.points([obj.points] == point) = [];
         end
         
-        function listBoxStr = getListboxStr(obj)
+        function [listBoxStr, points] = getListboxStr(obj)
             listBoxStr = {};
             
             for(i=1:length(obj.points))
                 listBoxStr{end+1} = obj.points(i).getListboxStr(); %#ok<AGROW>
             end
+            
+            points = obj.points;
         end
         
         function indPoints = getPointsForInds(obj, inds)
