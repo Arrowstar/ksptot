@@ -12,7 +12,12 @@ classdef CelestialBodyIntegration
         end
         
         function integrateCelestialBodies(obj, minUT, maxUT)         
-            allBodies = obj.celBodyData.getAllBodyInfo();
+%             allBodies = obj.celBodyData.getAllBodyInfo();
+            [~, allBodiesCell] = ma_getSortedBodyNames(obj.celBodyData);
+            
+            for(i=1:length(allBodiesCell))
+                allBodies(i) = allBodiesCell{i}; %#ok<AGROW>
+            end
             
             bool = [allBodies.propTypeEnum] == BodyPropagationTypeEnum.Numerical;
             if(any(bool))

@@ -28,6 +28,9 @@ if(isdeployed)
     end
 end
 
+%Populate initial ksptot log file
+writeKsptotLogFileHeaderToConsole();
+
 %display splashscreen
 hS = splashScreenGUI_App(); drawnow;
 t = tic;
