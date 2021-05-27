@@ -82,12 +82,14 @@ classdef LaunchVehicleGroundObject < matlab.mixin.SetGet
             numWayPts = length(obj.wayPts);
         end
         
-        function listBoxStr = getWayListboxStr(obj)
+        function [listBoxStr, wayPts] = getWayListboxStr(obj)
             listBoxStr = {};
             
             for(i=1:length(obj.wayPts))
                 listBoxStr{end+1} = sprintf('%02u - %s', i, obj.wayPts(i).getDisplayStr()); %#ok<AGROW>
             end
+            
+            wayPts = obj.wayPts;
         end
         
         function wayPt2 = getNextWaypt(obj, wayPt)
