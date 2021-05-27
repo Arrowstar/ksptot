@@ -38,7 +38,7 @@ classdef ConstraintSet < matlab.mixin.SetGet
             end
         end
         
-        function listBoxStr = getListboxStr(obj)
+        function [listBoxStr, consts] = getListboxStr(obj)
             listBoxStr = {};
             
             for(i=1:length(obj.consts))
@@ -50,6 +50,8 @@ classdef ConstraintSet < matlab.mixin.SetGet
                 
                 listBoxStr{end+1} = [prefStr,obj.consts(i).getName()]; %#ok<AGROW>
             end
+            
+            consts = obj.consts;
         end
         
         function tooltipStrs = getToolboxStrs(obj)
