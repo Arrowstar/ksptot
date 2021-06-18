@@ -2209,7 +2209,7 @@ function astroCalcsMenu_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
     celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
-    ma_AstroCalculatorsGUI(celBodyData);
+    ma_AstroCalculatorsGUI_App(celBodyData);
 
 
 % --------------------------------------------------------------------
