@@ -22,7 +22,7 @@ function varargout = lvd_editEventGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_editEventGUI
 
-% Last Modified by GUIDE v2.5 13-May-2021 09:08:26
+% Last Modified by GUIDE v2.5 02-Jul-2021 19:20:21
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -131,6 +131,8 @@ function populateGUI(handles, event, isNonSeq)
         handles.integratorOptionsButton.Enable = 'off';
         handles.propDirCombo.Enable = 'off';
         handles.checkSoITransCheckbox.Enable = 'off';
+        handles.prevEventButton.Enable = 'off';
+        handles.nextEventButton.Enable = 'off';
     end
 
 % --- Outputs from this function are returned to the command line.
@@ -143,7 +145,13 @@ function varargout = lvd_editEventGUI_OutputFcn(hObject, eventdata, handles)
 % Get default command line output from handles structure
     if(isempty(handles))
         varargout{1} = [];
-    else
+    else  
+        saveEvent(handles);
+        
+        close(handles.lvd_editEventGUI);
+    end
+    
+function saveEvent(handles)
         event = getappdata(handles.lvd_editEventGUI,'event');
         
         evtName = get(handles.eventNameText,'String');
@@ -188,9 +196,6 @@ function varargout = lvd_editEventGUI_OutputFcn(hObject, eventdata, handles)
     	event.execActionsNode = enum;
         
         event.clearActiveOptVarsCache();
-        
-        close(handles.lvd_editEventGUI);
-    end
 
 % --- Executes on button press in saveAndCloseButton.
 function saveAndCloseButton_Callback(hObject, eventdata, handles)
@@ -200,7 +205,7 @@ function saveAndCloseButton_Callback(hObject, eventdata, handles)
     errMsg = validateInputs(handles);
 
     if(isempty(errMsg))
-       uiresume(handles.lvd_editEventGUI);
+        uiresume(handles.lvd_editEventGUI);
     else
         msgbox(errMsg,'Errors were found while editing the event.','error');
     end  
@@ -832,3 +837,57 @@ function actionExecNodeCombo_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on button press in nextEventButton.
+function nextEventButton_Callback(hObject, eventdata, handles)
+% hObject    handle to nextEventButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    event = getappdata(handles.lvd_editEventGUI,'event');
+    eventNum = event.getEventNum();
+    
+    script = event.script;
+    numEvents = script.getTotalNumOfEvents();
+    
+    if(numEvents > 1)
+        if(eventNum >= numEvents)
+            newEvent = script.getEventForInd(1);
+        else
+            newEvent = script.getEventForInd(eventNum + 1);
+        end
+        
+        loadNewEvent(newEvent, handles);
+    end
+
+
+% --- Executes on button press in prevEventButton.
+function prevEventButton_Callback(hObject, eventdata, handles)
+% hObject    handle to prevEventButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    event = getappdata(handles.lvd_editEventGUI,'event');
+    eventNum = event.getEventNum();
+    
+    script = event.script;
+    numEvents = script.getTotalNumOfEvents();
+    
+    if(numEvents > 1)
+        if(eventNum <= 1)
+            newEvent = script.getEventForInd(numEvents);
+        else
+            newEvent = script.getEventForInd(eventNum - 1);
+        end
+        
+        loadNewEvent(newEvent, handles);
+    end
+
+
+function loadNewEvent(newEvent, handles)
+    saveEvent(handles);
+    
+    setappdata(handles.lvd_editEventGUI,'event',newEvent);
+    newEvent.clearActiveOptVarsCache();
+    
+    isNonSeq = getappdata(handles.lvd_editEventGUI,'isNonSeq');
+    populateGUI(handles, newEvent, isNonSeq);

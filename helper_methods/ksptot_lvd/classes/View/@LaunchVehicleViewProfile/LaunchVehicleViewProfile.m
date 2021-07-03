@@ -316,11 +316,13 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
 
                         case EventPlottingMethodEnum.SkipFirstState
                             times = times(2:end);
-                            rVects = rVects(2:end,:);
+                            rVects = rVects(:,2:end);
+                            rotMatsBodyToView = rotMatsBodyToView(:,:,2:end);
 
                         case EventPlottingMethodEnum.DoNotPlot
                             times = [];
                             rVects = [];
+                            rotMatsBodyToView = [];
 
                         otherwise
                             error('Unknown event plotting method: %s', EventPlottingMethodEnum.DoNotPlot.name);
