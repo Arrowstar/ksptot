@@ -7,7 +7,7 @@ function [hCBodySurf, hCBodySurfXForm] = ma_initOrbPlot(hFig, orbitDispAxes, bod
     set(orbitDispAxes,'YTickLabel',[]);
     set(orbitDispAxes,'ZTickLabel',[]);
     grid(orbitDispAxes,'on');
-    view(orbitDispAxes,3);
+%     view(orbitDispAxes,3);
     
     if(~isempty(bodyInfo))
         dRad = bodyInfo.radius;
