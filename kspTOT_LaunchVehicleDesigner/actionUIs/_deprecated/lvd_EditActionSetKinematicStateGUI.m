@@ -310,7 +310,6 @@ function varargout = lvd_EditActionSetKinematicStateGUI_OutputFcn(hObject, event
         varargout{1} = false;
     else  
         lvdData = getappdata(handles.lvd_EditActionSetKinematicStateGUI,'lvdData');
-        celBodyData = lvdData.celBodyData;
         action = getappdata(handles.lvd_EditActionSetKinematicStateGUI, 'action');
         
         action.stateLog = lvdData.stateLog;

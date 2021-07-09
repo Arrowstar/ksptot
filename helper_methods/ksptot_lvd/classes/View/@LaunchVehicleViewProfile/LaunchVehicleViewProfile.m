@@ -419,7 +419,8 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         function configureTimeSlider(obj, minTime, maxTime, subStateLogs, handles, app)
             timeSlider = app.DispAxesTimeSlider;
             curSliderTime = timeSlider.Value;
-            if(not(isfinite(minTime) && isfinite(maxTime)))
+            if(not(isfinite(minTime) && isfinite(maxTime)) || ...
+               minTime == maxTime)
                 onlyTime = subStateLogs{1}(1,1);
                 
                 minTime = onlyTime;
