@@ -94,14 +94,8 @@ classdef SetKinematicStateAction < AbstractEventAction
                 end
             else
                 cartElemSet = obj.orbitModel.convertToCartesianElementSet();
-                rVect = cartElemSet.rVect;
-                vVect = cartElemSet.vVect;
-                bodyInfo = cartElemSet.frame.getOriginBody();
                 
                 newStateLogEntry.setCartesianElementSet(cartElemSet);
-%                 newStateLogEntry.position = rVect;
-%                 newStateLogEntry.velocity = vVect;
-%                 newStateLogEntry.centralBody = bodyInfo;
             end
             
             if(obj.inheritStageStates)
