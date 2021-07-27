@@ -102,7 +102,7 @@ function varargout = lvd_EditRotatingSolarPanelGUI_OutputFcn(hObject, eventdata,
         rotatingSolarPanel = getappdata(hObject, 'rotatingSolarPanel');
         lv = rotatingSolarPanel.getAttachedStage().launchVehicle;
                 
-        rotatingSolarPanel.getAttachedStage().removePwrSrc(rotatingSolarPanel);
+%         rotatingSolarPanel.getAttachedStage().removePwrSrc(rotatingSolarPanel);
         
         stage = lv.getStageForInd(handles.stageCombo.Value);
         
@@ -120,7 +120,7 @@ function varargout = lvd_EditRotatingSolarPanelGUI_OutputFcn(hObject, eventdata,
         rotatingSolarPanel.refChargeRateDist = refDist;
         rotatingSolarPanel.bodyFrameRotAxis = normVector([xVect; yVect; zVect]);
         
-        rotatingSolarPanel.getAttachedStage().addPwrSrc(rotatingSolarPanel);
+%         rotatingSolarPanel.getAttachedStage().addPwrSrc(rotatingSolarPanel);
                 
         varargout{1} = true;
         close(handles.lvd_EditRotatingSolarPanelGUI);

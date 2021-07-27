@@ -126,6 +126,10 @@ classdef CumPwrStorageStateOfChargeConstraint < AbstractConstraint
         function addConstraintTf = openEditConstraintUI(obj, lvdData)
             addConstraintTf = lvd_EditGenericMAConstraintGUI(obj, lvdData);
         end
+        
+        function tf = canUseSparseOutput(obj)
+            tf = true;
+        end
     end
     
     methods(Static)

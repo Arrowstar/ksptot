@@ -7,7 +7,7 @@ classdef SetKinematicStateStageState < matlab.mixin.SetGet
         
         stageStateToSet(1,1) logical = true;
         
-        inheritStageState(1,1) logical = false;
+        inheritStageState(1,1) logical = true;
         inheritStageStateFrom(1,1) InheritStateEnum = InheritStateEnum.InheritFromLastState;
         inheritStageStateFromEvent LaunchVehicleEvent = LaunchVehicleEvent.empty(1,0);        
     end
@@ -34,6 +34,13 @@ classdef SetKinematicStateStageState < matlab.mixin.SetGet
                 end
             else
                 stageState.active = obj.stageStateToSet;
+            end
+        end
+        
+        function listboxStr = getListboxStr(obj)
+            listboxStr = {};
+            for(i=1:length(obj))
+                listboxStr{i} = obj(i).stage.name; %#ok<AGROW>
             end
         end
     end

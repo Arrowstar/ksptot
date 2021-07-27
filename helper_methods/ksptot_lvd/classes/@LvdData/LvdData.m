@@ -244,6 +244,16 @@ classdef LvdData < matlab.mixin.SetGet
             if(isempty(obj.graphAnalysis))
                 obj.graphAnalysis = LvdGraphicalAnalysis(obj);
             end
+            
+            evts = obj.script.evts;
+            for(i=1:length(evts))
+                evts(i).createUpdatedSetKinematicStateObjs();
+            end
+            
+            nonSeqEvts = obj.script.nonSeqEvts.nonSeqEvts;
+            for(i=1:length(nonSeqEvts))
+                nonSeqEvts(i).evt.createUpdatedSetKinematicStateObjs();
+            end
         end
         
         function obj = saveobj(obj)

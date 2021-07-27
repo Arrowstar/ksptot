@@ -99,7 +99,7 @@ function varargout = lvd_EditPowerRtgGUI_OutputFcn(hObject, eventdata, handles)
         rtg = getappdata(hObject, 'rtg');
         lv = rtg.getAttachedStage().launchVehicle;
                 
-        rtg.getAttachedStage().removePwrSrc(rtg);
+%         rtg.getAttachedStage().removePwrSrc(rtg);
         
         stage = lv.getStageForInd(handles.stageCombo.Value);
         
@@ -114,7 +114,7 @@ function varargout = lvd_EditPowerRtgGUI_OutputFcn(hObject, eventdata, handles)
         rtg.halfLife = halfLife;
         rtg.initTime = decayInitTime;
         
-        rtg.getAttachedStage().addPwrSrc(rtg);
+%         rtg.getAttachedStage().addPwrSrc(rtg);
                 
         varargout{1} = true;
         close(handles.lvd_EditPowerRtgGUI);

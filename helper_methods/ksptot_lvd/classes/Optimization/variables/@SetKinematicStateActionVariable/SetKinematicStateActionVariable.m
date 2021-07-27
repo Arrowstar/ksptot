@@ -49,6 +49,16 @@ classdef SetKinematicStateActionVariable < AbstractOptimizationVariable
             if(not(isempty(obj.orbitVar)))
                 x = horzcat(x, obj.orbitVar.getXsForVariable());
             end
+            
+            tankStates = obj.varObj.tankStates;
+            for(i=1:length(tankStates))
+                x = horzcat(x, tankStates(i).optVar.getXsForVariable()); %#ok<AGROW>
+            end
+            
+            epsStorageStates = obj.varObj.epsStorageStates;
+            for(i=1:length(epsStorageStates))
+                x = horzcat(x, epsStorageStates(i).optVar.getXsForVariable()); %#ok<AGROW>
+            end
         end
         
         function [lb, ub] = getBndsForVariable(obj)
@@ -59,6 +69,20 @@ classdef SetKinematicStateActionVariable < AbstractOptimizationVariable
                 [oLb, oUb] = obj.orbitVar.getBndsForVariable();
                 lb = horzcat(lb, oLb);
                 ub = horzcat(ub, oUb);
+            end
+            
+            tankStates = obj.varObj.tankStates;
+            for(i=1:length(tankStates))
+                [tLb, tUb] = tankStates(i).optVar.getBndsForVariable();
+                lb = horzcat(lb, tLb); %#ok<AGROW>
+                ub = horzcat(ub, tUb); %#ok<AGROW>
+            end
+            
+            epsStorageStates = obj.varObj.epsStorageStates;
+            for(i=1:length(epsStorageStates))
+                [sLb, sUb] = epsStorageStates(i).optVar.getBndsForVariable();
+                lb = horzcat(lb, sLb); %#ok<AGROW>
+                ub = horzcat(ub, sUb); %#ok<AGROW>
             end
         end
         
@@ -71,47 +95,145 @@ classdef SetKinematicStateActionVariable < AbstractOptimizationVariable
                 lb = horzcat(lb, oLb);
                 ub = horzcat(ub, oUb);
             end
+            
+            tankStates = obj.varObj.tankStates;
+            for(i=1:length(tankStates))
+                [tLb, tUb] = tankStates(i).optVar.getAllBndsForVariable();
+                lb = horzcat(lb, tLb); %#ok<AGROW>
+                ub = horzcat(ub, tUb); %#ok<AGROW>
+            end
+            
+            epsStorageStates = obj.varObj.epsStorageStates;
+            for(i=1:length(epsStorageStates))
+                [sLb, sUb] = epsStorageStates(i).optVar.getAllBndsForVariable();
+                lb = horzcat(lb, sLb); %#ok<AGROW>
+                ub = horzcat(ub, sUb); %#ok<AGROW>
+            end
         end
         
         function setBndsForVariable(obj, lb, ub)
-            if(length(lb) == 7 && length(ub) == 7)
-                obj.lb = lb(1);
-                obj.ub = ub(1);
-
-                obj.orbitVar.setBndsForVariable(lb(2:end), ub(2:end));
-            else
-                useTfVar = obj.getUseTfForVariable();
-
-                if(useTfVar(1))
-                    obj.lb(1) = lb(1);
-                    obj.ub(1) = ub(1);
-                    
-                    obj.orbitVar.setBndsForVariable(lb(2:end), ub(2:end));
-                else
-                    obj.orbitVar.setBndsForVariable(lb, ub);
+            ind = 1;
+            if(obj.useTf)
+                obj.lb = lb(ind);
+                obj.ub = ub(ind);
+                ind = ind+1;
+            end
+            
+            oUseTf = obj.orbitVar.getUseTfForVariable();
+            oUseTfCnt = sum(oUseTf);
+            if(oUseTfCnt > 0)
+                oInds = ind : 1 : ind+oUseTfCnt-1;
+                obj.orbitVar.setBndsForVariable(lb(oInds), ub(oInds));
+                ind = oInds(end) + 1;
+            end
+            
+            tankStates = obj.varObj.tankStates;
+            for(i=1:length(tankStates))
+                if(tankStates(i).optVar.getUseTfForVariable() == true)
+                    tankStates(i).optVar.setBndsForVariable(lb(ind), ub(ind));
+                    ind = ind + 1;
                 end
             end
+            
+            epsStorageStates = obj.varObj.epsStorageStates;
+            for(i=1:length(epsStorageStates))
+                if(epsStorageStates(i).optVar.getUseTfForVariable() == true)
+                    epsStorageStates(i).optVar.setBndsForVariable(lb(ind), ub(ind));
+                    ind = ind + 1;
+                end
+            end
+            
+%             if(length(lb) == 7 && length(ub) == 7)
+%                 obj.lb = lb(1);
+%                 obj.ub = ub(1);
+% 
+%                 obj.orbitVar.setBndsForVariable(lb(2:end), ub(2:end));
+%             else
+%                 useTfVar = obj.getUseTfForVariable();
+% 
+%                 if(useTfVar(1))
+%                     obj.lb(1) = lb(1);
+%                     obj.ub(1) = ub(1);
+%                     
+%                     obj.orbitVar.setBndsForVariable(lb(2:end), ub(2:end));
+%                 else
+%                     obj.orbitVar.setBndsForVariable(lb, ub);
+%                 end
+%             end
         end
         
         function useTf = getUseTfForVariable(obj)
             useTf = obj.useTf;
             
             useTf = horzcat(useTf, obj.orbitVar.getUseTfForVariable());
+            
+            tankStates = obj.varObj.tankStates;
+            for(i=1:length(tankStates))
+                useTf = horzcat(useTf, tankStates(i).optVar.getUseTfForVariable()); %#ok<AGROW>
+            end
+            
+            epsStorageStates = obj.varObj.epsStorageStates;
+            for(i=1:length(epsStorageStates))
+                useTf = horzcat(useTf, epsStorageStates(i).optVar.getUseTfForVariable()); %#ok<AGROW>
+            end
         end
         
         function setUseTfForVariable(obj, useTf)
             obj.useTf = useTf(1);
             
-            obj.orbitVar.setUseTfForVariable(useTf(2:end));
+            obj.orbitVar.setUseTfForVariable(useTf(2:7));
+            
+            tankStates = obj.varObj.tankStates;
+            ind = 8;
+            for(i=1:length(tankStates))
+                tankStates(i).optVar.setUseTfForVariable(useTf(ind));
+                ind = ind + 1;
+            end
+            
+            epsStorageStates = obj.varObj.epsStorageStates;
+            for(i=1:length(epsStorageStates))
+                epsStorageStates(i).optVar.setUseTfForVariable(useTf(ind));
+                ind = ind + 1;
+            end
         end
         
         function updateObjWithVarValue(obj, x)
+            ind = 1;
             if(obj.useTf)
-                obj.varObj.time = x(1);
-                obj.orbitVar.updateObjWithVarValue(x(2:end));
-            else
-                obj.orbitVar.updateObjWithVarValue(x(1:end));
+                obj.varObj.time = x(ind);
+                ind = ind+1;
             end
+            
+            oUseTf = obj.orbitVar.getUseTfForVariable();
+            oUseTfCnt = sum(oUseTf);
+            if(oUseTfCnt > 0)
+                oInds = ind : 1 : ind+oUseTfCnt-1;
+                obj.orbitVar.updateObjWithVarValue(x(oInds));
+                ind = oInds(end) + 1;
+            end            
+            
+            tankStates = obj.varObj.tankStates;
+            for(i=1:length(tankStates))
+                if(tankStates(i).optVar.getUseTfForVariable() == true)
+                    tankStates(i).optVar.updateObjWithVarValue(x(ind));
+                    ind = ind + 1;
+                end
+            end
+            
+            epsStorageStates = obj.varObj.epsStorageStates;
+            for(i=1:length(epsStorageStates))
+                if(epsStorageStates(i).optVar.getUseTfForVariable() == true)
+                    epsStorageStates(i).optVar.updateObjWithVarValue(x(ind));
+                    ind = ind + 1;
+                end
+            end
+            
+%             if(obj.useTf)
+%                 obj.varObj.time = x(1);
+%                 obj.orbitVar.updateObjWithVarValue(x(2:end));
+%             else
+%                 obj.orbitVar.updateObjWithVarValue(x(1:end));
+%             end
         end
         
         function nameStrs = getStrNamesOfVars(obj, evtNum, varLocType)
@@ -127,8 +249,23 @@ classdef SetKinematicStateActionVariable < AbstractOptimizationVariable
                 initTime = {};
             end
             
-%             nameStrs = horzcat(sprintf('Event %i Time', evtNum), obj.orbitVar.getStrNamesOfVars(evtNum));
-            nameStrs = horzcat(initTime, obj.orbitVar.getStrNamesOfVars(evtNum, varLocType));
+            tankStates = obj.varObj.tankStates;
+            tankStateVarStrs = {};
+            for(i=1:length(tankStates))
+                if(tankStates(i).optVar.getUseTfForVariable() == true)
+                    tankStateVarStrs = horzcat(tankStateVarStrs, tankStates(i).optVar.getStrNamesOfVars(evtNum, varLocType)); %#ok<AGROW>
+                end
+            end
+            
+            epsStorageStates = obj.varObj.epsStorageStates;
+            epsStorageStateVarStrs = {};
+            for(i=1:length(epsStorageStates))
+                if(epsStorageStates(i).optVar.getUseTfForVariable() == true)
+                    epsStorageStateVarStrs = horzcat(epsStorageStateVarStrs, epsStorageStates(i).optVar.getStrNamesOfVars(evtNum, varLocType)); %#ok<AGROW>
+                end
+            end
+            
+            nameStrs = horzcat(initTime, obj.orbitVar.getStrNamesOfVars(evtNum, varLocType), tankStateVarStrs, epsStorageStateVarStrs);
         end
     end
 end

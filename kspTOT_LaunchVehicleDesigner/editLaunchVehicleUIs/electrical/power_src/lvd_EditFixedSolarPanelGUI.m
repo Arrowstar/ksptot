@@ -102,7 +102,7 @@ function varargout = lvd_EditFixedSolarPanelGUI_OutputFcn(hObject, eventdata, ha
         fixedSolarPanel = getappdata(hObject, 'fixedSolarPanel');
         lv = fixedSolarPanel.getAttachedStage().launchVehicle;
                 
-        fixedSolarPanel.getAttachedStage().removePwrSrc(fixedSolarPanel);
+%         fixedSolarPanel.getAttachedStage().removePwrSrc(fixedSolarPanel);
         
         stage = lv.getStageForInd(handles.stageCombo.Value);
         
@@ -120,7 +120,7 @@ function varargout = lvd_EditFixedSolarPanelGUI_OutputFcn(hObject, eventdata, ha
         fixedSolarPanel.refChargeRateDist = refDist;
         fixedSolarPanel.bodyFrameNormVect = normVector([xVect; yVect; zVect]);
         
-        fixedSolarPanel.getAttachedStage().addPwrSrc(fixedSolarPanel);
+%         fixedSolarPanel.getAttachedStage().addPwrSrc(fixedSolarPanel);
                 
         varargout{1} = true;
         close(handles.lvd_EditFixedSolarPanelGUI);

@@ -97,7 +97,7 @@ function varargout = lvd_EditSimplePowerSinkGUI_OutputFcn(hObject, eventdata, ha
         powerSink = getappdata(hObject, 'powerSink');
         lv = powerSink.getAttachedStage().launchVehicle;
                 
-        powerSink.getAttachedStage().removePwrSink(powerSink);
+%         powerSink.getAttachedStage().removePwrSink(powerSink);
         
         stage = lv.getStageForInd(handles.stageCombo.Value);
         
@@ -108,7 +108,7 @@ function varargout = lvd_EditSimplePowerSinkGUI_OutputFcn(hObject, eventdata, ha
         powerSink.stage = stage;
         powerSink.pwrRate = dischargeRate;
         
-        powerSink.getAttachedStage().addPwrSink(powerSink);
+%         powerSink.getAttachedStage().addPwrSink(powerSink);
                 
         varargout{1} = true;
         close(handles.lvd_EditSimplePowerSinkGUI);

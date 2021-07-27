@@ -41,47 +41,67 @@ classdef LaunchVehicleStage < matlab.mixin.SetGet
         %% Propulsion
         function addEngine(obj, newEngine)
             obj.engines(end+1) = newEngine;
+            
+            notify(obj.launchVehicle,'EngineAdded',EngineAddedDeletedEventData(newEngine));
         end
         
         function removeEngine(obj, engine)
             obj.engines([obj.engines] == engine) = [];
             
             obj.launchVehicle.removeAllEngineToTanksConnsWithEngine(engine);
+            
+            notify(obj.launchVehicle,'EngineDeleted',EngineAddedDeletedEventData(engine));
         end
         
         function addTank(obj, newTank)
             obj.tanks(end+1) = newTank;
+            
+            notify(obj.launchVehicle,'TankAdded',TankAddedDeletedEventData(newTank));
         end
         
         function removeTank(obj, tank)
             obj.tanks([obj.tanks] == tank) = [];
             
             obj.launchVehicle.removeAllEngineToTanksConnsWithTank(tank);
+            
+            notify(obj.launchVehicle,'TankDeleted',TankAddedDeletedEventData(tank));
         end
         
         %% Electrical
         function addPwrSrc(obj, newPwrSrc)
             obj.powerSrcs(end+1) = newPwrSrc;
+            
+            notify(obj.launchVehicle,'EpsSrcAdded',EpsSrcAddedDeletedEventData(newPwrSrc));
         end
         
         function removePwrSrc(obj, pwrSrc)
             obj.powerSrcs([obj.powerSrcs] == pwrSrc) = [];
+            
+            notify(obj.launchVehicle,'EpsSrcDeleted',EpsSrcAddedDeletedEventData(pwrSrc));
         end
         
         function addPwrSink(obj, newPwrSink)
             obj.powerSinks(end+1) = newPwrSink;
+            
+            notify(obj.launchVehicle,'EpsSinkAdded',EpsSinkAddedDeletedEventData(newPwrSink));
         end
         
         function removePwrSink(obj, pwrSink)
             obj.powerSinks([obj.powerSinks] == pwrSink) = [];
+            
+            notify(obj.launchVehicle,'EpsSinkDeleted',EpsSinkAddedDeletedEventData(pwrSink));
         end
         
         function addPwrStorage(obj, newPwrStorage)
             obj.powerStorages(end+1) = newPwrStorage;
+            
+            notify(obj.launchVehicle,'EpsStorageAdded',EpsStorageAddedDeletedEventData(newPwrStorage));
         end
         
         function removePwrStorage(obj, pwrStorage)
             obj.powerStorages([obj.powerStorages] == pwrStorage) = [];
+            
+            notify(obj.launchVehicle,'EpsStorageDeleted',EpsStorageAddedDeletedEventData(pwrStorage));
         end
         
         %% Everything else

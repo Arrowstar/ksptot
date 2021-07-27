@@ -109,7 +109,7 @@ function varargout = lvd_EditEngineGUI_OutputFcn(hObject, eventdata, handles)
         
         conns = lv.getEngineToTankConnsForEngine(engine);
         
-        engine.stage.removeEngine(engine);
+%         engine.stage.removeEngine(engine);
         
         stage = lv.getStageForInd(handles.stageCombo.Value);
         
@@ -140,7 +140,7 @@ function varargout = lvd_EditEngineGUI_OutputFcn(hObject, eventdata, handles)
         engine.reqsElecCharge = reqsElecCharge;
         engine.pwrUsageRate = elecEnginePwrConsumption;
         
-        engine.stage.addEngine(engine);
+%         engine.stage.addEngine(engine);
         
         for(i=1:length(conns)) %#ok<NO4LP>
             conns(i).engine = engine;

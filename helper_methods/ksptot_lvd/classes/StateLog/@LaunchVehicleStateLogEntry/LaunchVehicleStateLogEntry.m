@@ -37,6 +37,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
         emptyEngineArr = LaunchVehicleEngineState.empty(1,0);
         emptyPwrStorageArr = AbstractLaunchVehicleEpsStorageState.empty(1,0);
         emptyPwrSrcArr = AbstractLaunchVehicleElectricalPowerSrcState.empty(1,0)
+        emptyPwrSinkArr = AbstractLaunchVehicleElectricalPowerSnkState.empty(1,0)
     end
     
     methods
@@ -342,15 +343,33 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             end
         end
         
+        function pwrStorageStates = getAllPwrStorageStates(obj)
+            stgStates = obj.stageStates;
+            pwrStorageStates = [stgStates.powerStorageStates];
+              
+            if(isempty(pwrStorageStates))
+                pwrStorageStates = obj.emptyPwrStorageArr;
+            end
+        end
+        
         function pwrSinksStates = getAllActivePwrSinksStates(obj)
             stgStates = obj.stageStates;
             pwrSinksStates = [stgStates([stgStates.active]).powerSinkStates];
               
             if(isempty(pwrSinksStates))
-                pwrSinksStates = obj.emptyPwrSrcArr;
+                pwrSinksStates = obj.emptyPwrSinkArr;
                 
             else
                 pwrSinksStates = pwrSinksStates(getActiveState(pwrSinksStates));
+            end
+        end
+        
+        function pwrSinksStates = getAllPwrSinksStates(obj)
+            stgStates = obj.stageStates;
+            pwrSinksStates = [stgStates.powerSinkStates];
+              
+            if(isempty(pwrSinksStates))
+                pwrSinksStates = obj.emptyPwrSinkArr;
             end
         end
         
@@ -367,6 +386,15 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                 end
                 
                 pwrSrcsStates = pwrSrcsStates(activeInds);
+            end
+        end
+        
+        function pwrSrcsStates = getAllPwrSrcsStates(obj)
+            stgStates = obj.stageStates;
+            pwrSrcsStates = [stgStates.powerSrcStates];
+              
+            if(isempty(pwrSrcsStates))
+                pwrSrcsStates = obj.emptyPwrSrcArr;
             end
         end
         
