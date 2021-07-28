@@ -112,34 +112,55 @@ classdef SetKinematicStateActionVariable < AbstractOptimizationVariable
         end
         
         function setBndsForVariable(obj, lb, ub)
-            ind = 1;
-            if(obj.useTf)
-                obj.lb = lb(ind);
-                obj.ub = ub(ind);
-                ind = ind+1;
-            end
-            
-            oUseTf = obj.orbitVar.getUseTfForVariable();
-            oUseTfCnt = sum(oUseTf);
-            if(oUseTfCnt > 0)
-                oInds = ind : 1 : ind+oUseTfCnt-1;
-                obj.orbitVar.setBndsForVariable(lb(oInds), ub(oInds));
-                ind = oInds(end) + 1;
-            end
-            
-            tankStates = obj.varObj.tankStates;
-            for(i=1:length(tankStates))
-                if(tankStates(i).optVar.getUseTfForVariable() == true)
+            if(length(lb) == obj.getNumMaxVariables() && length(ub) == obj.getNumMaxVariables())
+                obj.lb = lb(1);
+                obj.ub = ub(1);
+
+                obj.orbitVar.setBndsForVariable(lb(2:7), ub(2:7));
+                
+                ind = 8;
+                
+                tankStates = obj.varObj.tankStates;
+                for(i=1:length(tankStates))
                     tankStates(i).optVar.setBndsForVariable(lb(ind), ub(ind));
                     ind = ind + 1;
                 end
-            end
-            
-            epsStorageStates = obj.varObj.epsStorageStates;
-            for(i=1:length(epsStorageStates))
-                if(epsStorageStates(i).optVar.getUseTfForVariable() == true)
+                
+                epsStorageStates = obj.varObj.epsStorageStates;
+                for(i=1:length(epsStorageStates))
                     epsStorageStates(i).optVar.setBndsForVariable(lb(ind), ub(ind));
                     ind = ind + 1;
+                end
+            else
+                ind = 1;
+                if(obj.useTf)
+                    obj.lb = lb(ind);
+                    obj.ub = ub(ind);
+                    ind = ind+1;
+                end
+
+                oUseTf = obj.orbitVar.getUseTfForVariable();
+                oUseTfCnt = sum(oUseTf);
+                if(oUseTfCnt > 0)
+                    oInds = ind : 1 : ind+oUseTfCnt-1;
+                    obj.orbitVar.setBndsForVariable(lb(oInds), ub(oInds));
+                    ind = oInds(end) + 1;
+                end
+
+                tankStates = obj.varObj.tankStates;
+                for(i=1:length(tankStates))
+                    if(tankStates(i).optVar.getUseTfForVariable() == true)
+                        tankStates(i).optVar.setBndsForVariable(lb(ind), ub(ind));
+                        ind = ind + 1;
+                    end
+                end
+
+                epsStorageStates = obj.varObj.epsStorageStates;
+                for(i=1:length(epsStorageStates))
+                    if(epsStorageStates(i).optVar.getUseTfForVariable() == true)
+                        epsStorageStates(i).optVar.setBndsForVariable(lb(ind), ub(ind));
+                        ind = ind + 1;
+                    end
                 end
             end
             
@@ -266,6 +287,13 @@ classdef SetKinematicStateActionVariable < AbstractOptimizationVariable
             end
             
             nameStrs = horzcat(initTime, obj.orbitVar.getStrNamesOfVars(evtNum, varLocType), tankStateVarStrs, epsStorageStateVarStrs);
+        end
+        
+        function numMaxVars = getNumMaxVariables(obj)
+            numMaxVars = 1 + 6 + ...
+                         numel(obj.varObj.tankStates) + ...
+                         numel(obj.varObj.epsStorageStates);
+            
         end
     end
 end
