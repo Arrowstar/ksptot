@@ -194,11 +194,14 @@ classdef StopwatchValueConstraint < AbstractConstraint
             end
         end
         
-        function setupForUseAsObjectiveFcn(obj,lvdData)
+        function useObjFcn = setupForUseAsObjectiveFcn(obj,lvdData)
             sw = obj.selectConstraintObj(lvdData);
             
             if(not(isempty(sw)))
                 obj.stopwatch = sw;
+                useObjFcn = true;
+            else
+                useObjFcn = false;
             end
         end
     end

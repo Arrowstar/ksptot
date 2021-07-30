@@ -156,6 +156,37 @@ classdef GeometricVectorMagConstraint < AbstractConstraint
                 addConstraintTf = false;
             end
         end
+        
+        function vector = selectConstraintObj(obj, lvdData)
+            [listBoxStr, vectors] = lvdData.geometry.vectors.getListboxStr();
+
+            vector = [];
+            if(isempty(vectors))                
+                warndlg('Cannot create vector value object: no vectors have been created.  Create a vector first.','Vector Value Constraint','modal');
+            else
+                [Selection,ok] = listdlg('PromptString',{'Select a vector:'},...
+                                'SelectionMode','single',...
+                                'Name','Vectors',...
+                                'ListString',listBoxStr);
+                            
+                if(ok == 0)
+                    vector = [];
+                else
+                    vector = vectors(Selection);
+                end
+            end
+        end
+        
+        function useObjFcn = setupForUseAsObjectiveFcn(obj,lvdData)
+            vectorSel = obj.selectConstraintObj(lvdData);
+            
+            if(not(isempty(vectorSel)))
+                obj.vector = vectorSel;
+                useObjFcn = true;
+            else
+                useObjFcn = false;
+            end
+        end
     end
     
     methods(Static)

@@ -1,4 +1,4 @@
-classdef GroundObjAzConstraint < AbstractConstraint
+classdef GroundObjAzConstraint < AbstractGroundObjectConstraint
     %GroundObjAzConstraint Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -24,7 +24,7 @@ classdef GroundObjAzConstraint < AbstractConstraint
             obj.lb = lb;
             obj.ub = ub;   
             
-             obj.id = rand();
+            obj.id = rand();
         end
         
         function [lb, ub] = getBounds(obj)

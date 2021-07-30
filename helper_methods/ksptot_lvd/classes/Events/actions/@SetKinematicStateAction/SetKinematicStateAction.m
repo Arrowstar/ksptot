@@ -225,9 +225,29 @@ classdef SetKinematicStateAction < AbstractEventAction
         function tf = usesEvent(obj, event)
             tf = false;
             
+            tankEvtsTf = logical([]);
+            for(i=1:length(obj.tankStates))
+                tankState = obj.tankStates(i);
+                if(tankState.inheritTankStateFrom == InheritStateEnum.InheritFromSpecifiedEvent && ...
+                   not(isempty(tankState.inheritTankStateFromEvent)) && tankState.inheritTankStateFromEvent == event)
+                    tankEvtsTf(end+1) = tankState.inheritTankStateFromEvent == event; %#ok<AGROW>
+                end
+            end
+
+            epsSrcEvtsTf = logical([]);
+            for(i=1:length(obj.epsStorageStates))
+                storageState = obj.epsStorageStates(i);
+                
+                if(storageState.inheritStorageStateFrom == InheritStateEnum.InheritFromSpecifiedEvent && ...
+                   not(isempty(storageState.inheritStorageStateFromEvent)) && storageState.inheritStorageStateFromEvent == event)
+                    epsSrcEvtsTf(end+1) = storageState.inheritStorageStateFromEvent == event; %#ok<AGROW>
+                end
+            end
+            
             if((obj.inheritTime && obj.inheritTimeFrom == InheritStateEnum.InheritFromSpecifiedEvent && not(isempty(obj.inheritTimeFromEvent)) && obj.inheritTimeFromEvent == event) || ...
                (obj.inheritPosVel && obj.inheritPosVelFrom == InheritStateEnum.InheritFromSpecifiedEvent && not(isempty(obj.inheritPosVelFromEvent)) && obj.inheritPosVelFromEvent == event) || ...
-               (obj.inheritStageStates && obj.inheritStageStatesFrom == InheritStateEnum.InheritFromSpecifiedEvent && not(isempty(obj.inheritStageStatesFromEvent)) && obj.inheritStageStatesFromEvent == event))
+               (obj.inheritStateElems && obj.inheritStateElemsFrom == InheritStateEnum.InheritFromSpecifiedEvent && not(isempty(obj.inheritStateElemsFromEvent)) && obj.inheritStateElemsFromEvent == event) || ...
+               any(tankEvtsTf) || any(epsSrcEvtsTf))
                 tf = true;
             end
         end

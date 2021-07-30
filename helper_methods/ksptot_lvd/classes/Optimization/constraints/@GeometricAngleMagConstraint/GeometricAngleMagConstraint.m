@@ -163,6 +163,37 @@ classdef GeometricAngleMagConstraint < AbstractConstraint
                 addConstraintTf = false;
             end
         end
+        
+        function angle = selectConstraintObj(obj, lvdData)
+            [listBoxStr, angles] = lvdData.geometry.angles.getListboxStr();
+
+            angle = [];
+            if(isempty(angles))                
+                warndlg('Cannot create angle value object: no angles have been created.  Create an angle first.','Angle Value Constraint','modal');
+            else
+                [Selection,ok] = listdlg('PromptString',{'Select an angle:'},...
+                                'SelectionMode','single',...
+                                'Name','Angles',...
+                                'ListString',listBoxStr);
+                            
+                if(ok == 0)
+                    angle = [];
+                else
+                    angle = angles(Selection);
+                end
+            end
+        end
+        
+        function useObjFcn = setupForUseAsObjectiveFcn(obj,lvdData)
+            angleSel = obj.selectConstraintObj(lvdData);
+            
+            if(not(isempty(angleSel)))
+                obj.angle = angleSel;
+                useObjFcn = true;
+            else
+                useObjFcn = false;
+            end
+        end
     end
     
     methods(Static)

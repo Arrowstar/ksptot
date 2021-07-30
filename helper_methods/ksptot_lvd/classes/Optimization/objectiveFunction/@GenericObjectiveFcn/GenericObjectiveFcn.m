@@ -82,12 +82,36 @@ classdef GenericObjectiveFcn < AbstractObjectiveFcn
         end
         
         function tf = usesGroundObj(obj, grdObj)
-            tf = obj.fcn.usesExtremum(grdObj);
+            tf = obj.fcn.usesGroundObj(grdObj);
         end
         
         function tf = usesCalculusCalc(obj, calculusCalc)
             tf = obj.fcn.usesCalculusCalc(calculusCalc);
         end
+        
+        function tf = usesGeometricPoint(obj, point)
+            tf = obj.fcn.usesGeometricPoint(point);
+        end
+        
+        function tf = usesGeometricVector(obj, vector)
+            tf = obj.fcn.usesGeometricVector(vector);
+        end
+        
+        function tf = usesGeometricCoordSys(obj, coordSys)
+            tf = obj.fcn.usesGeometricCoordSys(coordSys);
+        end
+        
+        function tf = usesGeometricRefFrame(obj, refFrame)
+            tf = obj.fcn.usesGeometricRefFrame(refFrame);
+        end
+        
+        function tf = usesGeometricAngle(obj, angle)
+            tf = obj.fcn.usesGeometricAngle(angle);
+        end
+        
+        function tf = usesGeometricPlane(obj, plane)
+            tf = obj.fcn.usesGeometricPlane(plane);
+        end 
         
         function event = getRefEvent(obj)
             event = obj.event;

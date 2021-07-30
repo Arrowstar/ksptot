@@ -267,26 +267,20 @@ function addObjFuncButton_Callback(hObject, eventdata, handles)
         newObjFunc = eval(sprintf('%s.getDefaultConstraint(%s, %s)', constClass, 'input1', 'lvdData'));
         
         if(not(isempty(newObjFunc)))
-            newObjFunc.setupForUseAsObjectiveFcn(lvdData);
+            useObjFcn = newObjFunc.setupForUseAsObjectiveFcn(lvdData);
             
-            event = lvdData.script.getEventForInd(lvdData.script.getTotalNumOfEvents());
+            if(useObjFcn)
+                event = lvdData.script.getEventForInd(lvdData.script.getTotalNumOfEvents());
 
-%             if(handles.refCelBodyCombo.Value > 1)
-%                 bodyNameCell = handles.refCelBodyCombo.String(handles.refCelBodyCombo.Value);
-%                 bodyName = lower(strtrim(bodyNameCell{1}));
-%                 bodyInfo = celBodyData.(bodyName);
-%             else
-%                 bodyInfo = KSPTOT_BodyInfo.empty(1,0);
-%             end
-            
-            someFrame = LvdData.getDefaultInitialBodyInfo(lvdData.celBodyData).getBodyCenteredInertialFrame();
-            newObjFunc.event = event;
-            genObjFunc = GenericObjectiveFcn(event, someFrame, newObjFunc, 1, lvdOptim, lvdData);
+                someFrame = LvdData.getDefaultInitialBodyInfo(lvdData.celBodyData).getBodyCenteredInertialFrame();
+                newObjFunc.event = event;
+                genObjFunc = GenericObjectiveFcn(event, someFrame, newObjFunc, 1, lvdOptim, lvdData);
 
-            lvdOptim.objFcn.addObjFunc(genObjFunc);
-            handles.objFuncListbox.String = lvdOptim.objFcn.getListBoxStr();
-            handles.objFuncListbox.Value = lvdOptim.objFcn.getNumberObjFuncs();
-            objFuncListbox_Callback(handles.objFuncListbox, [], handles);
+                lvdOptim.objFcn.addObjFunc(genObjFunc);
+                handles.objFuncListbox.String = lvdOptim.objFcn.getListBoxStr();
+                handles.objFuncListbox.Value = lvdOptim.objFcn.getNumberObjFuncs();
+                objFuncListbox_Callback(handles.objFuncListbox, [], handles);
+            end
         end
     end
 

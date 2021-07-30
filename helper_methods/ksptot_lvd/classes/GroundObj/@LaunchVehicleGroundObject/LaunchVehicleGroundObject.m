@@ -177,7 +177,7 @@ classdef LaunchVehicleGroundObject < matlab.mixin.SetGet
         end
         
         function tf = isInUse(obj)
-            tf = obj.lvdData.geometry.usesGroundObj(obj);
+            tf = obj.lvdData.usesGroundObj(obj);
         end
     end
     

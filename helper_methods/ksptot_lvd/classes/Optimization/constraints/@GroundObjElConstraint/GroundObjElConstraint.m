@@ -1,4 +1,4 @@
-classdef GroundObjElConstraint < AbstractConstraint
+classdef GroundObjElConstraint < AbstractGroundObjectConstraint
     %GroundObjElConstraint Summary of this class goes here
     %   Detailed explanation goes here
     

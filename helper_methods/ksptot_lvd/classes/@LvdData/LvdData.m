@@ -77,7 +77,8 @@ classdef LvdData < matlab.mixin.SetGet
         end
         
         function tf = usesGroundObj(obj, grdObj)
-            tf = obj.optimizer.usesExtremum(grdObj);
+            tf = obj.optimizer.usesGroundObj(grdObj) || ...
+                 obj.geometry.usesGroundObj(obj);
         end
         
         function tf = usesCalculusCalc(obj, calculusCalc)

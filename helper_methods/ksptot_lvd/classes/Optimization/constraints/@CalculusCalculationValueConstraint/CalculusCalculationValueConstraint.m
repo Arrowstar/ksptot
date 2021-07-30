@@ -193,11 +193,14 @@ classdef CalculusCalculationValueConstraint < AbstractConstraint
             end
         end
         
-        function setupForUseAsObjectiveFcn(obj,lvdData)
+        function useObjFcn = setupForUseAsObjectiveFcn(obj,lvdData)
             calcObj = obj.selectConstraintObj(lvdData);
             
             if(not(isempty(calcObj)))
                 obj.calculusCalc = calcObj;
+                useObjFcn = true;
+            else
+                useObjFcn = false;
             end
         end
     end

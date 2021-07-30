@@ -70,7 +70,9 @@ classdef(Abstract) AbstractConstraint < matlab.mixin.SetGet & matlab.mixin.Heter
             tf = false;
         end 
         
-        tf = canUseSparseOutput(obj);
+        function tf = canUseSparseOutput(obj)
+            tf = true;
+        end
         
         event = getConstraintEvent(obj);
         
@@ -114,8 +116,8 @@ classdef(Abstract) AbstractConstraint < matlab.mixin.SetGet & matlab.mixin.Heter
         
         addConstraintTf = openEditConstraintUI(obj, lvdData);
         
-        function setupForUseAsObjectiveFcn(~,~)
-            return; %nothing
+        function useObjFcn = setupForUseAsObjectiveFcn(~,~)
+            useObjFcn = true;
         end
     end
     

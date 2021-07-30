@@ -195,11 +195,14 @@ classdef ExtremumValueConstraint < AbstractConstraint
             end
         end
         
-        function setupForUseAsObjectiveFcn(obj,lvdData)
+        function useObjFcn = setupForUseAsObjectiveFcn(obj,lvdData)
             ex = obj.selectConstraintObj(lvdData);
             
             if(not(isempty(ex)))
                 obj.extremum = ex;
+                useObjFcn = true;
+            else
+                useObjFcn = false;
             end
         end
     end
