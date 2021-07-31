@@ -164,6 +164,10 @@ classdef LvdOptimization < matlab.mixin.SetGet
         function tf = usesGeometricPlane(obj, plane)
             tf = obj.constraints.usesGeometricPlane(plane);
         end 
+        
+        function tf = usesPlugin(obj, plugin)
+            tf = obj.constraints.usesPlugin(plugin);
+        end 
     end
     
     methods(Static)

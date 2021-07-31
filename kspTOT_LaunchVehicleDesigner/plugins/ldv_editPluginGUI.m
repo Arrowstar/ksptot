@@ -55,6 +55,8 @@ function ldv_editPluginGUI_OpeningFcn(hObject, eventdata, handles, varargin)
     % Choose default command line output for ldv_editPluginGUI
     handles.output = hObject;
     
+    centerUIFigure(hObject);
+    
     lvdData = varargin{1};
     setappdata(hObject,'lvdData',lvdData);
     
@@ -492,29 +494,35 @@ function deletePluginButton_Callback(hObject, eventdata, handles)
     lvdData = getappdata(handles.ldv_editPluginGUI,'lvdData');
     
     selPlugin = getSelectedPlugin(handles);
-    lvdData.plugins.removePlugin(selPlugin);
-    numPlugins = lvdData.plugins.getNumPlugins();
+    isInUse = selPlugin.isInUse(lvdData);
     
-    pluginListboxStr = lvdData.plugins.getListboxStr();
-    handles.pluginsListbox.String = pluginListboxStr;
-    
-    if(numPlugins > 0)
-        enableDisableIndividualPluginElements(true, handles);
-        
-        if(handles.pluginsListbox.Value > numPlugins)
-            handles.pluginsListbox.Value = numPlugins;
+    if(isInUse == false)
+        lvdData.plugins.removePlugin(selPlugin);
+        numPlugins = lvdData.plugins.getNumPlugins();
+
+        pluginListboxStr = lvdData.plugins.getListboxStr();
+        handles.pluginsListbox.String = pluginListboxStr;
+
+        if(numPlugins > 0)
+            enableDisableIndividualPluginElements(true, handles);
+
+            if(handles.pluginsListbox.Value > numPlugins)
+                handles.pluginsListbox.Value = numPlugins;
+            end
+
+            selPlugin = getSelectedPlugin(handles);
+            setupIndividualPluginUiElements(lvdData, selPlugin, handles);
+        else
+            enableDisableIndividualPluginElements(false, handles);
+            handles.jCodePane.setText('');
+            handles.pluginNameText.String = 'No Plugin Selected';
+            handles.pluginDescText.String = '';
         end
-        
-        selPlugin = getSelectedPlugin(handles);
-        setupIndividualPluginUiElements(lvdData, selPlugin, handles);
+
+        setDeletePluginEnable(lvdData, handles);
     else
-        enableDisableIndividualPluginElements(false, handles);
-        handles.jCodePane.setText('');
-        handles.pluginNameText.String = 'No Plugin Selected';
-        handles.pluginDescText.String = '';
+        errordlg('The selected plugin could not be deleted.  It is in use as a constraint or objective function.  Remove plugin dependecies first.', 'Could Not Delete Plugin', 'modal');
     end
-    
-    setDeletePluginEnable(lvdData, handles);
     
     
     % --- Executes during object creation, after setting all properties.

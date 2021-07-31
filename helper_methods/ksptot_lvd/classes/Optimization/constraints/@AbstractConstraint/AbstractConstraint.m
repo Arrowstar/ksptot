@@ -70,6 +70,10 @@ classdef(Abstract) AbstractConstraint < matlab.mixin.SetGet & matlab.mixin.Heter
             tf = false;
         end 
         
+        function tf = usesPlugin(~, ~)
+            tf = false;
+        end 
+        
         function tf = canUseSparseOutput(obj)
             tf = true;
         end

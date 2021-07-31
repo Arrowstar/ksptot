@@ -1,35 +1,35 @@
-function varargout = lvd_EditGroundObjConstraintGUI(varargin)
-% LVD_EDITGROUNDOBJCONSTRAINTGUI MATLAB code for lvd_EditGroundObjConstraintGUI.fig
-%      LVD_EDITGROUNDOBJCONSTRAINTGUI, by itself, creates a new LVD_EDITGROUNDOBJCONSTRAINTGUI or raises the existing
+function varargout = lvd_EditPluginConstraintGUI(varargin)
+% LVD_EDITPLUGINCONSTRAINTGUI MATLAB code for lvd_EditPluginConstraintGUI.fig
+%      LVD_EDITPLUGINCONSTRAINTGUI, by itself, creates a new LVD_EDITPLUGINCONSTRAINTGUI or raises the existing
 %      singleton*.
 %
-%      H = LVD_EDITGROUNDOBJCONSTRAINTGUI returns the handle to a new LVD_EDITGROUNDOBJCONSTRAINTGUI or the handle to
+%      H = LVD_EDITPLUGINCONSTRAINTGUI returns the handle to a new LVD_EDITPLUGINCONSTRAINTGUI or the handle to
 %      the existing singleton*.
 %
-%      LVD_EDITGROUNDOBJCONSTRAINTGUI('CALLBACK',hObject,eventData,handles,...) calls the local
-%      function named CALLBACK in LVD_EDITGROUNDOBJCONSTRAINTGUI.M with the given input arguments.
+%      LVD_EDITPLUGINCONSTRAINTGUI('CALLBACK',hObject,eventData,handles,...) calls the local
+%      function named CALLBACK in LVD_EDITPLUGINCONSTRAINTGUI.M with the given input arguments.
 %
-%      LVD_EDITGROUNDOBJCONSTRAINTGUI('Property','Value',...) creates a new LVD_EDITGROUNDOBJCONSTRAINTGUI or raises the
+%      LVD_EDITPLUGINCONSTRAINTGUI('Property','Value',...) creates a new LVD_EDITPLUGINCONSTRAINTGUI or raises the
 %      existing singleton*.  Starting from the left, property value pairs are
-%      applied to the GUI before lvd_EditGroundObjConstraintGUI_OpeningFcn gets called.  An
+%      applied to the GUI before lvd_EditPluginConstraintGUI_OpeningFcn gets called.  An
 %      unrecognized property name or invalid value makes property application
-%      stop.  All inputs are passed to lvd_EditGroundObjConstraintGUI_OpeningFcn via varargin.
+%      stop.  All inputs are passed to lvd_EditPluginConstraintGUI_OpeningFcn via varargin.
 %
 %      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
 %      instance to run (singleton)".
 %
 % See also: GUIDE, GUIDATA, GUIHANDLES
 
-% Edit the above text to modify the response to help lvd_EditGroundObjConstraintGUI
+% Edit the above text to modify the response to help lvd_EditPluginConstraintGUI
 
-% Last Modified by GUIDE v2.5 13-May-2021 10:41:20
+% Last Modified by GUIDE v2.5 30-Jul-2021 18:35:28
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
                    'gui_Singleton',  gui_Singleton, ...
-                   'gui_OpeningFcn', @lvd_EditGroundObjConstraintGUI_OpeningFcn, ...
-                   'gui_OutputFcn',  @lvd_EditGroundObjConstraintGUI_OutputFcn, ...
+                   'gui_OpeningFcn', @lvd_EditPluginConstraintGUI_OpeningFcn, ...
+                   'gui_OutputFcn',  @lvd_EditPluginConstraintGUI_OutputFcn, ...
                    'gui_LayoutFcn',  [] , ...
                    'gui_Callback',   []);
 if nargin && ischar(varargin{1})
@@ -44,16 +44,18 @@ end
 % End initialization code - DO NOT EDIT
 
 
-% --- Executes just before lvd_EditGroundObjConstraintGUI is made visible.
-function lvd_EditGroundObjConstraintGUI_OpeningFcn(hObject, eventdata, handles, varargin)
+% --- Executes just before lvd_EditPluginConstraintGUI is made visible.
+function lvd_EditPluginConstraintGUI_OpeningFcn(hObject, eventdata, handles, varargin)
     % This function has no output args, see OutputFcn.
     % hObject    handle to figure
     % eventdata  reserved - to be defined in a future version of MATLAB
     % handles    structure with handles and user data (see GUIDATA)
-    % varargin   command line arguments to lvd_EditGroundObjConstraintGUI (see VARARGIN)
+    % varargin   command line arguments to lvd_EditPluginConstraintGUI (see VARARGIN)
 
-    % Choose default command line output for lvd_EditGroundObjConstraintGUI
+    % Choose default command line output for lvd_EditPluginConstraintGUI
     handles.output = hObject;
+    
+    centerUIFigure(hObject);
 
     constraint = varargin{1};
     setappdata(hObject, 'constraint', constraint);
@@ -66,8 +68,8 @@ function lvd_EditGroundObjConstraintGUI_OpeningFcn(hObject, eventdata, handles, 
     % Update handles structure
     guidata(hObject, handles);
 
-    % UIWAIT makes lvd_EditGroundObjConstraintGUI wait for user response (see UIRESUME)
-    uiwait(handles.lvd_EditGroundObjConstraintGUI);
+    % UIWAIT makes lvd_EditPluginConstraintGUI wait for user response (see UIRESUME)
+    uiwait(handles.lvd_EditPluginConstraintGUI);
 
 function populateGUI(handles, constraint, lvdData)
     handles.constraintTypeLabel.String = constraint.getConstraintType();
@@ -98,21 +100,21 @@ function populateGUI(handles, constraint, lvdData)
         handles.eventCombo.Value = 1;
     end
     
-    handles.groundObjCombo.String = lvdData.groundObjs.getListboxStr();
+    handles.pluginCombo.String = lvdData.plugins.getListboxStr();
     
-    if(isempty(constraint.groundObj))
-        grdObjInd = 1;
+    if(isempty(constraint.plugin))
+        pluginInd = 1;
     else
-        grdObjInd = lvdData.groundObjs.getIndsForGroundObjs(constraint.groundObj);
+        pluginInd = lvdData.plugins.getIndsForPlugins(constraint.plugin);
     end
-    handles.groundObjCombo.Value = grdObjInd;
+    handles.pluginCombo.Value = pluginInd;
     
     frame = constraint.frame;
     if(isempty(frame))
         frame = LvdData.getDefaultInitialBodyInfo(lvdData.celBodyData).getBodyCenteredInertialFrame();
         constraint.frame = frame;
     end
-    setappdata(handles.lvd_EditGroundObjConstraintGUI,'frame',frame);
+    setappdata(handles.lvd_EditPluginConstraintGUI,'frame',frame);
     
     handles.refFrameTypeCombo.String = ReferenceFrameEnum.getListBoxStr();
     [ind, ~] = ReferenceFrameEnum.getIndForName(frame.typeEnum.name);
@@ -148,7 +150,7 @@ function populateGUI(handles, constraint, lvdData)
     handles.constActiveCheckbox.Value = constraint.active;
     
 % --- Outputs from this function are returned to the command line.
-function varargout = lvd_EditGroundObjConstraintGUI_OutputFcn(hObject, eventdata, handles) 
+function varargout = lvd_EditPluginConstraintGUI_OutputFcn(hObject, eventdata, handles) 
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -166,7 +168,7 @@ function varargout = lvd_EditGroundObjConstraintGUI_OutputFcn(hObject, eventdata
         
         constraint.setScaleFactor(str2double(handles.scaleFactorText.String));
         
-        constraint.groundObj = lvdData.groundObjs.getGroundObjAtInd(handles.groundObjCombo.Value);
+        constraint.plugin = lvdData.plugins.getPluginAtInd(handles.pluginCombo.Value);
         
         frame = getappdata(hObject,'frame');
         constraint.frame = frame;
@@ -202,7 +204,7 @@ function varargout = lvd_EditGroundObjConstraintGUI_OutputFcn(hObject, eventdata
         constraint.active = logical(handles.constActiveCheckbox.Value);
         
         varargout{1} = true;
-        close(handles.lvd_EditGroundObjConstraintGUI);
+        close(handles.lvd_EditPluginConstraintGUI);
     end
 
 
@@ -214,7 +216,7 @@ function saveAndCloseButton_Callback(hObject, eventdata, handles)
     errMsg = validateInputs(handles);
     
     if(isempty(errMsg))
-        uiresume(handles.lvd_EditGroundObjConstraintGUI);
+        uiresume(handles.lvd_EditPluginConstraintGUI);
     else
         msgbox(errMsg,'Invalid Constraint Inputs','error');
     end
@@ -223,7 +225,7 @@ function saveAndCloseButton_Callback(hObject, eventdata, handles)
 function errMsg = validateInputs(handles)
     errMsg = {};
     
-    constraint = getappdata(handles.lvd_EditGroundObjConstraintGUI, 'constraint');
+    constraint = getappdata(handles.lvd_EditPluginConstraintGUI, 'constraint');
     [~, lbLim, ubLim, usesLbUb, ~, ~] = constraint.getConstraintStaticDetails();
     
     if(usesLbUb)
@@ -276,7 +278,7 @@ function cancelButton_Callback(hObject, eventdata, handles)
 % hObject    handle to cancelButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-    close(handles.lvd_EditGroundObjConstraintGUI);
+    close(handles.lvd_EditPluginConstraintGUI);
 
 
 function lbText_Callback(hObject, eventdata, handles)
@@ -335,19 +337,19 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes on selection change in groundObjCombo.
-function groundObjCombo_Callback(hObject, eventdata, handles)
-% hObject    handle to groundObjCombo (see GCBO)
+% --- Executes on selection change in pluginCombo.
+function pluginCombo_Callback(hObject, eventdata, handles)
+% hObject    handle to pluginCombo (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: contents = cellstr(get(hObject,'String')) returns groundObjCombo contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from groundObjCombo
+% Hints: contents = cellstr(get(hObject,'String')) returns pluginCombo contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from pluginCombo
 
 
 % --- Executes during object creation, after setting all properties.
-function groundObjCombo_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to groundObjCombo (see GCBO)
+function pluginCombo_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to pluginCombo (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -406,9 +408,9 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes on key press with focus on lvd_EditGroundObjConstraintGUI or any of its controls.
-function lvd_EditGroundObjConstraintGUI_WindowKeyPressFcn(hObject, eventdata, handles)
-% hObject    handle to lvd_EditGroundObjConstraintGUI (see GCBO)
+% --- Executes on key press with focus on lvd_EditPluginConstraintGUI or any of its controls.
+function lvd_EditPluginConstraintGUI_WindowKeyPressFcn(hObject, eventdata, handles)
+% hObject    handle to lvd_EditPluginConstraintGUI (see GCBO)
 % eventdata  structure with the following fields (see MATLAB.UI.FIGURE)
 %	Key: name of the key that was pressed, in lower case
 %	Character: character interpretation of the key(s) that was pressed
@@ -420,7 +422,7 @@ function lvd_EditGroundObjConstraintGUI_WindowKeyPressFcn(hObject, eventdata, ha
         case 'enter'
             saveAndCloseButton_Callback(handles.saveAndCloseButton, [], handles);
         case 'escape'
-            close(handles.lvd_EditGroundObjConstraintGUI);
+            close(handles.lvd_EditPluginConstraintGUI);
     end
 
 
@@ -551,17 +553,17 @@ function setFrameOptionsButton_Callback(hObject, eventdata, handles)
 % hObject    handle to setFrameOptionsButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-    curFrame = getappdata(handles.lvd_EditGroundObjConstraintGUI,'frame');
+    curFrame = getappdata(handles.lvd_EditPluginConstraintGUI,'frame');
     curFrame = curFrame.editFrameDialogUI(EditReferenceFrameContextEnum.ForState);
     
-    setappdata(handles.lvd_EditGroundObjConstraintGUI,'frame',curFrame);
+    setappdata(handles.lvd_EditPluginConstraintGUI,'frame',curFrame);
     
     handles.setFrameOptionsButton.Tooltip = sprintf('Current Frame: %s', curFrame.getNameStr());
     handles.refFrameNameLabel.String = sprintf('%s', curFrame.getNameStr());
     handles.refFrameNameLabel.TooltipString = sprintf('%s', curFrame.getNameStr());
 
 function updateFrameChange(handles)
-    lvdData = getappdata(handles.lvd_EditGroundObjConstraintGUI,'lvdData');
+    lvdData = getappdata(handles.lvd_EditPluginConstraintGUI,'lvdData');
     celBodyData = lvdData.celBodyData;
 
     refEnumListBoxStr = ReferenceFrameEnum.getListBoxStr();
@@ -634,13 +636,13 @@ function updateFrameChange(handles)
         handles.refFrameTypeCombo.Value = ReferenceFrameEnum.getIndForName(refFrameEnum.name);
     end
 
-    setappdata(handles.lvd_EditGroundObjConstraintGUI,'frame', newFrame);
+    setappdata(handles.lvd_EditPluginConstraintGUI,'frame', newFrame);
     handles.setFrameOptionsButton.TooltipString = sprintf('Current Frame: %s', newFrame.getNameStr());
     handles.refFrameNameLabel.String = sprintf('%s', newFrame.getNameStr());
     handles.refFrameNameLabel.TooltipString = sprintf('%s', newFrame.getNameStr());
     
 function bodyInfo = getSelectedBodyInfo(handles)
-    curFrame = getappdata(handles.lvd_EditGroundObjConstraintGUI,'frame');
+    curFrame = getappdata(handles.lvd_EditPluginConstraintGUI,'frame');
     bodyInfo = curFrame.getOriginBody();
 
 

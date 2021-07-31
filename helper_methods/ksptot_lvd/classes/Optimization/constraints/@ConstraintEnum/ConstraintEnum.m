@@ -95,6 +95,8 @@ classdef ConstraintEnum < matlab.mixin.SetGet
         
         TankMass('Tank Mass', 'TankMassConstraint', []);
         TankMassFlowRate('Tank Mass Flow Rate', 'TankMassFlowRateConstraint', []);
+        
+        Plugin('Plugin Value', 'PluginConstraint', []);
     end
     
     enumeration(Hidden)

@@ -8,6 +8,8 @@ classdef PluginFunctionInputSignatureEnum < matlab.mixin.SetGet
         AfterEvents('After Events','function userData = executePlugin(lvdData, stateLog, event, execLoc, [],[],[], userData)');
         AfterProp('After Propagation','function userData = executePlugin(lvdData, stateLog, [], execLoc, [],[],[], userData)');
         AfterTimeStep('After Time Steps','function userData = executePlugin(lvdData, [], eventInitStateLogEntry, execLoc, t,y,flag, userData)')
+        
+        Constraint('Plugin Constraint/Objective Function','function value = executePlugin(lvdData, stateLog, event, execLoc, [],[],[], userData)');
     end
     
     properties

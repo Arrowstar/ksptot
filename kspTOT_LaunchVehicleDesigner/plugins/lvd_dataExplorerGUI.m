@@ -55,6 +55,8 @@ function lvd_dataExplorerGUI_OpeningFcn(hObject, eventdata, handles, varargin)
     % Choose default command line output for lvd_dataExplorerGUI
     handles.output = hObject;
     
+    centerUIFigure(hObject);
+    
     explrInput = varargin{1};
     explrInputNames = varargin{2};
     

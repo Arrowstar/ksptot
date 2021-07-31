@@ -256,6 +256,14 @@ classdef ConstraintSet < matlab.mixin.SetGet
             end
         end 
         
+        function tf = usesPlugin(obj, plugin)
+            tf = false;
+            
+            for(i=1:length(obj.consts))
+                tf = tf || obj.consts(i).usesPlugin(plugin);
+            end
+        end 
+        
         function removeConstraintsThatUseEvent(obj, event)
             indsToRemove = [];
             for(i=1:length(obj.consts))

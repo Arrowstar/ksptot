@@ -132,6 +132,10 @@ classdef LvdData < matlab.mixin.SetGet
             tf = obj.optimizer.usesGeometricPlane(plane);
             tf = tf || obj.geometry.usesGeometricPlane(plane);
         end 
+
+        function tf = usesPlugin(obj, plugin)
+            tf = obj.optimizer.usesPlugin(plugin);
+        end 
         
         function baseFrame = getBaseFrame(obj)
             topLevelBody = obj.celBodyData.getTopLevelBody();

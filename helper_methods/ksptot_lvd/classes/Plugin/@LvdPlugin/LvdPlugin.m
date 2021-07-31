@@ -59,12 +59,20 @@ classdef LvdPlugin < matlab.mixin.SetGet
             else
                 try
                     eval(sprintf('%s',obj.pluginCode));
+                    
+                    if(execLoc == LvdPluginExecLocEnum.Constraint)
+                        userData = value;
+                    end
                 catch ME
                     errStr = sprintf('An error was encountered executing plugin "%s" at location "%s".  Msg: %s', ...
                                      obj.pluginName, execLoc.name, ME.message);
                     lvdData.validation.outputs(end+1) = LaunchVehicleDataValidationError(errStr);
                 end
             end
+        end
+        
+        function tf = isInUse(obj, lvdData)
+            tf = lvdData.usesPlugin(obj);
         end
     end
     

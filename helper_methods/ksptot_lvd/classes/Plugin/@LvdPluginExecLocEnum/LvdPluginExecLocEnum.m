@@ -8,6 +8,7 @@ classdef LvdPluginExecLocEnum < matlab.mixin.SetGet
         AfterTimestep('After Time Step')
         AfterEvent('After Events')
         AfterProp('After Propagation')
+        Constraint('Constraint/Objective Function')
     end
     
     properties

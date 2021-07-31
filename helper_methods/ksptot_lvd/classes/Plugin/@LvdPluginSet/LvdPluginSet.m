@@ -27,16 +27,30 @@ classdef LvdPluginSet < matlab.mixin.SetGet
             obj.plugins([obj.plugins] == plugin) = [];
         end
         
-        function listBoxStr = getListboxStr(obj)
+        function [listBoxStr, plugins] = getListboxStr(obj)
             listBoxStr = {};
             
             for(i=1:length(obj.plugins))
                 listBoxStr{end+1} = obj.plugins(i).pluginName; %#ok<AGROW>
             end
+            
+            plugins = obj.plugins;
         end
         
         function plugins = getPluginsArray(obj)
             plugins = obj.plugins;
+        end
+        
+        function inds = getIndsForPlugins(obj, plugins)
+            inds = find(ismember(obj.plugins, plugins));
+        end
+        
+        function plugin = getPluginAtInd(obj, ind)
+            if(ind > 0 && ind <= length(obj.plugins))
+                plugin = obj.plugins(ind);
+            else
+                plugin = LvdPlugin.empty(1,0);
+            end
         end
         
         function numPlugins = getNumPlugins(obj)
@@ -103,6 +117,7 @@ classdef LvdPluginSet < matlab.mixin.SetGet
             end
         end
         
+        %after timesteps
         function executePluginsAfterTimeStepOdeOutputFcn(obj, t,y,flag, eventInitStateLogEntry)
             if(obj.enablePlugins)
                 for(i=1:length(obj.plugins))

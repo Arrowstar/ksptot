@@ -113,6 +113,10 @@ classdef GenericObjectiveFcn < AbstractObjectiveFcn
             tf = obj.fcn.usesGeometricPlane(plane);
         end 
         
+        function tf = usesPlugin(obj, plugin)
+            tf = obj.fcn.usesPlugin(plugin);
+        end 
+        
         function event = getRefEvent(obj)
             event = obj.event;
         end
