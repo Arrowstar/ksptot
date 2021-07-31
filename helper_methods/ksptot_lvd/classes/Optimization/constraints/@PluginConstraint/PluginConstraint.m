@@ -46,13 +46,15 @@ classdef PluginConstraint < AbstractConstraint
                     error('Unknown event node.');
             end
             
-%             if(not(isempty(obj.frame)))
-%                 frame = obj.frame;
-%             else
-%                 frame = stateLogEntry.centralBody.getBodyCenteredInertialFrame();
-%             end
+            if(not(isempty(obj.frame)))
+                frame = obj.frame;
+            else
+                frame = stateLogEntry.centralBody.getBodyCenteredInertialFrame();
+            end
             
-            value = obj.plugin.executePlugin(stateLogEntry.lvdData, stateLog, obj.event, LvdPluginExecLocEnum.Constraint, [],[],[], stateLogEntry);
+            lvdData = stateLogEntry.lvdData;
+            pluginSet = lvdData.plugins;
+            value = obj.plugin.executePlugin(stateLogEntry.lvdData, stateLog, obj.event, LvdPluginExecLocEnum.Constraint, [],[],[], pluginSet.userData, stateLogEntry, frame);
             
             if(obj.evalType == ConstraintEvalTypeEnum.StateComparison)
                 switch obj.stateCompNode
@@ -66,7 +68,7 @@ classdef PluginConstraint < AbstractConstraint
                         error('Unknown event node.');
                 end
 
-                valueStateComp = obj.plugin.executePlugin(lvdData, stateLog, obj.event, LvdPluginExecLocEnum.Constraint, [],[],[], stateLogEntryStateComp);
+                valueStateComp = obj.plugin.executePlugin(lvdData, stateLog, obj.event, LvdPluginExecLocEnum.Constraint, [],[],[], pluginSet.userData, stateLogEntryStateComp, frame);
             else
                 valueStateComp = NaN;
             end

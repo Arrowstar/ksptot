@@ -124,5 +124,8 @@ function [taskList] = lvd_getGraphAnalysisTaskList(lvdData, excludeList)
     planeGAStr = lvdData.geometry.planes.getAllPlaneGraphAnalysisTaskStrs();
     taskList = horzcat(taskList, planeGAStr);
     
+    pluginGAStr = lvdData.plugins.getAllPluginGraphAnalysisTaskStrs();
+    taskList = horzcat(taskList, pluginGAStr);
+    
     taskList = sort(taskList);
 end

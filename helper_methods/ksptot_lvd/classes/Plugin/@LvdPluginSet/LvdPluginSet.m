@@ -73,12 +73,21 @@ classdef LvdPluginSet < matlab.mixin.SetGet
             obj.userData = [];
         end
         
+        function [pluginGAStr, plugins] = getAllPluginGraphAnalysisTaskStrs(obj)
+            pluginGAStr = {};
+            for(i=1:length(obj.plugins))
+                pluginGAStr{i} = sprintf('Plugin %u Value - "%s"', i, obj.plugins(i).pluginName); %#ok<AGROW>
+            end
+            
+            plugins = obj.plugins;
+        end
+        
         %before propagation
         function executePluginsBeforeProp(obj, stateLog)
             if(obj.enablePlugins)
                 for(i=1:length(obj.plugins))
                     if(obj.plugins(i).execBeforePropTF)
-                        obj.userData = obj.plugins(i).executePlugin(obj.lvdData, stateLog, LaunchVehicleEvent.empty(0,1), LvdPluginExecLocEnum.BeforeProp, [],[],[], obj.userData);
+                        obj.userData = obj.plugins(i).executePlugin(obj.lvdData, stateLog, LaunchVehicleEvent.empty(0,1), LvdPluginExecLocEnum.BeforeProp, [],[],[], obj.userData, [], []);
                     end
                 end
             end
@@ -89,7 +98,7 @@ classdef LvdPluginSet < matlab.mixin.SetGet
             if(obj.enablePlugins)
                 for(i=1:length(obj.plugins))
                     if(obj.plugins(i).execBeforeEventsTF)
-                        obj.userData = obj.plugins(i).executePlugin(obj.lvdData, stateLog, event, LvdPluginExecLocEnum.BeforeEvent, [],[],[], obj.userData);
+                        obj.userData = obj.plugins(i).executePlugin(obj.lvdData, stateLog, event, LvdPluginExecLocEnum.BeforeEvent, [],[],[], obj.userData, [], []);
                     end
                 end
             end
@@ -100,7 +109,7 @@ classdef LvdPluginSet < matlab.mixin.SetGet
             if(obj.enablePlugins)
                 for(i=1:length(obj.plugins))
                     if(obj.plugins(i).execAfterEventsTF)
-                        obj.userData = obj.plugins(i).executePlugin(obj.lvdData, stateLog, event, LvdPluginExecLocEnum.AfterEvent, [],[],[], obj.userData);
+                        obj.userData = obj.plugins(i).executePlugin(obj.lvdData, stateLog, event, LvdPluginExecLocEnum.AfterEvent, [],[],[], obj.userData, [], []);
                     end
                 end
             end
@@ -111,7 +120,7 @@ classdef LvdPluginSet < matlab.mixin.SetGet
             if(obj.enablePlugins)
                 for(i=1:length(obj.plugins))
                     if(obj.plugins(i).execAfterPropTF)
-                        obj.userData = obj.plugins(i).executePlugin(obj.lvdData, stateLog, LaunchVehicleEvent.empty(0,1), LvdPluginExecLocEnum.AfterProp, [],[],[], obj.userData);
+                        obj.userData = obj.plugins(i).executePlugin(obj.lvdData, stateLog, LaunchVehicleEvent.empty(0,1), LvdPluginExecLocEnum.AfterProp, [],[],[], obj.userData, [], []);
                     end
                 end
             end
@@ -122,7 +131,7 @@ classdef LvdPluginSet < matlab.mixin.SetGet
             if(obj.enablePlugins)
                 for(i=1:length(obj.plugins))
                     if(obj.plugins(i).execAfterTimeStepsTF)
-                        obj.userData = obj.plugins(i).executePlugin(obj.lvdData, [], eventInitStateLogEntry, LvdPluginExecLocEnum.AfterTimestep, t,y,flag, obj.userData);
+                        obj.userData = obj.plugins(i).executePlugin(obj.lvdData, [], eventInitStateLogEntry, LvdPluginExecLocEnum.AfterTimestep, t,y,flag, obj.userData, [], []);
                     end
                 end
             end

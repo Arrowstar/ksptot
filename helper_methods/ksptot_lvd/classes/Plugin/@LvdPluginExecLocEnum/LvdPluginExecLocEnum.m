@@ -9,6 +9,7 @@ classdef LvdPluginExecLocEnum < matlab.mixin.SetGet
         AfterEvent('After Events')
         AfterProp('After Propagation')
         Constraint('Constraint/Objective Function')
+        GraphAnalysis('Graphical Analysis Value');
     end
     
     properties

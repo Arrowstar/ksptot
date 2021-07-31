@@ -33,7 +33,7 @@ classdef LvdPlugin < matlab.mixin.SetGet
             obj.id = rand();
         end
         
-        function userData = executePlugin(obj, lvdData, stateLog, event, execLoc, t,y,flag, userData)
+        function userData = executePlugin(obj, lvdData, stateLog, event, execLoc, t,y,flag, userData, stateLogEntry, frame)
             tfBadWords = contains(obj.pluginCode,LvdPlugin.badWords,'IgnoreCase',true);
             
             inds = [];
@@ -60,7 +60,7 @@ classdef LvdPlugin < matlab.mixin.SetGet
                 try
                     eval(sprintf('%s',obj.pluginCode));
                     
-                    if(execLoc == LvdPluginExecLocEnum.Constraint)
+                    if(execLoc == LvdPluginExecLocEnum.Constraint || execLoc == LvdPluginExecLocEnum.GraphAnalysis)
                         userData = value;
                     end
                 catch ME
