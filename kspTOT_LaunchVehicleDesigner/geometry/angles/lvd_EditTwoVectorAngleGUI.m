@@ -54,6 +54,8 @@ function lvd_EditTwoVectorAngleGUI_OpeningFcn(hObject, eventdata, handles, varar
 
     % Choose default command line output for lvd_EditTwoVectorAngleGUI
     handles.output = hObject;
+    
+    centerUIFigure(hObject);
 
     angle = varargin{1};
     setappdata(hObject, 'angle', angle);

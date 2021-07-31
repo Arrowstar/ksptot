@@ -54,6 +54,8 @@ function lvd_EditCrossProductVectorGUI_OpeningFcn(hObject, eventdata, handles, v
 
     % Choose default command line output for lvd_EditCrossProductVectorGUI
     handles.output = hObject;
+    
+    centerUIFigure(hObject);
 
     vector = varargin{1};
     setappdata(hObject, 'vector', vector);

@@ -54,6 +54,8 @@ function lvd_EditGroundObjPointGUI_OpeningFcn(hObject, eventdata, handles, varar
 
     % Choose default command line output for lvd_EditGroundObjPointGUI
     handles.output = hObject;
+    
+    centerUIFigure(hObject);
 
     point = varargin{1};
     setappdata(hObject, 'point', point);

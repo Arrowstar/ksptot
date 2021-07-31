@@ -55,6 +55,8 @@ function lvd_EditTankGUI_OpeningFcn(hObject, eventdata, handles, varargin)
     % Choose default command line output for lvd_EditTankGUI
     handles.output = hObject;
 
+    centerUIFigure(hObject);
+    
     tank = varargin{1};
     setappdata(hObject, 'tank', tank);
     

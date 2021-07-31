@@ -55,6 +55,8 @@ function lvd_EditSumOfSinesModelGUI_OpeningFcn(hObject, eventdata, handles, vara
     % Choose default command line output for lvd_EditSumOfSinesModelGUI
     handles.output = hObject;
     
+    centerUIFigure(hObject);
+    
     sumOfSines = varargin{1};
     setappdata(hObject,'sumOfSines',sumOfSines);
     

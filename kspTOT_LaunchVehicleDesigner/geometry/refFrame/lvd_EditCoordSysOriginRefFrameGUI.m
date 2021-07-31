@@ -54,6 +54,8 @@ function lvd_EditCoordSysOriginRefFrameGUI_OpeningFcn(hObject, eventdata, handle
 
     % Choose default command line output for lvd_EditCoordSysOriginRefFrameGUI
     handles.output = hObject;
+    
+    centerUIFigure(hObject);
 
     refFrame = varargin{1};
     setappdata(hObject, 'refFrame', refFrame);

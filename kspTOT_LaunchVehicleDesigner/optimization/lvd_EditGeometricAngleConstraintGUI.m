@@ -54,6 +54,8 @@ function lvd_EditGeometricAngleConstraintGUI_OpeningFcn(hObject, eventdata, hand
 
     % Choose default command line output for lvd_EditGeometricAngleConstraintGUI
     handles.output = hObject;
+    
+    centerUIFigure(hObject);
 
     constraint = varargin{1};
     setappdata(hObject, 'constraint', constraint);

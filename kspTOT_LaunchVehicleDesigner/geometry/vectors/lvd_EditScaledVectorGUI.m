@@ -54,6 +54,8 @@ function lvd_EditScaledVectorGUI_OpeningFcn(hObject, eventdata, handles, varargi
 
     % Choose default command line output for lvd_EditScaledVectorGUI
     handles.output = hObject;
+    
+    centerUIFigure(hObject);
 
     vector = varargin{1};
     setappdata(hObject, 'vector', vector);

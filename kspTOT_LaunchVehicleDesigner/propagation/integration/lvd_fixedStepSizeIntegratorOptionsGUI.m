@@ -55,6 +55,8 @@ function lvd_fixedStepSizeIntegratorOptionsGUI_OpeningFcn(hObject, eventdata, ha
     % Choose default command line output for lvd_fixedStepSizeIntegratorOptionsGUI
     handles.output = hObject;
 
+    centerUIFigure(hObject);
+    
     optionsObj = varargin{1};
     setappdata(hObject,'options',optionsObj);
     

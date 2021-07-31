@@ -54,6 +54,8 @@ function lvd_EditVehiclePointGUI_OpeningFcn(hObject, eventdata, handles, varargi
 
     % Choose default command line output for lvd_EditVehiclePointGUI
     handles.output = hObject;
+    
+    centerUIFigure(hObject);
 
     point = varargin{1};
     setappdata(hObject, 'point', point);

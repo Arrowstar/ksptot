@@ -54,6 +54,8 @@ function lvd_EditActionSetPwrSrcStateGUI_OpeningFcn(hObject, eventdata, handles,
 
     % Choose default command line output for lvd_EditActionSetPwrSrcStateGUI
     handles.output = hObject;
+    
+    centerUIFigure(hObject);
 
     action = varargin{1};
     setappdata(hObject,'action',action);

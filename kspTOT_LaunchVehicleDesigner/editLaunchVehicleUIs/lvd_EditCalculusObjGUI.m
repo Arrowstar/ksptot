@@ -54,6 +54,8 @@ function lvd_EditCalculusObjGUI_OpeningFcn(hObject, eventdata, handles, varargin
 
     % Choose default command line output for lvd_EditCalculusObjGUI
     handles.output = hObject;
+    
+    centerUIFigure(hObject);
 
     calcObj = varargin{1};
     setappdata(hObject, 'calcObj', calcObj);

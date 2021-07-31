@@ -55,6 +55,8 @@ function lvd_EditActionSetStopwatchRunningStateGUI_OpeningFcn(hObject, eventdata
     % Choose default command line output for lvd_EditActionSetStopwatchRunningStateGUI
     handles.output = hObject;
     
+    centerUIFigure(hObject);
+    
     action = varargin{1};
     setappdata(hObject,'action',action);
     

@@ -54,6 +54,8 @@ function lvd_EditExtremaGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 
     % Choose default command line output for lvd_EditExtremaGUI
     handles.output = hObject;
+    
+    centerUIFigure(hObject);
 
     extrema = varargin{1};
     setappdata(hObject, 'extrema', extrema);

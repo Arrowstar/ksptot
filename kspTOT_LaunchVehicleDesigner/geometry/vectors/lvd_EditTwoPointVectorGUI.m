@@ -54,6 +54,8 @@ function lvd_EditTwoPointVectorGUI_OpeningFcn(hObject, eventdata, handles, varar
 
     % Choose default command line output for lvd_EditTwoPointVectorGUI
     handles.output = hObject;
+    
+    centerUIFigure(hObject);
 
     vector = varargin{1};
     setappdata(hObject, 'vector', vector);

@@ -54,6 +54,8 @@ function lvd_EditGroundObjConstraintGUI_OpeningFcn(hObject, eventdata, handles, 
 
     % Choose default command line output for lvd_EditGroundObjConstraintGUI
     handles.output = hObject;
+    
+    centerUIFigure(hObject);
 
     constraint = varargin{1};
     setappdata(hObject, 'constraint', constraint);

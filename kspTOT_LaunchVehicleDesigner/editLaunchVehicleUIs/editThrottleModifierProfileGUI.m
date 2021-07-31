@@ -54,6 +54,8 @@ function editThrottleModifierProfileGUI_OpeningFcn(hObject, eventdata, handles, 
 
 % Choose default command line output for editThrottleModifierProfileGUI
     handles.output = hObject;
+    
+    centerUIFigure(hObject);
 
     throttleCurve = varargin{1};
     setappdata(hObject,'throttleCurve',throttleCurve);

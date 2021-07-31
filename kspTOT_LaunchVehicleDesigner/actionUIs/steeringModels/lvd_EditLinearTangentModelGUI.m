@@ -55,6 +55,8 @@ function lvd_EditLinearTangentModelGUI_OpeningFcn(hObject, eventdata, handles, v
     % Choose default command line output for lvd_EditLinearTangentModelGUI
     handles.output = hObject;
     
+    centerUIFigure(hObject);
+    
     linearTangentModel = varargin{1};
     setappdata(hObject,'linearTangentModel',linearTangentModel);
     

@@ -54,6 +54,8 @@ function lvd_EditVehicleStateVectorGUI_OpeningFcn(hObject, eventdata, handles, v
 
     % Choose default command line output for lvd_EditVehicleStateVectorGUI
     handles.output = hObject;
+    
+    centerUIFigure(hObject);
 
     vector = varargin{1};
     setappdata(hObject, 'vector', vector);

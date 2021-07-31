@@ -55,6 +55,8 @@ function lvd_finiteDiffOptionsGUI_OpeningFcn(hObject, eventdata, handles, vararg
     % Choose default command line output for lvd_finiteDiffOptionsGUI
     handles.output = hObject;
     
+    centerUIFigure(hObject);
+    
     finDiffObj = varargin{1};
     setappdata(hObject,'finDiffObj',finDiffObj);
 

@@ -54,6 +54,8 @@ function lvd_EditAlignedConstrainedCoordSysGUI_OpeningFcn(hObject, eventdata, ha
 
     % Choose default command line output for lvd_EditAlignedConstrainedCoordSysGUI
     handles.output = hObject;
+    
+    centerUIFigure(hObject);
 
     coordsys = varargin{1};
     setappdata(hObject, 'coordsys', coordsys);

@@ -54,6 +54,8 @@ function lvd_EditActionSetSelectableSteeringModelGUI_OpeningFcn(hObject, eventda
 
     % Choose default command line output for lvd_EditActionSetSelectableSteeringModelGUI
     handles.output = hObject;
+    
+    centerUIFigure(hObject);
 
     action = varargin{1};
     setappdata(hObject,'action',action);

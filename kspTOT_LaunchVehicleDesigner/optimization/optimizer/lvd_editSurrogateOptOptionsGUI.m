@@ -54,6 +54,8 @@ function lvd_editSurrogateOptOptionsGUI_OpeningFcn(hObject, eventdata, handles, 
 
 % Choose default command line output for lvd_editSurrogateOptOptionsGUI
     handles.output = hObject;
+    
+    centerUIFigure(hObject);
 
     surrogateOpt = varargin{1};
     setappdata(hObject,'surrogateOpt',surrogateOpt);

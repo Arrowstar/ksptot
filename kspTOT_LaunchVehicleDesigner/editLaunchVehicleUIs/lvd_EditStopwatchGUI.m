@@ -54,6 +54,8 @@ function lvd_EditStopwatchGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 
     % Choose default command line output for lvd_EditStopwatchGUI
     handles.output = hObject;
+    
+    centerUIFigure(hObject);
 
     stopwatch = varargin{1};
     setappdata(hObject, 'stopwatch', stopwatch);

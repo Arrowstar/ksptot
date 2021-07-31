@@ -54,6 +54,8 @@ function lvd_editFminconOptionsGUI_OpeningFcn(hObject, eventdata, handles, varar
 
 % Choose default command line output for lvd_editFminconOptionsGUI
     handles.output = hObject;
+    
+    centerUIFigure(hObject);
 
     fminconOpt = varargin{1};
     setappdata(hObject,'fminconOpt',fminconOpt);

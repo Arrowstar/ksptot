@@ -54,6 +54,8 @@ function lvd_EditCelestialBodyPointGUI_OpeningFcn(hObject, eventdata, handles, v
 
     % Choose default command line output for lvd_EditCelestialBodyPointGUI
     handles.output = hObject;
+    
+    centerUIFigure(hObject);
 
     point = varargin{1};
     setappdata(hObject, 'point', point);

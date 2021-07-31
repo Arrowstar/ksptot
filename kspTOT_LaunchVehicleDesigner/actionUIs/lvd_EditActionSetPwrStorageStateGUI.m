@@ -54,6 +54,8 @@ function lvd_EditActionSetPwrStorageStateGUI_OpeningFcn(hObject, eventdata, hand
 
     % Choose default command line output for lvd_EditActionSetPwrStorageStateGUI
     handles.output = hObject;
+    
+    centerUIFigure(hObject);
 
     action = varargin{1};
     setappdata(hObject,'action',action);

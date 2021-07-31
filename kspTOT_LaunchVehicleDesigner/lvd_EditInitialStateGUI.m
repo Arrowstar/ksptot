@@ -54,6 +54,8 @@ function lvd_EditInitialStateGUI_OpeningFcn(hObject, eventdata, handles, varargi
 
     % Choose default command line output for lvd_EditInitialStateGUI
     handles.output = hObject;
+    
+    centerUIFigure(hObject);
    
     lvdData = varargin{1};
     setappdata(hObject,'lvdData',lvdData);

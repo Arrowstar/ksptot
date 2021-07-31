@@ -54,6 +54,8 @@ function lvd_EditVectorPlaneAngleGUI_OpeningFcn(hObject, eventdata, handles, var
 
     % Choose default command line output for lvd_EditVectorPlaneAngleGUI
     handles.output = hObject;
+    
+    centerUIFigure(hObject);
 
     angle = varargin{1};
     setappdata(hObject, 'angle', angle);

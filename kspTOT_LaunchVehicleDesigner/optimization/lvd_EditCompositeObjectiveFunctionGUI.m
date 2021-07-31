@@ -54,6 +54,8 @@ function lvd_EditCompositeObjectiveFunctionGUI_OpeningFcn(hObject, eventdata, ha
 
     % Choose default command line output for lvd_EditCompositeObjectiveFunctionGUI
     handles.output = hObject;
+    
+    centerUIFigure(hObject);
 
     % Update handles structure
     guidata(hObject, handles);

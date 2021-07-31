@@ -54,6 +54,8 @@ function lvd_EditStageGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 
     % Choose default command line output for lvd_EditStageGUI
     handles.output = hObject;
+    
+    centerUIFigure(hObject);
 
     stage = varargin{1};
     setappdata(hObject, 'stage', stage);

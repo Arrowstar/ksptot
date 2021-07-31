@@ -55,6 +55,8 @@ function lvd_EditFixedInFramePointGUI_OpeningFcn(hObject, eventdata, handles, va
     % Choose default command line output for lvd_EditFixedInFramePointGUI
     handles.output = hObject;
 
+    centerUIFigure(hObject);
+    
     point = varargin{1};
     setappdata(hObject, 'point', point);
     

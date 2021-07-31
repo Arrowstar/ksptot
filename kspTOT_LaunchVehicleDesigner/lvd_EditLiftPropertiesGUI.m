@@ -55,6 +55,8 @@ function lvd_EditLiftPropertiesGUI_OpeningFcn(hObject, eventdata, handles, varar
     % Choose default command line output for lvd_EditLiftPropertiesGUI
     handles.output = hObject;
     
+    centerUIFigure(hObject);
+    
     lvdData = varargin{1};
     setappdata(hObject,'lvdData',lvdData);
     

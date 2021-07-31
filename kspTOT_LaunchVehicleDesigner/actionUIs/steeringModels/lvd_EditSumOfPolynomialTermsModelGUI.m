@@ -55,6 +55,8 @@ function lvd_EditSumOfPolynomialTermsModelGUI_OpeningFcn(hObject, eventdata, han
     % Choose default command line output for lvd_EditSumOfPolynomialTermsModelGUI
     handles.output = hObject;
     
+    centerUIFigure(hObject);
+    
     sumOfPolyTerms = varargin{1};
     setappdata(hObject,'sumOfPolyTerms',sumOfPolyTerms);
     

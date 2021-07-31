@@ -54,6 +54,8 @@ function lvd_EditProjectedVectorGUI_OpeningFcn(hObject, eventdata, handles, vara
 
     % Choose default command line output for lvd_EditProjectedVectorGUI
     handles.output = hObject;
+    
+    centerUIFigure(hObject);
 
     vector = varargin{1};
     setappdata(hObject, 'vector', vector);

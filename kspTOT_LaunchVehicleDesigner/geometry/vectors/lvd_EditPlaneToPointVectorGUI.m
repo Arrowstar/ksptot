@@ -54,6 +54,8 @@ function lvd_EditPlaneToPointVectorGUI_OpeningFcn(hObject, eventdata, handles, v
 
     % Choose default command line output for lvd_EditPlaneToPointVectorGUI
     handles.output = hObject;
+    
+    centerUIFigure(hObject);
 
     vector = varargin{1};
     setappdata(hObject, 'vector', vector);

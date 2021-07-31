@@ -55,6 +55,8 @@ function lvd_EditFitNetModelGUI_OpeningFcn(hObject, eventdata, handles, varargin
     % Choose default command line output for lvd_EditFitNetModelGUI
     handles.output = hObject;
     
+    centerUIFigure(hObject);
+    
     fitNetModel = varargin{1};
     setappdata(hObject,'fitNetModel',fitNetModel);
     

@@ -54,6 +54,8 @@ function lvd_EditGeometricVectorConstraintGUI_OpeningFcn(hObject, eventdata, han
 
     % Choose default command line output for lvd_EditGeometricVectorConstraintGUI
     handles.output = hObject;
+    
+    centerUIFigure(hObject);
 
     constraint = varargin{1};
     setappdata(hObject, 'constraint', constraint);

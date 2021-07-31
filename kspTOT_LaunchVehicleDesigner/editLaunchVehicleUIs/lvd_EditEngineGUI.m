@@ -54,6 +54,8 @@ function lvd_EditEngineGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 
     % Choose default command line output for lvd_EditEngineGUI
     handles.output = hObject;
+    
+    centerUIFigure(hObject);
 
     engine = varargin{1};
     setappdata(hObject, 'engine', engine);

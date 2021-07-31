@@ -54,6 +54,8 @@ function lvd_EditActionSetThrottleModelGUI_OpeningFcn(hObject, eventdata, handle
 
     % Choose default command line output for lvd_EditActionSetThrottleModelGUI
     handles.output = hObject;
+    
+    centerUIFigure(hObject);
 
     action = varargin{1};
     setappdata(hObject,'action',action);

@@ -55,6 +55,8 @@ function lvd_EditT2WThrottleModelGUI_OpeningFcn(hObject, eventdata, handles, var
     % Choose default command line output for lvd_EditT2WThrottleModelGUI
     handles.output = hObject;
     
+    centerUIFigure(hObject);
+    
     action = varargin{1};
     setappdata(hObject,'action',action);
     

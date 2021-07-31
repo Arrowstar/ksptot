@@ -54,6 +54,8 @@ function lvd_EditObjectiveFunctionGUI_OpeningFcn(hObject, eventdata, handles, va
 
     % Choose default command line output for lvd_EditObjectiveFunctionGUI
     handles.output = hObject;
+    
+    centerUIFigure(hObject);
 
     lvdData = varargin{1};
     setappdata(hObject, 'lvdData', lvdData);

@@ -55,6 +55,8 @@ function lvd_EditTankToTankConnGUI_OpeningFcn(hObject, eventdata, handles, varar
     % Choose default command line output for lvd_EditTankToTankConnGUI
     handles.output = hObject;
 
+    centerUIFigure(hObject);
+    
     t2TConn = varargin{1};
     setappdata(hObject, 't2TConn', t2TConn);
     

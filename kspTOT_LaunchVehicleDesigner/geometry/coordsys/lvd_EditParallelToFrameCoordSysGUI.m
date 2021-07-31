@@ -54,6 +54,8 @@ function lvd_EditParallelToFrameCoordSysGUI_OpeningFcn(hObject, eventdata, handl
 
     % Choose default command line output for lvd_EditParallelToFrameCoordSysGUI
     handles.output = hObject;
+    
+    centerUIFigure(hObject);
 
     coordSys = varargin{1};
     setappdata(hObject, 'coordSys', coordSys);

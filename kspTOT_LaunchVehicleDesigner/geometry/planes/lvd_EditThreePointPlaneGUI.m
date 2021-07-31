@@ -54,6 +54,8 @@ function lvd_EditThreePointPlaneGUI_OpeningFcn(hObject, eventdata, handles, vara
 
     % Choose default command line output for lvd_EditThreePointPlaneGUI
     handles.output = hObject;
+    
+    centerUIFigure(hObject);
 
     plane = varargin{1};
     setappdata(hObject, 'plane', plane);
