@@ -295,6 +295,7 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
                     obj.lvdData.plugins.executePluginsBeforeEvent(stateLog, evt);
                                        
                     if(evt.execActionsNode == ActionExecNodeEnum.BeforeProp)
+                        tActions = tic;
                         %Execute Actions
                         initStateLogEntry = initStateLogEntry.deepCopy(); %this state log entry must be copied or the answers will change
                         stateLog.appendStateLogEntries(initStateLogEntry);
@@ -305,6 +306,7 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
                             stateLog.appendStateLogEntries(actionStateLogEntries);
                             initStateLogEntry = actionStateLogEntries(end).deepCopy(); %this state log entry must be copied or the answers will change;
                         end
+                        ttActions = toc(tActions);
                     end
                     
                     %Get applicable non sequential events and initialize
@@ -317,11 +319,14 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
                     evt.initEvent(initStateLogEntry);
                                         
                     %Execute Event (propagation)
+                    tPropagate = tic;
                     newStateLogEntries = evt.executeEvent(initStateLogEntry, obj.simDriver, tStartPropTime, tStartSimTime, isSparseOutput, activeNonSeqEvts);
                     stateLog.appendStateLogEntries(newStateLogEntries);
+                    ttPropagate = toc(tPropagate);
                     
                     initStateLogEntry = newStateLogEntries(end).deepCopy();  %this state log entry must be copied or the answers will change
                     if(evt.execActionsNode == ActionExecNodeEnum.AfterProp)
+                        tActions = tic;
                         %Execute Actions
                         actionStateLogEntries = evt.cleanupEvent(initStateLogEntry);
 
@@ -330,6 +335,7 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
                             stateLog.appendStateLogEntries(actionStateLogEntries);
                             initStateLogEntry = actionStateLogEntries(end).deepCopy(); %this state log entry must be copied or the answers will change;
                         end
+                        ttActions = toc(tActions);
                     end
                     
                     stateLog.appendNonSeqEvtsState(obj.nonSeqEvts.copy(), evt);
@@ -339,7 +345,7 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
                     
                     evtTime = toc(ttt);
                     if(dispEvtPropTimes)
-                        fprintf('(%s) Duration to execute Event %u: %0.3f s (Evt Dur: %0.3f s)\n', datestr(now,'hh:MM:ss'), i, evtTime, newStateLogEntries(end).time-newStateLogEntries(1).time);
+                        fprintf('(%s) Duration to execute Event %u: %0.3f s (Propagation: %0.3f s; Actions: %0.3f s) (Evt Dur: %0.3f s)\n', datestr(now,'hh:MM:ss'), i, evtTime, ttPropagate, ttActions, newStateLogEntries(end).time-newStateLogEntries(1).time);
                     end
                 end
                 
