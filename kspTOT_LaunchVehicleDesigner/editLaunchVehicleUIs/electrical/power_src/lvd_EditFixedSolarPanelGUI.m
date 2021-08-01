@@ -54,6 +54,8 @@ function lvd_EditFixedSolarPanelGUI_OpeningFcn(hObject, eventdata, handles, vara
 
     % Choose default command line output for lvd_EditFixedSolarPanelGUI
     handles.output = hObject;
+    
+    centerUIFigure(hObject);
 
     fixedSolarPanel = varargin{1};
     setappdata(hObject, 'fixedSolarPanel', fixedSolarPanel);

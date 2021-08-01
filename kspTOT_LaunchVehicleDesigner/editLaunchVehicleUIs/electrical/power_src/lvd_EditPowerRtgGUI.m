@@ -54,6 +54,8 @@ function lvd_EditPowerRtgGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 
     % Choose default command line output for lvd_EditPowerRtgGUI
     handles.output = hObject;
+    
+    centerUIFigure(hObject);
 
     rtg = varargin{1};
     setappdata(hObject, 'rtg', rtg);

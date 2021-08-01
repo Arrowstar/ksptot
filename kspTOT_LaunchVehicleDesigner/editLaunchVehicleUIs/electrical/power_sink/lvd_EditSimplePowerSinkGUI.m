@@ -54,6 +54,8 @@ function lvd_EditSimplePowerSinkGUI_OpeningFcn(hObject, eventdata, handles, vara
 
     % Choose default command line output for lvd_EditSimplePowerSinkGUI
     handles.output = hObject;
+    
+    centerUIFigure(hObject);
 
     powerSink = varargin{1};
     setappdata(hObject, 'powerSink', powerSink);

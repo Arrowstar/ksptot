@@ -54,6 +54,8 @@ function lvd_EditRotatingSolarPanelGUI_OpeningFcn(hObject, eventdata, handles, v
 
     % Choose default command line output for lvd_EditRotatingSolarPanelGUI
     handles.output = hObject;
+    
+    centerUIFigure(hObject);
 
     rotatingSolarPanel = varargin{1};
     setappdata(hObject, 'rotatingSolarPanel', rotatingSolarPanel);

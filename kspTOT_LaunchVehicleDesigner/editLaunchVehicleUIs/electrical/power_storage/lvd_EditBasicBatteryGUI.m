@@ -54,6 +54,8 @@ function lvd_EditBasicBatteryGUI_OpeningFcn(hObject, eventdata, handles, varargi
 
     % Choose default command line output for lvd_EditBasicBatteryGUI
     handles.output = hObject;
+    
+    centerUIFigure(hObject);
 
     powerStorage = varargin{1};
     setappdata(hObject, 'powerStorage', powerStorage);
