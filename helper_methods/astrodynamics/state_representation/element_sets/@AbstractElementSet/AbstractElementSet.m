@@ -69,8 +69,8 @@ classdef (Abstract) AbstractElementSet < matlab.mixin.SetGet & matlab.mixin.Cust
                 end
             end
 
-            rVect2 = posOffsetOrigin12 + squeeze(mtimesx(rotMatToInertial12, permute(rVect1, [1 3 2])));
-            vVect2 = velOffsetOrigin12 + squeeze(mtimesx(rotMatToInertial12, (permute(vVect1 + cross(angVelWrtOrigin12, rVect1), [1 3 2]))));
+            rVect2 = posOffsetOrigin12 + squeeze(pagemtimes(rotMatToInertial12, permute(rVect1, [1 3 2])));
+            vVect2 = velOffsetOrigin12 + squeeze(pagemtimes(rotMatToInertial12, (permute(vVect1 + cross(angVelWrtOrigin12, rVect1), [1 3 2]))));
             
             if(numel(times) == 1 && toFrame.timeCache == times) %#ok<BDSCI>
                 posOffsetOrigin32 = toFrame.posOffsetOriginCache;
@@ -89,8 +89,9 @@ classdef (Abstract) AbstractElementSet < matlab.mixin.SetGet & matlab.mixin.Cust
                 end
             end
             
-            rVect3 = squeeze(mtimesx(permute(rotMatToInertial32, [2 1 3]), permute(rVect2 - posOffsetOrigin32, [1 3 2])));
-            vVect3 = squeeze(mtimesx(permute(rotMatToInertial32, [2 1 3]), permute(vVect2 - velOffsetOrigin32, [1 3 2]))) - cross(angVelWrtOrigin32, rVect3);
+            rotMatToInertial32_Transpose = permute(rotMatToInertial32, [2 1 3]);
+            rVect3 = squeeze(pagemtimes(rotMatToInertial32_Transpose, permute(rVect2 - posOffsetOrigin32, [1 3 2])));
+            vVect3 = squeeze(pagemtimes(rotMatToInertial32_Transpose, permute(vVect2 - velOffsetOrigin32, [1 3 2]))) - cross(angVelWrtOrigin32, rVect3);
             
             createObjOfArrayVal = false;
             if(numel(obj) == 1 && obj.createObjOfArray == true && obj.typeEnum == ElementSetEnum.CartesianElements) %#ok<BDSCI>

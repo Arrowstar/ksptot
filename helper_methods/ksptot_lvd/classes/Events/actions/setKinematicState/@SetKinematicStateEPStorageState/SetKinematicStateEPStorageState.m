@@ -35,7 +35,7 @@ classdef SetKinematicStateEPStorageState < matlab.mixin.SetGet
                     if(not(isempty(evtStateLog)))
                         evtStorageState = obj.getStorageState(evtStateLog);
                         storageState.setActiveState(evtStorageState.getActiveState());
-                        storageState.setStateOfCharge(evtStorageState.stateOfCharge());
+                        storageState.setStateOfCharge(evtStorageState.stateOfCharge);
                     end
                 end
             else

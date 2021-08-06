@@ -45,7 +45,11 @@ classdef CartesianElementSet < AbstractElementSet
                     end
 
                     if(numel(frame) == 1)
-                        [obj.frame] = deal(frame);
+                        if(num > 1)
+                            [obj.frame] = deal(frame);
+                        else
+                            obj.frame = frame;
+                        end
                     end
                 else
                     obj.time = time;

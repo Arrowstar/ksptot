@@ -27,15 +27,15 @@ function [rVectECEF, vVectECEF, REci2Ecef] = getFixedFrameVectFromInertialVect_a
      
     rVectECI = reshape(rVectECI,3,1,numElems);
     REci2Ecef = permute(R,[2,1,3]); %ND transpose
-    rVectECEF = mtimesx(REci2Ecef, rVectECI);
+    rVectECEF = pagemtimes(REci2Ecef, rVectECI);
     rVectECEF = reshape(rVectECEF,3,numElems);
         
     if(~any(isnan(vVectECI)))
         rotRateRadSec = 2*pi/rotperiod;
-        omegaRI = repmat([0;0;rotRateRadSec],1,numElems);
+        omegaRI = repmat([0;0;rotRateRadSec],1,1,numElems);
         vVectECI = reshape(vVectECI,3,1,numElems);
         
-        vVectECEF = mtimesx(REci2Ecef, (vVectECI - cross(omegaRI, rVectECI)));
+        vVectECEF = pagemtimes(REci2Ecef, (vVectECI - cross(omegaRI, rVectECI)));
         vVectECEF = reshape(vVectECEF,3,numElems);
     else
         vVectECEF = repmat([NaN;NaN;NaN],1,numElems);

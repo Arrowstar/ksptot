@@ -28,8 +28,8 @@ classdef FixedVectorInFrame < AbstractGeometricVector
             [~, ~, ~, rotMatToInertial12] = obj.frame.getOffsetsWrtInertialOrigin(time, vehElemSet);
             [~, ~, ~, rotMatToInertial32] = inFrame.getOffsetsWrtInertialOrigin(time, vehElemSet);
             
-            rotMat = mtimesx(permute(rotMatToInertial32, [2 1 3]), rotMatToInertial12);
-            vect = squeeze(mtimesx(rotMat, repmat(obj.vect, [1 1 length(time)])));
+            rotMat = pagemtimes(permute(rotMatToInertial32, [2 1 3]), rotMatToInertial12);
+            vect = squeeze(pagemtimes(rotMat, repmat(obj.vect, [1 1 length(time)])));
         end
         
         function name = getName(obj)

@@ -11,7 +11,7 @@ function vectorSez = rotVectToSEZCoords(rVectorECEF, vectorECEF)
               reshape(zHat, [1, 3, numVectors])];
     
     vectorECEF = reshape(vectorECEF, [3, 1, numVectors]);
-    vectorSez = mtimesx(rotMat, vectorECEF);
+    vectorSez = pagemtimes(rotMat, vectorECEF);
     vectorSez = squeeze(vectorSez);
 end
 %     kHat = [0;0;1];
