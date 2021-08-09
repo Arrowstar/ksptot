@@ -275,11 +275,11 @@ classdef SetKinematicStateAction < AbstractEventAction
 
                     obj.stageStates(j) = stageState;
                 end
-                
-                addlistener(lvdData.launchVehicle, 'StageAdded',   @(src, evt) stageAddedClbk(obj, src, evt));
-                addlistener(lvdData.launchVehicle, 'StageDeleted', @(src, evt) stageDeletedClbk(obj, src, evt));
             end
-
+            addlistener(lvdData.launchVehicle, 'StageAdded',   @(src, evt) stageAddedClbk(obj, src, evt));
+            addlistener(lvdData.launchVehicle, 'StageDeleted', @(src, evt) stageDeletedClbk(obj, src, evt));
+            
+            
             if(isempty(obj.engineStates))
                 [~, engines] = lvdData.launchVehicle.getEnginesListBoxStr();
                 for(j=1:length(engines))
@@ -290,10 +290,9 @@ classdef SetKinematicStateAction < AbstractEventAction
 
                     obj.engineStates(j) = engineState;
                 end
-                
-                addlistener(lvdData.launchVehicle, 'EngineAdded',   @(src, evt) engineAddedClbk(obj, src, evt));
-                addlistener(lvdData.launchVehicle, 'EngineDeleted', @(src, evt) engineDeletedClbk(obj, src, evt));
             end
+            addlistener(lvdData.launchVehicle, 'EngineAdded',   @(src, evt) engineAddedClbk(obj, src, evt));
+            addlistener(lvdData.launchVehicle, 'EngineDeleted', @(src, evt) engineDeletedClbk(obj, src, evt));
 
             if(isempty(obj.tankStates))
                 [~, storages] = lvdData.launchVehicle.getTanksListBoxStr();
@@ -305,10 +304,9 @@ classdef SetKinematicStateAction < AbstractEventAction
 
                     obj.tankStates(j) = tankState;
                 end
-                
-                addlistener(lvdData.launchVehicle, 'TankAdded',   @(src, evt) tankAddedClbk(obj, src, evt));
-                addlistener(lvdData.launchVehicle, 'TankDeleted', @(src, evt) tankDeletedClbk(obj, src, evt));
             end
+            addlistener(lvdData.launchVehicle, 'TankAdded',   @(src, evt) tankAddedClbk(obj, src, evt));
+            addlistener(lvdData.launchVehicle, 'TankDeleted', @(src, evt) tankDeletedClbk(obj, src, evt));
 
             if(isempty(obj.epsSinkStates))
                 [~, sinks] = lvdData.launchVehicle.getPowerSinksListBoxStr();
@@ -320,10 +318,9 @@ classdef SetKinematicStateAction < AbstractEventAction
 
                     obj.epsSinkStates(j) = sinkState;
                 end
-                
-                addlistener(lvdData.launchVehicle, 'EpsSinkAdded',   @(src, evt) epsSinkAddedClbk(obj, src, evt));
-                addlistener(lvdData.launchVehicle, 'EpsSinkDeleted', @(src, evt) epsSinkDeletedClbk(obj, src, evt));
             end
+            addlistener(lvdData.launchVehicle, 'EpsSinkAdded',   @(src, evt) epsSinkAddedClbk(obj, src, evt));
+            addlistener(lvdData.launchVehicle, 'EpsSinkDeleted', @(src, evt) epsSinkDeletedClbk(obj, src, evt));
 
             if(isempty(obj.epsSrcStates))
                 [~, srcs] = lvdData.launchVehicle.getPowerSrcsListBoxStr();
@@ -335,11 +332,10 @@ classdef SetKinematicStateAction < AbstractEventAction
 
                     obj.epsSrcStates(j) = srcState; 
                 end
-                
-                addlistener(lvdData.launchVehicle, 'EpsSrcAdded',   @(src, evt) epsSrcAddedClbk(obj, src, evt));
-                addlistener(lvdData.launchVehicle, 'EpsSrcDeleted', @(src, evt) epsSrcDeletedClbk(obj, src, evt));
             end
-
+            addlistener(lvdData.launchVehicle, 'EpsSrcAdded',   @(src, evt) epsSrcAddedClbk(obj, src, evt));
+            addlistener(lvdData.launchVehicle, 'EpsSrcDeleted', @(src, evt) epsSrcDeletedClbk(obj, src, evt));
+            
             if(isempty(obj.epsStorageStates))
                 [~, storages] = lvdData.launchVehicle.getPowerStoragesListBoxStr();
                 for(j=1:length(storages))
@@ -350,10 +346,10 @@ classdef SetKinematicStateAction < AbstractEventAction
 
                     obj.epsStorageStates(j) = storageState;
                 end
-                
-                addlistener(lvdData.launchVehicle, 'EpsStorageAdded',   @(src, evt) epsStorageAddedClbk(obj, src, evt));
-                addlistener(lvdData.launchVehicle, 'EpsStorageDeleted', @(src, evt) epsStorageDeletedClbk(obj, src, evt));
             end
+            addlistener(lvdData.launchVehicle, 'EpsStorageAdded',   @(src, evt) epsStorageAddedClbk(obj, src, evt));
+            addlistener(lvdData.launchVehicle, 'EpsStorageDeleted', @(src, evt) epsStorageDeletedClbk(obj, src, evt));
+            
         end
     end
 
