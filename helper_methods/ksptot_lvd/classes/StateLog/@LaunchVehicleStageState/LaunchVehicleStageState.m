@@ -237,15 +237,14 @@ classdef LaunchVehicleStageState < matlab.mixin.SetGet & matlab.mixin.Copyable
                     end
                 end
 
-                %Copy Tank States - why is this so complicated again?
-                if(deepCopyState)
-                    if(not(isempty(obj.tankStates)))
-                        newTankStates = obj.tankStates.copy();
-                        [newTankStates.stageState] = deal(newStageState);
-                        newStageState.tankStates = newTankStates;
-                    end
+                
+                if(not(isempty(obj.tankStates)))
+                    newTankStates = obj.tankStates.copy();
+                    [newTankStates.stageState] = deal(newStageState);
+                    newStageState.tankStates = newTankStates;
                 end
                 
+                %Copy Tank States - why is this so complicated again?
 %                 if(not(isempty(obj.tankStates)))
 %                     tanksToUpdateStatesFor = LaunchVehicleStageState.emptyTankArr;
 %                     
