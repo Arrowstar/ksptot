@@ -19,6 +19,24 @@ classdef(Abstract) AbstractObjectiveFcn < matlab.mixin.SetGet & matlab.mixin.Het
         
         tf = usesEvent(obj, event)
         
+        tf = usesExtremum(obj, extremum)
+        
+        tf = usesGroundObj(obj, grdObj)
+        
+        tf = usesCalculusCalc(obj, calculusCalc)
+        
+        tf = usesGeometricPoint(~, ~)
+        
+        tf = usesGeometricVector(~, ~)
+        
+        tf = usesGeometricCoordSys(~, ~)
+        
+        tf = usesGeometricRefFrame(~, ~)
+        
+        tf = usesGeometricAngle(~, ~)
+        
+        tf = usesGeometricPlane(~, ~)
+        
         event = getRefEvent(obj)     
         
         bodyInfo = getRefBody(obj)

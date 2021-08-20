@@ -54,6 +54,8 @@ function lvd_editNomadOptionsGUI_OpeningFcn(hObject, eventdata, handles, varargi
 
     % Choose default command line output for lvd_editNomadOptionsGUI
     handles.output = hObject;
+    
+    centerUIFigure(hObject);
 
     nomadOpt = varargin{1};
     handles = populateGUI(handles, nomadOpt);

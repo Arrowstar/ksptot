@@ -33,13 +33,13 @@ classdef(Abstract) AbstractLaunchVehicleCalculusState < matlab.mixin.SetGet & ma
             taskStr = obj.calcObj.quantStr;
             
             prevDistTraveled = 0;
-            refBodyId = obj.calcObj.refBody.id;
+            refBodyId = obj.calcObj.frame.getOriginBody().id;
             for(i=1:length(stateLogEntries))
                 if(ismember(taskStr,maTaskList))
                     maSubLog = stateLogEntries(i).getMAFormattedStateLogMatrix(true);
                     [newDepVarValues(i), depVarUnits, prevDistTraveled] = ma_getDepVarValueUnit(1, maSubLog, taskStr, prevDistTraveled, refBodyId, [], [], propNames, [], obj.celBodyData, false);
                 else
-                    [newDepVarValues(i), depVarUnits] = lvd_getDepVarValueUnit(i, stateLogEntries, taskStr, refBodyId, obj.celBodyData, false);
+                    [newDepVarValues(i), depVarUnits] = lvd_getDepVarValueUnit(i, stateLogEntries, taskStr, refBodyId, obj.celBodyData, false, obj.calcObj.frame);
                 end
             end
             

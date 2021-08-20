@@ -2,7 +2,7 @@ function [bodyPlotted] = ma_plotFrame(hFig, mAxes, maData, stateLog, time, prevB
 %ma_plotFrame Summary of this function goes here
 %   Detailed explanation goes here      
     global GLOBAL_VideoWriter GLOBAL_isRecording;
-    persistent usrScMarker hCBodySurf preCbRotateAngle hCbGrdStn hOtherScPts hOtherScOrbits hCbGrdStnText hAnnote hChildBodies hChildBodyOrbits hSunBody hLight prevFrameTime curFrameTime;
+    persistent usrScMarker hCBodySurf hCBodySurfXform preCbRotateAngle hCbGrdStn hOtherScPts hOtherScOrbits hCbGrdStnText hAnnote hChildBodies hChildBodyOrbits hSunBody hLight prevFrameTime curFrameTime;
 
     if(~isempty(usrScMarker) && ishandle(usrScMarker))
         delete(usrScMarker);
@@ -29,7 +29,11 @@ function [bodyPlotted] = ma_plotFrame(hFig, mAxes, maData, stateLog, time, prevB
         cla(mAxes,'reset');
         [hCBodySurf] = plotStateLog(stateLog, handles, false, false, false, false, orbitToPlot, [], maData, celBodyData, mAxes, hFig);
         freezeColors(mAxes);
+        material(hCBodySurf,'dull');
         set(hCBodySurf,'AmbientStrength',0.1);
+        hCBodySurfXform = hgtransform(mAxes);
+        set(hCBodySurf,'Parent',hCBodySurfXform);
+        
         preCbRotateAngle = 0;
         
         if(~isnan(prevBody))
@@ -43,6 +47,12 @@ function [bodyPlotted] = ma_plotFrame(hFig, mAxes, maData, stateLog, time, prevB
         axisWasReset = true;
     else
         axisWasReset = false;
+    end
+    
+    bodyInfo = celBodyData.getBodyInfoById(bodyPlotted);
+    if(not(isempty(hCBodySurfXform)) && isvalid(hCBodySurfXform))
+        M = getBodyXformMatrix(time, bodyInfo, bodyInfo.getBodyCenteredInertialFrame());
+        set(hCBodySurfXform,'Matrix',M);
     end
     
     if(axisWasReset && ~strcmpi(get(handles.cameraTypeCombo,'UserData'),'Inertially Fixed'))

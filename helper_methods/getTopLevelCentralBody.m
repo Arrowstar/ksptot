@@ -1,8 +1,11 @@
 function topLevelBodyInfo = getTopLevelCentralBody(celBodyData)
     %getTopLevelCentralBody Summary of this function goes here
-    %   Detailed explanation goes here
-    
-    topLevelBodyInfo = KSPTOT_BodyInfo.empty(1,0);
+    %   Detailed explanation goes here   
+    try
+        topLevelBodyInfo = celBodyData.emptyBodyInfo;
+    catch
+        topLevelBodyInfo = KSPTOT_BodyInfo.empty(1,0);
+    end
     celBodyFields = fields(celBodyData);
     for(i=1:length(celBodyFields))
         bInfo = celBodyData.(celBodyFields{i});

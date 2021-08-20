@@ -3,6 +3,7 @@ classdef KSPTOT_AppOptions < handle
     %   Detailed explanation goes here
     
     properties
+        %KSPTOT Options
         bodiesinifile
         rtshostname
         timesystem char
@@ -13,6 +14,9 @@ classdef KSPTOT_AppOptions < handle
         porkchopnumsynperiods double
         departplotnumoptiters double
         quant2opt char
+        
+        %LVD Options
+        lvdrecentmsncasefiles(1,:) char = '';
     end
     
     events

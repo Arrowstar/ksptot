@@ -54,6 +54,8 @@ function lvd_EditBasicBatteryGUI_OpeningFcn(hObject, eventdata, handles, varargi
 
     % Choose default command line output for lvd_EditBasicBatteryGUI
     handles.output = hObject;
+    
+    centerUIFigure(hObject);
 
     powerStorage = varargin{1};
     setappdata(hObject, 'powerStorage', powerStorage);
@@ -98,7 +100,7 @@ function varargout = lvd_EditBasicBatteryGUI_OutputFcn(hObject, eventdata, handl
         powerStorage = getappdata(hObject, 'powerStorage');
         lv = powerStorage.getAttachedStage().launchVehicle;
                 
-        powerStorage.getAttachedStage().removePwrStorage(powerStorage);
+%         powerStorage.getAttachedStage().removePwrStorage(powerStorage);
         
         stage = lv.getStageForInd(handles.stageCombo.Value);
         
@@ -111,7 +113,7 @@ function varargout = lvd_EditBasicBatteryGUI_OutputFcn(hObject, eventdata, handl
         powerStorage.maxCapacity = maxCapacity;
         powerStorage.initialStateOfCharge = initSoc;
         
-        powerStorage.getAttachedStage().addPwrStorage(powerStorage);
+%         powerStorage.getAttachedStage().addPwrStorage(powerStorage);
                 
         varargout{1} = true;
         close(handles.lvd_EditBasicBatteryGUI);

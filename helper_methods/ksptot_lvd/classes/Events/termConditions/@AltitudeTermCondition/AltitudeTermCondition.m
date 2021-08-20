@@ -13,7 +13,7 @@ classdef AltitudeTermCondition < AbstractEventTerminationCondition
         end
         
         function evtTermCondFcnHndl = getEventTermCondFuncHandle(obj)            
-            evtTermCondFcnHndl = @(t,y) obj.eventTermCond(t,y, obj.altitude, obj.bodyInfo);
+            evtTermCondFcnHndl = @(t,y) obj.eventTermCond(t,y);
         end
         
         function initTermCondition(obj, initialStateLogEntry)
@@ -81,15 +81,16 @@ classdef AltitudeTermCondition < AbstractEventTerminationCondition
         end
     end
     
-    methods(Static, Access=private)
-        function [value,isterminal,direction] = eventTermCond(~,y, targetAlt, bodyInfo)
+    methods(Access=private)
+        function [value,isterminal,direction] = eventTermCond(obj, t,y)           
             rVect = y(1:3);
-
-            rMag = norm(rVect);
-            bRadius = bodyInfo.radius;
-            altitude = rMag - bRadius;
+            vVect = y(4:6);
+            cartElem = CartesianElementSet(t, rVect(:), vVect(:), obj.bodyInfo.getBodyCenteredInertialFrame());
+            geoElem = cartElem.convertToFrame(obj.frame).convertToGeographicElementSet();
             
-            value = altitude - targetAlt;
+            actualAltitude = geoElem.alt;
+            
+            value = actualAltitude - obj.altitude;
             isterminal = 1;
             direction = 0;
         end

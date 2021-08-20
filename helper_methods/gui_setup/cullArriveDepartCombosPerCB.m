@@ -6,12 +6,19 @@ function cullArriveDepartCombosPerCB(mainGUIHandle)
     [cbBodyNames, arriveDepartNames] = genCBArriveDepartComboBoxStrs(mainGUIHandle);
 
     %Strings for CB combo boxes
-    cbComboString = char(cap1stLetter(cbBodyNames));
+    cbBodyNames = cap1stLetter(cbBodyNames);
+    cbComboString = char(cbBodyNames);
     hCentralBodyCombo = findobj(mainGUIHandle,'Tag','centralBodyCombo');
-    set(hCentralBodyCombo,'String',cbComboString);
+    
+    try
+        set(hCentralBodyCombo,'String',cbComboString);
+    catch
+        hCentralBodyCombo.Items = cbBodyNames;
+    end
 
     %Strings for Depart/Arrival combo boxes
-    departArriveComboString = char(cap1stLetter(arriveDepartNames));
+    arriveDepartNames = cap1stLetter(arriveDepartNames);
+    departArriveComboString = char(arriveDepartNames);
     
     if(size(departArriveComboString,1)>5)
         dBValue = 3;
@@ -25,11 +32,24 @@ function cullArriveDepartCombosPerCB(mainGUIHandle)
     end
 
     hDepartBodyCombo = findobj(mainGUIHandle,'Tag','departBodyCombo');
-    set(hDepartBodyCombo,'Value',dBValue);
-    set(hDepartBodyCombo,'String',departArriveComboString);
+    try
+        set(hDepartBodyCombo,'Value',dBValue);
+        set(hDepartBodyCombo,'String',departArriveComboString);
+    catch
+        hDepartBodyCombo.Items = arriveDepartNames;
+        if(numel(arriveDepartNames) > 0)
+            hDepartBodyCombo.Value = arriveDepartNames{dBValue};
+        end
+    end
 
-    hArriveBodyCombo = findobj(mainGUIHandle,'Tag','arrivalBodyCombo');
-    set(hArriveBodyCombo,'Value',aBValue);
-    set(hArriveBodyCombo,'String',departArriveComboString);
+    hArriveBodyCombo = findobj(mainGUIHandle,'Tag','arrivalBodyCombo');    
+    try
+        set(hArriveBodyCombo,'Value',aBValue);
+        set(hArriveBodyCombo,'String',departArriveComboString);
+    catch
+        hArriveBodyCombo.Items = arriveDepartNames;
+        if(numel(arriveDepartNames) > 0)
+            hArriveBodyCombo.Value = arriveDepartNames{aBValue};
+        end
+    end
 end
-

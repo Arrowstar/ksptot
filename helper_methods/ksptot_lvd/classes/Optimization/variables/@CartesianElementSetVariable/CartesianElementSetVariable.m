@@ -47,7 +47,7 @@ classdef CartesianElementSetVariable < AbstractOrbitModelVariable
                 x(end+1) = obj.varObj.vVect(2);
             end
             
-            if(obj.varVy)
+            if(obj.varVz)
                 x(end+1) = obj.varObj.vVect(3);
             end
         end

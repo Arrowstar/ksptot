@@ -31,27 +31,39 @@ classdef UniversalElementSet < AbstractElementSet
             end
         end
         
+        %vectorized
         function cartElemSet = convertToCartesianElementSet(obj)           
-            cartElemSet = obj.convertToKeplerianElementSet().convertToCartesianElementSet();
+            cartElemSet = convertToCartesianElementSet(convertToKeplerianElementSet(obj));
         end
         
+        %vectorized
         function kepElemSet = convertToKeplerianElementSet(obj)
-            gmu = obj.frame.getOriginBody().gm;
+%             gmu = obj.frame.getOriginBody().gm;
+            gmu = NaN(length(obj), 1);
+            for(i=1:length(obj))
+                gmu(i) = obj(i).frame.getOriginBody().gm;
+            end
             
-            sma = -gmu./obj.c3;
-            ecc = abs(1 - obj.rP./sma);
+            sma = -gmu./[obj.c3];
+            ecc = abs(1 - [obj.rP]./sma);
             
             n = computeMeanMotion(sma, gmu);
-            mean = obj.tau .* n;
+            mean = [obj.tau] .* n;
             tru = computeTrueAnomFromMean(mean, ecc);
             
-            kepElemSet = KeplerianElementSet(obj.time, sma, ecc, obj.inc, obj.raan, obj.arg, tru, obj.frame);
+%             kepElemSet = KeplerianElementSet(obj.time, sma, ecc, obj.inc, obj.raan, obj.arg, tru, obj.frame);
+            kepElemSet = repmat(KeplerianElementSet.getDefaultElements(), size(obj));
+            for(i=1:length(obj))
+                kepElemSet(i) = KeplerianElementSet(obj(i).time, sma(i), ecc(i), obj(i).inc, obj(i).raan, obj(i).arg, tru(i), obj(i).frame);
+            end
         end
         
+        %vectorized
         function geoElemSet = convertToGeographicElementSet(obj)
-            geoElemSet = obj.convertToCartesianElementSet().convertToGeographicElementSet();
+            geoElemSet = convertToGeographicElementSet(convertToCartesianElementSet(obj));
         end
         
+        %vectorized
         function univElemSet = convertToUniversalElementSet(obj)
             univElemSet = obj;
         end

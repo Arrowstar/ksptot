@@ -28,20 +28,15 @@ if(isdeployed)
     end
 end
 
+%Populate initial ksptot log file
+writeKsptotLogFileHeaderToConsole();
+
 %display splashscreen
-hS = splashScreenGUI(); drawnow;
+hS = splashScreenGUI_App(); drawnow;
 t = tic;
 
 %Initialize KSPTOT options
-doesAppOptionsFileExist = exist('appOptions.ini','file');
-if(doesAppOptionsFileExist)
-    [appOptionsFromINI,~,~] = inifile('appOptions.ini','readall');
-    appOptionsFromINI = addMissingAppOptionsRows(appOptionsFromINI);
-else
-    appOptionsFromINI = createDefaultKsptotOptions();
-    inifile('appOptions.ini','write',appOptionsFromINI);
-end
-appOptions = processINIBodyInfo(appOptionsFromINI, false, 'appOptions'); %turns out this function works for other ini files too lol!
+appOptions = getAppOptionsFromFile();
 
 %Initalize KSP celestial body data
 if(isprop(appOptions.ksptot,'bodiesinifile') && ~isempty(appOptions.ksptot.bodiesinifile) && exist(appOptions.ksptot.bodiesinifile,'file'))
@@ -69,7 +64,8 @@ while(toc(t) < 1)
 end
 
 %Set up the GUI for use
-mainGUIHandle = mainGUI(celBodyData, bodyNames, hS, appOptions);
-if(isgraphics(hS))
-    close(hS);
+% mainGUIHandle = mainGUI(celBodyData, bodyNames, hS, appOptions);
+mainGUIHandle = mainGUI_App(celBodyData, bodyNames, hS, appOptions);
+if(isvalid(hS))
+    delete(hS);
 end

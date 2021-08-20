@@ -2,6 +2,21 @@ classdef LaunchVehicle < matlab.mixin.SetGet
     %LaunchVehicle Summary of this class goes here
     %   Detailed explanation goes here
     
+    events
+        StageAdded
+        StageDeleted
+        EngineAdded
+        EngineDeleted
+        TankAdded
+        TankDeleted
+        EpsSinkAdded
+        EpsSinkDeleted
+        EpsSrcAdded
+        EpsSrcDeleted
+        EpsStorageAdded
+        EpsStorageDeleted
+    end
+    
     properties
         stages LaunchVehicleStage
         engineTankConns EngineToTankConnection
@@ -51,6 +66,8 @@ classdef LaunchVehicle < matlab.mixin.SetGet
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         function addStage(obj, stage)
             obj.stages(end+1) = stage;
+            
+            notify(obj,'StageAdded',StageAddedDeletedEventData(stage));
         end
         
         function removeStage(obj, stage)
@@ -58,11 +75,27 @@ classdef LaunchVehicle < matlab.mixin.SetGet
             
             for(i=1:length(stage.tanks))
                 obj.removeAllEngineToTanksConnsWithTank(stage.tanks(i));
+                notify(obj,'TankDeleted',TankAddedDeletedEventData(stage.tanks(i)));
             end
             
             for(i=1:length(stage.engines))
                 obj.removeAllEngineToTanksConnsWithEngine(stage.engines(i));
+                notify(obj,'EngineDeleted',EngineAddedDeletedEventData(stage.engines(i)));
             end
+                        
+            for(i=1:length(stage.powerSrcs))
+                notify(obj,'EpsSrcDeleted',EpsSrcAddedDeletedEventData(stage.powerSrcs(i)));
+            end
+            
+            for(i=1:length(stage.powerSinks))
+                notify(obj,'EpsSinkDeleted',EpsSinkAddedDeletedEventData(stage.powerSinks(i)));
+            end
+            
+            for(i=1:length(stage.powerStorages))
+                notify(obj,'EpsStorageDeleted',EpsStorageAddedDeletedEventData(stage.powerStorages(i)));
+            end           
+            
+            notify(obj,'StageDeleted',StageAddedDeletedEventData(stage));
         end
         
         function stage = getStageForInd(obj, ind)

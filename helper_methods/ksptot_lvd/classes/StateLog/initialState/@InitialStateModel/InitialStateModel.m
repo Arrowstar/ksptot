@@ -319,10 +319,10 @@ classdef InitialStateModel < matlab.mixin.SetGet
             stateLogModel.aero = aeroState;
             
             grav3Body = LaunchVehicle3BodyGravState();
-            bNames = fieldnames(celBodyData);
-            for(i=1:length(bNames))
-                grav3Body.bodies(end+1) = celBodyData.(bNames{i});
-            end
+%             bNames = fieldnames(celBodyData);  %No more turning on all bodies for 3rd body gravity
+%             for(i=1:length(bNames))
+%                 grav3Body.bodies(end+1) = celBodyData.(bNames{i});
+%             end
             grav3Body.celBodyData = celBodyData;
             stateLogModel.thirdBodyGravity = grav3Body;
             

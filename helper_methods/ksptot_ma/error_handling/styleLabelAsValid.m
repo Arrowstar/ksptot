@@ -1,7 +1,6 @@
 function styleLabelAsValid(hLabel,validStr)
 %styleLabelAsValid Summary of this function goes here
 %   Detailed explanation goes here
-%     outstring = textwrap(hLabel,validStr);
     lblStr = strWrapForLabel(hLabel, validStr);
     
     set(hLabel,'Visible','on');

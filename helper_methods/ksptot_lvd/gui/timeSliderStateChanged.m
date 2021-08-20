@@ -1,11 +1,15 @@
-function timeSliderStateChanged(src,evt, lvdData, handles)
+function timeSliderStateChanged(src,evt, lvdData, handles, app)
     s = dbstack;
     matches = strfind({s.name},'timeSliderStateChanged');
     matches = cell2mat(matches(2:end));
     tf = any(matches == 1);
     
-    if(not(tf)) %getappdata(handles.hDispAxesTimeSlider,'lastTime') ~= javaMethodEDT('getValue',src) && 
-        time = javaMethodEDT('getValue',src);
+    if(not(tf))
+        try
+            time = evt.Value;
+        catch
+            time = src.Value;
+        end
         hAx = handles.dispAxes;        
 
         markerTrajData = lvdData.viewSettings.selViewProfile.markerTrajData;
@@ -13,8 +17,14 @@ function timeSliderStateChanged(src,evt, lvdData, handles)
         markerBodyAxesData = lvdData.viewSettings.selViewProfile.markerTrajAxesData;
         markerGrdObjData = lvdData.viewSettings.selViewProfile.markerGrdObjData;
         centralBodyData = lvdData.viewSettings.selViewProfile.centralBodyData;
+        pointData = lvdData.viewSettings.selViewProfile.pointData;
+        vectorData = lvdData.viewSettings.selViewProfile.vectorData;
+        refFrameData = lvdData.viewSettings.selViewProfile.refFrameData;
+        angleData = lvdData.viewSettings.selViewProfile.angleData;
+        planeData = lvdData.viewSettings.selViewProfile.planeData;
         
         markerTrajData.plotBodyMarkerAtTime(time, hAx);
+        
         for(i=1:length(markerBodyData))
             markerBodyData(i).plotBodyMarkerAtTime(time, hAx);
         end
@@ -23,6 +33,26 @@ function timeSliderStateChanged(src,evt, lvdData, handles)
         
         for(i=1:length(markerGrdObjData))
             markerGrdObjData(i).plotBodyMarkerAtTime(time, hAx);
+        end
+        
+        for(i=1:length(refFrameData))
+            refFrameData(i).plotRefFrameAtTime(time, hAx);
+        end
+        
+        for(i=1:length(vectorData))
+            vectorData(i).plotVectorAtTime(time, hAx);
+        end
+        
+        for(i=1:length(angleData))
+            angleData(i).plotAngleAtTime(time, hAx);
+        end
+        
+        for(i=1:length(planeData))
+            planeData(i).plotPlaneAtTime(time, hAx);
+        end
+        
+        for(i=1:length(pointData))
+            pointData(i).plotPointAtTime(time, hAx);
         end
         
         centralBodyData.setCentralBodyRotation(time);
@@ -49,7 +79,7 @@ function timeSliderStateChanged(src,evt, lvdData, handles)
         handles.timeSliderValueLabel.String = epochStr;
         handles.timeSliderValueLabel.TooltipString = tooltipStr;
         
-        setappdata(handles.hDispAxesTimeSlider,'lastTime',time);
+        setappdata(app.DispAxesTimeSlider,'lastTime',time);
         drawnow limitrate;
     end
 end

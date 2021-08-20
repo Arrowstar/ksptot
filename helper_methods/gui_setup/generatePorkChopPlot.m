@@ -5,27 +5,47 @@ function generatePorkChopPlot(mainGUIHandle)
     celBodyData = userData{1,1};
 
     hCentralBodyCombo = findobj(mainGUIHandle,'Tag','centralBodyCombo');
-    contents = cellstr(get(hCentralBodyCombo,'String'));
-    cbName = lower(contents{get(hCentralBodyCombo,'Value')});
+    try
+        contents = cellstr(get(hCentralBodyCombo,'String'));
+        cbName = lower(contents{get(hCentralBodyCombo,'Value')});
+    catch
+        cbName = lower(hCentralBodyCombo.Value);
+    end
     cBodyInfo = celBodyData.(cbName);
     gmu = cBodyInfo.gm;
 
     hDepartBodyCombo = findobj(mainGUIHandle,'Tag','departBodyCombo');
-    contents = cellstr(get(hDepartBodyCombo,'String'));
-    departName = lower(contents{get(hDepartBodyCombo,'Value')});
+    try
+        contents = cellstr(get(hDepartBodyCombo,'String'));
+        departName = lower(contents{get(hDepartBodyCombo,'Value')});
+    catch
+        departName = lower(hDepartBodyCombo.Value);
+    end
 
     hArrivalBodyCombo = findobj(mainGUIHandle,'Tag','arrivalBodyCombo');
-    contents = cellstr(get(hArrivalBodyCombo,'String'));
-    arrivalName = lower(contents{get(hArrivalBodyCombo,'Value')});
+    try
+        contents = cellstr(get(hArrivalBodyCombo,'String'));
+        arrivalName = lower(contents{get(hArrivalBodyCombo,'Value')});
+    catch
+        arrivalName = lower(hArrivalBodyCombo.Value);
+    end
 
     hEarlyDepartTime = findobj(mainGUIHandle,'Tag','departBodyEarliestTimeText');
-    earlyDepartTime = str2double(get(hEarlyDepartTime,'String'));
+    try
+        earlyDepartTime = str2double(get(hEarlyDepartTime,'String'));
+    catch
+        earlyDepartTime = str2double(hEarlyDepartTime.Value);
+    end
 
     hEarlyArrivalTime = findobj(mainGUIHandle,'Tag','arrivalBodyEarliestTimeText');
-    earlyArrivalTime = str2double(get(hEarlyArrivalTime,'String'));
+    try
+        earlyArrivalTime = str2double(get(hEarlyArrivalTime,'String'));
+    catch
+        earlyArrivalTime = str2double(hEarlyArrivalTime.Value);
+    end
 
     options = userData{1,9};
-    [departDV, arrivalDV, totalDV, departTimeArr, arrivalTimeArr, numSynPeriods] = computePorkChopData(celBodyData, departName, earlyDepartTime, arrivalName, earlyArrivalTime, gmu, options);
+    [departDV, arrivalDV, totalDV, departTimeArr, arrivalTimeArr, numSynPeriods] = computePorkChopData(celBodyData, departName, earlyDepartTime, arrivalName, earlyArrivalTime, gmu, options, mainGUIHandle);
     options.porkchopnumsynperiods = numSynPeriods;
     userData{1,9} = options;
     set(mainGUIHandle,'UserData',userData);

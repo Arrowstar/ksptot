@@ -37,6 +37,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
         emptyEngineArr = LaunchVehicleEngineState.empty(1,0);
         emptyPwrStorageArr = AbstractLaunchVehicleEpsStorageState.empty(1,0);
         emptyPwrSrcArr = AbstractLaunchVehicleElectricalPowerSrcState.empty(1,0)
+        emptyPwrSinkArr = AbstractLaunchVehicleElectricalPowerSnkState.empty(1,0)
     end
     
     methods
@@ -302,12 +303,34 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             end
         end
         
-        function cartElemSet = getCartesianElementSetRepresentation(obj)
-%             frame = BodyCenteredInertialFrame(obj.centralBody, obj.celBodyData);
-            frame = obj.centralBody.getBodyCenteredInertialFrame();
-            cartElemSet = CartesianElementSet(obj.time, obj.position, obj.velocity, frame);
+        function cartElemSet = getCartesianElementSetRepresentation(obj, createObjOfArray)
+            arguments
+                obj
+                createObjOfArray(1,1) logical = false;
+            end
+            
+            obj = obj(:)';
+            
+            for(i=1:length(obj))
+                frame(i) = obj(i).centralBody.getBodyCenteredInertialFrame(); %#ok<AGROW>
+            end
+            cartElemSet = CartesianElementSet([obj.time], [obj.position], [obj.velocity], frame, createObjOfArray);
         end
         
+        function setCartesianElementSet(obj, elemSet)
+            obj = obj(:)';
+            
+            for(i=1:length(obj))
+                cartElem = elemSet(i).convertToCartesianElementSet();
+                bodyInfo = cartElem.frame.getOriginBody();
+                cartElem = cartElem.convertToFrame(bodyInfo.getBodyCenteredInertialFrame());
+                
+                obj(i).position = cartElem.rVect;
+                obj(i).velocity = cartElem.vVect;
+                obj(i).centralBody = bodyInfo;
+            end
+        end
+
         function pwrStorageStates = getAllActivePwrStorageStates(obj)
             stgStates = obj.stageStates;
             pwrStorageStates = [stgStates([stgStates.active]).powerStorageStates];
@@ -320,15 +343,33 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             end
         end
         
+        function pwrStorageStates = getAllPwrStorageStates(obj)
+            stgStates = obj.stageStates;
+            pwrStorageStates = [stgStates.powerStorageStates];
+              
+            if(isempty(pwrStorageStates))
+                pwrStorageStates = obj.emptyPwrStorageArr;
+            end
+        end
+        
         function pwrSinksStates = getAllActivePwrSinksStates(obj)
             stgStates = obj.stageStates;
             pwrSinksStates = [stgStates([stgStates.active]).powerSinkStates];
               
             if(isempty(pwrSinksStates))
-                pwrSinksStates = obj.emptyPwrSrcArr;
+                pwrSinksStates = obj.emptyPwrSinkArr;
                 
             else
                 pwrSinksStates = pwrSinksStates(getActiveState(pwrSinksStates));
+            end
+        end
+        
+        function pwrSinksStates = getAllPwrSinksStates(obj)
+            stgStates = obj.stageStates;
+            pwrSinksStates = [stgStates.powerSinkStates];
+              
+            if(isempty(pwrSinksStates))
+                pwrSinksStates = obj.emptyPwrSinkArr;
             end
         end
         
@@ -345,6 +386,15 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                 end
                 
                 pwrSrcsStates = pwrSrcsStates(activeInds);
+            end
+        end
+        
+        function pwrSrcsStates = getAllPwrSrcsStates(obj)
+            stgStates = obj.stageStates;
+            pwrSrcsStates = [stgStates.powerSrcStates];
+              
+            if(isempty(pwrSrcsStates))
+                pwrSrcsStates = obj.emptyPwrSrcArr;
             end
         end
         

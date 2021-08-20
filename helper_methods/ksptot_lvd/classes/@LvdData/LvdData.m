@@ -14,6 +14,8 @@ classdef LvdData < matlab.mixin.SetGet
         plugins LvdPluginSet
         viewSettings LaunchVehicleViewSettings
         groundObjs LaunchVehicleGroundObjectSet
+        geometry LvdGeometry
+        graphAnalysis LvdGraphicalAnalysis
         
         celBodyData 
         ksptotVer char
@@ -30,6 +32,8 @@ classdef LvdData < matlab.mixin.SetGet
             obj.plugins = LvdPluginSet(obj);
             obj.viewSettings = LaunchVehicleViewSettings(obj);
             obj.groundObjs = LaunchVehicleGroundObjectSet(obj);
+            obj.geometry = LvdGeometry(obj);
+            obj.graphAnalysis = LvdGraphicalAnalysis(obj);
         end
     end
     
@@ -73,7 +77,8 @@ classdef LvdData < matlab.mixin.SetGet
         end
         
         function tf = usesGroundObj(obj, grdObj)
-            tf = obj.optimizer.usesExtremum(grdObj);
+            tf = obj.optimizer.usesGroundObj(grdObj) || ...
+                 obj.geometry.usesGroundObj(obj);
         end
         
         function tf = usesCalculusCalc(obj, calculusCalc)
@@ -95,6 +100,46 @@ classdef LvdData < matlab.mixin.SetGet
         function tf = usesPwrStorage(obj, powerStorage)
             tf = obj.script.usesPwrStorage(powerStorage);
 %             tf = tf || obj.optimizer.usesPwrStorage(powerStorage);
+        end
+        
+        function tf = usesGeometricPoint(obj, point)
+            tf = obj.optimizer.usesGeometricPoint(point);
+            tf = tf || obj.geometry.usesGeometricPoint(point);
+        end
+        
+        function tf = usesGeometricVector(obj, vector)
+            tf = obj.optimizer.usesGeometricVector(vector);
+            tf = tf || obj.geometry.usesGeometricVector(vector);
+        end
+        
+        function tf = usesGeometricCoordSys(obj, coordSys)
+            tf = obj.optimizer.usesGeometricCoordSys(coordSys);
+            tf = tf || obj.geometry.usesGeometricCoordSys(coordSys);
+        end
+        
+        function tf = usesGeometricRefFrame(obj, refFrame)
+            tf = obj.optimizer.usesGeometricRefFrame(refFrame);
+            tf = tf || obj.geometry.usesGeometricRefFrame(refFrame);
+            tf = tf || obj.graphAnalysis.usesGeometricRefFrame(refFrame);
+        end
+        
+        function tf = usesGeometricAngle(obj, angle)
+            tf = obj.optimizer.usesGeometricAngle(angle);
+            tf = tf || obj.geometry.usesGeometricAngle(angle);
+        end
+        
+        function tf = usesGeometricPlane(obj, plane)
+            tf = obj.optimizer.usesGeometricPlane(plane);
+            tf = tf || obj.geometry.usesGeometricPlane(plane);
+        end 
+
+        function tf = usesPlugin(obj, plugin)
+            tf = obj.optimizer.usesPlugin(plugin);
+        end 
+        
+        function baseFrame = getBaseFrame(obj)
+            topLevelBody = obj.celBodyData.getTopLevelBody();
+            baseFrame = topLevelBody.getBodyCenteredInertialFrame();
         end
     end
     
@@ -160,7 +205,7 @@ classdef LvdData < matlab.mixin.SetGet
             grndObj.wayPts = wayPt;
         end
         
-        function initBody = getDefaultInitialBodyInfo(celBodyData)
+        function initBody = getDefaultInitialBodyInfo(celBodyData)           
             if(isfield(celBodyData,'kerbin'))
                 initBody = celBodyData.kerbin;
             else
@@ -195,6 +240,24 @@ classdef LvdData < matlab.mixin.SetGet
             
             if(isempty(obj.groundObjs))
                 obj.groundObjs = LaunchVehicleGroundObjectSet(obj);
+            end
+            
+            if(isempty(obj.geometry))
+                obj.geometry = LvdGeometry(obj);
+            end
+            
+            if(isempty(obj.graphAnalysis))
+                obj.graphAnalysis = LvdGraphicalAnalysis(obj);
+            end
+            
+            evts = obj.script.evts;
+            for(i=1:length(evts))
+                evts(i).createUpdatedSetKinematicStateObjs();
+            end
+            
+            nonSeqEvts = obj.script.nonSeqEvts.nonSeqEvts;
+            for(i=1:length(nonSeqEvts))
+                nonSeqEvts(i).evt.createUpdatedSetKinematicStateObjs();
             end
         end
         

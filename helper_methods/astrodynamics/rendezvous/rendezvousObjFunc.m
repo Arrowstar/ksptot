@@ -6,13 +6,30 @@ function [objFuncValue, dv, deltaV1, deltaV2, deltaV1R, deltaV2R, xfrOrbit, delt
 
     iniOrbBodyInfo = getBodyInfoStructFromOrbit(iniOrbit);
     [rVect, vVect] = getStateAtTime(iniOrbBodyInfo, time1, iniOrbit(8));
-    [~, ~, ~, ~, ~, iniTA] = getKeplerFromState(rVect,vVect,iniOrbit(8));
+    [sma, ecc, inc, raan, arg, iniTA] = getKeplerFromState(rVect,vVect,iniOrbit(8));
+    iniOrbit(1) = sma;
+    iniOrbit(2) = ecc;
+    iniOrbit(3) = inc;
+    iniOrbit(4) = raan;
+    iniOrbit(5) = arg;
+    iniOrbit(6) = computeMeanFromTrueAnom(iniTA, ecc);
+    iniOrbit(7) = time1;
+    
+    iniOrbBodyInfo.mean = computeMeanFromTrueAnom(iniTA, ecc);
+    iniOrbBodyInfo.epoch = time1;
     % iniOrbit(7) = [];
     % iniOrbit(6) = [];
 
     finOrbBodyInfo = getBodyInfoStructFromOrbit(finOrbit);
     [rVect, vVect] = getStateAtTime(finOrbBodyInfo, time2, finOrbit(8));
-    [~, ~, ~, ~, ~, finTA] = getKeplerFromState(rVect,vVect,finOrbit(8));
+    [sma, ecc, inc, raan, arg, finTA] = getKeplerFromState(rVect,vVect,finOrbit(8));
+    finOrbit(1) = sma;
+    finOrbit(2) = ecc;
+    finOrbit(3) = inc;
+    finOrbit(4) = raan;
+    finOrbit(5) = arg;
+    finOrbit(6) = computeMeanFromTrueAnom(finTA, ecc);
+    finOrbit(7) = time2;
     % finOrbit(7) = [];
     % finOrbit(6) = [];
 

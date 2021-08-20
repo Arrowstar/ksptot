@@ -13,7 +13,7 @@ classdef PeriapsisAltitudeTermCondition < AbstractEventTerminationCondition
         end
         
         function evtTermCondFcnHndl = getEventTermCondFuncHandle(obj)            
-            evtTermCondFcnHndl = @(t,y) obj.eventTermCond(t,y, obj.perialt, obj.bodyInfo);
+            evtTermCondFcnHndl = @(t,y) obj.eventTermCond(t,y);
         end
         
         function initTermCondition(obj, initialStateLogEntry)
@@ -81,20 +81,14 @@ classdef PeriapsisAltitudeTermCondition < AbstractEventTerminationCondition
         end
     end
     
-    methods(Static, Access=private)
-        function [value,isterminal,direction] = eventTermCond(~,y, targetPeriAlt, bodyInfo)
+    methods(Access=private)
+        function [value,isterminal,direction] = eventTermCond(obj, t,y)
             rVect = y(1:3);
             vVect = y(4:6);
+            cartElem = CartesianElementSet(t, rVect(:), vVect(:), obj.bodyInfo.getBodyCenteredInertialFrame());
+            kepElem = cartElem.convertToFrame(obj.frame).convertToKeplerianElementSet();
             
-            gmu = bodyInfo.gm;
-            [sma, ecc, ~, ~, ~, ~] = getKeplerFromState(rVect,vVect,gmu);
-            
-            [rAp, rPe] = computeApogeePerigee(sma, ecc);
-            
-            bRadius = bodyInfo.radius;
-            periAltitude = rPe - bRadius;
-            
-            value = periAltitude - targetPeriAlt;
+            value = kepElem.getAltitudePeriapsis() - obj.perialt;
             isterminal = 1;
             direction = 0;
         end

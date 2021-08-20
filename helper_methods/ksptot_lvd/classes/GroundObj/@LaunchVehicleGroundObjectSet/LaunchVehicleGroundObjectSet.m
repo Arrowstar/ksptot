@@ -22,12 +22,14 @@ classdef LaunchVehicleGroundObjectSet < matlab.mixin.SetGet
             obj.groundObjs([obj.groundObjs] == groundObj) = [];
         end
         
-        function listBoxStr = getListboxStr(obj)
+        function [listBoxStr, groundObjs] = getListboxStr(obj)
             listBoxStr = {};
             
             for(i=1:length(obj.groundObjs))
                 listBoxStr{end+1} = obj.groundObjs(i).name; %#ok<AGROW>
             end
+            
+            groundObjs = obj.groundObjs;
         end
         
         function groundObjects = getGroundObjsForInds(obj, inds)

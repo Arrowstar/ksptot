@@ -6,9 +6,15 @@ classdef GenericMAConstraint < AbstractConstraint
         constraintType char = '';
         normFact = 1;
         event LaunchVehicleEvent
+        eventNode(1,1) ConstraintStateComparisonNodeEnum = ConstraintStateComparisonNodeEnum.FinalState;
         
         lb(1,1) double = 0;
         ub(1,1) double = 0;
+        
+        evalType(1,1) ConstraintEvalTypeEnum = ConstraintEvalTypeEnum.FixedBounds;
+        stateCompType(1,1) ConstraintStateComparisonTypeEnum = ConstraintStateComparisonTypeEnum.Equals;
+        stateCompEvent LaunchVehicleEvent
+        stateCompNode(1,1) ConstraintStateComparisonNodeEnum = ConstraintStateComparisonNodeEnum.FinalState;
     end
     
     methods
@@ -21,7 +27,7 @@ classdef GenericMAConstraint < AbstractConstraint
             obj.refOtherSC = refOtherSC;
             obj.refBodyInfo = refBodyInfo; 
             
-             obj.id = rand();
+            obj.id = rand();
         end
         
         function [lb, ub] = getBounds(obj)
@@ -29,40 +35,56 @@ classdef GenericMAConstraint < AbstractConstraint
             ub = obj.ub;
         end
         
-        function [c, ceq, value, lwrBnd, uprBnd, type, eventNum] = evalConstraint(obj, stateLog, celBodyData)           
-            stateLogEntry = stateLog.getLastStateLogForEvent(obj.event).getMAFormattedStateLogMatrix(true);
+        function [c, ceq, value, lwrBnd, uprBnd, type, eventNum, valueStateComp] = evalConstraint(obj, stateLog, celBodyData)   
+            maTaskList = ma_getGraphAnalysisTaskList(getLvdGAExcludeList());
             type = obj.constraintType;
+            
+            switch obj.eventNode
+                case ConstraintStateComparisonNodeEnum.FinalState
+                    stateLogEntry = stateLog.getLastStateLogForEvent(obj.event);
+                    
+                case ConstraintStateComparisonNodeEnum.InitialState
+                    stateLogEntry = stateLog.getFirstStateLogForEvent(obj.event);
+                
+                otherwise
+                    error('Unknown event node.');
+            end
+                       
+            if(not(isempty(obj.frame)))
+                frame = obj.frame;
+            else
+                frame = stateLogEntry.centralBody.getBodyCenteredInertialFrame();
+            end
             
             if(not(isempty(obj.refBodyInfo)))
                 refBodyId = obj.refBodyInfo.id;
             else
                 refBodyId = [];
             end
-            
-            oscId = -1;
-            if(not(isempty(obj.refOtherSC)))
-                oscId = obj.refOtherSC.id;
-            end
-            
-            stnId = -1;
-            if(not(isempty(obj.refStation)))
-                stnId = obj.refStation.id;
-            end
-            
-            maData.spacecraft = struct();
-            propNames = obj.event.lvdData.launchVehicle.tankTypes.getFirstThreeTypesCellArr();
-            value = ma_getDepVarValueUnit(1, stateLogEntry, type, 0, refBodyId, oscId, stnId, propNames, maData, celBodyData, false);
-                       
-            if(obj.lb == obj.ub)
-                c = [];
-                ceq(1) = value - obj.ub;
+                                   
+            value = obj.getValueForConstraint(stateLogEntry, type, maTaskList, refBodyId, celBodyData, frame);
+                    
+            if(obj.evalType == ConstraintEvalTypeEnum.StateComparison)
+                switch obj.stateCompNode
+                    case ConstraintStateComparisonNodeEnum.FinalState
+                        stateLogEntryStateComp = stateLog.getLastStateLogForEvent(obj.stateCompEvent).deepCopy();
+
+                    case ConstraintStateComparisonNodeEnum.InitialState
+                        stateLogEntryStateComp = stateLog.getFirstStateLogForEvent(obj.stateCompEvent).deepCopy();
+
+                    otherwise
+                        error('Unknown event node.');
+                end
+                
+                cartElem = stateLogEntryStateComp.getCartesianElementSetRepresentation().convertToFrame(frame);
+                stateLogEntryStateComp.setCartesianElementSet(cartElem);
+
+                valueStateComp = obj.getValueForConstraint(stateLogEntryStateComp, type, maTaskList, refBodyId, celBodyData, frame);
             else
-                c(1) = obj.lb - value;
-                c(2) = value - obj.ub;
-                ceq = [];
+                valueStateComp = NaN;
             end
-            c = c/obj.normFact;
-            ceq = ceq/obj.normFact;  
+            
+            [c, ceq] = obj.computeCAndCeqValues(value, valueStateComp);
             
             lwrBnd = obj.lb;
             uprBnd = obj.ub;
@@ -96,6 +118,9 @@ classdef GenericMAConstraint < AbstractConstraint
         
         function tf = usesEvent(obj, event)
             tf = obj.event == event;
+            if(obj.evalType == ConstraintEvalTypeEnum.StateComparison)
+                tf = tf || obj.stateCompEvent == event;
+            end
         end
         
         function tf = usesStopwatch(obj, stopwatch)
@@ -128,6 +153,35 @@ classdef GenericMAConstraint < AbstractConstraint
         
         function addConstraintTf = openEditConstraintUI(obj, lvdData)
             addConstraintTf = lvd_EditGenericMAConstraintGUI(obj, lvdData);
+        end
+        
+        function value = getValueForConstraint(obj, stateLogEntry, type, maTaskList, refBodyId, celBodyData, frame)
+            if(ismember(type,maTaskList))
+                oscId = -1;
+                if(not(isempty(obj.refOtherSC)))
+                    oscId = obj.refOtherSC.id;
+                end
+
+                stnId = -1;
+                if(not(isempty(obj.refStation)))
+                    stnId = obj.refStation.id;
+                end
+                
+                maData.spacecraft = struct();
+                propNames = obj.event.lvdData.launchVehicle.tankTypes.getFirstThreeTypesCellArr();
+                
+                stateLogEntryMA = stateLogEntry.getMAFormattedStateLogMatrix(true);
+                value = ma_getDepVarValueUnit(1, stateLogEntryMA, type, 0, refBodyId, oscId, stnId, propNames, maData, celBodyData, false);
+                
+            else
+                try
+                    [value, ~] = lvd_getDepVarValueUnit(1, stateLogEntry, type, refBodyId, celBodyData, false, frame);
+                catch ME
+                    warning('Could not evaluate constraint of type: %s', obj.constraintType);
+                    value = 0;
+                end
+
+            end
         end
     end
     

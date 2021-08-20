@@ -22,7 +22,7 @@ function varargout = lvd_EditCalculusObjGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditCalculusObjGUI
 
-% Last Modified by GUIDE v2.5 23-Jul-2020 20:30:12
+% Last Modified by GUIDE v2.5 03-May-2021 19:39:33
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -54,6 +54,8 @@ function lvd_EditCalculusObjGUI_OpeningFcn(hObject, eventdata, handles, varargin
 
     % Choose default command line output for lvd_EditCalculusObjGUI
     handles.output = hObject;
+    
+    centerUIFigure(hObject);
 
     calcObj = varargin{1};
     setappdata(hObject, 'calcObj', calcObj);
@@ -84,14 +86,28 @@ function populateGUI(handles, calcObj, lvdData)
     end
     handles.calcObjQuantCombo.Value = value;
     
-    populateBodiesCombo(lvdData.celBodyData, handles.refCelBodyCombo);
-    if(isempty(calcObj.refBody))
-        value = 1;
-    else
-        value = findValueFromComboBox(calcObj.refBody.name, handles.refCelBodyCombo);
-    end
-    handles.refCelBodyCombo.Value = value;
+%     populateBodiesCombo(lvdData.celBodyData, handles.refFrameTypeCombo);
+%     if(isempty(calcObj.refBody))
+%         value = 1;
+%     else
+%         value = findValueFromComboBox(calcObj.refBody.name, handles.refFrameTypeCombo);
+%     end
+%     handles.refFrameTypeCombo.Value = value;
 
+    frame = calcObj.frame;
+    if(isempty(frame))
+        frame = LvdData.getDefaultInitialBodyInfo(lvdData.celBodyData).getBodyCenteredInertialFrame();
+        calcObj.frame = frame;
+    end
+    setappdata(handles.lvd_EditCalculusObjGUI,'frame',frame);
+    
+    handles.refFrameTypeCombo.String = ReferenceFrameEnum.getListBoxStr();
+    [ind, ~] = ReferenceFrameEnum.getIndForName(frame.typeEnum.name);
+    handles.refFrameTypeCombo.Value = ind;
+    handles.setFrameOptionsButton.TooltipString = sprintf('Current Frame: %s', frame.getNameStr());
+    handles.refFrameNameLabel.String = sprintf('%s', frame.getNameStr());
+    handles.refFrameNameLabel.TooltipString = sprintf('%s', frame.getNameStr());
+    
 % --- Outputs from this function are returned to the command line.
 function varargout = lvd_EditCalculusObjGUI_OutputFcn(hObject, eventdata, handles) 
 % varargout  cell array for returning output args (see VARARGOUT);
@@ -110,9 +126,12 @@ function varargout = lvd_EditCalculusObjGUI_OutputFcn(hObject, eventdata, handle
         quantity = strtrim(quantityStrs{handles.calcObjQuantCombo.Value});
         calcObj.quantStr = quantity;
         
-        celBodyStrs = handles.refCelBodyCombo.String;
-        celBodyStr = celBodyStrs{handles.refCelBodyCombo.Value};
-        calcObj.refBody = lvdData.celBodyData.(strtrim(lower(celBodyStr)));
+%         celBodyStrs = handles.refFrameTypeCombo.String;
+%         celBodyStr = celBodyStrs{handles.refFrameTypeCombo.Value};
+%         calcObj.refBody = lvdData.celBodyData.(strtrim(lower(celBodyStr)));
+
+        frame = getappdata(handles.lvd_EditCalculusObjGUI,'frame');
+        calcObj.frame = frame;
         
         varargout{1} = true;
         close(handles.lvd_EditCalculusObjGUI);
@@ -175,19 +194,19 @@ function lvd_EditCalculusObjGUI_WindowKeyPressFcn(hObject, eventdata, handles)
     end
 
 
-% --- Executes on selection change in refCelBodyCombo.
-function refCelBodyCombo_Callback(hObject, eventdata, handles)
-% hObject    handle to refCelBodyCombo (see GCBO)
+% --- Executes on selection change in refFrameTypeCombo.
+function refFrameTypeCombo_Callback(hObject, eventdata, handles)
+% hObject    handle to refFrameTypeCombo (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: contents = cellstr(get(hObject,'String')) returns refCelBodyCombo contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from refCelBodyCombo
-
+% Hints: contents = cellstr(get(hObject,'String')) returns refFrameTypeCombo contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from refFrameTypeCombo
+    updateFrameChange(handles);
 
 % --- Executes during object creation, after setting all properties.
-function refCelBodyCombo_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to refCelBodyCombo (see GCBO)
+function refFrameTypeCombo_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to refFrameTypeCombo (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -196,3 +215,102 @@ function refCelBodyCombo_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on button press in setFrameOptionsButton.
+function setFrameOptionsButton_Callback(hObject, eventdata, handles)
+% hObject    handle to setFrameOptionsButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    curFrame = getappdata(handles.lvd_EditCalculusObjGUI,'frame');
+    curFrame = curFrame.editFrameDialogUI(EditReferenceFrameContextEnum.ForState);
+    
+    setappdata(handles.lvd_EditCalculusObjGUI,'frame',curFrame);
+    
+    handles.setFrameOptionsButton.Tooltip = sprintf('Current Frame: %s', curFrame.getNameStr());
+    handles.refFrameNameLabel.String = sprintf('%s', curFrame.getNameStr());
+    handles.refFrameNameLabel.TooltipString = sprintf('%s', curFrame.getNameStr());
+
+
+function updateFrameChange(handles)
+    lvdData = getappdata(handles.lvd_EditCalculusObjGUI,'lvdData');
+    celBodyData = lvdData.celBodyData;
+
+    refEnumListBoxStr = ReferenceFrameEnum.getListBoxStr();
+    selFrameTypeInd = handles.refFrameTypeCombo.Value;
+    refFrameEnum = ReferenceFrameEnum.getEnumForListboxStr(refEnumListBoxStr{selFrameTypeInd});
+
+%             if(not(isempty(newFrame)) && newFrame.typeEnum ~= refFrameEnum)
+%                 refFrameEnum = newFrame.typeEnum;
+%                 app.refFrameTypeCombo.Value = ReferenceFrameEnum.getIndForName(refFrameEnum.name);
+%             end
+
+    switch refFrameEnum
+        case ReferenceFrameEnum.BodyCenteredInertial
+            bodyInfo = getSelectedBodyInfo(handles);            
+
+            newFrame = bodyInfo.getBodyCenteredInertialFrame();
+
+        case ReferenceFrameEnum.BodyFixedRotating
+            bodyInfo = getSelectedBodyInfo(handles);
+
+            newFrame = bodyInfo.getBodyFixedFrame();
+
+        case ReferenceFrameEnum.TwoBodyRotating            
+            bodyInfo = getSelectedBodyInfo(handles);
+            if(not(isempty(bodyInfo.childrenBodyInfo)))
+                primaryBody = bodyInfo;
+                secondaryBody = bodyInfo.childrenBodyInfo(1);
+            else
+                primaryBody = bodyInfo.getParBodyInfo();
+                secondaryBody = bodyInfo;
+            end
+
+            originPt = TwoBodyRotatingFrameOriginEnum.Primary;
+
+            newFrame = TwoBodyRotatingFrame(primaryBody, secondaryBody, originPt, celBodyData);
+
+        case ReferenceFrameEnum.UserDefined
+            numFrames = lvdData.geometry.refFrames.getNumRefFrames();
+            if(numFrames >= 1)
+                geometricFrame = AbstractGeometricRefFrame.empty(1,0);
+                for(i=1:numFrames)
+                    frame = lvdData.geometry.refFrames.getRefFrameAtInd(i);
+                    if(frame.isVehDependent() == false)
+                        geometricFrame = frame;
+                        break;
+                    end
+                end
+
+                if(not(isempty(geometricFrame)))
+                    newFrame = UserDefinedGeometricFrame(geometricFrame, lvdData);
+                else
+                    bodyInfo = getSelectedBodyInfo(handles);
+                    newFrame = bodyInfo.getBodyCenteredInertialFrame();
+
+                    warndlg('There are no geometric frames available which are not dependent on vehicle properties.  A body-centered inertial frame will be selected instead.');
+                end
+            else
+                bodyInfo = getSelectedBodyInfo(handles);
+                newFrame = bodyInfo.getBodyCenteredInertialFrame();
+
+                warndlg('There are no geometric frames available which are not dependent on vehicle properties.  A body-centered inertial frame will be selected instead.');
+            end
+
+        otherwise
+            error('Unknown reference frame type: %s', string(refFrameEnum));                
+    end
+
+    if(not(isempty(newFrame)) && newFrame.typeEnum ~= refFrameEnum)
+        refFrameEnum = newFrame.typeEnum;
+        handles.refFrameTypeCombo.Value = ReferenceFrameEnum.getIndForName(refFrameEnum.name);
+    end
+
+    setappdata(handles.lvd_EditCalculusObjGUI,'frame', newFrame);
+    handles.setFrameOptionsButton.TooltipString = sprintf('Current Frame: %s', newFrame.getNameStr());
+    handles.refFrameNameLabel.String = sprintf('%s', newFrame.getNameStr());
+    handles.refFrameNameLabel.TooltipString = sprintf('%s', newFrame.getNameStr());
+    
+function bodyInfo = getSelectedBodyInfo(handles)
+    curFrame = getappdata(handles.lvd_EditCalculusObjGUI,'frame');
+    bodyInfo = curFrame.getOriginBody();

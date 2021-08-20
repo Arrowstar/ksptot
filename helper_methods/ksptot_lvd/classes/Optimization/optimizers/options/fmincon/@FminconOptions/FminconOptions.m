@@ -34,6 +34,7 @@ classdef FminconOptions < matlab.mixin.SetGet
         subproblemAlgorithm FminconIpSubprobAlgEnum = FminconIpSubprobAlgEnum.Factorization;
         tolProjCG(1,1) double = 0.01;
         tolProjCGAbs(1,1) double = 1E-10;
+        barrierParamUpdate FminconBarrierParamUpdateEnum = FminconBarrierParamUpdateEnum.PredictorCorrector;
         
         %Active-Set options
         funcTol(1,1) double = 1E-10;
@@ -131,7 +132,8 @@ classdef FminconOptions < matlab.mixin.SetGet
                                    'FiniteDifferenceType', obj.finDiffType.optionStr, ...
                                    'TypicalX', typicalX, ...
                                    'HessianApproximation', obj.hessianApproxAlg.optionStr, ...
-                                   'SubproblemAlgorithm', obj.subproblemAlgorithm.optionStr);    
+                                   'SubproblemAlgorithm', obj.subproblemAlgorithm.optionStr, ...
+                                   'BarrierParamUpdate', obj.barrierParamUpdate.optionStr);    
         end
         
         function tf = usesParallel(obj)

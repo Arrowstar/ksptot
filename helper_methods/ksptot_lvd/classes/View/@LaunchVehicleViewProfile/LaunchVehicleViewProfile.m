@@ -24,7 +24,7 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         dispZAxis(1,1) logical = false;
         
         %trajectory view options
-        trajEvtsViewType(1,1) ViewEventsTypeEnum = ViewEventsTypeEnum.SoIChunk %either chunked by event/SoI or all
+        trajEvtsViewType(1,1) ViewEventsTypeEnum = ViewEventsTypeEnum.All %either chunked by event/SoI or all
         frame AbstractReferenceFrame
         
         %body fixed options
@@ -57,6 +57,21 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         groundObjsToPlot(1,:) LaunchVehicleGroundObject
         showGndTracks(1,1) logical = true;
         showGrdObjLoS(1,1) logical = true;
+
+        %geometric points
+        pointsToPlot(1,:) AbstractGeometricPoint
+        
+        %geometric vectors
+        vectorsToPlot(1,:) AbstractGeometricVector
+        
+        %geometric reference frames
+        refFramesToPlot(1,:) AbstractGeometricRefFrame
+        
+        %geometric angles
+        anglesToPlot(1,:) AbstractGeometricAngle
+        
+        %geometric planes
+        planesToPlot(1,:) AbstractGeometricPlane
         
         %central body transform
         hCBodySurfXForm = matlab.graphics.GraphicsPlaceholder();
@@ -79,6 +94,14 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         markerGrdObjData(1,:) LaunchVehicleViewProfileGroundObjData = LaunchVehicleViewProfileGroundObjData.empty(1,0);
         sunLighting(1,:) LaunchVehicleViewProfileSunLighting = LaunchVehicleViewProfileSunLighting.empty(1,0);
         centralBodyData(1,:) LaunchVehicleViewProfileCentralBodyData = LaunchVehicleViewProfileCentralBodyData.empty(1,0);
+        
+        pointData(1,:) LaunchVehicleViewProfilePointData = LaunchVehicleViewProfilePointData.empty(1,0);
+        vectorData(1,:) LaunchVehicleViewProfileVectorData = LaunchVehicleViewProfileVectorData.empty(1,0);
+        refFrameData(1,:) LaunchVehicleViewProfileRefFrameData = LaunchVehicleViewProfileRefFrameData.empty(1,0);
+        angleData(1,:) LaunchVehicleViewProfileAngleData = LaunchVehicleViewProfileAngleData.empty(1,0);
+        planeData(1,:) LaunchVehicleViewProfilePlaneData = LaunchVehicleViewProfilePlaneData.empty(1,0);
+        
+        userDefinedRefFrames(1,:) 
     end
     
     properties(Access=private)
@@ -94,9 +117,29 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
             obj.groundObjsToPlot([obj.groundObjsToPlot] == grdObj) = [];
         end
         
-        function plotTrajectory(obj, lvdData, handles)
+        function removeGeoPointFromList(obj, point)
+            obj.pointsToPlot([obj.pointsToPlot] == point) = [];
+        end
+        
+        function removeGeoVectorFromList(obj, vector)
+            obj.vectorsToPlot([obj.vectorsToPlot] == vector) = [];
+        end
+        
+        function removeGeoRefFrameFromList(obj, refFrame)
+            obj.refFramesToPlot([obj.refFramesToPlot] == refFrame) = [];
+        end
+        
+        function removeGeoAngleFromList(obj, angle)
+            obj.anglesToPlot([obj.anglesToPlot] == angle) = [];
+        end
+        
+        function removeGeoPlaneFromList(obj, plane)
+            obj.planesToPlot([obj.planesToPlot] == plane) = [];
+        end
+        
+        function plotTrajectory(obj, lvdData, handles, app)
 %             profile on;
-            obj.generic3DTrajView.plotStateLog(obj.orbitNumToPlot, lvdData, obj, handles);
+            obj.generic3DTrajView.plotStateLog(obj.orbitNumToPlot, lvdData, obj, handles, app);
 %             profile viewer;
         end
         
@@ -106,34 +149,7 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
             
             for(j=1:length(subStateLogs))
                 if(size(subStateLogs{j},1) > 0)
-                    times = subStateLogs{j}(:,1);
-                    rVects = subStateLogs{j}(:,2:4);
-                    
-                    evtNum = subStateLogs{j}(1,13);
-                    evt = evts(evtNum);
-                    evtColor = evt.colorLineSpec.color;
-                    
-                    switch(evt.plotMethod)
-                        case EventPlottingMethodEnum.PlotContinuous
-                            %nothing
-                            
-                        case EventPlottingMethodEnum.SkipFirstState
-                            times = times(2:end);
-                            rVects = rVects(2:end,:);
-                            
-                        case EventPlottingMethodEnum.DoNotPlot
-                            times = [];
-                            rVects = [];
-                            
-                        otherwise
-                            error('Unknown event plotting method: %s', EventPlottingMethodEnum.DoNotPlot.name);
-                    end
-                    
-                    [times,ia,~] = unique(times,'stable','rows');
-                    rVects = rVects(ia,:);
-                    
-                    [times,I] = sort(times);
-                    rVects = rVects(I,:);
+                    [times, rVects, evtColor] = LaunchVehicleViewProfile.parseTrajDataFromSubStateLogs(subStateLogs, j, evts);
                     
                     if(length(unique(times)) > 1)
                         trajMarkerData.addData(times, rVects, evtColor);
@@ -161,8 +177,6 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
 %             parfor(i=1:length(obj.bodiesToPlot), M)
             for(i=1:length(obj.bodiesToPlot))
                 bodyToPlot = obj.bodiesToPlot(i); 
-                timesInner = {};
-                rVectsInner = {};
                 
                 if(bodyToPlot == viewInFrame.getOriginBody()) 
                     continue;
@@ -183,67 +197,47 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                 
                 bodyMarkerData = obj.createBodyData(bodyToPlot, viewInFrame, obj.bodyPlotStyle, showSoI, meshEdgeAlpha);
                 
+                times = [];
                 for(j=1:length(subStateLogs))
                     if(size(subStateLogs{j},1) > 0)
-                        times = subStateLogs{j}(:,1);
-                        
-                        evtNum = subStateLogs{j}(1,13);
-                        evt = evts(evtNum);
-                        
-                        if(isfinite(bodyOrbitPeriod))
-                            numPeriods = (max(times) - min(times))/bodyOrbitPeriod;
-                            times = linspace(min(times), max(times), max(10*numPeriods,length(times)));
-                        else
-                            times = linspace(min(times), max(times), length(times));
-                        end
-                        
-                        states = bodyToPlot.getElementSetsForTimes(times);
-                        if(numel(states) >= 1)
-                            doConversion = states(1).frame ~= viewInFrame;
-                        else
-                            doConversion = true;
-                        end
-                        
-                        for(k=1:length(states))
-                            if(doConversion)
-                                states(k) = states(k).convertToFrame(viewInFrame);
-                            end
-                        end
-                        
-                        rVects = [states.rVect];
-                        
-                        switch(evt.plotMethod)
-                            case EventPlottingMethodEnum.PlotContinuous
-                                %nothing
-
-                            case EventPlottingMethodEnum.SkipFirstState
-                                times = times(2:end);
-                                rVects = rVects(2:end,:);
-
-                            case EventPlottingMethodEnum.DoNotPlot
-                                times = [];
-                                rVects = [];
-
-                            otherwise
-                                error('Unknown event plotting method: %s', evt.plotMethod.name);
-                        end
-                        
-                        [times,ia,~] = unique(times,'stable');
-                        rVects = rVects(:,ia);
-
-                        [times,I] = sort(times);
-                        rVects = rVects(:,I);
-                        
-                        timesInner{j} = times;
-                        rVectsInner{j} = rVects;
+                        times = [times; subStateLogs{j}(:,1)]; %#ok<AGROW>
                     end
                 end
-
-                timesArr{i} = timesInner;
-                rVectArr{i} = rVectsInner;
                 
-                bodyColorsArr{i} = bColorRGB;
-                bodyMarkerDataObjs{i} = bodyMarkerData;
+                if(isfinite(bodyOrbitPeriod))
+                    numPeriods = (max(times) - min(times))/bodyOrbitPeriod;
+                    times = linspace(min(times), max(times), max(10*numPeriods,length(times)));
+                else
+                    times = linspace(min(times), max(times), length(times));
+                end
+
+                states = bodyToPlot.getElementSetsForTimes(times);
+                if(numel(states) >= 1)
+                    doConversion = states(1).frame ~= viewInFrame;
+                else
+                    doConversion = true;
+                end
+
+                if(doConversion)
+                    states = convertToFrame(states, viewInFrame);
+                end
+
+                rVects = [states.rVect];
+
+                [times,ia,~] = unique(times,'stable');
+                rVects = rVects(:,ia);
+
+                [times,I] = sort(times);
+                rVects = rVects(:,I);
+
+                timesInner = times; 
+                rVectsInner = rVects; 
+                
+                timesArr{i} = timesInner; %#ok<AGROW>
+                rVectArr{i} = rVectsInner; %#ok<AGROW>
+                
+                bodyColorsArr{i} = bColorRGB; %#ok<AGROW>
+                bodyMarkerDataObjs{i} = bodyMarkerData; %#ok<AGROW>
             end
 %             profile viewer;
             
@@ -256,14 +250,12 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                 if(not(isempty(timesInner)))
                     obj.markerBodyData(end+1) = bodyMarkerData;
                     
-                    for(j=1:length(timesInner))
-                        times = timesInner{j};
-                        rVects = rVectsInner{j};
+                    times = timesInner;
+                    rVects = rVectsInner;
 
-                        if(length(unique(times)) > 1)
-                            plot3(dAxes, rVects(1,:), rVects(2,:), rVects(3,:), '-', 'Color',bColorRGB, 'LineWidth',1.5);
-                            bodyMarkerData.addData(times, rVects);
-                        end
+                    if(length(unique(times)) > 1)
+                        plot3(dAxes, rVects(1,:), rVects(2,:), rVects(3,:), '-', 'Color',bColorRGB, 'LineWidth',1.5);
+                        bodyMarkerData.addData(times, rVects);
                     end
                 end
             end
@@ -285,23 +277,27 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                 for(i=1:length(evts))
                     evt = evts(i);
                     evtStateLogEntries = lvdStateLogEntries([lvdStateLogEntries.event] == evt);
-                                                            
+                    evtStateLogEntries = evtStateLogEntries(:)';           
+                    
+                    cartElem = convertToFrame(getCartesianElementSetRepresentation(evtStateLogEntries), viewInFrame);
+                    
                     times = [evtStateLogEntries.time];
-                    rVects = NaN(3, length(evtStateLogEntries));
+%                     rVects = NaN(3, length(evtStateLogEntries));
+                    rVects = [cartElem.rVect];
                     rotMatsBodyToView = NaN(3, 3, length(evtStateLogEntries));
                     for(j=1:length(evtStateLogEntries))
                         %get body position in view frame
                         entry = evtStateLogEntries(j);
-                        cartElem = entry.getCartesianElementSetRepresentation();
-                        cartElem = cartElem.convertToFrame(viewInFrame);
+%                         cartElem = entry.getCartesianElementSetRepresentation();
+%                         cartElem = cartElem.convertToFrame(viewInFrame);
 
-                        rVects(:,j) = cartElem.rVect;
+%                         rVects(:,j) = cartElem.rVect;
 
                         %get body axes in view frame
                         rotMatBodyToInertial = entry.steeringModel.getBody2InertialDcmAtTime(entry.time, entry.position, entry.velocity, entry.centralBody);
 
-                        [~, ~, ~, rotMatToInertial12] = viewInFrame.getOffsetsWrtInertialOrigin(entry.time);
-                        [~, ~, ~, rotMatToInertial32] = entry.centralBody.getBodyCenteredInertialFrame().getOffsetsWrtInertialOrigin(entry.time);
+                        [~, ~, ~, rotMatToInertial12] = viewInFrame.getOffsetsWrtInertialOrigin(entry.time, cartElem(j));
+                        [~, ~, ~, rotMatToInertial32] = entry.centralBody.getBodyCenteredInertialFrame().getOffsetsWrtInertialOrigin(entry.time, cartElem(j));
 
                         rotMatsBodyToView(:,:,j) = rotMatToInertial12' * rotMatToInertial32 * rotMatBodyToInertial; %body to inertial -> inertial to inertial -> inertial to view frame
                     end
@@ -320,11 +316,13 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
 
                         case EventPlottingMethodEnum.SkipFirstState
                             times = times(2:end);
-                            rVects = rVects(2:end,:);
+                            rVects = rVects(:,2:end);
+                            rotMatsBodyToView = rotMatsBodyToView(:,:,2:end);
 
                         case EventPlottingMethodEnum.DoNotPlot
                             times = [];
                             rVects = [];
+                            rotMatsBodyToView = [];
 
                         otherwise
                             error('Unknown event plotting method: %s', EventPlottingMethodEnum.DoNotPlot.name);
@@ -350,26 +348,37 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                     for(j=1:length(evts))
                         evt = evts(j);
                         evtStateLogEntries = lvdStateLogEntries([lvdStateLogEntries.event] == evt);
+                        numEntries = length(evtStateLogEntries);
                         
-                        times = [];
-                        rVectsGrdObj = [];
-                        rVectsSc = [];
-                        for(k=1:length(evtStateLogEntries))
-                            entry = evtStateLogEntries(k);
-                            scCartElem = entry.getCartesianElementSetRepresentation();
-                            scCartElem = scCartElem.convertToFrame(viewInFrame);
+                        scCartElem = convertToFrame(getCartesianElementSetRepresentation(evtStateLogEntries), viewInFrame);
+                        allTimes = [scCartElem.time];
+                        
+                        elemSet = GeographicElementSet.empty(1,0);
+                        
+                        for(k=1:numEntries)
+%                             entry = evtStateLogEntries(k);
+%                             scCartElem = entry.getCartesianElementSetRepresentation();
+%                             scCartElem = scCartElem.convertToFrame(viewInFrame);
                             
-                            time = entry.time;
+%                             time = entry.time;
                             
-                            elemSet = grdObj.getStateAtTime(time);
-                            if(not(isempty(elemSet)))
-                                elemSet = elemSet.convertToCartesianElementSet().convertToFrame(viewInFrame);
-                                
-                                times(end+1) = time;
-                                rVectsGrdObj(:,end+1) = elemSet.rVect;
-                                rVectsSc(:,end+1) = scCartElem.rVect;
+                            ge = grdObj.getStateAtTime(allTimes(k));
+                            if(not(isempty(ge)))
+                                elemSet(end+1) = ge; %#ok<AGROW>
                             end
+%                             if(not(isempty(elemSet)))
+%                                 elemSet = elemSet.convertToCartesianElementSet().convertToFrame(viewInFrame);
+%                                 
+%                                 times(end+1) = allTimes(i);
+%                                 rVectsGrdObj(:,end+1) = elemSet.rVect;
+%                                 rVectsSc(:,end+1) = scCartElem(i).rVect;
+%                             end
                         end
+                        elemSet = convertToFrame(convertToCartesianElementSet(elemSet), viewInFrame);
+
+                        times = [elemSet.time];
+                        rVectsGrdObj = [elemSet.rVect];
+                        rVectsSc= [scCartElem.rVect];
                         
                         [times,ia,~] = unique(times);
                         rVectsGrdObj = rVectsGrdObj(:,ia);
@@ -407,31 +416,34 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
             end
         end
         
-        function configureTimeSlider(obj, minTime, maxTime, subStateLogs, handles)
-            timeSlider = handles.jDispAxesTimeSlider;
-            curSliderTime = timeSlider.getValue();
-            if(not(isfinite(minTime) && isfinite(maxTime)))
+        function configureTimeSlider(obj, minTime, maxTime, subStateLogs, handles, app)
+            timeSlider = app.DispAxesTimeSlider;
+            curSliderTime = timeSlider.Value;
+            if(not(isfinite(minTime) && isfinite(maxTime)) || ...
+               minTime == maxTime)
                 onlyTime = subStateLogs{1}(1,1);
                 
                 minTime = onlyTime;
                 maxTime = onlyTime + 1;
             end
-            timeSlider.setMinimum(minTime);
-            timeSlider.setMaximum(maxTime);
-            timeSlider.setMajorTickSpacing((maxTime - minTime)/10);
-            timeSlider.setMinorTickSpacing((maxTime - minTime)/100);
+            timeSlider.Limits = [minTime maxTime];
+            timeSlider.MajorTicks = linspace(minTime, maxTime, 10);
+            timeSlider.MinorTicks = linspace(minTime, maxTime, 100);
+            timeSlider.MajorTickLabels = "";
+%             timeSlider.setMajorTickSpacing((maxTime - minTime)/10);
+%             timeSlider.setMinorTickSpacing((maxTime - minTime)/100);
             
             if(curSliderTime > maxTime)
-                timeSlider.setValue(maxTime);
+                timeSlider.Value = maxTime;
             elseif(curSliderTime < minTime)
-                timeSlider.setValue(minTime);
+                timeSlider.Value = minTime;
             end
                        
             lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
-            timeSliderCb = @(src,evt) timeSliderStateChanged(src,evt, lvdData, handles);
-            set(handles.hDispAxesTimeSlider, 'StateChangedCallback', timeSliderCb); 
+            timeSliderCb = @(src,evt) timeSliderStateChanged(src,evt, lvdData, handles, app);
+            timeSlider.ValueChangingFcn = timeSliderCb; 
             
-            handles.hDispAxesTimeSlider.StateChangedCallback(timeSlider, true);
+            timeSlider.ValueChangingFcn(timeSlider, true);
         end
         
         function trajData = createTrajData(obj)
@@ -446,8 +458,117 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         function bodyData = createBodyData(obj, bodyInfo, viewInFrame, bodyPlotStyle, showSoI,meshEdgeAlpha)
             bodyData = LaunchVehicleViewProfileBodyData(bodyInfo, viewInFrame, bodyPlotStyle, showSoI, meshEdgeAlpha);
             obj.markerBodyData(end+1) = bodyData;
+       end
+        
+        function createPointData(obj, viewFrame, subStateLogs, evts)
+            obj.clearPointData();
+            points = obj.pointsToPlot;
+            
+            for(i=1:length(points))
+                obj.pointData(end+1) = LaunchVehicleViewProfilePointData(points(i), viewFrame);
+            end
+            
+            for(i=1:length(subStateLogs))
+                if(size(subStateLogs{i},1) > 0)
+                    [times, rVects, ~, vVects] = LaunchVehicleViewProfile.parseTrajDataFromSubStateLogs(subStateLogs, i, evts);
+                    
+                    if(length(unique(times)) > 1)
+                        for(j=1:length(obj.pointData))
+                            obj.pointData(j).addData(times, rVects, vVects);
+                        end
+                    end
+                end
+            end
         end
         
+        function createVectorData(obj, viewFrame, subStateLogs, evts)
+            obj.clearVectorData();
+            vectors = obj.vectorsToPlot;
+            
+            for(i=1:length(vectors))
+                obj.vectorData(end+1) = LaunchVehicleViewProfileVectorData(vectors(i), viewFrame);
+            end
+            
+            for(i=1:length(subStateLogs))
+                if(size(subStateLogs{i},1) > 0)
+                    [times, rVects, ~, vVects] = LaunchVehicleViewProfile.parseTrajDataFromSubStateLogs(subStateLogs, i, evts);
+                    
+                    if(length(unique(times)) > 1)
+                        for(j=1:length(obj.vectorData))
+                            obj.vectorData(j).addData(times, rVects, vVects);
+                        end
+                    end
+                end
+            end
+        end
+        
+        function createRefFrameData(obj, viewFrame, subStateLogs, evts)
+            obj.clearRefFrameData();
+            refFrames = obj.refFramesToPlot;
+            
+            for(i=1:length(refFrames))
+                obj.refFrameData(end+1) = LaunchVehicleViewProfileRefFrameData(refFrames(i), viewFrame);
+            end
+            
+            for(i=1:length(subStateLogs))
+                if(size(subStateLogs{i},1) > 0)
+                    [times, rVects, ~, vVects] = LaunchVehicleViewProfile.parseTrajDataFromSubStateLogs(subStateLogs, i, evts);
+                    
+                    if(length(unique(times)) > 1)
+                        for(j=1:length(obj.refFrameData))
+                            obj.refFrameData(j).addData(times, rVects, vVects);
+                        end
+                    end
+                end
+            end
+        end
+        
+        function createAngleData(obj, viewFrame, subStateLogs, evts)
+            obj.clearAngleData();
+            angles = obj.anglesToPlot;
+            
+            for(i=1:length(angles))
+                obj.angleData(end+1) = LaunchVehicleViewProfileAngleData(angles(i), viewFrame);
+            end
+            
+            for(i=1:length(subStateLogs))
+                if(size(subStateLogs{i},1) > 0)
+                    [times, rVects, ~, vVects] = LaunchVehicleViewProfile.parseTrajDataFromSubStateLogs(subStateLogs, i, evts);
+                    
+                    if(length(unique(times)) > 1)
+                        for(j=1:length(obj.angleData))
+                            obj.angleData(j).addData(times, rVects, vVects);
+                        end
+                    end
+                end
+            end
+        end
+        
+        function createPlaneData(obj, viewFrame, subStateLogs, evts)
+            obj.clearPlaneData();
+            planes = obj.planesToPlot;
+
+%             h = findobj('Tag','ma_LvdMainGUI');
+%             lvdData = getappdata(h,'lvdData');
+%             planes = lvdData.geometry.planes.planes;
+            
+            for(i=1:length(planes))
+                obj.planeData(end+1) = LaunchVehicleViewProfilePlaneData(planes(i), viewFrame);
+            end
+            
+            for(i=1:length(subStateLogs))
+                if(size(subStateLogs{i},1) > 0)
+                    [times, rVects, ~, vVects] = LaunchVehicleViewProfile.parseTrajDataFromSubStateLogs(subStateLogs, i, evts);
+                    
+                    if(length(unique(times)) > 1)
+                        for(j=1:length(obj.planeData))
+                            obj.planeData(j).addData(times, rVects, vVects);
+                        end
+                    end
+                end
+            end
+        end
+               
         function clearAllTrajData(obj)
             obj.markerTrajData = LaunchVehicleViewProfileTrajectoryData.empty(1,0);
         end
@@ -462,6 +583,72 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         
         function clearAllGrdObjData(obj)
             obj.markerGrdObjData = LaunchVehicleViewProfileGroundObjData.empty(1,0);
+        end
+        
+        function clearPointData(obj)
+            obj.pointData = LaunchVehicleViewProfilePointData.empty(1,0);
+        end
+        
+        function clearVectorData(obj)
+            obj.vectorData = LaunchVehicleViewProfileVectorData.empty(1,0);
+        end
+        
+        function clearRefFrameData(obj)
+            obj.refFrameData = LaunchVehicleViewProfileRefFrameData.empty(1,0);
+        end
+        
+        function clearAngleData(obj)
+            obj.angleData = LaunchVehicleViewProfileAngleData.empty(1,0);
+        end
+        
+        function clearPlaneData(obj)
+            obj.planeData = LaunchVehicleViewProfilePlaneData.empty(1,0);
+        end
+    end
+    
+    methods(Static, Access=private)
+        function [times, rVects, evtColor, vVects] = parseTrajDataFromSubStateLogs(subStateLogs, j, evts)
+            times = subStateLogs{j}(:,1);
+            rVects = subStateLogs{j}(:,2:4);
+            vVects = subStateLogs{j}(:,5:7);
+
+            evtNum = subStateLogs{j}(1,13);
+            if(isempty(evtNum) || isnan(evtNum))
+                times = [];
+                rVects = [];
+                evtColor = [];
+                vVects = [];
+                
+                return;
+            end
+            evt = evts(evtNum);
+            evtColor = evt.colorLineSpec.color;
+
+            switch(evt.plotMethod)
+                case EventPlottingMethodEnum.PlotContinuous
+                    %nothing
+
+                case EventPlottingMethodEnum.SkipFirstState
+                    times = times(2:end);
+                    rVects = rVects(2:end,:);
+                    vVects = vVects(2:end,:);
+
+                case EventPlottingMethodEnum.DoNotPlot
+                    times = [];
+                    rVects = [];
+                    vVects = [];
+
+                otherwise
+                    error('Unknown event plotting method: %s', EventPlottingMethodEnum.DoNotPlot.name);
+            end
+
+            [times,ia,~] = unique(times,'stable','rows');
+            rVects = rVects(ia,:);
+            vVects = vVects(ia,:);
+
+            [times,I] = sort(times);
+            rVects = rVects(I,:);
+            vVects = vVects(I,:);
         end
     end
 end

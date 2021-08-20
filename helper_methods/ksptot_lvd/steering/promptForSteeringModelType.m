@@ -29,6 +29,12 @@ function steeringModel = promptForSteeringModelType(selectedEnum)
                 
             case SteerModelTypeEnum.LinearTangentAngles
                 steeringModel = GenericLinearTangentSteeringModel.getDefaultSteeringModel();
+
+            case SteerModelTypeEnum.SumOfSinesAngles
+                steeringModel = GenericSumOfSinesSteeringModel.getDefaultSteeringModel();
+                
+            case SteerModelTypeEnum.SelectableModelAngles
+                steeringModel = GenericSelectableSteeringModel.getDefaultSteeringModel();
                 
             otherwise
                 error('Unknown steering model type: %s', enum.name);

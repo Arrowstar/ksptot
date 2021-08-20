@@ -1,11 +1,15 @@
 function lvd_executeOptimProblem(celBodyData, writeOutput, problem, recorder, callOutputFcn)
     global options_gravParamType;
-    initX = [];
+    initX = []; %#ok<NASGU>
     
-    if(isfield(struct(problem.options),'UseParallel'))
+    try
         useParallel = problem.options.UseParallel;
-    else
-        useParallel = problem.UseParallel;
+    catch ME %#ok<NASGU>
+        if(isprop(problem.options,'UseParallel') || isfield(struct(problem.options),'UseParallel'))
+            useParallel = problem.options.UseParallel;
+        else
+            useParallel = problem.UseParallel;
+        end
     end
     
     if(useParallel)
@@ -34,6 +38,9 @@ function lvd_executeOptimProblem(celBodyData, writeOutput, problem, recorder, ca
     elseif(strcmpi(problem.solver,'ipopt'))
         [x,info] = ipopt(problem.x0, problem.funcs, problem.options);
         exitflag = info.status;
+        
+    elseif(strcmpi(problem.solver,'surrogateopt'))
+        [x,fval,exitflag,output,trials] = surrogateopt(problem);
 
     else
         error('Unknown optimizer function: %s', problem.solver);

@@ -2,6 +2,11 @@ function eventLog = ma_executeCoast_goto_ut(ut, initialState, eventNum, consider
 %ma_executeCoast_goto_ut Summary of this function goes here
 %   Detailed explanation goes here 
     global number_state_log_entries_per_coast;
+    
+    if(isempty(number_state_log_entries_per_coast))
+        number_state_log_entries_per_coast = 100; %intentionally lower than the default of 1000
+    end
+    
 	numPts = number_state_log_entries_per_coast;
        
     utINI = initialState(1);

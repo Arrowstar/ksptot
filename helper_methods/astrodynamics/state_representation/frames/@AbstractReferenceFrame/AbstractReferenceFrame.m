@@ -6,8 +6,16 @@ classdef (Abstract) AbstractReferenceFrame < matlab.mixin.SetGet & matlab.mixin.
         typeEnum
     end
     
+    properties(Transient)
+        timeCache(1,1) double = NaN
+        posOffsetOriginCache(3,1) double
+        velOffsetOriginCache(3,1) double
+        angVelWrtOriginCache(3,1) double
+        rotMatToInertialCache(3,3) double
+    end
+    
     methods
-        [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = getOffsetsWrtInertialOrigin(obj, time)
+        [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = getOffsetsWrtInertialOrigin(obj, time, vehElemSet)
         
         bodyInfo = getOriginBody(obj)
         
@@ -15,7 +23,7 @@ classdef (Abstract) AbstractReferenceFrame < matlab.mixin.SetGet & matlab.mixin.
         
         nameStr = getNameStr(obj)
         
-        editFrameDialogUI(obj)
+        editFrameDialogUI(obj, context)
     end
     
     methods(Access=protected)

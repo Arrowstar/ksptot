@@ -54,6 +54,8 @@ function lvd_editFminconOptionsGUI_OpeningFcn(hObject, eventdata, handles, varar
 
 % Choose default command line output for lvd_editFminconOptionsGUI
     handles.output = hObject;
+    
+    centerUIFigure(hObject);
 
     fminconOpt = varargin{1};
     setappdata(hObject,'fminconOpt',fminconOpt);
@@ -96,8 +98,8 @@ function handles = populateGUI(handles, fminconOpt)
     handles.useParallelCombo.Value = FminconUseParallelEnum.getIndForName(options.useParallel.name);
     
     setOptsDoubleValueStrInGUI(handles, options, 'optTol', 'optTolText');
-    setOptsDoubleValueStrInGUI(handles, options, 'stepTol', 'conTolText');
-    setOptsDoubleValueStrInGUI(handles, options, 'tolCon', 'stepTolText');
+    setOptsDoubleValueStrInGUI(handles, options, 'tolCon', 'conTolText');
+    setOptsDoubleValueStrInGUI(handles, options, 'stepTol', 'stepTolText');
     
     setOptsDoubleValueStrInGUI(handles, options, 'maxIter', 'maxItersText');
     setOptsDoubleValueStrInGUI(handles, options, 'maxFuncEvals', 'maxFuncEvalsText');

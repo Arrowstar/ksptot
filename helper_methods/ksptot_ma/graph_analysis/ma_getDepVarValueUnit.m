@@ -103,7 +103,7 @@ function [depVarValue, depVarUnit, prevDistTraveled, taskStr, refBodyInfo, other
             depVarUnit = 'km/s';
         case 'Flight Path Angle'
             depVarValue = ma_GAKeplerElementsTask(subLog(i,:), 'flightPathAngle', celBodyData);
-            depVarUnit = 'km/s';
+            depVarUnit = 'deg';
         case 'Longitude (East)'
             depVarValue = ma_GALongLatAltTasks(subLog(i,:), 'long', celBodyData);
             depVarUnit = 'degE';

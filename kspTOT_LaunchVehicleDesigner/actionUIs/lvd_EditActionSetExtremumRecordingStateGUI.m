@@ -55,6 +55,8 @@ function lvd_EditActionSetExtremumRecordingStateGUI_OpeningFcn(hObject, eventdat
     % Choose default command line output for lvd_EditActionSetExtremumRecordingStateGUI
     handles.output = hObject;
     
+    centerUIFigure(hObject);
+    
     action = varargin{1};
     setappdata(hObject,'action',action);
     

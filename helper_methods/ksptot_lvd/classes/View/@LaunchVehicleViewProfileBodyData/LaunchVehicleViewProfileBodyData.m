@@ -75,9 +75,9 @@ classdef LaunchVehicleViewProfileBodyData < matlab.mixin.SetGet
                         obj.markerPlot.Visible = 'on';
                     elseif(obj.plotStyle == ViewProfileBodyPlottingStyle.MeshSphere)
                         if(not(isempty(obj.markerPlot)) && isvalid(obj.markerPlot) && isa(obj.markerPlot, 'matlab.graphics.primitive.Transform'))                            
-                            Mt = makehgtform('translate',[x,y,z]);
+%                             Mt = makehgtform('translate',[x,y,z]);
                             Mr = getBodyXformMatrix(time, obj.bodyInfo, obj.viewInFrame);
-                            set(obj.markerPlot,'Matrix',Mt*Mr);
+                            set(obj.markerPlot,'Matrix',Mr);
                             
                         else
                             hold(hAx,'on');
@@ -99,9 +99,9 @@ classdef LaunchVehicleViewProfileBodyData < matlab.mixin.SetGet
                             
                             obj.createSoIRadii(hAx);
                             
-                            Mt = makehgtform('translate',[x,y,z]);
+%                             Mt = makehgtform('translate',[x,y,z]);
                             Mr = getBodyXformMatrix(time, obj.bodyInfo, obj.viewInFrame);
-                            set(obj.markerPlot,'Matrix',Mt*Mr);
+                            set(obj.markerPlot,'Matrix',Mr);
                             
                             hold(hAx,'off');
                         end

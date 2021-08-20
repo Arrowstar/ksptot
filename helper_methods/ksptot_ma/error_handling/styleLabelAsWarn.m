@@ -1,7 +1,6 @@
 function styleLabelAsWarn(hLabel,warnStr)
 %styleLabelAsWarn Summary of this function goes here
 %   Detailed explanation goes here
-%     outstring = textwrap(hLabel,warnStr);   
     lblStr = strWrapForLabel(hLabel, warnStr);
     
     set(hLabel,'Visible','on');

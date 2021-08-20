@@ -4,24 +4,38 @@ classdef GenericObjectiveFcn < AbstractObjectiveFcn
     
     properties
         event LaunchVehicleEvent
-        targetBodyInfo KSPTOT_BodyInfo
         fcn AbstractConstraint %use abstract constraints because they return values of their functions, too
         scaleFactor (1,1) double = 1;
         
         lvdOptim LvdOptimization
         lvdData LvdData
+        
+        %deprecated
+        targetBodyInfo KSPTOT_BodyInfo
+    end
+    
+    properties(Dependent)
+        frame AbstractReferenceFrame
     end
     
     methods
-        function obj = GenericObjectiveFcn(event, targetBodyInfo, fcn, scaleFactor, lvdOptim, lvdData)
+        function obj = GenericObjectiveFcn(event, frame, fcn, scaleFactor, lvdOptim, lvdData)
             if(nargin > 0)
                 obj.lvdData = lvdData;
                 obj.lvdOptim = lvdOptim;
                 obj.event = event;
                 obj.fcn = fcn;
-                obj.targetBodyInfo = targetBodyInfo;
+                obj.frame = frame;
                 obj.scaleFactor = scaleFactor;
             end
+        end
+        
+        function value = get.frame(obj)
+            value = obj.fcn.frame;
+        end
+        
+        function set.frame(obj, newFrame)
+            obj.fcn.frame = newFrame;
         end
         
         function set.targetBodyInfo(obj, newValue)
@@ -68,12 +82,40 @@ classdef GenericObjectiveFcn < AbstractObjectiveFcn
         end
         
         function tf = usesGroundObj(obj, grdObj)
-            tf = obj.fcn.usesExtremum(grdObj);
+            tf = obj.fcn.usesGroundObj(grdObj);
         end
         
         function tf = usesCalculusCalc(obj, calculusCalc)
             tf = obj.fcn.usesCalculusCalc(calculusCalc);
         end
+        
+        function tf = usesGeometricPoint(obj, point)
+            tf = obj.fcn.usesGeometricPoint(point);
+        end
+        
+        function tf = usesGeometricVector(obj, vector)
+            tf = obj.fcn.usesGeometricVector(vector);
+        end
+        
+        function tf = usesGeometricCoordSys(obj, coordSys)
+            tf = obj.fcn.usesGeometricCoordSys(coordSys);
+        end
+        
+        function tf = usesGeometricRefFrame(obj, refFrame)
+            tf = obj.fcn.usesGeometricRefFrame(refFrame);
+        end
+        
+        function tf = usesGeometricAngle(obj, angle)
+            tf = obj.fcn.usesGeometricAngle(angle);
+        end
+        
+        function tf = usesGeometricPlane(obj, plane)
+            tf = obj.fcn.usesGeometricPlane(plane);
+        end 
+        
+        function tf = usesPlugin(obj, plugin)
+            tf = obj.fcn.usesPlugin(plugin);
+        end 
         
         function event = getRefEvent(obj)
             event = obj.event;
@@ -86,8 +128,14 @@ classdef GenericObjectiveFcn < AbstractObjectiveFcn
 
     methods(Static)
         function objFcn = getDefaultObjFcn(event, refBodyInfo, lvdOptim, lvdData)
+            if(not(isempty(refBodyInfo)))
+                someFrame = refBodyInfo.getBodyCenteredInertialFrame();
+            else
+                someFrame = LvdData.getDefaultInitialBodyInfo(lvdData.celBodyData).getBodyCenteredInertialFrame();
+            end
+            
             fcn = GenericMAConstraint.getDefaultConstraint('Total Spacecraft Mass');
-            objFcn = GenericObjectiveFcn(event, refBodyInfo, fcn, lvdOptim, lvdData);
+            objFcn = GenericObjectiveFcn(event, someFrame, fcn, lvdOptim, lvdData);
         end
         
         function params = getParams()
@@ -95,6 +143,16 @@ classdef GenericObjectiveFcn < AbstractObjectiveFcn
             
             params.usesEvents = true;
             params.usesBodies = true;
+        end
+        
+        function obj = loadobj(obj)
+            if(isempty(obj.frame))
+                if(not(isempty(obj.targetBodyInfo)))
+                    obj.frame = obj.refBody.getBodyCenteredInertialFrame();
+                else
+                    obj.frame = LvdData.getDefaultInitialBodyInfo(obj.lvdData.celBodyData).getBodyCenteredInertialFrame();
+                end
+            end
         end
     end
 end

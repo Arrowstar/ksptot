@@ -54,6 +54,8 @@ function lvd_EditDragPropertiesGUI_OpeningFcn(hObject, eventdata, handles, varar
 
     % Choose default command line output for lvd_EditDragPropertiesGUI
     handles.output = hObject;
+    
+    centerUIFigure(hObject);
 
     lvdData = varargin{1};
     setappdata(hObject,'lvdData',lvdData);

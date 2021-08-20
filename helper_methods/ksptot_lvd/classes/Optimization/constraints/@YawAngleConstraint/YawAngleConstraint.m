@@ -5,9 +5,15 @@ classdef YawAngleConstraint < AbstractConstraint
     properties
         normFact = 1;
         event LaunchVehicleEvent
+        eventNode(1,1) ConstraintStateComparisonNodeEnum = ConstraintStateComparisonNodeEnum.FinalState;
         
         lb(1,1) double = 0;
         ub(1,1) double = 0;
+        
+        evalType(1,1) ConstraintEvalTypeEnum = ConstraintEvalTypeEnum.FixedBounds;
+        stateCompType(1,1) ConstraintStateComparisonTypeEnum = ConstraintStateComparisonTypeEnum.Equals;
+        stateCompEvent LaunchVehicleEvent
+        stateCompNode(1,1) ConstraintStateComparisonNodeEnum = ConstraintStateComparisonNodeEnum.FinalState;
     end
     
     methods
@@ -16,7 +22,7 @@ classdef YawAngleConstraint < AbstractConstraint
             obj.lb = lb;
             obj.ub = ub;  
             
-             obj.id = rand();
+            obj.id = rand();
         end
         
         function [lb, ub] = getBounds(obj)
@@ -24,29 +30,56 @@ classdef YawAngleConstraint < AbstractConstraint
             ub = obj.ub;
         end
         
-        function [c, ceq, value, lwrBnd, uprBnd, type, eventNum] = evalConstraint(obj, stateLog, celBodyData)           
+        function [c, ceq, value, lwrBnd, uprBnd, type, eventNum, valueStateComp] = evalConstraint(obj, stateLog, celBodyData)           
             type = obj.getConstraintType();
-            stateLogEntry = stateLog.getLastStateLogForEvent(obj.event);
+            
+            switch obj.eventNode
+                case ConstraintStateComparisonNodeEnum.FinalState
+                    stateLogEntry = stateLog.getLastStateLogForEvent(obj.event);
+                    
+                case ConstraintStateComparisonNodeEnum.InitialState
+                    stateLogEntry = stateLog.getFirstStateLogForEvent(obj.event);
+                
+                otherwise
+                    error('Unknown event node.');
+            end
             
             ut = stateLogEntry.time;
             rVect = stateLogEntry.position;
             vVect = stateLogEntry.velocity;
             bodyInfo = stateLogEntry.centralBody;
             
-            [rollAngle, pitchAngle, yawAngle] = stateLogEntry.attitude.getEulerAngles(ut, rVect, vVect, bodyInfo);
-            
+            [~, ~, yawAngle] = stateLogEntry.attitude.getEulerAngles(ut, rVect, vVect, bodyInfo);
             value = rad2deg(yawAngle);
                        
-            if(obj.lb == obj.ub)
-                c = [];
-                ceq(1) = value - obj.ub;
+            if(obj.evalType == ConstraintEvalTypeEnum.StateComparison)
+                switch obj.stateCompNode
+                    case ConstraintStateComparisonNodeEnum.FinalState
+                        stateLogEntryStateComp = stateLog.getLastStateLogForEvent(obj.stateCompEvent).deepCopy();
+
+                    case ConstraintStateComparisonNodeEnum.InitialState
+                        stateLogEntryStateComp = stateLog.getFirstStateLogForEvent(obj.stateCompEvent).deepCopy();
+
+                    otherwise
+                        error('Unknown event node.');
+                end
+                
+                cartElem = stateLogEntryStateComp.getCartesianElementSetRepresentation();
+                cartElem = cartElem.convertToFrame(stateLogEntry.centralBody.getBodyCenteredInertialFrame());
+                stateLogEntryStateComp.setCartesianElementSet(cartElem);
+
+                ut = stateLogEntryStateComp.time;
+                rVect = stateLogEntryStateComp.position;
+                vVect = stateLogEntryStateComp.velocity;
+                bodyInfo = stateLogEntryStateComp.centralBody;
+                
+                [~, ~, yawAngle] = stateLogEntryStateComp.attitude.getEulerAngles(ut, rVect, vVect, bodyInfo);
+                valueStateComp = rad2deg(yawAngle);
             else
-                c(1) = obj.lb - value;
-                c(2) = value - obj.ub;
-                ceq = [];
+                valueStateComp = NaN;
             end
-            c = c/obj.normFact;
-            ceq = ceq/obj.normFact;  
+            
+            [c, ceq] = obj.computeCAndCeqValues(value, valueStateComp);  
             
             lwrBnd = obj.lb;
             uprBnd = obj.ub;
@@ -80,6 +113,9 @@ classdef YawAngleConstraint < AbstractConstraint
         
         function tf = usesEvent(obj, event)
             tf = obj.event == event;
+            if(obj.evalType == ConstraintEvalTypeEnum.StateComparison)
+                tf = tf || obj.stateCompEvent == event;
+            end
         end
         
         function tf = usesStopwatch(obj, stopwatch)
@@ -109,6 +145,10 @@ classdef YawAngleConstraint < AbstractConstraint
         
         function addConstraintTf = openEditConstraintUI(obj, lvdData)
             addConstraintTf = lvd_EditGenericMAConstraintGUI(obj, lvdData);
+        end
+        
+        function tf = canUseSparseOutput(obj)
+            tf = true;
         end
     end
     

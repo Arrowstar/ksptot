@@ -13,7 +13,7 @@ classdef SoITransitionTermCondition < AbstractEventTerminationCondition
         end
         
         function evtTermCondFcnHndl = getEventTermCondFuncHandle(obj)            
-            evtTermCondFcnHndl = @(t,y) obj.eventTermCond(t,y, obj.bodyInfo, obj.celBodyData);
+            evtTermCondFcnHndl = @(t,y) obj.eventTermCond(t,y);
         end
         
         function initTermCondition(obj, initialStateLogEntry)
@@ -82,8 +82,8 @@ classdef SoITransitionTermCondition < AbstractEventTerminationCondition
         end
     end
     
-    methods(Static, Access=private)
-        function [value,isterminal,direction] = eventTermCond(t,y, bodyInfo, celBodyData)
+    methods(Access=private)
+        function [value,isterminal,direction] = eventTermCond(obj, t,y)
             ut = t;
             rVect = y(1:3); 
             rVect = rVect(:);
@@ -91,7 +91,7 @@ classdef SoITransitionTermCondition < AbstractEventTerminationCondition
             vVect = y(4:6);
             vVect = vVect(:);
 
-            [soivalue, soiisterminal, soidirection, ~] = getSoITransitionOdeEvents(ut, rVect, vVect, bodyInfo, celBodyData);
+            [soivalue, soiisterminal, soidirection, ~] = getSoITransitionOdeEvents(ut, rVect, vVect, obj.bodyInfo, obj.celBodyData);
             
             [value, I] = min(soivalue);
             isterminal = soiisterminal(I);

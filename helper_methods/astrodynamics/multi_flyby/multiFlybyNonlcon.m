@@ -1,15 +1,24 @@
-function [c, ceq ] = multiFlybyNonlcon(x, fitnessfcn, minRadii, maxRadii, minXferRad, maxDepartVInf, maxArriveVInf)
+function [c, ceq ] = multiFlybyNonlcon(x, fitnessfcn, minRadiiSingle, maxRadiiSingle, minXferRad, maxDepartVInf, maxArriveVInf)
 %multiFlybyNonlcon Summary of this function goes here
 %   Detailed explanation goes here
     ceq = [];
 
     numPop = size(x,1);
     
-    [~, rp, ~, ~, ~, vInfDNorm, ~, vInfArrive, ~, ~, ~, ~, ~, xferRp] = fitnessfcn(x);
-    if(size(rp,2) < size(minRadii,2))
-        c = 0;
-        return;
+    minRadii = [];
+    maxRadii = [];
+%     minRadii = NaN(1, numPop*numel(minRadiiSingle));
+%     maxRadii = NaN(1, numPop*numel(maxRadiiSingle));
+    for(i=1:length(minRadiiSingle))
+        minRadii = [minRadii, minRadiiSingle(i) * ones(1, numPop)]; %#ok<AGROW>
+        maxRadii = [maxRadii, maxRadiiSingle(i) * ones(1, numPop)]; %#ok<AGROW>
     end
+    
+    [~, rp, ~, ~, ~, vInfDNorm, ~, vInfArrive, ~, ~, ~, ~, ~, xferRp] = fitnessfcn(x);
+%     if(size(rp,2) < size(minRadii,2))
+%         c = 0;
+%         return;
+%     end
     
     c = (minRadii(1:length(rp)) - rp)';
     c = reshape(c,numPop,size(c,1)/numPop);
@@ -27,4 +36,6 @@ function [c, ceq ] = multiFlybyNonlcon(x, fitnessfcn, minRadii, maxRadii, minXfe
     c = horzcat(c,c2,c3,c4,c5);
     
     c(isnan(c)) = 1;
+    c(c == -Inf) = -realmax;
+    c(c == Inf) = realmax;
 end

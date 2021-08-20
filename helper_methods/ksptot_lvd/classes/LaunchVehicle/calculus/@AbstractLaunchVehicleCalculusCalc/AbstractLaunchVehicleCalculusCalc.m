@@ -6,10 +6,13 @@ classdef(Abstract) AbstractLaunchVehicleCalculusCalc < matlab.mixin.SetGet & mat
         lvdData LvdData
         
         quantStr char 
-        refBody KSPTOT_BodyInfo
+        frame AbstractReferenceFrame
         unitStr char
         
         id(1,1) double = 0;
+
+        %Deprecated
+        refBody KSPTOT_BodyInfo
     end
     
     methods        
@@ -26,5 +29,17 @@ classdef(Abstract) AbstractLaunchVehicleCalculusCalc < matlab.mixin.SetGet & mat
         function tf = eq(a,b)
             tf = [a.id] == [b.id];
         end
+    end
+    
+    methods(Static)
+        function obj = loadobj(obj)
+            if(isempty(obj.frame))
+                if(not(isempty(obj.refBody)))
+                    obj.frame = obj.refBody.getBodyCenteredInertialFrame();
+                else
+                    obj.frame = LvdData.getDefaultInitialBodyInfo(obj.lvdData.celBodyData).getBodyCenteredInertialFrame();
+                end
+            end
+        end        
     end
 end

@@ -54,6 +54,8 @@ function lvd_builtInIntegratorOptionsGUI_OpeningFcn(hObject, eventdata, handles,
 
     % Choose default command line output for lvd_builtInIntegratorOptionsGUI
     handles.output = hObject;
+    
+    centerUIFigure(hObject);
 
     optionsObj = varargin{1};
     setappdata(hObject,'options',optionsObj);

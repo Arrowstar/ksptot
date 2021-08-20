@@ -1,10 +1,11 @@
-classdef (Abstract) AbstractElementSet < matlab.mixin.SetGet & matlab.mixin.CustomDisplay
+classdef (Abstract) AbstractElementSet < matlab.mixin.SetGet & matlab.mixin.CustomDisplay & matlab.mixin.Copyable
     %AbstractElementSet Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
         time%(1,1) double %UT sec
-        frame AbstractReferenceFrame = AbstractReferenceFrame.empty(1,0);
+        frame  = AbstractReferenceFrame.empty(1,0);
+        createObjOfArray = false;
     end
     
     properties(Abstract, Constant)
@@ -22,40 +23,103 @@ classdef (Abstract) AbstractElementSet < matlab.mixin.SetGet & matlab.mixin.Cust
         
         elemVect = getElementVector(obj)
         
+        %obj is vector of elements, toFrame is scaler
         function convertedElemSet = convertToFrame(obj, toFrame)            
-            if(obj.frame == toFrame)
-                convertedElemSet = obj;
-                return;
-            end
+            obj = obj(:)';
+            num = length(obj);
             
-            cartElemSet = obj.convertToCartesianElementSet();
-            rVect1 = cartElemSet.rVect;
-            vVect1 = cartElemSet.vVect;
+            convertCartElemSet = convertToCartesianElementSet(obj);
+            rVect1 = [convertCartElemSet.rVect];
+            vVect1 = [convertCartElemSet.vVect];
             
-            [posOffsetOrigin12, velOffsetOrigin12, angVelWrtOrigin12, rotMatToInertial12] = obj.frame.getOffsetsWrtInertialOrigin(obj.time);
-            rVect2 = posOffsetOrigin12 + rotMatToInertial12*rVect1;
-            vVect2 = velOffsetOrigin12 + rotMatToInertial12*(vVect1 + crossARH(angVelWrtOrigin12, rVect1));
-            
-            [posOffsetOrigin32, velOffsetOrigin32, angVelWrtOrigin32, rotMatToInertial32] = toFrame.getOffsetsWrtInertialOrigin(obj.time);
-            rVect3 = rotMatToInertial32'*(rVect2 - posOffsetOrigin32);
-            vVect3 = rotMatToInertial32'*(vVect2 - velOffsetOrigin32) - crossARH(angVelWrtOrigin32, rVect3);
-            
-            convertCartElemSet = CartesianElementSet(obj.time, rVect3, vVect3, toFrame);
-            
-            if(isa(obj, 'CartesianElementSet'))
-                convertedElemSet = convertCartElemSet;
-                
-            elseif(isa(obj, 'KeplerianElementSet'))
-                convertedElemSet = convertCartElemSet.convertToKeplerianElementSet();
-                
-            elseif(isa(obj, 'GeographicElementSet'))
-                convertedElemSet = convertCartElemSet.convertToGeographicElementSet();
-                
-            elseif(isa(obj,'UniversalElementSet'))
-                convertedElemSet = convertCartElemSet.convertToUniversalElementSet();
+            if(numel(obj) == 1)
+                framesBool = true;
+                frameToUse = obj.frame;
             else
-                error('Unknown element set: %s', class(obj));
+                frames = [obj.frame];
+                framesBool = frames(1) == frames;
+                frameToUse = frames(1);
             end
+            times = [obj.time];
+                       
+            if(all(framesBool))
+                if(numel(times) == 1 && frameToUse.timeCache == times) %#ok<BDSCI>
+                    posOffsetOrigin12 = frameToUse.posOffsetOriginCache;
+                    velOffsetOrigin12 = frameToUse.velOffsetOriginCache;
+                    angVelWrtOrigin12 = frameToUse.angVelWrtOriginCache;
+                    rotMatToInertial12 = frameToUse.rotMatToInertialCache;
+                else
+                    [posOffsetOrigin12, velOffsetOrigin12, angVelWrtOrigin12, rotMatToInertial12] = getOffsetsWrtInertialOrigin(frameToUse, times, convertCartElemSet);
+                    
+                    if(numel(times) == 1)
+                        frameToUse.timeCache = times;
+                        frameToUse.posOffsetOriginCache = posOffsetOrigin12;
+                        frameToUse.velOffsetOriginCache = velOffsetOrigin12;
+                        frameToUse.angVelWrtOriginCache = angVelWrtOrigin12;
+                        frameToUse.rotMatToInertialCache = rotMatToInertial12;                        
+                    end
+                end
+            else
+                posOffsetOrigin12 = NaN(3,num);
+                velOffsetOrigin12 = NaN(3,num);
+                angVelWrtOrigin12 = NaN(3,num);
+                rotMatToInertial12 = NaN(3,3,num);
+                for(i=1:num)
+                    [posOffsetOrigin12(:,i), velOffsetOrigin12(:,i), angVelWrtOrigin12(:,i), rotMatToInertial12(:,:,i)] = obj(i).frame.getOffsetsWrtInertialOrigin(obj(i).time, convertCartElemSet(i));
+                end
+            end
+
+            rVect2 = posOffsetOrigin12 + squeeze(pagemtimes(rotMatToInertial12, permute(rVect1, [1 3 2])));
+            vVect2 = velOffsetOrigin12 + squeeze(pagemtimes(rotMatToInertial12, (permute(vVect1 + cross(angVelWrtOrigin12, rVect1), [1 3 2]))));
+            
+            if(numel(times) == 1 && toFrame.timeCache == times) %#ok<BDSCI>
+                posOffsetOrigin32 = toFrame.posOffsetOriginCache;
+                velOffsetOrigin32 = toFrame.velOffsetOriginCache;
+                angVelWrtOrigin32 = toFrame.angVelWrtOriginCache;
+                rotMatToInertial32 = toFrame.rotMatToInertialCache;
+            else
+                [posOffsetOrigin32, velOffsetOrigin32, angVelWrtOrigin32, rotMatToInertial32] = getOffsetsWrtInertialOrigin(toFrame, times, convertCartElemSet);
+                
+                if(numel(times) == 1)
+                    toFrame.timeCache = times;
+                    toFrame.posOffsetOriginCache = posOffsetOrigin32;
+                    toFrame.velOffsetOriginCache = velOffsetOrigin32;
+                    toFrame.angVelWrtOriginCache = angVelWrtOrigin32;
+                    toFrame.rotMatToInertialCache = rotMatToInertial32;                        
+                end
+            end
+            
+            rotMatToInertial32_Transpose = permute(rotMatToInertial32, [2 1 3]);
+            rVect3 = squeeze(pagemtimes(rotMatToInertial32_Transpose, permute(rVect2 - posOffsetOrigin32, [1 3 2])));
+            vVect3 = squeeze(pagemtimes(rotMatToInertial32_Transpose, permute(vVect2 - velOffsetOrigin32, [1 3 2]))) - cross(angVelWrtOrigin32, rVect3);
+            
+            createObjOfArrayVal = false;
+            if(numel(obj) == 1 && obj.createObjOfArray == true && obj.typeEnum == ElementSetEnum.CartesianElements) %#ok<BDSCI>
+                createObjOfArrayVal = true;
+            end
+            
+            convertCartElemSet = CartesianElementSet(times, rVect3, vVect3, toFrame, createObjOfArrayVal);            
+            
+            switch obj(1).typeEnum
+                case ElementSetEnum.CartesianElements
+                    convertedElemSet = convertCartElemSet;
+                    
+                case ElementSetEnum.KeplerianElements
+                    convertedElemSet = convertToKeplerianElementSet(convertCartElemSet);
+                    
+                case ElementSetEnum.GeographicElements
+                    convertedElemSet = convertToGeographicElementSet(convertCartElemSet);
+                    
+                case ElementSetEnum.UniversalElements
+                    convertedElemSet = convertToUniversalElementSet(convertCartElemSet);
+                    
+                otherwise
+                    error('Unknown element set: %s', string(obj(1).typeEnum));
+            end
+        end
+        
+        function gmu = getOriginBodyGM(obj)
+            gmu = obj.frame.getOriginBody().gm;
         end
     end
     

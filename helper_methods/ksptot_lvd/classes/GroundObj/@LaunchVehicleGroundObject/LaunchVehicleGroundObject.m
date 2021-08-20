@@ -23,6 +23,10 @@ classdef LaunchVehicleGroundObject < matlab.mixin.SetGet
         groundObjs LaunchVehicleGroundObjectSet
     end
     
+    properties(Constant)
+        emptyGeoElemSet = GeographicElementSet.empty(1,0);
+    end
+    
     properties(Dependent)
         centralBodyInfo
         lvdData
@@ -78,12 +82,14 @@ classdef LaunchVehicleGroundObject < matlab.mixin.SetGet
             numWayPts = length(obj.wayPts);
         end
         
-        function listBoxStr = getWayListboxStr(obj)
+        function [listBoxStr, wayPts] = getWayListboxStr(obj)
             listBoxStr = {};
             
             for(i=1:length(obj.wayPts))
                 listBoxStr{end+1} = sprintf('%02u - %s', i, obj.wayPts(i).getDisplayStr()); %#ok<AGROW>
             end
+            
+            wayPts = obj.wayPts;
         end
         
         function wayPt2 = getNextWaypt(obj, wayPt)
@@ -147,8 +153,8 @@ classdef LaunchVehicleGroundObject < matlab.mixin.SetGet
                     timeFrac = (time - obj.initialTime)/totalWayPtDuration;
                     
                     if(timeFrac < 0 || timeFrac > 1.0)
-                        elemSet = GeographicElementSet.empty(1,0);
-                        
+                        elemSet = obj.emptyGeoElemSet;
+
                         return;
                     end
                     
@@ -171,7 +177,7 @@ classdef LaunchVehicleGroundObject < matlab.mixin.SetGet
         end
         
         function tf = isInUse(obj)
-            
+            tf = obj.lvdData.usesGroundObj(obj);
         end
     end
     

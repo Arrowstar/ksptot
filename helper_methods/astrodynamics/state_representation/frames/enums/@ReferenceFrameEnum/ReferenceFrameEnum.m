@@ -6,6 +6,7 @@ classdef ReferenceFrameEnum < matlab.mixin.SetGet
         BodyCenteredInertial('Body-Centered Inertial');
         BodyFixedRotating('Body-Fixed Rotating');
         TwoBodyRotating('Two Body Rotating');
+        UserDefined('User-Defined Geometric');
     end
     
     properties

@@ -22,6 +22,8 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
         
         disableOptim(1,1) logical = false;
         
+        execActionsNode(1,1) ActionExecNodeEnum = ActionExecNodeEnum.AfterProp;
+        
         %%%%%
         %Propagators
         %%%%%
@@ -306,8 +308,18 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
             obj.hasActiveOptVarsTF = false(0);
             obj.hasActiveOptVarsVars = AbstractOptimizationVariable.empty(0,1);
         end
+        
+        function createUpdatedSetKinematicStateObjs(obj)
+            for(i=1:length(obj.actions))
+                action = obj.actions(i);
+                
+                if(isa(action,'SetKinematicStateAction'))
+                    action.generateLvComponentElements();
+                end
+            end            
+        end
     end
-    
+         
     methods(Static)
         function newEvent = getDefaultEvent(script)
             newEvent = LaunchVehicleEvent(script);

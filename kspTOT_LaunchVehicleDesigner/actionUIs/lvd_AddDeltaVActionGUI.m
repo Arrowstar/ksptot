@@ -54,6 +54,8 @@ function lvd_AddDeltaVActionGUI_OpeningFcn(hObject, eventdata, handles, varargin
 
     % Choose default command line output for lvd_AddDeltaVActionGUI
     handles.output = hObject;
+    
+    centerUIFigure(hObject);
 
     action = varargin{1};
     setappdata(hObject, 'action', action);

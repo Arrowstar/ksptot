@@ -54,6 +54,8 @@ function lvd_EditContinuityConstraintGUI_OpeningFcn(hObject, eventdata, handles,
 
     % Choose default command line output for lvd_EditContinuityConstraintGUI
     handles.output = hObject;
+    
+    centerUIFigure(hObject);
 
     constraint = varargin{1};
     setappdata(hObject, 'constraint', constraint);

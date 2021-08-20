@@ -3,6 +3,10 @@ function [parentGm] = getParentGM(bodyInfo, celBodyData)
 %   Detailed explanation goes here
     global options_gravParamType;
     
+    if(isempty(options_gravParamType))
+        options_gravParamType = 'kspStockLike';
+    end
+    
     try
         parentBodyInfo = bodyInfo.getParBodyInfo(celBodyData);
     catch 

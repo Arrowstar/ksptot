@@ -5,9 +5,15 @@ classdef ThrottleConstraint < AbstractConstraint
     properties
         normFact = 1;
         event LaunchVehicleEvent
+        eventNode(1,1) ConstraintStateComparisonNodeEnum = ConstraintStateComparisonNodeEnum.FinalState;
         
         lb(1,1) double = 0;
         ub(1,1) double = 0;
+        
+        evalType(1,1) ConstraintEvalTypeEnum = ConstraintEvalTypeEnum.FixedBounds;
+        stateCompType(1,1) ConstraintStateComparisonTypeEnum = ConstraintStateComparisonTypeEnum.Equals;
+        stateCompEvent LaunchVehicleEvent
+        stateCompNode(1,1) ConstraintStateComparisonNodeEnum = ConstraintStateComparisonNodeEnum.FinalState;
     end
     
     methods
@@ -16,7 +22,7 @@ classdef ThrottleConstraint < AbstractConstraint
             obj.lb = lb;
             obj.ub = ub;   
             
-             obj.id = rand();
+            obj.id = rand();
         end
         
         function [lb, ub] = getBounds(obj)
@@ -24,22 +30,40 @@ classdef ThrottleConstraint < AbstractConstraint
             ub = obj.ub;
         end
         
-        function [c, ceq, value, lwrBnd, uprBnd, type, eventNum] = evalConstraint(obj, stateLog, celBodyData)           
+        function [c, ceq, value, lwrBnd, uprBnd, type, eventNum, valueStateComp] = evalConstraint(obj, stateLog, celBodyData)           
             type = obj.getConstraintType();
-            stateLogEntry = stateLog.getLastStateLogForEvent(obj.event);
+            
+            switch obj.eventNode
+                case ConstraintStateComparisonNodeEnum.FinalState
+                    stateLogEntry = stateLog.getLastStateLogForEvent(obj.event);
+                    
+                case ConstraintStateComparisonNodeEnum.InitialState
+                    stateLogEntry = stateLog.getFirstStateLogForEvent(obj.event);
+                
+                otherwise
+                    error('Unknown event node.');
+            end
             
             value = 100*stateLogEntry.throttle;
                        
-            if(obj.lb == obj.ub)
-                c = [];
-                ceq(1) = value - obj.ub;
+            if(obj.evalType == ConstraintEvalTypeEnum.StateComparison)
+                switch obj.stateCompNode
+                    case ConstraintStateComparisonNodeEnum.FinalState
+                        stateLogEntryStateComp = stateLog.getLastStateLogForEvent(obj.stateCompEvent);
+
+                    case ConstraintStateComparisonNodeEnum.InitialState
+                        stateLogEntryStateComp = stateLog.getFirstStateLogForEvent(obj.stateCompEvent);
+
+                    otherwise
+                        error('Unknown event node.');
+                end
+
+                valueStateComp = 100*stateLogEntryStateComp.throttle;
             else
-                c(1) = obj.lb - value;
-                c(2) = value - obj.ub;
-                ceq = [];
+                valueStateComp = NaN;
             end
-            c = c/obj.normFact;
-            ceq = ceq/obj.normFact;  
+            
+            [c, ceq] = obj.computeCAndCeqValues(value, valueStateComp);  
             
             lwrBnd = obj.lb;
             uprBnd = obj.ub;
@@ -73,6 +97,9 @@ classdef ThrottleConstraint < AbstractConstraint
         
         function tf = usesEvent(obj, event)
             tf = obj.event == event;
+            if(obj.evalType == ConstraintEvalTypeEnum.StateComparison)
+                tf = tf || obj.stateCompEvent == event;
+            end
         end
         
         function tf = usesStopwatch(obj, stopwatch)

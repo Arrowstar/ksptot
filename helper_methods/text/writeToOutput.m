@@ -5,7 +5,11 @@ function writeToOutput(handle,str,msgType, varargin)
         maxlength=105;
     end
 
-    curStr=char(get(handle,'String'));
+    try
+        curStr=char(get(handle,'String'));
+    catch
+        curStr=char(handle.Value);
+    end
             
     if(strcmpi(msgType,'append'))
         str=char(str);
@@ -44,8 +48,21 @@ function writeToOutput(handle,str,msgType, varargin)
     end
     
     strToWriteStr = cellstr(string(strToWrite));
-    lblStrCell = textwrap(handle,strToWriteStr);
-    set(handle,'String',lblStrCell);
+
+    try
+        lblStrCell = textwrap(handle,strToWriteStr);
+        set(handle,'String',lblStrCell);
+    catch ME
+        try
+            set(handle,'String',strToWriteStr);
+        catch
+            try
+                handle.Value = strToWriteStr;
+            catch ME
+                a=1;
+            end
+        end
+    end
     
     drawnow;
 end

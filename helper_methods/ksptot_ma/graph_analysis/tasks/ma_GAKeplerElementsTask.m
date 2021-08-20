@@ -33,21 +33,24 @@ function datapt = ma_GAKeplerElementsTask(stateLogEntry, subTask, celBodyData)
                 datapt = computePeriod(sma, gmu);
             end
         case 'sunRX'
-            topLevelBodyInfo = getTopLevelCentralBody(celBodyData);
+%             topLevelBodyInfo = getTopLevelCentralBody(celBodyData);
+            topLevelBodyInfo = celBodyData.getTopLevelBody();
 
             bodySCInfo = getBodyInfoByNumber(bodyID, celBodyData);
             dVect = getAbsPositBetweenSpacecraftAndBody(stateLogEntry(1), stateLogEntry(2:4)',...
                     bodySCInfo, topLevelBodyInfo, celBodyData);
             datapt = -dVect(1); %neg sign to go from spacecraft to sun -> sun to spacecraft
         case 'sunRY'
-            topLevelBodyInfo = getTopLevelCentralBody(celBodyData);
+%             topLevelBodyInfo = getTopLevelCentralBody(celBodyData);
+            topLevelBodyInfo = celBodyData.getTopLevelBody();
             
             bodySCInfo = getBodyInfoByNumber(bodyID, celBodyData);
             dVect = getAbsPositBetweenSpacecraftAndBody(stateLogEntry(1), stateLogEntry(2:4)',...
                     bodySCInfo, topLevelBodyInfo, celBodyData);
             datapt = -dVect(2); %neg sign to go from spacecraft to sun -> sun to spacecraft
         case 'sunRZ'
-            topLevelBodyInfo = getTopLevelCentralBody(celBodyData);
+%             topLevelBodyInfo = getTopLevelCentralBody(celBodyData);
+            topLevelBodyInfo = celBodyData.getTopLevelBody();
             
             bodySCInfo = getBodyInfoByNumber(bodyID, celBodyData);
             dVect = getAbsPositBetweenSpacecraftAndBody(stateLogEntry(1), stateLogEntry(2:4)',...

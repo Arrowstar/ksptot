@@ -54,6 +54,8 @@ function lvd_EditEngineToTanksConnGUI_OpeningFcn(hObject, eventdata, handles, va
 
     % Choose default command line output for lvd_EditEngineToTanksConnGUI
     handles.output = hObject;
+    
+    centerUIFigure(hObject);
 
     e2TConn = varargin{1};
     setappdata(hObject, 'e2TConn', e2TConn);

@@ -5,10 +5,15 @@ function [cbBodyNames, arriveDepartNames, allNames] = genCBArriveDepartComboBoxS
     celBodyData = userData{1,1};
     
     hCentralBodyCombo = findobj(mainGUIHandle,'Tag','centralBodyCombo');
-    contents = cellstr(get(hCentralBodyCombo,'String'));
-    curSelCB = lower(contents{get(hCentralBodyCombo,'Value')});
+    try
+        contents = cellstr(get(hCentralBodyCombo,'String'));
+        curSelCB = lower(contents{get(hCentralBodyCombo,'Value')});
+    catch
+        curSelCB = hCentralBodyCombo.Value;
+    end
     
-    if(strcmp(curSelCB,'pop-up menu'))
+    
+    if(strcmpi(curSelCB,'pop-up menu'))
         curSelCB='Sun';
     end
     
@@ -30,4 +35,3 @@ function [cbBodyNames, arriveDepartNames, allNames] = genCBArriveDepartComboBoxS
     
     return;
 end
-

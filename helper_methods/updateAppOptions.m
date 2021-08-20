@@ -14,6 +14,9 @@ end
 function iniStruct = getIniCellsFromStruct(optStruct)
     headers = fieldnames(optStruct);
     iniStruct = cell(length(fields(optStruct.(headers{1}))),4);
+    for(i=1:numel(iniStruct))
+        iniStruct{i} = '';
+    end
     
     for(i=1:length(headers)) %#ok<*NO4LP>
         header = headers{i};

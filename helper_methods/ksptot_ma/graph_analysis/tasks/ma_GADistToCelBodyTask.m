@@ -2,7 +2,7 @@ function datapt = ma_GADistToCelBodyTask(stateLogEntry, subTask, refBodyInfo, ce
 %ma_GADistToCelBodyTask Summary of this function goes here
 %   Detailed explanation goes here
 
-    rVect = stateLogEntry(2:4);
+    rVect = stateLogEntry(2:4)';
     bodyID = stateLogEntry(8);
 
     bodyInfo = getBodyInfoByNumber(bodyID, celBodyData);

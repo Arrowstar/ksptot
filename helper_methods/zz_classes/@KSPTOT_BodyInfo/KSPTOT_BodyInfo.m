@@ -3,6 +3,7 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
     %   Detailed explanation goes here
     
     properties
+        %Orbit
         epoch double
         sma double
         ecc double
@@ -10,8 +11,12 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
         raan double
         arg double
         mean double
+        
+        %Physical
         gm double
         radius double
+        
+        %Atmo
         atmohgt double
         atmopresscurve = griddedInterpolant([0 1]',[0 0]','spline', 'nearest');
         atmotempcurve = griddedInterpolant([0 1]',[0 0]','spline', 'nearest');
@@ -22,9 +27,15 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
         axialtempsunmultcurve = griddedInterpolant([0 1]',[0 0]','spline', 'nearest');
         ecctempbiascurve = griddedInterpolant([0 1]',[0 0]','spline', 'nearest');
         atmomolarmass double
+        
+        %Rotation
         rotperiod double
         rotini double
+        
+        %Display
         bodycolor char
+        
+        %Others
         canbecentral double
         canbearrivedepart double
         parent
@@ -40,6 +51,11 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
         bodyZAxis(3,1) double = [0;0;1];
         bodyXAxis(3,1) double = [1;0;0];
         bodyRotMatFromGlobalInertialToBodyInertial = [];
+        
+        %Propagation type
+        proptype(1,:) char = 'analytic_two_body';
+        propTypeEnum(1,1) BodyPropagationTypeEnum = BodyPropagationTypeEnum.TwoBody
+        numIntStateCache CelestialBodySunRelStateDataCache
     end
     
     properties
@@ -65,6 +81,10 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
         fixedFrameFromInertialFrameCache cell = {};
         
         surfTextureCache uint8 = [];
+        
+        lastComputedTime(1,1) double = NaN;
+        lastComputedRVect(3,1) double = NaN(3,1);
+        lastComputedVVect(3,1) double = NaN(3,1);
     end
     
     properties(Access=private)
@@ -82,6 +102,7 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
         function obj = KSPTOT_BodyInfo() 
             obj.sunDotNormalCache = SunDotNormalDataCache(obj);
             obj.atmoTempCache = AtmoTempDataCache(obj);
+            obj.numIntStateCache = CelestialBodySunRelStateDataCache(obj);
         end
         
         function set.atmotempsunmultcurve(obj,newValue)
@@ -117,9 +138,9 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
             end
         end
         
-        function parentBodyInfo = getParBodyInfo(obj, celBodyData)
+        function parentBodyInfo = getParBodyInfo(obj, ~)
             if(obj.parentBodyInfoNeedsUpdate || (obj.parentid > 0 && isempty(obj.parentBodyInfo)))
-                pBodyInfo = getParentBodyInfo(obj, celBodyData);
+                pBodyInfo = getParentBodyInfo(obj, obj.celBodyData);
                 
                 if(not(isempty(pBodyInfo)))
                     obj.parentBodyInfo = pBodyInfo;
@@ -133,7 +154,7 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
         end
         
         function [childrenBodyInfo, cbNames] = getChildrenBodyInfo(obj, celBodyData)
-            if(obj.childrenBodyInfoNeedsUpdate || isempty(obj.childrenBodyInfo))
+            if(obj.childrenBodyInfoNeedsUpdate)
                 [cBodyInfo,cbNames] = getChildrenOfParentInfo(celBodyData, obj.name);
                 
                 if(not(isempty(cBodyInfo)))
@@ -197,9 +218,10 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
 
                 [rVects, vVects] = getStateAtTime(obj, times, gmu);
 
-                for(i=1:length(times))
-                    states(i) = CartesianElementSet(times(i), rVects(:,i), vVects(:,i), frame); %#ok<AGROW>
-                end
+                states = CartesianElementSet(times, rVects, vVects, frame);
+%                 for(i=1:length(times))
+%                     states(i) = CartesianElementSet(times(i), rVects(:,i), vVects(:,i), frame); %#ok<AGROW>
+%                 end
             else
                 frame = obj.getBodyCenteredInertialFrame();
                 
@@ -323,31 +345,25 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
                 tf = false;
             end
         end
+        
+        function setPropTypeEnum(obj)
+            switch obj.proptype
+                case 'analytic_two_body'
+                    obj.propTypeEnum = BodyPropagationTypeEnum.TwoBody;
+                case 'numerical_integration'
+                    obj.propTypeEnum = BodyPropagationTypeEnum.Numerical;
+                otherwise
+                    error('Unknown Body Prop Type: %s', obj.propType);
+            end
+        end
+        
+        function setStateCacheData(obj, times, stateVects, frame)
+            obj.numIntStateCache.setStateData(times, stateVects, frame);
+        end
     end
     
-	methods(Static)
-        function obj = loadobj(obj)            
-            obj.doNotUseAtmoTempSunMultCurve = isa(obj.atmotempsunmultcurve,'griddedInterpolant') && all(obj.atmotempsunmultcurve.Values == 0);
-            obj.doNotUseLatTempSunMultCurve = isa(obj.lattempsunmultcurve,'griddedInterpolant') && all(obj.lattempsunmultcurve.Values == 0);
-            obj.doNotUseAxialTempSunMultCurve = isa(obj.axialtempsunmultcurve,'griddedInterpolant') && all(obj.axialtempsunmultcurve.Values == 0);
-            obj.doNotUseAxialTempSunBiasCurveGI = isa(obj.axialtempsunbiascurve,'griddedInterpolant') && all(obj.axialtempsunbiascurve.Values == 0);
-            obj.doNotUseEccTempBiasCurveGI = isa(obj.ecctempbiascurve,'griddedInterpolant') && all(obj.ecctempbiascurve.Values == 0);
-            obj.doNotUseAtmoPressCurveGI = (obj.atmohgt > 0 && isempty(obj.atmopresscurve));
-            
-            obj.parentBodyInfoNeedsUpdate = true;
-            obj.getParBodyInfo(obj.celBodyData);
-            
-            obj.childrenBodyInfoNeedsUpdate = true;
-            obj.getChildrenBodyInfo(obj.celBodyData);
-            
-            if(isempty(obj.sunDotNormalCache))
-                obj.sunDotNormalCache = SunDotNormalDataCache(obj);
-            end
-            
-            if(isempty(obj.atmoTempCache))
-                obj.atmoTempCache = AtmoTempDataCache(obj);
-            end
-            
+    methods
+        function setBaseBodySurfaceTexture(obj)
             if(isempty(obj.surftexturefile) && strcmpi(obj.name,'Kerbin') && obj.id == 1)
                 obj.surftexturefile = 'images/body_textures/surface/kerbinSurface.png';
                 
@@ -392,8 +408,44 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
                 
             elseif(isempty(obj.surftexturefile) && strcmpi(obj.name,'Eeloo') && obj.id == 16)
                 obj.surftexturefile = 'images/body_textures/surface/eelooSurface.png';
-                
             end
+        end
+    end
+    
+	methods(Static)
+        function obj = loadobj(obj)   
+            if(isempty(obj.epoch))
+                return; %this should only happen if something is bugged out
+            end
+            
+            obj.doNotUseAtmoTempSunMultCurve = isa(obj.atmotempsunmultcurve,'griddedInterpolant') && all(obj.atmotempsunmultcurve.Values == 0);
+            obj.doNotUseLatTempSunMultCurve = isa(obj.lattempsunmultcurve,'griddedInterpolant') && all(obj.lattempsunmultcurve.Values == 0);
+            obj.doNotUseAxialTempSunMultCurve = isa(obj.axialtempsunmultcurve,'griddedInterpolant') && all(obj.axialtempsunmultcurve.Values == 0);
+            obj.doNotUseAxialTempSunBiasCurveGI = isa(obj.axialtempsunbiascurve,'griddedInterpolant') && all(obj.axialtempsunbiascurve.Values == 0);
+            obj.doNotUseEccTempBiasCurveGI = isa(obj.ecctempbiascurve,'griddedInterpolant') && all(obj.ecctempbiascurve.Values == 0);
+            obj.doNotUseAtmoPressCurveGI = (obj.atmohgt > 0 && isempty(obj.atmopresscurve));
+            
+            obj.parentBodyInfoNeedsUpdate = true;
+            obj.getParBodyInfo(obj.celBodyData);
+            
+            obj.childrenBodyInfoNeedsUpdate = true;
+            obj.getChildrenBodyInfo(obj.celBodyData);
+            
+            obj.setBaseBodySurfaceTexture();
+            
+            if(isempty(obj.sunDotNormalCache))
+                obj.sunDotNormalCache = SunDotNormalDataCache(obj);
+            end
+            
+            if(isempty(obj.atmoTempCache))
+                obj.atmoTempCache = AtmoTempDataCache(obj);
+            end
+            
+            if(isempty(obj.numIntStateCache))
+                obj.numIntStateCache = CelestialBodySunRelStateDataCache(obj);
+            end
+                        
+            obj.setPropTypeEnum();
         end
         
         function bodyObj = getObjFromBodyInfoStruct(bodyInfo)

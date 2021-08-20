@@ -3,4 +3,3 @@ function [vect] = normVector(vect)
 %   Detailed explanation goes here
     vect = vect / norm(vect);
 end
-

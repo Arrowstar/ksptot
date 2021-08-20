@@ -5,9 +5,15 @@ classdef TotalThrustConstraint < AbstractConstraint
     properties
         normFact = 1;
         event LaunchVehicleEvent
+        eventNode(1,1) ConstraintStateComparisonNodeEnum = ConstraintStateComparisonNodeEnum.FinalState;
         
         lb(1,1) double = 0;
         ub(1,1) double = 0;
+        
+        evalType(1,1) ConstraintEvalTypeEnum = ConstraintEvalTypeEnum.FixedBounds;
+        stateCompType(1,1) ConstraintStateComparisonTypeEnum = ConstraintStateComparisonTypeEnum.Equals;
+        stateCompEvent LaunchVehicleEvent
+        stateCompNode(1,1) ConstraintStateComparisonNodeEnum = ConstraintStateComparisonNodeEnum.FinalState;
     end
     
     methods
@@ -24,50 +30,41 @@ classdef TotalThrustConstraint < AbstractConstraint
             ub = obj.ub;
         end
         
-        function [c, ceq, value, lwrBnd, uprBnd, type, eventNum] = evalConstraint(obj, stateLog, celBodyData)           
+        function [c, ceq, value, lwrBnd, uprBnd, type, eventNum, valueStateComp] = evalConstraint(obj, stateLog, celBodyData)           
             type = obj.getConstraintType();
-            stateLogEntry = stateLog.getLastStateLogForEvent(obj.event);
             
-            ut = stateLogEntry.time;
-            rVect = stateLogEntry.position;
-            vVect = stateLogEntry.velocity;
-            
-            bodyInfo = stateLogEntry.centralBody;
-            tankStates = stateLogEntry.getAllActiveTankStates();
-            stageStates = stateLogEntry.stageStates;
-            lvState = stateLogEntry.lvState;
-            
-            dryMass = stateLogEntry.getTotalVehicleDryMass();
-            tankStatesMasses = [tankStates.tankMass]';
-            
-            throttleModel = stateLogEntry.throttleModel;
-            steeringModel = stateLogEntry.steeringModel;
-            
-            altitude = norm(rVect) - bodyInfo.radius;
-            pressure = getPressureAtAltitude(bodyInfo, altitude); 
-            
-            powerStorageStates = stateLogEntry.getAllActivePwrStorageStates();
-            storageSoCs = NaN(size(powerStorageStates));
-            for(i=1:length(powerStorageStates))
-                storageSoCs(i) = powerStorageStates(i).getStateOfCharge();
+            switch obj.eventNode
+                case ConstraintStateComparisonNodeEnum.FinalState
+                    stateLogEntry = stateLog.getLastStateLogForEvent(obj.event);
+                    
+                case ConstraintStateComparisonNodeEnum.InitialState
+                    stateLogEntry = stateLog.getFirstStateLogForEvent(obj.event);
+                
+                otherwise
+                    error('Unknown event node.');
             end
             
-            throttle = throttleModel.getThrottleAtTime(ut, rVect, vVect, tankStatesMasses, dryMass, stageStates, lvState, tankStates, bodyInfo, storageSoCs, powerStorageStates);
-            
-            [~, totalThrust, ~] = LaunchVehicleStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, tankStatesMasses, stageStates, throttle, lvState, pressure, ut, rVect, vVect, bodyInfo, steeringModel, storageSoCs, powerStorageStates);
-            
+            totalThrust = TotalThrustConstraint.getTotalThrust(stateLogEntry);
             value = totalThrust;
                        
-            if(obj.lb == obj.ub)
-                c = [];
-                ceq(1) = value - obj.ub;
+            if(obj.evalType == ConstraintEvalTypeEnum.StateComparison)
+                switch obj.stateCompNode
+                    case ConstraintStateComparisonNodeEnum.FinalState
+                        stateLogEntryStateComp = stateLog.getLastStateLogForEvent(obj.stateCompEvent);
+
+                    case ConstraintStateComparisonNodeEnum.InitialState
+                        stateLogEntryStateComp = stateLog.getFirstStateLogForEvent(obj.stateCompEvent);
+
+                    otherwise
+                        error('Unknown event node.');
+                end
+
+                valueStateComp = TotalThrustConstraint.getTotalThrust(stateLogEntryStateComp); %it's probably not a bad idea to leave the state here in the original reference frame.
             else
-                c(1) = obj.lb - value;
-                c(2) = value - obj.ub;
-                ceq = [];
+                valueStateComp = NaN;
             end
-            c = c/obj.normFact;
-            ceq = ceq/obj.normFact;  
+            
+            [c, ceq] = obj.computeCAndCeqValues(value, valueStateComp); 
             
             lwrBnd = obj.lb;
             uprBnd = obj.ub;
@@ -101,6 +98,9 @@ classdef TotalThrustConstraint < AbstractConstraint
         
         function tf = usesEvent(obj, event)
             tf = obj.event == event;
+            if(obj.evalType == ConstraintEvalTypeEnum.StateComparison)
+                tf = tf || obj.stateCompEvent == event;
+            end
         end
         
         function tf = usesStopwatch(obj, stopwatch)
@@ -138,6 +138,38 @@ classdef TotalThrustConstraint < AbstractConstraint
         
         function addConstraintTf = openEditConstraintUI(obj, lvdData)
             addConstraintTf = lvd_EditGenericMAConstraintGUI(obj, lvdData);
+        end
+    end
+    
+    methods(Static, Access=private)
+        function totalThrust = getTotalThrust(stateLogEntry)
+            ut = stateLogEntry.time;
+            rVect = stateLogEntry.position;
+            vVect = stateLogEntry.velocity;
+            
+            bodyInfo = stateLogEntry.centralBody;
+            tankStates = stateLogEntry.getAllActiveTankStates();
+            stageStates = stateLogEntry.stageStates;
+            lvState = stateLogEntry.lvState;
+            
+            dryMass = stateLogEntry.getTotalVehicleDryMass();
+            tankStatesMasses = [tankStates.tankMass]';
+            
+            throttleModel = stateLogEntry.throttleModel;
+            steeringModel = stateLogEntry.steeringModel;
+            
+            altitude = norm(rVect) - bodyInfo.radius;
+            pressure = getPressureAtAltitude(bodyInfo, altitude); 
+            
+            powerStorageStates = stateLogEntry.getAllActivePwrStorageStates();
+            storageSoCs = NaN(size(powerStorageStates));
+            for(i=1:length(powerStorageStates))
+                storageSoCs(i) = powerStorageStates(i).getStateOfCharge();
+            end
+            
+            throttle = throttleModel.getThrottleAtTime(ut, rVect, vVect, tankStatesMasses, dryMass, stageStates, lvState, tankStates, bodyInfo, storageSoCs, powerStorageStates);
+            
+            [~, totalThrust, ~] = LaunchVehicleStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, tankStatesMasses, stageStates, throttle, lvState, pressure, ut, rVect, vVect, bodyInfo, steeringModel, storageSoCs, powerStorageStates);
         end
     end
     

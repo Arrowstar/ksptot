@@ -67,7 +67,13 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
             
             if(propagationDir == PropagationDirectionEnum.Forward) 
             %set max integration time
-                maxT = tStartSimTime+obj.simMaxDur;
+                if(not(isfinite(obj.simMaxDur)))
+                    maxSimDuration = abs(1E6*integrationStep);
+                else
+                    maxSimDuration = obj.simMaxDur;
+                end
+                
+                maxT = tStartSimTime + maxSimDuration;
                 if(t0 > maxT)
                     maxT = t0;
                 end
@@ -87,7 +93,13 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
                 end
                 
             elseif(propagationDir == PropagationDirectionEnum.Backward) 
-                maxT = tStartSimTime-obj.simMaxDur;
+                if(not(isfinite(obj.simMaxDur)))
+                    maxSimDuration = abs(1E6*integrationStep);
+                else
+                    maxSimDuration = obj.simMaxDur;
+                end
+                
+                maxT = tStartSimTime - maxSimDuration;
                 if(t0 < maxT)
                     maxT = t0;
                 end                
@@ -171,6 +183,11 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
             [t,y,~,~,ie] = propagator.propagate(integrator, tspan, eventInitStateLogEntry, ...
                                                 eventTermCondFuncHandle, termCondDir, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, obj.minAltitude, obj.celBodyData, ...
                                                 tStartPropTime, obj.maxPropTime);
+                                            
+            if(isempty(ie))
+                str = sprintf('Event %u propagation did not return an event termination index (ie).\n\nThis generally happens when the integration is numerically unstable.  Consider loosening integration tolerances or switching to the ODE5 integrator.', event.getEventNum());
+                obj.lvdData.validation.outputs(end+1) = LaunchVehicleDataValidationError(str);
+            end
             
             if(isSparseOutput)
                 t = [t(end)];

@@ -55,6 +55,8 @@ function lvd_EditActionSetTankToTankConnFlowRateGUI_OpeningFcn(hObject, eventdat
     % Choose default command line output for lvd_EditActionSetTankToTankConnFlowRateGUI
     handles.output = hObject;
 
+    centerUIFigure(hObject);
+    
     action = varargin{1};
     setappdata(hObject,'action',action);
     

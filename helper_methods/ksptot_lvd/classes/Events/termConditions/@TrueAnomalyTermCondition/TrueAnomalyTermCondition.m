@@ -16,14 +16,8 @@ classdef TrueAnomalyTermCondition < AbstractEventTerminationCondition
             obj.tru = tru;
         end
         
-        function evtTermCondFcnHndl = getEventTermCondFuncHandle(obj)
-            truToUse = obj.tru;
-            
-            if(truToUse > 2*pi || truToUse < -pi)
-                truToUse = AngleZero2Pi(truToUse);
-            end
-            
-            evtTermCondFcnHndl = @(t,y) obj.eventTermCond(t,y, obj, truToUse, obj.bodyInfo);
+        function evtTermCondFcnHndl = getEventTermCondFuncHandle(obj)           
+            evtTermCondFcnHndl = @(t,y) obj.eventTermCond(t,y);
         end
         
         function initTermCondition(obj, initialStateLogEntry)
@@ -120,12 +114,23 @@ classdef TrueAnomalyTermCondition < AbstractEventTerminationCondition
         end
     end
     
-    methods(Static, Access=private)
-        function [value,isterminal,direction] = eventTermCond(~,y, obj, targetTru, bodyInfo)
+    methods(Access=private)
+        function [value,isterminal,direction] = eventTermCond(obj, t,y)
+            targetTru = obj.tru;
+            
+            if(targetTru > 2*pi || targetTru < -pi)
+                targetTru = AngleZero2Pi(targetTru);
+            end
+            
             rVect = y(1:3);
             vVect = y(4:6);
-                                  
-            gmu = bodyInfo.gm;
+            cartElem = CartesianElementSet(t, rVect(:), vVect(:), obj.bodyInfo.getBodyCenteredInertialFrame());
+            cartElem = cartElem.convertToFrame(obj.frame);
+                 
+            rVect = cartElem.rVect;
+            vVect = cartElem.vVect;
+            
+            gmu = obj.frame.getOriginBody().gm;
             [deltaT, deltaM, ~] = getDeltaTime(rVect, vVect, gmu, targetTru, obj.mustGoThrough0, obj.hasGoneThroughZero);
             
             if(not(isnan(obj.prevDeltaM)) && deltaM > obj.prevDeltaM)

@@ -54,6 +54,8 @@ function lvd_EditInitialStateGUI_OpeningFcn(hObject, eventdata, handles, varargi
 
     % Choose default command line output for lvd_EditInitialStateGUI
     handles.output = hObject;
+    
+    centerUIFigure(hObject);
    
     lvdData = varargin{1};
     setappdata(hObject,'lvdData',lvdData);
@@ -72,11 +74,6 @@ function lvd_EditInitialStateGUI_OpeningFcn(hObject, eventdata, handles, varargi
 function populateGUI(handles, lvdData)
     initStateModel = lvdData.initStateModel;
     setappdata(handles.lvd_EditInitialStateGUI,'curElemSet',initStateModel.orbitModel);
-    
-%     bodyInfo = initStateModel.centralBody;
-%     populateBodiesCombo(lvdData.celBodyData, handles.centralBodyCombo, false);
-%     value = findValueFromComboBox(bodyInfo.name, handles.centralBodyCombo);
-% 	  handles.centralBodyCombo.Value = value;
     
     handles.refFrameTypeCombo.String = ReferenceFrameEnum.getListBoxStr();
     handles.refFrameTypeCombo.Value = ReferenceFrameEnum.getIndForName(initStateModel.orbitModel.frame.typeEnum.name);
@@ -200,7 +197,7 @@ function varargout = lvd_EditInitialStateGUI_OutputFcn(hObject, eventdata, handl
 %         
 %         switch elemSetEnum
 %             case ElementSetEnum.CartesianElements
-%                 orbitModel = CartesianElementSet(time, [orbit1Elem, orbit2Elem, orbit3Elem], [orbit4Elem, orbit5Elem, orbit6Elem], frame);
+%                 orbitModel = CartesianElementSet(time, [orbit1Elem; orbit2Elem; orbit3Elem], [orbit4Elem; orbit5Elem; orbit6Elem], frame);
 %                 
 %             case ElementSetEnum.KeplerianElements
 %                 orbitModel = KeplerianElementSet(time, orbit1Elem, orbit2Elem, deg2rad(orbit3Elem), deg2rad(orbit4Elem), deg2rad(orbit5Elem), deg2rad(orbit6Elem), frame);
@@ -288,7 +285,7 @@ function varargout = lvd_EditInitialStateGUI_OutputFcn(hObject, eventdata, handl
                 ub(4:6) = deg2rad(ub(4:6));
 
             otherwise
-                error('Unknown element set type: %s', class(elemSetEnum));
+                error('Unknown element set type: %s', string(elemSetEnum));
         end
         
         optVar.setBndsForVariable(lb, ub);
@@ -316,7 +313,7 @@ function [orbitModel, elemSetEnum] = getCurrentElemSetFromExistingValues(handles
         
         switch elemSetEnum
             case ElementSetEnum.CartesianElements
-                orbitModel = CartesianElementSet(time, [orbit1Elem, orbit2Elem, orbit3Elem], [orbit4Elem, orbit5Elem, orbit6Elem], frame);
+                orbitModel = CartesianElementSet(time, [orbit1Elem; orbit2Elem; orbit3Elem], [orbit4Elem; orbit5Elem; orbit6Elem], frame);
                 
             case ElementSetEnum.KeplerianElements
                 orbitModel = KeplerianElementSet(time, orbit1Elem, orbit2Elem, deg2rad(orbit3Elem), deg2rad(orbit4Elem), deg2rad(orbit5Elem), deg2rad(orbit6Elem), frame);
@@ -535,6 +532,11 @@ function updateStateDueToFrameChange(handles, newFrame)
     selFrameType = contents{get(handles.refFrameTypeCombo,'Value')};
     refFrameEnum = ReferenceFrameEnum.getEnumForListboxStr(selFrameType);
     
+    if(not(isempty(newFrame)) && newFrame.typeEnum ~= refFrameEnum)
+        refFrameEnum = newFrame.typeEnum;
+        handles.refFrameTypeCombo.Value = ReferenceFrameEnum.getIndForName(refFrameEnum.name);
+    end
+    
     switch refFrameEnum
         case ReferenceFrameEnum.BodyCenteredInertial
             if(isempty(newFrame))
@@ -543,7 +545,6 @@ function updateStateDueToFrameChange(handles, newFrame)
                 bodyInfo = newFrame.getOriginBody();
             end            
             
-%             newFrame = BodyCenteredInertialFrame(bodyInfo, celBodyData);
             newFrame = bodyInfo.getBodyCenteredInertialFrame();
 
         case ReferenceFrameEnum.BodyFixedRotating
@@ -553,7 +554,6 @@ function updateStateDueToFrameChange(handles, newFrame)
                 bodyInfo = newFrame.getOriginBody();
             end
             
-%             newFrame = BodyFixedFrame(bodyInfo, celBodyData);
             newFrame = bodyInfo.getBodyFixedFrame();
             
         case ReferenceFrameEnum.TwoBodyRotating            
@@ -573,9 +573,46 @@ function updateStateDueToFrameChange(handles, newFrame)
             else
                 newFrame = TwoBodyRotatingFrame(newFrame.primaryBodyInfo, newFrame.secondaryBodyInfo, newFrame.originPt, celBodyData);
             end
+            
+        case ReferenceFrameEnum.UserDefined
+            if(isempty(newFrame))
+                numFrames = lvdData.geometry.refFrames.getNumRefFrames();
+                if(numFrames >= 1)
+                    geometricFrame = AbstractGeometricRefFrame.empty(1,0);
+                    for(i=1:numFrames)
+                        frame = lvdData.geometry.refFrames.getRefFrameAtInd(i);
+                        if(frame.isVehDependent() == false)
+                            geometricFrame = frame;
+                            break;
+                        end
+                    end
+
+                    if(not(isempty(geometricFrame)))
+                        newFrame = UserDefinedGeometricFrame(geometricFrame, lvdData);
+                    else
+                        bodyInfo = getSelectedBodyInfo(handles);
+                        newFrame = bodyInfo.getBodyCenteredInertialFrame();
+                        
+                        warndlg('There are no geometric frames available which are not dependent on vehicle properties.  A body-centered inertial frame will be selected instead.');
+                    end
+                else
+                    bodyInfo = getSelectedBodyInfo(handles);
+                    newFrame = bodyInfo.getBodyCenteredInertialFrame();
+                    
+                    warndlg('There are no geometric frames available which are not dependent on vehicle properties.  A body-centered inertial frame will be selected instead.');
+                end
+                
+            else
+                newFrame = UserDefinedGeometricFrame(newFrame.geometricFrame, lvdData);
+            end
 
         otherwise
-            error('Unknown reference frame type: %s', class(refFrameEnum));                
+            error('Unknown reference frame type: %s', string(refFrameEnum));                
+    end
+    
+    if(not(isempty(newFrame)) && newFrame.typeEnum ~= refFrameEnum)
+        refFrameEnum = newFrame.typeEnum;
+        handles.refFrameTypeCombo.Value = ReferenceFrameEnum.getIndForName(refFrameEnum.name);
     end
     
     try
@@ -618,7 +655,7 @@ function updateValuesInState(handles)
     frame = newElemSet.frame;
 	switch newElemSet.typeEnum
         case ElementSetEnum.CartesianElements
-            newElemSet = CartesianElementSet(time, [orbit1Elem, orbit2Elem, orbit3Elem], [orbit4Elem, orbit5Elem, orbit6Elem], frame);
+            newElemSet = CartesianElementSet(time, [orbit1Elem; orbit2Elem; orbit3Elem], [orbit4Elem; orbit5Elem; orbit6Elem], frame);
 
         case ElementSetEnum.KeplerianElements
             newElemSet = KeplerianElementSet(time, orbit1Elem, orbit2Elem, deg2rad(orbit3Elem), deg2rad(orbit4Elem), deg2rad(orbit5Elem), deg2rad(orbit6Elem), frame);
@@ -1468,8 +1505,6 @@ function getOrbitFromSFSFileContextMenu_Callback(hObject, eventdata, handles)
         
         curElemSet.frame.setOriginBody(bodyInfo);
         updateStateDueToFrameChange(handles, AbstractReferenceFrame.empty(1,0));
-%         value = findValueFromComboBox(bodyInfo.name, handles.centralBodyCombo);
-%         set(handles.centralBodyCombo,'Value',value);
     end
 
 % --------------------------------------------------------------------
@@ -1509,12 +1544,8 @@ function getOrbitFromKSPTOTConnectContextMenu_Callback(hObject, eventdata, handl
         curElemSet = getCurrentElemSetFromExistingValues(handles);
         setappdata(handles.lvd_EditInitialStateGUI,'curElemSet',curElemSet);
         
-%         curElemSet = getappdata(handles.lvd_EditInitialStateGUI,'curElemSet');
         curElemSet.frame.setOriginBody(bodyInfo);
         updateStateDueToFrameChange(handles, AbstractReferenceFrame.empty(1,0));
-        
-%         value = findValueFromComboBox(bodyInfo.name, handles.centralBodyCombo);
-%         set(handles.centralBodyCombo,'Value',value);
     end
 
 
@@ -1555,12 +1586,8 @@ function getOrbitFromKSPActiveVesselMenu_Callback(hObject, eventdata, handles)
         curElemSet = getCurrentElemSetFromExistingValues(handles);
         setappdata(handles.lvd_EditInitialStateGUI,'curElemSet',curElemSet);
         
-%         curElemSet = getappdata(handles.lvd_EditInitialStateGUI,'curElemSet');
         curElemSet.frame.setOriginBody(bodyInfo);
         updateStateDueToFrameChange(handles, AbstractReferenceFrame.empty(1,0));
-        
-%         value = findValueFromComboBox(bodyInfo.name, handles.centralBodyCombo);
-%         set(handles.centralBodyCombo,'Value',value);
     end
 
 % --------------------------------------------------------------------
@@ -1568,12 +1595,6 @@ function copyOrbitToClipboardMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to copyOrbitToClipboardMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-% 	  lvdData = getappdata(handles.lvd_EditInitialStateGUI,'lvdData');
-%     celBodyData = lvdData.celBodyData;
-    
-%     contents = cellstr(get(handles.centralBodyCombo,'String'));
-%     selected = strtrim(contents{get(handles.centralBodyCombo,'Value')});
-%     bodyInfo = celBodyData.(lower(selected));
     bodyInfo = getSelectedBodyInfo(handles);
 
     o1V = handles.orbit1Text.String;
@@ -1762,11 +1783,11 @@ function edit3BodyGravPropertiesButton_Callback(hObject, eventdata, handles)
     curSelBodies = lvdData.initStateModel.thirdBodyGravity.bodies;
     [~,inds,~] = intersect(sortedBodyInfoArr,curSelBodies);
     
-    [Selection,ok] = listdlg('ListString',bodiesStr,...
-                             'InitialValue', inds, ...
-                             'Name','3rd Body Gravity Sources', ...
-                             'PromptString',promptStr, ...
-                             'ListSize', [350 300]);
+    [Selection,ok] = listdlgARH('ListString', bodiesStr,...
+                                'InitialValue', inds, ...
+                                'Name', '3rd Body Gravity Sources', ...
+                                'PromptString', promptStr, ...
+                                'ListSize', [350 300]);
 
 	if(ok == 1)
         lvdData.initStateModel.thirdBodyGravity.bodies = sortedBodyInfoArr(Selection);
@@ -1804,6 +1825,6 @@ function setFrameOptionsButton_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
     curElemSet = getappdata(handles.lvd_EditInitialStateGUI,'curElemSet');
     frame = curElemSet.frame;
-    newFrame = frame.editFrameDialogUI();
+    newFrame = frame.editFrameDialogUI(EditReferenceFrameContextEnum.ForState);
     
     updateStateDueToFrameChange(handles, newFrame);

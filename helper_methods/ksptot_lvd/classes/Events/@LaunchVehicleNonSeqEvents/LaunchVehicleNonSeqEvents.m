@@ -99,12 +99,14 @@ classdef LaunchVehicleNonSeqEvents < matlab.mixin.SetGet & matlab.mixin.Copyable
             numEvents = length(obj.nonSeqEvts);
         end
         
-        function listboxStr = getListboxStr(obj)
+        function [listboxStr, events] = getListboxStr(obj)
             listboxStr = cell(length(obj.nonSeqEvts),1);
             
             for(i=1:length(obj.nonSeqEvts))
                 listboxStr{i} = obj.nonSeqEvts(i).getListboxStr();
             end
+            
+            events = obj.nonSeqEvts;
         end
         
         function tf = usesStage(obj, stage)
@@ -190,6 +192,14 @@ classdef LaunchVehicleNonSeqEvents < matlab.mixin.SetGet & matlab.mixin.Copyable
             
             for(i=1:length(obj.evts))
                 tf = tf || obj.evts(i).usesPwrStorage(powerStorage);
+            end
+        end
+        
+        function tf = usesTankToTankConn(obj, tankToTank)
+            tf = false;
+            
+            for(i=1:length(obj.nonSeqEvts))
+                tf = tf || obj.nonSeqEvts(i).usesTankToTankConn(tankToTank);
             end
         end
     end

@@ -20,7 +20,7 @@ classdef ThrottleTermCondition < AbstractEventTerminationCondition
         end
         
         function evtTermCondFcnHndl = getEventTermCondFuncHandle(obj)
-            evtTermCondFcnHndl = @(t,y) obj.eventTermCond(t,y, obj.targetThrottle, obj.throttleModel, obj.dryMass, obj.stgStates, obj.lvState, obj.tankStates, obj.bodyInfo, obj.pwrStorageStates);
+            evtTermCondFcnHndl = @(t,y) obj.eventTermCond(t,y);
         end
         
         function initTermCondition(obj, initialStateLogEntry)
@@ -95,17 +95,13 @@ classdef ThrottleTermCondition < AbstractEventTerminationCondition
         end
     end
     
-    methods(Static, Access=private)
-        function [value,isterminal,direction] = eventTermCond(t,y, targetThrottle, throttleModel, dryMass, stgStates, lvState, tankStates, bodyInfo, powerStorageStates)
-%             ut = t;
-%             rVect = y(1:3);
-%             vVect = y(4:6);
-%             tankMasses = y(7:6+length(tankStates));            
-            [ut, rVect, vVect, tankMasses, storageSoCs] = ForceModelPropagator.decomposeIntegratorTandY(t,y, length(tankStates), length(powerStorageStates));
+    methods(Access=private)
+        function [value,isterminal,direction] = eventTermCond(obj, t,y)         
+            [ut, rVect, vVect, tankMasses, ~] = ForceModelPropagator.decomposeIntegratorTandY(t,y, length(obj.tankStates), length(obj.pwrStorageStates));
             
-            throttle = throttleModel.getThrottleAtTime(ut, rVect, vVect, tankMasses, dryMass, stgStates, lvState, tankStates, bodyInfo);
+            throttle = obj.throttleModel.getThrottleAtTime(ut, rVect, vVect, tankMasses, obj.dryMass, obj.stgStates, obj.lvState, obj.tankStates, obj.bodyInfo);
             
-            value = throttle - targetThrottle;
+            value = throttle - obj.targetThrottle;
             isterminal = 1;
             direction = 0;
         end

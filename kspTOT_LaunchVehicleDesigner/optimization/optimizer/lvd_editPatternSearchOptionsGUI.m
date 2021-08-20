@@ -54,6 +54,8 @@ function lvd_editPatternSearchOptionsGUI_OpeningFcn(hObject, eventdata, handles,
 
     % Choose default command line output for lvd_editPatternSearchOptionsGUI
     handles.output = hObject;
+    
+    centerUIFigure(hObject);
 
     patternSearchOpt = varargin{1};
     handles = populateGUI(handles, patternSearchOpt);

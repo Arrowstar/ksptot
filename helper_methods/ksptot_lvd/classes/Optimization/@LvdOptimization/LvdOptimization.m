@@ -18,6 +18,7 @@ classdef LvdOptimization < matlab.mixin.SetGet
         patternSearchOpt(1,1) PatternSearchOptimizer = PatternSearchOptimizer();
         nomadOpt(1,1) NomadOptimizer = NomadOptimizer();
         ipoptOpt(1,1) IpOptOptimizer = IpOptOptimizer();
+        surragateOpt(1,1) SurrogateOptimizer = SurrogateOptimizer();
         
         %Gradient Calc Algo Selection
         gradAlgo(1,1) LvdOptimizerGradientCalculationAlgoEnum = LvdOptimizerGradientCalculationAlgoEnum.BuiltIn;
@@ -40,14 +41,13 @@ classdef LvdOptimization < matlab.mixin.SetGet
             obj.patternSearchOpt = PatternSearchOptimizer();
             obj.nomadOpt = NomadOptimizer();
             obj.ipoptOpt = IpOptOptimizer();
+            obj.surragateOpt = SurrogateOptimizer();
             
             obj.builtInGradMethod = BuiltInGradientCalculationMethod();
             obj.customFiniteDiffsCalcMethod = CustomFiniteDiffsCalculationMethod();
         end
         
-        function optimize(obj, writeOutput, callOutputFcn)  
-            disp(obj.getEvtNumToEndScriptExecAt());
-            
+        function optimize(obj, writeOutput, callOutputFcn)              
             obj.vars.sortVarsByEvtNum();
             optimizer = obj.getSelectedOptimizer();
             optimizer.optimize(obj, writeOutput, callOutputFcn);
@@ -80,6 +80,8 @@ classdef LvdOptimization < matlab.mixin.SetGet
                 optimizer = obj.nomadOpt;
             elseif(optAlgorithm == LvdOptimizerAlgoEnum.Ipopt)
                 optimizer = obj.ipoptOpt;
+            elseif(optAlgorithm == LvdOptimizerAlgoEnum.Surrogate)
+                optimizer = obj.surragateOpt;
             else
                 error('Unknown LVD optimization algorithm!');
             end
@@ -138,6 +140,34 @@ classdef LvdOptimization < matlab.mixin.SetGet
             
             tf = tf || obj.constraints.usesCalculusCalc(calculusCalc);
         end
+        
+        function tf = usesGeometricPoint(obj, point)
+            tf = obj.constraints.usesGeometricPoint(point);
+        end
+        
+        function tf = usesGeometricVector(obj, vector)
+            tf = obj.constraints.usesGeometricVector(vector);
+        end
+        
+        function tf = usesGeometricCoordSys(obj, coordSys)
+            tf = obj.constraints.usesGeometricCoordSys(coordSys);
+        end
+        
+        function tf = usesGeometricRefFrame(obj, refFrame)
+            tf = obj.constraints.usesGeometricRefFrame(refFrame);
+        end
+        
+        function tf = usesGeometricAngle(obj, angle)
+            tf = obj.constraints.usesGeometricAngle(angle);
+        end
+        
+        function tf = usesGeometricPlane(obj, plane)
+            tf = obj.constraints.usesGeometricPlane(plane);
+        end 
+        
+        function tf = usesPlugin(obj, plugin)
+            tf = obj.constraints.usesPlugin(plugin);
+        end 
     end
     
     methods(Static)

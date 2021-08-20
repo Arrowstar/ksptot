@@ -21,7 +21,7 @@ classdef TwoBodyRotatingFrame < AbstractReferenceFrame
             obj.celBodyData = celBodyData;
         end
         
-        function [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = getOffsetsWrtInertialOrigin(obj, time)            
+        function [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = getOffsetsWrtInertialOrigin(obj, time, ~)            
             [rVectSunToPrimaryBody, vVectSunToPrimaryBody] = getPositOfBodyWRTSun(time, obj.primaryBodyInfo, obj.celBodyData);
             [rVectSunToSecondaryBody, vVectSunToSecondaryBody] = getPositOfBodyWRTSun(time, obj.secondaryBodyInfo, obj.celBodyData);
             
@@ -41,13 +41,13 @@ classdef TwoBodyRotatingFrame < AbstractReferenceFrame
             rPrimaryToSecondary = rVectSunToSecondaryBody - rVectSunToPrimaryBody;
             vPrimaryToSecondary = vVectSunToSecondaryBody - vVectSunToPrimaryBody;
             
-            xHat = normVector(rPrimaryToSecondary);
-            zHat = normVector(crossARH(rPrimaryToSecondary, vPrimaryToSecondary));
-            yHat = normVector(crossARH(zHat,xHat));
+            xHat = permute(vect_normVector(rPrimaryToSecondary), [1 3 2]);
+            zHat = permute(vect_normVector(cross(rPrimaryToSecondary, vPrimaryToSecondary)), [1 3 2]);
+            yHat = vect_normVector(cross(zHat,xHat));
             
             rotMatToInertial = [xHat, yHat, zHat];
             
-            omegaRI = crossARH(rPrimaryToSecondary, vPrimaryToSecondary) / norm(rPrimaryToSecondary)^2;
+            omegaRI = cross(rPrimaryToSecondary, vPrimaryToSecondary) ./ vecNormARH(rPrimaryToSecondary).^2;
             
             posOffsetOrigin = rVectSunToOriginBody;
             velOffsetOrigin = vVectSunToOriginBody;
@@ -68,15 +68,17 @@ classdef TwoBodyRotatingFrame < AbstractReferenceFrame
         end
         
         function bodyInfo = getNonOriginBody(obj)
-            switch obj.originPt
-                case TwoBodyRotatingFrameOriginEnum.Primary
-                    bodyInfo = obj.secondaryBodyInfo; 
-                    
-                case TwoBodyRotatingFrameOriginEnum.Secondary
-                    bodyInfo = obj.primaryBodyInfo;
-                    
-                otherwise
-                    error('Unknown origin point enumeration: %s', obj.originPt.name);
+            for(i=1:length(obj))
+                switch obj.originPt
+                    case TwoBodyRotatingFrameOriginEnum.Primary
+                        bodyInfo(i) = obj(i).secondaryBodyInfo; 
+
+                    case TwoBodyRotatingFrameOriginEnum.Secondary
+                        bodyInfo(i) = obj(i).primaryBodyInfo;
+
+                    otherwise
+                        error('Unknown origin point enumeration: %s', string(obj(i).originPt));
+                end
             end
         end
         
@@ -100,7 +102,7 @@ classdef TwoBodyRotatingFrame < AbstractReferenceFrame
                               obj.originPt.name);
         end
         
-        function newFrame = editFrameDialogUI(obj)
+        function newFrame = editFrameDialogUI(obj, ~)
             if(isempty(obj.celBodyData))
                 obj.celBodyData = obj.primaryBodyInfo.celBodyData;
             end

@@ -5,13 +5,13 @@ function [dv, deltaV1, deltaV2, deltaV1R, deltaV2R, xfrOrbit, deltaV1NTW, deltaV
     burn2TA = AngleZero2Pi(x(2));
     xfrArcTOF = x(3);
     
-    if(iniOrbit(2)<1E-5 && finOrbit(2)<1E-5) 
-        if(finOrbit(2)<1E-5)
-            finOrbit(2) = finOrbit(2) + 1E-5;
-        else
-            iniOrbit(2) = iniOrbit(2) + 1E-5;
-        end
-    end
+%     if(iniOrbit(2)<1E-5 && finOrbit(2)<1E-5) 
+%         if(finOrbit(2)<1E-5)
+%             finOrbit(2) = finOrbit(2) + 1E-5;
+%         else
+%             iniOrbit(2) = iniOrbit(2) + 1E-5;
+%         end
+%     end
  
 %     if(iniOrbit(3)<1E-3 && finOrbit(3)<1E-3) 
 %         finOrbit(3) = finOrbit(3) + 1E-3;

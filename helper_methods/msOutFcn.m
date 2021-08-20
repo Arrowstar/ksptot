@@ -17,7 +17,12 @@ function [stop, options] = msOutFcn(optimValues, ~, totIterExpect, hWaitBar, ini
     msgStr = {[iniMessage, ' [',num2str(optimValues.localrunindex),'/',num2str(totIterExpect),']'],...
               estTimeStr};
     
-    waitbar(optimValues.localrunindex/totIterExpect, hWaitBar, msgStr);
+	try
+        waitbar(optimValues.localrunindex/totIterExpect, hWaitBar, msgStr);
+    catch
+        hWaitBar.Message = msgStr;
+        hWaitBar.Value = optimValues.localrunindex/totIterExpect;
+	end
     stop = false;
     if(nargout == 2)
         options=[];

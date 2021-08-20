@@ -54,6 +54,8 @@ function lvd_EditActionSetPwrSinkStateGUI_OpeningFcn(hObject, eventdata, handles
 
     % Choose default command line output for lvd_EditActionSetPwrSinkStateGUI
     handles.output = hObject;
+    
+    centerUIFigure(hObject);
 
     action = varargin{1};
     setappdata(hObject,'action',action);

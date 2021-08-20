@@ -55,6 +55,8 @@ function lvd_editIpoptOptionsGUI_OpeningFcn(hObject, eventdata, handles, varargi
     % Choose default command line output for lvd_editIpoptOptionsGUI
     handles.output = hObject;
     
+    centerUIFigure(hObject);
+    
     ipoptOpt = varargin{1};
     setappdata(hObject,'ipoptOpt',ipoptOpt);
 

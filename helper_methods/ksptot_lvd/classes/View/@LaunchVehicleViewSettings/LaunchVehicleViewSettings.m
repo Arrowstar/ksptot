@@ -21,8 +21,8 @@ classdef LaunchVehicleViewSettings < matlab.mixin.SetGet
             obj.selViewProfile = newProfile;
         end
         
-        function plotTrajectoryWithActiveViewProfile(obj, handles)
-            obj.selViewProfile.plotTrajectory(obj.lvdData, handles);
+        function plotTrajectoryWithActiveViewProfile(obj, handles, app)
+            obj.selViewProfile.plotTrajectory(obj.lvdData, handles, app);
         end
         
         function addViewProfile(obj, newProfile)
@@ -92,6 +92,36 @@ classdef LaunchVehicleViewSettings < matlab.mixin.SetGet
         function removeGrdObjFromViewProfiles(obj, grdObj)
             for(i=1:length(obj.viewProfiles))
                 obj.viewProfiles(i).removeGrdObjFromList(grdObj);
+            end
+        end
+        
+        function removeGeoPointFromViewProfiles(obj, point)
+            for(i=1:length(obj.viewProfiles))
+                obj.viewProfiles(i).removeGeoPointFromList(point);
+            end
+        end
+        
+        function removeGeoVectorFromViewProfiles(obj, vector)
+            for(i=1:length(obj.viewProfiles))
+                obj.viewProfiles(i).removeGeoVectorFromList(vector);
+            end
+        end
+        
+        function removeGeoRefFrameFromViewProfiles(obj, refFrame)
+            for(i=1:length(obj.viewProfiles))
+                obj.viewProfiles(i).removeGeoRefFrameFromList(refFrame);
+            end
+        end
+        
+        function removeGeoAngleFromViewProfiles(obj, angle)
+            for(i=1:length(obj.viewProfiles))
+                obj.viewProfiles(i).removeGeoAngleFromList(angle);
+            end
+        end
+        
+        function removeGeoPlaneFromViewProfiles(obj, plane)
+            for(i=1:length(obj.viewProfiles))
+                obj.viewProfiles(i).removeGeoPlaneFromList(plane);
             end
         end
     end

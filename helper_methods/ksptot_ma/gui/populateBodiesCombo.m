@@ -14,7 +14,5 @@ function populateBodiesCombo(celBodyData, hBodiesCombo, varargin)
     set(hBodiesCombo, 'String', bodiesStr);
     if(length(bodiesStr) >= 1)
         set(hBodiesCombo, 'value', 1);
-    elseif(length(bodiesStr) >= 1)
-        set(hBodiesCombo, 'value', 1);
     end
 end

@@ -54,6 +54,8 @@ function lvd_editThrottleModifierProfileElementGUI_OpeningFcn(hObject, eventdata
 
     % Choose default command line output for lvd_editThrottleModifierProfileElementGUI
     handles.output = hObject;
+    
+    centerUIFigure(hObject);
 
     elem = varargin{1};
     setappdata(hObject,'elem',elem);

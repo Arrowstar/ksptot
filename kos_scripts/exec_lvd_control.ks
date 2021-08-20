@@ -24,7 +24,7 @@
 // =================================================
 // INPUTS
 // =================================================
-	set fPath to "test.csv". //change "test.csv" to your CSV file name.  See step (4) above.
+	set fPath to "testKscPointing.csv". //change "test.csv" to your CSV file name.  See step (4) above.
 	set printOutput to true. //set to false to disable output display (time, steering, orbit, etc)
 
 // =================================================
@@ -97,9 +97,9 @@ until xq > xArr[xArr:length - 1] {
 		horzLine(l).  set l to l + 1.
 		paddedPrintLine(" Commanded Attitude",0,l).  set l to l + 1.
 		horzLine(l).  set l to l + 1.
-		paddedPrintLine("Yaw:        " + padding(yaw  , 0, dataNumPlaces) + " deg (Err: " + padding(yaw - compass_for(), 0, dataNumPlaces) + " deg)", dataPrintOffset, l).  set l to l + 1.
-		paddedPrintLine("Pitch:      " + padding(pitch, 0, dataNumPlaces) + " deg (Err: " + padding(pitch - pitch_for(), 0, dataNumPlaces) + " deg)", dataPrintOffset, l).  set l to l + 1.
-		paddedPrintLine("Roll:       " + padding(roll , 0, dataNumPlaces) + " deg", dataPrintOffset, l).  set l to l + 1.
+		paddedPrintLine("Yaw:        " + padding(yaw  , 0, dataNumPlaces) + " deg (Err: " + padding(STEERINGMANAGER:YAWERROR, 0, dataNumPlaces) + " deg)", dataPrintOffset, l).  set l to l + 1.
+		paddedPrintLine("Pitch:      " + padding(pitch, 0, dataNumPlaces) + " deg (Err: " + padding(STEERINGMANAGER:PITCHERROR, 0, dataNumPlaces) + " deg)", dataPrintOffset, l).  set l to l + 1.
+		paddedPrintLine("Roll:       " + padding(roll , 0, dataNumPlaces) + " deg (Err: " + padding(STEERINGMANAGER:ROLLERROR, 0, dataNumPlaces) + " deg)", dataPrintOffset, l).  set l to l + 1.
 		
 		horzLine(l).  set l to l + 1.
 		paddedPrintLine(" Commanded Throttle",0,l).  set l to l + 1.

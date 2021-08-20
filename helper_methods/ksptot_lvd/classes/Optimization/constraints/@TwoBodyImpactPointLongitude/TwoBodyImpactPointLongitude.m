@@ -5,9 +5,15 @@ classdef TwoBodyImpactPointLongitude < AbstractConstraint
     properties
         normFact = 1;
         event LaunchVehicleEvent
+        eventNode(1,1) ConstraintStateComparisonNodeEnum = ConstraintStateComparisonNodeEnum.FinalState;
         
         lb(1,1) double = 0;
         ub(1,1) double = 0;
+        
+        evalType(1,1) ConstraintEvalTypeEnum = ConstraintEvalTypeEnum.FixedBounds;
+        stateCompType(1,1) ConstraintStateComparisonTypeEnum = ConstraintStateComparisonTypeEnum.Equals;
+        stateCompEvent LaunchVehicleEvent
+        stateCompNode(1,1) ConstraintStateComparisonNodeEnum = ConstraintStateComparisonNodeEnum.FinalState;
     end
     
     methods
@@ -24,9 +30,19 @@ classdef TwoBodyImpactPointLongitude < AbstractConstraint
             ub = obj.ub;
         end
         
-        function [c, ceq, value, lwrBnd, uprBnd, type, eventNum] = evalConstraint(obj, stateLog, celBodyData)           
+        function [c, ceq, value, lwrBnd, uprBnd, type, eventNum, valueStateComp] = evalConstraint(obj, stateLog, celBodyData)           
             type = obj.getConstraintType();
-            stateLogEntry = stateLog.getLastStateLogForEvent(obj.event);
+            
+            switch obj.eventNode
+                case ConstraintStateComparisonNodeEnum.FinalState
+                    stateLogEntry = stateLog.getLastStateLogForEvent(obj.event);
+                    
+                case ConstraintStateComparisonNodeEnum.InitialState
+                    stateLogEntry = stateLog.getFirstStateLogForEvent(obj.event);
+                
+                otherwise
+                    error('Unknown event node.');
+            end
 
             value = lvd_TwoBodyImpactPointTasks(stateLogEntry, 'longitude');
             
@@ -34,16 +50,32 @@ classdef TwoBodyImpactPointLongitude < AbstractConstraint
                 value = 1000; %need to throw in a real number
             end
             
-            if(obj.lb == obj.ub)
-                c = [];
-                ceq(1) = value - obj.ub;
+            if(obj.evalType == ConstraintEvalTypeEnum.StateComparison)
+                switch obj.stateCompNode
+                    case ConstraintStateComparisonNodeEnum.FinalState
+                        stateLogEntryStateComp = stateLog.getLastStateLogForEvent(obj.stateCompEvent).deepCopy();
+
+                    case ConstraintStateComparisonNodeEnum.InitialState
+                        stateLogEntryStateComp = stateLog.getFirstStateLogForEvent(obj.stateCompEvent).deepCopy();
+
+                    otherwise
+                        error('Unknown event node.');
+                end
+                
+                cartElem = stateLogEntryStateComp.getCartesianElementSetRepresentation();
+                cartElem = cartElem.convertToFrame(stateLogEntry.centralBody.getBodyCenteredInertialFrame());
+                stateLogEntryStateComp.setCartesianElementSet(cartElem);
+
+                valueStateComp = lvd_TwoBodyImpactPointTasks(stateLogEntryStateComp, 'longitude');
+
+                if(isnan(valueStateComp))
+                    valueStateComp = 1000; %need to throw in a real number
+                end
             else
-                c(1) = obj.lb - value;
-                c(2) = value - obj.ub;
-                ceq = [];
+                valueStateComp = NaN;
             end
-            c = c/obj.normFact;
-            ceq = ceq/obj.normFact;  
+            
+            [c, ceq] = obj.computeCAndCeqValues(value, valueStateComp); 
             
             lwrBnd = obj.lb;
             uprBnd = obj.ub;
@@ -77,6 +109,9 @@ classdef TwoBodyImpactPointLongitude < AbstractConstraint
         
         function tf = usesEvent(obj, event)
             tf = obj.event == event;
+            if(obj.evalType == ConstraintEvalTypeEnum.StateComparison)
+                tf = tf || obj.stateCompEvent == event;
+            end
         end
         
         function tf = usesStopwatch(obj, stopwatch)

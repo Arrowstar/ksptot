@@ -22,7 +22,7 @@ function varargout = lvd_EditGenericMAConstraintGUI(varargin)
 
 % Edit the above text to modify the response to help lvd_EditGenericMAConstraintGUI
 
-% Last Modified by GUIDE v2.5 21-Mar-2019 18:27:29
+% Last Modified by GUIDE v2.5 13-May-2021 10:20:21
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -54,6 +54,8 @@ function lvd_EditGenericMAConstraintGUI_OpeningFcn(hObject, eventdata, handles, 
 
     % Choose default command line output for lvd_EditGenericMAConstraintGUI
     handles.output = hObject;
+    
+    centerUIFigure(hObject);
 
     constraint = varargin{1};
     setappdata(hObject, 'constraint', constraint);
@@ -72,7 +74,7 @@ function lvd_EditGenericMAConstraintGUI_OpeningFcn(hObject, eventdata, handles, 
 function populateGUI(handles, constraint, lvdData)
     handles.constraintTypeLabel.String = constraint.getConstraintType();
     handles.constraintTypeLabel.TooltipString = constraint.getConstraintType();
-    [unit, ~, ~, usesLbUb, usesCelBody, usesRefSc] = constraint.getConstraintStaticDetails();
+    [unit, ~, ~, usesLbUb, ~, ~] = constraint.getConstraintStaticDetails();
     
     if(usesLbUb)
         [lb, ub] = constraint.getBounds();
@@ -90,50 +92,19 @@ function populateGUI(handles, constraint, lvdData)
     handles.ubUnitLabel.String = unit;
     handles.lbUnitLabel.String = unit;
     
-    if(usesCelBody)
-        populateBodiesCombo(lvdData.celBodyData, handles.celBodyCombo, true);
-        if(not(isempty(constraint.refBodyInfo)))
-            value = findValueFromComboBox(constraint.refBodyInfo.name, handles.celBodyCombo);
-            handles.celBodyCombo.Value = value;
-        else
-            handles.celBodyCombo.Value = 1;
-        end
-    else
-        handles.celBodyCombo.Enable = 'off';
+    frame = constraint.frame;
+    if(isempty(frame))
+        frame = LvdData.getDefaultInitialBodyInfo(lvdData.celBodyData).getBodyCenteredInertialFrame();
+        constraint.frame = frame;
     end
+    setappdata(handles.lvd_EditGenericMAConstraintGUI,'frame',frame);
     
-    if(usesRefSc)
-        refOSc = constraint.refOtherSC;
-        if(isempty(refOSc) || not(isfield(refOSc,'id')))
-            otherSCID = [];
-        else
-            otherSCID = refOSc.id;
-        end
-
-        populateOtherSCCombo(handles, handles.refSpacecraftCombo);
-        otherSC = {};
-        if(~isempty(otherSC))
-            enableRefSC = true;
-            for(i=1:length(otherSC)) %#ok<*NO4LP>
-                oSC = otherSC{i};
-                if(oSC.id == otherSCID)
-                    value = findValueFromComboBox(oSC.name, handles.refSpacecraftCombo);
-                    set(handles.refSpacecraftCombo,'value',value);
-                    break;
-                end
-            end
-        else
-            enableRefSC = false;
-        end
-
-        if(enableRefSC)
-            handles.refSpacecraftCombo.Enable = 'on';
-        else
-            handles.refSpacecraftCombo.Enable = 'off';
-        end
-    else
-        handles.refSpacecraftCombo.Enable = 'off';
-    end
+    handles.refFrameTypeCombo.String = ReferenceFrameEnum.getListBoxStr();
+    [ind, ~] = ReferenceFrameEnum.getIndForName(frame.typeEnum.name);
+    handles.refFrameTypeCombo.Value = ind;
+    handles.setFrameOptionsButton.TooltipString = sprintf('Current Frame: %s', frame.getNameStr());
+    handles.refFrameNameLabel.String = sprintf('%s', frame.getNameStr());
+    handles.refFrameNameLabel.TooltipString = sprintf('%s', frame.getNameStr());
     
     evtNum = lvdData.script.getNumOfEvent(constraint.event);
     handles.eventCombo.String = lvdData.script.getListboxStr();
@@ -143,7 +114,29 @@ function populateGUI(handles, constraint, lvdData)
         handles.eventCombo.Value = 1;
     end
     
+    handles.eventNodeCombo.String = ConstraintStateComparisonNodeEnum.getListBoxStr();
+    handles.eventNodeCombo.Value = ConstraintStateComparisonNodeEnum.getIndForName(constraint.eventNode.name);
+    
+    handles.stateComparisonNodeCombo.String = ConstraintStateComparisonNodeEnum.getListBoxStr();
+    handles.stateComparisonNodeCombo.Value = ConstraintStateComparisonNodeEnum.getIndForName(constraint.stateCompNode.name);
+    
+    handles.constraintEvalTypeCombo.String = ConstraintEvalTypeEnum.getListBoxStr();
+    handles.constraintEvalTypeCombo.Value = ConstraintEvalTypeEnum.getIndForName(constraint.evalType.name);
+    constraintEvalTypeCombo_Callback(handles.constraintEvalTypeCombo, [], handles);
+    
+    evtNum = lvdData.script.getNumOfEvent(constraint.stateCompEvent);
+    handles.compEventCombo.String = lvdData.script.getListboxStr();
+    if(not(isempty(evtNum)))
+        handles.compEventCombo.Value = evtNum;
+    else
+        handles.compEventCombo.Value = 1;
+    end
+    
+    handles.comparisonTypeCombo.String = ConstraintStateComparisonTypeEnum.getListBoxStr();
+    handles.comparisonTypeCombo.Value = ConstraintStateComparisonTypeEnum.getIndForName(constraint.stateCompType.name);
+    
     handles.constActiveCheckbox.Value = constraint.active;
+    
     
 % --- Outputs from this function are returned to the command line.
 function varargout = lvd_EditGenericMAConstraintGUI_OutputFcn(hObject, eventdata, handles) 
@@ -158,36 +151,41 @@ function varargout = lvd_EditGenericMAConstraintGUI_OutputFcn(hObject, eventdata
     else
         constraint = getappdata(hObject, 'constraint');
         lvdData = getappdata(hObject,'lvdData');
-        celBodyData = lvdData.celBodyData;
         
         constraint.lb = str2double(handles.lbText.String);
         constraint.ub = str2double(handles.ubText.String);
         
         constraint.setScaleFactor(str2double(handles.scaleFactorText.String));
+
+        frame = getappdata(hObject,'frame');
+        constraint.frame = frame;
         
-        if(handles.celBodyCombo.Value > 1)
-            bodyNameCell = handles.celBodyCombo.String(handles.celBodyCombo.Value);
-            bodyName = lower(strtrim(bodyNameCell{1}));
-            bodyInfo = celBodyData.(bodyName);
-            constraint.refBodyInfo = bodyInfo;
-        else
-            constraint.refBodyInfo = KSPTOT_BodyInfo.empty(1,0);
-        end
+        [~, enums] = ConstraintEvalTypeEnum.getListBoxStr();
+        constraint.evalType = enums(handles.constraintEvalTypeCombo.Value);
         
-        otherSC = {};
-        if(length(otherSC) > 1)
-            selOSC = handles.refSpacecraftCombo.Value;
-            constraint.refOtherSC = otherSC(selOSC);
-        else
-            constraint.refOtherSC = struct.empty(1,0);
-        end
+        [~, enums] = ConstraintStateComparisonTypeEnum.getListBoxStr();
+        constraint.stateCompType = enums(handles.comparisonTypeCombo.Value);
         
+        [~, enums] = ConstraintStateComparisonNodeEnum.getListBoxStr();
+        constraint.eventNode = enums(handles.eventNodeCombo.Value);
+        
+        [~, enums] = ConstraintStateComparisonNodeEnum.getListBoxStr();
+        constraint.stateCompNode = enums(handles.stateComparisonNodeCombo.Value);
+               
         numEvents = lvdData.script.getTotalNumOfEvents();
         if(numEvents > 0)
             eventNum = handles.eventCombo.Value;
             constraint.event = lvdData.script.getEventForInd(eventNum);
+            
+            if(constraint.evalType == ConstraintEvalTypeEnum.StateComparison)
+                eventNum = handles.compEventCombo.Value;
+                constraint.stateCompEvent = lvdData.script.getEventForInd(eventNum);
+            else
+                constraint.stateCompEvent = LaunchVehicleEvent.empty(1,0);
+            end
         else
             constraint.event = LaunchVehicleEvent.empty(1,0);
+            constraint.stateCompEvent = LaunchVehicleEvent.empty(1,0);
         end
         
         constraint.active = logical(handles.constActiveCheckbox.Value);
@@ -252,6 +250,14 @@ function errMsg = validateInputs(handles)
     ub = Inf;
     isInt = false;
     errMsg = validateNumber(sf, numberName, lb, ub, isInt, errMsg, enteredStr);
+    
+    [~, enums] = ConstraintEvalTypeEnum.getListBoxStr();
+    evalTypeEnum = enums(handles.constraintEvalTypeCombo.Value);
+    if(evalTypeEnum == ConstraintEvalTypeEnum.StateComparison && ...
+       handles.eventCombo.Value == handles.compEventCombo.Value && ...
+       handles.eventNodeCombo.Value == handles.stateComparisonNodeCombo.Value)
+        errMsg{end+1} = 'When using the state comparison evaluation type, the Applicable Event and Node and Comparison Event and Node must be different.'; 
+    end
 
     
 % --- Executes on button press in cancelButton.
@@ -261,30 +267,7 @@ function cancelButton_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
     close(handles.lvd_EditGenericMAConstraintGUI);
 
-
-function engineNameText_Callback(hObject, eventdata, handles)
-% hObject    handle to engineNameText (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of engineNameText as text
-%        str2double(get(hObject,'String')) returns contents of engineNameText as a double
-
-
-% --- Executes during object creation, after setting all properties.
-function engineNameText_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to engineNameText see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
-
+    
 function lbText_Callback(hObject, eventdata, handles)
 % hObject    handle to lbText (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -308,29 +291,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
-
-% --- Executes on selection change in stageCombo.
-function stageCombo_Callback(hObject, eventdata, handles)
-% hObject    handle to stageCombo (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: contents = cellstr(get(hObject,'String')) returns stageCombo contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from stageCombo
-
-
-% --- Executes during object creation, after setting all properties.
-function stageCombo_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to stageCombo (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: popupmenu controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
 
 
 % --- Executes during object creation, after setting all properties.
@@ -365,42 +325,19 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes on selection change in celBodyCombo.
-function celBodyCombo_Callback(hObject, eventdata, handles)
-% hObject    handle to celBodyCombo (see GCBO)
+% --- Executes on selection change in refFrameTypeCombo.
+function refFrameTypeCombo_Callback(hObject, eventdata, handles)
+% hObject    handle to refFrameTypeCombo (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: contents = cellstr(get(hObject,'String')) returns celBodyCombo contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from celBodyCombo
-
-
-% --- Executes during object creation, after setting all properties.
-function celBodyCombo_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to celBodyCombo (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: popupmenu controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
-% --- Executes on selection change in refSpacecraftCombo.
-function refSpacecraftCombo_Callback(hObject, eventdata, handles)
-% hObject    handle to refSpacecraftCombo (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: contents = cellstr(get(hObject,'String')) returns refSpacecraftCombo contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from refSpacecraftCombo
-
+% Hints: contents = cellstr(get(hObject,'String')) returns refFrameTypeCombo contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from refFrameTypeCombo
+    updateFrameChange(handles);
 
 % --- Executes during object creation, after setting all properties.
-function refSpacecraftCombo_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to refSpacecraftCombo (see GCBO)
+function refFrameTypeCombo_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to refFrameTypeCombo (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -484,3 +421,238 @@ function constActiveCheckbox_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of constActiveCheckbox
+
+
+% --- Executes on selection change in constraintEvalTypeCombo.
+function constraintEvalTypeCombo_Callback(hObject, eventdata, handles)
+% hObject    handle to constraintEvalTypeCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns constraintEvalTypeCombo contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from constraintEvalTypeCombo
+    contents = cellstr(get(hObject,'String'));
+    name = contents{get(hObject,'Value')};
+
+    enum = ConstraintEvalTypeEnum.getEnumForListboxStr(name);
+    switch enum
+        case ConstraintEvalTypeEnum.FixedBounds
+            handles.ubText.Enable = 'on';
+            handles.lbText.Enable = 'on';
+            handles.compEventCombo.Enable = 'off';
+            handles.comparisonTypeCombo.Enable = 'off';
+            handles.stateComparisonNodeCombo.Enable = 'off';
+            
+        case ConstraintEvalTypeEnum.StateComparison
+            handles.ubText.Enable = 'off';
+            handles.lbText.Enable = 'off';
+            handles.compEventCombo.Enable = 'on';
+            handles.comparisonTypeCombo.Enable = 'on';
+            handles.stateComparisonNodeCombo.Enable = 'on';
+            
+        otherwise
+            error('Unknown constraint evaluation type.');
+    end
+
+% --- Executes during object creation, after setting all properties.
+function constraintEvalTypeCombo_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to constraintEvalTypeCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in compEventCombo.
+function compEventCombo_Callback(hObject, eventdata, handles)
+% hObject    handle to compEventCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns compEventCombo contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from compEventCombo
+
+
+% --- Executes during object creation, after setting all properties.
+function compEventCombo_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to compEventCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in comparisonTypeCombo.
+function comparisonTypeCombo_Callback(hObject, eventdata, handles)
+% hObject    handle to comparisonTypeCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns comparisonTypeCombo contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from comparisonTypeCombo
+
+
+% --- Executes during object creation, after setting all properties.
+function comparisonTypeCombo_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to comparisonTypeCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in setFrameOptionsButton.
+function setFrameOptionsButton_Callback(hObject, eventdata, handles)
+% hObject    handle to setFrameOptionsButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    curFrame = getappdata(handles.lvd_EditGenericMAConstraintGUI,'frame');
+    curFrame = curFrame.editFrameDialogUI(EditReferenceFrameContextEnum.ForState);
+    
+    setappdata(handles.lvd_EditGenericMAConstraintGUI,'frame',curFrame);
+    
+    handles.setFrameOptionsButton.Tooltip = sprintf('Current Frame: %s', curFrame.getNameStr());
+    handles.refFrameNameLabel.String = sprintf('%s', curFrame.getNameStr());
+    handles.refFrameNameLabel.TooltipString = sprintf('%s', curFrame.getNameStr());
+
+
+function updateFrameChange(handles)
+    lvdData = getappdata(handles.lvd_EditGenericMAConstraintGUI,'lvdData');
+    celBodyData = lvdData.celBodyData;
+
+    refEnumListBoxStr = ReferenceFrameEnum.getListBoxStr();
+    selFrameTypeInd = handles.refFrameTypeCombo.Value;
+    refFrameEnum = ReferenceFrameEnum.getEnumForListboxStr(refEnumListBoxStr{selFrameTypeInd});
+
+%             if(not(isempty(newFrame)) && newFrame.typeEnum ~= refFrameEnum)
+%                 refFrameEnum = newFrame.typeEnum;
+%                 app.refFrameTypeCombo.Value = ReferenceFrameEnum.getIndForName(refFrameEnum.name);
+%             end
+
+    switch refFrameEnum
+        case ReferenceFrameEnum.BodyCenteredInertial
+            bodyInfo = getSelectedBodyInfo(handles);            
+
+            newFrame = bodyInfo.getBodyCenteredInertialFrame();
+
+        case ReferenceFrameEnum.BodyFixedRotating
+            bodyInfo = getSelectedBodyInfo(handles);
+
+            newFrame = bodyInfo.getBodyFixedFrame();
+
+        case ReferenceFrameEnum.TwoBodyRotating            
+            bodyInfo = getSelectedBodyInfo(handles);
+            if(not(isempty(bodyInfo.childrenBodyInfo)))
+                primaryBody = bodyInfo;
+                secondaryBody = bodyInfo.childrenBodyInfo(1);
+            else
+                primaryBody = bodyInfo.getParBodyInfo();
+                secondaryBody = bodyInfo;
+            end
+
+            originPt = TwoBodyRotatingFrameOriginEnum.Primary;
+
+            newFrame = TwoBodyRotatingFrame(primaryBody, secondaryBody, originPt, celBodyData);
+
+        case ReferenceFrameEnum.UserDefined
+            numFrames = lvdData.geometry.refFrames.getNumRefFrames();
+            if(numFrames >= 1)
+                geometricFrame = AbstractGeometricRefFrame.empty(1,0);
+                for(i=1:numFrames)
+                    frame = lvdData.geometry.refFrames.getRefFrameAtInd(i);
+                    if(frame.isVehDependent() == false)
+                        geometricFrame = frame;
+                        break;
+                    end
+                end
+
+                if(not(isempty(geometricFrame)))
+                    newFrame = UserDefinedGeometricFrame(geometricFrame, lvdData);
+                else
+                    bodyInfo = getSelectedBodyInfo(handles);
+                    newFrame = bodyInfo.getBodyCenteredInertialFrame();
+
+                    warndlg('There are no geometric frames available which are not dependent on vehicle properties.  A body-centered inertial frame will be selected instead.');
+                end
+            else
+                bodyInfo = getSelectedBodyInfo(handles);
+                newFrame = bodyInfo.getBodyCenteredInertialFrame();
+
+                warndlg('There are no geometric frames available which are not dependent on vehicle properties.  A body-centered inertial frame will be selected instead.');
+            end
+
+        otherwise
+            error('Unknown reference frame type: %s', string(refFrameEnum));                
+    end
+
+    if(not(isempty(newFrame)) && newFrame.typeEnum ~= refFrameEnum)
+        refFrameEnum = newFrame.typeEnum;
+        handles.refFrameTypeCombo.Value = ReferenceFrameEnum.getIndForName(refFrameEnum.name);
+    end
+
+    setappdata(handles.lvd_EditGenericMAConstraintGUI,'frame', newFrame);
+    handles.setFrameOptionsButton.TooltipString = sprintf('Current Frame: %s', newFrame.getNameStr());
+    handles.refFrameNameLabel.String = sprintf('%s', newFrame.getNameStr());
+    handles.refFrameNameLabel.TooltipString = sprintf('%s', newFrame.getNameStr());
+    
+function bodyInfo = getSelectedBodyInfo(handles)
+    curFrame = getappdata(handles.lvd_EditGenericMAConstraintGUI,'frame');
+    bodyInfo = curFrame.getOriginBody();
+
+
+% --- Executes on selection change in eventNodeCombo.
+function eventNodeCombo_Callback(hObject, eventdata, handles)
+% hObject    handle to eventNodeCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns eventNodeCombo contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from eventNodeCombo
+
+
+% --- Executes during object creation, after setting all properties.
+function eventNodeCombo_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to eventNodeCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in stateComparisonNodeCombo.
+function stateComparisonNodeCombo_Callback(hObject, eventdata, handles)
+% hObject    handle to stateComparisonNodeCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns stateComparisonNodeCombo contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from stateComparisonNodeCombo
+
+
+% --- Executes during object creation, after setting all properties.
+function stateComparisonNodeCombo_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to stateComparisonNodeCombo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

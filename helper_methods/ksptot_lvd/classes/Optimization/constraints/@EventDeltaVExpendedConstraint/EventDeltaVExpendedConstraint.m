@@ -5,9 +5,15 @@ classdef EventDeltaVExpendedConstraint < AbstractConstraint
     properties
         normFact = 1;
         event LaunchVehicleEvent
+        eventNode(1,1) ConstraintStateComparisonNodeEnum = ConstraintStateComparisonNodeEnum.FinalState;
         
         lb(1,1) double = 0;
         ub(1,1) double = 0;
+        
+        evalType(1,1) ConstraintEvalTypeEnum = ConstraintEvalTypeEnum.FixedBounds;
+        stateCompType(1,1) ConstraintStateComparisonTypeEnum = ConstraintStateComparisonTypeEnum.Equals;
+        stateCompEvent LaunchVehicleEvent
+        stateCompNode(1,1) ConstraintStateComparisonNodeEnum = ConstraintStateComparisonNodeEnum.FinalState;
     end
     
     methods
@@ -16,7 +22,7 @@ classdef EventDeltaVExpendedConstraint < AbstractConstraint
             obj.lb = lb;
             obj.ub = ub;   
             
-             obj.id = rand();
+            obj.id = rand();
         end
         
         function [lb, ub] = getBounds(obj)
@@ -24,10 +30,96 @@ classdef EventDeltaVExpendedConstraint < AbstractConstraint
             ub = obj.ub;
         end
         
-        function [c, ceq, value, lwrBnd, uprBnd, type, eventNum] = evalConstraint(obj, stateLog, celBodyData)           
+        function [c, ceq, value, lwrBnd, uprBnd, type, eventNum, valueStateComp] = evalConstraint(obj, stateLog, celBodyData)           
             type = obj.getConstraintType();
-            subStateLog = stateLog.getAllStateLogEntriesForEvent(obj.event);
+
+            deltaVExpended = EventDeltaVExpendedConstraint.computeTotalDeltaV(stateLog, obj.event);
+            value = deltaVExpended;
+                       
+            if(obj.evalType == ConstraintEvalTypeEnum.StateComparison)               
+                valueStateComp = EventDeltaVExpendedConstraint.computeTotalDeltaV(stateLog, obj.stateCompEvent);
+                
+            else
+                valueStateComp = NaN;
+            end
             
+            [c, ceq] = obj.computeCAndCeqValues(value, valueStateComp);   
+            
+            lwrBnd = obj.lb;
+            uprBnd = obj.ub;
+            
+            eventNum = obj.event.getEventNum();
+        end
+        
+        function sF = getScaleFactor(obj)
+            sF = obj.normFact;
+        end
+        
+        function setScaleFactor(obj, sF)
+            obj.normFact = sF;
+        end
+        
+        function tf = usesStage(obj, stage)
+            tf = false;
+        end
+        
+        function tf = usesEngine(obj, engine)
+            tf = false;
+        end
+        
+        function tf = usesTank(obj, tank)
+            tf = false;
+        end
+        
+        function tf = usesEngineToTankConn(obj, engineToTank)
+            tf = false;
+        end
+        
+        function tf = usesEvent(obj, event)
+            tf = obj.event == event;
+            if(obj.evalType == ConstraintEvalTypeEnum.StateComparison)
+                tf = tf || obj.stateCompEvent == event;
+            end
+        end
+        
+        function tf = usesStopwatch(obj, stopwatch)
+            tf = false;
+        end
+        
+        function tf = usesExtremum(obj, extremum)
+            tf = false;
+        end
+        
+        function tf = canUseSparseOutput(obj)
+            tf = false;
+        end
+        
+        function event = getConstraintEvent(obj)
+            event = obj.event;
+        end
+        
+        function type = getConstraintType(obj)
+            type = 'Event Delta-V Expended';
+        end
+        
+        function [unit, lbLim, ubLim, usesLbUb, usesCelBody, usesRefSc] = getConstraintStaticDetails(obj)
+            unit = 'km/s';
+            lbLim = 0;
+            ubLim = Inf;
+            usesLbUb = true;
+            usesCelBody = false;
+            usesRefSc = false;
+        end
+        
+        function addConstraintTf = openEditConstraintUI(obj, lvdData)
+            addConstraintTf = lvd_EditGenericMAConstraintGUI(obj, lvdData);
+        end
+    end
+    
+    methods(Static, Access=private)
+        function deltaVExpended = computeTotalDeltaV(stateLog, event)
+            subStateLog = stateLog.getAllStateLogEntriesForEvent(event);
+
             if(length(subStateLog) > 1)
                 g0 = getG0();
                 deltaVExpended = 0;
@@ -81,85 +173,6 @@ classdef EventDeltaVExpendedConstraint < AbstractConstraint
             else
                 deltaVExpended = 0;
             end
-            
-            value = deltaVExpended;
-                       
-            if(obj.lb == obj.ub)
-                c = [];
-                ceq(1) = value - obj.ub;
-            else
-                c(1) = obj.lb - value;
-                c(2) = value - obj.ub;
-                ceq = [];
-            end
-            c = c/obj.normFact;
-            ceq = ceq/obj.normFact;  
-            
-            lwrBnd = obj.lb;
-            uprBnd = obj.ub;
-            
-            eventNum = obj.event.getEventNum();
-        end
-        
-        function sF = getScaleFactor(obj)
-            sF = obj.normFact;
-        end
-        
-        function setScaleFactor(obj, sF)
-            obj.normFact = sF;
-        end
-        
-        function tf = usesStage(obj, stage)
-            tf = false;
-        end
-        
-        function tf = usesEngine(obj, engine)
-            tf = false;
-        end
-        
-        function tf = usesTank(obj, tank)
-            tf = false;
-        end
-        
-        function tf = usesEngineToTankConn(obj, engineToTank)
-            tf = false;
-        end
-        
-        function tf = usesEvent(obj, event)
-            tf = obj.event == event;
-        end
-        
-        function tf = usesStopwatch(obj, stopwatch)
-            tf = false;
-        end
-        
-        function tf = usesExtremum(obj, extremum)
-            tf = false;
-        end
-        
-        function tf = canUseSparseOutput(obj)
-            tf = false;
-        end
-        
-        function event = getConstraintEvent(obj)
-            event = obj.event;
-        end
-        
-        function type = getConstraintType(obj)
-            type = 'Event Delta-V Expended';
-        end
-        
-        function [unit, lbLim, ubLim, usesLbUb, usesCelBody, usesRefSc] = getConstraintStaticDetails(obj)
-            unit = 'km/s';
-            lbLim = 0;
-            ubLim = Inf;
-            usesLbUb = true;
-            usesCelBody = false;
-            usesRefSc = false;
-        end
-        
-        function addConstraintTf = openEditConstraintUI(obj, lvdData)
-            addConstraintTf = lvd_EditGenericMAConstraintGUI(obj, lvdData);
         end
     end
     

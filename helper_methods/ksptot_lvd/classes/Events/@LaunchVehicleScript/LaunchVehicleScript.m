@@ -128,12 +128,14 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
             end
         end
         
-        function listboxStr = getListboxStr(obj)
+        function [listboxStr, events] = getListboxStr(obj)
             listboxStr = cell(length(obj.evts),1);
             
             for(i=1:length(obj.evts))
                 listboxStr{i} = obj.evts(i).getListboxStr();
             end
+            
+            events = obj.evts;
         end
         
         function tf = usesStage(obj, stage)
@@ -286,31 +288,54 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
                         drawnow;
                     end
                     
-                    %Init Event
-                    evt.initEvent(initStateLogEntry);
+                    %Set event correctly
                     initStateLogEntry.event = evt;
 
                     %execute plugins that occur before event
                     obj.lvdData.plugins.executePluginsBeforeEvent(stateLog, evt);
+                                       
+                    if(evt.execActionsNode == ActionExecNodeEnum.BeforeProp)
+                        tActions = tic;
+                        %Execute Actions
+                        initStateLogEntry = initStateLogEntry.deepCopy(); %this state log entry must be copied or the answers will change
+                        stateLog.appendStateLogEntries(initStateLogEntry);
+                        actionStateLogEntries = evt.cleanupEvent(initStateLogEntry); %this executes the actions
+
+                        %Add state log entries to state log
+                        if(not(isempty(actionStateLogEntries)))
+                            stateLog.appendStateLogEntries(actionStateLogEntries);
+                            initStateLogEntry = actionStateLogEntries(end).deepCopy(); %this state log entry must be copied or the answers will change;
+                        end
+                        ttActions = toc(tActions);
+                    end
                     
                     %Get applicable non sequential events and initialize
                     activeNonSeqEvts = obj.nonSeqEvts.getNonSeqEventsForScriptEvent(evt);
                     for(j=1:length(activeNonSeqEvts))
                         activeNonSeqEvts(j).initEvent(initStateLogEntry);
                     end
+                    
+                    %Init Event
+                    evt.initEvent(initStateLogEntry);
                                         
-                    %Execute Event
+                    %Execute Event (propagation)
+                    tPropagate = tic;
                     newStateLogEntries = evt.executeEvent(initStateLogEntry, obj.simDriver, tStartPropTime, tStartSimTime, isSparseOutput, activeNonSeqEvts);
                     stateLog.appendStateLogEntries(newStateLogEntries);
+                    ttPropagate = toc(tPropagate);
                     
-                    %Clean Up Event
-                    initStateLogEntry = newStateLogEntries(end).deepCopy(); %this state log entry must be copied or the answers will change
-                    actionStateLogEntries = evt.cleanupEvent(initStateLogEntry);
-                    
-                    %Add state log entries to state log
-                    if(not(isempty(actionStateLogEntries)))
-                        stateLog.appendStateLogEntries(actionStateLogEntries);
-                        initStateLogEntry = actionStateLogEntries(end).deepCopy(); %this state log entry must be copied or the answers will change;
+                    initStateLogEntry = newStateLogEntries(end).deepCopy();  %this state log entry must be copied or the answers will change
+                    if(evt.execActionsNode == ActionExecNodeEnum.AfterProp)
+                        tActions = tic;
+                        %Execute Actions
+                        actionStateLogEntries = evt.cleanupEvent(initStateLogEntry);
+
+                        %Add state log entries to state log
+                        if(not(isempty(actionStateLogEntries)))
+                            stateLog.appendStateLogEntries(actionStateLogEntries);
+                            initStateLogEntry = actionStateLogEntries(end).deepCopy(); %this state log entry must be copied or the answers will change;
+                        end
+                        ttActions = toc(tActions);
                     end
                     
                     stateLog.appendNonSeqEvtsState(obj.nonSeqEvts.copy(), evt);
@@ -320,7 +345,7 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
                     
                     evtTime = toc(ttt);
                     if(dispEvtPropTimes)
-                        fprintf('(%s) Duration to execute Event %u: %0.3f s (Evt Dur: %0.3f s)\n', datestr(now,'hh:MM:ss'), i, evtTime, newStateLogEntries(end).time-newStateLogEntries(1).time);
+                        fprintf('(%s) Duration to execute Event %u: %0.3f s (Propagation: %0.3f s; Actions: %0.3f s) (Evt Dur: %0.3f s)\n', datestr(now,'hh:MM:ss'), i, evtTime, ttPropagate, ttActions, newStateLogEntries(end).time-newStateLogEntries(1).time);
                     end
                 end
                 
@@ -336,17 +361,17 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
             
             if(evalConstraints)
                 x=obj.lvdData.optimizer.vars.getTotalScaledXVector();
-                [c, ceq, values, lb, ub, type, eventNum, cEventInds, ceqEventInds] = obj.lvdData.optimizer.constraints.evalConstraints(x, false, evtToStartScriptExecAt, allowInterrupt, []);
+                [c, ceq, values, lb, ub, type, eventNum, cEventInds, ceqEventInds, ~, consts, cCInds, cCeqInds, valueStateComps] = obj.lvdData.optimizer.constraints.evalConstraints(x, false, evtToStartScriptExecAt, allowInterrupt, []);
 
                 if(isempty(obj.lvdData.optimizer.constraints.lastRunValues))
                     obj.lvdData.optimizer.constraints.lastRunValues = ConstraintValues();
                 end
 
-                obj.lvdData.optimizer.constraints.lastRunValues.updateValues(c, ceq, values, lb, ub, type, eventNum, cEventInds, ceqEventInds);
+                obj.lvdData.optimizer.constraints.lastRunValues.updateValues(c, ceq, values, lb, ub, type, eventNum, cEventInds, ceqEventInds, consts, cCInds, cCeqInds, valueStateComps);
             end
         end
     end
-    
+
    methods (Static)
       function s = loadobj(s)
          if(isempty(s.nonSeqEvts))

@@ -5,6 +5,8 @@ classdef BodyCenteredInertialFrame < AbstractReferenceFrame
     properties
         bodyInfo KSPTOT_BodyInfo
         celBodyData
+        
+        bodyRotMatFromGlobalInertialToBodyInertial(3,3) double
     end
     
     properties(Constant)
@@ -15,19 +17,35 @@ classdef BodyCenteredInertialFrame < AbstractReferenceFrame
         function obj = BodyCenteredInertialFrame(bodyInfo, celBodyData)
             obj.bodyInfo = bodyInfo;
             obj.celBodyData = celBodyData;
+            obj.bodyRotMatFromGlobalInertialToBodyInertial = obj.bodyInfo.bodyRotMatFromGlobalInertialToBodyInertial;
         end
         
-        function [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = getOffsetsWrtInertialOrigin(obj, time)
-            [rVectB, vVectB] = getPositOfBodyWRTSun(time, obj.bodyInfo, obj.celBodyData);
+        function [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = getOffsetsWrtInertialOrigin(obj, time, ~)
+            [rVectB, vVectB] = getPositOfBodyWRTSun(time, [obj.bodyInfo], obj(1).celBodyData);
             
             posOffsetOrigin = rVectB;
             velOffsetOrigin = vVectB;
-            angVelWrtOrigin = [0;0;0];
-            rotMatToInertial = obj.bodyInfo.bodyRotMatFromGlobalInertialToBodyInertial;
+            angVelWrtOrigin = repmat([0;0;0], [1, length(time)]);
+            
+            if(numel(obj) == 1)
+                rotMatToInertial = repmat(obj.bodyRotMatFromGlobalInertialToBodyInertial, [1, 1, length(time)]);
+                
+            else
+                rotMatToInertial = NaN([3, 3, length(time)]);
+                
+                [uniObj,~,ic] = unique(obj,'stable');
+                for(i=1:length(uniObj))
+                    subObj = uniObj(i);
+                    bool = i == ic;
+                    subTimes = time(bool);
+                    
+                    rotMatToInertial(:,:,bool) = repmat(subObj.bodyRotMatFromGlobalInertialToBodyInertial, [1, 1, numel(subTimes)]);
+                end
+            end
         end
         
         function bodyInfo = getOriginBody(obj)
-            bodyInfo = obj.bodyInfo;
+            bodyInfo = [obj.bodyInfo];
         end
         
         function setOriginBody(obj, newBodyInfo)
@@ -38,7 +56,7 @@ classdef BodyCenteredInertialFrame < AbstractReferenceFrame
             nameStr = sprintf('Inertial Frame (Origin: %s)', obj.bodyInfo.name);
         end
         
-        function newFrame = editFrameDialogUI(obj)
+        function newFrame = editFrameDialogUI(obj, ~)
             if(isempty(obj.celBodyData))
                 obj.celBodyData = obj.bodyInfo.celBodyData;
             end
@@ -81,6 +99,12 @@ classdef BodyCenteredInertialFrame < AbstractReferenceFrame
         
         function bool = ne(A,B)
             bool = not(eq(A,B));
+        end
+    end
+    
+    methods(Static)
+        function obj = loadobj(obj)
+            obj.bodyRotMatFromGlobalInertialToBodyInertial = obj.bodyInfo.bodyRotMatFromGlobalInertialToBodyInertial;
         end
     end
 end

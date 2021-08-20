@@ -55,6 +55,8 @@ function lvd_adjustOptVarGUI_OpeningFcn(hObject, eventdata, handles, varargin)
     % Choose default command line output for lvd_adjustOptVarGUI
     handles.output = hObject;
     
+    centerUIFigure(hObject);
+    
     lvdData = varargin{1};
     setappdata(hObject,'lvdData',lvdData);
     

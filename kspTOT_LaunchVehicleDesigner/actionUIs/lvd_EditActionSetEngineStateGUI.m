@@ -54,6 +54,8 @@ function lvd_EditActionSetEngineStateGUI_OpeningFcn(hObject, eventdata, handles,
 
     % Choose default command line output for lvd_EditActionSetEngineStateGUI
     handles.output = hObject;
+    
+    centerUIFigure(hObject);
 
     action = varargin{1};
     setappdata(hObject,'action',action);

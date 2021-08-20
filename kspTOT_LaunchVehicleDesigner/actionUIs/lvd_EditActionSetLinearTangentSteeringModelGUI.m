@@ -1589,6 +1589,9 @@ function baseFrameCombo_Callback(hObject, eventdata, handles)
 
 % Hints: contents = cellstr(get(hObject,'String')) returns baseFrameCombo contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from baseFrameCombo
+    lv = getappdata(handles.lvd_EditActionSetLinearTangentSteeringModelGUI,'lv');
+    lvdData = lv.lvdData;
+
     contents = cellstr(get(handles.baseFrameCombo,'String'));
     selFrameType = contents{get(handles.baseFrameCombo,'Value')};
     refFrameEnum = ReferenceFrameEnum.getEnumForListboxStr(selFrameType);
@@ -1615,9 +1618,24 @@ function baseFrameCombo_Callback(hObject, eventdata, handles)
             originPt = TwoBodyRotatingFrameOriginEnum.Primary;
 
             newFrame = TwoBodyRotatingFrame(primaryBody, secondaryBody, originPt, bodyInfo.celBodyData);
+            
+        case ReferenceFrameEnum.UserDefined
+            numFrames = lvdData.geometry.refFrames.getNumRefFrames();
+            if(numFrames >= 1)
+                geometricFrame = lvdData.geometry.refFrames.getRefFrameAtInd(1);
+                newFrame = UserDefinedGeometricFrame(geometricFrame, lvdData);
+            else
+                newFrame = bodyInfo.getBodyCenteredInertialFrame();
+                warndlg('There are no geometric frames available.  A body-centered inertial frame will be selected instead.');
+            end
 
         otherwise
-            error('Unknown reference frame type: %s', class(refFrameEnum));                
+            error('Unknown reference frame type: %s', string(refFrameEnum));                
+    end
+    
+    if(not(isempty(newFrame)) && newFrame.typeEnum ~= refFrameEnum)
+        refFrameEnum = newFrame.typeEnum;
+        handles.baseFrameCombo.Value = ReferenceFrameEnum.getIndForName(refFrameEnum.name);
     end
     
     setappdata(handles.lvd_EditActionSetLinearTangentSteeringModelGUI, 'baseFrame', newFrame);
@@ -1641,7 +1659,7 @@ function setBaseFrameOptionsButton_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
     baseFrame = getappdata(handles.lvd_EditActionSetLinearTangentSteeringModelGUI, 'baseFrame');
-    newFrame = baseFrame.editFrameDialogUI();
+    newFrame = baseFrame.editFrameDialogUI(EditReferenceFrameContextEnum.ForSteering);
     
     setappdata(handles.lvd_EditActionSetLinearTangentSteeringModelGUI, 'baseFrame', newFrame);
 

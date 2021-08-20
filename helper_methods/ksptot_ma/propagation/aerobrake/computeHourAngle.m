@@ -1,11 +1,19 @@
 function hra = computeHourAngle(ut, long, bodyInfo)
-%     rVectBodyToSun = -1.0 * getPositOfBodyWRTSun(ut, bodyInfo, bodyInfo.celBodyData);
-    chain = bodyInfo.getOrbitElemsChain();
-    rVectBodyToSun = -1.0 * getPositOfBodyWRTSun_alg(ut, chain{:});
+%     if(bodyInfo.propTypeEnum == BodyPropagationTypeEnum.TwoBody)
+%         chain = bodyInfo.getOrbitElemsChain();
+%         rVectBodyToSun = -1.0 * getPositOfBodyWRTSun_alg(ut, chain{:});
+%         
+% 	elseif(bodyInfo.propTypeEnum == BodyPropagationTypeEnum.Numerical)
+%             
+%     else
+%         
+%     end
+    [rVectBodyToSun, ~] = getPositOfBodyWRTSun(ut, bodyInfo, bodyInfo.celBodyData);
+    rVectBodyToSun = -1.0 * rVectBodyToSun;
+    
     rVectBodyToSun = reshape(rVectBodyToSun, 3,numel(ut));
     rVectBodyToSunNorm = sqrt(sum(rVectBodyToSun.^2,1));
     
-%     rVectSunECEF = getFixedFrameVectFromInertialVect(ut, rVectBodyToSun, bodyInfo);
     inputs = bodyInfo.getFixedFrameFromInertialFrameInputsCache();
     rVectSunECEF = getFixedFrameVectFromInertialVect_alg(ut, rVectBodyToSun, inputs{:});
     

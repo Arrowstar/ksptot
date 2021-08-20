@@ -38,7 +38,7 @@ classdef ConstraintSet < matlab.mixin.SetGet
             end
         end
         
-        function listBoxStr = getListboxStr(obj)
+        function [listBoxStr, consts] = getListboxStr(obj)
             listBoxStr = {};
             
             for(i=1:length(obj.consts))
@@ -50,6 +50,8 @@ classdef ConstraintSet < matlab.mixin.SetGet
                 
                 listBoxStr{end+1} = [prefStr,obj.consts(i).getName()]; %#ok<AGROW>
             end
+            
+            consts = obj.consts;
         end
         
         function tooltipStrs = getToolboxStrs(obj)
@@ -72,7 +74,7 @@ classdef ConstraintSet < matlab.mixin.SetGet
             end
         end
         
-        function [c, ceq, value, lb, ub, type, eventNum, cEventInds, ceqEventInds, typeNumConstrArr] = evalConstraints(obj, x, tfRunScript, evtToStartScriptExecAt, allowInterrupt, stateLogToEval)
+        function [c, ceq, value, lb, ub, type, eventNum, cEventInds, ceqEventInds, typeNumConstrArr, constraints, cCInds, cCeqInds, valueStateComps] = evalConstraints(obj, x, tfRunScript, evtToStartScriptExecAt, allowInterrupt, stateLogToEval)
             c = [];
             ceq = [];
             value = [];
@@ -83,6 +85,10 @@ classdef ConstraintSet < matlab.mixin.SetGet
             cEventInds = [];
             ceqEventInds = [];
             typeNumConstrArr = {};
+            constraints = AbstractConstraint.empty(1,0);
+            cCInds = [];
+            cCeqInds = [];
+            valueStateComps = [];
             
             celBodyData = obj.lvdData.celBodyData;
             
@@ -97,6 +103,7 @@ classdef ConstraintSet < matlab.mixin.SetGet
                     stateLog = obj.lvdData.stateLog;
                 end
 
+                constCnt = 1;
                 for(i=1:length(obj.consts)) %#ok<*NO4LP>
                     constraint = obj.consts(i);
                     
@@ -104,7 +111,7 @@ classdef ConstraintSet < matlab.mixin.SetGet
                         continue;
                     end
                     
-                    [c1, ceq1, value1, lb1, ub1, type1, eventNum1] = constraint.evalConstraint(stateLog, celBodyData);
+                    [c1, ceq1, value1, lb1, ub1, type1, eventNum1, valueStateComp1] = constraint.evalConstraint(stateLog, celBodyData);
                     c1 = c1(:)';
                     ceq1 = ceq1(:)';
                     value1 = value1(:)';
@@ -113,10 +120,12 @@ classdef ConstraintSet < matlab.mixin.SetGet
                     
                     for(j=1:length(c1))
                         cEventInds(end+1) = eventNum1; %#ok<AGROW>
+                        cCInds(end+1) = constCnt; %#ok<AGROW>
                     end
                     
                     for(j=1:length(ceq1))
                         ceqEventInds(end+1) = eventNum1; %#ok<AGROW>
+                        cCeqInds(end+1) = constCnt; %#ok<AGROW>
                     end
                     
                     c   = [c, c1]; %#ok<AGROW>
@@ -127,6 +136,10 @@ classdef ConstraintSet < matlab.mixin.SetGet
                     type = horzcat(type, type1); %#ok<AGROW>
                     typeNumConstrArr = horzcat(typeNumConstrArr, repmat({type1}, 1, numel(c1)+numel(ceq1))); %#ok<AGROW>
                     eventNum = [eventNum, eventNum1]; %#ok<AGROW>
+                    constraints = [constraints, constraint]; %#ok<AGROW>
+                    valueStateComps = [valueStateComps, valueStateComp1]; %#ok<AGROW>
+                    
+                    constCnt = constCnt+1;
                 end
             end
         end
@@ -194,6 +207,62 @@ classdef ConstraintSet < matlab.mixin.SetGet
                 tf = tf || obj.consts(i).usesCalculusCalc(calculusCalc);
             end
         end
+        
+        function tf = usesGeometricPoint(obj, point)
+            tf = false;
+            
+            for(i=1:length(obj.consts))
+                tf = tf || obj.consts(i).usesGeometricPoint(point);
+            end
+        end
+        
+        function tf = usesGeometricVector(obj, vector)
+            tf = false;
+            
+            for(i=1:length(obj.consts))
+                tf = tf || obj.consts(i).usesGeometricVector(vector);
+            end
+        end
+        
+        function tf = usesGeometricCoordSys(obj, coordSys)
+            tf = false;
+            
+            for(i=1:length(obj.consts))
+                tf = tf || obj.consts(i).usesGeometricCoordSys(coordSys);
+            end
+        end
+        
+        function tf = usesGeometricRefFrame(obj, refFrame)
+            tf = false;
+            
+            for(i=1:length(obj.consts))
+                tf = tf || obj.consts(i).usesGeometricRefFrame(refFrame);
+            end
+        end
+        
+        function tf = usesGeometricAngle(obj, angle)
+            tf = false;
+            
+            for(i=1:length(obj.consts))
+                tf = tf || obj.consts(i).usesGeometricAngle(angle);
+            end
+        end
+        
+        function tf = usesGeometricPlane(obj, plane)
+            tf = false;
+            
+            for(i=1:length(obj.consts))
+                tf = tf || obj.consts(i).usesGeometricPlane(plane);
+            end
+        end 
+        
+        function tf = usesPlugin(obj, plugin)
+            tf = false;
+            
+            for(i=1:length(obj.consts))
+                tf = tf || obj.consts(i).usesPlugin(plugin);
+            end
+        end 
         
         function removeConstraintsThatUseEvent(obj, event)
             indsToRemove = [];

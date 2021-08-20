@@ -55,6 +55,8 @@ function lvd_EditTankGUI_OpeningFcn(hObject, eventdata, handles, varargin)
     % Choose default command line output for lvd_EditTankGUI
     handles.output = hObject;
 
+    centerUIFigure(hObject);
+    
     tank = varargin{1};
     setappdata(hObject, 'tank', tank);
     
@@ -113,7 +115,7 @@ function varargout = lvd_EditTankGUI_OutputFcn(hObject, eventdata, handles)
         
         conns = lv.getEngineToTankConnsForTank(tank);
         
-        tank.stage.removeTank(tank);
+%         tank.stage.removeTank(tank);
         
         stage = lv.getStageForInd(handles.stageCombo.Value);
         
@@ -124,7 +126,7 @@ function varargout = lvd_EditTankGUI_OutputFcn(hObject, eventdata, handles)
         tank.stage = stage;
         tank.initialMass = initialMass;
         
-        tank.stage.addTank(tank);
+%         tank.stage.addTank(tank);
         
         for(i=1:length(conns)) %#ok<NO4LP>
             conns(i).tank = tank;

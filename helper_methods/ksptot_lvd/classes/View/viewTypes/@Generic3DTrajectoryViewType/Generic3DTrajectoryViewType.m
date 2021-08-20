@@ -11,9 +11,9 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             
         end
         
-        function [hCBodySurf, childrenHGs] = plotStateLog(obj, orbitNumToPlot, lvdData, viewProfile, handles)
-            dAxes = handles.dispAxes;
-            hFig = handles.ma_LvdMainGUI;
+        function [hCBodySurf, childrenHGs] = plotStateLog(obj, orbitNumToPlot, lvdData, viewProfile, handles, app)
+            dAxes = app.dispAxes;
+            hFig = app.ma_LvdMainGUI;
             celBodyData = lvdData.celBodyData;
             stateLog = lvdData.stateLog;
             
@@ -66,13 +66,17 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                         bodyId = subStateLog(1,8);
                         bodyInfo = celBodyData.getBodyInfoById(bodyId);
                         inertialFrame = bodyInfo.getBodyCenteredInertialFrame();
-                        for(j=1:size(subStateLog,1))
-                            elemSet = CartesianElementSet(subStateLog(j,1), subStateLog(j,2:4)', subStateLog(5:7)', inertialFrame);
-                            elemSet = elemSet.convertToFrame(viewInFrame);
-                            
-                            subStateLog(j,2:4) = elemSet.rVect';
-                            subStateLog(j,5:7) = elemSet.vVect';
-                        end
+                        
+                        elemSet = CartesianElementSet(subStateLog(:,1), subStateLog(:,2:4)', subStateLog(:,5:7)', inertialFrame);
+%                         elemSet = repmat(CartesianElementSet.getDefaultElements(), [1, size(subStateLog,1)]);
+%                         for(j=1:size(subStateLog,1))
+%                             elemSet(j) = CartesianElementSet(subStateLog(j,1), subStateLog(j,2:4)', subStateLog(j,5:7)', inertialFrame);
+%                         end
+                        elemSet = convertToFrame(elemSet, viewInFrame);
+
+                        subStateLog(:,2:4) = [elemSet.rVect]';
+                        subStateLog(:,5:7) = [elemSet.vVect]';
+                        
                         evtIds = [evtIds, unique(subStateLog(:,13))']; %#ok<AGROW>
                         
                         subStateLogs{i} = subStateLog;
@@ -82,7 +86,8 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                     for(i=1:length(entries))
                         entry = entries(i);
                         
-                        if(ismember(entry.event.getEventNum(), evtIds) && ...
+                        if(not(isempty(entry.event.getEventNum())) && ...
+                           ismember(entry.event.getEventNum(), evtIds) && ...
                            entry.centralBody == bodyInfo)
                             lvdStateLogEntries(end+1) = entry; %#ok<AGROW>
                         end
@@ -94,23 +99,32 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                     totalMissionSegStr = num2str(numTotMissionSegs);
                 
                     if(numTotMissionSegs <= 1)
-                        handles.decrOrbitToPlotNum.Enable = 'off';
-                        handles.incrOrbitToPlotNum.Enable = 'off';
+                        app.decrOrbitToPlotNum.Enable = 'off';
+                        app.incrOrbitToPlotNum.Enable = 'off';
                     else
-                        handles.decrOrbitToPlotNum.Enable = 'on';
-                        handles.incrOrbitToPlotNum.Enable = 'on';
+                        app.decrOrbitToPlotNum.Enable = 'on';
+                        app.incrOrbitToPlotNum.Enable = 'on';
                     end
                 case ViewEventsTypeEnum.All
                     entries = stateLog.getAllEntries();
-                    subStateLogsMat = NaN(length(entries), 13);
-                    for(i=1:length(entries))
-                        tempMaMatrix = entries(i).getMAFormattedStateLogMatrix(false);
-
-                        cartesianEntry = entries(i).getCartesianElementSetRepresentation();
-                        cartesianEntry = cartesianEntry.convertToFrame(viewInFrame); 
-
-                        subStateLogsMat(i,:) = [entries(i).time, cartesianEntry.rVect', cartesianEntry.vVect', viewCentralBody.id, tempMaMatrix(9:13)];
-                    end
+                    maStateLogMatrix = stateLog.getMAFormattedStateLogMatrix(false);
+                    numRows = size(maStateLogMatrix,1);
+%                     subStateLogsMat = NaN(numRows, 13);
+                    
+                    cartesianEntry = convertToFrame(getCartesianElementSetRepresentation(entries, true),viewInFrame);
+                    times = [cartesianEntry.time]';
+                    rVect = [cartesianEntry.rVect]';
+                    vVect = [cartesianEntry.vVect]';
+                    bodyId = viewCentralBody.id + zeros(numRows,1);
+                    subStateLogsMat = [times, rVect, vVect, bodyId, maStateLogMatrix(:,9:13)];
+%                     for(i=1:numRows)
+%                         tempMaMatrix = entries(i).getMAFormattedStateLogMatrix(false);
+% 
+%                         cartesianEntry = 
+%                         cartesianEntry = cartesianEntry.convertToFrame(viewInFrame); 
+% 
+%                         subStateLogsMat(i,:) = [entries(i).time, cartesianEntry.rVect', cartesianEntry.vVect', viewCentralBody.id, maStateLogMatrix(i,9:13)];
+%                     end
 
                     subStateLogs = {};
                     for(evtNum=1:max(subStateLogsMat(:,13)))
@@ -159,27 +173,30 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                 color = viewProfile.thrustVectColor.color;
                 lineStyle = viewProfile.thrustVectLineType.linespec;
                 
-                rVects = [];
+                subsetLvdStateLogEntries = lvdStateLogEntries(1:entryInc:length(lvdStateLogEntries));
+                subsetLvdStateLogEntries = subsetLvdStateLogEntries(:)';
+                cartesianEntries = convertToFrame(getCartesianElementSetRepresentation(subsetLvdStateLogEntries), viewInFrame);
+                
+                rVects = [cartesianEntries.rVect];
                 tVects = [];
-                for(i=1:entryInc:length(lvdStateLogEntries)) %#ok<*NO4LP>
-                    entry = lvdStateLogEntries(i);
+                
+                [~, ~, ~, rotMatToInertial12] = viewInFrame.getOffsetsWrtInertialOrigin([cartesianEntries.time], cartesianEntries);
+                for(i=1:length(subsetLvdStateLogEntries)) %#ok<*NO4LP>
+                    entry = subsetLvdStateLogEntries(i);
+                    cartesianEntry = cartesianEntries(i);       
                     
-                    cartesianEntry = entry.getCartesianElementSetRepresentation();                   
-                    cartesianEntry = cartesianEntry.convertToFrame(viewInFrame); 
-                    
-                    rVects = [rVects, cartesianEntry.rVect]; %#ok<AGROW>
+%                     rVects = [rVects, cartesianEntry.rVect]; %#ok<AGROW>
                                         
 %                     tX = lvd_ThrottleTask(entry, 'thrust_x');
 %                     tY = lvd_ThrottleTask(entry, 'thrust_y');
 %                     tZ = lvd_ThrottleTask(entry, 'thrust_z');
 %                     tVect = [tX;tY;tZ];
-                    tVect = lvd_ThrottleTask(entry, 'thrust_vector');
+                    tVect = lvd_ThrottleTask(entry, 'thrust_vector', cartesianEntry.frame);
                     
                     if(norm(tVect) > 0)                       
-                        [~, ~, ~, rotMatToInertial12] = viewInFrame.getOffsetsWrtInertialOrigin(entry.time);
-                        [~, ~, ~, rotMatToInertial32] = entry.centralBody.getBodyCenteredInertialFrame().getOffsetsWrtInertialOrigin(entry.time);
+                        [~, ~, ~, rotMatToInertial32] = entry.centralBody.getBodyCenteredInertialFrame().getOffsetsWrtInertialOrigin(entry.time, cartesianEntry);
                         
-                        tVectNew = rotMatToInertial32 * rotMatToInertial12' * tVect;
+                        tVectNew = rotMatToInertial32 * rotMatToInertial12(:,:,i)' * tVect;
                     else
                         tVectNew = [0;0;0];
                     end
@@ -261,8 +278,8 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             end
             
             hDispAxisTitleLabel = handles.dispAxisTitleLabel;
-            titleStr = {[viewCentralBody.name, ' Orbit - ', 'Mission Segment ', curMissionSegStr, '/', totalMissionSegStr], eventStr};
-            set(hDispAxisTitleLabel, 'String', titleStr);
+            titleStr = sprintf('%s Orbit -- %s\n%s', viewCentralBody.name, eventStr, viewInFrame.getNameStr());
+            hDispAxisTitleLabel.String = titleStr;
             hDispAxisTitleLabel.TooltipString = sprintf('Frame: %s', viewInFrame.getNameStr());
             
             set(dAxes,'LineWidth',1);
@@ -332,11 +349,16 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             viewProfile.createSunLightSrc(dAxes, viewInFrame);
             viewProfile.createGroundObjMarkerData(dAxes, lvdStateLogEntries, lvdData.script.evts, viewInFrame, celBodyData);
             viewProfile.createCentralBodyData(viewCentralBody, hCBodySurfXForm, viewInFrame);
-            viewProfile.configureTimeSlider(minTime, maxTime, subStateLogs, handles);
+            viewProfile.createPointData(viewInFrame, subStateLogs, lvdData.script.evts);
+            viewProfile.createVectorData(viewInFrame, subStateLogs, lvdData.script.evts);
+            viewProfile.createRefFrameData(viewInFrame, subStateLogs, lvdData.script.evts);
+            viewProfile.createAngleData(viewInFrame, subStateLogs, lvdData.script.evts);
+            viewProfile.createPlaneData(viewInFrame, subStateLogs, lvdData.script.evts);
+            viewProfile.configureTimeSlider(minTime, maxTime, subStateLogs, handles, app);
             hold(dAxes,'off');
             
-            sliderCB = handles.hDispAxesTimeSlider.StateChangedCallback;
-            sliderCB(handles.hDispAxesTimeSlider,[]);
+            sliderCB = app.DispAxesTimeSlider.ValueChangingFcn;
+            sliderCB(app.DispAxesTimeSlider,[]);
         end
     end
 end
@@ -352,6 +374,11 @@ function [childrenHGs] = plotSubStateLog(subStateLog, prevSubStateLog, lvdData, 
 
     eventNum = subStateLog(1,13);
     event = lvdData.script.getEventForInd(eventNum);
+    if(isempty(event))
+        childrenHGs = [];
+        return;
+    end
+    
     plotLineColor = event.colorLineSpec.color.color;
     plotLineStyle = event.colorLineSpec.lineSpec.linespec;
     plotLineWidth = event.colorLineSpec.lineWidth;

@@ -206,10 +206,12 @@ classdef CompositeObjectiveFcn < AbstractObjectiveFcn
         end
         
         function objFcn = upgradeExistingObjFuncs(oldObjFunc, lvdOptim, lvdData)
+            someFrame = LvdData.getDefaultInitialBodyInfo(lvdData.celBodyData).getBodyCenteredInertialFrame();
+            
             if(isa(oldObjFunc,'MaximizeLaunchVehicleMassObjectiveFcn')) 
                 event = oldObjFunc.event;
                 fcn = GenericMAConstraint('Total Spacecraft Mass', event, 0, 0, struct([]), struct([]), KSPTOT_BodyInfo.empty(1,0));
-                genObjFunc = GenericObjectiveFcn(event, KSPTOT_BodyInfo.empty(1,0), fcn, 1, lvdOptim, lvdData);
+                genObjFunc = GenericObjectiveFcn(event, someFrame, fcn, 1, lvdOptim, lvdData);
                 
                 objFcn = CompositeObjectiveFcn(genObjFunc, ObjFcnDirectionTypeEnum.Maximize, ObjFcnCompositeMethodEnum.Sum, lvdOptim, lvdData);
             
@@ -217,7 +219,7 @@ classdef CompositeObjectiveFcn < AbstractObjectiveFcn
                 event = oldObjFunc.event;
                 targetBodyInfo = oldObjFunc.targetBodyInfo;
                 fcn = GenericMAConstraint('Distance to Ref. Celestial Body', event, 0, 0, struct([]), struct([]), targetBodyInfo);
-                genObjFunc = GenericObjectiveFcn(event, targetBodyInfo, fcn, 1, lvdOptim, lvdData);
+                genObjFunc = GenericObjectiveFcn(event, someFrame, fcn, 1, lvdOptim, lvdData);
                 
                 objFcn = CompositeObjectiveFcn(genObjFunc, ObjFcnDirectionTypeEnum.Minimize, ObjFcnCompositeMethodEnum.Sum, lvdOptim, lvdData);
                 
