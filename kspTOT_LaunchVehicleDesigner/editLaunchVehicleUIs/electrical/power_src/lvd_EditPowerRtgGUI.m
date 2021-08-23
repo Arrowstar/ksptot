@@ -117,6 +117,7 @@ function varargout = lvd_EditPowerRtgGUI_OutputFcn(hObject, eventdata, handles)
         rtg.initTime = decayInitTime;
         
 %         rtg.getAttachedStage().addPwrSrc(rtg);
+        lv.movePwrSrcToStage(rtg, stage);
                 
         varargout{1} = true;
         close(handles.lvd_EditPowerRtgGUI);

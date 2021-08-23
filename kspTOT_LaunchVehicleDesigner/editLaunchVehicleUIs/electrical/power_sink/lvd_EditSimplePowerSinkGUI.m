@@ -111,6 +111,7 @@ function varargout = lvd_EditSimplePowerSinkGUI_OutputFcn(hObject, eventdata, ha
         powerSink.pwrRate = dischargeRate;
         
 %         powerSink.getAttachedStage().addPwrSink(powerSink);
+        lv.movePwrSinkToStage(powerSink, stage);
                 
         varargout{1} = true;
         close(handles.lvd_EditSimplePowerSinkGUI);

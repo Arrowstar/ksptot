@@ -127,6 +127,7 @@ function varargout = lvd_EditTankGUI_OutputFcn(hObject, eventdata, handles)
         tank.initialMass = initialMass;
         
 %         tank.stage.addTank(tank);
+        lv.moveTankToStage(tank, stage);
         
         for(i=1:length(conns)) %#ok<NO4LP>
             conns(i).tank = tank;

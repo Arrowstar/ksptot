@@ -114,6 +114,7 @@ function varargout = lvd_EditBasicBatteryGUI_OutputFcn(hObject, eventdata, handl
         powerStorage.initialStateOfCharge = initSoc;
         
 %         powerStorage.getAttachedStage().addPwrStorage(powerStorage);
+        lv.movePwrStorageToStage(powerStorage, stage);
                 
         varargout{1} = true;
         close(handles.lvd_EditBasicBatteryGUI);

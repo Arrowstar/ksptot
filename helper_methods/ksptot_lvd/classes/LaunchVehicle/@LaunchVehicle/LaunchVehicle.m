@@ -179,6 +179,16 @@ classdef LaunchVehicle < matlab.mixin.SetGet
             end
         end
         
+        function moveTankToStage(obj, tank, newStage)
+            for(i=1:length(obj.stages))
+                stage = obj.stages(i);
+                stage.tanks([stage.tanks] == tank) = [];
+            end
+            
+            newStage.tanks(end+1) = tank;
+            tank.stage = newStage;
+        end
+        
         function [tanksGAStr, tanks] = getTanksGraphAnalysisTaskStrs(obj)
             [~, tanks] = obj.getTanksListBoxStr();
             
@@ -228,6 +238,16 @@ classdef LaunchVehicle < matlab.mixin.SetGet
                 enginesListStr{end+1} = '';
             end
         end
+        
+        function moveEngineToStage(obj, engine, newStage)
+            for(i=1:length(obj.stages))
+                stage = obj.stages(i);
+                stage.engines([stage.engines] == engine) = [];
+            end
+            
+            newStage.engines(end+1) = engine;
+            engine.stage = newStage;
+        end
     
         function [engineGAStr, engines] = getEnginesGraphAnalysisTaskStrs(obj)
             [~, engines] = obj.getEnginesListBoxStr();
@@ -271,6 +291,16 @@ classdef LaunchVehicle < matlab.mixin.SetGet
             if(isempty(powerSinkListStr))
                 powerSinkListStr{end+1} = '';
             end
+        end
+        
+        function movePwrSinkToStage(obj, sink, newStage)
+            for(i=1:length(obj.stages))
+                stage = obj.stages(i);
+                stage.powerSinks([stage.powerSinks] == sink) = [];
+            end
+            
+            newStage.powerSinks(end+1) = sink;
+            sink.stage = newStage;
         end
     
         function [powerSinkGAStr, powerSinks] = getPowerSinksGraphAnalysisTaskStrs(obj)
@@ -320,6 +350,16 @@ classdef LaunchVehicle < matlab.mixin.SetGet
                 powerSrcListStr{end+1} = '';
             end
         end
+        
+        function movePwrSrcToStage(obj, src, newStage)
+            for(i=1:length(obj.stages))
+                stage = obj.stages(i);
+                stage.powerSrcs([stage.powerSrcs] == src) = [];
+            end
+            
+            newStage.powerSrcs(end+1) = src;
+            src.stage = newStage;
+        end
     
         function [powerSrcsGAStr, powerSrcs] = getPowerSrcsGraphAnalysisTaskStrs(obj)
             [~, powerSrcs] = obj.getPowerSrcsListBoxStr();
@@ -367,6 +407,16 @@ classdef LaunchVehicle < matlab.mixin.SetGet
             if(isempty(powerStoragesListStr))
                 powerStoragesListStr{end+1} = '';
             end
+        end
+        
+        function movePwrStorageToStage(obj, storage, newStage)
+            for(i=1:length(obj.stages))
+                stage = obj.stages(i);
+                stage.powerStorages([stage.powerStorages] == storage) = [];
+            end
+            
+            newStage.powerStorages(end+1) = storage;
+            storage.stage = newStage;
         end
     
         function [pwrStorageGAStr, powerStorages] = getPowerStorageGraphAnalysisTaskStrs(obj)

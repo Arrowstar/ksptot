@@ -143,6 +143,7 @@ function varargout = lvd_EditEngineGUI_OutputFcn(hObject, eventdata, handles)
         engine.pwrUsageRate = elecEnginePwrConsumption;
         
 %         engine.stage.addEngine(engine);
+        lv.moveEngineToStage(engine, stage);
         
         for(i=1:length(conns)) %#ok<NO4LP>
             conns(i).engine = engine;

@@ -123,6 +123,7 @@ function varargout = lvd_EditRotatingSolarPanelGUI_OutputFcn(hObject, eventdata,
         rotatingSolarPanel.bodyFrameRotAxis = normVector([xVect; yVect; zVect]);
         
 %         rotatingSolarPanel.getAttachedStage().addPwrSrc(rotatingSolarPanel);
+        lv.movePwrSrcToStage(rotatingSolarPanel, stage);
                 
         varargout{1} = true;
         close(handles.lvd_EditRotatingSolarPanelGUI);

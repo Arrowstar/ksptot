@@ -123,6 +123,7 @@ function varargout = lvd_EditFixedSolarPanelGUI_OutputFcn(hObject, eventdata, ha
         fixedSolarPanel.bodyFrameNormVect = normVector([xVect; yVect; zVect]);
         
 %         fixedSolarPanel.getAttachedStage().addPwrSrc(fixedSolarPanel);
+        lv.movePwrSrcToStage(fixedSolarPanel, stage);
                 
         varargout{1} = true;
         close(handles.lvd_EditFixedSolarPanelGUI);

@@ -40,6 +40,7 @@ classdef LaunchVehicleStage < matlab.mixin.SetGet
         
         %% Propulsion
         function addEngine(obj, newEngine)
+            obj.engines([obj.engines] == newEngine) = [];
             obj.engines(end+1) = newEngine;
             
             notify(obj.launchVehicle,'EngineAdded',EngineAddedDeletedEventData(newEngine));
@@ -54,6 +55,7 @@ classdef LaunchVehicleStage < matlab.mixin.SetGet
         end
         
         function addTank(obj, newTank)
+            obj.tanks([obj.tanks] == newTank) = [];
             obj.tanks(end+1) = newTank;
             
             notify(obj.launchVehicle,'TankAdded',TankAddedDeletedEventData(newTank));
@@ -69,6 +71,7 @@ classdef LaunchVehicleStage < matlab.mixin.SetGet
         
         %% Electrical
         function addPwrSrc(obj, newPwrSrc)
+            obj.powerSrcs([obj.powerSrcs] == newPwrSrc) = [];
             obj.powerSrcs(end+1) = newPwrSrc;
             
             notify(obj.launchVehicle,'EpsSrcAdded',EpsSrcAddedDeletedEventData(newPwrSrc));
@@ -81,6 +84,7 @@ classdef LaunchVehicleStage < matlab.mixin.SetGet
         end
         
         function addPwrSink(obj, newPwrSink)
+            obj.powerSinks([obj.powerSinks] == newPwrSink) = [];
             obj.powerSinks(end+1) = newPwrSink;
             
             notify(obj.launchVehicle,'EpsSinkAdded',EpsSinkAddedDeletedEventData(newPwrSink));
@@ -93,6 +97,7 @@ classdef LaunchVehicleStage < matlab.mixin.SetGet
         end
         
         function addPwrStorage(obj, newPwrStorage)
+            obj.powerStorages([obj.powerStorages] == newPwrStorage) = [];
             obj.powerStorages(end+1) = newPwrStorage;
             
             notify(obj.launchVehicle,'EpsStorageAdded',EpsStorageAddedDeletedEventData(newPwrStorage));
