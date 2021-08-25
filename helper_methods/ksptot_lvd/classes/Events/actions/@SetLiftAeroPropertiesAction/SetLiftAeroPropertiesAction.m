@@ -82,7 +82,16 @@ classdef SetLiftAeroPropertiesAction < AbstractEventAction
             initStateModel.aero.Cl_0 = action.Cl_0;
             initStateModel.aero.bodyLiftVect = action.bodyLiftVect;
             
-            [addActionTf, useLift, areaLift, Cl_0, bodyLiftVect] = lvd_EditLiftPropertiesGUI(fakeLvdData);
+%             [addActionTf, useLift, areaLift, Cl_0, bodyLiftVect] = lvd_EditLiftPropertiesGUI(fakeLvdData);
+            output = AppDesignerGUIOutput({false,false,false,false,false});
+            lvd_EditLiftPropertiesGUI_App(fakeLvdData, output);
+            
+            addActionTf = output.output{1};
+            useLift = output.output{2};
+            areaLift = output.output{3};
+            Cl_0 = output.output{4};
+            bodyLiftVect = output.output{5};
+
             if(addActionTf)
                 action.useLift = useLift;
                 action.areaLift = areaLift;
