@@ -13,6 +13,10 @@ classdef AppDesignerGUIOutput < matlab.mixin.SetGet
             end
             
             if(not(isempty(defaultOut)))
+                if(not(iscell(defaultOut)))
+                    defaultOut = {defaultOut};
+                end
+                
                 obj.output = defaultOut;
             end
         end
