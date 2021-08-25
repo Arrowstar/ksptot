@@ -105,7 +105,15 @@ classdef SetDragAeroPropertiesAction < AbstractEventAction
             initStateModel.aero.CdInterpMethod = action.CdInterpMethodToSet;
             initStateModel.aero.CdInterpPts = action.CdInterpPtsToSet;
             
-            [addActionTf, aero, area] = lvd_EditDragPropertiesGUI(fakeLvdData);
+%             [addActionTf, aero, area] = lvd_EditDragPropertiesGUI(fakeLvdData);
+
+            output = AppDesignerGUIOutput({false,false,false});
+            lvd_EditDragPropertiesGUI_App(fakeLvdData, output);
+            
+            addActionTf = output.output{1};
+            aero = output.output{2};
+            area = output.output{3};
+            
             if(addActionTf)
                 action.areaToSet = area;
                 
