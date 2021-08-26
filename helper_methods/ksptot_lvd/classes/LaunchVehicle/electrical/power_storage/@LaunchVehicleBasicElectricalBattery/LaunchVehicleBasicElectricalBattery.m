@@ -34,7 +34,11 @@ classdef LaunchVehicleBasicElectricalBattery < AbstractLaunchVehicleElectricalPo
         end
         
         function useTF = openEditDialog(obj)
-            useTF = lvd_EditBasicBatteryGUI(obj);
+%             useTF = lvd_EditBasicBatteryGUI(obj);
+            
+            output = AppDesignerGUIOutput({false});
+            lvd_EditBasicBatteryGUI_App(obj, output);
+            useTF = output.output{1};
         end
         
 %         function tf = isInUse(obj) %see abstract class
