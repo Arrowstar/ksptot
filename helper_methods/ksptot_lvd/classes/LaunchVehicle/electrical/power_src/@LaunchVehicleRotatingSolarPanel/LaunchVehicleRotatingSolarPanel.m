@@ -34,7 +34,11 @@ classdef LaunchVehicleRotatingSolarPanel < AbstractLaunchVehicleSolarPanel
         end
         
         function useTF = openEditDialog(obj)
-            useTF = lvd_EditRotatingSolarPanelGUI(obj);
+%             useTF = lvd_EditRotatingSolarPanelGUI(obj);
+
+            output = AppDesignerGUIOutput({false});
+            lvd_EditRotatingSolarPanelGUI_App(obj, output);
+            useTF = output.output{1};
         end
         
         function tf = isInUse(obj)
