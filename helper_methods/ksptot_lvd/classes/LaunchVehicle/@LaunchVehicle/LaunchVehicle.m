@@ -587,6 +587,7 @@ classdef LaunchVehicle < matlab.mixin.SetGet
         % Engine to Tank Connections
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         function addEngineToTankConnection(obj, e2TConn)
+            obj.engineTankConns(obj.engineTankConns == e2TConn) = [];
             obj.engineTankConns(end+1) = e2TConn;
         end
         
@@ -632,6 +633,7 @@ classdef LaunchVehicle < matlab.mixin.SetGet
         % Tank to Tank Connections
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         function addTankToTankConnection(obj, t2TConn)
+            obj.tankToTankConns(obj.tankToTankConns == t2TConn) = [];
             obj.tankToTankConns(end+1) = t2TConn;
         end
         
