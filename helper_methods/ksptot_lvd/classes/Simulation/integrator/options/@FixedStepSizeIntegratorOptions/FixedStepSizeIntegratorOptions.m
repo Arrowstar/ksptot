@@ -25,7 +25,9 @@ classdef FixedStepSizeIntegratorOptions < AbstractIntegratorOptions
         end
         
         function openOptionsDialog(obj)
-            lvd_fixedStepSizeIntegratorOptionsGUI(obj);
+%             lvd_fixedStepSizeIntegratorOptionsGUI(obj);
+            output = AppDesignerGUIOutput({false});
+            lvd_fixedStepSizeIntegratorOptionsGUI_App(obj,output);
         end
     end
 end
