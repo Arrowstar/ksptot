@@ -36,7 +36,9 @@ classdef BuiltInIntegratorOptions < AbstractIntegratorOptions
         end
         
         function openOptionsDialog(obj)
-            lvd_builtInIntegratorOptionsGUI(obj);
+%             lvd_builtInIntegratorOptionsGUI(obj);
+            output = AppDesignerGUIOutput({false});
+            lvd_builtInIntegratorOptionsGUI_App(obj, output);
         end
     end
 end
