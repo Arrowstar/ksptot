@@ -70,7 +70,11 @@ classdef SetTankTankConnFlowRateEventAction < AbstractEventAction
     methods(Static)
         function addActionTf = openEditActionUI(action, lv)
             if(not(isempty(lv.tankToTankConns)))
-                addActionTf = lvd_EditActionSetTankToTankConnFlowRateGUI(action, lv);
+%                 addActionTf = lvd_EditActionSetTankToTankConnFlowRateGUI(action, lv);
+
+                output = AppDesignerGUIOutput({false});
+                lvd_EditActionSetTankToTankConnFlowRateGUI_App(action, lv, output);
+                addActionTf = output.output{1};
             else
                 addActionTf = false;
                 warndlg('There are no tank to tank connections on the launch vehicle.  Create one first.','Cannot Create Action','modal');
