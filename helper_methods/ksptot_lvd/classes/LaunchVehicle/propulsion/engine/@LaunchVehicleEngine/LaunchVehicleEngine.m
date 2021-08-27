@@ -116,6 +116,23 @@ classdef LaunchVehicleEngine < matlab.mixin.SetGet
             if(obj.reqsElecCharge)
                 engineSummStr{end+1} = sprintf('\t\t\t\tElectric Engine Discharge Rate = %.3f EC/s', obj.pwrUsageRate);
             end
+            
+            lv = obj.lvdData.launchVehicle;
+            conns = lv.getEngineToTankConnsForEngine(obj);
+            engineSummStr{end+1} = sprintf('\t\t\t\tConnected Tanks:');
+            if(~isempty(conns))
+                tanks = LaunchVehicleTank.empty(1,0);
+                for(i=1:length(conns))
+                    tanks(end+1) = conns(i).tank; %#ok<AGROW>
+                end    
+                
+                tanks = unique(tanks, 'stable');
+                for(i=1:length(tanks))
+                    engineSummStr{end+1} = sprintf('\t\t\t\t\t%s', tanks(i).name); %#ok<AGROW>
+                end
+            else
+                engineSummStr{end+1} = sprintf('\t\t\t\t\tNo Tanks Connected');
+            end            
         end
         
         function [thrust, isp] = getThrustIspForPressure(obj, presskPa)
