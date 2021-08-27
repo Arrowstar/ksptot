@@ -83,7 +83,11 @@ classdef SetHoldDownClampActiveStateAction < AbstractEventAction
     
     methods(Static)
         function addActionTf = openEditActionUI(action, lv)
-            addActionTf = lvd_EditActionSetClampStateGUI(action);
+%             addActionTf = lvd_EditActionSetClampStateGUI(action);
+
+            output = AppDesignerGUIOutput({false});
+            lvd_EditActionSetClampStateGUI_App(action, output);
+            addActionTf = output.output{1};
         end
     end
 end
