@@ -151,7 +151,11 @@ classdef AddDeltaVAction < AbstractEventAction
     
     methods(Static)
         function addActionTf = openEditActionUI(action, lv)
-            addActionTf = lvd_AddDeltaVActionGUI(action, lv.lvdData);
+%             addActionTf = lvd_AddDeltaVActionGUI(action, lv.lvdData);
+            
+            output = AppDesignerGUIOutput({false});
+            lvd_AddDeltaVActionGUI_App(action, lv.lvdData, output);
+            addActionTf = output.output{1};
         end
     end
 end

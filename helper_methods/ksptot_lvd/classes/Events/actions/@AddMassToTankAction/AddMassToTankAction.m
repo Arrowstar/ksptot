@@ -76,7 +76,11 @@ classdef AddMassToTankAction < AbstractEventAction
     
     methods(Static)
         function addActionTf = openEditActionUI(action, lv)
-            addActionTf = lvd_AddMassToTankActionGUI(action, lv.lvdData);
+%             addActionTf = lvd_AddMassToTankActionGUI(action, lv.lvdData);
+            
+            output = AppDesignerGUIOutput({false});
+            lvd_AddMassToTankActionGUI_App(action, lv.lvdData, output);
+            addActionTf = output.output{1};
         end
     end
 end
