@@ -74,7 +74,11 @@ classdef ResetExtremumValueAction < AbstractEventAction
     
     methods(Static)
         function addActionTf = openEditActionUI(action, lv)
-            addActionTf = lvd_EditActionResetExtremumValueGUI(action, lv);
+%             addActionTf = lvd_EditActionResetExtremumValueGUI(action, lv);
+            
+            output = AppDesignerGUIOutput({false});
+            lvd_EditActionResetExtremumValueGUI_App(action, lv, output);
+            addActionTf = output.output{1};
         end
     end
 end
