@@ -30,7 +30,7 @@ classdef SetExtremumRecordingStateAction < AbstractEventAction
             %nothing
         end
         
-        function name = getName(obj)            
+        function name = getName(obj)
             if(not(isempty(obj.extremum)))
                 nameStr = obj.extremum.getNameStr();
             else
@@ -76,7 +76,17 @@ classdef SetExtremumRecordingStateAction < AbstractEventAction
     
     methods(Static)
         function addActionTf = openEditActionUI(action, lv)
-            addActionTf = lvd_EditActionSetExtremumRecordingStateGUI(action, lv);
+            %             addActionTf = lvd_EditActionSetExtremumRecordingStateGUI(action, lv);
+            
+            [~, extrema] = lv.getExtremaListBoxStr();
+            if(not(isempty(extrema)))
+                output = AppDesignerGUIOutput({false});
+                lvd_EditActionSetExtremumRecordingStateGUI_App(action, lv, output);
+                addActionTf = output.output{1};
+            else
+                addActionTf = false;
+                warndlg('There are no extrema in the scenario.  Create one first.','Cannot Create Action','modal');
+            end
         end
     end
 end
