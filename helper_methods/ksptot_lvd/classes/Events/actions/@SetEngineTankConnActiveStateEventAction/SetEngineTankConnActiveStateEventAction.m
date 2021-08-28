@@ -76,7 +76,11 @@ classdef SetEngineTankConnActiveStateEventAction < AbstractEventAction
     
     methods(Static)
         function addActionTf = openEditActionUI(action, lv)
-            addActionTf = lvd_EditActionSetEngineToTankConnStateGUI(action, lv);
+%             addActionTf = lvd_EditActionSetEngineToTankConnStateGUI(action, lv);
+            
+            output = AppDesignerGUIOutput({false});
+            lvd_EditActionSetEngineToTankConnStateGUI_App(action, lv, output);
+            addActionTf = output.output{1};
         end
     end
 end
