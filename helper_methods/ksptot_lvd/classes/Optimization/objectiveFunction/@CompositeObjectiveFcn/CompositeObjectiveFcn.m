@@ -22,11 +22,13 @@ classdef CompositeObjectiveFcn < AbstractObjectiveFcn
             end
         end
         
-        function listBoxStr = getListBoxStr(obj)
+        function [listBoxStr, objFuncs] = getListBoxStr(obj)
             listBoxStr = {};
             for(i=1:length(obj.objFcns))
                 listBoxStr{end+1} = obj.objFcns(i).getListBoxStr(); %#ok<AGROW>
             end
+            
+            objFuncs = obj.objFcns;
         end
         
         function [f, stateLog] = evalObjFcn(obj, x, evtToStartScriptExecAt)
