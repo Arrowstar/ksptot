@@ -106,7 +106,11 @@ classdef SetPowerSrcActiveStateAction < AbstractEventAction
             [~, powerSrcs] = lv.getPowerSrcsListBoxStr();
             
             if(not(isempty(powerSrcs)))
-                addActionTf = lvd_EditActionSetPwrSrcStateGUI(action, lv);
+%                 addActionTf = lvd_EditActionSetPwrSrcStateGUI(action, lv);
+
+                output = AppDesignerGUIOutput({false});
+                lvd_EditActionSetPwrSrcStateGUI_App(action, lv, output);
+                addActionTf = output.output{1};
             else
                 addActionTf = false;
                 warndlg('There are no power sources on the vehicle.  Create one first.','Cannot Create Action','modal');
