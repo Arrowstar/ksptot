@@ -106,7 +106,11 @@ classdef SetPowerStorageActiveStateAction < AbstractEventAction
             [~, powerStorages] = lv.getPowerStoragesListBoxStr();
             
             if(not(isempty(powerStorages)))
-                addActionTf = lvd_EditActionSetPwrStorageStateGUI(action, lv);
+%                 addActionTf = lvd_EditActionSetPwrStorageStateGUI(action, lv);
+
+                output = AppDesignerGUIOutput({false});
+                lvd_EditActionSetPwrStorageStateGUI_App(action, lv, output);
+                addActionTf = output.output{1};
             else
                 addActionTf = false;
                 warndlg('There are no power storage components on the vehicle.  Create one first.','Cannot Create Action','modal');
