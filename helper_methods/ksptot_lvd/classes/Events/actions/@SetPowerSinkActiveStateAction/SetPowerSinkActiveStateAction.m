@@ -107,7 +107,11 @@ classdef SetPowerSinkActiveStateAction < AbstractEventAction
             [~, powerSinks] = lv.getPowerSinksListBoxStr();
             
             if(not(isempty(powerSinks)))
-                addActionTf = lvd_EditActionSetPwrSinkStateGUI(action, lv);
+%                 addActionTf = lvd_EditActionSetPwrSinkStateGUI(action, lv);
+
+                output = AppDesignerGUIOutput({false});
+                lvd_EditActionSetPwrSinkStateGUI_App(action, lv, output);
+                addActionTf = output.output{1};
             else
                 addActionTf = false;
                 warndlg('There are no power sinks on the vehicle.  Create one first.','Cannot Create Action','modal');
