@@ -81,7 +81,11 @@ classdef SetEngineActiveStateAction < AbstractEventAction
     
     methods(Static)
         function addActionTf = openEditActionUI(action, lv)
-            addActionTf = lvd_EditActionSetEngineStateGUI(action, lv);
+%             addActionTf = lvd_EditActionSetEngineStateGUI(action, lv);
+            
+            output = AppDesignerGUIOutput({false});
+            lvd_EditActionSetEngineStateGUI_App(action, lv, output);
+            addActionTf = output.output{1};
         end
     end
 end
