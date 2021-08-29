@@ -26,7 +26,11 @@ classdef(Abstract) AbstractThrottleModel < matlab.mixin.SetGet
                     addActionTf = lvd_EditActionSetThrottleModelGUI(fakeAction, lv, useContinuity);
                     
                 case ThrottleModelEnum.T2WModel
-                    addActionTf = lvd_EditT2WThrottleModelGUI(fakeAction, lv, useContinuity);
+%                     addActionTf = lvd_EditT2WThrottleModelGUI(fakeAction, lv, useContinuity);
+                    
+                    output = AppDesignerGUIOutput({false});
+                    lvd_EditT2WThrottleModelGUI_App(fakeAction, lv, useContinuity, output);
+                    addActionTf = output.output{1};
                     
                 otherwise
                     error('Unknown throttle model type: %s', enum.nameStr);

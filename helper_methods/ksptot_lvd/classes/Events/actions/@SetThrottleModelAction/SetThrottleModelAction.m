@@ -77,15 +77,6 @@ classdef SetThrottleModelAction < AbstractEventAction
     methods(Static)
         function addActionTf = openEditActionUI(action, lv)
             [addActionTf, ~] = action.throttleModel.openEditThrottleModelUI(lv, true);
-            
-%             switch class(action.throttleModel)
-%                 case ThrottleModelEnum.PolyModel.classNameStr
-%                     addActionTf = lvd_EditActionSetThrottleModelGUI(action, lv);
-%                 case ThrottleModelEnum.T2WModel.classNameStr
-%                     addActionTf = lvd_EditT2WThrottleModelGUI(action, lv);
-%                 otherwise
-%                     error('Unknown throttle model class type: %s', class(action.throttleModel));
-%             end
         end
     end
 end
