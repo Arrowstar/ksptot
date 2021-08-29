@@ -61,7 +61,11 @@ classdef SetThirdBodyGravitySourcesAction < AbstractEventAction
     
     methods(Static)
         function addActionTf = openEditActionUI(action, lv)
-            addActionTf = lvd_EditActionSetThirdBodyGravitySourcesGUI(action, lv);
+%             addActionTf = lvd_EditActionSetThirdBodyGravitySourcesGUI(action, lv);
+
+            output = AppDesignerGUIOutput({false});
+            lvd_EditActionSetThirdBodyGravitySourcesGUI_App(action, lv, output);
+            addActionTf = output.output{1};
         end
     end
 end
