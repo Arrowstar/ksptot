@@ -74,7 +74,11 @@ classdef SetStageActiveStateAction < AbstractEventAction
     
     methods(Static)
         function addActionTf = openEditActionUI(action, lv)
-            addActionTf = lvd_EditActionSetStageStateGUI(action, lv);
+%             addActionTf = lvd_EditActionSetStageStateGUI(action, lv);
+            
+            output = AppDesignerGUIOutput({false});
+            lvd_EditActionSetStageStateGUI_App(action, lv, output);
+            addActionTf = output.output{1};
         end
     end
 end
