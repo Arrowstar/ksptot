@@ -76,7 +76,11 @@ classdef SetStopwatchRunningStateAction < AbstractEventAction
     
     methods(Static)
         function addActionTf = openEditActionUI(action, lv)
-            addActionTf = lvd_EditActionSetStopwatchRunningStateGUI(action, lv);
+%             addActionTf = lvd_EditActionSetStopwatchRunningStateGUI(action, lv);
+            
+            output = AppDesignerGUIOutput({false});
+            lvd_EditActionSetStopwatchRunningStateGUI_App(action, lv, output);
+            addActionTf = output.output{1};
         end
     end
 end
