@@ -23,7 +23,11 @@ classdef(Abstract) AbstractThrottleModel < matlab.mixin.SetGet
             enum = obj.getThrottleModelTypeEnum();
             switch enum
                 case ThrottleModelEnum.PolyModel
-                    addActionTf = lvd_EditActionSetThrottleModelGUI(fakeAction, lv, useContinuity);
+%                     addActionTf = lvd_EditActionSetThrottleModelGUI(fakeAction, lv, useContinuity);
+                    
+                    output = AppDesignerGUIOutput({false});
+                    lvd_EditActionSetThrottleModelGUI_App(fakeAction, lv, useContinuity, output);
+                    addActionTf = output.output{1};
                     
                 case ThrottleModelEnum.T2WModel
 %                     addActionTf = lvd_EditT2WThrottleModelGUI(fakeAction, lv, useContinuity);
