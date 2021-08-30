@@ -35,8 +35,12 @@ classdef(Abstract) AbstractSteeringModel < matlab.mixin.SetGet
             enum = obj.getSteeringModelTypeEnum();
             switch enum
                 case SteerModelTypeEnum.PolyAngles
-                    addActionTf = lvd_EditActionSetSteeringModelGUI(fakeAction, lv, useContinuity);
+%                     addActionTf = lvd_EditActionSetSteeringModelGUI(fakeAction, lv, useContinuity);
 
+                    output = AppDesignerGUIOutput({false});
+                    lvd_EditActionSetSteeringModelGUI_App(fakeAction, lv, useContinuity, output);
+                    addActionTf = output.output{1};
+                    
                 case SteerModelTypeEnum.QuaterionInterp
 %                     addActionTf = lvd_EditActionSetQuatInterpSteeringModelGUI(fakeAction, lv, useContinuity);
 
