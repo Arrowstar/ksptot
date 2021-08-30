@@ -1,5 +1,5 @@
 classdef CustomFiniteDiffsCalculationMethod < AbstractGradientCalculationMethod
-    %CustomFiniteDiffsCalculationMethod 
+    %CustomFiniteDiffsCalculationMethod
     %   Detailed explanation goes here
     
     properties
@@ -14,7 +14,7 @@ classdef CustomFiniteDiffsCalculationMethod < AbstractGradientCalculationMethod
     
     methods
         function obj = CustomFiniteDiffsCalculationMethod()
-
+            
         end
         
         function tf = useBuiltInMethod(obj)
@@ -31,7 +31,7 @@ classdef CustomFiniteDiffsCalculationMethod < AbstractGradientCalculationMethod
                 try
                     g = obj.computeGrad(fun, x0, fAtX0, useParallel);
                     g(g~=0) = 1;
-
+                    
                     obj.gradientSparsity = g;
                 catch ME
                     obj.gradientSparsity = ones(length(x0),1);
@@ -68,7 +68,10 @@ classdef CustomFiniteDiffsCalculationMethod < AbstractGradientCalculationMethod
         end
         
         function openOptionsDialog(obj)
-            lvd_finiteDiffOptionsGUI(obj);
+            %             lvd_finiteDiffOptionsGUI(obj);
+            
+            output = AppDesignerGUIOutput({false});
+            lvd_finiteDiffOptionsGUI_App(obj, output);
         end
     end
     
@@ -83,11 +86,11 @@ classdef CustomFiniteDiffsCalculationMethod < AbstractGradientCalculationMethod
             fAtX0 = fun(x0);
             
             hValsToTest = 10.^[-14:-2]; %#ok<NBRAK>
-%             hValsToTest = 2.^[-40:2:-6];
+            %             hValsToTest = 2.^[-40:2:-6];
             
             p = 1;
             N = length(hValsToTest);
-
+            
             hWaitbar = waitbar(0,'Computing optimal step sizes, please wait...');
             derivs = [];
             q = parallel.pool.DataQueue;
@@ -103,12 +106,12 @@ classdef CustomFiniteDiffsCalculationMethod < AbstractGradientCalculationMethod
             parfor(i=1:length(hValsToTest), M)
                 fd = CustomFiniteDiffsCalculationMethod();
                 fd.h = hValsToTest(i);
-
+                
                 if(numel(fAtX0) > 1)
                     g = fd.computeJacobian(fun, x0, fAtX0, false);
                     derivs(:,i) = g(:);
                 else
-                    g = fd.computeGrad(fun, x0, fAtX0, false); 
+                    g = fd.computeGrad(fun, x0, fAtX0, false);
                     derivs(:,i) = g(:);
                 end
                 
@@ -129,12 +132,12 @@ classdef CustomFiniteDiffsCalculationMethod < AbstractGradientCalculationMethod
                 [~,I] = min(hStepDeriv);
                 rawBestHStep(i) = hValsToTest(I); %#ok<AGROW>
                 
-%                 hA = axes(figure()); %#ok<LAXES>
-%                 hold on
-%     %             semilogx(hA, hValsToTest, derivRow, 'o-');
-%                 semilogx(hA, hValsToTest(1:end-1), hStepDeriv, 'o-');
-%                 hold off;
-%                 hA.XScale = 'log';
+                %                 hA = axes(figure()); %#ok<LAXES>
+                %                 hold on
+                %     %             semilogx(hA, hValsToTest, derivRow, 'o-');
+                %                 semilogx(hA, hValsToTest(1:end-1), hStepDeriv, 'o-');
+                %                 hold off;
+                %                 hA.XScale = 'log';
             end
             
             reshapedBestHStep = reshape(rawBestHStep,[numel(fAtX0),numel(x0)]);
