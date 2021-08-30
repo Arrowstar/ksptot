@@ -38,8 +38,12 @@ classdef(Abstract) AbstractSteeringModel < matlab.mixin.SetGet
                     addActionTf = lvd_EditActionSetSteeringModelGUI(fakeAction, lv, useContinuity);
 
                 case SteerModelTypeEnum.QuaterionInterp
-                    addActionTf = lvd_EditActionSetQuatInterpSteeringModelGUI(fakeAction, lv, useContinuity);
+%                     addActionTf = lvd_EditActionSetQuatInterpSteeringModelGUI(fakeAction, lv, useContinuity);
 
+                    output = AppDesignerGUIOutput({false});
+                    lvd_EditActionSetQuatInterpSteeringModelGUI_App(fakeAction, lv, useContinuity, output);
+                    addActionTf = output.output{1};
+                    
                 case SteerModelTypeEnum.LinearTangentAngles
                     addActionTf = lvd_EditActionSetLinearTangentSteeringModelGUI(fakeAction, lv, useContinuity);
                     
