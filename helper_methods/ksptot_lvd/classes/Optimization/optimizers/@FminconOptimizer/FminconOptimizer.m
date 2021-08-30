@@ -105,7 +105,10 @@ classdef FminconOptimizer < AbstractGradientOptimizer
         end
         
         function openOptionsDialog(obj)
-            lvd_editFminconOptionsGUI(obj);
+%             lvd_editFminconOptionsGUI(obj);
+            
+            output = AppDesignerGUIOutput({false});
+            lvd_editFminconOptionsGUI_App(obj, output);
         end
         
         function tf = usesParallel(obj)
