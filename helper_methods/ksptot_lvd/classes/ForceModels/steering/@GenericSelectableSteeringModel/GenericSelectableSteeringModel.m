@@ -9,21 +9,21 @@ classdef GenericSelectableSteeringModel < AbstractSteeringModel
         gammaAngleSumPoly(1,1) SumOfPolyTermsModel = SumOfPolyTermsModel(0);
         gammaAngleSumSines(1,1) SumOfSinesModel = SumOfSinesModel(0);
         gammaAngleLinearTan(1,1) LinearTangentSelectableModel = LinearTangentSelectableModel(0,0,0,0,0);
-        gammaAngleFitNet(1,1) FitNetModel = FitNetModel([]);
+        gammaAngleFitNet(1,1) FitNetModel = FitNetModel(5);
         
         % Beta
         betaSelModel(1,1) SteerMathModelTypeEnum = SteerMathModelTypeEnum.GenericPoly
         betaAngleSumPoly(1,1) SumOfPolyTermsModel = SumOfPolyTermsModel(0);
         betaAngleSumSines(1,1) SumOfSinesModel = SumOfSinesModel(0);
         betaAngleLinearTan(1,1) LinearTangentSelectableModel = LinearTangentSelectableModel(0,0,0,0,0);
-        betaAngleFitNet(1,1) FitNetModel = FitNetModel([]);
+        betaAngleFitNet(1,1) FitNetModel = FitNetModel(5);
         
         % Alpha
         alphaSelModel(1,1) SteerMathModelTypeEnum = SteerMathModelTypeEnum.GenericPoly
         alphaAngleSumPoly(1,1) SumOfPolyTermsModel = SumOfPolyTermsModel(0);
         alphaAngleSumSines(1,1) SumOfSinesModel = SumOfSinesModel(0);
         alphaAngleLinearTan(1,1) LinearTangentSelectableModel = LinearTangentSelectableModel(0,0,0,0,0);
-        alphaAngleFitNet(1,1) FitNetModel = FitNetModel([]);
+        alphaAngleFitNet(1,1) FitNetModel = FitNetModel(5);
 
         %Continuity
         gammaContinuity(1,1) logical = false;
