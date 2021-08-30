@@ -579,7 +579,8 @@ function editAngle1SumOfSinesButton_Callback(hObject, eventdata, handles)
     steeringModel = action.steeringModel;
     sumOfSines = steeringModel.gammaAngleModel;
 
-    lvd_EditSumOfSinesModelGUI(sumOfSines);
+    output = AppDesignerGUIOutput({false});
+    lvd_EditSumOfSinesModelGUI_App(sumOfSines, output);
     
 
 % --- Executes on button press in editAngle2SumOfSinesButton.
@@ -591,7 +592,8 @@ function editAngle2SumOfSinesButton_Callback(hObject, eventdata, handles)
     steeringModel = action.steeringModel;
     sumOfSines = steeringModel.betaAngleModel;
 
-    lvd_EditSumOfSinesModelGUI(sumOfSines);
+    output = AppDesignerGUIOutput({false});
+    lvd_EditSumOfSinesModelGUI_App(sumOfSines, output);
 
 % --- Executes on button press in editAngle3SumOfSinesButton.
 function editAngle3SumOfSinesButton_Callback(hObject, eventdata, handles)
@@ -602,4 +604,5 @@ function editAngle3SumOfSinesButton_Callback(hObject, eventdata, handles)
     steeringModel = action.steeringModel;
     sumOfSines = steeringModel.alphaAngleModel;
 
-    lvd_EditSumOfSinesModelGUI(sumOfSines);
+    output = AppDesignerGUIOutput({false});
+    lvd_EditSumOfSinesModelGUI_App(sumOfSines, output);
