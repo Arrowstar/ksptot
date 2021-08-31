@@ -151,7 +151,11 @@ classdef PluginConstraint < AbstractConstraint
         
         function addConstraintTf = openEditConstraintUI(obj, lvdData)
             if(lvdData.plugins.getNumPlugins() >= 1)
-                addConstraintTf = lvd_EditPluginConstraintGUI(obj, lvdData);
+%                 addConstraintTf = lvd_EditPluginConstraintGUI(obj, lvdData);
+
+                output = AppDesignerGUIOutput({false});
+                lvd_EditPluginConstraintGUI_App(obj, lvdData, output);
+                addConstraintTf = output.output{1};
             else
                 errordlg('There are currently no plugins in this scenario.  Create at least one new plugin first.');
     
