@@ -156,7 +156,11 @@ classdef GeometricAngleMagConstraint < AbstractConstraint
         
         function addConstraintTf = openEditConstraintUI(obj, lvdData)
             if(lvdData.geometry.angles.getNumAngles() >= 1)
-                addConstraintTf = lvd_EditGeometricAngleConstraintGUI(obj, lvdData);
+%                 addConstraintTf = lvd_EditGeometricAngleConstraintGUI(obj, lvdData);
+
+                output = AppDesignerGUIOutput({false});
+                lvd_EditGeometricAngleConstraintGUI_App(obj, lvdData, output);
+                addConstraintTf = output.output{1};
             else
                 errordlg('There are currently no geometric angles in this scenario.  Add at least one new angle first.');
                 
