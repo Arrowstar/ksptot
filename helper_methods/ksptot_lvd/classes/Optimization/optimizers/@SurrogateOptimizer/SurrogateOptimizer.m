@@ -65,7 +65,10 @@ classdef SurrogateOptimizer < AbstractOptimizer
         end
                
         function openOptionsDialog(obj)
-            lvd_editSurrogateOptOptionsGUI(obj);
+%             lvd_editSurrogateOptOptionsGUI(obj);
+
+            output = AppDesignerGUIOutput({false});
+            lvd_editSurrogateOptOptionsGUI_App(obj, output);
         end
         
         function tf = usesParallel(obj)
