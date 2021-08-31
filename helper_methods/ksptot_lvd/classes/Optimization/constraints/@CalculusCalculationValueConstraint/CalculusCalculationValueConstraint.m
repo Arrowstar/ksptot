@@ -167,7 +167,11 @@ classdef CalculusCalculationValueConstraint < AbstractConstraint
             
             if(not(isempty(calcObj)))
                 obj.calculusCalc = calcObj;
-                addConstraintTf = lvd_EditGenericMAConstraintGUI(obj, lvdData);
+%                 addConstraintTf = lvd_EditGenericMAConstraintGUI(obj, lvdData);
+
+                output = AppDesignerGUIOutput({false});
+                lvd_EditGenericMAConstraintGUI_App(obj, lvdData, output);
+                addConstraintTf = output.output{1}; 
             else
                 addConstraintTf = false;
             end

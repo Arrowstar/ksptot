@@ -144,7 +144,11 @@ classdef YawAngleConstraint < AbstractConstraint
         end
         
         function addConstraintTf = openEditConstraintUI(obj, lvdData)
-            addConstraintTf = lvd_EditGenericMAConstraintGUI(obj, lvdData);
+%             addConstraintTf = lvd_EditGenericMAConstraintGUI(obj, lvdData);
+            
+            output = AppDesignerGUIOutput({false});
+            lvd_EditGenericMAConstraintGUI_App(obj, lvdData, output);
+            addConstraintTf = output.output{1}; 
         end
         
         function tf = canUseSparseOutput(obj)

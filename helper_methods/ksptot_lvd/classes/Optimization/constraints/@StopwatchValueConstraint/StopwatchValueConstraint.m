@@ -169,7 +169,11 @@ classdef StopwatchValueConstraint < AbstractConstraint
             
             if(not(isempty(sw)))
                 obj.stopwatch = sw;
-                addConstraintTf = lvd_EditGenericMAConstraintGUI(obj, lvdData);
+%                 addConstraintTf = lvd_EditGenericMAConstraintGUI(obj, lvdData);
+                
+                output = AppDesignerGUIOutput({false});
+                lvd_EditGenericMAConstraintGUI_App(obj, lvdData, output);
+                addConstraintTf = output.output{1}; 
             else
                 addConstraintTf = false;
             end
