@@ -149,7 +149,11 @@ classdef GeometricVectorMagConstraint < AbstractConstraint
         
         function addConstraintTf = openEditConstraintUI(obj, lvdData)
             if(lvdData.geometry.vectors.getNumVectors() >= 1)
-                addConstraintTf = lvd_EditGeometricVectorConstraintGUI(obj, lvdData);
+%                 addConstraintTf = lvd_EditGeometricVectorConstraintGUI(obj, lvdData);
+
+                output = AppDesignerGUIOutput({false});
+                lvd_EditGeometricVectorConstraintGUI_App(obj, lvdData, output);
+                addConstraintTf = output.output{1};
             else
                 errordlg('There are currently no geometric vectors in this scenario.  Add at least one new vector first.');
                 
