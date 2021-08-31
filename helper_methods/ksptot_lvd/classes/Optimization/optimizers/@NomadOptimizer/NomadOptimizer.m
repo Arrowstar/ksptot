@@ -105,7 +105,10 @@ classdef NomadOptimizer < AbstractOptimizer
         end
         
         function openOptionsDialog(obj)
-            lvd_editNomadOptionsGUI(obj);
+%             lvd_editNomadOptionsGUI(obj);
+            
+            output = AppDesignerGUIOutput({false});
+            lvd_editNomadOptionsGUI_App(obj, output);
         end
     end
     
