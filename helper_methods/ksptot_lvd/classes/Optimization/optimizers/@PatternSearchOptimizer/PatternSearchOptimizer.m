@@ -83,7 +83,10 @@ classdef PatternSearchOptimizer < AbstractOptimizer
         end
         
         function openOptionsDialog(obj)
-            lvd_editPatternSearchOptionsGUI(obj);
+%             lvd_editPatternSearchOptionsGUI(obj);
+            
+            output = AppDesignerGUIOutput({false});
+            lvd_editPatternSearchOptionsGUI_App(obj, output);
         end
     end
     
