@@ -140,7 +140,11 @@ classdef TankMassFlowRateConstraint < AbstractConstraint
         function addConstraintTf = openEditConstraintUI(obj, lvdData)
             [~, tanks] = lvdData.launchVehicle.getTanksListBoxStr();
             if(numel(tanks) >= 1)
-                addConstraintTf = lvd_EditTankConstraintGUI(obj, lvdData);
+%                 addConstraintTf = lvd_EditTankConstraintGUI(obj, lvdData);
+                
+                output = AppDesignerGUIOutput({false});
+                lvd_EditTankConstraintGUI_App(obj, lvdData, output);
+                addConstraintTf = output.output{1};
             else
                 errordlg('There are currently no tanks assigned to the launch vehicle in this scenario.  Add at least one tank first.');
                 
