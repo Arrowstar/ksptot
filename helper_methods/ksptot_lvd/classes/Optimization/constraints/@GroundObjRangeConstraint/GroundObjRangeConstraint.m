@@ -145,7 +145,11 @@ classdef GroundObjRangeConstraint < AbstractGroundObjectConstraint
         
         function addConstraintTf = openEditConstraintUI(obj, lvdData)
             if(lvdData.groundObjs.getNumGroundObj() >= 1)
-                addConstraintTf = lvd_EditGroundObjConstraintGUI(obj, lvdData);
+%                 addConstraintTf = lvd_EditGroundObjConstraintGUI(obj, lvdData);
+
+                output = AppDesignerGUIOutput({false});
+                lvd_EditGroundObjConstraintGUI_App(obj, lvdData, output);
+                addConstraintTf = output.output{1};
             else
                 errordlg('There are currently no ground objects in this scenario.  Add at least one new ground object first.');
                 
