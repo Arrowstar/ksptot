@@ -107,7 +107,10 @@ classdef IpOptOptimizer < AbstractGradientOptimizer
         end
         
         function openOptionsDialog(obj)
-            lvd_editIpoptOptionsGUI(obj);
+%             lvd_editIpoptOptionsGUI(obj);
+            
+            output = AppDesignerGUIOutput({false});
+            lvd_editIpoptOptionsGUI_App(obj, output);
         end
         
         function tf = usesParallel(obj)
