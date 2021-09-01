@@ -62,7 +62,11 @@ classdef ThreePointPlane < AbstractGeometricPlane
         end
         
         function useTf = openEditDialog(obj)
-            useTf = lvd_EditThreePointPlaneGUI(obj, obj.lvdData);
+%             useTf = lvd_EditThreePointPlaneGUI(obj, obj.lvdData);
+
+            output = AppDesignerGUIOutput({false});
+            lvd_EditThreePointPlaneGUI_App(obj, obj.lvdData, output);
+            useTf = output.output{1};
         end
         
         function tf = isVehDependent(obj)
