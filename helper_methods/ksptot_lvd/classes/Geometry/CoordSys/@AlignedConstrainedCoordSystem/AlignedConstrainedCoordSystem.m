@@ -86,7 +86,11 @@ classdef AlignedConstrainedCoordSystem < AbstractGeometricCoordSystem
         end
         
         function useTf = openEditDialog(obj)
-            useTf = lvd_EditAlignedConstrainedCoordSysGUI(obj, obj.lvdData);
+%             useTf = lvd_EditAlignedConstrainedCoordSysGUI(obj, obj.lvdData);
+
+            output = AppDesignerGUIOutput({false});
+            lvd_EditAlignedConstrainedCoordSysGUI_App(obj, obj.lvdData, output);
+            useTf = output.output{1};
         end
         
         function tf = isVehDependent(obj)
