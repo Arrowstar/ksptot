@@ -362,6 +362,10 @@ function frameUpdated(handles)
     frame = getappdata(handles.lvd_EditFixedInFrameVectorGUI,'frame'); %curElemSet
     bodyInfo = frame.getOriginBody();    
     
+    if(isempty(bodyInfo))
+        bodyInfo = LvdData.getDefaultInitialBodyInfo(lvdData.celBodyData);
+    end
+    
     contents = cellstr(get(handles.refFrameTypeCombo,'String'));
     selFrameType = contents{get(handles.refFrameTypeCombo,'Value')};
     refFrameEnum = ReferenceFrameEnum.getEnumForListboxStr(selFrameType);

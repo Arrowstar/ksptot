@@ -61,7 +61,11 @@ classdef CoordSysPointRefFrame < AbstractGeometricRefFrame
         end
         
         function useTf = openEditDialog(obj)
-            useTf = lvd_EditCoordSysOriginRefFrameGUI(obj, obj.lvdData);
+%             useTf = lvd_EditCoordSysOriginRefFrameGUI(obj, obj.lvdData);
+                    
+            output = AppDesignerGUIOutput({false});
+            lvd_EditCoordSysOriginRefFrameGUI_App(obj, obj.lvdData, output);
+            useTf = output.output{1};
         end
         
         function tf = isVehDependent(obj)
