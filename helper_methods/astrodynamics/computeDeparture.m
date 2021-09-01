@@ -121,15 +121,20 @@ function hDepartDisp = computeDeparture(celBodyData, departBody, arrivalBody, de
 % %     [sUnitVector, OUnitVector] = hyperOrbitExcessVelConstMath(eSMA, eEcc, eInc, eRAAN, eArg, eTA, gmuDepartBody, hVInf);
    
     %Departure display
-    [hDepartArr, hDepartDisp] = departDisplayGUI();
-    departAxis = hDepartArr{1};
-    hyperOrbitText = hDepartArr{2};
-    mainOrbitText = hDepartArr{3};
-    burnInfoText = hDepartArr{4}; 
-    departDispGUI = hDepartArr{5};
-    hyperOrbitLabel = hDepartArr{6};
-    transOrbitLabel = hDepartArr{7};
-    departureOrbitRadio = hDepartArr{8};
+%     [hDepartArr, hDepartDisp] = departDisplayGUI();
+
+    output = AppDesignerGUIOutput({false});
+    departDisplayGUI_App(output);
+
+    departAxis = output.output{1};
+    hyperOrbitText = output.output{2};
+    mainOrbitText = output.output{3};
+    burnInfoText = output.output{4}; 
+    departDispGUI = output.output{5};
+    hyperOrbitLabel = output.output{6};
+    transOrbitLabel = output.output{7};
+    departureOrbitRadio = output.output{8};
+    hDepartDisp = output.output{9};
     
     %1337 plotting
     hSMA = hOrbit(1);
