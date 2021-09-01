@@ -3,7 +3,13 @@ function [refBody,scName] = orbitPanelGetOrbitFromKSPTOTConnectCallBack(hSMA, hE
 %   Detailed explanation goes here
 
     refBody = [];
-    [orbit,~,scName] = importOrbitGUI(-1, 'KSPTOTConnect');
+%     [orbit,~,scName] = importOrbitGUI(-1, 'KSPTOTConnect');
+
+    output = AppDesignerGUIOutput({[],[],''});
+    importOrbitGUI_App(-1, 'KSPTOTConnect', output);
+    orbit = output.output{1};
+    scName = output.output{3};
+
     if(not(isempty(orbit)))
         if(not(isempty(hSMA)))
             set(hSMA, 'String', fullAccNum2Str(orbit{3}));

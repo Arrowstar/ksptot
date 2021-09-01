@@ -10,7 +10,14 @@ function [refBody, scName] = orbitPanelGetOrbitFromSFSContextCallBack(mainGUIHan
     end
     
     refBody = [];
-    [orbit,PathName,scName] = importOrbitGUI(1, prevPathName);
+%     [orbit,PathName,scName] = importOrbitGUI(1, prevPathName);
+
+    output = AppDesignerGUIOutput({[],[],''});
+    importOrbitGUI_App(1, prevPathName, output);
+    orbit = output.output{1};
+    PathName = output.output{3};
+    scName = output.output{3};
+
     if(not(isempty(orbit)))
         if(not(isempty(hSMA)))
             set(hSMA, 'String', fullAccNum2Str(orbit{3}));
