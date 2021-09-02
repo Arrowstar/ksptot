@@ -31,7 +31,11 @@ classdef CelestialBodyPoint < AbstractGeometricPoint
         end
         
         function useTf = openEditDialog(obj, ~)
-            useTf = lvd_EditCelestialBodyPointGUI(obj);
+%             useTf = lvd_EditCelestialBodyPointGUI(obj);
+            
+            output = AppDesignerGUIOutput({false});
+            lvd_EditCelestialBodyPointGUI_App(obj, output);
+            useTf = output.output{1};
         end
         
         function tf = isVehDependent(obj)
