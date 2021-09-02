@@ -37,7 +37,11 @@ classdef GroundObjectPoint < AbstractGeometricPoint
         end
         
         function useTf = openEditDialog(obj, ~)
-            useTf = lvd_EditGroundObjPointGUI(obj);
+%             useTf = lvd_EditGroundObjPointGUI(obj);
+
+            output = AppDesignerGUIOutput({false});
+            lvd_EditGroundObjPointGUI_App(obj, output);
+            useTf = output.output{1};
         end
         
         function tf = isVehDependent(obj)
