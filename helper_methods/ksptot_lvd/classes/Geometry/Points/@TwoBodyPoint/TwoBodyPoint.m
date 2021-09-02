@@ -170,7 +170,11 @@ classdef TwoBodyPoint < AbstractGeometricPoint
         end
         
         function useTf = openEditDialog(obj, hKsptotMainGUI)
-            useTf = lvd_EditTwoBodyPointGUI(obj, obj.lvdData, hKsptotMainGUI);
+%             useTf = lvd_EditTwoBodyPointGUI(obj, obj.lvdData, hKsptotMainGUI);
+            
+            output = AppDesignerGUIOutput({false});
+            lvd_EditTwoBodyPointGUI_App(obj, obj.lvdData, hKsptotMainGUI, output);
+            useTf = output.output{1};
         end
         
         function tf = isVehDependent(~)
