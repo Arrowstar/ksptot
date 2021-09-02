@@ -48,7 +48,11 @@ classdef FixedPointInFrame < AbstractGeometricPoint
         end
         
         function useTf = openEditDialog(obj, ~)
-            useTf = lvd_EditFixedInFramePointGUI(obj, obj.lvdData);
+%             useTf = lvd_EditFixedInFramePointGUI(obj, obj.lvdData);
+
+            output = AppDesignerGUIOutput({false});
+            lvd_EditFixedInFramePointGUI_App(obj, obj.lvdData, output);
+            useTf = output.output{1};
         end
         
         function tf = isVehDependent(obj)
