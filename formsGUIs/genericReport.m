@@ -61,7 +61,7 @@ guidata(hObject, handles);
 axis(handles.leftAxis, 'off');
 axis(handles.rightAxis, 'off');
 
-fp = fillPage(gcf, 'margins', [0 0 0 0], 'papersize', [8.5 11]);
+fp = fillPage(hObject, 'margins', [0 0 0 0], 'papersize', [8.5 11]);
 
 load('genericReportPrintSetup.mat');
 genericReportPrintSetup.ResolutionMode = 'manual';
@@ -72,7 +72,10 @@ setprinttemplate(hObject, genericReportPrintSetup);
 manType = varargin{2};
 generatedOn = datestr(now(), 'yyyy-mm-dd HH:MM:SS.FFF');
 generatedBy = ['KSP TOT v', getKSPTOTVersionNumStr(), ' -- ', varargin{3}];
-[scName, reportDesc] = basicReportInfoGUI();
+output = AppDesignerGUIOutput({'',''});
+basicReportInfoGUI_App(output);
+scName = output.output{1};
+reportDesc = output.output{2};
 headerTextBoxStr = {};
 headerTextBoxStr{end+1} = manType;
 headerTextBoxStr{end+1} = generatedOn;
