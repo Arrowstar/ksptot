@@ -32,7 +32,11 @@ classdef VehiclePoint < AbstractGeometricPoint
         end
         
         function useTf = openEditDialog(obj, ~)
-            useTf = lvd_EditVehiclePointGUI(obj);
+%             useTf = lvd_EditVehiclePointGUI(obj);
+
+            output = AppDesignerGUIOutput({false});
+            lvd_EditVehiclePointGUI_App(obj, output);
+            useTf = output.output{1};
         end
         
         function tf = isVehDependent(obj)
