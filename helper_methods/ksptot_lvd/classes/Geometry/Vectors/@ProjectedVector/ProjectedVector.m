@@ -46,7 +46,11 @@ classdef ProjectedVector < AbstractGeometricVector
         end
         
         function useTf = openEditDialog(obj)
-            useTf = lvd_EditProjectedVectorGUI(obj, obj.lvdData);
+%             useTf = lvd_EditProjectedVectorGUI(obj, obj.lvdData);
+            
+            output = AppDesignerGUIOutput({false});
+            lvd_EditProjectedVectorGUI_App(obj, obj.lvdData, output);
+            useTf = output.output{1};
         end
         
         function tf = isVehDependent(obj)
