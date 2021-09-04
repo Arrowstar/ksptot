@@ -45,7 +45,11 @@ classdef FixedVectorInFrame < AbstractGeometricVector
         end
         
         function useTf = openEditDialog(obj)
-            useTf = lvd_EditFixedInFrameVectorGUI(obj, obj.lvdData);
+%             useTf = lvd_EditFixedInFrameVectorGUI(obj, obj.lvdData);
+            
+            output = AppDesignerGUIOutput({false});
+            lvd_EditFixedInFrameVectorGUI_App(obj, obj.lvdData, output);
+            useTf = output.output{1};
         end
         
         function tf = isVehDependent(obj)
