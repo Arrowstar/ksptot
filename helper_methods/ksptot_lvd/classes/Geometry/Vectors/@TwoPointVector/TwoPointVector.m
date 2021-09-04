@@ -46,7 +46,11 @@ classdef TwoPointVector < AbstractGeometricVector
         end
         
         function useTf = openEditDialog(obj)
-            useTf = lvd_EditTwoPointVectorGUI(obj, obj.lvdData);
+%             useTf = lvd_EditTwoPointVectorGUI(obj, obj.lvdData);
+            
+            output = AppDesignerGUIOutput({false});
+            lvd_EditTwoPointVectorGUI_App(obj, obj.lvdData, output);
+            useTf = output.output{1};
         end
         
         function tf = isVehDependent(obj)
