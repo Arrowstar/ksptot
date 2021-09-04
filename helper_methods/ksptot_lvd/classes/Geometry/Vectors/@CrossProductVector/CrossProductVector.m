@@ -43,7 +43,11 @@ classdef CrossProductVector < AbstractGeometricVector
         end
         
         function useTf = openEditDialog(obj)
-            useTf = lvd_EditCrossProductVectorGUI(obj, obj.lvdData);
+%             useTf = lvd_EditCrossProductVectorGUI(obj, obj.lvdData);
+
+            output = AppDesignerGUIOutput({false});
+            lvd_EditCrossProductVectorGUI_App(obj, obj.lvdData, output);
+            useTf = output.output{1};
         end
         
         function tf = isVehDependent(obj)
