@@ -101,7 +101,11 @@ classdef VehicleStateVector < AbstractGeometricVector
         end
         
         function useTf = openEditDialog(obj)
-            useTf = lvd_EditVehicleStateVectorGUI(obj, obj.lvdData);
+%             useTf = lvd_EditVehicleStateVectorGUI(obj, obj.lvdData);
+            
+            output = AppDesignerGUIOutput({false});
+            lvd_EditVehicleStateVectorGUI_App(obj, obj.lvdData, output);
+            useTf = output.output{1};
         end
         
         function tf = isVehDependent(~)
