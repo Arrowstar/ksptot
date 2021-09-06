@@ -57,9 +57,9 @@ function [pointsOut, posOut, faceIndsOut] = vect_intersectLineMesh3d(lines, vert
     
     numLines = size(lines,1);
     
-    pointsOut = NaN(2,3,numLines);
-    posOut = NaN(2,1,numLines);
-    faceIndsOut = NaN(2,1,numLines);
+    pointsOut = NaN(4,3,numLines);
+    posOut = NaN(4,1,numLines);
+    faceIndsOut = NaN(4,1,numLines);
     for(i=1:numLines)
         line = lines(i,:);
         
