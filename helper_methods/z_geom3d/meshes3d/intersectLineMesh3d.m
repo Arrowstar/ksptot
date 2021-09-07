@@ -100,7 +100,7 @@ pos(ind2) = NaN;
 
 % keep only interesting points
 inds = ~ind1 & ~ind2 & valid;
-points = points(inds, :);
+points = points(inds, :); 
 
 pos = pos(inds);
 faceInds = find(inds);

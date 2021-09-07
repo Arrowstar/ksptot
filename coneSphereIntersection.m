@@ -24,16 +24,15 @@ sensorOriginRVect = [-2000;0;0];
 sensorOriginPt = FixedPointInFrame(sensorOriginRVect, frame, 'Sensor Origin', lvdData);
 
 steeringCoordSys = ParallelToFrameCoordSystem(frame, 'Kerbin Inertial', lvdData);
-steeringModel = FixedInCoordSysSensorSteeringModel(deg2rad(0), deg2rad(0), 0, steeringCoordSys);
+steeringModel = FixedInCoordSysSensorSteeringModel(deg2rad(-10), deg2rad(-10), 0, steeringCoordSys);
 
-sensorRange = 2000;
-sensAng = deg2rad(10);
+sensorRange = 3000;
+sensAng = deg2rad(45);
+
+sensor = ConicalSensor(sensAng, sensorRange, sensorOriginPt, steeringModel);
 
 %Compute Occluding Mesh
 [sV, sF] = sphereMesh([x0,y0,z0,r], 'nTheta', 16, 'nPhi', 16);
-
-%define sensor
-sensor = ConicalSensor(sensAng, sensorRange, sensorOriginPt, steeringModel);
 
 %define targets
 target1 = BodyFixedLatLongGridTargetModel(celBodyData.kerbin, 0, deg2rad(30), 2*pi, deg2rad(-30), 25, 25, 1);
@@ -46,7 +45,7 @@ target2 = PointSensorTargetModel(point);
 point = FixedPointInFrame([1000;0;0], frame, 'Point 2', lvdData);
 target3 = PointSensorTargetModel(point);
 
-target4 = BodyFixedCircleGridTargetModel(celBodyData.kerbin, 0, deg2rad(70), deg2rad(30), 25, 10, 1);
+target4 = BodyFixedCircleGridTargetModel(celBodyData.kerbin, deg2rad(30), deg2rad(70), deg2rad(30), 25, 10, 1);
 
 targets = [target1, target2, target3, target4];
 
@@ -56,12 +55,10 @@ bodyInfos = [celBodyData.kerbin, celBodyData.mun, celBodyData.minmus];
 tt=tic;[results, V3, F3] = sensor.evaluateSensorTargets(targets, scElem, bodyInfos, frame);toc(tt);
 [bool, sVPts] = getTargetResultsInFrame(results, frame);
 
-% disp(getCoverageFraction(results));
-
 %% Plotting
 hAx = axes(figure());
 hold on;
-drawMesh(hAx, sV, sF, 'FaceAlpha',1.0,'LineStyle','none');
+drawMesh(hAx, sV, sF, 'FaceAlpha',1.0,'LineStyle','-');
 % drawMesh(hAx, Vobs, Fobs, 'FaceAlpha',1.0, 'FaceColor','b');
 drawMesh(hAx, V3, F3, 'FaceColor','g','FaceAlpha',0.3, 'LineStyle','none');
 % plot3(hAx, V3(:,1), V3(:,2), V3(:,3),'b.');
@@ -76,3 +73,4 @@ hold off;
 
 % profile viewer; 
 toc(t);
+disp(getCoverageFraction(results));

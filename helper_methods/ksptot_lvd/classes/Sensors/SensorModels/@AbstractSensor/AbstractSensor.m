@@ -124,7 +124,7 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
                 targetColInds = vertcat(targetColInds, i*ones(size(rVects,2), 1)); %#ok<AGROW>
             end
             
-            bool = isPointInMesh(allRVects, V, F);
+            bool = vect_isPointInMesh(allRVects, V, F);
             
             results = SensorTargetResults.empty(1,0);
             for(i=1:length(targets))

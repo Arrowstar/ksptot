@@ -31,12 +31,13 @@ classdef ConicalSensor < AbstractSensor
             boreDir = obj.getSensorBoresightDirection(time, scElem, inFrame); 
             
             S = [0,0,0, sensorRange];
-            sphere = sphereMesh(S, 'nTheta', 5*2*pi/obj.angle, 'nPhi', 5*2*pi/obj.angle);
+            sphere = sphereMesh(S, 'nTheta', 2*2*pi/obj.angle, 'nPhi', 2*2*pi/obj.angle);
             sPtsRaw = unique(sphere.vertices,'rows');
-            sPtsAngs = dang(repmat(boreDir,1,size(sPtsRaw,1)), sPtsRaw');
+            sPtsAngs = dang(repmat([0;0;1],1,size(sPtsRaw,1)), sPtsRaw');
             sPts = sPtsRaw(sPtsAngs <= obj.angle+1E-10, :);
             
-            M = makehgtform('translate',rVectSc(:)');
+            r = vrrotvec([0;0;1],boreDir);            
+            M = makehgtform('translate',rVectSc(:)', 'axisrotate',r(1:3),r(4));
             sPts = transformPoint3d(sPts(:,1), sPts(:,2), sPts(:,3), M);
             
             V = vertcat(rVectSc(:)', sPts);

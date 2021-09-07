@@ -125,6 +125,16 @@ function [pointsOut, posOut, faceIndsOut] = vect_intersectLineMesh3d(lines, vert
         end
         
         if(not(isempty(points)))
+            if(height(points) < 4)
+                points = vertcat(points, NaN(4-height(points), width(points))); %#ok<AGROW>
+            end
+            if(height(pos) < 4)
+                pos = vertcat(pos, NaN(4-height(pos), width(pos))); %#ok<AGROW>
+            end
+            if(height(faceInds) < 4)
+                faceInds = vertcat(faceInds, NaN(4-height(faceInds), width(faceInds))); %#ok<AGROW>
+            end
+            
             pointsOut(:,:,i) = points; %#ok<AGROW>
             posOut(:,:,i) = pos; %#ok<AGROW>
             faceIndsOut(:,:,i) = faceInds; %#ok<AGROW>
