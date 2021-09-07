@@ -27,7 +27,7 @@ steeringCoordSys = ParallelToFrameCoordSystem(frame, 'Kerbin Inertial', lvdData)
 steeringModel = FixedInCoordSysSensorSteeringModel(deg2rad(-10), deg2rad(-10), 0, steeringCoordSys);
 
 sensorRange = 3000;
-sensAng = deg2rad(45);
+sensAng = deg2rad(10);
 
 sensor = ConicalSensor(sensAng, sensorRange, sensorOriginPt, steeringModel);
 

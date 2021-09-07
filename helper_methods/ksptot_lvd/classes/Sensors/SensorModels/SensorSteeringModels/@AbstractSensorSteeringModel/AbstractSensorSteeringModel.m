@@ -3,7 +3,7 @@ classdef AbstractSensorSteeringModel < matlab.mixin.SetGet
     %   Detailed explanation goes here
     
     methods       
-        [boreDir] = getBoresightVector(obj, time, vehElemSet, inFrame)
+        [boreDir] = getBoresightVector(obj, time, vehElemSet, steeringModel, inFrame)
         
         rollAngle = getBoresightRollAngle(obj)
     end

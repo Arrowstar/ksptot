@@ -17,7 +17,7 @@ classdef FixedInCoordSysSensorSteeringModel < AbstractSensorSteeringModel
             obj.coordSys = coordSys;
         end
         
-        function [boreDir] = getBoresightVector(obj, time, vehElemSet, inFrame)
+        function [boreDir] = getBoresightVector(obj, time, vehElemSet, ~, inFrame)
             rotMat = obj.coordSys.getCoordSysAtTime(time, vehElemSet, inFrame);
             
             [x,y,z] = sph2cart(obj.rhtAsc, obj.dec, 1);

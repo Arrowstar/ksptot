@@ -27,7 +27,7 @@ classdef ConicalSensor < AbstractSensor
             time = scElem.time;
             sensorRange = obj.range;
             
-            rVectSc = scElem.rVect;
+            rVectSensorOrigin = obj.getOriginInFrame(time, scElem, inFrame);
             boreDir = obj.getSensorBoresightDirection(time, scElem, inFrame); 
             
             S = [0,0,0, sensorRange];
@@ -37,10 +37,10 @@ classdef ConicalSensor < AbstractSensor
             sPts = sPtsRaw(sPtsAngs <= obj.angle+1E-10, :);
             
             r = vrrotvec([0;0;1],boreDir);            
-            M = makehgtform('translate',rVectSc(:)', 'axisrotate',r(1:3),r(4));
+            M = makehgtform('translate',rVectSensorOrigin(:)', 'axisrotate',r(1:3),r(4));
             sPts = transformPoint3d(sPts(:,1), sPts(:,2), sPts(:,3), M);
             
-            V = vertcat(rVectSc(:)', sPts);
+            V = vertcat(rVectSensorOrigin(:)', sPts);
             F = convhull(V);
         end
         
