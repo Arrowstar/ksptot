@@ -16,6 +16,7 @@ classdef LvdData < matlab.mixin.SetGet
         groundObjs LaunchVehicleGroundObjectSet
         geometry LvdGeometry
         graphAnalysis LvdGraphicalAnalysis
+        sensors LvdSensorSet
         
         celBodyData 
         ksptotVer char
@@ -34,6 +35,7 @@ classdef LvdData < matlab.mixin.SetGet
             obj.groundObjs = LaunchVehicleGroundObjectSet(obj);
             obj.geometry = LvdGeometry(obj);
             obj.graphAnalysis = LvdGraphicalAnalysis(obj);
+            obj.sensors = LvdSensorSet(obj);
         end
     end
     
@@ -248,6 +250,10 @@ classdef LvdData < matlab.mixin.SetGet
             
             if(isempty(obj.graphAnalysis))
                 obj.graphAnalysis = LvdGraphicalAnalysis(obj);
+            end
+            
+            if(isempty(obj.sensors))
+                obj.sensors = LvdSensorSet(obj);
             end
             
             evts = obj.script.evts;

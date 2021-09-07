@@ -27,15 +27,15 @@ steeringCoordSys = ParallelToFrameCoordSystem(frame, 'Kerbin Inertial', lvdData)
 steeringModel = FixedInCoordSysSensorSteeringModel(deg2rad(-10), deg2rad(-10), 0, steeringCoordSys);
 
 sensorRange = 3000;
-sensAng = deg2rad(10);
+sensAng = deg2rad(5);
 
-sensor = ConicalSensor(sensAng, sensorRange, sensorOriginPt, steeringModel);
+sensor = ConicalSensor('Demo Conical Sensor', sensAng, sensorRange, sensorOriginPt, steeringModel);
 
 %Compute Occluding Mesh
 [sV, sF] = sphereMesh([x0,y0,z0,r], 'nTheta', 16, 'nPhi', 16);
 
 %define targets
-target1 = BodyFixedLatLongGridTargetModel(celBodyData.kerbin, 0, deg2rad(30), 2*pi, deg2rad(-30), 25, 25, 1);
+target1 = BodyFixedLatLongGridTargetModel(celBodyData.kerbin, 0, deg2rad(30), pi, deg2rad(-30), 25, 25, 1);
 
 frame = celBodyData.kerbin.getBodyCenteredInertialFrame();
 lvdData = LvdData.getDefaultLvdData(celBodyData);
@@ -45,14 +45,14 @@ target2 = PointSensorTargetModel(point);
 point = FixedPointInFrame([1000;0;0], frame, 'Point 2', lvdData);
 target3 = PointSensorTargetModel(point);
 
-target4 = BodyFixedCircleGridTargetModel(celBodyData.kerbin, deg2rad(30), deg2rad(70), deg2rad(30), 25, 10, 1);
+target4 = BodyFixedCircleGridTargetModel(celBodyData.kerbin, deg2rad(270), deg2rad(0), deg2rad(30), 25, 10, 1);
 
 targets = [target1, target2, target3, target4];
 
 %Compute results
 scElem = CartesianElementSet(0, sensorOriginRVect, [0;0;0], frame);
 bodyInfos = [celBodyData.kerbin, celBodyData.mun, celBodyData.minmus];
-tt=tic;[results, V3, F3] = sensor.evaluateSensorTargets(targets, scElem, bodyInfos, frame);toc(tt);
+tt=tic;[results, V3, F3] = sensor.evaluateSensorTargets(targets, scElem, [], bodyInfos, frame);toc(tt);
 [bool, sVPts] = getTargetResultsInFrame(results, frame);
 
 %% Plotting

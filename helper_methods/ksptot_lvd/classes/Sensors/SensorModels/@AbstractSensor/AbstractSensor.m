@@ -15,17 +15,20 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
         
         origin = getOriginInFrame(obj, time, scElem, inFrame)
         
-        function [VTotal,FTotal] = getObscuringMesh(obj, scElem, bodyInfos, inFrame)
+        listboxStr = getListboxStr(obj)
+        
+        function [VTotal,FTotal] = getObscuringMesh(obj, scElem, scSteeringModel, bodyInfos, inFrame)
             arguments
                 obj(1,1) AbstractSensor
                 scElem(1,1) CartesianElementSet 
+                scSteeringModel
                 bodyInfos KSPTOT_BodyInfo
                 inFrame(1,1) AbstractReferenceFrame
             end
             
             time = scElem.time;
             rVectSensorOrigin = obj.getOriginInFrame(time, scElem, inFrame);
-            boreDir = obj.getSensorBoresightDirection(time, scElem, inFrame);
+            boreDir = obj.getSensorBoresightDirection(time, scElem, scSteeringModel, inFrame);
               
             FTotal = [];
             VTotal = [];
@@ -71,16 +74,17 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
             end
         end
 
-        function [V,F, Vobs,Fobs] = getObscuredSensorMesh(obj, scElem, bodyInfos, inFrame)
+        function [V,F, Vobs,Fobs] = getObscuredSensorMesh(obj, scElem, scSteeringModel, bodyInfos, inFrame)
             arguments
                 obj(1,1) AbstractSensor
                 scElem(1,1) CartesianElementSet
+                scSteeringModel
                 bodyInfos KSPTOT_BodyInfo
                 inFrame(1,1) AbstractReferenceFrame
             end
             
-            [Vobs,Fobs] = obj.getObscuringMesh(scElem, bodyInfos, inFrame);
-            [Vsens,Fsens] = obj.getSensorMesh(scElem, inFrame);
+            [Vobs,Fobs] = obj.getObscuringMesh(scElem, scSteeringModel, bodyInfos, inFrame);
+            [Vsens,Fsens] = obj.getSensorMesh(scElem, scSteeringModel, inFrame);
             
             rVectSc = scElem.rVect;
             
@@ -102,17 +106,18 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
             [V,F] = meshVertexClustering(coneMesh,0.1);
         end
         
-        function [results, V, F] = evaluateSensorTargets(obj, targets, scElem, bodyInfos, inFrame)
+        function [results, V, F] = evaluateSensorTargets(obj, targets, scElem, scSteeringModel, bodyInfos, inFrame)
             arguments
                 obj(1,1) AbstractSensor
                 targets(1,:) AbstractSensorTarget
                 scElem(1,1) CartesianElementSet
+                scSteeringModel
                 bodyInfos KSPTOT_BodyInfo
                 inFrame(1,1) AbstractReferenceFrame
             end
             
             time = scElem.time;
-            [V,F] = obj.getObscuredSensorMesh(scElem, bodyInfos, inFrame);
+            [V,F] = obj.getObscuredSensorMesh(scElem, scSteeringModel, bodyInfos, inFrame);
             
             allRVects = [];
             targetColInds = [];
@@ -136,6 +141,34 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
                 
                 results(i) = SensorTargetResults(obj, target, time, subBool, subRVects, inFrame);
             end
+        end
+        
+        function tf = usesGroundObj(obj, groundObj)
+            tf = false;
+        end
+        
+        function tf = usesGeometricPoint(obj, point)
+            tf = false;
+        end
+        
+        function tf = usesGeometricVector(obj, vector)
+            tf = false;
+        end
+        
+        function tf = usesGeometricCoordSys(obj, coordSys)
+            tf = false;
+        end
+        
+        function tf = usesGeometricRefFrame(obj, refFrame)
+            tf = false;
+        end
+        
+        function tf = usesGeometricAngle(obj, angle)
+            tf = false;
+        end
+        
+        function tf = usesGeometricPlane(obj, plane)
+            tf = false;
         end
     end
     
