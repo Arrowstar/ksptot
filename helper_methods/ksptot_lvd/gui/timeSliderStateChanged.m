@@ -22,6 +22,8 @@ function timeSliderStateChanged(src,evt, lvdData, handles, app)
         refFrameData = lvdData.viewSettings.selViewProfile.refFrameData;
         angleData = lvdData.viewSettings.selViewProfile.angleData;
         planeData = lvdData.viewSettings.selViewProfile.planeData;
+        sensorData = lvdData.viewSettings.selViewProfile.sensorData;
+        sensorTgtData = lvdData.viewSettings.selViewProfile.sensorTgtData;
         
         markerTrajData.plotBodyMarkerAtTime(time, hAx);
         
@@ -53,6 +55,19 @@ function timeSliderStateChanged(src,evt, lvdData, handles, app)
         
         for(i=1:length(pointData))
             pointData(i).plotPointAtTime(time, hAx);
+        end
+        
+        sensorTgtResults = SensorTargetResults.empty(1,0);
+        for(i=1:length(sensorData))
+            subResults = sensorData(i).plotSensorAtTime(time, hAx);
+            sensorTgtResults = horzcat(sensorTgtResults, subResults(:)'); %#ok<AGROW>
+        end
+        
+        if(numel(sensorTgtResults) > 0)
+            mergedResults = SensorTargetResults.mergeResults(sensorTgtResults);
+            for(i=1:length(sensorTgtData))
+                sensorTgtData(i).plotTargetResults(mergedResults, hAx);
+            end
         end
         
         centralBodyData.setCentralBodyRotation(time);

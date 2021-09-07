@@ -1,5 +1,5 @@
 classdef SensorTargetResults < matlab.mixin.SetGet
-    %UNTITLED4 Summary of this class goes here
+    %SensorTargetResults Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
@@ -41,6 +41,25 @@ classdef SensorTargetResults < matlab.mixin.SetGet
         function covFrac = getCoverageFraction(obj)
             for(i=1:length(obj))
                 covFrac(i) = sum(obj(i).resultsBool) / numel(obj(i).resultsBool); %#ok<AGROW>
+            end
+        end
+    end
+    
+    methods(Static)
+        function mergedResults = mergeResults(results)
+            targets = unique([results.target]);
+            for(i=1:length(targets))
+                target = targets(i);
+                
+                subResults = results([results.target] == target);
+                sensor = [subResults.sensor];
+                time = subResults(1).time;
+                targetRVect = subResults(1).targetRVect;
+                frame = subResults(1).frame;
+                
+                allBools = any([subResults.resultsBool],2);
+                
+                mergedResults(i) = SensorTargetResults(sensor, target, time, allBools, targetRVect, frame); %#ok<AGROW>
             end
         end
     end

@@ -15,18 +15,11 @@ classdef FixedInVehicleFrameSensorSteeringModel < AbstractSensorSteeringModel
             obj.roll = roll;
         end
         
-        function [boreDir] = getBoresightVector(obj, time, vehElemSet, scSteeringModel, inFrame)
-            vehElemSet = convertToCartesianElementSet(vehElemSet);
-            rVect = vehElemSet.rVect;
-            vVect = vehElemSet.vVect;
-            bodyInfo = vehElemSet.frame.getOriginBody();
-            
-            rotMat = scSteeringModel.getBody2InertialDcmAtTime(time, rVect, vVect, bodyInfo);
-            
+        function [boreDir] = getBoresightVector(obj, time, vehElemSet, dcm, inFrame)                       
             [x,y,z] = sph2cart(obj.rhtAsc, obj.dec, 1);
             v = [x;y;z];
             
-            boreDir = rotMat * v;
+            boreDir = dcm * v;
         end
         
         function rollAngle = getBoresightRollAngle(obj)

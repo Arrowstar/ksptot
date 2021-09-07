@@ -7,9 +7,9 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
     end
     
     methods
-        [V,F] = getSensorMesh(obj, scElem, inFrame)
+        [V,F] = getSensorMesh(obj, scElem, dcm, inFrame)
         
-        boreDir = getSensorBoresightDirection(obj)
+        boreDir = getSensorBoresightDirection(obj, scElem, dcm, inFrame)
         
         maxRange = getMaximumRange(obj)
         
@@ -17,18 +17,22 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
         
         listboxStr = getListboxStr(obj)
         
-        function [VTotal,FTotal] = getObscuringMesh(obj, scElem, scSteeringModel, bodyInfos, inFrame)
+        color = getMeshColor(obj)
+        
+        alpha = getMeshAlpha(obj)
+        
+        function [VTotal,FTotal] = getObscuringMesh(obj, scElem, dcm, bodyInfos, inFrame)
             arguments
                 obj(1,1) AbstractSensor
                 scElem(1,1) CartesianElementSet 
-                scSteeringModel
+                dcm
                 bodyInfos KSPTOT_BodyInfo
                 inFrame(1,1) AbstractReferenceFrame
             end
             
             time = scElem.time;
             rVectSensorOrigin = obj.getOriginInFrame(time, scElem, inFrame);
-            boreDir = obj.getSensorBoresightDirection(time, scElem, scSteeringModel, inFrame);
+            boreDir = obj.getSensorBoresightDirection(time, scElem, dcm, inFrame);
               
             FTotal = [];
             VTotal = [];
@@ -74,17 +78,17 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
             end
         end
 
-        function [V,F, Vobs,Fobs] = getObscuredSensorMesh(obj, scElem, scSteeringModel, bodyInfos, inFrame)
+        function [V,F, Vobs,Fobs] = getObscuredSensorMesh(obj, scElem, dcm, bodyInfos, inFrame)
             arguments
                 obj(1,1) AbstractSensor
                 scElem(1,1) CartesianElementSet
-                scSteeringModel
+                dcm
                 bodyInfos KSPTOT_BodyInfo
                 inFrame(1,1) AbstractReferenceFrame
             end
             
-            [Vobs,Fobs] = obj.getObscuringMesh(scElem, scSteeringModel, bodyInfos, inFrame);
-            [Vsens,Fsens] = obj.getSensorMesh(scElem, scSteeringModel, inFrame);
+            [Vobs,Fobs] = obj.getObscuringMesh(scElem, dcm, bodyInfos, inFrame);
+            [Vsens,Fsens] = obj.getSensorMesh(scElem, dcm, inFrame);
             
             rVectSc = scElem.rVect;
             
@@ -106,18 +110,18 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
             [V,F] = meshVertexClustering(coneMesh,0.1);
         end
         
-        function [results, V, F] = evaluateSensorTargets(obj, targets, scElem, scSteeringModel, bodyInfos, inFrame)
+        function [results, V, F] = evaluateSensorTargets(obj, targets, scElem, dcm, bodyInfos, inFrame)
             arguments
                 obj(1,1) AbstractSensor
                 targets(1,:) AbstractSensorTarget
                 scElem(1,1) CartesianElementSet
-                scSteeringModel
+                dcm
                 bodyInfos KSPTOT_BodyInfo
                 inFrame(1,1) AbstractReferenceFrame
             end
             
             time = scElem.time;
-            [V,F] = obj.getObscuredSensorMesh(scElem, scSteeringModel, bodyInfos, inFrame);
+            [V,F] = obj.getObscuredSensorMesh(scElem, dcm, bodyInfos, inFrame);
             
             allRVects = [];
             targetColInds = [];
@@ -129,7 +133,11 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
                 targetColInds = vertcat(targetColInds, i*ones(size(rVects,2), 1)); %#ok<AGROW>
             end
             
-            bool = vect_isPointInMesh(allRVects, V, F);
+            if(isempty(allRVects))
+                bool = false(0);
+            else
+                bool = vect_isPointInMesh(allRVects, V, F);
+            end
             
             results = SensorTargetResults.empty(1,0);
             for(i=1:length(targets))

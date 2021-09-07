@@ -17,7 +17,7 @@ classdef LvdSensorSet < matlab.mixin.SetGet
             obj.sensors(end+1) = sensor;
         end
         
-        function removePoint(obj, sensor)
+        function removeSensor(obj, sensor)
             obj.sensors([obj.sensors] == sensor) = [];
         end
         

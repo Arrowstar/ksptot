@@ -131,7 +131,6 @@ classdef TwoBodyPoint < AbstractGeometricPoint
                 
             elseif(minTime < initState.time && maxTime < initState.time)
                 newStateLogEntries = obj.doTwoBodyProp(initState, evt, minTime);
-                
             end
             
             maStateLog = NaN(length(newStateLogEntries), 13);

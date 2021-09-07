@@ -342,6 +342,9 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                 view(dAxes,viewProfile.viewAzEl);
             end
                         
+            vehPosVelData = LaunchVehicleViewProfile.createVehPosVelData(subStateLogs, lvdData.script.evts, viewInFrame);
+            vehAttData = LaunchVehicleViewProfile.createVehAttitudeData(lvdStateLogEntries, lvdData.script.evts, viewInFrame);
+            
             hold(dAxes,'on');
             viewProfile.createBodyMarkerData(dAxes, subStateLogs, viewInFrame, showSoI, viewProfile.meshEdgeAlpha, lvdData.script.evts);
             viewProfile.createTrajectoryMarkerData(subStateLogs, lvdData.script.evts);
@@ -354,6 +357,8 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             viewProfile.createRefFrameData(viewInFrame, subStateLogs, lvdData.script.evts);
             viewProfile.createAngleData(viewInFrame, subStateLogs, lvdData.script.evts);
             viewProfile.createPlaneData(viewInFrame, subStateLogs, lvdData.script.evts);
+            viewProfile.createSensorData(vehPosVelData, vehAttData, viewInFrame);
+            viewProfile.createSensorTargetData(viewInFrame);
             viewProfile.configureTimeSlider(minTime, maxTime, subStateLogs, handles, app);
             hold(dAxes,'off');
             

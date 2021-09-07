@@ -9,6 +9,10 @@ classdef ConicalSensor < AbstractSensor
         range(1,1) double = 1000;       %km
         origin AbstractGeometricPoint
         steeringModel AbstractSensorSteeringModel
+        
+        %drawing properties
+        color(1,1) ColorSpecEnum = ColorSpecEnum.Green;
+        alpha(1,1) double = 0.3;
     end
     
     methods
@@ -27,12 +31,12 @@ classdef ConicalSensor < AbstractSensor
             obj.steeringModel = steeringModel;
         end
                
-        function [V,F] = getSensorMesh(obj, scElem, scSteeringModel, inFrame)
+        function [V,F] = getSensorMesh(obj, scElem, dcm, inFrame)
             time = scElem.time;
             sensorRange = obj.range;
             
             rVectSensorOrigin = obj.getOriginInFrame(time, scElem, inFrame);
-            boreDir = obj.getSensorBoresightDirection(time, scElem, scSteeringModel, inFrame); 
+            boreDir = obj.getSensorBoresightDirection(time, scElem, dcm, inFrame); 
             
             S = [0,0,0, sensorRange];
             sphere = sphereMesh(S, 'nTheta', ceil(2*pi/obj.angle), 'nPhi', 25);
@@ -48,8 +52,8 @@ classdef ConicalSensor < AbstractSensor
             F = convhull(V);
         end
         
-        function boreDir = getSensorBoresightDirection(obj, time, scElem, scSteeringModel, inFrame)
-            boreDir = obj.steeringModel.getBoresightVector(time, scElem, scSteeringModel, inFrame);
+        function boreDir = getSensorBoresightDirection(obj, time, scElem, dcm, inFrame)
+            boreDir = obj.steeringModel.getBoresightVector(time, scElem, dcm, inFrame);
         end
         
         function maxRange = getMaximumRange(obj)
@@ -63,6 +67,14 @@ classdef ConicalSensor < AbstractSensor
         
         function listboxStr = getListboxStr(obj)
             listboxStr = obj.name;
+        end
+        
+        function color = getMeshColor(obj)
+            color = obj.color;
+        end
+        
+        function alpha = getMeshAlpha(obj)
+            alpha = obj.alpha;
         end
                 
         function tf = usesGeometricPoint(obj, point)

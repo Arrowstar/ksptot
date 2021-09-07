@@ -4,6 +4,14 @@ classdef PointSensorTargetModel < AbstractSensorTarget
     
     properties
         point AbstractGeometricPoint
+        
+        %display
+        markerShape(1,1) MarkerStyleEnum = MarkerStyleEnum.Circle;
+        markerFoundFaceColor(1,1) ColorSpecEnum = ColorSpecEnum.Green;
+        markerFoundEdgeColor(1,1) ColorSpecEnum = ColorSpecEnum.Black;
+        markerNotFoundFaceColor(1,1) ColorSpecEnum = ColorSpecEnum.Black;
+        markerNotFoundEdgeColor(1,1) ColorSpecEnum = ColorSpecEnum.Black;
+        markerSize(1,1) double = 3;
     end
     
     methods
@@ -21,6 +29,34 @@ classdef PointSensorTargetModel < AbstractSensorTarget
             
             newCartElem = obj.point.getPositionAtTime(time, vehElemSet, inFrame);
             rVect = newCartElem.rVect;
+        end
+        
+        function shape = getMarkerShape(obj)
+            shape = obj.markerShape;
+        end
+        
+        function color = getFoundMarkerFaceColor(obj)
+            color = obj.markerFoundFaceColor;
+        end
+        
+        function color = getFoundMarkerEdgeColor(obj)
+            color = obj.markerFoundEdgeColor;
+        end
+        
+        function color = getNotFoundMarkerFaceColor(obj)
+            color = obj.markerNotFoundFaceColor;
+        end
+        
+        function color = getNotFoundMarkerEdgeColor(obj)
+            color = obj.markerNotFoundEdgeColor;
+        end
+        
+        function markerSize = getMarkerSize(obj)
+            markerSize = obj.markerSize;
+        end
+        
+        function tf = usesGeometricPoint(obj, point)
+            tf = obj.point == point;
         end
     end
 end

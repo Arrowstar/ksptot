@@ -4,6 +4,14 @@ classdef BodyFixedLatLongGridTargetModel < AbstractBodyFixedSensorTarget
     
     properties
         bodyInfo
+        
+        %display
+        markerShape(1,1) MarkerStyleEnum = MarkerStyleEnum.Circle;
+        markerFoundFaceColor(1,1) ColorSpecEnum = ColorSpecEnum.Green;
+        markerFoundEdgeColor(1,1) ColorSpecEnum = ColorSpecEnum.Black;
+        markerNotFoundFaceColor(1,1) ColorSpecEnum = ColorSpecEnum.Black;
+        markerNotFoundEdgeColor(1,1) ColorSpecEnum = ColorSpecEnum.Black;
+        markerSize(1,1) double = 3;
     end
     
     methods
@@ -36,6 +44,30 @@ classdef BodyFixedLatLongGridTargetModel < AbstractBodyFixedSensorTarget
             rVectECEF(abs(rVectECEF) < 1E-10) = 0;
             
             obj.rVectECEF = unique(rVectECEF','rows')';
+        end
+        
+        function shape = getMarkerShape(obj)
+            shape = obj.markerShape;
+        end
+        
+        function color = getFoundMarkerFaceColor(obj)
+            color = obj.markerFoundFaceColor;
+        end
+        
+        function color = getFoundMarkerEdgeColor(obj)
+            color = obj.markerFoundEdgeColor;
+        end
+        
+        function color = getNotFoundMarkerFaceColor(obj)
+            color = obj.markerNotFoundFaceColor;
+        end
+        
+        function color = getNotFoundMarkerEdgeColor(obj)
+            color = obj.markerNotFoundEdgeColor;
+        end
+        
+        function markerSize = getMarkerSize(obj)
+            markerSize = obj.markerSize;
         end
     end
 end
