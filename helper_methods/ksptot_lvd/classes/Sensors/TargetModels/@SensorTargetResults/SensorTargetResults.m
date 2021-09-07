@@ -37,5 +37,11 @@ classdef SensorTargetResults < matlab.mixin.SetGet
                 rVects = cartElem.rVects;
             end
         end
+        
+        function covFrac = getCoverageFraction(obj)
+            for(i=1:length(obj))
+                covFrac(i) = sum(obj(i).resultsBool) / numel(obj(i).resultsBool); %#ok<AGROW>
+            end
+        end
     end
 end

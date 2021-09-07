@@ -11,6 +11,12 @@ classdef ConicalSensor < AbstractSensor
     
     methods
         function obj = ConicalSensor(angle, range, origin, steeringModel)
+            arguments
+                angle(1,1) double {mustBeGreaterThanOrEqual(angle,0), mustBeLessThanOrEqual(angle,1.5707963267949)}
+                range(1,1) double {mustBeGreaterThan(range, 0)}
+                origin(1,1) AbstractGeometricPoint
+                steeringModel(1,1) AbstractSensorSteeringModel
+            end
             obj.angle = angle;
             obj.range = range;
             obj.origin = origin;
@@ -23,19 +29,22 @@ classdef ConicalSensor < AbstractSensor
             
             rVectSc = scElem.rVect;
             boreDir = obj.getSensorBoresightDirection(time, scElem, inFrame); 
-
-            sensorOutlineCenter = rVectSc + sensorRange*boreDir;
-            sensorRadius = obj.range*(sin(obj.angle) / sin(pi/2 - obj.angle));
-            sensorOutlinePtsRaw = AbstractSensor.getCircleInSpace(boreDir, sensorOutlineCenter, sensorRadius);
             
-            V = vertcat(rVectSc(:)', sensorOutlinePtsRaw');
+            S = [0,0,0, sensorRange];
+            sphere = sphereMesh(S, 'nTheta', 5*2*pi/obj.angle, 'nPhi', 5*2*pi/obj.angle);
+            sPtsRaw = unique(sphere.vertices,'rows');
+            sPtsAngs = dang(repmat(boreDir,1,size(sPtsRaw,1)), sPtsRaw');
+            sPts = sPtsRaw(sPtsAngs <= obj.angle+1E-10, :);
+            
+            M = makehgtform('translate',rVectSc(:)');
+            sPts = transformPoint3d(sPts(:,1), sPts(:,2), sPts(:,3), M);
+            
+            V = vertcat(rVectSc(:)', sPts);
             F = convhull(V);
         end
         
         function boreDir = getSensorBoresightDirection(obj, time, scElem, inFrame)
             boreDir = obj.steeringModel.getBoresightVector(time, scElem, inFrame);
-            
-%             boreDir = vect_normVector([4;1;0]);
         end
         
         function maxRange = getMaximumRange(obj)

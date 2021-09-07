@@ -1,5 +1,4 @@
 clc; clear variables; format long g; close all;
-% addpath(genpath('C:\Users\Adam\Dropbox\Documents\MATLAB\gptoolbox-master'));
 
 %Initalize KSP celestial body data
 [celBodyDataFromINI,~,~] = inifile('bodies.ini','readall');
@@ -10,21 +9,24 @@ t=tic;
 % profile off; profile on;
 
 %planet sphere
-x0 = 0;
-y0 = 0;
-z0 = 0;
-r = 600;
+bodyInfo = celBodyData.kerbin;
+frame = bodyInfo.getBodyCenteredInertialFrame();
+state = convertToFrame(bodyInfo.getElementSetsForTimes(0), frame);
+
+x0 = state.rVect(1);
+y0 = state.rVect(2);
+z0 = state.rVect(3);
+r = bodyInfo.radius;
 
 %sensor cone
-frame = celBodyData.kerbin.getBodyCenteredInertialFrame();
 lvdData = LvdData.getDefaultLvdData(celBodyData);
 sensorOriginRVect = [-2000;0;0];
 sensorOriginPt = FixedPointInFrame(sensorOriginRVect, frame, 'Sensor Origin', lvdData);
 
 steeringCoordSys = ParallelToFrameCoordSystem(frame, 'Kerbin Inertial', lvdData);
-steeringModel = FixedInCoordSysSensorSteeringModel(deg2rad(10), deg2rad(10), 0, steeringCoordSys);
+steeringModel = FixedInCoordSysSensorSteeringModel(deg2rad(0), deg2rad(0), 0, steeringCoordSys);
 
-sensorRange = 5000;
+sensorRange = 2000;
 sensAng = deg2rad(10);
 
 %Compute Occluding Mesh
@@ -34,7 +36,7 @@ sensAng = deg2rad(10);
 sensor = ConicalSensor(sensAng, sensorRange, sensorOriginPt, steeringModel);
 
 %define targets
-target1 = BodyFixedLatLongGridTargetModel(celBodyData.kerbin, 0, deg2rad(90), 2*pi, deg2rad(-90), 30, 30, 100);
+target1 = BodyFixedLatLongGridTargetModel(celBodyData.kerbin, 0, deg2rad(30), 2*pi, deg2rad(-30), 25, 25, 1);
 
 frame = celBodyData.kerbin.getBodyCenteredInertialFrame();
 lvdData = LvdData.getDefaultLvdData(celBodyData);
@@ -44,13 +46,17 @@ target2 = PointSensorTargetModel(point);
 point = FixedPointInFrame([1000;0;0], frame, 'Point 2', lvdData);
 target3 = PointSensorTargetModel(point);
 
-targets = [target1, target2, target3];
+target4 = BodyFixedCircleGridTargetModel(celBodyData.kerbin, 0, deg2rad(70), deg2rad(30), 25, 10, 1);
+
+targets = [target1, target2, target3, target4];
 
 %Compute results
 scElem = CartesianElementSet(0, sensorOriginRVect, [0;0;0], frame);
 bodyInfos = [celBodyData.kerbin, celBodyData.mun, celBodyData.minmus];
 tt=tic;[results, V3, F3] = sensor.evaluateSensorTargets(targets, scElem, bodyInfos, frame);toc(tt);
 [bool, sVPts] = getTargetResultsInFrame(results, frame);
+
+% disp(getCoverageFraction(results));
 
 %% Plotting
 hAx = axes(figure());

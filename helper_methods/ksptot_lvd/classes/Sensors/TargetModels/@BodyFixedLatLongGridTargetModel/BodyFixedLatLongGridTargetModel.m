@@ -1,10 +1,9 @@
-classdef BodyFixedLatLongGridTargetModel < AbstractSensorTarget
+classdef BodyFixedLatLongGridTargetModel < AbstractBodyFixedSensorTarget
     %BodyFixedLatLongGridTargetModel Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
         bodyInfo
-        rVectECEF(3,:) double
     end
     
     methods
@@ -37,27 +36,6 @@ classdef BodyFixedLatLongGridTargetModel < AbstractSensorTarget
             rVectECEF(abs(rVectECEF) < 1E-10) = 0;
             
             obj.rVectECEF = unique(rVectECEF','rows')';
-        end
-        
-        function rVect = getTargetPositions(obj, time, vehElemSet, inFrame)
-            arguments
-                obj(1,1) BodyFixedLatLongGridTargetModel
-                time(1,1) double
-                vehElemSet(1,1) CartesianElementSet
-                inFrame(1,1) AbstractReferenceFrame
-            end
-            
-            bodyFixedFrame = obj.bodyInfo.getBodyFixedFrame();
-            
-            numPts = size(obj.rVectECEF, 2);
-            
-            times = time*ones(1, numPts);
-            rVects = obj.rVectECEF;
-            vVects = zeros(3,numPts);
-            cartElem = CartesianElementSet(times, rVects, vVects, bodyFixedFrame, true);
-            
-            cartElem = convertToFrame(cartElem, inFrame);
-            rVect = cartElem.rVect;
         end
     end
 end
