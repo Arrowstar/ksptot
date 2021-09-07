@@ -7,11 +7,13 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
     end
     
     methods
-        [V,F] = getSensorMesh(obj, scElem)
+        [V,F] = getSensorMesh(obj, scElem, inFrame)
         
         boreDir = getSensorBoresightDirection(obj)
         
         maxRange = getMaximumRange(obj)
+        
+        origin = getOriginInFrame(obj, time, scElem, inFrame)
         
         function [VTotal,FTotal] = getObscuringMesh(obj, scElem, bodyInfos, inFrame)
             arguments
@@ -22,8 +24,8 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
             end
             
             time = scElem.time;
-            rVectSc = scElem.rVect;
-            boreDir = obj.getSensorBoresightDirection();
+            rVectSensorOrigin = obj.getOriginInFrame(time, scElem, inFrame);
+            boreDir = obj.getSensorBoresightDirection(time, scElem, inFrame);
               
             FTotal = [];
             VTotal = [];
@@ -36,7 +38,7 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
                 rVectBody = cartElem.rVect;
                 bRadius = bodyInfo.radius;
                 
-                sc2BodyVect = rVectBody - rVectSc;
+                sc2BodyVect = rVectBody - rVectSensorOrigin;
                 body2BoreAngle = dang(boreDir, sc2BodyVect);
                 bodyAngularSize = atan(bRadius/norm(sc2BodyVect));
 
@@ -49,7 +51,7 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
                     coneBodyPts = ConicalSensor.getCircleInSpace(v, rVectBody, bRadius);
                     
                     circleCnterPt = rVectBody + vect_normVector(sc2BodyVect)*1.1*obj.getMaximumRange();
-                    circleRadius = tan(bodyAngularSize) * norm(circleCnterPt - rVectSc);
+                    circleRadius = tan(bodyAngularSize) * norm(circleCnterPt - rVectSensorOrigin);
                     coneProjPts = ConicalSensor.getCircleInSpace(v, circleCnterPt, circleRadius);
                     
                     cV = [coneBodyPts';
@@ -78,7 +80,7 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
             end
             
             [Vobs,Fobs] = obj.getObscuringMesh(scElem, bodyInfos, inFrame);
-            [Vsens,Fsens] = obj.getSensorMesh(scElem);
+            [Vsens,Fsens] = obj.getSensorMesh(scElem, inFrame);
             
             rVectSc = scElem.rVect;
             
@@ -161,4 +163,3 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
         end
     end
 end
-

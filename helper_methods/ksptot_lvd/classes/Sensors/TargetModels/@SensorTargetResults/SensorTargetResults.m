@@ -39,4 +39,3 @@ classdef SensorTargetResults < matlab.mixin.SetGet
         end
     end
 end
-

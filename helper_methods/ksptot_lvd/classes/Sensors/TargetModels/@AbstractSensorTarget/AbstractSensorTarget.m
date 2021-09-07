@@ -10,4 +10,3 @@ classdef(Abstract) AbstractSensorTarget < matlab.mixin.SetGet & matlab.mixin.Het
         rVect = getTargetPositions(obj, time, vehElemSet, inFrame);
     end
 end
-
