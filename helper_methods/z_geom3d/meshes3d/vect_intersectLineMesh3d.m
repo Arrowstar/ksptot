@@ -34,7 +34,6 @@ function [pointsOut, posOut, faceIndsOut] = vect_intersectLineMesh3d(lines, vert
         tol = varargin{1};
     end
     
-    
     % ensure the mesh has triangular faces
     tri2Face = [];
     if iscell(faces) || size(faces, 2) ~= 3
@@ -67,7 +66,8 @@ function [pointsOut, posOut, faceIndsOut] = vect_intersectLineMesh3d(lines, vert
         dir = line(4:6);
         
         % vector between triangle origin and line origin
-        w0 = bsxfun(@minus, line(1:3), t0);
+%         w0 = bsxfun(@minus, line(1:3), t0);
+        w0 = line(1:3) - t0;
         
         a = -dot(n, w0, 2);
         b = dot(n, repmat(dir, size(n, 1), 1), 2);
@@ -81,7 +81,6 @@ function [pointsOut, posOut, faceIndsOut] = vect_intersectLineMesh3d(lines, vert
         
         % coordinates of intersection point
         points = bsxfun(@plus, line(1:3), bsxfun(@times, pos, dir));
-        
         
         %% test if intersection point is inside triangle
         

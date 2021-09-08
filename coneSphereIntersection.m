@@ -24,12 +24,12 @@ sensorOriginRVect = [-2000;0;0];
 sensorOriginPt = FixedPointInFrame(sensorOriginRVect, frame, 'Sensor Origin', lvdData);
 
 steeringCoordSys = ParallelToFrameCoordSystem(frame, 'Kerbin Inertial', lvdData);
-steeringModel = FixedInCoordSysSensorSteeringModel(deg2rad(-10), deg2rad(-10), 0, steeringCoordSys);
+steeringModel = FixedInCoordSysSensorSteeringModel(deg2rad(-10), deg2rad(-10), 0, steeringCoordSys, lvdData);
 
 sensorRange = 3000;
 sensAng = deg2rad(5);
 
-sensor = ConicalSensor('Demo Conical Sensor', sensAng, sensorRange, sensorOriginPt, steeringModel);
+sensor = ConicalSensor('Demo Conical Sensor', sensAng, sensorRange, sensorOriginPt, steeringModel, lvdData);
 
 %Compute Occluding Mesh
 [sV, sF] = sphereMesh([x0,y0,z0,r], 'nTheta', 16, 'nPhi', 16);

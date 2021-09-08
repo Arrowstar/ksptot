@@ -21,6 +21,12 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
         
         alpha = getMeshAlpha(obj)
         
+        name = getName(obj)
+        
+        tf = isInUse(obj, lvdData)
+        
+        openEditDialog(obj)
+        
         function [VTotal,FTotal] = getObscuringMesh(obj, scElem, dcm, bodyInfos, inFrame)
             arguments
                 obj(1,1) AbstractSensor
@@ -51,8 +57,8 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
 
                 if(body2BoreAngle - bodyAngularSize < obj.angle && norm(sc2BodyVect) < obj.getMaximumRange())
                     S = [rVectBody(:)', bRadius];                
-                    [sV, sF] = sphereMesh(S, 'nTheta', 32, 'nPhi', 32);
-                    sF = triangulateFaces(sF);
+                    [sV, sF] = sphereMesh(S, 'nTheta', 16, 'nPhi', 16);
+%                     sF = triangulateFaces(sF);
 
                     v = sc2BodyVect / norm(sc2BodyVect);
                     coneBodyPts = ConicalSensor.getCircleInSpace(v, rVectBody, bRadius);
@@ -63,10 +69,11 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
                     
                     cV = [coneBodyPts';
                           coneProjPts'];
-                    cF = convhull(cV);
+%                     cF = convhull(cV);
 
-                    [V,~] = concatenateMeshes(sV,sF,cV,cF);
-                    F = convhull(V);
+%                     [V,~] = concatenateMeshes(sV,sF,cV,cF);
+                    V = [cV; sV];
+                    F = convhull([cV; sV]);
 
                     if(not(isempty(FTotal)))
                         [VTotal,FTotal] = concatenateMeshes(VTotal,FTotal, V,F);
@@ -92,7 +99,16 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
             
             rVectSc = scElem.rVect;
             
-            [V3,F3] = mesh_boolean(Vsens,Fsens,Vobs,Fobs,'minus');
+            [V3,F3] = AbstractSensor.mesh_boolean_fallback(Vsens,Fsens,Vobs,Fobs,'minus');
+            
+%             SENS.VL = Vsens;
+%             SENS.FL = Fsens;
+%             OBS.VL = Vobs;
+%             OBS.FL = Fobs;
+%             out = SGbool5('-',SENS,OBS);
+%             V3 = out.VL;
+%             F3 = out.FL;
+            
             MESHES = splitMesh(V3, F3);
 
             if(length(MESHES) > 1)
@@ -197,10 +213,18 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
             borePlaneV1 = cross(normDir,borePlaneV0);
             borePlaneV2 = cross(normDir,borePlaneV1);
             
-            numAngles = 50;
+            numAngles = 25;
             theta = linspace(0,2*pi,numAngles);
             
             circlePts = circleCnterPt + circleRadius*borePlaneV1*cos(theta) + circleRadius*borePlaneV2*sin(theta);
+        end
+        
+        function [W,H] = mesh_boolean_fallback(V,F,U,G,operation)
+            try
+                [W,H] = mesh_boolean(V,F, U,G, operation);
+            catch %if the mex file doesn't work
+                [W,H] = mesh_boolean_winding_number(V,F, U,G, operation);    
+            end
         end
     end
 end

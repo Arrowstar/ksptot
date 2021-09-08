@@ -24,8 +24,8 @@ classdef LvdSensorSet < matlab.mixin.SetGet
         function [listBoxStr, sensors] = getListboxStr(obj)
             listBoxStr = {};
             
-            for(i=1:length(obj.sensor))
-                listBoxStr{end+1} = obj.sensor(i).getListboxStr(); %#ok<AGROW>
+            for(i=1:length(obj.sensors))
+                listBoxStr{end+1} = obj.sensors(i).getListboxStr(); %#ok<AGROW>
             end
             
             sensors = obj.sensors;

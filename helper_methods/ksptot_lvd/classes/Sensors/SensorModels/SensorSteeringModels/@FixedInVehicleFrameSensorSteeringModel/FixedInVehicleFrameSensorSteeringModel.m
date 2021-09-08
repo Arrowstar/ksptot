@@ -6,13 +6,16 @@ classdef FixedInVehicleFrameSensorSteeringModel < AbstractSensorSteeringModel
         rhtAsc(1,1) double
         dec(1,1) double
         roll(1,1) double
+        
+        lvdData LvdData
     end
     
     methods
-        function obj = FixedInVehicleFrameSensorSteeringModel(rhtAsc, dec, roll)
+        function obj = FixedInVehicleFrameSensorSteeringModel(rhtAsc, dec, roll, lvdData)
             obj.rhtAsc = rhtAsc;
             obj.dec = dec;
             obj.roll = roll;
+            obj.lvdData = lvdData;
         end
         
         function [boreDir] = getBoresightVector(obj, time, vehElemSet, dcm, inFrame)                       
@@ -24,6 +27,16 @@ classdef FixedInVehicleFrameSensorSteeringModel < AbstractSensorSteeringModel
         
         function rollAngle = getBoresightRollAngle(obj)
             rollAngle = obj.roll;
+        end
+        
+        function useTf = openEditDialog(obj)
+            output = AppDesignerGUIOutput({false});
+            lvd_EditFixedInVehicleBodyFrameSensorSteeringModelGUI_App(obj, obj.lvdData, output);
+            useTf = output.output{1};
+        end
+        
+        function enum = getEnum(obj)
+            enum = SensorSteeringModelEnum.FixedVehicleBodyFrame;
         end
     end
 end

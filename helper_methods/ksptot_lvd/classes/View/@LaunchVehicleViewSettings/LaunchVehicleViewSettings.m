@@ -124,6 +124,12 @@ classdef LaunchVehicleViewSettings < matlab.mixin.SetGet
                 obj.viewProfiles(i).removeGeoPlaneFromList(plane);
             end
         end
+        
+        function removeSensorFromViewProfiles(obj, sensor)
+            for(i=1:length(obj.viewProfiles))
+                obj.viewProfiles(i).removeSensorFromList(sensor);
+            end
+        end
     end
     
     methods(Static)
