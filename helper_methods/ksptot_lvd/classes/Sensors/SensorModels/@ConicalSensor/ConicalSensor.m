@@ -15,6 +15,7 @@ classdef ConicalSensor < AbstractSensor
         %drawing properties
         color(1,1) ColorSpecEnum = ColorSpecEnum.Green;
         alpha(1,1) double = 0.3;
+        showMeshEdges(1,1) logical = false;
     end
     
     methods
@@ -84,6 +85,10 @@ classdef ConicalSensor < AbstractSensor
         
         function alpha = getMeshAlpha(obj)
             alpha = obj.alpha;
+        end
+        
+        function tf = getDisplayMeshEdges(obj)
+            tf = obj.showMeshEdges;
         end
         
         function name = getName(obj)

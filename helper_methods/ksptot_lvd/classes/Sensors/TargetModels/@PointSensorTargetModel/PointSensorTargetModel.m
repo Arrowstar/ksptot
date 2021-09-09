@@ -72,7 +72,9 @@ classdef PointSensorTargetModel < AbstractSensorTarget
         end
         
         function useTf = openEditDialog(obj)
-            useTf = false;
+            output = AppDesignerGUIOutput({false});
+            lvd_EditPointSensorTargetGUI_App(obj, obj.lvdData, output);
+            useTf = output.output{1};
         end
         
         function tf = isInUse(obj, lvdData)

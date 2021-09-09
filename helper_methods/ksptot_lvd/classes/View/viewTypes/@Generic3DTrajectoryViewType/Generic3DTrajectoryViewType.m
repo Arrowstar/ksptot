@@ -289,6 +289,7 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             dAxes.MinorGridColor = viewProfile.minorGridColor.color;
             dAxes.GridAlpha = viewProfile.gridTransparency;
             axis(dAxes,'equal');
+            axis(dAxes,'tight');
             
             xlabel(dAxes, '');
             ylabel(dAxes, '');

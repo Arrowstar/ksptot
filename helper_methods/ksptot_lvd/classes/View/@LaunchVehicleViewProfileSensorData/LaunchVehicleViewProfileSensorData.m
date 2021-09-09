@@ -40,7 +40,15 @@ classdef LaunchVehicleViewProfileSensorData < matlab.mixin.SetGet
                     hold(hAx,'on'); 
                     color = obj.sensor.getMeshColor().color;
                     alpha = obj.sensor.getMeshAlpha();
-                    obj.sensorMeshPlot = drawMesh(hAx, V, F, 'FaceColor',color,'FaceAlpha',alpha, 'LineStyle','none');
+                    showMeshEdges = obj.sensor.getDisplayMeshEdges();
+                    
+                    if(showMeshEdges)
+                        meshLineStyle = '-';
+                    else
+                        meshLineStyle = 'none';
+                    end
+                    
+                    obj.sensorMeshPlot = drawMesh(hAx, V, F, 'FaceColor',color,'FaceAlpha',alpha, 'LineStyle',meshLineStyle, 'EdgeAlpha',alpha);
                     hold(hAx,'off');
                 else
                     obj.sensorMeshPlot.Vertices = V;

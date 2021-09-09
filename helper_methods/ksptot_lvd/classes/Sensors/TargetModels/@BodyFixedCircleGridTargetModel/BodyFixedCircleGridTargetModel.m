@@ -11,6 +11,8 @@ classdef BodyFixedCircleGridTargetModel < AbstractBodyFixedSensorTarget
         longCenter(1,1) double
         latCenter(1,1) double
         radius(1,1) double
+        arcOffset(1,1) double 
+        arcAngle(1,1) double
         numPtsCircumference(1,1) double
         numPtsRadial(1,1) double 
         altitude(1,1) double
@@ -51,20 +53,23 @@ classdef BodyFixedCircleGridTargetModel < AbstractBodyFixedSensorTarget
         function setGridPointsFromInputs(obj, bodyInfo, longCenter, latCenter, radius, arcOffset, arcAngle, numPtsCircumference, numPtsRadial, altitude)
             bRadius = bodyInfo.radius;
             
+            %get the points radially
             S = [0,0,0, bRadius+altitude];
-            sphere = sphereMesh(S, 'nTheta', (numPtsRadial-1)*(pi/radius), 'nPhi', (numPtsCircumference-1)*(2*pi/arcAngle));
+            sphere = sphereMesh(S, 'nTheta', numPtsRadial*(pi/radius), 'nPhi', floor(numPtsCircumference*(2*pi/arcAngle)));
             sPtsRaw = unique(sphere.vertices,'rows');
             sPtsAngs = dang(repmat([0;0;1],1,size(sPtsRaw,1)), sPtsRaw');
             sPts = sPtsRaw(sPtsAngs <= radius+1E-10, :);
             
+            %trim to desired angular arc
             [theta, ~] = cart2pol(sPts(:,1), sPts(:,2));
             theta = AngleZero2Pi(theta);
             sPts = sPts(theta <= arcAngle,:);
-            sPts = reshape(sPts',3,1,numel(sPts)/3);
-            rotMat = repmat(rotz(rad2deg(arcOffset)),1,1,size(sPts,3));
-            sPts = pagemtimes(rotMat, sPts);
-            sPts = squeeze(sPts)';
             
+            %rotate points by desired offset
+            rotMat = rotz(rad2deg(arcOffset));
+            sPts = pagemtimes(rotMat, sPts')';
+            
+            %rotate points to desired lat/long center
             [x,y,z] = sph2cart(longCenter, latCenter, 1);
             v = [x;y;z];
             r = vrrotvec([0;0;1],v);
@@ -74,6 +79,8 @@ classdef BodyFixedCircleGridTargetModel < AbstractBodyFixedSensorTarget
             obj.longCenter = longCenter;
             obj.latCenter = latCenter;
             obj.radius = radius;
+            obj.arcOffset = arcOffset;
+            obj.arcAngle = arcAngle;
             obj.numPtsCircumference = numPtsCircumference;
             obj.numPtsRadial = numPtsRadial;
             obj.altitude = altitude;
@@ -114,7 +121,9 @@ classdef BodyFixedCircleGridTargetModel < AbstractBodyFixedSensorTarget
         end
         
         function useTf = openEditDialog(obj)
-            useTf = false;
+            output = AppDesignerGUIOutput({false});
+            lvd_EditLatLongCircleGridSensorTargetGUI_App(obj, obj.lvdData, output);
+            useTf = output.output{1};
         end
     end
 end

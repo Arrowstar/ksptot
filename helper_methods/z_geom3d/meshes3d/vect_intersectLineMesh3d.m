@@ -56,9 +56,9 @@ function [pointsOut, posOut, faceIndsOut] = vect_intersectLineMesh3d(lines, vert
     
     numLines = size(lines,1);
     
-    pointsOut = NaN(4,3,numLines);
-    posOut = NaN(4,1,numLines);
-    faceIndsOut = NaN(4,1,numLines);
+    pointsOutCell = {};
+    posOutCell = {};
+    faceIndsOutCell = {};
     for(i=1:numLines)
         line = lines(i,:);
         
@@ -66,7 +66,7 @@ function [pointsOut, posOut, faceIndsOut] = vect_intersectLineMesh3d(lines, vert
         dir = line(4:6);
         
         % vector between triangle origin and line origin
-%         w0 = bsxfun(@minus, line(1:3), t0);
+        %         w0 = bsxfun(@minus, line(1:3), t0);
         w0 = line(1:3) - t0;
         
         a = -dot(n, w0, 2);
@@ -84,10 +84,10 @@ function [pointsOut, posOut, faceIndsOut] = vect_intersectLineMesh3d(lines, vert
         
         %% test if intersection point is inside triangle
         
-%         % normalize direction vectors of triangle edges
-%         uu  = dot(u, u, 2);
-%         uv  = dot(u, v, 2);
-%         vv  = dot(v, v, 2);
+        %         % normalize direction vectors of triangle edges
+        %         uu  = dot(u, u, 2);
+        %         uv  = dot(u, v, 2);
+        %         vv  = dot(v, v, 2);
         
         % coordinates of vector v in triangle basis
         w   = points - t0;
@@ -134,8 +134,32 @@ function [pointsOut, posOut, faceIndsOut] = vect_intersectLineMesh3d(lines, vert
                 faceInds = vertcat(faceInds, NaN(4-height(faceInds), width(faceInds))); %#ok<AGROW>
             end
             
-            pointsOut(:,:,i) = points; %#ok<AGROW>
-            posOut(:,:,i) = pos; %#ok<AGROW>
-            faceIndsOut(:,:,i) = faceInds; %#ok<AGROW>
+            pointsOutCell{i} = points; %#ok<AGROW>
+            posOutCell{i} = pos; %#ok<AGROW>
+            faceIndsOutCell{i} = faceInds; %#ok<AGROW>
         end
     end
+    
+    numrows = max(cellfun(@(c) height(c), pointsOutCell));
+    
+    pointsOut = NaN(numrows,3,numel(pointsOutCell));
+    for(i=1:length(pointsOutCell))
+        if(not(isempty(pointsOutCell{i})))
+            pointsOut(:,:,i) = pointsOutCell{i};
+        end
+    end
+    
+    posOut = NaN(numrows,1,numel(posOutCell));
+    for(i=1:length(posOutCell))
+        if(not(isempty(posOutCell{i})))
+            posOut(:,:,i) = posOutCell{i};
+        end
+    end
+    
+    faceIndsOut = NaN(numrows,1,numel(faceIndsOutCell));
+    for(i=1:length(faceIndsOutCell))
+        if(not(isempty(faceIndsOutCell{i})))
+            faceIndsOut(:,:,i) = faceIndsOutCell{i};
+        end
+    end
+end

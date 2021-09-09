@@ -245,7 +245,8 @@ classdef LvdData < matlab.mixin.SetGet
             sensAng = deg2rad(30);
             steeringCoordSys = ParallelToFrameCoordSystem(frame, 'Kerbin Inertial', lvdData);
             steeringModel = FixedInCoordSysSensorSteeringModel(deg2rad(0), deg2rad(0), 0, steeringCoordSys, lvdData);
-
+            lvdData.geometry.coordSyses.addCoordSys(steeringCoordSys);
+            
             sensor = ConicalSensor('Demo Conical Sensor 2', sensAng, sensorRange, twoBodyPoint, steeringModel, lvdData);
             lvdData.sensors.addSensor(sensor);
             lvdData.viewSettings.selViewProfile.sensorsToPlot(end+1) = sensor;

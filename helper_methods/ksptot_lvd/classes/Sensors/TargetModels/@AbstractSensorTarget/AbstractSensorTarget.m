@@ -50,4 +50,14 @@ classdef(Abstract) AbstractSensorTarget < matlab.mixin.SetGet & matlab.mixin.Het
             tf = false;
         end
     end
+    
+    methods(Sealed)
+        function tf = eq(A,B)
+            tf = eq@handle(A,B);
+        end
+        
+        function tf = ne(A,B)
+            tf = ne@handle(A,B);
+        end
+    end
 end

@@ -16,7 +16,7 @@ classdef LaunchVehicleViewProfileSensorTargetData < matlab.mixin.SetGet
         end
         
         function plotTargetResults(obj, results, hAx)
-            result = results(results.target == obj.target);
+            result = results([results.target] == obj.target);
             [bool, rVects] = result.getTargetResultsInFrame(obj.viewFrame);
             
             if(isempty(obj.markerPlot))
