@@ -251,7 +251,7 @@ classdef LvdData < matlab.mixin.SetGet
             lvdData.viewSettings.selViewProfile.sensorsToPlot(end+1) = sensor;
             
             %add temp sensor target
-            target1 = BodyFixedLatLongGridTargetModel(initBody, 0, deg2rad(90), 2*pi, deg2rad(-90), 15, 15, 1);
+            target1 = BodyFixedLatLongGridTargetModel('Demo Target 1', initBody, deg2rad(0), deg2rad(30), deg2rad(360), deg2rad(-30), 15, 15, 1, lvdData);
             lvdData.sensorTgts.addTarget(target1);
             lvdData.viewSettings.selViewProfile.sensorTgtsToPlot = target1;
         end

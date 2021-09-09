@@ -3,9 +3,11 @@ classdef AbstractSensorSteeringModel < matlab.mixin.SetGet
     %   Detailed explanation goes here
     
     methods       
-        [boreDir] = getBoresightVector(obj, time, vehElemSet, steeringModel, inFrame)
+        [boreDir] = getBoresightVector(obj, time, vehElemSet, steeringModel, dcm, inFrame)
         
         rollAngle = getBoresightRollAngle(obj)
+        
+        dcm = getSensorParentDcmToInertial(obj, time, vehElemSet, steeringModel, dcm, inFrame)
         
         useTf = openEditDialog(obj)
         

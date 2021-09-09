@@ -9,12 +9,18 @@ classdef(Abstract) AbstractSensorTarget < matlab.mixin.SetGet & matlab.mixin.Het
     methods
         rVect = getTargetPositions(obj, time, vehElemSet, inFrame);
         
+        listboxStr = getListboxStr(obj)
+        
         shape = getMarkerShape(obj)
         color = getFoundMarkerFaceColor(obj)
         color = getFoundMarkerEdgeColor(obj)
         color = getNotFoundMarkerFaceColor(obj)
         color = getNotFoundMarkerEdgeColor(obj)
         markerSize = getMarkerSize(obj);
+        
+        useTf = openEditDialog(obj)
+        
+        tf = isInUse(obj, lvdData)
         
         function tf = usesGroundObj(obj, groundObj)
             tf = false;

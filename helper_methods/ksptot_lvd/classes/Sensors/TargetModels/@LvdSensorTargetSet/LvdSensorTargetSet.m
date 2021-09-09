@@ -24,8 +24,8 @@ classdef LvdSensorTargetSet < matlab.mixin.SetGet
         function [listBoxStr, targets] = getListboxStr(obj)
             listBoxStr = {};
             
-            for(i=1:length(obj.target))
-                listBoxStr{end+1} = obj.target(i).getListboxStr(); %#ok<AGROW>
+            for(i=1:length(obj.targets))
+                listBoxStr{end+1} = obj.targets(i).getListboxStr(); %#ok<AGROW>
             end
             
             targets = obj.targets;

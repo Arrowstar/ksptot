@@ -30,7 +30,7 @@ classdef MarkerStyleEnum < matlab.mixin.SetGet
     end
     
     methods(Static)
-        function listBoxStr = getListboxStr()
+        function [listBoxStr, m] = getListboxStr()
             m = enumeration('MarkerStyleEnum');
             listBoxStr = {m.name};
         end

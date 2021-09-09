@@ -3,7 +3,17 @@ classdef BodyFixedCircleGridTargetModel < AbstractBodyFixedSensorTarget
     %   Detailed explanation goes here
     
     properties
+        name(1,:) char
+        
         bodyInfo
+        
+        %input data
+        longCenter(1,1) double
+        latCenter(1,1) double
+        radius(1,1) double
+        numPtsLong(1,1) double
+        numPtsLat(1,1) double 
+        altitude(1,1) double
         
         %display
         markerShape(1,1) MarkerStyleEnum = MarkerStyleEnum.Circle;
@@ -12,11 +22,14 @@ classdef BodyFixedCircleGridTargetModel < AbstractBodyFixedSensorTarget
         markerNotFoundFaceColor(1,1) ColorSpecEnum = ColorSpecEnum.Black;
         markerNotFoundEdgeColor(1,1) ColorSpecEnum = ColorSpecEnum.Black;
         markerSize(1,1) double = 3;
+        
+        lvdData LvdData
     end
     
     methods
-        function obj = BodyFixedCircleGridTargetModel(bodyInfo, longCenter, latCenter, radius, numPtsLong, numPtsLat, altitude)
+        function obj = BodyFixedCircleGridTargetModel(name, bodyInfo, longCenter, latCenter, radius, numPtsLong, numPtsLat, altitude, lvdData)
             arguments
+                name(1,:) char
                 bodyInfo(1,1) KSPTOT_BodyInfo
                 longCenter(1,1) double
                 latCenter(1,1) double
@@ -24,8 +37,16 @@ classdef BodyFixedCircleGridTargetModel < AbstractBodyFixedSensorTarget
                 numPtsLong(1,1) double
                 numPtsLat(1,1) double
                 altitude(1,1) double
+                lvdData(1,1) LvdData
             end
+            
+            obj.name = name;
             obj.bodyInfo = bodyInfo;
+            obj.setGridPointsFromInputs(bodyInfo, longCenter, latCenter, radius, numPtsLong, numPtsLat, altitude); 
+            obj.lvdData = lvdData;
+        end
+        
+        function getGridPointsFromInputs(obj, bodyInfo, longCenter, latCenter, radius, numPtsLong, numPtsLat, altitude)
             bRadius = bodyInfo.radius;
             
             S = [0,0,0, bRadius+altitude];
@@ -40,7 +61,18 @@ classdef BodyFixedCircleGridTargetModel < AbstractBodyFixedSensorTarget
             M = makehgtform('axisrotate',r(1:3),r(4));
             sPts = transformPoint3d(sPts(:,1), sPts(:,2), sPts(:,3), M);
             
+            obj.longCenter = longCenter;
+            obj.latCenter = latCenter;
+            obj.radius = radius;
+            obj.numPtsLong = numPtsLong;
+            obj.numPtsLat = numPtsLat;
+            obj.altitude = altitude;
+            
             obj.rVectECEF = unique(sPts,'rows')';
+        end
+        
+        function listboxStr = getListboxStr(obj)
+            listboxStr = obj.name;
         end
         
         function shape = getMarkerShape(obj)
@@ -65,6 +97,14 @@ classdef BodyFixedCircleGridTargetModel < AbstractBodyFixedSensorTarget
         
         function markerSize = getMarkerSize(obj)
             markerSize = obj.markerSize;
+        end
+        
+        function tf = isInUse(obj, lvdData)
+            tf = false;
+        end
+        
+        function useTf = openEditDialog(obj)
+            useTf = false;
         end
     end
 end

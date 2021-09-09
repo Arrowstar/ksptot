@@ -34,6 +34,10 @@ classdef FixedInCoordSysSensorSteeringModel < AbstractSensorSteeringModel
             rollAngle = obj.roll;
         end
         
+        function parentDcm = getSensorParentDcmToInertial(obj, time, vehElemSet, dcm, inFrame)
+            parentDcm = obj.coordSys.getCoordSysAtTime(time, vehElemSet, inFrame);
+        end
+        
         function useTf = openEditDialog(obj)
             output = AppDesignerGUIOutput({false});
             lvd_EditFixedInCoordSysSensorSteeringModelGUI_App(obj, obj.lvdData, output);

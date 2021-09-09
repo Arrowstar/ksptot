@@ -150,6 +150,10 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
             obj.sensorsToPlot([obj.sensorsToPlot] == sensor) = [];
         end
         
+        function removeSensorTargetFromList(obj, target)
+            obj.sensorTgtsToPlot([obj.sensorTgtsToPlot] == target) = [];
+        end
+        
         function plotTrajectory(obj, lvdData, handles, app)
             obj.generic3DTrajView.plotStateLog(obj.orbitNumToPlot, lvdData, obj, handles, app);
         end

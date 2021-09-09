@@ -3,6 +3,8 @@ classdef PointSensorTargetModel < AbstractSensorTarget
     %   Detailed explanation goes here
     
     properties
+        name(1,:) char
+        
         point AbstractGeometricPoint
         
         %display
@@ -12,11 +14,21 @@ classdef PointSensorTargetModel < AbstractSensorTarget
         markerNotFoundFaceColor(1,1) ColorSpecEnum = ColorSpecEnum.Black;
         markerNotFoundEdgeColor(1,1) ColorSpecEnum = ColorSpecEnum.Black;
         markerSize(1,1) double = 3;
+        
+        lvdData LvdData
     end
     
     methods
-        function obj = PointSensorTargetModel(point)
+        function obj = PointSensorTargetModel(name, point, lvdData)
+            arguments
+                name(1,:) char
+                point(1,1) AbstractGeometricPoint
+                lvdData(1,1) LvdData
+            end
+            
+            obj.name = name;
             obj.point = point;
+            obj.lvdData = lvdData;
         end
         
         function rVect = getTargetPositions(obj, time, vehElemSet, inFrame)
@@ -29,6 +41,10 @@ classdef PointSensorTargetModel < AbstractSensorTarget
             
             newCartElem = obj.point.getPositionAtTime(time, vehElemSet, inFrame);
             rVect = newCartElem.rVect;
+        end
+        
+        function listboxStr = getListboxStr(obj)
+            listboxStr = obj.name;
         end
         
         function shape = getMarkerShape(obj)
@@ -53,6 +69,14 @@ classdef PointSensorTargetModel < AbstractSensorTarget
         
         function markerSize = getMarkerSize(obj)
             markerSize = obj.markerSize;
+        end
+        
+        function useTf = openEditDialog(obj)
+            useTf = false;
+        end
+        
+        function tf = isInUse(obj, lvdData)
+            tf = false;
         end
         
         function tf = usesGeometricPoint(obj, point)
