@@ -11,8 +11,8 @@ classdef BodyFixedCircleGridTargetModel < AbstractBodyFixedSensorTarget
         longCenter(1,1) double
         latCenter(1,1) double
         radius(1,1) double
-        numPtsLong(1,1) double
-        numPtsLat(1,1) double 
+        numPtsCircumference(1,1) double
+        numPtsRadial(1,1) double 
         altitude(1,1) double
         
         %display
@@ -27,33 +27,43 @@ classdef BodyFixedCircleGridTargetModel < AbstractBodyFixedSensorTarget
     end
     
     methods
-        function obj = BodyFixedCircleGridTargetModel(name, bodyInfo, longCenter, latCenter, radius, numPtsLong, numPtsLat, altitude, lvdData)
+        function obj = BodyFixedCircleGridTargetModel(name, bodyInfo, longCenter, latCenter, radius, arcOffset, arcAngle, numPtsCircumference, numPtsRadial, altitude, lvdData)
             arguments
                 name(1,:) char
                 bodyInfo(1,1) KSPTOT_BodyInfo
                 longCenter(1,1) double
                 latCenter(1,1) double
-                radius(1,1) double
-                numPtsLong(1,1) double
-                numPtsLat(1,1) double
-                altitude(1,1) double
+                radius(1,1) double {mustBeGreaterThanOrEqual(radius,0)}
+                arcOffset(1,1) double
+                arcAngle(1,1) double
+                numPtsCircumference(1,1) double {mustBeInteger(numPtsCircumference), mustBeGreaterThanOrEqual(numPtsCircumference,2)}
+                numPtsRadial(1,1) double {mustBeInteger(numPtsRadial), mustBeGreaterThanOrEqual(numPtsRadial,2)}
+                altitude(1,1) double {mustBeGreaterThanOrEqual(altitude,0)}
                 lvdData(1,1) LvdData
             end
             
             obj.name = name;
             obj.bodyInfo = bodyInfo;
-            obj.setGridPointsFromInputs(bodyInfo, longCenter, latCenter, radius, numPtsLong, numPtsLat, altitude); 
+            obj.setGridPointsFromInputs(bodyInfo, longCenter, latCenter, radius, arcOffset, arcAngle, numPtsCircumference, numPtsRadial, altitude); 
             obj.lvdData = lvdData;
         end
         
-        function getGridPointsFromInputs(obj, bodyInfo, longCenter, latCenter, radius, numPtsLong, numPtsLat, altitude)
+        function setGridPointsFromInputs(obj, bodyInfo, longCenter, latCenter, radius, arcOffset, arcAngle, numPtsCircumference, numPtsRadial, altitude)
             bRadius = bodyInfo.radius;
             
             S = [0,0,0, bRadius+altitude];
-            sphere = sphereMesh(S, 'nTheta', numPtsLat*(pi/radius), 'nPhi', numPtsLong);
+            sphere = sphereMesh(S, 'nTheta', (numPtsRadial-1)*(pi/radius), 'nPhi', (numPtsCircumference-1)*(2*pi/arcAngle));
             sPtsRaw = unique(sphere.vertices,'rows');
             sPtsAngs = dang(repmat([0;0;1],1,size(sPtsRaw,1)), sPtsRaw');
             sPts = sPtsRaw(sPtsAngs <= radius+1E-10, :);
+            
+            [theta, ~] = cart2pol(sPts(:,1), sPts(:,2));
+            theta = AngleZero2Pi(theta);
+            sPts = sPts(theta <= arcAngle,:);
+            sPts = reshape(sPts',3,1,numel(sPts)/3);
+            rotMat = repmat(rotz(rad2deg(arcOffset)),1,1,size(sPts,3));
+            sPts = pagemtimes(rotMat, sPts);
+            sPts = squeeze(sPts)';
             
             [x,y,z] = sph2cart(longCenter, latCenter, 1);
             v = [x;y;z];
@@ -64,8 +74,8 @@ classdef BodyFixedCircleGridTargetModel < AbstractBodyFixedSensorTarget
             obj.longCenter = longCenter;
             obj.latCenter = latCenter;
             obj.radius = radius;
-            obj.numPtsLong = numPtsLong;
-            obj.numPtsLat = numPtsLat;
+            obj.numPtsCircumference = numPtsCircumference;
+            obj.numPtsRadial = numPtsRadial;
             obj.altitude = altitude;
             
             obj.rVectECEF = unique(sPts,'rows')';

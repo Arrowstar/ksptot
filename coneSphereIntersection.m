@@ -35,17 +35,17 @@ sensor = ConicalSensor('Demo Conical Sensor', sensAng, sensorRange, sensorOrigin
 [sV, sF] = sphereMesh([x0,y0,z0,r], 'nTheta', 16, 'nPhi', 16);
 
 %define targets
-target1 = BodyFixedLatLongGridTargetModel(celBodyData.kerbin, 0, deg2rad(30), pi, deg2rad(-30), 25, 25, 1);
+target1 = BodyFixedLatLongGridTargetModel('Test 1', celBodyData.kerbin, deg2rad(0), deg2rad(30), deg2rad(30), deg2rad(0), 5, 5, 1, lvdData);
 
 frame = celBodyData.kerbin.getBodyCenteredInertialFrame();
 lvdData = LvdData.getDefaultLvdData(celBodyData);
 point = FixedPointInFrame([-1000;0;0], frame, 'Point 1', lvdData);
-target2 = PointSensorTargetModel(point);
+target2 = PointSensorTargetModel('Test 2', point, lvdData);
 
 point = FixedPointInFrame([1000;0;0], frame, 'Point 2', lvdData);
-target3 = PointSensorTargetModel(point);
+target3 = PointSensorTargetModel('Test 3', point, lvdData);
 
-target4 = BodyFixedCircleGridTargetModel(celBodyData.kerbin, deg2rad(270), deg2rad(0), deg2rad(30), 25, 10, 1);
+target4 = BodyFixedCircleGridTargetModel('Test 4', celBodyData.kerbin, deg2rad(270), deg2rad(0), deg2rad(30), deg2rad(0), deg2rad(30), 5, 5, 1, lvdData);
 
 targets = [target1, target2, target3, target4];
 

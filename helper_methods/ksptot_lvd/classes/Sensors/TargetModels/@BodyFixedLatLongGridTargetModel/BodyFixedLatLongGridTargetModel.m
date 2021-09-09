@@ -49,6 +49,14 @@ classdef BodyFixedLatLongGridTargetModel < AbstractBodyFixedSensorTarget
         end
         
         function setGridPointsFromInputs(obj, bodyInfo, nwCornerLong, nwCornerLat, seCornerLong, seCornerLat, numPtsLong, numPtsLat, altitude)
+            obj.nwCornerLong = nwCornerLong;
+            obj.nwCornerLat = nwCornerLat;
+            obj.seCornerLong = seCornerLong;
+            obj.seCornerLat = seCornerLat;
+            obj.numPtsLong = numPtsLong;
+            obj.numPtsLat = numPtsLat;
+            obj.altitude = altitude;
+            
             minLong = min([nwCornerLong, seCornerLong]);
             maxLong = max([nwCornerLong, seCornerLong]);
             longs = linspace(minLong, maxLong, numPtsLong);
@@ -63,14 +71,6 @@ classdef BodyFixedLatLongGridTargetModel < AbstractBodyFixedSensorTarget
             alt = altitude * ones(size(longs));
             rVectECEF = getrVectEcefFromLatLongAlt(lats, longs, alt, bodyInfo);
             rVectECEF(abs(rVectECEF) < 1E-10) = 0;
-            
-            obj.nwCornerLong = nwCornerLong;
-            obj.nwCornerLat = nwCornerLat;
-            obj.seCornerLong = seCornerLong;
-            obj.seCornerLat = seCornerLat;
-            obj.numPtsLong = numPtsLong;
-            obj.numPtsLat = numPtsLat;
-            obj.altitude = altitude;
             
             obj.rVectECEF = unique(rVectECEF','rows')';
         end
