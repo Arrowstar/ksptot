@@ -11,6 +11,8 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
         
         boreDir = getSensorBoresightDirection(obj, scElem, dcm, inFrame)
         
+        sensorDcm = getSensorDcmToInertial(obj, scElem, dcm, inFrame)
+        
         maxRange = getMaximumRange(obj)
         
         origin = getOriginInFrame(obj, time, scElem, inFrame)
@@ -131,7 +133,7 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
                 coneMesh = MESHES;
             end
 
-            tic;[V,F] = meshVertexClustering(coneMesh,0.1);toc;
+            [V,F] = meshVertexClustering(coneMesh,0.1); %needed for helping to determine if point is in mesh
         end
         
         function [results, V, F] = evaluateSensorTargets(obj, targets, scElem, dcm, bodyInfos, inFrame)
@@ -163,6 +165,8 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
                 bool = isPointInMesh(allRVects, V, F);
             end
             
+            rVectSensorOrigin = obj.getOriginInFrame(time, scElem, inFrame);
+            
             results = SensorTargetResults.empty(1,0);
             for(i=1:length(targets))
                 target = targets(i);
@@ -171,7 +175,7 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
                 subBool = bool(inds);
                 subRVects = allRVects(inds, :);
                 
-                results(i) = SensorTargetResults(obj, target, time, subBool, subRVects, inFrame);
+                results(i) = SensorTargetResults(obj, target, time, rVectSensorOrigin, subBool, subRVects, inFrame);
             end
         end
         

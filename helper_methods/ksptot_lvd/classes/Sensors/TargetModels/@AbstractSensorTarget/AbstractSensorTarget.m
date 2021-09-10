@@ -9,6 +9,10 @@ classdef(Abstract) AbstractSensorTarget < matlab.mixin.SetGet & matlab.mixin.Het
     methods
         rVect = getTargetPositions(obj, time, vehElemSet, inFrame);
         
+        numPts = getNumberOfTargetPts(obj)
+        
+        strs = getTargetPtLabelStrs(obj)
+        
         listboxStr = getListboxStr(obj)
         
         shape = getMarkerShape(obj)

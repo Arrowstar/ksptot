@@ -49,6 +49,8 @@ classdef BodyFixedLatLongGridTargetModel < AbstractBodyFixedSensorTarget
         end
         
         function setGridPointsFromInputs(obj, bodyInfo, nwCornerLong, nwCornerLat, seCornerLong, seCornerLat, numPtsLong, numPtsLat, altitude)
+            obj.bodyInfo = bodyInfo;
+            
             obj.nwCornerLong = nwCornerLong;
             obj.nwCornerLat = nwCornerLat;
             obj.seCornerLong = seCornerLong;

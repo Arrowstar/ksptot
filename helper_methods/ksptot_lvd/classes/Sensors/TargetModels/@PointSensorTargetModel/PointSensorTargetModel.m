@@ -43,6 +43,14 @@ classdef PointSensorTargetModel < AbstractSensorTarget
             rVect = newCartElem.rVect;
         end
         
+        function numPts = getNumberOfTargetPts(obj)
+            numPts = 1;
+        end
+        
+        function strs = getTargetPtLabelStrs(obj)
+            strs = string(obj.point.getName());
+        end
+        
         function listboxStr = getListboxStr(obj)
             listboxStr = obj.name;
         end

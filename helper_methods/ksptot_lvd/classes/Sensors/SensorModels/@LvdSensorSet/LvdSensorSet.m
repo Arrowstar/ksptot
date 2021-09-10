@@ -47,7 +47,7 @@ classdef LvdSensorSet < matlab.mixin.SetGet
             end
         end
         
-        function indSensor = getPointAtInd(obj, ind)
+        function indSensor = getSensorAtInd(obj, ind)
             if(ind > 0 && ind <= length(obj.sensors))
                 indSensor = obj.sensors(ind);
             else

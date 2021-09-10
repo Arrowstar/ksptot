@@ -51,6 +51,7 @@ classdef BodyFixedCircleGridTargetModel < AbstractBodyFixedSensorTarget
         end
         
         function setGridPointsFromInputs(obj, bodyInfo, longCenter, latCenter, radius, arcOffset, arcAngle, numPtsCircumference, numPtsRadial, altitude)
+            obj.bodyInfo = bodyInfo;
             bRadius = bodyInfo.radius;
             
             %get the points radially
@@ -75,6 +76,7 @@ classdef BodyFixedCircleGridTargetModel < AbstractBodyFixedSensorTarget
             r = vrrotvec([0;0;1],v);
             M = makehgtform('axisrotate',r(1:3),r(4));
             sPts = transformPoint3d(sPts(:,1), sPts(:,2), sPts(:,3), M);
+            sPts = sortrows(sPts,[1 2 3]);
             
             obj.longCenter = longCenter;
             obj.latCenter = latCenter;
@@ -85,7 +87,7 @@ classdef BodyFixedCircleGridTargetModel < AbstractBodyFixedSensorTarget
             obj.numPtsRadial = numPtsRadial;
             obj.altitude = altitude;
             
-            obj.rVectECEF = unique(sPts,'rows')';
+            obj.rVectECEF = uniquetol(sPts,1E-10,'ByRows',true)';
         end
         
         function listboxStr = getListboxStr(obj)

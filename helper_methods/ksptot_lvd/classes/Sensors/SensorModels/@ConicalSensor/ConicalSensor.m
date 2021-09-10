@@ -66,6 +66,11 @@ classdef ConicalSensor < AbstractSensor
             boreDir = obj.steeringModel.getBoresightVector(time, scElem, dcm, inFrame);
         end
         
+        function sensorDcm = getSensorDcmToInertial(obj, scElem, dcm, inFrame)
+            time = scElem.time;
+            sensorDcm = obj.steeringModel.getSensorDcmToInertial(time, scElem, dcm, inFrame);
+        end
+        
         function maxRange = getMaximumRange(obj)
             maxRange = obj.range;
         end

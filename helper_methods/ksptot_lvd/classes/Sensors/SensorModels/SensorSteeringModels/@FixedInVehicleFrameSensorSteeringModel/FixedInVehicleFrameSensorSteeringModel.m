@@ -28,9 +28,17 @@ classdef FixedInVehicleFrameSensorSteeringModel < AbstractSensorSteeringModel
         function rollAngle = getBoresightRollAngle(obj)
             rollAngle = obj.roll;
         end
-        
+               
+        %body to inertial
         function parentDcm = getSensorParentDcmToInertial(obj, time, vehElemSet, dcm, inFrame)
             parentDcm = dcm;
+        end
+        
+        function sensorDcm = getSensorDcmToInertial(obj, time, vehElemSet, dcm, inFrame)
+            sensorToParentDcm = eul2rotmARH([obj.rhtAsc,obj.dec,obj.roll],'zyx');
+            parentToInertialDcm = obj.getSensorParentDcmToInertial(time, vehElemSet, dcm, inFrame);
+            
+            sensorDcm = parentToInertialDcm * sensorToParentDcm;
         end
         
         function useTf = openEditDialog(obj)

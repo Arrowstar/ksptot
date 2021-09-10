@@ -38,6 +38,14 @@ classdef FixedInCoordSysSensorSteeringModel < AbstractSensorSteeringModel
             parentDcm = obj.coordSys.getCoordSysAtTime(time, vehElemSet, inFrame);
         end
         
+        %body to inertial
+        function sensorDcm = getSensorDcmToInertial(obj, time, vehElemSet, dcm, inFrame)
+            sensorToParentDcm = eul2rotmARH([obj.rhtAsc,obj.dec,obj.roll],'zyx');
+            parentToInertialDcm = obj.getSensorParentDcmToInertial(time, vehElemSet, dcm, inFrame);
+            
+            sensorDcm = parentToInertialDcm * sensorToParentDcm;
+        end
+        
         function useTf = openEditDialog(obj)
             output = AppDesignerGUIOutput({false});
             lvd_EditFixedInCoordSysSensorSteeringModelGUI_App(obj, obj.lvdData, output);
