@@ -5,7 +5,6 @@ clc; clear variables; format long g; close all;
 celBodyData = processINIBodyInfo(celBodyDataFromINI, false, 'bodyInfo');
 celBodyData = CelestialBodyData(celBodyData);
 
-t=tic;
 % profile off; profile on;
 
 %planet sphere
@@ -35,7 +34,7 @@ sensor = ConicalSensor('Demo Conical Sensor', sensAng, sensorRange, sensorOrigin
 [sV, sF] = sphereMesh([x0,y0,z0,r], 'nTheta', 16, 'nPhi', 16);
 
 %define targets
-target1 = BodyFixedLatLongGridTargetModel('Test 1', celBodyData.kerbin, deg2rad(0), deg2rad(30), deg2rad(30), deg2rad(0), 5, 5, 1, lvdData);
+target1 = BodyFixedLatLongGridTargetModel('Test 1', celBodyData.kerbin, deg2rad(-180), deg2rad(90), deg2rad(180), deg2rad(-90), 100, 100, 1, lvdData);
 
 frame = celBodyData.kerbin.getBodyCenteredInertialFrame();
 lvdData = LvdData.getDefaultLvdData(celBodyData);
@@ -45,7 +44,7 @@ target2 = PointSensorTargetModel('Test 2', point, lvdData);
 point = FixedPointInFrame([1000;0;0], frame, 'Point 2', lvdData);
 target3 = PointSensorTargetModel('Test 3', point, lvdData);
 
-target4 = BodyFixedCircleGridTargetModel('Test 4', celBodyData.kerbin, deg2rad(270), deg2rad(0), deg2rad(30), deg2rad(0), deg2rad(30), 5, 5, 1, lvdData);
+target4 = BodyFixedCircleGridTargetModel('Test 4', celBodyData.kerbin, deg2rad(270), deg2rad(0), deg2rad(30), deg2rad(0), deg2rad(30), 100, 100, 1, lvdData);
 
 targets = [target1, target2, target3, target4];
 
@@ -72,5 +71,4 @@ axis(hAx, 'equal');
 hold off;
 
 % profile viewer; 
-toc(t);
 disp(getCoverageFraction(results));

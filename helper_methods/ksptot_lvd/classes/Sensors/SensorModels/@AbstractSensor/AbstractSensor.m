@@ -162,7 +162,8 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
             if(isempty(allRVects))
                 bool = false(0);
             else
-                bool = isPointInMesh(allRVects, V, F);
+%                 bool = isPointInMesh(allRVects, V, F);
+                bool = in_polyhedron(F,V,allRVects);
             end
             
             rVectSensorOrigin = obj.getOriginInFrame(time, scElem, inFrame);
