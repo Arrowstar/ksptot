@@ -106,8 +106,8 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
             
             [Vobs,Fobs] = obj.getObscuringMesh(scElem, dcm, bodyInfos, inFrame);
             [Vsens,Fsens] = obj.getSensorMesh(scElem, dcm, inFrame);
-            
-            rVectSc = scElem.rVect;
+
+            rVectSensorOrigin = obj.getOriginInFrame(scElem.time, scElem, inFrame);
             
             [V3,F3] = AbstractSensor.mesh_boolean_fallback(Vsens,Fsens,Vobs,Fobs,'minus');
             
@@ -124,7 +124,7 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
             if(length(MESHES) > 1)
                 for(i=1:length(MESHES))
                     centroid = mean(MESHES(i).vertices,1);
-                    dist(i) = norm(centroid - rVectSc); %#ok<AGROW>
+                    dist(i) = norm(centroid - rVectSensorOrigin); %#ok<AGROW>
                 end
                 
                 [~,meshInd] = min(dist);
