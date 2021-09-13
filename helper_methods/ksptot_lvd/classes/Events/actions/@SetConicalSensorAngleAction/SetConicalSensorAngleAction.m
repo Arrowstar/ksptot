@@ -1,10 +1,10 @@
-classdef SetSensorActiveStateAction < AbstractEventAction
-    %SetSensorActiveStateAction Summary of this class goes here
+classdef SetConicalSensorAngleAction < AbstractEventAction
+    %SetConicalSensorAngleAction Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
-        sensor AbstractSensor
-        activeStateToSet(1,1) logical = false;
+        sensor ConicalSensor
+        sensorAngle(1,1) double {mustBeGreaterThan(sensorAngle, 0)} = deg2rad(10);
     end
     
     properties(Constant)
@@ -12,10 +12,10 @@ classdef SetSensorActiveStateAction < AbstractEventAction
     end
     
     methods
-        function obj = SetSensorActiveStateAction(sensor, activeStateToSet)
+        function obj = SetConicalSensorAngleAction(sensor, sensorAngle)
             if(nargin > 0)
                 obj.sensor = sensor;
-                obj.activeStateToSet = activeStateToSet;
+                obj.sensorAngle = sensorAngle;
             end
             
             obj.id = rand();
@@ -24,21 +24,15 @@ classdef SetSensorActiveStateAction < AbstractEventAction
         function newStateLogEntry = executeAction(obj, stateLogEntry)
             newStateLogEntry = stateLogEntry;
             sensorState = newStateLogEntry.getSensorStateForSensor(obj.sensor);
-            sensorState.setSensorActiveState(obj.activeStateToSet);
+            sensorState.setSensorAngle(obj.sensorAngle);
         end
         
         function initAction(obj, initialStateLogEntry)
             %nothing
         end
         
-        function name = getName(obj)
-            if(obj.activeStateToSet)
-                tf = 'Active';
-            else
-                tf = 'Inactive';
-            end
-            
-            name = sprintf('Set Sensor State (%s = %s)',obj.sensor.name,tf);
+        function name = getName(obj)            
+            name = sprintf('Set Sensor Half-Angle (%s => %0.3f deg)',obj.sensor.name, rad2deg(obj.sensorAngle));
         end
         
         function tf = usesStage(obj, stage)
@@ -84,9 +78,9 @@ classdef SetSensorActiveStateAction < AbstractEventAction
             lvdData = lv.lvdData;
             [~, sensors] = lvdData.sensors.getListboxStr();
             
-            if(not(isempty(sensors)))
+            if(not(isempty(sensors)) && any([sensors.typeEnum] == SensorEnum.ConicalSensor))
                 output = AppDesignerGUIOutput({false});
-                lvd_EditActionSetSensorStateGUI_App(action, lvdData, output);
+                lvd_EditActionSetConicalSensorHalfAngleGUI_App(action, lvdData, output);
                 addActionTf = output.output{1};
             else
                 addActionTf = false;

@@ -1,10 +1,10 @@
-classdef SetSensorActiveStateAction < AbstractEventAction
-    %SetSensorActiveStateAction Summary of this class goes here
+classdef SetSensorMaxRangeAction < AbstractEventAction
+    %SetSensorMaxRangeAction Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
         sensor AbstractSensor
-        activeStateToSet(1,1) logical = false;
+        sensorMaxRange(1,1) double {mustBeGreaterThan(sensorMaxRange, 0)} = 1;
     end
     
     properties(Constant)
@@ -12,10 +12,10 @@ classdef SetSensorActiveStateAction < AbstractEventAction
     end
     
     methods
-        function obj = SetSensorActiveStateAction(sensor, activeStateToSet)
+        function obj = SetSensorMaxRangeAction(sensor, maxRange)
             if(nargin > 0)
                 obj.sensor = sensor;
-                obj.activeStateToSet = activeStateToSet;
+                obj.sensorMaxRange = maxRange;
             end
             
             obj.id = rand();
@@ -24,21 +24,15 @@ classdef SetSensorActiveStateAction < AbstractEventAction
         function newStateLogEntry = executeAction(obj, stateLogEntry)
             newStateLogEntry = stateLogEntry;
             sensorState = newStateLogEntry.getSensorStateForSensor(obj.sensor);
-            sensorState.setSensorActiveState(obj.activeStateToSet);
+            sensorState.setSensorMaxRange(obj.sensorMaxRange);
         end
         
         function initAction(obj, initialStateLogEntry)
             %nothing
         end
         
-        function name = getName(obj)
-            if(obj.activeStateToSet)
-                tf = 'Active';
-            else
-                tf = 'Inactive';
-            end
-            
-            name = sprintf('Set Sensor State (%s = %s)',obj.sensor.name,tf);
+        function name = getName(obj)            
+            name = sprintf('Set Sensor Max Range (%s => %0.3f km)',obj.sensor.name,obj.sensorMaxRange);
         end
         
         function tf = usesStage(obj, stage)
@@ -86,7 +80,7 @@ classdef SetSensorActiveStateAction < AbstractEventAction
             
             if(not(isempty(sensors)))
                 output = AppDesignerGUIOutput({false});
-                lvd_EditActionSetSensorStateGUI_App(action, lvdData, output);
+                lvd_EditActionSetSensorMaxRangeGUI_App(action, lvdData, output);
                 addActionTf = output.output{1};
             else
                 addActionTf = false;

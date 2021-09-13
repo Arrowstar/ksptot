@@ -24,6 +24,8 @@ classdef EventActionEnum < matlab.mixin.SetGet
         SetPowerSrcActiveState('Set Power Source Active State','SetPowerSrcActiveStateAction')
         SetPowerStorageActiveState('Set Power Storage Active State','SetPowerStorageActiveStateAction')
         SetSensorActiveState('Set Sensor Active State','SetSensorActiveStateAction');
+        SetSensorMaxRange('Set Sensor Max Range','SetSensorMaxRangeAction');
+        SetConicalSensorAngle('Set Conical Sensor Half Angle','SetConicalSensorAngleAction');
     end
     
     properties

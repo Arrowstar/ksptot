@@ -21,6 +21,10 @@ classdef ConicalSensor < AbstractSensor
         showMeshEdges(1,1) logical = false;
     end
     
+    properties(Constant)
+        typeEnum = SensorEnum.ConicalSensor;
+    end
+    
     methods
         function obj = ConicalSensor(name, angle, range, origin, steeringModel, lvdData)
             arguments

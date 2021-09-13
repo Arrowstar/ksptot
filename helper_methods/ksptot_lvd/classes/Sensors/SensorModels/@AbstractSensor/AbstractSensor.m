@@ -2,8 +2,8 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
     %AbstractSensor Summary of this class goes here
     %   Detailed explanation goes here
     
-    properties
-        
+    properties(Constant, Abstract)
+        typeEnum(1,1) SensorEnum 
     end
     
     methods
