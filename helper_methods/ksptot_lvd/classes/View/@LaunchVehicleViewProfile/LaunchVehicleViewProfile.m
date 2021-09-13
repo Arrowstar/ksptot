@@ -551,12 +551,12 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
             end
         end
         
-        function createSensorData(obj, vehPosVelData, vehAttData, viewFrame)
+        function createSensorData(obj, lvdStateLogEntries, vehPosVelData, vehAttData, viewFrame)
             obj.clearSensorData();
             
             for(i=1:length(obj.sensorsToPlot))
                 sensor = obj.sensorsToPlot(i);
-                obj.sensorData(i) = LaunchVehicleViewProfileSensorData(sensor, obj.sensorTgtsToPlot, vehPosVelData, vehAttData, viewFrame);
+                obj.sensorData(i) = LaunchVehicleViewProfileSensorData(sensor, obj.sensorTgtsToPlot, lvdStateLogEntries, vehPosVelData, vehAttData, viewFrame);
             end
         end
         

@@ -9,13 +9,13 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
     methods
         [V,F] = getSensorMesh(obj, scElem, dcm, inFrame)
         
-        boreDir = getSensorBoresightDirection(obj, scElem, dcm, inFrame)
+        boreDir = getSensorBoresightDirection(obj, sensorState, scElem, dcm, inFrame)
         
         sensorDcm = getSensorDcmToInertial(obj, scElem, dcm, inFrame)
-        
-        maxRange = getMaximumRange(obj)
-        
+               
         origin = getOriginInFrame(obj, time, scElem, inFrame)
+        
+        tf = isVehDependent(obj, sensorState)
         
         listboxStr = getListboxStr(obj)
         
@@ -31,18 +31,22 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
         
         openEditDialog(obj)
         
-        function [VTotal,FTotal] = getObscuringMesh(obj, scElem, dcm, bodyInfos, inFrame)
+        state = getInitialState(obj)
+        
+        function [VTotal,FTotal] = getObscuringMesh(obj, sensorState, scElem, dcm, bodyInfos, inFrame)
             arguments
                 obj(1,1) AbstractSensor
+                sensorState(1,1) AbstractSensorState
                 scElem(1,1) CartesianElementSet
-                dcm
+                dcm(3,3) double
                 bodyInfos KSPTOT_BodyInfo
                 inFrame(1,1) AbstractReferenceFrame
             end
             
             time = scElem.time;
+            sensorRange = sensorState.getSensorMaxRange();
             rVectSensorOrigin = obj.getOriginInFrame(time, scElem, inFrame);
-            boreDir = obj.getSensorBoresightDirection(time, scElem, dcm, inFrame);
+            boreDir = obj.getSensorBoresightDirection(sensorState, time, scElem, dcm, inFrame);
             
             FTotal = [];
             VTotal = [];
@@ -61,7 +65,7 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
                 
                 [p2,r2,theta] = AbstractSensor.getTangentCirclePointAndRadius(rVectSensorOrigin, rVectBody, bRadius);
                 
-                if(body2BoreAngle - theta < obj.angle && norm(sc2BodyVect) < obj.getMaximumRange())
+                if(body2BoreAngle - theta < obj.angle && norm(sc2BodyVect) < sensorRange)
                     S = [rVectBody(:)', bRadius];
                     [sV, ~] = sphereMesh(S, 'nTheta', 16, 'nPhi', 16);
                     
@@ -75,7 +79,7 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
                         angleToUse = bodyAngularSize;
                     end
                     
-                    circleCnterPt = rVectBody + vect_normVector(sc2BodyVect)*1.1*obj.getMaximumRange();
+                    circleCnterPt = rVectBody + vect_normVector(sc2BodyVect)*1.1*sensorRange;
                     circleRadius = tan(angleToUse) * norm(circleCnterPt - rVectSensorOrigin);
                     coneProjPts = ConicalSensor.getCircleInSpace(v, circleCnterPt, circleRadius);
                     
@@ -95,17 +99,18 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
             end
         end
         
-        function [V,F, Vobs,Fobs] = getObscuredSensorMesh(obj, scElem, dcm, bodyInfos, inFrame)
+        function [V,F, Vobs,Fobs] = getObscuredSensorMesh(obj, sensorState, scElem, dcm, bodyInfos, inFrame)
             arguments
                 obj(1,1) AbstractSensor
+                sensorState(1,1) AbstractSensorState
                 scElem(1,1) CartesianElementSet
-                dcm
+                dcm(3,3) double
                 bodyInfos KSPTOT_BodyInfo
                 inFrame(1,1) AbstractReferenceFrame
             end
             
-            [Vobs,Fobs] = obj.getObscuringMesh(scElem, dcm, bodyInfos, inFrame);
-            [Vsens,Fsens] = obj.getSensorMesh(scElem, dcm, inFrame);
+            [Vobs,Fobs] = obj.getObscuringMesh(sensorState, scElem, dcm, bodyInfos, inFrame);
+            [Vsens,Fsens] = obj.getSensorMesh(sensorState, scElem, dcm, inFrame);
 
             rVectSensorOrigin = obj.getOriginInFrame(scElem.time, scElem, inFrame);
             
@@ -136,18 +141,19 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
             [V,F] = meshVertexClustering(coneMesh,0.1); %needed for helping to determine if point is in mesh
         end
         
-        function [results, V, F] = evaluateSensorTargets(obj, targets, scElem, dcm, bodyInfos, inFrame)
+        function [results, V, F] = evaluateSensorTargets(obj, sensorState, targets, scElem, dcm, bodyInfos, inFrame)
             arguments
                 obj(1,1) AbstractSensor
+                sensorState(1,1) AbstractSensorState
                 targets(1,:) AbstractSensorTarget
                 scElem(1,1) CartesianElementSet
-                dcm
+                dcm(3,3) double
                 bodyInfos KSPTOT_BodyInfo
                 inFrame(1,1) AbstractReferenceFrame
             end
             
             time = scElem.time;
-            [V,F] = obj.getObscuredSensorMesh(scElem, dcm, bodyInfos, inFrame);
+            [V,F] = obj.getObscuredSensorMesh(sensorState, scElem, dcm, bodyInfos, inFrame);
             
             allRVects = [];
             targetColInds = [];

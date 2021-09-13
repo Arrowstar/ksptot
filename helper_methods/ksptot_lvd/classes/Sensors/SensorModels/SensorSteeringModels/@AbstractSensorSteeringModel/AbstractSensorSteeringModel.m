@@ -11,6 +11,8 @@ classdef AbstractSensorSteeringModel < matlab.mixin.SetGet
         
         sensorDcm = getSensorDcmToInertial(obj, time, vehElemSet, dcm, inFrame)
         
+        tf = isVehDependent(obj);
+        
         useTf = openEditDialog(obj)
         
         enum = getEnum(obj)

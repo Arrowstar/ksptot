@@ -358,7 +358,7 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             viewProfile.createRefFrameData(viewInFrame, subStateLogs, lvdData.script.evts);
             viewProfile.createAngleData(viewInFrame, subStateLogs, lvdData.script.evts);
             viewProfile.createPlaneData(viewInFrame, subStateLogs, lvdData.script.evts);
-            viewProfile.createSensorData(vehPosVelData, vehAttData, viewInFrame);
+            viewProfile.createSensorData(lvdStateLogEntries, vehPosVelData, vehAttData, viewInFrame);
             viewProfile.createSensorTargetData(viewInFrame);
             viewProfile.configureTimeSlider(minTime, maxTime, subStateLogs, handles, app);
             hold(dAxes,'off');

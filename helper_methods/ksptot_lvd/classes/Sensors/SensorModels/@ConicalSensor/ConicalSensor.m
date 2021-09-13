@@ -5,11 +5,14 @@ classdef ConicalSensor < AbstractSensor
     properties
         name(1,:) char = 'Untitled Sensor';
         
+        %Initial sensor properties (can be changed in sensor state later)
         angle(1,1) double = deg2rad(10) %rad
         range(1,1) double = 1000;       %km
         origin AbstractGeometricPoint
         steeringModel AbstractSensorSteeringModel
+        initActiveTf(1,1) logical = true;
         
+        %LVD Data
         lvdData LvdData
         
         %drawing properties
@@ -41,43 +44,58 @@ classdef ConicalSensor < AbstractSensor
             obj.lvdData = lvdData;
         end
                
-        function [V,F] = getSensorMesh(obj, scElem, dcm, inFrame)
-            time = scElem.time;
-            sensorRange = obj.range;
+        function [V,F] = getSensorMesh(obj, sensorState, scElem, dcm, inFrame)
+            arguments
+                obj(1,1) ConicalSensor
+                sensorState(1,1) ConicalSensorState
+                scElem(1,1) CartesianElementSet
+                dcm(3,3) double
+                inFrame(1,1) AbstractReferenceFrame
+            end
             
-            rVectSensorOrigin = obj.getOriginInFrame(time, scElem, inFrame);
-            boreDir = obj.getSensorBoresightDirection(time, scElem, dcm, inFrame); 
-            
-            S = [0,0,0, sensorRange];
-            sphere = sphereMesh(S, 'nTheta', ceil(5*2*pi/obj.angle), 'nPhi', 16);
-            sPtsRaw = unique(sphere.vertices,'rows');
-            sPtsAngs = dang(repmat([0;0;1],1,size(sPtsRaw,1)), sPtsRaw');
-            sPts = sPtsRaw(sPtsAngs <= obj.angle+1E-10, :);
-            
-            r = vrrotvec([0;0;1],boreDir);            
-            M = makehgtform('translate',rVectSensorOrigin(:)', 'axisrotate',r(1:3),r(4));
-            sPts = transformPoint3d(sPts(:,1), sPts(:,2), sPts(:,3), M);
-            
-            V = vertcat(rVectSensorOrigin(:)', sPts);
-            F = convhull(V);
+            active = sensorState.getSensorActiveState();
+            if(active)
+                time = scElem.time;
+                sensorRange = sensorState.getSensorMaxRange();
+                sensorAngle = sensorState.getSensorAngle();
+
+                rVectSensorOrigin = obj.getOriginInFrame(time, scElem, inFrame);
+                boreDir = obj.getSensorBoresightDirection(sensorState, time, scElem, dcm, inFrame); 
+
+                S = [0,0,0, sensorRange];
+                sphere = sphereMesh(S, 'nTheta', ceil(5*2*pi/sensorAngle), 'nPhi', 16);
+                sPtsRaw = unique(sphere.vertices,'rows');
+                sPtsAngs = dang(repmat([0;0;1],1,size(sPtsRaw,1)), sPtsRaw');
+                sPts = sPtsRaw(sPtsAngs <= obj.angle+1E-10, :);
+
+                r = vrrotvec([0;0;1],boreDir);            
+                M = makehgtform('translate',rVectSensorOrigin(:)', 'axisrotate',r(1:3),r(4));
+                sPts = transformPoint3d(sPts(:,1), sPts(:,2), sPts(:,3), M);
+
+                V = vertcat(rVectSensorOrigin(:)', sPts);
+                F = convhull(V);
+            else
+                V = [];
+                F = [];
+            end
         end
         
-        function boreDir = getSensorBoresightDirection(obj, time, scElem, dcm, inFrame)
-            boreDir = obj.steeringModel.getBoresightVector(time, scElem, dcm, inFrame);
+        function boreDir = getSensorBoresightDirection(~, sensorState, time, scElem, dcm, inFrame)
+            boreDir = sensorState.getSensorSteeringMode().getBoresightVector(time, scElem, dcm, inFrame);
         end
         
         function sensorDcm = getSensorDcmToInertial(obj, scElem, dcm, inFrame)
             time = scElem.time;
             sensorDcm = obj.steeringModel.getSensorDcmToInertial(time, scElem, dcm, inFrame);
         end
-        
-        function maxRange = getMaximumRange(obj)
-            maxRange = obj.range;
-        end
-        
+               
         function rVectOrigin = getOriginInFrame(obj, time, scElem, inFrame)
             newCartElem = obj.origin.getPositionAtTime(time, scElem, inFrame);
             rVectOrigin = [newCartElem.rVect];
+        end
+        
+        function tf = isVehDependent(obj, sensorState)
+            tf = obj.origin.isVehDependent() || sensorState.getSensorSteeringMode().isVehDependent();
         end
         
         function listboxStr = getListboxStr(obj)
@@ -108,6 +126,10 @@ classdef ConicalSensor < AbstractSensor
             output = AppDesignerGUIOutput({false});
             lvd_EditConicalSensorGUI_App(obj, obj.lvdData, output);
             useTf = output.output{1};
+        end
+        
+        function state = getInitialState(obj)
+            state = ConicalSensorState(obj, obj.initActiveTf, obj.steeringModel, obj.angle, obj.range);
         end
         
         function tf = usesGeometricPoint(obj, point)

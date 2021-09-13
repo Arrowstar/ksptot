@@ -46,6 +46,10 @@ classdef FixedInCoordSysSensorSteeringModel < AbstractSensorSteeringModel
             sensorDcm = parentToInertialDcm * sensorToParentDcm;
         end
         
+        function tf = isVehDependent(obj)
+            tf = obj.coordSys.isVehDependent();
+        end
+        
         function useTf = openEditDialog(obj)
             output = AppDesignerGUIOutput({false});
             lvd_EditFixedInCoordSysSensorSteeringModelGUI_App(obj, obj.lvdData, output);

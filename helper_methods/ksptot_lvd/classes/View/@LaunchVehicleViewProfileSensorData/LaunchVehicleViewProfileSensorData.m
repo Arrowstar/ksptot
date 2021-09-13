@@ -3,56 +3,131 @@ classdef LaunchVehicleViewProfileSensorData < matlab.mixin.SetGet
     %   Detailed explanation goes here
     
     properties
+        %Objects
         sensor AbstractSensor
         targets AbstractSensorTarget
         
+        %Modeled vehicle position/vel/attitude
         vehPosVelData LaunchVehicleViewPosVelInterp
         vehAttData LaunchVehicleViewProfileAttitudeData
         
-        sensorMeshPlot = matlab.graphics.GraphicsPlaceholder.empty(1,0)
+        %Sensor State Data
+        timesArr cell
+        sensorStateArr cell
+        eventsArr(1,:) LaunchVehicleEvent = LaunchVehicleEvent.empty(1,0);
+        
+        %display objects
+        sensorMeshPlot(1,:) matlab.graphics.primitive.Patch = matlab.graphics.primitive.Patch.empty(1,0);
         viewFrame AbstractReferenceFrame
     end
     
     methods
-        function obj = LaunchVehicleViewProfileSensorData(sensor, targets, vehPosVelData, vehAttData, viewFrame)
+        function obj = LaunchVehicleViewProfileSensorData(sensor, targets, lvdStateLogEntries, vehPosVelData, vehAttData, viewFrame)
             obj.sensor = sensor;
             obj.targets = targets;
             obj.vehPosVelData = vehPosVelData;
             obj.vehAttData = vehAttData;
             obj.viewFrame = viewFrame;
+            
+            obj.parseLvdStateData(lvdStateLogEntries);
         end
         
         function results = plotSensorAtTime(obj, time, hAx)
             results = SensorTargetResults.empty(1,0);
             
-            [rVect, vVect] = obj.vehPosVelData.getPositionVelocityAtTime(time);
-            if(width(rVect) > 0 && width(vVect) > 0)
-                scElem = CartesianElementSet(time, rVect, vVect, obj.viewFrame);
-
-                dcm = obj.vehAttData.getDCMatTime(time);
-
-                bodyInfo = obj.viewFrame.getOriginBody();
-                bodyInfos = [bodyInfo, bodyInfo.getParBodyInfo(), bodyInfo.getChildrenBodyInfo(bodyInfo.celBodyData)];
-
-                [results, V, F] = obj.sensor.evaluateSensorTargets(obj.targets, scElem, dcm, bodyInfos, obj.viewFrame);
-                
-                if(isempty(obj.sensorMeshPlot))
-                    hold(hAx,'on'); 
-                    color = obj.sensor.getMeshColor().color;
-                    alpha = obj.sensor.getMeshAlpha();
-                    showMeshEdges = obj.sensor.getDisplayMeshEdges();
+            [rVects, vVects] = obj.vehPosVelData.getPositionVelocityAtTime(time);
+            dcms = obj.vehAttData.getDCMatTime(time);
+            sensorStates = obj.getSensorStatesForTime(time);
+            if(width(rVects) > 0 && size(dcms,3) > 0 && width(rVects) == size(dcms,3))                
+                for(i=1:width(rVects))
+                    rVect = rVects(:,i);
+                    vVect = vVects(:,i);
+                    dcm = dcms(:,:,i);
+                    sensorState = sensorStates(i);
                     
-                    if(showMeshEdges)
-                        meshLineStyle = '-';
+                    scElem = CartesianElementSet(time, rVect, vVect, obj.viewFrame);
+                    
+                    bodyInfo = obj.viewFrame.getOriginBody();
+                    bodyInfos = [bodyInfo, bodyInfo.getParBodyInfo(), bodyInfo.getChildrenBodyInfo(bodyInfo.celBodyData)];
+                    
+                    [results, V, F] = obj.sensor.evaluateSensorTargets(sensorState, obj.targets, scElem, dcm, bodyInfos, obj.viewFrame); %TODO Needs to handle multiple states
+                    
+                    if(numel(obj.sensorMeshPlot) < i || isempty(obj.sensorMeshPlot(i)))
+                        hold(hAx,'on');
+                        color = obj.sensor.getMeshColor().color;
+                        alpha = obj.sensor.getMeshAlpha();
+                        showMeshEdges = obj.sensor.getDisplayMeshEdges();
+                        
+                        if(showMeshEdges)
+                            meshLineStyle = '-';
+                        else
+                            meshLineStyle = 'none';
+                        end
+                        
+                        obj.sensorMeshPlot(i) = drawMesh(hAx, V, F, 'FaceColor',color,'FaceAlpha',alpha, 'LineStyle',meshLineStyle, 'EdgeAlpha',alpha);
+                        hold(hAx,'off');
                     else
-                        meshLineStyle = 'none';
+                        obj.sensorMeshPlot(i).Vertices = V;
+                        obj.sensorMeshPlot(i).Faces = F;
+                    end
+                end
+                
+                if(numel(obj.sensorMeshPlot) > width(rVects))
+                    for(i=width(rVects)+1 : length(obj.sensorMeshPlot))
+                        if(not(isempty(obj.sensorMeshPlot(i))) && isvalid(obj.sensorMeshPlot(i)))
+                            obj.sensorMeshPlot(i).Visible = 'off';
+                        end
+                    end
+                end
+            end
+        end
+    end
+    
+    methods(Access=private)
+        function parseLvdStateData(obj, lvdStateLogEntries)
+            obj.timesArr = {};
+            obj.sensorStateArr = {};
+            obj.eventsArr = LaunchVehicleEvent.empty(1,0);
+            
+            events = unique([lvdStateLogEntries.event],'stable');
+            for(i=1:numel(events))
+                event = events(i);
+                eventLogEntries = lvdStateLogEntries([lvdStateLogEntries.event] == event);
+                
+                times = [eventLogEntries.time];
+                sensorState = AbstractSensorState.empty(1,0);
+                for(j=1:length(eventLogEntries))
+                    sensorState(j) = eventLogEntries(j).getSensorStateForSensor(obj.sensor);
+                end
+                
+                obj.timesArr{i} = times;
+                obj.sensorStateArr{i} = sensorState;
+                obj.eventsArr(i) = event;
+            end
+        end
+        
+        function sensorStates = getSensorStatesForTime(obj, time)
+            sensorStates = AbstractSensorState.empty(1,0);
+            
+            for(i=1:length(obj.timesArr))
+                times = obj.timesArr{i};
+                sensorStatesForTimes = obj.sensorStateArr{i};
+                
+                if(numel(times) == 1 && time == times(1))
+                    sensorStates(end+1) = sensorStatesForTimes(1); %#ok<AGROW>
+                    
+                elseif(time >= min(times) && time <= max(times))
+                    [times,I] = sort(times);
+                    sensorStatesForTimes = sensorStatesForTimes(I);
+                    
+                    bool = time == times;
+                    if(any(bool))
+                        ind = find(bool, 1, 'last');
+                    else
+                        ind = find(time >= times, 1, 'last');
                     end
                     
-                    obj.sensorMeshPlot = drawMesh(hAx, V, F, 'FaceColor',color,'FaceAlpha',alpha, 'LineStyle',meshLineStyle, 'EdgeAlpha',alpha);
-                    hold(hAx,'off');
-                else
-                    obj.sensorMeshPlot.Vertices = V;
-                    obj.sensorMeshPlot.Faces = F;
+                    sensorStates(end+1) = sensorStatesForTimes(ind); %#ok<AGROW>
                 end
             end
         end

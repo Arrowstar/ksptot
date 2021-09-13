@@ -41,6 +41,10 @@ classdef FixedInVehicleFrameSensorSteeringModel < AbstractSensorSteeringModel
             sensorDcm = parentToInertialDcm * sensorToParentDcm;
         end
         
+        function tf = isVehDependent(obj)
+            tf = true;
+        end
+        
         function useTf = openEditDialog(obj)
             output = AppDesignerGUIOutput({false});
             lvd_EditFixedInVehicleBodyFrameSensorSteeringModelGUI_App(obj, obj.lvdData, output);

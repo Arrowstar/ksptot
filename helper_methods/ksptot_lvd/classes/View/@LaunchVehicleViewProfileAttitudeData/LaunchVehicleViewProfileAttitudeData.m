@@ -54,13 +54,14 @@ classdef LaunchVehicleViewProfileAttitudeData < matlab.mixin.SetGet
     
     methods
         function dcm = getDCMatTime(obj, time)
+            dcm = NaN(0,0,0);
             for(i=1:length(obj.timesArr))
                 times = obj.timesArr{i};
                 
                 if(time >= min(floor(times)) && time <= max(ceil(times)))                                                           
-                    dcm(:,:,i) = [obj.dcm11Interps{i}(time), obj.dcm12Interps{i}(time), obj.dcm13Interps{i}(time);
-                                      obj.dcm21Interps{i}(time), obj.dcm22Interps{i}(time), obj.dcm23Interps{i}(time);
-                                      obj.dcm31Interps{i}(time), obj.dcm32Interps{i}(time), obj.dcm33Interps{i}(time)]; %#ok<AGROW>
+                    dcm(:,:,size(dcm,3)+1) = [obj.dcm11Interps{i}(time), obj.dcm12Interps{i}(time), obj.dcm13Interps{i}(time);
+                                              obj.dcm21Interps{i}(time), obj.dcm22Interps{i}(time), obj.dcm23Interps{i}(time);
+                                              obj.dcm31Interps{i}(time), obj.dcm32Interps{i}(time), obj.dcm33Interps{i}(time)]; %#ok<AGROW>
                 end
             end
         end
