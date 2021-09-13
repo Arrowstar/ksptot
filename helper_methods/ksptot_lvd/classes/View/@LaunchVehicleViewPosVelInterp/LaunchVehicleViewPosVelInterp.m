@@ -40,6 +40,8 @@ classdef LaunchVehicleViewPosVelInterp < matlab.mixin.SetGet
     
     methods
         function [rVect, vVect] = getPositionVelocityAtTime(obj, time)
+            rVect = [];
+            vVect = [];
             for(i=1:length(obj.timesArr))
                 times = obj.timesArr{i};
                 
@@ -65,10 +67,10 @@ classdef LaunchVehicleViewPosVelInterp < matlab.mixin.SetGet
                     vzInterp = obj.vzInterps{i};
                     vz = vzInterp(time);
                     
-                    rVect = [x(:)'; y(:)'; z(:)'];
-                    vVect = [vx(:)'; vy(:)'; vz(:)'];
+                    subRVect = [x(:)'; y(:)'; z(:)'];
+                    subVVect = [vx(:)'; vy(:)'; vz(:)'];
                     
-                    vehElemSet = CartesianElementSet(boolTimes, rVect, vVect, obj.viewFrame);
+                    vehElemSet = CartesianElementSet(boolTimes, subRVect, subVVect, obj.viewFrame);
                     
                     rVect = horzcat(rVect, [vehElemSet.rVect]);  %#ok<AGROW>
                     vVect = horzcat(vVect, [vehElemSet.vVect]); %#ok<AGROW>
