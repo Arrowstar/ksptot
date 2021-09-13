@@ -676,7 +676,7 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                         rotMatsBodyToView = [];
                         
                     otherwise
-                        error('Unknown event plotting method: %s', EventPlottingMethodEnum.DoNotPlot.name);
+                        error('Unknown event plotting method: %s', evt.plotMethod);
                 end
                 
                 if(length(times) >= 2 && all(diff(times)>0))
@@ -719,16 +719,18 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                     vVects = [];
 
                 otherwise
-                    error('Unknown event plotting method: %s', EventPlottingMethodEnum.DoNotPlot.name);
+                    error('Unknown event plotting method: %s', event.plotMethod);
             end
 
-            [times,ia,~] = unique(times,'stable','rows');
-            rVects = rVects(ia,:);
-            vVects = vVects(ia,:);
+            if(not(isempty(times)))
+                [times,ia,~] = unique(times,'stable','rows');
+                rVects = rVects(ia,:);
+                vVects = vVects(ia,:);
 
-            [times,I] = sort(times);
-            rVects = rVects(I,:);
-            vVects = vVects(I,:);
+                [times,I] = sort(times);
+                rVects = rVects(I,:);
+                vVects = vVects(I,:);
+            end
         end
     end
 end

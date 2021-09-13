@@ -14,7 +14,6 @@ classdef LaunchVehicleViewProfileSensorData < matlab.mixin.SetGet
         %Sensor State Data
         timesArr cell
         sensorStateArr cell
-        eventsArr(1,:) LaunchVehicleEvent = LaunchVehicleEvent.empty(1,0);
         
         %display objects
         sensorMeshPlot(1,:) matlab.graphics.primitive.Patch = matlab.graphics.primitive.Patch.empty(1,0);
@@ -69,6 +68,7 @@ classdef LaunchVehicleViewProfileSensorData < matlab.mixin.SetGet
                     else
                         obj.sensorMeshPlot(i).Vertices = V;
                         obj.sensorMeshPlot(i).Faces = F;
+                        obj.sensorMeshPlot(i).Visible = 'on';
                     end
                 end
                 
@@ -87,7 +87,6 @@ classdef LaunchVehicleViewProfileSensorData < matlab.mixin.SetGet
         function parseLvdStateData(obj, lvdStateLogEntries)
             obj.timesArr = {};
             obj.sensorStateArr = {};
-            obj.eventsArr = LaunchVehicleEvent.empty(1,0);
             
             events = unique([lvdStateLogEntries.event],'stable');
             for(i=1:numel(events))
@@ -95,14 +94,32 @@ classdef LaunchVehicleViewProfileSensorData < matlab.mixin.SetGet
                 eventLogEntries = lvdStateLogEntries([lvdStateLogEntries.event] == event);
                 
                 times = [eventLogEntries.time];
+                
                 sensorState = AbstractSensorState.empty(1,0);
                 for(j=1:length(eventLogEntries))
                     sensorState(j) = eventLogEntries(j).getSensorStateForSensor(obj.sensor);
                 end
                 
-                obj.timesArr{i} = times;
-                obj.sensorStateArr{i} = sensorState;
-                obj.eventsArr(i) = event;
+                switch(event.plotMethod)
+                    case EventPlottingMethodEnum.PlotContinuous
+                        %nothing
+                        
+                    case EventPlottingMethodEnum.SkipFirstState
+                        times = times(2:end);
+                        sensorState = sensorState(2:end);
+                        
+                    case EventPlottingMethodEnum.DoNotPlot
+                        times = [];
+                        sensorState = [];
+                        
+                    otherwise
+                        error('Unknown event plotting method: %s', event.plotMethod);
+                end
+                
+                if(length(times) >= 2 && length(unique(times)) > 1)
+                    obj.timesArr{end+1} = times;
+                    obj.sensorStateArr{end+1} = sensorState;
+                end
             end
         end
         
@@ -113,21 +130,20 @@ classdef LaunchVehicleViewProfileSensorData < matlab.mixin.SetGet
                 times = obj.timesArr{i};
                 sensorStatesForTimes = obj.sensorStateArr{i};
                 
-                if(numel(times) == 1 && time == times(1))
-                    sensorStates(end+1) = sensorStatesForTimes(1); %#ok<AGROW>
-                    
-                elseif(time >= min(times) && time <= max(times))
-                    [times,I] = sort(times);
-                    sensorStatesForTimes = sensorStatesForTimes(I);
-                    
-                    bool = time == times;
-                    if(any(bool))
-                        ind = find(bool, 1, 'last');
-                    else
-                        ind = find(time >= times, 1, 'last');
+                if(length(unique(times)) > 1)
+                    if(time >= min(times) && time <= max(times))
+                        [times,I] = sort(times);
+                        sensorStatesForTimes = sensorStatesForTimes(I);
+
+                        bool = time == times;
+                        if(any(bool))
+                            ind = find(bool, 1, 'last');
+                        else
+                            ind = find(time >= times, 1, 'last');
+                        end
+
+                        sensorStates(end+1) = sensorStatesForTimes(ind); %#ok<AGROW>
                     end
-                    
-                    sensorStates(end+1) = sensorStatesForTimes(ind); %#ok<AGROW>
                 end
             end
         end
