@@ -12,7 +12,7 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
         boreDir = getSensorBoresightDirection(obj, sensorState, scElem, dcm, inFrame)
         
         sensorDcm = getSensorDcmToInertial(obj, scElem, dcm, inFrame)
-               
+        
         origin = getOriginInFrame(obj, time, scElem, inFrame)
         
         tf = isVehDependent(obj, sensorState)
@@ -65,7 +65,7 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
                 
                 [p2,r2,theta] = AbstractSensor.getTangentCirclePointAndRadius(rVectSensorOrigin, rVectBody, bRadius);
                 
-                if(body2BoreAngle - theta < obj.angle && norm(sc2BodyVect) < sensorRange)
+                if(body2BoreAngle - theta < obj.angle && norm(sc2BodyVect) <= sensorRange && norm(sc2BodyVect) > bRadius)
                     S = [rVectBody(:)', bRadius];
                     [sV, ~] = sphereMesh(S, 'nTheta', 16, 'nPhi', 16);
                     
@@ -89,6 +89,8 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
                     V = [cV; sV];
                     F = convhull([cV; sV]);
                     
+%                     [V, F] = meshVertexClustering(V,F, 1);
+                    
                     if(not(isempty(FTotal)))
                         [VTotal,FTotal] = concatenateMeshes(VTotal,FTotal, V,F);
                     else
@@ -97,6 +99,8 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
                     end
                 end
             end
+            
+            [VTotal, FTotal] = meshVertexClustering(VTotal, FTotal, 0.1);
         end
         
         function [V,F, Vobs,Fobs] = getObscuredSensorMesh(obj, sensorState, scElem, dcm, bodyInfos, inFrame)
@@ -109,36 +113,42 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
                 inFrame(1,1) AbstractReferenceFrame
             end
             
-            [Vobs,Fobs] = obj.getObscuringMesh(sensorState, scElem, dcm, bodyInfos, inFrame);
-            [Vsens,Fsens] = obj.getSensorMesh(sensorState, scElem, dcm, inFrame);
-
-            rVectSensorOrigin = obj.getOriginInFrame(scElem.time, scElem, inFrame);
-            
-            [V3,F3] = AbstractSensor.mesh_boolean_fallback(Vsens,Fsens,Vobs,Fobs,'minus');
-            
-            %             SENS.VL = Vsens;
-            %             SENS.FL = Fsens;
-            %             OBS.VL = Vobs;
-            %             OBS.FL = Fobs;
-            %             out = SGbool5('-',SENS,OBS);
-            %             V3 = out.VL;
-            %             F3 = out.FL;
-            
-            MESHES = splitMesh(V3, F3);
-            
-            if(length(MESHES) > 1)
-                for(i=1:length(MESHES))
-                    centroid = mean(MESHES(i).vertices,1);
-                    dist(i) = norm(centroid - rVectSensorOrigin); %#ok<AGROW>
+            activeTf = sensorState.getSensorActiveState();
+            if(activeTf)
+                [Vobs,Fobs] = obj.getObscuringMesh(sensorState, scElem, dcm, bodyInfos, inFrame);
+                [Vsens,Fsens] = obj.getSensorMesh(sensorState, scElem, dcm, inFrame);
+                
+                rVectSensorOrigin = obj.getOriginInFrame(scElem.time, scElem, inFrame);
+                
+                [V3,F3] = AbstractSensor.mesh_boolean_fallback(Vsens,Fsens,Vobs,Fobs,'minus');
+                
+%                 SENS.VL = Vsens;
+%                 SENS.FL = Fsens;
+%                 OBS.VL = Vobs;
+%                 OBS.FL = Fobs;
+%                 out = SGbool5('-',SENS,OBS);
+%                 V3 = out.VL;
+%                 F3 = out.FL;
+                
+                MESHES = splitMesh(V3, F3);
+                
+                if(length(MESHES) > 1)
+                    for(i=1:length(MESHES))
+                        centroid = mean(MESHES(i).vertices,1);
+                        dist(i) = norm(centroid - rVectSensorOrigin); %#ok<AGROW>
+                    end
+                    
+                    [~,meshInd] = min(dist);
+                    coneMesh = MESHES(meshInd);
+                else
+                    coneMesh = MESHES;
                 end
                 
-                [~,meshInd] = min(dist);
-                coneMesh = MESHES(meshInd);
+                [V,F] = meshVertexClustering(coneMesh,0.1); %needed for helping to determine if point is in mesh
             else
-                coneMesh = MESHES;
+                V = [];
+                F = [];
             end
-
-            [V,F] = meshVertexClustering(coneMesh,0.1); %needed for helping to determine if point is in mesh
         end
         
         function [results, V, F] = evaluateSensorTargets(obj, sensorState, targets, scElem, dcm, bodyInfos, inFrame)
@@ -239,11 +249,15 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
         end
         
         function [W,H] = mesh_boolean_fallback(V,F,U,G,operation)
-            try
-                [W,H] = mesh_boolean(V,F, U,G, operation);
-            catch %if the mex file doesn't work
+%             try
+%                 [W,H] = mesh_boolean(V,F, U,G, operation);
+%             catch  %if the mex file doesn't work
+%                 [W,H] = mesh_boolean_winding_number(V,F, U,G, operation);
+%             end
+            
+%             if(isempty(W) && isempty(H))
                 [W,H] = mesh_boolean_winding_number(V,F, U,G, operation);
-            end
+%             end
         end
         
         function [p2,r2,theta] = getTangentCirclePointAndRadius(offPoint, sphereCenter, r)

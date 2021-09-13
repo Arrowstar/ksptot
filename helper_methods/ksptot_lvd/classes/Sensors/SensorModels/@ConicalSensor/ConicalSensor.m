@@ -58,22 +58,55 @@ classdef ConicalSensor < AbstractSensor
                 time = scElem.time;
                 sensorRange = sensorState.getSensorMaxRange();
                 sensorAngle = sensorState.getSensorAngle();
+                
+                theta = linspace(pi/2, pi/2 + sensorAngle, 10);
+                xPts = sensorRange*cos(theta);
+                yPts = sensorRange*sin(theta);
+                
+                xPts = [0, 0, xPts];
+                yPts = [0, sensorRange/2, yPts];
+                
+                v = normVector([xPts(end); yPts(end)]);
+                xPts = [xPts 0.5*v(1)*sensorRange];
+                yPts = [yPts 0.5*v(2)*sensorRange];
+                
+                xPts = [xPts, 0];
+                yPts = [yPts, 0];
+                
+                PV = [xPts(:), yPts(:)];
 
+                [X,Y,Z] = revolutionSurface(PV, 15, [0,0, 0, 1]);
+                fvc = surf2patch(X,Y,Z);
+                fvc.faces = triangulateFaces(fvc.faces);
+                
                 rVectSensorOrigin = obj.getOriginInFrame(time, scElem, inFrame);
                 boreDir = obj.getSensorBoresightDirection(sensorState, time, scElem, dcm, inFrame); 
-
-                S = [0,0,0, sensorRange];
-                sphere = sphereMesh(S, 'nTheta', ceil(5*2*pi/sensorAngle), 'nPhi', 16);
-                sPtsRaw = unique(sphere.vertices,'rows');
-                sPtsAngs = dang(repmat([0;0;1],1,size(sPtsRaw,1)), sPtsRaw');
-                sPts = sPtsRaw(sPtsAngs <= obj.angle+1E-10, :);
-
+                
                 r = vrrotvec([0;0;1],boreDir);            
                 M = makehgtform('translate',rVectSensorOrigin(:)', 'axisrotate',r(1:3),r(4));
-                sPts = transformPoint3d(sPts(:,1), sPts(:,2), sPts(:,3), M);
-
-                V = vertcat(rVectSensorOrigin(:)', sPts);
-                F = convhull(V);
+                fvc = transformPoint3d(fvc, M);
+                    
+                [V, F] = meshVertexClustering(fvc, 1);
+                
+%                 [V, F] = ensureManifoldMesh(fvc);
+%                 [V, F] = removeInvalidBorderFaces(V, F);
+%                 
+%                 faceRowToRemove = NaN(height(F),1);
+%                 for(i=1:height(F))
+%                     if(numel(unique(F(i,:))) < 3)
+%                         faceRowToRemove(i) = i;
+%                     end
+%                 end
+%                 faceRowToRemove(isnan(faceRowToRemove)) = [];
+%                 [V,F] = removeMeshFaces(V, F, faceRowToRemove);
+%                 
+%                 V(abs(V)<1E-10) = 0;
+                
+%                 [~,~,IC] = uniquetol(V, 1E-10, 'ByRows',true);
+%                 vertsToRemove = setdiff([1:height(V)], unique(IC));
+%                 [V,F] = removeMeshVertices(V, F, vertsToRemove);
+                
+                a=1;
             else
                 V = [];
                 F = [];

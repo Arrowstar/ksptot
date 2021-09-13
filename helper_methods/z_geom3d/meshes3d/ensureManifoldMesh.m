@@ -32,9 +32,6 @@ verbose = true;
 %% Pre-processing
 
 % remove duplicate faces if any
-if verbose
-    disp('remove duplicate faces');
-end
 faces = removeDuplicateFaces(faces);
 
 
@@ -44,17 +41,12 @@ faces = removeDuplicateFaces(faces);
 
 % iter = 0;
 % while ~isManifoldMesh(vertices, faces) && iter < 10
-%     iter = iter + 1;
-    if verbose
-        disp('collapse edges with many faces');
-    end
-    
+%     iter = iter + 1;   
     [vertices, faces] = collapseEdgesWithManyFaces(vertices, faces);
 % end
 
 
 
 %% Format output
-
 varargout = formatMeshOutput(nargout, vertices, faces);
 
