@@ -218,43 +218,6 @@ classdef LvdData < matlab.mixin.SetGet
             elemSet = GeographicElementSet(grndObj.initialTime + durToNextWayPt, deg2rad(-0.1025), deg2rad(285.42472), 0.06841, 0, 0, 0, bfFrame);
             wayPt = LaunchVehicleGroundObjectWayPt(elemSet, durToNextWayPt);
             grndObj.wayPts = wayPt;
-            
-            %%%add temp sensors
-            vehiclePt = VehiclePoint('Vehicle');
-            lvdData.geometry.points.addPoint(vehiclePt);
-            
-            %sensor 1
-%             frame = initBody.getBodyCenteredInertialFrame();
-%             steeringCoordSys = ParallelToFrameCoordSystem(frame, 'Kerbin Inertial', lvdData);
-%             steeringModel = FixedInCoordSysSensorSteeringModel(deg2rad(0), deg2rad(0), 0, steeringCoordSys);
-            steeringModel = FixedInVehicleFrameSensorSteeringModel(deg2rad(0), deg2rad(0), 0, lvdData);
-
-            sensorRange = 3000;
-            sensAng = deg2rad(5);
-            sensor = ConicalSensor('Demo Conical Sensor 1', sensAng, sensorRange, vehiclePt, steeringModel, lvdData);
-            lvdData.sensors.addSensor(sensor);
-            lvdData.viewSettings.selViewProfile.sensorsToPlot = sensor;
-            
-            %sensor 2
-            frame = initBody.getBodyCenteredInertialFrame();
-            ke = KeplerianElementSet(0, 2000, 0, deg2rad(0), 0, 0, 0, frame);
-            twoBodyPoint = TwoBodyPoint(ke, 'Two Body Point', lvdData);
-            lvdData.geometry.points.addPoint(twoBodyPoint);
-            
-            sensorRange = 3000;
-            sensAng = deg2rad(30);
-            steeringCoordSys = ParallelToFrameCoordSystem(frame, 'Kerbin Inertial', lvdData);
-            steeringModel = FixedInCoordSysSensorSteeringModel(deg2rad(0), deg2rad(0), 0, steeringCoordSys, lvdData);
-            lvdData.geometry.coordSyses.addCoordSys(steeringCoordSys);
-            
-            sensor = ConicalSensor('Demo Conical Sensor 2', sensAng, sensorRange, twoBodyPoint, steeringModel, lvdData);
-            lvdData.sensors.addSensor(sensor);
-            lvdData.viewSettings.selViewProfile.sensorsToPlot(end+1) = sensor;
-            
-            %add temp sensor target
-            target1 = BodyFixedLatLongGridTargetModel('Demo Target 1', initBody, deg2rad(0), deg2rad(30), deg2rad(360), deg2rad(-30), 15, 15, 1, lvdData);
-            lvdData.sensorTgts.addTarget(target1);
-            lvdData.viewSettings.selViewProfile.sensorTgtsToPlot = target1;
         end
         
         function initBody = getDefaultInitialBodyInfo(celBodyData)           

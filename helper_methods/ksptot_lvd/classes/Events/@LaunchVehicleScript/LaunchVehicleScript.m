@@ -2,6 +2,13 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
     %LaunchVehicleScript Summary of this class goes here
     %   Detailed explanation goes here
     
+    events
+        ScriptPropagationStarted
+        ScriptPropagationFinished
+        EventPropagationStarted
+        EventPropagationEnded
+    end
+    
     properties
         evts LaunchVehicleEvent
         simDriver LaunchVehicleSimulationDriver
@@ -11,7 +18,7 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
         
         nonSeqEvts LaunchVehicleNonSeqEvents 
     end
-    
+        
     properties(Constant)
         emptyEvtArr = LaunchVehicleEvent.empty(1,0);
     end
@@ -248,7 +255,17 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
             tf = tf || obj.nonSeqEvts.usesPwrStorage(powerStorage);
         end
         
-        function stateLog = executeScript(obj, isSparseOutput, evtToStartScriptExecAt, evalConstraints, allowInterrupt, dispEvtPropTimes)
+        function stateLog = executeScript(obj, isSparseOutput, evtToStartScriptExecAt, evalConstraints, allowInterrupt, dispEvtPropTimes, notifyScriptEvents)
+            arguments
+                obj(1,1) LaunchVehicleScript
+                isSparseOutput(1,1) logical
+                evtToStartScriptExecAt(1,:) LaunchVehicleEvent
+                evalConstraints(1,1) logical
+                allowInterrupt(1,1) logical
+                dispEvtPropTimes(1,1) logical
+                notifyScriptEvents(1,1) logical = true;
+            end
+            
             stateLog = obj.lvdData.stateLog;
             
             if(not(isempty(evtToStartScriptExecAt)))
@@ -268,6 +285,11 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
                 obj.nonSeqEvts = stateLog.getFinalNonSeqEvtsState().nonSeqEvts.copy();
             end
             
+            %notify that script propagation has started
+            if(notifyScriptEvents && isOnParallelWorker() == false)
+                notify(obj, 'ScriptPropagationStarted');
+            end
+            
             obj.lvdData.plugins.initializePlugins();
             
             tPropTime = 0;
@@ -280,6 +302,12 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
                 for(i=evtStartNum:length(obj.evts)) %#ok<*NO4LP>
                     ttt = tic;
                     evt = obj.evts(i);
+                    
+                    %notify that event propagation has started
+                    if(notifyScriptEvents && isOnParallelWorker() == false)
+                        notify(obj, 'EventPropagationStarted', ScriptEventPropagationData(evt));
+                    end
+                    
                     initStateLogEntry.event = obj.evts(i); %need to set the event on the initial state
                     
                     %allow interrupting script execution with figure
@@ -343,6 +371,11 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
                     %execute plugins that occur after event
                     obj.lvdData.plugins.executePluginsAfterEvent(stateLog, evt);
                     
+                    %notify that event propagation has ended
+                    if(notifyScriptEvents && isOnParallelWorker() == false)
+                        notify(obj, 'EventPropagationEnded', ScriptEventPropagationData(evt));
+                    end
+                    
                     evtTime = toc(ttt);
                     if(dispEvtPropTimes)
                         fprintf('(%s) Duration to execute Event %u: %0.3f s (Propagation: %0.3f s; Actions: %0.3f s) (Evt Dur: %0.3f s)\n', datestr(now,'hh:MM:ss'), i, evtTime, ttPropagate, ttActions, newStateLogEntries(end).time-newStateLogEntries(1).time);
@@ -368,6 +401,11 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
                 end
 
                 obj.lvdData.optimizer.constraints.lastRunValues.updateValues(c, ceq, values, lb, ub, type, eventNum, cEventInds, ceqEventInds, consts, cCInds, cCeqInds, valueStateComps);
+            end
+            
+            %notify that script propagation has ended
+            if(notifyScriptEvents && isOnParallelWorker() == false)
+                notify(obj, 'ScriptPropagationFinished');
             end
         end
     end

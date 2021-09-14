@@ -347,24 +347,25 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             vehAttData = LaunchVehicleViewProfile.createVehAttitudeData(lvdStateLogEntries, lvdData.script.evts, viewInFrame);
             
             hold(dAxes,'on');
-            viewProfile.createBodyMarkerData(dAxes, subStateLogs, viewInFrame, showSoI, viewProfile.meshEdgeAlpha, lvdData.script.evts);
+            viewProfile.createBodyMarkerData(dAxes, subStateLogs, viewInFrame, showSoI, viewProfile.meshEdgeAlpha, lvdData.script.evts);           
             viewProfile.createTrajectoryMarkerData(subStateLogs, lvdData.script.evts);
             viewProfile.createBodyAxesData(lvdStateLogEntries, lvdData.script.evts, viewInFrame);
             viewProfile.createSunLightSrc(dAxes, viewInFrame);
             viewProfile.createGroundObjMarkerData(dAxes, lvdStateLogEntries, lvdData.script.evts, viewInFrame, celBodyData);
             viewProfile.createCentralBodyData(viewCentralBody, hCBodySurfXForm, viewInFrame);
-            viewProfile.createPointData(viewInFrame, subStateLogs, lvdData.script.evts);
+            viewProfile.createPointData(viewInFrame, subStateLogs, lvdData.script.evts);           
             viewProfile.createVectorData(viewInFrame, subStateLogs, lvdData.script.evts);
             viewProfile.createRefFrameData(viewInFrame, subStateLogs, lvdData.script.evts);
             viewProfile.createAngleData(viewInFrame, subStateLogs, lvdData.script.evts);
-            viewProfile.createPlaneData(viewInFrame, subStateLogs, lvdData.script.evts);
+            viewProfile.createPlaneData(viewInFrame, subStateLogs, lvdData.script.evts);           
             viewProfile.createSensorData(lvdStateLogEntries, vehPosVelData, vehAttData, viewInFrame);
             viewProfile.createSensorTargetData(viewInFrame);
+            
             viewProfile.configureTimeSlider(minTime, maxTime, subStateLogs, handles, app);
             hold(dAxes,'off');
             
-            sliderCB = app.DispAxesTimeSlider.ValueChangingFcn;
-            sliderCB(app.DispAxesTimeSlider,[]);
+%             sliderCB = app.DispAxesTimeSlider.ValueChangingFcn;
+%             sliderCB(app.DispAxesTimeSlider,[]);
         end
     end
 end

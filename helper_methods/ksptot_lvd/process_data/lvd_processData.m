@@ -1,7 +1,8 @@
 function lvd_processData(handles, app)
     %lvd_processData Summary of this function goes here
     %   Detailed explanation goes here
-    set(handles.plotWorkingLbl,'Visible','on'); drawnow;
+    
+    
     lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
     celBodyData = lvdData.celBodyData;
     
@@ -11,7 +12,6 @@ function lvd_processData(handles, app)
     % Update script listbox
     %%%%%%%%%%    
     [evtListboxStr, events] = lvdData.script.getListboxStr();
-%     set(handles.scriptListbox,'String',evtListboxStr);
     app.scriptListbox.Items = evtListboxStr;
     app.scriptListbox.ItemsData = events;
     
@@ -21,12 +21,6 @@ function lvd_processData(handles, app)
     elseif(scriptListVal > length(get(handles.scriptListbox,'String')))
         set(handles.scriptListbox,'Value',length(get(handles.scriptListbox,'String')));
     end
-    drawnow;
-    
-    %%%%%%%%%%
-    % Redraw plots
-    %%%%%%%%%%
-    lvdData.viewSettings.plotTrajectoryWithActiveViewProfile(handles, app);
     drawnow;
     
     %%%%%%%%%%
@@ -50,13 +44,17 @@ function lvd_processData(handles, app)
     drawnow;
     
     %%%%%%%%%%
+    % Redraw plots
+    %%%%%%%%%%
+    lvdData.viewSettings.plotTrajectoryWithActiveViewProfile(handles, app);
+    drawnow;
+       
+    %%%%%%%%%%
     % Update State Readouts
     %%%%%%%%%%
     propNames = lvdData.launchVehicle.tankTypes.getFirstThreeTypesCellArr();
     ma_UpdateStateReadout(handles.initialStateReadoutLabel, 'initial', propNames, maStateLog, celBodyData);
     ma_UpdateStateReadout(handles.finalStateReadoutLabel, 'final', propNames, maStateLog, celBodyData);
 
-    set(handles.plotWorkingLbl,'Visible','off');
     drawnow;
 end
-
