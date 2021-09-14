@@ -4,6 +4,7 @@ classdef SensorEnum < matlab.mixin.SetGet
     
     enumeration
         ConicalSensor('Conical Sensor');
+        RectangularSensor('Rectangular Sensor');
     end
     
     properties

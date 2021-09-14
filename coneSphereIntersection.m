@@ -7,7 +7,7 @@ celBodyData = CelestialBodyData(celBodyData);
 
 lvdData = LvdData.getDefaultLvdData(celBodyData);
 
-profile off; profile on;
+% profile off; profile on;
 
 %planet sphere
 bodyInfo = celBodyData.kerbin;
@@ -20,18 +20,19 @@ z0 = state.rVect(3);
 r = bodyInfo.radius;
 
 %sensor cone
-sensorOriginRVect = [-2000;0;0];
+sensorOriginRVect = [-700;0;0];
 sensorOriginPt = FixedPointInFrame(sensorOriginRVect, frame, 'Sensor Origin', lvdData);
 lvdData.geometry.points.addPoint(sensorOriginPt);
 
 steeringCoordSys = ParallelToFrameCoordSystem(frame, 'Kerbin Inertial', lvdData);
 lvdData.geometry.coordSyses.addCoordSys(steeringCoordSys);
-steeringModel = FixedInCoordSysSensorSteeringModel(deg2rad(10), deg2rad(10), 0, steeringCoordSys, lvdData);
+steeringModel = FixedInCoordSysSensorSteeringModel(deg2rad(0), deg2rad(0), deg2rad(10), steeringCoordSys, lvdData);
 
 sensorRange = 3000;
-sensAng = deg2rad(55);
+sensAzAng = deg2rad(10);
+sensElAng = deg2rad(45);
 
-sensor = ConicalSensor('Demo Conical Sensor', sensAng, sensorRange, sensorOriginPt, steeringModel, lvdData);
+sensor = RectangularSensor('Demo Conical Sensor', sensAzAng, sensElAng, sensorRange, sensorOriginPt, steeringModel, lvdData);
 sensorState = sensor.getInitialState();
 
 %Compute Occluding Mesh
@@ -47,7 +48,7 @@ target2 = PointSensorTargetModel('Test 2', point, lvdData);
 point = FixedPointInFrame([1000;0;0], frame, 'Point 2', lvdData);
 target3 = PointSensorTargetModel('Test 3', point, lvdData);
 
-target4 = BodyFixedCircleGridTargetModel('Test 4', celBodyData.kerbin, deg2rad(270), deg2rad(0), deg2rad(30), deg2rad(0), deg2rad(30), 10, 10, 1, lvdData);
+target4 = BodyFixedCircleGridTargetModel('Test 4', celBodyData.kerbin, deg2rad(90), deg2rad(-10), deg2rad(30), deg2rad(270), deg2rad(30), 10, 10, 1, lvdData);
 
 targets = [target1, target2, target3, target4];
 
@@ -69,9 +70,10 @@ plot3(hAx, sVPts(bool,1), sVPts(bool,2), sVPts(bool,3), 'o', 'MarkerFaceColor','
 plot3(hAx, sVPts(~bool,1), sVPts(~bool,2), sVPts(~bool,3), 'o', 'MarkerFaceColor','k', 'MarkerEdgeColor','k', 'MarkerSize',3);
 grid(hAx, 'minor');
 axis(hAx, 'equal');
+axis(hAx, 'tight');
 % camproj(hAx, 'perspective')
 % campos(hAx,sensorOriginRVect)
 hold off;
 
-profile viewer; 
+% profile viewer; 
 % disp(getCoverageFraction(results));

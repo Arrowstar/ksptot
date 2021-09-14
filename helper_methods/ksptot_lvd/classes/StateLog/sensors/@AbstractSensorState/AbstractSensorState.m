@@ -20,6 +20,8 @@ classdef(Abstract) AbstractSensorState < matlab.mixin.SetGet & matlab.mixin.Hete
         range = getSensorMaxRange(obj);
                
         setSensorMaxRange(obj, range);
+        
+        angle = getMaxAngle(obj);
     end
 end
 

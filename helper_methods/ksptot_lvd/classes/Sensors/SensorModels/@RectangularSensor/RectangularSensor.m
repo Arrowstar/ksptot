@@ -1,12 +1,13 @@
-classdef ConicalSensor < AbstractSensor
-    %ConicalSensor Summary of this class goes here
+classdef RectangularSensor < AbstractSensor
+    %RectangularSensor Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
         name(1,:) char = 'Untitled Sensor';
         
         %Initial sensor properties (can be changed in sensor state later)
-        angle(1,1) double = deg2rad(10) %rad
+        azAngle(1,1) double = deg2rad(10) %rad
+        decAngle(1,1) double = deg2rad(10) %rad
         range(1,1) double = 1000;       %km
         origin AbstractGeometricPoint
         steeringModel AbstractSensorSteeringModel
@@ -22,26 +23,34 @@ classdef ConicalSensor < AbstractSensor
     end
     
     properties(Constant)
-        typeEnum = SensorEnum.ConicalSensor;
+        typeEnum = SensorEnum.RectangularSensor;
     end
     
     methods
-        function obj = ConicalSensor(name, angle, range, origin, steeringModel, lvdData)
+        function obj = RectangularSensor(name, azAngle, decAngle, range, origin, steeringModel, lvdData)
             arguments
                 name(1,:) char
-                angle(1,1) double {mustBeGreaterThanOrEqual(angle,0), mustBeLessThanOrEqual(angle,3.141592654)}
+                azAngle(1,1) double {mustBeGreaterThanOrEqual(azAngle,0), mustBeLessThanOrEqual(azAngle,1.5708)}
+                decAngle(1,1) double {mustBeGreaterThanOrEqual(decAngle,0), mustBeLessThanOrEqual(decAngle,1.5708)}
                 range(1,1) double {mustBeGreaterThan(range, 0)}
                 origin(1,1) AbstractGeometricPoint
                 steeringModel(1,1) AbstractSensorSteeringModel
                 lvdData(1,1) LvdData
             end
             
-            if(angle > pi)
-                angle = pi;
+            if(azAngle > pi/2)
+                azAngle = pi/2;
+            end
+            
+            if(decAngle < -pi/2)
+                decAngle = -pi/2;
+            elseif(decAngle > pi/2)
+                decAngle = pi/2;
             end
             
             obj.name = name;
-            obj.angle = angle;
+            obj.azAngle = azAngle;
+            obj.decAngle = decAngle;
             obj.range = range;
             obj.origin = origin;
             obj.steeringModel = steeringModel;
@@ -50,8 +59,8 @@ classdef ConicalSensor < AbstractSensor
                
         function [V,F] = getSensorMesh(obj, sensorState, scElem, dcm, inFrame)
             arguments
-                obj(1,1) ConicalSensor
-                sensorState(1,1) ConicalSensorState
+                obj(1,1) RectangularSensor
+                sensorState(1,1) RectangularSensorState
                 scElem(1,1) CartesianElementSet
                 dcm(3,3) double
                 inFrame(1,1) AbstractReferenceFrame
@@ -60,33 +69,29 @@ classdef ConicalSensor < AbstractSensor
             active = sensorState.getSensorActiveState();
             if(active)
                 time = scElem.time;
+                sensorSteering = sensorState.getSensorSteeringMode();
                 sensorRange = sensorState.getSensorMaxRange();
-                sensorAngle = sensorState.getSensorAngle();
+                azimuthAngle = sensorState.getSensorAzAngle();
+                declinationAngle = sensorState.getSensorDecAngle();
                 
-                theta = linspace(pi/2, pi/2 + sensorAngle, 10);
-                xPts = sensorRange*cos(theta);
-                yPts = sensorRange*sin(theta);
+                azAngles = linspace(-azimuthAngle, azimuthAngle, 10);
+                decAngles = linspace(-declinationAngle, declinationAngle,10);
                 
-                xPts = [0, 0, xPts];
-                yPts = [0, sensorRange/2, yPts];
+                angles = combvec(azAngles, decAngles);
+                sphCoords = vertcat(angles, sensorRange*ones(1, width(angles)));
                 
-                v = normVector([xPts(end); yPts(end)]);
-                xPts = [xPts 0.5*v(1)*sensorRange];
-                yPts = [yPts 0.5*v(2)*sensorRange];
+                [x,y,z] = sph2cart(sphCoords(1,:), sphCoords(2,:), sphCoords(3,:));
+                r = [x', y', z'];
                 
-                xPts = [xPts, 0];
-                yPts = [yPts, 0];
-                
-                PV = [xPts(:), yPts(:)];
-
-                [X,Y,Z] = revolutionSurface(PV, 15, [0,0, 0, 1]);
-                fvc = surf2patch(X,Y,Z);
-                fvc.faces = triangulateFaces(fvc.faces);
+                sPts = vertcat([0,0,0], r);
+                F = convhull(sPts);
+                fvc.vertices = sPts;
+                fvc.faces = F;
                 
                 rVectSensorOrigin = obj.getOriginInFrame(time, scElem, inFrame);
-                
+
                 MM = sensorSteering.getSensorDcmToInertial(time, scElem, dcm, inFrame);
-                r = rotm2axangARH(MM);            
+                r = rotm2axangARH(MM);
                 M = makehgtform('translate',rVectSensorOrigin(:)', 'axisrotate',r(1:3),r(4));
                 fvc = transformPoint3d(fvc, M);
                     
@@ -141,12 +146,12 @@ classdef ConicalSensor < AbstractSensor
         
         function useTf = openEditDialog(obj)
             output = AppDesignerGUIOutput({false});
-            lvd_EditConicalSensorGUI_App(obj, obj.lvdData, output);
+%             lvd_EditConicalSensorGUI_App(obj, obj.lvdData, output);
             useTf = output.output{1};
         end
         
         function state = getInitialState(obj)
-            state = ConicalSensorState(obj, obj.initActiveTf, obj.steeringModel, obj.angle, obj.range);
+            state = RectangularSensorState(obj, obj.initActiveTf, obj.steeringModel, obj.azAngle, obj.decAngle, obj.range);
         end
         
         function tf = usesGeometricPoint(obj, point)

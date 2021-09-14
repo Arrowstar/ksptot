@@ -1,22 +1,24 @@
-classdef ConicalSensorState < AbstractSensorState
-    %ConicalSensorState Summary of this class goes here
+classdef RectangularSensorState < AbstractSensorState
+    %RectangularSensorState Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
-        sensor ConicalSensor
+        sensor RectangularSensor
         
         activeTf(1,1) logical = true;
         steeringModel(1,1) AbstractSensorSteeringModel
-        angle(1,1) double {mustBeGreaterThan(angle,0)} = deg2rad(10);
+        azAngle(1,1) double {mustBeGreaterThan(azAngle,0)} = deg2rad(10);
+        decAngle(1,1) double {mustBeGreaterThan(decAngle,0)} = deg2rad(10);
         range(1,1) double {mustBeGreaterThan(range,0)} = 1;
     end
     
     methods
-        function obj = ConicalSensorState(sensor, activeTf, steeringModel, angle, range)
+        function obj = RectangularSensorState(sensor, activeTf, steeringModel, azAngle, decAngle, range)
             obj.sensor = sensor;
             obj.activeTf = activeTf;
             obj.steeringModel = steeringModel;
-            obj.angle = angle;
+            obj.azAngle = azAngle;
+            obj.decAngle = decAngle;
             obj.range = range; 
         end
         
@@ -40,14 +42,6 @@ classdef ConicalSensorState < AbstractSensorState
             obj.steeringModel = steeringModel;
         end
         
-        function angle = getSensorAngle(obj)
-            angle = obj.angle;
-        end
-        
-        function setSensorAngle(obj, angle)
-            obj.angle = angle;
-        end
-        
         function range = getSensorMaxRange(obj)
             range = obj.range;
         end
@@ -56,8 +50,24 @@ classdef ConicalSensorState < AbstractSensorState
             obj.range = range;
         end
         
+        function azAngle = getSensorAzAngle(obj)
+            azAngle = obj.azAngle;
+        end
+        
+        function setSensorAzAngle(obj, azAngle)
+            obj.azAngle = azAngle;
+        end
+        
+        function decAngle = getSensorDecAngle(obj)
+            decAngle = obj.decAngle;
+        end
+        
+        function setSensorDecAngle(obj, decAngle)
+            obj.decAngle = decAngle;
+        end
+        
         function angle = getMaxAngle(obj)
-            angle = obj.getSensorAngle();
+            angle = max([obj.getSensorAzAngle, obj.getSensorDecAngle()]);
         end
     end
 end

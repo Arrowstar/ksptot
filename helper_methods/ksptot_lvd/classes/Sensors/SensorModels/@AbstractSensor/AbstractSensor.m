@@ -47,6 +47,7 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
             sensorRange = sensorState.getSensorMaxRange();
             rVectSensorOrigin = obj.getOriginInFrame(time, scElem, inFrame);
             boreDir = obj.getSensorBoresightDirection(sensorState, time, scElem, dcm, inFrame);
+            maxAngle = sensorState.getMaxAngle();
             
             FTotal = [];
             VTotal = [];
@@ -65,7 +66,7 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
                 
                 [p2,r2,theta] = AbstractSensor.getTangentCirclePointAndRadius(rVectSensorOrigin, rVectBody, bRadius);
                 
-                if(body2BoreAngle - theta < obj.angle && norm(sc2BodyVect) <= sensorRange && norm(sc2BodyVect) > bRadius)
+                if(body2BoreAngle - theta < maxAngle && norm(sc2BodyVect) <= sensorRange && norm(sc2BodyVect) > bRadius)
                     S = [rVectBody(:)', bRadius];
                     [sV, ~] = sphereMesh(S, 'nTheta', 16, 'nPhi', 16);
                     

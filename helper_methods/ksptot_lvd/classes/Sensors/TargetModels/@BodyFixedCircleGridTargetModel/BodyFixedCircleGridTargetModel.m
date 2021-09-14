@@ -20,7 +20,7 @@ classdef BodyFixedCircleGridTargetModel < AbstractBodyFixedSensorTarget
         %display
         markerShape(1,1) MarkerStyleEnum = MarkerStyleEnum.Circle;
         markerFoundFaceColor(1,1) ColorSpecEnum = ColorSpecEnum.Green;
-        markerFoundEdgeColor(1,1) ColorSpecEnum = ColorSpecEnum.Black;
+        markerFoundEdgeColor(1,1) ColorSpecEnum = ColorSpecEnum.Green;
         markerNotFoundFaceColor(1,1) ColorSpecEnum = ColorSpecEnum.Black;
         markerNotFoundEdgeColor(1,1) ColorSpecEnum = ColorSpecEnum.Black;
         markerSize(1,1) double = 3;
