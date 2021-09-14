@@ -146,7 +146,7 @@ classdef RectangularSensor < AbstractSensor
         
         function useTf = openEditDialog(obj)
             output = AppDesignerGUIOutput({false});
-%             lvd_EditConicalSensorGUI_App(obj, obj.lvdData, output);
+            lvd_EditRectangularSensorGUI_App(obj, obj.lvdData, output);
             useTf = output.output{1};
         end
         
