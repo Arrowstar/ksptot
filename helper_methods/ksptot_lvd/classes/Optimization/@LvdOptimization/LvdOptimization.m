@@ -33,7 +33,7 @@ classdef LvdOptimization < matlab.mixin.SetGet
             obj.lvdData = lvdData;
             
             obj.vars = OptimizationVariableSet(obj.lvdData);
-            obj.objFcn = NoOptimizationObjectiveFcn();
+            obj.objFcn = CompositeObjectiveFcn(GenericObjectiveFcn.empty(1,0), ObjFcnDirectionTypeEnum.Minimize, ObjFcnCompositeMethodEnum.Sum, lvdData.optimizer, lvdData);
             obj.constraints = ConstraintSet(obj, lvdData);
             
             obj.optAlgo = LvdOptimizerAlgoEnum.Fmincon;

@@ -21,6 +21,8 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
         
         steeringModel AbstractSteeringModel = RollPitchYawPolySteeringModel.getDefaultSteeringModel();
         throttleModel AbstractThrottleModel = ThrottlePolyModel.getDefaultThrottleModel();
+        
+        sensorStates AbstractSensorState = AbstractSensorState.empty(1,0);
     end
     
     properties(Dependent)
@@ -261,6 +263,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             newStateLogEntry.event = obj.event;
             newStateLogEntry.steeringModel = obj.steeringModel;
             newStateLogEntry.throttleModel = obj.throttleModel;
+            newStateLogEntry.sensorStates = obj.sensorStates;
             
             %stuff that requires it's own copy
             newStateLogEntry.lvState = obj.lvState.deepCopy();
@@ -300,6 +303,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             if(deepCopyState)
                 obj.aero = obj.aero.copy();
                 obj.thirdBodyGravity = obj.thirdBodyGravity.copy();
+                obj.sensorStates = obj.sensorStates.copy();
             end
         end
         
@@ -407,6 +411,16 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             
             for(i=1:length(pwrStorageStates))
                 pwrStorageStates(i).setStateOfCharge(newStorageSoCs(i));
+            end
+        end
+        
+        function sensorState = getSensorStateForSensor(obj, sensor)
+            sensorState = AbstractSensorState.empty(1,0);
+            for(i=1:length(obj.sensorStates))
+                if(sensor == obj.sensorStates(i).getSensor())
+                    sensorState = obj.sensorStates(i);
+                    break;
+                end
             end
         end
     end

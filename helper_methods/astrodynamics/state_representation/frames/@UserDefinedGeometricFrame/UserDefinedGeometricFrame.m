@@ -20,7 +20,7 @@ classdef UserDefinedGeometricFrame < AbstractReferenceFrame
         function [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = getOffsetsWrtInertialOrigin(obj, time, vehElemSet)
             baseFrame = obj.lvdData.getBaseFrame();
             
-            [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = obj.geometricFrame.getRefFrameAtTime(time, vehElemSet, baseFrame);
+            [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = obj.geometricFrame.getRefFrameAtTime(time, vehElemSet,  baseFrame);
         end
         
         function bodyInfo = getOriginBody(obj)

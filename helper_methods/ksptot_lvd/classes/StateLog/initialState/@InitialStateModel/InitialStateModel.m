@@ -127,6 +127,11 @@ classdef InitialStateModel < matlab.mixin.SetGet
             
             stateLogEntry.steeringModel = obj.steeringModel;
             stateLogEntry.throttleModel = obj.throttleModel;
+            
+            [~,sensors] = stateLogEntry.launchVehicle.lvdData.sensors.getListboxStr();
+            for(i=1:length(sensors))
+                stateLogEntry.sensorStates(end+1) = sensors(i).getInitialState();
+            end
         end
         
         function optVar = getNewOptVar(obj)

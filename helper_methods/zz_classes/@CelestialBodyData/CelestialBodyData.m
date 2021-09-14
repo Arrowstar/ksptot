@@ -116,6 +116,16 @@ classdef CelestialBodyData < matlab.mixin.SetGet & dynamicprops
             allBodyInfo = obj.bodies;
         end
         
+        function [listBoxStr, bodyInfos] = getListboxStr(obj)
+            listBoxStr = {};
+            
+            for(i=1:length(obj.bodies))
+                listBoxStr{end+1} = obj.bodies(i).name; %#ok<AGROW>
+            end
+            
+            bodyInfos = obj.bodies;
+        end
+        
         function topLvlBody = getTopLevelBody(obj)
             if(isempty(obj.topLvlBodyCache))
                 obj.topLvlBodyCache = getTopLevelCentralBody(obj);

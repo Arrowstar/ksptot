@@ -33,7 +33,7 @@ classdef ColorSpecEnum < matlab.mixin.SetGet
     end
     
     methods(Static)
-        function listBoxStr = getListboxStr()
+        function [listBoxStr, m] = getListboxStr()
             m = enumeration('ColorSpecEnum');
             listBoxStr = {m.name};
         end

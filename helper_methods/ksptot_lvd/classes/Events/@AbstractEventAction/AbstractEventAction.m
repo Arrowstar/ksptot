@@ -48,6 +48,10 @@ classdef(Abstract) AbstractEventAction < matlab.mixin.SetGet & matlab.mixin.Hete
             tf = false;
         end
         
+        function tf = usesSensor(obj, sensor)
+            tf = false;
+        end
+        
         [tf,vars] = hasActiveOptimVar(obj)
     end
     

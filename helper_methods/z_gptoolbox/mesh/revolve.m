@@ -28,7 +28,10 @@ function [V,F] = revolve(PV,PE,n)
   % winding number Boolean
   PE2 = [PE;size(PV,1)+fliplr(PE)];
   PV2 = [PV;PV.*[-1 1]];
-  [PV,PF] = cdt([PV2;0 max(PV(:,2));0 min(PV(:,2))],[PE2;size(PV,1)*2+[1 2]],'UseBoundingBox',1);
+%   [PV,PF] = cdt([PV2;0 max(PV(:,2));0 min(PV(:,2))],[PE2;size(PV,1)*2+[1 2]],'UseBoundingBox',1);
+  DT = delaunayTriangulation([PV2;0 max(PV(:,2));0 min(PV(:,2))],[PE2;size(PV,1)*2+[1 2]]);
+  PV = DT.Points;
+  PF = DT.ConnectivityList;
   W = winding_number(PV2,PE2,barycenter(PV,PF));
   O = outline(PF(abs(W)>0.5,:));
   PE = O(barycenter(PV(:,1),O)<0,:);

@@ -16,6 +16,8 @@ classdef LvdData < matlab.mixin.SetGet
         groundObjs LaunchVehicleGroundObjectSet
         geometry LvdGeometry
         graphAnalysis LvdGraphicalAnalysis
+        sensors LvdSensorSet
+        sensorTgts LvdSensorTargetSet
         
         celBodyData 
         ksptotVer char
@@ -34,6 +36,8 @@ classdef LvdData < matlab.mixin.SetGet
             obj.groundObjs = LaunchVehicleGroundObjectSet(obj);
             obj.geometry = LvdGeometry(obj);
             obj.graphAnalysis = LvdGraphicalAnalysis(obj);
+            obj.sensors = LvdSensorSet(obj);
+            obj.sensorTgts = LvdSensorTargetSet(obj);
         end
     end
     
@@ -105,32 +109,44 @@ classdef LvdData < matlab.mixin.SetGet
         function tf = usesGeometricPoint(obj, point)
             tf = obj.optimizer.usesGeometricPoint(point);
             tf = tf || obj.geometry.usesGeometricPoint(point);
+            tf = tf || obj.sensors.usesGeometricPoint(point);
+            tf = tf || obj.sensorTgts.usesGeometricPoint(point);
         end
         
         function tf = usesGeometricVector(obj, vector)
             tf = obj.optimizer.usesGeometricVector(vector);
             tf = tf || obj.geometry.usesGeometricVector(vector);
+            tf = tf || obj.sensors.usesGeometricVector(vector);
+            tf = tf || obj.sensorTgts.usesGeometricVector(vector);
         end
         
         function tf = usesGeometricCoordSys(obj, coordSys)
             tf = obj.optimizer.usesGeometricCoordSys(coordSys);
             tf = tf || obj.geometry.usesGeometricCoordSys(coordSys);
+            tf = tf || obj.sensors.usesGeometricCoordSys(coordSys);
+            tf = tf || obj.sensorTgts.usesGeometricCoordSys(coordSys);
         end
         
         function tf = usesGeometricRefFrame(obj, refFrame)
             tf = obj.optimizer.usesGeometricRefFrame(refFrame);
             tf = tf || obj.geometry.usesGeometricRefFrame(refFrame);
             tf = tf || obj.graphAnalysis.usesGeometricRefFrame(refFrame);
+            tf = tf || obj.sensors.usesGeometricRefFrame(refFrame);
+            tf = tf || obj.sensorTgts.usesGeometricRefFrame(refFrame);
         end
         
         function tf = usesGeometricAngle(obj, angle)
             tf = obj.optimizer.usesGeometricAngle(angle);
             tf = tf || obj.geometry.usesGeometricAngle(angle);
+            tf = tf || obj.sensors.usesGeometricAngle(angle);
+            tf = tf || obj.sensorTgts.usesGeometricAngle(angle);
         end
         
         function tf = usesGeometricPlane(obj, plane)
             tf = obj.optimizer.usesGeometricPlane(plane);
             tf = tf || obj.geometry.usesGeometricPlane(plane);
+            tf = tf || obj.sensors.usesGeometricPlane(plane);
+            tf = tf || obj.sensorTgts.usesGeometricPlane(plane);
         end 
 
         function tf = usesPlugin(obj, plugin)
@@ -188,7 +204,6 @@ classdef LvdData < matlab.mixin.SetGet
             lvdData.optimizer = lvdOptim;
             
             %set up view profile
-%             lvdData.viewSettings.selViewProfile.frame = BodyCenteredInertialFrame(lvdData.initialState.centralBody, lvdData.celBodyData);
             lvdData.viewSettings.selViewProfile.frame = lvdData.initialState.centralBody.getBodyCenteredInertialFrame();
             
             %set up ground objects
@@ -248,6 +263,14 @@ classdef LvdData < matlab.mixin.SetGet
             
             if(isempty(obj.graphAnalysis))
                 obj.graphAnalysis = LvdGraphicalAnalysis(obj);
+            end
+            
+            if(isempty(obj.sensors))
+                obj.sensors = LvdSensorSet(obj);
+            end
+            
+            if(isempty(obj.sensorTgts))
+                obj.sensorTgts = LvdSensorTargetSet(obj);
             end
             
             evts = obj.script.evts;
