@@ -41,18 +41,19 @@ classdef LaunchVehicleSensorReport < matlab.mixin.SetGet
             for(i=1:length(entries))
                 entry = entries(i);
                 
+                sensorState = entry.getSensorStateForSensor(obj.sensor);
                 scElem = entry.getCartesianElementSetRepresentation(false);
                 dcm = entry.attitude.dcm;
                 frame = entry.centralBody.getBodyCenteredInertialFrame();
                 
-                results = obj.sensor.evaluateSensorTargets(targets, scElem, dcm, bodyInfos, frame);
+                results = obj.sensor.evaluateSensorTargets(sensorState, targets, scElem, dcm, bodyInfos, frame); 
                 
                 for(j=1:length(results))
                     result = results(j);
                     
                     coverages{j} = vertcat(coverages{j}, result.resultsBool(:)');
                     
-                    [az, el, rng, angle] = result.getBoresightRelativeAngles(scElem, dcm); 
+                    [az, el, rng, angle] = result.getBoresightRelativeAngles(sensorState, scElem, dcm); 
                     
                     sensorAzs{j} = vertcat(sensorAzs{j}, az);
                     sensorEls{j} = vertcat(sensorEls{j}, el);

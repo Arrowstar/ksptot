@@ -11,7 +11,7 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
         
         boreDir = getSensorBoresightDirection(obj, sensorState, scElem, dcm, inFrame)
         
-        sensorDcm = getSensorDcmToInertial(obj, scElem, dcm, inFrame)
+        sensorDcm = getSensorDcmToInertial(obj, sensorState, scElem, dcm, inFrame)
         
         origin = getOriginInFrame(obj, time, scElem, inFrame)
         
@@ -177,9 +177,12 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
             
             if(isempty(allRVects))
                 bool = false(0);
-            else
-%                 bool = isPointInMesh(allRVects, V, F);
-                bool = in_polyhedron(F,V,allRVects);
+            else 
+                if(isempty(V) || isempty(F))
+                    bool = false(height(allRVects),1);
+                else
+                    bool = in_polyhedron(F,V,allRVects);
+                end
             end
             
             rVectSensorOrigin = obj.getOriginInFrame(time, scElem, inFrame);

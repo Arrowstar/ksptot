@@ -46,18 +46,18 @@ classdef SensorTargetResults < matlab.mixin.SetGet
             end
         end
         
-        function [az, el, range, angleFromBoresight] = getBoresightRelativeAngles(obj, scElem, dcm)
+        function [az, el, range, angleFromBoresight] = getBoresightRelativeAngles(obj, sensorState, scElem, dcm)
             targetRVects = obj.targetRVect';
             
             scElem = scElem.convertToCartesianElementSet().convertToFrame(obj.frame);
-            sensorDcm = obj.sensor.getSensorDcmToInertial(scElem, dcm, obj.frame); %returns the body to inertial rotation
+            sensorDcm = obj.sensor.getSensorDcmToInertial(sensorState, scElem, dcm, obj.frame); %returns the body to inertial rotation
             
             sensorToTargetRVectInertial = targetRVects - obj.sensorRVect;
             sensorToTargetRVectInSensorFrame = sensorDcm' * sensorToTargetRVectInertial;
-            
+             
             [az, el, range] = cart2sph(sensorToTargetRVectInSensorFrame(1,:), sensorToTargetRVectInSensorFrame(2,:),sensorToTargetRVectInSensorFrame(3,:));
             
-            boreDir = obj.sensor.getSensorBoresightDirection(scElem.time, scElem, dcm, obj.frame); %in inertial frame
+            boreDir = obj.sensor.getSensorBoresightDirection(sensorState, scElem.time, scElem, dcm, obj.frame); %in inertial frame
             boreDir = repmat(boreDir, 1, width(sensorToTargetRVectInertial));
             
             angleFromBoresight = dang(boreDir, sensorToTargetRVectInertial);

@@ -91,26 +91,6 @@ classdef ConicalSensor < AbstractSensor
                 fvc = transformPoint3d(fvc, M);
                     
                 [V, F] = meshVertexClustering(fvc, 1);
-                
-%                 [V, F] = ensureManifoldMesh(fvc);
-%                 [V, F] = removeInvalidBorderFaces(V, F);
-%                 
-%                 faceRowToRemove = NaN(height(F),1);
-%                 for(i=1:height(F))
-%                     if(numel(unique(F(i,:))) < 3)
-%                         faceRowToRemove(i) = i;
-%                     end
-%                 end
-%                 faceRowToRemove(isnan(faceRowToRemove)) = [];
-%                 [V,F] = removeMeshFaces(V, F, faceRowToRemove);
-%                 
-%                 V(abs(V)<1E-10) = 0;
-                
-%                 [~,~,IC] = uniquetol(V, 1E-10, 'ByRows',true);
-%                 vertsToRemove = setdiff([1:height(V)], unique(IC));
-%                 [V,F] = removeMeshVertices(V, F, vertsToRemove);
-                
-                a=1;
             else
                 V = [];
                 F = [];
@@ -121,9 +101,9 @@ classdef ConicalSensor < AbstractSensor
             boreDir = sensorState.getSensorSteeringMode().getBoresightVector(time, scElem, dcm, inFrame);
         end
         
-        function sensorDcm = getSensorDcmToInertial(obj, scElem, dcm, inFrame)
+        function sensorDcm = getSensorDcmToInertial(obj, sensorState, scElem, dcm, inFrame)
             time = scElem.time;
-            sensorDcm = obj.steeringModel.getSensorDcmToInertial(time, scElem, dcm, inFrame);
+            sensorDcm = sensorState.getSensorSteeringMode().getSensorDcmToInertial(time, scElem, dcm, inFrame);
         end
                
         function rVectOrigin = getOriginInFrame(obj, time, scElem, inFrame)
