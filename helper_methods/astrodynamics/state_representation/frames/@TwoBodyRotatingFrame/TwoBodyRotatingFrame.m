@@ -107,7 +107,10 @@ classdef TwoBodyRotatingFrame < AbstractReferenceFrame
                 obj.celBodyData = obj.primaryBodyInfo.celBodyData;
             end
             
-            editTwoBodyRotatingFrameGUI(obj);
+%             editTwoBodyRotatingFrameGUI(obj);
+
+            output = AppDesignerGUIOutput({false});
+            editTwoBodyRotatingFrameGUI_App(obj, output);
             newFrame = obj; %the frame is either going to be updated or not.
         end
     end

@@ -36,7 +36,7 @@ classdef SensorTargetResults < matlab.mixin.SetGet
                 cartElem = CartesianElementSet(times, rVects', vVects, obj.frame, true);
                 
                 cartElem = convertToFrame(cartElem, inFrame);
-                rVects = cartElem.rVects;
+                rVects = [cartElem.rVect]';
             end
         end
         

@@ -100,7 +100,9 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
                 end
             end
             
-            [VTotal, FTotal] = meshVertexClustering(VTotal, FTotal, 0.1);
+            if(not(isempty(VTotal)) && not(isempty(FTotal)))
+                [VTotal, FTotal] = meshVertexClustering(VTotal, FTotal, 0.1);
+            end
         end
         
         function [V,F, Vobs,Fobs] = getObscuredSensorMesh(obj, sensorState, scElem, dcm, bodyInfos, inFrame)
@@ -120,7 +122,12 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
                 
                 rVectSensorOrigin = obj.getOriginInFrame(scElem.time, scElem, inFrame);
                 
-                [V3,F3] = AbstractSensor.mesh_boolean_fallback(Vsens,Fsens,Vobs,Fobs,'minus');
+                if(not(isempty(Vobs)) && not(isempty(Fobs)))
+                    [V3,F3] = AbstractSensor.mesh_boolean_fallback(Vsens,Fsens,Vobs,Fobs,'minus');
+                else
+                    V3 = Vsens;
+                    F3 = Fsens;
+                end
                 
 %                 SENS.VL = Vsens;
 %                 SENS.FL = Fsens;
@@ -131,6 +138,15 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
 %                 F3 = out.FL;
                 
                 MESHES = splitMesh(V3, F3);
+                
+                indDel = [];
+                for(i=1:length(MESHES))
+                    mesh = MESHES(i);
+                    if(height(mesh.vertices) < 4 || height(mesh.faces) < 1)
+                        indDel(end+1) = i; %#ok<AGROW>
+                    end
+                end
+                MESHES(indDel) = [];
                 
                 if(length(MESHES) > 1)
                     for(i=1:length(MESHES))
@@ -162,14 +178,16 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
                 inFrame(1,1) AbstractReferenceFrame
             end
             
+            inertialFrame = inFrame.getOriginBody().getBodyCenteredInertialFrame();
+            
             time = scElem.time;
-            [V,F] = obj.getObscuredSensorMesh(sensorState, scElem, dcm, bodyInfos, inFrame);
+            [V,F] = obj.getObscuredSensorMesh(sensorState, scElem, dcm, bodyInfos, inertialFrame);
             
             allRVects = [];
             targetColInds = [];
             for(i=1:length(targets))
                 target = targets(i);
-                rVects = target.getTargetPositions(time, scElem, inFrame);
+                rVects = target.getTargetPositions(time, scElem, inertialFrame);
                 
                 allRVects = vertcat(allRVects, rVects'); %#ok<AGROW>
                 targetColInds = vertcat(targetColInds, i*ones(size(rVects,2), 1)); %#ok<AGROW>
@@ -185,7 +203,7 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
                 end
             end
             
-            rVectSensorOrigin = obj.getOriginInFrame(time, scElem, inFrame);
+            rVectSensorOrigin = obj.getOriginInFrame(time, scElem, inertialFrame);
             
             results = SensorTargetResults.empty(1,0);
             for(i=1:length(targets))
@@ -195,8 +213,13 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
                 subBool = bool(inds);
                 subRVects = allRVects(inds, :);
                 
-                results(i) = SensorTargetResults(obj, target, time, rVectSensorOrigin, subBool, subRVects, inFrame);
+                results(i) = SensorTargetResults(obj, target, time, rVectSensorOrigin, subBool, subRVects, inertialFrame);
             end
+            
+            sensorMeshPts = V';
+            sensorPtsCartElem = CartesianElementSet(repmat(time, 1, width(sensorMeshPts)), sensorMeshPts, zeros(size(sensorMeshPts)), inertialFrame, true);
+            sensorPtsCartElem = sensorPtsCartElem.convertToFrame(inFrame);
+            V = [sensorPtsCartElem.rVect]';
         end
         
         function tf = usesGroundObj(obj, groundObj)
