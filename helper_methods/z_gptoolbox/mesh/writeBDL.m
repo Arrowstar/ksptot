@@ -80,7 +80,7 @@ function writeBDL(filename,V,F)
     fwrite(fp, mesh.V', 'float32');
     if isfield(mesh,'UV') fwrite(fp, mesh.UV', 'float32'); end
     if isfield(mesh,'col') fwrite(fp, mesh.col', 'float32'); end
-    if isfield(mesh,'F') fwrite(fp, mesh.F'-1, 'uint32');  % faces are 1-based in matlab
+    if isfield(mesh,'F') fwrite(fp, mesh.F'-1, 'uint32'); end % faces are 1-based in matlab
 
     chunkSize = ftell(fp) - chunkStart;
 
