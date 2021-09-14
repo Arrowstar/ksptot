@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.ezdeploy" plugin-version="1.0">
-  <configuration build-checksum="2622579502" file="/home/adam/ksptot/KSPTrajectoryOptimizationTool_Linux.prj" location="/home/adam/ksptot" name="KSPTrajectoryOptimizationTool_Linux" preferred-package-location="/home/adam/ksptot/deploy/KSPTrajectoryOptimizationTool/for_redistribution" preferred-package-type="package.type.install" target="target.ezdeploy.standalone" target-name="Application Compiler">
+  <configuration build-checksum="2413674180" file="/home/adam/ksptot/KSPTrajectoryOptimizationTool_Linux.prj" location="/home/adam/ksptot" name="KSPTrajectoryOptimizationTool_Linux" preferred-package-location="/home/adam/ksptot/deploy/KSPTrajectoryOptimizationTool/for_redistribution" preferred-package-type="package.type.install" target="target.ezdeploy.standalone" target-name="Application Compiler">
     <param.appname>KSPTrajectoryOptimizationTool</param.appname>
     <param.icon>${PROJECT_ROOT}/KSPTrajectoryOptimizationTool_resources/icon.ico</param.icon>
     <param.icons>
@@ -102,6 +102,7 @@ ${LD_LIBRARY_PATH}:MR/v910/runtime/glnxa64:MR/v910/bin/glnxa64:MR/v910/sys/os/gl
     <fileset.package />
     <fileset.depfun>
       <file>${MATLAB_ROOT}/toolbox/local/matlabrc.m</file>
+      <file>${MATLAB_ROOT}/toolbox/matlab/demos/bucky.m</file>
     </fileset.depfun>
     <build-deliverables>
       <file location="${PROJECT_ROOT}/deploy/KSPTrajectoryOptimizationTool/for_testing" name="readme.txt" optional="true">/home/adam/ksptot/deploy/KSPTrajectoryOptimizationTool/for_testing/readme.txt</file>
