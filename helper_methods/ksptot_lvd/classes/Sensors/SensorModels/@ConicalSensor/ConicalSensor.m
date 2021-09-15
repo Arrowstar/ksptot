@@ -99,9 +99,9 @@ classdef ConicalSensor < AbstractSensor
                 sPtsAngs = dang(repmat([0;0;1],1,size(sPtsRaw,1)), sPtsRaw');
                 sPts = sPtsRaw(sPtsAngs <= sensorAngle+1E-10, :);
 
-                sPts = transformPoint3d(sPts(:,1), sPts(:,2), sPts(:,3), M);
+                sPts2 = transformPoint3d(sPts(:,1), sPts(:,2), sPts(:,3), M);
 
-                V = vertcat(rVectSensorOrigin(:)', sPts);
+                V = vertcat(rVectSensorOrigin(:)', sPts2);
                 F = convhull(V);
                     
                 [V, F] = meshVertexClustering(V,F, 0.001);

@@ -252,6 +252,12 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
         end
     end
     
+    methods(Sealed)
+        function tf = eq(A,B)
+            tf = eq@handle(A,B);
+        end
+    end
+    
     methods(Static, Access=protected)
         function circlePts = getCircleInSpace(normDir, circleCnterPt, circleRadius)
             arguments
@@ -260,19 +266,28 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
                 circleRadius(1,1) double
             end
             
-            if(abs(dang(normDir,[0;0;1])) < deg2rad(1))
-                borePlaneV0 = [0;1;0];
-            else
-                borePlaneV0 = [0;0;1];
-            end
-            
-            borePlaneV1 = cross(normDir,borePlaneV0);
-            borePlaneV2 = cross(normDir,borePlaneV1);
-            
+%             if(abs(dang(normDir,[0;0;1])) < deg2rad(10) || abs(dang(normDir,[0;0;1])) > deg2rad(170))
+%                 borePlaneV0 = [0;1;0];
+%             else
+%                 borePlaneV0 = [0;0;1];
+%             end
+%             
+%             borePlaneV1 = cross(normDir,borePlaneV0);
+%             borePlaneV2 = cross(normDir,borePlaneV1);
+%             
+%             numAngles = 25;
+%             theta = linspace(0,2*pi,numAngles);
+%             
+%             circlePts = circleCnterPt + circleRadius*borePlaneV1*cos(theta) + circleRadius*borePlaneV2*sin(theta);
+
             numAngles = 25;
             theta = linspace(0,2*pi,numAngles);
+
+            circlePts = circleRadius*[1;0;0]*cos(theta) + circleRadius*[0;1;0]*sin(theta);
+            r = vrrotvec([0;0;1], normDir);
+            M = vrrotvec2mat(r);
             
-            circlePts = circleCnterPt + circleRadius*borePlaneV1*cos(theta) + circleRadius*borePlaneV2*sin(theta);
+            circlePts = M*circlePts + circleCnterPt;
         end
         
         function [W,H] = mesh_boolean_fallback(V,F,U,G,operation)
