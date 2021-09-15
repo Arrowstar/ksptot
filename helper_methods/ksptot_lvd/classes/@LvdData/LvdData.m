@@ -153,6 +153,10 @@ classdef LvdData < matlab.mixin.SetGet
             tf = obj.optimizer.usesPlugin(plugin);
         end 
         
+        function tf = usesSensor(obj, sensor)
+            tf = obj.script.usesSensor(sensor);
+        end
+        
         function baseFrame = getBaseFrame(obj)
             topLevelBody = obj.celBodyData.getTopLevelBody();
             baseFrame = topLevelBody.getBodyCenteredInertialFrame();

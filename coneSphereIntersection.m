@@ -20,7 +20,7 @@ z0 = state.rVect(3);
 r = bodyInfo.radius;
 
 %sensor cone
-sensorOriginRVect = [-700;0;0];
+sensorOriginRVect = [-2000;0;0];
 sensorOriginPt = FixedPointInFrame(sensorOriginRVect, frame, 'Sensor Origin', lvdData);
 lvdData.geometry.points.addPoint(sensorOriginPt);
 
@@ -29,10 +29,10 @@ lvdData.geometry.coordSyses.addCoordSys(steeringCoordSys);
 steeringModel = FixedInCoordSysSensorSteeringModel(deg2rad(0), deg2rad(0), deg2rad(10), steeringCoordSys, lvdData);
 
 sensorRange = 3000;
-sensAzAng = deg2rad(10);
+sensAzAng = deg2rad(90);
 sensElAng = deg2rad(45);
 
-sensor = RectangularSensor('Demo Conical Sensor', sensAzAng, sensElAng, sensorRange, sensorOriginPt, steeringModel, lvdData);
+sensor = ConicalSensor('Demo Conical Sensor', sensAzAng, sensorRange, sensorOriginPt, steeringModel, lvdData);
 sensorState = sensor.getInitialState();
 
 %Compute Occluding Mesh

@@ -80,7 +80,7 @@ classdef SetSensorSteeringModelAction < AbstractEventAction
             
             if(not(isempty(sensors)))
                 output = AppDesignerGUIOutput({false});
-                lvd_EditActionSetConicalSensorHalfAngleGUI_App(action, lvdData, output);
+                lvd_EditActionSetSensorSteeringModelGUI_App(action, lvdData, output);
                 addActionTf = output.output{1};
             else
                 addActionTf = false;

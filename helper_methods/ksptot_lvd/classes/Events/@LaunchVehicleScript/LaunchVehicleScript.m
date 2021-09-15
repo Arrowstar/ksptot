@@ -255,6 +255,16 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
             tf = tf || obj.nonSeqEvts.usesPwrStorage(powerStorage);
         end
         
+        function tf = usesSensor(obj, sensor)
+            tf = false;
+            
+            for(i=1:length(obj.evts))
+                tf = tf || obj.evts(i).usesSensor(sensor);
+            end
+            
+            tf = tf || obj.nonSeqEvts.usesSensor(sensor);
+        end
+        
         function stateLog = executeScript(obj, isSparseOutput, evtToStartScriptExecAt, evalConstraints, allowInterrupt, dispEvtPropTimes, notifyScriptEvents)
             arguments
                 obj(1,1) LaunchVehicleScript

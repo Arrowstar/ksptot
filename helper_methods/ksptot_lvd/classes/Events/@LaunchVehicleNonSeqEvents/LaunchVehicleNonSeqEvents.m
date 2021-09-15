@@ -109,6 +109,12 @@ classdef LaunchVehicleNonSeqEvents < matlab.mixin.SetGet & matlab.mixin.Copyable
             events = obj.nonSeqEvts;
         end
         
+        function resetAllNumExecsRemaining(obj)
+            for(i=1:length(obj.nonSeqEvts))
+                obj.nonSeqEvts(i).resetNumExecsRemaining();
+            end
+        end
+        
         function tf = usesStage(obj, stage)
             tf = false;
             
@@ -156,13 +162,7 @@ classdef LaunchVehicleNonSeqEvents < matlab.mixin.SetGet & matlab.mixin.Copyable
                 tf = tf || obj.evts(i).usesExtremum(extremum);
             end
         end
-        
-        function resetAllNumExecsRemaining(obj)
-            for(i=1:length(obj.nonSeqEvts))
-                obj.nonSeqEvts(i).resetNumExecsRemaining();
-            end
-        end
-        
+               
         function tf = usesCalculusCalc(obj, calculusCalc)
             tf = false;
             
@@ -192,6 +192,14 @@ classdef LaunchVehicleNonSeqEvents < matlab.mixin.SetGet & matlab.mixin.Copyable
             
             for(i=1:length(obj.evts))
                 tf = tf || obj.evts(i).usesPwrStorage(powerStorage);
+            end
+        end
+        
+        function tf = usesSensor(obj, sensor)
+            tf = false;
+            
+            for(i=1:length(obj.evts))
+                tf = tf || obj.evts(i).usesSensor(sensor);
             end
         end
         

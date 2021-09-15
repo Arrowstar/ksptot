@@ -13,6 +13,14 @@ classdef ConicalSensorState < AbstractSensorState
     
     methods
         function obj = ConicalSensorState(sensor, activeTf, steeringModel, angle, range)
+            arguments
+                sensor(1,1) ConicalSensor
+                activeTf(1,1) logical
+                steeringModel(1,1) AbstractSensorSteeringModel
+                angle(1,1) double {mustBeGreaterThanOrEqual(angle,0)}
+                range(1,1) double {mustBeGreaterThan(range, 0)}
+            end
+            
             obj.sensor = sensor;
             obj.activeTf = activeTf;
             obj.steeringModel = steeringModel;

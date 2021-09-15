@@ -90,7 +90,7 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
                     V = [cV; sV];
                     F = convhull([cV; sV]);
                     
-%                     [V, F] = meshVertexClustering(V,F, 1);
+                    [V, F] = meshVertexClustering(V,F, 0.001);
                     
                     if(not(isempty(FTotal)))
                         [VTotal,FTotal] = concatenateMeshes(VTotal,FTotal, V,F);
@@ -102,7 +102,7 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
             end
             
             if(not(isempty(VTotal)) && not(isempty(FTotal)))
-                [VTotal, FTotal] = meshVertexClustering(VTotal, FTotal, 0.1);
+                [VTotal, FTotal] = meshVertexClustering(VTotal, FTotal, 0.001);
             end
         end
         
@@ -161,7 +161,7 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
                     coneMesh = MESHES;
                 end
                 
-                [V,F] = meshVertexClustering(coneMesh,0.1); %needed for helping to determine if point is in mesh
+                [V,F] = meshVertexClustering(coneMesh,0.001); %needed for helping to determine if point is in mesh
             else
                 V = [];
                 F = [];
@@ -276,15 +276,15 @@ classdef(Abstract) AbstractSensor < matlab.mixin.SetGet & matlab.mixin.Heterogen
         end
         
         function [W,H] = mesh_boolean_fallback(V,F,U,G,operation)
-%             try
-%                 [W,H] = mesh_boolean(V,F, U,G, operation);
-%             catch  %if the mex file doesn't work
-%                 [W,H] = mesh_boolean_winding_number(V,F, U,G, operation);
-%             end
-            
-%             if(isempty(W) && isempty(H))
+            try
+                [W,H] = mesh_boolean(V,F, U,G, operation);
+            catch  %if the mex file doesn't work
                 [W,H] = mesh_boolean_winding_number(V,F, U,G, operation);
-%             end
+            end
+            
+            if(height(W)<4 && height(H)<4)
+                [W,H] = mesh_boolean_winding_number(V,F, U,G, operation);
+            end
         end
         
         function [p2,r2,theta] = getTangentCirclePointAndRadius(offPoint, sphereCenter, r)

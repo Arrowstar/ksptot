@@ -267,6 +267,14 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
             end
         end
         
+        function tf = usesSensor(obj, sensor)
+            tf = obj.termCond.usesSensor(sensor);
+            
+            for(i=1:length(obj.actions))
+                tf = tf || obj.actions(i).usesSensor(sensor);
+            end
+        end
+        
         function toggleOptimDisable(obj, lvdData)
             obj.disableOptim = not(obj.disableOptim);
             

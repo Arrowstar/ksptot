@@ -14,6 +14,14 @@ classdef RectangularSensorState < AbstractSensorState
     
     methods
         function obj = RectangularSensorState(sensor, activeTf, steeringModel, azAngle, decAngle, range)
+            arguments
+                sensor(1,1) ConicalSensor
+                activeTf(1,1) logical
+                steeringModel(1,1) AbstractSensorSteeringModel
+                azAngle(1,1) double {mustBeGreaterThanOrEqual(azAngle,0)}
+                decAngle(1,1) double {mustBeGreaterThanOrEqual(decAngle,0)}
+                range(1,1) double {mustBeGreaterThan(range, 0)}
+            end
             obj.sensor = sensor;
             obj.activeTf = activeTf;
             obj.steeringModel = steeringModel;

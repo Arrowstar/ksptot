@@ -30,8 +30,8 @@ classdef RectangularSensor < AbstractSensor
         function obj = RectangularSensor(name, azAngle, decAngle, range, origin, steeringModel, lvdData)
             arguments
                 name(1,:) char
-                azAngle(1,1) double {mustBeGreaterThanOrEqual(azAngle,0), mustBeLessThanOrEqual(azAngle,1.5708)}
-                decAngle(1,1) double {mustBeGreaterThanOrEqual(decAngle,0), mustBeLessThanOrEqual(decAngle,1.5708)}
+                azAngle(1,1) double {mustBeGreaterThanOrEqual(azAngle,0)}
+                decAngle(1,1) double {mustBeGreaterThanOrEqual(decAngle,0)}
                 range(1,1) double {mustBeGreaterThan(range, 0)}
                 origin(1,1) AbstractGeometricPoint
                 steeringModel(1,1) AbstractSensorSteeringModel

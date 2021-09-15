@@ -44,6 +44,10 @@ classdef(Abstract) AbstractEventTerminationCondition < matlab.mixin.SetGet & mat
         function tf = usesPwrStorage(obj, powerStorage)
             tf = false;
         end
+        
+        function tf = usesSensor(obj, sensor)
+            tf = false;
+        end
     end
     
     methods(Static)

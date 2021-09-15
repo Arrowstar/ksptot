@@ -29,15 +29,15 @@ classdef ConicalSensor < AbstractSensor
         function obj = ConicalSensor(name, angle, range, origin, steeringModel, lvdData)
             arguments
                 name(1,:) char
-                angle(1,1) double {mustBeGreaterThanOrEqual(angle,0), mustBeLessThanOrEqual(angle,3.141592654)}
+                angle(1,1) double {mustBeGreaterThanOrEqual(angle,0)}
                 range(1,1) double {mustBeGreaterThan(range, 0)}
                 origin(1,1) AbstractGeometricPoint
                 steeringModel(1,1) AbstractSensorSteeringModel
                 lvdData(1,1) LvdData
             end
             
-            if(angle > pi)
-                angle = pi;
+            if(angle > pi/2)
+                angle = pi/2;
             end
             
             obj.name = name;
@@ -59,38 +59,52 @@ classdef ConicalSensor < AbstractSensor
             
             active = sensorState.getSensorActiveState();
             if(active)
+                sensorSteering = sensorState.getSensorSteeringMode();
                 time = scElem.time;
                 sensorRange = sensorState.getSensorMaxRange();
                 sensorAngle = sensorState.getSensorAngle();
-                
-                theta = linspace(pi/2, pi/2 + sensorAngle, 10);
-                xPts = sensorRange*cos(theta);
-                yPts = sensorRange*sin(theta);
-                
-                xPts = [0, 0, xPts];
-                yPts = [0, sensorRange/2, yPts];
-                
-                v = normVector([xPts(end); yPts(end)]);
-                xPts = [xPts 0.5*v(1)*sensorRange];
-                yPts = [yPts 0.5*v(2)*sensorRange];
-                
-                xPts = [xPts, 0];
-                yPts = [yPts, 0];
-                
-                PV = [xPts(:), yPts(:)];
+       
+%                 theta = linspace(pi/2, pi/2 + sensorAngle, 10);
+%                 xPts = sensorRange*cos(theta);
+%                 yPts = sensorRange*sin(theta);
+%                 
+%                 xPts = [0, 0, xPts];
+%                 yPts = [0, sensorRange/2, yPts];
+%                 
+%                 v = normVector([xPts(end); yPts(end)]);
+%                 xPts = [xPts 0.5*v(1)*sensorRange];
+%                 yPts = [yPts 0.5*v(2)*sensorRange];
+%                 
+%                 xPts = [xPts, 0];
+%                 yPts = [yPts, 0];
+%                 
+%                 PV = [xPts(:), yPts(:)];
+% 
+%                 [X,Y,Z] = revolutionSurface(PV, 15, [0,0, 0, 1]);
+%                 fvc = surf2patch(X,Y,Z);
+%                 fvc.faces = triangulateFaces(fvc.faces);
 
-                [X,Y,Z] = revolutionSurface(PV, 15, [0,0, 0, 1]);
-                fvc = surf2patch(X,Y,Z);
-                fvc.faces = triangulateFaces(fvc.faces);
-                
                 rVectSensorOrigin = obj.getOriginInFrame(time, scElem, inFrame);
                 
                 MM = sensorSteering.getSensorDcmToInertial(time, scElem, dcm, inFrame);
-                r = rotm2axangARH(MM);            
+                r = rotm2axang(MM*roty(90));            
                 M = makehgtform('translate',rVectSensorOrigin(:)', 'axisrotate',r(1:3),r(4));
-                fvc = transformPoint3d(fvc, M);
+
+%                 fvc = transformPoint3d(fvc, M);
+%                 [V, F] = meshVertexClustering(fvc, 1);
+
+                S = [0,0,0, sensorRange];
+                sphere = sphereMesh(S, 'nTheta', ceil(5*2*pi/sensorAngle), 'nPhi', 16);
+                sPtsRaw = unique(sphere.vertices,'rows');
+                sPtsAngs = dang(repmat([0;0;1],1,size(sPtsRaw,1)), sPtsRaw');
+                sPts = sPtsRaw(sPtsAngs <= sensorAngle+1E-10, :);
+
+                sPts = transformPoint3d(sPts(:,1), sPts(:,2), sPts(:,3), M);
+
+                V = vertcat(rVectSensorOrigin(:)', sPts);
+                F = convhull(V);
                     
-                [V, F] = meshVertexClustering(fvc, 1);
+                [V, F] = meshVertexClustering(V,F, 0.001);
             else
                 V = [];
                 F = [];
@@ -136,7 +150,7 @@ classdef ConicalSensor < AbstractSensor
         end
         
         function tf = isInUse(obj, lvdData)
-            tf = false;
+            tf = lvdData.usesSensor(obj);
         end
         
         function useTf = openEditDialog(obj)
