@@ -91,7 +91,7 @@ classdef RectangularSensor < AbstractSensor
                 rVectSensorOrigin = obj.getOriginInFrame(time, scElem, inFrame);
 
                 MM = sensorSteering.getSensorDcmToInertial(time, scElem, dcm, inFrame);
-                r = rotm2axangARH(MM);
+                r = rotm2axang(MM);  
                 M = makehgtform('translate',rVectSensorOrigin(:)', 'axisrotate',r(1:3),r(4));
                 fvc = transformPoint3d(fvc, M);
                     

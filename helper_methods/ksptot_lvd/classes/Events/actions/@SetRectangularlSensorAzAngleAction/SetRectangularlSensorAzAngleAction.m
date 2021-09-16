@@ -1,10 +1,10 @@
-classdef SetConicalSensorAngleAction < AbstractEventAction
-    %SetConicalSensorAngleAction Summary of this class goes here
+classdef SetRectangularlSensorAzAngleAction < AbstractEventAction
+    %SetRectangularlSensorAzAngleAction Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
-        sensor ConicalSensor
-        sensorAngle(1,1) double {mustBeGreaterThan(sensorAngle, 0)} = deg2rad(10);
+        sensor RectangularSensor
+        sensorAzAngle(1,1) double {mustBeGreaterThan(sensorAzAngle, 0)} = deg2rad(10);
     end
     
     properties(Constant)
@@ -12,10 +12,10 @@ classdef SetConicalSensorAngleAction < AbstractEventAction
     end
     
     methods
-        function obj = SetConicalSensorAngleAction(sensor, sensorAngle)
+        function obj = SetRectangularlSensorAngleAction(sensor, sensorAzAngle)
             if(nargin > 0)
                 obj.sensor = sensor;
-                obj.sensorAngle = sensorAngle;
+                obj.sensorAzAngle = sensorAzAngle;
             end
             
             obj.id = rand();
@@ -24,7 +24,7 @@ classdef SetConicalSensorAngleAction < AbstractEventAction
         function newStateLogEntry = executeAction(obj, stateLogEntry)
             newStateLogEntry = stateLogEntry;
             sensorState = newStateLogEntry.getSensorStateForSensor(obj.sensor);
-            sensorState.setSensorAngle(obj.sensorAngle);
+            sensorState.setSensorAzAngle(obj.sensorAzAngle);
         end
         
         function initAction(obj, initialStateLogEntry)
@@ -32,7 +32,7 @@ classdef SetConicalSensorAngleAction < AbstractEventAction
         end
         
         function name = getName(obj)            
-            name = sprintf('Set Sensor Half-Angle (%s => %0.3f deg)',obj.sensor.name, rad2deg(obj.sensorAngle));
+            name = sprintf('Set Sensor Azimuth Half-Angle (%s => %0.3f deg)', obj.sensor.name, rad2deg(obj.sensorAzAngle));
         end
         
         function tf = usesStage(obj, stage)
@@ -78,13 +78,13 @@ classdef SetConicalSensorAngleAction < AbstractEventAction
             lvdData = lv.lvdData;
             [~, sensors] = lvdData.sensors.getListboxStr();
             
-            if(not(isempty(sensors)) && any([sensors.typeEnum] == SensorEnum.ConicalSensor))
+            if(not(isempty(sensors)) && any([sensors.typeEnum] == SensorEnum.RectangularSensor))
                 output = AppDesignerGUIOutput({false});
-                lvd_EditActionSetConicalSensorHalfAngleGUI_App(action, lvdData, output);
+                lvd_EditActionSetRectangularSensorAzAngleGUI_App(action, lvdData, output);
                 addActionTf = output.output{1};
             else
                 addActionTf = false;
-                warndlg('There are no conical sensors in this scenario.  Create one first.','Cannot Create Action','modal');
+                warndlg('There are no rectangular sensors in this scenario.  Create one first.','Cannot Create Action','modal');
             end
         end
     end

@@ -27,6 +27,8 @@ classdef EventActionEnum < matlab.mixin.SetGet
         SetSensorMaxRange('Set Sensor Max Range','SetSensorMaxRangeAction');
         SetConicalSensorAngle('Set Conical Sensor Half Angle','SetConicalSensorAngleAction');
         SetSensorSteeringModel('Set Sensor Pointing Model', 'SetSensorSteeringModelAction');
+        SetRectangularSensorAzAngle('Set Rectangular Sensor Azimuth Angle','SetRectangularlSensorAzAngleAction');
+        SetRectangularSensorDecAngle('Set Rectangular Sensor Declination Angle','SetRectangularlSensorDecAngleAction');
     end
     
     properties

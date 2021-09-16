@@ -26,13 +26,13 @@ lvdData.geometry.points.addPoint(sensorOriginPt);
 
 steeringCoordSys = ParallelToFrameCoordSystem(frame, 'Kerbin Inertial', lvdData);
 lvdData.geometry.coordSyses.addCoordSys(steeringCoordSys);
-steeringModel = FixedInCoordSysSensorSteeringModel(deg2rad(10), deg2rad(10), deg2rad(0), steeringCoordSys, lvdData);
+steeringModel = FixedInCoordSysSensorSteeringModel(deg2rad(10), deg2rad(10), deg2rad(10), steeringCoordSys, lvdData);
 
 sensorRange = 3000;
 sensAzAng = deg2rad(45);
 sensElAng = deg2rad(45);
 
-sensor = ConicalSensor('Demo Conical Sensor', sensAzAng, sensorRange, sensorOriginPt, steeringModel, lvdData);
+sensor = RectangularSensor('Demo Conical Sensor', sensAzAng, sensElAng, sensorRange, sensorOriginPt, steeringModel, lvdData);
 sensorState = sensor.getInitialState();
 
 %Compute Occluding Mesh

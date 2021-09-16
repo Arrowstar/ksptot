@@ -35,10 +35,15 @@ classdef FixedInVehicleFrameSensorSteeringModel < AbstractSensorSteeringModel
         end
         
         function sensorDcm = getSensorDcmToInertial(obj, time, vehElemSet, dcm, inFrame)
-            sensorToParentDcm = eul2rotmARH([obj.rhtAsc,obj.dec,obj.roll],'zyx');
-            parentToInertialDcm = obj.getSensorParentDcmToInertial(time, vehElemSet, dcm, inFrame);
+%             sensorToParentDcm = eul2rotmARH([obj.rhtAsc,obj.dec,obj.roll],'zyx');
+%             parentToInertialDcm = obj.getSensorParentDcmToInertial(time, vehElemSet, dcm, inFrame);
+%             sensorDcm = parentToInertialDcm * sensorToParentDcm;
+
+            boreDir = obj.getBoresightVector(time, vehElemSet, dcm, inFrame);
+            M1 = vrrotvec2mat(vrrotvec([1;0;0], boreDir));
+            M2 = rotx(rad2deg(obj.getBoresightRollAngle()));
             
-            sensorDcm = parentToInertialDcm * sensorToParentDcm;
+            sensorDcm = M2 * M1;
         end
         
         function tf = isVehDependent(obj)
