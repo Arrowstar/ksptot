@@ -161,6 +161,57 @@ classdef LvdData < matlab.mixin.SetGet
             topLevelBody = obj.celBodyData.getTopLevelBody();
             baseFrame = topLevelBody.getBodyCenteredInertialFrame();
         end
+        
+        function createContinuityConstraints(obj, evt, selEvt, refBodyInfo)
+            arguments
+                obj(1,1) LvdData
+                evt(1,1) LaunchVehicleEvent
+                selEvt(1,1) LaunchVehicleEvent
+                refBodyInfo = [];
+            end
+            
+            eventNum = evt.getEventNum();
+            selEvtNum = selEvt.getEventNum();
+            
+            if(eventNum > selEvtNum)
+                refEvt = evt;
+                constrEvt = selEvt;
+            else
+                refEvt = selEvt;
+                constrEvt = evt;
+            end
+
+            if(isempty(refBodyInfo))
+                stateLogEntry = obj.stateLog.getLastStateLogForEvent(refEvt);
+                refBodyInfo = stateLogEntry.centralBody;
+            end
+            frame = refBodyInfo.getBodyCenteredInertialFrame();
+
+            cs = AbstractConstraint.empty(1,0);
+
+            %position
+            cs(end+1) = GenericMAConstraint('Position Vector (X)', refEvt, 0, 0, [], [], refBodyInfo);
+            cs(end+1) = GenericMAConstraint('Position Vector (Y)', refEvt, 0, 0, [], [], refBodyInfo);
+            cs(end+1) = GenericMAConstraint('Position Vector (Z)', refEvt, 0, 0, [], [], refBodyInfo);
+
+            %velocity
+            cs(end+1) = GenericMAConstraint('Velocity Vector (X)', refEvt, 0, 0, [], [], refBodyInfo);
+            cs(end+1) = GenericMAConstraint('Velocity Vector (Y)', refEvt, 0, 0, [], [], refBodyInfo);
+            cs(end+1) = GenericMAConstraint('Velocity Vector (Z)', refEvt, 0, 0, [], [], refBodyInfo);
+
+            %time
+            cs(end+1) = GenericMAConstraint('Universal Time', refEvt, 0, 0, [], [], refBodyInfo);
+
+            for(i=1:length(cs))
+                c = cs(i);
+                c.evalType = ConstraintEvalTypeEnum.StateComparison;
+                c.stateCompType = ConstraintStateComparisonTypeEnum.Equals;
+                c.stateCompEvent = constrEvt;
+                c.frame = frame;
+
+                obj.optimizer.constraints.addConstraint(c);
+            end
+        end
     end
     
     methods(Static)        
@@ -222,6 +273,341 @@ classdef LvdData < matlab.mixin.SetGet
             elemSet = GeographicElementSet(grndObj.initialTime + durToNextWayPt, deg2rad(-0.1025), deg2rad(285.42472), 0.06841, 0, 0, 0, bfFrame);
             wayPt = LaunchVehicleGroundObjectWayPt(elemSet, durToNextWayPt);
             grndObj.wayPts = wayPt;
+        end
+        
+        function lvdData = getLvdDataFromMfmsOutputs(mfmsOutputs)
+            lvdData = LvdData.getDefaultLvdData(mfmsOutputs.celBodyData);
+            lvdOptim = lvdData.optimizer;
+            
+            wayPtBodies = [mfmsOutputs.wayPtBodies{:}];
+            
+            [~, colorEnums] = ColorSpecEnum.getListboxStr();
+            
+            %Xfer orbit data
+            xferOrbits = mfmsOutputs.xferOrbits; %sma ecc inc raan arg tru tru2 t1 t2 gmu
+            xferOrbitDurations = xferOrbits(:,9) - xferOrbits(:,8);
+            
+            %Set critical settings
+            maxSimDur = 10*(max(xferOrbits(:,9)) - min(xferOrbits(:,8)));
+            lvdData.settings.simMaxDur = maxSimDur;
+            lvdData.settings.maxScriptPropTime = 10;
+            
+            %Set up view profile
+            cBodyInfo = wayPtBodies(1).getParBodyInfo();
+            
+            viewProfile = lvdData.viewSettings.selViewProfile;
+            viewProfile.name = sprintf('%s-centered Inertial Frame', cBodyInfo.name);
+            viewProfile.frame = cBodyInfo.getBodyCenteredInertialFrame();
+            viewProfile.bodiesToPlot = wayPtBodies;
+            
+            %Set Initial State
+            departBody = wayPtBodies(1);
+            frame = departBody.getBodyCenteredInertialFrame();
+            time = xferOrbits(1,8);
+            orbit = mfmsOutputs.eOrbit;
+            kepElemSet = KeplerianElementSet(time, orbit(1), orbit(2), orbit(3), orbit(4), orbit(5), orbit(8), frame);
+            
+            lvdData.initStateModel.orbitModel = kepElemSet;
+            
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            %Setup Departure Event
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            event = lvdData.script.evts(1);
+            event.name = sprintf('Departure from %s (+)', departBody.name);
+            event.execActionsNode = ActionExecNodeEnum.BeforeProp;
+            event.colorLineSpec.color = colorEnums(1);
+            
+            %%%Set up termination condition
+            dur = xferOrbitDurations(1)/2;
+            termCond = EventDurationTermCondition(dur); %/2 so that we can meet a patch point in the middle
+            event.termCond = termCond;
+            
+            var = termCond.getNewOptVar();
+            lvdOptim.vars.addVariable(var);
+            
+            var.lb = 0.50*dur;
+            var.ub = 1.50*dur;
+            var.useTf = true;
+            
+            %%%Set up delta-v action
+            deltaV = mfmsOutputs.dVDepartVectNTW;
+            deltaVAction = AddDeltaVAction(deltaV, DeltaVFrameEnum.OrbitNtw, true);
+            event.addAction(deltaVAction);
+            deltaVAction.event = event;
+            
+            var = AddDeltaVActionVariable(deltaVAction);
+            lvdOptim.vars.addVariable(var);
+            var.lb = deltaV - 0.50*abs(deltaV);
+            var.ub = deltaV + 0.50*abs(deltaV);
+            var.varDVx = true;
+            var.varDVy = true;
+            var.varDVz = true;
+            
+            %%%Generate active vars cache
+            event.clearActiveOptVarsCache();
+            event.hasActiveOptVars();
+            
+            %%%Set previous forward prop event
+            prevFwdPropEvent = event;
+            
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            %Do gravity assist maneuvers
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            for(i=2:length(wayPtBodies)-1)
+                bodyInfo = wayPtBodies(i);
+                frame = bodyInfo.getBodyCenteredInertialFrame();
+                time = xferOrbits(i,8);
+                
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                %Set up periapsis state event
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                eventPeri = LaunchVehicleEvent(lvdData.script);
+                lvdData.script.addEvent(eventPeri);
+                eventPeri.name = sprintf('%s Periapsis', bodyInfo.name);
+                eventPeri.execActionsNode = ActionExecNodeEnum.BeforeProp;
+                eventPeri.plotMethod = EventPlottingMethodEnum.DoNotPlot;
+                eventPeri.propDir = PropagationDirectionEnum.Forward;
+                
+                %%%Event line color
+                colorI = mod(2*(i-1), length(colorEnums));
+                eventPeri.colorLineSpec.color = colorEnums(colorI);
+                
+                %%%Set up termination condition
+                termCond = EventDurationTermCondition(0); %/2 so that we can meet a patch point in the middle
+                eventPeri.termCond = termCond;
+                
+                %%%Set up Set Kinematic State Action
+                orbitIn = mfmsOutputs.orbitsIn(i-1,:);
+                orbitModel = KeplerianElementSet(time, orbitIn(1), orbitIn(2), orbitIn(3), angleNegPiToPi(orbitIn(4)), angleNegPiToPi(orbitIn(5)), 0, frame);
+                orbitModel = orbitModel.convertToUniversalElementSet();
+                action = SetKinematicStateAction(lvdData.stateLog, orbitModel);
+                
+                action.inheritStateElems = true;
+                action.inheritStateElemsFrom = InheritStateEnum.InheritFromLastState;
+                eventPeri.addAction(action);
+                action.event = eventPeri;
+                
+                %%%Set up Set Kinematic State variable
+                var = SetKinematicStateActionVariable(action);
+                lvdOptim.vars.addVariable(var);
+                
+                var.lb = 0.50*time;
+                var.ub = 1.50*time;
+                var.useTf = true;
+                
+                var.orbitVar.lb = [0.75*orbitModel.c3, ...
+                                   max(0.75*orbitModel.rP,bodyInfo.radius+bodyInfo.atmohgt), ...
+                                   0, ...
+                                   -2*pi, ...
+                                   -2*pi, ...
+                                   0];
+                               
+                var.orbitVar.ub = [1.25*orbitModel.c3, ...
+                                   1.25*orbitModel.rP, ...
+                                   pi, ...
+                                   2*pi, ...
+                                   2*pi, ...
+                                   0];
+                               
+                var.orbitVar.varC3 = true;
+                var.orbitVar.varRp = true;
+                var.orbitVar.varInc = true;
+                var.orbitVar.varRaan = true;
+                var.orbitVar.varArg = true;
+                var.orbitVar.varTau = false;
+                
+                %%%Generate active vars cache
+                eventPeri.clearActiveOptVarsCache();
+                eventPeri.hasActiveOptVars();
+                
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                %Set up event that props backwards from peri state
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                eventMinus = LaunchVehicleEvent(lvdData.script);
+                lvdData.script.addEvent(eventMinus);
+                eventMinus.name = sprintf('%s Periapsis (-)', bodyInfo.name);
+                eventMinus.plotMethod = EventPlottingMethodEnum.PlotContinuous;
+                eventMinus.propDir = PropagationDirectionEnum.Backward;
+                
+                %%%Event line color
+                colorI = mod(2*(i-1), length(colorEnums));
+                eventMinus.colorLineSpec.color = colorEnums(colorI);
+                
+                %%%Set up termination condition
+                dur = xferOrbitDurations(i-1)/2;
+                termCond = EventDurationTermCondition(dur); %/2 so that we can meet a patch point in the middle
+                eventMinus.termCond = termCond;
+
+                var = termCond.getNewOptVar();
+                lvdOptim.vars.addVariable(var);
+                var.lb = 0.50*dur;
+                var.ub = 1.50*dur;
+                var.useTf = true;
+                
+                %%%Create continuity constraint
+                lvdData.createContinuityConstraints(eventMinus, prevFwdPropEvent, cBodyInfo);
+                
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                %Set up periapsis state event and propagate FORWARDS
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                eventPlus = LaunchVehicleEvent(lvdData.script);
+                lvdData.script.addEvent(eventPlus);
+                eventPlus.name = sprintf('%s Periapsis (+)', bodyInfo.name);
+                eventPlus.execActionsNode = ActionExecNodeEnum.BeforeProp;
+                eventPlus.plotMethod = EventPlottingMethodEnum.SkipFirstState;
+                eventPlus.propDir = PropagationDirectionEnum.Forward;
+                
+                %%%Event line color
+                colorI = mod(2*(i-1)+1, length(colorEnums));
+                eventPlus.colorLineSpec.color = colorEnums(colorI);
+                
+                %%%Set up termination condition
+                dur = xferOrbitDurations(i)/2; %/2 so that we can meet a patch point in the middle
+                termCond = EventDurationTermCondition(dur); 
+                eventPlus.termCond = termCond;
+
+                var = termCond.getNewOptVar();
+                lvdOptim.vars.addVariable(var);
+                
+                var.lb = 0.50*dur;
+                var.ub = 1.50*dur;
+                var.useTf = true;
+                
+                %%%Set up Set Kinematic State Action
+                orbitModel = KeplerianElementSet(time, orbitIn(1), orbitIn(2), orbitIn(3), angleNegPiToPi(orbitIn(4)), angleNegPiToPi(orbitIn(5)), 0, frame);
+                orbitModel = orbitModel.convertToUniversalElementSet();
+                
+                action = SetKinematicStateAction(lvdData.stateLog, orbitModel);
+                eventPlus.addAction(action);
+                action.event = eventPlus;
+                
+                action.inheritTime = true;
+                action.inheritTimeFrom = InheritStateEnum.InheritFromSpecifiedEvent;
+                action.inheritTimeFromEvent = eventPeri;
+
+                action.inheritPosVel = true;
+                action.inheritPosVelFrom = InheritStateEnum.InheritFromSpecifiedEvent;
+                action.inheritPosVelFromEvent = eventPeri;
+
+                action.inheritStateElems = true;
+                action.inheritStateElemsFrom = InheritStateEnum.InheritFromSpecifiedEvent;
+                action.inheritStateElemsFromEvent = eventPeri;
+                
+                %%%Set up delta-v action
+                deltaV = mfmsOutputs.deltaVVectNTW(:,i-1);
+                action = AddDeltaVAction(deltaV, DeltaVFrameEnum.OrbitNtw, true);
+                eventPlus.addAction(action);
+                action.event = eventPlus;
+
+                var = AddDeltaVActionVariable(action);
+                lvdOptim.vars.addVariable(var);
+                var.lb = deltaV - 0.50*abs(deltaV);
+                var.ub = deltaV + 0.50*abs(deltaV);
+                var.varDVx = true;
+                var.varDVy = false;
+                var.varDVz = false;
+                
+                %%%Generate active vars cache
+                eventPlus.clearActiveOptVarsCache();
+                eventPlus.hasActiveOptVars();
+                
+                %%%Set previous forward prop event
+                prevFwdPropEvent = eventPlus;
+            end
+            
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            %Set up periapsis state for arrive body and propagate BACKWARDS
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            arriveBodyInfo = wayPtBodies(end);
+            frame = arriveBodyInfo.getBodyCenteredInertialFrame();
+            time = xferOrbits(end,9);
+            
+            %Compute an inbound orbit
+            vInfArriveIn = mfmsOutputs.vInfArrive;
+            vInfArriveMag = norm(vInfArriveIn);
+            
+            gmu = arriveBodyInfo.gm;
+            sma = -gmu / vInfArriveMag^2;
+            rP = arriveBodyInfo.radius + arriveBodyInfo.atmohgt + 0.1*arriveBodyInfo.radius;
+            ecc = 1 - rP/sma;
+            
+            turnAngle = 2*acos(-1/ecc);
+            R = rotz(rad2deg(turnAngle));
+            vInfArriveOut = R * vInfArriveIn;
+            
+            [smaIn, eIn, hHat, sHat, ~, ~, ~] = computeMultiFlyByParameters(vInfArriveIn, vInfArriveOut, gmu);
+            [hSMAIn, hEccIn, hIncIn, hRAANIn, hArgIn, ~, ~, ~] = computeHyperOrbitFromMultiFlybyParams(smaIn, eIn, hHat, sHat, true);
+            
+            %Create event
+            event = LaunchVehicleEvent(lvdData.script);
+            lvdData.script.addEvent(event);
+            event.name = sprintf('%s Periapsis (-)', arriveBodyInfo.name);
+            event.execActionsNode = ActionExecNodeEnum.BeforeProp;
+            event.plotMethod = EventPlottingMethodEnum.SkipFirstState;
+            event.propDir = PropagationDirectionEnum.Backward;
+            
+            %%%Event line color
+            event.colorLineSpec.color = ColorSpecEnum.Blue;
+                
+            %%%Set up termination condition
+            dur = xferOrbitDurations(end)/2; %/2 so that we can meet a patch point in the middle
+            termCond = EventDurationTermCondition(dur); %/2 so that we can meet a patch point in the middle
+            event.termCond = termCond;
+            
+            var = termCond.getNewOptVar();
+            lvdOptim.vars.addVariable(var);
+
+            var.lb = 0.50*dur;
+            var.ub = 1.50*dur;
+            var.useTf = true;
+
+            %%%Set up Set Kinematic State Action
+            orbitModel = KeplerianElementSet(time, hSMAIn, hEccIn, hIncIn, angleNegPiToPi(hRAANIn), angleNegPiToPi(hArgIn), 0, frame);
+            orbitModel = orbitModel.convertToUniversalElementSet();
+            action = SetKinematicStateAction(lvdData.stateLog, orbitModel);
+
+            action.inheritStateElems = true;
+            action.inheritStateElemsFrom = InheritStateEnum.InheritFromLastState;
+            event.addAction(action);
+            action.event = event;
+            
+            %%%Set up Set Kinematic State variable
+            var = SetKinematicStateActionVariable(action);
+            lvdOptim.vars.addVariable(var);
+
+            var.lb = 0.50*time;
+            var.ub = 1.50*time;
+            var.useTf = true;
+
+            var.orbitVar.lb = [0.75*orbitModel.c3, ...
+                               max(0.75*orbitModel.rP,arriveBodyInfo.radius+arriveBodyInfo.atmohgt), ...
+                               0, ...
+                               -2*pi, ...
+                               -2*pi, ...
+                               0];
+
+            var.orbitVar.ub = [1.25*orbitModel.c3, ...
+                               1.25*orbitModel.rP, ...
+                               pi, ...
+                               2*pi, ...
+                               2*pi, ...
+                               0];
+
+            var.orbitVar.varC3 = true;
+            var.orbitVar.varRp = true;
+            var.orbitVar.varInc = true;
+            var.orbitVar.varRaan = true;
+            var.orbitVar.varArg = true;
+            var.orbitVar.varTau = false;
+            
+            %%%Create continuity constraint
+            lvdData.createContinuityConstraints(event, prevFwdPropEvent, cBodyInfo);
+            
+            %Set up objective function
+            fcn = GenericMAConstraint('Total Spacecraft Mass', event, 0, 0, [], [], cBodyInfo);
+            objFcn = GenericObjectiveFcn(event, cBodyInfo.getBodyCenteredInertialFrame(), fcn, 1, lvdOptim, lvdData);
+            lvdOptim.objFcn.addObjFunc(objFcn);
+            lvdOptim.objFcn.dirType = ObjFcnDirectionTypeEnum.Maximize;
         end
         
         function initBody = getDefaultInitialBodyInfo(celBodyData)           

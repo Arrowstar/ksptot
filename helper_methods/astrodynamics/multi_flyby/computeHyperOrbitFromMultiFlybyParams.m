@@ -30,11 +30,7 @@ function [hSMA, hEcc, hInc, hRAAN, hArg, hTA, rpVect, rp] = computeHyperOrbitFro
     hRAAN = zeros(size(hSMA));
     bool = any(isnan(nHat),1);
     
-    try
     hRAAN(~bool) = atan2(nHat(2,~bool),nHat(1,~bool));
-    catch ME
-        a = 1;
-    end
     
     hP = hSMA.*(1-hEcc.^2);
     hTA = AngleZero2Pi(real(acos((hP./normRpVect - 1)./hEcc)));
