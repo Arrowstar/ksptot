@@ -316,6 +316,10 @@ classdef LvdData < matlab.mixin.SetGet
             event.name = sprintf('Departure from %s (+)', departBody.name);
             event.execActionsNode = ActionExecNodeEnum.BeforeProp;
             event.colorLineSpec.color = colorEnums(1);
+            event.integratorObj = event.ode113Integrator;
+            event.integratorObj.options.AbsTol = 1E-7;
+            event.integratorObj.options.RelTol = 1E-7;
+            event.integratorObj.options.NormControl = false;
             
             %%%Set up termination condition
             dur = xferOrbitDurations(1)/2;
@@ -363,7 +367,7 @@ classdef LvdData < matlab.mixin.SetGet
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 eventPeri = LaunchVehicleEvent(lvdData.script);
                 lvdData.script.addEvent(eventPeri);
-                eventPeri.name = sprintf('%s Periapsis', bodyInfo.name);
+                eventPeri.name = sprintf('%s Periapsis State', bodyInfo.name);
                 eventPeri.execActionsNode = ActionExecNodeEnum.BeforeProp;
                 eventPeri.plotMethod = EventPlottingMethodEnum.DoNotPlot;
                 eventPeri.propDir = PropagationDirectionEnum.Forward;
@@ -386,6 +390,7 @@ classdef LvdData < matlab.mixin.SetGet
                 action.inheritStateElemsFrom = InheritStateEnum.InheritFromLastState;
                 eventPeri.addAction(action);
                 action.event = eventPeri;
+                action.generateLvComponentElements();
                 
                 %%%Set up Set Kinematic State variable
                 var = SetKinematicStateActionVariable(action);
@@ -425,9 +430,13 @@ classdef LvdData < matlab.mixin.SetGet
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 eventMinus = LaunchVehicleEvent(lvdData.script);
                 lvdData.script.addEvent(eventMinus);
-                eventMinus.name = sprintf('%s Periapsis (-)', bodyInfo.name);
+                eventMinus.name = sprintf('Coast from %s Periapsis (-)', bodyInfo.name);
                 eventMinus.plotMethod = EventPlottingMethodEnum.PlotContinuous;
                 eventMinus.propDir = PropagationDirectionEnum.Backward;
+                eventMinus.integratorObj = eventMinus.ode113Integrator;
+                eventMinus.integratorObj.options.AbsTol = 1E-7;
+                eventMinus.integratorObj.options.RelTol = 1E-7;
+                eventMinus.integratorObj.options.NormControl = false;
                 
                 %%%Event line color
                 colorI = mod(2*(i-1), length(colorEnums));
@@ -452,10 +461,14 @@ classdef LvdData < matlab.mixin.SetGet
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 eventPlus = LaunchVehicleEvent(lvdData.script);
                 lvdData.script.addEvent(eventPlus);
-                eventPlus.name = sprintf('%s Periapsis (+)', bodyInfo.name);
+                eventPlus.name = sprintf('Coast from %s Periapsis (+)', bodyInfo.name);
                 eventPlus.execActionsNode = ActionExecNodeEnum.BeforeProp;
                 eventPlus.plotMethod = EventPlottingMethodEnum.SkipFirstState;
                 eventPlus.propDir = PropagationDirectionEnum.Forward;
+                eventPlus.integratorObj = eventPlus.ode113Integrator;
+                eventPlus.integratorObj.options.AbsTol = 1E-7;
+                eventPlus.integratorObj.options.RelTol = 1E-7;
+                eventPlus.integratorObj.options.NormControl = false;
                 
                 %%%Event line color
                 colorI = mod(2*(i-1)+1, length(colorEnums));
@@ -492,6 +505,8 @@ classdef LvdData < matlab.mixin.SetGet
                 action.inheritStateElems = true;
                 action.inheritStateElemsFrom = InheritStateEnum.InheritFromSpecifiedEvent;
                 action.inheritStateElemsFromEvent = eventPeri;
+                
+                action.generateLvComponentElements();
                 
                 %%%Set up delta-v action
                 deltaV = mfmsOutputs.deltaVVectNTW(:,i-1);
@@ -535,16 +550,19 @@ classdef LvdData < matlab.mixin.SetGet
             R = rotz(rad2deg(turnAngle));
             vInfArriveOut = R * vInfArriveIn;
             
-            [smaIn, eIn, hHat, sHat, ~, ~, ~] = computeMultiFlyByParameters(vInfArriveIn, vInfArriveOut, gmu);
-            [hSMAIn, hEccIn, hIncIn, hRAANIn, hArgIn, ~, ~, ~] = computeHyperOrbitFromMultiFlybyParams(smaIn, eIn, hHat, sHat, true);
+            [~, ~, hHat, sHat, ~, ~, ~] = computeMultiFlyByParameters(vInfArriveIn, vInfArriveOut, gmu);
+            [hSMAIn, hEccIn, hIncIn, hRAANIn, hArgIn, ~, ~, ~] = computeHyperOrbitFromMultiFlybyParams(sma, ecc, hHat, sHat, true);
             
             %Create event
             event = LaunchVehicleEvent(lvdData.script);
             lvdData.script.addEvent(event);
-            event.name = sprintf('%s Periapsis (-)', arriveBodyInfo.name);
+            event.name = sprintf('Coast from %s Arrival (-)', arriveBodyInfo.name);
             event.execActionsNode = ActionExecNodeEnum.BeforeProp;
             event.plotMethod = EventPlottingMethodEnum.SkipFirstState;
             event.propDir = PropagationDirectionEnum.Backward;
+            event.integratorObj.options.AbsTol = 1E-7;
+            event.integratorObj.options.RelTol = 1E-7;
+            event.integratorObj.options.NormControl = false;
             
             %%%Event line color
             event.colorLineSpec.color = ColorSpecEnum.Blue;
@@ -570,6 +588,8 @@ classdef LvdData < matlab.mixin.SetGet
             action.inheritStateElemsFrom = InheritStateEnum.InheritFromLastState;
             event.addAction(action);
             action.event = event;
+            
+            action.generateLvComponentElements();
             
             %%%Set up Set Kinematic State variable
             var = SetKinematicStateActionVariable(action);
