@@ -58,7 +58,17 @@ classdef ConstraintSet < matlab.mixin.SetGet
             tooltipStrs = {};
             
             for(i=1:length(obj.consts))
-                tooltipStrs{end+1} = obj.consts(i).getListboxTooltipStr(); %#ok<AGROW>
+                if(ismember(i,obj.lastRunValues.cCeqInds))
+                    bool = obj.lastRunValues.cCeqInds == i;
+                    scaledValue = max(obj.lastRunValues.ceq(bool));
+                elseif(ismember(i,obj.lastRunValues.cCInds))
+                    bool = obj.lastRunValues.cCInds == i;
+                    scaledValue = max(obj.lastRunValues.c(bool));
+                else
+                    scaledValue = 0;
+                end
+                
+                tooltipStrs{end+1} = obj.consts(i).getListboxTooltipStr(scaledValue); %#ok<AGROW>
             end
         end
         

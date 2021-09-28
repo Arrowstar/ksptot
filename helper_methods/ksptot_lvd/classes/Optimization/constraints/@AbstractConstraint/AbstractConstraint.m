@@ -86,7 +86,7 @@ classdef(Abstract) AbstractConstraint < matlab.mixin.SetGet & matlab.mixin.Heter
             name = sprintf('%s - Event %i', obj.getConstraintType(), obj.getConstraintEvent().getEventNum());
         end
         
-        function str = getListboxTooltipStr(obj)
+        function str = getListboxTooltipStr(obj, scaledValue)
             type = obj.getConstraintType();
             [lb, ub] = obj.getBounds();
             sF = obj.getScaleFactor();
@@ -101,15 +101,15 @@ classdef(Abstract) AbstractConstraint < matlab.mixin.SetGet & matlab.mixin.Heter
             end
             
             if(obj.evalType == ConstraintEvalTypeEnum.FixedBounds)
-                str = sprintf('%s\n\tEvent %u %s \n\tBounds: [%0.3g, %0.3g]\n\tScale factor: %0.3g%s', ...
-                              type, eventNum, evtNodeStr, lb, ub, sF, frameStr);
+                str = sprintf('%s\n\tEvent %u %s \n\tBounds: [%0.3g, %0.3g]\n\tScale factor: %0.3g%s\n\tScaled Value (last run): %0.3f', ...
+                              type, eventNum, evtNodeStr, lb, ub, sF, frameStr, scaledValue);
                           
             elseif(obj.evalType == ConstraintEvalTypeEnum.StateComparison)
                 symbol = obj.stateCompType.symbol;
                 compEventNum = obj.stateCompEvent.getEventNum();
                 
-                str = sprintf('%s\n\tEvent %u %s %s %s Event %u %s %s\n\tScale factor: %0.3g%s', ...
-                              type, eventNum, evtNodeStr, type, symbol, compEventNum, stateCompNodeStr, type, sF, frameStr);
+                str = sprintf('%s\n\tEvent %u %s %s %s Event %u %s %s\n\tScale factor: %0.3g%s\n\tScaled Value (last run): %0.3f', ...
+                              type, eventNum, evtNodeStr, type, symbol, compEventNum, stateCompNodeStr, type, sF, frameStr, scaledValue);
                 
             else
                 error('Unknown constraint evaluation type.');
