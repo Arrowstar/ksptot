@@ -11,7 +11,7 @@ classdef PatternSearchOptimizer < AbstractOptimizer
             obj.options = PatternSearchOptions();
         end
         
-        function optimize(obj, lvdOpt, writeOutput, callOutputFcn)
+        function optimize(obj, lvdOpt, writeOutput, callOutputFcn, hLvdMainGUI)
             [x0All, actVars, varNameStrs] = lvdOpt.vars.getTotalScaledXVector();
             [lbAll, ubAll, lbUsAll, ubUsAll] = lvdOpt.vars.getTotalScaledBndsVector();
 %             typicalX = lvdOpt.vars.getTypicalScaledXVector();

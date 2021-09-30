@@ -11,7 +11,7 @@ classdef FminconOptimizer < AbstractGradientOptimizer
             obj.options = FminconOptions();
         end
         
-        function optimize(obj, lvdOpt, writeOutput, callOutputFcn)
+        function optimize(obj, lvdOpt, writeOutput, callOutputFcn, hLvdMainGUI)
             [x0All, actVars, varNameStrs] = lvdOpt.vars.getTotalScaledXVector();
             [lbAll, ubAll, lbUsAll, ubUsAll] = lvdOpt.vars.getTotalScaledBndsVector();
             typicalX = lvdOpt.vars.getTypicalScaledXVector();
@@ -35,7 +35,7 @@ classdef FminconOptimizer < AbstractGradientOptimizer
             opts = obj.options.getOptionsForOptimizer(typicalX);
             
             if(obj.options.computeOptimalStepSizes == true)
-                optimalStepSizes = CustomFiniteDiffsCalculationMethod.determineOptimalStepSizes(@(x) CustomFiniteDiffsCalculationMethod.combinedConstrFun(x, lvdOpt.lvdData),x0All);
+                optimalStepSizes = CustomFiniteDiffsCalculationMethod.determineOptimalStepSizes(@(x) CustomFiniteDiffsCalculationMethod.combinedConstrFun(x, lvdOpt.lvdData), x0All, hLvdMainGUI);
                 
                 if(not(isempty(optimalStepSizes)))
                     opts.FiniteDifferenceStepSize = optimalStepSizes;
@@ -53,7 +53,8 @@ classdef FminconOptimizer < AbstractGradientOptimizer
                 
                 sparsityTF = gradCalcMethod.shouldComputeSparsity();
                 if(sparsityTF)
-                    hMsgBox = msgbox('Computing sparsity.  Please wait...');
+%                     hMsgBox = msgbox('Computing sparsity.  Please wait...');
+                    hMsgBox = uiprogressdlg(hLvdMainGUI, 'Message','Computing sparsity.  Please wait...', 'Title','Computing Sparsity', 'Indeterminate',true, 'Icon','info');
                 else
                     hMsgBox = NaN;
                 end
@@ -62,7 +63,7 @@ classdef FminconOptimizer < AbstractGradientOptimizer
                 gradCalcMethod.computeGradientSparsity(objFuncWrapper, x0All, fAtX0, obj.usesParallel());
                 
                 if(sparsityTF && isgraphics(hMsgBox))
-                    close(hMsgBox);
+                    close(hMsgBox); drawnow;
                 end
             end
             

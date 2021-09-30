@@ -82,7 +82,7 @@ classdef CustomFiniteDiffsCalculationMethod < AbstractGradientCalculationMethod
             cOut = [c(:);ceq(:)];
         end
         
-        function optimalStepSizes = determineOptimalStepSizes(fun, x0)
+        function optimalStepSizes = determineOptimalStepSizes(fun, x0, hLvdMainGUI)
             fAtX0 = fun(x0);
             
             hValsToTest = 10.^[-14:-2]; %#ok<NBRAK>
@@ -91,7 +91,8 @@ classdef CustomFiniteDiffsCalculationMethod < AbstractGradientCalculationMethod
             p = 1;
             N = length(hValsToTest);
             
-            hWaitbar = waitbar(0,'Computing optimal step sizes, please wait...');
+%             hWaitbar = waitbar(0,'Computing optimal step sizes, please wait...');
+            hWaitbar = uiprogressdlg(hLvdMainGUI, 'Message','Computing optimal step sizes, please wait...', 'Title','Step Size', 'ShowPercentage',true, 'Icon','info');
             derivs = [];
             q = parallel.pool.DataQueue;
             q.afterEach(@updateParallelWaitbar);
@@ -144,19 +145,10 @@ classdef CustomFiniteDiffsCalculationMethod < AbstractGradientCalculationMethod
             optimalStepSizes = max(reshapedBestHStep,[],1);
             
             function updateParallelWaitbar(~)
-                waitbar(p/N, hWaitbar);
+%                 waitbar(p/N, hWaitbar);
+                hWaitbar.Value = p/N;
                 p = p + 1;
             end
         end
     end
 end
-
-% fd = CustomFiniteDiffsCalculationMethod();
-% x0 = lvdData.optimizer.vars.getTotalScaledXVector();
-% fun = @(x) lvdData.optimizer.objFcn.evalObjFcn(x,lvdData.script.getEventForInd(1));
-% fAtX0 = fun(x0);
-% fd.computeGrad(fun, x0, fAtX0, true);
-
-% cFun = @(x) CustomFiniteDiffsCalculationMethod.combinedConstrFun(x,lvdData);
-% cAtX0 = cFun(x0);
-% fd.computeJacobian(cFun, x0, cAtX0, true)

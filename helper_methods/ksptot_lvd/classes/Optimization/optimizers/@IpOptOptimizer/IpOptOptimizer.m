@@ -11,7 +11,7 @@ classdef IpOptOptimizer < AbstractGradientOptimizer
             obj.options = IpoptOptions();
         end
         
-        function optimize(obj, lvdOpt, writeOutput, callOutputFcn)
+        function optimize(obj, lvdOpt, writeOutput, callOutputFcn, hLvdMainGUI)
             global ipoptFuncCount ipoptLastXVect
             ipoptFuncCount = 0;
             
@@ -41,7 +41,8 @@ classdef IpOptOptimizer < AbstractGradientOptimizer
             %sparsity calculations
             sparsityTF = gradCalcMethod.shouldComputeSparsity();
             if(sparsityTF)
-                hMsgBox = msgbox('Computing sparsity.  Please wait...');
+%                 hMsgBox = msgbox('Computing sparsity.  Please wait...');
+                hMsgBox = uiprogressdlg(hLvdMainGUI, 'Message','Computing sparsity.  Please wait...', 'Title','Computing Sparsity', 'Indeterminate',true, 'Icon','info');
             else
                 hMsgBox = NaN;
             end
@@ -50,7 +51,7 @@ classdef IpOptOptimizer < AbstractGradientOptimizer
             gradCalcMethod.computeGradientSparsity(objFuncWrapper, x0All, fAtX0, obj.usesParallel());
 
             if(sparsityTF && isgraphics(hMsgBox))
-                close(hMsgBox);
+                close(hMsgBox); drawnow nocallbacks;
             end
             %end sparsity calculations
             
