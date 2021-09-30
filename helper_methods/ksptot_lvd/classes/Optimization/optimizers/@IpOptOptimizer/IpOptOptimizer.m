@@ -206,14 +206,14 @@ classdef IpOptOptimizer < AbstractGradientOptimizer
             
             [~, stateLog] = objFcn(x);
             
-            finalStateLogEntry = stateLog.getFinalStateLogEntry();
-            finalStateLogEntryMA = finalStateLogEntry.getMAFormattedStateLogMatrix(true);
+%             finalStateLogEntry = stateLog.getFinalStateLogEntry();
+%             finalStateLogEntryMA = finalStateLogEntry.getMAFormattedStateLogMatrix(true);
             
-%             axes(hDispAxes);
+            stateLogMA = stateLog.getMAFormattedStateLogMatrix(true);
             
             if(strcmpi(state,'init') || strcmpi(state,'iter'))
                 IpOptOptimizer.writeOptimStatus(hOptimStatusLabel, optimValues, state, writeOutput, optimStartTic);
-                ma_UpdateStateReadout(hFinalStateOptimLabel, 'final', propNames, finalStateLogEntryMA, celBodyData);
+                ma_UpdateStateReadout(hFinalStateOptimLabel, 'final', propNames, stateLogMA, celBodyData);
                 IpOptOptimizer.generatePlots(x, optimValues, state, hDispAxes, lb, ub, varLabels, lbUsAll, ubUsAll);
                 
                 drawnow;

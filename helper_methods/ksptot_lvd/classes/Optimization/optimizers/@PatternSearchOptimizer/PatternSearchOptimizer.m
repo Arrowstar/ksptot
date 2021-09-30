@@ -116,12 +116,14 @@ classdef PatternSearchOptimizer < AbstractOptimizer
             
             [~, stateLog] = objFcn(x);
             
-            finalStateLogEntry = stateLog.getFinalStateLogEntry();
-            finalStateLogEntryMA = finalStateLogEntry.getMAFormattedStateLogMatrix(true);
+%             finalStateLogEntry = stateLog.getFinalStateLogEntry();
+%             finalStateLogEntryMA = finalStateLogEntry.getMAFormattedStateLogMatrix(true);
+
+            stateLogMA = stateLog.getMAFormattedStateLogMatrix(true);
                        
             if(strcmpi(flag,'init') || strcmpi(flag,'iter'))
                 PatternSearchOptimizer.writeOptimStatus(hOptimStatusLabel, optimValues, flag, writeOutput, optimStartTic);
-                ma_UpdateStateReadout(hFinalStateOptimLabel, 'final', propNames, finalStateLogEntryMA, celBodyData);
+                ma_UpdateStateReadout(hFinalStateOptimLabel, 'final', propNames, stateLogMA, celBodyData);
                 PatternSearchOptimizer.generatePlots(x, optimValues, flag, hDispAxes, lb, ub, varLabels, lbUsAll, ubUsAll);
                 drawnow;
             end

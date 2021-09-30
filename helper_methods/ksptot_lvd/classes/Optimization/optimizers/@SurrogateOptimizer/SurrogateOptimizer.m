@@ -119,10 +119,12 @@ classdef SurrogateOptimizer < AbstractOptimizer
             if(strcmpi(state,'iter'))
                 [~, stateLog] = objFcn(optimValues.currentX);
 
-                finalStateLogEntry = stateLog.getFinalStateLogEntry();
-                finalStateLogEntryMA = finalStateLogEntry.getMAFormattedStateLogMatrix(true);
+%                 finalStateLogEntry = stateLog.getFinalStateLogEntry();
+%                 finalStateLogEntryMA = finalStateLogEntry.getMAFormattedStateLogMatrix(true);
+
+                stateLogMA = stateLog.getMAFormattedStateLogMatrix(true);
                 
-                ma_UpdateStateReadout(hFinalStateOptimLabel, 'final', propNames, finalStateLogEntryMA, celBodyData);
+                ma_UpdateStateReadout(hFinalStateOptimLabel, 'final', propNames, stateLogMA, celBodyData);
             end
             
             if(strcmpi(state,'init') || strcmpi(state,'iter'))

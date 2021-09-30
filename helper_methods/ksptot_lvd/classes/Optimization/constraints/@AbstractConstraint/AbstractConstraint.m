@@ -101,7 +101,7 @@ classdef(Abstract) AbstractConstraint < matlab.mixin.SetGet & matlab.mixin.Heter
             end
             
             if(obj.evalType == ConstraintEvalTypeEnum.FixedBounds)
-                str = sprintf('%s\n\tEvent %u %s \n\tBounds: [%0.3g, %0.3g]\n\tScale factor: %0.3g%s\n\tScaled Value (last run): %0.3f', ...
+                str = sprintf('%s\n\tEvent %u %s \n\tBounds: [%0.3g, %0.3g]\n\tScale factor: %0.3g%s\n\tScaled Value (last run): %0.6f', ...
                               type, eventNum, evtNodeStr, lb, ub, sF, frameStr, scaledValue);
                           
             elseif(obj.evalType == ConstraintEvalTypeEnum.StateComparison)

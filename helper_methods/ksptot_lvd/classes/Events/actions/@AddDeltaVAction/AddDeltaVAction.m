@@ -38,27 +38,7 @@ classdef AddDeltaVAction < AbstractEventAction
             newStateLogEntry.velocity = newStateLogEntry.velocity + dvKmsVect;
             
             if(obj.useDeltaMass)
-                tankStates = newStateLogEntry.getAllActiveTankStates();
-                tankStatesMasses = [tankStates.tankMass];
-                stageStates = newStateLogEntry.stageStates;
-                lvState = newStateLogEntry.lvState;
-                ut = newStateLogEntry.time;
-                rVect = newStateLogEntry.position;
-                vVect = newStateLogEntry.velocity;
-                bodyInfo = newStateLogEntry.centralBody;
-                steeringModel = newStateLogEntry.steeringModel;
-                
-                altitude = newStateLogEntry.altitude;
-                pressure = getPressureAtAltitude(bodyInfo, altitude);
-                throttle = 1.0;
-                
-                powerStorageStates = newStateLogEntry.getAllActivePwrStorageStates();
-                storageSoCs = NaN(size(powerStorageStates));
-                for(j=1:length(powerStorageStates))
-                    storageSoCs(j) = powerStorageStates(j).getStateOfCharge();
-                end
-
-                [tankMDots, totalThrust, ~, ~] = newStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, tankStatesMasses, stageStates, throttle, lvState, pressure, ut, rVect, vVect, bodyInfo, steeringModel, storageSoCs, powerStorageStates);
+                [tankMDots, totalThrust, tankStates] = AddDeltaVAction.getTankMDotsAndTotalThrustForStateLogEntry(newStateLogEntry);
                 
                 if(abs(sum(tankMDots)) > 0)
                     tankMDotsKgS = tankMDots * 1000;
@@ -156,6 +136,30 @@ classdef AddDeltaVAction < AbstractEventAction
             output = AppDesignerGUIOutput({false});
             lvd_AddDeltaVActionGUI_App(action, lv.lvdData, output);
             addActionTf = output.output{1};
+        end
+        
+        function [tankMDots, totalThrust, tankStates] = getTankMDotsAndTotalThrustForStateLogEntry(newStateLogEntry)
+            tankStates = newStateLogEntry.getAllActiveTankStates();
+            tankStatesMasses = [tankStates.tankMass];
+            stageStates = newStateLogEntry.stageStates;
+            lvState = newStateLogEntry.lvState;
+            ut = newStateLogEntry.time;
+            rVect = newStateLogEntry.position;
+            vVect = newStateLogEntry.velocity;
+            bodyInfo = newStateLogEntry.centralBody;
+            steeringModel = newStateLogEntry.steeringModel;
+
+            altitude = newStateLogEntry.altitude;
+            pressure = getPressureAtAltitude(bodyInfo, altitude);
+            throttle = 1.0;
+
+            powerStorageStates = newStateLogEntry.getAllActivePwrStorageStates();
+            storageSoCs = NaN(size(powerStorageStates));
+            for(j=1:length(powerStorageStates))
+                storageSoCs(j) = powerStorageStates(j).getStateOfCharge();
+            end
+
+            [tankMDots, totalThrust, ~, ~] = newStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, tankStatesMasses, stageStates, throttle, lvState, pressure, ut, rVect, vVect, bodyInfo, steeringModel, storageSoCs, powerStorageStates);
         end
     end
 end

@@ -28,6 +28,10 @@ if(isdeployed)
     end
 end
 
+%Turn off class destructor warnings.  These pop up a lot for App Designer
+%UIs when closing while using uiwait().
+warning('off','MATLAB:class:DestructorError');
+
 %Populate initial ksptot log file
 writeKsptotLogFileHeaderToConsole();
 

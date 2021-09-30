@@ -138,7 +138,7 @@ classdef GenericQuatInterpSteeringModel < AbstractSteeringModel
         end
         
         function newSteeringModel = deepCopy(obj)
-            newSteeringModel = GenericQuatInterpSteeringModel(obj.t0, obj.tDur, obj.initQuat, obj.finalQuat);
+            newSteeringModel = GenericQuatInterpSteeringModel(obj.t0, obj.tDur, obj.alpha0, obj.beta0, obj.gamma0, obj.alpha1, obj.beta1, obj.gamma1);
 
             newSteeringModel.angleContinuity = obj.angleContinuity;
 

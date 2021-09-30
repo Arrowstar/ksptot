@@ -14,12 +14,21 @@ classdef MinAltitudeReachedValidator < AbstractLaunchVehicleDataValidator
         function [errors, warnings] = validate(obj)
             errors = LaunchVehicleDataValidationError.empty(0,1);
             warnings = LaunchVehicleDataValidationWarning.empty(0,1);
-            
-            finalEntry = obj.lvdData.stateLog.getFinalStateLogEntry();
+
             minAltitude = obj.lvdData.settings.minAltitude;
+
+            entries = obj.lvdData.stateLog.getAllEntries();
+            altitudes = [entries.altitude];
+            bool = altitudes <= minAltitude;
             
-            if(finalEntry.altitude <= minAltitude)
-                str = sprintf('Minimum altitude of %.3f km reached or exceeded.  Propagation terminated.', minAltitude);
+            if(any(bool))
+                events = unique([entries(bool).event]);
+                for(i=1:length(events))
+                    eventNums(i) = events(i).getEventNum(); %#ok<AGROW>
+                end
+                eventsStr = makeEventsStr(unique(eventNums));
+                
+                str = sprintf('Minimum altitude of %.3f km reached or exceeded.  Propagation terminated early. (Events: %s)', minAltitude, eventsStr);
                 warnings(end+1) = LaunchVehicleDataValidationWarning(str);
             end
         end

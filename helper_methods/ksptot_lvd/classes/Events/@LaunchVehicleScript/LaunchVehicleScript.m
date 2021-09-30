@@ -288,12 +288,16 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
                 evtStartNum = 1;  %disable the event start exec time optimization for now, it is buggy/broken
                 stateLog.clearStateLog();
                 initStateLogEntry = obj.lvdData.initialState; 
+                initStateLogEntry.event = obj.lvdData.script.getEventForInd(evtStartNum);
                 obj.nonSeqEvts.resetAllNumExecsRemaining();
             else
                 stateLog.clearStateLogAtOrAfterEvent(evtToStartScriptExecAt);
                 initStateLogEntry = stateLog.getFinalStateLogEntry().deepCopy();
                 obj.nonSeqEvts = stateLog.getFinalNonSeqEvtsState().nonSeqEvts.copy();
             end
+            
+            stateLog.appendStateLogEntries(initStateLogEntry);
+            initStateLogEntry = initStateLogEntry.deepCopy();
             
             %notify that script propagation has started
             if(notifyScriptEvents && isOnParallelWorker() == false)

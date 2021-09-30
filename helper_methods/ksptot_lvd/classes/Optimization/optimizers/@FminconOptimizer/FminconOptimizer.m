@@ -151,12 +151,14 @@ classdef FminconOptimizer < AbstractGradientOptimizer
             
             [~, stateLog] = objFcn(x);
             
-            finalStateLogEntry = stateLog.getFinalStateLogEntry();
-            finalStateLogEntryMA = finalStateLogEntry.getMAFormattedStateLogMatrix(true);
+%             finalStateLogEntry = stateLog.getFinalStateLogEntry();
+%             finalStateLogEntryMA = finalStateLogEntry.getMAFormattedStateLogMatrix(true);
+
+            stateLogMA = stateLog.getMAFormattedStateLogMatrix(true);
             
             if(strcmpi(state,'init') || strcmpi(state,'iter'))
                 FminconOptimizer.writeOptimStatus(hOptimStatusLabel, optimValues, state, writeOutput, optimStartTic);
-                ma_UpdateStateReadout(hFinalStateOptimLabel, 'final', propNames, finalStateLogEntryMA, celBodyData);
+                ma_UpdateStateReadout(hFinalStateOptimLabel, 'final', propNames, stateLogMA, celBodyData);
                 FminconOptimizer.generatePlots(x, optimValues, state, hDispAxes, lb, ub, varLabels, lbUsAll, ubUsAll);
                 drawnow;
             end
