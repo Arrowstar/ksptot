@@ -639,6 +639,10 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                 evtStateLogEntries = lvdStateLogEntries([lvdStateLogEntries.event] == evt);
                 evtStateLogEntries = evtStateLogEntries(:)';
                 
+                if(isempty(evtStateLogEntries))
+                    continue;
+                end
+                
                 cartElem = convertToFrame(getCartesianElementSetRepresentation(evtStateLogEntries), viewInFrame);
                 
                 times = [evtStateLogEntries.time];

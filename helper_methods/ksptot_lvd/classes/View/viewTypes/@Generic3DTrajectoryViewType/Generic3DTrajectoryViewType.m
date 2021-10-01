@@ -12,7 +12,8 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
         end
         
         function [hCBodySurf, childrenHGs] = plotStateLog(obj, orbitNumToPlot, lvdData, viewProfile, handles, app)
-            dAxes = app.dispAxes;
+%             dAxes = app.dispAxes;
+            dAxes = handles.dispAxes;
             hFig = app.ma_LvdMainGUI;
             celBodyData = lvdData.celBodyData;
             stateLog = lvdData.stateLog;
