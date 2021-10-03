@@ -162,12 +162,27 @@ classdef LvdData < matlab.mixin.SetGet
             baseFrame = topLevelBody.getBodyCenteredInertialFrame();
         end
         
-        function createContinuityConstraints(obj, evt, selEvt, refBodyInfo)
+        function createContinuityConstraints(obj, evt, selEvt, refBodyInfo, useTime, timeScale, usePos, posScale, useVel, velScale, useAtt, attScale, useTankMass, tankMassScale)
             arguments
                 obj(1,1) LvdData
                 evt(1,1) LaunchVehicleEvent
                 selEvt(1,1) LaunchVehicleEvent
                 refBodyInfo = [];
+                
+                useTime(1,1) logical = true;
+                timeScale(1,1) double = 1.0;
+                
+                usePos(1,1) logical = true;
+                posScale(1,1) double = 1.0;
+                
+                useVel(1,1) logical = true;
+                velScale(1,1) double = 1.0;
+                
+                useAtt(1,1) logical = false;
+                attScale(1,1) double = 1.0;
+                
+                useTankMass(1,1) logical = false;
+                tankMassScale(1,1) double = 1.0;
             end
             
             eventNum = evt.getEventNum();
@@ -189,18 +204,68 @@ classdef LvdData < matlab.mixin.SetGet
 
             cs = AbstractConstraint.empty(1,0);
 
+            %time
+            if(useTime)
+                c = GenericMAConstraint('Universal Time', refEvt, 0, 0, [], [], refBodyInfo);
+                c.setScaleFactor(timeScale);
+                cs(end+1) = c;
+            end
+            
             %position
-            cs(end+1) = GenericMAConstraint('Position Vector (X)', refEvt, 0, 0, [], [], refBodyInfo);
-            cs(end+1) = GenericMAConstraint('Position Vector (Y)', refEvt, 0, 0, [], [], refBodyInfo);
-            cs(end+1) = GenericMAConstraint('Position Vector (Z)', refEvt, 0, 0, [], [], refBodyInfo);
+            if(usePos)
+                c = GenericMAConstraint('Position Vector (X)', refEvt, 0, 0, [], [], refBodyInfo);
+                c.setScaleFactor(posScale);
+                cs(end+1) = c;
+
+                c = GenericMAConstraint('Position Vector (Y)', refEvt, 0, 0, [], [], refBodyInfo);
+                c.setScaleFactor(posScale);
+                cs(end+1) = c;
+                
+                c = GenericMAConstraint('Position Vector (Z)', refEvt, 0, 0, [], [], refBodyInfo);
+                c.setScaleFactor(posScale);
+                cs(end+1) = c;
+            end
 
             %velocity
-            cs(end+1) = GenericMAConstraint('Velocity Vector (X)', refEvt, 0, 0, [], [], refBodyInfo);
-            cs(end+1) = GenericMAConstraint('Velocity Vector (Y)', refEvt, 0, 0, [], [], refBodyInfo);
-            cs(end+1) = GenericMAConstraint('Velocity Vector (Z)', refEvt, 0, 0, [], [], refBodyInfo);
-
-            %time
-            cs(end+1) = GenericMAConstraint('Universal Time', refEvt, 0, 0, [], [], refBodyInfo);
+            if(useVel)
+                c = GenericMAConstraint('Velocity Vector (X)', refEvt, 0, 0, [], [], refBodyInfo);
+                c.setScaleFactor(velScale);
+                cs(end+1) = c;
+                
+                c = GenericMAConstraint('Velocity Vector (Y)', refEvt, 0, 0, [], [], refBodyInfo);
+                c.setScaleFactor(velScale);
+                cs(end+1) = c;
+                
+                c = GenericMAConstraint('Velocity Vector (Z)', refEvt, 0, 0, [], [], refBodyInfo);
+                c.setScaleFactor(velScale);
+                cs(end+1) = c;
+            end
+            
+            %attitude
+            if(useAtt)
+                c = RollAngleConstraint(refEvt, 0, 0);
+                c.setScaleFactor(attScale);
+                cs(end+1) = c;
+                
+                c = PitchAngleConstraint(refEvt, 0, 0);
+                c.setScaleFactor(attScale);
+                cs(end+1) = c;
+                
+                c = YawAngleConstraint(refEvt, 0, 0);
+                c.setScaleFactor(attScale);
+                cs(end+1) = c;
+            end
+            
+            %tank masses
+            if(useTankMass)
+                [~,tanks] = obj.launchVehicle.getTanksListBoxStr();
+                
+                for(i=1:length(tanks))
+                    c = TankMassConstraint(tanks(i), refEvt, 0, 0);
+                    c.setScaleFactor(tankMassScale);
+                    cs(end+1) = c; %#ok<AGROW>
+                end
+            end
 
             for(i=1:length(cs))
                 c = cs(i);
@@ -454,7 +519,7 @@ classdef LvdData < matlab.mixin.SetGet
                 var.useTf = true;
                 
                 %%%Create continuity constraint
-                lvdData.createContinuityConstraints(eventMinus, prevFwdPropEvent, cBodyInfo);
+                lvdData.createContinuityConstraints(eventMinus, prevFwdPropEvent, cBodyInfo, true, 1, true, 1, true, 1, false, 1, false, 1);
                 
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 %Set up periapsis state event and propagate FORWARDS
@@ -621,7 +686,7 @@ classdef LvdData < matlab.mixin.SetGet
             var.orbitVar.varTau = false;
             
             %%%Create continuity constraint
-            lvdData.createContinuityConstraints(event, prevFwdPropEvent, cBodyInfo);
+            lvdData.createContinuityConstraints(event, prevFwdPropEvent, cBodyInfo, true, 1, true, 1, true, 1, false, 1, false, 1);
             
             %Set up objective function
             fcn = GenericMAConstraint('Total Spacecraft Mass', event, 0, 0, [], [], cBodyInfo);

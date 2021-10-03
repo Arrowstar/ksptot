@@ -82,9 +82,9 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
         
         surfTextureCache uint8 = [];
         
-        lastComputedTime(1,1) double = NaN;
-        lastComputedRVect(3,1) double = NaN(3,1);
-        lastComputedVVect(3,1) double = NaN(3,1);
+        lastComputedTime double = [];
+        lastComputedRVect double = [];
+        lastComputedVVect double = [];
     end
     
     properties(Access=private)
