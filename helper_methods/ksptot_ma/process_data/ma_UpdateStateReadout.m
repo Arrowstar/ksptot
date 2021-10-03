@@ -9,6 +9,7 @@ function ma_UpdateStateReadout(hStateReadoutLabel, whichState, propNames, stateL
     if(strcmpi(whichState,'initial'))
         [~,I] = min(stateLog(:,1));
         state = stateLog(I,:);
+        state = stateLog(stateLog(:,1) == state(1,1), :);
         
         if(height(state) > 1)
             [~,I] = min(state(:,13));
@@ -18,11 +19,12 @@ function ma_UpdateStateReadout(hStateReadoutLabel, whichState, propNames, stateL
     elseif(strcmpi(whichState,'final'))
         [~,I] = max(stateLog(:,1));
         state = stateLog(I,:);
+        state = stateLog(stateLog(:,1) == state(1,1), :);
         
         if(height(state) > 1)
             [~,I] = max(state(:,13));
             state = state(I,:);
-            state = state(1,:);
+            state = state(end,:);
         end 
     else
         error(['Unknown state type "', whichState,'" when generating state readouts.']);

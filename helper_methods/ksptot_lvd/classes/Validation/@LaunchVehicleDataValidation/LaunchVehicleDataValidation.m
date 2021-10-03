@@ -29,8 +29,7 @@ classdef LaunchVehicleDataValidation < matlab.mixin.SetGet
         function validate(obj)
             errors = LaunchVehicleDataValidationError.empty(0,1);
             warnings = LaunchVehicleDataValidationWarning.empty(0,1);
-            
-            allOkay = LaunchVehicleDataValidationOK();
+
             for(i=1:length(obj.validators)) %#ok<*NO4LP>
                 validator = obj.validators(i);
                 [subErrors, subWarnings] = validator.validate();
@@ -45,7 +44,7 @@ classdef LaunchVehicleDataValidation < matlab.mixin.SetGet
             end
             
             if(isempty(obj.outputs) && isempty(errors) && isempty(warnings))
-                obj.outputs = allOkay;
+                obj.outputs = LaunchVehicleDataValidationOK();
             else
                 obj.outputs = horzcat(obj.outputs,errors,warnings);
             end

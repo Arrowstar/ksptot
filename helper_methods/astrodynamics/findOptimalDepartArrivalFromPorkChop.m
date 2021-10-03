@@ -1,4 +1,4 @@
-function [arrivalUT, departUT, dv] = findOptimalDepartArrivalFromPorkChop(arrivalUTGuess, departUTGuess, departBodyInfo, arrivalBodyInfo, gmu, quant2Opt, departTimeArr, arrivalTimeArr)
+function [arrivalUT, departUT, dv] = findOptimalDepartArrivalFromPorkChop(arrivalUTGuess, departUTGuess, departBodyInfo, arrivalBodyInfo, gmu, quant2Opt, departTimeArr, arrivalTimeArr, mainGUIHandle)
 %findOptimalDepartArrival Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -42,9 +42,12 @@ function [arrivalUT, departUT, dv] = findOptimalDepartArrivalFromPorkChop(arriva
             waitBarStr = 'Searching for optimal departure/arrival...';
     end
     
+    hUiProgDlg = uiprogressdlg(mainGUIHandle, 'Message',waitBarStr);
+    
     A = [-1, 1];
     b = 0;
-    [x,dv] = multiStartCommonRun(waitBarStr, tpoints, objFunc, x0, A, b, lb, ub, []);
+    [x,dv] = multiStartCommonRun(waitBarStr, tpoints, objFunc, x0, A, b, lb, ub, [], hUiProgDlg);
+    close(hUiProgDlg);
     
     arrivalUT = x(1);
     departUT = x(2);

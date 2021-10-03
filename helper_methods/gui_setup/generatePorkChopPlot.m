@@ -97,7 +97,7 @@ function generatePorkChopPlot(mainGUIHandle)
             xpos = departTimeArr(c)/(secInDay);
             ypos = arrivalTimeArr(r)/(secInDay);
 
-            [arrivalUT, departUT, dv] = findOptimalDepartArrivalFromPorkChop(ypos*(secInDay), xpos*(secInDay), departBodyInfo, arrivalBodyInfo, gmu, options.quant2opt, departTimeArr, arrivalTimeArr);
+            [arrivalUT, departUT, dv] = findOptimalDepartArrivalFromPorkChop(ypos*(secInDay), xpos*(secInDay), departBodyInfo, arrivalBodyInfo, gmu, options.quant2opt, departTimeArr, arrivalTimeArr, mainGUIHandle);
         end
         userData{2,7} = departUT;
         userData{2,8} = arrivalUT;

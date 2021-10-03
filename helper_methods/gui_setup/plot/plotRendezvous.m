@@ -23,10 +23,12 @@ function plotRendezvous(hAxis, timeArr, bodyInfo, iniOrbit, finOrbit, xfrOrbit, 
     grid on;
     view(3);
 
-    dRad = bodyInfo.radius;
-    [X,Y,Z] = sphere(30);
-    surf(dRad*X,dRad*Y,dRad*Z);
-    colormap(bodyInfo.bodycolor);
+%     dRad = bodyInfo.radius;
+%     [X,Y,Z] = sphere(30);
+%     surf(dRad*X,dRad*Y,dRad*Z);
+%     colormap(bodyInfo.bodycolor);
+
+    ma_initOrbPlot([], hAxis, bodyInfo);
 
     parentBodyInfo = bodyInfo.getParBodyInfo(celBodyData);
 

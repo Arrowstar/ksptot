@@ -1,6 +1,30 @@
-function [dVVect, dVVectNTW, eRVect, hOrbit, eTA] = computeDepartureOrbit(eSMA, eEcc, eInc, eRAAN, eArg, eMA, eEpoch, gmuDepartBody, hVInf, departUT, arrivalUT, departPlotNumOptIters, x0, iniLB, iniUB, departBody, arrivalBody, numRevs, parentBodyInfo, celBodyData)
+function [dVVect, dVVectNTW, eRVect, hOrbit, eTA] = computeDepartureOrbit(eSMA, eEcc, eInc, eRAAN, eArg, eMA, eEpoch, gmuDepartBody, hVInf, departUT, arrivalUT, departPlotNumOptIters, x0, iniLB, iniUB, departBody, arrivalBody, numRevs, parentBodyInfo, celBodyData, hUiProgDlg)
 %computeDepartureOrbit Summary of this function goes here
 %   Detailed explanation goes here
+    arguments
+        eSMA
+        eEcc
+        eInc
+        eRAAN
+        eArg
+        eMA
+        eEpoch
+        gmuDepartBody
+        hVInf
+        departUT
+        arrivalUT
+        departPlotNumOptIters
+        x0
+        iniLB
+        iniUB
+        departBody
+        arrivalBody
+        numRevs
+        parentBodyInfo
+        celBodyData
+        hUiProgDlg = [];
+    end
+
     ePeriod = computePeriod(eSMA, gmuDepartBody);
     meanMotion = computeMeanMotion(eSMA, gmuDepartBody);
     if(not(isempty(eMA) && isempty(eEpoch)))
@@ -21,7 +45,7 @@ function [dVVect, dVVectNTW, eRVect, hOrbit, eTA] = computeDepartureOrbit(eSMA, 
         %Optimization run
         [eTA,~] = multiStartCommonRun('Searching for departure orbit...',...
                                        departPlotNumOptIters,...
-                                       fun, x0, [], [], iniLB, iniUB, []);
+                                       fun, x0, [], [], iniLB, iniUB, [], hUiProgDlg);
         
         if(isempty(eMA) && isempty(eEpoch))
             deltaT=0;

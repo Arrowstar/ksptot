@@ -1,4 +1,23 @@
-function hDepartDisp = computeDeparture(celBodyData, departBody, arrivalBody, departUT, arrivalUT, eSMA, eEcc, eInc, eRAAN, eArg, gmuXfr, cBody, options, eMA, eEpoch)
+function hDepartDisp = computeDeparture(celBodyData, departBody, arrivalBody, departUT, arrivalUT, eSMA, eEcc, eInc, eRAAN, eArg, gmuXfr, cBody, options, eMA, eEpoch, hUiProgDlg)
+    arguments
+        celBodyData
+        departBody
+        arrivalBody
+        departUT
+        arrivalUT
+        eSMA
+        eEcc
+        eInc
+        eRAAN
+        eArg
+        gmuXfr
+        cBody
+        options
+        eMA
+        eEpoch
+        hUiProgDlg = [];
+    end
+    
     gmuDepartBody = celBodyData.(lower(departBody)).gm;
     timeOfFlight = (arrivalUT - departUT)/(86400);
     numRevs=0;
@@ -81,7 +100,7 @@ function hDepartDisp = computeDeparture(celBodyData, departBody, arrivalBody, de
         plotBnds = [-AngleZero2Pi(computeTrueAFromRadiusEcc(maxPlotR, eSMA, eEcc)) AngleZero2Pi(computeTrueAFromRadiusEcc(maxPlotR, eSMA, eEcc))];
     end
     
-    [dVVect, dVVectNTW, eRVect, hOrbit, eTA] = computeDepartureOrbit(eSMA, eEcc, eInc, eRAAN, eArg, eMA, eEpoch, gmuDepartBody, hVInf, departUT, arrivalUT, options.departplotnumoptiters, x0, iniLB, iniUB, departBody, arrivalBody, 0, parentBodyInfo, celBodyData);
+    [dVVect, dVVectNTW, eRVect, hOrbit, eTA] = computeDepartureOrbit(eSMA, eEcc, eInc, eRAAN, eArg, eMA, eEpoch, gmuDepartBody, hVInf, departUT, arrivalUT, options.departplotnumoptiters, x0, iniLB, iniUB, departBody, arrivalBody, 0, parentBodyInfo, celBodyData, hUiProgDlg);
     
 %     ePeriod = computePeriod(eSMA, gmuDepartBody);
 %     meanMotion = computeMeanMotion(eSMA, gmuDepartBody);

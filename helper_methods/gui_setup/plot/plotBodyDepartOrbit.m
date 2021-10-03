@@ -37,12 +37,15 @@ function plotBodyDepartOrbit(departAxis)
     plot3(dispDVVectX, dispDVVectY, dispDVVectZ,'r', 'LineWidth',2');
 
     dRad = celBodyData.(departBody).radius;
-    bColor = celBodyData.(departBody).bodycolor;
+%     bColor = celBodyData.(departBody).bodycolor;
     
     hold on;
-    [X,Y,Z] = sphere(30);
-    surf(dRad*X,dRad*Y,dRad*Z);
-    colormap(bColor);
+%     [X,Y,Z] = sphere(30);
+%     surf(dRad*X,dRad*Y,dRad*Z);
+%     colormap(bColor);
+
+    ma_initOrbPlot([], departAxis, celBodyData.(departBody));
+
     plotOrbit('k', eSMA, eEcc, eInc, eRAAN, eArg, iniOrbPlotBnd(1), iniOrbPlotBnd(2), gmuDepartBody);
     
     hTruMax = abs(computeTrueAFromRadiusEcc(5*dRad, hSMA, hEcc));
