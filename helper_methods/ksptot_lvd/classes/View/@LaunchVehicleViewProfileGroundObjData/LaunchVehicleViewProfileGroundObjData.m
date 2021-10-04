@@ -10,9 +10,11 @@ classdef LaunchVehicleViewProfileGroundObjData < matlab.mixin.SetGet
         xInterps(1,:) cell = {};
         yInterps(1,:) cell = {};
         zInterps(1,:) cell = {};
-        xInterpsSc(1,:) cell = {};
-        yInterpsSc(1,:) cell = {};
-        zInterpsSc(1,:) cell = {};
+%         xInterpsSc(1,:) cell = {};
+%         yInterpsSc(1,:) cell = {};
+%         zInterpsSc(1,:) cell = {};
+
+        vehPosVelData LaunchVehicleViewPosVelInterp
         
         viewFrames(1,:) AbstractReferenceFrame
         showGrdObjLoS(1,:) logical
@@ -22,21 +24,22 @@ classdef LaunchVehicleViewProfileGroundObjData < matlab.mixin.SetGet
     end
     
     methods
-        function obj = LaunchVehicleViewProfileGroundObjData(groundObj, celBodyData)
+        function obj = LaunchVehicleViewProfileGroundObjData(groundObj, vehPosVelData, celBodyData)
             obj.groundObj = groundObj;
+            obj.vehPosVelData = vehPosVelData;
             obj.celBodyData = celBodyData;
         end
         
-        function addData(obj, times, rVectsGrdObj, rVectsSc, viewInFrame, showGrdObjLoS)
+        function addData(obj, times, rVectsGrdObj, viewInFrame, showGrdObjLoS)
             obj.timesArr(end+1) = {times};
             
             obj.xInterps{end+1} = griddedInterpolant(times, rVectsGrdObj(1,:), 'spline', 'linear');
             obj.yInterps{end+1} = griddedInterpolant(times, rVectsGrdObj(2,:), 'spline', 'linear');
             obj.zInterps{end+1} = griddedInterpolant(times, rVectsGrdObj(3,:), 'spline', 'linear');
             
-            obj.xInterpsSc{end+1} = griddedInterpolant(times, rVectsSc(1,:), 'spline', 'linear');
-            obj.yInterpsSc{end+1} = griddedInterpolant(times, rVectsSc(2,:), 'spline', 'linear');
-            obj.zInterpsSc{end+1} = griddedInterpolant(times, rVectsSc(3,:), 'spline', 'linear');
+%             obj.xInterpsSc{end+1} = griddedInterpolant(times, rVectsSc(1,:), 'spline', 'linear');
+%             obj.yInterpsSc{end+1} = griddedInterpolant(times, rVectsSc(2,:), 'spline', 'linear');
+%             obj.zInterpsSc{end+1} = griddedInterpolant(times, rVectsSc(3,:), 'spline', 'linear');
             
             obj.viewFrames(end+1) = viewInFrame;
             obj.showGrdObjLoS(end+1) = showGrdObjLoS;
@@ -46,6 +49,9 @@ classdef LaunchVehicleViewProfileGroundObjData < matlab.mixin.SetGet
         end
         
         function plotBodyMarkerAtTime(obj, time, hAx)
+            [rVect, ~] = obj.vehPosVelData.getPositionVelocityAtTime(time);
+            rVectInd = 1;
+            
             for(i=1:length(obj.timesArr))
                 times = obj.timesArr{i};
                 
@@ -78,15 +84,20 @@ classdef LaunchVehicleViewProfileGroundObjData < matlab.mixin.SetGet
                     end
                     
                     if(obj.showGrdObjLoS(i))
-                        xInterp = obj.xInterpsSc{i};
-                        xSc = xInterp(time);
+%                         xInterp = obj.xInterpsSc{i};
+%                         xSc = xInterp(time);
+%                         
+%                         yInterp = obj.yInterpsSc{i};
+%                         ySc = yInterp(time);
+%                         
+%                         zInterp = obj.zInterpsSc{i};
+%                         zSc = zInterp(time);
                         
-                        yInterp = obj.yInterpsSc{i};
-                        ySc = yInterp(time);
-                        
-                        zInterp = obj.zInterpsSc{i};
-                        zSc = zInterp(time);
-                        
+                        xSc = rVect(1, rVectInd);
+                        ySc = rVect(2, rVectInd);
+                        zSc = rVect(3, rVectInd);
+                        rVectInd = rVectInd + 1;
+
                         if(not(isempty(obj.losMarkerPlot{i})) && isvalid(obj.losMarkerPlot{i})) % && isa(obj.markerPlot{i}, 'matlab.graphics.primitive.Transform')
                             obj.losMarkerPlot{i}.XData = [xGrd xSc];
                             obj.losMarkerPlot{i}.YData = [yGrd ySc];

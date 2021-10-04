@@ -19,8 +19,9 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             stateLog = lvdData.stateLog;
             
 %             axes(dAxes);
-            cla(dAxes);
-            cla(dAxes,'reset');
+%             cla(dAxes);
+%             cla(dAxes,'reset');
+            delete(dAxes.Children);
             dAxes.Color = viewProfile.backgroundColor.color;
             
             hFig.Renderer = viewProfile.renderer.renderer;
@@ -112,7 +113,7 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                     numRows = size(maStateLogMatrix,1);
 %                     subStateLogsMat = NaN(numRows, 13);
                     
-                    cartesianEntry = convertToFrame(getCartesianElementSetRepresentation(entries, true),viewInFrame);
+                    cartesianEntry = convertToFrame(getCartesianElementSetRepresentation(entries, false),viewInFrame);
                     times = [cartesianEntry.time]';
                     rVect = [cartesianEntry.rVect]';
                     vVect = [cartesianEntry.vVect]';
@@ -289,11 +290,11 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             dAxes.GridColor = viewProfile.majorGridColor.color;
             dAxes.MinorGridColor = viewProfile.minorGridColor.color;
             dAxes.GridAlpha = viewProfile.gridTransparency;
-            axis(dAxes,'equal');
-            axis(dAxes,'tight');
+%             axis(dAxes,'equal');
+%             axis(dAxes,'tight');
             
-            xlabel(dAxes, '');
-            ylabel(dAxes, '');
+%             xlabel(dAxes, '');
+%             ylabel(dAxes, '');
             
             set(dAxes,'XTickLabel',[]);
             set(dAxes,'YTickLabel',[]);
@@ -345,14 +346,14 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             end
                         
             vehPosVelData = LaunchVehicleViewProfile.createVehPosVelData(subStateLogs, lvdData.script.evts, viewInFrame);
-            vehAttData = LaunchVehicleViewProfile.createVehAttitudeData(lvdStateLogEntries, lvdData.script.evts, viewInFrame);
+            vehAttData = LaunchVehicleViewProfile.createVehAttitudeData(vehPosVelData, lvdStateLogEntries, lvdData.script.evts, viewInFrame);
             
             hold(dAxes,'on');
             viewProfile.createBodyMarkerData(dAxes, subStateLogs, viewInFrame, showSoI, viewProfile.meshEdgeAlpha, lvdData.script.evts);           
             viewProfile.createTrajectoryMarkerData(subStateLogs, lvdData.script.evts);
-            viewProfile.createBodyAxesData(lvdStateLogEntries, lvdData.script.evts, viewInFrame);
+            viewProfile.createBodyAxesData(vehPosVelData, vehAttData); %lvdStateLogEntries, lvdData.script.evts, viewInFrame
             viewProfile.createSunLightSrc(dAxes, viewInFrame);
-            viewProfile.createGroundObjMarkerData(dAxes, lvdStateLogEntries, lvdData.script.evts, viewInFrame, celBodyData);
+            viewProfile.createGroundObjMarkerData(dAxes, lvdStateLogEntries, vehPosVelData, lvdData.script.evts, viewInFrame, celBodyData);
             viewProfile.createCentralBodyData(viewCentralBody, hCBodySurfXForm, viewInFrame);
             viewProfile.createPointData(viewInFrame, subStateLogs, lvdData.script.evts);           
             viewProfile.createVectorData(viewInFrame, subStateLogs, lvdData.script.evts);

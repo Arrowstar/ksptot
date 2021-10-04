@@ -22,4 +22,7 @@ function [rVect, vVect] = getStateAtTime_alg(time, sma, ecc, inc, raan, arg, mea
     else
         [rVect, vVect] = getStatefromKepler_Alg(sma, ecc, inc, raan, argp, tru, gmu);
     end
+    
+    rVect(isnan(rVect)) = 0;
+    vVect(isnan(vVect)) = 0;
 end

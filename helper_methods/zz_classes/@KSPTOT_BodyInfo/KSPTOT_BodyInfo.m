@@ -82,9 +82,11 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
         
         surfTextureCache uint8 = [];
         
-        lastComputedTime(1,1) double = NaN;
-        lastComputedRVect(3,1) double = NaN(3,1);
-        lastComputedVVect(3,1) double = NaN(3,1);
+        lastComputedTime = [];
+        lastComputedRVect = [];
+        lastComputedVVect = [];
+        
+        lastComputedRVectVVect = [];
     end
     
     properties(Access=private)
@@ -103,6 +105,9 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
             obj.sunDotNormalCache = SunDotNormalDataCache(obj);
             obj.atmoTempCache = AtmoTempDataCache(obj);
             obj.numIntStateCache = CelestialBodySunRelStateDataCache(obj);
+            
+            obj.bodyInertialFrameCache = BodyCenteredInertialFrame(obj, obj.celBodyData);
+            obj.bodyFixedFrameCache = BodyFixedFrame(obj, obj.celBodyData);
         end
         
         function set.atmotempsunmultcurve(obj,newValue)
@@ -195,17 +200,17 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
         end
         
         function frame = getBodyCenteredInertialFrame(obj)
-            if(isempty(obj.bodyInertialFrameCache))
-                obj.bodyInertialFrameCache = BodyCenteredInertialFrame(obj, obj.celBodyData);
-            end
+%             if(isempty(obj.bodyInertialFrameCache))
+%                 obj.bodyInertialFrameCache = BodyCenteredInertialFrame(obj, obj.celBodyData);
+%             end
             
             frame = obj.bodyInertialFrameCache;
         end
         
         function frame = getBodyFixedFrame(obj)
-            if(isempty(obj.bodyFixedFrameCache))
-                obj.bodyFixedFrameCache = BodyFixedFrame(obj, obj.celBodyData);
-            end
+%             if(isempty(obj.bodyFixedFrameCache))
+%                 obj.bodyFixedFrameCache = BodyFixedFrame(obj, obj.celBodyData);
+%             end
             
             frame = obj.bodyFixedFrameCache;
         end
@@ -219,9 +224,6 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
                 [rVects, vVects] = getStateAtTime(obj, times, gmu);
 
                 states = CartesianElementSet(times, rVects, vVects, frame);
-%                 for(i=1:length(times))
-%                     states(i) = CartesianElementSet(times(i), rVects(:,i), vVects(:,i), frame); %#ok<AGROW>
-%                 end
             else
                 frame = obj.getBodyCenteredInertialFrame();
                 
@@ -296,6 +298,8 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
                     end
 
                     if(isempty(thisParentBodyInfo))
+                        parentGMs(end+1) = 0;
+                        
                         break;
                     else
                         parentGMs(end+1) = bodyInfo.getParentGmuFromCache(); %#ok<AGROW>
@@ -446,6 +450,14 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
             end
                         
             obj.setPropTypeEnum();
+            
+            if(isempty(obj.bodyInertialFrameCache))
+                obj.bodyInertialFrameCache = BodyCenteredInertialFrame(obj, obj.celBodyData);
+            end
+            
+            if(isempty(obj.bodyFixedFrameCache))
+                obj.bodyFixedFrameCache = BodyFixedFrame(obj, obj.celBodyData);
+            end
         end
         
         function bodyObj = getObjFromBodyInfoStruct(bodyInfo)

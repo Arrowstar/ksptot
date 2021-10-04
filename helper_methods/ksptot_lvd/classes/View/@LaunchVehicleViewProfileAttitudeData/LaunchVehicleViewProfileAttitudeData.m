@@ -20,8 +20,8 @@ classdef LaunchVehicleViewProfileAttitudeData < matlab.mixin.SetGet
         dcm23Interps(1,:) cell = {};
         dcm33Interps(1,:) cell = {};
         
-        scale(1,1) double = 100;
-        markerPlot(1,:) cell = {}
+%         scale(1,1) double = 100;
+%         markerPlot(1,:) cell = {}
     end
     
     methods    

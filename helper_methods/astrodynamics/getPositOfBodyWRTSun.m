@@ -14,45 +14,48 @@ function [rVectB, vVectB] = getPositOfBodyWRTSun(time, bodyInfo, celBodyData)
     else
         try %try new way
             if(bodyInfo.propTypeEnum == BodyPropagationTypeEnum.TwoBody || (numel(time) == 1 && time == bodyInfo.epoch))
-                if(numel(time) == 1 && bodyInfo.lastComputedTime == time)
-                    rVectB = bodyInfo.lastComputedRVect;
-                    vVectB = bodyInfo.lastComputedVVect;
-                else
-                    chain = bodyInfo.getOrbitElemsChain();
-                    [rVectB, vVectB] = getPositOfBodyWRTSun_alg(time, chain{:});
-
-                    if(numel(time) == 1)
-                        bodyInfo.lastComputedTime = time;
-                        bodyInfo.lastComputedRVect = rVectB;
-                        bodyInfo.lastComputedVVect = vVectB;
-                    end
-                end
-
-%                 if(numel(time) == 1)
-%                     bool = time == bodyInfo.lastComputedTime;
-%                     if(any(bool))
-%                         rVectB = bodyInfo.lastComputedRVect(:,bool);
-%                         rVectB = rVectB(:,1);
-%                         
-%                         vVectB = bodyInfo.lastComputedVVect(:,bool);
-%                         vVectB = vVectB(:,1);
-%                         
-%                     else
-%                         chain = bodyInfo.getOrbitElemsChain();
-%                         [rVectB, vVectB] = getPositOfBodyWRTSun_alg(time, chain{:});
-% 
-%                         bodyInfo.lastComputedTime = horzcat(bodyInfo.lastComputedTime, time);
-%                         bodyInfo.lastComputedRVect = horzcat(bodyInfo.lastComputedRVect, rVectB);
-%                         bodyInfo.lastComputedVVect = horzcat(bodyInfo.lastComputedVVect, vVectB);
-%                     end
+%                 if(numel(time) == 1 && numel(bodyInfo.lastComputedTime) > 0 && bodyInfo.lastComputedTime == time)
+%                     rVectB = bodyInfo.lastComputedRVect;
+%                     vVectB = bodyInfo.lastComputedVVect;
 %                 else
 %                     chain = bodyInfo.getOrbitElemsChain();
 %                     [rVectB, vVectB] = getPositOfBodyWRTSun_alg(time, chain{:});
 % 
-%                     bodyInfo.lastComputedTime = horzcat(bodyInfo.lastComputedTime, time);
-%                     bodyInfo.lastComputedRVect = horzcat(bodyInfo.lastComputedRVect, rVectB);
-%                     bodyInfo.lastComputedVVect = horzcat(bodyInfo.lastComputedVVect, vVectB);
+%                     if(numel(time) == 1)
+%                         bodyInfo.lastComputedTime = time;
+%                         bodyInfo.lastComputedRVect = rVectB;
+%                         bodyInfo.lastComputedVVect = vVectB;
+%                     end
 %                 end
+
+                if(numel(time) == 1)
+                    bool = time == bodyInfo.lastComputedTime;
+                    
+                    if(any(bool))
+                        rVectVVectB = bodyInfo.lastComputedRVectVVect(:,bool);
+                        rVectB = rVectVVectB(1:3,1);
+                        vVectB = rVectVVectB(4:6,1);
+                        
+                    else
+                        chain = bodyInfo.getOrbitElemsChain();
+                        [rVectB, vVectB] = getPositOfBodyWRTSun_alg(time, chain{:});
+
+                        bodyInfo.lastComputedTime = horzcat(bodyInfo.lastComputedTime, time);
+                        bodyInfo.lastComputedRVectVVect = horzcat(bodyInfo.lastComputedRVectVVect, [rVectB;vVectB]);
+                        
+                        [bodyInfo.lastComputedTime,ia,~] = unique(bodyInfo.lastComputedTime,'stable');
+                        bodyInfo.lastComputedRVectVVect = bodyInfo.lastComputedRVectVVect(:, ia);
+                    end
+                else
+                    chain = bodyInfo.getOrbitElemsChain();
+                    [rVectB, vVectB] = getPositOfBodyWRTSun_alg(time, chain{:});
+
+                    bodyInfo.lastComputedTime = horzcat(bodyInfo.lastComputedTime, time);
+                    bodyInfo.lastComputedRVectVVect = horzcat(bodyInfo.lastComputedRVectVVect, [rVectB;vVectB]);
+                    
+                    [bodyInfo.lastComputedTime,ia,~] = unique(bodyInfo.lastComputedTime,'stable');
+                    bodyInfo.lastComputedRVectVVect = bodyInfo.lastComputedRVectVVect(:, ia);
+                end
 
             elseif(bodyInfo.propTypeEnum == BodyPropagationTypeEnum.Numerical)
                 parentBodyInfo = bodyInfo.getParBodyInfo(celBodyData);

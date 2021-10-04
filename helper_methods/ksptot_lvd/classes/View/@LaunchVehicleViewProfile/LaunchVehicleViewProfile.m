@@ -274,76 +274,76 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
             obj.sunLighting.updateSunLightingPosition(time);
         end
         
-        function createBodyAxesData(obj, lvdStateLogEntries, evts, viewInFrame)
+        function createBodyAxesData(obj, vehPosVelData, vehAttData) %lvdStateLogEntries, evts, viewInFrame
             obj.clearAllBodyAxesData();
-            obj.markerTrajAxesData = LaunchVehicleViewProfileBodyAxesData(obj.scBodyAxesScale);
+            obj.markerTrajAxesData = LaunchVehicleViewProfileBodyAxesData(vehPosVelData, vehAttData, obj.scBodyAxesScale, obj.showScBodyAxes);
             
-            if(obj.showScBodyAxes)
-                for(i=1:length(evts))
-                    evt = evts(i);
-                    evtStateLogEntries = lvdStateLogEntries([lvdStateLogEntries.event] == evt);
-                    evtStateLogEntries = evtStateLogEntries(:)';           
-                    
-                    cartElem = convertToFrame(getCartesianElementSetRepresentation(evtStateLogEntries), viewInFrame);
-                    
-                    times = [evtStateLogEntries.time];
-
-                    rVects = [cartElem.rVect];
-                    rotMatsBodyToView = NaN(3, 3, length(evtStateLogEntries));
-                    for(j=1:length(evtStateLogEntries))
-                        %get body position in view frame
-                        entry = evtStateLogEntries(j);
-
-                        %get body axes in view frame
-                        rotMatBodyToInertial = entry.steeringModel.getBody2InertialDcmAtTime(entry.time, entry.position, entry.velocity, entry.centralBody);
-
-                        [~, ~, ~, rotMatToInertial12] = viewInFrame.getOffsetsWrtInertialOrigin(entry.time, cartElem(j));
-                        [~, ~, ~, rotMatToInertial32] = entry.centralBody.getBodyCenteredInertialFrame().getOffsetsWrtInertialOrigin(entry.time, cartElem(j));
-
-                        rotMatsBodyToView(:,:,j) = rotMatToInertial12' * rotMatToInertial32 * rotMatBodyToInertial; %body to inertial -> inertial to inertial -> inertial to view frame
-                    end
-
-                    [times,ia,~] = unique(times,'stable');
-                    rVects = rVects(:,ia);
-                    rotMatsBodyToView = rotMatsBodyToView(:,:,ia);
-
-                    [times,I] = sort(times);
-                    rVects = rVects(:,I);
-                    rotMatsBodyToView = rotMatsBodyToView(:,:,I);
-                    
-                    switch(evt.plotMethod)
-                        case EventPlottingMethodEnum.PlotContinuous
-                            %nothing
-
-                        case EventPlottingMethodEnum.SkipFirstState
-                            times = times(2:end);
-                            rVects = rVects(:,2:end);
-                            rotMatsBodyToView = rotMatsBodyToView(:,:,2:end);
-
-                        case EventPlottingMethodEnum.DoNotPlot
-                            times = [];
-                            rVects = [];
-                            rotMatsBodyToView = [];
-
-                        otherwise
-                            error('Unknown event plotting method: %s', EventPlottingMethodEnum.DoNotPlot.name);
-                    end
-
-                    if(length(times) >= 2 && all(diff(times)>0))
-                        obj.markerTrajAxesData.addData(times, rVects, rotMatsBodyToView);
-                    end
-                end
-            end
+%             if(obj.showScBodyAxes)
+%                 for(i=1:length(evts))
+%                     evt = evts(i);
+%                     evtStateLogEntries = lvdStateLogEntries([lvdStateLogEntries.event] == evt);
+%                     evtStateLogEntries = evtStateLogEntries(:)';           
+%                     
+%                     cartElem = convertToFrame(getCartesianElementSetRepresentation(evtStateLogEntries), viewInFrame);
+%                     
+%                     times = [evtStateLogEntries.time];
+% 
+%                     rVects = [cartElem.rVect];
+%                     rotMatsBodyToView = NaN(3, 3, length(evtStateLogEntries));
+%                     for(j=1:length(evtStateLogEntries))
+%                         %get body position in view frame
+%                         entry = evtStateLogEntries(j);
+% 
+%                         %get body axes in view frame
+%                         rotMatBodyToInertial = entry.steeringModel.getBody2InertialDcmAtTime(entry.time, entry.position, entry.velocity, entry.centralBody);
+% 
+%                         [~, ~, ~, rotMatToInertial12] = viewInFrame.getOffsetsWrtInertialOrigin(entry.time, cartElem(j));
+%                         [~, ~, ~, rotMatToInertial32] = entry.centralBody.getBodyCenteredInertialFrame().getOffsetsWrtInertialOrigin(entry.time, cartElem(j));
+% 
+%                         rotMatsBodyToView(:,:,j) = rotMatToInertial12' * rotMatToInertial32 * rotMatBodyToInertial; %body to inertial -> inertial to inertial -> inertial to view frame
+%                     end
+% 
+%                     [times,ia,~] = unique(times,'stable');
+%                     rVects = rVects(:,ia);
+%                     rotMatsBodyToView = rotMatsBodyToView(:,:,ia);
+% 
+%                     [times,I] = sort(times);
+%                     rVects = rVects(:,I);
+%                     rotMatsBodyToView = rotMatsBodyToView(:,:,I);
+%                     
+%                     switch(evt.plotMethod)
+%                         case EventPlottingMethodEnum.PlotContinuous
+%                             %nothing
+% 
+%                         case EventPlottingMethodEnum.SkipFirstState
+%                             times = times(2:end);
+%                             rVects = rVects(:,2:end);
+%                             rotMatsBodyToView = rotMatsBodyToView(:,:,2:end);
+% 
+%                         case EventPlottingMethodEnum.DoNotPlot
+%                             times = [];
+%                             rVects = [];
+%                             rotMatsBodyToView = [];
+% 
+%                         otherwise
+%                             error('Unknown event plotting method: %s', EventPlottingMethodEnum.DoNotPlot.name);
+%                     end
+% 
+%                     if(length(times) >= 2 && all(diff(times)>0))
+%                         obj.markerTrajAxesData.addData(times, rVects, rotMatsBodyToView);
+%                     end
+%                 end
+%             end
         end
         
-        function createGroundObjMarkerData(obj, dAxes, lvdStateLogEntries, evts, viewInFrame, celBodyData)
+        function createGroundObjMarkerData(obj, dAxes, lvdStateLogEntries, vehPosVelData, evts, viewInFrame, celBodyData)
             obj.clearAllGrdObjData();
             
             for(i=1:length(obj.groundObjsToPlot))
                 grdObj = obj.groundObjsToPlot(i);
                 
                 if(ismember(grdObj.centralBodyInfo, obj.bodiesToPlot) || grdObj.centralBodyInfo == viewInFrame.getOriginBody())
-                    grdObjData = LaunchVehicleViewProfileGroundObjData(grdObj, celBodyData);
+                    grdObjData = LaunchVehicleViewProfileGroundObjData(grdObj, vehPosVelData, celBodyData);
                     obj.markerGrdObjData(end+1) = grdObjData;
                     
                     for(j=1:length(evts))
@@ -351,8 +351,8 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                         evtStateLogEntries = lvdStateLogEntries([lvdStateLogEntries.event] == evt);
                         numEntries = length(evtStateLogEntries);
                         
-                        scCartElem = convertToFrame(getCartesianElementSetRepresentation(evtStateLogEntries), viewInFrame);
-                        allTimes = [scCartElem.time];
+%                         scCartElem = convertToFrame(getCartesianElementSetRepresentation(evtStateLogEntries), viewInFrame);
+                        allTimes = [evtStateLogEntries.time];
                         
                         elemSet = GeographicElementSet.empty(1,0);
                         
@@ -366,11 +366,11 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
 
                         times = [elemSet.time];
                         rVectsGrdObj = [elemSet.rVect];
-                        rVectsSc= [scCartElem.rVect];
+%                         rVectsSc= [scCartElem.rVect];
                         
                         [times,ia,~] = unique(times);
                         rVectsGrdObj = rVectsGrdObj(:,ia);
-                        rVectsSc = rVectsSc(:,ia);
+%                         rVectsSc = rVectsSc(:,ia);
 
                         switch(evt.plotMethod)
                             case EventPlottingMethodEnum.PlotContinuous
@@ -379,19 +379,19 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                             case EventPlottingMethodEnum.SkipFirstState
                                 times = times(2:end);
                                 rVectsGrdObj = rVectsGrdObj(2:end,:);
-                                rVectsSc = rVectsSc(2:end,:);
+%                                 rVectsSc = rVectsSc(2:end,:);
                                 
                             case EventPlottingMethodEnum.DoNotPlot
                                 times = [];
                                 rVectsGrdObj = [];
-                                rVectsSc = [];
+%                                 rVectsSc = [];
 
                             otherwise
                                 error('Unknown event plotting method: %s', EventPlottingMethodEnum.DoNotPlot.name);
                         end
                         
                         if(length(times) >= 2 && all(diff(times)>0))
-                            grdObjData.addData(times, rVectsGrdObj, rVectsSc, viewInFrame, obj.showGrdObjLoS);
+                            grdObjData.addData(times, rVectsGrdObj, viewInFrame, obj.showGrdObjLoS);
                         
                             if(obj.showGndTracks)
                                 hold(dAxes,'on');
@@ -631,12 +631,13 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
             end
         end
         
-        function vehAttData = createVehAttitudeData(lvdStateLogEntries, evts, viewInFrame)
+        function vehAttData = createVehAttitudeData(vehPosVelData, lvdStateLogEntries, evts, viewInFrame)
             vehAttData = LaunchVehicleViewProfileAttitudeData();            
-
+            
             for(i=1:length(evts))
                 evt = evts(i);
-                evtStateLogEntries = lvdStateLogEntries([lvdStateLogEntries.event] == evt);
+                bool = [lvdStateLogEntries.event] == evt;
+                evtStateLogEntries = lvdStateLogEntries(bool);
                 evtStateLogEntries = evtStateLogEntries(:)';
                 
                 if(isempty(evtStateLogEntries))

@@ -42,7 +42,7 @@ function LoS = LoS2Target(stateLogEntry, bodyInfo, eclipseBodyInfo, targetBodyIn
             
             stnElemSet = station.getStateAtTime(time);
 %             stnElemSet = stnElemSet.convertToFrame(inertialFrame).convertToCartesianElementSet();
-            stnElemSet = stnElemSet.convertToFrame(sunInertialFrame).convertToCartesianElementSet();           
+            stnElemSet = stnElemSet.convertToCartesianElementSet().convertToFrame(sunInertialFrame);           
             rVectTargetwrtSun = stnElemSet.rVect;
             
 %             stnRVectECIRelToParent = stnElemSet.rVect;

@@ -7,7 +7,12 @@ function [hCBodySurf, hCBodySurfXForm] = ma_initOrbPlot(hFig, orbitDispAxes, bod
     set(orbitDispAxes,'YTickLabel',[]);
     set(orbitDispAxes,'ZTickLabel',[]);
     grid(orbitDispAxes,'on');
-%     view(orbitDispAxes,3);
+
+    if(any(orbitDispAxes.DataAspectRatio ~= [1 1 1]))
+        axis(orbitDispAxes, 'equal');
+    end
+    
+    axis(orbitDispAxes, 'tight');
     
     if(~isempty(bodyInfo))
         dRad = bodyInfo.radius;
@@ -45,7 +50,6 @@ function [hCBodySurf, hCBodySurfXForm] = ma_initOrbPlot(hFig, orbitDispAxes, bod
     mColor = colorFromColorMap(bodyInfo.bodycolor);
     plot3(orbitDispAxes, 0, 0, 0,'Marker','o','MarkerEdgeColor',mColor,'MarkerFaceColor',mColor,'MarkerSize',3);
     
-    axis(orbitDispAxes, 'equal');
-    hold(orbitDispAxes,'off');
+    hold(orbitDispAxes, 'off');
 end
 
