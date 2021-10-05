@@ -84,7 +84,8 @@ classdef LaunchVehicleDataValidation < matlab.mixin.SetGet
                 obj.outputs(i).writeToLabel(hLbl);
                 lblUseCnt = lblUseCnt+1;
             end
-            drawnow;
+
+            drawnow limitrate nocallbacks;
         end
         
         function clearOutputs(obj)

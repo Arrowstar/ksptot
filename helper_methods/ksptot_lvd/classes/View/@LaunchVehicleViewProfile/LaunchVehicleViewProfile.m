@@ -80,7 +80,7 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         sensorTgtsToPlot(1,:) AbstractSensorTarget
         
         %central body transform
-        hCBodySurfXForm = matlab.graphics.GraphicsPlaceholder();
+        hCBodySurfXForm = []; %matlab.graphics.GraphicsPlaceholder()
         
         %view properties (set by user indirectly through UI controls)
         updateViewAxesLimits(1,1) logical = true;

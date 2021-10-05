@@ -38,7 +38,7 @@ classdef KeplerianElementSet < AbstractElementSet
                 gmu(i) = obj(i).frame.getOriginBody().gm;
             end
 
-            [rVect, vVect] = vect_getStatefromKepler([obj.sma], [obj.ecc], [obj.inc], [obj.raan], [obj.arg], [obj.tru], gmu);
+            [rVect, vVect] = vect_getStatefromKepler([obj.sma], [obj.ecc], [obj.inc], [obj.raan], [obj.arg], [obj.tru], gmu, false);
 
             obj = obj(:)';
             cartElemSet = CartesianElementSet([obj.time], rVect, vVect, [obj.frame]);

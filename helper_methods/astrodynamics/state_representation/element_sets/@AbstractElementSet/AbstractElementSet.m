@@ -102,7 +102,15 @@ classdef (Abstract) AbstractElementSet < matlab.mixin.SetGet & matlab.mixin.Cust
                 createObjOfArrayVal = true;
             end
             
-            convertCartElemSet = CartesianElementSet(times, rVect3, vVect3, toFrame, createObjOfArrayVal);            
+            if(num == 1)
+                convertCartElemSet.time = times;
+                convertCartElemSet.rVect = rVect3;
+                convertCartElemSet.vVect = vVect3;
+                convertCartElemSet.frame = toFrame;
+                convertCartElemSet.createObjOfArray = createObjOfArrayVal;
+            else
+                convertCartElemSet = CartesianElementSet(times, rVect3, vVect3, toFrame, createObjOfArrayVal);   
+            end
             
             switch obj(1).typeEnum
                 case ElementSetEnum.CartesianElements

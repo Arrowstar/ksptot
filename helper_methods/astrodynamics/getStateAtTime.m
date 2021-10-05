@@ -22,6 +22,7 @@ function [rVect, vVect] = getStateAtTime(bodyInfo, time, gmu)
             [rVect, vVect] = vect_getStatefromKepler(sma, ecc, inc, raan, argp, tru, gmu, true); 
         else
             [rVect, vVect] = getStatefromKepler_Alg(sma, ecc, inc, raan, argp, tru, gmu);
+%             [rVect, vVect] = vect_getStatefromKepler(sma, ecc, inc, raan, argp, tru, gmu, true); 
         end
         
     elseif(bodyInfo.propTypeEnum == BodyPropagationTypeEnum.Numerical)

@@ -4,7 +4,7 @@ classdef LaunchVehicleViewProfileCentralBodyData < matlab.mixin.SetGet
     
     properties
         bodyInfo KSPTOT_BodyInfo = KSPTOT_BodyInfo();
-        hCBodySurfXForm = matlab.graphics.GraphicsPlaceholder();
+        hCBodySurfXForm = []; %matlab.graphics.GraphicsPlaceholder();
         viewFrame AbstractReferenceFrame
     end
     

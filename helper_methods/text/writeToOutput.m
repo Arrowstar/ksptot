@@ -64,5 +64,5 @@ function writeToOutput(handle,str,msgType, varargin)
         end
     end
     
-    drawnow;
+    drawnow limitrate nocallbacks;
 end
