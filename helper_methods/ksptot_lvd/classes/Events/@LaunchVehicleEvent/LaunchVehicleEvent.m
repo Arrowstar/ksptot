@@ -29,6 +29,7 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
         %%%%%
         forceModelPropagator(1,:) ForceModelPropagator
         twoBodyPropagator(1,:) TwoBodyPropagator
+        secOrdGravOnlyPropagator(1,:) SecondOrderGravOnlyPropagator
         
         %%%%%
         %Integrators
@@ -39,6 +40,7 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
         ode23Integrator(1,:) ODE23Integrator 
         ode23sIntegrator(1,:) ODE23sIntegrator 
         ode15sIntegrator(1,:) ODE15sIntegrator
+        rkn1210Integrator(1,:) RKN1210Integrator
         
         %Fixed Step Size
         ode5Integrator(1,:) ODE5Integrator
@@ -70,6 +72,7 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
             
             obj.forceModelPropagator = ForceModelPropagator();
             obj.twoBodyPropagator = TwoBodyPropagator();
+            obj.secOrdGravOnlyPropagator = SecondOrderGravOnlyPropagator();
             
             obj.ode45Integrator = ODE45Integrator();
             obj.ode113Integrator = ODE113Integrator();
@@ -77,6 +80,7 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
             obj.ode23sIntegrator = ODE23sIntegrator();
             obj.ode15sIntegrator = ODE15sIntegrator();
             obj.ode5Integrator = ODE5Integrator();
+            obj.rkn1210Integrator = RKN1210Integrator();
         end
         
         function lvdData = get.lvdData(obj)
@@ -346,7 +350,11 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
             if(isempty(obj.twoBodyPropagator))
                 obj.twoBodyPropagator = TwoBodyPropagator();
             end
-            
+
+            if(isempty(obj.secOrdGravOnlyPropagator))
+                obj.secOrdGravOnlyPropagator = SecondOrderGravOnlyPropagator();
+            end
+
             if(isempty(obj.propagatorObj))
                 obj.propagatorObj = obj.forceModelPropagator;
             end
@@ -373,6 +381,10 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
             
             if(isempty(obj.ode5Integrator))
                 obj.ode5Integrator = ODE5Integrator();
+            end
+
+            if(isempty(obj.rkn1210Integrator))
+                obj.rkn1210Integrator = RKN1210Integrator();
             end
             
             if(isempty(obj.integratorObj))

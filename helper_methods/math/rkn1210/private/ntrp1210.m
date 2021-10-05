@@ -16,7 +16,7 @@ function [yinterp,ypinterp] = ntrp1210(tinterp,t,y,tnew,ynew,klast,phi,psi,idxNo
 
 
 % References;
-% [1] "Interpolating Runge-Kutta-Nyström Methods of High Order", C.
+% [1] "Interpolating Runge-Kutta-NystrÃ¶m Methods of High Order", C.
 %     Tsitouras, G. Papageorgiou, Intern. J. Computer Math., vol 47,
 %     pp. 209-217 (1993).
 

@@ -112,7 +112,6 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             end
         end
         
-        %this probably no longer works, needs tank masses and stuff
         function [t,y,yp] = getSecondOrderIntegratorStateRepresentation(obj)
             t = obj.time;
             

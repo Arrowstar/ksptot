@@ -51,7 +51,6 @@ classdef(Abstract) AbstractPropagator < matlab.mixin.SetGet & matlab.mixin.Heter
             
             vVect = y(4:6);
             vVect = vVect(:);
-%             [ut, rVect, ~, ~] = ForceModelPropagator.decomposeIntegratorTandY(t,y);
 
             %Max Sim Time Constraint
             simTimeRemaining = maxSimTime - ut;
@@ -69,7 +68,7 @@ classdef(Abstract) AbstractPropagator < matlab.mixin.SetGet & matlab.mixin.Heter
             causes(end+1) = minAltTermCause;
 
             %Non-Sequence Events
-            for(i=1:length(nonSeqTermConds))
+            for(i=1:length(nonSeqTermConds)) %#ok<*NO4LP> 
                 nonSeqTermCond = nonSeqTermConds{i};
 
                 [value(end+1),isterminal(end+1),direction(end+1)] = nonSeqTermCond(t,y); %#ok<AGROW>
@@ -96,8 +95,14 @@ classdef(Abstract) AbstractPropagator < matlab.mixin.SetGet & matlab.mixin.Heter
             ut = t;
             rVect = y(1:3);
             vVect = y(4:6);
-            tankStates = y(7:6+numTankStates);
-            pwrStorageStates = y(6+numTankStates+1 : 6+numTankStates+numPwrStorageStates);
+
+            if(numel(y) > 6)
+                tankStates = y(7:6+numTankStates);
+                pwrStorageStates = y(6+numTankStates+1 : 6+numTankStates+numPwrStorageStates);
+            else
+                tankStates = zeros(numTankStates,1);
+                pwrStorageStates = zeros(numPwrStorageStates,1);
+            end
         end
     end
 end

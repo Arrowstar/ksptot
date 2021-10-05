@@ -1,4 +1,4 @@
-classdef ODE45Integrator < AbstractIntegrator
+classdef ODE45Integrator < AbstractFirstOrderIntegrator
     %ODE45Integrator Summary of this class goes here
     %   Detailed explanation goes here
     

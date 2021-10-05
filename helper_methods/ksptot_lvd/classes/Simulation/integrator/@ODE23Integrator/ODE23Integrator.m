@@ -1,4 +1,4 @@
-classdef ODE23Integrator < AbstractIntegrator
+classdef ODE23Integrator < AbstractFirstOrderIntegrator
     %ODE23Integrator Summary of this class goes here
     %   Detailed explanation goes here
     

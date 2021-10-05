@@ -306,36 +306,35 @@ fprintf(1, 'Number of function evaluations: %d\n', ...
     if ~isempty(opts.Events)
 
         % cast into cell-array if only one function is given (easier later on)
-        if isa(opts.Events, 'function_handle')
-            opts.Events = {opts.Events}; end
+%         if isa(opts.Events, 'function_handle')
+%             opts.Events = {opts.Events}; 
+%         end
 
         % Init event function values
         input.previous_event_values = NaN(numel(opts.Events),1);
 
         % Check if all are indeed function handles
-        for ii = 1:numel(opts.Events)
-            assert(~isempty(opts.Events{ii}) && isa(opts.Events{ii}, 'function_handle'),...
-                  [mfilename ':event_not_function_handles'], [...
-                  'Unsupported class for event function received; event %d ',...
-                  'is of class ''%s''.\n%s only supports function handles.'],...
-                  ii, class(opts.Events{ii}), upper(mfilename));
-        end
+        assert(~isempty(opts.Events) && isa(opts.Events, 'function_handle'),...
+              [mfilename ':event_not_function_handles'], [...
+              'Unsupported class for event function received; event %d ',...
+              'is of class ''%s''.\n%s only supports function handles.'],...
+              1, class(opts.Events), upper(mfilename));
 
         % Initialize TE (event times), YE (event solutions) YPE (event
         % derivs) and IE (indices to corresponding event function). Check
         % user-provided event functions at the same time
+        input.previous_event_values = zeros(numel(opts.Events),1);
         input.previous_event_values = [];
-        for k = 1:numel(opts.Events)
-            try
-                input.previous_event_values = horzcat(input.previous_event_values, opts.Events{k}(tspan(1), y0, yp0));
+        try
+            eventValues = opts.Events(tspan(1), y0, yp0);
+            input.previous_event_values = eventValues(:)';
 
-            catch ME
-                ME2 = MException([mfilename ':cannot_evaluate_eventFcn'],...
-                                 'Event function #%1d failed to evaluate on initial call.',...
-                                 k);
-                throw(addCause(ME2,ME));
+        catch ME
+            ME2 = MException([mfilename ':cannot_evaluate_eventFcn'],...
+                             'Event function #%1d failed to evaluate on initial call.',...
+                             k);
+            throw(addCause(ME2,ME));
 
-            end
         end
 
     end
@@ -448,17 +447,17 @@ function input = parse_options(input)
     opts.RelTol = abs(opts.RelTol);
     direction = 1 - 2*(input.tspan(end) < input.tspan(1));
     if ~isempty(opts.InitialStep) && direction*opts.InitialStep < 0
-        warning([mfilename ':initialstep_wrong_direction'],...
-                ['The sign of the initial step disagrees with the integration ',...
-                'direction implied by argument tspan; setting the sign of the ',...
-                'initial step equal to the implied direction ']);
+%         warning([mfilename ':initialstep_wrong_direction'],...
+%                 ['The sign of the initial step disagrees with the integration ',...
+%                 'direction implied by argument tspan; setting the sign of the ',...
+%                 'initial step equal to the implied direction ']);
         opts.InitialStep = direction * abs(opts.InitialStep);
     end
     if direction*opts.MaxStep < 0
-        warning([mfilename ':maxstep_wrong_direction'],...
-                ['The sign of the maximum step disagrees with the integration ',...
-                'direction implied by the argument tspan; setting the sign of the ',...
-                'maximum step equal to the implied direction ']);
+%         warning([mfilename ':maxstep_wrong_direction'],...
+%                 ['The sign of the maximum step disagrees with the integration ',...
+%                 'direction implied by the argument tspan; setting the sign of the ',...
+%                 'maximum step equal to the implied direction ']);
         opts.MaxStep = sign(opts.InitialStep)* abs(opts.MaxStep);
     end
 
@@ -644,8 +643,8 @@ function varargout = rkn1210_sparse_output(input)
     y    = input.y0(:);       hmin      = 16*eps(t);
     dy   = input.yp0(:);      f         = input.y0(:)*zeros(1,17);
     opts = input.options;     direction = 1 - 2*(tfinal < t0);
-    f1   = 0.8;
-    f2   = 10;
+    f1   = 0.90; % <- safety factor in determination of new step 
+    f2   = 11;   % <- twiggle factor for error estimation 
 
     % IO variables
     if nargout ~= 0
@@ -800,70 +799,66 @@ function varargout = rkn1210_sparse_output(input)
 
             % evaluate event-funtions
             if ~isempty(opts.Events)
-                eVI = 1;
-                
+
                 % Evaluate all functions
                 terminate = false;
-                for fk = 1:numel(opts.Events)
-                    % Evaluate event function, and check if any have changed sign
-                    %
-                    % NOTE: although not really necessary (event functions have been
-                    % checked upon initialization), use TRY-CATCH block to produce
-                    % more useful errors in case something does go wrong.
+                % Evaluate event function, and check if any have changed sign
+                %
+                % NOTE: although not really necessary (event functions have been
+                % checked upon initialization), use TRY-CATCH block to produce
+                % more useful errors in case something does go wrong.
 
-                    try
-                        % evaluate function
-                        [value, ...
-                         isterminal,...
-                         zerodirection] = opts.Events{fk}(t, y, dy);
+                try
+                    % evaluate function
+                    [values, isterminals, zerodirections] = opts.Events(t, y, dy);
 
-                        for(vI=1:length(value))
-                            % look for sign change
-                            if (input.previous_event_values(eVI)*value(vI) < 0)
+                    for(i=1:length(values)) %#ok<*NO4LP> 
+                        value = values(i);
+                        isterminal = isterminals(i);
+                        zerodirection = zerodirections(i);
 
-                                % ZERODIRECTION:
-                                %  0: detect all zeros (default
-                                % +1: detect only INcreasing zeros
-                                % -1: detect only DEcreasing zeros
-                                if (zerodirection(vI) == 0) ||...
-                                   (sign(value(vI)) == sign(zerodirection(vI)))
-
-                                    % terminate?
-                                    terminate = terminate || isterminal(vI);
-
-                                    % Detect the precise location of the zero
-                                    % NOTE: try-catch is necessary to prevent things like
-                                    % discontinuous event-functions from resulting in
-                                    % unintelligible error messages
-                                    if nargout ~= 0
-                                        try
-                                            output = detect_Event(...
-                                                input, output, fk, vI, eVI, value(vI));
-
-                                        catch ME
-                                            ME2 = MException([mfilename ':eventFcn_failure_zero'],...
-                                                             'Failed to locate a zero for event function #%1d.',...
-                                                             eVI);
-                                            throw(addCause(ME2,ME));
-
-                                        end
+                        % look for sign change
+                        if (input.previous_event_values(i)*value < 0)
+    
+                            % ZERODIRECTION:
+                            %  0: detect all zeros (default
+                            % +1: detect only INcreasing zeros
+                            % -1: detect only DEcreasing zeros
+                            if (zerodirection == 0) ||...
+                               (sign(value) == sign(zerodirection))
+    
+                                % terminate?
+                                terminate = terminate || isterminal;
+    
+                                % Detect the precise location of the zero
+                                % NOTE: try-catch is necessary to prevent things like
+                                % discontinuous event-functions from resulting in
+                                % unintelligible error messages
+                                if nargout ~= 0
+                                    try
+                                        output = detect_Event(...
+                                            input, output, i, value);
+    
+                                    catch ME
+                                        ME2 = MException([mfilename ':eventFcn_failure_zero'],...
+                                                         'Failed to locate a zero for event function #%1d.',...
+                                                         i);
+                                        throw(addCause(ME2,ME));
+    
                                     end
                                 end
                             end
-                            
-                            eVI = eVI+1;
                         end
-
+    
                         % save new value
-                        input.previous_event_values = horzcat(input.previous_event_values, value);
-
-                    catch ME
-                        ME2 = MException([mfilename ':eventFcn_failure_integration'],...
-                                         'Event function #%1d failed to evaluate during integration.',...
-                                         fk);
-                        throw(addCause(ME2,ME));
-
+                        input.previous_event_values(i) = value;
                     end
+
+                catch ME
+                    ME2 = MException([mfilename ':eventFcn_failure_integration'],...
+                                     'Event function #%1d failed to evaluate during integration.',...
+                                     1);
+                    throw(addCause(ME2,ME));
 
                 end
 
@@ -958,7 +953,7 @@ end % rkn1210_sparse_output
 
 % Detect zero passages of event functions
 % using false-position method (derivative-free)
-function output = detect_Event(input, output, fk, vI, which_event, value)
+function output = detect_Event(input, output,which_event, value)
 
     % initialize
     y0  = output.yout (output.index-1,:);    side          = 0;
@@ -979,8 +974,9 @@ function output = detect_Event(input, output, fk, vI, which_event, value)
                   'InitialStep', output.info.stepsize(output.index-1) );
 
     % Start root finding process
-    while (min(abs(fa),abs(fb)) > opts.AbsTol)
-
+    while ( min(abs(fa),abs(fb)) > opts.AbsTol || ...
+            min(abs(fa),abs(fb)) > opts.RelTol * max(abs([y0(:);dy0(:)])) )
+        
         % Regula-falsi step
         iterations = iterations + 1;
         ttp = tt;
@@ -1012,8 +1008,8 @@ function output = detect_Event(input, output, fk, vI, which_event, value)
         dy0 = Zdyout(end,:).';
 
         % NOW evaluate event-function with these values
-        fval = input.options.Events{fk}(tt, y0, dy0);
-        fval = fval(vI);
+        fval = input.options.Events(tt, y0, dy0);
+        fval = fval(which_event);
 
         % keep track of number of stats
         output.info.fevals = output.info.fevals + Zoutput.fevals;
@@ -1056,7 +1052,8 @@ function output = detect_Event(input, output, fk, vI, which_event, value)
 
     output.index = output.index + 1;
     if output.index > size(output.yout,1)
-        output = grow_arrays(output); end
+        output = grow_arrays(output); 
+    end
 
     output.yout (output.index  ,:) = output.yout(output.index-1,:);
     output.yout (output.index-1,:) = y0.';
@@ -1068,9 +1065,22 @@ function output = detect_Event(input, output, fk, vI, which_event, value)
     output.tout (output.index-1,:) = tt;
 
     output.info.stepsize(output.index-1) = tt - output.tout(output.index-1);
-
 end % find zeros of event functions
 
+function [rootOutput] = rootFindingFunc(odefun, evtFun, tt, ttp, y0, dy0, opts, which_event, forRootFinder)
+    [~, Zyout, Zdyout, ~, ~] = rkn1210(odefun, [ttp tt], y0, dy0, opts);
+
+    y0  = Zyout (end,:).';
+    dy0 = Zdyout(end,:).';
+
+    fval = evtFun(tt, y0, dy0);
+    
+    if(forRootFinder)
+        rootOutput = fval(which_event); %for fzero and the like
+    else
+        rootOutput = abs(fval(which_event)); %for an optimizer like fminbnd
+    end
+end
 
 % clean up and finalize
 function varargout = finalize(input, output)
