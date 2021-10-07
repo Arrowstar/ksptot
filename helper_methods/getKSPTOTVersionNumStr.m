@@ -1,6 +1,6 @@
 function [verNumStr] = getKSPTOTVersionNumStr()
 %getKSPTOTVersionNumStr Provides the current version number of KSPTOT as
 %string for use within various places of the software.
-    verNumStr = '1.6.9 PR3';
+    verNumStr = '1.6.9 PR4';
 end
 
