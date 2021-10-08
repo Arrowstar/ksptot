@@ -465,7 +465,7 @@ classdef LvdData < matlab.mixin.SetGet
                 var.ub = 1.50*time;
                 var.useTf = true;
                 
-                var.orbitVar.lb = [0.75*orbitModel.c3, ...
+                var.orbitVar.lb = [min(1.0001,0.75*orbitModel.c3), ...
                                    max(0.75*orbitModel.rP,bodyInfo.radius+bodyInfo.atmohgt), ...
                                    0, ...
                                    -2*pi, ...
@@ -596,7 +596,7 @@ classdef LvdData < matlab.mixin.SetGet
             end
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            %Set up periapsis state for arrive body and propagate BACKWARDS
+            %Set up periapsis state for arrive body
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             arriveBodyInfo = wayPtBodies(end);
             frame = arriveBodyInfo.getBodyCenteredInertialFrame();
@@ -621,7 +621,7 @@ classdef LvdData < matlab.mixin.SetGet
             %Create event
             event = LaunchVehicleEvent(lvdData.script);
             lvdData.script.addEvent(event);
-            event.name = sprintf('Coast from %s Arrival (-)', arriveBodyInfo.name);
+            event.name = sprintf('%s Periapsis State', arriveBodyInfo.name);
             event.execActionsNode = ActionExecNodeEnum.BeforeProp;
             event.plotMethod = EventPlottingMethodEnum.SkipFirstState;
             event.propDir = PropagationDirectionEnum.Backward;
@@ -633,16 +633,9 @@ classdef LvdData < matlab.mixin.SetGet
             event.colorLineSpec.color = ColorSpecEnum.Blue;
                 
             %%%Set up termination condition
-            dur = xferOrbitDurations(end)/2; %/2 so that we can meet a patch point in the middle
+            dur = 0; %/2 so that we can meet a patch point in the middle
             termCond = EventDurationTermCondition(dur); %/2 so that we can meet a patch point in the middle
             event.termCond = termCond;
-            
-            var = termCond.getNewOptVar();
-            lvdOptim.vars.addVariable(var);
-
-            var.lb = 0.50*dur;
-            var.ub = 1.50*dur;
-            var.useTf = true;
 
             %%%Set up Set Kinematic State Action
             orbitModel = KeplerianElementSet(time, hSMAIn, hEccIn, hIncIn, angleNegPiToPi(hRAANIn), angleNegPiToPi(hArgIn), 0, frame);
@@ -664,7 +657,7 @@ classdef LvdData < matlab.mixin.SetGet
             var.ub = 1.50*time;
             var.useTf = true;
 
-            var.orbitVar.lb = [0.75*orbitModel.c3, ...
+            var.orbitVar.lb = [min(1.0001,0.75*orbitModel.c3), ...
                                max(0.75*orbitModel.rP,arriveBodyInfo.radius+arriveBodyInfo.atmohgt), ...
                                0, ...
                                -2*pi, ...
@@ -684,6 +677,35 @@ classdef LvdData < matlab.mixin.SetGet
             var.orbitVar.varRaan = true;
             var.orbitVar.varArg = true;
             var.orbitVar.varTau = false;
+            
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            %Prop BACKWARDS from periapsis state for arrive body
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            %Create event
+            event = LaunchVehicleEvent(lvdData.script);
+            lvdData.script.addEvent(event);
+            event.name = sprintf('Coast from %s Arrival (-)', arriveBodyInfo.name);
+            event.execActionsNode = ActionExecNodeEnum.BeforeProp;
+            event.plotMethod = EventPlottingMethodEnum.SkipFirstState;
+            event.propDir = PropagationDirectionEnum.Backward;
+            event.integratorObj.options.AbsTol = 1E-7;
+            event.integratorObj.options.RelTol = 1E-7;
+            event.integratorObj.options.NormControl = false;
+            
+            %%%Event line color
+            event.colorLineSpec.color = ColorSpecEnum.Blue;
+            
+            %%%Set up termination condition
+            dur = xferOrbitDurations(end)/2; %/2 so that we can meet a patch point in the middle
+            termCond = EventDurationTermCondition(dur); %/2 so that we can meet a patch point in the middle
+            event.termCond = termCond;
+            
+            var = termCond.getNewOptVar();
+            lvdOptim.vars.addVariable(var);
+
+            var.lb = 0.50*dur;
+            var.ub = 1.50*dur;
+            var.useTf = true;
             
             %%%Create continuity constraint
             lvdData.createContinuityConstraints(event, prevFwdPropEvent, cBodyInfo, true, 1, true, 1, true, 1, false, 1, false, 1);
