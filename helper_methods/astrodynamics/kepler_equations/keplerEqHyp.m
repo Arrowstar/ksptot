@@ -33,4 +33,3 @@ function [H] = keplerEqHyp(M,e, eps)
     
     H = Hn1;
 end
-

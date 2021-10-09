@@ -26,7 +26,7 @@ else
 end
 
 if(isscalar(gmu))
-    gmu = gmu * ones(1,length(sma));
+    gmu = gmu * ones(size(sma));
 end
 
 % try

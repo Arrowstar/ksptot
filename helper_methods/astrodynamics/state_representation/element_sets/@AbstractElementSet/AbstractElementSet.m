@@ -24,9 +24,11 @@ classdef (Abstract) AbstractElementSet < matlab.mixin.SetGet & matlab.mixin.Cust
         elemVect = getElementVector(obj)
         
         %obj is vector of elements, toFrame is scaler
-        function convertedElemSet = convertToFrame(obj, toFrame)            
-            obj = obj(:)';
+        function convertedElemSet = convertToFrame(obj, toFrame)          
             num = length(obj);
+            if(num > 1)
+                obj = obj(:)';
+            end
             
             convertCartElemSet = convertToCartesianElementSet(obj);
             rVect1 = [convertCartElemSet.rVect];

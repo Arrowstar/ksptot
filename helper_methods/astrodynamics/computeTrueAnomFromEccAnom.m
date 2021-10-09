@@ -6,4 +6,3 @@ function [tru] = computeTrueAnomFromEccAnom(EccA, ecc)
     lower = sqrt(1-ecc);
     tru = AngleZero2Pi(atan2(upper, lower) * 2);
 end
-

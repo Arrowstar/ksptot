@@ -6,4 +6,3 @@ function [tru] = computeTrueAnomFromHypAnom(HypA, ecc)
     lower = sqrt(ecc-1);
     tru = atan2(upper, lower) * 2;
 end
-

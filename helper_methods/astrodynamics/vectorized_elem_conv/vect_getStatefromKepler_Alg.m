@@ -20,6 +20,7 @@ function [rVect, vVect] = vect_getStatefromKepler_Alg(sma, ecc, inc, raan, arg, 
     %%%%%%%%%%
     bool = ecc < 1E-10 & inc >= 1E-10 & abs(inc-pi) >= 1E-10;
     if(any(bool))
+        u = zeros(size(tru));
         u(bool) = arg(bool) + tru(bool);
         tru(bool) = u(bool);
         arg(bool) = 0.0; %may need to remove this, new addition

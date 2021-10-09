@@ -87,6 +87,9 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
         lastComputedVVect = [];
         
         lastComputedRVectVVect = [];
+        
+        propTypeIsTwoBody(1,1) logical = true;
+        propTypeIsNumerical(1,1) logical = false;
     end
     
     properties(Access=private)
@@ -108,6 +111,14 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
             
             obj.bodyInertialFrameCache = BodyCenteredInertialFrame(obj, obj.celBodyData);
             obj.bodyFixedFrameCache = BodyFixedFrame(obj, obj.celBodyData);
+            
+            if(obj.propTypeEnum == BodyPropagationTypeEnum.TwoBody)
+                obj.propTypeIsTwoBody = true;
+                obj.propTypeIsNumerical = false;
+            elseif(obj.propTypeEnum == BodyPropagationTypeEnum.Numerical)
+                obj.propTypeIsTwoBody = false;
+                obj.propTypeIsNumerical = true;
+            end
         end
         
         function set.atmotempsunmultcurve(obj,newValue)
@@ -141,6 +152,18 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
             if(not(isempty(obj.atmohgt))) %#ok<MCSUP>
                 obj.doNotUseAtmoPressCurveGI = logical(obj.atmohgt > 0 && isempty(obj.atmopresscurve)); %#ok<MCSUP>
             end
+        end
+        
+        function set.propTypeEnum(obj, newValue)
+            obj.propTypeEnum = newValue;
+            
+            if(obj.propTypeEnum == BodyPropagationTypeEnum.TwoBody)
+                obj.propTypeIsTwoBody = true; %#ok<MCSUP>
+                obj.propTypeIsNumerical = false; %#ok<MCSUP>
+            elseif(obj.propTypeEnum == BodyPropagationTypeEnum.Numerical)
+                obj.propTypeIsTwoBody = false; %#ok<MCSUP>
+                obj.propTypeIsNumerical = true; %#ok<MCSUP>
+            end 
         end
         
         function parentBodyInfo = getParBodyInfo(obj, ~)
@@ -457,6 +480,14 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
             
             if(isempty(obj.bodyFixedFrameCache))
                 obj.bodyFixedFrameCache = BodyFixedFrame(obj, obj.celBodyData);
+            end
+            
+            if(obj.propTypeEnum == BodyPropagationTypeEnum.TwoBody)
+                obj.propTypeIsTwoBody = true;
+                obj.propTypeIsNumerical = false;
+            elseif(obj.propTypeEnum == BodyPropagationTypeEnum.Numerical)
+                obj.propTypeIsTwoBody = false;
+                obj.propTypeIsNumerical = true;
             end
         end
         
