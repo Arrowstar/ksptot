@@ -661,13 +661,7 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                     
                     rotMatsBodyToView(:,:,j) = rotMatToInertial12' * rotMatToInertial32 * rotMatBodyToInertial; %body to inertial -> inertial to inertial -> inertial to view frame
                 end
-                
-                [times,ia,~] = unique(times,'stable');
-                rotMatsBodyToView = rotMatsBodyToView(:,:,ia);
-                
-                [times,I] = sort(times);
-                rotMatsBodyToView = rotMatsBodyToView(:,:,I);
-                
+                                
                 switch(evt.plotMethod)
                     case EventPlottingMethodEnum.PlotContinuous
                         %nothing
@@ -683,6 +677,12 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                     otherwise
                         error('Unknown event plotting method: %s', evt.plotMethod);
                 end
+                
+                [times,ia,~] = unique(times,'stable');
+                rotMatsBodyToView = rotMatsBodyToView(:,:,ia);
+                
+                [times,I] = sort(times);
+                rotMatsBodyToView = rotMatsBodyToView(:,:,I);
                 
                 if(length(times) >= 2 && all(diff(times)>0))
                     vehAttData.addData(times, rotMatsBodyToView);
