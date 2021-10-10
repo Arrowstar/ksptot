@@ -3,7 +3,7 @@ classdef SecondOrderGravOnlyPropagator < AbstractPropagator
     %   Detailed explanation goes here
     
     properties
-        forceModels ForceModelsEnum = [ForceModelsEnum.Gravity, ForceModelsEnum.Gravity3rdBody]; 
+        forceModels ForceModelsEnum = [ForceModelsEnum.Gravity]; 
     end
     
     properties(Constant)
@@ -78,25 +78,25 @@ classdef SecondOrderGravOnlyPropagator < AbstractPropagator
         end
         
         function openOptionsDialog(obj)
-%             fms = obj.forceModels;
-%             initSelInds = [];
-%             for(i=1:length(fms))
-%                 if(fms(i).canBeDisabled)
-%                     initSelInds(end+1) = ForceModelsEnum.getIndOfDisablableListboxStrsForModel(fms(i).model); %#ok<AGROW>
-%                 end
-%             end
-% 
-%             [Selection,ok] = listdlgARH('ListString',ForceModelsEnum.getListBoxStrsOfDisablableModels(), ...
-%                                         'SelectionMode', 'multiple', ...
-%                                         'ListSize', [300, 300], ...
-%                                         'Name', 'Select Force Models', ...
-%                                         'PromptString', {'Select the Force Models you wish to have enabled during this','event.  Gravity is always enabled.  Disabling Thrust during','periods of coasting may improve performance considerably.'}, ...
-%                                         'InitialValue', initSelInds);
-% 
-%             if(ok == 1)
-%                 m = ForceModelsEnum.getEnumsOfDisablableForceModels();
-%                 obj.forceModels = [ForceModelsEnum.getAllForceModelsThatCannotBeDisabled(), m(Selection)'];
-%             end
+            fms = obj.forceModels;
+            
+            
+            fmArr = ForceModelsEnum.getEnumsOfDisablableForceModels();
+            fmArr = fmArr([fmArr.allowedForSecondOrder] == true);
+            
+            [~,initSelInds] = ismember(fms, fmArr);
+            initSelInds = initSelInds(initSelInds > 0);
+            
+            [Selection,ok] = listdlgARH('ListString',{fmArr.name}, ...
+                                        'SelectionMode', 'multiple', ...
+                                        'ListSize', [300, 300], ...
+                                        'Name', 'Select Force Models', ...
+                                        'PromptString', {'Select the Force Models you wish to have enabled during this','event.  Gravity is always enabled.  Disabling Thrust during','periods of coasting may improve performance considerably.'}, ...
+                                        'InitialValue', initSelInds);
+
+            if(ok == 1)
+                obj.forceModels = [ForceModelsEnum.getAllForceModelsThatCannotBeDisabled(), fmArr(Selection)'];
+            end
         end
         
         function tf = canProduceThrust(obj)
