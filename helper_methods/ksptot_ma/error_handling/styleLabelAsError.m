@@ -7,7 +7,9 @@ function styleLabelAsError(hLabel, errorStr)
     set(hLabel,'BackgroundColor',[0.847,0.161,0]);
     set(hLabel,'ForegroundColor',[1,1,1]);
     set(hLabel,'String',lblStr);
-    set(hLabel,'TooltipString',errorStr);
+    set(hLabel,'TooltipString','');
     set(hLabel,'FontWeight','bold');
+    
+    setappdata(hLabel,'tooltipstring',errorStr);
 end
 

@@ -1,6 +1,20 @@
 function [rVectB, vVectB] = getPositOfBodyWRTSun(time, bodyInfo, celBodyData)  
-    chain = bodyInfo.getOrbitElemsChain();
-    [rVectB, vVectB] = getPositOfBodyWRTSun_alg_fast_mex(time, chain{:});
+    if(bodyInfo.propTypeEnum == BodyPropagationTypeEnum.TwoBody || (numel(time) == 1 && time == bodyInfo.epoch))
+        chain = bodyInfo.getOrbitElemsChain();
+        [rVectB, vVectB] = getPositOfBodyWRTSun_alg_fast_mex(time, chain{:});
+    elseif(bodyInfo.propTypeEnum == BodyPropagationTypeEnum.Numerical)
+        parentBodyInfo = bodyInfo.getParBodyInfo(celBodyData);
+
+        [rVect, vVect] = getStateAtTime(bodyInfo, time, []);
+        cartElem = CartesianElementSet(time, rVect, vVect, parentBodyInfo.getBodyCenteredInertialFrame(), true);
+        cartElem = convertToFrame(cartElem, celBodyData.getTopLevelBody().getBodyCenteredInertialFrame());
+
+        rVectB = [cartElem.rVect];
+        vVectB = [cartElem.vVect];
+
+    else
+        error('Unknown celestial body prop sim type.');
+    end
     
 %     if(numel(time) > 1 && numel(time) == numel(bodyInfo))
 %         [uniBodies,~,ic] = unique(bodyInfo,'stable');

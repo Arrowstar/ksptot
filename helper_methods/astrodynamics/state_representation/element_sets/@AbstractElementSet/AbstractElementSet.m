@@ -29,8 +29,13 @@ classdef (Abstract) AbstractElementSet < matlab.mixin.SetGet & matlab.mixin.Cust
             if(num > 1)
                 obj = obj(:)';
             end
+                        
+            if(isa(obj, 'CartesianElementSet'))
+                convertCartElemSet = obj;
+            else
+                convertCartElemSet = convertToCartesianElementSet(obj);
+            end
             
-            convertCartElemSet = convertToCartesianElementSet(obj);
             rVect1 = [convertCartElemSet.rVect];
             vVect1 = [convertCartElemSet.vVect];
             
@@ -100,7 +105,7 @@ classdef (Abstract) AbstractElementSet < matlab.mixin.SetGet & matlab.mixin.Cust
             vVect3 = squeeze(pagemtimes(rotMatToInertial32_Transpose, permute(vVect2 - velOffsetOrigin32, [1 3 2]))) - cross(angVelWrtOrigin32, rVect3);
             
             createObjOfArrayVal = false;
-            if(numel(obj) == 1 && obj.createObjOfArray == true && obj.typeEnum == ElementSetEnum.CartesianElements) %#ok<BDSCI>
+            if(numel(obj) == 1 && obj.createObjOfArray == true && obj.typeEnum == ElementSetEnum.CartesianElements)
                 createObjOfArrayVal = true;
             end
             
@@ -114,17 +119,24 @@ classdef (Abstract) AbstractElementSet < matlab.mixin.SetGet & matlab.mixin.Cust
                 convertCartElemSet = CartesianElementSet(times, rVect3, vVect3, toFrame, createObjOfArrayVal);   
             end
             
-            switch obj(1).typeEnum
-                case ElementSetEnum.CartesianElements
+            ce = ElementSetEnum.CartesianElements;
+            ke = ElementSetEnum.KeplerianElements;
+            ge = ElementSetEnum.GeographicElements;
+            ue = ElementSetEnum.UniversalElements;
+            
+            enum = obj(1).typeEnum;
+            
+            switch enum
+                case ce
                     convertedElemSet = convertCartElemSet;
                     
-                case ElementSetEnum.KeplerianElements
+                case ke
                     convertedElemSet = convertToKeplerianElementSet(convertCartElemSet);
                     
-                case ElementSetEnum.GeographicElements
+                case ge
                     convertedElemSet = convertToGeographicElementSet(convertCartElemSet);
                     
-                case ElementSetEnum.UniversalElements
+                case ue
                     convertedElemSet = convertToUniversalElementSet(convertCartElemSet);
                     
                 otherwise

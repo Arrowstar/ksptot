@@ -7,6 +7,8 @@ function styleLabelAsWarn(hLabel,warnStr)
     set(hLabel,'BackgroundColor',[1,1,0]);
     set(hLabel,'ForegroundColor',[0,0,0]);
     set(hLabel,'String',lblStr);
-    set(hLabel,'TooltipString',warnStr);
+    set(hLabel,'TooltipString','');
     set(hLabel,'FontWeight','bold');
+    
+    setappdata(hLabel,'tooltipstring',warnStr);
 end

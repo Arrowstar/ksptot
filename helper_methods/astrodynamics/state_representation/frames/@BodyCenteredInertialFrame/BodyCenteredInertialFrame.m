@@ -21,9 +21,7 @@ classdef BodyCenteredInertialFrame < AbstractReferenceFrame
         end
         
         function [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = getOffsetsWrtInertialOrigin(obj, time, ~)            
-%             [rVectB, vVectB] = getPositOfBodyWRTSun(time, [obj.bodyInfo], obj(1).celBodyData);
-            chain = obj.bodyInfo.getOrbitElemsChain();
-            [rVectB, vVectB] = getPositOfBodyWRTSun_alg_fast_mex(time, chain{:});
+            [rVectB, vVectB] = getPositOfBodyWRTSun(time, [obj.bodyInfo], obj(1).celBodyData);
 
             posOffsetOrigin = rVectB;
             velOffsetOrigin = vVectB;
