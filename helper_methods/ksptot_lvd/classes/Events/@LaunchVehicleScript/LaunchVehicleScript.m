@@ -93,22 +93,35 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
             timeEvtsListboxStrs = string.empty(1,0);
             for(i=1:length(obj.evts))
                 evt = obj.evts(i);
+                subStateLog = stateLog.entries([stateLog.entries.event] == evt);
                 
-                s1 = stateLog.getFirstStateLogForEvent(evt);
-                if(not(isempty(s1)))
-                    t1 = s1.time;
+                if(not(isempty(subStateLog)))
+                    switch evt.plotMethod
+                        case EventPlottingMethodEnum.PlotContinuous
+                            t1 = subStateLog(1).time;
+                            t2 = subStateLog(end).time;
+                            
+                        case EventPlottingMethodEnum.SkipFirstState
+                            if(numel(subStateLog) >= 2)
+                                t1 = subStateLog(2).time;
+                            else
+                                t1 = subStateLog(1).time;
+                            end
+                            t2 = subStateLog(end).time;
+                            
+                        case EventPlottingMethodEnum.DoNotPlot
+                            t1 = Inf;
+                            t2 = -Inf;
+                        otherwise
+                           error('Unknown event plotting method: %s', evt.plotMethod.name); 
+                    end
+                  
                 else
                     t1 = Inf;
-                end
-                
-                s2 = stateLog.getLastStateLogForEvent(evt);
-                if(not(isempty(s2)))
-                    t2 = s2.time;
-                else
                     t2 = -Inf;
                 end
                 
-                if(t1 > t2)
+                if(t1 > t2 && (isfinite(t1) && isfinite(t2)))
                     t1Temp = t2;
                     t2Temp = t1;
                     
