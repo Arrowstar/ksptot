@@ -1,4 +1,4 @@
-function throttleModel = promptForThrottleModelType(selectedEnum)
+function [throttleModel, ok] = promptForThrottleModelType(selectedEnum)
     [listboxStr, enums] = ThrottleModelEnum.getThrottleModelTypeNameStrs();
     
     if(not(isempty(selectedEnum)))

@@ -1,4 +1,4 @@
-function steeringModel = promptForSteeringModelType(selectedEnum)
+function [steeringModel, ok] = promptForSteeringModelType(selectedEnum)
     [listboxStr, enums] = SteerModelTypeEnum.getListBoxStr();
     
     if(not(isempty(selectedEnum)))
