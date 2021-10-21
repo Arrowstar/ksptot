@@ -31,11 +31,13 @@ classdef SumOfSinesModel < AbstractSteeringMathModel
         end
         
         function value = getValueAtTime(obj,ut)            
-            value = obj.const;
-            
-            for(i=1:length(obj.sines))
-                value = value + obj.sines(i).getValueAtTime(ut);
-            end
+%             value = obj.const;
+%             
+%             for(i=1:length(obj.sines))
+%                 value = value + obj.sines(i).getValueAtTime(ut);
+%             end
+            allSines = obj.sines;
+            value = obj.const + sum(getValueAtTime(allSines, ut));
         end
         
         function period = getLongestPeriod(obj)

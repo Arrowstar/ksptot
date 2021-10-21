@@ -75,9 +75,9 @@ classdef SineModel < matlab.mixin.SetGet
         end
         
         function value = getValueAtTime(obj,ut)
-            dt = (ut - obj.t0) + obj.tOffset;
+            dt = (ut - [obj.t0]) + [obj.tOffset];
             
-            value = obj.amp * sin(obj.freq*(dt + obj.phase));
+            value = [obj.amp] .* sin([obj.freq].*(dt + [obj.phase]));
         end
         
         function listBoxStr = getListboxStr(obj)
