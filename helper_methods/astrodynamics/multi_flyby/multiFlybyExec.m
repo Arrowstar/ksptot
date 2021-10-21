@@ -23,7 +23,7 @@ function [x, dv, rp, orbitsIn, orbitsOut, xferOrbits, deltaVVect, vInfDNorm, c, 
         maxRadiiSingle(i) = rSOI; %#ok<AGROW>
     end
     
-    parentBodyInfo = flybyBodies{1}.getParBodyInfo(celBodyData);
+    parentBodyInfo = bodiesInfo{1}.getParBodyInfo(celBodyData);
     minXferRad = parentBodyInfo.radius + parentBodyInfo.atmohgt + minCbPeriHgt;
 
     [lb, ub] = getMultiFlybyLBUB(lWindDef(1), lWindDef(2), bodiesInfo, celBodyData);
