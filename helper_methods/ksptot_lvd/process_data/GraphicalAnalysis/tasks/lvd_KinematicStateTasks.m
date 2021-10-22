@@ -143,6 +143,6 @@ function datapt = lvd_KinematicStateTasks(stateLogEntry, subTask, inFrame)
             datapt = kepElemSet.getLongDriftRate() * (3600*180/pi); %convert rad/sec to deg/hr
             
         case 'centralBodyId'
-            datapt = cartElem.frame.getOriginBody().id;
+            datapt = stateLogEntry.centralBody.id;
     end
 end

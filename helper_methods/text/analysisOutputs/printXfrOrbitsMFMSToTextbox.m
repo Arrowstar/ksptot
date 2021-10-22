@@ -1,11 +1,13 @@
 function [str] = printXfrOrbitsMFMSToTextbox(hTransferOrbitsText,waypoints, xferOrbits, numRev, form, form2, paddLen)
 %printXfrOrbitsMFMSToTextbox Summary of this function goes here
 %   Detailed explanation goes here
-
         hRule = getHRule();
+        [~, ~, secInDay, ~] = getSecondsInVariousTimeUnits();
         
         str = {};
         for(i=1:size(xferOrbits,1))
+            xferDurDay = (xferOrbits(i,9) - xferOrbits(i,8))/secInDay;
+            
             str{end+1} = sprintf(['Phase %u Transfer Orbit (%s -> %s)'], i, cap1stLetter(waypoints{i}.name), cap1stLetter(waypoints{i+1}.name));
             str{end+1} = hRule;
             str{end+1} = ['Semi-major Axis = ', paddStrLeft(num2str(xferOrbits(i,1), form),24), ' km'];
@@ -19,6 +21,7 @@ function [str] = printXfrOrbitsMFMSToTextbox(hTransferOrbitsText,waypoints, xfer
             str{end+1} = [paddStr(['Departure True Anomaly = '],paddLen), num2str(rad2deg(AngleZero2Pi(xferOrbits(i,6))), form), ' deg'];
             str{end+1} = [paddStr(['Arrival True Anomaly = '],paddLen), num2str(rad2deg(AngleZero2Pi(xferOrbits(i,7))), form), ' deg'];
             str{end+1} = [paddStr(['Num. Full Revs Prior to Arrival = '],paddLen), num2str(abs(numRev(i)), form)];
+            str{end+1} = [paddStr(['Transfer Duration = '],paddLen), num2str(xferDurDay, form), ' days'];
             str{end+1} = hRule;
         end
         str = horzcat(str,getDatesStr(waypoints, xferOrbits, form));

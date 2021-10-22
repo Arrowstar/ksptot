@@ -8,9 +8,7 @@ function [hCBodySurf, hCBodySurfXForm] = ma_initOrbPlot(hFig, orbitDispAxes, bod
     set(orbitDispAxes,'ZTickLabel',[]);
     grid(orbitDispAxes,'on');
 
-    if(any(orbitDispAxes.DataAspectRatio ~= [1 1 1]))
-        axis(orbitDispAxes, 'equal');
-    end
+    axis(orbitDispAxes, 'equal');
     
     axis(orbitDispAxes, 'tight');
     
