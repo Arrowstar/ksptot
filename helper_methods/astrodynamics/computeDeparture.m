@@ -154,6 +154,7 @@ function hDepartDisp = computeDeparture(celBodyData, departBody, arrivalBody, de
     transOrbitLabel = output.output{7};
     departureOrbitRadio = output.output{8};
     hDepartDisp = output.output{9};
+    xferOrbitAxes = output.output{10};
     
     %1337 plotting
     hSMA = hOrbit(1);
@@ -291,13 +292,10 @@ function hDepartDisp = computeDeparture(celBodyData, departBody, arrivalBody, de
     
     reportResults.axisUserData = axisUserData;
     set(departDispGUI,'UserData',{reportResults});
-    
-    reset(departAxis);       
+          
     set(departAxis,'UserData',axisUserData);
-    hPlotBtnGrp = findobj(departDispGUI,'Tag','plotDisplayPanel');
-    hTypeBtn = findobj(hPlotBtnGrp,'Tag','departureOrbitRadio');
-    set(hTypeBtn,'Value', 1);
-    hLegend = findobj(departDispGUI,'Type','axes','Tag','legend');
-    delete(hLegend);
+    set(xferOrbitAxes,'UserData',axisUserData);
+    
     plotBodyDepartOrbit(departAxis);
+    plotTransferOrbit(xferOrbitAxes);
 end
