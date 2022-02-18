@@ -30,6 +30,7 @@ function [x, dv, rp, orbitsIn, orbitsOut, xferOrbits, deltaVVect, vInfDNorm, c, 
     lb(2:1+length(bnds(:,1))) = bnds(:,1);
     ub(2:1+length(bnds(:,2))) = bnds(:,2);
     maxRevs = bnds(:,3);
+    maxDeltaV = bnds(:,4);
     
     for(i=1:length(maxRevs))
         tmpNumRevsArrCell = -maxRevs(i):1:maxRevs(i);
@@ -63,12 +64,13 @@ function [x, dv, rp, orbitsIn, orbitsOut, xferOrbits, deltaVVect, vInfDNorm, c, 
     b = maxMsnDur;
     
     fitnessfcn = @(x) multiFlybyObjFunc(x, numRevsArr,bodiesInfo,includeDepartVInf,includeArrivalVInf,celBodyData);
-    nonlcon = @(x) multiFlybyNonlcon(x, fitnessfcn,minRadiiSingle,maxRadiiSingle,minXferRad,maxDepartVInf,maxArriveVInf);
+    nonlcon = @(x) multiFlybyNonlcon(x, fitnessfcn,minRadiiSingle,maxRadiiSingle,minXferRad,maxDepartVInf,maxArriveVInf,maxDeltaV(2:end));
     options = gaoptimset('Vectorized','on',...
                          'PopulationSize',popSize,...
                          'Display','iter',...
                          'PlotFcns', {@gaplotbestf, @gaplotscorediversity},...
                          'TolFun',1E-10,...
+                         'TolCon', 1E-6,...
                          'Generations',numGen,...
                          'EliteCount',round(popSize/15));
     [~,~,exitflag,output,population,scores] = ga(fitnessfcn,nvars,A,b,[],[],lb,ub,nonlcon,IntCon,options);
@@ -107,7 +109,7 @@ function [x, dv, rp, orbitsIn, orbitsOut, xferOrbits, deltaVVect, vInfDNorm, c, 
         populationC = population(Ind,:);
         scoresC = scores(Ind,:);
 
-        [x, dv, rp, orbitsIn, orbitsOut, deltaVVect, vInfDNorm, xferOrbits, c, vInfDepart, vInfArrive, numRev] = findSaneTraj(scoresC, populationC, bodiesInfo, lb, ub, fitnessfcn, minRadiiSingle, maxRadiiSingle, minXferRad, numRevsArr, maxDepartVInf, maxArriveVInf, celBodyData);
+        [x, dv, rp, orbitsIn, orbitsOut, deltaVVect, vInfDNorm, xferOrbits, c, vInfDepart, vInfArrive, numRev] = findSaneTraj(scoresC, populationC, bodiesInfo, lb, ub, fitnessfcn, minRadiiSingle, maxRadiiSingle, minXferRad, numRevsArr, maxDepartVInf, maxArriveVInf, maxDeltaV(2:end), celBodyData);
     else
         cMaxes = max(abs(c),[],1);
         cNorm = zeros(size(c));
@@ -118,46 +120,46 @@ function [x, dv, rp, orbitsIn, orbitsOut, xferOrbits, deltaVVect, vInfDNorm, c, 
         
         scoresC = scores(cI,:);
         populationC = population(cI,:);
-        [x, dv, rp, orbitsIn, orbitsOut, deltaVVect, vInfDNorm, xferOrbits, c, vInfDepart, vInfArrive, numRev] = findSaneTraj(scoresC, populationC, bodiesInfo, lb, ub, fitnessfcn, minRadiiSingle, maxRadiiSingle, minXferRad, numRevsArr, maxDepartVInf, maxArriveVInf, celBodyData);
+        [x, dv, rp, orbitsIn, orbitsOut, deltaVVect, vInfDNorm, xferOrbits, c, vInfDepart, vInfArrive, numRev] = findSaneTraj(scoresC, populationC, bodiesInfo, lb, ub, fitnessfcn, minRadiiSingle, maxRadiiSingle, minXferRad, numRevsArr, maxDepartVInf, maxArriveVInf, maxDeltaV(2:end), celBodyData);
         
         warning('No valid solutions');
     end
 
-    try
-        fitnessfcnFmincon = @(xx) multiFlybyObjFunc(joinIntConToNonInts(xx, x, IntCon), numRevsArr,bodiesInfo,includeDepartVInf,includeArrivalVInf,celBodyData);
-        nonlconFmincon = @(xx) multiFlybyNonlcon(joinIntConToNonInts(xx, x, IntCon), fitnessfcnFmincon,minRadiiSingle,maxRadiiSingle,minXferRad,maxDepartVInf,maxArriveVInf);
-
-        notIntBool = not(ismember(1:length(x), IntCon));
-
-        x0Fmincon = x(notIntBool);
-
-        hLB = lb(notIntBool);     
-        hUB = ub(notIntBool);
-
-        Afmincon = A(:,notIntBool);
-
-        options = optimoptions(@fmincon, 'Display','iter', ...
-                                         'Algorithm','interior-point', ...
-                                         'OptimalityTolerance',1E-10, ...
-                                         'UseParallel',false, ...
-                                         'BarrierParamUpdate','predictor-corrector', ...
-                                         'HonorBounds',true);
-
-        f = msgbox('Attempting gradient-based hybrid optimization... please wait.','Hybrid Optimization','help');
-        [xfmincon, fval, exitFlag] = fmincon(fitnessfcnFmincon,x0Fmincon,Afmincon,b,[],[],hLB,hUB,nonlconFmincon,options);
-        
-        if(isvalid(f))
-            close(f);
-        end
-        
-        if(exitFlag > 0 && fval < min(scoresC))
-            xfminconTotal = x;
-            xfminconTotal(notIntBool) = xfmincon;
-            [x, dv, rp, orbitsIn, orbitsOut, deltaVVect, vInfDNorm, xferOrbits, c, vInfDepart, vInfArrive, numRev] = findSaneTraj(fval, xfminconTotal, bodiesInfo, lb, ub, fitnessfcn, minRadiiSingle, maxRadiiSingle, minXferRad, numRevsArr, maxDepartVInf, maxArriveVInf, celBodyData);      
-        end
-    catch ME
-        warning(ME.identifier, 'Hybrid optimization call failed, reverting back to GA solution.  Msg:\n\n%s', ME.message);
-    end
+%     try
+%         fitnessfcnFmincon = @(xx) multiFlybyObjFunc(joinIntConToNonInts(xx, x, IntCon), numRevsArr,bodiesInfo,includeDepartVInf,includeArrivalVInf,celBodyData);
+%         nonlconFmincon = @(xx) multiFlybyNonlcon(joinIntConToNonInts(xx, x, IntCon), fitnessfcnFmincon,minRadiiSingle,maxRadiiSingle,minXferRad,maxDepartVInf,maxArriveVInf);
+% 
+%         notIntBool = not(ismember(1:length(x), IntCon));
+% 
+%         x0Fmincon = x(notIntBool);
+% 
+%         hLB = lb(notIntBool);     
+%         hUB = ub(notIntBool);
+% 
+%         Afmincon = A(:,notIntBool);
+% 
+%         options = optimoptions(@fmincon, 'Display','iter', ...
+%                                          'Algorithm','interior-point', ...
+%                                          'OptimalityTolerance',1E-10, ...
+%                                          'UseParallel',false, ...
+%                                          'BarrierParamUpdate','predictor-corrector', ...
+%                                          'HonorBounds',true);
+% 
+%         f = msgbox('Attempting gradient-based hybrid optimization... please wait.','Hybrid Optimization','help');
+%         [xfmincon, fval, exitFlag] = fmincon(fitnessfcnFmincon,x0Fmincon,Afmincon,b,[],[],hLB,hUB,nonlconFmincon,options);
+%         
+%         if(isvalid(f))
+%             close(f);
+%         end
+%         
+%         if(exitFlag > 0 && fval < min(scoresC))
+%             xfminconTotal = x;
+%             xfminconTotal(notIntBool) = xfmincon;
+%             [x, dv, rp, orbitsIn, orbitsOut, deltaVVect, vInfDNorm, xferOrbits, c, vInfDepart, vInfArrive, numRev] = findSaneTraj(fval, xfminconTotal, bodiesInfo, lb, ub, fitnessfcn, minRadiiSingle, maxRadiiSingle, minXferRad, numRevsArr, maxDepartVInf, maxArriveVInf, celBodyData);      
+%         end
+%     catch ME
+%         warning(ME.identifier, 'Hybrid optimization call failed, reverting back to GA solution.  Msg:\n\n%s', ME.message);
+%     end
 end
 
 function x = joinIntConToNonInts(nonIntX, allX, IntCon)
