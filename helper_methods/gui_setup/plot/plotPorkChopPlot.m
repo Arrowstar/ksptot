@@ -35,14 +35,18 @@ function plotPorkChopPlot(mainGUIHandle)
         arrivalName='';
     end
     
+    departDeltaVMat = userData{1,2};
+    arrivalDeltaVMat = userData{1,3};
+    totalDeltaVMat = userData{1,4};
+    
     matrixToPlot = [];
     switch plotType
         case 'departDeltaVRadioButton'
-            matrixToPlot=userData{1,2};
+            matrixToPlot=departDeltaVMat;
         case 'arrivalDeltaVRadioButton'
-            matrixToPlot=userData{1,3};
+            matrixToPlot=arrivalDeltaVMat;
         case 'departArrivalDeltaVRadioButton'
-            matrixToPlot=userData{1,4};
+            matrixToPlot=totalDeltaVMat;
     end
     
     if(~isempty(matrixToPlot))
@@ -80,7 +84,7 @@ function plotPorkChopPlot(mainGUIHandle)
     end
     
     dcm_obj = datacursormode(mainGUIHandle);
-    porkchopUpdate = @(empty, event_obj) porkchopUpdateFcn(empty, event_obj, departTimeArr, arrivalTimeArr, matrixToPlot);
+    porkchopUpdate = @(empty, event_obj) porkchopUpdateFcn(empty, event_obj, departTimeArr, arrivalTimeArr, matrixToPlot, departDeltaVMat', arrivalDeltaVMat', totalDeltaVMat');
     set(dcm_obj, 'UpdateFcn', porkchopUpdate, 'DisplayStyle','datatip');
         
     if(not(isempty(matrixToPlot)))
@@ -119,7 +123,7 @@ function plotPorkChopPlot(mainGUIHandle)
     hold(hAxes,'off'); 
 end
 
-function txt = porkchopUpdateFcn(~, event_obj, xArr, yArr, zMat) 
+function txt = porkchopUpdateFcn(~, event_obj, xArr, yArr, zMat, departDeltaVMat, arrivalDeltaVMat, totalDeltaVMat) 
     [~, ~, secInDay, ~] = getSecondsInVariousTimeUnits();
 
     pos = get(event_obj,'Position');
@@ -132,6 +136,8 @@ function txt = porkchopUpdateFcn(~, event_obj, xArr, yArr, zMat)
     zMat = zMat';
     dv = zMat(xind,yind);
     
+%     fprintf('%0.3f %0.3f %0.3f %0.3f\n', dv);
+    
     [year, day, hour, minute, sec] = convertSec2YearDayHrMnSec(xpos);
     dateStrDept = formDateStr(year, day, hour, minute, sec);
     
@@ -143,15 +149,17 @@ function txt = porkchopUpdateFcn(~, event_obj, xArr, yArr, zMat)
     strLen = 19;
     
     if(isnan(dv))
-        dvStr = '(no solution or above plot max)';
+        dvStr = 'Est. Delta-V: (no solution or above plot max)';
     else
-        dvStr = [num2str(dv), ' km/s'];
+%         dvStr = [num2str(dv), ' km/s'];
+        dvStr = sprintf('Est. Departure Delta-V: %0.3f km/s\nEst. Arrival Delta-V: %0.3f km/s\nEst. Total Delta-V: %0.3f km/s', ...
+                        departDeltaVMat(xind, yind), arrivalDeltaVMat(xind, yind), totalDeltaVMat(xind, yind));
     end
     
     txt = {[paddStr('Departure: ', strLen), dateStrDept], ...
            [paddStr('Arrival: ', strLen), dateStrArrive], ...
            [paddStr('Transfer Duration: ', strLen), durationStr], ...
-           [paddStr('Est. Delta-V: ', strLen), dvStr]};
+           dvStr}; %[paddStr('Est. Delta-V: ', strLen), dvStr]
        
     set(0,'ShowHiddenHandles','on');                       
     hText = findobj('Type','text','Tag','DataTipMarker');  

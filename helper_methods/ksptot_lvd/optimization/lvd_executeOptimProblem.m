@@ -34,6 +34,7 @@ function lvd_executeOptimProblem(celBodyData, writeOutput, problem, recorder, ca
 
     elseif(strcmpi(problem.solver,'nomad'))            
         [x,fval,exitflag,iter,nfval] = nomad(problem.objective, problem.x0, problem.lb, problem.ub, problem.options);
+%         [x,fval,exitflag,iter,nfval] = nomadOpt(problem.objective, problem.x0, problem.lb, problem.ub, problem.options);
 
     elseif(strcmpi(problem.solver,'ipopt'))
         [x,info] = ipopt(problem.x0, problem.funcs, problem.options);
