@@ -1,19 +1,49 @@
 function [rVectB, vVectB] = getPositOfBodyWRTSun(time, bodyInfo, celBodyData)  
-    if(bodyInfo.propTypeEnum == BodyPropagationTypeEnum.TwoBody || (numel(time) == 1 && time == bodyInfo.epoch))
-        chain = bodyInfo.getOrbitElemsChain();
-        [rVectB, vVectB] = getPositOfBodyWRTSun_alg_fast_mex(time, chain{:});
-    elseif(bodyInfo.propTypeEnum == BodyPropagationTypeEnum.Numerical)
-        parentBodyInfo = bodyInfo.getParBodyInfo(celBodyData);
+    try
+        if(bodyInfo.propTypeEnum == BodyPropagationTypeEnum.TwoBody || (numel(time) == 1 && time == bodyInfo.epoch))
+            chain = bodyInfo.getOrbitElemsChain();
+            [rVectB, vVectB] = getPositOfBodyWRTSun_alg_fast_mex(time, chain{:});
+        elseif(bodyInfo.propTypeEnum == BodyPropagationTypeEnum.Numerical)
+            parentBodyInfo = bodyInfo.getParBodyInfo(celBodyData);
 
-        [rVect, vVect] = getStateAtTime(bodyInfo, time, []);
-        cartElem = CartesianElementSet(time, rVect, vVect, parentBodyInfo.getBodyCenteredInertialFrame(), true);
-        cartElem = convertToFrame(cartElem, celBodyData.getTopLevelBody().getBodyCenteredInertialFrame());
+            [rVect, vVect] = getStateAtTime(bodyInfo, time, []);
+            cartElem = CartesianElementSet(time, rVect, vVect, parentBodyInfo.getBodyCenteredInertialFrame(), true);
+            cartElem = convertToFrame(cartElem, celBodyData.getTopLevelBody().getBodyCenteredInertialFrame());
 
-        rVectB = [cartElem.rVect];
-        vVectB = [cartElem.vVect];
+            rVectB = [cartElem.rVect];
+            vVectB = [cartElem.vVect];
 
-    else
-        error('Unknown celestial body prop sim type.');
+        else
+            error('Unknown celestial body prop sim type.');
+        end
+    catch ME %if bad then use old way
+        numTimes = length(time);
+        loop = true;
+        rVectB = zeros(3,numTimes);
+        vVectB = zeros(3,numTimes);
+        while(loop)
+            try
+                parentBodyInfo = bodyInfo.getParBodyInfo(celBodyData);
+            catch 
+                parentBodyInfo = getParentBodyInfo(bodyInfo, celBodyData);
+            end
+
+            if(isempty(parentBodyInfo))
+                break;
+            end
+
+            try
+                parentGM = bodyInfo.getParentGmuFromCache();
+            catch
+                parentGM = getParentGM(bodyInfo,celBodyData);
+            end
+
+            [rVect, vVect] = getStateAtTime(bodyInfo, time, parentGM); %getParentGM(bodyInfo, celBodyData)
+            rVectB = rVectB + rVect;
+            vVectB = vVectB + vVect;
+
+            bodyInfo = parentBodyInfo;
+        end
     end
     
 %     if(numel(time) > 1 && numel(time) == numel(bodyInfo))

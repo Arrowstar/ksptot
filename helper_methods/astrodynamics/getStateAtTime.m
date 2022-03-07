@@ -1,7 +1,7 @@
 function [rVect, vVect] = getStateAtTime(bodyInfo, time, gmu)
 %getStateAtTime Summary of this function goes here
 %   Detailed explanation goes here
-    if(bodyInfo.propTypeEnum == BodyPropagationTypeEnum.TwoBody || (numel(time) == 1 && time == bodyInfo.epoch))
+    if(isstruct(bodyInfo) || (isprop(bodyInfo,'propTypeEnum') && bodyInfo.propTypeEnum == BodyPropagationTypeEnum.TwoBody) || (numel(time) == 1 && time == bodyInfo.epoch))
         numTimes = length(time);
 
         oneArray = (zeros(1, numTimes)+1);
