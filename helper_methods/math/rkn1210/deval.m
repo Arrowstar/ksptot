@@ -49,7 +49,11 @@ function [Sxint,Spxint] = deval(sol,xint,varargin)
     persistent deval_original
     if isempty(deval_original)
         prevPath = pwd;
-        cd(fullfile(matlabroot, 'toolbox', 'matlab','funfun'));
+        try
+            cd(fullfile(matlabroot, 'toolbox', 'matlab','funfun')); %works if running MATLAB normally
+        catch
+            cd(fullfile(matlabroot, 'mcr', 'toolbox', 'matlab','funfun')); %works if running MATLAB via MCR: mcr\toolbox\matlab\funfun
+        end
         deval_original = @deval;
         cd(prevPath);
     end
