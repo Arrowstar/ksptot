@@ -109,15 +109,16 @@ classdef (Abstract) AbstractElementSet < matlab.mixin.SetGet & matlab.mixin.Cust
                 createObjOfArrayVal = true;
             end
             
-            if(num == 1)
-                convertCartElemSet.time = times;
-                convertCartElemSet.rVect = rVect3;
-                convertCartElemSet.vVect = vVect3;
-                convertCartElemSet.frame = toFrame;
-                convertCartElemSet.createObjOfArray = createObjOfArrayVal;
-            else
-                convertCartElemSet = CartesianElementSet(times, rVect3, vVect3, toFrame, createObjOfArrayVal);   
-            end
+            convertCartElemSet = CartesianElementSet(times, rVect3, vVect3, toFrame, createObjOfArrayVal);
+%             if(num == 1) %CAN'T DO THIS - SOME CODE DEPENDS ON A NEW ELEMENT SET OBJECT BEING RETURNED
+%                 convertCartElemSet.time = times;
+%                 convertCartElemSet.rVect = rVect3;
+%                 convertCartElemSet.vVect = vVect3;
+%                 convertCartElemSet.frame = toFrame;
+%                 convertCartElemSet.createObjOfArray = createObjOfArrayVal;
+%             else
+%                 convertCartElemSet = CartesianElementSet(times, rVect3, vVect3, toFrame, createObjOfArrayVal);   
+%             end
             
             ce = ElementSetEnum.CartesianElements;
             ke = ElementSetEnum.KeplerianElements;

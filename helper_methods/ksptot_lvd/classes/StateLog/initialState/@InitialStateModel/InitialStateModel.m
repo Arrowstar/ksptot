@@ -51,13 +51,13 @@ classdef InitialStateModel < matlab.mixin.SetGet
             if(isa(newOrbitModel,'AbstractOrbitStateModel'))
                 if(isa(newOrbitModel,'BodyFixedOrbitStateModel'))
 %                     newFrame = BodyFixedFrame(obj.centralBody, obj.centralBody.celBodyData); %#ok<MCSUP>
-                    newFrame = obj.centralBody.getBodyFixedFrame();
+                    newFrame = obj.centralBody.getBodyFixedFrame(); %#ok<MCSUP> 
                     elemSet = GeographicElementSet(obj.time, newOrbitModel.lat, newOrbitModel.long, newOrbitModel.alt, ...
                                                    newOrbitModel.vVectNEZ_az, newOrbitModel.vVectNEZ_el, newOrbitModel.vVectNEZ_mag, newFrame); %#ok<MCSUP>
 
                 elseif(isa(newOrbitModel,'KeplerianOrbitStateModel'))
 %                     newFrame = BodyCenteredInertialFrame(obj.centralBody, obj.centralBody.celBodyData); %#ok<MCSUP>
-                    newFrame = obj.centralBody.getBodyCenteredInertialFrame();
+                    newFrame = obj.centralBody.getBodyCenteredInertialFrame(); %#ok<MCSUP> 
                     elemSet = KeplerianElementSet(obj.time, newOrbitModel.sma, newOrbitModel.ecc, newOrbitModel.inc, ...
                                                   newOrbitModel.raan, newOrbitModel.arg, newOrbitModel.tru, newFrame); %#ok<MCSUP>
                     
