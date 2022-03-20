@@ -242,7 +242,7 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
             parBodyInfo = obj.getParBodyInfo();
             if(not(isempty(parBodyInfo)))
                 frame = parBodyInfo.getBodyCenteredInertialFrame();
-                gmu = parBodyInfo.gm;
+                gmu = obj.getParentGmuFromCache();
 
                 [rVects, vVects] = getStateAtTime(obj, times, gmu);
 

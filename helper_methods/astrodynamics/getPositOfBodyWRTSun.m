@@ -2,7 +2,7 @@ function [rVectB, vVectB] = getPositOfBodyWRTSun(time, bodyInfo, celBodyData)
     try
         if(bodyInfo.propTypeEnum == BodyPropagationTypeEnum.TwoBody || (numel(time) == 1 && time == bodyInfo.epoch))
             chain = bodyInfo.getOrbitElemsChain();
-            [rVectB, vVectB] = getPositOfBodyWRTSun_alg_fast_mex(time, chain{:});
+            [rVectB, vVectB] = getPositOfBodyWRTSun_alg(time, chain{:});
         elseif(bodyInfo.propTypeEnum == BodyPropagationTypeEnum.Numerical)
             parentBodyInfo = bodyInfo.getParBodyInfo(celBodyData);
 

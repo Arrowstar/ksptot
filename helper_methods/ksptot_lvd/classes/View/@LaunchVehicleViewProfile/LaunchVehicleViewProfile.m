@@ -204,7 +204,7 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                 bodyMarkerData = obj.createBodyData(bodyToPlot, viewInFrame, obj.bodyPlotStyle, showSoI, meshEdgeAlpha);
                 
                 times = [];
-                for(j=1:length(subStateLogs))
+                for(j=1:length(subStateLogs)) %#ok<NO4LP> 
                     if(size(subStateLogs{j},1) > 0)
                         times = [times; subStateLogs{j}(:,1)]; %#ok<AGROW>
                     end
