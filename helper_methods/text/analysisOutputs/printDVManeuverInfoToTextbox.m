@@ -36,13 +36,27 @@ function burn1InfoText = printDVManeuverInfoToTextbox(hDvManInfoText, burnInfoTe
         end
         set(hDvManInfoText, 'String', burn1InfoText);
         
+        try
+            objAdHandle = findobj(hDvManInfoText.Parent.Children,'Tag',hDvManInfoText.Tag);
+            if(not(isempty(objAdHandle)))
+                objAdHandle = objAdHandle(1);
+            end
+        catch
+            objAdHandle = [];
+        end
+        
         %first number is type of time in the second element: 0 is UT, 1 is
         %time past periapse;
         %Note: Code after this method is called may modify UserData
         %(specifically to change the type to strict UT time)
         if(~isempty(ut))
-            set(hDvManInfoText, 'UserData', [0, ut, 1000*deltaVNTW(1), 1000*deltaVNTW(2), 1000*deltaVNTW(3)]);
+            userData = [0, ut, 1000*deltaVNTW(1), 1000*deltaVNTW(2), 1000*deltaVNTW(3)];
         else
-            set(hDvManInfoText, 'UserData', [1, secFromPeri, 1000*deltaVNTW(1), 1000*deltaVNTW(2), 1000*deltaVNTW(3)]);
+            userData = [1, secFromPeri, 1000*deltaVNTW(1), 1000*deltaVNTW(2), 1000*deltaVNTW(3)];
+        end
+        hDvManInfoText.UserData = userData;
+        
+        if(not(isempty(objAdHandle)) && isvalid(objAdHandle) && isprop(objAdHandle,'UserData'))
+            objAdHandle.UserData = userData;
         end
 end
