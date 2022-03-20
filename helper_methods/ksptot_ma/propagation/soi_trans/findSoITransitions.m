@@ -166,9 +166,11 @@ function soITrans = findSoITransitions(initialState, maxSearchUT, soiSkipIds, ma
             
             [rVectDown, vVectDown] = convertRVVectOnDownwardsSoITransition(childBodyInfo, celBodyData, crossingUT, tempEventLog(end,2:4), tempEventLog(end,5:7));
             
-            downSoITrans(end+1,:) = [-1, crossingUT, bodyInfo.id, childBodyInfo.id, ...
-                                     tempEventLog(end,2:7), ...
-                                     rVectDown', vVectDown'];
+            if(dot(rVectDown, vVectDown) < 0)
+                downSoITrans(end+1,:) = [-1, crossingUT, bodyInfo.id, childBodyInfo.id, ...
+                                         tempEventLog(end,2:7), ...
+                                         rVectDown', vVectDown'];
+            end
         end
     end
     
@@ -208,7 +210,7 @@ function [value, isterminal, direction] = getSoITransitionOdeEvents(ut, mean, sm
     direction = [];
     
     tru = computeTrueAnomFromMean(mean, ecc);
-    [rVect, ~] = getStatefromKepler(sma, ecc, inc, raan, arg, tru, gmu, false);
+    [rVect, vVect] = getStatefromKepler(sma, ecc, inc, raan, arg, tru, gmu, false);
 
     for(i=1:length(childBodies)) %#ok<*NO4LP>
         childBodyInfo = childBodies(i);

@@ -12,17 +12,17 @@ function [rVect,vVect] = getAbsPositBetweenSpacecraftAndBody(time, rVectSC, body
         end
         
 	%may not work correctly... \/
-    elseif(isa(bodyOther,'KSPTOT_BodyInfo') && bodyOther.getParBodyInfo(celBodyData) == bodySC)
-        parentGmu = bodyOther.getParentGmuFromCache();
-        [rVectOther, vVectOther] = getStateAtTime(bodyOther, time, parentGmu);
-        rVect = rVectOther - rVectSC;
-        
-        if(~isempty(varargin))
-            vVectSC = varargin{1};
-            vVect = vVectOther - vVectSC;
-        else
-            vVect = nan(size(rVect));
-        end
+%     elseif(isa(bodyOther,'KSPTOT_BodyInfo') && bodyOther.getParBodyInfo(celBodyData) == bodySC)
+%         parentGmu = bodyOther.getParentGmuFromCache();
+%         [rVectOther, vVectOther] = getStateAtTime(bodyOther, time, parentGmu);
+%         rVect = rVectOther - rVectSC;
+%         
+%         if(~isempty(varargin))
+%             vVectSC = varargin{1};
+%             vVect = vVectOther - vVectSC;
+%         else
+%             vVect = nan(size(rVect));
+%         end
         
     else
         [rVectBodySC, vVectBodySC] = getPositOfBodyWRTSun(time, bodySC, celBodyData);
