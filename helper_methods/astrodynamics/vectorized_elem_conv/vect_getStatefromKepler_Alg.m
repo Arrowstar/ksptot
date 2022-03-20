@@ -66,4 +66,3 @@ function [rVect, vVect] = vect_getStatefromKepler_Alg(sma, ecc, inc, raan, arg, 
     rVect = reshape(rVect, 3,numOrb);
     vVect = reshape(vVect, 3,numOrb);
 end
-

@@ -9,7 +9,7 @@ function [rVect, vVect] = getStateAtTime_alg(time, sma, ecc, inc, raan, arg, mea
     ecc = ecc * oneArray;
     inc = AngleZero2Pi(deg2rad(inc)) * oneArray;
     raan = AngleZero2Pi(deg2rad(raan)) * oneArray;
-    argp = AngleZero2Pi(deg2rad(arg)) * oneArray;
+    arg = AngleZero2Pi(deg2rad(arg)) * oneArray;
     M0 = deg2rad(mean) * oneArray; 
        
     n = computeMeanMotion(sma, gmu);
@@ -18,9 +18,9 @@ function [rVect, vVect] = getStateAtTime_alg(time, sma, ecc, inc, raan, arg, mea
     tru = computeTrueAnomFromMean(M, ecc);
 
     if(length(tru) > 1)
-        [rVect,vVect] = vect_getStatefromKepler(sma, ecc, inc, raan, argp, tru, gmu, false); 
+        [rVect,vVect] = vect_getStatefromKepler(sma, ecc, inc, raan, arg, tru, gmu, false); 
     else
-        [rVect, vVect] = getStatefromKepler_Alg(sma, ecc, inc, raan, argp, tru, gmu);
+        [rVect, vVect] = getStatefromKepler_Alg(sma, ecc, inc, raan, arg, tru, gmu);
     end
     
     rVect(isnan(rVect)) = 0;

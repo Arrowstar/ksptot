@@ -170,6 +170,7 @@ function [rVect, vVect] = getStatefromKepler_Alg(sma, ecc, inc, raan, arg, tru, 
         u = zeros(size(tru));
         u(bool) = arg(bool) + tru(bool);
         tru(bool) = u(bool);
+        arg(bool) = 0.0;
     end
 
     %%%%%%%%%%
