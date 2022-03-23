@@ -304,32 +304,46 @@ function showLvdDataStructButton_Callback(hObject, eventdata, handles)
     nameStr = contents{get(handles.functionInputSigCombo,'Value')};
     sigEnum = PluginFunctionInputSignatureEnum.getEnumForListboxStr(nameStr);
     
-    inputNames = {'lvdData', 'stateLog', 'event', 'execLoc', 't', 'y', 'flag', 'userData'};
+    inputNames = {'lvdData', 'stateLog', 'event', 'execLoc', 't', 'y', 'flag', 'userData', 'stateLogEntry', 'frame', 'pluginVarValues'};
     switch sigEnum
         case PluginFunctionInputSignatureEnum.BeforeProp
             stateLog = lvdData.stateLog;
-            inputData = {lvdData, stateLog, [], LvdPluginExecLocEnum.BeforeProp, [],[],[], []};
+            inputData = {lvdData, stateLog, [], LvdPluginExecLocEnum.BeforeProp, [],[],[], [], [],[], []};
             
         case PluginFunctionInputSignatureEnum.BeforeEvents
             stateLog = lvdData.stateLog;
             event = lvdData.script.evts(1);
-            inputData = {lvdData, stateLog, event, LvdPluginExecLocEnum.BeforeEvent, [],[],[], []};
+            inputData = {lvdData, stateLog, event, LvdPluginExecLocEnum.BeforeEvent, [],[],[], [], [], [],[], []};
             
         case PluginFunctionInputSignatureEnum.AfterTimeStep
             event = lvdData.script.evts(1);
             [t,y] = lvdData.initialState.getFirstOrderIntegratorStateRepresentation();
             flag = 'init';
-            inputData = {lvdData, [], event, LvdPluginExecLocEnum.AfterTimestep, t,y,flag, []};
+            inputData = {lvdData, [], event, LvdPluginExecLocEnum.AfterTimestep, t,y,flag, [], [], [],[], []};
             
         case PluginFunctionInputSignatureEnum.AfterEvents
             stateLog = lvdData.stateLog;
             event = lvdData.script.evts(1);
-            inputData = {lvdData, stateLog, event, LvdPluginExecLocEnum.AfterEvent, [],[],[], []};
+            inputData = {lvdData, stateLog, event, LvdPluginExecLocEnum.AfterEvent, [],[],[], [], [], [],[], []};
             
         case PluginFunctionInputSignatureEnum.AfterProp
             stateLog = lvdData.stateLog;
-            inputData = {lvdData, stateLog, [], LvdPluginExecLocEnum.AfterProp, [],[],[], []};
-            
+            inputData = {lvdData, stateLog, [], LvdPluginExecLocEnum.AfterProp, [],[],[], [], [], [],[], []};
+           
+        case PluginFunctionInputSignatureEnum.Constraint
+            stateLog = lvdData.stateLog;
+            stateLogEntry = lvdData.initialState;
+            frame = lvdData.initialState.getCartesianElementSetRepresentation().frame;
+            pluginVarValues = lvdData.pluginVars.getPluginVarValues;
+            inputData = {lvdData, stateLog, [], LvdPluginExecLocEnum.Constraint, [],[],[], [], stateLogEntry,frame, pluginVarValues};
+
+        case PluginFunctionInputSignatureEnum.GraphicalAnalysis
+            stateLog = lvdData.stateLog;
+            stateLogEntry = lvdData.initialState;
+            frame = lvdData.initialState.getCartesianElementSetRepresentation().frame;
+            pluginVarValues = lvdData.pluginVars.getPluginVarValues;
+            inputData = {lvdData, stateLog, [], LvdPluginExecLocEnum.Constraint, [],[],[], [], stateLogEntry,frame, pluginVarValues};
+
         otherwise
             error('Unknown plugin function input signature: %s', sigEnum);
     end
