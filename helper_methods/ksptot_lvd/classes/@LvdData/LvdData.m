@@ -12,6 +12,7 @@ classdef LvdData < matlab.mixin.SetGet
         settings LvdSettings
         notes char
         plugins LvdPluginSet
+        pluginVars LvdPluginOptimVarSet
         viewSettings LaunchVehicleViewSettings
         groundObjs LaunchVehicleGroundObjectSet
         geometry LvdGeometry
@@ -32,6 +33,7 @@ classdef LvdData < matlab.mixin.SetGet
             obj.validation = LaunchVehicleDataValidation(obj);
             obj.settings = LvdSettings();
             obj.plugins = LvdPluginSet(obj);
+            obj.pluginVars = LvdPluginOptimVarSet(obj);
             obj.viewSettings = LaunchVehicleViewSettings(obj);
             obj.groundObjs = LaunchVehicleGroundObjectSet(obj);
             obj.geometry = LvdGeometry(obj);
@@ -735,6 +737,10 @@ classdef LvdData < matlab.mixin.SetGet
             
             if(isempty(obj.plugins))
                 obj.plugins = LvdPluginSet(obj);
+            end
+
+            if(isempty(obj.pluginVars))
+                obj.pluginVars = LvdPluginOptimVarSet(obj);
             end
             
             if(isempty(obj.viewSettings))

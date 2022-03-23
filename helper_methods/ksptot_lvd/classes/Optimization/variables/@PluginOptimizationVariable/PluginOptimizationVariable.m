@@ -1,29 +1,33 @@
-classdef FlightPathAngleOptimizationVariable < AbstractOptimizationVariable
-    %FlightPathAngleOptimizationVariable Summary of this class goes here
+classdef PluginOptimizationVariable < AbstractOptimizationVariable
+    %LvdPluginOptimizationVariable Summary of this class goes here
     %   Detailed explanation goes here
-    
+
     properties
-        varObj(1,1) FlightPathAngleTermCondition = FlightPathAngleTermCondition(0);
-        
-        lb(1,1) double = 0;
-        ub(1,1) double = 0;
+        varObj(1,1) LvdPluginOptimVarWrapper = LvdPluginOptimVarWrapper();
+
+        lb(1,1) double = -1;
+        ub(1,1) double = 1;
         
         useTf(1,1) = false;
     end
-    
+
     methods
-        function obj = FlightPathAngleOptimizationVariable(varObj)
+        function obj = PluginOptimizationVariable(varObj)
+            arguments
+                varObj(1,1) LvdPluginOptimVarWrapper
+            end
+
             obj.varObj = varObj;
             obj.varObj.optVar = obj;
             
             obj.id = rand();
         end
-        
+
         function x = getXsForVariable(obj)
             x = [];
             
             if(obj.useTf)
-                x = obj.varObj.fpa;
+                x = obj.varObj.value;
             end
         end
         
@@ -49,13 +53,13 @@ classdef FlightPathAngleOptimizationVariable < AbstractOptimizationVariable
         function setUseTfForVariable(obj, useTf)
             obj.useTf = useTf;
         end
-        
+                
         function updateObjWithVarValue(obj, x)
-            obj.varObj.fpa = x;
+            obj.varObj.value = x;
         end
         
         function nameStrs = getStrNamesOfVars(obj, evtNum, varLocType)
-            nameStrs = {sprintf('Event %i Flight Path Angle Termination Condition', evtNum)};
+            nameStrs = {sprintf('Plugin Variable "%s"', obj.varObj.name)};
         end
     end
 end

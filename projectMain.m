@@ -32,6 +32,10 @@ end
 %UIs when closing while using uiwait().
 warning('off','MATLAB:class:DestructorError');
 
+%Turn off java component being removed warnings.  User doesn't need to see
+%that and I already know.
+warning('off','MATLAB:ui:javacomponent:FunctionToBeRemoved');
+
 %Populate initial ksptot log file
 writeKsptotLogFileHeaderToConsole();
 

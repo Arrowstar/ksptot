@@ -57,6 +57,8 @@ classdef LvdPlugin < matlab.mixin.SetGet
                                  obj.pluginName, execLoc.name, errMsg);
                 lvdData.validation.outputs(end+1) = LaunchVehicleDataValidationError(errStr);
             else
+                pluginVarValues = lvdData.pluginVars.getPluginVarValues(); %gets used by the plugin code itself
+
                 try
                     eval(sprintf('%s',obj.pluginCode));
                     

@@ -8,7 +8,7 @@ function [evtNum, varLocType] = getEventNumberForVar(var, lvdData)
         
         [~, eVars] = event.hasActiveOptVars();
         
-        for(j=1:length(eVars))
+        for(j=1:length(eVars)) %#ok<*NO4LP> 
             eVar = eVars(j);
             
             if(strcmpi(class(var), class(eVar)) && var == eVar)
@@ -29,7 +29,10 @@ function [evtNum, varLocType] = getEventNumberForVar(var, lvdData)
             
         elseif(lvdData.launchVehicle.isVarFromLaunchVehicle(var))
             varLocType = 'Launch Vehicle';
-            
+
+        elseif(lvdData.pluginVars.isVarAPluginVar(var))
+            varLocType = 'Plugins';
+
         else
             varLocType = '';
             

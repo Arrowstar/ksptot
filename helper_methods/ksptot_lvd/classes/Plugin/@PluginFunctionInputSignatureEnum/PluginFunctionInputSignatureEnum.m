@@ -3,14 +3,14 @@ classdef PluginFunctionInputSignatureEnum < matlab.mixin.SetGet
     %   Detailed explanation goes here
     
     enumeration
-        BeforeProp('Before Propagation','function userData = executePlugin(lvdData, stateLog, [], execLoc, [],[],[], userData, [], [])')
-        BeforeEvents('Before Events','function userData = executePlugin(lvdData, stateLog, event, execLoc, [],[],[], userData, [], [])');
-        AfterEvents('After Events','function userData = executePlugin(lvdData, stateLog, event, execLoc, [],[],[], userData, [], [])');
-        AfterProp('After Propagation','function userData = executePlugin(lvdData, stateLog, [], execLoc, [],[],[], userData, [], [])');
-        AfterTimeStep('After Time Steps','function userData = executePlugin(lvdData, [], eventInitStateLogEntry, execLoc, t,y,flag, userData, [], [])')
+        BeforeProp('Before Propagation','function userData = executePlugin(lvdData, stateLog, [], execLoc, [],[],[], userData, [], [], pluginVarValues)')
+        BeforeEvents('Before Events','function userData = executePlugin(lvdData, stateLog, event, execLoc, [],[],[], userData, [], [], pluginVarValues)');
+        AfterEvents('After Events','function userData = executePlugin(lvdData, stateLog, event, execLoc, [],[],[], userData, [], [], pluginVarValues)');
+        AfterProp('After Propagation','function userData = executePlugin(lvdData, stateLog, [], execLoc, [],[],[], userData, [], [], pluginVarValues)');
+        AfterTimeStep('After Time Steps','function userData = executePlugin(lvdData, [], eventInitStateLogEntry, execLoc, t,y,flag, userData, [], [], pluginVarValues)')
         
-        Constraint('Plugin Constraint/Objective Function','function value = executePlugin(lvdData, stateLog, event, execLoc, [],[],[], userData, stateLogEntry, frame)');
-        GraphicalAnalysis('Graphical Analysis Value','function value = executePlugin(lvdData, stateLog, event, execLoc, [],[],[], userData, stateLogEntry, frame)');
+        Constraint('Plugin Constraint/Objective Function','function value = executePlugin(lvdData, stateLog, event, execLoc, [],[],[], userData, stateLogEntry, frame, pluginVarValues)');
+        GraphicalAnalysis('Graphical Analysis Value','function value = executePlugin(lvdData, stateLog, event, execLoc, [],[],[], userData, stateLogEntry, frame, pluginVarValues)');
     end
     
     properties

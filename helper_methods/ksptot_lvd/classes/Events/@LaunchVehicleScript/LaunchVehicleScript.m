@@ -297,6 +297,9 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
                 evtStartNum = 1;
             end
             
+            %execute plugins that occur before propagation
+            obj.lvdData.plugins.executePluginsBeforeProp(stateLog);
+
             if(isempty(evtStartNum) || evtStartNum <= 1)
                 evtStartNum = 1;  %disable the event start exec time optimization for now, it is buggy/broken
                 stateLog.clearStateLog();
@@ -320,10 +323,7 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
             obj.lvdData.plugins.initializePlugins();
             
             tPropTime = 0;
-            if(~isempty(obj.evts))
-                %execute plugins that occur after propagation
-                obj.lvdData.plugins.executePluginsBeforeProp(stateLog);
-                
+            if(~isempty(obj.evts))                
                 tStartSimTime = initStateLogEntry.time;
                 tStartPropTime = tic();
                 for(i=evtStartNum:length(obj.evts)) %#ok<*NO4LP>

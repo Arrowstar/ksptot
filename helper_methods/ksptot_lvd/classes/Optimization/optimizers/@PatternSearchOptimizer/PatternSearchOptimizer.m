@@ -97,7 +97,7 @@ classdef PatternSearchOptimizer < AbstractOptimizer
             optchanged = false;
             x = optimValues.x;
             maxConstr = PatternSearchOptimizer.getConstrViolation(optimValues);              
-            
+
             switch flag
                 case 'iter'
                     stop = get(hCancelButton,'Value');
@@ -253,6 +253,10 @@ classdef PatternSearchOptimizer < AbstractOptimizer
             end
             
             maxConstr = max([max(abs(optimValues.nonlinineq)), max(abs(optimValues.nonlineq))]);
+
+            if(isempty(maxConstr))
+                maxConstr = 0;
+            end
         end
     end
 end
