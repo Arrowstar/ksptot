@@ -62,10 +62,16 @@ classdef LvdPluginOptimVarSet < matlab.mixin.SetGet
             varValues = varValues(:);
         end
 
-        function tf = isVarAPluginVar(obj, var)
+        function tf = isVarAPluginVar(obj, var)            
             if(not(isempty(obj)))
-                vars = [obj.pluginVars.optVar];
-                tf = any(var == vars);
+                if(isempty(obj.pluginVars))
+                    tf = false;
+                    
+                else
+                    vars = [obj.pluginVars.optVar];
+                    tf = any(var == vars);
+                end
+                
             else
                 tf = true;
             end
