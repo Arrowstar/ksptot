@@ -18,17 +18,17 @@ classdef Gravity3rdBodyForceModel < AbstractForceModel
 
             bodyScFrame = bodySC.getBodyCenteredInertialFrame();
 
-            cartElemSC = obj.cartElemSCObj;
-            cartElemSC.time = ut;
-            cartElemSC.rVect = rVectSC;
-            cartElemSC.vVect = vVectSC;
-            cartElemSC.frame = bodyScFrame;
+%             cartElemSC = obj.cartElemSCObj;
+%             cartElemSC.time = ut;
+%             cartElemSC.rVect = rVectSC;
+%             cartElemSC.vVect = vVectSC;
+%             cartElemSC.frame = bodyScFrame;
 
-            cartElemSCBody = obj.cartElemSCBodyObj;
-            cartElemSCBody.time = ut;
-            cartElemSCBody.rVect = [0;0;0];
-            cartElemSCBody.vVect = [0;0;0];
-            cartElemSCBody.frame = bodyScFrame;
+%             cartElemSCBody = obj.cartElemSCBodyObj;
+%             cartElemSCBody.time = ut;
+%             cartElemSCBody.rVect = [0;0;0];
+%             cartElemSCBody.vVect = [0;0;0];
+%             cartElemSCBody.frame = bodyScFrame;
             
             bodies = grav3Body.bodies;
             bodies = bodies(bodies ~= bodySC);
@@ -43,7 +43,7 @@ classdef Gravity3rdBodyForceModel < AbstractForceModel
 
 %                 cartElemSCBody_JBody = cartElemSCBody.convertToFrame(bodyInfoJ.getBodyCenteredInertialFrame());
 %                 r_1_to_j = -1 * cartElemSCBody_JBody.rVect;
-                [r_1_to_j,~] = getAbsPositBetweenSpacecraftAndBody(ut, [0;0;0], cartElemSCBody.frame.getOriginBody, bodyInfoJ, bodyInfoJ.celBodyData);
+                [r_1_to_j,~] = getAbsPositBetweenSpacecraftAndBody(ut, [0;0;0], bodyScFrame.getOriginBody(), bodyInfoJ, bodyInfoJ.celBodyData);
 
                 if(norm(r_sat_to_j) > 0)
                     term1 = r_sat_to_j/norm(r_sat_to_j)^3;  %km/km^3 = km^-2
