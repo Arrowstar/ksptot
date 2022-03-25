@@ -37,11 +37,13 @@ classdef Gravity3rdBodyForceModel < AbstractForceModel
             for(i=1:length(bodies))
                 bodyInfoJ = bodies(i);
 
-                cartElemSC_JBody = cartElemSC.convertToFrame(bodyInfoJ.getBodyCenteredInertialFrame());
-                r_sat_to_j = -1 * cartElemSC_JBody.rVect;
+%                 cartElemSC_JBody = cartElemSC.convertToFrame(bodyInfoJ.getBodyCenteredInertialFrame());
+%                 r_sat_to_j = -1 * cartElemSC_JBody.rVect;
+                [r_sat_to_j,~] = getAbsPositBetweenSpacecraftAndBody(ut, rVectSC, bodySC, bodyInfoJ, bodyInfoJ.celBodyData);
 
-                cartElemSCBody_JBody = cartElemSCBody.convertToFrame(bodyInfoJ.getBodyCenteredInertialFrame());
-                r_1_to_j = -1 * cartElemSCBody_JBody.rVect;
+%                 cartElemSCBody_JBody = cartElemSCBody.convertToFrame(bodyInfoJ.getBodyCenteredInertialFrame());
+%                 r_1_to_j = -1 * cartElemSCBody_JBody.rVect;
+                [r_1_to_j,~] = getAbsPositBetweenSpacecraftAndBody(ut, [0;0;0], cartElemSCBody.frame.getOriginBody, bodyInfoJ, bodyInfoJ.celBodyData);
 
                 if(norm(r_sat_to_j) > 0)
                     term1 = r_sat_to_j/norm(r_sat_to_j)^3;  %km/km^3 = km^-2
