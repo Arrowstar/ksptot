@@ -91,11 +91,16 @@ classdef CustomFiniteDiffsCalculationMethod < AbstractGradientCalculationMethod
             p = 1;
             N = length(hValsToTest);
             
-%             hWaitbar = waitbar(0,'Computing optimal step sizes, please wait...');
-            hWaitbar = uiprogressdlg(hLvdMainGUI, 'Message','Computing optimal step sizes, please wait...', 'Title','Step Size', 'ShowPercentage',true, 'Icon','info');
-            derivs = [];
             q = parallel.pool.DataQueue;
-            q.afterEach(@updateParallelWaitbar);
+            if(not(isempty(hLvdMainGUI)))
+                hWaitbar = uiprogressdlg(hLvdMainGUI, 'Message','Computing optimal step sizes, please wait...', 'Title','Step Size', 'ShowPercentage',true, 'Icon','info');
+                
+                q.afterEach(@updateParallelWaitbar);
+            else
+                hWaitbar = NaN;
+            end
+            
+            derivs = [];
             
             pp = gcp('nocreate');
             if(not(isempty(pp)))

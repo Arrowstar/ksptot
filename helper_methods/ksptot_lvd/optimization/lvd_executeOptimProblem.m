@@ -1,4 +1,4 @@
-function lvd_executeOptimProblem(celBodyData, writeOutput, problem, recorder, callOutputFcn)
+function [exitflag, message] = lvd_executeOptimProblem(celBodyData, writeOutput, problem, recorder, callOutputFcn)
     global options_gravParamType;
     initX = []; %#ok<NASGU>
     
@@ -28,21 +28,26 @@ function lvd_executeOptimProblem(celBodyData, writeOutput, problem, recorder, ca
     tt = tic;
     if(strcmpi(problem.solver,'fmincon'))
         [x,fval,exitflag,output,lambda,grad,hessian] = fmincon(problem);
-
+        message = output.message;
+        
     elseif(strcmpi(problem.solver,'patternsearch'))
         [x,fval,exitflag,output] = patternsearch(problem);
-
+        message = output.message;
+        
     elseif(strcmpi(problem.solver,'nomad'))            
         [x,fval,exitflag,iter,nfval] = nomad(problem.objective, problem.x0, problem.lb, problem.ub, problem.options);
+        message = nomadExitFlagMessageLookup(exitflag);
 %         [x,fval,exitflag,iter,nfval] = nomadOpt(problem.objective, problem.x0, problem.lb, problem.ub, problem.options);
 
     elseif(strcmpi(problem.solver,'ipopt'))
         [x,info] = ipopt(problem.x0, problem.funcs, problem.options);
         exitflag = info.status;
+        message = ipoptExitFlagMessageLookup(exitflag);
         
     elseif(strcmpi(problem.solver,'surrogateopt'))
         [x,fval,exitflag,output,trials] = surrogateopt(problem);
-
+        message = output.message;
+        
     else
         error('Unknown optimizer function: %s', problem.solver);
     end

@@ -11,7 +11,7 @@ classdef NomadOptimizer < AbstractOptimizer
             obj.options = NomadOptions();
         end
         
-        function optimize(obj, lvdOpt, writeOutput, callOutputFcn, hLvdMainGUI)
+        function [exitflag, message] = optimize(obj, lvdOpt, writeOutput, callOutputFcn, hLvdMainGUI)
             [x0All, actVars, varNameStrs] = lvdOpt.vars.getTotalScaledXVector();
             [lbAll, ubAll, lbUsAll, ubUsAll] = lvdOpt.vars.getTotalScaledBndsVector();
             typicalX = lvdOpt.vars.getTypicalScaledXVector();
@@ -85,7 +85,7 @@ classdef NomadOptimizer < AbstractOptimizer
             end
             
             problem.UseParallel = useParallel;
-            lvd_executeOptimProblem(celBodyData, writeOutput, problem, recorder, callOutputFcn);
+            [exitflag, message] = lvd_executeOptimProblem(celBodyData, writeOutput, problem, recorder, callOutputFcn);
             
             if(callOutputFcn)
                 close(handlesObsOptimGui.ma_ObserveOptimGUI);

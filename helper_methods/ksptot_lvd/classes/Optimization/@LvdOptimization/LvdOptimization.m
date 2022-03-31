@@ -47,23 +47,23 @@ classdef LvdOptimization < matlab.mixin.SetGet
             obj.customFiniteDiffsCalcMethod = CustomFiniteDiffsCalculationMethod();
         end
         
-        function optimize(obj, writeOutput, callOutputFcn, hLvdMainGUI)              
+        function [exitflag, message] = optimize(obj, writeOutput, callOutputFcn, hLvdMainGUI)              
             obj.vars.sortVarsByEvtNum();
             optimizer = obj.getSelectedOptimizer();
-            optimizer.optimize(obj, writeOutput, callOutputFcn, hLvdMainGUI);
+            [exitflag, message] = optimizer.optimize(obj, writeOutput, callOutputFcn, hLvdMainGUI);
         end
         
-        function consoleOptimize(obj)
+        function [exitflag, message] = consoleOptimize(obj)
             global options_gravParamType
             
             if(isempty(options_gravParamType))
                 options_gravParamType = 'kspStockLike';
             end
             
-            writeOutput = @(varargin) disp(varargin);
+            writeOutput = @(varargin) disp('');
             callOutputFcn = false;
             
-            obj.optimize(writeOutput, callOutputFcn);
+            [exitflag, message] = obj.optimize(writeOutput, callOutputFcn, []);
         end
         
         function optimizer = getSelectedOptimizer(obj)

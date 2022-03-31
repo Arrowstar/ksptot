@@ -11,7 +11,7 @@ classdef IpOptOptimizer < AbstractGradientOptimizer
             obj.options = IpoptOptions();
         end
         
-        function optimize(obj, lvdOpt, writeOutput, callOutputFcn, hLvdMainGUI)
+        function [exitflag, message] = optimize(obj, lvdOpt, writeOutput, callOutputFcn, hLvdMainGUI)
             global ipoptFuncCount ipoptLastXVect
             ipoptFuncCount = 0;
             
@@ -40,7 +40,7 @@ classdef IpOptOptimizer < AbstractGradientOptimizer
             
             %sparsity calculations
             sparsityTF = gradCalcMethod.shouldComputeSparsity();
-            if(sparsityTF)
+            if(sparsityTF && not(isempty(hLvdMainGUI)))
 %                 hMsgBox = msgbox('Computing sparsity.  Please wait...');
                 hMsgBox = uiprogressdlg(hLvdMainGUI, 'Message','Computing sparsity.  Please wait...', 'Title','Computing Sparsity', 'Indeterminate',true, 'Icon','info');
             else
@@ -92,7 +92,7 @@ classdef IpOptOptimizer < AbstractGradientOptimizer
                 problem.funcs.iterfunc = outputFnc;
             end
             
-            lvd_executeOptimProblem(celBodyData, writeOutput, problem, recorder, callOutputFcn);
+            [exitflag, message] = lvd_executeOptimProblem(celBodyData, writeOutput, problem, recorder, callOutputFcn);
             
             if(callOutputFcn)
                 close(handlesObsOptimGui.ma_ObserveOptimGUI);

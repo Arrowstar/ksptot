@@ -1,3 +1,4 @@
+
 classdef FminconOptimizer < AbstractGradientOptimizer
     %FminconOptimizer Summary of this class goes here
     %   Detailed explanation goes here
@@ -11,7 +12,7 @@ classdef FminconOptimizer < AbstractGradientOptimizer
             obj.options = FminconOptions();
         end
         
-        function optimize(obj, lvdOpt, writeOutput, callOutputFcn, hLvdMainGUI)
+        function [exitflag, message] = optimize(obj, lvdOpt, writeOutput, callOutputFcn, hLvdMainGUI)
             [x0All, actVars, varNameStrs] = lvdOpt.vars.getTotalScaledXVector();
             [lbAll, ubAll, lbUsAll, ubUsAll] = lvdOpt.vars.getTotalScaledBndsVector();
             typicalX = lvdOpt.vars.getTypicalScaledXVector();
@@ -52,7 +53,7 @@ classdef FminconOptimizer < AbstractGradientOptimizer
                 opts = optimoptions(opts, 'SpecifyObjectiveGradient',true);
                 
                 sparsityTF = gradCalcMethod.shouldComputeSparsity();
-                if(sparsityTF)
+                if(sparsityTF && not(isempty(hLvdMainGUI)))
 %                     hMsgBox = msgbox('Computing sparsity.  Please wait...');
                     hMsgBox = uiprogressdlg(hLvdMainGUI, 'Message','Computing sparsity.  Please wait...', 'Title','Computing Sparsity', 'Indeterminate',true, 'Icon','info');
                 else
@@ -90,7 +91,7 @@ classdef FminconOptimizer < AbstractGradientOptimizer
                 problem.options.OutputFcn = outputFnc;
             end
             
-            lvd_executeOptimProblem(celBodyData, writeOutput, problem, recorder, callOutputFcn);
+            [exitflag, message] = lvd_executeOptimProblem(celBodyData, writeOutput, problem, recorder, callOutputFcn);
             
             if(callOutputFcn)
                 close(handlesObsOptimGui.ma_ObserveOptimGUI);

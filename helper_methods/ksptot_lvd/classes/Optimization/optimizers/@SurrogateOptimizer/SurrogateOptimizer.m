@@ -11,7 +11,7 @@ classdef SurrogateOptimizer < AbstractOptimizer
             obj.options = SurrogateOptimizerOptions();
         end
         
-        function optimize(obj, lvdOpt, writeOutput, callOutputFcn, hLvdMainGUI)
+        function [exitflag, message] = optimize(obj, lvdOpt, writeOutput, callOutputFcn, hLvdMainGUI)
             [x0All, actVars, varNameStrs] = lvdOpt.vars.getTotalScaledXVector();
             [lbAll, ubAll, lbUsAll, ubUsAll] = lvdOpt.vars.getTotalScaledBndsVector();
             
@@ -53,7 +53,7 @@ classdef SurrogateOptimizer < AbstractOptimizer
                 problem.options.OutputFcn = outputFnc;
             end
             
-            lvd_executeOptimProblem(celBodyData, writeOutput, problem, recorder, callOutputFcn);
+            [exitflag, message] = lvd_executeOptimProblem(celBodyData, writeOutput, problem, recorder, callOutputFcn);
             
             if(callOutputFcn)
                 close(handlesObsOptimGui.ma_ObserveOptimGUI);

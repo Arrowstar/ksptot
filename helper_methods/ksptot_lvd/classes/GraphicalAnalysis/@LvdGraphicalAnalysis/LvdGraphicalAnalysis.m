@@ -38,7 +38,7 @@ classdef LvdGraphicalAnalysis < matlab.mixin.SetGet
             allTasks = obj.tasks;
         end
         
-        function [depVarValues, depVarUnits, dataEvtNums] = executeTasks(obj, hFig, startTimeUT, endTimeUT, otherSCId, stationID)
+        function [depVarValues, depVarUnits, dataEvtNums, utTimeForDepVarValues, taskLabels] = executeTasks(obj, hFig, startTimeUT, endTimeUT, otherSCId, stationID)
             propNames = obj.lvdData.launchVehicle.tankTypes.getFirstThreeTypesCellArr();
             celBodyData = obj.lvdData.celBodyData;
             
@@ -46,8 +46,13 @@ classdef LvdGraphicalAnalysis < matlab.mixin.SetGet
             
             depVarValues = zeros(numel(lvdSubLog), length(obj.tasks));
             depVarUnits = cell(1,length(obj.tasks));
+            utTimeForDepVarValues = NaN(numel(lvdSubLog),1);
             
-            hWaitBar = uiprogressdlg(hFig, 'Value',0, 'Message','Computing Dependent Variables...', 'Title','Computing Dependent Variables');
+            if(not(isempty(hFig)))
+                hWaitBar = uiprogressdlg(hFig, 'Value',0, 'Message','Computing Dependent Variables...', 'Title','Computing Dependent Variables');
+            else
+                hWaitBar = [];
+            end
             
             maTaskList = ma_getGraphAnalysisTaskList(getLvdGAExcludeList());
             
@@ -59,7 +64,7 @@ classdef LvdGraphicalAnalysis < matlab.mixin.SetGet
                 for(j=1:length(obj.tasks))
                     task = obj.tasks(j);  
                     
-                    if(isvalid(hWaitBar))
+                    if(not(isempty(hWaitBar)) && isvalid(hWaitBar))
                         hWaitBar.Value = i/length(lvdSubLog);
                         hWaitBar.Message = sprintf('Computing Dependent Variables...\n[%u of %u]', i, length(lvdSubLog));
                     end
@@ -68,8 +73,16 @@ classdef LvdGraphicalAnalysis < matlab.mixin.SetGet
                 end
 
                 dataEvtNums(i) = lvdStateLogEntry.event.getEventNum(); %#ok<AGROW>
+                utTimeForDepVarValues(i) = lvdStateLogEntry.time;
             end
-            close(hWaitBar);
+            
+            for(i=1:length(obj.tasks))
+                taskLabels(i) = string(obj.tasks(i).getListBoxStr());
+            end
+            
+            if(not(isempty(hWaitBar)) && isvalid(hWaitBar))
+                close(hWaitBar);
+            end
         end
         
         function tf = usesGeometricRefFrame(obj, refFrame)
