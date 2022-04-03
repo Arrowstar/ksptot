@@ -5,6 +5,8 @@ classdef IntegratorEnum < matlab.mixin.SetGet
     enumeration
         ODE45('ODE45','Most of the time ode45 should be the first solver you try.', true, false);
         ODE113('ODE113','ode113 can be more efficient than ode45 at problems with stringent error tolerances, or when the ODE function is expensive to evaluate.', true, false);
+        ODE78('ODE78','ode78 can be more efficient than ode45 at problems with smooth solutions that have high accuracy requirements.', true, false);
+        ODE89('ODE89','ode89 can be more efficient than ode78 on very smooth problems, when integrating over long time intervals, or when tolerances are especially tight.', true, false)
         ODE23('ODE23','ode23 can be more efficient than ode45 at problems with crude tolerances, or in the presence of moderate stiffness.', true, false);
         ODE15s('ODE15s','Try ode15s when ode45 fails or is inefficient and you suspect that the problem is stiff.', true, false);
         ODE23s('ODE23s','ode23s can be more efficient than ode15s at problems with crude error tolerances. It can solve some stiff problems for which ode15s is not effective.', true, false);
@@ -80,6 +82,12 @@ classdef IntegratorEnum < matlab.mixin.SetGet
 
                 case IntegratorEnum.ODE45
                     integratorObj = ODE45Integrator();
+
+                case IntegratorEnum.ODE78
+                    integratorObj = ODE78Integrator();
+
+                case IntegratorEnum.ODE89
+                    integratorObj = ODE89Integrator();
                     
                 case IntegratorEnum.ODE5
                     integratorObj = ODE5Integrator();

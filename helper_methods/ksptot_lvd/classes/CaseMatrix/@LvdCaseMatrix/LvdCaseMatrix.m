@@ -11,23 +11,27 @@ classdef LvdCaseMatrix < matlab.mixin.SetGet
 
         runCanceled(1,1) logical = false;
     end
+
+    events
+        TaskCreated
+    end
     
     methods
-        function obj = LvdCaseMatrix(lvdData, paramsAndRanges, current_save_location)
+        function obj = LvdCaseMatrix(lvdData, current_save_location)
             arguments
                 lvdData(1,1) LvdData
-                paramsAndRanges(:,2) cell %column 1 is the plugins and column 2 are the associated double vectors 
                 current_save_location(1,:) char
             end
             
             obj.lvdData = lvdData;
             obj.current_save_location = current_save_location;
-            
-            obj.createAllTaskParamCombos([paramsAndRanges{:,1}], paramsAndRanges(:,2));
         end
         
-        function createAllTaskParamCombos(obj, usedPluginVars, paramRanges)
+        function createAllTaskParamCombos(obj, paramsAndRanges)
             warning('off','stats:pdist2:ZeroInverseWeights');
+
+            usedPluginVars = [paramsAndRanges{:,1}];
+            paramRanges = paramsAndRanges(:,2);
             
             for(i=1:length(paramRanges))
                 arr = paramRanges{i};
@@ -49,11 +53,12 @@ classdef LvdCaseMatrix < matlab.mixin.SetGet
             [Idx,~] = knnsearch(A,currentPluginValues, 'Distance','seuclidean', 'K',height(A)); 
             
             for(i=1:length(Idx))
-                newLvdDataSerialized = getByteStreamFromArray(obj.lvdData); %for now, but need to grab lvdData from the nearest finished case eventually
-                newLvdData = getArrayFromByteStream(newLvdDataSerialized);
+%                 newLvdDataSerialized = getByteStreamFromArray(obj.lvdData); %for now, but need to grab lvdData from the nearest finished case eventually
+%                 newLvdData = getArrayFromByteStream(newLvdDataSerialized);
                 
-                pluginVars = newLvdData.pluginVars.getPluginVarsArray();
-                
+                pluginVars = obj.lvdData.pluginVars.getPluginVarsArray();
+                pluginVars = pluginVars(bool);
+
                 runParams = A(Idx(i), :);
                 
                 caseParams = LvdCaseMatrixTaskParameter.empty(1,0);
@@ -65,7 +70,10 @@ classdef LvdCaseMatrix < matlab.mixin.SetGet
                 
                 prereqTask = LvdCaseMatrixTask.empty(1,0);
                 
-                obj.tasks(i) = LvdCaseMatrixTask(newLvdData, obj, caseParams, prereqTask, lvdFilePath, bool);
+                obj.tasks(i) = LvdCaseMatrixTask(obj.lvdData, obj, caseParams, prereqTask, lvdFilePath, bool);
+
+                s = LvdCaseMatrixTaskGenerationEvtData(obj.tasks(i), i, length(Idx));
+                notify(obj, 'TaskCreated', s);
             end
             
             warning('on','stats:pdist2:ZeroInverseWeights');
@@ -96,33 +104,17 @@ classdef LvdCaseMatrix < matlab.mixin.SetGet
                 
                 if(not(isempty(nextTask)) && obj.getNumOfRunningJobs() < pp.NumWorkers)
                     nextTask.setTaskStatusAsRunning();
-                    fToRun = parfeval(pp,fcn,3,nextTask);
-                    F(end+1) = fToRun; %#ok<AGROW> 
+                    numOutputs = 3;
+                    fToRun = parfeval(pp,fcn,numOutputs,nextTask);
+  
+                    fH = @(runStatus,message,task) LvdCaseMatrix.processTaskOutputs(fToRun, runStatus,message,task);
+                    F(end+1) = afterEach(fToRun,fH,0); %#ok<AGROW> 
                     
 %                     runFinalStatus = nextTask.runTask(xlsFile);
 %                     nextTask.setTaskAsFinished(runFinalStatus);
 
-                else
-                    subF = F(strcmpi({F.State},'finished') & [F.Read] == 0);
-                    for(i=1:length(subF))
-                        f = subF(i);
-                        
-                        [~,runStatus,message,task] = fetchNext(f);
-                        FTask = f.InputArguments{1};
-                        
-                        FTask.setTaskAsFinished(runStatus, message);
-                        
-                        FTask.lvdData = task.lvdData;
-                        
-                        [path, name, ~] = fileparts(task.lvdFilePath);
-                        logFile = fullfile(path, [name, '.log']);
-                        
-                        fid = fopen(logFile,'w+'); 
-                        fprintf(fid, '%s', eraseTags(f.Diary)); 
-                        fclose(fid);
-                    end
-                    
-                    pause(0.5); drawnow; %process button clicks
+                else                    
+                    pause(0.5); %process button clicks
                 end
             end
             
@@ -227,20 +219,16 @@ classdef LvdCaseMatrix < matlab.mixin.SetGet
             successfulTasks = obj.tasks(~bool);
             successfulTasks = setdiff(successfulTasks, failedTask);
             
-            try
-                sX = [];
-                sP = [];
-                for(i=1:length(successfulTasks))
-                    subX = successfulTasks(i).lvdData.optimizer.vars.getTotalScaledXVector();
-                    if(any(isnan(subX)) || any(not(isfinite(subX))))
-                        continue;
-                    end
-
-                    sX(end+1,:) = subX; %#ok<AGROW> 
-                    sP(end+1,:) = successfulTasks(i).getArrayOfParamValues(); %#ok<AGROW> 
+            sX = [];
+            sP = [];
+            for(i=1:length(successfulTasks))
+                subX = successfulTasks(i).lvdData.optimizer.vars.getTotalScaledXVector();
+                if(any(isnan(subX)) || any(not(isfinite(subX))))
+                    continue;
                 end
-            catch ME
-                a=1;
+
+                sX(end+1,:) = subX; %#ok<AGROW> 
+                sP(end+1,:) = successfulTasks(i).getArrayOfParamValues(); %#ok<AGROW> 
             end
 
             fP = failedTask.getArrayOfParamValues();
@@ -260,6 +248,9 @@ classdef LvdCaseMatrix < matlab.mixin.SetGet
                 end
             end        
             
+            fX(fX >=  1) =  1 - 1E-8;
+            fX(fX <= -1) = -1 + 1E-8;
+
             failedTask.lvdData.optimizer.vars.updateObjsWithScaledVarValues(fX);
         end
         
@@ -326,6 +317,23 @@ classdef LvdCaseMatrix < matlab.mixin.SetGet
                     task.taskOutputMessage = 'Canceled';
                 end
             end
+        end
+    end
+
+    methods(Static,Access='private')
+        function processTaskOutputs(f, runStatus,message,task)
+            FTask = f.InputArguments{1};
+            
+            FTask.setTaskAsFinished(runStatus, message);
+            
+            FTask.lvdData = task.lvdData;
+            
+            [path, name, ~] = fileparts(task.lvdFilePath);
+            logFile = fullfile(path, [name, '.log']);
+            
+            fid = fopen(logFile,'w+'); 
+            fprintf(fid, '%s', eraseTags(f.Diary)); 
+            fclose(fid);
         end
     end
 end

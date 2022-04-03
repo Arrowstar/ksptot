@@ -30,7 +30,7 @@ classdef FminconOptions < matlab.mixin.SetGet
         hessianApproxAlg FminconHessApproxAlgEnum = FminconHessApproxAlgEnum.BFGS;
         initBarrierParam(1,1) double = 0.1;
         initTrustRegionRadius(1,1) double = NaN;
-        maxProjCGIter(1,1) double = NaN;
+        maxProjCGIter(1,1) double = 250;
         subproblemAlgorithm FminconIpSubprobAlgEnum = FminconIpSubprobAlgEnum.Factorization;
         tolProjCG(1,1) double = 0.01;
         tolProjCGAbs(1,1) double = 1E-10;
@@ -61,7 +61,8 @@ classdef FminconOptions < matlab.mixin.SetGet
                                              'Display','iter-detailed', ...
                                              'HonorBounds',true, ...
                                              'FunValCheck','on', ...
-                                             'ScaleProblem','none');
+                                             'ScaleProblem','none', ...
+                                             'EnableFeasibilityMode',false);
             
             if(not(isnan(obj.optTol)))
                 options = optimoptions(options, 'OptimalityTolerance', obj.optTol);

@@ -35,7 +35,7 @@ classdef IpoptOptions < matlab.mixin.SetGet
             ipoptDotOptions.print_timing_statistics = 'yes';
 %             ipoptDotOptions.print_user_options = 'yes';
             ipoptDotOptions.mu_strategy = 'adaptive';
-            ipoptDotOptions.linear_solver = 'ma57';
+            ipoptDotOptions.linear_solver = 'mumps';
             
             %Convergence
             if(not(isnan(obj.constr_viol_tol)))

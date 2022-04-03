@@ -69,7 +69,12 @@ classdef LvdGraphicalAnalysis < matlab.mixin.SetGet
                         hWaitBar.Message = sprintf('Computing Dependent Variables...\n[%u of %u]', i, length(lvdSubLog));
                     end
 
-                    [depVarValues(i,j), depVarUnits{j}, prevDistTraveled] = task.executeTask(lvdStateLogEntry, maTaskList, prevDistTraveled, otherSCId, stationID, propNames, celBodyData);
+                    try
+                        [depVarValues(i,j), depVarUnits{j}, prevDistTraveled] = task.executeTask(lvdStateLogEntry, maTaskList, prevDistTraveled, otherSCId, stationID, propNames, celBodyData);
+                    catch ME
+                        depVarValues(i,j) = -1;
+                        depVarUnits{j} = '';
+                    end
                 end
 
                 dataEvtNums(i) = lvdStateLogEntry.event.getEventNum(); %#ok<AGROW>

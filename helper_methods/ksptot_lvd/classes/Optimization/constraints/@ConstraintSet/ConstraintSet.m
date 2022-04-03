@@ -106,7 +106,16 @@ classdef ConstraintSet < matlab.mixin.SetGet
                 if(tfRunScript == true)                   
                     obj.lvdOptim.vars.updateObjsWithScaledVarValues(x);
                     useSparse = obj.canUseSparseOutput();
-                    stateLog = obj.lvdData.script.executeScript(useSparse, evtToStartScriptExecAt, false, allowInterrupt, false, false);
+                    
+                    try
+                        stateLog = obj.lvdData.script.executeScript(useSparse, evtToStartScriptExecAt, false, allowInterrupt, false, false);
+                    catch ME
+                        c = NaN;
+                        ceq = NaN;
+
+                        return;
+                    end
+
                 elseif(not(isempty(stateLogToEval)) && isa(stateLogToEval, 'LaunchVehicleStateLog'))
                     stateLog = stateLogToEval;
                 else

@@ -37,6 +37,8 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
         %Adaptive Step Size
         ode45Integrator(1,:) ODE45Integrator
         ode113Integrator(1,:) ODE113Integrator
+        ode78Integrator(1,:) ODE78Integrator
+        ode89Integrator(1,:) ODE89Integrator
         ode23Integrator(1,:) ODE23Integrator 
         ode23sIntegrator(1,:) ODE23sIntegrator 
         ode15sIntegrator(1,:) ODE15sIntegrator
@@ -76,6 +78,8 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
             
             obj.ode45Integrator = ODE45Integrator();
             obj.ode113Integrator = ODE113Integrator();
+            obj.ode78Integrator = ODE78Integrator();
+            obj.ode89Integrator = ODE89Integrator();
             obj.ode23Integrator = ODE23Integrator();
             obj.ode23sIntegrator = ODE23sIntegrator();
             obj.ode15sIntegrator = ODE15sIntegrator();
@@ -367,6 +371,14 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
                 obj.ode113Integrator = ODE113Integrator();
             end
             
+            if(isempty(obj.ode78Integrator))
+                obj.ode78Integrator = ODE78Integrator();
+            end
+
+            if(isempty(obj.ode89Integrator))
+                obj.ode89Integrator = ODE89Integrator();
+            end
+
             if(isempty(obj.ode23Integrator))
                 obj.ode23Integrator = ODE23Integrator();
             end

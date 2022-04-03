@@ -124,7 +124,7 @@ classdef CustomFiniteDiffsCalculationMethod < AbstractGradientCalculationMethod
                 q.send(i); %#ok<PFBNS>
             end
             
-            if(isvalid(hWaitbar))
+            if(not(isempty(hWaitbar)) && isgraphics(hWaitbar) && isvalid(hWaitbar))
                 close(hWaitbar);
             end
             

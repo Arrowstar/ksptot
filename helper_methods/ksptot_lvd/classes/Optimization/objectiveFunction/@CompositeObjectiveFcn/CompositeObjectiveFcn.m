@@ -38,7 +38,15 @@ classdef CompositeObjectiveFcn < AbstractObjectiveFcn
             
             obj.lvdOptim.vars.updateObjsWithScaledVarValues(x);
             useSparse = obj.canUseSparseOutput();
-            stateLog = obj.lvdData.script.executeScript(useSparse, evtToStartScriptExecAt, false, true, false, false);
+
+            try
+                stateLog = obj.lvdData.script.executeScript(useSparse, evtToStartScriptExecAt, false, true, false, false);
+            catch ME
+                f = NaN;
+                stateLog = obj.lvdData.stateLog;
+
+                return;
+            end
             
             numObjFcns = length(obj.objFcns);
             if(numObjFcns == 0)

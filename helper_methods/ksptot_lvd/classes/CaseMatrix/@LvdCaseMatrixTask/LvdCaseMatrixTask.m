@@ -112,7 +112,7 @@ classdef LvdCaseMatrixTask < matlab.mixin.SetGet
                 obj.lvdData = obj.caseMatrix.getNearestCompletedTaskLvdDataToTask(obj);
 
                 pluginVars = obj.lvdData.pluginVars.getPluginVarsArray();
-                for(i=1:length(pluginVars))
+                for(i=1:length(pluginVars)) %#ok<*NO4LP> 
                     for(j=1:length(obj.caseParams))
                         if(pluginVars(i).id == obj.caseParams(j).pluginVar.id)
                             obj.caseParams(j).pluginVar = pluginVars(i);
@@ -179,6 +179,7 @@ classdef LvdCaseMatrixTask < matlab.mixin.SetGet
                 writecell(C, outputXlsFile, 'WriteMode','overwritesheet', 'Sheet',name);
             end
             
+            obj.lvdData.stateLog.clearStateLog();
             lvdData = obj.lvdData;
             save(obj.lvdFilePath, 'lvdData');
         end
