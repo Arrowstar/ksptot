@@ -117,15 +117,20 @@ classdef LvdCaseMatrixTask < matlab.mixin.SetGet
         
         function [runFinalStatus, message, obj] = runTask(obj, outputXlsFile)            
             if(obj.areAllPreReqsSatisfied())
-                lvdData = obj.caseMatrix.getNearestCompletedTaskLvdDataToTask(obj);
-
-                pluginVars = lvdData.pluginVars.getPluginVarsArray();
-                for(i=1:length(pluginVars)) %#ok<*NO4LP> 
-                    for(j=1:length(obj.caseParams))
-                        if(pluginVars(i).id == obj.caseParams(j).pluginVar.id)
-                            obj.caseParams(j).pluginVar = pluginVars(i);
+                if(obj.numAttempts <= 1)
+                    lvdData = obj.caseMatrix.getNearestCompletedTaskLvdDataToTask(obj);
+    
+                    pluginVars = lvdData.pluginVars.getPluginVarsArray();
+                    for(i=1:length(pluginVars)) %#ok<*NO4LP> 
+                        for(j=1:length(obj.caseParams))
+                            if(pluginVars(i).id == obj.caseParams(j).pluginVar.id)
+                                obj.caseParams(j).pluginVar = pluginVars(i);
+                            end
                         end
                     end
+                else
+                    lvdData = obj.lvdData;
+                    disp(lvdData.optimizer.vars.getTotalScaledXVector());
                 end
 
                 for(i=1:length(obj.caseParams))

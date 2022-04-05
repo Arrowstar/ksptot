@@ -255,7 +255,9 @@ classdef LvdCaseMatrix < matlab.mixin.SetGet
             fX(fX >=  1) =  1 - 1E-8;
             fX(fX <= -1) = -1 + 1E-8;
 
-            failedTask.lvdData.optimizer.vars.updateObjsWithScaledVarValues(fX);
+            failedLvdData = failedTask.lvdData;
+            failedLvdData.optimizer.vars.updateObjsWithScaledVarValues(fX);
+            failedTask.lvdData = failedLvdData;
         end
         
         function cnt = getNumOfRunningJobs(obj)
