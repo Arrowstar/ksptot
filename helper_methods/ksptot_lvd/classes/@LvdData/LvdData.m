@@ -22,6 +22,8 @@ classdef LvdData < matlab.mixin.SetGet
         
         celBodyData 
         ksptotVer char
+
+        userData
     end
     
     properties(Dependent)

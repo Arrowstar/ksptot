@@ -27,7 +27,11 @@ end
 rVect = reshape(rVect,3,1);
 vVect = reshape(vVect,3,1);
 
-[sma, ecc, inc, raan, arg, tru] = getKeplerFromState_Alg(rVect,vVect,gmu);
+try
+    [sma, ecc, inc, raan, arg, tru] = getKeplerFromState_Alg(rVect,vVect,gmu);
+catch ME
+    [sma, ecc, inc, raan, arg, tru] = vect_getKeplerFromState_Alg(rVect,vVect,gmu);
+end
 
 if(ecc<1.0)
     tru=AngleZero2Pi(tru);
