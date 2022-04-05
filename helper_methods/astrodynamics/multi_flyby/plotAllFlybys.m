@@ -44,9 +44,10 @@ function plotAllFlybys(hAxis, cBodyInfo, xferOrbits, bodiesInfo, numRev, celBody
         end
         
         [rVect, ~] = getStateAtTime(bodyInfo, t, gmu);
-        hold on;
-        plot3(rVect(1),rVect(2),rVect(3), 'o', 'Color', bColorRGB, 'MarkerEdgeColor', bColorRGB, 'MarkerFaceColor', bColorRGB, 'MarkerSize', 10);
+        hold(hAxis,'on');
+        plot3(hAxis, rVect(1),rVect(2),rVect(3), 'o', 'Color', bColorRGB, 'MarkerEdgeColor', bColorRGB, 'MarkerFaceColor', bColorRGB, 'MarkerSize', 10);
     end
+    drawnow;
     
     lineSpec = {'-.','-','--'};
     for(i=1:size(xferOrbits,1))
@@ -59,21 +60,22 @@ function plotAllFlybys(hAxis, cBodyInfo, xferOrbits, bodiesInfo, numRev, celBody
             plotOrbit('w', orbit(1), orbit(2), orbit(3), orbit(4), orbit(5), 0, 2*pi, orbit(10), gca, [0;0;0], 1.5, lineSpec{ind});
         end
         
-        h=plotOrbit('w', orbit(1), orbit(2), orbit(3), orbit(4), orbit(5), orbit(6), orbit(7), orbit(10), gca, [0;0;0], 1.5, lineSpec{ind});
+        h=plotOrbit('w', orbit(1), orbit(2), orbit(3), orbit(4), orbit(5), orbit(6), orbit(7), orbit(10), hAxis, [0;0;0], 1.5, lineSpec{ind});
         legendHs(end+1) = h;
         legendStrs{end+1} = ['Phase ',num2str(i),' Xfer Orbit'];
     end
+    drawnow;
     
-    hL = legend(legendHs,legendStrs,'Location','SouthEast','orientation','vertical','EdgeColor','w','LineWidth',2,'TextColor','w');
+    hL = legend(hAxis, legendHs,legendStrs,'Location','SouthEast','orientation','vertical','EdgeColor','w','LineWidth',2,'TextColor','w');
     hText = findobj(hL, 'type', 'text');
     set(hText,'Color', 'w');
     
-    hold on;
+    hold(hAxis,'on');
     view([0 89]);
-    axis equal;
+    axis(hAxis,'equal');
     v = axis;
     axis(v*1.05);
-    hold off;
+    hold(hAxis,'off');
     zoom reset;
 end
 
