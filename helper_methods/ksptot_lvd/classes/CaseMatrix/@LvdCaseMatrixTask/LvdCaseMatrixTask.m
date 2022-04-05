@@ -32,9 +32,8 @@ classdef LvdCaseMatrixTask < matlab.mixin.SetGet
     end
     
     methods
-        function obj = LvdCaseMatrixTask(lvdData, caseMatrix, caseParams, prereqTasks, lvdFilePath, pluginVarIsUsed)
+        function obj = LvdCaseMatrixTask(caseMatrix, caseParams, prereqTasks, lvdFilePath, pluginVarIsUsed)
             obj.lvdFilePath = lvdFilePath;
-            obj.lvdData = lvdData;
             obj.caseMatrix = caseMatrix;
             obj.caseParams = caseParams;
             obj.prereqTasks = prereqTasks;

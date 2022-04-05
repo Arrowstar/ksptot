@@ -70,7 +70,7 @@ classdef LvdCaseMatrix < matlab.mixin.SetGet
                 
                 prereqTask = LvdCaseMatrixTask.empty(1,0);
                 
-                obj.tasks(i) = LvdCaseMatrixTask(obj.lvdData, obj, caseParams, prereqTask, lvdFilePath, bool);
+                obj.tasks(i) = LvdCaseMatrixTask(obj, caseParams, prereqTask, lvdFilePath, bool);
 
                 s = LvdCaseMatrixTaskGenerationEvtData(obj.tasks(i), i, length(Idx));
                 notify(obj, 'TaskCreated', s);
@@ -163,7 +163,11 @@ classdef LvdCaseMatrix < matlab.mixin.SetGet
                     [~,I] = min(numAttempts);
                     task = failedTasks(I);
 
-                    obj.updateFailedTaskWithFitXVector(task);
+                    try
+                        obj.updateFailedTaskWithFitXVector(task);
+                    catch ME
+                        %nothing, just don't do anything here
+                    end
                 end
             end
         end
