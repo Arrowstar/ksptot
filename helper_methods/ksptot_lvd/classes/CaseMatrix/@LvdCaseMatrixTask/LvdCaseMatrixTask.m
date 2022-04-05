@@ -3,7 +3,6 @@ classdef LvdCaseMatrixTask < matlab.mixin.SetGet
     %   Detailed explanation goes here
     
     properties
-        lvdData LvdData
         caseMatrix LvdCaseMatrix
         
         caseParams(1,:) LvdCaseMatrixTaskParameter
@@ -21,6 +20,8 @@ classdef LvdCaseMatrixTask < matlab.mixin.SetGet
     end
     
     properties(Dependent)
+        lvdData LvdData
+        
         caseNumber(1,1) double
     end
     
@@ -32,14 +33,22 @@ classdef LvdCaseMatrixTask < matlab.mixin.SetGet
     
     methods
         function obj = LvdCaseMatrixTask(lvdData, caseMatrix, caseParams, prereqTasks, lvdFilePath, pluginVarIsUsed)
+            obj.lvdFilePath = lvdFilePath;
             obj.lvdData = lvdData;
             obj.caseMatrix = caseMatrix;
             obj.caseParams = caseParams;
             obj.prereqTasks = prereqTasks;
-            obj.lvdFilePath = lvdFilePath;
             obj.pluginVarIsUsed = pluginVarIsUsed(:)';
             
             obj.id = rand();
+        end
+
+        function lvdData = get.lvdData(obj)
+            load(obj.lvdFilePath,'lvdData');
+        end
+
+        function set.lvdData(obj, lvdData)
+            save(obj.lvdFilePath, "lvdData");
         end
         
         function set.status(obj, newStatus)
@@ -109,9 +118,9 @@ classdef LvdCaseMatrixTask < matlab.mixin.SetGet
         
         function [runFinalStatus, message, obj] = runTask(obj, outputXlsFile)            
             if(obj.areAllPreReqsSatisfied())
-                obj.lvdData = obj.caseMatrix.getNearestCompletedTaskLvdDataToTask(obj);
+                lvdData = obj.caseMatrix.getNearestCompletedTaskLvdDataToTask(obj);
 
-                pluginVars = obj.lvdData.pluginVars.getPluginVarsArray();
+                pluginVars = lvdData.pluginVars.getPluginVarsArray();
                 for(i=1:length(pluginVars)) %#ok<*NO4LP> 
                     for(j=1:length(obj.caseParams))
                         if(pluginVars(i).id == obj.caseParams(j).pluginVar.id)
@@ -126,7 +135,9 @@ classdef LvdCaseMatrixTask < matlab.mixin.SetGet
                 end
                 
                 try
-                    [exitflag, message] = obj.lvdData.optimizer.consoleOptimize();
+                    obj.lvdData = lvdData;
+                    [exitflag, message] = lvdData.optimizer.consoleOptimize();
+                    obj.lvdData = lvdData;
                 catch ME
                     exitflag = -Inf;
                     message = sprintf('Run failed due to error: %s', ME.message);
@@ -149,38 +160,30 @@ classdef LvdCaseMatrixTask < matlab.mixin.SetGet
             
             if(not(isempty(outputXlsFile)) && ...
                (runFinalStatus == LvdCaseMatrixTaskRunStatusEnum.RunSuceeded || runFinalStatus == LvdCaseMatrixTaskRunStatusEnum.RunFailedOptimizerNotConverged))
-                obj.lvdData.stateLog = obj.lvdData.script.executeScript(false, obj.lvdData.script.getEventForInd(1), false, false, false, false);
-                stateLog = obj.lvdData.stateLog.getAllEntries();
-                times = [stateLog.time];
+                try
+                    lvdData.stateLog = lvdData.script.executeScript(false, lvdData.script.getEventForInd(1), false, false, false, false);
+                    stateLog = lvdData.stateLog.getAllEntries();
+                    times = [stateLog.time];
+    
+                    startTimeUT = min(times);
+                    endTimeUT = max(times);
+                    [depVarValues, depVarUnits, ~, utTimeForDepVarValues, taskLabels] = lvdData.graphAnalysis.executeTasks([], startTimeUT, endTimeUT, [], []);
+                    
+                    C = cellstr(["Universal Time", taskLabels]);
+                    C(end+1,:) = horzcat({'sec'}, depVarUnits);
+                    C = vertcat(C, num2cell([utTimeForDepVarValues, depVarValues]));
+                    
+                    [~,name,~] = fileparts(obj.lvdFilePath);
+                    writecell(C, outputXlsFile, 'WriteMode','overwritesheet', 'Sheet',name);
 
-                startTimeUT = min(times);
-                endTimeUT = max(times);
-                [depVarValues, depVarUnits, dataEvtNums, utTimeForDepVarValues, taskLabels] = obj.lvdData.graphAnalysis.executeTasks([], startTimeUT, endTimeUT, [], []);
-                
-%                 varNames = ["Universal Time", taskLabels];
-%                 bool = strlength(varNames) > 63;
-%                 varNames(bool) = matlab.lang.makeValidName(varNames(bool));
-%                 
-%                 unitsStr = string(horzcat({'sec'}, depVarUnits));
-%                 unitsStr(unitsStr == "") = " ";
-%                 
-%                 T = array2table([utTimeForDepVarValues, depVarValues], ...
-%                                 'VariableNames',varNames);
-%                 T.Properties.VariableUnits = unitsStr;
-%                 
-%                 [~,name,~] = fileparts(obj.lvdFilePath);
-%                 writetable(T, outputXlsFile, 'WriteMode','overwritesheet', 'Sheet',name);
-
-                C = cellstr(["Universal Time", taskLabels]);
-                C(end+1,:) = horzcat({'sec'}, depVarUnits);
-                C = vertcat(C, num2cell([utTimeForDepVarValues, depVarValues]));
-                
-                [~,name,~] = fileparts(obj.lvdFilePath);
-                writecell(C, outputXlsFile, 'WriteMode','overwritesheet', 'Sheet',name);
+                catch ME
+                    runFinalStatus = LvdCaseMatrixTaskRunStatusEnum.RunFailedDueToError;
+                    message = sprintf('Run failed due to error: %s', ME.message);
+                end
             end
             
-            obj.lvdData.stateLog.clearStateLog();
-            lvdData = obj.lvdData;
+            lvdData.stateLog.clearStateLog();
+%             lvdData = obj.lvdData;
             save(obj.lvdFilePath, 'lvdData');
         end
         
