@@ -43,6 +43,14 @@ classdef AbstractFixedStepIntegrator < AbstractIntegrator
         function [t,y, te,ye,ie] = integrate(odefun, tspan, y0, options)
             [h,y0,~] = AbstractFixedStepIntegrator.checkInputs(odefun, tspan, y0);
             
+            if(all(h>0))
+                propDirPos = true;
+            elseif(all(h<0))
+                propDirPos = false;
+            else
+                error('Prop direction might be consistently forward or backwards.');
+            end
+
             if(not(isempty(options.OutputFcn)) && ...
                isa(options.OutputFcn,'function_handle'))
                 hasOutput = true;
@@ -84,12 +92,11 @@ classdef AbstractFixedStepIntegrator < AbstractIntegrator
             
             evtTerminate = false;
             outputTerminate = false;
-            
-            ti = t(1);
+
             i = 2;
-            while(ti < tspan(end))
+            while(keepLooping(propDirPos, i, tspan))
                 ti = tspan(i-1);
-                if(ti >= tspan(end))
+                if(breakLoop(propDirPos, ti, tspan(end))) 
                     break;
                 end
 
@@ -267,5 +274,22 @@ classdef AbstractFixedStepIntegrator < AbstractIntegrator
                 rootOutput = abs(rootOutput(I)); %for an optimizer like fminbnd
             end
         end
+    end
+end
+
+function tf = keepLooping(propDirPos, i, tspan)
+    ti = tspan(i-1);
+    if(propDirPos)
+        tf = ti < tspan(end);
+    else
+        tf = ti > tspan(end);
+    end
+end
+
+function tf = breakLoop(propDirPos, ti, tspanEnd)
+    if(propDirPos)
+        tf = ti >= tspanEnd;
+    else
+        tf = ti <= tspanEnd;
     end
 end

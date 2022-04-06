@@ -4,6 +4,7 @@ classdef FixedStepSizeIntegratorOptions < AbstractIntegratorOptions
     
     properties
         integratorStepSize(1,1) double = 1;
+        maxNumFixedSteps(1,1) double = 10000;
     end
     
     methods       
@@ -22,6 +23,10 @@ classdef FixedStepSizeIntegratorOptions < AbstractIntegratorOptions
             else
                 obj.integratorStepSize = integratorStepSize;
             end
+        end
+
+        function maxSteps = getIntegratorMaxNumFixedSteps(obj)
+            maxSteps = obj.maxNumFixedSteps;
         end
         
         function openOptionsDialog(obj)

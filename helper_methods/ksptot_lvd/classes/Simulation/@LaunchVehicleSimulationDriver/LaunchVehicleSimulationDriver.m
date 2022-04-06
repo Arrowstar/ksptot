@@ -61,6 +61,7 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
             %set integration output step size
             integratorOptions = integrator.getOptions();
             integrationStep = integratorOptions.getIntegratorStepSize();
+            integrationMaxFixedSteps = integratorOptions.getIntegratorMaxNumFixedSteps();
             
             %get propagation direction in time
             propagationDir = event.propDir;
@@ -84,7 +85,13 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
                     if(maxT - t0 < integrationStep)
                         tspan = [t0, maxT];
                     else
-                        tspan = [t0:integrationStep:maxT]; %#ok<NBRAK>
+                        estStepsInTspan = (maxT-t0)/integrationStep + 1;
+                        if(estStepsInTspan <= integrationMaxFixedSteps)
+                            tspan = [t0:integrationStep:maxT]; %#ok<NBRAK>
+                        else
+                            maxT = integrationMaxFixedSteps*integrationStep+t0;
+                            tspan = [t0:integrationStep:maxT]; %#ok<NBRAK>
+                        end
                     end
                 end
 
@@ -110,7 +117,13 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
                     if(t0 - maxT < integrationStep)
                         tspan = [t0, maxT];
                     else
-                        tspan = [t0:-1*integrationStep:maxT]; %#ok<NBRAK>
+                        estStepsInTspan = abs((maxT-t0)/integrationStep - 1);
+                        if(estStepsInTspan <= integrationMaxFixedSteps)
+                            tspan = [t0:-1*integrationStep:maxT]; %#ok<NBRAK>
+                        else
+                            maxT = -(integrationMaxFixedSteps*integrationStep - t0);
+                            tspan = [t0:-1*integrationStep:maxT]; %#ok<NBRAK>
+                        end                        
                     end
                 end
 
