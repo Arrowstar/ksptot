@@ -8,5 +8,7 @@ classdef AbstractLaunchVehicleValidatorOutput < matlab.mixin.SetGet & matlab.mix
     
     methods
         writeToLabel(obj, hLbl)
+
+        [str, style] = getUiTableStringAndRowStyle(obj)
     end
 end

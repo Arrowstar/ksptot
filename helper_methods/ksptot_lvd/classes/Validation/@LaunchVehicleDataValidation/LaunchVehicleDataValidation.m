@@ -88,6 +88,23 @@ classdef LaunchVehicleDataValidation < matlab.mixin.SetGet
 
             drawnow limitrate nocallbacks;
         end
+
+        function writeOutputsToUITable(obj, hTable)
+            arguments
+                obj(1,1) LaunchVehicleDataValidation
+                hTable(1,1) matlab.ui.control.Table
+            end
+
+            data = string.empty(1,0);
+            for(i=1:length(obj.outputs))
+                [data(i,1), s(i)] = obj.outputs(i).getUiTableStringAndRowStyle(); %#ok<AGROW> 
+            end
+
+            hTable.Data = data;
+            for(i=1:length(s))
+                addStyle(hTable, s(i), "row", i);
+            end
+        end
         
         function clearOutputs(obj)
             obj.outputs = AbstractLaunchVehicleValidatorOutput.empty(1,0);

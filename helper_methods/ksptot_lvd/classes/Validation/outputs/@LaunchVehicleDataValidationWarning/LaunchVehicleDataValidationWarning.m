@@ -14,5 +14,10 @@ classdef LaunchVehicleDataValidationWarning < AbstractLaunchVehicleValidatorOutp
         function writeToLabel(obj, hLbl)
             styleLabelAsWarn(hLbl,obj.str)
         end
+
+        function [str, style] = getUiTableStringAndRowStyle(obj)
+            str = string(obj.str);
+            style = uistyle('BackgroundColor',[1,1,0], 'FontColor',[0,0,0], 'FontWeight','bold');
+        end
     end
 end
