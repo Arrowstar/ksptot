@@ -31,7 +31,7 @@ function timeSliderStateChanged(src,evt, lvdData, handles, app)
         markerTrajData.plotBodyMarkerAtTime(time, hAx);
         
 %         notify(app, 'GenericStatusLabelUpdate', GenericStatusLabelUpdate('Drawing Celestial Bodies...'));
-        for(i=1:length(markerBodyData))
+        for(i=1:length(markerBodyData)) %#ok<*NO4LP> 
             markerBodyData(i).plotBodyMarkerAtTime(time, hAx);
         end
         

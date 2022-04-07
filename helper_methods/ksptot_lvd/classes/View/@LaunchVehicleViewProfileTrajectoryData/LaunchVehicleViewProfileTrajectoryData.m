@@ -25,11 +25,20 @@ classdef LaunchVehicleViewProfileTrajectoryData < matlab.mixin.SetGet
             else
                 method = 'linear';
             end
+
+            if(length(unique(times)) == 1)
+                times = [times, times+1E-10];
+                rVects = [rVects; rVects];
+            end
             
-            obj.xInterps{end+1} = griddedInterpolant(times, rVects(:,1), method, 'linear');
-            obj.yInterps{end+1} = griddedInterpolant(times, rVects(:,2), method, 'linear');
-            obj.zInterps{end+1} = griddedInterpolant(times, rVects(:,3), method, 'linear');
-            obj.evtColors(end+1) = evtColor;
+            try
+                obj.xInterps{end+1} = griddedInterpolant(times, rVects(:,1), method, 'linear');
+                obj.yInterps{end+1} = griddedInterpolant(times, rVects(:,2), method, 'linear');
+                obj.zInterps{end+1} = griddedInterpolant(times, rVects(:,3), method, 'linear');
+                obj.evtColors(end+1) = evtColor;
+            catch ME
+                warning(ME.message);
+            end
         end
         
         function plotBodyMarkerAtTime(obj, time, hAx)   
