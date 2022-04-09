@@ -166,9 +166,9 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                 if(size(subStateLogs{j},1) > 0)
                     [times, rVects, evtColor] = LaunchVehicleViewProfile.parseTrajDataFromSubStateLogs(subStateLogs, j, evts);
                     
-%                     if(length(unique(times)) > 1)
+                    if(length(unique(times)) > 0)
                         trajMarkerData.addData(times, rVects, evtColor);
-%                     end
+                    end
                 end
             end
         end

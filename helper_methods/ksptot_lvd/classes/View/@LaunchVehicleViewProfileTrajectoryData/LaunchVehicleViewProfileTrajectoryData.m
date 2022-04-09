@@ -18,6 +18,11 @@ classdef LaunchVehicleViewProfileTrajectoryData < matlab.mixin.SetGet
         end
         
         function addData(obj, times, rVects, evtColor)
+            if(length(unique(times)) == 1)
+                times = [times, times+10*eps(times(1))];
+                rVects = [rVects; rVects];
+            end
+
             obj.timesArr(end+1) = {times};
             
             if(length(times) >= 3)
@@ -25,12 +30,7 @@ classdef LaunchVehicleViewProfileTrajectoryData < matlab.mixin.SetGet
             else
                 method = 'linear';
             end
-
-            if(length(unique(times)) == 1)
-                times = [times, times+1E-10];
-                rVects = [rVects; rVects];
-            end
-            
+           
             try
                 obj.xInterps{end+1} = griddedInterpolant(times, rVects(:,1), method, 'linear');
                 obj.yInterps{end+1} = griddedInterpolant(times, rVects(:,2), method, 'linear');
@@ -43,23 +43,25 @@ classdef LaunchVehicleViewProfileTrajectoryData < matlab.mixin.SetGet
         
         function plotBodyMarkerAtTime(obj, time, hAx)   
             delete(obj.markerPlot);
-            for(i=1:length(obj.timesArr))
+            for(i=1:length(obj.timesArr)) %#ok<*NO4LP> 
                 times = obj.timesArr{i};
                 
-                if(time >= min(floor(times)) && time <= max(ceil(times)))                    
-                    xInterp = obj.xInterps{i};
-                    x = xInterp(time);
-                    
-                    yInterp = obj.yInterps{i};
-                    y = yInterp(time);
-                    
-                    zInterp = obj.zInterps{i};
-                    z = zInterp(time);
-                    
-                    evtColor = obj.evtColors(i).color;
-                    hold(hAx,'on');
-                    obj.markerPlot(end+1) = plot3(hAx, x,y,z, 'd', 'MarkerEdgeColor','k', 'MarkerFaceColor',evtColor);
-                    hold(hAx,'off');
+                if(not(isempty(times)))
+                    if(time >= min(floor(times)) && time <= max(ceil(times)))                    
+                        xInterp = obj.xInterps{i};
+                        x = xInterp(time);
+                        
+                        yInterp = obj.yInterps{i};
+                        y = yInterp(time);
+                        
+                        zInterp = obj.zInterps{i};
+                        z = zInterp(time);
+                        
+                        evtColor = obj.evtColors(i).color;
+                        hold(hAx,'on');
+                        obj.markerPlot(end+1) = plot3(hAx, x,y,z, 'd', 'MarkerEdgeColor','k', 'MarkerFaceColor',evtColor);
+                        hold(hAx,'off');
+                    end
                 end
             end
         end

@@ -105,6 +105,10 @@ classdef TwoBodyPoint < AbstractGeometricPoint
             obj.clearCache();
             dummyLvdData = LvdData.getDefaultLvdData(obj.lvdData.celBodyData);
             
+            if(isnan(minTime))
+                minTime = 0;
+            end
+
             initState = dummyLvdData.initialState;
             
             ce = obj.elemSet.convertToCartesianElementSet();
@@ -144,7 +148,7 @@ classdef TwoBodyPoint < AbstractGeometricPoint
             
             chunkedStateLog = breakStateLogIntoSoIChunks(maStateLog);
             
-            for(i=1:length(chunkedStateLog))
+            for(i=1:length(chunkedStateLog)) %#ok<*NO4LP> 
                 subStateLog = chunkedStateLog{i};
                 
                 times = subStateLog(:,1);
@@ -226,9 +230,20 @@ classdef TwoBodyPoint < AbstractGeometricPoint
             evtDur = propToTime - initState.time;
             evt.termCond = EventDurationTermCondition(abs(evtDur));
             evt.integratorObj = evt.ode113Integrator;
-            evt.integratorObj.getOptions().integratorStepSize = evtDur/1000;
             evt.propagatorObj = evt.twoBodyPropagator;
             
+%             k = initState.getCartesianElementSetRepresentation().convertToKeplerianElementSet();
+%             if(k.ecc < 1)
+%                 period = k.getPeriod();
+%                 stepSize = period/25;
+%                 
+%             else
+%                 stepSize = evtDur/1000;
+%             end
+            stepSize = evtDur/10000;
+            evt.integratorObj.getOptions().integratorStepSize = stepSize;
+            evt.integratorObj.getOptions().maxNumFixedSteps = Inf;
+
             if(evtDur >= 0)
                 evt.propDir = PropagationDirectionEnum.Forward;
             else
@@ -295,6 +310,14 @@ classdef TwoBodyPoint < AbstractGeometricPoint
                 if(max(times) > maxTime)
                     maxTime = max(times);
                 end
+            end
+
+            if(~isfinite(minTime))
+                minTime = 0;
+            end
+
+            if(~isfinite(maxTime))
+                maxTime = 20000;
             end
         end
     end
