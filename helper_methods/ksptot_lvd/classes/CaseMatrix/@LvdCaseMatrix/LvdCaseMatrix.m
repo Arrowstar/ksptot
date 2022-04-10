@@ -110,8 +110,8 @@ classdef LvdCaseMatrix < matlab.mixin.SetGet
                     fH = @(runStatus,message,task) LvdCaseMatrix.processTaskOutputs(fToRun, runStatus,message,task);
                     F(end+1) = afterEach(fToRun,fH,0); %#ok<AGROW> 
                     
-%                     runFinalStatus = nextTask.runTask(xlsFile);
-%                     nextTask.setTaskAsFinished(runFinalStatus);
+%                     [runFinalStatus, message] = nextTask.runTask(xlsFile);
+%                     nextTask.setTaskAsFinished(runFinalStatus, message);
 
                 else                    
                     pause(0.5); %process button clicks

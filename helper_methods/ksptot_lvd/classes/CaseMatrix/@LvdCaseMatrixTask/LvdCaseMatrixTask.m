@@ -171,14 +171,20 @@ classdef LvdCaseMatrixTask < matlab.mixin.SetGet
     
                     startTimeUT = min(times);
                     endTimeUT = max(times);
-                    [depVarValues, depVarUnits, ~, utTimeForDepVarValues, taskLabels] = lvdData.graphAnalysis.executeTasks([], startTimeUT, endTimeUT, [], []);
-                    
-                    C = cellstr(["Universal Time", taskLabels]);
-                    C(end+1,:) = horzcat({'sec'}, depVarUnits);
-                    C = vertcat(C, num2cell([utTimeForDepVarValues, depVarValues]));
-                    
-                    [~,name,~] = fileparts(obj.lvdFilePath);
-                    writecell(C, outputXlsFile, 'WriteMode','overwritesheet', 'Sheet',name);
+                    if(lvdData.graphAnalysis.getNumTasks() > 0)
+                        [depVarValues, depVarUnits, ~, utTimeForDepVarValues, taskLabels] = lvdData.graphAnalysis.executeTasks([], startTimeUT, endTimeUT, [], []);
+                        
+                        C = cellstr(["Universal Time", taskLabels]);
+                        C(end+1,:) = horzcat({'sec'}, depVarUnits);
+                        C = vertcat(C, num2cell([utTimeForDepVarValues, depVarValues]));
+                        
+                        [~,name,~] = fileparts(obj.lvdFilePath);
+                        writecell(C, outputXlsFile, 'WriteMode','overwritesheet', 'Sheet',name);
+                    else
+                        C = {'No Graphical Analysis tasks in scenario.'};
+                        [~,name,~] = fileparts(obj.lvdFilePath);
+                        writecell(C, outputXlsFile, 'WriteMode','overwritesheet', 'Sheet',name);
+                    end
 
                 catch ME
                     runFinalStatus = LvdCaseMatrixTaskRunStatusEnum.RunFailedDueToError;
