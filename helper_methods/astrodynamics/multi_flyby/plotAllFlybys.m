@@ -11,11 +11,11 @@ function plotAllFlybys(hAxis, cBodyInfo, xferOrbits, bodiesInfo, numRev, celBody
     legendHs = [];
     legendStrs = {};
     
-    hold on;
+    hold(hAxis,'on');
     bColor = cBodyInfo.bodycolor;
     cmap = colormap(bColor);
     bColorRGB = mean(cmap,1);
-    plot3(0,0,0, 'o', 'Color', bColorRGB, 'MarkerEdgeColor', bColorRGB, 'MarkerFaceColor', bColorRGB, 'MarkerSize', 10);
+    plot3(hAxis, 0,0,0, 'o', 'Color', bColorRGB, 'MarkerEdgeColor', bColorRGB, 'MarkerFaceColor', bColorRGB, 'MarkerSize', 10);
     
     usedIds = [];
     for(i=1:length(bodiesInfo)) %#ok<*NO4LP>
@@ -27,8 +27,8 @@ function plotAllFlybys(hAxis, cBodyInfo, xferOrbits, bodiesInfo, numRev, celBody
         midRow = round(size(cmap,1)/2);
         bColorRGB = cmap(midRow,:);
         
-        hold on;
-        h=plotBodyOrbit(bodyInfo, bColorRGB, gmu);
+        hold(hAxis,'on');
+        h=plotBodyOrbit(bodyInfo, bColorRGB, gmu, false, hAxis);
         if(~ismember(bodyInfo.id,usedIds))
             legendHs(end+1) = h; %#ok<AGROW>
             legendStrs{end+1} = [cap1stLetter(lower(bodyInfo.name)), ' Orbit']; %#ok<AGROW>
@@ -57,7 +57,7 @@ function plotAllFlybys(hAxis, cBodyInfo, xferOrbits, bodiesInfo, numRev, celBody
         
         hold on;
         if(abs(numRev(i)) > 0)
-            plotOrbit('w', orbit(1), orbit(2), orbit(3), orbit(4), orbit(5), 0, 2*pi, orbit(10), gca, [0;0;0], 1.5, lineSpec{ind});
+            plotOrbit('w', orbit(1), orbit(2), orbit(3), orbit(4), orbit(5), 0, 2*pi, orbit(10), hAxis, [0;0;0], 1.5, lineSpec{ind});
         end
         
         h=plotOrbit('w', orbit(1), orbit(2), orbit(3), orbit(4), orbit(5), orbit(6), orbit(7), orbit(10), hAxis, [0;0;0], 1.5, lineSpec{ind});
@@ -66,11 +66,12 @@ function plotAllFlybys(hAxis, cBodyInfo, xferOrbits, bodiesInfo, numRev, celBody
     end
     drawnow;
     
-    hL = legend(hAxis, legendHs,legendStrs,'Location','SouthEast','orientation','vertical','EdgeColor','w','LineWidth',2,'TextColor','w');
-    hText = findobj(hL, 'type', 'text');
-    set(hText,'Color', 'w');
-    
     hold(hAxis,'on');
+    hL = legend(hAxis, legendHs,legendStrs,'Location','SouthEast','orientation','vertical','EdgeColor','w','LineWidth',2,'TextColor','w');
+%     hText = findobj(hL, 'type', 'text');
+%     set(hText,'Color', 'w');
+    drawnow;
+    
     view([0 89]);
     axis(hAxis,'equal');
     v = axis;
