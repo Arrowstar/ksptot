@@ -30,9 +30,9 @@ classdef FminconOptions < matlab.mixin.SetGet
         hessianApproxAlg FminconHessApproxAlgEnum = FminconHessApproxAlgEnum.BFGS;
         initBarrierParam(1,1) double = 0.1;
         initTrustRegionRadius(1,1) double = NaN;
-        maxProjCGIter(1,1) double = 250;
+        maxProjCGIter(1,1) double = 10000;
         subproblemAlgorithm FminconIpSubprobAlgEnum = FminconIpSubprobAlgEnum.Factorization;
-        tolProjCG(1,1) double = 0.01;
+        tolProjCG(1,1) double = 1E-10;
         tolProjCGAbs(1,1) double = 1E-10;
         barrierParamUpdate FminconBarrierParamUpdateEnum = FminconBarrierParamUpdateEnum.PredictorCorrector;
         feasibilityMode(1,1) logical = false;
