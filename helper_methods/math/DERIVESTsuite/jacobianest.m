@@ -2,11 +2,11 @@ function [jac,err] = jacobianest(fun,x0)
 % gradest: estimate of the Jacobian matrix of a vector valued function of n variables
 % usage: [jac,err] = jacobianest(fun,x0)
 %
-% 
+%
 % arguments: (input)
 %  fun - (vector valued) analytical function to differentiate.
 %        fun must be a function of the vector or array x0.
-% 
+%
 %  x0  - vector location at which to differentiate fun
 %        If x0 is an nxm array, then fun is assumed to be
 %        a function of n*m variables.
@@ -74,7 +74,7 @@ StepRatio = 2.0000001;
 
 % was a string supplied?
 if ischar(fun)
-  fun = str2func(fun);
+    fun = str2func(fun);
 end
 
 % get fun at the center point
@@ -82,10 +82,10 @@ f0 = fun(x0);
 f0 = f0(:);
 n = length(f0);
 if n==0
-  % empty begets empty
-  jac = zeros(0,nx);
-  err = jac;
-  return
+    % empty begets empty
+    jac = zeros(0,nx);
+    err = jac;
+    return
 end
 
 relativedelta = MaxStep*StepRatio .^(0:-1:-25);
@@ -95,50 +95,50 @@ nsteps = length(relativedelta);
 jac = zeros(n,nx);
 err = jac;
 for i = 1:nx
-  x0_i = x0(i);
-  if x0_i ~= 0
-    delta = x0_i*relativedelta;
-  else
-    delta = relativedelta;
-  end
-  
-  % evaluate at each step, centered around x0_i
-  % difference to give a second order estimate
-  fdel = zeros(n,nsteps);
-  for j = 1:nsteps
-    fdif = fun(swapelement(x0,i,x0_i + delta(j))) - ...
-      fun(swapelement(x0,i,x0_i - delta(j)));
-    
-    fdel(:,j) = fdif(:);
-  end
-  
-  % these are pure second order estimates of the
-  % first derivative, for each trial delta.
-  derest = fdel.*repmat(0.5 ./ delta,n,1);
-  
-  % The error term on these estimates has a second order
-  % component, but also some 4th and 6th order terms in it.
-  % Use Romberg exrapolation to improve the estimates to
-  % 6th order, as well as to provide the error estimate.
-  
-  % loop here, as rombextrap coupled with the trimming
-  % will get complicated otherwise.
-  for j = 1:n
-    [der_romb,errest] = rombextrap(StepRatio,derest(j,:),[2 4]);
-    
-    % trim off 3 estimates at each end of the scale
-    nest = length(der_romb);
-    trim = [1:3, nest+(-2:0)];
-    [der_romb,tags] = sort(der_romb);
-    der_romb(trim) = [];
-    tags(trim) = [];
-    
-    errest = errest(tags);
-    
-    % now pick the estimate with the lowest predicted error
-    [err(j,i),ind] = min(errest);
-    jac(j,i) = der_romb(ind);
-  end
+    x0_i = x0(i);
+    if x0_i ~= 0
+        delta = x0_i*relativedelta;
+    else
+        delta = relativedelta;
+    end
+
+    % evaluate at each step, centered around x0_i
+    % difference to give a second order estimate
+    fdel = zeros(n,nsteps);
+    for j = 1:nsteps
+        fdif = fun(swapelement(x0,i,x0_i + delta(j))) - ...
+            fun(swapelement(x0,i,x0_i - delta(j)));
+
+        fdel(:,j) = fdif(:);
+    end
+
+    % these are pure second order estimates of the
+    % first derivative, for each trial delta.
+    derest = fdel.*repmat(0.5 ./ delta,n,1);
+
+    % The error term on these estimates has a second order
+    % component, but also some 4th and 6th order terms in it.
+    % Use Romberg exrapolation to improve the estimates to
+    % 6th order, as well as to provide the error estimate.
+
+    % loop here, as rombextrap coupled with the trimming
+    % will get complicated otherwise.
+    for j = 1:n
+        [der_romb,errest] = rombextrap(StepRatio,derest(j,:),[2 4]);
+
+        % trim off 3 estimates at each end of the scale
+        nest = length(der_romb);
+        trim = [1:3, nest+(-2:0)];
+        [der_romb,tags] = sort(der_romb);
+        der_romb(trim) = [];
+        tags(trim) = [];
+
+        errest = errest(tags);
+
+        % now pick the estimate with the lowest predicted error
+        [err(j,i),ind] = min(errest);
+        jac(j,i) = der_romb(ind);
+    end
 end
 
 end % mainline function end
@@ -207,10 +207,7 @@ function mat = vec2mat(vec,n,m)
 ind = i+j;
 mat = vec(ind);
 if n==1
-  mat = mat';
+    mat = mat';
 end
 
 end % vec2mat
-
-
-
