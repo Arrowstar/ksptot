@@ -6,8 +6,8 @@ classdef FminconOptions < matlab.mixin.SetGet
         algorithm(1,1) LvdFminconAlgorithmEnum = LvdFminconAlgorithmEnum.InteriorPoint;
         
         %Tolerances
-        optTol(1,1) double = 1E-10;
-        stepTol(1,1) double = 1E-10;
+        optTol(1,1) double = 1E-4;
+        stepTol(1,1) double = 1E-6;
         tolCon(1,1) double = 1E-10;
         
         %Maximums
@@ -35,6 +35,7 @@ classdef FminconOptions < matlab.mixin.SetGet
         tolProjCG(1,1) double = 0.01;
         tolProjCGAbs(1,1) double = 1E-10;
         barrierParamUpdate FminconBarrierParamUpdateEnum = FminconBarrierParamUpdateEnum.PredictorCorrector;
+        feasibilityMode(1,1) logical = false;
         
         %Active-Set options
         funcTol(1,1) double = 1E-10;
@@ -61,8 +62,7 @@ classdef FminconOptions < matlab.mixin.SetGet
                                              'Display','iter-detailed', ...
                                              'HonorBounds',true, ...
                                              'FunValCheck','on', ...
-                                             'ScaleProblem','none', ...
-                                             'EnableFeasibilityMode',false);
+                                             'ScaleProblem','none');
             
             if(not(isnan(obj.optTol)))
                 options = optimoptions(options, 'OptimalityTolerance', obj.optTol);
@@ -134,7 +134,8 @@ classdef FminconOptions < matlab.mixin.SetGet
                                    'TypicalX', typicalX, ...
                                    'HessianApproximation', obj.hessianApproxAlg.optionStr, ...
                                    'SubproblemAlgorithm', obj.subproblemAlgorithm.optionStr, ...
-                                   'BarrierParamUpdate', obj.barrierParamUpdate.optionStr);    
+                                   'BarrierParamUpdate', obj.barrierParamUpdate.optionStr, ...
+                                   'EnableFeasibilityMode',obj.feasibilityMode);    
         end
         
         function tf = usesParallel(obj)
