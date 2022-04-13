@@ -1,27 +1,27 @@
-classdef GeometricVectorMagConstraint < AbstractGeometricVectorConstraint
+classdef GeometricVectorXConstraint < AbstractGeometricVectorConstraint
     %GeometricVectorMagConstraint Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
-        
+
     end
     
     methods
-        function obj = GeometricVectorMagConstraint(vector, event, lb, ub)
+        function obj = GeometricVectorXConstraint(vector, event, lb, ub)
             obj.vector = vector;
             obj.event = event;
             obj.lb = lb;
             obj.ub = ub;   
-            
-            obj.type = 'VectMag';
 
+            obj.type = 'VectorX';
+            
             obj.id = rand();
         end
     end
     
     methods(Static)
         function constraint = getDefaultConstraint(~, ~)            
-            constraint = GeometricVectorMagConstraint(AbstractGeometricVector.empty(1,0), LaunchVehicleEvent.empty(1,0), 0, 0);
+            constraint = GeometricVectorXConstraint(AbstractGeometricVector.empty(1,0), LaunchVehicleEvent.empty(1,0), 0, 0);
         end
     end
 end

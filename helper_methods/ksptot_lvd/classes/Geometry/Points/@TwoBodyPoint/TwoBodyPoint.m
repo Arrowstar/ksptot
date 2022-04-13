@@ -21,12 +21,20 @@ classdef TwoBodyPoint < AbstractGeometricPoint
     
     properties
         timesArr(1,:) cell = {};
-        xInterps(1,:) cell = {};
-        yInterps(1,:) cell = {};
-        zInterps(1,:) cell = {};
-        vxInterps(1,:) cell = {};
-        vyInterps(1,:) cell = {};
-        vzInterps(1,:) cell = {};
+%         xInterps(1,:) cell = {};
+%         yInterps(1,:) cell = {};
+%         zInterps(1,:) cell = {};
+%         vxInterps(1,:) cell = {};
+%         vyInterps(1,:) cell = {};
+%         vzInterps(1,:) cell = {};
+
+        smaInterps(1,:) cell = {};
+        eccInterps(1,:) cell = {};
+        incInterps(1,:) cell = {};
+        raanInterps(1,:) cell = {};
+        argInterps(1,:) cell = {};
+        truInterps(1,:) cell = {};
+
         cbArr(1,:) KSPTOT_BodyInfo = KSPTOT_BodyInfo.empty(1,0);
         
         rVectArr(1,:) cell = {};
@@ -50,30 +58,54 @@ classdef TwoBodyPoint < AbstractGeometricPoint
                 if(any(bool))  
                     boolTimes = time(bool);
                     
-                    xInterp = obj.xInterps{i};
-                    x = xInterp(boolTimes);
+%                     xInterp = obj.xInterps{i};
+%                     x = xInterp(boolTimes);
+%                     
+%                     yInterp = obj.yInterps{i};
+%                     y = yInterp(boolTimes);
+%                     
+%                     zInterp = obj.zInterps{i};
+%                     z = zInterp(boolTimes);
+%                     
+%                     vxInterp = obj.vxInterps{i};
+%                     vx = vxInterp(boolTimes);
+%                     
+%                     vyInterp = obj.vyInterps{i};
+%                     vy = vyInterp(boolTimes);
+%                     
+%                     vzInterp = obj.vzInterps{i};
+%                     vz = vzInterp(boolTimes);
+
+                    smaInterp = obj.smaInterps{i};
+                    sma = smaInterp(boolTimes);
                     
-                    yInterp = obj.yInterps{i};
-                    y = yInterp(boolTimes);
+                    eccInterp = obj.eccInterps{i};
+                    ecc = eccInterp(boolTimes);
                     
-                    zInterp = obj.zInterps{i};
-                    z = zInterp(boolTimes);
+                    incInterp = obj.incInterps{i};
+                    inc = incInterp(boolTimes);
                     
-                    vxInterp = obj.vxInterps{i};
-                    vx = vxInterp(boolTimes);
+                    raanInterp = obj.raanInterps{i};
+                    raan = raanInterp(boolTimes);
                     
-                    vyInterp = obj.vyInterps{i};
-                    vy = vyInterp(boolTimes);
+                    argInterp = obj.argInterps{i};
+                    arg = argInterp(boolTimes);
                     
-                    vzInterp = obj.vzInterps{i};
-                    vz = vzInterp(boolTimes);
+                    truInterp = obj.truInterps{i};
+                    tru = truInterp(boolTimes);
                     
                     bodyInfo = obj.cbArr(i);
                     
-                    rVect = [x(:)'; y(:)'; z(:)'];
-                    vVect = [vx(:)'; vy(:)'; vz(:)'];
+%                     rVect = [x(:)'; y(:)'; z(:)'];
+%                     vVect = [vx(:)'; vy(:)'; vz(:)'];
                     
-                    subCartElems = CartesianElementSet(boolTimes, rVect, vVect, bodyInfo.getBodyCenteredInertialFrame());
+                    for(j=1:length(sma))
+                        subKepElems = KeplerianElementSet(boolTimes(j), sma(j), ecc(j), inc(j), raan(j), arg(j), tru(j), bodyInfo.getBodyCenteredInertialFrame());
+                    end
+
+                    subCartElems = convertToCartesianElementSet(subKepElems);
+
+%                     subCartElems = CartesianElementSet(boolTimes, rVect, vVect, bodyInfo.getBodyCenteredInertialFrame());
 %                     subCartElems = repmat(CartesianElementSet.getDefaultElements(), [1, length(boolTimes)]);
 %                     for(j=1:length(boolTimes))
 %                         subCartElems(j) = CartesianElementSet(boolTimes(j), [x(j);y(j);z(j)], [vx(j);vy(j);vz(j)], bodyInfo.getBodyCenteredInertialFrame());
@@ -151,12 +183,23 @@ classdef TwoBodyPoint < AbstractGeometricPoint
             for(i=1:length(chunkedStateLog)) %#ok<*NO4LP> 
                 subStateLog = chunkedStateLog{i};
                 
-                times = subStateLog(:,1);
-                rVects = subStateLog(:,2:4);
-                vVects = subStateLog(:,5:7);
                 bodyInfo = dummyLvdData.celBodyData.getBodyInfoById(subStateLog(1,8));
-                
-                obj.addDataToCache(times, rVects, vVects, bodyInfo);
+
+                times = subStateLog(:,1);
+                rVects = subStateLog(:,2:4)';
+                vVects = subStateLog(:,5:7)';
+                [smas, eccs, incs, raans, args, trus] = vect_getKeplerFromState(rVects, vVects, bodyInfo.gm);
+
+                %this is needed to prevent angle wrapping
+                dTru = diff(trus);
+                inds = find(dTru < 0);
+                for(j=1:length(inds))
+                    ind = inds(j);
+
+                    trus(ind+1:end) = trus(ind+1:end) + 2*pi;
+                end
+
+                obj.addDataToCache(times, smas, eccs, incs, raans, args, trus, bodyInfo);
             end
         end
                
@@ -240,7 +283,7 @@ classdef TwoBodyPoint < AbstractGeometricPoint
 %             else
 %                 stepSize = evtDur/1000;
 %             end
-            stepSize = evtDur/10000;
+            stepSize = evtDur/100;
             evt.integratorObj.getOptions().integratorStepSize = stepSize;
             evt.integratorObj.getOptions().maxNumFixedSteps = Inf;
 
@@ -268,10 +311,10 @@ classdef TwoBodyPoint < AbstractGeometricPoint
             obj.lvdData.settings.simMaxDur = oldMaxSimDur;
         end
         
-        function addDataToCache(obj, times, rVects, vVects, bodyInfo)
+        function addDataToCache(obj, times, smas, eccs, incs, raans, args, trus, bodyInfo)
             obj.timesArr{end+1} = times;
             obj.cbArr(end+1) = bodyInfo;
-            obj.rVectArr{end+1} = rVects;
+%             obj.rVectArr{end+1} = rVects;
             
             if(length(times) >= 3)
                 method = 'spline';
@@ -279,22 +322,38 @@ classdef TwoBodyPoint < AbstractGeometricPoint
                 method = 'linear';
             end
             
-            obj.xInterps{end+1} = griddedInterpolant(times, rVects(:,1), method, 'nearest');
-            obj.yInterps{end+1} = griddedInterpolant(times, rVects(:,2), method, 'nearest');
-            obj.zInterps{end+1} = griddedInterpolant(times, rVects(:,3), method, 'nearest');
-            obj.vxInterps{end+1} = griddedInterpolant(times, vVects(:,1), method, 'nearest');
-            obj.vyInterps{end+1} = griddedInterpolant(times, vVects(:,2), method, 'nearest');
-            obj.vzInterps{end+1} = griddedInterpolant(times, vVects(:,3), method, 'nearest');
+%             obj.xInterps{end+1} = griddedInterpolant(times, rVects(:,1), method, 'nearest');
+%             obj.yInterps{end+1} = griddedInterpolant(times, rVects(:,2), method, 'nearest');
+%             obj.zInterps{end+1} = griddedInterpolant(times, rVects(:,3), method, 'nearest');
+%             obj.vxInterps{end+1} = griddedInterpolant(times, vVects(:,1), method, 'nearest');
+%             obj.vyInterps{end+1} = griddedInterpolant(times, vVects(:,2), method, 'nearest');
+%             obj.vzInterps{end+1} = griddedInterpolant(times, vVects(:,3), method, 'nearest');
+
+            obj.smaInterps{end+1} = griddedInterpolant(times, smas, method, 'nearest');
+            obj.eccInterps{end+1} = griddedInterpolant(times, eccs, method, 'nearest');
+            obj.incInterps{end+1} = griddedInterpolant(times, incs, method, 'nearest');
+            obj.raanInterps{end+1} = griddedInterpolant(times, raans, method, 'nearest');
+            obj.argInterps{end+1} = griddedInterpolant(times, args, method, 'nearest');
+            obj.truInterps{end+1} = griddedInterpolant(times, trus, method, 'nearest');
         end
         
         function clearCache(obj)
             obj.timesArr = {};
-            obj.xInterps = {};
-            obj.yInterps = {};
-            obj.zInterps = {};
-            obj.vxInterps = {};
-            obj.vyInterps = {};
-            obj.vzInterps = {};
+%             
+%             obj.xInterps = {};
+%             obj.yInterps = {};
+%             obj.zInterps = {};
+%             obj.vxInterps = {};
+%             obj.vyInterps = {};
+%             obj.vzInterps = {};
+
+            obj.smaInterps = {};
+            obj.eccInterps = {};
+            obj.incInterps = {};
+            obj.raanInterps = {};
+            obj.argInterps = {};
+            obj.truInterps = {};
+
             obj.cbArr = KSPTOT_BodyInfo.empty(1,0);
         end
         

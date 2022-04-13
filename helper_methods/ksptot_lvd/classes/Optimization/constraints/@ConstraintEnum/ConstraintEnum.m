@@ -91,6 +91,10 @@ classdef ConstraintEnum < matlab.mixin.SetGet
         GroundObjRng('Ground Object Range', 'GroundObjRangeConstraint', []);
         
         GeoVectorMagntide('Geometric Vector Magnitude', 'GeometricVectorMagConstraint', []);
+        GeoVectorXComponent('Geometric Vector X', 'GeometricVectorXConstraint', []);
+        GeoVectorYComponent('Geometric Vector Y', 'GeometricVectorYConstraint', []);
+        GeoVectorZComponent('Geometric Vector Z', 'GeometricVectorZConstraint', []);
+
         GeoAngleMagnitude('Geometric Angle Magnitude', 'GeometricAngleMagConstraint', []);
         
         TankMass('Tank Mass', 'TankMassConstraint', []);
