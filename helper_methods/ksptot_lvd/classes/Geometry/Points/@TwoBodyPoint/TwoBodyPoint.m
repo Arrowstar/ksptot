@@ -33,7 +33,7 @@ classdef TwoBodyPoint < AbstractGeometricPoint
         incInterps(1,:) cell = {};
         raanInterps(1,:) cell = {};
         argInterps(1,:) cell = {};
-        truInterps(1,:) cell = {};
+        meanInterps(1,:) cell = {};
 
         cbArr(1,:) KSPTOT_BodyInfo = KSPTOT_BodyInfo.empty(1,0);
         
@@ -91,18 +91,18 @@ classdef TwoBodyPoint < AbstractGeometricPoint
                     argInterp = obj.argInterps{i};
                     arg = argInterp(boolTimes);
                     
-                    truInterp = obj.truInterps{i};
-                    tru = truInterp(boolTimes);
+                    meanInterp = obj.meanInterps{i};
+                    mean = meanInterp(boolTimes);
                     
                     bodyInfo = obj.cbArr(i);
                     
 %                     rVect = [x(:)'; y(:)'; z(:)'];
 %                     vVect = [vx(:)'; vy(:)'; vz(:)'];
                     
+                    tru = computeTrueAnomFromMean(mean, ecc);
                     for(j=1:length(sma))
-                        subKepElems = KeplerianElementSet(boolTimes(j), sma(j), ecc(j), inc(j), raan(j), arg(j), tru(j), bodyInfo.getBodyCenteredInertialFrame());
+                        subKepElems(j) = KeplerianElementSet(boolTimes(j), sma(j), ecc(j), inc(j), raan(j), arg(j), tru(j), bodyInfo.getBodyCenteredInertialFrame()); %#ok<AGROW> 
                     end
-
                     subCartElems = convertToCartesianElementSet(subKepElems);
 
 %                     subCartElems = CartesianElementSet(boolTimes, rVect, vVect, bodyInfo.getBodyCenteredInertialFrame());
@@ -189,6 +189,10 @@ classdef TwoBodyPoint < AbstractGeometricPoint
                 rVects = subStateLog(:,2:4)';
                 vVects = subStateLog(:,5:7)';
                 [smas, eccs, incs, raans, args, trus] = vect_getKeplerFromState(rVects, vVects, bodyInfo.gm);
+                means = computeMeanFromTrueAnom(trus, eccs);
+
+                raans = AngleZero2Pi(raans);
+                args = AngleZero2Pi(args);
 
                 %this is needed to prevent angle wrapping
                 dTru = diff(trus);
@@ -199,7 +203,7 @@ classdef TwoBodyPoint < AbstractGeometricPoint
                     trus(ind+1:end) = trus(ind+1:end) + 2*pi;
                 end
 
-                obj.addDataToCache(times, smas, eccs, incs, raans, args, trus, bodyInfo);
+                obj.addDataToCache(times, smas, eccs, incs, raans, args, means, bodyInfo);
             end
         end
                
@@ -283,7 +287,7 @@ classdef TwoBodyPoint < AbstractGeometricPoint
 %             else
 %                 stepSize = evtDur/1000;
 %             end
-            stepSize = evtDur/100;
+            stepSize = evtDur/1000;
             evt.integratorObj.getOptions().integratorStepSize = stepSize;
             evt.integratorObj.getOptions().maxNumFixedSteps = Inf;
 
@@ -311,13 +315,13 @@ classdef TwoBodyPoint < AbstractGeometricPoint
             obj.lvdData.settings.simMaxDur = oldMaxSimDur;
         end
         
-        function addDataToCache(obj, times, smas, eccs, incs, raans, args, trus, bodyInfo)
+        function addDataToCache(obj, times, smas, eccs, incs, raans, args, means, bodyInfo)
             obj.timesArr{end+1} = times;
             obj.cbArr(end+1) = bodyInfo;
 %             obj.rVectArr{end+1} = rVects;
             
             if(length(times) >= 3)
-                method = 'spline';
+                method = 'linear';
             else
                 method = 'linear';
             end
@@ -334,7 +338,7 @@ classdef TwoBodyPoint < AbstractGeometricPoint
             obj.incInterps{end+1} = griddedInterpolant(times, incs, method, 'nearest');
             obj.raanInterps{end+1} = griddedInterpolant(times, raans, method, 'nearest');
             obj.argInterps{end+1} = griddedInterpolant(times, args, method, 'nearest');
-            obj.truInterps{end+1} = griddedInterpolant(times, trus, method, 'nearest');
+            obj.meanInterps{end+1} = griddedInterpolant(times, means, method, 'nearest');
         end
         
         function clearCache(obj)
@@ -352,7 +356,7 @@ classdef TwoBodyPoint < AbstractGeometricPoint
             obj.incInterps = {};
             obj.raanInterps = {};
             obj.argInterps = {};
-            obj.truInterps = {};
+            obj.meanInterps = {};
 
             obj.cbArr = KSPTOT_BodyInfo.empty(1,0);
         end
