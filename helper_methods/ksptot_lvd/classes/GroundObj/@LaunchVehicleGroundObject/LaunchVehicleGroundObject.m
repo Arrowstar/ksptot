@@ -256,16 +256,30 @@ classdef LaunchVehicleGroundObject < matlab.mixin.SetGet
 end
 
 function [lati,longi] = getIntermediatePt(lat1, long1, lat2, long2, f, bodyRadius)
-    d = distance(lat1,long1, lat2,long2, 'radians');
-    delta = d/bodyRadius;
-    
-    a = sin((1-f)*delta) / sin(delta);
-    b = sin(f*delta) / sin(delta);
-    
-    x = a * cos(lat1) * cos(long1) + b * cos(lat2) * cos(long2);
-    y = a * cos(lat1) * sin(long1) + b * cos(lat2) * sin(long2);
-    z = a * sin(lat1) + b * sin(lat2);
-    
-    lati = atan2(z, sqrt(x^2 + y^2));
-    longi = atan2(y, x);
+    arguments
+        lat1(1,1) double
+        long1(1,1) double
+        lat2(1,1) double
+        long2(1,1) double
+        f(1,1) double
+        bodyRadius(1,1) double
+    end
+
+    if(lat1 == lat2 && long1 == long2)
+        lati = lat1;
+        longi = long1;
+    else
+        d = distance(lat1,long1, lat2,long2, 'radians');
+        delta = d/bodyRadius;
+        
+        a = sin((1-f)*delta) / sin(delta);
+        b = sin(f*delta) / sin(delta);
+        
+        x = a * cos(lat1) * cos(long1) + b * cos(lat2) * cos(long2);
+        y = a * cos(lat1) * sin(long1) + b * cos(lat2) * sin(long2);
+        z = a * sin(lat1) + b * sin(lat2);
+        
+        lati = atan2(z, sqrt(x^2 + y^2));
+        longi = atan2(y, x);
+    end
 end
