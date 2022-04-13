@@ -1,5 +1,5 @@
 function [datapt, unitStr] = lvd_GeometricVectorTasks(stateLogEntry, subTask, vector, inFrame)
-%lvd_GeometricPointTasks Summary of this function goes here
+%lvd_GeometricVectorTasks Summary of this function goes here
 %   Detailed explanation goes here
 
     stateLogCartElem = stateLogEntry.getCartesianElementSetRepresentation();

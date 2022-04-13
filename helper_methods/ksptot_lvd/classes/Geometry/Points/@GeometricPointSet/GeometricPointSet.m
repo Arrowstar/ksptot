@@ -24,7 +24,7 @@ classdef GeometricPointSet < matlab.mixin.SetGet
         function [listBoxStr, points] = getListboxStr(obj)
             listBoxStr = {};
             
-            for(i=1:length(obj.points))
+            for(i=1:length(obj.points)) %#ok<*NO4LP> 
                 listBoxStr{end+1} = obj.points(i).getListboxStr(); %#ok<AGROW>
             end
             
@@ -123,7 +123,10 @@ classdef GeometricPointSet < matlab.mixin.SetGet
         function ptGAStr = getAllPointGraphAnalysisTaskStrs(obj)
             ptGAStr = horzcat(obj.getPointPositionXGraphAnalysisTaskStrs(), ...
                               obj.getPointPositionYGraphAnalysisTaskStrs(), ... 
-                              obj.getPointPositionZGraphAnalysisTaskStrs()); 
+                              obj.getPointPositionZGraphAnalysisTaskStrs(), ...
+                              obj.getPointVelocityXGraphAnalysisTaskStrs(), ...
+                              obj.getPointVelocityYGraphAnalysisTaskStrs(), ...
+                              obj.getPointVelocityZGraphAnalysisTaskStrs()); 
         end
         
         function [ptPosXGAStr, points] = getPointPositionXGraphAnalysisTaskStrs(obj)
@@ -156,6 +159,39 @@ classdef GeometricPointSet < matlab.mixin.SetGet
             formSpec = sprintf('%%0%uu',floor(log10(abs(A)+1)) + 1);
             for(i=1:length(points))
                 ptPosXGAStr{i} = sprintf(sprintf('Point %s Position (Z) - "%s"',formSpec, points(i).getName()), i);
+            end
+        end
+
+        function [ptVelXGAStr, points] = getPointVelocityXGraphAnalysisTaskStrs(obj)
+            points = obj.points;
+            
+            ptVelXGAStr = cell(1,length(points));
+            A = length(points);
+            formSpec = sprintf('%%0%uu',floor(log10(abs(A)+1)) + 1);
+            for(i=1:length(points))
+                ptVelXGAStr{i} = sprintf(sprintf('Point %s Velocity (X) - "%s"',formSpec, points(i).getName()), i);
+            end
+        end
+
+        function [ptVelYGAStr, points] = getPointVelocityYGraphAnalysisTaskStrs(obj)
+            points = obj.points;
+            
+            ptVelYGAStr = cell(1,length(points));
+            A = length(points);
+            formSpec = sprintf('%%0%uu',floor(log10(abs(A)+1)) + 1);
+            for(i=1:length(points))
+                ptVelYGAStr{i} = sprintf(sprintf('Point %s Velocity (Y) - "%s"',formSpec, points(i).getName()), i);
+            end
+        end
+
+        function [ptVelZGAStr, points] = getPointVelocityZGraphAnalysisTaskStrs(obj)
+            points = obj.points;
+            
+            ptVelZGAStr = cell(1,length(points));
+            A = length(points);
+            formSpec = sprintf('%%0%uu',floor(log10(abs(A)+1)) + 1);
+            for(i=1:length(points))
+                ptVelZGAStr{i} = sprintf(sprintf('Point %s Velocity (Z) - "%s"',formSpec, points(i).getName()), i);
             end
         end
     end

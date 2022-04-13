@@ -10,6 +10,8 @@ classdef GeometricVectorEnum < matlab.mixin.SetGet
         VehicleState('Vehicle State Vector');
         Projected('Projected Vector');
         PlaneToPoint('Plane To Point');
+        PointVelocityVector('Point Velocity Vector');
+        VectorDifference('Vector Difference');
     end
     
     properties

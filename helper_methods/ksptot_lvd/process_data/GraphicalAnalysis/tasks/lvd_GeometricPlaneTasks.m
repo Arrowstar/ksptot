@@ -1,5 +1,5 @@
 function [datapt, unitStr] = lvd_GeometricPlaneTasks(stateLogEntry, subTask, plane, inFrame)
-%lvd_GeometricPointTasks Summary of this function goes here
+%lvd_GeometricPlaneTasks Summary of this function goes here
 %   Detailed explanation goes here
 
     stateLogCartElem = stateLogEntry.getCartesianElementSetRepresentation();

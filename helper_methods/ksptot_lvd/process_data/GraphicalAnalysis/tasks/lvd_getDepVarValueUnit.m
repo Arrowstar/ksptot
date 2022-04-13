@@ -244,6 +244,9 @@ function [depVarValue, depVarUnit, taskStr, refBodyInfo] = lvd_getDepVarValueUni
             geoPtPosXPattern = '^Point (\d+?) Position \(X\) - ".*"';
             geoPtPosYPattern = '^Point (\d+?) Position \(Y\) - ".*"';
             geoPtPosZPattern = '^Point (\d+?) Position \(Z\) - ".*"';
+            geoPtVelXPattern = '^Point (\d+?) Velocity \(X\) - ".*"';
+            geoPtVelYPattern = '^Point (\d+?) Velocity \(Y\) - ".*"';
+            geoPtVelZPattern = '^Point (\d+?) Velocity \(Z\) - ".*"';
             
             geoVectXPattern = '^Vector (\d+?) X Component - ".*"';
             geoVectYPattern = '^Vector (\d+?) Y Component - ".*"';
@@ -261,7 +264,7 @@ function [depVarValue, depVarUnit, taskStr, refBodyInfo] = lvd_getDepVarValueUni
             
             pluginValuePattern = '^Plugin (\d+?) Value - ".*"';
             
-            if(not(isempty(regexpi(taskStr, fluidTypeMassPattern))))
+            if(not(isempty(regexpi(taskStr, fluidTypeMassPattern)))) %#ok<*RGXPI> 
                 tokens = regexpi(taskStr, fluidTypeMassPattern, 'tokens');
                 tokens = tokens{1};
                 tokens = tokens{1};
@@ -509,6 +512,39 @@ function [depVarValue, depVarUnit, taskStr, refBodyInfo] = lvd_getDepVarValueUni
                 point = points(pointInd);
                 
                 [depVarValue, depVarUnit] = lvd_GeometricPointTasks(subLog(i), 'PosZ', point, inFrame);
+
+            elseif(not(isempty(regexpi(taskStr, geoPtVelXPattern))))
+                tokens = regexpi(taskStr, geoPtVelXPattern, 'tokens');
+                tokens = tokens{1};
+                tokens = tokens{1};
+                pointInd = str2double(tokens);
+                
+                [~, points] = subLog(i).lvdData.geometry.points.getPointPositionXGraphAnalysisTaskStrs();
+                point = points(pointInd);
+                
+                [depVarValue, depVarUnit] = lvd_GeometricPointTasks(subLog(i), 'VelX', point, inFrame);
+
+            elseif(not(isempty(regexpi(taskStr, geoPtVelYPattern))))
+                tokens = regexpi(taskStr, geoPtVelYPattern, 'tokens');
+                tokens = tokens{1};
+                tokens = tokens{1};
+                pointInd = str2double(tokens);
+                
+                [~, points] = subLog(i).lvdData.geometry.points.getPointPositionXGraphAnalysisTaskStrs();
+                point = points(pointInd);
+                
+                [depVarValue, depVarUnit] = lvd_GeometricPointTasks(subLog(i), 'VelY', point, inFrame);
+
+            elseif(not(isempty(regexpi(taskStr, geoPtVelZPattern))))
+                tokens = regexpi(taskStr, geoPtVelZPattern, 'tokens');
+                tokens = tokens{1};
+                tokens = tokens{1};
+                pointInd = str2double(tokens);
+                
+                [~, points] = subLog(i).lvdData.geometry.points.getPointPositionXGraphAnalysisTaskStrs();
+                point = points(pointInd);
+                
+                [depVarValue, depVarUnit] = lvd_GeometricPointTasks(subLog(i), 'VelZ', point, inFrame);
                 
             elseif(not(isempty(regexpi(taskStr, geoVectXPattern))))
                 tokens = regexpi(taskStr, geoVectXPattern, 'tokens');

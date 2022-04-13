@@ -7,6 +7,7 @@ function [datapt, unitStr] = lvd_GeometricPointTasks(stateLogEntry, subTask, poi
 %     frame = stateLogCartElem.frame;
     pointCartElem = point.getPositionAtTime(time, stateLogCartElem, inFrame);
     ptRVect = pointCartElem.rVect;
+    ptVVect = pointCartElem.vVect;
     
     switch subTask
         case 'PosX'
@@ -20,7 +21,19 @@ function [datapt, unitStr] = lvd_GeometricPointTasks(stateLogEntry, subTask, poi
         case 'PosZ'
             datapt = ptRVect(3);
             unitStr = 'km';
-            
+
+        case 'VelX'
+            datapt = ptVVect(1);
+            unitStr = 'km/s';
+
+        case 'VelY'
+            datapt = ptVVect(2);
+            unitStr = 'km/s';
+
+        case 'VelZ'
+            datapt = ptVVect(3);
+            unitStr = 'km/s';
+
         otherwise
             error('Unknown sub task string: %s', subTask);
     end
