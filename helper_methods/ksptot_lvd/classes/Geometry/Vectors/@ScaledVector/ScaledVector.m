@@ -5,6 +5,7 @@ classdef ScaledVector < AbstractGeometricVector
     properties
         vector(1,1) AbstractGeometricVector
         scaleFactor(1,1) double = 1;
+        normVect(1,1) logical = false;
         
         name(1,:) char
         lvdData LvdData
@@ -24,7 +25,12 @@ classdef ScaledVector < AbstractGeometricVector
         end
         
         function vect = getVectorAtTime(obj, time, vehElemSet, inFrame)
-            vect = obj.scaleFactor * obj.vector.getVectorAtTime(time, vehElemSet, inFrame);
+            if(obj.normVect)
+                vect = obj.vector.getVectorAtTime(time, vehElemSet, inFrame);
+                vect = vect_normVector(vect);
+            else
+                vect = obj.scaleFactor * obj.vector.getVectorAtTime(time, vehElemSet, inFrame);
+            end
         end
         
         function name = getName(obj)
@@ -36,12 +42,14 @@ classdef ScaledVector < AbstractGeometricVector
         end
         
         function listboxStr = getListboxStr(obj)
-            listboxStr = sprintf('%s ("%s" scaled by %0.3f)', obj.getName(), obj.vector.getName(), obj.scaleFactor);
+            if(obj.normVect == false)
+                listboxStr = sprintf('%s ("%s" scaled by %0.3f)', obj.getName(), obj.vector.getName(), obj.scaleFactor);
+            else
+                listboxStr = sprintf('%s ("%s" Normalized)', obj.getName(), obj.vector.getName());
+            end
         end
         
-        function useTf = openEditDialog(obj)
-%             useTf = lvd_EditScaledVectorGUI(obj, obj.lvdData);
-            
+        function useTf = openEditDialog(obj)            
             output = AppDesignerGUIOutput({false});
             lvd_EditScaledVectorGUI_App(obj, obj.lvdData, output);
             useTf = output.output{1};
