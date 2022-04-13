@@ -50,7 +50,7 @@ classdef TwoBodyPoint < AbstractGeometricPoint
         end
         
         function newCartElems = getPositionAtTime(obj, time, vehElemSet, inFrame)
-            newCartElems = repmat(CartesianElementSet.empty(0,1), [1, length(time)]);
+            newCartElems = repmat(CartesianElementSet.getDefaultElements(), [1, length(time)]);
             for(i=1:length(obj.timesArr))
                 times = obj.timesArr{i};
                 
@@ -100,6 +100,7 @@ classdef TwoBodyPoint < AbstractGeometricPoint
 %                     vVect = [vx(:)'; vy(:)'; vz(:)'];
                     
                     tru = computeTrueAnomFromMean(mean, ecc);
+                    clear subKepElems;
                     for(j=1:length(sma))
                         subKepElems(j) = KeplerianElementSet(boolTimes(j), sma(j), ecc(j), inc(j), raan(j), arg(j), tru(j), bodyInfo.getBodyCenteredInertialFrame()); %#ok<AGROW> 
                     end
