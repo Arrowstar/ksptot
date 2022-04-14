@@ -392,6 +392,8 @@ function [childrenHGs] = plotSubStateLog(subStateLog, prevSubStateLog, lvdData, 
     plotLineColor = event.colorLineSpec.color.color;
     plotLineStyle = event.colorLineSpec.lineSpec.linespec;
     plotLineWidth = event.colorLineSpec.lineWidth;
+    plotMarkerType = event.colorLineSpec.markerSpec.shape;
+    plotMarkerSize = event.colorLineSpec.markerSize;
     plotMethodEnum = event.plotMethod;
 
     hold(dAxes,'on');
@@ -420,7 +422,7 @@ function [childrenHGs] = plotSubStateLog(subStateLog, prevSubStateLog, lvdData, 
             error('Unknown event plotting method enum: %s', plotMethodEnum.name);
     end
 
-    plot3(dAxes, x, y, z, 'Color', plotLineColor, 'LineStyle', plotLineStyle, 'LineWidth',plotLineWidth);   
+    plot3(dAxes, x, y, z, 'Color', plotLineColor, 'LineStyle', plotLineStyle, 'LineWidth',plotLineWidth, 'Marker',plotMarkerType, 'MarkerSize',plotMarkerSize, 'MarkerEdgeColor','none', 'MarkerFaceColor',plotLineColor);   
     childrenHGs = cell(0,4);
 end
 

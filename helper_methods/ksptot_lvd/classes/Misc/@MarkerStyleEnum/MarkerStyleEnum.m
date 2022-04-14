@@ -15,6 +15,7 @@ classdef MarkerStyleEnum < matlab.mixin.SetGet
         LeftTriangle('Left-pointing triangle', '<')
         Pentagram('Pentagram', 'p')
         Hexagram('Hexagram', 'h')
+        None('No Marker', 'none');
     end
     
     properties
