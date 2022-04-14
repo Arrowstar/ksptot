@@ -126,19 +126,19 @@ classdef LaunchVehicleStateLog < matlab.mixin.SetGet
 
                 subStateLog = obj.getAllStateLogEntriesForEvent(evt);
 
-                switch evt.plotMethod
-                    case EventPlottingMethodEnum.PlotContinuous
-                        %nothing here
-
-                    case EventPlottingMethodEnum.SkipFirstState
-                        subStateLog = subStateLog(2:end);
-                        
-                    case EventPlottingMethodEnum.DoNotPlot
-                        subStateLog = LaunchVehicleStateLogEntry.empty(1,0);
-
-                    otherwise
-                        error('Unknown plotting method: %s', evt.plotMethod.name);
-                end
+%                 switch evt.plotMethod
+%                     case EventPlottingMethodEnum.PlotContinuous
+%                         %nothing here
+% 
+%                     case EventPlottingMethodEnum.SkipFirstState
+%                         subStateLog = subStateLog(2:end);
+%                         
+%                     case EventPlottingMethodEnum.DoNotPlot
+%                         subStateLog = LaunchVehicleStateLogEntry.empty(1,0);
+% 
+%                     otherwise
+%                         error('Unknown plotting method: %s', evt.plotMethod.name);
+%                 end
 
                 if(not(isempty(subStateLog)))
                     e = horzcat(e, subStateLog(:)'); %#ok<AGROW> 

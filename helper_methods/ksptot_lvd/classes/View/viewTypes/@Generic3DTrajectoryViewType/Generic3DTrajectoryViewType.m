@@ -398,12 +398,16 @@ function [childrenHGs] = plotSubStateLog(subStateLog, prevSubStateLog, lvdData, 
     
     switch plotMethodEnum
         case EventPlottingMethodEnum.PlotContinuous
-%             x = [prevSubStateLog(end,2);subStateLog(1:end,2)];
-%             y = [prevSubStateLog(end,3);subStateLog(1:end,3)];
-%             z = [prevSubStateLog(end,4);subStateLog(1:end,4)];
-            x = [subStateLog(1:end,2)];
-            y = [subStateLog(1:end,3)];
-            z = [subStateLog(1:end,4)];
+            t = [prevSubStateLog(end,1);subStateLog(1:end,1)];
+            x = [prevSubStateLog(end,2);subStateLog(1:end,2)];
+            y = [prevSubStateLog(end,3);subStateLog(1:end,3)];
+            z = [prevSubStateLog(end,4);subStateLog(1:end,4)];
+
+            [~,I] = sort(t);
+            x = x(I);
+            y = y(I);
+            z = z(I);
+
         case EventPlottingMethodEnum.SkipFirstState
             x = subStateLog(2:end,2);
             y = subStateLog(2:end,3);

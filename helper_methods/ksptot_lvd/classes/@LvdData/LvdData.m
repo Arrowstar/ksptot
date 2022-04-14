@@ -314,7 +314,7 @@ classdef LvdData < matlab.mixin.SetGet
             lvdData.script = script;
 
             %State Log
-            lvdData.stateLog = LaunchVehicleStateLog();
+            lvdData.stateLog = LaunchVehicleStateLog(lvdData);
                       
             %Optimization
             lvdOptim = LvdOptimization(lvdData);
