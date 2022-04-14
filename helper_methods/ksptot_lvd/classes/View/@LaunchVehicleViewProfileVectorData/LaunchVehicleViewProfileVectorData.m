@@ -27,7 +27,7 @@ classdef LaunchVehicleViewProfileVectorData < matlab.mixin.SetGet
             obj.timesArr{end+1} = times;
             
             if(length(times) >= 3)
-                method = 'spline';
+                method = 'pchip';
             else
                 method = 'linear';
             end

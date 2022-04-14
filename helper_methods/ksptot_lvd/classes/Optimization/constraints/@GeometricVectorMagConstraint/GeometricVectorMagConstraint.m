@@ -17,6 +17,10 @@ classdef GeometricVectorMagConstraint < AbstractGeometricVectorConstraint
 
             obj.id = rand();
         end
+
+        function type = getConstraintType(obj)
+            type = 'Geometric Vector Magnitude';
+        end
     end
     
     methods(Static)

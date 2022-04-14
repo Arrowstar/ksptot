@@ -32,6 +32,7 @@ classdef LvdData < matlab.mixin.SetGet
     
     methods(Access = private)
         function obj = LvdData()
+            obj.stateLog = LaunchVehicleStateLog(obj);
             obj.validation = LaunchVehicleDataValidation(obj);
             obj.settings = LvdSettings();
             obj.plugins = LvdPluginSet(obj);
@@ -734,7 +735,11 @@ classdef LvdData < matlab.mixin.SetGet
             obj.validation = LaunchVehicleDataValidation(obj);
             
             if(isempty(obj.stateLog))
-                obj.stateLog = LaunchVehicleStateLog();
+                obj.stateLog = LaunchVehicleStateLog(obj);
+            end
+
+            if(isempty(obj.stateLog.lvdData))
+                obj.stateLog.lvdData = obj;
             end
             
             if(isempty(obj.plugins))

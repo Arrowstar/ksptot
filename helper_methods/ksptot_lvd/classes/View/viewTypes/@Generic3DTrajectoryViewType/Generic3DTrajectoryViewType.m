@@ -46,9 +46,10 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             switch viewProfile.trajEvtsViewType
                 case ViewEventsTypeEnum.SoIChunk
                     entries = stateLog.getAllEntries();
-                    maStateLog = stateLog.getMAFormattedStateLogMatrix(false);
+%                     maStateLog = stateLog.getMAFormattedStateLogMatrix(false);
 
-                    chunkedStateLog = breakStateLogIntoSoIChunks(maStateLog);
+%                     chunkedStateLog = breakStateLogIntoSoIChunks(maStateLog);
+                    chunkedStateLog = stateLog.breakUpStateLogBySoIChunk();
                     if(orbitNumToPlot > size(chunkedStateLog,1))
                         orbitNumToPlot = size(chunkedStateLog,1);
                         set(dAxes,'UserData',orbitNumToPlot);
@@ -97,8 +98,8 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
 
                     numTotMissionSegs = size(chunkedStateLog,1);
                     
-                    curMissionSegStr = num2str(orbitNumToPlot);
-                    totalMissionSegStr = num2str(numTotMissionSegs);
+%                     curMissionSegStr = num2str(orbitNumToPlot);
+%                     totalMissionSegStr = num2str(numTotMissionSegs);
                 
                     if(numTotMissionSegs <= 1)
                         app.decrOrbitToPlotNum.Enable = 'off';
@@ -133,8 +134,8 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                         subStateLogs{evtNum} = subStateLogsMat(subStateLogsMat(:,13) == evtNum,:); %#ok<AGROW>
                     end
 
-                    curMissionSegStr = num2str(1);
-                    totalMissionSegStr = num2str(1);
+%                     curMissionSegStr = num2str(1);
+%                     totalMissionSegStr = num2str(1);
                     
                     lvdStateLogEntries = entries;
                 otherwise
@@ -397,9 +398,12 @@ function [childrenHGs] = plotSubStateLog(subStateLog, prevSubStateLog, lvdData, 
     
     switch plotMethodEnum
         case EventPlottingMethodEnum.PlotContinuous
-            x = [prevSubStateLog(end,2);subStateLog(1:end,2)];
-            y = [prevSubStateLog(end,3);subStateLog(1:end,3)];
-            z = [prevSubStateLog(end,4);subStateLog(1:end,4)];
+%             x = [prevSubStateLog(end,2);subStateLog(1:end,2)];
+%             y = [prevSubStateLog(end,3);subStateLog(1:end,3)];
+%             z = [prevSubStateLog(end,4);subStateLog(1:end,4)];
+            x = [subStateLog(1:end,2)];
+            y = [subStateLog(1:end,3)];
+            z = [subStateLog(1:end,4)];
         case EventPlottingMethodEnum.SkipFirstState
             x = subStateLog(2:end,2);
             y = subStateLog(2:end,3);

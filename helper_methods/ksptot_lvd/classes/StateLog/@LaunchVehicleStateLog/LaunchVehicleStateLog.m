@@ -4,13 +4,14 @@ classdef LaunchVehicleStateLog < matlab.mixin.SetGet
     
     properties
         entries LaunchVehicleStateLogEntry
-        
         nonSeqEvtsStates NonSeqEvtsState
+
+        lvdData LvdData
     end
     
     methods
-        function obj = LaunchVehicleStateLog()
-            
+        function obj = LaunchVehicleStateLog(lvdData)
+            obj.lvdData = lvdData;
         end
         
         function appendStateLogEntries(obj, newStateLogEntries)
@@ -114,6 +115,93 @@ classdef LaunchVehicleStateLog < matlab.mixin.SetGet
             [~,I] = max(eventNums);
             
             nonSeqEvtsState = obj.nonSeqEvtsStates(I);
+        end
+
+        function stateLogEntries = breakUpStateLogBySoIChunk(obj)
+            e = LaunchVehicleStateLogEntry.empty(1,0);
+
+            evts = obj.lvdData.script.evts;
+            for(i=1:length(evts))
+                evt = evts(i);
+
+                subStateLog = obj.getAllStateLogEntriesForEvent(evt);
+
+                switch evt.plotMethod
+                    case EventPlottingMethodEnum.PlotContinuous
+                        %nothing here
+
+                    case EventPlottingMethodEnum.SkipFirstState
+                        subStateLog = subStateLog(2:end);
+                        
+                    case EventPlottingMethodEnum.DoNotPlot
+                        subStateLog = LaunchVehicleStateLogEntry.empty(1,0);
+
+                    otherwise
+                        error('Unknown plotting method: %s', evt.plotMethod.name);
+                end
+
+                if(not(isempty(subStateLog)))
+                    e = horzcat(e, subStateLog(:)'); %#ok<AGROW> 
+                end
+            end
+
+            times = [e.time];
+            cbs = [e.centralBody];
+            cbIds = [cbs.id];
+            data = [times(:), cbIds(:)];
+
+            [~,I] = sortrows(data, [1,2]);
+            e = e(I);
+
+            centralBodies = [e.centralBody];
+            cbIds = [centralBodies.id];
+            cbIdDiff = diff(cbIds);
+            inds = find(cbIdDiff ~= 0);
+
+            curInd = 1;
+            stateLogEntries = {};
+            for(i=1:length(inds)+1)
+                if(i <= length(inds))
+                    ind = inds(i);
+                else
+                    ind = length(e);
+                end
+
+                ee = e(curInd:ind);
+
+                times = [ee.time];
+
+                evts = [ee.event];
+                evtNums = [];
+                for(j=1:length(evts))
+                    evtNums(j) = evts(j).getEventNum(); %#ok<AGROW> 
+                end
+                data = [times(:), evtNums(:)];
+                [~,I] = sortrows(data,[2,1]);
+                ee = ee(I);
+
+                evtNumsUnique = unique(evtNums);
+                for(j=1:length(evtNumsUnique))
+                    evtNum = evtNumsUnique(j);
+
+                    bool = getEventNum([ee.event]) == evtNum;
+                    sub_ee = ee(bool);
+
+                    for(k=1:length(sub_ee))
+                        stateLogEntries{i,j}(k,:) = sub_ee(k).getMAFormattedStateLogMatrix(false); %#ok<AGROW> 
+                    end
+                end
+
+%                 for(j=1:length(ee))
+%                     ee_j = ee(j);
+% 
+%                     stateLogEntries{i}(j,:) = ee_j.getMAFormattedStateLogMatrix(false); %#ok<AGROW> 
+%                 end
+
+                curInd = ind+1;
+            end
+
+%             stateLogEntries{end+1} = e(curInd:end);
         end
     end
 end

@@ -50,7 +50,7 @@ classdef TwoBodyPoint < AbstractGeometricPoint
         end
         
         function newCartElems = getPositionAtTime(obj, time, vehElemSet, inFrame)
-            newCartElems = repmat(CartesianElementSet.getDefaultElements(), [1, length(time)]);
+            newCartElems = repmat(CartesianElementSet.empty(1,0), [1, length(time)]);
             for(i=1:length(obj.timesArr))
                 times = obj.timesArr{i};
                 
@@ -321,11 +321,12 @@ classdef TwoBodyPoint < AbstractGeometricPoint
             obj.cbArr(end+1) = bodyInfo;
 %             obj.rVectArr{end+1} = rVects;
             
-            if(length(times) >= 3)
-                method = 'linear';
-            else
-                method = 'linear';
-            end
+%             if(length(times) >= 3)
+%                 method = 'linear';
+%             else
+%                 method = 'linear';
+%             end
+            method = 'linear';
             
 %             obj.xInterps{end+1} = griddedInterpolant(times, rVects(:,1), method, 'nearest');
 %             obj.yInterps{end+1} = griddedInterpolant(times, rVects(:,2), method, 'nearest');

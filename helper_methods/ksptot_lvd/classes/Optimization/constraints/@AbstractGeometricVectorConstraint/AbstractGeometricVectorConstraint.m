@@ -126,11 +126,7 @@ classdef(Abstract) AbstractGeometricVectorConstraint < AbstractConstraint
         function event = getConstraintEvent(obj)
             event = obj.event;
         end
-        
-        function type = getConstraintType(obj)
-            type = 'Geometric Vector Magnitude';
-        end
-        
+                
         function [unit, lbLim, ubLim, usesLbUb, usesCelBody, usesRefSc] = getConstraintStaticDetails(obj)
             unit = '';
             lbLim = 0;

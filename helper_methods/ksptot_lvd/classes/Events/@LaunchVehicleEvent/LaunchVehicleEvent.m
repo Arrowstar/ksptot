@@ -125,7 +125,9 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
         end
         
         function evtNum = getEventNum(obj)
-            evtNum = [obj(1).script.getNumOfEvent(obj)];
+            for(i=1:length(obj))
+                evtNum(i) = [obj(i).script.getNumOfEvent(obj(i))]; %#ok<AGROW> 
+            end
         end
         
         function listboxStr = getListboxStr(obj)

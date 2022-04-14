@@ -17,6 +17,10 @@ classdef GeometricVectorXConstraint < AbstractGeometricVectorConstraint
             
             obj.id = rand();
         end
+
+        function type = getConstraintType(obj)
+            type = 'Geometric Vector X Component';
+        end
     end
     
     methods(Static)
