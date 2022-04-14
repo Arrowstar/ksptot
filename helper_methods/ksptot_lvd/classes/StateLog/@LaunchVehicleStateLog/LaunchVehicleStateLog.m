@@ -192,16 +192,8 @@ classdef LaunchVehicleStateLog < matlab.mixin.SetGet
                     end
                 end
 
-%                 for(j=1:length(ee))
-%                     ee_j = ee(j);
-% 
-%                     stateLogEntries{i}(j,:) = ee_j.getMAFormattedStateLogMatrix(false); %#ok<AGROW> 
-%                 end
-
                 curInd = ind+1;
             end
-
-%             stateLogEntries{end+1} = e(curInd:end);
         end
     end
 end
