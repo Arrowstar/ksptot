@@ -325,26 +325,28 @@ classdef NomadOptimizer < AbstractOptimizer
                     fValPlotIsLog = true;
             end
 
+            hPlot1 = nexttile(tLayout, 1);
             if(strcmpi(state,'init'))
-                hPlot1 = nexttile(tLayout, 1);
+                
                 hPlot1.XTickLabel= [];
                 hPlot1.YTickLabel= [];
                 hPlot1.ZTickLabel= [];
-                axes(hPlot1);
+%                 axes(hPlot1);
             else
-                axes(hPlot1);
+%                 axes(hPlot1);
             end
             optimplotxKsptot(x, optimValues, state, lb, ub, varLabels, lbUsAll, ubUsAll);
 
+            hPlot2 = nexttile(tLayout, 2);
             if(strcmpi(state,'init'))
-                hPlot2 = nexttile(tLayout, 2);
+                
                 hPlot2.XTickLabel= [];
                 hPlot2.YTickLabel= [];
                 hPlot2.ZTickLabel= [];
                 h = hPlot2;
             else
                 h = hPlot2;
-                axes(hPlot2);
+%                 axes(hPlot2);
             end
             if(optimValues.fval<=0)
                 fValPlotIsLog = false;
@@ -359,15 +361,15 @@ classdef NomadOptimizer < AbstractOptimizer
             grid on;
             grid minor;
 
+            hPlot3 = nexttile(tLayout, 3);
             if(strcmpi(state,'init'))
-                hPlot3 = nexttile(tLayout, 3);
                 hPlot3.XTickLabel= [];
                 hPlot3.YTickLabel= [];
                 hPlot3.ZTickLabel= [];
                 h = hPlot3;
             else
                 h = hPlot3;
-                axes(hPlot3);
+%                 axes(hPlot3);
             end
             optimplotconstrviolationKsptot(x, optimValues, state);
 

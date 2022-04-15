@@ -200,26 +200,26 @@ classdef SurrogateOptimizer < AbstractOptimizer
                     end
             end
 
+            hPlot1 = nexttile(tLayout, 1);
             if(strcmpi(state,'init'))
-                hPlot1 = nexttile(tLayout, 1);
                 hPlot1.XTickLabel= [];
                 hPlot1.YTickLabel= [];
                 hPlot1.ZTickLabel= [];
-                axes(hPlot1);
+%                 axes(hPlot1);
             else
-                axes(hPlot1);
+%                 axes(hPlot1);
             end
             optimplotxKsptot(optimValues.currentX, optimValues, state, lb, ub, varLabels, lbUsAll, ubUsAll);
 
+            hPlot3 = nexttile(tLayout, 2);
             if(strcmpi(state,'init'))
-                hPlot3 = nexttile(tLayout, 2);
                 hPlot3.XTickLabel= [];
                 hPlot3.YTickLabel= [];
                 hPlot3.ZTickLabel= [];
                 h = hPlot3;
             else
                 h = hPlot3;
-                axes(hPlot3);
+%                 axes(hPlot3);
             end
             surrogateoptplot(x, optimValues, state);
 
