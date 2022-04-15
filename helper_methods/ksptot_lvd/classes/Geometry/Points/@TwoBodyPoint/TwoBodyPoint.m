@@ -155,6 +155,7 @@ classdef TwoBodyPoint < AbstractGeometricPoint
             initState.lvState.holdDownEnabled = false;
             
             evt = LaunchVehicleEvent(dummyLvdData.script);
+            dummyLvdData.script.addEvent(evt);
             initState.event = evt;
             
             if(initState.time >= minTime && initState.time <= maxTime)

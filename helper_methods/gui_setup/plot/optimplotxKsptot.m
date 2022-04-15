@@ -65,7 +65,7 @@ function stop = optimplotxKsptot(x,optimValues,state,lb,ub,varLabels,lbUsAll,ubU
                 end
 
                 hAxes = ancestor(plotx,'axes');
-                hPanel = get(hAxes,'Parent');
+                hPanel = ancestor(hAxes,'matlab.ui.container.Panel');
                 hFig = ancestor(hAxes,'figure');
                 
                 tb = annotation(hPanel,'textbox');
@@ -101,7 +101,6 @@ end
 function wbmcb(~,~, hAxes, hPanel, rects, labels, tb, lb, ub)
     cp = hAxes.CurrentPoint;
     
-    
     found = false;
     for(i=1:length(rects))
         pos = rects(i).Position;
@@ -128,7 +127,7 @@ function wbmcb(~,~, hAxes, hPanel, rects, labels, tb, lb, ub)
             tb.String = str;
             tbPos = tb.Position;
             
-            [figx, figy] = dsxy2figxy(hAxes, [xq xq],[yq yq]);     
+            [figx, figy] = dsxy2figxy2(hAxes, [xq xq],[yq yq]);     
             figx = figx(1);
             figy = figy(1);
             

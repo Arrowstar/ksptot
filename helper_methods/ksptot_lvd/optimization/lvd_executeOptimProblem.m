@@ -59,7 +59,10 @@ function [exitflag, message] = lvd_executeOptimProblem(celBodyData, writeOutput,
     % Ask if the user wants to keep the current solution or not.
     %%%%%%%
     if(callOutputFcn)
-        [~, x] = ma_OptimResultsScorecardGUI(recorder);
+%         [~, x] = ma_OptimResultsScorecardGUI(recorder);
+        out = AppDesignerGUIOutput({[],[]});
+        ma_OptimResultsScorecardGUI_App(recorder, out);
+        x = out.output{2};
     end
     
     if(~isempty(x))

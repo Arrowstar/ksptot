@@ -38,11 +38,15 @@ classdef SurrogateOptimizer < AbstractOptimizer
             
             if(callOutputFcn)
                 propNames = lvdOpt.lvdData.launchVehicle.tankTypes.getFirstThreeTypesCellArr();
-                handlesObsOptimGui = ma_ObserveOptimGUI(celBodyData, problem, true, writeOutput, [], varNameStrs, lbUsAll, ubUsAll);
+%                 handlesObsOptimGui = ma_ObserveOptimGUI(celBodyData, problem, true, writeOutput, [], varNameStrs, lbUsAll, ubUsAll);
                 
+                out = AppDesignerGUIOutput();
+                ma_ObserveOptimGUI_App(out);
+                handlesObsOptimGui = out.output{1};
+
                 hOptimStatusLabel = handlesObsOptimGui.optimStatusLabel;
                 hFinalStateOptimLabel = handlesObsOptimGui.finalStateOptimLabel;
-                hDispAxes = handlesObsOptimGui.dispAxes;
+                hDispAxes = handlesObsOptimGui.dispAxesPanel;
                 hCancelButton = handlesObsOptimGui.cancelButton;
                 optimStartTic = tic();
 
@@ -171,7 +175,7 @@ classdef SurrogateOptimizer < AbstractOptimizer
         end
         
         function generatePlots(x, optimValues, state, hDispAxes, lb, ub, varLabels, lbUsAll, ubUsAll)
-            persistent fValPlotIsLog hPlot1 hPlot2 hPlot3
+            persistent fValPlotIsLog tLayout hPlot1 hPlot2 hPlot3
 
             if(isempty(fValPlotIsLog))
                 fValPlotIsLog = true;
@@ -180,9 +184,10 @@ classdef SurrogateOptimizer < AbstractOptimizer
             switch state
                 case 'init'
                     if(isvalid(hDispAxes))
-                        set(hDispAxes,'Visible','on');
-                        subplot(hDispAxes);
-                        axes(hDispAxes);
+%                         set(hDispAxes,'Visible','on');
+%                         subplot(hDispAxes);
+%                         axes(hDispAxes);
+                        tLayout = tiledlayout(hDispAxes, 2,1);
                     end
                     fValPlotIsLog = true;
                     
@@ -196,34 +201,21 @@ classdef SurrogateOptimizer < AbstractOptimizer
             end
 
             if(strcmpi(state,'init'))
-                hPlot1 = subplot(2,1,1);
+                hPlot1 = nexttile(tLayout, 1);
+                hPlot1.XTickLabel= [];
+                hPlot1.YTickLabel= [];
+                hPlot1.ZTickLabel= [];
+                axes(hPlot1);
             else
                 axes(hPlot1);
             end
             optimplotxKsptot(optimValues.currentX, optimValues, state, lb, ub, varLabels, lbUsAll, ubUsAll);
 
-%             if(strcmpi(state,'init'))
-%                 hPlot2 = subplot(3,1,2);
-%                 h = hPlot2;
-%             else
-%                 h = hPlot2;
-%                 axes(hPlot2);
-%             end
-%             if(optimValues.fval<=0)
-%                 fValPlotIsLog = false;
-%                 set(h,'yscale','linear');
-%             end
-%             optimplotfvalconstr(x, optimValues, state);
-%             if(fValPlotIsLog)
-%                 set(h,'yscale','log');
-%             else
-%                 set(h,'yscale','linear');
-%             end
-%             grid on;
-%             grid minor;
-
             if(strcmpi(state,'init'))
-                hPlot3 = subplot(2,1,2);
+                hPlot3 = nexttile(tLayout, 2);
+                hPlot3.XTickLabel= [];
+                hPlot3.YTickLabel= [];
+                hPlot3.ZTickLabel= [];
                 h = hPlot3;
             else
                 h = hPlot3;

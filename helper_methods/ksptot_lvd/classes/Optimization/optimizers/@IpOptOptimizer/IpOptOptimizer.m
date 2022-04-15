@@ -80,11 +80,15 @@ classdef IpOptOptimizer < AbstractGradientOptimizer
             
             if(callOutputFcn)
                 propNames = lvdOpt.lvdData.launchVehicle.tankTypes.getFirstThreeTypesCellArr();
-                handlesObsOptimGui = ma_ObserveOptimGUI(celBodyData, problem, true, writeOutput, [], varNameStrs, lbUsAll, ubUsAll);
+%                 handlesObsOptimGui = ma_ObserveOptimGUI(celBodyData, problem, true, writeOutput, [], varNameStrs, lbUsAll, ubUsAll);
+
+                out = AppDesignerGUIOutput();
+                ma_ObserveOptimGUI_App(out);
+                handlesObsOptimGui = out.output{1};
 
                 hOptimStatusLabel = handlesObsOptimGui.optimStatusLabel;
                 hFinalStateOptimLabel = handlesObsOptimGui.finalStateOptimLabel;
-                hDispAxes = handlesObsOptimGui.dispAxes;
+                hDispAxes = handlesObsOptimGui.dispAxesPanel;
                 hCancelButton = handlesObsOptimGui.cancelButton;
                 optimStartTic = tic();
                 
@@ -258,7 +262,7 @@ classdef IpOptOptimizer < AbstractGradientOptimizer
         end
         
         function generatePlots(x, optimValues, state, hDispAxes, lb, ub, varLabels, lbUsAll, ubUsAll)
-            persistent fValPlotIsLog hPlot1 hPlot2 hPlot3
+            persistent fValPlotIsLog tLayout hPlot1 hPlot2 hPlot3
 
             if(isempty(fValPlotIsLog))
                 fValPlotIsLog = true;
@@ -267,22 +271,31 @@ classdef IpOptOptimizer < AbstractGradientOptimizer
             switch state
                 case 'init'
                     if(isvalid(hDispAxes))
-                        set(hDispAxes,'Visible','on');
-                        subplot(hDispAxes);
-                        axes(hDispAxes);
+%                         set(hDispAxes,'Visible','on');
+%                         subplot(hDispAxes);
+%                         axes(hDispAxes);
+                        tLayout = tiledlayout(hDispAxes, 3,1);
                     end
                     fValPlotIsLog = true;
             end
 
             if(strcmpi(state,'init'))
-                hPlot1 = subplot(3,1,1);
+%                 hPlot1 = subplot(3,1,1);
+                hPlot1 = nexttile(tLayout, 1);
+                hPlot1.XTickLabel= [];
+                hPlot1.YTickLabel= [];
+                hPlot1.ZTickLabel= [];
+                axes(hPlot1);
             else
                 axes(hPlot1);
             end
             optimplotxKsptot(x, optimValues, state, lb, ub, varLabels, lbUsAll, ubUsAll);
 
             if(strcmpi(state,'init'))
-                hPlot2 = subplot(3,1,2);
+                hPlot2 = nexttile(tLayout, 2);
+                hPlot2.XTickLabel= [];
+                hPlot2.YTickLabel= [];
+                hPlot2.ZTickLabel= [];
                 h = hPlot2;
             else
                 h = hPlot2;
@@ -302,7 +315,10 @@ classdef IpOptOptimizer < AbstractGradientOptimizer
             grid minor;
 
             if(strcmpi(state,'init'))
-                hPlot3 = subplot(3,1,3);
+                hPlot3 = nexttile(tLayout, 3);
+                hPlot3.XTickLabel= [];
+                hPlot3.YTickLabel= [];
+                hPlot3.ZTickLabel= [];
                 h = hPlot3;
             else
                 h = hPlot3;
