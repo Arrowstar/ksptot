@@ -33,9 +33,11 @@ classdef SumOfPolyTermsModel < AbstractSteeringMathModel
         function value = getValueAtTime(obj,ut)            
             value = obj.const;
             
-            for(i=1:length(obj.terms))
-                value = value + obj.terms(i).getValueAtTime(ut);
-            end
+%             for(i=1:length(obj.terms))
+%                 value = value + obj.terms(i).getValueAtTime(ut);
+%             end
+
+            value = value + sum(getValueAtTime(obj.terms, ut));
         end
         
         function [listBoxStr, terms] = getListboxStr(obj)

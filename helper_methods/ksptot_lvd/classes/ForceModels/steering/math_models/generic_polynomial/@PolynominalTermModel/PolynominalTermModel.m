@@ -28,9 +28,9 @@ classdef PolynominalTermModel < matlab.mixin.SetGet
         end
                
         function value = getValueAtTime(obj,ut)
-            dt = (ut - obj.t0) + obj.tOffset;
+            dt = (ut - [obj.t0]) + [obj.tOffset];
             
-            value = obj.coeff * (dt^obj.exponent);
+            value = [obj.coeff] .* (dt.^[obj.exponent]);
         end
         
         function listBoxStr = getListboxStr(obj)
