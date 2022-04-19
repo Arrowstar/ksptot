@@ -22,7 +22,7 @@ classdef LineSpecEnum < matlab.mixin.SetGet
     end
     
     methods(Static)
-        function listBoxStr = getListboxStr()
+        function [listBoxStr, m] = getListboxStr()
             m = enumeration('LineSpecEnum');
             listBoxStr = {m.name};
         end

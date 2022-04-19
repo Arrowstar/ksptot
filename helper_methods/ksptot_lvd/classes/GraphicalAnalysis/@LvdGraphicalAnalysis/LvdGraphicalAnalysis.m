@@ -4,7 +4,31 @@ classdef LvdGraphicalAnalysis < matlab.mixin.SetGet
     
     properties
         tasks(1,:) GraphicalAnalysisTask = GraphicalAnalysisTask.empty(1,0);
-        
+
+        %indep var
+        indepVarType(1,1) GraphicalAnalysisIndepVarEnum = GraphicalAnalysisIndepVarEnum.MissionElapsedTime;
+        indepVarTimeUnit(1,1) TimeUnitEnum = TimeUnitEnum.Seconds;
+
+        %tabular output
+        genTabTextOutput(1,1) logical = false;
+
+        %plotting
+        useSubplots(1,1) logical = false;
+        subplotX(1,1) double = 3;
+        subplotY(1,1) double = 3;
+        lineWidth(1,1) double = 1.5;
+        lineColor(1,1) ColorSpecEnum = ColorSpecEnum.White
+        useEvtColors(1,1) logical = false;
+        bgColor(1,1) ColorSpecEnum = ColorSpecEnum.Black
+        lineType(1,1) LineSpecEnum = LineSpecEnum.SolidLine
+
+        %plotting options
+        showGrid(1,1) logical = true;
+        showEvtEnds(1,1) logical = false;
+        showSoITrans(1,1) logical = false;
+        showPeriCrossings(1,1) logical = false;
+        showApoCrossings(1,1) logical = false;
+
         lvdData
     end
     
@@ -58,7 +82,7 @@ classdef LvdGraphicalAnalysis < matlab.mixin.SetGet
             
             dataEvtNums = [];
             prevDistTraveled = 0;
-            for(i=1:numel(lvdSubLog))
+            for(i=1:numel(lvdSubLog)) %#ok<*NO4LP> 
                 lvdStateLogEntry = lvdSubLog(i);
                 
                 for(j=1:length(obj.tasks))
@@ -71,7 +95,7 @@ classdef LvdGraphicalAnalysis < matlab.mixin.SetGet
 
                     try
                         [depVarValues(i,j), depVarUnits{j}, prevDistTraveled] = task.executeTask(lvdStateLogEntry, maTaskList, prevDistTraveled, otherSCId, stationID, propNames, celBodyData);
-                    catch ME
+                    catch ME %#ok<NASGU> 
                         depVarValues(i,j) = -1;
                         depVarUnits{j} = '';
                     end
@@ -82,7 +106,7 @@ classdef LvdGraphicalAnalysis < matlab.mixin.SetGet
             end
             
             for(i=1:length(obj.tasks))
-                taskLabels(i) = string(obj.tasks(i).getListBoxStr());
+                taskLabels(i) = string(obj.tasks(i).getListBoxStr()); %#ok<AGROW> 
             end
             
             if(not(isempty(hWaitBar)) && isvalid(hWaitBar))
