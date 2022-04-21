@@ -54,9 +54,6 @@ function [depVarValue, depVarUnit, taskStr, refBodyInfo] = lvd_getDepVarValueUni
             depVarUnit = 'degE';
         case 'Drag Coefficient'
             depVarValue = lvd_AeroTasks(subLog(i), 'dragCoeff', []);
-            depVarUnit = '';
-        case 'Drag Area'
-            depVarValue = lvd_AeroTasks(subLog(i), 'dragArea', []);
             depVarUnit = 'm^2';
         case 'Event Number'
             depVarValue = lvd_EventNumTask(subLog(i), 'eventNum');

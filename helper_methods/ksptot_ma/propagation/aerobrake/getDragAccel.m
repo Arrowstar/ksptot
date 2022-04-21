@@ -39,4 +39,3 @@ function [dragAccel, dragForce] = getDragAccel(bodyInfo, ut, rVectECI, vVectECI,
         dragForce = [0;0;0];
     end
 end
-

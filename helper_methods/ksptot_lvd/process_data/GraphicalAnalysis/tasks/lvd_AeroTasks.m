@@ -9,11 +9,12 @@ function datapt = lvd_AeroTasks(stateLogEntry, subTask, dummy)
     mass = stateLogEntry.getTotalVehicleMass();
     celBodyData = bodyInfo.celBodyData;
     
+    maStateLogEntry = [ut, rVect(:)', vVect(:)', bodyInfo.id, mass, 0, 0, 0, -1];
+    altitude = ma_GALongLatAltTasks(maStateLogEntry, 'alt', celBodyData);
+    vVectEcefMag = ma_GALongLatAltTasks(maStateLogEntry, 'bodyFixedVNorm', celBodyData);
+
     switch subTask            
         case 'dragCoeff'
-            datapt = stateLogEntry.aero.getDragCoeff(ut, rVect, vVect, bodyInfo, mass, celBodyData);
-            
-        case 'dragArea'
-            datapt = stateLogEntry.aero.getArea();
+            datapt = stateLogEntry.aero.getDragCoeff(ut, rVect, vVect, bodyInfo, mass, altitude, vVectEcefMag);
     end
 end
