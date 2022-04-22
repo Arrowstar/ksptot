@@ -10,6 +10,7 @@ function [taskList] = lvd_getGraphAnalysisTaskList(lvdData, excludeList)
     taskList{end+1} = 'Bank Angle';
     taskList{end+1} = 'Angle of Attack';
     taskList{end+1} = 'SideSlip Angle';
+    taskList{end+1} = 'Total Angle of Attack';
     taskList{end+1} = 'Throttle';
     taskList{end+1} = 'Thrust to Weight Ratio';
     taskList{end+1} = 'Total Thrust';

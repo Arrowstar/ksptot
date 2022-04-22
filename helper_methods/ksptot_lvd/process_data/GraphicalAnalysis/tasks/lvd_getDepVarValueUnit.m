@@ -34,6 +34,9 @@ function [depVarValue, depVarUnit, taskStr, refBodyInfo] = lvd_getDepVarValueUni
         case 'SideSlip Angle'
             depVarValue = lvd_SteeringAngleTask(subLog(i), 'sideslip', inFrame);
             depVarUnit = 'deg';
+        case 'Total Angle of Attack'
+            depVarValue = lvd_SteeringAngleTask(subLog(i), 'totalAngleOfAttack', inFrame);
+            depVarUnit = 'deg';
         case 'Throttle'
             depVarValue = lvd_ThrottleTask(subLog(i), 'throttle', inFrame);
             depVarUnit = 'Percent';
