@@ -159,6 +159,22 @@ classdef ThreeDimKspWindTunnelDragCoeffModel < AbstractDragCoefficientModel
     end
 
     methods(Static)
+        function obj = loadobj(obj)
+            if(isempty(obj.slices))
+                slice1 = ThreeDimKspWindTunnelDragCoeffModel.produceDataSlice(0, '');
+                obj.addSlice(slice1);
+
+                slice2 = ThreeDimKspWindTunnelDragCoeffModel.produceDataSlice(deg2rad(1), '');
+                obj.addSlice(slice2);
+            end
+
+            try
+                obj.createGriddedInterpFromSlices();
+            catch ME
+                % nothing to do here
+            end
+        end
+
         function slice = produceDataSlice(aoa, sliceDataFile)
             slice = ThreeDimKWTDragCoefficientModelSlice(aoa, sliceDataFile);
         end

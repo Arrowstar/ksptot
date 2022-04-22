@@ -5,7 +5,8 @@ classdef DragCoefficientModelEnum < matlab.mixin.SetGet
     enumeration
         Constant('Constant',"Models the drag coefficient (Cd*A) as a constant value.");
         OneDim('One Dimensional', "Models the drag coefficient (Cd*A) as a function of a single user-selectable parameter.")
-        TwoDimWindTunnel('Kerbal Wind Tunnel', "Uses 'drag force' flight envelope data output from the KSP Addon 'Kerbal Wind Tunnel' to model drag coefficient.")
+        TwoDimWindTunnel('Kerbal Wind Tunnel (Speed/Altitude)', "Uses 'drag force' flight envelope data output from the KSP Addon 'Kerbal Wind Tunnel' to model drag coefficient for a constant total angle of attack.")
+        ThreeDimWindTunnel('Kerbal Wind Tunnel (Speed/Altitude/AoA)', "Uses multiple 'drag force' flight envelope data output from the KSP Addon 'Kerbal Wind Tunnel' to model drag coefficient for varying AoA.");
     end
 
     properties

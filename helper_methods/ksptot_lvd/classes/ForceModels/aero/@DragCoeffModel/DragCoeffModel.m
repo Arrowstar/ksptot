@@ -3,9 +3,10 @@ classdef DragCoeffModel < matlab.mixin.SetGet & matlab.mixin.Copyable
     %   Detailed explanation goes here
 
     properties
-        constDragModel(1,1) ConstantDragCoeffModel = ConstantDragCoeffModel(1);
-        oneDDragModel(1,1) OneDimDragCoefficientModel = OneDimDragCoefficientModel();
-        twoDimWindTunnelDragModel(1,1) TwoDimKspWindTunnelDragCoeffModel = TwoDimKspWindTunnelDragCoeffModel('');
+        constDragModel(1,:) ConstantDragCoeffModel
+        oneDDragModel(1,:) OneDimDragCoefficientModel
+        twoDimWindTunnelDragModel(1,:) TwoDimKspWindTunnelDragCoeffModel
+        threeDimWindTunnelDragModel(1,:) ThreeDimKspWindTunnelDragCoeffModel
 
         dragCoeffObj(1,:) AbstractDragCoefficientModel = AbstractDragCoefficientModel.empty(1,0);
     end
@@ -15,6 +16,7 @@ classdef DragCoeffModel < matlab.mixin.SetGet & matlab.mixin.Copyable
             obj.constDragModel = ConstantDragCoeffModel(1);
             obj.oneDDragModel = OneDimDragCoefficientModel();
             obj.twoDimWindTunnelDragModel = TwoDimKspWindTunnelDragCoeffModel('');
+            obj.threeDimWindTunnelDragModel = ThreeDimKspWindTunnelDragCoeffModel.createDefault();
 
             obj.dragCoeffObj = obj.oneDDragModel;
         end
@@ -47,6 +49,28 @@ classdef DragCoeffModel < matlab.mixin.SetGet & matlab.mixin.Copyable
     end
 
     methods(Static)
+        function obj = loadobj(obj)
+            if(isempty(obj.constDragModel))
+                obj.constDragModel = ConstantDragCoeffModel(1);
+            end
+
+            if(isempty(obj.oneDDragModel))
+                obj.oneDDragModel = OneDimDragCoefficientModel();
+            end
+
+            if(isempty(obj.twoDimWindTunnelDragModel))
+                obj.twoDimWindTunnelDragModel = TwoDimKspWindTunnelDragCoeffModel('');
+            end
+
+            if(isempty(obj.threeDimWindTunnelDragModel))
+                obj.threeDimWindTunnelDragModel = ThreeDimKspWindTunnelDragCoeffModel.createDefault();
+            end
+
+            if(isempty(obj.dragCoeffObj))
+                obj.dragCoeffObj = obj.oneDDragModel;
+            end
+        end
+
         function dragCoeffModel = createFromOldDragInputs(area, CdInterp, CdIndepVar, CdInterpMethod, CdInterpPts)
             dragCoeffModel = DragCoeffModel();
             dragCoeffModel.oneDDragModel.area = area;
