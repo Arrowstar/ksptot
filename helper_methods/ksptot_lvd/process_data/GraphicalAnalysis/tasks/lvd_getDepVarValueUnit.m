@@ -211,6 +211,9 @@ function [depVarValue, depVarUnit, taskStr, refBodyInfo] = lvd_getDepVarValueUni
         case  'Hyperbolic Velocity Magnitude'
             depVarValue = lvd_KinematicStateTasks(subLog(i), 'hyperVelMag', inFrame);
             depVarUnit = 'km/s';
+        case 'Drag Force'
+            depVarValue = lvd_AeroTasks(subLog(i), 'dragForce', inFrame);
+            depVarUnit = 'kN';
  
         otherwise %is a programmatically generated string that we'll handle here
             fluidTypeMassPattern = '^Fluid Type (\d+?) Mass - ".*"';

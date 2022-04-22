@@ -1,6 +1,11 @@
 function datapt = lvd_AeroTasks(stateLogEntry, subTask, dummy)
 %lvd_AeroTasks Summary of this function goes here
 %   Detailed explanation goes here
+    arguments
+        stateLogEntry(1,1) LaunchVehicleStateLogEntry
+        subTask(1,:) char
+        dummy
+    end
 
     ut = stateLogEntry.time;
     rVect = stateLogEntry.position;
@@ -16,5 +21,13 @@ function datapt = lvd_AeroTasks(stateLogEntry, subTask, dummy)
     switch subTask            
         case 'dragCoeff'
             datapt = stateLogEntry.aero.getDragCoeff(ut, rVect, vVect, bodyInfo, mass, altitude, vVectEcefMag);
+        case 'dragForce'
+            aero = stateLogEntry.aero;
+            attState = stateLogEntry.attitude;
+
+            dragForceModel = DragForceModel();
+            dragForceVect = dragForceModel.getForce(ut, rVect, vVect, mass, bodyInfo, aero, [], [], [], [], [], [], [], [], [], [], attState);
+            dragForceMag = norm(dragForceVect); %mT*km/s^2
+            datapt = dragForceMag*1000; %kN
     end
 end

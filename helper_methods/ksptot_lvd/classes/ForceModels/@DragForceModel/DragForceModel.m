@@ -64,8 +64,8 @@ function [dragForce] = getDragForce(bodyInfo, ut, rVectECI, vVectECI, aero, mass
 
         CdA = aero.getDragCoeff(ut, rVectECI, vVectECI, bodyInfo, mass, altitude, vVectEcefMag, totalAoA); 
         
+        %all forces are returned in units of mT*km/s^2
         Fd = -(1/2) * density * (vVectEcefMag^2) * CdA; %kg/m^3 * (km^2/s^2) * m^2 = kg/m * km^2/s^2 = kg*(km/m)*km/s^2 = kg*(1000)*km/s^2
-        dragAccelMag = Fd/mass; % (1000)*kg*km/s^2/kg/1000 = 1000*km/s^2/1000 = km/s^2
         dragForce = Fd * normVector(vVectECI);
     else
         dragForce = [0;0;0];
