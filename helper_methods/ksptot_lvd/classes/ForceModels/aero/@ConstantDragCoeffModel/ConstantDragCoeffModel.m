@@ -31,6 +31,10 @@ classdef ConstantDragCoeffModel < AbstractDragCoefficientModel
             CdA = obj.CdA;
         end
 
+        function tf = usesAoA(obj)
+            tf = false;
+        end
+
         function useTf = openEditDialog(obj, lvdData)
             out = AppDesignerGUIOutput({false});
             lvd_EditConstDragPropertiesGUI_App(obj, lvdData, out);

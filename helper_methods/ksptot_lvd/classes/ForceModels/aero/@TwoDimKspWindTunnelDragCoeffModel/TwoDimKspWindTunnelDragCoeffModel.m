@@ -80,6 +80,10 @@ classdef TwoDimKspWindTunnelDragCoeffModel < AbstractDragCoefficientModel
             CdA = max([CdA, 0]);
         end
 
+        function tf = usesAoA(obj)
+            tf = false;
+        end
+
         function plotDragEnvelope(obj, hAx)
             arguments
                 obj(1,1) TwoDimKspWindTunnelDragCoeffModel

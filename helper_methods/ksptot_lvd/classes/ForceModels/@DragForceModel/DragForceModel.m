@@ -11,11 +11,11 @@ classdef DragForceModel < AbstractForceModel
 
         end
         
-        function [forceVect,tankMdots, ecStgDots] = getForce(obj, ut, rVect, vVect, mass, bodyInfo, aero, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~)
+        function [forceVect,tankMdots, ecStgDots] = getForce(obj, ut, rVect, vVect, mass, bodyInfo, aero, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, attState)
             if(norm(rVect) - (bodyInfo.radius + bodyInfo.atmohgt) > 0)
                 forceVect = [0;0;0];
             else
-                forceVect = getDragForce(bodyInfo, ut, rVect, vVect, aero, mass);
+                forceVect = getDragForce(bodyInfo, ut, rVect, vVect, aero, mass, attState);
             end
             
             tankMdots = [];
@@ -24,7 +24,7 @@ classdef DragForceModel < AbstractForceModel
     end
 end
 
-function [dragForce] = getDragForce(bodyInfo, ut, rVectECI, vVectECI, aero, mass)
+function [dragForce] = getDragForce(bodyInfo, ut, rVectECI, vVectECI, aero, mass, attState)
 %getDragAccel Summary of this function goes here
 %   Detailed explanation goes here
             arguments
@@ -34,6 +34,7 @@ function [dragForce] = getDragForce(bodyInfo, ut, rVectECI, vVectECI, aero, mass
                 vVectECI(3,1) double 
                 aero(1,1) LaunchVehicleAeroState
                 mass(1,1) double
+                attState(1,1) LaunchVehicleAttitudeState
             end
 
     rVectECI = reshape(rVectECI,3,1);
@@ -53,8 +54,15 @@ function [dragForce] = getDragForce(bodyInfo, ut, rVectECI, vVectECI, aero, mass
     if(density > 0)                
         vVectEcefMag = norm(vVectECEF);
 
-        aoa = 0; %still not implemented anywhere yet
-        CdA = aero.getDragCoeff(ut, rVectECI, vVectECI, bodyInfo, mass, altitude, vVectEcefMag, aoa); 
+        %helps to prevent wasting time on the potentially expensive total
+        %AoA calculation if it's not needed
+        if(aero.dragCoeffModel.usesAoA())
+            [~,~,~,totalAoA] = attState.getAeroAngles(ut, rVectECI, vVectECI, bodyInfo);
+        else
+            totalAoA = 0;
+        end
+
+        CdA = aero.getDragCoeff(ut, rVectECI, vVectECI, bodyInfo, mass, altitude, vVectEcefMag, totalAoA); 
         
         Fd = -(1/2) * density * (vVectEcefMag^2) * CdA; %kg/m^3 * (km^2/s^2) * m^2 = kg/m * km^2/s^2 = kg*(km/m)*km/s^2 = kg*(1000)*km/s^2
         dragAccelMag = Fd/mass; % (1000)*kg*km/s^2/kg/1000 = 1000*km/s^2/1000 = km/s^2

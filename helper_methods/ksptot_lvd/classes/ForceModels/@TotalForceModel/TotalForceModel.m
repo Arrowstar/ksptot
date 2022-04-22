@@ -20,9 +20,12 @@ classdef TotalForceModel < matlab.mixin.SetGet
             ecStgDots = zeros(length(powerStorageStates),1);
             
             if(mass > 0)
+                attState = LaunchVehicleAttitudeState();
+                attState.dcm = steeringModel.getBody2InertialDcmAtTime(ut, rVect, vVect, bodyInfo);
+
 %                 forceModelsVar = obj.forceModels;
                 for(i=1:length(fmEnums)) %#ok<*NO4LP>
-                    [fv, mdots, ecDots] = fmEnums(i).model.getForce(ut, rVect, vVect, mass, bodyInfo, aero, throttleModel, steeringModel, tankStates, stageStates, lvState, dryMass, tankStatesMasses, thirdBodyGravity, storageSoCs, powerStorageStates);
+                    [fv, mdots, ecDots] = fmEnums(i).model.getForce(ut, rVect, vVect, mass, bodyInfo, aero, throttleModel, steeringModel, tankStates, stageStates, lvState, dryMass, tankStatesMasses, thirdBodyGravity, storageSoCs, powerStorageStates, attState);
                     forceVect = forceVect + fv;
                     
                     if(not(isempty(mdots)))

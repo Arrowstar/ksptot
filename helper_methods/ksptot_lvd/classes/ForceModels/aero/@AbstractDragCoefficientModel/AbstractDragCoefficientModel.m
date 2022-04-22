@@ -9,6 +9,8 @@ classdef(Abstract) AbstractDragCoefficientModel < matlab.mixin.SetGet & matlab.m
     methods
         CdA = getDragCoeff(obj, ut, rVect, vVect, bodyInfo, mass, altitude, vVectECEFMag, aoa);
 
+        tf = usesAoA(obj)
+
         useTf = openEditDialog(obj)
     end
 end

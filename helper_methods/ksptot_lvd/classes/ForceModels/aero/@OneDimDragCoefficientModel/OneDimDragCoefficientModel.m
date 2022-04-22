@@ -69,6 +69,10 @@ classdef OneDimDragCoefficientModel < AbstractDragCoefficientModel
             CdA = max([CdA, 0]);
         end
 
+        function tf = usesAoA(obj)
+            tf = false;
+        end
+
         function useTf = openEditDialog(obj, lvdData)
             out = AppDesignerGUIOutput({false});
             lvd_Edit1DDragPropertiesGUI_App(obj, lvdData, out);

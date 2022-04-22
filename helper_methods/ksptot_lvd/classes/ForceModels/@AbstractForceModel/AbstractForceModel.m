@@ -7,17 +7,6 @@ classdef (Abstract) AbstractForceModel < matlab.mixin.SetGet & matlab.mixin.Hete
     end
     
     methods
-        [forceVect, tankMdots] = getForce(obj, ut, rVect, vVect, mass, bodyInfo, CdA, throttleModel, steeringModel, tankStates, stageStates, lvState, dryMass, tankStatesMasses, grav3Body);
-    end
-    
-    methods(Static)
-        function [ut, rVect, vVect, mass, bodyInfo, CdA] = getParamsFromStateLogEntry(stateLogEntry)
-            ut = stateLogEntry.time;
-            rVect = stateLogEntry.position;
-            vVect = stateLogEntry.velocity;
-            mass = stateLogEntry.getTotalVehicleMass();
-            bodyInfo = stateLogEntry.centralBody;
-            CdA = stateLogEntry.aero.area * stateLogEntry.aero.Cd;  %TODO WRONG
-        end
+        [forceVect, tankMdots] = getForce(obj, ut, rVect, vVect, mass, bodyInfo, CdA, throttleModel, steeringModel, tankStates, stageStates, lvState, dryMass, tankStatesMasses, grav3Body, storageSoCs, powerStorageStates, attState);
     end
 end

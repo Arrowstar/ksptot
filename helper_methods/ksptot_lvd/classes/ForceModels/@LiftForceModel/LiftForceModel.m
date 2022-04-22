@@ -11,7 +11,7 @@ classdef LiftForceModel < AbstractForceModel
             
         end
         
-        function [liftForce, tankMdots, ecStgDots] = getForce(obj, ut, rVectECI, vVectECI, ~, bodyInfo, aero, ~, steeringModel, ~, ~, ~, ~, ~, ~, ~, ~)  
+        function [liftForce, tankMdots, ecStgDots] = getForce(obj, ut, rVectECI, vVectECI, ~, bodyInfo, aero, ~, steeringModel, ~, ~, ~, ~, ~, ~, ~, ~, ~)  
             tankMdots = [];
             ecStgDots = [];
             

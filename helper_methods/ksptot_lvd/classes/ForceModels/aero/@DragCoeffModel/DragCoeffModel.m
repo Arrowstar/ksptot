@@ -35,6 +35,10 @@ classdef DragCoeffModel < matlab.mixin.SetGet & matlab.mixin.Copyable
             CdA = obj.dragCoeffObj.getDragCoeff(ut, rVect, vVect, bodyInfo, mass, altitude, vVectECEFMag, aoa);
         end
 
+        function tf = usesAoA(obj)
+            tf = obj.dragCoeffObj.usesAoA();
+        end
+
         function useTf = openEditDialog(obj, lvdData)
             out = AppDesignerGUIOutput();
             lvd_EditDragCoefficientModels_App(obj, lvdData, out);
