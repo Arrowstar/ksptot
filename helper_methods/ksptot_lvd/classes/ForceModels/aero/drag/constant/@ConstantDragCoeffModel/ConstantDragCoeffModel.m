@@ -15,7 +15,7 @@ classdef ConstantDragCoeffModel < AbstractDragCoefficientModel
             obj.CdA = CdA;
         end
 
-        function CdA = getDragCoeff(obj, ut, rVect, vVect, bodyInfo, mass, altitude, vVectECEFMag, aoa)
+        function CdA = getDragCoeff(obj, ut, rVect, vVect, bodyInfo, mass, altitude, pressure, density, vVectECEFMag, totalAoA, aoa, sideslip)
             arguments
                 obj(1,1) ConstantDragCoeffModel
                 ut(1,1) double 
@@ -24,14 +24,22 @@ classdef ConstantDragCoeffModel < AbstractDragCoefficientModel
                 bodyInfo(1,1) KSPTOT_BodyInfo
                 mass(1,1) double
                 altitude(1,1) double
+                pressure(1,1) double
+                density(1,1) double
                 vVectECEFMag(1,1) double
-                aoa(1,1) double = 0;  %this is not implemented yet
+                totalAoA(1,1) double = 0;
+                aoa(1,1) double = 0;
+                sideslip(1,1) double = 0;
             end
 
             CdA = obj.CdA;
         end
 
-        function tf = usesAoA(obj)
+        function tf = usesTotalAoA(obj)
+            tf = false;
+        end
+
+        function tf = usesAoaAndSideslip(obj)
             tf = false;
         end
 

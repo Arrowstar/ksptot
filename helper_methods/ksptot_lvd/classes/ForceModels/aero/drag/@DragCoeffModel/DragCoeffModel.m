@@ -7,8 +7,11 @@ classdef DragCoeffModel < matlab.mixin.SetGet & matlab.mixin.Copyable
         oneDDragModel(1,:) OneDimDragCoefficientModel
         twoDimWindTunnelDragModel(1,:) TwoDimKspWindTunnelDragCoeffModel
         threeDimWindTunnelDragModel(1,:) ThreeDimKspWindTunnelDragCoeffModel
+        kosDragModel(1,:) KosDragCoeffientModel
 
         dragCoeffObj(1,:) AbstractDragCoefficientModel = AbstractDragCoefficientModel.empty(1,0);
+
+        globalDragMultiplier(1,1) = 0.8;
     end
 
     methods
@@ -17,11 +20,12 @@ classdef DragCoeffModel < matlab.mixin.SetGet & matlab.mixin.Copyable
             obj.oneDDragModel = OneDimDragCoefficientModel();
             obj.twoDimWindTunnelDragModel = TwoDimKspWindTunnelDragCoeffModel('');
             obj.threeDimWindTunnelDragModel = ThreeDimKspWindTunnelDragCoeffModel.createDefault();
+            obj.kosDragModel = KosDragCoeffientModel('');
 
             obj.dragCoeffObj = obj.oneDDragModel;
         end
 
-        function CdA = getDragCoeff(obj, ut, rVect, vVect, bodyInfo, mass, altitude, vVectECEFMag, aoa)
+        function CdA = getDragCoeff(obj, ut, rVect, vVect, bodyInfo, mass, altitude, pressure, density, vVectECEFMag, totalAoA, aoa, sideslip)
             arguments
                 obj(1,1) DragCoeffModel
                 ut(1,1) double 
@@ -30,15 +34,23 @@ classdef DragCoeffModel < matlab.mixin.SetGet & matlab.mixin.Copyable
                 bodyInfo(1,1) KSPTOT_BodyInfo
                 mass(1,1) double
                 altitude(1,1) double
+                pressure(1,1) double %kPa
+                density(1,1) double
                 vVectECEFMag(1,1) double
-                aoa(1,1) double = 0;  %this is not implemented yet
+                totalAoA(1,1) double = 0;
+                aoa(1,1) double = 0;
+                sideslip(1,1) double = 0;
             end
 
-            CdA = obj.dragCoeffObj.getDragCoeff(ut, rVect, vVect, bodyInfo, mass, altitude, vVectECEFMag, aoa);
+            CdA = obj.globalDragMultiplier * obj.dragCoeffObj.getDragCoeff(ut, rVect, vVect, bodyInfo, mass, altitude, pressure, density, vVectECEFMag, totalAoA, aoa, sideslip);
         end
 
-        function tf = usesAoA(obj)
-            tf = obj.dragCoeffObj.usesAoA();
+        function tf = usesTotalAoA(obj)
+            tf = obj.dragCoeffObj.usesTotalAoA();
+        end
+
+        function tf = usesAoaAndSideslip(obj)
+            tf = obj.dragCoeffObj.usesAoaAndSideslip();
         end
 
         function useTf = openEditDialog(obj, lvdData)
@@ -64,6 +76,10 @@ classdef DragCoeffModel < matlab.mixin.SetGet & matlab.mixin.Copyable
 
             if(isempty(obj.threeDimWindTunnelDragModel))
                 obj.threeDimWindTunnelDragModel = ThreeDimKspWindTunnelDragCoeffModel.createDefault();
+            end
+
+            if(isempty(obj.kosDragModel))
+                obj.kosDragModel = KosDragCoeffientModel('');
             end
 
             if(isempty(obj.dragCoeffObj))

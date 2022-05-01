@@ -23,7 +23,7 @@ classdef ThreeDimKspWindTunnelDragCoeffModel < AbstractDragCoefficientModel
             obj.sortSlicesByAoA();
         end
 
-        function CdA = getDragCoeff(obj, ut, rVect, vVect, bodyInfo, mass, altitude, vVectECEFMag, aoa)
+        function CdA = getDragCoeff(obj, ut, rVect, vVect, bodyInfo, mass, altitude, pressure, density, vVectECEFMag, totalAoA, aoa, sideslip)
             arguments
                 obj(1,1) ThreeDimKspWindTunnelDragCoeffModel
                 ut(1,1) double 
@@ -32,11 +32,15 @@ classdef ThreeDimKspWindTunnelDragCoeffModel < AbstractDragCoefficientModel
                 bodyInfo(1,1) KSPTOT_BodyInfo
                 mass(1,1) double
                 altitude(1,1) double
+                pressure(1,1) double
+                density(1,1) double
                 vVectECEFMag(1,1) double
-                aoa(1,1) double = 0;  %radian
+                totalAoA(1,1) double = 0;
+                aoa(1,1) double = 0;
+                sideslip(1,1) double = 0;
             end
 
-            CdA = obj.gi(altitude, vVectECEFMag, aoa);
+            CdA = obj.gi(altitude, vVectECEFMag, totalAoA);
             CdA = max([CdA, 0]);
         end
 
@@ -50,8 +54,12 @@ classdef ThreeDimKspWindTunnelDragCoeffModel < AbstractDragCoefficientModel
             obj.sortSlicesByAoA();
         end
 
-        function tf = usesAoA(obj)
+        function tf = usesTotalAoA(obj)
             tf = true;
+        end
+
+        function tf = usesAoaAndSideslip(obj)
+            tf = false;
         end
 
         function createGriddedInterpFromSlices(obj)

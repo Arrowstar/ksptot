@@ -12,19 +12,21 @@ function datapt = lvd_AeroTasks(stateLogEntry, subTask, dummy)
     vVect = stateLogEntry.velocity;
     bodyInfo = stateLogEntry.centralBody;
     mass = stateLogEntry.getTotalVehicleMass();
+    aero = stateLogEntry.aero;
+    attState = stateLogEntry.attitude;
     celBodyData = bodyInfo.celBodyData;
     
     maStateLogEntry = [ut, rVect(:)', vVect(:)', bodyInfo.id, mass, 0, 0, 0, -1];
     altitude = ma_GALongLatAltTasks(maStateLogEntry, 'alt', celBodyData);
     vVectEcefMag = ma_GALongLatAltTasks(maStateLogEntry, 'bodyFixedVNorm', celBodyData);
+    [lat, long, ~, ~, ~, ~, ~, ~] = getLatLongAltFromInertialVect(ut, rVect, bodyInfo, vVect);
+    [density, pressureKPA, ~] = getAtmoDensityAtAltitude(bodyInfo, altitude, lat, ut, long); 
+    [~,angOfAttack,angOfSideslip,totalAoA] = attState.getAeroAngles(ut, rVect, vVect, bodyInfo);
 
     switch subTask            
         case 'dragCoeff'
-            datapt = stateLogEntry.aero.getDragCoeff(ut, rVect, vVect, bodyInfo, mass, altitude, vVectEcefMag);
+            datapt = stateLogEntry.aero.getDragCoeff(ut, rVect, vVect, bodyInfo, mass, altitude, pressureKPA, density, vVectEcefMag, totalAoA, angOfAttack, angOfSideslip);
         case 'dragForce'
-            aero = stateLogEntry.aero;
-            attState = stateLogEntry.attitude;
-
             dragForceModel = DragForceModel();
             dragForceVect = dragForceModel.getForce(ut, rVect, vVect, mass, bodyInfo, aero, [], [], [], [], [], [], [], [], [], [], attState);
             dragForceMag = norm(dragForceVect); %mT*km/s^2

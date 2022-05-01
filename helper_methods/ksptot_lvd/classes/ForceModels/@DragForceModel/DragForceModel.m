@@ -44,7 +44,7 @@ function [dragForce] = getDragForce(bodyInfo, ut, rVectECI, vVectECI, aero, mass
     
     if(altitude <= bodyInfo.atmohgt && altitude >= 0)
         [lat, long, ~, ~, ~, ~, ~, vVectECEF] = getLatLongAltFromInertialVect(ut, rVectECI, bodyInfo, vVectECI);
-        density = getAtmoDensityAtAltitude(bodyInfo, altitude, lat, ut, long); 
+        [density, pressureKPA, ~] = getAtmoDensityAtAltitude(bodyInfo, altitude, lat, ut, long); 
     elseif(altitude <= 0)
         density = 0;
     else 
@@ -56,17 +56,26 @@ function [dragForce] = getDragForce(bodyInfo, ut, rVectECI, vVectECI, aero, mass
 
         %helps to prevent wasting time on the potentially expensive total
         %AoA calculation if it's not needed
-        if(aero.dragCoeffModel.usesAoA())
-            [~,~,~,totalAoA] = attState.getAeroAngles(ut, rVectECI, vVectECI, bodyInfo);
+        if(aero.dragCoeffModel.usesTotalAoA() || aero.dragCoeffModel.usesAoaAndSideslip())
+            [~,angOfAttack,angOfSideslip,totalAoA] = attState.getAeroAngles(ut, rVectECI, vVectECI, bodyInfo);
         else
+            angOfAttack = 0;
+            angOfSideslip = 0;
             totalAoA = 0;
         end
 
-        CdA = aero.getDragCoeff(ut, rVectECI, vVectECI, bodyInfo, mass, altitude, vVectEcefMag, totalAoA); 
+        CdA = aero.getDragCoeff(ut, rVectECI, vVectECI, bodyInfo, mass, altitude, pressureKPA, density, vVectEcefMag, totalAoA, angOfAttack, angOfSideslip); 
         
         %all forces are returned in units of mT*km/s^2
         Fd = -(1/2) * density * (vVectEcefMag^2) * CdA; %kg/m^3 * (km^2/s^2) * m^2 = kg/m * km^2/s^2 = kg*(km/m)*km/s^2 = kg*(1000)*km/s^2
-        dragForce = Fd * normVector(vVectECI);
+        
+        bff = bodyInfo.getBodyFixedFrame();
+        [~, ~, ~, rotMatToInertial]=bff.getOffsetsWrtInertialOrigin(ut,[]);
+        dragForceECEF = Fd * normVector(vVectECEF);
+        dragForce = rotMatToInertial * dragForceECEF;
+        
+%         dragForce = Fd * normVector(vVectECI);
+        a=1;
     else
         dragForce = [0;0;0];
     end

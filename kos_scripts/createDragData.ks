@@ -16,7 +16,7 @@
 // 5) Place this script in <KSP_root>\Ships\Script.
 // 6) Start KSP and go to launch your ship whose craft file you copied in step (4).  You should be on the launchpad at this point.
 // 7) Open up a kOS terminal.
-// 8) If the file listed in the "dataFile" input exists, delete it.
+// 8) If the file listed in the "dataFile" input exists in the <KSP_root>\Ships\Script folder, delete it.
 // 9) Run this script by first executing: "switch to 0."  Then execute: "run createDragProfile.ks."
 //10) Collect the data output file (see variable "dataFile" in the INPUTS section) and copy to a more appropriate location as desired.
 //    Output data file gets written to <KSP_root>\Ships\Script.
@@ -72,10 +72,17 @@ IF sideslipMin >= sideslipMax {
 //delete existing data file if it exists
 DELETEPATH(dataFile).
 
+//Number of total runs
+set aoaRuns to floor((aoaMax-aoaMin)/aoaStep)+1.
+set slipRuns to floor((sideslipMax-sideslipMin)/sideSlipStep)+1.
+set totalNumRuns to aoaRuns*slipRuns.
+
 print "Running KSPTOT LVD drag profile scan.".
-print "Please wait (this may take some times)...".
+print "Please wait (this may take some time)...".
 print "============================================".
 
+set runNum to 1.
+set profileRunDurs to LIST().
 FROM {local aoa is aoaMin.} UNTIL aoa > aoaMax STEP {set aoa to aoa+aoaStep.} DO { //loop over AoA
 	FROM {local sideslip is sideslipMin.} UNTIL sideslip > sideslipMax STEP {set sideslip to sideslip+sideSlipStep.} DO { //loop over sideslip
 		set Scan to True.
@@ -86,14 +93,48 @@ FROM {local aoa is aoaMin.} UNTIL aoa > aoaMax STEP {set aoa to aoa+aoaStep.} DO
 		set CustomAoA to aoa.
 		set CustomAoAYaw to sideslip.
 		set Profile to "Posigrade".
+		
+		set numRunsRemaining to totalNumRuns - runNum + 1.
+		
+		//compute estimated time remaining
+		set sumDurs to 0.
+		IF profileRunDurs:LENGTH > 0 {
+			FOR runDur IN profileRunDurs {
+				set sumDurs to sumDurs + runDur.
+			}
+			set avgRunDur to sumDurs/profileRunDurs:LENGTH.
+			
+			set timeRemaining to avgRunDur*numRunsRemaining.
+			
+			set timeRemainingHr to floor(timeRemaining/3600).
+			set timeRemainingMin to floor((timeRemaining - timeRemainingHr*3600)/60).
+			set timeRemainingSec to CEILING(timeRemaining - timeRemainingHr*3600 - timeRemainingMin*60).
+			
+			set timeRemainStr to "Est. Time Remaining: " + timeRemainingHr + ":" + timeRemainingMin + ":" +  timeRemainingSec + " (hr:min:sec)".
+			
+		} ELSE {
+			set timeRemainStr to "".
+		}
 
+		print "Creating Profile (AoA = " + aoa + " deg, Sideslip = " + sideslip + " deg) [" + runNum + " of " + totalNumRuns + "]...".
+		
+		if(timeRemainStr:LENGTH > 0) {
+			print timeRemainStr.
+		}
+		
+		set startProfileTime to KUniverse:REALTIME.
+		
 		//create the Cd*A vs Mach number profile for the given AoA and sideslip angles.
-		print "Creating Profile (AoA = " + aoa + " deg, Side Slip = " + sideslip + " deg)...".
 		set profile to createProfile(Scan, machStart, machEnd, dT, Gears, Airbrakes, Aerosurfaces, Parachutes, CustomAoA, CustomAoAYaw, Profile).
-
+		
 		//Write the profile to the output file.
-		//print "Writing profile to: " + dataFile.
-		writeProfileToFile(profile, dataFile, aoa, sideslip).		
+		writeProfileToFile(profile, dataFile, aoa, sideslip).	
+		
+		set endProfileTime to KUniverse:REALTIME.
+		
+		set thisRunDur to endProfileTime - startProfileTime.
+		profileRunDurs:ADD(thisRunDur).
+		set runNum to runNum + 1.	
 	}
 }
 

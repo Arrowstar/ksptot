@@ -40,7 +40,7 @@ classdef LaunchVehicleAeroState < matlab.mixin.SetGet & matlab.mixin.Copyable
 %             obj.CdInterp = pointSet.getGriddedInterpFromPoints(obj.CdInterpMethod, GriddedInterpolantMethodEnum.Nearest);
         end
         
-        function CdA = getDragCoeff(obj, ut, rVect, vVect, bodyInfo, mass, altitude, vVectECEFMag, aoa)
+        function CdA = getDragCoeff(obj, ut, rVect, vVect, bodyInfo, mass, altitude, pressure, density, vVectECEFMag, totalAoA, aoa, sideslip)
             arguments
                 obj(1,1) LaunchVehicleAeroState
                 ut(1,1) double 
@@ -49,11 +49,15 @@ classdef LaunchVehicleAeroState < matlab.mixin.SetGet & matlab.mixin.Copyable
                 bodyInfo(1,1) KSPTOT_BodyInfo
                 mass(1,1) double
                 altitude(1,1) double
+                pressure(1,1) double %kPa
+                density(1,1) double
                 vVectECEFMag(1,1) double
-                aoa(1,1) double = 0;  %this is not implemented yet, still need aoa based grids
+                totalAoA(1,1) double = 0;
+                aoa(1,1) double = 0;
+                sideslip(1,1) double = 0;
             end
 
-            CdA = obj.dragCoeffModel.dragCoeffObj.getDragCoeff(ut, rVect, vVect, bodyInfo, mass, altitude, vVectECEFMag, aoa);
+            CdA = obj.dragCoeffModel.getDragCoeff(ut, rVect, vVect, bodyInfo, mass, altitude, pressure, density, vVectECEFMag, totalAoA, aoa, sideslip);
 %             stateLogEntry = [ut, rVect(:)', vVect(:)', bodyInfo.id, mass, 0, 0, 0, -1];
 % 
 %             switch obj.CdIndepVar
