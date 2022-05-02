@@ -24,7 +24,7 @@
 // =================================================
 // INPUTS
 // =================================================
-	set fPath to "testKscPointing.csv". //change "test.csv" to your CSV file name.  See step (4) above.
+	set fPath to "bigLauncher1.csv". //change "test.csv" to your CSV file name.  See step (4) above.
 	set printOutput to true. //set to false to disable output display (time, steering, orbit, etc)
 
 // =================================================
@@ -54,6 +54,7 @@ set xArr to parsedDataList[0].
 set yArr to parsedDataList:SUBLIST(1,parsedDataList:length - 3).
 set curEvtList to parsedDataList[parsedDataList:length - 2].
 set nxtEvtList to parsedDataList[parsedDataList:length - 1].
+set stagingTimes to List().
 
 set headingRot to heading(0, 0, 0).
 lock steering to headingRot.
@@ -69,6 +70,8 @@ set dataNumPlaces to 3.
 until xq > xArr[xArr:length - 1] {
 	set interpOutput to interp1(xArr, yArr, xq, startInd).
 	set yqList to interpData:yqList.
+	set y0List to interpData:y0List.
+	set y1List to interpData:y1List.
 	set startInd to interpOutput:ind.
 
 	set yaw to yqList[0].
@@ -76,11 +79,43 @@ until xq > xArr[xArr:length - 1] {
 	set roll to yqList[2].
 	set throtValue to yqList[3].
 	set timeToNextEvt to yqList[4].
+	set stagingCue to yqList[5].
 	set curEvtName to curEvtList[startInd].
 	set nxtEvtName to nxtEvtList[startInd].
+	
+	if y0List:length > 0 {
+		set stagingCueInd0 to y0List[5].
+	} else {
+		set stagingCueInd0 to 0.
+	}
+	
+	if y1List:length > 0 {
+		set stagingCueInd1 to y1List[5].
+	} else {
+		set stagingCueInd1 to 0.
+	}
+	
+	set headingRot to heading(yaw, pitch, roll).
 
 	if nxtEvtName:length = 0 {
 		set nxtEvtName to "N/A".
+	}
+	
+	if stagingCue > 0 AND stagingCueInd0 = 1 {
+		set x0 to xArr[ind].
+		
+		set doStaging to true.
+		for stagingTime IN stagingTimes {
+			if x0 = stagingTime {
+				set doStaging to false.
+				break.
+			} 
+		}
+		
+		if doStaging {
+			stagingTimes:add(x0).
+			STAGE.
+		}
 	}
 
 	if printOutput {
@@ -121,8 +156,6 @@ until xq > xArr[xArr:length - 1] {
 		horzLine(l).  set l to l + 1.
 		paddedPrintLine("Tot. Mass:  " + padding(ship:mass, 0, dataNumPlaces) + " mT", dataPrintOffset, l).  set l to l + 1.
 	}
-
-	set headingRot to heading(yaw, pitch, roll).
 }
 
 clearscreen.
@@ -136,6 +169,8 @@ function interp1 {
 	parameter startInd is 0.
 	
 	set yqList to List().
+	set y0List to List().
+	set y1List to List().
 	if xq <= xArr[0] {
 		set ind to 0.
 		for ySubArr in yArr {
@@ -168,10 +203,12 @@ function interp1 {
 			
 			set yq to (y0*(x1-xq) + y1*(xq-x0))/(x1-x0).	
 			yqList:add(yq).
+			y0List:add(y0).
+			y1List:add(y1).
 		}
 	}
 	
-	set interpData to lexicon("yqList", yqList, "ind", ind).
+	set interpData to lexicon("yqList",yqList, "ind",ind, "y0List",y0List, "y1List",y1List).
 	
 	return interpData.
 }
