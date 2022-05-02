@@ -61,6 +61,26 @@ classdef LvdGraphicalAnalysis < matlab.mixin.SetGet
             
             allTasks = obj.tasks;
         end
+
+        function ind = getIndOfTask(obj, tasks)
+            ind = find([obj.tasks] == tasks,1,'first');
+        end
+
+        function moveTaskUp(obj, task)
+            ind = obj.getIndOfTask(task);
+            
+            if(ind > 1)
+                obj.tasks([ind,ind-1]) = obj.tasks([ind-1,ind]);
+            end
+        end
+        
+        function moveTaskDown(obj, task)
+            ind = obj.getIndOfTask(task);
+            
+            if(ind < obj.getNumTasks())
+                obj.tasks([ind+1,ind]) = obj.tasks([ind,ind+1]);
+            end
+        end
         
         function [depVarValues, depVarUnits, dataEvtNums, utTimeForDepVarValues, taskLabels] = executeTasks(obj, hFig, startTimeUT, endTimeUT, otherSCId, stationID)
             propNames = obj.lvdData.launchVehicle.tankTypes.getFirstThreeTypesCellArr();
