@@ -126,7 +126,11 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
         
         function evtNum = getEventNum(obj)
             for(i=1:length(obj))
-                evtNum(i) = [obj(i).script.getNumOfEvent(obj(i))]; %#ok<AGROW> 
+                thisEvtNum = obj(i).script.getNumOfEvent(obj(i));
+                if(isempty(thisEvtNum))
+                    thisEvtNum = NaN;
+                end
+                evtNum(i) = thisEvtNum; %#ok<AGROW> 
             end
         end
         
