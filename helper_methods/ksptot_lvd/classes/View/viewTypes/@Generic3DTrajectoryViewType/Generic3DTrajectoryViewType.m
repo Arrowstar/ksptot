@@ -226,10 +226,10 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
 %                 force = lfm.getForce(ut, rVect, vVect, mass, bodyInfo, aero, [], [], [], [], [], [], [], [], [], [], attState);
 %                 forceVect(:,i) = 1000*force;
 %             end
-
-            hold(dAxes,'on');
-            quiver3(dAxes, rVects(1,:),rVects(2,:),rVects(3,:), forceVect(1,:),forceVect(2,:),forceVect(3,:), 0, 'Color','c', 'LineStyle','-');
-            hold(dAxes,'off');
+% 
+%             hold(dAxes,'on');
+%             quiver3(dAxes, rVects(1,:),rVects(2,:),rVects(3,:), forceVect(1,:),forceVect(2,:),forceVect(3,:), 0, 'Color','c', 'LineStyle','-');
+%             hold(dAxes,'off');
 
             if(showSoI && ~isempty(viewCentralBody.getParBodyInfo(celBodyData)))
                 hold(dAxes,'on');
