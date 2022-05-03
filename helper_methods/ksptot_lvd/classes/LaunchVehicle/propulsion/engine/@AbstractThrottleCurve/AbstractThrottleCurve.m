@@ -63,11 +63,10 @@ classdef(Abstract) AbstractThrottleCurve < matlab.mixin.SetGet & matlab.mixin.Co
         
         function yq = evalCurve(obj, xq)            
             if(isnan(obj.constValue))
-                if(isempty(obj.curve))
-                    obj.generateCurve();
-                end
+%                 if(isempty(obj.curve))
+%                     obj.generateCurve();
+%                 end
                 
-%                 yq = ppval(obj.curve,xq);
                 yq = obj.curve(xq);
             else
                 yq = ones(size(xq)) * obj.constValue;

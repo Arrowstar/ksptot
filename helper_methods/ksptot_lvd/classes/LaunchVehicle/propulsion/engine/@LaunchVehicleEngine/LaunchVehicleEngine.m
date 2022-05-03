@@ -136,18 +136,6 @@ classdef LaunchVehicleEngine < matlab.mixin.SetGet
         end
         
         function [thrust, isp] = getThrustIspForPressure(obj, presskPa)
-%             x = presskPa;
-%             x1 = obj.seaLvlPress;
-%             x2 = obj.vacPress;
-%             
-%             y1 = obj.seaLvlThrust;
-%             y2 = obj.vacThrust;
-%             thrust = y1 + ((x-x1)*(y2-y1))/(x2-x1);
-%             
-%             y1 = obj.seaLvlIsp;
-%             y2 = obj.vacIsp;
-%             isp = y1 + ((x-x1)*(y2-y1))/(x2-x1);
-
             thrust = obj.thrustPressCurve.evalCurve(presskPa);
             if(thrust < 0)
                 thrust = 0;

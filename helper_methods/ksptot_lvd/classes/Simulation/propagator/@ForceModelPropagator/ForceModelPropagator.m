@@ -135,7 +135,10 @@ classdef ForceModelPropagator < AbstractPropagator
                 pressure = getPressureAtAltitude(bodyInfo, altitude);
                 throttle = throttleModel.getThrottleAtTime(ut, rVect, vVect, tankStatesMasses, dryMass, stageStates, lvState, tankStates, bodyInfo, storageSoCs, powerStorageStates);
 
-                [tankMassDotsEngines,~,~,ecStgDots] = eventInitStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, tankStatesMasses, stageStates, throttle, lvState, pressure, ut, rVect, vVect, bodyInfo, steeringModel, storageSoCs, powerStorageStates);
+                attState = LaunchVehicleAttitudeState();
+                attState.dcm = steeringModel.getBody2InertialDcmAtTime(ut, rVect, vVect, bodyInfo);
+
+                [tankMassDotsEngines,~,~,ecStgDots] = eventInitStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, tankStatesMasses, stageStates, throttle, lvState, pressure, ut, rVect, vVect, bodyInfo, steeringModel, storageSoCs, powerStorageStates, attState);
 
                 tankMassDots = tankMassDotsEngines + tankMassDotsT2TConns;
                 storageRates = storageRates + ecStgDots;

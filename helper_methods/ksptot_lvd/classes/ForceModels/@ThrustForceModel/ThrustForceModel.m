@@ -11,12 +11,12 @@ classdef ThrustForceModel < AbstractForceModel
             
         end
         
-        function [forceVect, tankMdots, ecDots] = getForce(obj, ut, rVect, vVect, ~, bodyInfo, ~, throttleModel, steeringModel, tankStates, stageStates, lvState, dryMass, tankStatesMasses, ~, storageSoCs, powerStorageStates, ~)    
+        function [forceVect, tankMdots, ecDots] = getForce(obj, ut, rVect, vVect, ~, bodyInfo, ~, throttleModel, steeringModel, tankStates, stageStates, lvState, dryMass, tankStatesMasses, ~, storageSoCs, powerStorageStates, attState)    
             altitude = norm(rVect) - bodyInfo.radius;
             pressure = bodyInfo.getBodyAtmoPressure(altitude);
             throttle = throttleModel.getThrottleAtTime(ut, rVect, vVect, tankStatesMasses, dryMass, stageStates, lvState, tankStates, bodyInfo, storageSoCs, powerStorageStates);
             
-            [tankMdots, ~, forceVect, ecDots] = LaunchVehicleStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, tankStatesMasses, stageStates, throttle, lvState, pressure, ut, rVect, vVect, bodyInfo, steeringModel, storageSoCs, powerStorageStates);
+            [tankMdots, ~, forceVect, ecDots] = LaunchVehicleStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, tankStatesMasses, stageStates, throttle, lvState, pressure, ut, rVect, vVect, bodyInfo, steeringModel, storageSoCs, powerStorageStates, attState);
         end
     end
 end

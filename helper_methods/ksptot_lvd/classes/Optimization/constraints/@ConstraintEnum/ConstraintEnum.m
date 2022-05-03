@@ -72,6 +72,7 @@ classdef ConstraintEnum < matlab.mixin.SetGet
         InertialSideSlipAngle('Inertial Side Slip Angle','InertialSideSlipAngleConstraint',[]);
         
         TotalThrust('Total Thrust','TotalThrustConstraint',[]);
+        Thrust2Weight('Sea Level Thrust to Weight','ThrustToWeightConstraint',[]);
         
         StopwatchValue('Stopwatch Value','StopwatchValueConstraint',[]);
         ExtremumValue('Extremum Value','ExtremumValueConstraint',[]);

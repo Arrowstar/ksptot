@@ -510,7 +510,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             end
         end
         
-        function [tankMDots, totalThrust, forceVect, ecStorageRates] = getTankMassFlowRatesDueToEngines(tankStates, tankStatesMasses, stgStates, throttle, lvState, presskPa, ut, rVect, vVect, bodyInfo, steeringModel, storageSoCs, powerStorageStates)
+        function [tankMDots, totalThrust, forceVect, ecStorageRates] = getTankMassFlowRatesDueToEngines(tankStates, tankStatesMasses, stgStates, throttle, lvState, presskPa, ut, rVect, vVect, bodyInfo, steeringModel, storageSoCs, powerStorageStates, attState)
             tankMDots = zeros(size(tankStates));
             tankMDots = tankMDots(:);
             totalThrust = 0;
@@ -624,7 +624,8 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             
             if(nargout >= 3 && not(isempty(steeringModel)))
                 if(norm(bodyThrust) > 0)
-                    body2InertDcm = steeringModel.getBody2InertialDcmAtTime(ut, rVect, vVect, bodyInfo);
+%                     body2InertDcm = steeringModel.getBody2InertialDcmAtTime(ut, rVect, vVect, bodyInfo);
+                    body2InertDcm = attState.dcm;
                     forceVect = body2InertDcm * bodyThrust;
                 else
                     forceVect = [0;0;0];

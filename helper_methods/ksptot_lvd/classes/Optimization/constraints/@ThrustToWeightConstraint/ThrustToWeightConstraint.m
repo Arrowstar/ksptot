@@ -1,4 +1,4 @@
-classdef TotalThrustConstraint < AbstractConstraint
+classdef ThrustToWeightConstraint < AbstractConstraint
     %TotalThrustConstraint Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -17,7 +17,7 @@ classdef TotalThrustConstraint < AbstractConstraint
     end
     
     methods
-        function obj = TotalThrustConstraint(event, lb, ub)
+        function obj = ThrustToWeightConstraint(event, lb, ub)
             obj.event = event;
             obj.lb = lb;
             obj.ub = ub;   
@@ -44,8 +44,10 @@ classdef TotalThrustConstraint < AbstractConstraint
                     error('Unknown event node.');
             end
             
+            bodyInfo = stateLogEntry.centralBody;
             totalThrust = TotalThrustConstraint.getTotalThrust(stateLogEntry);
-            value = totalThrust;
+            totalMass = stateLogEntry.getTotalVehicleMass();
+            value = computeSLThrustToWeight(bodyInfo, totalThrust, totalMass);
                        
             if(obj.evalType == ConstraintEvalTypeEnum.StateComparison)
                 switch obj.stateCompNode
@@ -59,7 +61,10 @@ classdef TotalThrustConstraint < AbstractConstraint
                         error('Unknown event node.');
                 end
 
-                valueStateComp = TotalThrustConstraint.getTotalThrust(stateLogEntryStateComp); %it's probably not a bad idea to leave the state here in the original reference frame.
+                bodyInfo = stateLogEntryStateComp.centralBody;
+                totalThrust = TotalThrustConstraint.getTotalThrust(stateLogEntryStateComp);
+                totalMass = stateLogEntryStateComp.getTotalVehicleMass();
+                valueStateComp = computeSLThrustToWeight(bodyInfo, totalThrust, totalMass);
             else
                 valueStateComp = NaN;
             end
@@ -120,15 +125,11 @@ classdef TotalThrustConstraint < AbstractConstraint
         end
         
         function type = getConstraintType(obj)
-            type = 'Total Thrust';
+            type = 'Sea Level Thrust to Weight';
         end
         
-%         function name = getName(obj)
-%             name = sprintf('%s - Event %i', obj.getConstraintType(), obj.event.getEventNum());
-%         end
-        
         function [unit, lbLim, ubLim, usesLbUb, usesCelBody, usesRefSc] = getConstraintStaticDetails(obj)
-            unit = 'kN';
+            unit = '';
             lbLim = 0;
             ubLim = Inf;
             usesLbUb = true;
@@ -136,53 +137,16 @@ classdef TotalThrustConstraint < AbstractConstraint
             usesRefSc = false;
         end
         
-        function addConstraintTf = openEditConstraintUI(obj, lvdData)
-%             addConstraintTf = lvd_EditGenericMAConstraintGUI(obj, lvdData);
-            
+        function addConstraintTf = openEditConstraintUI(obj, lvdData)           
             output = AppDesignerGUIOutput({false});
             lvd_EditGenericMAConstraintGUI_App(obj, lvdData, output);
             addConstraintTf = output.output{1}; 
         end
     end
-    
-    methods(Static)
-        function totalThrust = getTotalThrust(stateLogEntry)
-            ut = stateLogEntry.time;
-            rVect = stateLogEntry.position;
-            vVect = stateLogEntry.velocity;
-            
-            bodyInfo = stateLogEntry.centralBody;
-            tankStates = stateLogEntry.getAllActiveTankStates();
-            stageStates = stateLogEntry.stageStates;
-            lvState = stateLogEntry.lvState;
-            
-            dryMass = stateLogEntry.getTotalVehicleDryMass();
-            tankStatesMasses = [tankStates.tankMass]';
-            
-            throttleModel = stateLogEntry.throttleModel;
-            steeringModel = stateLogEntry.steeringModel;
-
-            attState = LaunchVehicleAttitudeState();
-            attState.dcm = steeringModel.getBody2InertialDcmAtTime(ut, rVect, vVect, bodyInfo);
-            
-            altitude = norm(rVect) - bodyInfo.radius;
-            pressure = getPressureAtAltitude(bodyInfo, altitude); 
-            
-            powerStorageStates = stateLogEntry.getAllActivePwrStorageStates();
-            storageSoCs = NaN(size(powerStorageStates));
-            for(i=1:length(powerStorageStates))
-                storageSoCs(i) = powerStorageStates(i).getStateOfCharge();
-            end
-            
-            throttle = throttleModel.getThrottleAtTime(ut, rVect, vVect, tankStatesMasses, dryMass, stageStates, lvState, tankStates, bodyInfo, storageSoCs, powerStorageStates);
-            
-            [~, totalThrust, ~] = LaunchVehicleStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, tankStatesMasses, stageStates, throttle, lvState, pressure, ut, rVect, vVect, bodyInfo, steeringModel, storageSoCs, powerStorageStates, attState);
-        end
-    end
-    
+        
     methods(Static)
         function constraint = getDefaultConstraint(~, ~)            
-            constraint = TotalThrustConstraint(LaunchVehicleEvent.empty(1,0),0,0);
+            constraint = ThrustToWeightConstraint(LaunchVehicleEvent.empty(1,0),0,0);
         end
     end
 end
