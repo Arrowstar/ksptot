@@ -5,38 +5,56 @@ classdef LaunchVehicleAttitudeState < matlab.mixin.SetGet
     properties
         dcm(3,3) double = eye(3)
     end
+
+    properties(Dependent)
+        bodyX
+        bodyY
+        bodyZ
+    end
     
     methods
         function obj = LaunchVehicleAttitudeState()
             
         end
+
+        function value = get.bodyX(obj)
+            value = obj.dcm(:,1);
+        end
+
+        function value = get.bodyY(obj)
+            value = obj.dcm(:,2);
+        end
+
+        function value = get.bodyZ(obj)
+            value = obj.dcm(:,3);
+        end
         
         function [rollAngle, pitchAngle, yawAngle] = getEulerAngles(obj, ut, rVect, vVect, bodyInfo)
-            bodyX = obj.dcm(:,1);
-            bodyY = obj.dcm(:,2);
-            bodyZ = obj.dcm(:,3);
+%             bodyX = obj.dcm(:,1);
+%             bodyY = obj.dcm(:,2);
+%             bodyZ = obj.dcm(:,3);
             
-            [rollAngle, pitchAngle, yawAngle] = computeEulerAnglesFromInertialBodyAxes(ut, rVect, vVect, bodyInfo, bodyX, bodyY, bodyZ);
+            [rollAngle, pitchAngle, yawAngle] = computeEulerAnglesFromInertialBodyAxes(ut, rVect, vVect, bodyInfo, obj.bodyX, obj.bodyY, obj.bodyZ);
             rollAngle = AngleZero2Pi(rollAngle);
             yawAngle = AngleZero2Pi(yawAngle);
         end
         
         function [bankAng,angOfAttack,angOfSideslip,totalAoA] = getAeroAngles(obj, ut, rVect, vVect, bodyInfo)
-            bodyX = obj.dcm(:,1);
-            bodyY = obj.dcm(:,2);
-            bodyZ = obj.dcm(:,3);
+%             bodyX = obj.dcm(:,1);
+%             bodyY = obj.dcm(:,2);
+%             bodyZ = obj.dcm(:,3);
             
-            [bankAng,angOfAttack,angOfSideslip,totalAoA] = computeAeroAnglesFromBodyAxes(ut, rVect, vVect, bodyInfo, bodyX, bodyY, bodyZ);
+            [bankAng,angOfAttack,angOfSideslip,totalAoA] = computeAeroAnglesFromBodyAxes(ut, rVect, vVect, bodyInfo, obj.bodyX, obj.bodyY, obj.bodyZ);
             bankAng = AngleZero2Pi(bankAng);
             angOfSideslip = AngleZero2Pi(angOfSideslip);
         end
         
         function [inertBankAng,inertAngOfAttack,insertAngOfSideslip] = getInertialAeroAngles(obj, ut, rVect, vVect, bodyInfo)
-            bodyX = obj.dcm(:,1);
-            bodyY = obj.dcm(:,2);
-            bodyZ = obj.dcm(:,3);
+%             bodyX = obj.dcm(:,1);
+%             bodyY = obj.dcm(:,2);
+%             bodyZ = obj.dcm(:,3);
             
-            [inertBankAng,inertAngOfAttack,insertAngOfSideslip] = computeInertialAeroAnglesFromBodyAxes(ut, rVect, vVect, bodyInfo, bodyX, bodyY, bodyZ);
+            [inertBankAng,inertAngOfAttack,insertAngOfSideslip] = computeInertialAeroAnglesFromBodyAxes(ut, rVect, vVect, bodyInfo, obj.bodyX, obj.bodyY, obj.bodyZ);
             inertBankAng = AngleZero2Pi(inertBankAng);
             insertAngOfSideslip = AngleZero2Pi(insertAngOfSideslip);
         end

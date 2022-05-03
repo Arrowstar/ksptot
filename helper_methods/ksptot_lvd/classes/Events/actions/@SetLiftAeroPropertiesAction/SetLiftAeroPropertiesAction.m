@@ -3,6 +3,11 @@ classdef SetLiftAeroPropertiesAction < AbstractEventAction
     %   Detailed explanation goes here
     
     properties
+        liftCoeffModel LiftCoeffModel
+    end
+
+    %deprecated
+    properties(Access=private)
         useLift(1,1) logical = false;
         areaLift(1,1) double = 16.2; 
         Cl_0(1,1) double = 0.731;  
@@ -10,24 +15,25 @@ classdef SetLiftAeroPropertiesAction < AbstractEventAction
     end
     
     methods
-        function obj = SetDragAeroPropertiesAction(useLift, areaLift, Cl_0, bodyLiftVect)
+        function obj = SetDragAeroPropertiesAction(liftCoeffModel)
             if(nargin > 0)
-                obj.useLift = useLift;
-                obj.areaLift = areaLift;
-                obj.Cl_0 = Cl_0;
-                obj.bodyLiftVect = bodyLiftVect;
+                obj.liftCoeffModel = liftCoeffModel;
+            else
+                obj.liftCoeffModel = LiftCoeffModel();
             end
             
             obj.id = rand();
         end
         
         function newStateLogEntry = executeAction(obj, stateLogEntry)
+            arguments
+                obj(1,1) SetDragAeroPropertiesAction
+                stateLogEntry(1,1) LaunchVehicleStateLogEntry 
+            end
+
             newStateLogEntry = stateLogEntry;
             
-            newStateLogEntry.aero.useLift = obj.useLift;
-            newStateLogEntry.aero.areaLift = obj.areaLift;
-            newStateLogEntry.aero.Cl_0 = obj.Cl_0;
-            newStateLogEntry.aero.bodyLiftVect = obj.bodyLiftVect;
+            newStateLogEntry.aero.liftCoeffModel = obj.liftCoeffModel;
         end
         
         function initAction(obj, initialStateLogEntry)
@@ -74,30 +80,37 @@ classdef SetLiftAeroPropertiesAction < AbstractEventAction
     
     methods(Static)
         function addActionTf = openEditActionUI(action, lv)
-            fakeLvdData = LvdData.getDefaultLvdData(lv.lvdData.celBodyData);
-            
-            initStateModel = fakeLvdData.initStateModel;
-            initStateModel.aero.useLift = action.useLift;
-            initStateModel.aero.areaLift = action.areaLift;
-            initStateModel.aero.Cl_0 = action.Cl_0;
-            initStateModel.aero.bodyLiftVect = action.bodyLiftVect;
-            
-%             [addActionTf, useLift, areaLift, Cl_0, bodyLiftVect] = lvd_EditLiftPropertiesGUI(fakeLvdData);
-            output = AppDesignerGUIOutput({false,false,false,false,false});
-            lvd_EditLiftPropertiesGUI_App(fakeLvdData, output);
-            
-            addActionTf = output.output{1};
-            useLift = output.output{2};
-            areaLift = output.output{3};
-            Cl_0 = output.output{4};
-            bodyLiftVect = output.output{5};
-
-            if(addActionTf)
-                action.useLift = useLift;
-                action.areaLift = areaLift;
-                action.Cl_0 = Cl_0;
-                action.bodyLiftVect = bodyLiftVect;
+            arguments
+                action(1,1) SetLiftAeroPropertiesAction
+                lv(1,1) LaunchVehicle
             end
+
+            addActionTf = action.liftCoeffModel.openEditDialog(lv.lvdData);
+
+%             fakeLvdData = LvdData.getDefaultLvdData(lv.lvdData.celBodyData);
+%             
+%             initStateModel = fakeLvdData.initStateModel;
+%             initStateModel.aero.useLift = action.useLift;
+%             initStateModel.aero.areaLift = action.areaLift;
+%             initStateModel.aero.Cl_0 = action.Cl_0;
+%             initStateModel.aero.bodyLiftVect = action.bodyLiftVect;
+%             
+% %             [addActionTf, useLift, areaLift, Cl_0, bodyLiftVect] = lvd_EditLiftPropertiesGUI(fakeLvdData);
+%             output = AppDesignerGUIOutput({false,false,false,false,false});
+%             lvd_EditLiftPropertiesGUI_App(fakeLvdData, output);
+%             
+%             addActionTf = output.output{1};
+%             useLift = output.output{2};
+%             areaLift = output.output{3};
+%             Cl_0 = output.output{4};
+%             bodyLiftVect = output.output{5};
+% 
+%             if(addActionTf)
+%                 action.useLift = useLift;
+%                 action.areaLift = areaLift;
+%                 action.Cl_0 = Cl_0;
+%                 action.bodyLiftVect = bodyLiftVect;
+%             end
         end
     end
 end

@@ -24,18 +24,18 @@ classdef DragForceModel < AbstractForceModel
     end
 end
 
-function [dragForce] = getDragForce(bodyInfo, ut, rVectECI, vVectECI, aero, mass, attState)
-%getDragAccel Summary of this function goes here
+function dragForce = getDragForce(bodyInfo, ut, rVectECI, vVectECI, aero, mass, attState)
+%getDragForce Summary of this function goes here
 %   Detailed explanation goes here
-            arguments
-                bodyInfo(1,1) KSPTOT_BodyInfo
-                ut(1,1) double 
-                rVectECI(3,1) double 
-                vVectECI(3,1) double 
-                aero(1,1) LaunchVehicleAeroState
-                mass(1,1) double
-                attState(1,1) LaunchVehicleAttitudeState
-            end
+    arguments
+        bodyInfo(1,1) KSPTOT_BodyInfo
+        ut(1,1) double 
+        rVectECI(3,1) double 
+        vVectECI(3,1) double 
+        aero(1,1) LaunchVehicleAeroState
+        mass(1,1) double
+        attState(1,1) LaunchVehicleAttitudeState
+    end
 
     rVectECI = reshape(rVectECI,3,1);
     vVectECI = reshape(vVectECI,3,1);

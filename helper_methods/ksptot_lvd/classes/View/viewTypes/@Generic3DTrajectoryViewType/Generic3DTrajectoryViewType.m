@@ -188,12 +188,6 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                     entry = subsetLvdStateLogEntries(i);
                     cartesianEntry = cartesianEntries(i);       
                     
-%                     rVects = [rVects, cartesianEntry.rVect]; %#ok<AGROW>
-                                        
-%                     tX = lvd_ThrottleTask(entry, 'thrust_x');
-%                     tY = lvd_ThrottleTask(entry, 'thrust_y');
-%                     tZ = lvd_ThrottleTask(entry, 'thrust_z');
-%                     tVect = [tX;tY;tZ];
                     tVect = lvd_ThrottleTask(entry, 'thrust_vector', cartesianEntry.frame);
                     
                     if(norm(tVect) > 0)                       
@@ -213,7 +207,30 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                 quiver3(dAxes, rVects(1,:),rVects(2,:),rVects(3,:), tVects(1,:),tVects(2,:),tVects(3,:), 0, 'Color',color, 'LineStyle',lineStyle);
                 hold(dAxes,'off');
             end
-            
+
+%             lfm = LiftForceModel();
+%             rVects = NaN([3, length(lvdStateLogEntries)]);
+%             forceVect = NaN([3, length(lvdStateLogEntries)]);
+%             for(i=1:length(lvdStateLogEntries))
+%                 stateLogEntry = lvdStateLogEntries(i);
+% 
+%                 bodyInfo = stateLogEntry.centralBody;
+%                 ut = stateLogEntry.time;
+%                 rVect = stateLogEntry.position;
+%                 vVect = stateLogEntry.velocity;
+%                 aero = stateLogEntry.aero;
+%                 mass = stateLogEntry.getTotalVehicleMass();
+%                 attState = stateLogEntry.attitude;
+% 
+%                 rVects(:,i) = rVect;
+%                 force = lfm.getForce(ut, rVect, vVect, mass, bodyInfo, aero, [], [], [], [], [], [], [], [], [], [], attState);
+%                 forceVect(:,i) = 1000*force;
+%             end
+
+            hold(dAxes,'on');
+            quiver3(dAxes, rVects(1,:),rVects(2,:),rVects(3,:), forceVect(1,:),forceVect(2,:),forceVect(3,:), 0, 'Color','c', 'LineStyle','-');
+            hold(dAxes,'off');
+
             if(showSoI && ~isempty(viewCentralBody.getParBodyInfo(celBodyData)))
                 hold(dAxes,'on');
                 

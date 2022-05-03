@@ -7,7 +7,7 @@ classdef(Abstract) AbstractDragCoefficientModel < matlab.mixin.SetGet & matlab.m
     end
 
     methods
-        CdA = getDragCoeff(obj, ut, rVect, vVect, bodyInfo, mass, altitude, density, vVectECEFMag, totalAoA, aoa, sideslip);
+        CdA = getDragCoeff(obj, ut, rVect, vVect, bodyInfo, mass, altitude, pressure, density, vVectECEFMag, totalAoA, aoa, sideslip);
 
         tf = usesTotalAoA(obj)
 
