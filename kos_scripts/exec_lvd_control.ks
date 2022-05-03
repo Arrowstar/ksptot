@@ -120,13 +120,20 @@ until xq > xArr[xArr:length - 1] {
 
 	if printOutput {
 		set l to 0.
+		
+		if time:seconds < xArr[0] {
+			set timeToScriptStart to time:seconds - xArr[0].
+			set timeToScriptStartStr to " (" + time_formatting(timeToScriptStart,0,2,true) + ")".
+		} else {
+			set timeToScriptStartStr to "".
+		}
 	
 		horzLine(l). set l to l + 1.
 		paddedPrintLine(" Current Time",0,l).  set l to l + 1.
 		horzLine(l).  set l to l + 1.
 		paddedPrintLine(time:CALENDAR + " " + time:CLOCK, dataPrintOffset, l).  set l to l + 1.
 		paddedPrintLine("UT:         " + padding(time:seconds, 0, dataNumPlaces) + " sec", dataPrintOffset, l).  set l to l + 1.
-		paddedPrintLine("Event:      " + curEvtName, dataPrintOffset, l).  set l to l + 1.
+		paddedPrintLine("Event:      " + curEvtName + timeToScriptStartStr, dataPrintOffset, l).  set l to l + 1.
 		paddedPrintLine("Next Event: " + nxtEvtName + " (" + time_formatting(-1 * timeToNextEvt,0,2,true) + ")", dataPrintOffset, l).  set l to l + 1.
 		
 		horzLine(l).  set l to l + 1.
