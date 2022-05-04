@@ -3,9 +3,9 @@ classdef BuiltInIntegratorOptions < AbstractIntegratorOptions
     %   Detailed explanation goes here
     
     properties        
-        AbsTol(1,1) double = 1E-10;
-        RelTol(1,1) double = 1E-10;
-        NormControl(1,1) logical = true;
+        AbsTol(1,1) double = 1E-7;
+        RelTol(1,1) double = 1E-7;
+        NormControl(1,1) logical = false;
         Refine(1,1) double = 1;
         InitialStep(1,1) double = 1;
         MaxStep(1,1) double = Inf;
