@@ -34,10 +34,13 @@ function [g] = computeGradAtPoint(fun, x0, fAtX0, h, diffType, numPts, sparsity,
         if(isempty(p))
             error('Cannot run gradient in parallel: no parallel pool exists!');
         else
-            M = p.NumWorkers;
+%             M = p.NumWorkers;
+            M = parforOptions(p, 'RangePartitionMethod','fixed', 'SubrangeSize',1);
+            C = parallel.pool.Constant({fun});
         end
     else
         M = 0;
+        C.Value{1} = fun;
     end
     
     numFunOutputs = length(fAtX0);
@@ -46,7 +49,7 @@ function [g] = computeGradAtPoint(fun, x0, fAtX0, h, diffType, numPts, sparsity,
     zeroArr = zeros(1,size(g,1));
 	parfor(i=1:size(g,1), M)
 % 	for(i=1:size(g,1))
-        if(isempty(sparsity) || (not(isempty(sparsity)) && sparsity(i) ~= 0)) %numFunOutputs == 1 && 
+        if(isempty(sparsity) || (not(isempty(sparsity)) && sparsity(i) ~= 0)) 
             varArr = zeroArr;
             varArr(i) = 1;
 
@@ -57,12 +60,17 @@ function [g] = computeGradAtPoint(fun, x0, fAtX0, h, diffType, numPts, sparsity,
             numPtsToEval = size(xToEvalAt, 2);
 
             numerator = zeros(1,numFunOutputs);
-            for(j=1:numPtsToEval)
+            for(j=1:numPtsToEval) %#ok<*NO4LP> 
                 if(diffCoeff(j) ~= 0) %#ok<PFBNS> %otherwise we're just adding zero regardless
                     if(not(isempty(fAtX0)) && all(x0 == xToEvalAt(:,j)))
                         fAtX = fAtX0;
                     else
-                        fAtX = fun(xToEvalAt(:,j)); %#ok<PFBNS>
+%                         if(useParallel)
+                            f = C.Value{1}; %#ok<PFBNS> 
+                            fAtX = f(xToEvalAt(:,j)); %#ok<PFBNS>
+%                         else
+%                             fAtX = fun(xToEvalAt(:,j)); %#ok<PFBNS>
+%                         end
                     end
                     numerator = numerator + diffCoeff(j) .* fAtX(:)'; 
                 end

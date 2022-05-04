@@ -30,11 +30,16 @@ classdef FminconOptimizer < AbstractGradientOptimizer
             evtNumToStartScriptExecAt = obj.getEvtNumToStartScriptExecAt(lvdOpt, actVars);
             evtToStartScriptExecAt = lvdOpt.lvdData.script.getEventForInd(evtNumToStartScriptExecAt);
             
-            objFuncWrapper = @(x) lvdOpt.objFcn.evalObjFcn(x, evtToStartScriptExecAt);
-            nonlcon = @(x) lvdOpt.constraints.evalConstraints(x, true, evtToStartScriptExecAt, true, []);
-                            
             opts = obj.options.getOptionsForOptimizer(typicalX);
-            
+
+            objFuncWrapper = @(x) lvdOpt.objFcn.evalObjFcn(x, evtToStartScriptExecAt);
+
+            if(opts.SpecifyConstraintGradient)
+                nonlcon = @(x) lvdOpt.constraints.evalConstraintsWithGradients(x, true, evtToStartScriptExecAt, true, []);
+            else
+                nonlcon = @(x) lvdOpt.constraints.evalConstraints(x, true, evtToStartScriptExecAt, true, []);
+            end
+                            
             if(obj.options.computeOptimalStepSizes == true)
                 optimalStepSizes = CustomFiniteDiffsCalculationMethod.determineOptimalStepSizes(@(x) CustomFiniteDiffsCalculationMethod.combinedConstrFun(x, lvdOpt.lvdData), x0All, hLvdMainGUI);
                 

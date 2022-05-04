@@ -43,6 +43,9 @@ classdef FminconOptions < matlab.mixin.SetGet
         relLineSrchBnd(1,1) double = NaN;
         relLineSrchBndDuration(1,1) double = 1;
         tolConSQP(1,1) double = 1E-6;
+
+        %Constraints
+        specifyConstraintGradient(1,1) logical = false;
     end
     
     methods 
@@ -127,6 +130,8 @@ classdef FminconOptions < matlab.mixin.SetGet
             if(not(isnan(obj.tolConSQP)))
                 options = optimoptions(options, 'TolConSQP', obj.tolConSQP);
             end
+
+            options = optimoptions(options, 'SpecifyConstraintGradient', obj.specifyConstraintGradient);
                         
             options = optimoptions(options, ...
                                    'UseParallel', obj.useParallel.optionVal, ...

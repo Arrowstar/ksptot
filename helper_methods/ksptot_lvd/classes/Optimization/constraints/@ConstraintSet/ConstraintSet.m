@@ -162,6 +162,27 @@ classdef ConstraintSet < matlab.mixin.SetGet
                 end
             end
         end
+
+        function [cAtX0, cEqAtX0, DC, DCeq] = evalConstraintsWithGradients(obj, x, tfRunScript, evtToStartScriptExecAt, allowInterrupt, stateLogToEval)
+            [cAtX0, cEqAtX0] = obj.evalConstraints(x, tfRunScript, evtToStartScriptExecAt, allowInterrupt, stateLogToEval);
+
+            p = gcp('nocreate');
+            if(not(isempty(p)))
+                if(p.NumWorkers > 1)
+                    useParallel = true;
+                else
+                    useParallel = false;
+                end
+            else
+                useParallel = false;
+            end
+
+            fC = @(x) obj.evalConstraints(x, tfRunScript, evtToStartScriptExecAt, allowInterrupt, stateLogToEval);
+            DC = computeGradAtPoint(fC, x, cAtX0, 1E-5, FiniteDiffTypeEnum.Forward, 2, [], useParallel);
+
+            fCEq = @(x) out2(fC, x);
+            DCeq = computeGradAtPoint(fCEq, x, cEqAtX0, 1E-5, FiniteDiffTypeEnum.Forward, 2, [], useParallel);
+        end
         
         function tf = usesStage(obj, stage)
             tf = false;
@@ -321,4 +342,8 @@ classdef ConstraintSet < matlab.mixin.SetGet
             end
         end
     end
+end
+
+function out = out2(fun, x)
+    [~,out] = fun(x);
 end
