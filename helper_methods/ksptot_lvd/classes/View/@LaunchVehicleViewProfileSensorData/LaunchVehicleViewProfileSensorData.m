@@ -38,7 +38,7 @@ classdef LaunchVehicleViewProfileSensorData < matlab.mixin.SetGet
             dcms = obj.vehAttData.getDCMatTime(time);
             sensorStates = obj.getSensorStatesForTime(time);
             if(width(rVects) > 0 && size(dcms,3) > 0 && width(rVects) == size(dcms,3))                
-                for(i=1:width(rVects))
+                for(i=1:width(rVects)) %#ok<*NO4LP> 
                     rVect = rVects(:,i);
                     vVect = vVects(:,i);
                     dcm = dcms(:,:,i);
@@ -131,15 +131,17 @@ classdef LaunchVehicleViewProfileSensorData < matlab.mixin.SetGet
                 sensorStatesForTimes = obj.sensorStateArr{i};
                 
                 if(length(unique(times)) > 1)
-                    if(time >= min(times) && time <= max(times))
+                    if(time >= min(floor(times)) && time <= max(ceil(times)))
                         [times,I] = sort(times);
                         sensorStatesForTimes = sensorStatesForTimes(I);
 
                         bool = time == times;
                         if(any(bool))
                             ind = find(bool, 1, 'last');
-                        else
+                        elseif(time > max(times))
                             ind = find(time >= times, 1, 'last');
+                        else
+                            ind = find(time <= times, 1, 'first');
                         end
 
                         sensorStates(end+1) = sensorStatesForTimes(ind); %#ok<AGROW>

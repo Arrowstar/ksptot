@@ -42,7 +42,7 @@ classdef LaunchVehicleViewPosVelInterp < matlab.mixin.SetGet
         function [rVect, vVect] = getPositionVelocityAtTime(obj, time)
             rVect = [];
             vVect = [];
-            for(i=1:length(obj.timesArr))
+            for(i=1:length(obj.timesArr)) %#ok<*NO4LP> 
                 times = obj.timesArr{i};
                 
                 bool = time >= min(floor(times)) & time <= max(ceil(times));
