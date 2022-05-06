@@ -11,8 +11,4 @@ function [bankAng,angOfAttack,angOfSideslip] = computeInertialAeroAnglesFromBody
     bankAng = angles(3);
 	angOfAttack = angles(2);
 	angOfSideslip = angles(1);
-     
-%     bankAng = real(bankAng);
-%     angOfAttack = real(angOfAttack);
-%     angOfSideslip = real(angOfSideslip);
 end

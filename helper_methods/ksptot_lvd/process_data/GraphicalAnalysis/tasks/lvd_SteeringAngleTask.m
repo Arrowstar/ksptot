@@ -2,17 +2,17 @@ function datapt = lvd_SteeringAngleTask(stateLogEntry, subTask, inFrame)
 %lvd_SteeringAngleTask Summary of this function goes here
 %   Detailed explanation goes here
 
-    stateLogEntry = stateLogEntry.deepCopy();
-    cartElem = stateLogEntry.getCartesianElementSetRepresentation().convertToFrame(inFrame);
-    stateLogEntry.setCartesianElementSet(cartElem);
+%     stateLogEntry = stateLogEntry.deepCopy();
+%     cartElem = stateLogEntry.getCartesianElementSetRepresentation().convertToFrame(inFrame);
+%     stateLogEntry.setCartesianElementSet(cartElem);
 
     ut = stateLogEntry.time;
     rVect = stateLogEntry.position;
     vVect = stateLogEntry.velocity;
     bodyInfo = stateLogEntry.centralBody;
 
-    [rollAngle, pitchAngle, yawAngle] =  stateLogEntry.attitude.getEulerAngles(ut, rVect, vVect, bodyInfo);
-    [bankAng,angOfAttack,angOfSideslip,totalAoA] =  stateLogEntry.attitude.getAeroAngles(ut, rVect, vVect, bodyInfo);
+    [rollAngle, pitchAngle, yawAngle] =  stateLogEntry.attitude.getEulerAnglesInFrame(ut, rVect, vVect, bodyInfo, inFrame);
+    [bankAng,angOfAttack,angOfSideslip,totalAoA] =  stateLogEntry.attitude.getAeroAnglesInFrame(ut, rVect, vVect, bodyInfo, inFrame);
 
     switch subTask
         case 'roll'

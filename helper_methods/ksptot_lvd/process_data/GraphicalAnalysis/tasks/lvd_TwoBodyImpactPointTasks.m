@@ -1,7 +1,7 @@
 function datapt = lvd_TwoBodyImpactPointTasks(stateLogEntry, subTask)
-%lvd_SteeringAngleTask Summary of this function goes here
+%lvd_TwoBodyImpactPointTasks Summary of this function goes here
 %   Detailed explanation goes here
-    global number_state_log_entries_per_coast;
+    global number_state_log_entries_per_coast; %#ok<GVMIS> 
 
     ut = stateLogEntry.time;
     rVect = stateLogEntry.position;

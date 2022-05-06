@@ -73,7 +73,7 @@ classdef (Abstract) AbstractElementSet < matlab.mixin.SetGet & matlab.mixin.Cust
                 velOffsetOrigin12 = NaN(3,num);
                 angVelWrtOrigin12 = NaN(3,num);
                 rotMatToInertial12 = NaN(3,3,num);
-                for(i=1:num)
+                for(i=1:num) %#ok<*NO4LP> 
                     [posOffsetOrigin12(:,i), velOffsetOrigin12(:,i), angVelWrtOrigin12(:,i), rotMatToInertial12(:,:,i)] = obj(i).frame.getOffsetsWrtInertialOrigin(obj(i).time, convertCartElemSet(i));
                 end
             end
@@ -103,7 +103,7 @@ classdef (Abstract) AbstractElementSet < matlab.mixin.SetGet & matlab.mixin.Cust
             rotMatToInertial32_Transpose = permute(rotMatToInertial32, [2 1 3]);
             rVect3 = squeeze(pagemtimes(rotMatToInertial32_Transpose, permute(rVect2 - posOffsetOrigin32, [1 3 2])));
             vVect3 = squeeze(pagemtimes(rotMatToInertial32_Transpose, permute(vVect2 - velOffsetOrigin32, [1 3 2]))) - cross(angVelWrtOrigin32, rVect3);
-            
+
             createObjOfArrayVal = false;
             if(numel(obj) == 1 && obj.createObjOfArray == true && obj.typeEnum == ElementSetEnum.CartesianElements)
                 createObjOfArrayVal = true;

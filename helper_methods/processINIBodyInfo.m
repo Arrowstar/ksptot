@@ -8,16 +8,28 @@ function [celBodyData] = processINIBodyInfo(celBodyDataFromINI, varargin)
         
         if(length(varargin)>=2)
             dataType = varargin{2};
+
+            if(length(varargin) >= 3)
+                hFig = varargin{3};
+            else
+                hFig = [];
+            end
         else
             dataType = 'bodyInfo';
+            hFig = [];
         end
     else
         showWaitbar = true;
         dataType = 'bodyInfo';
+        hFig = [];
     end
 
     if(showWaitbar)
-        hWaitbar = waitbar(0,'Loading bodies file, please wait...');
+        if(not(isempty(hFig)))
+            hWaitbar = uiprogressdlg(hFig,'Message','Loading bodies file, please wait...', 'Title','KSP Trajectory Optimizatoon Tool');
+        else
+            hWaitbar = waitbar(0,'Loading bodies file, please wait...');
+        end
     end
 
     celBodyData = struct();
@@ -78,7 +90,15 @@ function [celBodyData] = processINIBodyInfo(celBodyDataFromINI, varargin)
         end
         
         if(showWaitbar)
-            waitbar(i/size(celBodyDataFromINI,1), hWaitbar, sprintf('Loading bodies file, please wait... [%u/%u]', i, size(celBodyDataFromINI,1)));
+            waitbarValue = i/size(celBodyDataFromINI,1);
+            waitbarMsg = sprintf('Loading bodies file, please wait... [%u/%u]', i, size(celBodyDataFromINI,1));
+
+            if(not(isempty(hFig)))
+                hWaitbar.Value = waitbarValue;
+                hWaitbar.Message = waitbarMsg;
+            else
+                waitbar(waitbarValue, hWaitbar, waitbarMsg);
+            end
         end
     end
     

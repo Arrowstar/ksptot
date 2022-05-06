@@ -1,5 +1,5 @@
 function datapt = lvd_StageTasks(stateLogEntry, subTask, stage)
-%lvd_SteeringAngleTask Summary of this function goes here
+%lvd_StageTasks Summary of this function goes here
 %   Detailed explanation goes here
 
     switch subTask

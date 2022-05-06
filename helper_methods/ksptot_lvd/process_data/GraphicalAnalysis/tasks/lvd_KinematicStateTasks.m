@@ -1,5 +1,5 @@
 function datapt = lvd_KinematicStateTasks(stateLogEntry, subTask, inFrame)
-%lvd_SteeringAngleTask Summary of this function goes here
+%lvd_KinematicStateTasks Summary of this function goes here
 %   Detailed explanation goes here
     
     cartElem = stateLogEntry.getCartesianElementSetRepresentation();
