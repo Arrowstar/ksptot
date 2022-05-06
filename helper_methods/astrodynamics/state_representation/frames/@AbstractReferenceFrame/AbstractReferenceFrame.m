@@ -15,7 +15,7 @@ classdef (Abstract) AbstractReferenceFrame < matlab.mixin.SetGet & matlab.mixin.
     end
     
     methods        
-        [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = getOffsetsWrtInertialOrigin(obj, time, vehElemSet)
+        [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = getOffsetsWrtInertialOrigin(obj, time, vehElemSet, bodyInfoInertialOrigin)
         
         bodyInfo = getOriginBody(obj)
         

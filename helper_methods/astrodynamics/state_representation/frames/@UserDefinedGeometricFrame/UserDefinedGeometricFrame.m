@@ -17,16 +17,19 @@ classdef UserDefinedGeometricFrame < AbstractReferenceFrame
             obj.lvdData = lvdData;
         end
         
-        function [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = getOffsetsWrtInertialOrigin(obj, time, vehElemSet)
+        function [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = getOffsetsWrtInertialOrigin(obj, time, vehElemSet, bodyInfoInertialOrigin)
             arguments
                 obj UserDefinedGeometricFrame
                 time double
                 vehElemSet AbstractElementSet
+                bodyInfoInertialOrigin KSPTOT_BodyInfo = KSPTOT_BodyInfo.empty(1,0); %this is only used here because geometric frames can be defined w.r.t vectors that change depending on the frame evaluted, thus changing the orientation of the frame w.r.t. global inertial.
             end
 
-%             if(nargin <= 3 || isempty(baseFrame))
+            if(nargin <= 3 || isempty(bodyInfoInertialOrigin))
                 baseFrame = obj.lvdData.getBaseFrame();
-%             end
+            else
+                baseFrame = bodyInfoInertialOrigin.getBodyCenteredInertialFrame();
+            end
             
             [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = obj.geometricFrame.getRefFrameAtTime(time, vehElemSet,  baseFrame);
         end
