@@ -21,12 +21,12 @@ classdef GenericPolySteeringModel < AbstractAnglePolySteeringModel
             betaAng = obj.betaAngleModel.getValueAtTime(ut);
             alphaAng = obj.alphaAngleModel.getValueAtTime(ut);
             
-            elemSet = CartesianElementSet(ut, rVect(:), vVect(:), bodyInfo.getBodyCenteredInertialFrame());
-            if(not(isempty(obj.refFrame.getOriginBody())))
-                elemSet = elemSet.convertToFrame(obj.refFrame);
-            end
+%             elemSet = CartesianElementSet(ut, rVect(:), vVect(:), bodyInfo.getBodyCenteredInertialFrame());
+%             if(not(isempty(obj.refFrame.getOriginBody())))
+%                 elemSet = elemSet.convertToFrame(obj.refFrame);
+%             end
             
-            dcm = obj.controlFrame.computeDcmToInertialFrame(elemSet.time, elemSet.rVect, elemSet.vVect, elemSet.frame, gammaAng, betaAng, alphaAng, obj.refFrame);
+            dcm = real(obj.controlFrame.computeDcmToInertialFrame(ut, rVect, vVect, bodyInfo, gammaAng, betaAng, alphaAng, obj.refFrame));
         end
 
         function [angleModel, continuity] = getAngleNModel(obj, n)
@@ -95,11 +95,11 @@ classdef GenericPolySteeringModel < AbstractAnglePolySteeringModel
             if(obj.gammaContinuity || obj.betaContinuity || obj.alphaContinuity)
                 elemSet = CartesianElementSet(ut, rVect(:), vVect(:), bodyInfo.getBodyCenteredInertialFrame());
                 
-                if(not(isempty(obj.refFrame.getOriginBody())))
-                    elemSet = elemSet.convertToFrame(obj.refFrame);
-                end
+%                 if(not(isempty(obj.refFrame.getOriginBody())))
+%                     elemSet = elemSet.convertToFrame(obj.refFrame);
+%                 end
                 
-                [gammaAngle, betaAngle, alphaAngle] = obj.controlFrame.getAnglesFromInertialBodyAxes(dcm, elemSet.time, elemSet.rVect(:), elemSet.vVect(:), elemSet.frame.getOriginBody(), obj.refFrame);
+                [gammaAngle, betaAngle, alphaAngle] = obj.controlFrame.getAnglesFromInertialBodyAxes(LaunchVehicleAttitudeState(dcm), elemSet.time, elemSet.rVect(:), elemSet.vVect(:), elemSet.frame.getOriginBody(), obj.refFrame);
              
                 if(obj.gammaContinuity)
                     obj.gammaAngleModel.constTerm = gammaAngle;

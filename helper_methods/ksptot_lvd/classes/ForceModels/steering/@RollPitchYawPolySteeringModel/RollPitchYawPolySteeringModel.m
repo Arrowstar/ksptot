@@ -18,7 +18,9 @@ classdef RollPitchYawPolySteeringModel < AbstractAnglePolySteeringModel
             pitchAng = obj.pitchModel.getValueAtTime(ut);
             yawAng = obj.yawModel.getValueAtTime(ut);
                         
-            [~, ~, ~, dcm] = computeBodyAxesFromEuler(ut, rVect, vVect, bodyInfo, rollAng, pitchAng, yawAng);
+%             [~, ~, ~, dcm] = computeBodyAxesFromEuler(ut, rVect, vVect, bodyInfo, rollAng, pitchAng, yawAng);
+            baseFrame = bodyInfo.getBodyFixedFrame();
+            [~, ~, ~, dcm] = computeInertialBodyAxesFromFrameEuler(ut, rVect, vVect, bodyInfo, rollAng, pitchAng, yawAng, baseFrame);
             dcm = real(dcm);
         end
 

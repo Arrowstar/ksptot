@@ -100,7 +100,7 @@ classdef TwoBodyPoint < AbstractGeometricPoint
 %                     vVect = [vx(:)'; vy(:)'; vz(:)'];
                     
                     tru = computeTrueAnomFromMean(mean, ecc);
-                    clear subKepElems;
+                    subKepElems = KeplerianElementSet.empty(1,0);
                     for(j=1:length(sma))
                         subKepElems(j) = KeplerianElementSet(boolTimes(j), sma(j), ecc(j), inc(j), raan(j), arg(j), tru(j), bodyInfo.getBodyCenteredInertialFrame()); %#ok<AGROW> 
                     end

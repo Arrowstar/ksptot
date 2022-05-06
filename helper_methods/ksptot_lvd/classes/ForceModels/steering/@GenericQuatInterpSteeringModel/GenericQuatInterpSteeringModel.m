@@ -45,14 +45,14 @@ classdef GenericQuatInterpSteeringModel < AbstractSteeringModel
                 q = obj.initQuat;
             end
             
-            elemSet = CartesianElementSet(ut, rVect(:), vVect(:), bodyInfo.getBodyCenteredInertialFrame());
-            if(not(isempty(obj.refFrame.getOriginBody())))
-                elemSet = elemSet.convertToFrame(obj.refFrame);
-            end
+%             elemSet = CartesianElementSet(ut, rVect(:), vVect(:), bodyInfo.getBodyCenteredInertialFrame());
+%             if(not(isempty(obj.refFrame.getOriginBody())))
+%                 elemSet = elemSet.convertToFrame(obj.refFrame);
+%             end
             
             [alphaAng, betaAng, gammaAng] = quat2angle(q, 'ZYX');
             
-            dcm = obj.controlFrame.computeDcmToInertialFrame(elemSet.time, elemSet.rVect, elemSet.vVect, elemSet.frame, gammaAng, betaAng, alphaAng, obj.refFrame);
+            dcm = obj.controlFrame.computeDcmToInertialFrame(ut, rVect, vVect, bodyInfo, gammaAng, betaAng, alphaAng, obj.refFrame);
             dcm = real(dcm);
         end
         
@@ -108,11 +108,11 @@ classdef GenericQuatInterpSteeringModel < AbstractSteeringModel
             if(obj.angleContinuity)
                 elemSet = CartesianElementSet(ut, rVect(:), vVect(:), bodyInfo.getBodyCenteredInertialFrame());
 
-                if(not(isempty(obj.refFrame.getOriginBody())))
-                    elemSet = elemSet.convertToFrame(obj.refFrame);
-                end
+%                 if(not(isempty(obj.refFrame.getOriginBody())))
+%                     elemSet = elemSet.convertToFrame(obj.refFrame);
+%                 end
                 
-                [gammaAngle, betaAngle, alphaAngle] = obj.controlFrame.getAnglesFromInertialBodyAxes(dcm, elemSet.time, elemSet.rVect(:), elemSet.vVect(:), elemSet.frame.getOriginBody(), obj.refFrame);
+                [gammaAngle, betaAngle, alphaAngle] = obj.controlFrame.getAnglesFromInertialBodyAxes(LaunchVehicleAttitudeState(dcm), elemSet.time, elemSet.rVect(:), elemSet.vVect(:), elemSet.frame.getOriginBody(), obj.refFrame);
 
                 obj.alpha0 = alphaAngle;
                 obj.beta0 = betaAngle;

@@ -13,13 +13,14 @@ classdef InertialAeroAnglesPolySteeringModel < AbstractAnglePolySteeringModel
     end
     
     methods       
-        function dcm = getBody2InertialDcmAtTime(obj, ut, rVect, vVect, bodyInfo)
+        function R_body_2_inertial = getBody2InertialDcmAtTime(obj, ut, rVect, vVect, bodyInfo)
             bankAng = obj.bankModel.getValueAtTime(ut);
             angOfAttack = obj.aoAModel.getValueAtTime(ut);
             angOfSideslip = obj.slipModel.getValueAtTime(ut);
             
-            [~, ~, ~, dcm] = computeBodyAxesFromInertialAeroAngles(ut, rVect, vVect, bodyInfo, angOfAttack, angOfSideslip, bankAng);
-            dcm = real(dcm);
+%             [~, ~, ~, dcm] = computeBodyAxesFromInertialAeroAngles(ut, rVect, vVect, bodyInfo, angOfAttack, angOfSideslip, bankAng);
+            baseFrame = bodyInfo.getBodyCenteredInertialFrame();
+            [~, ~, ~, R_body_2_inertial] = computeInertialBodyAxesFromFrameAeroAngles(ut, rVect, vVect, bodyInfo, bankAng, angOfAttack, angOfSideslip, baseFrame);
         end
         
         function [angleModel, continuity] = getAngleNModel(obj, n)

@@ -18,7 +18,15 @@ classdef UserDefinedGeometricFrame < AbstractReferenceFrame
         end
         
         function [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = getOffsetsWrtInertialOrigin(obj, time, vehElemSet)
-            baseFrame = obj.lvdData.getBaseFrame();
+            arguments
+                obj UserDefinedGeometricFrame
+                time double
+                vehElemSet AbstractElementSet
+            end
+
+%             if(nargin <= 3 || isempty(baseFrame))
+                baseFrame = obj.lvdData.getBaseFrame();
+%             end
             
             [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = obj.geometricFrame.getRefFrameAtTime(time, vehElemSet,  baseFrame);
         end
@@ -44,7 +52,7 @@ classdef UserDefinedGeometricFrame < AbstractReferenceFrame
                 if(context == EditReferenceFrameContextEnum.ForState || ...
                    context == EditReferenceFrameContextEnum.ForView)    %can't have vehicle dependent frames for states
                     goodInds = [];
-                    for(i=1:length(frames))
+                    for(i=1:length(frames)) %#ok<*NO4LP> 
                         if(frames(i).isVehDependent() == false)
                             goodInds(end+1) = i; %#ok<AGROW>
                         end

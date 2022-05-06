@@ -34,7 +34,7 @@ classdef CoordSysPointRefFrame < AbstractGeometricRefFrame
                 rotMatToInertial12 = rotMatToInertial;
                 rotMatToInertial32 = obj.coordSys.getCoordSysAtTime(time + h, vehElemSet, inFrame);
                 rotMatToInertial23 = permute(rotMatToInertial32, [2 1 3]);
-                rotMatToInertial13 = mtimesx(rotMatToInertial23,rotMatToInertial12);
+                rotMatToInertial13 = pagemtimes(rotMatToInertial23,rotMatToInertial12);
                 
                 axang = rotm2axangARH(rotMatToInertial13);
                 axang = axang';

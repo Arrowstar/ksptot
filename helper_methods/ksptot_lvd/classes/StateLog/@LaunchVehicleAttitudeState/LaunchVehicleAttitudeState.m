@@ -30,6 +30,28 @@ classdef LaunchVehicleAttitudeState < matlab.mixin.SetGet
         function value = get.bodyZ(obj)
             value = obj.dcm(:,3);
         end
+
+        function [gammaAngle, betaAngle, alphaAngle] = getEulerAnglesInBaseFrame(obj, ut, rVect, vVect, bodyInfo, inFrame)
+            arguments
+                obj(1,1) LaunchVehicleAttitudeState
+                ut(1,1) double
+                rVect(3,1) double
+                vVect(3,1) double
+                bodyInfo(1,1) KSPTOT_BodyInfo
+                inFrame(1,1) AbstractReferenceFrame
+            end
+
+            frame = bodyInfo.getBodyCenteredInertialFrame();
+            ce = CartesianElementSet(ut, rVect, vVect, frame);
+
+            [~, ~, ~, base_frame_2_inertial] = inFrame.getOffsetsWrtInertialOrigin(ut, ce);
+        
+            angles = real(rotm2eulARH(base_frame_2_inertial' * obj.dcm, 'zyx'));
+        
+            gammaAngle = angles(3);
+            betaAngle = angles(2);
+            alphaAngle = angles(1);
+        end
         
         function [rollAngle, pitchAngle, yawAngle] = getEulerAngles(obj, ut, rVect, vVect, bodyInfo)  
             arguments
