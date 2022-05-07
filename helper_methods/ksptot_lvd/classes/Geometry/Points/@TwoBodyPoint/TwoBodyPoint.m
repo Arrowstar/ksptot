@@ -142,6 +142,10 @@ classdef TwoBodyPoint < AbstractGeometricPoint
                 minTime = 0;
             end
 
+            if(minTime >= maxTime)
+                maxTime = minTime + 1;
+            end
+
             initState = dummyLvdData.initialState;
             
             ce = obj.elemSet.convertToCartesianElementSet();

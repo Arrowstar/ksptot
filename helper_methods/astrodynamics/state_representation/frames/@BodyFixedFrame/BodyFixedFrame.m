@@ -27,7 +27,7 @@ classdef BodyFixedFrame < AbstractReferenceFrame
             one  = zero + 1;
             c = permute(cos(spinAngle), [1 3 2]);
             s = permute(sin(spinAngle), [1 3 2]);
-            rotMatToInertial = mtimesx([c -s zero;  s c zero;  zero zero one], repmat(obj.bodyInfo.bodyRotMatFromGlobalInertialToBodyInertial, [1 1 length(time)]));
+            rotMatToInertial = pagemtimes([c -s zero;  s c zero;  zero zero one], repmat(obj.bodyInfo.bodyRotMatFromGlobalInertialToBodyInertial, [1 1 length(time)]));
             
             rotRateRadSec = 2*pi/obj.bodyInfo.rotperiod;
             omegaRI = repmat([0;0;rotRateRadSec], [1 length(time)]);
