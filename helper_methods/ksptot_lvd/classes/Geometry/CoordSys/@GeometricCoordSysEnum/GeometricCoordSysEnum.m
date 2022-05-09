@@ -5,6 +5,7 @@ classdef GeometricCoordSysEnum < matlab.mixin.SetGet
     enumeration
         AlignedConstrained('Aligned/Constrained');
         ParallelToFrame('Parallel To Reference Frame');
+        ParallelToFrameAtTime('Parallel to Reference Frame at Time');
     end
     
     properties
