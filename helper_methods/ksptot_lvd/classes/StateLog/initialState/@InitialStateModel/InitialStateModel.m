@@ -12,7 +12,7 @@ classdef InitialStateModel < matlab.mixin.SetGet
         thirdBodyGravity(1,1) LaunchVehicle3BodyGravState
         
         steeringModels SteeringModelsSet
-        throttleModel(1,1) AbstractThrottleModel = ThrottlePolyModel.getDefaultThrottleModel();
+        throttleModels ThrottleModelsSet
         
         optVar InitialStateVariable
     end
@@ -20,6 +20,7 @@ classdef InitialStateModel < matlab.mixin.SetGet
     %deprecated
     properties(Access=private)
         steeringModel AbstractSteeringModel = RollPitchYawPolySteeringModel.getDefaultSteeringModel();
+        throttleModel(1,1) AbstractThrottleModel = ThrottlePolyModel.getDefaultThrottleModel();
     end
     
     properties(Dependent)
@@ -30,6 +31,7 @@ classdef InitialStateModel < matlab.mixin.SetGet
     methods
         function obj = InitialStateModel()
             obj.steeringModels = SteeringModelsSet();
+            obj.throttleModels = ThrottleModelsSet();
         end
         
         function time = get.time(obj)
@@ -344,6 +346,14 @@ classdef InitialStateModel < matlab.mixin.SetGet
 
             elseif(obj.steeringModels.selectedModel ~= obj.steeringModel)
                 obj.steeringModels.selectedModel = obj.steeringModel;
+            end
+
+            if(isempty(obj.throttleModels))
+                obj.throttleModels = ThrottleModelsSet();
+                obj.throttleModels.selectedModel = obj.throttleModel;
+
+            elseif(obj.throttleModels.selectedModel ~= obj.throttleModel)
+                obj.throttleModels.selectedModel = obj.throttleModel;
             end
         end
     end

@@ -3,19 +3,21 @@ classdef ThrottleModelEnum < matlab.mixin.SetGet
     %   Detailed explanation goes here
     
     enumeration
-        PolyModel('Polynominal Model','ThrottlePolyModel');
-        T2WModel('Thrust To Weight Model','T2WThrottleModel');
+        PolyModel('Polynominal Model','ThrottlePolyModel',"The vehicle throttle varies as a function of a second degree polynomial.  Can set constant throttle here too.");
+        T2WModel('Thrust To Weight Model','T2WThrottleModel',"The vehicle will set the throttle to maintain a fixed thrust to weight ratio.");
     end
     
     properties
         nameStr char = '';
         classNameStr char = '';
+        desc(1,1) string
     end
     
     methods
-        function obj = ThrottleModelEnum(nameStr,classNameStr)
+        function obj = ThrottleModelEnum(nameStr,classNameStr,desc)
             obj.nameStr = nameStr;
             obj.classNameStr = classNameStr;
+            obj.desc = desc;
         end
     end
     

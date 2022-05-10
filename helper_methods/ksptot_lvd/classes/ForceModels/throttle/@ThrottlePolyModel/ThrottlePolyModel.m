@@ -63,6 +63,13 @@ classdef ThrottlePolyModel < AbstractThrottleModel
         function optVar = getExistingOptVar(obj)
             optVar = obj.optVar;
         end
+
+        function [addActionTf, throttleModel] = openEditThrottleModelUI(obj, lv, useContinuity)
+            output = AppDesignerGUIOutput({false});
+            lvd_EditActionSetThrottleModelGUI_App(obj, lv, useContinuity, output);
+            addActionTf = output.output{1};
+            throttleModel = output.output{2};
+        end
     end
     
     methods(Access=private)

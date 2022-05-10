@@ -1,8 +1,13 @@
 classdef SetThrottleModelAction < AbstractEventAction
-    %SetSteeringModelAction Summary of this class goes here
+    %SetThrottleModelAction Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
+        throttleModels ThrottleModelsSet
+    end
+
+    %deprecated
+    properties(Access=private)
         throttleModel(1,1) AbstractThrottleModel = ThrottlePolyModel.getDefaultThrottleModel()
     end
     
@@ -12,10 +17,12 @@ classdef SetThrottleModelAction < AbstractEventAction
     
     methods
         function obj = SetThrottleModelAction(throttleModel)
+            obj.throttleModels = ThrottleModelsSet();
+
             if(nargin > 0)
-                obj.throttleModel = throttleModel;
+                obj.throttleModels.selectedModel = throttleModel;
             else
-                obj.throttleModel = promptForThrottleModelType([]);
+                obj.throttleModels.selectedModel = ThrottlePolyModel.getDefaultThrottleModel();
             end
             
             obj.id = rand();
@@ -23,15 +30,15 @@ classdef SetThrottleModelAction < AbstractEventAction
         
         function newStateLogEntry = executeAction(obj, stateLogEntry)
             newStateLogEntry = stateLogEntry;
-            newStateLogEntry.throttleModel = obj.throttleModel;
+            newStateLogEntry.throttleModel = obj.throttleModels.selectedModel;
         end
         
         function initAction(obj, initialStateLogEntry)
-            obj.throttleModel.initThrottleModel(initialStateLogEntry);
+            obj.throttleModels.selectedModel.initThrottleModel(initialStateLogEntry);
         end
         
         function name = getName(obj)
-            name = sprintf('Set Throttle Model');
+            name = sprintf('Set Throttle Model (%s)', obj.throttleModels.selectedModel.getThrottleModelTypeEnum().nameStr);
         end
         
         function tf = usesStage(obj, stage)
@@ -66,7 +73,7 @@ classdef SetThrottleModelAction < AbstractEventAction
             tf = false;
             vars = obj.emptyVarArr;
             
-            optVar = obj.throttleModel.getExistingOptVar();
+            optVar = obj.throttleModels.selectedModel.getExistingOptVar();
             if(not(isempty(optVar)))
                 tf = any(optVar.getUseTfForVariable());
                 vars(end+1) = optVar;
@@ -76,7 +83,26 @@ classdef SetThrottleModelAction < AbstractEventAction
     
     methods(Static)
         function addActionTf = openEditActionUI(action, lv)
-            [addActionTf, ~] = action.throttleModel.openEditThrottleModelUI(lv, true);
+            arguments
+                action SetThrottleModelAction
+                lv LaunchVehicle
+            end
+
+            addActionTf = action.throttleModels.openEditDialog(lv.lvdData, true);
+        end
+
+        function obj = loadobj(obj)
+            arguments
+                obj SetThrottleModelAction
+            end
+
+            if(isempty(obj.throttleModels))
+                obj.throttleModels = ThrottleModelsSet();
+                obj.throttleModels.selectedModel = obj.throttleModel;
+
+            elseif(obj.throttleModels.selectedModel ~= obj.throttleModel)
+                obj.throttleModels.selectedModel = obj.throttleModel;
+            end
         end
     end
 end

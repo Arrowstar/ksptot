@@ -17,31 +17,31 @@ classdef(Abstract) AbstractThrottleModel < matlab.mixin.SetGet
                 
         enum = getThrottleModelTypeEnum(obj);
         
-        function [addActionTf, throttleModel] = openEditThrottleModelUI(obj, lv, useContinuity)
-            fakeAction = SetThrottleModelAction(obj);
-            
-            enum = obj.getThrottleModelTypeEnum();
-            switch enum
-                case ThrottleModelEnum.PolyModel
-%                     addActionTf = lvd_EditActionSetThrottleModelGUI(fakeAction, lv, useContinuity);
-                    
-                    output = AppDesignerGUIOutput({false});
-                    lvd_EditActionSetThrottleModelGUI_App(fakeAction, lv, useContinuity, output);
-                    addActionTf = output.output{1};
-                    
-                case ThrottleModelEnum.T2WModel
-%                     addActionTf = lvd_EditT2WThrottleModelGUI(fakeAction, lv, useContinuity);
-                    
-                    output = AppDesignerGUIOutput({false});
-                    lvd_EditT2WThrottleModelGUI_App(fakeAction, lv, useContinuity, output);
-                    addActionTf = output.output{1};
-                    
-                otherwise
-                    error('Unknown throttle model type: %s', enum.nameStr);
-            end
-            
-            throttleModel = fakeAction.throttleModel;
-        end
+%         function [addActionTf, throttleModel] = openEditThrottleModelUI(obj, lv, useContinuity)
+%             fakeAction = SetThrottleModelAction(obj);
+%             
+%             enum = obj.getThrottleModelTypeEnum();
+%             switch enum
+%                 case ThrottleModelEnum.PolyModel
+% %                     addActionTf = lvd_EditActionSetThrottleModelGUI(fakeAction, lv, useContinuity);
+%                     
+%                     output = AppDesignerGUIOutput({false});
+%                     lvd_EditActionSetThrottleModelGUI_App(fakeAction, lv, useContinuity, output);
+%                     addActionTf = output.output{1};
+%                     
+%                 case ThrottleModelEnum.T2WModel
+% %                     addActionTf = lvd_EditT2WThrottleModelGUI(fakeAction, lv, useContinuity);
+%                     
+%                     output = AppDesignerGUIOutput({false});
+%                     lvd_EditT2WThrottleModelGUI_App(fakeAction, lv, useContinuity, output);
+%                     addActionTf = output.output{1};
+%                     
+%                 otherwise
+%                     error('Unknown throttle model type: %s', enum.nameStr);
+%             end
+%             
+%             throttleModel = fakeAction.throttleModel;
+%         end
         
         optVar = getNewOptVar(obj)
         
