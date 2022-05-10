@@ -3,6 +3,11 @@ classdef SetSteeringModelAction < AbstractEventAction
     %   Detailed explanation goes here
     
     properties
+        steeringModels SteeringModelsSet
+    end
+
+    %deprecated
+    properties(Access=private)
         steeringModel(1,1) AbstractSteeringModel = RollPitchYawPolySteeringModel.getDefaultSteeringModel()
     end
     
@@ -12,10 +17,12 @@ classdef SetSteeringModelAction < AbstractEventAction
     
     methods
         function obj = SetSteeringModelAction(steeringModel)
+            obj.steeringModels = SteeringModelsSet();
+
             if(nargin > 0)
-                obj.steeringModel = steeringModel;
+                obj.steeringModels.selectedModel = steeringModel;
             else
-                obj.steeringModel = promptForSteeringModelType([]);
+                obj.steeringModels.selectedModel = RollPitchYawPolySteeringModel.getDefaultSteeringModel();
             end
             
             obj.id = rand();
@@ -23,22 +30,22 @@ classdef SetSteeringModelAction < AbstractEventAction
         
         function newStateLogEntry = executeAction(obj, stateLogEntry)
             newStateLogEntry = stateLogEntry;
-            newStateLogEntry.steeringModel = obj.steeringModel;
+            newStateLogEntry.steeringModel = obj.steeringModels.selectedModel;
         end
         
         function initAction(obj, initialStateLogEntry)
             t0 = initialStateLogEntry.time;
-            obj.steeringModel.setT0(t0);
+            obj.steeringModels.selectedModel.setT0(t0);
             
             dcm = initialStateLogEntry.attitude.dcm;
             rVect = initialStateLogEntry.position;
             vVect = initialStateLogEntry.velocity;
             bodyInfo = initialStateLogEntry.centralBody;
-            obj.steeringModel.setConstsFromDcmAndContinuitySettings(dcm, t0, rVect, vVect, bodyInfo);
+            obj.steeringModels.selectedModel.setConstsFromDcmAndContinuitySettings(dcm, t0, rVect, vVect, bodyInfo);
         end
         
         function name = getName(obj)
-            name = sprintf('Set Steering Model (%s)', obj.steeringModel.getTypeNameStr());
+            name = sprintf('Set Steering Model (%s)', obj.steeringModels.selectedModel.getTypeNameStr());
         end
         
         function tf = usesStage(obj, stage)
@@ -73,7 +80,7 @@ classdef SetSteeringModelAction < AbstractEventAction
             tf = false;
             vars = obj.emptyVarArr;
             
-            optVar = obj.steeringModel.getExistingOptVar();
+            optVar = obj.steeringModels.selectedModel.getExistingOptVar();
             if(not(isempty(optVar)))
                 tf = any(optVar.getUseTfForVariable());
                 vars(end+1) = optVar;
@@ -83,8 +90,26 @@ classdef SetSteeringModelAction < AbstractEventAction
     
     methods(Static)
         function addActionTf = openEditActionUI(action, lv)
-            [addActionTf, steeringModel] = action.steeringModel.openEditSteeringModelUI(lv, true);
-            action.steeringModel = steeringModel;
+            arguments
+                action SetSteeringModelAction
+                lv LaunchVehicle
+            end
+            
+            addActionTf = action.steeringModels.openEditDialog(lv.lvdData, true);
+        end
+
+        function obj = loadobj(obj)
+            arguments
+                obj SetSteeringModelAction
+            end
+
+            if(isempty(obj.steeringModels))
+                obj.steeringModels = SteeringModelsSet();
+                obj.steeringModels.selectedModel = obj.steeringModel;
+
+            elseif(obj.steeringModels.selectedModel ~= obj.steeringModel)
+                obj.steeringModels.selectedModel = obj.steeringModel;
+            end
         end
     end
 end
