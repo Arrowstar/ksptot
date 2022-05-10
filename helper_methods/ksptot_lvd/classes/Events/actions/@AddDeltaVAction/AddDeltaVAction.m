@@ -155,11 +155,14 @@ classdef AddDeltaVAction < AbstractEventAction
 
             powerStorageStates = newStateLogEntry.getAllActivePwrStorageStates();
             storageSoCs = NaN(size(powerStorageStates));
-            for(j=1:length(powerStorageStates))
+            for(j=1:length(powerStorageStates)) %#ok<*NO4LP> 
                 storageSoCs(j) = powerStorageStates(j).getStateOfCharge();
             end
 
-            [tankMDots, totalThrust, ~, ~] = newStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, tankStatesMasses, stageStates, throttle, lvState, pressure, ut, rVect, vVect, bodyInfo, steeringModel, storageSoCs, powerStorageStates);
+            attState = LaunchVehicleAttitudeState();
+            attState.dcm = steeringModel.getBody2InertialDcmAtTime(ut, rVect, vVect, bodyInfo);
+
+            [tankMDots, totalThrust, ~, ~] = newStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, tankStatesMasses, stageStates, throttle, lvState, pressure, ut, rVect, vVect, bodyInfo, steeringModel, storageSoCs, powerStorageStates, attState);
         end
     end
 end

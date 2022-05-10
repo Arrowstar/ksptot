@@ -24,7 +24,7 @@ function datapt = lvd_PropulsionTasks(stateLogEntry, subTask)
                 storageSoCs(i) = powerStorageStates(i).getStateOfCharge();
             end
 
-            [tankMDots, totalThrust, ~] = stateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, tankStatesMasses, stageStates, throttle, lvState, pressure, ut, rVect, vVect, bodyInfo, steeringModel, storageSoCs, powerStorageStates);
+            [tankMDots, totalThrust, ~] = stateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, tankStatesMasses, stageStates, throttle, lvState, pressure, ut, rVect, vVect, bodyInfo, steeringModel, storageSoCs, powerStorageStates, []);
             
             if(abs(sum(tankMDots)) > 0)
                 tankMDotsKgS = tankMDots * 1000;

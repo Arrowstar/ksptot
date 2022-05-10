@@ -170,7 +170,7 @@ classdef TotalThrustConstraint < AbstractConstraint
             
             powerStorageStates = stateLogEntry.getAllActivePwrStorageStates();
             storageSoCs = NaN(size(powerStorageStates));
-            for(i=1:length(powerStorageStates))
+            for(i=1:length(powerStorageStates)) %#ok<*NO4LP> 
                 storageSoCs(i) = powerStorageStates(i).getStateOfCharge();
             end
             

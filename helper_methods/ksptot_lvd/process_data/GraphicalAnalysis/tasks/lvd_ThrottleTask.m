@@ -102,13 +102,16 @@ function [totalThrust, thrustForceVector] = getThrustParameters(stateLogEntry)
 
         powerStorageStates = stateLogEntry.getAllActivePwrStorageStates();
         storageSoCs = NaN(size(powerStorageStates));
-        for(i=1:length(powerStorageStates))
+        for(i=1:length(powerStorageStates)) %#ok<*NO4LP> 
             storageSoCs(i) = powerStorageStates(i).getStateOfCharge();
         end
+
+        attState = LaunchVehicleAttitudeState();
+        attState.dcm = steeringModel.getBody2InertialDcmAtTime(ut, rVect, vVect, bodyInfo);
         
         throttle = throttleModel.getThrottleAtTime(ut, rVect, vVect, tankStatesMasses, dryMass, stageStates, lvState, tankStates, bodyInfo, storageSoCs, powerStorageStates);
 
-        [~, totalThrust, thrustForceVector] = LaunchVehicleStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, tankStatesMasses, stageStates, throttle, lvState, pressure, ut, rVect, vVect, bodyInfo, steeringModel, storageSoCs, powerStorageStates);
+        [~, totalThrust, thrustForceVector] = LaunchVehicleStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, tankStatesMasses, stageStates, throttle, lvState, pressure, ut, rVect, vVect, bodyInfo, steeringModel, storageSoCs, powerStorageStates, attState);
         thrustForceVector = 1000*thrustForceVector; %in order to recover kN
     else
         totalThrust = 0;

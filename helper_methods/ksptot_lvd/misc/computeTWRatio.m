@@ -2,7 +2,7 @@ function twRatio = computeTWRatio(throttle, ut, rVect, vVect, tankMasses, dryMas
     altitude = norm(rVect) - bodyInfo.radius;
     presskPa = getPressureAtAltitude(bodyInfo, altitude); 
 
-    [~, totalThrust]= LaunchVehicleStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, tankMasses, stgStates, throttle, lvState, presskPa, ut, rVect, vVect, bodyInfo, [], storageSoCs, powerStorageStates);
+    [~, totalThrust]= LaunchVehicleStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, tankMasses, stgStates, throttle, lvState, presskPa, ut, rVect, vVect, bodyInfo, [], storageSoCs, powerStorageStates, []);
 
     totalMass = (dryMass + sum(tankMasses))*1000; %kg          
     totalThrust = totalThrust * 1000; % N

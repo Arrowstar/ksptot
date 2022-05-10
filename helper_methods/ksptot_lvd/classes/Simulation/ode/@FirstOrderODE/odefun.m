@@ -19,7 +19,16 @@ function dydt = odefun(t,y, simDriver, eventInitStateLogEntry, tankStates, dryMa
         pressure = getPressureAtAltitude(bodyInfo, altitude);
         throttle = throttleModel.getThrottleAtTime(ut, rVect, vVect, tankStatesMasses, dryMass, stageStates, lvState, tankStates, bodyInfo);
         
-        tankMassDotsEngines = eventInitStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, tankStatesMasses, stageStates, throttle, lvState, pressure, ut, rVect, vVect, bodyInfo, steeringModel);
+        powerStorageStates = eventInitStateLogEntry.getAllActivePwrStorageStates();
+        storageSoCs = NaN(size(powerStorageStates));
+        for(i=1:length(powerStorageStates)) %#ok<*NO4LP> 
+            storageSoCs(i) = powerStorageStates(i).getStateOfCharge();
+        end
+
+        attState = LaunchVehicleAttitudeState();
+        attState.dcm = steeringModel.getBody2InertialDcmAtTime(ut, rVect, vVect, bodyInfo);
+
+        tankMassDotsEngines = eventInitStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, tankStatesMasses, stageStates, throttle, lvState, pressure, ut, rVect, vVect, bodyInfo, steeringModel, storageSoCs, powerStorageStates, attState);
         
         tankMassDots = tankMassDotsEngines + tankMassDotsT2TConns;
         
