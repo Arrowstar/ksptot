@@ -85,21 +85,6 @@ classdef SetSteeringModelAction < AbstractEventAction
         function addActionTf = openEditActionUI(action, lv)
             [addActionTf, steeringModel] = action.steeringModel.openEditSteeringModelUI(lv, true);
             action.steeringModel = steeringModel;
-%                 enum = action.steeringModel.getSteeringModelTypeEnum();
-% 
-%                 switch enum
-%                     case SteerModelTypeEnum.PolyAngles
-%                         addActionTf = lvd_EditActionSetSteeringModelGUI(action, lv, true);
-% 
-%                     case SteerModelTypeEnum.QuaterionInterp
-%                         addActionTf = lvd_EditActionSetQuatInterpSteeringModelGUI(action, lv, true);
-%                         
-%                     case SteerModelTypeEnum.LinearTangentAngles
-%                         addActionTf = lvd_EditActionSetLinearTangentSteeringModelGUI(action, lv, true);
-% 
-%                     otherwise
-%                         error('Unknown steering model type: %s', enum.name);
-%                 end
         end
     end
 end

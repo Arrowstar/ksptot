@@ -28,42 +28,44 @@ classdef(Abstract) AbstractSteeringModel < matlab.mixin.SetGet
         optVar = getNewOptVar(obj)
         
         optVar = getExistingOptVar(obj)
+
+        [addActionTf, steeringModel] = openEditSteeringModelUI(obj, lv, useContinuity)
         
-        function [addActionTf, steeringModel] = openEditSteeringModelUI(obj, lv, useContinuity)
-%             fakeAction = SetSteeringModelAction(obj);
-
-            enum = obj.getSteeringModelTypeEnum();
-            switch enum
-                case SteerModelTypeEnum.PolyAngles
-                    output = AppDesignerGUIOutput({false, obj});
-                    lvd_EditActionSetSteeringModelGUI_App(obj, lv, useContinuity, output);
-                    addActionTf = output.output{1};
-                    steeringModel = output.output{2};
-                    
-                case SteerModelTypeEnum.QuaterionInterp
-                    output = AppDesignerGUIOutput({false, obj});
-                    lvd_EditActionSetQuatInterpSteeringModelGUI_App(obj, lv, useContinuity, output);
-                    addActionTf = output.output{1};
-                    steeringModel = output.output{2};
+%         function [addActionTf, steeringModel] = openEditSteeringModelUI(obj, lv, useContinuity)
+% %             fakeAction = SetSteeringModelAction(obj);
+% 
+%             enum = obj.getSteeringModelTypeEnum();
+%             switch enum
+%                 case SteerModelTypeEnum.PolyAngles
+%                     output = AppDesignerGUIOutput({false, obj});
+%                     lvd_EditActionSetSteeringModelGUI_App(obj, lv, useContinuity, output);
+%                     addActionTf = output.output{1};
+%                     steeringModel = output.output{2};
 %                     
-%                 case SteerModelTypeEnum.LinearTangentAngles
-%                     addActionTf = lvd_EditActionSetLinearTangentSteeringModelGUI(fakeAction, lv, useContinuity);
+%                 case SteerModelTypeEnum.QuaterionInterp
+%                     output = AppDesignerGUIOutput({false, obj});
+%                     lvd_EditActionSetQuatInterpSteeringModelGUI_App(obj, lv, useContinuity, output);
+%                     addActionTf = output.output{1};
+%                     steeringModel = output.output{2};
+% %                     
+% %                 case SteerModelTypeEnum.LinearTangentAngles
+% %                     addActionTf = lvd_EditActionSetLinearTangentSteeringModelGUI(fakeAction, lv, useContinuity);
+% %                     
+% %                 case SteerModelTypeEnum.SumOfSinesAngles
+% %                     addActionTf = lvd_EditActionSetSumOfSinesSteeringModelGUI(fakeAction, lv, useContinuity);
 %                     
-%                 case SteerModelTypeEnum.SumOfSinesAngles
-%                     addActionTf = lvd_EditActionSetSumOfSinesSteeringModelGUI(fakeAction, lv, useContinuity);
-                    
-                case SteerModelTypeEnum.SelectableModelAngles
-                    output = AppDesignerGUIOutput({false, obj});
-                    lvd_EditActionSetSelectableSteeringModelGUI_App(obj, lv, useContinuity, output);
-                    addActionTf = output.output{1};
-                    steeringModel = output.output{2};
-
-                otherwise
-                    error('Unknown steering model type: %s', enum.name);
-            end
-
-%             steeringModel = fakeAction.steeringModel;
-        end
+%                 case SteerModelTypeEnum.SelectableModelAngles
+%                     output = AppDesignerGUIOutput({false, obj});
+%                     lvd_EditActionSetSelectableSteeringModelGUI_App(obj, lv, useContinuity, output);
+%                     addActionTf = output.output{1};
+%                     steeringModel = output.output{2};
+% 
+%                 otherwise
+%                     error('Unknown steering model type: %s', enum.name);
+%             end
+% 
+% %             steeringModel = fakeAction.steeringModel;
+%         end
     end
     
     methods(Static)

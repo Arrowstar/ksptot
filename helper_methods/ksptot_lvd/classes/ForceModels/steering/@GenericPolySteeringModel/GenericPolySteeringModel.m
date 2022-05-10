@@ -175,6 +175,13 @@ classdef GenericPolySteeringModel < AbstractAnglePolySteeringModel
         function tf = requiresReInitAfterSoIChange(obj)
             tf = false;
         end
+
+        function [addActionTf, steeringModel] = openEditSteeringModelUI(obj, lv, useContinuity)
+            output = AppDesignerGUIOutput({false, obj});
+            lvd_EditActionSetSteeringModelGUI_App(obj, lv, useContinuity, output);
+            addActionTf = output.output{1};
+            steeringModel = output.output{2};
+        end
     end
     
     methods(Access=private)
