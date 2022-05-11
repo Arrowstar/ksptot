@@ -57,5 +57,9 @@ classdef TrueAnomalyOptimizationVariable < AbstractOptimizationVariable
         function nameStrs = getStrNamesOfVars(obj, evtNum, varLocType)
             nameStrs = {sprintf('Event %i True Anomaly Termination Condition', evtNum)};
         end
+
+        function varsStoredInRad = getVarsStoredInRad(obj)
+            varsStoredInRad = true;
+        end
     end
 end

@@ -8,13 +8,13 @@ classdef PolynominalTermModel < matlab.mixin.SetGet
         tOffset(1,1) double = 0;
         
         %Coefficient
-        coeff(1,1) double = 1;
+        coeff(1,1) double = 0;
         varCoeff(1,1) logical = false;
         coeffUb(1,1) double = 0;
         coeffLb(1,1) double = 0;
         
         %Exponent
-        exponent(1,1) double = 1;
+        exponent(1,1) double = 0;
         varExp(1,1) logical = false;
         expUb(1,1) double = 0;
         expLb(1,1) double = 0;
@@ -113,7 +113,12 @@ classdef PolynominalTermModel < matlab.mixin.SetGet
         end
         
         function nameStrs = getStrNamesOfVars(obj)
-            nameStrs = {'Polynomial Term Coefficient', 'Polynomial Term Exponent'};
+            nameStrs = {'Polynomial Term Coefficient', ...
+                        'Polynomial Term Exponent'};
+        end
+
+        function varsStoredInRad = getVarsStoredInRad(obj)
+            varsStoredInRad = [true false];
         end
     end
 end

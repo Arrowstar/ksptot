@@ -59,7 +59,7 @@ bodyNames = fieldnames(celBodyData);
 
 if(not(goodTF))
     msg = {sprintf('Potential issues were found with the loaded celestial body information: \n')};
-    for(i=1:length(celBodyWarnMsgs))
+    for(i=1:length(celBodyWarnMsgs)) %#ok<*NO4LP> 
         msg{end+1} = sprintf('\t%s\n', celBodyWarnMsgs{i}); %#ok<SAGROW>
     end
     

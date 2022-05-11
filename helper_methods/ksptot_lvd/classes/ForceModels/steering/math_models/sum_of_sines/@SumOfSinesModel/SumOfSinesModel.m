@@ -214,13 +214,21 @@ classdef SumOfSinesModel < AbstractSteeringMathModel
         function nameStrs = getStrNamesOfVars(obj)
             nameStrs = {'Constant Offset'};
             
-            for(i=1:length(obj.sines))
+            for(i=1:length(obj.sines)) %#ok<*NO4LP> 
                 varNames = obj.sines(i).getStrNamesOfVars();
                 for(j=1:length(varNames))
                     varNames{j} = sprintf('Sine %u %s', i, varNames{j});
                 end
                 
                 nameStrs = horzcat(nameStrs, varNames); %#ok<AGROW>
+            end
+        end
+
+        function varsStoredInRad = getVarsStoredInRad(obj)
+            varsStoredInRad = true;
+
+            for(i=1:length(obj.sines)) %#ok<*NO4LP> 
+                varsStoredInRad = horzcat(varsStoredInRad, obj.sines(i).getVarsStoredInRad()); %#ok<AGROW>
             end
         end
     end

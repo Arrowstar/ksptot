@@ -133,7 +133,7 @@ classdef LinearTangentSelectableModel < AbstractSteeringMathModel
             end
             
             if(not(isnan(x(3))))
-                obj.b = x(31);
+                obj.b = x(3);
             end
             
             if(not(isnan(x(4))))
@@ -193,6 +193,10 @@ classdef LinearTangentSelectableModel < AbstractSteeringMathModel
         
         function nameStrs = getStrNamesOfVars(obj)
             nameStrs = {'Linear Tangent A', 'Linear Tangent A Dot', 'Linear Tangent B', 'Linear Tangent B Dot'};
+        end
+
+        function varsStoredInRad = getVarsStoredInRad(obj)
+            varsStoredInRad = [false false false false];
         end
     end
 end

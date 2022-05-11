@@ -32,6 +32,8 @@ classdef(Abstract) AbstractSteeringMathModel < matlab.mixin.SetGet & matlab.mixi
         setUseTfForVariable(obj, useTf) 
         
         nameStrs = getStrNamesOfVars(obj)
+
+        varsStoredInRad = getVarsStoredInRad(obj)
     end
 end
 

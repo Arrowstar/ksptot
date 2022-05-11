@@ -139,5 +139,9 @@ classdef GeographicElementSetVariable < AbstractOrbitModelVariable
                     
             nameStrs = nameStrs(obj.getUseTfForVariable());
         end
+
+        function varsStoredInRad = getVarsStoredInRad(obj)
+            varsStoredInRad = [true true false true true false];
+        end
     end
 end

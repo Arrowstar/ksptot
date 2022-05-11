@@ -194,7 +194,7 @@ classdef SetGenericSelectableSteeringModelActionOptimVar < AbstractOptimizationV
             
             %gamma
             modelNameStrs = obj.varObj.gammaAngleModel.getStrNamesOfVars();
-            for(i=1:length(modelNameStrs))
+            for(i=1:length(modelNameStrs)) %#ok<*NO4LP> 
                 nameStrs = horzcat(nameStrs, sprintf('%s %s %s', subStr, angle1Name, modelNameStrs{i})); %#ok<AGROW>
             end
             
@@ -211,6 +211,19 @@ classdef SetGenericSelectableSteeringModelActionOptimVar < AbstractOptimizationV
             end
                     
             nameStrs = nameStrs(obj.getUseTfForVariable());
+        end
+
+        function varsStoredInRad = getVarsStoredInRad(obj)
+            varsStoredInRad = false;
+            
+            %gamma
+            varsStoredInRad = horzcat(varsStoredInRad, obj.varObj.gammaAngleModel.getVarsStoredInRad());
+            
+            %beta
+            varsStoredInRad = horzcat(varsStoredInRad, obj.varObj.betaAngleModel.getVarsStoredInRad());
+            
+            %alpha
+            varsStoredInRad = horzcat(varsStoredInRad, obj.varObj.alphaAngleModel.getVarsStoredInRad());
         end
     end
 end

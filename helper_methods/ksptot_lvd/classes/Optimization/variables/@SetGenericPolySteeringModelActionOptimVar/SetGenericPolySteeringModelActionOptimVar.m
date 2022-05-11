@@ -188,5 +188,9 @@ classdef SetGenericPolySteeringModelActionOptimVar < AbstractOptimizationVariabl
                     
             nameStrs = nameStrs(obj.getUseTfForVariable());
         end
+
+        function varsStoredInRad = getVarsStoredInRad(obj)
+            varsStoredInRad = [true true true  true true true  true true true false];
+        end
     end
 end

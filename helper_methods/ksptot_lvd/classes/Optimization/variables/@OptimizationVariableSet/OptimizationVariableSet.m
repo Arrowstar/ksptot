@@ -196,6 +196,22 @@ classdef OptimizationVariableSet < matlab.mixin.SetGet
             
             obj.clearCachedVarEvtDisabledStatus();
         end
+
+        function varsStoredInRad = getVarsStoredInRad(obj)
+            varsStoredInRad = [];
+            
+            for(i=1:length(obj.vars)) %#ok<*NO4LP>
+                var = obj.vars(i);
+                
+                if(obj.isVarEventOptimDisabled(var))
+                    continue;
+                end
+                
+                useTf = var.getUseTfForVariable();
+                varStoredInRad = var.getVarsStoredInRad();
+                varsStoredInRad = horzcat(varsStoredInRad, varStoredInRad(useTf)); %#ok<AGROW>
+            end
+        end
     end
     
     methods(Access=private)

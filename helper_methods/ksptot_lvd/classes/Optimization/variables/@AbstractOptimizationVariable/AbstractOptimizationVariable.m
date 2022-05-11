@@ -101,6 +101,11 @@ classdef(Abstract) AbstractOptimizationVariable < matlab.mixin.SetGet & matlab.m
             
             obj.updateObjWithVarValue(x);
         end
+
+        function varsStoredInRad = getVarsStoredInRad(obj)
+            useTf = obj.getUseTfForVariable();
+            varsStoredInRad = false(size(useTf));
+        end
     end
     
     methods(Sealed)

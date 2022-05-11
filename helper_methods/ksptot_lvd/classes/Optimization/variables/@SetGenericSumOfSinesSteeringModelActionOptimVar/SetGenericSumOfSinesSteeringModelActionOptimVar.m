@@ -194,7 +194,7 @@ classdef SetGenericSumOfSinesSteeringModelActionOptimVar < AbstractOptimizationV
             
             %gamma
             modelNameStrs = obj.varObj.gammaAngleModel.getStrNamesOfVars();
-            for(i=1:length(modelNameStrs))
+            for(i=1:length(modelNameStrs)) %#ok<*NO4LP> 
                 nameStrs = horzcat(nameStrs, sprintf('%s %s %s', subStr, angle1Name, modelNameStrs{i})); %#ok<AGROW>
             end
             
@@ -212,5 +212,9 @@ classdef SetGenericSumOfSinesSteeringModelActionOptimVar < AbstractOptimizationV
                     
             nameStrs = nameStrs(obj.getUseTfForVariable());
         end
+
+        function varsStoredInRad = getVarsStoredInRad(obj)
+            varsStoredInRad = [];
+        end        
     end
 end

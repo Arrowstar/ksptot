@@ -57,5 +57,9 @@ classdef FlightPathAngleOptimizationVariable < AbstractOptimizationVariable
         function nameStrs = getStrNamesOfVars(obj, evtNum, varLocType)
             nameStrs = {sprintf('Event %i Flight Path Angle Termination Condition', evtNum)};
         end
+
+        function varsStoredInRad = getVarsStoredInRad(obj)
+            varsStoredInRad = true;
+        end
     end
 end

@@ -133,7 +133,7 @@ classdef FitNetModel < matlab.mixin.SetGet
             x = x(2:end);
             if(any(obj.varNetWB))
                 wb = getwb(obj.net);
-                wb(obj.varNetWB) = x;
+                wb(obj.varNetWB) = x(obj.varNetWB);
                 obj.net = setwb(obj.net, wb);
             end
         end
@@ -164,8 +164,17 @@ classdef FitNetModel < matlab.mixin.SetGet
             x = getwb(obj.net);
             nameStrs = {'Constant Offset'};
             
-            for(i=1:length(x))
+            for(i=1:length(x)) %#ok<*NO4LP> 
                 nameStrs{end+1} = sprintf('Parameter %u', i); %#ok<AGROW>
+            end
+        end
+
+        function varsStoredInRad = getVarsStoredInRad(obj)
+            varsStoredInRad = true;
+
+            x = getwb(obj.net);
+            for(i=1:length(x)) %#ok<*NO4LP> 
+                varsStoredInRad = horzcat(varsStoredInRad, false); %#ok<AGROW> 
             end
         end
         

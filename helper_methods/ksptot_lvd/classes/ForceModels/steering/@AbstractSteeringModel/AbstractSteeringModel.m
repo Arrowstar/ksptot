@@ -1,4 +1,4 @@
-classdef(Abstract) AbstractSteeringModel < matlab.mixin.SetGet
+classdef(Abstract) AbstractSteeringModel < matlab.mixin.SetGet & matlab.mixin.Heterogeneous
     %AbstractSteeringModel Summary of this class goes here
     %   Detailed explanation goes here
     

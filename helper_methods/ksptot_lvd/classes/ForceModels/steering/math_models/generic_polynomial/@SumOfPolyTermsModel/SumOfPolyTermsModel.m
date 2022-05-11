@@ -32,10 +32,6 @@ classdef SumOfPolyTermsModel < AbstractSteeringMathModel
         
         function value = getValueAtTime(obj,ut)            
             value = obj.const;
-            
-%             for(i=1:length(obj.terms))
-%                 value = value + obj.terms(i).getValueAtTime(ut);
-%             end
 
             value = value + sum(getValueAtTime(obj.terms, ut));
         end
@@ -204,13 +200,21 @@ classdef SumOfPolyTermsModel < AbstractSteeringMathModel
         function nameStrs = getStrNamesOfVars(obj)
             nameStrs = {'Constant Offset'};
             
-            for(i=1:length(obj.terms))
+            for(i=1:length(obj.terms)) %#ok<*NO4LP> 
                 varNames = obj.terms(i).getStrNamesOfVars();
                 for(j=1:length(varNames))
                     varNames{j} = sprintf('Polynomial Term %u %s', i, varNames{j});
                 end
                 
                 nameStrs = horzcat(nameStrs, varNames); %#ok<AGROW>
+            end
+        end
+
+        function varsStoredInRad = getVarsStoredInRad(obj)
+            varsStoredInRad = true;
+
+            for(i=1:length(obj.terms)) %#ok<*NO4LP> 
+                varsStoredInRad = horzcat(varsStoredInRad, obj.terms(i).getVarsStoredInRad()); %#ok<AGROW>
             end
         end
     end

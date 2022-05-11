@@ -57,5 +57,9 @@ classdef AoATermConditionOptimizationVariable < AbstractOptimizationVariable
         function nameStrs = getStrNamesOfVars(obj, evtNum, varLocType)
             nameStrs = {sprintf('Event %i Angle Of Attack Termination Condition', evtNum)};
         end
+
+        function varsStoredInRad = getVarsStoredInRad(obj)
+            varsStoredInRad = true;
+        end
     end
 end

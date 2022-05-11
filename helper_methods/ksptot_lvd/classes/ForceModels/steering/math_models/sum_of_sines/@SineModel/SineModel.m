@@ -8,13 +8,13 @@ classdef SineModel < matlab.mixin.SetGet
         tOffset(1,1) double = 0;
         
         %Amplitude
-        amp(1,1) double = 1;
+        amp(1,1) double = 0;    %rad
         varAmp(1,1) logical = false;
         ampUb(1,1) double = 0;
         ampLb(1,1) double = 0;
         
         %Period
-        period(1,1) double = 1;  %sec
+        period(1,1) double = 1000;  %sec
         varPeriod(1,1) logical = false;
         periodUb(1,1) double = 0;
         periodLb(1,1) double = 0;
@@ -183,6 +183,10 @@ classdef SineModel < matlab.mixin.SetGet
         
         function nameStrs = getStrNamesOfVars(obj)
             nameStrs = {'Sine Amplitude', 'Sine Period', 'Sine Phase Shift'};
+        end
+
+        function varsStoredInRad = getVarsStoredInRad(obj)
+            varsStoredInRad = [true false false];
         end
     end
 end

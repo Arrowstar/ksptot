@@ -139,5 +139,9 @@ classdef KeplerianElementSetVariable < AbstractOrbitModelVariable
                     
             nameStrs = nameStrs(obj.getUseTfForVariable());
         end
+
+        function varsStoredInRad = getVarsStoredInRad(obj)
+            varsStoredInRad = [false false true true true true];
+        end
     end
 end
