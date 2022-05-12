@@ -31,7 +31,9 @@ classdef InertialControlFrame < AbstractControlFrame
             ce = CartesianElementSet(ut, rVect, vVect, frame);
             ce = ce.convertToFrame(baseFrame);
             
-            [~, ~, ~, base_frame_2_inertial] = baseFrame.getOffsetsWrtInertialOrigin(ut, ce, baseFrame.getOriginBody()); 
+%             [~, ~, ~, base_frame_2_inertial] = baseFrame.getOffsetsWrtInertialOrigin(ut, ce, baseFrame.getOriginBody()); 
+            base_frame_2_inertial = baseFrame.getRotMatToInertialAtTime(ut, ce, baseFrame.getOriginBody());
+
             body_2_base_frame = eul2rotmARH([alphaAng,betaAng,gammaAng],'zyx');
             dcm = base_frame_2_inertial * body_2_base_frame;
         end
@@ -48,8 +50,6 @@ classdef InertialControlFrame < AbstractControlFrame
             end
 
             [gammaAngle, betaAngle, alphaAngle] = attState.getEulerAnglesInBaseFrame(ut, rVect, vVect, bodyInfo, inFrame);
-
-%             [gammaAngle, betaAngle, alphaAngle] = getAnglesFromInertialBodyAxes_Func(dcm, ut, rVect, vVect, bodyInfo, baseFrame);
         end
     end
 end

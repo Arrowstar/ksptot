@@ -19,6 +19,10 @@ classdef GlobalBaseInertialFrame < AbstractReferenceFrame
             posOffsetOrigin = repmat([0;0;0], [1, length(time)]);
             velOffsetOrigin = repmat([0;0;0], [1, length(time)]);
             angVelWrtOrigin = repmat([0;0;0], [1, length(time)]);
+            rotMatToInertial = obj.getRotMatToInertialAtTime(time);
+        end
+
+        function rotMatToInertial = getRotMatToInertialAtTime(~, time, ~, ~)
             rotMatToInertial = repmat(eye(3), [1, 1, length(time)]);
         end
         

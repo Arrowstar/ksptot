@@ -16,7 +16,7 @@ function [rVectB, vVectB] = getPositOfBodyWRTSun(time, bodyInfo, celBodyData)
         else
             error('Unknown celestial body prop sim type.');
         end
-    catch ME %if bad then use old way
+    catch ME %#ok<NASGU> %if bad then use old way
         numTimes = length(time);
         loop = true;
         rVectB = zeros(3,numTimes);

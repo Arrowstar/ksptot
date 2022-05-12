@@ -17,6 +17,8 @@ classdef (Abstract) AbstractReferenceFrame < matlab.mixin.SetGet & matlab.mixin.
     methods        
         [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = getOffsetsWrtInertialOrigin(obj, time, vehElemSet, bodyInfoInertialOrigin)
         
+        rotMatToInertial = getRotMatToInertialAtTime(obj, time, vehElemSet, bodyInfoInertialOrigin);
+
         bodyInfo = getOriginBody(obj)
         
         setOriginBody(obj, newBodyInfo)
@@ -25,13 +27,13 @@ classdef (Abstract) AbstractReferenceFrame < matlab.mixin.SetGet & matlab.mixin.
         
         editFrameDialogUI(obj, context)
         
-        function [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = getOffsetsFromCache(obj, times, vehElemSet)
+        function [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = getOffsetsFromCache(obj, times, vehElemSet, bodyInfoInertialOrigin)
             posOffsetOrigin = NaN(3,numel(times));
             velOffsetOrigin = NaN(3,numel(times));
             angVelWrtOrigin = NaN(3,numel(times));
             rotMatToInertial = NaN(3,3,numel(times));
             
-            for(i=1:length(times))
+            for(i=1:length(times)) %#ok<NO4LP> 
                 time = times(i);
                 
                 bool = time == obj.timeCache;
@@ -41,7 +43,7 @@ classdef (Abstract) AbstractReferenceFrame < matlab.mixin.SetGet & matlab.mixin.
                     angVelWrtOrigin(:,i) = obj.angVelWrtOriginCache(:,bool);
                     rotMatToInertial(:,:,i) = obj.rotMatToInertialCache(:,:,bool);
                 else
-                    [posOffsetOrigin(:,i), velOffsetOrigin(:,i), angVelWrtOrigin(:,i), rotMatToInertial(:,:,i)] = obj.getOffsetsWrtInertialOrigin(time, vehElemSet);
+                    [posOffsetOrigin(:,i), velOffsetOrigin(:,i), angVelWrtOrigin(:,i), rotMatToInertial(:,:,i)] = obj.getOffsetsWrtInertialOrigin(time, vehElemSet, bodyInfoInertialOrigin);
  
                     obj.timeCache = horzcat(obj.timeCache, time);
                     obj.posOffsetOriginCache = horzcat(obj.posOffsetOriginCache, posOffsetOrigin(:,i));

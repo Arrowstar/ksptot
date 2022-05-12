@@ -24,7 +24,13 @@ classdef (Abstract) AbstractElementSet < matlab.mixin.SetGet & matlab.mixin.Cust
         elemVect = getElementVector(obj)
         
         %obj is vector of elements, toFrame is scaler
-        function convertedElemSet = convertToFrame(obj, toFrame)          
+        function convertedElemSet = convertToFrame(obj, toFrame, overwriteElemSetValues)
+            arguments
+                obj AbstractElementSet
+                toFrame AbstractReferenceFrame
+                overwriteElemSetValues(1,1) logical = false;
+            end
+
             num = length(obj);
             if(num > 1)
                 obj = obj(:)';
@@ -109,16 +115,19 @@ classdef (Abstract) AbstractElementSet < matlab.mixin.SetGet & matlab.mixin.Cust
                 createObjOfArrayVal = true;
             end
             
-            convertCartElemSet = CartesianElementSet(times, rVect3, vVect3, toFrame, createObjOfArrayVal);
-%             if(num == 1) %CAN'T DO THIS - SOME CODE DEPENDS ON A NEW ELEMENT SET OBJECT BEING RETURNED
-%                 convertCartElemSet.time = times;
-%                 convertCartElemSet.rVect = rVect3;
-%                 convertCartElemSet.vVect = vVect3;
-%                 convertCartElemSet.frame = toFrame;
-%                 convertCartElemSet.createObjOfArray = createObjOfArrayVal;
-%             else
-%                 convertCartElemSet = CartesianElementSet(times, rVect3, vVect3, toFrame, createObjOfArrayVal);   
-%             end
+            if(overwriteElemSetValues == false)
+                convertCartElemSet = CartesianElementSet(times, rVect3, vVect3, toFrame, createObjOfArrayVal);
+            else
+                if(num == 1)
+                    convertCartElemSet.time = times;
+                    convertCartElemSet.rVect = rVect3;
+                    convertCartElemSet.vVect = vVect3;
+                    convertCartElemSet.frame = toFrame;
+                    convertCartElemSet.createObjOfArray = createObjOfArrayVal;
+                else
+                    convertCartElemSet = CartesianElementSet(times, rVect3, vVect3, toFrame, createObjOfArrayVal);   
+                end
+            end
             
             ce = ElementSetEnum.CartesianElements;
             ke = ElementSetEnum.KeplerianElements;

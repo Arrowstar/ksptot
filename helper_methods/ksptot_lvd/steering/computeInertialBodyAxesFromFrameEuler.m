@@ -12,12 +12,13 @@ function [bodyX, bodyY, bodyZ, R_body_2_inertial] = computeInertialBodyAxesFromF
 
     frame = bodyInfo.getBodyCenteredInertialFrame();
     ce = CartesianElementSet(ut, rVect, vVect, frame);
-    ce = ce.convertToFrame(baseFrame);
+    ce = ce.convertToFrame(baseFrame, true);
     rVectFrame = ce.rVect;
 
     R_body_2_ned = eul2rotmARH([yawAng,pitchAng,rollAng],'zyx');
     [R_ned_2_frame, ~, ~, ~] = computeNedFrameInFrame(rVectFrame);
-    [~,~,~, R_frame_2_inertial] = baseFrame.getOffsetsWrtInertialOrigin(ut, ce);
+%     [~,~,~, R_frame_2_inertial] = baseFrame.getOffsetsWrtInertialOrigin(ut, ce, []);
+    R_frame_2_inertial = baseFrame.getRotMatToInertialAtTime(ut, ce, []);
 	R_body_2_inertial = real(R_frame_2_inertial * R_ned_2_frame * R_body_2_ned);
     
     bodyX = R_body_2_inertial(:,1);

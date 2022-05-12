@@ -27,6 +27,10 @@ classdef BodyCenteredInertialFrame < AbstractReferenceFrame
             velOffsetOrigin = vVectB;
             angVelWrtOrigin = repmat([0;0;0], [1, length(time)]);
             
+            rotMatToInertial = obj.getRotMatToInertialAtTime(time);
+        end
+
+        function rotMatToInertial = getRotMatToInertialAtTime(obj, time, ~, ~)
             if(numel(obj) == 1)
                 rotMatToInertial = repmat(obj.bodyRotMatFromGlobalInertialToBodyInertial, [1, 1, length(time)]);
                 
@@ -34,7 +38,7 @@ classdef BodyCenteredInertialFrame < AbstractReferenceFrame
                 rotMatToInertial = NaN([3, 3, length(time)]);
                 
                 [uniObj,~,ic] = unique(obj,'stable');
-                for(i=1:length(uniObj))
+                for(i=1:length(uniObj)) %#ok<*NO4LP> 
                     subObj = uniObj(i);
                     bool = i == ic;
                     subTimes = time(bool);

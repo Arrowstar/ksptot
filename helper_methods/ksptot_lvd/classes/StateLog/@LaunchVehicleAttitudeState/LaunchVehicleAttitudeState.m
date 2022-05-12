@@ -44,7 +44,8 @@ classdef LaunchVehicleAttitudeState < matlab.mixin.SetGet
             frame = bodyInfo.getBodyCenteredInertialFrame();
             ce = CartesianElementSet(ut, rVect, vVect, frame);
 
-            [~, ~, ~, base_frame_2_inertial] = inFrame.getOffsetsWrtInertialOrigin(ut, ce);
+%             [~, ~, ~, base_frame_2_inertial] = inFrame.getOffsetsWrtInertialOrigin(ut, ce);
+            base_frame_2_inertial = inFrame.getRotMatToInertialAtTime(ut, ce, []);
         
             angles = real(rotm2eulARH(base_frame_2_inertial' * obj.dcm, 'zyx'));
         
@@ -62,9 +63,6 @@ classdef LaunchVehicleAttitudeState < matlab.mixin.SetGet
                 bodyInfo(1,1) KSPTOT_BodyInfo
             end
 
-%             [rollAngle, pitchAngle, yawAngle] = computeEulerAnglesFromInertialBodyAxes(ut, rVect, vVect, bodyInfo, obj.bodyX, obj.bodyY, obj.bodyZ);
-%             rollAngle = AngleZero2Pi(rollAngle);
-%             yawAngle = AngleZero2Pi(yawAngle);
             inFrame = bodyInfo.getBodyFixedFrame();
             [rollAngle, pitchAngle, yawAngle] = obj.getEulerAnglesInFrame(ut, rVect, vVect, bodyInfo, inFrame);
         end
@@ -81,7 +79,7 @@ classdef LaunchVehicleAttitudeState < matlab.mixin.SetGet
 
             frame = bodyInfo.getBodyCenteredInertialFrame();
             ce = CartesianElementSet(ut, rVect, vVect, frame);
-            ce = ce.convertToFrame(inFrame);
+            ce = ce.convertToFrame(inFrame, true);
             rVectFrame = ce.rVect;
 
             [~, ~, ~, R_1_to_inert] = frame.getOffsetsWrtInertialOrigin(ut,[]);
@@ -107,9 +105,6 @@ classdef LaunchVehicleAttitudeState < matlab.mixin.SetGet
             end
             inFrame = bodyInfo.getBodyFixedFrame();
             [bankAng,angOfAttack,angOfSideslip,totalAoA] = obj.getAeroAnglesInFrame(ut, rVect, vVect, bodyInfo, inFrame);
-%             [bankAng,angOfAttack,angOfSideslip,totalAoA] = computeAeroAnglesFromBodyAxes(ut, rVect, vVect, bodyInfo, obj.bodyX, obj.bodyY, obj.bodyZ);
-%             bankAng = AngleZero2Pi(bankAng);
-%             angOfSideslip = AngleZero2Pi(angOfSideslip);
         end
 
         function [bankAng,angOfAttack,angOfSideslip,totalAoA] = getAeroAnglesInFrame(obj, ut, rVect, vVect, bodyInfo, inFrame)            
@@ -124,12 +119,16 @@ classdef LaunchVehicleAttitudeState < matlab.mixin.SetGet
 
             frame = bodyInfo.getBodyCenteredInertialFrame();
             ce = CartesianElementSet(ut, rVect, vVect, frame);
-            ce = ce.convertToFrame(inFrame);
+            ce = ce.convertToFrame(inFrame, true);
             rVectFrame = ce.rVect;
             vVectFrame = ce.vVect;
 
-            [~, ~, ~, R_1_to_inert] = frame.getOffsetsWrtInertialOrigin(ut,[]);
-            [~, ~, ~, R_2_to_inert] = inFrame.getOffsetsWrtInertialOrigin(ut,[]);
+%             [~, ~, ~, R_1_to_inert] = frame.getOffsetsWrtInertialOrigin(ut,[]);
+%             [~, ~, ~, R_2_to_inert] = inFrame.getOffsetsWrtInertialOrigin(ut,[]);
+
+            R_1_to_inert = frame.getRotMatToInertialAtTime(ut,[],[]);
+            R_2_to_inert = inFrame.getRotMatToInertialAtTime(ut,[],[]);
+
             R_1_to_2 = R_2_to_inert' * R_1_to_inert;
 
             bodyXFrame = R_1_to_2 * obj.bodyX;
@@ -151,10 +150,6 @@ classdef LaunchVehicleAttitudeState < matlab.mixin.SetGet
             end
             inFrame = bodyInfo.getBodyCenteredInertialFrame();
             [inertBankAng,inertAngOfAttack,insertAngOfSideslip,~] = obj.getAeroAnglesInFrame(ut, rVect, vVect, bodyInfo, inFrame);
-
-%             [inertBankAng,inertAngOfAttack,insertAngOfSideslip] = computeInertialAeroAnglesFromBodyAxes(ut, rVect, vVect, bodyInfo, obj.bodyX, obj.bodyY, obj.bodyZ);
-%             inertBankAng = AngleZero2Pi(inertBankAng);
-%             insertAngOfSideslip = AngleZero2Pi(insertAngOfSideslip);
         end
         
         function newAttState = deepCopy(obj)

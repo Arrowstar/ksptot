@@ -27,7 +27,7 @@ classdef CoordSysPointRefFrame < AbstractGeometricRefFrame
             posOffsetOrigin = [ce.rVect];
             velOffsetOrigin = [ce.vVect];
             
-            rotMatToInertial = obj.coordSys.getCoordSysAtTime(time, vehElemSet, inFrame);
+            rotMatToInertial = obj.getRotMatToInertialAtTime(time, vehElemSet, inFrame);
             
             if(obj.coordSys.isVehDependent() == false)
                 h = 0.01;
@@ -46,6 +46,10 @@ classdef CoordSysPointRefFrame < AbstractGeometricRefFrame
             else
                 angVelWrtOrigin = repmat([0;0;0], [1, length(time)]);
             end
+        end
+
+        function rotMatToInertial = getRotMatToInertialAtTime(obj, time, vehElemSet, inFrame)
+            rotMatToInertial = obj.coordSys.getCoordSysAtTime(time, vehElemSet, inFrame);
         end
         
         function name = getName(obj)

@@ -24,6 +24,8 @@ classdef AbstractGeometricRefFrame < matlab.mixin.SetGet & matlab.mixin.Heteroge
     
     methods         
         [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = getRefFrameAtTime(obj, time, vehElemSet, inFrame)
+
+        rotMatToInertial = getRotMatToInertialAtTime(obj, time, vehElemSet, inFrame)
         
         name = getName(obj)
         

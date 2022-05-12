@@ -82,9 +82,9 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
         
         surfTextureCache uint8 = [];
         
-        lastComputedTime = [];
-        lastComputedRVect = [];
-        lastComputedVVect = [];
+        lastComputedTime = NaN;
+        lastComputedRVect = NaN(3,1);
+        lastComputedVVect = NaN(3,1);
         
         lastComputedRVectVVect = [];
         
@@ -186,7 +186,7 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
                 [cBodyInfo,cbNames] = getChildrenOfParentInfo(celBodyData, obj.name);
                 
                 if(not(isempty(cBodyInfo)))
-                    for(i=1:length(cBodyInfo))
+                    for(i=1:length(cBodyInfo)) %#ok<*NO4LP> 
                         obj.childrenBodyInfo(i) = cBodyInfo{i};
                     end
                     obj.childrenBodyNames = cbNames;
@@ -253,6 +253,22 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
                 for(i=1:length(times))
                     states(i) = CartesianElementSet(times(i), [0;0;0], [0;0;0], frame); %#ok<AGROW>
                 end
+            end
+        end
+
+        function [rVect, vVect] = getCachedPositionVelWrtSun(obj, time)
+            if(numel(time) == 1)
+                if(time == obj.lastComputedTime)
+                    rVect = obj.lastComputedRVect;
+                    vVect = obj.lastComputedVVect;
+                else
+                    [rVect, vVect] = getPositOfBodyWRTSun(time, obj, obj.celBodyData);
+    
+                    obj.lastComputedRVect = rVect;
+                    obj.lastComputedVVect = vVect;
+                end
+            else
+                [rVect, vVect] = getPositOfBodyWRTSun(time, obj, obj.celBodyData);
             end
         end
         

@@ -22,9 +22,9 @@ classdef TwoBodyRotatingFrame < AbstractReferenceFrame
         end
         
         function [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = getOffsetsWrtInertialOrigin(obj, time, ~, ~)            
-            [rVectSunToPrimaryBody, vVectSunToPrimaryBody] = getPositOfBodyWRTSun(time, obj.primaryBodyInfo, obj.celBodyData);
+            [rVectSunToPrimaryBody, vVectSunToPrimaryBody] = getPositOfBodyWRTSun(time, obj.primaryBodyInfo, obj.celBodyData);            
             [rVectSunToSecondaryBody, vVectSunToSecondaryBody] = getPositOfBodyWRTSun(time, obj.secondaryBodyInfo, obj.celBodyData);
-            
+
             switch obj.originPt
                 case TwoBodyRotatingFrameOriginEnum.Primary
                     rVectSunToOriginBody = rVectSunToPrimaryBody;
@@ -52,6 +52,10 @@ classdef TwoBodyRotatingFrame < AbstractReferenceFrame
             posOffsetOrigin = rVectSunToOriginBody;
             velOffsetOrigin = vVectSunToOriginBody;
             angVelWrtOrigin = omegaRI;
+        end
+
+        function rotMatToInertial = getRotMatToInertialAtTime(obj, time, ~, ~)
+            [~, ~, ~, rotMatToInertial] = obj.getOffsetsWrtInertialOrigin(time);
         end
         
         function bodyInfo = getOriginBody(obj)

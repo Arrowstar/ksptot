@@ -12,7 +12,7 @@ function [bodyX, bodyY, bodyZ, R_body_2_inertial] = computeInertialBodyAxesFromF
 
     frame = bodyInfo.getBodyCenteredInertialFrame();
     ce = CartesianElementSet(ut, rVect, vVect, frame);
-    ce = ce.convertToFrame(baseFrame);
+    ce = ce.convertToFrame(baseFrame, true);
     rVectFrame = ce.rVect;
     vVectFrame = ce.vVect;
 

@@ -51,7 +51,8 @@ classdef CylindricalLiftModel < AbstractLiftCoefficientModel
 
             bodyXInertial = attState.bodyX;
             bff = bodyInfo.getBodyFixedFrame();
-            [~, ~, ~, rotMatToInertial] = bff.getOffsetsWrtInertialOrigin(ut, []);
+%             [~, ~, ~, rotMatToInertial] = bff.getOffsetsWrtInertialOrigin(ut, []);
+            rotMatToInertial = bff.getRotMatToInertialAtTime(ut, [], []);
             rotMatInertialToECEF = rotMatToInertial';
             bodyXECEF = rotMatInertialToECEF*bodyXInertial;
 
