@@ -54,8 +54,16 @@ classdef TwoBodyRotatingFrame < AbstractReferenceFrame
             angVelWrtOrigin = omegaRI;
         end
 
-        function rotMatToInertial = getRotMatToInertialAtTime(obj, time, ~, ~)
-            [~, ~, ~, rotMatToInertial] = obj.getOffsetsWrtInertialOrigin(time);
+        function rotMatToInertial = getRotMatToInertialAtTime(obj, time, vehElemSet, bodyInfoInertialOrigin)
+            [~, ~, ~, rotMatToInertial] = obj.getOffsetsWrtInertialOrigin(time, vehElemSet, bodyInfoInertialOrigin);
+        end
+
+        function [angVelWrtOrigin, rotMatToInertial] = getAngVelWrtOriginAndRotMatToInertial(obj, time, vehElemSet, bodyInfoInertialOrigin)
+            [~, ~, angVelWrtOrigin, rotMatToInertial] = obj.getOffsetsWrtInertialOrigin(time, vehElemSet, bodyInfoInertialOrigin);
+        end
+
+        function tf = frameOriginIsACelBody(obj)
+            tf = true;
         end
         
         function bodyInfo = getOriginBody(obj)

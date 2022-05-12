@@ -19,6 +19,8 @@ classdef (Abstract) AbstractReferenceFrame < matlab.mixin.SetGet & matlab.mixin.
         
         rotMatToInertial = getRotMatToInertialAtTime(obj, time, vehElemSet, bodyInfoInertialOrigin);
 
+        [angVelWrtOrigin, rotMatToInertial] = getAngVelWrtOriginAndRotMatToInertial(obj, time, vehElemSet, bodyInfoInertialOrigin)
+
         bodyInfo = getOriginBody(obj)
         
         setOriginBody(obj, newBodyInfo)

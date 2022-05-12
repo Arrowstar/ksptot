@@ -27,6 +27,14 @@ classdef CoordSysPointRefFrame < AbstractGeometricRefFrame
             posOffsetOrigin = [ce.rVect];
             velOffsetOrigin = [ce.vVect];
             
+            [angVelWrtOrigin, rotMatToInertial] = obj.getAngVelWrtOriginAndRotMatToInertial(time, vehElemSet, inFrame);
+        end
+
+        function rotMatToInertial = getRotMatToInertialAtTime(obj, time, vehElemSet, inFrame)
+            rotMatToInertial = obj.coordSys.getCoordSysAtTime(time, vehElemSet, inFrame);
+        end
+
+        function [angVelWrtOrigin, rotMatToInertial] = getAngVelWrtOriginAndRotMatToInertial(obj, time, vehElemSet, inFrame)
             rotMatToInertial = obj.getRotMatToInertialAtTime(time, vehElemSet, inFrame);
             
             if(obj.coordSys.isVehDependent() == false)
@@ -48,8 +56,8 @@ classdef CoordSysPointRefFrame < AbstractGeometricRefFrame
             end
         end
 
-        function rotMatToInertial = getRotMatToInertialAtTime(obj, time, vehElemSet, inFrame)
-            rotMatToInertial = obj.coordSys.getCoordSysAtTime(time, vehElemSet, inFrame);
+        function tf = frameOriginIsACelBody(obj)
+            tf = isa(obj.origin,'CelestialBodyPoint');
         end
         
         function name = getName(obj)

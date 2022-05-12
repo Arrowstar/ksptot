@@ -18,12 +18,20 @@ classdef GlobalBaseInertialFrame < AbstractReferenceFrame
         function [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = getOffsetsWrtInertialOrigin(~, time, ~, ~)            
             posOffsetOrigin = repmat([0;0;0], [1, length(time)]);
             velOffsetOrigin = repmat([0;0;0], [1, length(time)]);
-            angVelWrtOrigin = repmat([0;0;0], [1, length(time)]);
-            rotMatToInertial = obj.getRotMatToInertialAtTime(time);
+            [angVelWrtOrigin, rotMatToInertial] = obj.getAngVelWrtOriginAndRotMatToInertial(time, [], []);
         end
 
         function rotMatToInertial = getRotMatToInertialAtTime(~, time, ~, ~)
             rotMatToInertial = repmat(eye(3), [1, 1, length(time)]);
+        end
+
+        function [angVelWrtOrigin, rotMatToInertial] = getAngVelWrtOriginAndRotMatToInertial(obj, time, vehElemSet, bodyInfoInertialOrigin)
+            angVelWrtOrigin = repmat([0;0;0], [1, length(time)]);
+            rotMatToInertial = obj.getRotMatToInertialAtTime(time, vehElemSet, bodyInfoInertialOrigin);
+        end
+
+        function tf = frameOriginIsACelBody(obj)
+            tf = false;
         end
         
         function bodyInfo = getOriginBody(~)

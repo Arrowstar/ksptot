@@ -19,16 +19,9 @@ classdef BodyFixedFrame < AbstractReferenceFrame
         
         function [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = getOffsetsWrtInertialOrigin(obj, time, ~, ~)
             bi = obj.bodyInfo;
-            [rVectSunToBody, vVectSunToBody] = getPositOfBodyWRTSun(time, bi, obj.celBodyData);
-            
-            rotMatToInertial = obj.getRotMatToInertialAtTime(time);
 
-            rotRateRadSec = 2*pi/bi.rotperiod;
-            omegaRI = repmat([0;0;rotRateRadSec], [1 length(time)]);
-            
-            posOffsetOrigin = rVectSunToBody;
-            velOffsetOrigin = vVectSunToBody;
-            angVelWrtOrigin = omegaRI;
+            [posOffsetOrigin, velOffsetOrigin] = getPositOfBodyWRTSun(time, bi, obj.celBodyData);
+            [angVelWrtOrigin, rotMatToInertial] = obj.getAngVelWrtOriginAndRotMatToInertial(time, [], []);
         end
 
         function rotMatToInertial = getRotMatToInertialAtTime(obj, time, ~, ~)
@@ -48,6 +41,19 @@ classdef BodyFixedFrame < AbstractReferenceFrame
                 s = permute(sin(spinAngle), [1 3 2]);
                 rotMatToInertial = pagemtimes([c -s zero;  s c zero;  zero zero one], repmat(bi.bodyRotMatFromGlobalInertialToBodyInertial, [1 1 length(time)]));
             end
+        end
+
+        function [angVelWrtOrigin, rotMatToInertial] = getAngVelWrtOriginAndRotMatToInertial(obj, time, vehElemSet, bodyInfoInertialOrigin)
+            bi = obj.bodyInfo;
+
+            rotRateRadSec = 2*pi/bi.rotperiod;
+            angVelWrtOrigin = repmat([0;0;rotRateRadSec], [1 length(time)]);
+
+            rotMatToInertial = obj.getRotMatToInertialAtTime(time, vehElemSet, bodyInfoInertialOrigin);
+        end
+
+        function tf = frameOriginIsACelBody(obj)
+            tf = true;
         end
         
         function bodyInfo = getOriginBody(obj)
