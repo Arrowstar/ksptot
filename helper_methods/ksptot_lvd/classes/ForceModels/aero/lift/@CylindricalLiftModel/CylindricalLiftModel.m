@@ -47,22 +47,29 @@ classdef CylindricalLiftModel < AbstractLiftCoefficientModel
             area = obj.getIncidentArea(totalAoA);
             
             ClS = obj.liftCurves.bodyLiftGiLift(sin(totalAoA))*obj.liftCurves.bodyLiftMachCurve(thisMachNum)*area;
-%             disp(ClS);
 
-            bodyXInertial = attState.bodyX;
+            %get body centered coordinate systems
             bff = bodyInfo.getBodyFixedFrame();
-%             [~, ~, ~, rotMatToInertial] = bff.getOffsetsWrtInertialOrigin(ut, []);
-            rotMatToInertial = bff.getRotMatToInertialAtTime(ut, [], []);
-            rotMatInertialToECEF = rotMatToInertial';
-            bodyXECEF = rotMatInertialToECEF*bodyXInertial;
+            bci = bodyInfo.getBodyCenteredInertialFrame();
 
+            %get the rotation matrix from body fixed to body centered
+            %inertial
+            R_ecef_to_global_inertial = bff.getRotMatToInertialAtTime(ut,[],[]);
+            R_bci_to_global_inertial = bci.getRotMatToInertialAtTime(ut,[],[]);
+            R_ecef_to_bci = R_bci_to_global_inertial' * R_ecef_to_global_inertial;
+
+            %rotate the body X axis in the inertial frame to the body
+            %fixed frame
+            %TODO: Is attState.bodyX already in the body centered inertial
+            %frame?  Or is it in the global inertial frame?
+            R_bci_to_ecef = R_ecef_to_bci';
+            bodyXInertial = attState.bodyX;
+            bodyXECEF = R_bci_to_ecef*bodyXInertial;
+
+            %get the lift vector in the body centered inertial frame
             v1 = crossARH(vVectECEF, bodyXECEF);
             liftUnitVectECEF = normVector(crossARH(v1, bodyXECEF));
-            liftUnitVectInertial = rotMatToInertial * liftUnitVectECEF;
-
-            if(abs(ut - 21673513) < 1)
-                a = 1;
-            end
+            liftUnitVectInertial = R_ecef_to_bci * liftUnitVectECEF;
         end
 
         function useTf = openEditDialog(obj, lvdData)

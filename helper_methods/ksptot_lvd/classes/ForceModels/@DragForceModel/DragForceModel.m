@@ -70,10 +70,14 @@ function dragForce = getDragForce(bodyInfo, ut, rVectECI, vVectECI, aero, mass, 
         Fd = -(1/2) * density * (vVectEcefMag^2) * CdA; %kg/m^3 * (km^2/s^2) * m^2 = kg/m * km^2/s^2 = kg*(km/m)*km/s^2 = kg*(1000)*km/s^2
         
         bff = bodyInfo.getBodyFixedFrame();
-%         [~, ~, ~, rotMatToInertial]=bff.getOffsetsWrtInertialOrigin(ut,[]);
-        rotMatToInertial = bff.getRotMatToInertialAtTime(ut,[],[]);
+        bci = bodyInfo.getBodyCenteredInertialFrame();
+
+        R_ecef_to_global_inertial = bff.getRotMatToInertialAtTime(ut,[],[]);
+        R_bci_to_global_inertial = bci.getRotMatToInertialAtTime(ut,[],[]);
+        R_ecef_to_bci = R_bci_to_global_inertial' * R_ecef_to_global_inertial;
+
         dragForceECEF = Fd * normVector(vVectECEF);
-        dragForce = rotMatToInertial * dragForceECEF;
+        dragForce = R_ecef_to_bci * dragForceECEF;
         
 %         dragForce = Fd * normVector(vVectECI);
         a=1;

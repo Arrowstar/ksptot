@@ -34,7 +34,7 @@ classdef Gravity3rdBodyForceModel < AbstractForceModel
             bodies = bodies(bodies ~= bodySC);
             
             forceVect = [0;0;0]; 
-            for(i=1:length(bodies))
+            for(i=1:length(bodies)) %#ok<*NO4LP> 
                 bodyInfoJ = bodies(i);
 
 %                 cartElemSC_JBody = cartElemSC.convertToFrame(bodyInfoJ.getBodyCenteredInertialFrame());
