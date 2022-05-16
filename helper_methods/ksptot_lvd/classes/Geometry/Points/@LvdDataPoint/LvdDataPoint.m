@@ -3,16 +3,21 @@ classdef LvdDataPoint < AbstractGeometricPoint
     %   Detailed explanation goes here
 
     properties
-        allTimes cell
-        allStates cell
+        allTimes cell = {[0 1]};
+        allStates cell = {[0 0 0 0 0 0]'};
+
+        name(1,:) char = 'New Point';
     end
 
     methods
-        function obj = LvdDataPoint(inputLvdData, lvdData)
+        function obj = LvdDataPoint(inputLvdData, lvdData, name)
             arguments
                 inputLvdData(1,1) LvdData
                 lvdData(1,1) LvdData
+                name(1,:) char
             end
+
+            obj.name = name;
 
             stateLog = inputLvdData.script.executeScript(false, inputLvdData.script.getEventForInd(1), true, false, false, false);
             

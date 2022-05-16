@@ -8,6 +8,7 @@ classdef GeometricPointEnum < matlab.mixin.SetGet
         CelestialBody('Celestial Body Point');
         Vehicle('Vehicle Point');
         TwoBody('Two Body Propagated Point');
+        LvdData('LVD Trajectory Point');
     end
     
     properties
