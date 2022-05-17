@@ -99,8 +99,6 @@ classdef LvdDataPoint < AbstractGeometricPoint
                     obj.allFrames(end+1) = useFrame;
                     obj.allGIs{end+1} = griddedInterpolant(times,[rvVects;times]', "makima", "nearest");
                 end
-
-%                 obj.allStates{i} = states;
             end
         end
         
@@ -113,7 +111,7 @@ classdef LvdDataPoint < AbstractGeometricPoint
         end
         
         function listboxStr = getListboxStr(obj)
-            listboxStr = sprintf('%s', obj.getName());
+            listboxStr = sprintf('%s (LVD Trajectory)', obj.getName());
         end
         
         function useTf = openEditDialog(obj, ~)            
