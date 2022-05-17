@@ -75,7 +75,7 @@ classdef LaunchVehicleViewProfilePointData < matlab.mixin.SetGet
     methods(Access=private)
         function rVect = getPositionAtTime(obj, time)
             vehElemSet = repmat(CartesianElementSet.getDefaultElements(), [1, length(time)]);
-            for(i=1:length(obj.timesArr))
+            for(i=1:length(obj.timesArr)) %#ok<*NO4LP> 
                 times = obj.timesArr{i};
                 
                 bool = time >= min(floor(times)) & time <= max(ceil(times));

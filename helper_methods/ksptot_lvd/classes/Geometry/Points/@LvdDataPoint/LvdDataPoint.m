@@ -3,8 +3,10 @@ classdef LvdDataPoint < AbstractGeometricPoint
     %   Detailed explanation goes here
 
     properties
-        allTimes cell = {[0 1]};
-        allStates cell = {[0 0 0 0 0 0]'};
+        allTimes cell = {};
+        allRVVect cell = {};
+        allFrames(1,:) AbstractReferenceFrame
+        allGIs cell = {};
 
         name(1,:) char = 'New Point';
 
@@ -47,47 +49,7 @@ classdef LvdDataPoint < AbstractGeometricPoint
         end
 
         function cartElems = getPositionAtTime(obj, inputTimes, ~, inFrame)
-            for(i=1:length(inputTimes))
-                time = inputTimes(i);
-
-                cartElem = CartesianElementSet.empty(1,0);
-                for(j=1:length(obj.allTimes))
-                    times = obj.allTimes{j};
-                    states = obj.allStates{j};
-    
-                    if(time >= min(times) && time <= max(times))
-                        cartElem = obj.getCartElemForTime(time, times, states, inFrame);
-
-                        break;
-                    end
-                end
-
-                if(isempty(cartElem))
-                    for(j=1:length(obj.allTimes))
-                        times = obj.allTimes{j};
-                        distToLb = abs(time - min(times));
-                        distToUb = abs(time - max(times));
-                        dists(j) = min([distToLb, distToUb]); %#ok<AGROW> 
-                    end
-
-                    [~, I] = min(dists);
-
-                    times = obj.allTimes{I};
-                    states = obj.allStates{I};
-
-                    distToLb = abs(time - min(times));
-                    distToUb = abs(time - max(times));
-                    if(distToLb < distToUb) 
-                        timeToUse = min(times);
-                    else
-                        timeToUse = max(times);
-                    end
-
-                    cartElem = obj.getCartElemForTime(timeToUse, times, states, inFrame);
-                end
-
-                cartElems(i) = cartElem; %#ok<AGROW> 
-            end
+            cartElems = obj.getCartElemForTime(inputTimes, inFrame);
         end
 
         function loadLvdData(obj, inputLvdData, lvdData)
@@ -96,28 +58,49 @@ classdef LvdDataPoint < AbstractGeometricPoint
             stateLog = inputLvdData.script.executeScript(false, inputLvdData.script.getEventForInd(1), true, false, false, false);
             
             obj.allTimes = {};
-            obj.allStates = {};
+            obj.allRVVect = {};
+            obj.allFrames = AbstractReferenceFrame.empty(1,0);
+            obj.allGIs = {};
+
             for(i=1:inputLvdData.script.getTotalNumOfEvents()) %#ok<*NO4LP> 
                 evt = inputLvdData.script.getEventForInd(i);
                 entries = stateLog.getAllStateLogEntriesForEvent(evt);
 
-                for(j=1:length(entries))
-                    entry = entries(j);
-                    maEntry = entry.getMAFormattedStateLogMatrix(true);
+                [~,ia,~] = unique([entries.time], 'sorted');
+                entries = entries(ia);
 
-                    time = maEntry(1);
-                    rVect = maEntry(2:4)';
-                    vVect = maEntry(5:7)';   
-                    bodyInfo = lvdData.celBodyData.getBodyInfoById(maEntry(8));
+                if(numel(entries) > 2)
+                    useFrame = entries(1).centralBody.getBodyCenteredInertialFrame();
 
-                    ce = CartesianElementSet(time, rVect(:), vVect(:), bodyInfo.getBodyCenteredInertialFrame());
+                    times = [];
+                    rvVects = [];
+                    for(j=1:length(entries))
+                        entry = entries(j);
+                        maEntry = entry.getMAFormattedStateLogMatrix(true);
+    
+                        time = maEntry(1);
+                        rVect = maEntry(2:4)';
+                        vVect = maEntry(5:7)';   
+                        
+                        bodyInfo = lvdData.celBodyData.getBodyInfoById(maEntry(8));
+                        frame = bodyInfo.getBodyCenteredInertialFrame();
+    
+                        ce = CartesianElementSet(time, rVect(:), vVect(:), frame);
+                        ce = ce.convertToFrame(useFrame, true);
+    
+                        rvVect = [ce.rVect; ce.vVect];
+    % 
+                        times(j) = time; %#ok<AGROW> 
+                        rvVects(:,j) = rvVect; %#ok<AGROW> 
+                    end
 
-                    times(j) = time; %#ok<AGROW> 
-                    states(j) = ce; %#ok<AGROW> 
+                    obj.allTimes{end+1} = times;
+                    obj.allRVVect{end+1} = rvVects;
+                    obj.allFrames(end+1) = useFrame;
+                    obj.allGIs{end+1} = griddedInterpolant(times,[rvVects;times]', "makima", "nearest");
                 end
 
-                obj.allTimes{i} = times;
-                obj.allStates{i} = states;
+%                 obj.allStates{i} = states;
             end
         end
         
@@ -185,24 +168,61 @@ classdef LvdDataPoint < AbstractGeometricPoint
     end
 
     methods(Access=private)
-        function cartElem = getCartElemForTime(obj, time, times, states, inFrame)
-            [times,ia,~] = unique(times);
+        function cartElem = getCartElemForTime(obj, qTimes, inFrame)
+            fillerCe = CartesianElementSet(0, [0;0;0], [0;0;0], inFrame);
+            cartElem = repmat(fillerCe, [1, numel(qTimes)]);
 
-            states = states(ia);
-            states = convertToFrame(states, inFrame, true);
+            for(i=1:length(obj.allTimes))
+                times = obj.allTimes{i};
+                minTime = min(times);
+                maxTime = max(times);
 
-            rVects = [states.rVect];
-            vVects = [states.vVect];
-            rvVects = [rVects; vVects]';
+                bool = qTimes >= minTime & qTimes <= maxTime;
+                if(any(bool))
+                    subQTimes = qTimes(bool);
+                    gi = obj.allGIs{i};
+                    frame = obj.allFrames(i);
 
-            gi = griddedInterpolant(times,rvVects, "makima", "nearest");
-            rvVect = gi(time);
-            rvVect = rvVect';
-            
-            rVectInterp = rvVect(1:3,:);
-            vVectInterp = rvVect(4:6,:);
+                    rvVects = gi(subQTimes)';
+                    subCe = CartesianElementSet(subQTimes, rvVects(1:3,:), rvVects(4:6,:), frame);
+                    subCe = convertToFrame(subCe, inFrame, true);
+                    cartElem(bool) = subCe;
+                end
+            end
 
-            cartElem = CartesianElementSet(time, rVectInterp, vVectInterp, inFrame);
+            bool = cartElem == fillerCe;
+            if(any(bool))
+                outQTimes = qTimes(bool);
+
+                for(i=1:length(obj.allTimes))
+                    times = obj.allTimes{i};
+                    minTime = min(times);
+                    maxTime = max(times);
+
+                    distToLb = abs(outQTimes - minTime);
+                    distToUb = abs(outQTimes - maxTime);
+                    distToBnd(:,i) = min([distToLb(:), distToUb(:)], [], 2); %#ok<AGROW,NASGU> 
+                end
+
+                boolInds = find(bool);
+
+                [~,I] = min(distToBnd, [], 2);
+                for(i=1:length(I))
+                    qTime = outQTimes(i);
+                    Ii = I(i);
+                    
+                    gi = obj.allGIs{Ii};
+                    frame = obj.allFrames(Ii);
+
+                    rvVects = gi(qTime)';
+                    rVects = rvVects(1:3,:);
+                    vVects = rvVects(4:6,:);
+                    nearestTimes = rvVects(7,:);
+                    subCe = CartesianElementSet(nearestTimes, rVects, vVects, frame);
+                    subCe = convertToFrame(subCe, inFrame, true);
+                    cartElem(boolInds(i)) = subCe;
+                end
+            end
         end
     end
 end

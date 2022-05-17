@@ -33,7 +33,7 @@ classdef CartesianElementSet < AbstractElementSet
                     end
 
                     bool = numel(frame) > 1;
-                    for(i=1:num)
+                    for(i=1:num) %#ok<*NO4LP> 
                         obj(i).time = time(i);
                         obj(i).rVect = rVect(:,i);
                         obj(i).vVect = vVect(:,i);
