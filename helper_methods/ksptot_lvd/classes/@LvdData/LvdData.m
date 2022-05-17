@@ -24,6 +24,8 @@ classdef LvdData < matlab.mixin.SetGet
         ksptotVer char
 
         userData
+
+        id(1,1) double
     end
     
     properties(Dependent)
@@ -43,6 +45,8 @@ classdef LvdData < matlab.mixin.SetGet
             obj.graphAnalysis = LvdGraphicalAnalysis(obj);
             obj.sensors = LvdSensorSet(obj);
             obj.sensorTgts = LvdSensorTargetSet(obj);
+
+            obj.id = rand();
         end
     end
     
@@ -732,6 +736,10 @@ classdef LvdData < matlab.mixin.SetGet
         end
         
         function obj = loadobj(obj)
+            arguments
+                obj LvdData
+            end
+
             obj.validation = LaunchVehicleDataValidation(obj);
             
             if(isempty(obj.stateLog))
@@ -784,13 +792,17 @@ classdef LvdData < matlab.mixin.SetGet
             end
             
             evts = obj.script.evts;
-            for(i=1:length(evts))
+            for(i=1:length(evts)) %#ok<*NO4LP> 
                 evts(i).createUpdatedSetKinematicStateObjs();
             end
             
             nonSeqEvts = obj.script.nonSeqEvts.nonSeqEvts;
             for(i=1:length(nonSeqEvts))
                 nonSeqEvts(i).evt.createUpdatedSetKinematicStateObjs();
+            end
+
+            if(isempty(obj.id) || obj.id == 0)
+                obj.id = rand();
             end
         end
         

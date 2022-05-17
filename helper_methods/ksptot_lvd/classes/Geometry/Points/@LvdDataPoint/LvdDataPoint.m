@@ -7,43 +7,42 @@ classdef LvdDataPoint < AbstractGeometricPoint
         allStates cell = {[0 0 0 0 0 0]'};
 
         name(1,:) char = 'New Point';
+
+        inputLvdData LvdData
+        lvdData LvdData
+
+        %marker
+        markerColor(1,1) ColorSpecEnum = ColorSpecEnum.Red;
+        markerShape(1,1) MarkerStyleEnum = MarkerStyleEnum.RightTriangle;
+        
+        %track line
+        plotTrkLine(1,1) logical = true;
+        trkLineColor(1,1) ColorSpecEnum = ColorSpecEnum.Black;
+        trkLineSpec(1,1) LineSpecEnum = LineSpecEnum.DottedLine;
     end
 
     methods
         function obj = LvdDataPoint(inputLvdData, lvdData, name)
             arguments
-                inputLvdData(1,1) LvdData
-                lvdData(1,1) LvdData
-                name(1,:) char
+                inputLvdData(1,1) LvdData %the lvd data that contains the trajectory to be loaded
+                lvdData(1,1) LvdData %the lvd data for the current case/scenario/mission
+                name(1,:) char %the name of the point
             end
 
             obj.name = name;
+            obj.lvdData = lvdData;
 
-            stateLog = inputLvdData.script.executeScript(false, inputLvdData.script.getEventForInd(1), true, false, false, false);
-            
-            obj.allTimes = {};
-            obj.allStates = {};
-            for(i=1:inputLvdData.script.getTotalNumOfEvents()) %#ok<*NO4LP> 
-                evt = inputLvdData.script.getEventForInd(i);
-                entries = stateLog.getAllStateLogEntriesForEvent(evt);
+            obj.loadLvdData(inputLvdData, lvdData);
+        end
 
-                for(j=1:length(entries))
-                    entry = entries(j);
-                    maEntry = entry.getMAFormattedStateLogMatrix(true);
+        function tf = hasValidLvdData(obj)
+            tf = true;
 
-                    time = maEntry(1);
-                    rVect = maEntry(2:4)';
-                    vVect = maEntry(5:7)';   
-                    bodyInfo = lvdData.celBodyData.getBodyInfoById(maEntry(8));
+            if(isempty(obj.inputLvdData) || ...
+               obj.inputLvdData == obj.lvdData)
+                tf = false;
 
-                    ce = CartesianElementSet(time, rVect(:), vVect(:), bodyInfo.getBodyCenteredInertialFrame());
-
-                    times(j) = time; %#ok<AGROW> 
-                    states(j) = ce; %#ok<AGROW> 
-                end
-
-                obj.allTimes{i} = times;
-                obj.allStates{i} = states;
+                return;
             end
         end
 
@@ -91,24 +90,35 @@ classdef LvdDataPoint < AbstractGeometricPoint
             end
         end
 
-        function cartElem = getCartElemForTime(obj, time, times, states, inFrame)
-            [times,ia,~] = unique(times);
+        function loadLvdData(obj, inputLvdData, lvdData)
+            obj.inputLvdData = inputLvdData;
 
-            states = states(ia);
-            states = convertToFrame(states, inFrame, true);
-
-            rVects = [states.rVect];
-            vVects = [states.vVect];
-            rvVects = [rVects; vVects]';
-
-            gi = griddedInterpolant(times,rvVects, "makima", "nearest");
-            rvVect = gi(time);
-            rvVect = rvVect';
+            stateLog = inputLvdData.script.executeScript(false, inputLvdData.script.getEventForInd(1), true, false, false, false);
             
-            rVectInterp = rvVect(1:3,:);
-            vVectInterp = rvVect(4:6,:);
+            obj.allTimes = {};
+            obj.allStates = {};
+            for(i=1:inputLvdData.script.getTotalNumOfEvents()) %#ok<*NO4LP> 
+                evt = inputLvdData.script.getEventForInd(i);
+                entries = stateLog.getAllStateLogEntriesForEvent(evt);
 
-            cartElem = CartesianElementSet(time, rVectInterp, vVectInterp, inFrame);
+                for(j=1:length(entries))
+                    entry = entries(j);
+                    maEntry = entry.getMAFormattedStateLogMatrix(true);
+
+                    time = maEntry(1);
+                    rVect = maEntry(2:4)';
+                    vVect = maEntry(5:7)';   
+                    bodyInfo = lvdData.celBodyData.getBodyInfoById(maEntry(8));
+
+                    ce = CartesianElementSet(time, rVect(:), vVect(:), bodyInfo.getBodyCenteredInertialFrame());
+
+                    times(j) = time; %#ok<AGROW> 
+                    states(j) = ce; %#ok<AGROW> 
+                end
+
+                obj.allTimes{i} = times;
+                obj.allStates{i} = states;
+            end
         end
         
         function name = getName(obj)
@@ -124,9 +134,9 @@ classdef LvdDataPoint < AbstractGeometricPoint
         end
         
         function useTf = openEditDialog(obj, ~)            
-%             output = AppDesignerGUIOutput({false});
-%             lvd_EditCelestialBodyPointGUI_App(obj, output);
-%             useTf = output.output{1};
+            output = AppDesignerGUIOutput({false});
+            lvd_EditLvdTrajectoryPointGUI_App(obj, output, obj.lvdData);
+            useTf = output.output{1};
         end
         
         function tf = isVehDependent(obj)
@@ -171,6 +181,28 @@ classdef LvdDataPoint < AbstractGeometricPoint
         
         function tf = isInUse(obj, lvdData)
             tf = lvdData.usesGeometricPoint(obj);
+        end
+    end
+
+    methods(Access=private)
+        function cartElem = getCartElemForTime(obj, time, times, states, inFrame)
+            [times,ia,~] = unique(times);
+
+            states = states(ia);
+            states = convertToFrame(states, inFrame, true);
+
+            rVects = [states.rVect];
+            vVects = [states.vVect];
+            rvVects = [rVects; vVects]';
+
+            gi = griddedInterpolant(times,rvVects, "makima", "nearest");
+            rvVect = gi(time);
+            rvVect = rvVect';
+            
+            rVectInterp = rvVect(1:3,:);
+            vVectInterp = rvVect(4:6,:);
+
+            cartElem = CartesianElementSet(time, rVectInterp, vVectInterp, inFrame);
         end
     end
 end
