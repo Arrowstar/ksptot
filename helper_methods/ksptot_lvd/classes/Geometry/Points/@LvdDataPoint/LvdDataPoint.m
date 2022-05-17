@@ -89,7 +89,7 @@ classdef LvdDataPoint < AbstractGeometricPoint
                         ce = ce.convertToFrame(useFrame, true);
     
                         rvVect = [ce.rVect; ce.vVect];
-    % 
+
                         times(j) = time; %#ok<AGROW> 
                         rvVects(:,j) = rvVect; %#ok<AGROW> 
                     end
@@ -120,11 +120,11 @@ classdef LvdDataPoint < AbstractGeometricPoint
             useTf = output.output{1};
         end
         
-        function tf = isVehDependent(obj)
+        function tf = isVehDependent(obj) %#ok<MANU> 
             tf = false;
         end
         
-        function tf = canBePlotted(obj)
+        function tf = canBePlotted(obj) %#ok<MANU> 
             tf = true;
         end
         
@@ -199,7 +199,7 @@ classdef LvdDataPoint < AbstractGeometricPoint
 
                     distToLb = abs(outQTimes - minTime);
                     distToUb = abs(outQTimes - maxTime);
-                    distToBnd(:,i) = min([distToLb(:), distToUb(:)], [], 2); %#ok<AGROW,NASGU> 
+                    distToBnd(:,i) = min([distToLb(:), distToUb(:)], [], 2); %#ok<AGROW> 
                 end
 
                 boolInds = find(bool);

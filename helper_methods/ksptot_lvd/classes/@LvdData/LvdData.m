@@ -729,6 +729,8 @@ classdef LvdData < matlab.mixin.SetGet
         function initBody = getDefaultInitialBodyInfo(celBodyData)           
             if(isfield(celBodyData,'kerbin'))
                 initBody = celBodyData.kerbin;
+            elseif(isfield(celBodyData,'earth'))
+                initBody = celBodyData.earth;
             else
                 fields = fieldnames(celBodyData);
                 initBody = celBodyData.(fields{1});

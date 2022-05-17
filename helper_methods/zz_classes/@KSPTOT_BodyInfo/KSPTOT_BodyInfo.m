@@ -451,6 +451,9 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
                 
             elseif(isempty(obj.surftexturefile) && strcmpi(obj.name,'Eeloo') && obj.id == 16)
                 obj.surftexturefile = 'images/body_textures/surface/eelooSurface.png';
+
+            elseif(isempty(obj.surftexturefile) && strcmpi(obj.name,'Mercury') && obj.id == 199)
+                obj.surftexturefile = 'images/body_textures/surface/mercurySurface.png';
             end
         end
     end
