@@ -26,6 +26,7 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         %trajectory view options
         trajEvtsViewType(1,1) ViewEventsTypeEnum = ViewEventsTypeEnum.All %either chunked by event/SoI or all
         frame AbstractReferenceFrame
+        projType ViewProjectionTypeEnum = ViewProjectionTypeEnum.Perspective;
         
         %body fixed options
         showLongLatAnnotations(1,1) logical = true;

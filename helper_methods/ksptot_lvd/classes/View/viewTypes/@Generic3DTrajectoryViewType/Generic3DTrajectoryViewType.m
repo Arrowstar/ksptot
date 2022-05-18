@@ -372,8 +372,18 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             
             viewProfile.configureTimeSlider(minTime, maxTime, subStateLogs, handles, app);
             hold(dAxes,'off');
-            
-%             dAxes.CameraTarget = [0 0 0];
+
+            switch viewProfile.projType
+                case ViewProjectionTypeEnum.Orthographic
+                    camproj(dAxes, 'orthographic');
+    
+                case ViewProjectionTypeEnum.Perspective
+                    camproj(dAxes, 'perspective');
+
+                otherwise
+                    error('Unknown projection type: %s', viewProfile.projType.name);
+
+            end
         end
     end
 end
