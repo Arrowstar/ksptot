@@ -267,17 +267,6 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             %plot central body
             [hCBodySurf, hCBodySurfXForm] = ma_initOrbPlot(hFig, dAxes, viewCentralBody);
             hCBodySurf.EdgeAlpha = viewProfile.meshEdgeAlpha; 
-            
-%             hold(dAxes,'on');
-%             dRad = viewCentralBody.radius;
-%             [X,Y,Z] = sphere(50);
-%             CData = getCDataForSphereWithColormap(Z, viewCentralBody.bodycolor);
-%             mColor = colorFromColorMap(viewCentralBody.bodycolor);
-%             plot3(dAxes, 0, 0, 0,'Marker','o','MarkerEdgeColor',mColor,'MarkerFaceColor',mColor,'MarkerSize',3);
-%             hCBodySurf = surf(dAxes, dRad*X,dRad*Y,dRad*Z, 'CData',CData, 'BackFaceLighting','lit', 'FaceLighting','gouraud', 'EdgeLighting','gouraud', 'LineWidth',0.1, 'EdgeAlpha',0.1);
-%             material(hCBodySurf,'dull');
-%             hCBodySurf.EdgeAlpha = viewProfile.meshEdgeAlpha;  
-%             hold(dAxes,'off');
   
             if(viewProfile.showAtmosphere && viewCentralBody.atmohgt > 0)
                 hold(dAxes,'on');
@@ -321,13 +310,13 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             hold(dAxes,'off');
             
             if(not(viewProfile.updateViewAxesLimits))
-                setappdata(handles.ma_LvdMainGUI,'dispOrbitXLim',xlim(dAxes));
-                setappdata(handles.ma_LvdMainGUI,'dispOrbitYLim',ylim(dAxes));
-                setappdata(handles.ma_LvdMainGUI,'dispOrbitZLim',zlim(dAxes));
+%                 setappdata(handles.ma_LvdMainGUI,'dispOrbitXLim',xlim(dAxes));
+%                 setappdata(handles.ma_LvdMainGUI,'dispOrbitYLim',ylim(dAxes));
+%                 setappdata(handles.ma_LvdMainGUI,'dispOrbitZLim',zlim(dAxes));
                 
-                zoom reset;
+%                 zoom reset;
                 
-                view(dAxes,viewProfile.viewAzEl);
+%                 view(dAxes,viewProfile.viewAzEl);
                 
                 camPos = viewProfile.viewCameraPosition;
                 camTgt = viewProfile.viewCameraTarget;
@@ -349,18 +338,18 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                     dAxes.CameraViewAngle = camVA;
                 end
                 
-                if(any(isnan(viewProfile.viewZoomAxLims)))
-                    viewProfile.viewZoomAxLims = [xlim(dAxes);
-                                                  ylim(dAxes);
-                                                  zlim(dAxes)];
-                else
-                    dAxes.XLim = viewProfile.viewZoomAxLims(1,:);
-                    dAxes.YLim = viewProfile.viewZoomAxLims(2,:);
-                    dAxes.ZLim = viewProfile.viewZoomAxLims(3,:);
-                end
-                
+%                 if(any(isnan(viewProfile.viewZoomAxLims)))
+%                     viewProfile.viewZoomAxLims = [xlim(dAxes);
+%                                                   ylim(dAxes);
+%                                                   zlim(dAxes)];
+%                 else
+%                     dAxes.XLim = viewProfile.viewZoomAxLims(1,:);
+%                     dAxes.YLim = viewProfile.viewZoomAxLims(2,:);
+%                     dAxes.ZLim = viewProfile.viewZoomAxLims(3,:);
+%                 end
+%                 
             else
-                view(dAxes,viewProfile.viewAzEl);
+                view(dAxes, 3);
             end
                         
             vehPosVelData = LaunchVehicleViewProfile.createVehPosVelData(subStateLogs, lvdData.script.evts, viewInFrame);
@@ -384,8 +373,7 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             viewProfile.configureTimeSlider(minTime, maxTime, subStateLogs, handles, app);
             hold(dAxes,'off');
             
-%             sliderCB = app.DispAxesTimeSlider.ValueChangingFcn;
-%             sliderCB(app.DispAxesTimeSlider,[]);
+%             dAxes.CameraTarget = [0 0 0];
         end
     end
 end

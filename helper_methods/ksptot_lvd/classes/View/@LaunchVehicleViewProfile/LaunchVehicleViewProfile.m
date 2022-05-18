@@ -83,7 +83,7 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         hCBodySurfXForm = []; %matlab.graphics.GraphicsPlaceholder()
         
         %view properties (set by user indirectly through UI controls)
-        updateViewAxesLimits(1,1) logical = true;
+        updateViewAxesLimits(1,1) logical = false;
         orbitNumToPlot(1,1) double = 1;
         viewAzEl(1,2) = [-37.5, 30]; %view(3)
         viewZoomAxLims(3,2) double = NaN(3,2);
