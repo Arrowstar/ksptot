@@ -186,11 +186,11 @@ classdef FitNetModel < matlab.mixin.SetGet
     
     methods(Static, Access=private)
         function net = createNetwork(hiddenSizes)
-            [x,t] = simplefit_dataset;
+%             [x,t] = simplefit_dataset;
             
             net = fitnet(hiddenSizes);
             net = init(net);
-            net = configure(net,x,t);
+%             net = configure(net,x,t);
         end
     end
     
