@@ -20,20 +20,20 @@
     <param.installpath.combo>option.installpath.user</param.installpath.combo>
     <param.logo />
     <param.install.notes />
-    <param.target.install.notes>In the following directions, replace MR/v910 by the directory on the target machine where MATLAB is installed, or MR by the directory where the MATLAB Runtime is installed.
+    <param.target.install.notes>In the following directions, replace MR/v912 by the directory on the target machine where MATLAB is installed, or MR by the directory where the MATLAB Runtime is installed.
 
 (1) Set the environment variable XAPPLRESDIR to this value:
 
-MR/v910/X11/app-defaults
+MR/v912/X11/app-defaults
 
 
 (2) If the environment variable LD_LIBRARY_PATH is undefined, set it to the following:
 
-MR/v910/runtime/glnxa64:MR/v910/bin/glnxa64:MR/v910/sys/os/glnxa64:MR/v910/sys/opengl/lib/glnxa64
+MR/v912/runtime/glnxa64:MR/v912/bin/glnxa64:MR/v912/sys/os/glnxa64:MR/v912/sys/opengl/lib/glnxa64
 
 If it is defined, set it to the following:
 
-${LD_LIBRARY_PATH}:MR/v910/runtime/glnxa64:MR/v910/bin/glnxa64:MR/v910/sys/os/glnxa64:MR/v910/sys/opengl/lib/glnxa64</param.target.install.notes>
+${LD_LIBRARY_PATH}:MR/v912/runtime/glnxa64:MR/v912/bin/glnxa64:MR/v912/sys/os/glnxa64:MR/v912/sys/opengl/lib/glnxa64</param.target.install.notes>
     <param.intermediate>${PROJECT_ROOT}/deploy/KSPTrajectoryOptimizationTool/for_testing</param.intermediate>
     <param.files.only>${PROJECT_ROOT}/KSPTrajectoryOptimizationTool/deploy/for_redistribution_files_only</param.files.only>
     <param.output>${PROJECT_ROOT}/deploy/KSPTrajectoryOptimizationTool/for_redistribution</param.output>
@@ -87,7 +87,6 @@ ${LD_LIBRARY_PATH}:MR/v910/runtime/glnxa64:MR/v910/bin/glnxa64:MR/v910/sys/os/gl
       <file>${PROJECT_ROOT}/projectMain.m</file>
     </fileset.main>
     <fileset.resources>
-      <file>${PROJECT_ROOT}/appOptions.ini</file>
       <file>${PROJECT_ROOT}/bodies.ini</file>
       <file>${PROJECT_ROOT}/formsGUIs</file>
       <file>${PROJECT_ROOT}/helper_methods</file>
@@ -112,7 +111,7 @@ ${LD_LIBRARY_PATH}:MR/v910/runtime/glnxa64:MR/v910/bin/glnxa64:MR/v910/sys/os/gl
     </build-deliverables>
     <workflow />
     <matlab>
-      <root>/usr/local/MATLAB/R2021a</root>
+      <root>/usr/local/MATLAB/R2022a</root>
       <toolboxes>
         <toolbox name="matlabcoder" />
         <toolbox name="embeddedcoder" />
@@ -120,7 +119,6 @@ ${LD_LIBRARY_PATH}:MR/v910/runtime/glnxa64:MR/v910/bin/glnxa64:MR/v910/sys/os/gl
         <toolbox name="fixedpoint" />
         <toolbox name="matlabhdlcoder" />
         <toolbox name="neuralnetwork" />
-        <toolbox name="polyspacebugfinder" />
       </toolboxes>
       <toolbox>
         <matlabcoder>
@@ -151,11 +149,6 @@ ${LD_LIBRARY_PATH}:MR/v910/runtime/glnxa64:MR/v910/bin/glnxa64:MR/v910/sys/os/gl
         <neuralnetwork>
           <enabled>true</enabled>
         </neuralnetwork>
-      </toolbox>
-      <toolbox>
-        <polyspacebugfinder>
-          <enabled>true</enabled>
-        </polyspacebugfinder>
       </toolbox>
     </matlab>
     <platform>
