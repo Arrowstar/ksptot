@@ -15,7 +15,7 @@ classdef GlobalBaseInertialFrame < AbstractReferenceFrame
             obj.celBodyData = celBodyData;
         end
         
-        function [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = getOffsetsWrtInertialOrigin(~, time, ~, ~)            
+        function [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = getOffsetsWrtInertialOrigin(obj, time, ~, ~)            
             posOffsetOrigin = repmat([0;0;0], [1, length(time)]);
             velOffsetOrigin = repmat([0;0;0], [1, length(time)]);
             [angVelWrtOrigin, rotMatToInertial] = obj.getAngVelWrtOriginAndRotMatToInertial(time, [], []);
