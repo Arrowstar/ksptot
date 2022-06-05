@@ -68,15 +68,13 @@ function plotAllFlybys(hAxis, cBodyInfo, xferOrbits, bodiesInfo, numRev, celBody
     
     hold(hAxis,'on');
     hL = legend(hAxis, legendHs,legendStrs,'Location','SouthEast','orientation','vertical','EdgeColor','w','LineWidth',2,'TextColor','w');
-%     hText = findobj(hL, 'type', 'text');
-%     set(hText,'Color', 'w');
     drawnow;
-    
-    view([0 89]);
-    axis(hAxis,'equal');
-    v = axis;
-    axis(v*1.05);
     hold(hAxis,'off');
-    zoom reset;
+    
+    view(hAxis, 2);
+    axis(hAxis,'equal');
+    axis(hAxis,'padded');
+
+%     zoom reset;
 end
 
