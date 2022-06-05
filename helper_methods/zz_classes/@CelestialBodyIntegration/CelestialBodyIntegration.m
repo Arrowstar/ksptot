@@ -11,21 +11,25 @@ classdef CelestialBodyIntegration
             obj.celBodyData = celBodyData;
         end
         
-        function integrateCelestialBodies(obj, minUT, maxUT)         
+        function integrateCelestialBodies(obj, minUT, maxUT, hWaitbar) 
+            arguments
+                obj(1,1) CelestialBodyIntegration
+                minUT(1,1) double
+                maxUT(1,1) double
+                hWaitbar = [];
+            end
+
 %             allBodies = obj.celBodyData.getAllBodyInfo();
             [~, allBodiesCell] = ma_getSortedBodyNames(obj.celBodyData);
             
-            for(i=1:length(allBodiesCell))
+            for(i=1:length(allBodiesCell)) %#ok<*NO4LP> 
                 allBodies(i) = allBodiesCell{i}; %#ok<AGROW>
             end
             
             bool = [allBodies.propTypeEnum] == BodyPropagationTypeEnum.Numerical;
             if(any(bool))
-                hFig = uifigure('Position',[0,0,400,125], 'WindowStyle','modal', 'Icon','logoSquare_48px_transparentBg.png');
-                centerUIFigure(hFig);
-                hWaitbar = uiprogressdlg(hFig, 'Title','Integrating Trajectories', ...
-                                        'Message', 'Creating trajectory databases for numerically integrated celestial bodies.  Please wait.', ...
-                                        'Indeterminate','on');
+%                 hFig = uifigure('Position',[0,0,400,125], 'WindowStyle','modal', 'Icon','logoSquare_48px_transparentBg.png');
+%                 centerUIFigure(hFig);
                 drawnow;
                 
                 numericBodies = allBodies(bool);
@@ -48,9 +52,11 @@ classdef CelestialBodyIntegration
                     
                     [T,~,YY] = obj.callIntegrator(numericBodies, numericMasses, numericInds, analyticBodies, analyticInds, t0, maxUT, y0, hWaitbar);
                     
-                    hWaitbar.Message = 'Performing frame rotations on computed states.  Please wait.';
-                    hWaitbar.Value = 0;
-                    hWaitbar.Indeterminate = 'off';
+                    if(not(isempty(hWaitbar)))
+                        hWaitbar.Message = 'Performing frame rotations on computed states.  Please wait.';
+                        hWaitbar.Value = 0;
+                        hWaitbar.Indeterminate = 'off';
+                    end
                                         
                     for(i=1:size(YY,3))
                         bodyInfo = numericBodies(i);
@@ -77,15 +83,17 @@ classdef CelestialBodyIntegration
                         states = vertcat(rVects, vVects)';
                         bodyInfo.setStateCacheData(times, states, convertFrame);
                         
-                        hWaitbar.Value = i/size(YY,3);
+                        if(not(isempty(hWaitbar)))
+                            hWaitbar.Value = i/size(YY,3);
+                        end
                     end
                 else
                     error('All bodies must be defined with the same orbit epoch.');
                 end
                 
-                if(isvalid(hFig))
-                    close(hFig);
-                end
+%                 if(isvalid(hFig))
+%                     close(hFig);
+%                 end
             end
         end
     end
@@ -99,6 +107,8 @@ classdef CelestialBodyIntegration
 
             massesAnalytic = [analyticBodies.gm];
             
+            hWaitbar.Indeterminate = false;
+
             odefcn = @(t,y) odefun(t,y, numericMasses, numPts, ptCombsNum, massesAnalytic, ptCombsAnalytic, analyticBodies, obj.celBodyData);
             options = odeset('AbsTol',1E-10, 'RelTol',1E-6, ...
                              'OutputFcn',@(t,y,flag) outputFcn(t,y,flag, t0, tf, hWaitbar)); %'Events',@(t,y) myEventsFcn(t,y, numPts, masses, density, ptCombs), 
@@ -183,10 +193,10 @@ end
 
 %% Output function (for fun)
 function status = outputFcn(t,~,flag, t0, tf, hWaitbar)
-%     if(isempty(flag))
-%         tPercent = (t-t0)/(tf-t0);
-%         hWaitbar.Value = tPercent;
-%     end
+    if(isempty(flag))
+        tPercent = (t-t0)/(tf-t0);
+        hWaitbar.Value = tPercent;
+    end
     status = 0;
 end
 

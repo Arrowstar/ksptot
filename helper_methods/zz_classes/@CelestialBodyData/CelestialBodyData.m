@@ -25,7 +25,7 @@ classdef CelestialBodyData < matlab.mixin.SetGet & dynamicprops
             if(isstruct(celBodyData))
                 bodyNameFields = fields(celBodyData);
                 
-                for(i=1:length(bodyNameFields))
+                for(i=1:length(bodyNameFields)) %#ok<*NO4LP> 
                     bodyName = bodyNameFields{i};
                     
                     if(not(isprop(obj,bodyName)))
@@ -88,8 +88,15 @@ classdef CelestialBodyData < matlab.mixin.SetGet & dynamicprops
             end
         end
         
-        function updateCelestialBodyStateCache(obj, minUT, maxUT)
-            obj.ci.integrateCelestialBodies(minUT, maxUT);
+        function updateCelestialBodyStateCache(obj, minUT, maxUT, hWaitbar)
+            arguments
+                obj(1,1) CelestialBodyData
+                minUT(1,1) double
+                maxUT(1,1) double
+                hWaitbar = [];
+            end
+
+            obj.ci.integrateCelestialBodies(minUT, maxUT, hWaitbar);
         end
         
         %Override the following structure methods for backwards
