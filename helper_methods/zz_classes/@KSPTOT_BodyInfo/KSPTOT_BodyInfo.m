@@ -407,7 +407,10 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
     
     methods
         function setBaseBodySurfaceTexture(obj)
-            if(isempty(obj.surftexturefile) && strcmpi(obj.name,'Kerbin') && obj.id == 1)
+            if(isempty(obj.surftexturefile) && strcmpi(obj.name,'Sun') && obj.id == 0)
+                obj.surftexturefile = 'images/body_textures/surface/sunSurface.jpg';
+
+            elseif(isempty(obj.surftexturefile) && strcmpi(obj.name,'Kerbin') && obj.id == 1)
                 obj.surftexturefile = 'images/body_textures/surface/kerbinSurface.png';
                 
             elseif(isempty(obj.surftexturefile) && strcmpi(obj.name,'Mun') && obj.id == 2)
@@ -433,6 +436,9 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
                 
             elseif(isempty(obj.surftexturefile) && strcmpi(obj.name,'Dres') && obj.id == 15)
                 obj.surftexturefile = 'images/body_textures/surface/dresSurface.png';
+
+            elseif(isempty(obj.surftexturefile) && strcmpi(obj.name,'Jool') && obj.id == 8)
+                obj.surftexturefile = 'images/body_textures/surface/joolSurface.png';
                 
             elseif(isempty(obj.surftexturefile) && strcmpi(obj.name,'Laythe') && obj.id == 9)
                 obj.surftexturefile = 'images/body_textures/surface/laytheSurface.png';
