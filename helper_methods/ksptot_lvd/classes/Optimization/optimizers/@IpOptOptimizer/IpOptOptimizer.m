@@ -12,7 +12,7 @@ classdef IpOptOptimizer < AbstractGradientOptimizer
         end
         
         function [exitflag, message] = optimize(obj, lvdOpt, writeOutput, callOutputFcn, hLvdMainGUI)
-            global ipoptFuncCount ipoptLastXVect
+            global ipoptFuncCount ipoptLastXVect %#ok<GVMIS> 
             ipoptFuncCount = 0;
             
             [x0All, actVars, varNameStrs] = lvdOpt.vars.getTotalScaledXVector();
@@ -20,6 +20,9 @@ classdef IpOptOptimizer < AbstractGradientOptimizer
             ipoptLastXVect = x0All;
             
             if(isempty(x0All) && isempty(actVars))
+                exitflag = 0;
+                message = 'No variables enabled on script.  Aborting optimization.';
+
                 return;
             end
             

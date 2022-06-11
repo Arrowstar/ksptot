@@ -50,11 +50,20 @@ classdef LvdOptimization < matlab.mixin.SetGet
         function [exitflag, message] = optimize(obj, writeOutput, callOutputFcn, hLvdMainGUI)              
             obj.vars.sortVarsByEvtNum();
             optimizer = obj.getSelectedOptimizer();
+
+            [x0All, actVars, ~] = obj.vars.getTotalScaledXVector();
+
+            if(isempty(x0All) && isempty(actVars))
+                uialert(hLvdMainGUI, 'There are no optimization variables enabled in this mission.  Optimization requires at least one variable.  Please enable at least one variable to continue with optimization.', 'Launch Vehicle Designer', 'Icon','error');
+
+                return;
+            end
+
             [exitflag, message] = optimizer.optimize(obj, writeOutput, callOutputFcn, hLvdMainGUI);
         end
         
         function [exitflag, message] = consoleOptimize(obj)
-            global options_gravParamType
+            global options_gravParamType %#ok<GVMIS> 
             
             if(isempty(options_gravParamType))
                 options_gravParamType = 'kspStockLike';

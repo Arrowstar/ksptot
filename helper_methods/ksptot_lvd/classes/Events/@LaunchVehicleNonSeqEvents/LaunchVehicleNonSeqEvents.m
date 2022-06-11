@@ -69,8 +69,25 @@ classdef LaunchVehicleNonSeqEvents < matlab.mixin.SetGet & matlab.mixin.Copyable
             end
         end
         
-        function removeEvent(obj, evt)
-            obj.nonSeqEvts(obj.nonSeqEvts == evt) = [];
+        function removeEvent(obj, nonSeqEvt)
+            arguments
+                obj(1,1) LaunchVehicleNonSeqEvents
+                nonSeqEvt(1,1) LaunchVehicleNonSeqEvent
+            end
+
+            evt = nonSeqEvt.evt;
+
+            termCondOptVar = evt.termCond.getExistingOptVar();
+            if(not(isempty(termCondOptVar)))
+                obj.lvdData.optimizer.vars.removeVariable(termCondOptVar);
+            end
+            
+            actions = evt.actions;
+            for(i=1:length(actions)) %#ok<*NO4LP> 
+                evt.removeAction(actions(i));
+            end
+
+            obj.nonSeqEvts(obj.nonSeqEvts == nonSeqEvt) = [];
         end
         
         function removeEventFromIndex(obj, ind)

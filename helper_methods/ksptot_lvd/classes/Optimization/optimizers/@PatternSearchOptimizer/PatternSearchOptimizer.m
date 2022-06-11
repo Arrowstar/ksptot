@@ -17,6 +17,9 @@ classdef PatternSearchOptimizer < AbstractOptimizer
 %             typicalX = lvdOpt.vars.getTypicalScaledXVector();
             
             if(isempty(x0All) && isempty(actVars))
+                exitflag = 0;
+                message = 'No variables enabled on script.  Aborting optimization.';
+
                 return;
             end
             

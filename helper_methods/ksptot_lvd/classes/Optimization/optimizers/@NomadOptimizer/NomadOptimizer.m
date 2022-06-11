@@ -18,6 +18,9 @@ classdef NomadOptimizer < AbstractOptimizer
             lvdData = lvdOpt.lvdData;
             
             if(isempty(x0All) && isempty(actVars))
+                exitflag = 0;
+                message = 'No variables enabled on script.  Aborting optimization.';
+
                 return;
             end
             
