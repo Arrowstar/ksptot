@@ -27,6 +27,16 @@ classdef SetThrottleModelAction < AbstractEventAction
             
             obj.id = rand();
         end
+
+%         function tm = get.throttleModel(obj)
+%             tm = obj.throttleModel;
+%             warning('Calling SetThrottleModelAction.throttleModel is deprecated.');
+%         end
+% 
+%         function set.throttleModel(obj,tm)
+%             obj.throttleModel = tm;
+%             warning('Calling SetThrottleModelAction.throttleModel is deprecated.');
+%         end
         
         function newStateLogEntry = executeAction(obj, stateLogEntry)
             newStateLogEntry = stateLogEntry;
@@ -100,8 +110,8 @@ classdef SetThrottleModelAction < AbstractEventAction
                 obj.throttleModels = ThrottleModelsSet();
                 obj.throttleModels.selectedModel = obj.throttleModel;
 
-            elseif(obj.throttleModels.selectedModel ~= obj.throttleModel)
-                obj.throttleModels.selectedModel = obj.throttleModel;
+%             elseif(obj.throttleModels.selectedModel ~= obj.throttleModel)
+%                 obj.throttleModels.selectedModel = obj.throttleModel;
             end
         end
     end

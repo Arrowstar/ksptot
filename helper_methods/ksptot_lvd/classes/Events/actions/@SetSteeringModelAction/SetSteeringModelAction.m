@@ -27,6 +27,16 @@ classdef SetSteeringModelAction < AbstractEventAction
             
             obj.id = rand();
         end
+
+%         function sm = get.steeringModel(obj)
+%             sm = obj.steeringModel;
+%             warning('Calling SetSteeringModelAction.steeringModel is deprecated.');
+%         end
+% 
+%         function set.steeringModel(obj,sm)
+%             obj.steeringModel = sm;
+%             warning('Calling SetThrottleModelAction.steeringModel is deprecated.');
+%         end
         
         function newStateLogEntry = executeAction(obj, stateLogEntry)
             newStateLogEntry = stateLogEntry;
@@ -107,8 +117,8 @@ classdef SetSteeringModelAction < AbstractEventAction
                 obj.steeringModels = SteeringModelsSet();
                 obj.steeringModels.selectedModel = obj.steeringModel;
 
-            elseif(obj.steeringModels.selectedModel ~= obj.steeringModel)
-                obj.steeringModels.selectedModel = obj.steeringModel;
+%             elseif(obj.steeringModels.selectedModel ~= obj.steeringModel)
+%                 obj.steeringModels.selectedModel = obj.steeringModel;
             end
         end
     end
