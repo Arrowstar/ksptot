@@ -115,7 +115,7 @@ classdef SetSteeringModelAction < AbstractEventAction
 
             if(isempty(obj.steeringModels))
                 obj.steeringModels = SteeringModelsSet();
-                obj.steeringModels.selectedModel = obj.steeringModel;
+%                 obj.steeringModels.selectedModel = obj.steeringModel;
 
 %             elseif(obj.steeringModels.selectedModel ~= obj.steeringModel)
 %                 obj.steeringModels.selectedModel = obj.steeringModel;

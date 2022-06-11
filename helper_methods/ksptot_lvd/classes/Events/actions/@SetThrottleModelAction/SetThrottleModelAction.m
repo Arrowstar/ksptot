@@ -108,7 +108,7 @@ classdef SetThrottleModelAction < AbstractEventAction
 
             if(isempty(obj.throttleModels))
                 obj.throttleModels = ThrottleModelsSet();
-                obj.throttleModels.selectedModel = obj.throttleModel;
+%                 obj.throttleModels.selectedModel = obj.throttleModel;
 
 %             elseif(obj.throttleModels.selectedModel ~= obj.throttleModel)
 %                 obj.throttleModels.selectedModel = obj.throttleModel;
