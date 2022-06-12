@@ -106,6 +106,12 @@ classdef InitialStateModel < matlab.mixin.SetGet
             for(i=1:length(obj.stageStates))
                 stateLogEntry.stageStates(i) = obj.stageStates(i).deepCopy(true, stateLogEntry.lvState);
             end
+
+            tankStates = stateLogEntry.getAllTankStates();
+            for(i=1:length(tankStates))
+                tankState = tankStates(i);
+                tankState.tankMass = tankState.tank.initialMass;
+            end
             
             stateLogEntry.event = LaunchVehicleEvent.empty(0,1);
             stateLogEntry.aero = obj.aero.deepCopy();
@@ -127,10 +133,10 @@ classdef InitialStateModel < matlab.mixin.SetGet
             end
             
             obj.steeringModels.selectedModel.setT0(obj.time);
-            obj.throttleModel.setT0(obj.time);
+            obj.throttleModels.selectedModel.setT0(obj.time);
             
             stateLogEntry.steeringModel = obj.steeringModels.selectedModel;
-            stateLogEntry.throttleModel = obj.throttleModel;
+            stateLogEntry.throttleModel = obj.throttleModels.selectedModel;
             
             [~,sensors] = stateLogEntry.launchVehicle.lvdData.sensors.getListboxStr();
             for(i=1:length(sensors))
