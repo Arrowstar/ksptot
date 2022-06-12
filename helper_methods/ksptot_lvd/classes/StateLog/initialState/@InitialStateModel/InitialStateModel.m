@@ -160,7 +160,7 @@ classdef InitialStateModel < matlab.mixin.SetGet
                 vars(end+1) = obj.steeringModels.selectedModel.getExistingOptVar();
             end
             
-            throttleVar = obj.throttleModel.getExistingOptVar();
+            throttleVar = obj.throttleModels.selectedModel.getExistingOptVar();
             if(not(isempty(throttleVar)))
                 vars(end+1) = throttleVar;
             end
@@ -227,8 +227,8 @@ classdef InitialStateModel < matlab.mixin.SetGet
                 tf = tf || obj.steeringModels.selectedModel.getExistingOptVar() == var;
             end
             
-            if(not(isempty(obj.throttleModel.getExistingOptVar())))
-                tf = tf || obj.throttleModel.getExistingOptVar() == var;
+            if(not(isempty(obj.throttleModels.selectedModel.getExistingOptVar())))
+                tf = tf || obj.throttleModels.selectedModel.getExistingOptVar() == var;
             end
         end
         
@@ -246,7 +246,7 @@ classdef InitialStateModel < matlab.mixin.SetGet
             steerVar = obj.steeringModels.selectedModel.getExistingOptVar();
             varSet.removeVariable(steerVar);
             
-            throttleVar = obj.throttleModel.getExistingOptVar();
+            throttleVar = obj.throttleModels.selectedModel.getExistingOptVar();
             varSet.removeVariable(throttleVar);
             
             %set elements
@@ -254,6 +254,12 @@ classdef InitialStateModel < matlab.mixin.SetGet
 
             obj.lvState = stateLogEntry.lvState;
             obj.stageStates = stateLogEntry.stageStates;
+
+            tankStates = stateLogEntry.getAllTankStates();
+            for(i=1:length(tankStates))
+                tankState = tankStates(i);
+                tankState.tank.initialMass = tankState.tankMass;
+            end
 
             obj.aero = stateLogEntry.aero;
             obj.thirdBodyGravity = stateLogEntry.thirdBodyGravity;
@@ -267,8 +273,8 @@ classdef InitialStateModel < matlab.mixin.SetGet
             oldThrottleModelT0 = stateLogEntry.throttleModel.getT0();
             newThrottleModelT0 = stateLogEntry.time;
             tOffsetDelta = newThrottleModelT0 - oldThrottleModelT0;
-            obj.throttleModel = stateLogEntry.throttleModel;
-            obj.throttleModel.setInitialThrottleFromState(stateLogEntry, tOffsetDelta);
+            obj.throttleModels.selectedModel = stateLogEntry.throttleModel;
+            obj.throttleModels.selectedModel.setInitialThrottleFromState(stateLogEntry, tOffsetDelta);
             
             %clean up
             obj.clearDuplicateEngineStates();
