@@ -25,7 +25,7 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             dAxes.Color = viewProfile.backgroundColor.color;
             
             hFig.Renderer = viewProfile.renderer.renderer;
-            if(viewProfile.renderer == FigureRendererEnum.OpenGL)
+            if(viewProfile.renderer == FigureRendererEnum.OpenGL && ~isunix())
                 d = opengl('data');
                 if(strcmpi(d.HardwareSupportLevel,'full'))
                     opengl hardware;
