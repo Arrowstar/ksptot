@@ -45,7 +45,7 @@ classdef LaunchVehicleAttitudeState < matlab.mixin.SetGet
             ce = CartesianElementSet(ut, rVect, vVect, frame);
 
 %             [~, ~, ~, base_frame_2_inertial] = inFrame.getOffsetsWrtInertialOrigin(ut, ce);
-            base_frame_2_inertial = inFrame.getRotMatToInertialAtTime(ut, ce, []);
+            base_frame_2_inertial = inFrame.getRotMatToInertialAtTime(ut, ce);
         
             angles = real(rotm2eulARH(base_frame_2_inertial' * obj.dcm, 'zyx'));
         
@@ -126,8 +126,8 @@ classdef LaunchVehicleAttitudeState < matlab.mixin.SetGet
 %             [~, ~, ~, R_1_to_inert] = frame.getOffsetsWrtInertialOrigin(ut,[]);
 %             [~, ~, ~, R_2_to_inert] = inFrame.getOffsetsWrtInertialOrigin(ut,[]);
 
-            R_1_to_inert = frame.getRotMatToInertialAtTime(ut,[],[]);
-            R_2_to_inert = inFrame.getRotMatToInertialAtTime(ut,[],[]);
+            R_1_to_inert = frame.getRotMatToInertialAtTime(ut,ce);
+            R_2_to_inert = inFrame.getRotMatToInertialAtTime(ut,ce);
 
             R_1_to_2 = R_2_to_inert' * R_1_to_inert;
 

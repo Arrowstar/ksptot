@@ -56,6 +56,13 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
         proptype(1,:) char = 'analytic_two_body';
         propTypeEnum(1,1) BodyPropagationTypeEnum = BodyPropagationTypeEnum.TwoBody
         numIntStateCache CelestialBodySunRelStateDataCache
+
+        %non-spherical gravity
+        usenonsphericalgrav(1,1) logical = false;
+        nonsphericalgavdatafile(1,:) char = '';
+        nonsphericalgravmaxdeg(1,1) double = 0;
+        nonSphericalGravC double = [];
+        nonSphericalGravS double = [];
     end
     
     properties
@@ -514,11 +521,11 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
                         
             obj.setPropTypeEnum();
             
-            if(isempty(obj.bodyInertialFrameCache))
+            if(isempty(obj.bodyInertialFrameCache) || isempty(obj.bodyInertialFrameCache.getOriginBody()))
                 obj.bodyInertialFrameCache = BodyCenteredInertialFrame(obj, obj.celBodyData);
             end
             
-            if(isempty(obj.bodyFixedFrameCache))
+            if(isempty(obj.bodyFixedFrameCache) || isempty(obj.bodyFixedFrameCache.getOriginBody()))
                 obj.bodyFixedFrameCache = BodyFixedFrame(obj, obj.celBodyData);
             end
             
@@ -528,6 +535,19 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
             elseif(obj.propTypeEnum == BodyPropagationTypeEnum.Numerical)
                 obj.propTypeIsTwoBody = false;
                 obj.propTypeIsNumerical = true;
+            end
+
+            if(obj.usenonsphericalgrav && obj.nonsphericalgravmaxdeg > 0 && exist(obj.nonsphericalgavdatafile,'file'))
+                [obj.nonSphericalGravC, obj.nonSphericalGravS, maxOrderDeg] = getSphericalHarmonicsMatricesFromFile(obj.nonsphericalgavdatafile);
+
+                if(obj.nonsphericalgravmaxdeg > maxOrderDeg)
+                    obj.nonsphericalgravmaxdeg = maxOrderDeg;
+                end
+            elseif(obj.usenonsphericalgrav == true)
+                obj.usenonsphericalgrav = false;
+                msg = sprintf('Non-spherical gravity for body %s is enabled but either the max degree/order is less than 1 or the gravity model data file does not exist.  Reverting to standard spherical gravity.', obj.name);
+                warning(msg);
+                msgbox(msg, 'Sperhical Harmonics Gravity Error.', 'error', 'non-modal');
             end
         end
         

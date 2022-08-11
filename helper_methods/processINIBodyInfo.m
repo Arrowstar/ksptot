@@ -112,6 +112,19 @@ function [celBodyData] = processINIBodyInfo(celBodyDataFromINI, varargin)
             
             celBodyData.(name).setPropTypeEnum();
             celBodyData.(name).setBaseBodySurfaceTexture();
+
+            if(celBodyData.(name).usenonsphericalgrav && celBodyData.(name).nonsphericalgravmaxdeg > 0 && exist(celBodyData.(name).nonsphericalgavdatafile,'file'))
+                [celBodyData.(name).nonSphericalGravC, celBodyData.(name).nonSphericalGravS, maxOrderDeg] = getSphericalHarmonicsMatricesFromFile(celBodyData.(name).nonsphericalgavdatafile);
+
+                if(celBodyData.(name).nonsphericalgravmaxdeg > maxOrderDeg)
+                    celBodyData.(name).nonsphericalgravmaxdeg = maxOrderDeg;
+                end
+            elseif(celBodyData.(name).usenonsphericalgrav == true)
+                celBodyData.(name).usenonsphericalgrav = false;
+                msg = sprintf('Non-spherical gravity for body %s is enabled but either the max degree/order is less than 1 or the gravity model data file does not exist.  Reverting to standard spherical gravity.', name);
+                warning(msg);
+                msgbox(msg, 'Sperhical Harmonics Gravity Error.', 'error', 'non-modal');
+            end
         end
     end
     

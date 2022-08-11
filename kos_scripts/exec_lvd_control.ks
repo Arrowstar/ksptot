@@ -80,8 +80,32 @@ until xq > xArr[xArr:length - 1] {
 	set throtValue to yqList[3].
 	set timeToNextEvt to yqList[4].
 	set stagingCue to yqList[5].
+	set tgtSma to yqList[6].
+	set tgtEcc to yqList[7].
+	set tgtInc to yqList[8].
+	set tgtRaan to yqList[9].
+	set tgtArg to yqList[10].
+	set tgtTru to yqList[11].
 	set curEvtName to curEvtList[startInd].
 	set nxtEvtName to nxtEvtList[startInd].
+	
+	set curSma to SHIP:ORBIT:SEMIMAJORAXIS/1000.
+	set errSma to curSma - tgtSma.
+	
+	set curEcc to SHIP:ORBIT:ECCENTRICITY.
+	set errEcc to curEcc - tgtEcc.
+	
+	set curInc to SHIP:ORBIT:INCLINATION.
+	set errInc to curInc - tgtInc.
+	
+	set curRaan to SHIP:ORBIT:LAN.
+	set errRaan to curRaan - tgtRaan.
+	
+	set curArg to SHIP:ORBIT:ARGUMENTOFPERIAPSIS.
+	set errArg to curArg - tgtArg.
+	
+	set curTru to SHIP:ORBIT:TRUEANOMALY.
+	set errtru to curTru - tgtTru.
 	
 	if y0List:length > 0 {
 		set stagingCueInd0 to y0List[5].
@@ -151,12 +175,12 @@ until xq > xArr[xArr:length - 1] {
 		horzLine(l).  set l to l + 1.
 		paddedPrintLine(" Current Orbit",0,l).  set l to l + 1.
 		horzLine(l).  set l to l + 1.
-		paddedPrintLine("SMA:        " + padding(SHIP:ORBIT:SEMIMAJORAXIS/1000,0, dataNumPlaces) + " km    ", dataPrintOffset, l).  set l to l + 1.
-		paddedPrintLine("ECC:        " + padding(SHIP:ORBIT:ECCENTRICITY,0, dataNumPlaces+2), dataPrintOffset, l).  set l to l + 1.
-		paddedPrintLine("INC:        " + padding(SHIP:ORBIT:INCLINATION, 0, dataNumPlaces) + " deg", dataPrintOffset, l).  set l to l + 1.
-		paddedPrintLine("RAAN:       " + padding(SHIP:ORBIT:LAN, 0, dataNumPlaces) + " deg", dataPrintOffset, l).  set l to l + 1.
-		paddedPrintLine("AOP:        " + padding(SHIP:ORBIT:ARGUMENTOFPERIAPSIS, 0, dataNumPlaces) + " deg", dataPrintOffset, l).  set l to l + 1.
-		paddedPrintLine("TRU:        " + padding(SHIP:ORBIT:TRUEANOMALY, 0, dataNumPlaces) + " deg", dataPrintOffset, l).  set l to l + 1.
+		paddedPrintLine("SMA:        " + padding(curSma,0, dataNumPlaces) + " km (Err: " + padding(errSma,0,dataNumPlaces) + " km)", dataPrintOffset, l).  set l to l + 1.
+		paddedPrintLine("ECC:        " + padding(curEcc,0, dataNumPlaces+2) + " (Err: " + padding(errEcc,0,dataNumPlaces) + ")", dataPrintOffset, l).  set l to l + 1.
+		paddedPrintLine("INC:        " + padding(curInc, 0, dataNumPlaces) + " deg (Err: " + padding(errInc,0,dataNumPlaces) + " deg)", dataPrintOffset, l).  set l to l + 1.
+		paddedPrintLine("RAAN:       " + padding(curRaan, 0, dataNumPlaces) + " deg (Err: " + padding(errRaan,0,dataNumPlaces) + " deg)", dataPrintOffset, l).  set l to l + 1.
+		paddedPrintLine("AOP:        " + padding(curArg, 0, dataNumPlaces) + " deg (Err: " + padding(errArg,0,dataNumPlaces) + " deg)", dataPrintOffset, l).  set l to l + 1.
+		paddedPrintLine("TRU:        " + padding(curTru, 0, dataNumPlaces) + " deg (Err: " + padding(errTru,0,dataNumPlaces) + " deg)", dataPrintOffset, l).  set l to l + 1.
 		
 		horzLine(l).  set l to l + 1.
 		paddedPrintLine(" Vehicle Data",0,l).  set l to l + 1.

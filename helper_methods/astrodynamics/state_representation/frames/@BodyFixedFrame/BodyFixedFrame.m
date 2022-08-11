@@ -49,7 +49,9 @@ classdef BodyFixedFrame < AbstractReferenceFrame
             rotRateRadSec = 2*pi/bi.rotperiod;
             angVelWrtOrigin = repmat([0;0;rotRateRadSec], [1 length(time)]);
 
-            rotMatToInertial = obj.getRotMatToInertialAtTime(time, vehElemSet, bodyInfoInertialOrigin);
+            if(nargout > 1)
+                rotMatToInertial = obj.getRotMatToInertialAtTime(time, vehElemSet, bodyInfoInertialOrigin);
+            end
         end
 
         function tf = frameOriginIsACelBody(obj)
