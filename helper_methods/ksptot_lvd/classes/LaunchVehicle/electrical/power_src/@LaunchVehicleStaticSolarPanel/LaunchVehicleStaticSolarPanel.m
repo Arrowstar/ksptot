@@ -9,7 +9,7 @@ classdef LaunchVehicleStaticSolarPanel < AbstractLaunchVehicleSolarPanel
         
         bodyFrameNormVect(3,1) double = [0;1;0];
         refChargeRate(1,1) double = 0;
-        refChargeRateDist(1,1) = 13599840.256;
+        refChargeRateDist(1,1) = 13599840.256; %km
         
         id = rand();
     end

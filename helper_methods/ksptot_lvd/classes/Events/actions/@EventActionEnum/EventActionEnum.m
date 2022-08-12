@@ -29,6 +29,7 @@ classdef EventActionEnum < matlab.mixin.SetGet
         SetSensorSteeringModel('Set Sensor Pointing Model', 'SetSensorSteeringModelAction');
         SetRectangularSensorAzAngle('Set Rectangular Sensor Azimuth Angle','SetRectangularlSensorAzAngleAction');
         SetRectangularSensorDecAngle('Set Rectangular Sensor Declination Angle','SetRectangularlSensorDecAngleAction');
+        SetSolarRadPressModelAction('Set Solar Radiation Pressure Model', 'SetSolarRadPressPropertiesAction');
     end
     
     properties

@@ -14,7 +14,7 @@ classdef TotalForceModel < matlab.mixin.SetGet
     end
     
    methods (Static)
-        function [forceVect, tankMdots, ecStgDots] = getForce(fmEnums, ut, rVect, vVect, mass, bodyInfo, aero, throttleModel, steeringModel, tankStates, stageStates, lvState, dryMass, tankStatesMasses, thirdBodyGravity, storageSoCs, powerStorageStates)
+        function [forceVect, tankMdots, ecStgDots] = getForce(fmEnums, ut, rVect, vVect, mass, bodyInfo, aero, throttleModel, steeringModel, tankStates, stageStates, lvState, dryMass, tankStatesMasses, thirdBodyGravity, storageSoCs, powerStorageStates, srp)
             forceVect = [0;0;0];
             tankMdots = zeros(length(tankStates),1);
             ecStgDots = zeros(length(powerStorageStates),1);
@@ -23,10 +23,9 @@ classdef TotalForceModel < matlab.mixin.SetGet
                 attState = LaunchVehicleAttitudeState();
                 attState.dcm = steeringModel.getBody2InertialDcmAtTime(ut, rVect, vVect, bodyInfo);
 
-%                 forceModelsVar = obj.forceModels;
                 for(i=1:length(fmEnums)) %#ok<*NO4LP>
                     %all thrusts should be in units of mT*km/s^2
-                    [fv, mdots, ecDots] = fmEnums(i).model.getForce(ut, rVect, vVect, mass, bodyInfo, aero, throttleModel, steeringModel, tankStates, stageStates, lvState, dryMass, tankStatesMasses, thirdBodyGravity, storageSoCs, powerStorageStates, attState);
+                    [fv, mdots, ecDots] = fmEnums(i).model.getForce(ut, rVect, vVect, mass, bodyInfo, aero, throttleModel, steeringModel, tankStates, stageStates, lvState, dryMass, tankStatesMasses, thirdBodyGravity, storageSoCs, powerStorageStates, attState, srp);
                     forceVect = forceVect + fv;
                     
                     if(not(isempty(mdots)))

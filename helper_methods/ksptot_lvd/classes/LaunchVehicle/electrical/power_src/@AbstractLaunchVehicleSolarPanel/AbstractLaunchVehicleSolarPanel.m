@@ -84,7 +84,7 @@ classdef(Abstract) AbstractLaunchVehicleSolarPanel < AbstractLaunchVehicleElectr
 
             hasSunLoS = true;
             eclipseBodies = [bodyInfo, bodyInfo.getParBodyInfo(), bodyInfo.getChildrenBodyInfo()];
-            for(i=1:length(eclipseBodies))
+            for(i=1:length(eclipseBodies)) %#ok<*NO4LP> 
                 eclipseBodyInfo = eclipseBodies(i);
 
                 if(eclipseBodyInfo == sunBodyInfo)

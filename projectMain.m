@@ -36,6 +36,9 @@ warning('off','MATLAB:class:DestructorError');
 %that and I already know.
 warning('off','MATLAB:ui:javacomponent:FunctionToBeRemoved');
 
+%Turn off warning for up axis when rotating camera.
+warning('off','MATLAB:Axes:UpVector');
+
 %Populate initial ksptot log file
 writeKsptotLogFileHeaderToConsole();
 

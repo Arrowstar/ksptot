@@ -10,6 +10,7 @@ classdef InitialStateModel < matlab.mixin.SetGet
         
         aero(1,1) LaunchVehicleAeroState
         thirdBodyGravity(1,1) LaunchVehicle3BodyGravState
+        srp(1,1) LaunchVehicleSolarRadPressState
         
         steeringModels SteeringModelsSet
         throttleModels ThrottleModelsSet
@@ -116,6 +117,7 @@ classdef InitialStateModel < matlab.mixin.SetGet
             stateLogEntry.event = LaunchVehicleEvent.empty(0,1);
             stateLogEntry.aero = obj.aero.deepCopy();
             stateLogEntry.thirdBodyGravity = obj.thirdBodyGravity.copy();
+            stateLogEntry.srp = obj.srp.deepCopy();
             
             stopwatches = stateLogEntry.launchVehicle.stopwatches;
             for(i=1:length(stopwatches))
@@ -263,6 +265,7 @@ classdef InitialStateModel < matlab.mixin.SetGet
 
             obj.aero = stateLogEntry.aero;
             obj.thirdBodyGravity = stateLogEntry.thirdBodyGravity;
+            obj.srp = stateLogEntry.srp;
             
             oldSteerModelT0 = stateLogEntry.steeringModel.getT0();
             newSteerModelT0 = stateLogEntry.time;
@@ -339,6 +342,8 @@ classdef InitialStateModel < matlab.mixin.SetGet
             grav3Body = LaunchVehicle3BodyGravState();
             grav3Body.celBodyData = celBodyData;
             stateLogModel.thirdBodyGravity = grav3Body;
+
+            stateLogModel.srp = LaunchVehicleSolarRadPressState();
             
             rpyModel = RollPitchYawPolySteeringModel.getDefaultSteeringModel();
             stateLogModel.steeringModel = rpyModel;
@@ -355,17 +360,17 @@ classdef InitialStateModel < matlab.mixin.SetGet
             if(isempty(obj.steeringModels))
                 obj.steeringModels = SteeringModelsSet();
                 obj.steeringModels.selectedModel = obj.steeringModel;
-
-            elseif(obj.steeringModels.selectedModel ~= obj.steeringModel)
-                obj.steeringModels.selectedModel = obj.steeringModel;
+% 
+%             elseif(obj.steeringModels.selectedModel ~= obj.steeringModel)
+%                 obj.steeringModels.selectedModel = obj.steeringModel;
             end
 
             if(isempty(obj.throttleModels))
                 obj.throttleModels = ThrottleModelsSet();
                 obj.throttleModels.selectedModel = obj.throttleModel;
 
-            elseif(obj.throttleModels.selectedModel ~= obj.throttleModel)
-                obj.throttleModels.selectedModel = obj.throttleModel;
+%             elseif(obj.throttleModels.selectedModel ~= obj.throttleModel)
+%                 obj.throttleModels.selectedModel = obj.throttleModel;
             end
         end
     end

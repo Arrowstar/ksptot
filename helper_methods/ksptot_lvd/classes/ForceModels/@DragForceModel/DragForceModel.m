@@ -11,7 +11,7 @@ classdef DragForceModel < AbstractForceModel
 
         end
         
-        function [forceVect,tankMdots, ecStgDots] = getForce(obj, ut, rVect, vVect, mass, bodyInfo, aero, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, attState)
+        function [forceVect,tankMdots, ecStgDots] = getForce(obj, ut, rVect, vVect, mass, bodyInfo, aero, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, attState, ~)
             if(norm(rVect) - (bodyInfo.radius + bodyInfo.atmohgt) > 0)
                 forceVect = [0;0;0];
             else
@@ -67,7 +67,7 @@ function dragForce = getDragForce(bodyInfo, ut, rVectECI, vVectECI, aero, mass, 
         CdA = aero.getDragCoeff(ut, rVectECI, vVectECI, bodyInfo, mass, altitude, pressureKPA, density, vVectEcefMag, totalAoA, angOfAttack, angOfSideslip); 
         
         %all forces are returned in units of mT*km/s^2
-        Fd = -(1/2) * density * (vVectEcefMag^2) * CdA; %kg/m^3 * (km^2/s^2) * m^2 = kg/m * km^2/s^2 = kg*(km/m)*km/s^2 = kg*(1000)*km/s^2
+        Fd = -(1/2) * density * (vVectEcefMag^2) * CdA; %kg/m^3 * (km^2/s^2) * m^2 = kg/m * km^2/s^2 = kg*(km/m)*km/s^2 = kg*(1000)*km/s^2 => kg*(1000)*km/s^2 * (1 mT/1000 kg) = mT*km/s^2
         
         bff = bodyInfo.getBodyFixedFrame();
         bci = bodyInfo.getBodyCenteredInertialFrame();
@@ -78,9 +78,6 @@ function dragForce = getDragForce(bodyInfo, ut, rVectECI, vVectECI, aero, mass, 
 
         dragForceECEF = Fd * normVector(vVectECEF);
         dragForce = R_ecef_to_bci * dragForceECEF;
-        
-%         dragForce = Fd * normVector(vVectECI);
-        a=1;
     else
         dragForce = [0;0;0];
     end

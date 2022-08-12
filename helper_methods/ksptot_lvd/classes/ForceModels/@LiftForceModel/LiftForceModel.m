@@ -11,7 +11,7 @@ classdef LiftForceModel < AbstractForceModel
             
         end
         
-        function [forceVect, tankMdots, ecStgDots] = getForce(obj, ut, rVect, vVect, mass, bodyInfo, aero, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, attState)  
+        function [forceVect, tankMdots, ecStgDots] = getForce(obj, ut, rVect, vVect, mass, bodyInfo, aero, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, attState, ~)  
             if(norm(rVect) - (bodyInfo.radius + bodyInfo.atmohgt) > 0)
                 forceVect = [0;0;0];
             else

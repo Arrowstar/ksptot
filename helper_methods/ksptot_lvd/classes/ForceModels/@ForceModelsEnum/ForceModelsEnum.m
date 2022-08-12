@@ -3,12 +3,13 @@ classdef ForceModelsEnum < matlab.mixin.SetGet & matlab.mixin.Heterogeneous
     %   Detailed explanation goes here
     
     enumeration
-        Gravity('Gravity',GravityForceModel(),false, true);
-        Drag('Drag Force',DragForceModel(),true, false);
-        Thrust('Thrust',ThrustForceModel(),true, false);
-        Normal('Normal Force',NormalForceModel(),true, false);
-        Lift('Lift Force',LiftForceModel(),true, false);
-        Gravity3rdBody('3rd Body Gravity',Gravity3rdBodyForceModel(),true, true);
+        Gravity('Gravity',GravityForceModel(), false, true);
+        Drag('Drag Force',DragForceModel(), true, false);
+        Thrust('Thrust',ThrustForceModel(), true, false);
+        Normal('Normal Force',NormalForceModel(), true, false);
+        Lift('Lift Force',LiftForceModel(), true, false);
+        Gravity3rdBody('3rd Body Gravity',Gravity3rdBodyForceModel(), true, true);
+        SolarRadPress('Solar Radiation Pressure',SolarRadPressForceModel, true, false);
     end
     
     properties

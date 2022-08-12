@@ -12,7 +12,7 @@ classdef Gravity3rdBodyForceModel < AbstractForceModel
             
         end
         
-        function [forceVect, tankMdots, ecStgDots] = getForce(obj, ut, rVectSC, vVectSC, mass, bodySC, ~, ~, ~, ~, ~, ~, ~, ~, grav3Body, ~, ~, ~)      
+        function [forceVect, tankMdots, ecStgDots] = getForce(obj, ut, rVectSC, vVectSC, mass, bodySC, ~, ~, ~, ~, ~, ~, ~, ~, grav3Body, ~, ~, ~, ~)      
 %             cartElemSC = CartesianElementSet(ut, rVectSC, vVectSC, bodySC.getBodyCenteredInertialFrame());
 %             cartElemSCBody = CartesianElementSet(ut, [0;0;0], [0;0;0], bodySC.getBodyCenteredInertialFrame());
 
