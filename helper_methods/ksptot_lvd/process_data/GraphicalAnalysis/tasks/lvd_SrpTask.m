@@ -18,8 +18,13 @@ function datapt = lvd_SrpTask(stateLogEntry, subTask, inFrame)
         steeringModel = stateLogEntry.steeringModel;
         
         srpForceVector = stateLogEntry.srp.getSolarRadiationForce(ut, rVect, vVect, bodyInfo, steeringModel);
-        [~, ~, ~, rotMat] = inFrame.getOffsetsWrtInertialOrigin(stateLogEntry.time, vehElemSet);
-        srpForceVector = rotMat * srpForceVector;
+
+        bci = bodyInfo.getBodyCenteredInertialFrame();
+        R_bci_to_global_inertial = bci.getRotMatToInertialAtTime(ut,[],[]);
+        [~, ~, ~, R_inFrame_to_global_inertial] = inFrame.getOffsetsWrtInertialOrigin(stateLogEntry.time, vehElemSet);
+        R_bci_to_inFrame = R_inFrame_to_global_inertial' * R_bci_to_global_inertial;
+
+        srpForceVector = R_bci_to_inFrame * srpForceVector;
 
     else
         srpForceVector = [0;0;0];

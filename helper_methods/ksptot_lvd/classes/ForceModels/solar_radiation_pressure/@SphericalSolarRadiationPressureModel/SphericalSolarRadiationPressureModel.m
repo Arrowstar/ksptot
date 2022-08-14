@@ -57,6 +57,18 @@ classdef SphericalSolarRadiationPressureModel < AbstractSolarRadiationPressureMo
                 %Convert units, all forces are returned in units of mT*km/s^2
                 fSR = fSR/(1000^2); % N * (1 mT/1000 kg) * (1 km / 1000 m) = kg*m/s^2 * (mT/kg) * (km/m) = mT*km/s^2
 
+                %Do frame rotation to convert sun-relative force to
+                %body-relative force
+                sunif = bodyInfo.celBodyData.getTopLevelBody().getBodyCenteredInertialFrame();
+                bci = bodyInfo.getBodyCenteredInertialFrame();
+        
+                ut = elemSet.time;
+                R_sunif_to_global_inertial = sunif.getRotMatToInertialAtTime(ut,[],[]);
+                R_bci_to_global_inertial = bci.getRotMatToInertialAtTime(ut,[],[]);
+                R_sunif_to_bci = R_bci_to_global_inertial' * R_sunif_to_global_inertial;
+        
+                fSR = R_sunif_to_bci * fSR;
+                    
             else
                 fSR = [0;0;0];
             end
