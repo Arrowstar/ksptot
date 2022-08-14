@@ -15,7 +15,7 @@ classdef SumOfPolyTermsModel < AbstractSteeringMathModel
         function obj = SumOfPolyTermsModel(const)
             obj.const = const;
             
-            obj.terms = PolynominalTermModel(0,deg2rad(1),1);
+            obj.terms = PolynominalTermModel(0,0,0);
         end
         
         function addTerm(obj, term)

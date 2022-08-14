@@ -71,6 +71,11 @@ function [taskList] = lvd_getGraphAnalysisTaskList(lvdData, excludeList)
     taskList{end+1} = 'Hyperbolic Velocity Magnitude';
 
     taskList{end+1} = 'Drag Force';
+
+    taskList{end+1} = 'Solar Radiation Pressure Force Vector X Component';
+    taskList{end+1} = 'Solar Radiation Pressure Force Vector Y Component';
+    taskList{end+1} = 'Solar Radiation Pressure Force Vector Z Component';
+    taskList{end+1} = 'Solar Radiation Pressure Force Vector Magnitude';
     
     [fluidTypesGAStr, ~] = lvdData.launchVehicle.tankTypes.getFluidTypesGraphAnalysisTaskStrs();
     taskList = horzcat(taskList, fluidTypesGAStr);

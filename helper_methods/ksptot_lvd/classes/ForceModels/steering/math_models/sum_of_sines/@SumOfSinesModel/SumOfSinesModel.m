@@ -15,7 +15,7 @@ classdef SumOfSinesModel < AbstractSteeringMathModel
         function obj = SumOfSinesModel(const)
             obj.const = const;
             
-            obj.sines = SineModel(0,1,2*pi,0);
+            obj.sines = SineModel(0,0,2*pi,0);
         end
         
         function addSine(obj, sine)

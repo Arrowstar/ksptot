@@ -170,6 +170,7 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             
             showSoI = viewProfile.showSoIRadius;
             
+            %Show Thrust Vectors
             if(viewProfile.showThrustVectors)
                 entryInc = viewProfile.thrustVectEntryIncr;
                 scale = viewProfile.thrustVectScale;
@@ -181,7 +182,7 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                 cartesianEntries = convertToFrame(getCartesianElementSetRepresentation(subsetLvdStateLogEntries), viewInFrame);
                 
                 rVects = [cartesianEntries.rVect];
-                tVects = [];
+                srpVects = [];
                 
                 [~, ~, ~, rotMatToInertial12] = viewInFrame.getOffsetsWrtInertialOrigin([cartesianEntries.time], cartesianEntries);
                 for(i=1:length(subsetLvdStateLogEntries)) %#ok<*NO4LP>
@@ -193,18 +194,45 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                     if(norm(tVect) > 0)                       
                         [~, ~, ~, rotMatToInertial32] = entry.centralBody.getBodyCenteredInertialFrame().getOffsetsWrtInertialOrigin(entry.time, cartesianEntry);
                         
-                        tVectNew = rotMatToInertial32 * rotMatToInertial12(:,:,i)' * tVect;
+                        srpVect = rotMatToInertial32 * rotMatToInertial12(:,:,i)' * tVect;
                     else
-                        tVectNew = [0;0;0];
+                        srpVect = [0;0;0];
                     end
                     
-                    tVects = [tVects, tVectNew]; %#ok<AGROW>
+                    srpVects = [srpVects, srpVect]; %#ok<AGROW>
                 end
                 
-                tVects = scale .* tVects;
+                srpVects = scale .* srpVects;
                 
                 hold(dAxes,'on');
-                quiver3(dAxes, rVects(1,:),rVects(2,:),rVects(3,:), tVects(1,:),tVects(2,:),tVects(3,:), 0, 'Color',color, 'LineStyle',lineStyle);
+                quiver3(dAxes, rVects(1,:),rVects(2,:),rVects(3,:), srpVects(1,:),srpVects(2,:),srpVects(3,:), 0, 'Color',color, 'LineStyle',lineStyle);
+                hold(dAxes,'off');
+            end
+
+            %Show SRP vectors
+            if(viewProfile.showSrpVectors)
+                entryInc = viewProfile.srpVectEntryIncr;
+                scale = viewProfile.srpVectScale;       %km/N
+                color = viewProfile.srpVectColor.color;
+                lineStyle = viewProfile.srpVectLineType.linespec;
+
+                subsetLvdStateLogEntries = lvdStateLogEntries(1:entryInc:length(lvdStateLogEntries));
+                subsetLvdStateLogEntries = subsetLvdStateLogEntries(:)';
+                cartesianEntries = convertToFrame(getCartesianElementSetRepresentation(subsetLvdStateLogEntries), viewInFrame);
+
+                rVects = [cartesianEntries.rVect];
+                srpVects = [];
+
+                for(i=1:length(subsetLvdStateLogEntries)) %#ok<*NO4LP>
+                    entry = subsetLvdStateLogEntries(i);      
+                    srpVect = lvd_SrpTask(entry, 'SrpForceVector', viewInFrame); %N
+                    srpVects = [srpVects, srpVect]; %#ok<AGROW>
+                end
+                
+                srpVects = scale .* srpVects;
+
+                hold(dAxes,'on');
+                quiver3(dAxes, rVects(1,:),rVects(2,:),rVects(3,:), srpVects(1,:),srpVects(2,:),srpVects(3,:), 0, 'Color',color, 'LineStyle',lineStyle);
                 hold(dAxes,'off');
             end
 

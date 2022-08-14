@@ -35,8 +35,15 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         showThrustVectors(1,1) logical = false;
         thrustVectColor(1,1) ColorSpecEnum  = ColorSpecEnum.Red;
         thrustVectLineType(1,1) LineSpecEnum = LineSpecEnum.SolidLine;
-        thrustVectScale(1,1) double = 1;
+        thrustVectScale(1,1) double = 1;  %km/kN                               
         thrustVectEntryIncr(1,1) double = 1;
+
+        %srp vectors
+        showSrpVectors(1,1) logical = false;
+        srpVectColor(1,1) ColorSpecEnum  = ColorSpecEnum.Yellow;
+        srpVectLineType(1,1) LineSpecEnum = LineSpecEnum.SolidLine;
+        srpVectScale(1,1) double = 1000; %km/N
+        srpVectEntryIncr(1,1) double = 1;
         
         %SoI and other body options
         showSoIRadius(1,1) logical = false;

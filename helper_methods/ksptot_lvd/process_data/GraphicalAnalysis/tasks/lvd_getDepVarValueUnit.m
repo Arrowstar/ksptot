@@ -211,9 +211,23 @@ function [depVarValue, depVarUnit, taskStr, refBodyInfo] = lvd_getDepVarValueUni
         case  'Hyperbolic Velocity Magnitude'
             depVarValue = lvd_KinematicStateTasks(subLog(i), 'hyperVelMag', inFrame);
             depVarUnit = 'km/s';
+            
         case 'Drag Force'
             depVarValue = lvd_AeroTasks(subLog(i), 'dragForce', inFrame);
             depVarUnit = 'kN';
+
+        case 'Solar Radiation Pressure Force Vector X Component'
+            depVarValue = lvd_SrpTask(subLog(i), 'SrpForceVectX', inFrame);
+            depVarUnit = 'N';
+        case 'Solar Radiation Pressure Force Vector Y Component'
+            depVarValue = lvd_SrpTask(subLog(i), 'SrpForceVectY', inFrame);
+            depVarUnit = 'N';
+        case 'Solar Radiation Pressure Force Vector Z Component'
+            depVarValue = lvd_SrpTask(subLog(i), 'SrpForceVectZ', inFrame);
+            depVarUnit = 'N';
+        case 'Solar Radiation Pressure Force Vector Magnitude'
+            depVarValue = lvd_SrpTask(subLog(i), 'SrpForceVectMag', inFrame);
+            depVarUnit = 'N';
  
         otherwise %is a programmatically generated string that we'll handle here
             fluidTypeMassPattern = '^Fluid Type (\d+?) Mass - ".*"';
