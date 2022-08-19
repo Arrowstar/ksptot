@@ -1,4 +1,10 @@
-function [rVectB, vVectB] = getPositOfBodyWRTSun(time, bodyInfo, celBodyData)  
+function [rVectB, vVectB] = getPositOfBodyWRTSun(time, bodyInfo, celBodyData) 
+%     arguments
+%         time double
+%         bodyInfo KSPTOT_BodyInfo
+%         celBodyData CelestialBodyData
+%     end
+    
     try
         if(bodyInfo.propTypeEnum == BodyPropagationTypeEnum.TwoBody || (numel(time) == 1 && time == bodyInfo.epoch))
             chain = bodyInfo.getOrbitElemsChain();
@@ -45,7 +51,7 @@ function [rVectB, vVectB] = getPositOfBodyWRTSun(time, bodyInfo, celBodyData)
             bodyInfo = parentBodyInfo;
         end
     end
-    
+
 %     if(numel(time) > 1 && numel(time) == numel(bodyInfo))
 %         [uniBodies,~,ic] = unique(bodyInfo,'stable');
 %         

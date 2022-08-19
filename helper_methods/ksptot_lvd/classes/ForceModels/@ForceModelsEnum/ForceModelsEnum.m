@@ -3,28 +3,30 @@ classdef ForceModelsEnum < matlab.mixin.SetGet & matlab.mixin.Heterogeneous
     %   Detailed explanation goes here
     
     enumeration
-        Gravity('Gravity',GravityForceModel(), false, true);
-        Drag('Drag Force',DragForceModel(), true, false);
-        Thrust('Thrust',ThrustForceModel(), true, false);
-        Normal('Normal Force',NormalForceModel(), true, false);
-        Lift('Lift Force',LiftForceModel(), true, false);
-        Gravity3rdBody('3rd Body Gravity',Gravity3rdBodyForceModel(), true, true);
-        SolarRadPress('Solar Radiation Pressure',SolarRadPressForceModel, true, false);
+        Gravity('Gravity',GravityForceModel(), false, true, false);
+        Drag('Drag Force',DragForceModel(), true, false, true);
+        Thrust('Thrust',ThrustForceModel(), true, false, true);
+        Normal('Normal Force',NormalForceModel(), true, false, false);
+        Lift('Lift Force',LiftForceModel(), true, false, true);
+        Gravity3rdBody('3rd Body Gravity',Gravity3rdBodyForceModel(), true, true, false);
+        SolarRadPress('Solar Radiation Pressure',SolarRadPressForceModel, true, false, true);
     end
     
     properties
         name char
         model AbstractForceModel
         canBeDisabled(1,1) logical = false;
-        allowedForSecondOrder(1,1) logical = false
+        allowedForSecondOrder(1,1) logical = false;
+        usesAttitudeState(1,1) logical
     end
     
     methods
-        function obj = ForceModelsEnum(name, model, canBeDisabled, allowedForSecondOrder)
+        function obj = ForceModelsEnum(name, model, canBeDisabled, allowedForSecondOrder, usesAttitudeState)
             obj.name = name;
             obj.model = model;
             obj.canBeDisabled = canBeDisabled;
             obj.allowedForSecondOrder = allowedForSecondOrder;
+            obj.usesAttitudeState = usesAttitudeState;
         end
     end
     

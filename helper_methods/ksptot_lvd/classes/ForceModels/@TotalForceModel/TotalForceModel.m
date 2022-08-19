@@ -20,8 +20,12 @@ classdef TotalForceModel < matlab.mixin.SetGet
             ecStgDots = zeros(length(powerStorageStates),1);
             
             if(mass > 0)
-                attState = LaunchVehicleAttitudeState();
-                attState.dcm = steeringModel.getBody2InertialDcmAtTime(ut, rVect, vVect, bodyInfo);
+                if(any([fmEnums.usesAttitudeState]))
+                    attState = LaunchVehicleAttitudeState();
+                    attState.dcm = steeringModel.getBody2InertialDcmAtTime(ut, rVect, vVect, bodyInfo);
+                else
+                    attState = [];
+                end
 
                 for(i=1:length(fmEnums)) %#ok<*NO4LP>
                     %all thrusts should be in units of mT*km/s^2

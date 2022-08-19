@@ -5,6 +5,7 @@ clc; clear variables; format long g; close all;
 
 %set pathes if not deployed
 if(~isdeployed) 
+    restoredefaultpath();
     addpath(genpath('helper_methods'));
     addpath(genpath('formsGUIs'));
     addpath(genpath('kspTOT_RTS'));

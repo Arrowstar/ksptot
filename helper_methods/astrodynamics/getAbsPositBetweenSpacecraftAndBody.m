@@ -26,15 +26,27 @@ function [rVect,vVect] = getAbsPositBetweenSpacecraftAndBody(time, rVectSC, body
         
     else
         [rVectBodySC, vVectBodySC] = getPositOfBodyWRTSun(time, bodySC, celBodyData);
-        rVectSCTot = bsxfun(@plus, rVectBodySC, rVectSC);
+        if(numel(rVectBodySC) == 3 && numel(rVectSC) == 3)
+            rVectSCTot = rVectBodySC + rVectSC;
+        else
+            rVectSCTot = bsxfun(@plus, rVectBodySC, rVectSC);
+        end
 
         [rVectB, vVectB] = getPositOfBodyWRTSun(time, bodyOther, celBodyData);
 
-        rVect = bsxfun(@minus, rVectB, rVectSCTot);
+        if(numel(rVectB) == 3 && numel(rVectSCTot) == 3)
+            rVect = rVectB - rVectSCTot;
+        else
+            rVect = bsxfun(@minus, rVectB, rVectSCTot);
+        end
 
         if(~isempty(varargin))
             vVectSC = varargin{1};
-            vVectSCTot = bsxfun(@plus, vVectBodySC, vVectSC);
+            if(numel(rVectB) == 3 && numel(rVectSCTot) == 3)
+                vVectSCTot = vVectBodySC + vVectSC;
+            else
+                vVectSCTot = bsxfun(@plus, vVectBodySC, vVectSC);
+            end
 
             vVect = bsxfun(@minus, vVectB, vVectSCTot);
         else

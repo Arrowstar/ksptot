@@ -41,11 +41,19 @@ function points = intersectLineSphere(line, sphere, varargin)
         tol = varargin{1};
     end
     % difference between centers
-    dc = bsxfun(@minus, line(:, 1:3), sphere(:, 1:3));
-    % equation coefficients
-    a = sum(line(:, 4:6) .* line(:, 4:6), 2);
-    b = 2 * sum(bsxfun(@times, dc, line(:, 4:6)), 2);
-    c = sum(dc.*dc, 2) - sphere(:,4).*sphere(:,4);
+    if(height(line) == 1 && height(sphere) == 1)
+        dc = line(1:3) - sphere(1:3);
+        % equation coefficients
+        a = sum(line(4:6) .* line(4:6), 2);
+        b = 2 * sum(dc.*line(4:6), 2);
+        c = sum(dc.*dc, 2) - sphere(:,4).*sphere(:,4);
+    else
+        dc = bsxfun(@minus, line(:, 1:3), sphere(:, 1:3));
+        % equation coefficients
+        a = sum(line(:, 4:6) .* line(:, 4:6), 2);
+        b = 2 * sum(bsxfun(@times, dc, line(:, 4:6)), 2);
+        c = sum(dc.*dc, 2) - sphere(:,4).*sphere(:,4);
+    end
     % solve equation
     delta = b.*b - 4*a.*c;
     % initialize empty results

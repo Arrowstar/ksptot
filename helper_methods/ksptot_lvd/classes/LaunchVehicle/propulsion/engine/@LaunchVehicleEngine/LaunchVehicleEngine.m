@@ -148,7 +148,7 @@ classdef LaunchVehicleEngine < matlab.mixin.SetGet
         end
         
         function [thrust, mdot] = getThrustFlowRateForPressure(obj, presskPa)
-            [thrust, isp] = obj.getThrustIspForPressure(presskPa);
+            [thrust, isp] = getThrustIspForPressure(obj, presskPa);
             
             mdot = -(thrust/(getG0() * isp)); %kN/(m/s/s * s) = kN/(m/s) = (1/1000) N / (m/s) = (1/1000) kg*m/s/s /(m/s) = (1/1000) kg/s = mT/s
         end
