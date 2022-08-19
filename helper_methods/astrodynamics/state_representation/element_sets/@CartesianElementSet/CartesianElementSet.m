@@ -94,7 +94,7 @@ classdef CartesianElementSet < AbstractElementSet
             lat = pi/2 - acos(rVects(3,:)./rNorm);
             alt = rNorm - [bodyInfos.radius];
             
-            vectorSez = rotVectToSEZCoords(rVects, vVects);
+            vectorSez = rotVectToSEZCoords_mex(rVects, vVects);
             [velAz, velEl, velMag] = cart2sph(vectorSez(1,:), vectorSez(2,:), vectorSez(3,:));
             velAz = pi - velAz;
             
@@ -118,7 +118,7 @@ classdef CartesianElementSet < AbstractElementSet
         end
         
         function [horzVel, vertVel] = getHorzVertVelocities(obj)
-            vVectSez = rotVectToSEZCoords(obj.rVect, obj.vVect);
+            vVectSez = rotVectToSEZCoords_mex(obj.rVect, obj.vVect);
             
             horzVel = sqrt(vVectSez(1)^2 + vVectSez(2)^2);
             vertVel = vVectSez(3);

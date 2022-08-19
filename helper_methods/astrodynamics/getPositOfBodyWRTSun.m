@@ -1,9 +1,9 @@
 function [rVectB, vVectB] = getPositOfBodyWRTSun(time, bodyInfo, celBodyData) 
-%     arguments
-%         time double
-%         bodyInfo KSPTOT_BodyInfo
-%         celBodyData CelestialBodyData
-%     end
+    arguments
+        time double
+        bodyInfo KSPTOT_BodyInfo
+        celBodyData
+    end
 
     if(numel(time) == 1 && bodyInfo.lastComputedSunTime == time)
         rVectB = bodyInfo.lastComputedSunRVect;

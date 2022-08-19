@@ -76,6 +76,12 @@ classdef(Abstract) AbstractLaunchVehicleSolarPanel < AbstractLaunchVehicleElectr
     
     methods(Static)
         function [hasSunLoS, body2InertDcm, elemSetSun] = getExpensiveSolarPanelInputs(elemSet, bodyInfo, steeringModel)
+            arguments
+                elemSet AbstractElementSet
+                bodyInfo KSPTOT_BodyInfo
+                steeringModel AbstractSteeringModel
+            end
+
             celBodyData = bodyInfo.celBodyData;
             sunBodyInfo = celBodyData.getTopLevelBody();
             

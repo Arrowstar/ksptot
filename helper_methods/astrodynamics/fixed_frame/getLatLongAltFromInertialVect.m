@@ -18,7 +18,7 @@ function [lat, long, alt, vVectSez, horzVel, vertVel, rVectECEF, vVectECEF, REci
     alt = rNorm - bodyInfo.radius;
     
     if(~any(isnan(vVectECI)))
-        vVectSez = rotVectToSEZCoords(rVectECEF, vVectECEF);
+        vVectSez = rotVectToSEZCoords_mex(rVectECEF, vVectECEF);
         horzVel = sqrt(vVectSez(1)^2 + vVectSez(2)^2);
         vertVel = vVectSez(3);
     else

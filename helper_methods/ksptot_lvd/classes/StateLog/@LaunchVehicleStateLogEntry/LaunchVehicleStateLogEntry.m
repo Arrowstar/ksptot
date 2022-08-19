@@ -514,6 +514,23 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
         end
         
         function [tankMDots, totalThrust, forceVect, ecStorageRates] = getTankMassFlowRatesDueToEngines(tankStates, tankStatesMasses, stgStates, throttle, lvState, presskPa, ut, rVect, vVect, bodyInfo, steeringModel, storageSoCs, powerStorageStates, attState)
+            arguments
+                tankStates LaunchVehicleTankState
+                tankStatesMasses double
+                stgStates LaunchVehicleStageState
+                throttle(1,1) double
+                lvState(1,1) LaunchVehicleState
+                presskPa(1,1) double
+                ut(1,1) double
+                rVect(3,1) double
+                vVect(3,1) double
+                bodyInfo(1,1) KSPTOT_BodyInfo
+                steeringModel(1,1) AbstractSteeringModel
+                storageSoCs double
+                powerStorageStates AbstractLaunchVehicleEpsStorageState
+                attState LaunchVehicleAttitudeState
+            end
+            
             tankMDots = zeros(size(tankStates));
             tankMDots = tankMDots(:);
             totalThrust = 0;
@@ -658,27 +675,6 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                 
                 if(hasPanels)
                     [hasSunLoS, body2InertDcm, elemSetSun] = AbstractLaunchVehicleSolarPanel.getExpensiveSolarPanelInputs(elemSet, bodyInfo, steeringModel);
-%                     celBodyData = bodyInfo.celBodyData;
-%                     sunBodyInfo = celBodyData.getTopLevelBody();
-%                     
-%                     hasSunLoS = true;
-%                     eclipseBodies = [bodyInfo, bodyInfo.getParBodyInfo(), bodyInfo.getChildrenBodyInfo()];
-%                     for(i=1:length(eclipseBodies))
-%                         eclipseBodyInfo = eclipseBodies(i);
-% 
-%                         if(eclipseBodyInfo == sunBodyInfo)
-%                             continue;
-%                         end
-% 
-%                         stateLogEntry = [elemSet.time, elemSet.rVect(:)'];
-%                         LoS = LoS2Target(stateLogEntry, bodyInfo, eclipseBodyInfo, sunBodyInfo, celBodyData, []);
-%                         if(LoS == 0)
-%                             hasSunLoS = false;
-%                             break;
-%                         end
-%                     end
-%                     
-%                     body2InertDcm = steeringModel.getBody2InertialDcmAtTime(elemSet.time, elemSet.rVect(:), elemSet.vVect(:), bodyInfo);
                 else
                     hasSunLoS = false; %doesn't matter
                     body2InertDcm = eye(3); %doesn't matter

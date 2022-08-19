@@ -10,17 +10,27 @@ classdef RollPitchYawPolySteeringModel < AbstractAnglePolySteeringModel
         rollContinuity(1,1) logical = false;
         pitchContinuity(1,1) logical = false;
         yawContinuity(1,1) logical = false;
+
+        dcmCacheTime(1,1) double = NaN;
+        dcmCache(3,3) double = NaN(3,3);
     end
     
     methods       
         function dcm = getBody2InertialDcmAtTime(obj, ut, rVect, vVect, bodyInfo)
-            rollAng = obj.rollModel.getValueAtTime(ut);
-            pitchAng = obj.pitchModel.getValueAtTime(ut);
-            yawAng = obj.yawModel.getValueAtTime(ut);
-                        
-            baseFrame = bodyInfo.getBodyFixedFrame();
-            [~, ~, ~, dcm] = computeInertialBodyAxesFromFrameEuler(ut, rVect, vVect, bodyInfo, rollAng, pitchAng, yawAng, baseFrame);
-            dcm = real(dcm);
+            if(numel(ut) == 1 && ut == obj.dcmCacheTime)
+                dcm = obj.dcmCache;
+            else
+                rollAng = obj.rollModel.getValueAtTime(ut);
+                pitchAng = obj.pitchModel.getValueAtTime(ut);
+                yawAng = obj.yawModel.getValueAtTime(ut);
+                            
+                baseFrame = bodyInfo.getBodyFixedFrame();
+                [~, ~, ~, dcm] = computeInertialBodyAxesFromFrameEuler(ut, rVect, vVect, bodyInfo, rollAng, pitchAng, yawAng, baseFrame);
+                dcm = real(dcm);
+
+                obj.dcmCacheTime = ut;
+                obj.dcmCache = dcm;
+            end
         end
 
         function [angleModel, continuity] = getAngleNModel(obj, n)

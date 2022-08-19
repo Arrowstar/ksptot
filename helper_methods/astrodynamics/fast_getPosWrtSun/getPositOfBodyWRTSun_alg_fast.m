@@ -209,7 +209,7 @@ function [rVect, vVect] = getStatefromKepler_Alg(sma, ecc, inc, raan, arg, tru, 
 
     rVect = zeros(3,numOrb);
     vVect = zeros(3,numOrb);
-    for(i=1:numOrb)
+    for(i=1:numOrb) %#ok<*NO4LP> 
         rVect(:,i) = TransMatrix(:,:,i) * rPQW(:,i);
         vVect(:,i) = TransMatrix(:,:,i) * vPQW(:,i);
     end

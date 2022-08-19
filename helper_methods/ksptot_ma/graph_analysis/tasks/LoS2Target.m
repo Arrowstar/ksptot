@@ -1,18 +1,24 @@
 function LoS = LoS2Target(stateLogEntry, bodyInfo, eclipseBodyInfo, targetBodyInfo, celBodyData, station, varargin)
     %https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
     
+    arguments
+        stateLogEntry
+        bodyInfo KSPTOT_BodyInfo
+        eclipseBodyInfo KSPTOT_BodyInfo
+        targetBodyInfo KSPTOT_BodyInfo
+        celBodyData
+        station
+    end
+
+    arguments(Repeating)
+        varargin
+    end
+
     eBodyRad = eclipseBodyInfo.radius;
     
     time = stateLogEntry(1);
     rVectSc = stateLogEntry(2:4);
     rVectSc = rVectSc(:);
-    
-    %     [sma, ecc, inc, raan, arg, tru] = getKeplerFromState(stateLogEntry(2:4),stateLogEntry(5:7),bodyInfo.gm);
-    %     meanA = computeMeanFromTrueAnom(tru, ecc);
-    %     inputOrbit = [sma, ecc, inc, raan, arg, meanA, time];
-    %     scBodyInfo = getBodyInfoStructFromOrbit(inputOrbit);
-    %     scBodyInfo.parent = bodyInfo.name;
-    %     [rVectBodySCwrtSun, ~] = getPositOfBodyWRTSun(time, scBodyInfo, celBodyData);
        
     if(length(varargin) >= 1 && not(isempty(varargin{1})))
         scElemSetSun = varargin{1};
@@ -26,11 +32,15 @@ function LoS = LoS2Target(stateLogEntry, bodyInfo, eclipseBodyInfo, targetBodyIn
     end
     
     rVectBodySCwrtSun = scElemSetSun.rVect;
-    
-    [rVectTargetwrtSun, ~] = getPositOfBodyWRTSun(time, targetBodyInfo, celBodyData);
-    
     rVectEclipseBodyBodywrtSun = getPositOfBodyWRTSun(time, eclipseBodyInfo, celBodyData);
-    
+
+    if(norm(rVectBodySCwrtSun) < (norm(rVectEclipseBodyBodywrtSun) - eBodyRad))
+        LoS = 1;
+        return;
+    end
+
+    rVectTargetwrtSun = getPositOfBodyWRTSun(time, targetBodyInfo, celBodyData);
+
     if(~isempty(station))
         if(isstruct(station)) %MA ground target
             stnBodyInfo = getBodyInfoByNumber(station.parentID, celBodyData);

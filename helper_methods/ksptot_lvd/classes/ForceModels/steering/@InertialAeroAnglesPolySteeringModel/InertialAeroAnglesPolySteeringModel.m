@@ -10,16 +10,26 @@ classdef InertialAeroAnglesPolySteeringModel < AbstractAnglePolySteeringModel
         bankContinuity(1,1) logical = true;
         aoAContinuity(1,1) logical = true;
         slipContinuity(1,1) logical = true;
+
+        dcmCacheTime(1,1) double = NaN;
+        dcmCache(3,3) double = NaN(3,3);
     end
     
     methods       
         function R_body_2_inertial = getBody2InertialDcmAtTime(obj, ut, rVect, vVect, bodyInfo)
-            bankAng = obj.bankModel.getValueAtTime(ut);
-            angOfAttack = obj.aoAModel.getValueAtTime(ut);
-            angOfSideslip = obj.slipModel.getValueAtTime(ut);
-            
-            baseFrame = bodyInfo.getBodyCenteredInertialFrame();
-            [~, ~, ~, R_body_2_inertial] = computeInertialBodyAxesFromFrameAeroAngles(ut, rVect, vVect, bodyInfo, bankAng, angOfAttack, angOfSideslip, baseFrame);
+            if(numel(ut) == 1 && ut == obj.dcmCacheTime)
+                R_body_2_inertial = obj.dcmCache;
+            else
+                bankAng = obj.bankModel.getValueAtTime(ut);
+                angOfAttack = obj.aoAModel.getValueAtTime(ut);
+                angOfSideslip = obj.slipModel.getValueAtTime(ut);
+                
+                baseFrame = bodyInfo.getBodyCenteredInertialFrame();
+                [~, ~, ~, R_body_2_inertial] = computeInertialBodyAxesFromFrameAeroAngles(ut, rVect, vVect, bodyInfo, bankAng, angOfAttack, angOfSideslip, baseFrame);
+
+                obj.dcmCacheTime = ut;
+                obj.dcmCache = R_body_2_inertial;
+            end
         end
         
         function [angleModel, continuity] = getAngleNModel(obj, n)
