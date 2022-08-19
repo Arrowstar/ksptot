@@ -66,7 +66,7 @@ function LoS = LoS2Target(stateLogEntry, bodyInfo, eclipseBodyInfo, targetBodyIn
     tol=1E-6;
     if(any(not(isnan(points))))       
         LoS = 1;
-        for(i=1:2)
+        for(i=1:2) %#ok<*NO4LP> 
             if(all(not(isnan(points(i,:)))))
                 pt = points(i,:)';
                 pt = pt(:);

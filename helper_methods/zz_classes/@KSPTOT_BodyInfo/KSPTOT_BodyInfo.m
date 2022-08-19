@@ -94,6 +94,10 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
         lastComputedVVect = NaN(3,1);
         
         lastComputedRVectVVect = [];
+
+        lastComputedSunTime = NaN;
+        lastComputedSunRVect = NaN(3,1);
+        lastComputedSunVVect = NaN(3,1);
         
         propTypeIsTwoBody(1,1) logical = true;
         propTypeIsNumerical(1,1) logical = false;

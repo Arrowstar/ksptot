@@ -4,12 +4,19 @@ function [rVectB, vVectB] = getPositOfBodyWRTSun(time, bodyInfo, celBodyData)
 %         bodyInfo KSPTOT_BodyInfo
 %         celBodyData CelestialBodyData
 %     end
-    
+
+    if(numel(time) == 1 && bodyInfo.lastComputedSunTime == time)
+        rVectB = bodyInfo.lastComputedSunRVect;
+        vVectB =  bodyInfo.lastComputedSunVVect;
+        return;
+    end
+
     try
-        if(bodyInfo.propTypeEnum == BodyPropagationTypeEnum.TwoBody || (numel(time) == 1 && time == bodyInfo.epoch))
+        if(bodyInfo.propTypeIsTwoBody || (numel(time) == 1 && time == bodyInfo.epoch))
             chain = bodyInfo.getOrbitElemsChain();
             [rVectB, vVectB] = getPositOfBodyWRTSun_alg_fast_mex(time, chain{:});
-        elseif(bodyInfo.propTypeEnum == BodyPropagationTypeEnum.Numerical)
+            
+        elseif(bodyInfo.propTypeIsNumerical)
             parentBodyInfo = bodyInfo.getParBodyInfo(celBodyData);
 
             [rVect, vVect] = getStateAtTime(bodyInfo, time, []);
@@ -50,6 +57,12 @@ function [rVectB, vVectB] = getPositOfBodyWRTSun(time, bodyInfo, celBodyData)
 
             bodyInfo = parentBodyInfo;
         end
+    end
+
+    if(numel(time) == 1)
+        bodyInfo.lastComputedSunTime = time;
+        bodyInfo.lastComputedSunRVect = rVectB;
+        bodyInfo.lastComputedSunVVect = vVectB;
     end
 
 %     if(numel(time) > 1 && numel(time) == numel(bodyInfo))
