@@ -547,7 +547,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             maxEcCapacities = maxEcCapacities(:);
             
             for(i=1:length(stgStates)) %#ok<*NO4LP>
-                %                 stgState = stgStates(i);
+%                 stgState = stgStates(i);
                 
                 if(stgStates(i).active)
                     engineStates = stgStates(i).engineStates;

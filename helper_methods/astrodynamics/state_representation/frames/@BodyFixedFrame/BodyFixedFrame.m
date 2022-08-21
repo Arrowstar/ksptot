@@ -5,6 +5,9 @@ classdef BodyFixedFrame < AbstractReferenceFrame
     properties
         bodyInfo KSPTOT_BodyInfo
         celBodyData
+
+        rotMatToInertialCacheTime = NaN;
+        rotMatToInertialCache2 = NaN(3,3);
     end
     
     properties(Constant)
@@ -25,21 +28,28 @@ classdef BodyFixedFrame < AbstractReferenceFrame
         end
 
         function rotMatToInertial = getRotMatToInertialAtTime(obj, time, ~, ~)
-            bi = obj.bodyInfo;
-
-            spinAngle = getBodySpinAngle(bi, time);
-            spinAngle = spinAngle(:)';
-            
-            if(numel(time) == 1)
-                c = cos(spinAngle);
-                s = sin(spinAngle);
-                rotMatToInertial = [c -s 0;  s c 0;  0 0 1] * bi.bodyRotMatFromGlobalInertialToBodyInertial;
+            if(numel(time) == 1 && obj.rotMatToInertialCacheTime == time)
+                rotMatToInertial = obj.rotMatToInertialCache2;
             else
-                zero = permute(zeros(size(spinAngle)), [1 3 2]);
-                one  = zero + 1;
-                c = permute(cos(spinAngle), [1 3 2]);
-                s = permute(sin(spinAngle), [1 3 2]);
-                rotMatToInertial = pagemtimes([c -s zero;  s c zero;  zero zero one], repmat(bi.bodyRotMatFromGlobalInertialToBodyInertial, [1 1 length(time)]));
+                bi = obj.bodyInfo;
+    
+                spinAngle = getBodySpinAngle(bi, time);
+                spinAngle = spinAngle(:)';
+                
+                if(numel(time) == 1)
+                    c = cos(spinAngle);
+                    s = sin(spinAngle);
+                    rotMatToInertial = [c -s 0;  s c 0;  0 0 1] * bi.bodyRotMatFromGlobalInertialToBodyInertial;
+
+                    obj.rotMatToInertialCacheTime = time;
+                    obj.rotMatToInertialCache2 = rotMatToInertial;
+                else
+                    zero = permute(zeros(size(spinAngle)), [1 3 2]);
+                    one  = zero + 1;
+                    c = permute(cos(spinAngle), [1 3 2]);
+                    s = permute(sin(spinAngle), [1 3 2]);
+                    rotMatToInertial = pagemtimes([c -s zero;  s c zero;  zero zero one], repmat(bi.bodyRotMatFromGlobalInertialToBodyInertial, [1 1 length(time)]));
+                end
             end
         end
 
