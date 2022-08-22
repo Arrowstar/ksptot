@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.coder" plugin-version="R2021a">
-  <configuration build-checksum="3877685642" file="C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\astrodynamics\fixed_frame\getFixedFrameVectFromInertialVect_alg.prj" location="C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\astrodynamics\fixed_frame" name="getFixedFrameVectFromInertialVect_alg" target="target.unifiedcoder" target-name="MATLAB Coder">
+  <configuration build-checksum="3574081806" file="C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\math\angleNegPiToPi.prj" location="C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\math" name="angleNegPiToPi" target="target.unifiedcoder" target-name="MATLAB Coder">
     <profile key="profile.mex">
       <param.BuiltInstrumentedMex>false</param.BuiltInstrumentedMex>
       <param.RanInstrumentedMex>false</param.RanInstrumentedMex>
@@ -259,7 +259,7 @@
       <param.PostCodeGenCommand />
       <param.TargetLangStandard>Auto</param.TargetLangStandard>
       <param.CodeReplacementLibrary>None</param.CodeReplacementLibrary>
-      <param.DeprecatedCRLFlag>false</param.DeprecatedCRLFlag>
+      <param.DeprecatedCRLFlag />
       <param.SameHardware>true</param.SameHardware>
       <param.Toolchain>Automatically locate an installed toolchain</param.Toolchain>
       <param.BuildConfiguration>Faster Runs</param.BuildConfiguration>
@@ -552,13 +552,13 @@
       </unset>
     </profile>
     <param.objective>option.objective.c</param.objective>
-    <param.WorkflowStep>workflowSummary</param.WorkflowStep>
+    <param.WorkflowStep>generateCode</param.WorkflowStep>
     <param.TestSnippets>
-      <item>getFixedFrameVectFromInertialVect_alg(21673485, rVectECI, 21549.42518309, 90, vVect)</item>
+      <item>angleNegPiToPi(1)</item>
     </param.TestSnippets>
     <param.ExternalFcnMajority>column</param.ExternalFcnMajority>
     <param.UseGlobals>option.UseGlobals.No</param.UseGlobals>
-    <param.outputfile>${PROJECT_ROOT}\getFixedFrameVectFromInertialVect_alg_mex.mexw64</param.outputfile>
+    <param.outputfile>${PROJECT_ROOT}\angleNegPiToPi_mex.mexw64</param.outputfile>
     <param.version>R2012a</param.version>
     <param.HasECoderFeatures>true</param.HasECoderFeatures>
     <param.HasGpuCoder>false</param.HasGpuCoder>
@@ -573,7 +573,7 @@
     <param.AutoInferUnboundedSizeThreshold>2048</param.AutoInferUnboundedSizeThreshold>
     <param.EnableFixedPointStep>false</param.EnableFixedPointStep>
     <param.EnableScreener>true</param.EnableScreener>
-    <param.AnnotationChecksum>912489749</param.AnnotationChecksum>
+    <param.AnnotationChecksum>3602912205</param.AnnotationChecksum>
     <var.LegacyTarget />
     <var.MirrorOnOpen>false</var.MirrorOnOpen>
     <param.FixedPointEnabled>false</param.FixedPointEnabled>
@@ -581,15 +581,15 @@
     <var.DismissScreener>false</var.DismissScreener>
     <param.unifiedParamStorage />
     <param.hdlParamStorage />
-    <var.gc.lastOutputRoot>codegen\mex\getFixedFrameVectFromInertialVect_alg</var.gc.lastOutputRoot>
+    <var.gc.lastOutputRoot>codegen\mex\angleNegPiToPi</var.gc.lastOutputRoot>
     <var.gc.lastOutputType>MEX_FILE</var.gc.lastOutputType>
-    <var.gc.preBuildChecksum>3877685642</var.gc.preBuildChecksum>
-    <var.cfi.lastOutputRoot>codegen\mex\getFixedFrameVectFromInertialVect_alg</var.cfi.lastOutputRoot>
-    <var.cfi.preBuildChecksum>2855008165</var.cfi.preBuildChecksum>
-    <var.lastCfiTestSnippet>getFixedFrameVectFromInertialVect_alg(21673485, rVectECI, 21549.42518309, 90, vVect)</var.lastCfiTestSnippet>
+    <var.gc.preBuildChecksum>3574081806</var.gc.preBuildChecksum>
+    <var.cfi.lastOutputRoot>codegen\mex\angleNegPiToPi</var.cfi.lastOutputRoot>
+    <var.cfi.preBuildChecksum>3730946154</var.cfi.preBuildChecksum>
+    <var.lastCfiTestSnippet>angleNegPiToPi(1)</var.lastCfiTestSnippet>
     <var.outdatedOnRestore>false</var.outdatedOnRestore>
-    <var.lastUserSourceChecksum>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;checksum&gt;&lt;includedFiles&gt;&lt;file&gt;C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\astrodynamics\fixed_frame\getBodySpinAngle_alg.m&lt;/file&gt;&lt;file&gt;C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\astrodynamics\fixed_frame\getFixedFrameVectFromInertialVect_alg.m&lt;/file&gt;&lt;file&gt;C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\math\AngleZero2Pi.m&lt;/file&gt;&lt;file&gt;C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\math\deg2rad.m&lt;/file&gt;&lt;/includedFiles&gt;&lt;value&gt;2920550972&lt;/value&gt;&lt;/checksum&gt;</var.lastUserSourceChecksum>
-    <var.sourceSetState>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;sourceModel&gt;&lt;primarySourceFiles&gt;&lt;file&gt;C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\astrodynamics\fixed_frame\getBodySpinAngle_alg.m&lt;/file&gt;&lt;file&gt;C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\astrodynamics\fixed_frame\getFixedFrameVectFromInertialVect_alg.m&lt;/file&gt;&lt;file&gt;C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\math\AngleZero2Pi.m&lt;/file&gt;&lt;file&gt;C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\math\deg2rad.m&lt;/file&gt;&lt;/primarySourceFiles&gt;&lt;fixedPointSourceFiles/&gt;&lt;fixedPointSourceRegistered&gt;false&lt;/fixedPointSourceRegistered&gt;&lt;fixedPointSourceSelected&gt;false&lt;/fixedPointSourceSelected&gt;&lt;/sourceModel&gt;</var.sourceSetState>
+    <var.lastUserSourceChecksum>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;checksum&gt;&lt;includedFiles&gt;&lt;file&gt;C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\math\angleNegPiToPi.m&lt;/file&gt;&lt;file&gt;C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\math\AngleZero2Pi.m&lt;/file&gt;&lt;/includedFiles&gt;&lt;value&gt;373945660&lt;/value&gt;&lt;/checksum&gt;</var.lastUserSourceChecksum>
+    <var.sourceSetState>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;sourceModel&gt;&lt;primarySourceFiles&gt;&lt;file&gt;C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\math\angleNegPiToPi.m&lt;/file&gt;&lt;file&gt;C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\math\AngleZero2Pi.m&lt;/file&gt;&lt;/primarySourceFiles&gt;&lt;fixedPointSourceFiles/&gt;&lt;fixedPointSourceRegistered&gt;false&lt;/fixedPointSourceRegistered&gt;&lt;fixedPointSourceSelected&gt;false&lt;/fixedPointSourceSelected&gt;&lt;/sourceModel&gt;</var.sourceSetState>
     <param.forceMexBuild>false</param.forceMexBuild>
     <param.NoDefaultJIT>false</param.NoDefaultJIT>
     <param.configImportActive>false</param.configImportActive>
@@ -603,10 +603,10 @@
     <param.EnableStructExplosion>true</param.EnableStructExplosion>
     <param.ForceANSIC>false</param.ForceANSIC>
     <param.NumCompileJobs>1</param.NumCompileJobs>
-    <param.mex.outputfile>getFixedFrameVectFromInertialVect_alg_mex</param.mex.outputfile>
-    <param.grt.outputfile>getFixedFrameVectFromInertialVect_alg</param.grt.outputfile>
+    <param.mex.outputfile>angleNegPiToPi_mex</param.mex.outputfile>
+    <param.grt.outputfile>angleNegPiToPi</param.grt.outputfile>
     <param.artifact>option.target.artifact.mex</param.artifact>
-    <param.outputfile>${PROJECT_ROOT}\getFixedFrameVectFromInertialVect_alg_mex.mexw64</param.outputfile>
+    <param.outputfile>${PROJECT_ROOT}\angleNegPiToPi_mex.mexw64</param.outputfile>
     <param.CppNamespace />
     <param.CppPackagesToNamespaces>true</param.CppPackagesToNamespaces>
     <param.CppNamespaceForMathworksCode>coder</param.CppNamespaceForMathworksCode>
@@ -837,32 +837,19 @@
       <param.FixedPointUseDesignRanges />
     </unset>
     <fileset.entrypoints>
-      <file custom-data-expanded="false" value="${PROJECT_ROOT}\getFixedFrameVectFromInertialVect_alg.m">
-        <Marker>1661187702102</Marker>
+      <file custom-data-expanded="false" value="${PROJECT_ROOT}\angleNegPiToPi.m">
+        <Marker>1661188402736</Marker>
       </file>
     </fileset.entrypoints>
     <fileset.testbench />
     <fileset.inputtypes>
-      <file custom-data-expanded="false" value="${PROJECT_ROOT}\getFixedFrameVectFromInertialVect_alg.m">
-        <Inputs fileName="getFixedFrameVectFromInertialVect_alg.m" functionName="getFixedFrameVectFromInertialVect_alg">
-          <Input Name="ut" typeId="0" />
-          <Input Name="rVectECI" typeId="1" />
-          <Input Name="rotperiod" typeId="0" />
-          <Input Name="rotini" typeId="0" />
-          <Input Name="vVectECI" typeId="1" />
+      <file custom-data-expanded="false" value="${PROJECT_ROOT}\angleNegPiToPi.m">
+        <Inputs fileName="angleNegPiToPi.m" functionName="angleNegPiToPi">
+          <Input Name="angle" typeId="0" />
           <idpTable>
             <type typeId="0">
               <Class>double</Class>
-              <Size>1 x :inf</Size>
-              <Value />
-              <InitialValue />
-              <UserDefined>true</UserDefined>
-              <Complex>false</Complex>
-              <Sparse>false</Sparse>
-            </type>
-            <type typeId="1">
-              <Class>double</Class>
-              <Size>3 x :inf</Size>
+              <Size>:inf x :inf</Size>
               <Value />
               <InitialValue />
               <UserDefined>true</UserDefined>
@@ -874,7 +861,7 @@
       </file>
     </fileset.inputtypes>
     <build-deliverables>
-      <file location="${PROJECT_ROOT}" name="getFixedFrameVectFromInertialVect_alg_mex.mexw64" optional="false">C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\astrodynamics\fixed_frame\getFixedFrameVectFromInertialVect_alg_mex.mexw64</file>
+      <file location="${PROJECT_ROOT}" name="angleNegPiToPi_mex.mexw64" optional="false">C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\math\angleNegPiToPi_mex.mexw64</file>
     </build-deliverables>
     <workflow />
     <matlab>
