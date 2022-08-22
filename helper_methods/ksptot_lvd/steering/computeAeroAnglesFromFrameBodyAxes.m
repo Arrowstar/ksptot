@@ -10,7 +10,7 @@ function [bankAng,angOfAttack,angOfSideslip,totalAoA] = computeAeroAnglesFromFra
 	angOfAttack = angles(2);
 	angOfSideslip = angles(1);
 
-    [x,y,z] = sph2cart(angleNegPiToPi(angOfSideslip),angleNegPiToPi(angOfAttack),1);
+    [x,y,z] = sph2cart(angleNegPiToPi_mex(angOfSideslip),angleNegPiToPi_mex(angOfAttack),1);
     v1 = [1;0;0];
     v2 = [x;y;z];
     totalAoA = dang(v1,v2);

@@ -114,7 +114,7 @@ classdef KosDragCoeffientModel < AbstractDragCoefficientModel
             end
 
             if(density > 0)
-                sideslip = angleNegPiToPi(sideslip);
+                sideslip = angleNegPiToPi_mex(sideslip);
     
                 %see useProfile.ks in the Project-Atmospheric-Drag for details
                 %of this algorithm

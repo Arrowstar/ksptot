@@ -13,7 +13,7 @@ function [rVectB, vVectB] = getPositOfBodyWRTSun(time, bodyInfo, celBodyData)
 
     try
         if(bodyInfo.propTypeIsTwoBody || (numel(time) == 1 && time == bodyInfo.epoch))
-            chain = bodyInfo.getOrbitElemsChain();
+            chain = getOrbitElemsChain(bodyInfo);
             [rVectB, vVectB] = getPositOfBodyWRTSun_alg_fast_mex(time, chain{:});
             
         elseif(bodyInfo.propTypeIsNumerical)

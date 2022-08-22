@@ -49,7 +49,8 @@ classdef LaunchVehicleState < matlab.mixin.SetGet & matlab.mixin.Copyable
         end
         
         function tanks = getTanksConnectedToEngine(obj, engine)
-            bool = obj.cachedEngines == engine;
+            ce = obj.cachedEngines;
+            bool = ce == engine;
             if(any(bool))
                 tanks = obj.cachedConnTanks{bool};
             else

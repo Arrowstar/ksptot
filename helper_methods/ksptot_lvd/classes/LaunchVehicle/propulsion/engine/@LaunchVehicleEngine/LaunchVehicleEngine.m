@@ -127,7 +127,7 @@ classdef LaunchVehicleEngine < matlab.mixin.SetGet
                 end    
                 
                 tanks = unique(tanks, 'stable');
-                for(i=1:length(tanks))
+                for(i=1:length(tanks)) %#ok<*NO4LP> 
                     engineSummStr{end+1} = sprintf('\t\t\t\t\t%s', tanks(i).name); %#ok<AGROW>
                 end
             else

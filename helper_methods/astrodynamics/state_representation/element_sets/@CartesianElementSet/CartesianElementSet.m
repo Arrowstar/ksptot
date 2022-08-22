@@ -73,12 +73,12 @@ classdef CartesianElementSet < AbstractElementSet
             for(i=1:length(obj))
                 gmu(i) = obj(i).frame.getOriginBody().gm;
             end
-%             [sma, ecc, inc, raan, arg, tru] = getKeplerFromState(obj.rVect, obj.vVect, gmu);
-            [sma, ecc, inc, raan, arg, tru] = vect_getKeplerFromState([obj.rVect], [obj.vVect], gmu);
+            [sma, ecc, inc, raan, arg, tru] = getKeplerFromState([obj.rVect], [obj.vVect], gmu);
+%             [sma, ecc, inc, raan, arg, tru] = vect_getKeplerFromState([obj.rVect], [obj.vVect], gmu);
             
-            kepElemSet = repmat(KeplerianElementSet.getDefaultElements(), size(obj));
+%             kepElemSet = repmat(KeplerianElementSet.getDefaultElements(), size(obj));
             for(i=1:length(obj))
-                kepElemSet(i) = KeplerianElementSet(obj(i).time, sma(i), ecc(i), inc(i), raan(i), arg(i), tru(i), obj(i).frame);
+                kepElemSet(i) = KeplerianElementSet(obj(i).time, sma(i), ecc(i), inc(i), raan(i), arg(i), tru(i), obj(i).frame); %#ok<AGROW> 
             end
         end
         

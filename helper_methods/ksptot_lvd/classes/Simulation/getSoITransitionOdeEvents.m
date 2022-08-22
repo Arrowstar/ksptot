@@ -14,10 +14,14 @@ function [value, isterminal, direction, causes] = getSoITransitionOdeEvents(ut, 
 %             parentBodyInfo = KSPTOT_BodyInfo.empty(0,1);
 %         end
 
-        value(end+1) = rSOI - radius;
-        isterminal(end+1) = 1;
-        direction(end+1) = -1;
-        causes(1) = SoITransitionUpIntTermCause(bodyInfo, parentBodyInfo, celBodyData);    
+        if(rSOI < realmax)
+            value(end+1) = rSOI - radius;
+            isterminal(end+1) = 1;
+            direction(end+1) = -1;
+            causes(1) = SoITransitionUpIntTermCause(bodyInfo, parentBodyInfo, celBodyData);
+        else
+            causes = AbstractIntegrationTerminationCause.empty(1,0);
+        end
 
         %Leave SoI Downwards
         [sma, ecc, ~, ~, ~, ~] = getKeplerFromState(rVect, vVect, bodyInfo.gm, false);
