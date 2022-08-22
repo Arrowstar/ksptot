@@ -475,7 +475,7 @@ classdef HaloOrbitApproximator < matlab.mixin.SetGet
             end
             
             c = NaN(4,1);
-            for(n=1:4)
+            for(n=1:4) %#ok<*NO4LP> 
                 c(n) = Ceqn(n);
             end
             

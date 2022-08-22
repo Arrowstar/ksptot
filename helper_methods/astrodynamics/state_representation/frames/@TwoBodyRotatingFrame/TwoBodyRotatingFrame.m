@@ -80,7 +80,7 @@ classdef TwoBodyRotatingFrame < AbstractReferenceFrame
         end
         
         function bodyInfo = getNonOriginBody(obj)
-            for(i=1:length(obj))
+            for(i=1:length(obj)) %#ok<*NO4LP> 
                 switch obj.originPt
                     case TwoBodyRotatingFrameOriginEnum.Primary
                         bodyInfo(i) = obj(i).secondaryBodyInfo; 
@@ -105,6 +105,13 @@ classdef TwoBodyRotatingFrame < AbstractReferenceFrame
                 otherwise
                     error('Unknown origin point enumeration: %s', obj.originPt.name);
             end
+        end
+
+        function muStar = getMuStar(obj)
+            gm1 = max(obj.primaryBodyInfo.gm, obj.secondaryBodyInfo.gm);
+            gm2 = min(obj.primaryBodyInfo.gm, obj.secondaryBodyInfo.gm);
+
+            muStar = gm2/(gm1 + gm2);
         end
         
         function nameStr = getNameStr(obj)
