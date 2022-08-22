@@ -1,12 +1,12 @@
-function [rVectECEF, vVectECEF, REci2Ecef] = getFixedFrameVectFromInertialVect_alg(ut, rVectECI, rotperiod, rotini, varargin)
+function [rVectECEF, vVectECEF, REci2Ecef] = getFixedFrameVectFromInertialVect_alg(ut, rVectECI, rotperiod, rotini, vVectECI)
 %getFixedFrameVectFromInertialVect Summary of this function goes here 
 %   Detailed explanation goes here
 
-    if(~isempty(varargin))
-        vVectECI = varargin{1};
-    else
-        vVectECI = [NaN;NaN;NaN];
-    end
+%     if(~isempty(varargin))
+%         vVectECI = varargin{1};
+%     else
+%         vVectECI = [NaN;NaN;NaN];
+%     end
 
     numElems = length(ut);
     

@@ -3,7 +3,8 @@ function [rVectECEF, vVectECEF, REci2Ecef] = getFixedFrameVectFromInertialVect(u
 % %   Detailed explanation goes here
 % 
     inputs = bodyInfo.getFixedFrameFromInertialFrameInputsCache();
-    [rVectECEF, vVectECEF, REci2Ecef] = getFixedFrameVectFromInertialVect_alg(ut, rVectECI, inputs{:}, varargin{:});
+%     [rVectECEF, vVectECEF, REci2Ecef] = getFixedFrameVectFromInertialVect_alg(ut, rVectECI, inputs{:}, varargin{:});
+    [rVectECEF, vVectECEF, REci2Ecef] = getFixedFrameVectFromInertialVect_alg_mex(ut, rVectECI, inputs{:}, varargin{:});
 end
 
 % %getFixedFrameVectFromInertialVect Summary of this function goes here

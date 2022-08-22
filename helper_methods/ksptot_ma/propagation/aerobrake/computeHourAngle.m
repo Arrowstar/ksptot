@@ -15,7 +15,8 @@ function hra = computeHourAngle(ut, long, bodyInfo)
     rVectBodyToSunNorm = sqrt(sum(rVectBodyToSun.^2,1));
     
     inputs = bodyInfo.getFixedFrameFromInertialFrameInputsCache();
-    rVectSunECEF = getFixedFrameVectFromInertialVect_alg(ut, rVectBodyToSun, inputs{:});
+%     rVectSunECEF = getFixedFrameVectFromInertialVect_alg(ut, rVectBodyToSun, inputs{:}, NaN(3,1));
+    rVectSunECEF = getFixedFrameVectFromInertialVect_alg_mex(ut, rVectBodyToSun, inputs{:}, NaN(3,1));
     
     rECEF = getrVectEcefFromLatLongAlt(zeros(size(long)), long, zeros(size(long)), bodyInfo);
 

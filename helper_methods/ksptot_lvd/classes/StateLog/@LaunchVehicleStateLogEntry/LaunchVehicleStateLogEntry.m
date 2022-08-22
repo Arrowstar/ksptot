@@ -545,6 +545,8 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                 maxEcCapacities(i) = pwrStorage.getMaximumCapacity();
             end
             maxEcCapacities = maxEcCapacities(:);
+
+            tankStateTanksArr = [tankStates.tank];
             
             for(i=1:length(stgStates)) %#ok<*NO4LP>
 %                 stgState = stgStates(i);
@@ -565,14 +567,14 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                                 flowFromTankInds = zeros(size(tankStates));
                                 if(mdot < 0 && ... %negative because we're flowing out
                                    (engine.reqsElecCharge == false || (engine.reqsElecCharge == true && numel(storageSoCs)>0 && sum(storageSoCs)>0))) %handle engines that require EC to function 
-                                    tanks = lvState.getTanksConnectedToEngine(engine);
+                                    tanks = getTanksConnectedToEngine(lvState, engine);
                                     
                                     totalConnTankCapacity = 0;
                                     totalConnTankMass = 0;
                                     for(k=1:length(tanks))
                                         if(not(isempty(tankStates)))
                                             tank = tanks(k);
-                                            tankBool = [tankStates.tank] == tank;
+                                            tankBool = tankStateTanksArr == tank;
                                             tankState = tankStates(tankBool);
                                             
                                             if(not(isempty(tankState)))
