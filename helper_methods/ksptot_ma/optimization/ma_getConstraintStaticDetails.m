@@ -1041,6 +1041,19 @@ function [unit, lbLim, ubLim, lbVal, ubVal, body, othersc, usesLbUb, usesCelBody
             usesLbUb = true;
             usesCelBody = false;
             usesRefSc = false;
+
+        case 'Height Above Terrain'
+            unit = 'km';
+            lbLim = -Inf;
+            ubLim = Inf;
+            lbVal = 0;
+            ubVal = 0;
+            body = -1;
+            othersc = -1;
+            
+            usesLbUb = true;
+            usesCelBody = false;
+            usesRefSc = false;
             
         otherwise
             error(['Unrecongized Constraint Type: ', type]);

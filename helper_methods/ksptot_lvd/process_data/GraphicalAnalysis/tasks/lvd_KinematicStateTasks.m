@@ -144,5 +144,13 @@ function datapt = lvd_KinematicStateTasks(stateLogEntry, subTask, inFrame)
             
         case 'centralBodyId'
             datapt = stateLogEntry.centralBody.id;
+
+        case 'heightAboveTerrain'
+            geoElemSet = cartElem.convertToFrame(stateLogEntry.centralBody.getBodyFixedFrame()).convertToGeographicElementSet();
+            lat = geoElemSet.lat;
+            lon = geoElemSet.long;
+            heightMapGI = stateLogEntry.centralBody.getHeightMap();
+
+            datapt = geoElemSet.alt - heightMapGI(angleNegPiToPi(lat), angleNegPiToPi(lon)); %subtract because it's our alt relative to terrain height
     end
 end

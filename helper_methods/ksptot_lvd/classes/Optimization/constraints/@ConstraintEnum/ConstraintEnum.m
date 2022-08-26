@@ -102,6 +102,8 @@ classdef ConstraintEnum < matlab.mixin.SetGet
         TankMassFlowRate('Tank Mass Flow Rate', 'TankMassFlowRateConstraint', []);
         
         Plugin('Plugin Value', 'PluginConstraint', []);
+
+        HeightAboveTerrain('Height Above Terrain', 'GenericMAConstraint','Height Above Terrain');
     end
     
     enumeration(Hidden)

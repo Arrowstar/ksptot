@@ -228,6 +228,10 @@ function [depVarValue, depVarUnit, taskStr, refBodyInfo] = lvd_getDepVarValueUni
         case 'Solar Radiation Pressure Force Vector Magnitude'
             depVarValue = lvd_SrpTask(subLog(i), 'SrpForceVectMag', inFrame);
             depVarUnit = 'N';
+
+        case 'Height Above Terrain'
+            depVarValue = lvd_KinematicStateTasks(subLog(i), 'heightAboveTerrain', inFrame);
+            depVarUnit = 'km';
  
         otherwise %is a programmatically generated string that we'll handle here
             fluidTypeMassPattern = '^Fluid Type (\d+?) Mass - ".*"';

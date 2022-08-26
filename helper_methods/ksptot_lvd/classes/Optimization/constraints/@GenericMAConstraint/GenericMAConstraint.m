@@ -184,7 +184,6 @@ classdef GenericMAConstraint < AbstractConstraint
                     warning('Could not evaluate constraint of type: %s', obj.constraintType);
                     value = 0;
                 end
-
             end
         end
     end

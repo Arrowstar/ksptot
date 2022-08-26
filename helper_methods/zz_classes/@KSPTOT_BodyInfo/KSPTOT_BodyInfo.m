@@ -46,6 +46,11 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
         %body surface textures
         surftexturefile (1,:) char = '';
         surftexturezrotoffset(1,1) double = 0; %degrees
+
+        %body height map
+        heightmapfile(1,:) char = '';
+        heightmapoffset(1,1) double = 0; %m
+        heightmapdeformity(1,1) double = 0; %m
         
         %orientation of inertial frame (spin axis handling)
         bodyZAxis(3,1) double = [0;0;1];
@@ -88,6 +93,7 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
         fixedFrameFromInertialFrameCache cell = {};
         
         surfTextureCache uint8 = [];
+        heightMapCache
         
         lastComputedTime = NaN;
         lastComputedRVect = NaN(3,1);
@@ -391,6 +397,33 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
             
             surfTexture = obj.surfTextureCache;
         end
+
+        function heightMapGI = getHeightMap(obj)
+            if(isempty(obj.heightMapCache))
+                if(not(isempty(obj.heightmapfile)))
+                    try
+                        [I,~] = imread(obj.heightmapfile);
+                        I = double(rgb2gray(I))/255;
+
+                        y1 = obj.heightmapoffset;
+                        y2 = obj.heightmapoffset + obj.heightmapdeformity;
+                        heightMapPts = (((y2 - y1)/(1 - 0)) .* (I - 0) + y1) / 1000;
+
+                        gi = griddedInterpolant({linspace(-pi/2,pi/2,height(heightMapPts)), linspace(-pi,pi,width(heightMapPts))}, heightMapPts);
+                    catch ME
+                        gi = griddedInterpolant({[-pi/2 pi/2], [-pi pi]}, zeros(2,2));
+
+                        warning('Could not load height map for "%s".  Message: \n\n%s', obj.name, ME.message);
+                    end
+
+                    obj.heightMapCache = gi;
+                else
+                    obj.heightMapCache = griddedInterpolant({[-pi/2 pi/2], [-pi pi]}, zeros(2,2));
+                end
+            end
+            
+            heightMapGI = obj.heightMapCache;
+        end
         
         function tf = eq(A,B)
             tf = [A.id] == [B.id];
@@ -488,6 +521,84 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
                 obj.surftexturefile = 'images/body_textures/surface/plutoSurface.png';
             end
         end
+
+        function setBaseBodyHeightMap(obj)
+            if(isempty(obj.heightmapfile) && strcmpi(obj.name,'Kerbin') && obj.id == 1)
+                obj.heightmapfile = 'images/body_textures/heightmap/kerbinheightmap.png';
+                obj.heightmapoffset = -1985;
+                obj.heightmapdeformity = 10720;
+                
+            elseif(isempty(obj.heightmapfile) && strcmpi(obj.name,'Mun') && obj.id == 2)
+                obj.heightmapfile = 'images/body_textures/heightmap/munheightmap.png';
+                obj.heightmapoffset = -400;
+                obj.heightmapdeformity = 8700;
+                
+            elseif(isempty(obj.heightmapfile) && strcmpi(obj.name,'Minmus') && obj.id == 3)
+                obj.heightmapfile = 'images/body_textures/heightmap/minmusheightmap.png';
+                obj.heightmapoffset = 0;
+                obj.heightmapdeformity = 6000;
+
+            elseif(isempty(obj.heightmapfile) && strcmpi(obj.name,'Moho') && obj.id == 4)
+                obj.heightmapfile = 'images/body_textures/heightmap/mohoheightmap.png';
+                obj.heightmapoffset = -700;
+                obj.heightmapdeformity = 8900;
+                
+            elseif(isempty(obj.heightmapfile) && strcmpi(obj.name,'Eve') && obj.id == 5)
+                obj.heightmapfile = 'images/body_textures/heightmap/eveheightmap.png';
+                obj.heightmapoffset = -2000;
+                obj.heightmapdeformity = 11000;
+                
+            elseif(isempty(obj.heightmapfile) && strcmpi(obj.name,'Gilly') && obj.id == 13)
+                obj.heightmapfile = 'images/body_textures/heightmap/gillyheightmap.png';
+                obj.heightmapoffset = -8000;
+                obj.heightmapdeformity = 16150;
+                
+            elseif(isempty(obj.heightmapfile) && strcmpi(obj.name,'Duna') && obj.id == 6)
+                obj.heightmapfile = 'images/body_textures/heightmap/dunaheightmap.png';
+                obj.heightmapoffset = -500;
+                obj.heightmapdeformity = 11000;
+                
+            elseif(isempty(obj.heightmapfile) && strcmpi(obj.name,'Ike') && obj.id == 7)
+                obj.heightmapfile = 'images/body_textures/heightmap/ikeheightmap.png';
+                obj.heightmapoffset = -12100;
+                obj.heightmapdeformity = 25800;
+                
+            elseif(isempty(obj.heightmapfile) && strcmpi(obj.name,'Dres') && obj.id == 15)
+                obj.heightmapfile = 'images/body_textures/heightmap/dresheightmap.png';
+                obj.heightmapoffset = -2100;
+                obj.heightmapdeformity = 9200;
+                
+            elseif(isempty(obj.heightmapfile) && strcmpi(obj.name,'Laythe') && obj.id == 9)
+                obj.heightmapfile = 'images/body_textures/heightmap/laytheheightmap.png';
+                obj.heightmapoffset = -2900;
+                obj.heightmapdeformity = 10800;
+                
+            elseif(isempty(obj.heightmapfile) && strcmpi(obj.name,'Vall') && obj.id == 10)
+                obj.heightmapfile = 'images/body_textures/heightmap/vallheightmap.png';
+                obj.heightmapoffset = -3100;
+                obj.heightmapdeformity = 11200;
+                
+            elseif(isempty(obj.heightmapfile) && strcmpi(obj.name,'Tylo') && obj.id == 12)
+                obj.heightmapfile = 'images/body_textures/heightmap/tyloheightmap.png';
+                obj.heightmapoffset = -3000;
+                obj.heightmapdeformity = 20000;
+                
+            elseif(isempty(obj.heightmapfile) && strcmpi(obj.name,'Bop') && obj.id == 11)
+                obj.heightmapfile = 'images/body_textures/heightmap/bopheightmap.png';
+                obj.heightmapoffset = -24000;
+                obj.heightmapdeformity = 48600;
+                
+            elseif(isempty(obj.heightmapfile) && strcmpi(obj.name,'Pol') && obj.id == 14)
+                obj.heightmapfile = 'images/body_textures/heightmap/polheightmap.png';
+                obj.heightmapoffset = -3800;
+                obj.heightmapdeformity = 10200;
+                
+            elseif(isempty(obj.heightmapfile) && strcmpi(obj.name,'Eeloo') && obj.id == 16)
+                obj.heightmapfile = 'images/body_textures/heightmap/eelooheightmap.png';
+                obj.heightmapoffset = -900;
+                obj.heightmapdeformity = 5840;
+            end
+        end
     end
     
 	methods(Static)
@@ -510,6 +621,7 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
             obj.getChildrenBodyInfo(obj.celBodyData);
             
             obj.setBaseBodySurfaceTexture();
+            obj.setBaseBodyHeightMap();
             
             if(isempty(obj.sunDotNormalCache))
                 obj.sunDotNormalCache = SunDotNormalDataCache(obj);

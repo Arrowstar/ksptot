@@ -162,7 +162,7 @@ classdef AddDeltaVAction < AbstractEventAction
             attState = LaunchVehicleAttitudeState();
             attState.dcm = steeringModel.getBody2InertialDcmAtTime(ut, rVect, vVect, bodyInfo);
 
-            [tankMDots, totalThrust, ~, ~] = newStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, tankStatesMasses, stageStates, throttle, lvState, pressure, ut, rVect, vVect, bodyInfo, steeringModel, storageSoCs, powerStorageStates, attState);
+            [tankMDots, totalThrust] = newStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, tankStatesMasses, stageStates, throttle, lvState, pressure, ut, rVect, vVect, bodyInfo, steeringModel, storageSoCs, powerStorageStates, attState);
         end
     end
 end

@@ -10,7 +10,7 @@ function [goodTF, msg] = verifyCelBodyData(celBodyData)
     bodyNames = {};
     topLevelBodyIdStrs = {};
     celBodyFields = fields(celBodyData);
-    for(i=1:length(celBodyFields))
+    for(i=1:length(celBodyFields)) %#ok<*NO4LP> 
         bInfo = celBodyData.(celBodyFields{i});
         bodyIds(end+1) = bInfo.id; %#ok<AGROW>
         bodyNames{end+1} = bInfo.name; %#ok<AGROW>
@@ -20,6 +20,8 @@ function [goodTF, msg] = verifyCelBodyData(celBodyData)
             topLevelBodies(end+1) = bInfo; %#ok<AGROW>
             topLevelBodyIdStrs{end+1} = fullAccNum2Str(bInfo.id); %#ok<AGROW>
         end
+
+        bInfo.getHeightMap(); %verify that if height maps are requested that they actually do load.
     end
     
     if(numTopLvlBodies ~= 1)
