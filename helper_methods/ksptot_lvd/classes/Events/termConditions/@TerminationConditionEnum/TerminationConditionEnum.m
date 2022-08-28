@@ -12,6 +12,7 @@ classdef TerminationConditionEnum < matlab.mixin.SetGet
         DynP('Dynamic Pressure','DynamicPressureTermCondition');
         EventDuration('Event Duration','EventDurationTermCondition');
         FlightPathAngle('Flight Path Angle','FlightPathAngleTermCondition');
+        HeightAboveTerrain('Height Above Terrain','HeightAboveTerrainCondition');
         Latitude('Latitude','LatitudeTermCondition');
         PeriAlt('Periapsis Altitude','PeriapsisAltitudeTermCondition');
         PitchAngle('Pitch Angle','PitchTermCondition');
