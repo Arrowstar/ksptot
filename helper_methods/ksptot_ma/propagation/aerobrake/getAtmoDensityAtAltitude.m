@@ -5,7 +5,7 @@ function [density, pressure, temperature] = getAtmoDensityAtAltitude(bodyInfo, a
 
     if(altitude <= bodyInfo.atmohgt && altitude >= 0)
 %         pressure = getPressureAtAltitude(bodyInfo, altitude);
-        pressure = bodyInfo.getBodyAtmoPressure(altitude);
+        pressure = getBodyAtmoPressure(bodyInfo, altitude);
         
         if(pressure > 0)
             temperature = getBodyAtmoTemperature(bodyInfo, ut, lat, long, altitude);

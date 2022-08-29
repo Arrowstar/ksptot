@@ -603,7 +603,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                                     %rerun the calculations for thrust and
                                     %flow rate, this time incorporating the
                                     %fuel remaining in all connected tanks
-                                    adjustedThrottle = engine.adjustThrottle(throttle, fuelRemainPct);
+                                    adjustedThrottle = adjustThrottle(engine, throttle, fuelRemainPct);
                                     if(totalConnTankMass <= 0)
                                         adjustedThrottle = 0;
                                     end
