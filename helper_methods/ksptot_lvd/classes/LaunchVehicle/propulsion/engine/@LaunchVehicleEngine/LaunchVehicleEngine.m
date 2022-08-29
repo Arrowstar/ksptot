@@ -136,12 +136,12 @@ classdef LaunchVehicleEngine < matlab.mixin.SetGet
         end
         
         function [thrust, isp] = getThrustIspForPressure(obj, presskPa)
-            thrust = obj.thrustPressCurve.evalCurve(presskPa);
+            thrust = evalCurve(obj.thrustPressCurve, presskPa);
             if(thrust < 0)
                 thrust = 0;
             end
             
-            isp = obj.ispPressCurve.evalCurve(presskPa);
+            isp = evalCurve(obj.ispPressCurve, presskPa);
             if(isp < 1E-6)
                 isp = 1E-6;
             end

@@ -29,7 +29,7 @@ classdef InertialControlFrame < AbstractControlFrame
 
             frame = bodyInfo.getBodyCenteredInertialFrame();
             ce = CartesianElementSet(ut, rVect, vVect, frame);
-            ce = ce.convertToFrame(baseFrame);
+            ce = convertToFrame(ce, baseFrame);
             
 %             [~, ~, ~, base_frame_2_inertial] = baseFrame.getOffsetsWrtInertialOrigin(ut, ce, baseFrame.getOriginBody()); 
             base_frame_2_inertial = baseFrame.getRotMatToInertialAtTime(ut, ce, baseFrame.getOriginBody());

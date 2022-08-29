@@ -86,7 +86,7 @@ classdef AltitudeTermCondition < AbstractEventTerminationCondition
             rVect = y(1:3);
             vVect = y(4:6);
             cartElem = CartesianElementSet(t, rVect(:), vVect(:), obj.bodyInfo.getBodyCenteredInertialFrame());
-            geoElem = cartElem.convertToFrame(obj.frame).convertToGeographicElementSet();
+            geoElem = convertToGeographicElementSet(convertToFrame(cartElem, obj.frame, true));
             
             actualAltitude = geoElem.alt;
             

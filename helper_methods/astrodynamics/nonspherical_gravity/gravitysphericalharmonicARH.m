@@ -37,9 +37,9 @@ function gInertial = gravitysphericalharmonicARH(elemSet, gravBodyInfo)
     ut = elemSet.time;
     
     %Get position in cartesian elements in body fixed frame
-    bci = gravBodyInfo.getBodyCenteredInertialFrame();
-    bff = gravBodyInfo.getBodyFixedFrame();
-    ceBF = elemSet.convertToCartesianElementSet().convertToFrame(bff, true);
+    bci = getBodyCenteredInertialFrame(gravBodyInfo);
+    bff = getBodyFixedFrame(gravBodyInfo);
+    ceBF = convertToFrame(convertToCartesianElementSet(elemSet), bff, true);
     p = ceBF.rVect';
     
     %Get body data

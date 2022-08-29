@@ -561,7 +561,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                             engine = engineState.engine;
                             adjustedThrottle = engine.adjustThrottle(throttle, []);
                             if(adjustedThrottle > 0)
-                                [baseThrust, baseMdot] = engine.getThrustFlowRateForPressure(presskPa); %total mass flow through engine
+                                [baseThrust, baseMdot] = getThrustFlowRateForPressure(engine, presskPa); %total mass flow through engine
                                 mdot = adjustedThrottle * baseMdot;
                                 
                                 flowFromTankInds = zeros(size(tankStates));
