@@ -86,7 +86,7 @@ classdef HeightAboveTerrainCondition < AbstractEventTerminationCondition
             rVect = y(1:3);
             vVect = y(4:6);
             cartElem = CartesianElementSet(t, rVect(:), vVect(:), obj.bodyInfo.getBodyCenteredInertialFrame());
-            geoElemSet = cartElem.convertToFrame(obj.frame.getOriginBody().getBodyFixedFrame()).convertToGeographicElementSet();
+            geoElemSet = cartElem.convertToFrame(obj.frame.getOriginBody().getBodyFixedFrame(), true).convertToGeographicElementSet();
             
             lat = geoElemSet.lat;
             lon = geoElemSet.long;
