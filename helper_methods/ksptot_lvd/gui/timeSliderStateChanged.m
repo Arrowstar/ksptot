@@ -1,4 +1,23 @@
 function timeSliderStateChanged(src,evt, lvdData, handles, app)
+    arguments
+        src matlab.ui.control.Slider
+        evt matlab.ui.eventdata.ValueChangingData
+        lvdData LvdData
+        handles struct
+        app ma_LvdMainGUI_App
+    end
+
+    %We need to do this because for some reason the slider rotates, pans,
+    %or zooms the axes if a camera toolbar mode is selected.
+    m = cameratoolbar(app.ma_LvdMainGUI, 'GetMode');
+    if(not(isempty(m)))
+        cameratoolbar(app.ma_LvdMainGUI, 'SetMode','nomode');
+        app.panPushMenuToggle.State ="off";
+        app.rotatePushMenuToggle.State ="off";
+        app.zoomOutPushMenuToggle.State ="off";
+        app.zoomInPushMenuToggle.State ="off";
+    end
+
     s = dbstack;
     matches = strfind({s.name},'timeSliderStateChanged');
     matches = cell2mat(matches(2:end));
