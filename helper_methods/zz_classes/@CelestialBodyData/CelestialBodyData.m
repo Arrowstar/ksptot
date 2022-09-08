@@ -148,7 +148,7 @@ classdef CelestialBodyData < matlab.mixin.SetGet & dynamicprops
                 
                 cBodies = bodyInfo.getChildrenBodyInfo(obj);
                 if(not(isempty(cBodies)))
-                    bodies(end+1) = bodyInfo;
+                    bodies(end+1) = bodyInfo; %#ok<AGROW> 
                 end
             end
         end

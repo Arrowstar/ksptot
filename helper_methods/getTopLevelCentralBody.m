@@ -7,7 +7,7 @@ function topLevelBodyInfo = getTopLevelCentralBody(celBodyData)
         topLevelBodyInfo = KSPTOT_BodyInfo.empty(1,0);
     end
     celBodyFields = fields(celBodyData);
-    for(i=1:length(celBodyFields))
+    for(i=1:length(celBodyFields)) %#ok<*NO4LP> 
         bInfo = celBodyData.(celBodyFields{i});
         
         if(isempty(bInfo.parentBodyInfo))

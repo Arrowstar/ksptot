@@ -29,6 +29,7 @@ function timeSliderStateChanged(src,evt, lvdData, handles, app)
         catch
             time = src.Value;
         end
+        time = double(time);
         hAx = handles.dispAxes;        
 
         markerTrajData = lvdData.viewSettings.selViewProfile.markerTrajData;
