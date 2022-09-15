@@ -525,7 +525,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                 rVect(3,1) double
                 vVect(3,1) double
                 bodyInfo(1,1) KSPTOT_BodyInfo
-                steeringModel(1,1) AbstractSteeringModel
+                steeringModel %(1,1) AbstractSteeringModel
                 storageSoCs double
                 powerStorageStates AbstractLaunchVehicleEpsStorageState
                 attState LaunchVehicleAttitudeState
@@ -644,7 +644,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                 end
             end
             
-            if(nargout >= 3 && not(isempty(steeringModel)))
+            if(nargout >= 3)
                 if(norm(bodyThrust) > 0)
 %                     body2InertDcm = steeringModel.getBody2InertialDcmAtTime(ut, rVect, vVect, bodyInfo);
                     body2InertDcm = attState.dcm;

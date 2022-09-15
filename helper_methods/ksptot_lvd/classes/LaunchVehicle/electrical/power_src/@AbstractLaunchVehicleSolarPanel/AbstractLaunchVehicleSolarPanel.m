@@ -90,6 +90,8 @@ classdef(Abstract) AbstractLaunchVehicleSolarPanel < AbstractLaunchVehicleElectr
 
             hasSunLoS = true;
             eclipseBodies = [bodyInfo, bodyInfo.getParBodyInfo(), bodyInfo.getChildrenBodyInfo()];
+
+            stateLogEntry = [elemSet.time, elemSet.rVect(:)'];
             for(i=1:length(eclipseBodies)) %#ok<*NO4LP> 
                 eclipseBodyInfo = eclipseBodies(i);
 
@@ -97,7 +99,6 @@ classdef(Abstract) AbstractLaunchVehicleSolarPanel < AbstractLaunchVehicleElectr
                     continue;
                 end
 
-                stateLogEntry = [elemSet.time, elemSet.rVect(:)'];
                 LoS = LoS2Target(stateLogEntry, bodyInfo, eclipseBodyInfo, sunBodyInfo, celBodyData, [], elemSetSun);
                 if(LoS == 0)
                     hasSunLoS = false;
