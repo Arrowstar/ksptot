@@ -1,6 +1,6 @@
 function [bodyX, bodyY, bodyZ, Rtotal] = computeBodyAxesFromInertialAeroAngles(~, rVect, vVect, ~, angOfAttack, angOfSideslip, bankAng)
     [R_wind_2_inert, ~, ~, ~] = computeWindFrame(rVect,vVect);
-    RBody2Wind = eul2rotmARH([angOfSideslip,angOfAttack,bankAng],'zyx');
+    RBody2Wind = eul2rotmARH_mex([angOfSideslip,angOfAttack,bankAng],'zyx');
     Rtotal = R_wind_2_inert*RBody2Wind;
     
     bodyX = Rtotal(:,1);

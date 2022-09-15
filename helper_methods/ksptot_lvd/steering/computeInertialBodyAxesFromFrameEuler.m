@@ -15,7 +15,7 @@ function [bodyX, bodyY, bodyZ, R_body_2_inertial] = computeInertialBodyAxesFromF
     ce = ce.convertToFrame(baseFrame, true);
     rVectFrame = ce.rVect;
 
-    R_body_2_ned = eul2rotmARH([yawAng,pitchAng,rollAng],'zyx');
+    R_body_2_ned = eul2rotmARH_mex([yawAng,pitchAng,rollAng],'zyx');
     [R_ned_2_frame, ~, ~, ~] = computeNedFrameInFrame(rVectFrame);
 %     [~,~,~, R_frame_2_inertial] = baseFrame.getOffsetsWrtInertialOrigin(ut, ce, []);
     R_frame_2_inertial = baseFrame.getRotMatToInertialAtTime(ut, ce, []);

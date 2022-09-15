@@ -18,7 +18,7 @@ function [value, isterminal, direction, causes] = getSoITransitionOdeEvents(ut, 
             value(end+1) = rSOI - radius;
             isterminal(end+1) = 1;
             direction(end+1) = -1;
-            causes(1) = SoITransitionUpIntTermCause(bodyInfo, parentBodyInfo, celBodyData);
+            causes = SoITransitionUpIntTermCause(bodyInfo, parentBodyInfo, celBodyData);
         else
             causes = AbstractIntegrationTerminationCause.empty(1,0);
         end
@@ -56,6 +56,7 @@ function [value, isterminal, direction, causes] = getSoITransitionOdeEvents(ut, 
                 isterminal(end+1) = 1; %#ok<AGROW>
                 soiDownCauses(i) = SoITransitionDownIntTermCause(bodyInfo, childBodyInfo, celBodyData); %#ok<AGROW>
             end    
-            causes = [causes, soiDownCauses];
+%             causes = [causes, soiDownCauses];
+            causes = horzcat(causes, soiDownCauses);
         end
 end

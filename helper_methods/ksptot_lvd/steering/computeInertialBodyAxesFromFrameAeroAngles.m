@@ -17,7 +17,7 @@ function [bodyX, bodyY, bodyZ, R_body_2_inertial] = computeInertialBodyAxesFromF
     vVectFrame = ce.vVect;
 
     [R_wind_2_frame, ~, ~, ~] = computeWindFrame(rVectFrame, vVectFrame);
-    R_body_2_wind = eul2rotmARH([angOfSideslip,angOfAttack,bankAng],'zyx');
+    R_body_2_wind = eul2rotmARH_mex([angOfSideslip,angOfAttack,bankAng],'zyx');
     [~,~,~, R_frame_2_inertial] = baseFrame.getOffsetsWrtInertialOrigin(ut, ce);
     R_body_2_inertial = real(R_frame_2_inertial * R_wind_2_frame * R_body_2_wind);
     

@@ -57,7 +57,7 @@ classdef(Abstract) AbstractPropagator < matlab.mixin.SetGet & matlab.mixin.Heter
             value(1) = simTimeRemaining;
             isterminal(1) = 1;
             direction(1) = 0;
-            causes(1) = maxSimTimeCause;
+            causes = maxSimTimeCause;
 
             %Min Altitude Constraint
             rMag = norm(rVect);
