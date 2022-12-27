@@ -34,7 +34,13 @@ function [exitflag, message] = lvd_executeOptimProblem(celBodyData, writeOutput,
         [x,fval,exitflag,output] = patternsearch(problem);
         message = output.message;
         
-    elseif(strcmpi(problem.solver,'nomad'))            
+    elseif(strcmpi(problem.solver,'nomad'))   
+        o = problem.options;
+        f = fields(o);
+        for(i=1:numel(f))
+            o.(f{i}) = char(string(o.(f{i}))); 
+        end
+
         [x,fval,exitflag,iter,nfval] = nomad(problem.objective, problem.x0, problem.lb, problem.ub, problem.options);
         message = nomadExitFlagMessageLookup(exitflag);
 %         [x,fval,exitflag,iter,nfval] = nomadOpt(problem.objective, problem.x0, problem.lb, problem.ub, problem.options);
