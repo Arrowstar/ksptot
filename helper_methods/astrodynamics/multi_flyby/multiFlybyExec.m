@@ -1,8 +1,8 @@
-function [x, dv, rp, orbitsIn, orbitsOut, xferOrbits, deltaVVect, vInfDNorm, c, vInfDepart, vInfArrive, numRev] = multiFlybyExec(bodiesInfo, lWindDef, bnds, minCbPeriHgt, maxMsnDur, popSize, numGen, includeDepartVInf, includeArrivalVInf, maxDepartVInf, maxArriveVInf, celBodyData)
+function [x, dv, rp, orbitsIn, orbitsOut, xferOrbits, deltaVVect, vInfDNorm, c, vInfDepart, vInfArrive, numRev] = multiFlybyExec(bodiesInfo, lWindDef, bnds, minCbPeriHgt, maxMsnDur, popSize, numGen, includeDepartVInf, includeArrivalVInf, maxDepartVInf, maxArriveVInf, eSMA, eEcc, eInc, eRAAN, eArg, celBodyData)
 %multiFlybyExec Summary of this function goes here
 %   Detailed explanation goes here
 
-    nvars = length(bodiesInfo)+(length(bodiesInfo)-1)+(length(bodiesInfo)-1);
+    nvars = length(bodiesInfo) + (length(bodiesInfo)-1) + (length(bodiesInfo)-1) + 1;
 
     flybyBodies = bodiesInfo(2:end-1);
     nFlybyBodies = length(flybyBodies);
@@ -47,9 +47,13 @@ function [x, dv, rp, orbitsIn, orbitsOut, xferOrbits, deltaVVect, vInfDNorm, c, 
         lb(end+1) = 1; %#ok<AGROW>
         ub(end+1) = length(tmpNumRevsArrCell); %#ok<AGROW>
     end
+
+    %departure true anomaly relative to initial eccentric orbit
+    lb(end+1) = 0;
+    ub(end+1) = 2*pi;
     
     IntCon = 1:nvars;
-    IntCon = IntCon(length(bodiesInfo)+1:end);
+    IntCon = IntCon(length(bodiesInfo)+1:end-1);
    
     %linear constraint for the max mission duration
 	if(maxMsnDur == Inf)
@@ -63,7 +67,7 @@ function [x, dv, rp, orbitsIn, orbitsOut, xferOrbits, deltaVVect, vInfDNorm, c, 
     A(2:nSegments+1) = 1;
     b = maxMsnDur;
     
-    fitnessfcn = @(x) multiFlybyObjFunc(x, numRevsArr,bodiesInfo,includeDepartVInf,includeArrivalVInf,celBodyData);
+    fitnessfcn = @(x) multiFlybyObjFunc(x, numRevsArr,bodiesInfo,includeDepartVInf,includeArrivalVInf, eSMA, eEcc, eInc, eRAAN, eArg, celBodyData);
     nonlcon = @(x) multiFlybyNonlcon(x, fitnessfcn,minRadiiSingle,maxRadiiSingle,minXferRad,maxDepartVInf,maxArriveVInf,maxDeltaV(2:end));
     options = gaoptimset('Vectorized','on',...
                          'PopulationSize',popSize,...

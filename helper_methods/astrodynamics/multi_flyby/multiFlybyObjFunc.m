@@ -1,4 +1,4 @@
-function [dv, rp, orbitIn, orbitOut, deltaVVect, vInfDNorm, vInfDepart, vInfArrive, totDV, r1B, r2B, v1Output, v2Output, xferRp] =  multiFlybyObjFunc(x, numRevsArr,bodiesInfo,includeDepartVInf,includeArrivalVInf,celBodyData)
+function [dv, rp, orbitIn, orbitOut, deltaVVect, vInfDNorm, vInfDepart, vInfArrive, totDV, r1B, r2B, v1Output, v2Output, xferRp] =  multiFlybyObjFunc(x, numRevsArr,bodiesInfo,includeDepartVInf,includeArrivalVInf, eSMA, eEcc, eInc, eRAAN, eArg, celBodyData)
 %multiFlybyObjFunc Summary of this function goes here
 %   Detailed explanation goes here
     numX = size(x,1);
@@ -21,18 +21,27 @@ function [dv, rp, orbitIn, orbitOut, deltaVVect, vInfDNorm, vInfDepart, vInfArri
         return;
     end
 
+    eSMA = repmat(eSMA, [1, numX]);
+    eEcc = repmat(eEcc, [1, numX]);
+    eInc = repmat(eInc, [1, numX]);
+    eRAAN = repmat(eRAAN, [1, numX]);
+    eArg = repmat(eArg, [1, numX]);
+
     flybyBodies = bodiesInfo(2:end-1);
     numFB = length(flybyBodies);
     numREVS = length(bodiesInfo) - 1;
+    numDepartTru = 1;
     
-    tm = x(:,end-numREVS-numFB:end-numREVS);
+    tm = x(:, end-numREVS-numFB-numDepartTru : end-numREVS-numDepartTru);
     tm = round(tm);
     tm(tm==2) = -1;
     numTM = size(tm,2);
     
-    numRevInds = x(:,end-numREVS+1:end);
+    numRevInds = x(:, end-numREVS+1-numDepartTru : end-numDepartTru);
     
-    x = x(:,1:end-numTM-numREVS);
+    departTrus = x(:,end);
+
+    x = x(:, 1:end-numTM-numREVS-numDepartTru);
     daTimes = cumsum(x,2);
 
     gmu = zeros(length(bodiesInfo),numX);
@@ -58,11 +67,11 @@ function [dv, rp, orbitIn, orbitOut, deltaVVect, vInfDNorm, vInfDepart, vInfArri
     gmu = reshape(gmu',1,numel(gmu'));
     
     rVectsB = reshape(rVectsB,3,length(bodiesInfo)*numX);
-    r1B = rVectsB(:,1:end-size(x,1));
-    r2B = rVectsB(:,size(x,1)+1:end);
+    r1B = rVectsB(:,1:end-numX);
+    r2B = rVectsB(:,numX+1:end);
 
     vVectsB = reshape(vVectsB,3,length(bodiesInfo)*numX);
-    vB = vVectsB(:,size(x,1)+1:end-size(x,1));
+    vB = vVectsB(:,numX+1:end-numX);
 
     tempXferGmu = zeros(1,length(bodiesInfo)-1);
     for(i=1:length(bodiesInfo)-1)
@@ -166,7 +175,16 @@ function [dv, rp, orbitIn, orbitOut, deltaVVect, vInfDNorm, vInfDepart, vInfArri
     dv = totDV;
     
     if(includeDepartVInf)
-        dv = dv + vInfDNorm;
+        eTA = departTrus;
+        gmus = repmat(bodiesInfo{1}.gm, size(eSMA));
+        [hSMA, hEcc, hInc, hRAAN, hArg, hTA] = vect_computeHypOrbitFromEllipticTarget(eSMA, eEcc, eInc, eRAAN, eArg, eTA, gmus, vInfDepart);
+        
+        [eRVect, evVect] = vect_getStatefromKepler(eSMA, eEcc, eInc, eRAAN, eArg, eTA, gmus);
+        [hRvect, hvVect] = vect_getStatefromKepler(hSMA, hEcc, hInc, hRAAN, hArg, hTA, gmus);
+        departDeltaVVect = hvVect - evVect;
+        departDeltaV = vecnorm(departDeltaVVect);
+
+        dv = dv + departDeltaV(:);
     end
     
     if(includeArrivalVInf)

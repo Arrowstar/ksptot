@@ -9,9 +9,12 @@ function [x, dv, rp, orbitsIn, orbitsOut, deltaVVect, vInfDNorm, xferOrbits, c, 
     flybyBodies = bodiesInfo(2:end-1);
     numFB = length(flybyBodies);
     numREVS = length(bodiesInfo) - 1;
+    numDepartTru = 1;
     
-    tm = x2(:,end-numREVS-numFB:end-numREVS);
-    numRevInds = x2(:,end-numREVS+1:end);
+    tm = x2(:,end-numREVS-numFB-numDepartTru:end-numREVS-numDepartTru);
+    numRevInds = x2(:,end-numREVS+1-numDepartTru:end-numDepartTru);
+
+    departTrus = x2(:,end);
     
     for(i=1:size(numRevInds,2)) %#ok<*NO4LP>
         numRevInd = numRevInds(:,i);
@@ -21,8 +24,8 @@ function [x, dv, rp, orbitsIn, orbitsOut, deltaVVect, vInfDNorm, xferOrbits, c, 
     x0 = x2(1:length(bodiesInfo));
     lb = lb(1:length(bodiesInfo));
     ub = ub(1:length(bodiesInfo));
-    objfun = @(x) fitnessfcn([x,tm,numRevInds]);
-    nonlconFMC1 = @(x) multiFlybyNonlcon([x,tm,numRevInds], fitnessfcn,minRadiiSingle,maxRadiiSingle, minXferRad, maxDepartVInf, maxArriveVInf, maxDeltaV);
+    objfun = @(x) fitnessfcn([x,tm,numRevInds,departTrus]);
+    nonlconFMC1 = @(x) multiFlybyNonlcon([x,tm,numRevInds,departTrus], fitnessfcn,minRadiiSingle,maxRadiiSingle, minXferRad, maxDepartVInf, maxArriveVInf, maxDeltaV);
     nonlconFMC2 = @(x) multiFlybyNonlcon(x, fitnessfcn,minRadiiSingle,maxRadiiSingle, minXferRad, maxDepartVInf, maxArriveVInf, maxDeltaV);
     optionsFMC = optimoptions('fmincon','Algorithm','interior-point','Display','none','ScaleProblem','obj-and-constr');
     try

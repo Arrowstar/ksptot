@@ -18,4 +18,3 @@ function [sUnitVector, OUnitVector, vInfMag] = computeHyperSVectOVect(hSMA, hEcc
     
     vInfMag = sqrt(-gmu/hSMA);
 end
-
