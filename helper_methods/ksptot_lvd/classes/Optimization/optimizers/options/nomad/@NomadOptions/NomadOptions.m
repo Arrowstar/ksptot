@@ -68,14 +68,21 @@ classdef NomadOptions < matlab.mixin.SetGet
             
 %             options.h_norm = obj.h_norm.optionStr;
             
-%             if(not(isnan(obj.vns_trigger)))
-%                 options.vns_search = obj.vns_trigger;
-%             end
+            if(not(isnan(obj.vns_trigger)))
+                options.VNS_MADS_SEARCH_TRIGGER = obj.vns_trigger;
+
+                if(obj.vns_trigger > 0)
+                    options.VNS_MADS_SEARCH = true;
+                else
+                    options.VNS_MADS_SEARCH = false;
+                end
+            end
 
             options.nm_search = 0;
-            options.display_degree = 3;
+            options.display_degree = 2;
             options.display_all_eval = 0;
             options.bb_max_block_size = 100000000000;
+            options.DISPLAY_STATS = 'BBE TIME OBJ CONS_H';
         end
         
         function tf = usesParallel(obj)
