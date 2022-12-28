@@ -52,7 +52,7 @@ classdef NomadOptimizer < AbstractOptimizer
             
             numVars = length(x0All);
             f = @(x) NomadOptimizer.nomadObjConstrWrapper(x, objFuncWrapper, nomadNonlconWrapper, numVars, numElemPerOutput, numWorkers, lvdData);
-            opts = nomadset(opts, 'bb_output_type',bboutput);
+            opts.bb_output_type = bboutput;
             
             problem.objective = f; %f
             problem.x0 = x0All;
@@ -88,7 +88,7 @@ classdef NomadOptimizer < AbstractOptimizer
 
                 nomadOutput1 = @(iter, fval, x, state) NomadOptimizer.nomadIterFunWrapper(iter, fval, x, outputFnc, state, numVars);
                 nomadOutput2 = @(iter, fval, x) nomadOutput1(iter, fval, x, 'iter');
-                problem.options = nomadset(problem.options, 'iterfun',nomadOutput2);
+                problem.options.iterfun = nomadOutput2;
                 nomadOutput1(0,NaN,x0All,'init');
             end
             

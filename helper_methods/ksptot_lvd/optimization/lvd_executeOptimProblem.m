@@ -35,15 +35,26 @@ function [exitflag, message] = lvd_executeOptimProblem(celBodyData, writeOutput,
         message = output.message;
         
     elseif(strcmpi(problem.solver,'nomad'))   
+        %This block is needed for NOMAD v4.3+
+        %We need to turn every option value into a character array.
         o = problem.options;
         f = fields(o);
-        for(i=1:numel(f))
-            o.(f{i}) = char(string(o.(f{i}))); 
+        for(i=1:numel(f)) %#ok<*NO4LP> 
+            if(not(isa(o.(f{i}),'function_handle'))) %don't try to convert function handles
+                o.(f{i}) = char(string(o.(f{i}))); 
+            end
+
+            if(isempty(o.(f{i})))
+                o = rmfield(o, f{i});
+            end
         end
 
-        [x,fval,exitflag,iter,nfval] = nomad(problem.objective, problem.x0, problem.lb, problem.ub, problem.options);
+        iterFun = o.iterfun;
+        o = rmfield(o,'iterfun');
+
+%         [x,fval,exitflag,iter,nfval] = nomad(problem.objective, problem.x0, problem.lb, problem.ub, problem.options);
+        [x,fval,exitflag,iter,nfval] = nomadOpt(problem.objective, problem.x0, problem.lb, problem.ub, o, iterFun);
         message = nomadExitFlagMessageLookup(exitflag);
-%         [x,fval,exitflag,iter,nfval] = nomadOpt(problem.objective, problem.x0, problem.lb, problem.ub, problem.options);
 
     elseif(strcmpi(problem.solver,'ipopt'))
         [x,info] = ipopt(problem.x0, problem.funcs, problem.options);

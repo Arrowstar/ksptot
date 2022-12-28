@@ -34,55 +34,48 @@ classdef NomadOptions < matlab.mixin.SetGet
         end
         
         function options = getOptionsForOptimizer(obj, ~)
-            options = nomadset();
-            
-            options = nomadset(options, 'direction_type', obj.direction_type.optionStr);
-            
-            if(not(isnan(obj.initial_mesh_size)))
-                options = nomadset(options, 'initial_mesh_size', obj.fullAccNum2Str(obj.initial_mesh_size));
-            end
+            options = struct('direction_type', obj.direction_type.optionStr);
+                      
+%             if(not(isnan(obj.initial_mesh_size)))
+%                 options.INITIAL_MESH_SIZE = obj.initial_mesh_size;
+%             end
             
             if(not(isnan(obj.max_bb_eval)))
-                options = nomadset(options, 'max_bb_eval', obj.max_bb_eval);
+                options.max_bb_eval = obj.max_bb_eval;
             end
             
             if(not(isnan(obj.max_time)))
-                options = nomadset(options, 'max_time', obj.max_time);
+                options.max_time = obj.max_time;
             end
             
-            if(not(isnan(obj.max_cache_memory)))
-                options = nomadset(options, 'max_cache_memory', obj.max_cache_memory);
-            end
+%             if(not(isnan(obj.max_cache_memory)))
+%                 options.max_cache_memory = obj.max_cache_memory;
+%             end
             
             if(not(isnan(obj.max_iterations)))
-                options = nomadset(options, 'max_iterations', obj.max_iterations);
+                options.max_iterations = obj.max_iterations;
             end
             
-            options = nomadset(options, 'stop_if_feasible', obj.stop_if_feasible.optVal);
+            options.stop_if_feasible = obj.stop_if_feasible.optVal;
             
             if(not(isnan(obj.h_max_0)))
-                options = nomadset(options, 'h_max_0', obj.h_max_0);
+                options.h_max_0 = obj.h_max_0;
             end
             
-            if(not(isnan(obj.h_min)))
-                options = nomadset(options, 'h_min', obj.h_min);
-            end
+%             if(not(isnan(obj.h_min)))
+%                 options.h_min = obj.h_min;
+%             end
+            
+%             options.h_norm = obj.h_norm.optionStr;
+            
+%             if(not(isnan(obj.vns_trigger)))
+%                 options.vns_search = obj.vns_trigger;
+%             end
 
-            if(not(isnan(obj.h_min)))
-                options = nomadset(options, 'h_min', obj.h_min);
-            end
-            
-            options = nomadset(options, 'h_norm', obj.h_norm.optionStr);
-            
-            if(not(isnan(obj.vns_trigger)))
-                options = nomadset(options, 'vns_search', obj.vns_trigger);
-            end
-
-            options = nomadset(options, ...
-                               'nm_search',0, ...
-                               'display_degree',3, ...
-                               'display_all_eval',0, ...
-                               'bb_max_block_size',100000000000);
+            options.nm_search = 0;
+            options.display_degree = 3;
+            options.display_all_eval = 0;
+            options.bb_max_block_size = 100000000000;
         end
         
         function tf = usesParallel(obj)
