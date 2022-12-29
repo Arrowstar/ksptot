@@ -21,7 +21,15 @@ function [tcpipClient] = createTcpIpClient(varargin)
         end
     end
     
-    tcpipClient = tcpip(rHost,port,'NetworkRole',role);
+    if(strcmpi(role,'client'))
+        tcpipClient = tcpclient(rHost,port);
+    elseif(strcmpi(role,'server'))
+        tcpipClient = tcpserver(rHost,port);
+    else
+        error('Unknown tcpip network role: %s', role);
+    end
+
+%     tcpipClient = tcpip(rHost,port,'NetworkRole',role);
 
     tcpipClient.ByteOrder = 'bigEndian';
     set(tcpipClient, 'InputBufferSize',120480);
