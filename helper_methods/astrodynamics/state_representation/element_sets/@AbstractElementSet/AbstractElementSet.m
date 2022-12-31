@@ -22,6 +22,8 @@ classdef (Abstract) AbstractElementSet < matlab.mixin.SetGet & matlab.mixin.Cust
         univElemSet = convertToUniversalElementSet(obj)
         
         elemVect = getElementVector(obj)
+
+        txt = getDisplayText(obj, num)
         
         %obj is vector of elements, toFrame is scaler
         function convertedElemSet = convertToFrame(obj, toFrame, overwriteElemSetValues)

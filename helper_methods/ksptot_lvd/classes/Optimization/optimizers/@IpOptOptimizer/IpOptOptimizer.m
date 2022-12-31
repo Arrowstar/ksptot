@@ -88,9 +88,10 @@ classdef IpOptOptimizer < AbstractGradientOptimizer
                 out = AppDesignerGUIOutput();
                 ma_ObserveOptimGUI_App(out);
                 handlesObsOptimGui = out.output{1};
+                appObsOptimGui = out.output{2};
 
                 hOptimStatusLabel = handlesObsOptimGui.optimStatusLabel;
-                hFinalStateOptimLabel = handlesObsOptimGui.finalStateOptimLabel;
+                hFinalStateOptimLabel = appObsOptimGui.finalStateOptimLabel;
                 hDispAxes = handlesObsOptimGui.dispAxesPanel;
                 hCancelButton = handlesObsOptimGui.cancelButton;
                 optimStartTic = tic();
@@ -217,11 +218,16 @@ classdef IpOptOptimizer < AbstractGradientOptimizer
 %             finalStateLogEntry = stateLog.getFinalStateLogEntry();
 %             finalStateLogEntryMA = finalStateLogEntry.getMAFormattedStateLogMatrix(true);
             
-            stateLogMA = stateLog.getMAFormattedStateLogMatrix(true);
+%             stateLogMA = stateLog.getMAFormattedStateLogMatrix(true);
             
             if(strcmpi(state,'init') || strcmpi(state,'iter'))
                 IpOptOptimizer.writeOptimStatus(hOptimStatusLabel, optimValues, state, writeOutput, optimStartTic);
-                ma_UpdateStateReadout(hFinalStateOptimLabel, 'final', propNames, stateLogMA, celBodyData);
+                    
+                [stateStr, stateTooltipStr, clipboardData] = lvd_UpdateStateReadout(AbstractReferenceFrame.empty(1,0), ElementSetEnum.KeplerianElements, 'final', stateLog);
+                hFinalStateOptimLabel.Text = stateStr;
+                hFinalStateOptimLabel.Tooltip = stateTooltipStr;
+                hFinalStateOptimLabel.UserData = clipboardData;
+            
                 IpOptOptimizer.generatePlots(x, optimValues, state, hDispAxes, lb, ub, varLabels, lbUsAll, ubUsAll);
                 
                 drawnow;

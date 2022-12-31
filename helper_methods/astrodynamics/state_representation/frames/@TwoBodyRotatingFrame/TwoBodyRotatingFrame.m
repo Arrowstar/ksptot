@@ -77,6 +77,12 @@ classdef TwoBodyRotatingFrame < AbstractReferenceFrame
                 otherwise
                     error('Unknown origin point enumeration: %s', obj.originPt.name);
             end
+
+            obj.timeCache = [];
+            obj.posOffsetOriginCache = [];
+            obj.velOffsetOriginCache = [];
+            obj.angVelWrtOriginCache = [];
+            obj.rotMatToInertialCache = [];
         end
         
         function bodyInfo = getNonOriginBody(obj)

@@ -90,10 +90,11 @@ classdef FminconOptimizer < AbstractGradientOptimizer
                 out = AppDesignerGUIOutput();
                 ma_ObserveOptimGUI_App(out);
                 handlesObsOptimGui = out.output{1};
+                appObsOptimGui = out.output{2};
 
 %                 outputFnc = @(x, optimValues, state) ma_OptimOutputFunc(x, optimValues, state, handlesObsOptimGui, problem.objective, problem.lb, problem.ub, celBodyData, recorder, propNames, writeOutput, varNameStrs, lbUsAll, ubUsAll);
                 hOptimStatusLabel = handlesObsOptimGui.optimStatusLabel;
-                hFinalStateOptimLabel = handlesObsOptimGui.finalStateOptimLabel;
+                hFinalStateOptimLabel = appObsOptimGui.finalStateOptimLabel;
                 hDispAxes = handlesObsOptimGui.dispAxesPanel;
                 hCancelButton = handlesObsOptimGui.cancelButton;
                 optimStartTic = tic();
@@ -168,12 +169,17 @@ classdef FminconOptimizer < AbstractGradientOptimizer
 %             finalStateLogEntry = stateLog.getFinalStateLogEntry();
 %             finalStateLogEntryMA = finalStateLogEntry.getMAFormattedStateLogMatrix(true);
 
-            stateLogMA = stateLog.getMAFormattedStateLogMatrix(true);
+%             stateLogMA = stateLog.getMAFormattedStateLogMatrix(true);
             
             if(strcmpi(state,'init') || strcmpi(state,'iter'))
                 try
                     FminconOptimizer.writeOptimStatus(hOptimStatusLabel, optimValues, state, writeOutput, optimStartTic);
-                    ma_UpdateStateReadout(hFinalStateOptimLabel, 'final', propNames, stateLogMA, celBodyData);
+                    
+                    [stateStr, stateTooltipStr, clipboardData] = lvd_UpdateStateReadout(AbstractReferenceFrame.empty(1,0), ElementSetEnum.KeplerianElements, 'final', stateLog);
+                    hFinalStateOptimLabel.Text = stateStr;
+                    hFinalStateOptimLabel.Tooltip = stateTooltipStr;
+                    hFinalStateOptimLabel.UserData = clipboardData;
+
                     FminconOptimizer.generatePlots(x, optimValues, state, hDispAxes, lb, ub, varLabels, lbUsAll, ubUsAll);
                     drawnow;
                 catch ME

@@ -81,6 +81,16 @@ classdef GeographicElementSet < AbstractElementSet
         function elemVect = getElementVector(obj)
             elemVect = [rad2deg(obj.lat),rad2deg(obj.long),obj.alt,rad2deg(obj.velAz),rad2deg(obj.velEl),obj.velMag];
         end
+
+        function txt = getDisplayText(obj, num)
+            txt = {};
+            txt{end+1} = ['Latitude         = ', num2str(rad2deg(obj.lat),num),  ' deg'];
+            txt{end+1} = ['Longitude        = ', num2str(rad2deg(obj.long),num), ' deg'];
+            txt{end+1} = ['Altitude         = ', num2str(obj.alt,num),  ' km'];
+            txt{end+1} = ['Velocity Az.     = ', num2str(rad2deg(obj.velAz),num),  ' deg'];
+            txt{end+1} = ['Velocity El.     = ', num2str(rad2deg(obj.velEl),num),  ' deg'];
+            txt{end+1} = ['Velocity Mag.    = ', num2str(obj.velMag,num), ' km/s'];
+        end
         
         function newElemSet = copyWithoutOptVar(obj)
             newElemSet = GeographicElementSet(obj.time, obj.lat, obj.long, obj.alt, obj.velAz, obj.velEl, obj.velMag, obj.frame);

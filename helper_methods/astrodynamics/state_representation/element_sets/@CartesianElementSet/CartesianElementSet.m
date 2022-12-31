@@ -111,6 +111,16 @@ classdef CartesianElementSet < AbstractElementSet
             univElemSet = convertToUniversalElementSet(convertToKeplerianElementSet(obj));
         end
         
+        function txt = getDisplayText(obj, num)
+            txt = {};
+            txt{end+1} = ['Rx               = ', num2str(obj.rVect(1),num),  ' km'];
+            txt{end+1} = ['Ry               = ', num2str(obj.rVect(2),num),  ' km'];
+            txt{end+1} = ['Rz               = ', num2str(obj.rVect(3),num)   ' km'];
+            txt{end+1} = ['Vx               = ', num2str(obj.vVect(1),num),  ' km/s'];
+            txt{end+1} = ['Vy               = ', num2str(obj.vVect(2),num),  ' km/s'];
+            txt{end+1} = ['Vz               = ', num2str(obj.vVect(3),num),  ' km/s'];
+        end
+
         function rMag = getRadiusMagnitude(obj)
             rMag = vecNormARH(obj.rVect);
         end

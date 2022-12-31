@@ -67,6 +67,16 @@ classdef UniversalElementSet < AbstractElementSet
         function univElemSet = convertToUniversalElementSet(obj)
             univElemSet = obj;
         end
+
+        function txt = getDisplayText(obj, num)
+            txt = {};
+            txt{end+1} = ['C3 Energy        = ', num2str(obj.c3,num),  ' km^2/s^2'];
+            txt{end+1} = ['Radius of Peri.  = ', num2str(obj.rP,num), ' km'];
+            txt{end+1} = ['Inclination      = ', num2str(rad2deg(obj.inc),num),  ' deg'];
+            txt{end+1} = ['Rt Asc of Asc Nd = ', num2str(rad2deg(obj.raan),num), ' deg'];
+            txt{end+1} = ['Arg. of Periapse = ', num2str(rad2deg(obj.arg),num),  ' deg'];
+            txt{end+1} = ['Sec. Past Peri.  = ', num2str(obj.tau,num),  ' sec'];
+        end
         
         function elemVect = getElementVector(obj)
             elemVect = [obj.c3,obj.rP,rad2deg(obj.inc),rad2deg(obj.raan),rad2deg(obj.arg),obj.tau];

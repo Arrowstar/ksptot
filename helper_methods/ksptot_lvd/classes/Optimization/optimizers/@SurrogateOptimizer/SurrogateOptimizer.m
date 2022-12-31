@@ -46,9 +46,10 @@ classdef SurrogateOptimizer < AbstractOptimizer
                 out = AppDesignerGUIOutput();
                 ma_ObserveOptimGUI_App(out);
                 handlesObsOptimGui = out.output{1};
+                appObsOptimGui = out.output{2};
 
                 hOptimStatusLabel = handlesObsOptimGui.optimStatusLabel;
-                hFinalStateOptimLabel = handlesObsOptimGui.finalStateOptimLabel;
+                hFinalStateOptimLabel = appObsOptimGui.finalStateOptimLabel;
                 hDispAxes = handlesObsOptimGui.dispAxesPanel;
                 hCancelButton = handlesObsOptimGui.cancelButton;
                 optimStartTic = tic();
@@ -129,9 +130,12 @@ classdef SurrogateOptimizer < AbstractOptimizer
 %                 finalStateLogEntry = stateLog.getFinalStateLogEntry();
 %                 finalStateLogEntryMA = finalStateLogEntry.getMAFormattedStateLogMatrix(true);
 
-                stateLogMA = stateLog.getMAFormattedStateLogMatrix(true);
+%                 stateLogMA = stateLog.getMAFormattedStateLogMatrix(true);
                 
-                ma_UpdateStateReadout(hFinalStateOptimLabel, 'final', propNames, stateLogMA, celBodyData);
+                [stateStr, stateTooltipStr, clipboardData] = lvd_UpdateStateReadout(AbstractReferenceFrame.empty(1,0), ElementSetEnum.KeplerianElements, 'final', stateLog);
+                hFinalStateOptimLabel.Text = stateStr;
+                hFinalStateOptimLabel.Tooltip = stateTooltipStr;
+                hFinalStateOptimLabel.UserData = clipboardData;
             end
             
             if(strcmpi(state,'init') || strcmpi(state,'iter'))

@@ -69,13 +69,23 @@ classdef KeplerianElementSet < AbstractElementSet
             tau = mean ./ n;
             
             univElemSet = repmat(UniversalElementSet.getDefaultElements(), size(obj));
-            for(i=1:length(obj))
+            for(i=1:length(obj)) %#ok<*NO4LP> 
                 univElemSet(i) = UniversalElementSet(obj(i).time, c3(i), rP(i), obj(i).inc, obj(i).raan, obj(i).arg, tau(i), obj(i).frame);
             end
         end
         
         function elemVect = getElementVector(obj)
             elemVect = [obj.sma,obj.ecc,rad2deg(obj.inc),rad2deg(obj.raan),rad2deg(obj.arg),rad2deg(obj.tru)];
+        end
+
+        function txt = getDisplayText(obj, num)
+            txt = {};
+            txt{end+1} = ['Semi-major Axis  = ', num2str(obj.sma,num),  ' km'];
+            txt{end+1} = ['Eccentricity     = ', num2str(obj.ecc,num)];
+            txt{end+1} = ['Inclination      = ', num2str(rad2deg(obj.inc),num),  ' deg'];
+            txt{end+1} = ['Rt Asc of Asc Nd = ', num2str(rad2deg(obj.raan),num), ' deg'];
+            txt{end+1} = ['Arg. of Periapse = ', num2str(rad2deg(obj.arg),num),  ' deg'];
+            txt{end+1} = ['True Anomaly     = ', num2str(rad2deg(obj.tru),num),  ' deg'];
         end
         
         function mean = getMeanAnomaly(obj)
