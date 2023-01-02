@@ -227,7 +227,7 @@ function initializeOutputWindowText(handles, hOutputText)
     write_to_output_func = getappdata(handles.ma_LvdMainGUI,'write_to_output_func');
 
     set(hOutputText,'String',' ');
-    statusBoxMsg = {['KSP TOT Launch Vehicle Designer v', getKSPTOTVersionNumStr(), sprintf(' (R%s)', version('-release'))], 'Written By Arrowstar (C) 2021', ...
+    statusBoxMsg = {['KSP TOT Launch Vehicle Designer v', getKSPTOTVersionNumStr(), sprintf(' (R%s)', version('-release'))], 'Written By Arrowstar (C) 2023', ...
                     getLVD_HR(hOutputText)};
 	for(i=1:size(statusBoxMsg,2)) %#ok<ALIGN,*NO4LP>
         if(i==1)
