@@ -26,11 +26,15 @@ classdef NomadOptions < matlab.mixin.SetGet
         
         %VNS 
         vns_trigger(1,1) double = NaN;
+
+        %surrogate model
+        useSurrogateModelSearch(1,1) logical = false;
+        surrogateOptions NomadSurrogateOptions
     end
     
     methods 
         function obj = NomadOptions()
-
+            obj.surrogateOptions = NomadSurrogateOptions();
         end
         
         function options = getOptionsForOptimizer(obj, ~)
@@ -79,10 +83,15 @@ classdef NomadOptions < matlab.mixin.SetGet
             end
 
             options.nm_search = 0;
-            options.display_degree = 2;
-            options.display_all_eval = 0;
+            options.display_degree = 3;
+            options.display_all_eval = 1;
             options.bb_max_block_size = 100000000000;
-            options.DISPLAY_STATS = 'BBE TIME OBJ CONS_H';
+            options.DISPLAY_STATS = 'BBE TIME OBJ CONS_H H_MAX';
+            options.SGTELIB_MODEL_SEARCH = obj.useSurrogateModelSearch;
+
+            if(obj.useSurrogateModelSearch)
+                options.SGTELIB_MODEL_DEFINITION = obj.surrogateOptions.getSurrogateModelDefinitionString();
+            end
         end
         
         function tf = usesParallel(obj)
@@ -95,6 +104,18 @@ classdef NomadOptions < matlab.mixin.SetGet
         
         function constrType = getConstrTypeStr(obj)
             constrType = obj.constrType.optionStr;
+        end
+    end
+
+    methods(Static)
+        function obj = loadobj(obj)
+            arguments
+                obj NomadOptions
+            end
+
+            if(isempty(obj.surrogateOptions))
+                obj.surrogateOptions = NomadSurrogateOptions();
+            end
         end
     end
 end
