@@ -7,6 +7,17 @@ function timeSliderStateChanged(src,evt, lvdData, handles, app)
         app ma_LvdMainGUI_App
     end
 
+    persistent lastCall
+
+    if(isempty(lastCall))
+        lastCall = tic;
+    end
+
+    elapsedTime = toc(lastCall);
+    if(elapsedTime < 0.05)
+        return;
+    end
+
     %We need to do this because for some reason the slider rotates, pans,
     %or zooms the axes if a camera toolbar mode is selected.
     m = cameratoolbar(app.ma_LvdMainGUI, 'GetMode');
@@ -18,17 +29,20 @@ function timeSliderStateChanged(src,evt, lvdData, handles, app)
         app.zoomInPushMenuToggle.State ="off";
     end
 
-    s = dbstack;
-    matches = strfind({s.name},'timeSliderStateChanged');
-    matches = cell2mat(matches(2:end));
-    tf = any(matches == 1);
+%     s = dbstack;
+%     matches = strfind({s.name},'timeSliderStateChanged');
+%     matches = cell2mat(matches(2:end));
+%     tf = any(matches == 1);
     
+    tf = false;
+
     if(not(tf))
         try
             time = evt.Value;
-        catch
+        catch ME
             time = src.Value;
         end
+%         disp(time);
         time = double(time);
         hAx = handles.dispAxes;        
 
@@ -45,7 +59,7 @@ function timeSliderStateChanged(src,evt, lvdData, handles, app)
         sensorData = lvdData.viewSettings.selViewProfile.sensorData;
         sensorTgtData = lvdData.viewSettings.selViewProfile.sensorTgtData;
         
-        notify(app, 'GenericStatusLabelUpdate', GenericStatusLabelUpdate('Drawing Scene...'));
+%         notify(app, 'GenericStatusLabelUpdate', GenericStatusLabelUpdate('Drawing Scene...'));
         
 %         notify(app, 'GenericStatusLabelUpdate', GenericStatusLabelUpdate('Drawing Vehicle Trajectory...'));
         markerTrajData.plotBodyMarkerAtTime(time, hAx);
@@ -131,5 +145,6 @@ function timeSliderStateChanged(src,evt, lvdData, handles, app)
         
         setappdata(app.DispAxesTimeSlider,'lastTime',time);
         drawnow limitrate;
+        lastCall = tic;
     end
 end

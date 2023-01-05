@@ -444,7 +444,7 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
             timeSliderCb = @(src,evt) timeSliderStateChanged(src,evt, lvdData, handles, app);
             timeSlider.ValueChangingFcn = timeSliderCb; 
             
-            timeSlider.ValueChangingFcn(timeSlider, true);
+            timeSlider.ValueChangingFcn(timeSlider, matlab.ui.eventdata.ValueChangingData(timeSlider.Value));
         end
         
         function trajData = createTrajData(obj)
