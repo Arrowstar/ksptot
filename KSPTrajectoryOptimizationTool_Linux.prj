@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.ezdeploy" plugin-version="1.0">
-  <configuration build-checksum="2413674180" file="/home/adam/ksptot/KSPTrajectoryOptimizationTool_Linux.prj" location="/home/adam/ksptot" name="KSPTrajectoryOptimizationTool_Linux" preferred-package-location="/home/adam/ksptot/deploy/KSPTrajectoryOptimizationTool/for_redistribution" preferred-package-type="package.type.install" target="target.ezdeploy.standalone" target-name="Application Compiler">
+  <configuration build-checksum="2675712743" file="/home/adam/ksptot/KSPTrajectoryOptimizationTool_Linux.prj" location="/home/adam/ksptot" name="KSPTrajectoryOptimizationTool_Linux" preferred-package-location="/home/adam/ksptot/deploy/KSPTrajectoryOptimizationTool/for_redistribution" preferred-package-type="package.type.install" target="target.ezdeploy.standalone" target-name="Application Compiler">
     <param.appname>KSPTrajectoryOptimizationTool</param.appname>
     <param.icon>${PROJECT_ROOT}/KSPTrajectoryOptimizationTool_resources/icon.ico</param.icon>
     <param.icons>
@@ -8,7 +8,7 @@
       <file>${PROJECT_ROOT}/KSPTrajectoryOptimizationTool_resources/icon_24.png</file>
       <file>${PROJECT_ROOT}/KSPTrajectoryOptimizationTool_resources/icon_16.png</file>
     </param.icons>
-    <param.version>1.6.9</param.version>
+    <param.version>1.6.10</param.version>
     <param.authnamewatermark>Arrowstar</param.authnamewatermark>
     <param.email />
     <param.company />
@@ -87,7 +87,6 @@ ${LD_LIBRARY_PATH}:MR/v912/runtime/glnxa64:MR/v912/bin/glnxa64:MR/v912/sys/os/gl
       <file>${PROJECT_ROOT}/projectMain.m</file>
     </fileset.main>
     <fileset.resources>
-      <file>${PROJECT_ROOT}/bodies.ini</file>
       <file>${PROJECT_ROOT}/formsGUIs</file>
       <file>${PROJECT_ROOT}/helper_methods</file>
       <file>${PROJECT_ROOT}/images</file>
@@ -101,6 +100,8 @@ ${LD_LIBRARY_PATH}:MR/v912/runtime/glnxa64:MR/v912/bin/glnxa64:MR/v912/sys/os/gl
     <fileset.package />
     <fileset.depfun>
       <file>${MATLAB_ROOT}/toolbox/local/matlabrc.m</file>
+      <file>${MATLAB_ROOT}/toolbox/local/restoredefaultpath.m</file>
+      <file>${MATLAB_ROOT}/toolbox/local/userpath.m</file>
       <file>${MATLAB_ROOT}/toolbox/matlab/demos/bucky.m</file>
     </fileset.depfun>
     <build-deliverables>
