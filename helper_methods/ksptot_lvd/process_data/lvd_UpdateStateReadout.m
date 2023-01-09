@@ -13,8 +13,9 @@ function [stateStr, stateTooltipStr, clipboardData] = lvd_UpdateStateReadout(tgt
         if(numel(s) > 1)
             evts = [s.event];
             nums = getEventNum(evts);
-            [~,I] = min(nums);
-            state = s(I(1));
+            minEvtNum = min(nums);
+            I = find(nums == minEvtNum, 1, "first");
+            state = s(I);
         else
             state = s;
         end
@@ -24,8 +25,9 @@ function [stateStr, stateTooltipStr, clipboardData] = lvd_UpdateStateReadout(tgt
         if(numel(s) > 1)
             evts = [s.event];
             nums = getEventNum(evts);
-            [~,I] = max(nums);
-            state = s(I(end));
+            maxEvtNum = max(nums);
+            I = find(nums == maxEvtNum, 1, "last");
+            state = s(I);
         else
             state = s;
         end

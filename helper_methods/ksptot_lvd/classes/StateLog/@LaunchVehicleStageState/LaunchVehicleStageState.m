@@ -224,9 +224,14 @@ classdef LaunchVehicleStageState < matlab.mixin.SetGet & matlab.mixin.Copyable
             stageMass = obj.getStateDryMass() + obj.getStageTotalTankMass();
         end
         
-        function newStageState = deepCopy(obj, deepCopyState, lvState)
-            if(obj.active || deepCopyState)    
-                newStageState = obj.copy();
+        function newStageState = deepCopy(obj, deepCopyState)
+            arguments
+                obj LaunchVehicleStageState
+                deepCopyState(1,1) logical
+            end
+
+            if(deepCopyState || obj.active)   
+                newStageState = copy(obj);
             
                 %Copy Engine States
                 if(deepCopyState)
@@ -239,52 +244,11 @@ classdef LaunchVehicleStageState < matlab.mixin.SetGet & matlab.mixin.Copyable
 
                 
                 if(not(isempty(obj.tankStates)))
-                    newTankStates = obj.tankStates.copy();
+                    newTankStates = copy(obj.tankStates);
                     [newTankStates.stageState] = deal(newStageState);
                     newStageState.tankStates = newTankStates;
                 end
-                
-                %Copy Tank States - why is this so complicated again?
-%                 if(not(isempty(obj.tankStates)))
-%                     tanksToUpdateStatesFor = LaunchVehicleStageState.emptyTankArr;
-%                     
-%                     for(i=1:length(obj.engineStates))
-%                         if(obj.engineStates(i).active)
-% %                             tanksToUpdateStatesFor = [tanksToUpdateStatesFor, lvState.getTanksConnectedToEngine(obj.engineStates(i).engine)]; %#ok<AGROW>
-%                             tanksToUpdateStatesFor = [tanksToUpdateStatesFor, lvState.getTanksConnectedToEngineForStage(obj.engineStates(i).engine, newStageState.stage)]; %#ok<AGROW>
-%                         end
-%                     end
-%                     
-%                     if(~isempty(lvState.t2TConns))
-%                         tanksToUpdateStatesFor = [tanksToUpdateStatesFor, lvState.getTanksWithActiveTankToTankConnectionsForStage(obj)];
-%                     end
-%                     
-% %                     stageTanks = [obj.tankStates.tank];
-%                     if(not(isempty(tanksToUpdateStatesFor)))
-% %                         [Lia] = ismemberClassTypesARH(tanksToUpdateStatesFor,stageTanks);
-% %                         tanksToUpdateStatesFor = tanksToUpdateStatesFor(logical(Lia));
-%                         
-% %                         if(not(isempty(tanksToUpdateStatesFor)))
-% 
-%                         if(length(tanksToUpdateStatesFor) > 1)
-%                             tanksToUpdateStatesFor = unique(tanksToUpdateStatesFor);
-%                         end
-% 
-%                         for(i=1:length(tanksToUpdateStatesFor))
-% %                             tankToUpdateState = tanksToUpdateStatesFor(i);
-% 
-%                             [tankState, ind] = obj.getStateForTank(tanksToUpdateStatesFor(i));
-% %                             newTankState = LaunchVehicleTankState(newStageState);
-% %                             newTankState.tank = tanksToUpdateStatesFor(i);
-% %                             newTankState.tankMass = tankState.tankMass;
-%                             newTankState = tankState.copy();
-%                             newTankState.stageState = newStageState;
-%                             newStageState.tankStates(ind) = newTankState;
-%                         end
-% %                         end
-%                     end
-%                 end
-                
+                               
                 %Copy Power Sink States
                 if(deepCopyState && not(isempty(obj.powerSinkStates)))
                     newPwrSinkStates = obj.powerSinkStates.copy();

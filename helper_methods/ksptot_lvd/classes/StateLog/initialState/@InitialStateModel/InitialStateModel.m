@@ -105,7 +105,7 @@ classdef InitialStateModel < matlab.mixin.SetGet
             stateLogEntry.lvState = obj.lvState.deepCopy();
         
             for(i=1:length(obj.stageStates))
-                stateLogEntry.stageStates(i) = obj.stageStates(i).deepCopy(true, stateLogEntry.lvState);
+                stateLogEntry.stageStates(i) = obj.stageStates(i).deepCopy(true);
             end
 
             tankStates = stateLogEntry.getAllTankStates();

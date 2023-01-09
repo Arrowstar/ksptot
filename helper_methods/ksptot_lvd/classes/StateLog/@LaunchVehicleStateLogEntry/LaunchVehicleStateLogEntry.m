@@ -269,7 +269,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             newStateLogEntry.lvState = obj.lvState.deepCopy();
             
             for(i=1:length(obj.stageStates))
-                newStateLogEntry.stageStates(i) = obj.stageStates(i).deepCopy(true, newStateLogEntry.lvState);
+                newStateLogEntry.stageStates(i) = obj.stageStates(i).deepCopy(true);
             end
             
             newStateLogEntry.stopwatchStates = obj.stopwatchStates.copy();
@@ -286,8 +286,9 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
         function obj = createCopiesOfCopyableInternals(obj, deepCopyState)
             %stuff that requires it's own copy
             for(i=1:length(obj.stageStates))
-                obj.stageStates(i) = obj.stageStates(i).deepCopy(deepCopyState, obj.lvState);
+                obj.stageStates(i) = obj.stageStates(i).deepCopy(deepCopyState);
             end
+%             obj.stageStates = deepCopy(obj.stageStates, deepCopyState);
             
             if(~isempty(obj.stopwatchStates))
                 obj.stopwatchStates = obj.stopwatchStates.copy();
@@ -429,8 +430,9 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
     
     methods(Access=protected)
         function cpObj = copyElement(obj, deepCopyStageState)
-            if(nargin <= 1)
-                deepCopyStageState = true;
+            arguments
+                obj LaunchVehicleStateLogEntry
+                deepCopyStageState(1,1) logical = true;
             end
             
             cpObj = copyElement@matlab.mixin.Copyable(obj);
