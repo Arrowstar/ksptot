@@ -12,6 +12,15 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
         end
         
         function [hCBodySurf, childrenHGs] = plotStateLog(obj, orbitNumToPlot, lvdData, viewProfile, handles, app)
+            arguments
+                obj Generic3DTrajectoryViewType
+                orbitNumToPlot
+                lvdData(1,1) LvdData
+                viewProfile(1,1) LaunchVehicleViewProfile
+                handles
+                app ma_LvdMainGUI_App
+            end
+
 %             dAxes = app.dispAxes;
             dAxes = handles.dispAxes;
             hFig = app.ma_LvdMainGUI;
@@ -108,9 +117,19 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                         app.decrOrbitToPlotNum.Enable = 'on';
                         app.incrOrbitToPlotNum.Enable = 'on';
                     end
+
                 case ViewEventsTypeEnum.All
                     entries = stateLog.getAllEntries();
                     maStateLogMatrix = stateLog.getMAFormattedStateLogMatrix(false);
+
+                    if(viewProfile.plotAllEvents == false && numel(viewProfile.eventsToPlot) > 0)
+                        Lia = ismember([entries.event], viewProfile.eventsToPlot);
+                        entries = entries(Lia);
+
+                        eventNumsToPlot = getEventNum(viewProfile.eventsToPlot);
+                        maStateLogMatrix = maStateLogMatrix(ismember(maStateLogMatrix(:,13), eventNumsToPlot), :);
+                    end
+
                     numRows = size(maStateLogMatrix,1);
 %                     subStateLogsMat = NaN(numRows, 13);
                     
@@ -411,18 +430,24 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             vehPosVelData = LaunchVehicleViewProfile.createVehPosVelData(subStateLogs, lvdData.script.evts, viewInFrame);
             vehAttData = LaunchVehicleViewProfile.createVehAttitudeData(vehPosVelData, lvdStateLogEntries, lvdData.script.evts, viewInFrame);
             
+            if(viewProfile.trajEvtsViewType ==  ViewEventsTypeEnum.All && viewProfile.plotAllEvents == false && numel(viewProfile.eventsToPlot)>0)
+                eventsToPlot = viewProfile.eventsToPlot;
+            else
+                eventsToPlot = lvdData.script.evts;
+            end
+
             hold(dAxes,'on');
-            viewProfile.createBodyMarkerData(dAxes, subStateLogs, viewInFrame, showSoI, viewProfile.meshEdgeAlpha, lvdData.script.evts);           
-            viewProfile.createTrajectoryMarkerData(subStateLogs, lvdData.script.evts);
+            viewProfile.createBodyMarkerData(dAxes, subStateLogs, viewInFrame, showSoI, viewProfile.meshEdgeAlpha, eventsToPlot);           
+            viewProfile.createTrajectoryMarkerData(subStateLogs, eventsToPlot);
             viewProfile.createBodyAxesData(vehPosVelData, vehAttData); %lvdStateLogEntries, lvdData.script.evts, viewInFrame
             viewProfile.createSunLightSrc(dAxes, viewInFrame);
-            viewProfile.createGroundObjMarkerData(dAxes, lvdStateLogEntries, vehPosVelData, lvdData.script.evts, viewInFrame, celBodyData);
+            viewProfile.createGroundObjMarkerData(dAxes, lvdStateLogEntries, vehPosVelData, eventsToPlot, viewInFrame, celBodyData);
             viewProfile.createCentralBodyData(viewCentralBody, hCBodySurfXForm, viewInFrame);
-            viewProfile.createPointData(viewInFrame, subStateLogs, lvdData.script.evts);           
-            viewProfile.createVectorData(viewInFrame, subStateLogs, lvdData.script.evts);
-            viewProfile.createRefFrameData(viewInFrame, subStateLogs, lvdData.script.evts);
-            viewProfile.createAngleData(viewInFrame, subStateLogs, lvdData.script.evts);
-            viewProfile.createPlaneData(viewInFrame, subStateLogs, lvdData.script.evts);           
+            viewProfile.createPointData(viewInFrame, subStateLogs, eventsToPlot);           
+            viewProfile.createVectorData(viewInFrame, subStateLogs, eventsToPlot);
+            viewProfile.createRefFrameData(viewInFrame, subStateLogs, eventsToPlot);
+            viewProfile.createAngleData(viewInFrame, subStateLogs, eventsToPlot);
+            viewProfile.createPlaneData(viewInFrame, subStateLogs, eventsToPlot);           
             viewProfile.createSensorData(lvdStateLogEntries, vehPosVelData, vehAttData, viewInFrame);
             viewProfile.createSensorTargetData(viewInFrame);
             

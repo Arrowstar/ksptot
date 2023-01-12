@@ -15,6 +15,10 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         gridTransparency(1,1) double = 0.15;
         meshEdgeAlpha(1,1) double = 0.1;
 
+        %events
+        plotAllEvents(1,1) logical = true;
+        eventsToPlot(1,:) LaunchVehicleEvent = LaunchVehicleEvent.empty(1,0);
+
         %render mode
         renderer(1,1) FigureRendererEnum = FigureRendererEnum.OpenGL;
         
@@ -628,7 +632,9 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
             obj.sensorTgtData = LaunchVehicleViewProfileSensorTargetData.empty(1,0);
         end
         
-        
+        function removeEventFromListOfPlottedEvents(obj, event)
+            obj.eventsToPlot(obj.eventsToPlot == event) = [];
+        end
     end
     
     methods(Static)

@@ -90,7 +90,7 @@ classdef LaunchVehicleViewSettings < matlab.mixin.SetGet
         end
         
         function removeGrdObjFromViewProfiles(obj, grdObj)
-            for(i=1:length(obj.viewProfiles))
+            for(i=1:length(obj.viewProfiles)) %#ok<*NO4LP> 
                 obj.viewProfiles(i).removeGrdObjFromList(grdObj);
             end
         end
@@ -134,6 +134,17 @@ classdef LaunchVehicleViewSettings < matlab.mixin.SetGet
         function removeSensorTargetsFromViewProfiles(obj, target)
             for(i=1:length(obj.viewProfiles))
                 obj.viewProfiles(i).removeSensorTargetFromList(target);
+            end
+        end
+
+        function removeEventFromListOfPlottedEvents(obj, event)
+            arguments
+                obj(1,1) LaunchVehicleViewSettings
+                event(1,1) LaunchVehicleEvent
+            end
+
+            for(i=1:length(obj.viewProfiles))
+                obj.viewProfiles(i).removeEventFromListOfPlottedEvents(event);
             end
         end
     end
