@@ -137,14 +137,17 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
         function listboxStr = getListboxStr(obj)
             hasOpt = obj.hasActiveOptVars();
             if(obj.disableOptim == true)
-                optStr = '**';
+                optStr = '❄';
             elseif(hasOpt && obj.disableOptim == false)
                 optStr = '*';
             else
                 optStr = '';
             end
             
-            listboxStr = sprintf('%i - %s%s', obj.getEventNum(), optStr, obj.name);
+            totalNumEvents = obj.script.getTotalNumOfEvents();
+            numDigits = floor(log10(abs(totalNumEvents)+1)) + 1;
+
+            listboxStr = sprintf('%0*i - %s%s', numDigits, obj.getEventNum(), optStr, obj.name);
         end
         
         function [aListboxStr, actions] = getActionsListboxStr(obj)
