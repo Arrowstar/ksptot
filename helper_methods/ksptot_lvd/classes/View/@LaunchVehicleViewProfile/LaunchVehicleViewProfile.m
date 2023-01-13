@@ -727,7 +727,7 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                 
                 return;
             end
-            evt = evts(evtNum);
+            evt = evts(unique([getEventNum(evts)], "stable") == evtNum);
             evtColor = evt.colorLineSpec.color;
 
             switch(evt.plotMethod)

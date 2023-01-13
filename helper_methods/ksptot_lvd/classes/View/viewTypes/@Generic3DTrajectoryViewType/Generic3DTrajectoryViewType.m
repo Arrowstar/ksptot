@@ -174,6 +174,10 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                     prevSubStateLog = NaN(1,size(subStateLogs{i},2));
                 end
 
+                if(isempty(prevSubStateLog))
+                    prevSubStateLog = NaN(1,size(subStateLogs{i},2));
+                end
+
                 if(size(subStateLogs{i},1)>1)
                     [childrenHGs] = plotSubStateLog(subStateLogs{i}, prevSubStateLog, lvdData, dAxes);
                     
