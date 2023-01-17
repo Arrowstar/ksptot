@@ -359,7 +359,7 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             maxEventNum = max(eventsList);
             
             if(minEventNum < maxEventNum)
-                eventStr = ['Events ', num2str(minEventNum), ' - ', num2str(maxEventNum)];
+                eventStr = sprintf('Events %s', getPrettyStringForIntegerArray(eventsList));
             else
                 eventStr = ['Event ', num2str(minEventNum)];
             end
