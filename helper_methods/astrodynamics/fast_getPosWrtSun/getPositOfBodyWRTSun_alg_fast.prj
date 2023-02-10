@@ -1,7 +1,7 @@
 <deployment-project plugin="plugin.coder" plugin-version="R2021a">
-  <configuration build-checksum="2050246661" file="C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\astrodynamics\fast_getPosWrtSun\getPositOfBodyWRTSun_alg_fast.prj" location="C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\astrodynamics\fast_getPosWrtSun" name="getPositOfBodyWRTSun_alg_fast" target="target.unifiedcoder" target-name="MATLAB Coder">
+  <configuration build-checksum="1058615501" file="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\helper_methods\astrodynamics\fast_getPosWrtSun\getPositOfBodyWRTSun_alg_fast.prj" location="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\helper_methods\astrodynamics\fast_getPosWrtSun" name="getPositOfBodyWRTSun_alg_fast" target="target.unifiedcoder" target-name="MATLAB Coder">
     <profile key="profile.mex">
-      <param.BuiltInstrumentedMex>false</param.BuiltInstrumentedMex>
+      <param.BuiltInstrumentedMex />
       <param.RanInstrumentedMex>false</param.RanInstrumentedMex>
       <param.WorkingFolder>option.WorkingFolder.Project</param.WorkingFolder>
       <param.SpecifiedWorkingFolder />
@@ -27,14 +27,14 @@
       <param.RowMajor>option.RowMajor.ColumnMajor</param.RowMajor>
       <param.HighlightPotentialRowMajorIssues>true</param.HighlightPotentialRowMajorIssues>
       <param.PreserveArrayDimensions>false</param.PreserveArrayDimensions>
-      <param.EliminateSingleDimensions>false</param.EliminateSingleDimensions>
+      <param.EliminateSingleDimensions />
       <param.StackUsageMax>200000</param.StackUsageMax>
       <param.FilePartitionMethod>option.FilePartitionMethod.MapMFileToCFile</param.FilePartitionMethod>
       <param.GenerateComments>true</param.GenerateComments>
       <param.MATLABSourceComments>false</param.MATLABSourceComments>
       <param.CodeFormattingTool>option.CodeFormattingTool.Auto</param.CodeFormattingTool>
       <param.ReservedNameArray />
-      <param.CppStyleConst>true</param.CppStyleConst>
+      <param.CppStyleConst />
       <param.EnableDebugging>false</param.EnableDebugging>
       <param.Verbosity>option.Verbosity.Info</param.Verbosity>
       <param.ReportPotentialDifferences>false</param.ReportPotentialDifferences>
@@ -47,7 +47,7 @@
       <param.VerificationMode>option.VerificationMode.None</param.VerificationMode>
       <param.VerificationStatus>option.VerificationStatus.Passed</param.VerificationStatus>
       <param.EnableMexProfiling>false</param.EnableMexProfiling>
-      <var.BuiltWithMexProfiling>false</var.BuiltWithMexProfiling>
+      <var.BuiltWithMexProfiling />
       <param.CustomSourceCode />
       <param.CustomHeaderCode />
       <param.CustomInitializer />
@@ -77,11 +77,11 @@
       <param.EnableAutoParallelizationReporting>true</param.EnableAutoParallelizationReporting>
       <param.CacheDynamicArrayDataPointer>true</param.CacheDynamicArrayDataPointer>
       <param.EnableJIT>false</param.EnableJIT>
-      <param.EnableJITSilentBailOut>false</param.EnableJITSilentBailOut>
+      <param.EnableJITSilentBailOut />
       <param.CheckForIssuesJIT>true</param.CheckForIssuesJIT>
-      <param.EnableGitSupport>false</param.EnableGitSupport>
-      <param.EnableAutoCommit>true</param.EnableAutoCommit>
-      <param.RepositoryStyle>option.RepositoryStyle.Auto</param.RepositoryStyle>
+      <param.EnableGitSupport />
+      <param.EnableAutoCommit />
+      <param.RepositoryStyle />
       <unset>
         <param.BuiltInstrumentedMex />
         <param.RanInstrumentedMex />
@@ -180,7 +180,7 @@
       <param.RowMajor>option.RowMajor.ColumnMajor</param.RowMajor>
       <param.HighlightPotentialRowMajorIssues>true</param.HighlightPotentialRowMajorIssues>
       <param.PreserveArrayDimensions>false</param.PreserveArrayDimensions>
-      <param.EliminateSingleDimensions>false</param.EliminateSingleDimensions>
+      <param.EliminateSingleDimensions />
       <param.StackUsageMax>200000</param.StackUsageMax>
       <param.MultiInstanceCode />
       <param.PreserveUnusedStructFields />
@@ -226,7 +226,7 @@
       <param.CustomSymbolStrEMXArray>emxArray_$M$N</param.CustomSymbolStrEMXArray>
       <param.CustomSymbolStrEMXArrayFcn />
       <param.ReservedNameArray />
-      <param.CppStyleConst>true</param.CppStyleConst>
+      <param.CppStyleConst />
       <param.RuntimeChecks>false</param.RuntimeChecks>
       <param.Verbose />
       <param.Verbosity>option.Verbosity.Info</param.Verbosity>
@@ -349,9 +349,9 @@
       <param.EnableTraceability />
       <param.SILPILVerbosity />
       <param.UseECoderFeatures>true</param.UseECoderFeatures>
-      <param.EnableGitSupport>false</param.EnableGitSupport>
-      <param.EnableAutoCommit>true</param.EnableAutoCommit>
-      <param.RepositoryStyle>option.RepositoryStyle.Auto</param.RepositoryStyle>
+      <param.EnableGitSupport />
+      <param.EnableAutoCommit />
+      <param.RepositoryStyle />
       <param.psCustomPrjState />
       <param.psCustomProjectFile />
       <param.psCheckConfValue />
@@ -554,22 +554,22 @@
     <param.TestSnippets>
       <item>[rVectB, vVectB] = getPositOfBodyWRTSun_alg_fast([0 1 2], chain{:});</item>
     </param.TestSnippets>
-    <param.ExternalFcnMajority>column</param.ExternalFcnMajority>
+    <param.ExternalFcnMajority />
     <param.UseGlobals>option.UseGlobals.No</param.UseGlobals>
     <param.outputfile>${PROJECT_ROOT}\getPositOfBodyWRTSun_alg_fast_mex.mexw64</param.outputfile>
-    <param.version>R2012a</param.version>
+    <param.version />
     <param.HasECoderFeatures>true</param.HasECoderFeatures>
-    <param.HasGpuCoder>false</param.HasGpuCoder>
+    <param.HasGpuCoder>true</param.HasGpuCoder>
     <var.HasNeuralNetworkToolbox>true</var.HasNeuralNetworkToolbox>
     <param.mex.mainhtml />
     <param.grt.mainhtml />
     <param.CallGeneratedCodeFromTest>true</param.CallGeneratedCodeFromTest>
     <param.AutoInferDefaultFile />
-    <param.AutoInferUseVariableSize>false</param.AutoInferUseVariableSize>
-    <param.AutoInferUseUnboundedSize>false</param.AutoInferUseUnboundedSize>
-    <param.AutoInferVariableSizeThreshold>1024</param.AutoInferVariableSizeThreshold>
-    <param.AutoInferUnboundedSizeThreshold>2048</param.AutoInferUnboundedSizeThreshold>
-    <param.EnableFixedPointStep>false</param.EnableFixedPointStep>
+    <param.AutoInferUseVariableSize />
+    <param.AutoInferUseUnboundedSize />
+    <param.AutoInferVariableSizeThreshold />
+    <param.AutoInferUnboundedSizeThreshold />
+    <param.EnableFixedPointStep />
     <param.EnableScreener>true</param.EnableScreener>
     <param.AnnotationChecksum>3037556185</param.AnnotationChecksum>
     <var.LegacyTarget />
@@ -581,26 +581,26 @@
     <param.hdlParamStorage />
     <var.gc.lastOutputRoot>codegen\mex\getPositOfBodyWRTSun_alg_fast</var.gc.lastOutputRoot>
     <var.gc.lastOutputType>MEX_FILE</var.gc.lastOutputType>
-    <var.gc.preBuildChecksum>3396426142</var.gc.preBuildChecksum>
+    <var.gc.preBuildChecksum>86734330</var.gc.preBuildChecksum>
     <var.cfi.lastOutputRoot>codegen\mex\getPositOfBodyWRTSun_alg_fast</var.cfi.lastOutputRoot>
     <var.cfi.preBuildChecksum>4206226447</var.cfi.preBuildChecksum>
     <var.lastCfiTestSnippet>[rVectB, vVectB] = getPositOfBodyWRTSun_alg_fast([0 1 2], chain{:});</var.lastCfiTestSnippet>
     <var.outdatedOnRestore>false</var.outdatedOnRestore>
-    <var.lastUserSourceChecksum>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;checksum&gt;&lt;includedFiles&gt;&lt;file&gt;C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\astrodynamics\computeMeanMotion.m&lt;/file&gt;&lt;file&gt;C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\astrodynamics\fast_getPosWrtSun\getPositOfBodyWRTSun_alg_fast.m&lt;/file&gt;&lt;file&gt;C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\math\AngleZero2Pi.m&lt;/file&gt;&lt;file&gt;C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\math\deg2rad.m&lt;/file&gt;&lt;file&gt;C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\math\opti\Utilities\@adiff\abs.m&lt;/file&gt;&lt;file&gt;C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\math\opti\Utilities\@adiff\adiff.m&lt;/file&gt;&lt;file&gt;C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\math\opti\Utilities\@adiff\conj.m&lt;/file&gt;&lt;file&gt;C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\math\opti\Utilities\@adiff\cos.m&lt;/file&gt;&lt;file&gt;C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\math\opti\Utilities\@adiff\cosh.m&lt;/file&gt;&lt;file&gt;C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\math\opti\Utilities\@adiff\isreal.m&lt;/file&gt;&lt;file&gt;C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\math\opti\Utilities\@adiff\issparse.m&lt;/file&gt;&lt;file&gt;C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\math\opti\Utilities\@adiff\length.m&lt;/file&gt;&lt;file&gt;C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\math\opti\Utilities\@adiff\private\rowmult.m&lt;/file&gt;&lt;file&gt;C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\math\opti\Utilities\@adiff\real.m&lt;/file&gt;&lt;file&gt;C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\math\opti\Utilities\@adiff\repmat.m&lt;/file&gt;&lt;file&gt;C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\math\opti\Utilities\@adiff\sin.m&lt;/file&gt;&lt;file&gt;C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\math\opti\Utilities\@adiff\sinh.m&lt;/file&gt;&lt;file&gt;C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\math\opti\Utilities\@adiff\size.m&lt;/file&gt;&lt;file&gt;C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\math\opti\Utilities\@adiff\sparse.m&lt;/file&gt;&lt;file&gt;C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\math\opti\Utilities\@adiff\sqrt.m&lt;/file&gt;&lt;file&gt;C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\math\opti\Utilities\@adiff\tan.m&lt;/file&gt;&lt;file&gt;C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\math\opti\Utilities\@adiff\tanh.m&lt;/file&gt;&lt;/includedFiles&gt;&lt;value&gt;724974039&lt;/value&gt;&lt;/checksum&gt;</var.lastUserSourceChecksum>
-    <var.sourceSetState>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;sourceModel&gt;&lt;primarySourceFiles&gt;&lt;file&gt;C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\astrodynamics\computeMeanMotion.m&lt;/file&gt;&lt;file&gt;C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\astrodynamics\fast_getPosWrtSun\getPositOfBodyWRTSun_alg_fast.m&lt;/file&gt;&lt;file&gt;C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\math\AngleZero2Pi.m&lt;/file&gt;&lt;file&gt;C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\math\deg2rad.m&lt;/file&gt;&lt;/primarySourceFiles&gt;&lt;fixedPointSourceFiles/&gt;&lt;fixedPointSourceRegistered&gt;false&lt;/fixedPointSourceRegistered&gt;&lt;fixedPointSourceSelected&gt;false&lt;/fixedPointSourceSelected&gt;&lt;/sourceModel&gt;</var.sourceSetState>
+    <var.lastUserSourceChecksum>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;checksum&gt;&lt;includedFiles&gt;&lt;file&gt;C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\helper_methods\astrodynamics\computeMeanMotion.m&lt;/file&gt;&lt;file&gt;C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\helper_methods\astrodynamics\fast_getPosWrtSun\getPositOfBodyWRTSun_alg_fast.m&lt;/file&gt;&lt;file&gt;C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\helper_methods\math\AngleZero2Pi.m&lt;/file&gt;&lt;file&gt;C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\helper_methods\math\deg2rad.m&lt;/file&gt;&lt;file&gt;C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\helper_methods\math\opti\Utilities\@adiff\abs.m&lt;/file&gt;&lt;file&gt;C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\helper_methods\math\opti\Utilities\@adiff\adiff.m&lt;/file&gt;&lt;file&gt;C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\helper_methods\math\opti\Utilities\@adiff\conj.m&lt;/file&gt;&lt;file&gt;C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\helper_methods\math\opti\Utilities\@adiff\cos.m&lt;/file&gt;&lt;file&gt;C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\helper_methods\math\opti\Utilities\@adiff\cosh.m&lt;/file&gt;&lt;file&gt;C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\helper_methods\math\opti\Utilities\@adiff\isreal.m&lt;/file&gt;&lt;file&gt;C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\helper_methods\math\opti\Utilities\@adiff\issparse.m&lt;/file&gt;&lt;file&gt;C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\helper_methods\math\opti\Utilities\@adiff\length.m&lt;/file&gt;&lt;file&gt;C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\helper_methods\math\opti\Utilities\@adiff\private\rowmult.m&lt;/file&gt;&lt;file&gt;C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\helper_methods\math\opti\Utilities\@adiff\real.m&lt;/file&gt;&lt;file&gt;C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\helper_methods\math\opti\Utilities\@adiff\repmat.m&lt;/file&gt;&lt;file&gt;C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\helper_methods\math\opti\Utilities\@adiff\sin.m&lt;/file&gt;&lt;file&gt;C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\helper_methods\math\opti\Utilities\@adiff\sinh.m&lt;/file&gt;&lt;file&gt;C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\helper_methods\math\opti\Utilities\@adiff\size.m&lt;/file&gt;&lt;file&gt;C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\helper_methods\math\opti\Utilities\@adiff\sparse.m&lt;/file&gt;&lt;file&gt;C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\helper_methods\math\opti\Utilities\@adiff\sqrt.m&lt;/file&gt;&lt;file&gt;C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\helper_methods\math\opti\Utilities\@adiff\tan.m&lt;/file&gt;&lt;file&gt;C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\helper_methods\math\opti\Utilities\@adiff\tanh.m&lt;/file&gt;&lt;/includedFiles&gt;&lt;value&gt;867133877&lt;/value&gt;&lt;/checksum&gt;</var.lastUserSourceChecksum>
+    <var.sourceSetState>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;sourceModel&gt;&lt;primarySourceFiles&gt;&lt;file&gt;C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\helper_methods\astrodynamics\computeMeanMotion.m&lt;/file&gt;&lt;file&gt;C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\helper_methods\astrodynamics\fast_getPosWrtSun\getPositOfBodyWRTSun_alg_fast.m&lt;/file&gt;&lt;file&gt;C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\helper_methods\math\AngleZero2Pi.m&lt;/file&gt;&lt;file&gt;C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\helper_methods\math\deg2rad.m&lt;/file&gt;&lt;/primarySourceFiles&gt;&lt;fixedPointSourceFiles/&gt;&lt;fixedPointSourceRegistered&gt;false&lt;/fixedPointSourceRegistered&gt;&lt;fixedPointSourceSelected&gt;false&lt;/fixedPointSourceSelected&gt;&lt;/sourceModel&gt;</var.sourceSetState>
     <param.forceMexBuild>false</param.forceMexBuild>
-    <param.NoDefaultJIT>false</param.NoDefaultJIT>
+    <param.NoDefaultJIT />
     <param.configImportActive>false</param.configImportActive>
     <var.isGpuCoder>false</var.isGpuCoder>
     <var.notGpuCoder>true</var.notGpuCoder>
     <var.boundToGui>true</var.boundToGui>
-    <var.isConfigDialog>false</var.isConfigDialog>
+    <var.isConfigDialog />
     <var.ecoderEnabled>true</var.ecoderEnabled>
-    <param.AlwaysGenerateTypedefGuards>false</param.AlwaysGenerateTypedefGuards>
-    <param.RemoveDuplicateFunctionsAndTypes>true</param.RemoveDuplicateFunctionsAndTypes>
-    <param.EnableStructExplosion>true</param.EnableStructExplosion>
-    <param.ForceANSIC>false</param.ForceANSIC>
-    <param.NumCompileJobs>1</param.NumCompileJobs>
+    <param.AlwaysGenerateTypedefGuards />
+    <param.RemoveDuplicateFunctionsAndTypes />
+    <param.EnableStructExplosion />
+    <param.ForceANSIC />
+    <param.NumCompileJobs />
     <param.mex.outputfile>getPositOfBodyWRTSun_alg_fast_mex</param.mex.outputfile>
     <param.grt.outputfile>getPositOfBodyWRTSun_alg_fast</param.grt.outputfile>
     <param.artifact>option.target.artifact.mex</param.artifact>
@@ -611,27 +611,27 @@
     <param.CppPreserveClasses>true</param.CppPreserveClasses>
     <param.CppGenerateEnumClass>true</param.CppGenerateEnumClass>
     <param.gpu.Enabled>false</param.gpu.Enabled>
-    <param.gpu.SelectCudaDevice>-1</param.gpu.SelectCudaDevice>
-    <param.gpu.ComputeCapability />
+    <param.gpu.SelectCudaDevice />
+    <param.gpu.ComputeCapability>3.5</param.gpu.ComputeCapability>
     <param.gpu.CustomComputeCapability />
-    <param.gpu.MallocMode />
-    <param.gpu.MallocThreshold>200</param.gpu.MallocThreshold>
-    <param.gpu.StackLimitPerThread>1024</param.gpu.StackLimitPerThread>
-    <param.gpu.MaximumBlocksPerKernel>0</param.gpu.MaximumBlocksPerKernel>
+    <param.gpu.MallocMode>discrete</param.gpu.MallocMode>
+    <param.gpu.MallocThreshold />
+    <param.gpu.StackLimitPerThread />
+    <param.gpu.MaximumBlocksPerKernel />
     <param.gpu.Benchmarking>false</param.gpu.Benchmarking>
-    <param.gpu.SafeBuild>false</param.gpu.SafeBuild>
+    <param.gpu.SafeBuild />
     <param.gpu.KernelNamePrefix />
     <param.gpu.CompilerFlags />
-    <param.gpu.EnableCUBLAS>false</param.gpu.EnableCUBLAS>
-    <param.gpu.EnableCUSOLVER>false</param.gpu.EnableCUSOLVER>
-    <param.gpu.EnableCUFFT>false</param.gpu.EnableCUFFT>
+    <param.gpu.EnableCUBLAS>true</param.gpu.EnableCUBLAS>
+    <param.gpu.EnableCUSOLVER>true</param.gpu.EnableCUSOLVER>
+    <param.gpu.EnableCUFFT>true</param.gpu.EnableCUFFT>
     <param.gpu.EnableMemoryManager>false</param.gpu.EnableMemoryManager>
-    <param.gpu.BlockAlignment>256</param.gpu.BlockAlignment>
-    <param.gpu.FreeMode />
-    <param.gpu.MinPoolSize>8</param.gpu.MinPoolSize>
-    <param.gpu.MaxPoolSize>2048</param.gpu.MaxPoolSize>
+    <param.gpu.BlockAlignment />
+    <param.gpu.FreeMode>Never</param.gpu.FreeMode>
+    <param.gpu.MinPoolSize />
+    <param.gpu.MaxPoolSize />
     <var.checkIssuesGpu>false</var.checkIssuesGpu>
-    <var.hasGpu>true</var.hasGpu>
+    <var.hasGpu>false</var.hasGpu>
     <var.isDeepLearningForMatlabCoderEnabled>true</var.isDeepLearningForMatlabCoderEnabled>
     <param.deeplearning.EnableDeepLearning>false</param.deeplearning.EnableDeepLearning>
     <param.deeplearning.DeepLearningCustomCallback />
@@ -657,7 +657,7 @@
     <param.UsePreconditions>false</param.UsePreconditions>
     <param.FeatureFlags />
     <param.FixedPointMode>option.FixedPointMode.None</param.FixedPointMode>
-    <param.AutoScaleLoopIndexVariables>false</param.AutoScaleLoopIndexVariables>
+    <param.AutoScaleLoopIndexVariables />
     <param.ComputedFixedPointData />
     <param.UserFixedPointData />
     <param.DefaultWordLength>16</param.DefaultWordLength>
@@ -687,8 +687,8 @@
     <param.EnableCodeEfficiencyChecks>false</param.EnableCodeEfficiencyChecks>
     <param.DefaultFixedPointSignedness>option.DefaultFixedPointSignedness.Automatic</param.DefaultFixedPointSignedness>
     <param.FixedPointTypeProposalMode>option.FixedPointTypeProposalMode.ProposeFractionLengths</param.FixedPointTypeProposalMode>
-    <param.EnableFixedPointStep>false</param.EnableFixedPointStep>
-    <var.lastFixedPointAction>option.fixedPointAction.none</var.lastFixedPointAction>
+    <param.EnableFixedPointStep />
+    <var.lastFixedPointAction />
     <var.lastSimContext />
     <var.lastVerifyContext />
     <param.fpDataRoot />
@@ -696,7 +696,7 @@
     <var.snapshotChecksum />
     <param.fpLastConvertChecksum />
     <var.functionBlockSid />
-    <param.fptSignedness>false</param.fptSignedness>
+    <param.fptSignedness />
     <var.FixedPointAnalysisMode>option.FixedPointAnalysisMode.Sim</var.FixedPointAnalysisMode>
     <param.FixedPointUseDesignRanges>false</param.FixedPointUseDesignRanges>
     <unset>
@@ -865,7 +865,7 @@
       </file>
     </fileset.inputtypes>
     <build-deliverables>
-      <file location="${PROJECT_ROOT}" name="getPositOfBodyWRTSun_alg_fast_mex.mexw64" optional="false">C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\astrodynamics\fast_getPosWrtSun\getPositOfBodyWRTSun_alg_fast_mex.mexw64</file>
+      <file location="${PROJECT_ROOT}" name="getPositOfBodyWRTSun_alg_fast_mex.mexw64" optional="false">C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\helper_methods\astrodynamics\fast_getPosWrtSun\getPositOfBodyWRTSun_alg_fast_mex.mexw64</file>
     </build-deliverables>
     <workflow />
     <matlab>
@@ -873,7 +873,9 @@
       <toolboxes>
         <toolbox name="matlabcoder" />
         <toolbox name="embeddedcoder" />
+        <toolbox name="gpucoder" />
         <toolbox name="fixedpoint" />
+        <toolbox name="matlabhdlcoder" />
         <toolbox name="neuralnetwork" />
       </toolboxes>
       <toolbox>
@@ -887,9 +889,19 @@
         </embeddedcoder>
       </toolbox>
       <toolbox>
+        <gpucoder>
+          <enabled>true</enabled>
+        </gpucoder>
+      </toolbox>
+      <toolbox>
         <fixedpoint>
           <enabled>true</enabled>
         </fixedpoint>
+      </toolbox>
+      <toolbox>
+        <matlabhdlcoder>
+          <enabled>true</enabled>
+        </matlabhdlcoder>
       </toolbox>
       <toolbox>
         <neuralnetwork>

@@ -212,6 +212,20 @@ classdef OptimizationVariableSet < matlab.mixin.SetGet
                 varsStoredInRad = horzcat(varsStoredInRad, varStoredInRad(useTf)); %#ok<AGROW>
             end
         end
+
+        function removeUselessVars(obj)
+            indsToRemove = [];
+            for(i=1:length(obj.vars))
+                var = obj.vars(i);
+                [~, varLocType] = getEventNumberForVar(var, obj.lvdData);
+                
+                if(isempty(varLocType))
+                    indsToRemove(end+1) = i; %#ok<AGROW>
+                end
+            end
+            
+            obj.vars(indsToRemove) = [];
+        end
     end
     
     methods(Access=private)
@@ -239,18 +253,7 @@ classdef OptimizationVariableSet < matlab.mixin.SetGet
     
     methods(Static, Access=private)
         function obj = loadobj(obj)
-            indsToRemove = [];
-            for(i=1:length(obj.vars))
-                var = obj.vars(i);
-                lvdData = obj.lvdData;
-                [~, varLocType] = getEventNumberForVar(var, lvdData);
-                
-                if(isempty(varLocType))
-                    indsToRemove(end+1) = i; %#ok<AGROW>
-                end
-            end
-            
-            obj.vars(indsToRemove) = [];
+            obj.removeUselessVars();
         end
     end
 end

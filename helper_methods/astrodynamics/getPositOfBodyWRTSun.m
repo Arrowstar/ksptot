@@ -15,6 +15,9 @@ function [rVectB, vVectB] = getPositOfBodyWRTSun(time, bodyInfo, celBodyData)
         if(bodyInfo.propTypeIsTwoBody || (numel(time) == 1 && time == bodyInfo.epoch))
             chain = getOrbitElemsChain(bodyInfo);
             [rVectB, vVectB] = getPositOfBodyWRTSun_alg_fast_mex(time, chain{:});
+            [rVectB, vVectB] = getPositOfBodyWRTSun_alg_fast_mex_OpenMP(time, chain{:});
+%             [rVectB, vVectB] = getPositOfBodyWRTSun_alg_fast_mex_AVX2(time, chain{:});
+%             [rVectB, vVectB] = Copy_of_getPositOfBodyWRTSun_alg_fast_mex(time, chain{:});
             
         elseif(bodyInfo.propTypeIsNumerical)
             parentBodyInfo = bodyInfo.getParBodyInfo(celBodyData);

@@ -83,9 +83,9 @@ classdef NomadOptions < matlab.mixin.SetGet
             end
 
             options.nm_search = 0;
-            options.display_degree = 3;
+            options.display_degree = 2;
             options.display_all_eval = 1;
-            options.bb_max_block_size = 100000000000;
+            options.BB_MAX_BLOCK_SIZE = 100;
             options.DISPLAY_STATS = 'BBE TIME OBJ CONS_H H_MAX';
             options.SGTELIB_MODEL_SEARCH = obj.useSurrogateModelSearch;
 

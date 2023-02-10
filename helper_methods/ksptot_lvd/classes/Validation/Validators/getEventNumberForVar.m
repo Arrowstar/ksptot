@@ -35,7 +35,6 @@ function [evtNum, varLocType] = getEventNumberForVar(var, lvdData)
 
         else
             varLocType = '';
-            
         end
     end
 end

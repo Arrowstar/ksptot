@@ -82,8 +82,8 @@ classdef LaunchVehicleAttitudeState < matlab.mixin.SetGet
             ce = ce.convertToFrame(inFrame, true);
             rVectFrame = ce.rVect;
 
-            [~, ~, ~, R_1_to_inert] = frame.getOffsetsWrtInertialOrigin(ut,[]);
-            [~, ~, ~, R_2_to_inert] = inFrame.getOffsetsWrtInertialOrigin(ut,[]);
+            [~, ~, ~, R_1_to_inert] = frame.getOffsetsWrtInertialOrigin(ut,ce);
+            [~, ~, ~, R_2_to_inert] = inFrame.getOffsetsWrtInertialOrigin(ut,ce);
             R_1_to_2 = R_2_to_inert' * R_1_to_inert;
 
             bodyXFrame = R_1_to_2 * obj.bodyX;

@@ -149,6 +149,13 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
 
             listboxStr = sprintf('%0*i - %s%s', numDigits, obj.getEventNum(), optStr, obj.name);
         end
+
+        function htmlListboxStr = getHtmlListboxStr(obj)
+            colorRGB = 255*obj.colorLineSpec.color.color;
+
+%             style="color: rgb(%u,%u,%u);"   colorRGB(1),colorRGB(2),colorRGB(3), 
+            htmlListboxStr = sprintf('<option value="%u" title="%s">▉ %s</option>', obj.getEventNum(), obj.getListboxStr(), obj.getListboxStr());
+        end
         
         function [aListboxStr, actions] = getActionsListboxStr(obj)
             aListboxStr = {};

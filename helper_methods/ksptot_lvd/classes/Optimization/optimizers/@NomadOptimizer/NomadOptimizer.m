@@ -164,6 +164,8 @@ classdef NomadOptimizer < AbstractOptimizer
                     stateLogs(i) = LaunchVehicleStateLog(lvdData); %#ok<AGROW>
                 end
 
+%                 disp(numEvals);
+
                 if(M > 0 && numEvals > 1)
                     pp = gcp();
                     opts = parforOptions(pp,'RangePartitionMethod','fixed','SubrangeSize',ceil(pp.NumWorkers/numEvals));
@@ -175,7 +177,7 @@ classdef NomadOptimizer < AbstractOptimizer
                         stateLogs(i) = stateLog;
                     end
                 else
-                    for(i=1:numEvals)
+                    for(i=1:numEvals) %#ok<*NO4LP> 
                         xI = x(i,:);
                         [fcRow, stateLog] = NomadOptimizer.loopInternal(xI, objFun, nonlcon);
 
