@@ -1,5 +1,18 @@
 function startParallelPool(appFigure, writeOutput, numWorkers)
+    arguments
+        appFigure matlab.ui.Figure
+        writeOutput(1,1)
+        numWorkers(1,1) double {mustBeInteger(numWorkers), mustBeGreaterThanOrEqual(numWorkers,1)}
+    end
+
     p = gcp('nocreate');
+    numCores = feature('numcores');
+    
+    if(numWorkers > numCores)
+        warning('Cannot create parallel pool with more workers (%u) than exist physical CPU cores on this PC (%u).', numWorkers, numCores);
+    end
+    numWorkers = min(numWorkers, numCores);
+
     if(isempty(p) || p.NumWorkers ~= numWorkers)
         try
             beep off;
@@ -13,7 +26,7 @@ function startParallelPool(appFigure, writeOutput, numWorkers)
             end
 
             pp=parpool('local',numWorkers);
-            pp.IdleTimeout = 99999; %we don't want the pool to shutdown
+            pp.IdleTimeout = Inf; %we don't want the pool to shutdown
             if(isvalid(h))
                 close(h);
             end
