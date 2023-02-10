@@ -33,31 +33,33 @@ classdef UIGridLayoutMouseDragResizer < matlab.mixin.SetGet
         end
 
         function windowButtonMotionCallback(obj)
-            [obj.rowData, obj.colData, obj.rowSpaceData, obj.colSpaceData, obj.sumVarRowHeights, obj.sumVarColWidths] = obj.computeRowColSizeInfo();
-
-            cp = obj.uiFigure.CurrentPoint;
-            if(isnan(obj.movingRow) && isnan(obj.movingCol)) %not moving rows or columns
-                [isInRow, isInCol] = obj.isCursorinRowCol();
-
-                if(isInRow && isInCol)
-                    obj.uiFigure.Pointer = "cross";
-                elseif(isInCol)
-                    obj.uiFigure.Pointer = "left";
-                elseif(isInRow)
-                    obj.uiFigure.Pointer = "top";
-                else
-                    obj.uiFigure.Pointer = "arrow";
+            if(obj.isCursorInGridLayout())
+                [obj.rowData, obj.colData, obj.rowSpaceData, obj.colSpaceData, obj.sumVarRowHeights, obj.sumVarColWidths] = obj.computeRowColSizeInfo();
+                
+                cp = obj.uiFigure.CurrentPoint;
+                if(isnan(obj.movingRow) && isnan(obj.movingCol)) %not moving rows or columns
+                    [isInRow, isInCol] = obj.isCursorinRowCol();
+    
+                    if(isInRow && isInCol)
+                        obj.uiFigure.Pointer = "cross";
+                    elseif(isInCol)
+                        obj.uiFigure.Pointer = "left";
+                    elseif(isInRow)
+                        obj.uiFigure.Pointer = "top";
+                    else
+                        obj.uiFigure.Pointer = "arrow";
+                    end
+    
+                elseif(not(isnan(obj.movingRow)) && not(isnan(obj.movingCol)))
+                    obj.adjustRow(cp);
+                    obj.adjustColumn(cp);
+    
+                elseif(not(isnan(obj.movingRow))) %moving row size
+                    obj.adjustRow(cp);
+    
+                elseif(not(isnan(obj.movingCol))) %moving column size
+                    obj.adjustColumn(cp);
                 end
-
-            elseif(not(isnan(obj.movingRow)) && not(isnan(obj.movingCol)))
-                obj.adjustRow(cp);
-                obj.adjustColumn(cp);
-
-            elseif(not(isnan(obj.movingRow))) %moving row size
-                obj.adjustRow(cp);
-
-            elseif(not(isnan(obj.movingCol))) %moving column size
-                obj.adjustColumn(cp);
             end
         end
 
@@ -106,7 +108,7 @@ classdef UIGridLayoutMouseDragResizer < matlab.mixin.SetGet
                 cp(2,1) double
             end
 
-            gridPosition = obj.gridLayout.Position;
+            gridPosition = obj.getGridPosition();
             gridHeight = gridPosition(4);
             gridPadding = obj.gridLayout.Padding;
             rowSpacing = obj.gridLayout.RowSpacing;
@@ -126,7 +128,7 @@ classdef UIGridLayoutMouseDragResizer < matlab.mixin.SetGet
                 cp(2,1) double
             end
 
-            gridPosition = obj.gridLayout.Position;
+            gridPosition = obj.getGridPosition();
             gridWidth = gridPosition(3);
             gridPadding = obj.gridLayout.Padding;
             colSpacing = obj.gridLayout.ColumnSpacing;
@@ -141,7 +143,9 @@ classdef UIGridLayoutMouseDragResizer < matlab.mixin.SetGet
         end
 
         function [rowData, colData, rowSpaceData, colSpaceData, sumVarRowHeights, sumVarColWidths] = computeRowColSizeInfo(obj)
-            gridPosition = obj.gridLayout.Position;
+            gridPosition = obj.getGridPosition();
+            gridXPos = gridPosition(1);
+            gridYPos = gridPosition(2);
             gridWidth = gridPosition(3);
             gridHeight = gridPosition(4);
 
@@ -210,7 +214,7 @@ classdef UIGridLayoutMouseDragResizer < matlab.mixin.SetGet
                 end
 
                 if(i == 1)
-                    lastEnd = gridPadding(2) + excessGridRowSpace;
+                    lastEnd = gridYPos + gridPadding(2) + excessGridRowSpace;
                 else
                     lastEnd = rowEnd(i-1) + rowSpacing;
                 end
@@ -234,7 +238,7 @@ classdef UIGridLayoutMouseDragResizer < matlab.mixin.SetGet
                 end
 
                 if(i == 1)
-                    lastEnd = gridPadding(1);
+                    lastEnd = gridXPos + gridPadding(1);
                 else
                     lastEnd = colEnd(i-1) + colSpacing;
                 end
@@ -248,24 +252,26 @@ classdef UIGridLayoutMouseDragResizer < matlab.mixin.SetGet
         
         function [isInRow, isInCol, row, col] = isCursorinRowCol(obj)
             cp = obj.uiFigure.CurrentPoint;
-            
-            boolCol = cp(1) >= obj.colSpaceData(:,1) & cp(1) <= obj.colSpaceData(:,2);
-            boolRow = cp(2) >= obj.rowSpaceData(:,1) & cp(2) <= obj.rowSpaceData(:,2);
-            boolRow = boolRow(end:-1:1);
 
             isInRow = false;
             row = [];
             isInCol = false;
             col = [];
-            
-            if(any(boolCol))
-                isInCol = true;
-                col = find(boolCol);
-            end
 
-            if(any(boolRow))
-                isInRow = true;
-                row = find(boolRow);
+            if(obj.isCursorInGridLayout())     
+                boolCol = cp(1) >= obj.colSpaceData(:,1) & cp(1) <= obj.colSpaceData(:,2);
+                boolRow = cp(2) >= obj.rowSpaceData(:,1) & cp(2) <= obj.rowSpaceData(:,2);
+                boolRow = boolRow(end:-1:1);
+                
+                if(any(boolCol))
+                    isInCol = true;
+                    col = find(boolCol);
+                end
+    
+                if(any(boolRow))
+                    isInRow = true;
+                    row = find(boolRow);
+                end
             end
         end
 
@@ -331,6 +337,20 @@ classdef UIGridLayoutMouseDragResizer < matlab.mixin.SetGet
             end
 
             dimSizes(tf) = finalProValsChar;
+        end
+
+        function bool = isCursorInGridLayout(obj)
+            cp = obj.uiFigure.CurrentPoint;
+            gridPosition = obj.getGridPosition();
+
+            bool = (cp(1) >= gridPosition(1) && ...
+                    cp(1) <= gridPosition(1) + gridPosition(3) && ...
+                    cp(2) >= gridPosition(2) && ...
+                    cp(2) <= gridPosition(2) + gridPosition(4));
+        end
+
+        function gridPosition = getGridPosition(obj)
+            gridPosition = getpixelposition(obj.gridLayout,true);
         end
     end
 end
