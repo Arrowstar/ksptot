@@ -21,26 +21,26 @@ function [x, dv, rp, orbitsIn, orbitsOut, deltaVVect, vInfDNorm, xferOrbits, c, 
         numRev(i) = numRevsArr{i}(numRevInd); %#ok<AGROW>
     end
     
-    x0 = x2(1:length(bodiesInfo));
-    lb = lb(1:length(bodiesInfo));
-    ub = ub(1:length(bodiesInfo));
-    objfun = @(x) fitnessfcn([x,tm,numRevInds,departTrus]);
-    nonlconFMC1 = @(x) multiFlybyNonlcon([x,tm,numRevInds,departTrus], fitnessfcn,minRadiiSingle,maxRadiiSingle, minXferRad, maxDepartVInf, maxArriveVInf, maxDeltaV);
+%     x0 = x2(1:length(bodiesInfo));
+%     lb = lb(1:length(bodiesInfo));
+%     ub = ub(1:length(bodiesInfo));
+%     objfun = @(x) fitnessfcn([x,tm,numRevInds,departTrus]);
+%     nonlconFMC1 = @(x) multiFlybyNonlcon([x,tm,numRevInds,departTrus], fitnessfcn,minRadiiSingle,maxRadiiSingle, minXferRad, maxDepartVInf, maxArriveVInf, maxDeltaV);
     nonlconFMC2 = @(x) multiFlybyNonlcon(x, fitnessfcn,minRadiiSingle,maxRadiiSingle, minXferRad, maxDepartVInf, maxArriveVInf, maxDeltaV);
-    optionsFMC = optimoptions('fmincon','Algorithm','interior-point','Display','none','ScaleProblem','obj-and-constr');
-    try
-        [x3,dv3] = fmincon(objfun,x0,[],[],[],[],lb,ub,nonlconFMC1, optionsFMC);
-    catch ME %#ok<NASGU>
-        x3 = x2(1:length(bodiesInfo));
-        dv3 = dv2;
-    end
-    x3 = [x3,tm,numRevInds];
-
-    if(dv3 < dv2)
-        x = x3;
-    else
+%     optionsFMC = optimoptions('fmincon','Algorithm','interior-point','Display','none','ScaleProblem','obj-and-constr');
+%     try
+%         [x3,dv3] = fmincon(objfun,x0,[],[],[],[],lb,ub,nonlconFMC1, optionsFMC);
+%     catch ME %#ok<NASGU>
+%         x3 = x2(1:length(bodiesInfo));
+%         dv3 = dv2;
+%     end
+%     x3 = [x3,tm,numRevInds,departTrus];
+% 
+%     if(dv3 < dv2)
+%         x = x3;
+%     else
         x = x2;
-    end
+%     end
     
 %     numRev = zeros(1,(length(bodiesInfo)-1));
 %     for(i=1:length(bodiesInfo)-1) %#ok<*NO4LP>
@@ -53,7 +53,7 @@ function [x, dv, rp, orbitsIn, orbitsOut, deltaVVect, vInfDNorm, xferOrbits, c, 
     
     [dv, rp, orbitsIn, orbitsOut, deltaVVect, vInfDNorm, ~, ~, ~, r1B, r2B, v1, v2] = fitnessfcn(x);
     
-    times = cumsum(x3(1:length(bodiesInfo)));
+    times = cumsum(x(1:length(bodiesInfo)));
     parentBodyFrame = bodiesInfo{1}.getParBodyInfo().getBodyCenteredInertialFrame();
     for(i=1:size(orbitsIn,1)) %this section handle non-uniform body spin axis
         time = times(1+i);

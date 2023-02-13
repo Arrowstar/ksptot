@@ -217,9 +217,9 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
         end
         
         function soiRadius = getCachedSoIRadius(obj)
-            if(isnan(obj.soiRadiusCache))
-                obj.soiRadiusCache = getSOIRadius(obj, obj.getParBodyInfo);
-            end
+%             if(isnan(obj.soiRadiusCache))
+%                 obj.soiRadiusCache = getSOIRadius(obj, obj.getParBodyInfo);
+%             end
             
             soiRadius = obj.soiRadiusCache;
         end
@@ -325,49 +325,49 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
             parentGM = obj.parentGmuCache;
         end
         
-        function chain = getOrbitElemsChain(obj)
-            if(isempty(obj.orbitElemsChainCache))
-                smas = [];
-                eccs = [];
-                incs = [];
-                raans = [];
-                args = [];
-                means = [];
-                epochs = [];
-                parentGMs = [];
+        function chain = getOrbitElemsChain(obj)            
+            chain = obj.orbitElemsChainCache;
+        end
 
-                loop = true;
-                bodyInfo = obj;
-                while(loop)
-                    smas(end+1) = bodyInfo.sma; %#ok<AGROW>
-                    eccs(end+1) = bodyInfo.ecc; %#ok<AGROW>
-                    incs(end+1) = bodyInfo.inc; %#ok<AGROW>
-                    raans(end+1) = bodyInfo.raan; %#ok<AGROW>
-                    args(end+1) = bodyInfo.arg; %#ok<AGROW>
-                    means(end+1) = bodyInfo.mean; %#ok<AGROW>
-                    epochs(end+1) = bodyInfo.epoch; %#ok<AGROW>
+        function generateOrbitChainCache(obj)
+            smas = [];
+            eccs = [];
+            incs = [];
+            raans = [];
+            args = [];
+            means = [];
+            epochs = [];
+            parentGMs = [];
 
-                    try
-                        thisParentBodyInfo = bodyInfo.getParBodyInfo(obj.celBodyData);
-                    catch 
-                        thisParentBodyInfo = getParentBodyInfo(bodyInfo, obj.celBodyData);
-                    end
+            loop = true;
+            bodyInfo = obj;
+            while(loop)
+                smas(end+1) = bodyInfo.sma; %#ok<AGROW>
+                eccs(end+1) = bodyInfo.ecc; %#ok<AGROW>
+                incs(end+1) = bodyInfo.inc; %#ok<AGROW>
+                raans(end+1) = bodyInfo.raan; %#ok<AGROW>
+                args(end+1) = bodyInfo.arg; %#ok<AGROW>
+                means(end+1) = bodyInfo.mean; %#ok<AGROW>
+                epochs(end+1) = bodyInfo.epoch; %#ok<AGROW>
 
-                    if(isempty(thisParentBodyInfo))
-                        parentGMs(end+1) = 0;
-                        
-                        break;
-                    else
-                        parentGMs(end+1) = bodyInfo.getParentGmuFromCache(); %#ok<AGROW>
-
-                        bodyInfo = thisParentBodyInfo;
-                    end
+                try
+                    thisParentBodyInfo = bodyInfo.getParBodyInfo(obj.celBodyData);
+                catch 
+                    thisParentBodyInfo = getParentBodyInfo(bodyInfo, obj.celBodyData);
                 end
-                
-                obj.orbitElemsChainCache = {smas, eccs, incs, raans, args, means, epochs, parentGMs};
+
+                if(isempty(thisParentBodyInfo))
+                    parentGMs(end+1) = 0; %#ok<AGROW> 
+                    
+                    break;
+                else
+                    parentGMs(end+1) = bodyInfo.getParentGmuFromCache(); %#ok<AGROW>
+
+                    bodyInfo = thisParentBodyInfo;
+                end
             end
             
-            chain = obj.orbitElemsChainCache;
+            obj.orbitElemsChainCache = {smas, eccs, incs, raans, args, means, epochs, parentGMs};
         end
         
         function inputs = getFixedFrameFromInertialFrameInputsCache(obj)
@@ -665,6 +665,9 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
                 warning(msg);
                 msgbox(msg, 'Sperhical Harmonics Gravity Error.', 'error', 'non-modal');
             end
+
+            obj.soiRadiusCache = getSOIRadius(obj, obj.getParBodyInfo);
+            obj.generateOrbitChainCache();
         end
         
         function bodyObj = getObjFromBodyInfoStruct(bodyInfo)

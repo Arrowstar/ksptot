@@ -1,4 +1,4 @@
-function [grad,err,finaldelta] = gradest(fun,x0)
+function [grad,err,finaldelta] = gradest(fun,x0,useParallel)
 % gradest: estimate of the gradient vector of an analytical function of n variables
 % usage: [grad,err,finaldelta] = gradest(fun,x0)
 %
@@ -67,6 +67,12 @@ function [grad,err,finaldelta] = gradest(fun,x0)
 
 % get the size of x0 so we can reshape
 % later.
+arguments
+    fun(1,1)
+    x0 double
+    useParallel(1,1) logical = false;
+end
+
 sx = size(x0);
 
 % total number of derivatives we will need to take
@@ -75,12 +81,28 @@ nx = numel(x0);
 grad = zeros(1,nx);
 err = grad;
 finaldelta = grad;
-for ind = 1:nx
+
+pp = gcp('nocreate');
+if(isempty(pp))
+    M = 0;
+else
+    if(not(useParallel))
+        M = 0;
+    else
+        M = pp.NumWorkers;
+    end
+end
+
+tic;
+parfor(ind = 1:nx, M)
   [grad(ind),err(ind),finaldelta(ind)] = derivest( ...
     @(xi) fun(swapelement(x0,ind,xi)), ...
     x0(ind),'deriv',1,'vectorized','no', ...
-    'methodorder',2);
+    'methodorder',2, 'Style','forward', ...
+    'MaxStep',0.1,'StepRatio',4.000001);
 end
+t = toc;
+fprintf('Computed gradient in %0.3f sec.\n', t);
 
 end % mainline function end
 

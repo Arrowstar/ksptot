@@ -2,6 +2,7 @@ function [dv, rp, orbitIn, orbitOut, deltaVVect, vInfDNorm, vInfDepart, vInfArri
 %multiFlybyObjFunc Summary of this function goes here
 %   Detailed explanation goes here
     numX = size(x,1);
+    xOrig = x;
     
     if(numX==0)
         dv = 9E99;

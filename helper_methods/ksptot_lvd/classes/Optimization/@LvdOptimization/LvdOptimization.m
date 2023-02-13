@@ -26,6 +26,7 @@ classdef LvdOptimization < matlab.mixin.SetGet
         %Gradient Calculation Algos
         builtInGradMethod(1,1) BuiltInGradientCalculationMethod = BuiltInGradientCalculationMethod();
         customFiniteDiffsCalcMethod(1,1) CustomFiniteDiffsCalculationMethod = CustomFiniteDiffsCalculationMethod();
+        derivEstFiniteDiffCalcMethod(1,1) DERIVEstFiniteDiffsCalculationMethod = DERIVEstFiniteDiffsCalculationMethod();
     end
     
     methods
@@ -194,7 +195,7 @@ classdef LvdOptimization < matlab.mixin.SetGet
             for(i=1:length(actVars)) %#ok<*NO4LP>
                 var = actVars(i);
                 
-                if(isVarInLaunchVehicle(var, obj.lvdData) || isVarInLaunchVehicle(var, obj.lvdData))
+                if(isVarInLaunchVehicle(var, obj.lvdData))
                     varEvtNum = 1;
                 else
                     varEvtNum = getEventNumberForVar(var, obj.lvdData);
@@ -221,7 +222,7 @@ classdef LvdOptimization < matlab.mixin.SetGet
             for(i=1:length(activeVars))
                 var = activeVars(i);
                 
-                if(isVarInLaunchVehicle(var, obj.lvdData) || isVarInLaunchVehicle(var, obj.lvdData))
+                if(isVarInLaunchVehicle(var, obj.lvdData))
                     varEvtNum = 1;
                 else
                     varEvtNum = getEventNumberForVar(var, obj.lvdData);

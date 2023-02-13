@@ -74,6 +74,14 @@ classdef FminconOptimizer < AbstractGradientOptimizer
                 if(sparsityTF && isgraphics(hMsgBox))
                     close(hMsgBox); drawnow;
                 end
+
+            elseif(lvdOpt.gradAlgo == LvdOptimizerGradientCalculationAlgoEnum.DerivEst)
+                opts = optimoptions(opts, 'SpecifyObjectiveGradient',true);
+                gradCalcMethod = lvdOpt.derivEstFiniteDiffCalcMethod;
+                objFunToPass = @(x) obj.objFuncWithGradient(objFuncWrapper, x, gradCalcMethod, obj.usesParallel());
+
+            else
+                error('Unknown gradient algorithm: %s', lvdOpt.gradAlgo.name);
             end
             
             problem = createOptimProblem('fmincon', 'objective',objFunToPass, 'x0', x0All, 'lb', lbAll, 'ub', ubAll, 'nonlcon', nonlcon, 'options', opts);
@@ -119,9 +127,7 @@ classdef FminconOptimizer < AbstractGradientOptimizer
             obj.gradCalcMethod = newGradCalcMethod;
         end
         
-        function openOptionsDialog(obj)
-%             lvd_editFminconOptionsGUI(obj);
-            
+        function openOptionsDialog(obj)           
             output = AppDesignerGUIOutput({false});
             lvd_editFminconOptionsGUI_App(obj, output);
         end

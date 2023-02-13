@@ -75,9 +75,8 @@ function [x, dv, rp, orbitsIn, orbitsOut, xferOrbits, deltaVVect, vInfDNorm, c, 
                          'PlotFcns', {@gaplotbestf, @gaplotscorediversity},...
                          'TolFun',1E-10,...
                          'TolCon', 1E-6,...
-                         'Generations',numGen,...
-                         'EliteCount',round(popSize/15));
-    [~,~,exitflag,output,population,scores] = ga(fitnessfcn,nvars,A,b,[],[],lb,ub,nonlcon,IntCon,options);
+                         'Generations',numGen);
+    [xstar,fstar,exitflag,output,population,scores] = ga(fitnessfcn,nvars,A,b,[],[],lb,ub,nonlcon,IntCon,options);
     
     hGAPlot = findobj('Name','Genetic Algorithm');
     if(ishandle(hGAPlot))
@@ -104,30 +103,53 @@ function [x, dv, rp, orbitsIn, orbitsOut, xferOrbits, deltaVVect, vInfDNorm, c, 
         return
     end
     
-    c = nonlcon(population);
-    numCPerRow = size(c,2);
-    cTest = c <= 0;
-    cTest = sum(cTest,2);
-    Ind = find(cTest==numCPerRow);
-    if(~isempty(Ind))
-        populationC = population(Ind,:);
-        scoresC = scores(Ind,:);
-
-        [x, dv, rp, orbitsIn, orbitsOut, deltaVVect, vInfDNorm, xferOrbits, c, vInfDepart, vInfArrive, numRev] = findSaneTraj(scoresC, populationC, bodiesInfo, lb, ub, fitnessfcn, minRadiiSingle, maxRadiiSingle, minXferRad, numRevsArr, maxDepartVInf, maxArriveVInf, maxDeltaV(2:end), celBodyData);
+    [c, ~] = nonlcon(population);
+%     numCPerRow = size(c,2);
+%     cTest = c <= 0;
+%     cTest = sum(cTest,2);
+%     Ind = find(cTest==numCPerRow);
+    cBool = all(c <= 0, 2);
+    if(any(cBool))
+        [~,cI] = min(scores(cBool));
+        x = population(cI, :);
     else
-        cMaxes = max(abs(c),[],1);
-        cNorm = zeros(size(c));
-        for(i=1:length(cMaxes))
-            cNorm(:,i) = c(:,i)/cMaxes(i);
-        end        
-        [~,cI] = min(sum(cNorm,2));
-        
-        scoresC = scores(cI,:);
-        populationC = population(cI,:);
-        [x, dv, rp, orbitsIn, orbitsOut, deltaVVect, vInfDNorm, xferOrbits, c, vInfDepart, vInfArrive, numRev] = findSaneTraj(scoresC, populationC, bodiesInfo, lb, ub, fitnessfcn, minRadiiSingle, maxRadiiSingle, minXferRad, numRevsArr, maxDepartVInf, maxArriveVInf, maxDeltaV(2:end), celBodyData);
-        
-        warning('No valid solutions');
+        [~,cI] = min(scores);
+        x = population(cI, :);
     end
+
+    [dv, rp, orbitsIn, orbitsOut, deltaVVect, vInfDNorm, vInfDepart, vInfArrive, totDV, r1B, r2B, v1Output, v2Output, xferRp] = fitnessfcn(x);
+    c = nonlcon(x); 
+
+    numREVS = length(bodiesInfo) - 1;
+    numDepartTru = 1;
+    numRevInds = x(:,end-numREVS+1-numDepartTru:end-numDepartTru);
+    
+    for(i=1:size(numRevInds,2)) %#ok<*NO4LP>
+        numRevInd = numRevInds(:,i);
+        numRev(i) = numRevsArr{i}(numRevInd); %#ok<AGROW>
+    end
+
+    xferOrbits = getMultiFlybyXferOrbits(x, numRev, r1B, r2B, v1Output, v2Output, bodiesInfo, celBodyData);
+
+%     if(~isempty(Ind))
+%         populationC = population(Ind,:);
+%         scoresC = scores(Ind,:);
+% 
+%         [x, dv, rp, orbitsIn, orbitsOut, deltaVVect, vInfDNorm, xferOrbits, c, vInfDepart, vInfArrive, numRev] = findSaneTraj(scoresC, populationC, bodiesInfo, lb, ub, fitnessfcn, minRadiiSingle, maxRadiiSingle, minXferRad, numRevsArr, maxDepartVInf, maxArriveVInf, maxDeltaV(2:end), celBodyData);
+%     else
+%         cMaxes = max(abs(c),[],1);
+%         cNorm = zeros(size(c));
+%         for(i=1:length(cMaxes))
+%             cNorm(:,i) = c(:,i)/cMaxes(i);
+%         end        
+%         [~,cI] = min(sum(cNorm,2));
+%         
+%         scoresC = scores(cI,:);
+%         populationC = population(cI,:);
+%         [x, dv, rp, orbitsIn, orbitsOut, deltaVVect, vInfDNorm, xferOrbits, c, vInfDepart, vInfArrive, numRev] = findSaneTraj(scoresC, populationC, bodiesInfo, lb, ub, fitnessfcn, minRadiiSingle, maxRadiiSingle, minXferRad, numRevsArr, maxDepartVInf, maxArriveVInf, maxDeltaV(2:end), celBodyData);
+%         
+%         warning('No valid solutions');
+%     end
 
 %     try
 %         fitnessfcnFmincon = @(xx) multiFlybyObjFunc(joinIntConToNonInts(xx, x, IntCon), numRevsArr,bodiesInfo,includeDepartVInf,includeArrivalVInf,celBodyData);

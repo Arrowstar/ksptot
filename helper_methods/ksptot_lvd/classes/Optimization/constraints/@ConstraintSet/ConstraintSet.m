@@ -179,9 +179,11 @@ classdef ConstraintSet < matlab.mixin.SetGet
 
             fC = @(x) obj.evalConstraints(x, tfRunScript, evtToStartScriptExecAt, allowInterrupt, stateLogToEval);
             DC = computeGradAtPoint(fC, x, cAtX0, 1E-5, FiniteDiffTypeEnum.Forward, 2, [], useParallel);
+%             DC = jacobianest(fC,x,useParallel);
 
             fCEq = @(x) out2(fC, x);
             DCeq = computeGradAtPoint(fCEq, x, cEqAtX0, 1E-5, FiniteDiffTypeEnum.Forward, 2, [], useParallel);
+%             DCeq = jacobianest(fCEq,x,useParallel)';
         end
         
         function tf = usesStage(obj, stage)

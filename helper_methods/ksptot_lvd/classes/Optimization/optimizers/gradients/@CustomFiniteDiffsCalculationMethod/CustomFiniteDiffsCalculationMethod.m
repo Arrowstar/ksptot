@@ -67,9 +67,7 @@ classdef CustomFiniteDiffsCalculationMethod < AbstractGradientCalculationMethod
             J = J';
         end
         
-        function openOptionsDialog(obj)
-            %             lvd_finiteDiffOptionsGUI(obj);
-            
+        function openOptionsDialog(obj)           
             output = AppDesignerGUIOutput({false});
             lvd_finiteDiffOptionsGUI_App(obj, output);
         end
@@ -129,7 +127,7 @@ classdef CustomFiniteDiffsCalculationMethod < AbstractGradientCalculationMethod
             end
             
             rawBestHStep = [];
-            for(i=1:size(derivs,1))
+            for(i=1:size(derivs,1)) %#ok<*NO4LP> 
                 derivRow = derivs(i,:);
                 
                 hValLogDiff = diff(log(hValsToTest));

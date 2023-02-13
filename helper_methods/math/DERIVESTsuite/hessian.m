@@ -1,4 +1,4 @@
-function [hess,err] = hessian(fun,x0)
+function [hess,err] = hessian(fun,x0,useParallel)
 % hessian: estimate elements of the Hessian matrix (array of 2nd partials)
 % usage: [hess,err] = hessian(fun,x0)
 %
@@ -52,6 +52,11 @@ function [hess,err] = hessian(fun,x0)
 % e-mail: woodchips@rochester.rr.com
 % Release: 1.0
 % Release date: 2/10/2007
+arguments
+    fun(1,1)
+    x0 double
+    useParallel(1,1) logical = false;
+end
 
 % parameters that we might allow to change
 params.StepRatio = 2.0000001;
@@ -84,12 +89,23 @@ end
 
 % get the gradient vector. This is done only to decide
 % on intelligent step sizes for the mixed partials
-[grad,graderr,stepsize] = gradest(fun,x0);
+[grad,graderr,stepsize] = gradest(fun,x0,useParallel);
 
 % Get params.RombergTerms+1 estimates of the upper
 % triangle of the hessian matrix
+pp = gcp('nocreate');
+if(isempty(pp))
+    M = 0;
+else
+    if(not(useParallel))
+        M = 0;
+    else
+        M = pp.NumWorkers;
+    end
+end
+
 dfac = params.StepRatio.^(-(0:params.RombergTerms)');
-for i = 2:nx
+parfor(i = 2:nx,M)
     for j = 1:(i-1)
         dij = zeros(params.RombergTerms+1,1);
         for k = 1:(params.RombergTerms+1)
@@ -108,10 +124,12 @@ for i = 2:nx
 
         % Romberg extrapolation step
         [hess(i,j),err(i,j)] =  rombextrap(params.StepRatio,dij,[2 4]);
-        hess(j,i) = hess(i,j);
-        err(j,i) = err(i,j);
+%         hess(j,i) = hess(i,j);
+%         err(j,i) = err(i,j);
     end
 end
+hess = transpose(hess);
+err = transpose(err);
 
 
 end % mainline function end

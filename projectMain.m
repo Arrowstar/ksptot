@@ -43,6 +43,9 @@ warning('off','MATLAB:Axes:UpVector');
 %Turn off warning for recursive close
 warning('off','MATLAB:Figure:RecursionOnClose');
 
+%Turn off warning for "unable to save App Designer object
+warning('off','MATLAB:appdesigner:appdesigner:SaveObjWarning');
+
 %Populate initial ksptot log file
 writeKsptotLogFileHeaderToConsole();
 
