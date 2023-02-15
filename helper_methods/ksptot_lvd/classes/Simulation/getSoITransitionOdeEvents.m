@@ -34,21 +34,30 @@ function [value, isterminal, direction, causes] = getSoITransitionOdeEvents(ut, 
                 rApSC = Inf;
             end
 
+            bodyScChain = bodyInfo.getOrbitElemsChain();
+            bodyOtherChain = getOrbitElemsChain(children);
+            for(i=1:height(bodyOtherChain))
+                bodyOtherChain2(i) = {bodyOtherChain(i,:)}; %#ok<AGROW>
+            end
+
+            dVects = getAbsPositBetweenSpacecraftAndBody_fast_mex(ut, rVect, bodyScChain, bodyOtherChain2, vVect);
+
             for(i=length(children):-1:1) %#ok<*NO4LP>
                 childBodyInfo = children(i);
                 rSOI = childBodyInfo.getCachedSoIRadius();
                 [rApCB, rPeCB] = computeApogeePerigee(childBodyInfo.sma, childBodyInfo.ecc);
                 
-                if((rApSC < (rPeCB - rSOI)) || ...
-                    rPeSC > (rApCB + rSOI))
-                    val = realmax;
-                    
-                else
-                    dVect = getAbsPositBetweenSpacecraftAndBody(ut, rVect, bodyInfo, childBodyInfo, celBodyData);
+                % if((rApSC < (rPeCB - rSOI)) || ...
+                %     rPeSC > (rApCB + rSOI))
+                %     val = realmax;
+                % 
+                % else
+                    % dVect = getAbsPositBetweenSpacecraftAndBody(ut, rVect, bodyInfo, childBodyInfo, celBodyData);
+                    dVect = dVects(:,i);
                     distToChild = norm(dVect);               
 
                     val = distToChild - rSOI;
-                end
+                % end
 
                 value(end+1) = val; %#ok<AGROW>
                 direction(end+1) = -1; %#ok<AGROW>

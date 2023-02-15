@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.coder" plugin-version="R2023a">
-  <configuration build-checksum="3396762165" file="C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\astrodynamics\fast_getAbsPositBetweenSpacecraftAndBody\getAbsPositBetweenSpacecraftAndBody_fast.prj" location="C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\astrodynamics\fast_getAbsPositBetweenSpacecraftAndBody" name="getAbsPositBetweenSpacecraftAndBody_fast" target="target.unifiedcoder" target-name="MATLAB Coder">
+  <configuration build-checksum="3568265312" file="C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\astrodynamics\fast_getAbsPositBetweenSpacecraftAndBody\getAbsPositBetweenSpacecraftAndBody_fast.prj" location="C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\astrodynamics\fast_getAbsPositBetweenSpacecraftAndBody" name="getAbsPositBetweenSpacecraftAndBody_fast" target="target.unifiedcoder" target-name="MATLAB Coder">
     <profile key="profile.mex">
       <param.BuiltInstrumentedMex>false</param.BuiltInstrumentedMex>
       <param.RanInstrumentedMex>false</param.RanInstrumentedMex>
@@ -17,7 +17,7 @@
       <param.SaturateOnIntegerOverflow>false</param.SaturateOnIntegerOverflow>
       <param.EnableAutoParallelization>false</param.EnableAutoParallelization>
       <param.NumberOfCpuThreads>128</param.NumberOfCpuThreads>
-      <param.OptimizeReductions>false</param.OptimizeReductions>
+      <param.OptimizeReductions>true</param.OptimizeReductions>
       <param.SIMDAcceleration>option.SIMDAcceleration.Full</param.SIMDAcceleration>
       <param.GlobalDataSyncMethod>option.GlobalDataSyncMethod.NoSync</param.GlobalDataSyncMethod>
       <param.EnableVariableSizing>true</param.EnableVariableSizing>
@@ -99,7 +99,6 @@
         <var.SimdQueryHardwareType />
         <param.InstructionSetExtensionsAvailableInUI />
         <param.EnableAutoParallelization />
-        <param.OptimizeReductions />
         <param.EnableVariableSizing />
         <param.EnableDynamicMemoryAllocation />
         <param.DynamicMemoryAllocation />
@@ -179,9 +178,9 @@
       <param.InstructionSetExtensionsAvailableInUI>true</param.InstructionSetExtensionsAvailableInUI>
       <param.InstructionSetExtensions>None</param.InstructionSetExtensions>
       <param.SaturateOnIntegerOverflow>true</param.SaturateOnIntegerOverflow>
-      <param.PurelyIntegerCode>false</param.PurelyIntegerCode>
-      <param.SupportNonFinite>true</param.SupportNonFinite>
-      <param.LoopUnrollThreshold>5</param.LoopUnrollThreshold>
+      <param.PurelyIntegerCode />
+      <param.SupportNonFinite />
+      <param.LoopUnrollThreshold />
       <param.EnableAutoParallelization>false</param.EnableAutoParallelization>
       <param.NumberOfCpuThreads>0</param.NumberOfCpuThreads>
       <param.OptimizeReductions>false</param.OptimizeReductions>
@@ -196,26 +195,26 @@
       <param.PreserveArrayDimensions>false</param.PreserveArrayDimensions>
       <param.EliminateSingleDimensions>false</param.EliminateSingleDimensions>
       <param.StackUsageMax>200000</param.StackUsageMax>
-      <param.MultiInstanceCode>false</param.MultiInstanceCode>
-      <param.PreserveUnusedStructFields>false</param.PreserveUnusedStructFields>
+      <param.MultiInstanceCode />
+      <param.PreserveUnusedStructFields />
       <param.FilePartitionMethod>option.FilePartitionMethod.MapMFileToCFile</param.FilePartitionMethod>
       <param.GenerateComments>true</param.GenerateComments>
-      <param.CommentStyle>option.CommentStyle.Auto</param.CommentStyle>
+      <param.CommentStyle />
       <param.MATLABSourceComments>false</param.MATLABSourceComments>
       <param.MATLABSourceCommentLineNumbers>true</param.MATLABSourceCommentLineNumbers>
-      <param.MATLABFcnDesc>true</param.MATLABFcnDesc>
-      <param.ReqsInCode>false</param.ReqsInCode>
-      <param.ConvertIfToSwitch>false</param.ConvertIfToSwitch>
-      <param.PreserveExternInFcnDecls>true</param.PreserveExternInFcnDecls>
-      <param.EnableSignedLeftShifts>true</param.EnableSignedLeftShifts>
-      <param.EnableSignedRightShifts>true</param.EnableSignedRightShifts>
-      <param.ParenthesesLevel>option.ParenthesesLevel.Nominal</param.ParenthesesLevel>
-      <param.MaxIdLength>1024</param.MaxIdLength>
-      <param.HeaderGuardStyle>option.HeaderGuardStyle.UseIncludeGuard</param.HeaderGuardStyle>
+      <param.MATLABFcnDesc />
+      <param.ReqsInCode />
+      <param.ConvertIfToSwitch />
+      <param.PreserveExternInFcnDecls />
+      <param.EnableSignedLeftShifts />
+      <param.EnableSignedRightShifts />
+      <param.ParenthesesLevel />
+      <param.MaxIdLength />
+      <param.HeaderGuardStyle />
       <param.CodeFormattingTool>option.CodeFormattingTool.Auto</param.CodeFormattingTool>
-      <param.ClangFormatFile>option.ClangFormatFile.Generate</param.ClangFormatFile>
-      <param.DataTypeReplacement>option.DataTypeReplacement.CBuiltIn</param.DataTypeReplacement>
-      <param.EnableCustomReplacementTypes>false</param.EnableCustomReplacementTypes>
+      <param.ClangFormatFile />
+      <param.DataTypeReplacement />
+      <param.EnableCustomReplacementTypes />
       <param.ReplacementTypes.double />
       <param.ReplacementTypes.single />
       <param.ReplacementTypes.uint8 />
@@ -228,11 +227,11 @@
       <param.ReplacementTypes.int64 />
       <param.ReplacementTypes.char />
       <param.ReplacementTypes.logical />
-      <param.ReplacementTypes.ImportCustomTypes>false</param.ReplacementTypes.ImportCustomTypes>
+      <param.ReplacementTypes.ImportCustomTypes />
       <param.ReplacementTypes.HeaderFiles />
       <param.CppInterfaceStyle>option.CppInterfaceStyle.Functions</param.CppInterfaceStyle>
       <param.CppInterfaceClassName />
-      <param.CustomFileNameStr>$N$M</param.CustomFileNameStr>
+      <param.CustomFileNameStr />
       <param.CustomSymbolStrGlobalVar>$M$N</param.CustomSymbolStrGlobalVar>
       <param.CustomSymbolStrType>$M$N</param.CustomSymbolStrType>
       <param.CustomSymbolStrField>$M$N</param.CustomSymbolStrField>
@@ -240,7 +239,7 @@
       <param.CustomSymbolStrTmpVar>$M$N</param.CustomSymbolStrTmpVar>
       <param.CustomSymbolStrMacro>$M$N</param.CustomSymbolStrMacro>
       <param.CustomSymbolStrEMXArray>emxArray_$M$N</param.CustomSymbolStrEMXArray>
-      <param.CustomSymbolStrEMXArrayFcn>emx$M$N</param.CustomSymbolStrEMXArrayFcn>
+      <param.CustomSymbolStrEMXArrayFcn />
       <param.ReservedNameArray />
       <param.CppStyleConst>true</param.CppStyleConst>
       <param.RuntimeChecks>false</param.RuntimeChecks>
@@ -248,22 +247,22 @@
       <param.Verbosity>option.Verbosity.Info</param.Verbosity>
       <param.ReportPotentialDifferences>false</param.ReportPotentialDifferences>
       <param.GenerateReport>true</param.GenerateReport>
-      <param.GenerateCodeMetricsReport>false</param.GenerateCodeMetricsReport>
-      <param.GenerateCodeReplacementReport>false</param.GenerateCodeReplacementReport>
-      <param.HighlightPotentialDataTypeIssues>false</param.HighlightPotentialDataTypeIssues>
+      <param.GenerateCodeMetricsReport />
+      <param.GenerateCodeReplacementReport />
+      <param.HighlightPotentialDataTypeIssues />
       <param.HighlightImplicitExpansionIssues>true</param.HighlightImplicitExpansionIssues>
       <param.HighlightLoopControlIssues>true</param.HighlightLoopControlIssues>
       <param.LaunchReport>false</param.LaunchReport>
       <param.ReportInfoVarName />
-      <param.SILPILDebugging>false</param.SILPILDebugging>
-      <param.SILPILCheckConstantInputs>true</param.SILPILCheckConstantInputs>
-      <param.SILPILSyncGlobalData>true</param.SILPILSyncGlobalData>
-      <param.CodeExecutionProfiling>false</param.CodeExecutionProfiling>
-      <param.CodeProfilingInstrumentation>false</param.CodeProfilingInstrumentation>
-      <param.CodeProfilingSaveOptions>option.CodeProfilingSaveOptions.AllData</param.CodeProfilingSaveOptions>
-      <param.CodeStackProfiling>false</param.CodeStackProfiling>
-      <param.CodeCoverage>false</param.CodeCoverage>
-      <param.EnableInstrumentCode>false</param.EnableInstrumentCode>
+      <param.SILPILDebugging />
+      <param.SILPILCheckConstantInputs />
+      <param.SILPILSyncGlobalData />
+      <param.CodeExecutionProfiling />
+      <param.CodeProfilingInstrumentation />
+      <param.CodeProfilingSaveOptions />
+      <param.CodeStackProfiling />
+      <param.CodeCoverage />
+      <param.EnableInstrumentCode />
       <param.DefaultTestFile />
       <param.MergeInstrumentationResults>false</param.MergeInstrumentationResults>
       <param.RanPilSilVerification>false</param.RanPilSilVerification>
@@ -277,15 +276,15 @@
       <param.CustomSource />
       <param.CustomLibrary />
       <param.PostCodeGenCommand />
-      <param.TargetLangStandard>Auto</param.TargetLangStandard>
-      <param.CodeReplacementLibrary>None</param.CodeReplacementLibrary>
+      <param.TargetLangStandard />
+      <param.CodeReplacementLibrary />
       <param.DeprecatedCRLFlag />
       <param.SameHardware>true</param.SameHardware>
       <param.Toolchain>Automatically locate an installed toolchain</param.Toolchain>
-      <param.BuildConfiguration>Faster Runs</param.BuildConfiguration>
+      <param.BuildConfiguration />
       <param.CustomToolchainOptions />
-      <var.ToolchainSettingsVisible>true</var.ToolchainSettingsVisible>
-      <var.ToolchainSupportsBuildConfigurations>true</var.ToolchainSupportsBuildConfigurations>
+      <var.ToolchainSettingsVisible />
+      <var.ToolchainSupportsBuildConfigurations />
       <param.target.Data>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;ctdata&gt;&lt;configuredHardware/&gt;&lt;/ctdata&gt;</param.target.Data>
       <param.target.ActiveType>option.target.TargetType.MatlabHost</param.target.ActiveType>
       <param.target.ActiveTarget />
@@ -332,21 +331,21 @@
       <param.HardwareAtomicFloatSize.Target>option.HardwareAtomicFloatSize.None</param.HardwareAtomicFloatSize.Target>
       <param.HardwareDivisionRounding.Target>option.HardwareDivisionRounding.Zero</param.HardwareDivisionRounding.Target>
       <var.SuppressHardwareChange>false</var.SuppressHardwareChange>
-      <param.CastingMode>option.CastingMode.Nominal</param.CastingMode>
-      <param.IndentStyle>option.IndentStyle.K&amp;R</param.IndentStyle>
-      <param.IndentSize>2</param.IndentSize>
-      <param.ColumnLimit>80</param.ColumnLimit>
+      <param.CastingMode />
+      <param.IndentStyle />
+      <param.IndentSize />
+      <param.ColumnLimit />
       <param.grt.GenCodeOnly>false</param.grt.GenCodeOnly>
       <param.ConstantFoldingTimeout>40000</param.ConstantFoldingTimeout>
       <param.CompileTimeRecursionLimit>50</param.CompileTimeRecursionLimit>
       <param.EnableRuntimeRecursion>true</param.EnableRuntimeRecursion>
-      <param.RunInitializeFcn>true</param.RunInitializeFcn>
-      <param.IncludeInitializeFcn>true</param.IncludeInitializeFcn>
-      <param.IncludeTerminateFcn>true</param.IncludeTerminateFcn>
+      <param.RunInitializeFcn />
+      <param.IncludeInitializeFcn />
+      <param.IncludeTerminateFcn />
       <param.GenerateExampleMain>option.GenerateExampleMain.GenerateCodeOnly</param.GenerateExampleMain>
       <param.PreserveVariableNames>option.PreserveVariableNames.None</param.PreserveVariableNames>
-      <param.GenerateMakefile>true</param.GenerateMakefile>
-      <param.BuildToolEnable>false</param.BuildToolEnable>
+      <param.GenerateMakefile />
+      <param.BuildToolEnable />
       <param.BuildToolConfiguration />
       <param.InlineThreshold>10</param.InlineThreshold>
       <param.InlineThresholdMax>200</param.InlineThresholdMax>
@@ -354,24 +353,24 @@
       <param.InlineBetweenUserFunctions>option.InlineBetweenUserFunctions.Speed</param.InlineBetweenUserFunctions>
       <param.InlineBetweenUserAndMathWorksFunctions>option.InlineBetweenUserAndMathWorksFunctions.Speed</param.InlineBetweenUserAndMathWorksFunctions>
       <param.InlineBetweenMathWorksFunctions>option.InlineBetweenMathWorksFunctions.Speed</param.InlineBetweenMathWorksFunctions>
-      <param.EnableStrengthReduction>false</param.EnableStrengthReduction>
+      <param.EnableStrengthReduction />
       <param.EnableMemcpy>true</param.EnableMemcpy>
       <param.MemcpyThreshold>64</param.MemcpyThreshold>
       <param.EnableOpenMP>true</param.EnableOpenMP>
       <param.InitFltsAndDblsToZero>true</param.InitFltsAndDblsToZero>
       <param.DefaultVariableInitialization>option.DefaultVariableInitialization.None</param.DefaultVariableInitialization>
-      <param.GenerateNonFiniteFilesIfUsed>true</param.GenerateNonFiniteFilesIfUsed>
-      <param.PassStructByReference>true</param.PassStructByReference>
-      <param.UseBuiltinFFTWLibrary>false</param.UseBuiltinFFTWLibrary>
+      <param.GenerateNonFiniteFilesIfUsed />
+      <param.PassStructByReference />
+      <param.UseBuiltinFFTWLibrary />
       <param.CustomFFTCallback />
       <param.CustomBLASCallback />
       <param.CustomLAPACKCallback />
       <param.EnableAutoParallelizationReporting>true</param.EnableAutoParallelizationReporting>
       <param.CacheDynamicArrayDataPointer>true</param.CacheDynamicArrayDataPointer>
-      <param.GenerateDefaultInSwitch>false</param.GenerateDefaultInSwitch>
-      <param.JustifyMISRAViolations>false</param.JustifyMISRAViolations>
-      <param.EnableTraceability>true</param.EnableTraceability>
-      <param.SILPILVerbosity>option.SILPILVerbosity.off</param.SILPILVerbosity>
+      <param.GenerateDefaultInSwitch />
+      <param.JustifyMISRAViolations />
+      <param.EnableTraceability />
+      <param.SILPILVerbosity />
       <param.UseECoderFeatures>true</param.UseECoderFeatures>
       <param.EnableGitSupport>false</param.EnableGitSupport>
       <param.EnableAutoCommit>true</param.EnableAutoCommit>
@@ -588,7 +587,7 @@
       </unset>
     </profile>
     <param.objective>option.objective.c</param.objective>
-    <param.WorkflowStep>workflowSummary</param.WorkflowStep>
+    <param.WorkflowStep>generateCode</param.WorkflowStep>
     <param.TestSnippets>
       <item>[rVect,vVect] = getAbsPositBetweenSpacecraftAndBody_fast(time, rVectSC, bodyScChain, bodyOtherChain2, vVectSC)</item>
     </param.TestSnippets>
@@ -609,7 +608,7 @@
     <param.AutoInferUnboundedSizeThreshold>2048</param.AutoInferUnboundedSizeThreshold>
     <param.EnableFixedPointStep>false</param.EnableFixedPointStep>
     <param.EnableScreener>true</param.EnableScreener>
-    <param.AnnotationChecksum>2108267853</param.AnnotationChecksum>
+    <param.AnnotationChecksum>480833510</param.AnnotationChecksum>
     <var.LegacyTarget />
     <var.MirrorOnOpen>false</var.MirrorOnOpen>
     <param.FixedPointEnabled>false</param.FixedPointEnabled>
@@ -619,7 +618,7 @@
     <param.hdlParamStorage />
     <var.gc.lastOutputRoot>codegen\mex\getAbsPositBetweenSpacecraftAndBody_fast</var.gc.lastOutputRoot>
     <var.gc.lastOutputType>MEX_FILE</var.gc.lastOutputType>
-    <var.gc.preBuildChecksum>3396762165</var.gc.preBuildChecksum>
+    <var.gc.preBuildChecksum>3568265312</var.gc.preBuildChecksum>
     <var.cfi.lastOutputRoot>codegen\mex\getAbsPositBetweenSpacecraftAndBody_fast</var.cfi.lastOutputRoot>
     <var.cfi.preBuildChecksum>2897695370</var.cfi.preBuildChecksum>
     <var.lastCfiTestSnippet>[rVect,vVect] = getAbsPositBetweenSpacecraftAndBody_fast(time, rVectSC, bodyScChain, bodyOtherChain2, vVectSC)</var.lastCfiTestSnippet>
@@ -878,7 +877,7 @@
     </unset>
     <fileset.entrypoints>
       <file custom-data-expanded="false" value="${PROJECT_ROOT}\getAbsPositBetweenSpacecraftAndBody_fast.m">
-        <Marker>1676484159501</Marker>
+        <Marker>1676485161650</Marker>
       </file>
     </fileset.entrypoints>
     <fileset.testbench />
@@ -892,7 +891,7 @@
           </Input>
           <Input Name="bodyOtherChain" typeId="4">
             <Field Name="{:}" typeId="4">
-              <Field Name="{:}" typeId="5" />
+              <Field Name="{:}" typeId="3" />
             </Field>
           </Input>
           <Input Name="vVectSC" typeId="1" />
@@ -925,10 +924,10 @@
             </type>
             <type typeId="3">
               <Class>double</Class>
-              <Size>1 x 3</Size>
+              <Size>1 x :inf</Size>
               <Value />
               <InitialValue />
-              <UserDefined>false</UserDefined>
+              <UserDefined>true</UserDefined>
               <Complex>false</Complex>
               <Sparse>false</Sparse>
             </type>
@@ -939,15 +938,6 @@
               <InitialValue />
               <UserDefined>true</UserDefined>
               <Homogeneous>true</Homogeneous>
-            </type>
-            <type typeId="5">
-              <Class>double</Class>
-              <Size>1 x :inf</Size>
-              <Value />
-              <InitialValue />
-              <UserDefined>true</UserDefined>
-              <Complex>false</Complex>
-              <Sparse>false</Sparse>
             </type>
           </idpTable>
         </Inputs>
