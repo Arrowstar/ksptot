@@ -24,17 +24,16 @@ function [value, isterminal, direction, causes] = getSoITransitionOdeEvents(ut, 
         end
 
         %Leave SoI Downwards
-%         [sma, ecc, ~, ~, ~, ~] = getKeplerFromState(rVect, vVect, bodyInfo.gm, false);
-        [sma, ecc, ~, ~, ~, ~] = getKeplerFromState_Alg(rVect, vVect, bodyInfo.gm);
-        [rApSC, rPeSC] = computeApogeePerigee(sma, ecc);
-        
-        if(ecc >= 1)
-            rApSC = Inf;
-        end
-        
+%         [sma, ecc, ~, ~, ~, ~] = getKeplerFromState(rVect, vVect, bodyInfo.gm, false);        
         children = bodyInfo.getChildrenBodyInfo(celBodyData);
         if(~isempty(children))
-%             soiDownCauses(length(children)) = SoITransitionDownIntTermCause(bodyInfo, children(end), celBodyData);
+            [sma, ecc, ~, ~, ~, ~] = getKeplerFromState_Alg(rVect, vVect, bodyInfo.gm);
+            [rApSC, rPeSC] = computeApogeePerigee(sma, ecc);
+            
+            if(ecc >= 1)
+                rApSC = Inf;
+            end
+
             for(i=length(children):-1:1) %#ok<*NO4LP>
                 childBodyInfo = children(i);
                 rSOI = childBodyInfo.getCachedSoIRadius();
@@ -45,8 +44,6 @@ function [value, isterminal, direction, causes] = getSoITransitionOdeEvents(ut, 
                     val = realmax;
                     
                 else
-%                     [cRVect, ~] = getStateAtTime(childBodyInfo, ut, bodyInfo.gm);
-%                     distToChild = norm(rVect - cRVect);
                     dVect = getAbsPositBetweenSpacecraftAndBody(ut, rVect, bodyInfo, childBodyInfo, celBodyData);
                     distToChild = norm(dVect);               
 
