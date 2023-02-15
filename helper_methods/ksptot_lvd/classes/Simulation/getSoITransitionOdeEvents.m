@@ -45,7 +45,7 @@ function [value, isterminal, direction, causes] = getSoITransitionOdeEvents(ut, 
             for(i=length(children):-1:1) %#ok<*NO4LP>
                 childBodyInfo = children(i);
                 rSOI = childBodyInfo.getCachedSoIRadius();
-                [rApCB, rPeCB] = computeApogeePerigee(childBodyInfo.sma, childBodyInfo.ecc);
+                % [rApCB, rPeCB] = computeApogeePerigee(childBodyInfo.sma, childBodyInfo.ecc);
                 
                 % if((rApSC < (rPeCB - rSOI)) || ...
                 %     rPeSC > (rApCB + rSOI))
