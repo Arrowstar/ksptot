@@ -221,11 +221,7 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
 %                 obj.soiRadiusCache = getSOIRadius(obj, obj.getParBodyInfo);
 %             end
             
-            soiRadius = [obj.soiRadiusCache];
-        end
-
-        function setSoIRadiusCache(obj)
-            obj.soiRadiusCache = getSOIRadius(obj, obj.getParBodyInfo);
+            soiRadius = obj.soiRadiusCache;
         end
         
         function rotMat = get.bodyRotMatFromGlobalInertialToBodyInertial(obj)
@@ -330,7 +326,7 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
         end
         
         function chain = getOrbitElemsChain(obj)            
-            chain = vertcat(obj.orbitElemsChainCache);
+            chain = obj.orbitElemsChainCache;
         end
 
         function generateOrbitChainCache(obj)
