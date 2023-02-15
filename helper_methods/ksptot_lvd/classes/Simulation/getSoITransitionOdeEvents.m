@@ -1,18 +1,18 @@
 function [value, isterminal, direction, causes] = getSoITransitionOdeEvents(ut, rVect, vVect, bodyInfo, celBodyData)
+        persistent soiDownCauseEmpty
+
+        if(isempty(soiDownCauseEmpty))
+            soiDownCauseEmpty = SoITransitionDownIntTermCause();
+        end
+
         value = [];
         isterminal = [];
         direction = [];
-%         causes = AbstractIntegrationTerminationCause.empty(0,1);
             
         %Max Radius (SoI Radius) Constraint (Leave SOI Upwards)
         parentBodyInfo = bodyInfo.getParBodyInfo(celBodyData);
-%         rSOI = getSOIRadius(bodyInfo, parentBodyInfo);
         rSOI = bodyInfo.getCachedSoIRadius();
         radius = norm(rVect);
-
-%         if(isempty(parentBodyInfo))
-%             parentBodyInfo = KSPTOT_BodyInfo.empty(0,1);
-%         end
 
         if(rSOI < realmax)
             value(end+1) = rSOI - radius;
@@ -34,7 +34,8 @@ function [value, isterminal, direction, causes] = getSoITransitionOdeEvents(ut, 
         
         children = bodyInfo.getChildrenBodyInfo(celBodyData);
         if(~isempty(children))
-%             soiDownCauses(length(children)) = SoITransitionDownIntTermCause(bodyInfo, children(end), celBodyData);
+            soiDownCauses = repmat(soiDownCauseEmpty, [1,length(children)]);
+
             for(i=length(children):-1:1) %#ok<*NO4LP>
                 childBodyInfo = children(i);
                 rSOI = childBodyInfo.getCachedSoIRadius();
