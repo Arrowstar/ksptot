@@ -202,7 +202,12 @@ classdef TwoBodyPropagator < AbstractPropagator
             [rVect, vVect] = getStatefromKepler(sma, ecc, inc, raan, arg, tru, gmu, false);
             y = [rVect(:); vVect(:); tankStatesMasses(:); pwrStorageSocs(:)]';
 
-            [value,isterminal,direction, causes] = AbstractPropagator.odeEvents(t,y, eventInitStateLogEntry, evtTermCond, termCondDir, maxSimTime, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, minAltitude, celBodyData);
+            if(nargout >= 4)
+                [value,isterminal,direction, causes] = AbstractPropagator.odeEvents(t,y, eventInitStateLogEntry, evtTermCond, termCondDir, maxSimTime, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, minAltitude, celBodyData);
+            else
+                [value,isterminal,direction] = AbstractPropagator.odeEvents(t,y, eventInitStateLogEntry, evtTermCond, termCondDir, maxSimTime, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, minAltitude, celBodyData);
+                causes = AbstractIntegrationTerminationCause.empty(1,0);
+            end
         end
         
         function [ut, mean, tankStates, storageSoCs] = decomposeIntegratorTandY(t,y, numTankMasses, numPwrStorageStates)

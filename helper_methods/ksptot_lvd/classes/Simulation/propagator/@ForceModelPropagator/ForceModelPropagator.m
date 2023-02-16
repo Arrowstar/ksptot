@@ -73,7 +73,7 @@ classdef ForceModelPropagator < AbstractPropagator
         function openOptionsDialog(obj)
             fms = obj.forceModels;
             initSelInds = [];
-            for(i=1:length(fms))
+            for(i=1:length(fms)) %#ok<*NO4LP> 
                 if(fms(i).canBeDisabled)
                     initSelInds(end+1) = ForceModelsEnum.getIndOfDisablableListboxStrsForModel(fms(i).model); %#ok<AGROW>
                 end

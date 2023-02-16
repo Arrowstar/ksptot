@@ -221,7 +221,11 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
 %                 obj.soiRadiusCache = getSOIRadius(obj, obj.getParBodyInfo);
 %             end
             
-            soiRadius = obj.soiRadiusCache;
+            soiRadius = [obj.soiRadiusCache];
+        end
+
+        function setCachedSoIRadius(obj)
+            obj.soiRadiusCache = getSOIRadius(obj, obj.getParBodyInfo);
         end
         
         function rotMat = get.bodyRotMatFromGlobalInertialToBodyInertial(obj)
@@ -666,7 +670,7 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
                 msgbox(msg, 'Sperhical Harmonics Gravity Error.', 'error', 'non-modal');
             end
 
-            obj.soiRadiusCache = getSOIRadius(obj, obj.getParBodyInfo);
+            obj.setCachedSoIRadius();
             obj.generateOrbitChainCache();
         end
         

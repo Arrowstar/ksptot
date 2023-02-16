@@ -8,10 +8,14 @@ function [value, isterminal, direction, causes] = getSoITransitionOdeEvents(ut, 
             createCausesArr(1,1) logical = true
         end
 
-        persistent soiDownCauseEmpty
+        persistent soiDownCauseEmpty emptyCauses
 
         if(isempty(soiDownCauseEmpty))
             soiDownCauseEmpty = SoITransitionDownIntTermCause();
+        end
+
+        if(isnumeric(emptyCauses) && isempty(emptyCauses))
+            emptyCauses = AbstractIntegrationTerminationCause.empty(1,0);
         end
 
         value = [];
@@ -23,12 +27,12 @@ function [value, isterminal, direction, causes] = getSoITransitionOdeEvents(ut, 
         rSOI = bodyInfo.getCachedSoIRadius();
         radius = norm(rVect);
 
-        causes = AbstractIntegrationTerminationCause.empty(1,0);
+        causes = emptyCauses;
 
         if(rSOI < realmax)
-            value(end+1) = rSOI - radius;
-            isterminal(end+1) = 1;
-            direction(end+1) = -1;
+            value(1) = rSOI - radius;
+            isterminal(1) = 1;
+            direction(1) = -1;
             if(createCausesArr)
                 causes = SoITransitionUpIntTermCause(bodyInfo, parentBodyInfo, celBodyData);
             end
@@ -43,37 +47,48 @@ function [value, isterminal, direction, causes] = getSoITransitionOdeEvents(ut, 
             rApSC = Inf;
         end
         
+        bodyChainSc = bodyInfo.getOrbitElemsChain();
+
         children = bodyInfo.getChildrenBodyInfo(celBodyData);
         if(~isempty(children))
             if(createCausesArr)
                 soiDownCauses = repmat(soiDownCauseEmpty, [1,length(children)]);
             end
 
-            for(i=length(children):-1:1) %#ok<*NO4LP>
+            rSOIs = getCachedSoIRadius(children);
+            [rApCBs, rPeCBs] = computeApogeePerigee([children.sma], [children.ecc]);
+            downValue = NaN(1,length(children));
+            downDirection = NaN(1,length(children));
+            downIsterminal = NaN(1,length(children));
+            for(i=1:length(children)) %#ok<*NO4LP>
                 childBodyInfo = children(i);
-                rSOI = childBodyInfo.getCachedSoIRadius();
-                [rApCB, rPeCB] = computeApogeePerigee(childBodyInfo.sma, childBodyInfo.ecc);
+                rSOI = rSOIs(i);
+                rApCB = rApCBs(i);
+                rPeCB = rPeCBs(i);
                 
                 if((rApSC < (rPeCB - rSOI)) || ...
                     rPeSC > (rApCB + rSOI))
                     val = realmax;
                     
                 else
-%                     [cRVect, ~] = getStateAtTime(childBodyInfo, ut, bodyInfo.gm);
-%                     distToChild = norm(rVect - cRVect);
-                    dVect = getAbsPositBetweenSpacecraftAndBody(ut, rVect, bodyInfo, childBodyInfo, celBodyData);
+                    % dVect = getAbsPositBetweenSpacecraftAndBody(ut, rVect, bodyInfo, childBodyInfo, celBodyData);
+                    dVect = getAbsPositBetweenSpacecraftAndBody_fast_mex(ut, rVect, bodyChainSc, childBodyInfo.getOrbitElemsChain(), vVect);
                     distToChild = norm(dVect);               
 
                     val = distToChild - rSOI;
                 end
 
-                value(end+1) = val; %#ok<AGROW>
-                direction(end+1) = -1; %#ok<AGROW>
-                isterminal(end+1) = 1; %#ok<AGROW>
+                downValue(i) = val; 
+                downDirection(i) = -1; 
+                downIsterminal(i) = 1; 
                 if(createCausesArr)
-                    soiDownCauses(i) = SoITransitionDownIntTermCause(bodyInfo, childBodyInfo, celBodyData); %#ok<AGROW>
+                    soiDownCauses(i) = SoITransitionDownIntTermCause(bodyInfo, childBodyInfo, celBodyData);
                 end
-            end    
+            end  
+
+            value = horzcat(value, downValue);
+            direction = horzcat(direction, downDirection);
+            isterminal = horzcat(isterminal, downIsterminal);
 
             if(createCausesArr)
                 causes = horzcat(causes, soiDownCauses);

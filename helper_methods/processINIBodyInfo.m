@@ -112,6 +112,8 @@ function [celBodyData] = processINIBodyInfo(celBodyDataFromINI, varargin)
             
             celBodyData.(name).setPropTypeEnum();
             celBodyData.(name).setBaseBodySurfaceTexture();
+            celBodyData.(name).generateOrbitChainCache();
+            celBodyData.(name).setCachedSoIRadius();
 
             if(celBodyData.(name).usenonsphericalgrav && celBodyData.(name).nonsphericalgravmaxdeg > 0 && exist(celBodyData.(name).nonsphericalgavdatafile,'file'))
                 [celBodyData.(name).nonSphericalGravC, celBodyData.(name).nonSphericalGravS, maxOrderDeg] = getSphericalHarmonicsMatricesFromFile(celBodyData.(name).nonsphericalgavdatafile);
