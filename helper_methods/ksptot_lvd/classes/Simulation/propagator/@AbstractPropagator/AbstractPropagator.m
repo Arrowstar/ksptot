@@ -26,18 +26,19 @@ classdef(Abstract) AbstractPropagator < matlab.mixin.SetGet & matlab.mixin.Heter
     
     methods(Static)
         function [value,isterminal,direction, causes] = odeEvents(t,y, eventInitStateLogEntry, evtTermCond, termCondDir, maxSimTime, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, minAltitude, celBodyData)
-            persistent maxSimTimeCause minAltTermCause eventTermCondCause
+            persistent maxSimTimeCause minAltTermCause eventTermCondCause emptyCause
             if(isempty(maxSimTimeCause))
                 maxSimTimeCause = MaxEventSimTimeIntTermCause();
                 minAltTermCause = MinAltitudeIntTermCause();
                 eventTermCondCause = EventTermCondIntTermCause();
+                emptyCause = AbstractIntegrationTerminationCause.empty(1,0);
             end
 
             if(nargout > 3)
                 createCausesArr = true;
             else
                 createCausesArr = false;
-                causes = AbstractIntegrationTerminationCause.empty(1,0);
+                causes = emptyCause;
             end
             
             y = y(:);
