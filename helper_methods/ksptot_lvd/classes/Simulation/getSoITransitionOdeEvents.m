@@ -1,4 +1,13 @@
-function [value, isterminal, direction, causes] = getSoITransitionOdeEvents(ut, rVect, vVect, bodyInfo, celBodyData)
+function [value, isterminal, direction, causes] = getSoITransitionOdeEvents(ut, rVect, vVect, bodyInfo, celBodyData, createCausesArr)
+        arguments
+            ut(1,1) double
+            rVect(3,1) double
+            vVect(3,1) double
+            bodyInfo(1,1) KSPTOT_BodyInfo
+            celBodyData(1,1) CelestialBodyData
+            createCausesArr(1,1) logical = true
+        end
+
         persistent soiDownCauseEmpty
 
         if(isempty(soiDownCauseEmpty))
@@ -14,13 +23,15 @@ function [value, isterminal, direction, causes] = getSoITransitionOdeEvents(ut, 
         rSOI = bodyInfo.getCachedSoIRadius();
         radius = norm(rVect);
 
+        causes = AbstractIntegrationTerminationCause.empty(1,0);
+
         if(rSOI < realmax)
             value(end+1) = rSOI - radius;
             isterminal(end+1) = 1;
             direction(end+1) = -1;
-            causes = SoITransitionUpIntTermCause(bodyInfo, parentBodyInfo, celBodyData);
-        else
-            causes = AbstractIntegrationTerminationCause.empty(1,0);
+            if(createCausesArr)
+                causes = SoITransitionUpIntTermCause(bodyInfo, parentBodyInfo, celBodyData);
+            end
         end
 
         %Leave SoI Downwards
@@ -34,7 +45,9 @@ function [value, isterminal, direction, causes] = getSoITransitionOdeEvents(ut, 
         
         children = bodyInfo.getChildrenBodyInfo(celBodyData);
         if(~isempty(children))
-            soiDownCauses = repmat(soiDownCauseEmpty, [1,length(children)]);
+            if(createCausesArr)
+                soiDownCauses = repmat(soiDownCauseEmpty, [1,length(children)]);
+            end
 
             for(i=length(children):-1:1) %#ok<*NO4LP>
                 childBodyInfo = children(i);
@@ -57,9 +70,13 @@ function [value, isterminal, direction, causes] = getSoITransitionOdeEvents(ut, 
                 value(end+1) = val; %#ok<AGROW>
                 direction(end+1) = -1; %#ok<AGROW>
                 isterminal(end+1) = 1; %#ok<AGROW>
-                soiDownCauses(i) = SoITransitionDownIntTermCause(bodyInfo, childBodyInfo, celBodyData); %#ok<AGROW>
+                if(createCausesArr)
+                    soiDownCauses(i) = SoITransitionDownIntTermCause(bodyInfo, childBodyInfo, celBodyData); %#ok<AGROW>
+                end
             end    
-%             causes = [causes, soiDownCauses];
-            causes = horzcat(causes, soiDownCauses);
+
+            if(createCausesArr)
+                causes = horzcat(causes, soiDownCauses);
+            end
         end
 end

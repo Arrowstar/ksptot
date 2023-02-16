@@ -32,6 +32,13 @@ classdef(Abstract) AbstractPropagator < matlab.mixin.SetGet & matlab.mixin.Heter
                 minAltTermCause = MinAltitudeIntTermCause();
                 eventTermCondCause = EventTermCondIntTermCause();
             end
+
+            if(nargout > 3)
+                createCausesArr = true;
+            else
+                createCausesArr = false;
+                causes = AbstractIntegrationTerminationCause.empty(1,0);
+            end
             
             y = y(:);
 
@@ -57,7 +64,10 @@ classdef(Abstract) AbstractPropagator < matlab.mixin.SetGet & matlab.mixin.Heter
             value(1) = simTimeRemaining;
             isterminal(1) = 1;
             direction(1) = 0;
-            causes = maxSimTimeCause;
+
+            if(createCausesArr)
+                causes = maxSimTimeCause;
+            end
 
             %Min Altitude Constraint
             rMag = norm(rVect);
@@ -65,30 +75,41 @@ classdef(Abstract) AbstractPropagator < matlab.mixin.SetGet & matlab.mixin.Heter
             value(end+1) = altitude - minAltitude;
             isterminal(end+1) = 1;
             direction(end+1) = -1;
-            causes(end+1) = minAltTermCause;
+
+            if(createCausesArr)
+                causes(end+1) = minAltTermCause;
+            end
 
             %Non-Sequence Events
             for(i=1:length(nonSeqTermConds)) %#ok<*NO4LP> 
                 nonSeqTermCond = nonSeqTermConds{i};
 
                 [value(end+1),isterminal(end+1),direction(end+1)] = nonSeqTermCond(t,y); %#ok<AGROW>
-                causes(end+1) = nonSeqTermCauses(i); %#ok<AGROW>
+                if(createCausesArr)
+                    causes(end+1) = nonSeqTermCauses(i); %#ok<AGROW>
+                end
             end
 
             if(checkForSoITrans)
                 %SoI transitions
-                [soivalue, soiisterminal, soidirection, soicauses] = getSoITransitionOdeEvents(ut, rVect, vVect, bodyInfo, celBodyData);
+                [soivalue, soiisterminal, soidirection, soicauses] = getSoITransitionOdeEvents(ut, rVect, vVect, bodyInfo, celBodyData, createCausesArr);
 
                 value = horzcat(value, soivalue);
                 isterminal = horzcat(isterminal, soiisterminal);
                 direction = horzcat(direction, soidirection);
-                causes = horzcat(causes, soicauses);
+
+                if(createCausesArr)
+                    causes = horzcat(causes, soicauses);
+                end
             end
 
             %Event Termination Condition
             [value(end+1),isterminal(end+1),direction(end+1)] = evtTermCond(t,y);
             direction(end) = termCondDir.direction;
-            causes(end+1) = eventTermCondCause;
+
+            if(createCausesArr)
+                causes(end+1) = eventTermCondCause;
+            end
         end
         
         function [ut, rVect, vVect, tankStates, pwrStorageStates] = decomposeIntegratorTandY(t,y, numTankStates, numPwrStorageStates)
