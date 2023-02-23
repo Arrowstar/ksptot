@@ -160,7 +160,7 @@ classdef NomadOptimizer < AbstractOptimizer
 
                 fc = NaN(numEvals,numElementsInEachOutput);
 
-                for(i=1:numEvals) %#ok<NO4LP>
+                for(i=1:numEvals)
                     stateLogs(i) = LaunchVehicleStateLog(lvdData); %#ok<AGROW>
                 end
 
@@ -319,21 +319,36 @@ classdef NomadOptimizer < AbstractOptimizer
         end
         
         function generatePlots(x, optimValues, state, hDispAxes, lb, ub, varLabels, lbUsAll, ubUsAll)
-            persistent fValPlotIsLog tLayout hPlot1 hPlot2 hPlot3
+            persistent fValPlotIsLog tLayout hPlot1 hPlot2 hPlot3 isFirstIter iterationCount
 
             if(isempty(fValPlotIsLog))
                 fValPlotIsLog = true;
             end
 
+            if(isempty(isFirstIter))
+                isFirstIter = true;
+            end
+
+            if(isempty(iterationCount))
+                iterationCount = 0;
+            end
+
             switch state
                 case 'init'
                     if(isvalid(hDispAxes))
-%                         set(hDispAxes,'Visible','on');
-%                         subplot(hDispAxes);
-%                         axes(hDispAxes);
                         tLayout = tiledlayout(hDispAxes, 3,1);
                     end
                     fValPlotIsLog = true;
+                    isFirstIter = true;
+                    iterationCount = 0;
+
+                case 'iter'
+                    if(isFirstIter)
+                        isFirstIter = false;
+                    end
+
+                    optimValues.iteration = iterationCount;
+                    iterationCount = iterationCount + 1;
             end
 
             hPlot1 = nexttile(tLayout, 1);

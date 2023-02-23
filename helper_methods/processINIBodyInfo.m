@@ -107,6 +107,7 @@ function [celBodyData] = processINIBodyInfo(celBodyDataFromINI, varargin)
         for(i=1:length(names))
             name = names{i};
             celBodyData.(name).celBodyData = celBodyData;
+            celBodyData.(name).parentBodyInfoNeedsUpdate = true;
             [~] = celBodyData.(name).getParBodyInfo(celBodyData); %set that parent info now so that we don't have to handle it later
             [~] = celBodyData.(name).getChildrenBodyInfo(celBodyData); 
             

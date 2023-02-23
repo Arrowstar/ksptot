@@ -150,7 +150,9 @@ classdef GenericObjectiveFcn < AbstractObjectiveFcn
                 if(not(isempty(obj.targetBodyInfo)))
                     obj.frame = obj.refBody.getBodyCenteredInertialFrame();
                 else
-                    obj.frame = LvdData.getDefaultInitialBodyInfo(obj.lvdData.celBodyData).getBodyCenteredInertialFrame();
+                    if(not(isempty(obj.lvdData.celBodyData)))
+                        obj.frame = LvdData.getDefaultInitialBodyInfo(obj.lvdData.celBodyData).getBodyCenteredInertialFrame();
+                    end
                 end
             end
         end

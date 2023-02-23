@@ -96,8 +96,8 @@ classdef (Abstract) AbstractElementSet < matlab.mixin.SetGet & matlab.mixin.Cust
                 angVelWrtOrigin32 = toFrame.angVelWrtOriginCache(:,1);
                 rotMatToInertial32 = toFrame.rotMatToInertialCache(:,:,1);
             else
-               [posOffsetOrigin32, velOffsetOrigin32, angVelWrtOrigin32, rotMatToInertial32] = getOffsetsWrtInertialOrigin(toFrame, times, convertCartElemSet);
-                
+                [posOffsetOrigin32, velOffsetOrigin32, angVelWrtOrigin32, rotMatToInertial32] = getOffsetsWrtInertialOrigin(toFrame, times, convertCartElemSet);
+
                 if(numel(times) == 1)
                     toFrame.timeCache = times;
                     toFrame.posOffsetOriginCache = posOffsetOrigin32;

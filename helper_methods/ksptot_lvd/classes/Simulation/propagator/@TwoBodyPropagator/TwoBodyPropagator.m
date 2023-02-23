@@ -33,7 +33,23 @@ classdef TwoBodyPropagator < AbstractPropagator
             y0 = [kepState.getMeanAnomaly(), tankStates, pwrStorageStates];
             
             [t,y,te,ye,ie] = integrator.integrate(odefun, tspan, y0, evtsFunc, odeOutputFun);  
-            
+
+            if(not(all(ismember(te,t))))
+                t = vertcat(t, te);
+                y = vertcat(y,ye);
+
+                diffT = diff(t);
+                signDiffT = sign(diffT(1));
+                if(signDiffT == 1)
+                    [t, tI] = sort(t,'ascend');
+
+                elseif(signDiffT == -1)
+                    [t, tI] = sort(t,'descend');
+                end
+
+                y = y(tI,:);
+            end
+
             [t,ia,~] = unique(t,'stable');
             y = y(ia,:);
             
@@ -60,7 +76,11 @@ classdef TwoBodyPropagator < AbstractPropagator
             if(not(isempty(te)))
                 ye = []; %going to overwrite it soon with the 6 element state
                 for(i=1:length(te))
-                    ye(i,:) = ynew(t == te(i),:); %#ok<AGROW>
+                    try
+                        ye(i,:) = ynew(t == te(i),:); %#ok<AGROW>
+                    catch ME
+                        a=1;
+                    end
                 end
             end
         end
