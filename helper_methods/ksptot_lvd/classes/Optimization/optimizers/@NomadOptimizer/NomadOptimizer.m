@@ -197,11 +197,27 @@ classdef NomadOptimizer < AbstractOptimizer
             fcRow = [f; c(:);]';
         end
         
-        function stop = nomadIterFunWrapper(iter, fval, x, outputFnc, state, numVars)
+        function stop = nomadIterFunWrapper(funcount, fval, x, outputFnc, state, numVars)
+            persistent iterationCount
+
             if(numel(x) == numVars)
                 numEvals = 1;
             else
                 numEvals = size(x,1);
+            end
+
+            if(isempty(iterationCount))
+                iterationCount = 0;
+            end
+
+            switch state
+                case 'init'
+                    iterationCount = 0;
+                    optimValues.iteration = iterationCount;
+
+                case 'iter'
+                    optimValues.iteration = iterationCount;
+                    iterationCount = iterationCount + 1;
             end
 
             x = reshape(x, numEvals, numel(x)/numEvals);
@@ -236,11 +252,12 @@ classdef NomadOptimizer < AbstractOptimizer
                     xx = x(I,:);
                 end
             end
+
+            disp(numEvals);
             
             optimValues.constrviolation = max(cViol, 0);
-            optimValues.funccount = iter;
+            optimValues.funccount = funcount;
             optimValues.fval = fval;
-            optimValues.iteration = iter;
             optimValues.stepsize = 0;
             optimValues.firstorderopt = 0;
 
