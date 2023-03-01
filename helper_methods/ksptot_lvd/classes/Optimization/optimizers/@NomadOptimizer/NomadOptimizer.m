@@ -164,8 +164,6 @@ classdef NomadOptimizer < AbstractOptimizer
                     stateLogs(i) = LaunchVehicleStateLog(lvdData); %#ok<AGROW>
                 end
 
-%                 disp(numEvals);
-
                 if(M > 0 && numEvals > 1)
                     pp = gcp();
                     opts = parforOptions(pp,'RangePartitionMethod','fixed','SubrangeSize',ceil(pp.NumWorkers/numEvals));
@@ -252,8 +250,6 @@ classdef NomadOptimizer < AbstractOptimizer
                     xx = x(I,:);
                 end
             end
-
-            disp(numEvals);
             
             optimValues.constrviolation = max(cViol, 0);
             optimValues.funccount = funcount;

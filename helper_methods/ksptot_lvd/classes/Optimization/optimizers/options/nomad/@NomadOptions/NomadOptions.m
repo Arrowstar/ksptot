@@ -30,6 +30,10 @@ classdef NomadOptions < matlab.mixin.SetGet
         %surrogate model
         useSurrogateModelSearch(1,1) logical = false;
         surrogateOptions NomadSurrogateOptions
+
+        %latin hypercube
+        lhSearchInitEvals(1,1) double = NaN;
+        lhSearchEvals(1,1) double = NaN;
     end
     
     methods 
@@ -40,9 +44,9 @@ classdef NomadOptions < matlab.mixin.SetGet
         function options = getOptionsForOptimizer(obj, ~)
             options = struct('direction_type', obj.direction_type.optionStr);
                       
-%             if(not(isnan(obj.initial_mesh_size)))
-%                 options.INITIAL_MESH_SIZE = obj.initial_mesh_size;
-%             end
+            if(not(isnan(obj.initial_mesh_size)))
+                options.INITIAL_MESH_SIZE = obj.initial_mesh_size;
+            end
             
             if(not(isnan(obj.max_bb_eval)))
                 options.max_bb_eval = obj.max_bb_eval;
@@ -82,16 +86,27 @@ classdef NomadOptions < matlab.mixin.SetGet
                 end
             end
 
+            if(not(isnan(obj.lhSearchEvals)) && obj.lhSearchEvals > 0 && not(isnan(obj.lhSearchInitEvals)) && obj.lhSearchInitEvals > 0)
+                options.LH_SEARCH = sprintf('%u %u', obj.lhSearchInitEvals, obj.lhSearchEvals);
+            end
+
             options.nm_search = 0;
             options.display_degree = 2;
             options.display_all_eval = 1;
-            options.BB_MAX_BLOCK_SIZE = 100;
+            options.BB_MAX_BLOCK_SIZE = 100000000;
             options.DISPLAY_STATS = 'BBE TIME OBJ CONS_H H_MAX';
             options.SGTELIB_MODEL_SEARCH = obj.useSurrogateModelSearch;
 
             if(obj.useSurrogateModelSearch)
                 options.SGTELIB_MODEL_DEFINITION = obj.surrogateOptions.getSurrogateModelDefinitionString();
             end
+
+            if(obj.usesParallel())
+                options.MEGA_SEARCH_POLL = true;
+            end
+
+            disp('Running NOMAD with the following options enabled: ');
+            disp(options);
         end
         
         function tf = usesParallel(obj)
