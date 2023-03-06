@@ -52,6 +52,7 @@ classdef LvdCaseMatrix < matlab.mixin.SetGet
             
             [Idx,~] = knnsearch(A,currentPluginValues, 'Distance','seuclidean', 'K',height(A)); 
             
+            numDigits = ceil(log10(abs(max(Idx))));
             for(i=1:length(Idx))
 %                 newLvdDataSerialized = getByteStreamFromArray(obj.lvdData); %for now, but need to grab lvdData from the nearest finished case eventually
 %                 newLvdData = getArrayFromByteStream(newLvdDataSerialized);
@@ -66,7 +67,7 @@ classdef LvdCaseMatrix < matlab.mixin.SetGet
                     caseParams(j) = LvdCaseMatrixTaskParameter(pluginVars(j), runParams(j));
                 end
                 
-                lvdFilePath = fullfile(obj.current_save_location, sprintf('Case_%u.mat', i));
+                lvdFilePath = fullfile(obj.current_save_location, sprintf('Case_%0*u.mat', numDigits, i));
                 
                 prereqTask = LvdCaseMatrixTask.empty(1,0);
                 

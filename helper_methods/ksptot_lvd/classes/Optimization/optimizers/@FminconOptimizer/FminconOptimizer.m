@@ -84,6 +84,15 @@ classdef FminconOptimizer < AbstractGradientOptimizer
                 error('Unknown gradient algorithm: %s', lvdOpt.gradAlgo.name);
             end
             
+            %need to fix issues with variables being on bounds causing
+            %fmincon to go crazy on setting the initial condition
+            bool = x0All >= ubAll;
+            x0All(bool) = ubAll(bool) - 10*eps;
+
+            bool = x0All <= lbAll;
+            x0All(bool) = lbAll(bool) + 10*eps;
+
+            %create problem
             problem = createOptimProblem('fmincon', 'objective',objFunToPass, 'x0', x0All, 'lb', lbAll, 'ub', ubAll, 'nonlcon', nonlcon, 'options', opts);
             problem.lvdData = lvdOpt.lvdData; %need to get lvdData in somehow
                     

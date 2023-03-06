@@ -38,14 +38,17 @@ function datapt = lvd_TankMassTasks(stateLogEntry, subTask, tank)
             
             powerStorageStates = stateLogEntry.getAllActivePwrStorageStates();
             storageSoCs = NaN(size(powerStorageStates));
-            for(i=1:length(powerStorageStates))
+            for(i=1:length(powerStorageStates)) %#ok<*NO4LP> 
                 storageSoCs(i) = powerStorageStates(i).getStateOfCharge();
             end
             
             throttle = throttleModel.getThrottleAtTime(ut, rVect, vVect, tankStatesMasses, dryMass, stageStates, lvState, tankStates, bodyInfo, storageSoCs, powerStorageStates);
             presskPa = getPressureAtAltitude(bodyInfo, altitude); 
             
-            [tankMDotsEngines] = LaunchVehicleStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, tankStatesMasses, stageStates, throttle, lvState, presskPa, ut, rVect, vVect, bodyInfo, steeringModel, storageSoCs, powerStorageStates, []);
+            attState = LaunchVehicleAttitudeState();
+            attState.dcm = steeringModel.getBody2InertialDcmAtTime(ut, rVect, vVect, bodyInfo);
+
+            [tankMDotsEngines] = LaunchVehicleStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, tankStatesMasses, stageStates, throttle, lvState, presskPa, ut, rVect, vVect, bodyInfo, steeringModel, storageSoCs, powerStorageStates, attState);
             tankMassDotsT2TConns = TankToTankConnection.getTankMassFlowRatesFromTankToTankConnections(tankStates, tankStatesMasses, t2tConnStates);
             
             tankMDots = tankMDotsEngines + tankMassDotsT2TConns;

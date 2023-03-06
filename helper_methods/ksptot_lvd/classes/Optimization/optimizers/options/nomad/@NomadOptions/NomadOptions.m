@@ -99,10 +99,15 @@ classdef NomadOptions < matlab.mixin.SetGet
 
             if(obj.useSurrogateModelSearch)
                 options.SGTELIB_MODEL_DEFINITION = obj.surrogateOptions.getSurrogateModelDefinitionString();
+%                 options.SGTELIB_MODEL_SEARCH_TRIALS = 1000;
+%                 options.SGTELIB_MAX_POINTS_FOR_MODEL = 100000;
+%                 options.SGTELIB_MIN_POINTS_FOR_MODEL = 1;
+%                 options.SGTELIB_MODEL_RADIUS_FACTOR = 10;
             end
 
             if(obj.usesParallel())
                 options.MEGA_SEARCH_POLL = true;
+                options.MAX_ITERATION_PER_MEGAITERATION = 1;
             end
 
             disp('Running NOMAD with the following options enabled: ');

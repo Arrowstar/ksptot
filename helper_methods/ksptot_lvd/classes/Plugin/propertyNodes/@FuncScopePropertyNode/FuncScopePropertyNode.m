@@ -26,7 +26,11 @@ classdef FuncScopePropertyNode < AbstractObjPropertyNode
             for(i=1:length(objs))
                 nodeObject = objs{i};
                 
+                try
                 objPropName = obj.nodeObjsNames{i};
+                catch ME
+                    a=1;
+                end
                 
                 desc = sprintf('Type: %s', ...
                     class(nodeObject));

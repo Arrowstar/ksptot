@@ -313,22 +313,22 @@ function showLvdDataStructButton_Callback(hObject, eventdata, handles)
         case PluginFunctionInputSignatureEnum.BeforeEvents
             stateLog = lvdData.stateLog;
             event = lvdData.script.evts(1);
-            inputData = {lvdData, stateLog, event, LvdPluginExecLocEnum.BeforeEvent, [],[],[], [], [], [],[], []};
+            inputData = {lvdData, stateLog, event, LvdPluginExecLocEnum.BeforeEvent, [],[],[], [], [],[], []};
             
         case PluginFunctionInputSignatureEnum.AfterTimeStep
             event = lvdData.script.evts(1);
             [t,y] = lvdData.initialState.getFirstOrderIntegratorStateRepresentation();
             flag = 'init';
-            inputData = {lvdData, [], event, LvdPluginExecLocEnum.AfterTimestep, t,y,flag, [], [], [],[], []};
+            inputData = {lvdData, [], event, LvdPluginExecLocEnum.AfterTimestep, t,y,flag, [], [],[], []};
             
         case PluginFunctionInputSignatureEnum.AfterEvents
             stateLog = lvdData.stateLog;
             event = lvdData.script.evts(1);
-            inputData = {lvdData, stateLog, event, LvdPluginExecLocEnum.AfterEvent, [],[],[], [], [], [],[], []};
+            inputData = {lvdData, stateLog, event, LvdPluginExecLocEnum.AfterEvent, [],[],[], [], [],[], []};
             
         case PluginFunctionInputSignatureEnum.AfterProp
             stateLog = lvdData.stateLog;
-            inputData = {lvdData, stateLog, [], LvdPluginExecLocEnum.AfterProp, [],[],[], [], [], [],[], []};
+            inputData = {lvdData, stateLog, [], LvdPluginExecLocEnum.AfterProp, [],[],[], [], [],[], []};
            
         case PluginFunctionInputSignatureEnum.Constraint
             stateLog = lvdData.stateLog;
