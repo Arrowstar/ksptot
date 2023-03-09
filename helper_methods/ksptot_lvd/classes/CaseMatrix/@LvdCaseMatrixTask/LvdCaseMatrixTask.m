@@ -184,7 +184,7 @@ classdef LvdCaseMatrixTask < matlab.mixin.SetGet
                         tFileWriteTimeStart = tic;
                         while(fileWritten == false && toc(tFileWriteTimeStart) < 10)
                             try
-                                writecell(C, outputXlsFile, 'WriteMode','overwritesheet', 'Sheet',name);
+                                writecell(C, outputXlsFile, 'WriteMode','overwritesheet', 'Sheet',name, 'UseExcel',false);
                                 fclose('all');
                                 fileWritten = true;
                             catch ME
@@ -193,7 +193,7 @@ classdef LvdCaseMatrixTask < matlab.mixin.SetGet
                         end
 
                         if(fileWritten == false)
-                            writecell(C, outputXlsFile, 'WriteMode','overwritesheet', 'Sheet',name);
+                            writecell(C, outputXlsFile, 'WriteMode','overwritesheet', 'Sheet',name, 'UseExcel',false);
                             fclose('all');
                         end
                         
@@ -205,7 +205,7 @@ classdef LvdCaseMatrixTask < matlab.mixin.SetGet
                         tFileWriteTimeStart = tic;
                         while(fileWritten == false && toc(tFileWriteTimeStart) < 10)
                             try
-                                writecell(C, outputXlsFile, 'WriteMode','overwritesheet', 'Sheet',name);
+                                writecell(C, outputXlsFile, 'WriteMode','overwritesheet', 'Sheet',name, 'UseExcel',false);
                                 fclose('all');
                                 fileWritten = true;
                             catch ME
@@ -214,7 +214,7 @@ classdef LvdCaseMatrixTask < matlab.mixin.SetGet
                         end
 
                         if(fileWritten == false)
-                            writecell(C, outputXlsFile, 'WriteMode','overwritesheet', 'Sheet',name);
+                            writecell(C, outputXlsFile, 'WriteMode','overwritesheet', 'Sheet',name, 'UseExcel',false);
                             fclose('all');
                         end
                     end
