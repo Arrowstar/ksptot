@@ -185,6 +185,7 @@ classdef LvdCaseMatrixTask < matlab.mixin.SetGet
                         while(fileWritten == false && toc(tFileWriteTimeStart) < 10)
                             try
                                 writecell(C, outputXlsFile, 'WriteMode','overwritesheet', 'Sheet',name);
+                                fclose('all');
                                 fileWritten = true;
                             catch ME
                                 fileWritten = false;
@@ -193,6 +194,7 @@ classdef LvdCaseMatrixTask < matlab.mixin.SetGet
 
                         if(fileWritten == false)
                             writecell(C, outputXlsFile, 'WriteMode','overwritesheet', 'Sheet',name);
+                            fclose('all');
                         end
                         
                     else
@@ -204,6 +206,7 @@ classdef LvdCaseMatrixTask < matlab.mixin.SetGet
                         while(fileWritten == false && toc(tFileWriteTimeStart) < 10)
                             try
                                 writecell(C, outputXlsFile, 'WriteMode','overwritesheet', 'Sheet',name);
+                                fclose('all');
                                 fileWritten = true;
                             catch ME
                                 fileWritten = false;
@@ -212,6 +215,7 @@ classdef LvdCaseMatrixTask < matlab.mixin.SetGet
 
                         if(fileWritten == false)
                             writecell(C, outputXlsFile, 'WriteMode','overwritesheet', 'Sheet',name);
+                            fclose('all');
                         end
                     end
 
