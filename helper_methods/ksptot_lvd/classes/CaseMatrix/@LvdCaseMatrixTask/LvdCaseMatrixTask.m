@@ -179,11 +179,40 @@ classdef LvdCaseMatrixTask < matlab.mixin.SetGet
                         C = vertcat(C, num2cell([utTimeForDepVarValues, depVarValues]));
                         
                         [~,name,~] = fileparts(obj.lvdFilePath);
-                        writecell(C, outputXlsFile, 'WriteMode','overwritesheet', 'Sheet',name);
+
+                        fileWritten = false;
+                        tFileWriteTimeStart = tic;
+                        while(fileWritten == false && toc(tFileWriteTimeStart) < 10)
+                            try
+                                writecell(C, outputXlsFile, 'WriteMode','overwritesheet', 'Sheet',name);
+                                fileWritten = true;
+                            catch ME
+                                fileWritten = false;
+                            end
+                        end
+
+                        if(fileWritten == false)
+                            writecell(C, outputXlsFile, 'WriteMode','overwritesheet', 'Sheet',name);
+                        end
+                        
                     else
                         C = {'No Graphical Analysis tasks in scenario.'};
                         [~,name,~] = fileparts(obj.lvdFilePath);
-                        writecell(C, outputXlsFile, 'WriteMode','overwritesheet', 'Sheet',name);
+
+                        fileWritten = false;
+                        tFileWriteTimeStart = tic;
+                        while(fileWritten == false && toc(tFileWriteTimeStart) < 10)
+                            try
+                                writecell(C, outputXlsFile, 'WriteMode','overwritesheet', 'Sheet',name);
+                                fileWritten = true;
+                            catch ME
+                                fileWritten = false;
+                            end
+                        end
+
+                        if(fileWritten == false)
+                            writecell(C, outputXlsFile, 'WriteMode','overwritesheet', 'Sheet',name);
+                        end
                     end
 
                 catch ME
