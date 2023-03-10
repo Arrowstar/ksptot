@@ -345,7 +345,8 @@ classdef LvdCaseMatrix < matlab.mixin.SetGet
             disp('f');
 
             try
-            txt = eraseTags(f.Diary);
+                diaryText = f.Diary;
+            txt = eraseTags(diaryText);
             disp('g');
             fid = fopen(logFile,'w+'); 
             disp('h');
