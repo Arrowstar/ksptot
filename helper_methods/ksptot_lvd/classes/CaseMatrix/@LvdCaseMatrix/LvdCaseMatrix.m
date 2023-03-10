@@ -332,19 +332,27 @@ classdef LvdCaseMatrix < matlab.mixin.SetGet
             disp('c');
             FTask.lvdData = task.lvdData;
             disp('d');
+            try
             writecell(task.taskOutputData, task.taskOutputXlsFile, 'WriteMode','overwritesheet', 'Sheet',name, 'UseExcel',false);
+            catch ME
+                disp(ME.message);
+            end
             disp('e');
             [path, name, ~] = fileparts(task.lvdFilePath);
             logFile = fullfile(path, [name, '.log']);
             disp('f');
             txt = eraseTags(f.Diary);
             disp('g');
+            try
             fid = fopen(logFile,'w+'); 
             disp('h');
             fprintf(fid, '%s', txt);
             disp('i');
             fclose(fid);
             disp('j');
+            catch ME
+                disp(ME.message);
+            end
             
             fprintf('Output for %s:\n', name);
             disp('k');
