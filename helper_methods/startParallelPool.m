@@ -6,7 +6,7 @@ function startParallelPool(appFigure, writeOutput, numWorkers)
     end
 
     p = gcp('nocreate');
-    numCores = feature('numcores');
+    numCores = 2*feature('numcores');
     
     if(numWorkers > numCores)
         warning('Cannot create parallel pool with more workers (%u) than exist physical CPU cores on this PC (%u).', numWorkers, numCores);
