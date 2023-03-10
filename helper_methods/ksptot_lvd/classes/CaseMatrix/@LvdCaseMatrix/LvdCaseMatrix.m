@@ -327,22 +327,16 @@ classdef LvdCaseMatrix < matlab.mixin.SetGet
         function processTaskOutputs(f, runStatus,message,task)
             [path, name, ~] = fileparts(task.lvdFilePath);
 
-            disp('a');
             FTask = f.InputArguments{1};
-            disp('b');
             FTask.setTaskAsFinished(runStatus, message);
-            disp('c');
             FTask.lvdData = task.lvdData;
-            disp('d');
             try
-            writecell(task.taskOutputData, task.taskOutputXlsFile, 'WriteMode','overwritesheet', 'Sheet',name, 'UseExcel',false);
+                writecell(task.taskOutputData, task.taskOutputXlsFile, 'WriteMode','overwritesheet', 'Sheet',name, 'UseExcel',false);
             catch ME
                 disp(ME.message);
             end
-            disp('e');
             
             logFile = fullfile(path, [name, '.log']);
-            disp('f');
 
             try
                 diaryText = f.Diary;
@@ -351,21 +345,13 @@ classdef LvdCaseMatrix < matlab.mixin.SetGet
                 catch
                     txt = diaryText;
                 end
-            disp('g');
-            fid = fopen(logFile,'w+'); 
-            disp('h');
-            fprintf(fid, '%s', txt);
-            disp('i');
-            fclose(fid);
-            disp('j');
+
+                fid = fopen(logFile,'w+'); 
+                fprintf(fid, '%s', txt);
+                fclose(fid);
             catch ME
                 disp(ME.message);
             end
-            
-            fprintf('Output for %s:\n', name);
-            disp('k');
-            disp(txt);
-            disp('l');
         end
     end
 end

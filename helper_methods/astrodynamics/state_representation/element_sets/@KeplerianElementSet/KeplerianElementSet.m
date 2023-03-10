@@ -89,12 +89,12 @@ classdef KeplerianElementSet < AbstractElementSet
         end
         
         function mean = getMeanAnomaly(obj)
-            [mean] = computeMeanFromTrueAnom(obj.tru, obj.ecc);
+            [mean] = computeMeanFromTrueAnom([obj.tru], [obj.ecc]);
         end
         
         function meanMotion = getMeanMotion(obj)
-            gmu = obj.frame.getOriginBody().gm;
-            meanMotion = computeMeanMotion(obj.sma, gmu);
+            gmu = [getOriginBody([obj.frame]).gm];
+            meanMotion = computeMeanMotion([obj.sma], gmu);
         end
         
         function period = getPeriod(obj)
@@ -146,6 +146,35 @@ classdef KeplerianElementSet < AbstractElementSet
             yUnitVectElem = OUnitVector(2);
             zUnitVectElem = OUnitVector(3);
             hyperbolicVelMag = sqrt(-gmu/obj.sma);
+        end
+
+        function timeToApo = getTimeToApoapsis(obj)
+            bool = [obj.ecc] >= 1;
+
+            timeToApo = NaN(size(obj));
+            timeToApo(bool) = NaN;
+
+            eccBool = not(bool);
+            m0 = obj(eccBool).getMeanAnomaly();
+            n = obj(eccBool).getMeanMotion();
+
+            m1 = pi;
+            timeToApo(eccBool) = (m1-m0)/n;
+        end
+
+        function timeToPeri = getTimeToPeriapsis(obj)
+            hypBool = [obj.ecc] >= 1;
+            eccBool = not(hypBool);
+
+            m0 = getMeanAnomaly(obj);
+            n = getMeanMotion(obj);
+
+            m0(eccBool) = AngleZero2Pi(m0(eccBool));
+            m0(hypBool) = angleNegPiToPi(m0(hypBool));
+
+            m1(eccBool) = 2*pi;
+            m1(hypBool) = 0;
+            timeToPeri = (m1-m0)./n;
         end
     end
     

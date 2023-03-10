@@ -152,5 +152,13 @@ function datapt = lvd_KinematicStateTasks(stateLogEntry, subTask, inFrame)
             heightMapGI = stateLogEntry.centralBody.getHeightMap();
 
             datapt = geoElemSet.alt - heightMapGI(angleNegPiToPi(lat), angleNegPiToPi(lon)); %subtract because it's our alt relative to terrain height
+
+        case 'timeToApoapsis'
+            kepElemSet = cartElem.convertToKeplerianElementSet();
+            datapt = kepElemSet.getTimeToApoapsis();
+
+        case 'timeToPeriapsis'
+            kepElemSet = cartElem.convertToKeplerianElementSet();
+            datapt = kepElemSet.getTimeToPeriapsis();
     end
 end

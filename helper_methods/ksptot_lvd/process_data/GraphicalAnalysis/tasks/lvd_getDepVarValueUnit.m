@@ -232,6 +232,13 @@ function [depVarValue, depVarUnit, taskStr, refBodyInfo] = lvd_getDepVarValueUni
         case 'Height Above Terrain'
             depVarValue = lvd_KinematicStateTasks(subLog(i), 'heightAboveTerrain', inFrame);
             depVarUnit = 'km';
+
+        case 'Time To Periapsis'
+            depVarValue = lvd_KinematicStateTasks(subLog(i), 'timeToPeriapsis', inFrame); 
+            depVarUnit = 'sec';
+        case 'Time to Apoapsis'
+            depVarValue = lvd_KinematicStateTasks(subLog(i), 'timeToApoapsis', inFrame);
+            depVarUnit = 'sec';
  
         otherwise %is a programmatically generated string that we'll handle here
             fluidTypeMassPattern = '^Fluid Type (\d+?) Mass - ".*"';

@@ -78,6 +78,9 @@ function [taskList] = lvd_getGraphAnalysisTaskList(lvdData, excludeList)
     taskList{end+1} = 'Solar Radiation Pressure Force Vector Magnitude';
 
     taskList{end+1} = 'Height Above Terrain';
+
+    taskList{end+1} = 'Time To Periapsis';
+    taskList{end+1} = 'Time to Apoapsis';
     
     [fluidTypesGAStr, ~] = lvdData.launchVehicle.tankTypes.getFluidTypesGraphAnalysisTaskStrs();
     taskList = horzcat(taskList, fluidTypesGAStr);
