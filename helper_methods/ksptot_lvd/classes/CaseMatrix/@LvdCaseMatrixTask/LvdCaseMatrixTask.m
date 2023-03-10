@@ -10,7 +10,10 @@ classdef LvdCaseMatrixTask < matlab.mixin.SetGet
         status(1,1) LvdCaseMatrixTaskStatusEnum = LvdCaseMatrixTaskStatusEnum.NotRun
         prereqTasks(1,:) LvdCaseMatrixTask
         numAttempts(1,1) double = 0;
+
+        taskOutputXlsFile(1,:) char = '';
         taskOutputMessage(1,:) char = '';
+        taskOutputData cell
         
         lvdFilePath(1,:) char = '';
         
@@ -165,6 +168,8 @@ classdef LvdCaseMatrixTask < matlab.mixin.SetGet
             if(not(isempty(outputXlsFile)) && ...
                (runFinalStatus == LvdCaseMatrixTaskRunStatusEnum.RunSuceeded || runFinalStatus == LvdCaseMatrixTaskRunStatusEnum.RunFailedOptimizerNotConverged))
                 try
+                    obj.taskOutputXlsFile = outputXlsFile;
+
                     lvdData.stateLog = lvdData.script.executeScript(false, lvdData.script.getEventForInd(1), false, false, false, false);
                     stateLog = lvdData.stateLog.getAllEntries();
                     times = [stateLog.time];
@@ -177,50 +182,60 @@ classdef LvdCaseMatrixTask < matlab.mixin.SetGet
                         C = cellstr(["Universal Time", taskLabels]);
                         C(end+1,:) = horzcat({'sec'}, depVarUnits);
                         C = vertcat(C, num2cell([utTimeForDepVarValues, depVarValues]));
+                        obj.taskOutputData = C;
                         
-                        [~,name,~] = fileparts(obj.lvdFilePath);
-
-                        fileWritten = false;
-                        tFileWriteTimeStart = tic;
-                        while(fileWritten == false && toc(tFileWriteTimeStart) < 10)
-                            try
-                                writecell(C, outputXlsFile, 'WriteMode','overwritesheet', 'Sheet',name, 'UseExcel',false);
-                                pause(0.1);
-                                fclose('all');
-                                fileWritten = true;
-                            catch ME
-                                fileWritten = false;
-                            end
-                        end
-
-                        if(fileWritten == false)
-                            writecell(C, outputXlsFile, 'WriteMode','overwritesheet', 'Sheet',name, 'UseExcel',false);
-                            pause(0.1);
-                            fclose('all');
-                        end
+%                         [~,name,~] = fileparts(obj.lvdFilePath);
+% 
+%                         fileWritten = false;
+%                         tFileWriteTimeStart = tic;
+%                         while(fileWritten == false && toc(tFileWriteTimeStart) < 10)
+%                             try
+%                                 fclose('all');
+%                                 pause(2);
+%                                 writecell(C, outputXlsFile, 'WriteMode','overwritesheet', 'Sheet',name, 'UseExcel',false);
+%                                 pause(2);
+%                                 fclose('all');
+%                                 fileWritten = true;
+%                             catch ME
+%                                 fileWritten = false;
+%                             end
+%                         end
+% 
+%                         if(fileWritten == false)
+%                             fclose('all');
+%                             pause(2);
+%                             writecell(C, outputXlsFile, 'WriteMode','overwritesheet', 'Sheet',name, 'UseExcel',false);
+%                             pause(2);
+%                             fclose('all');
+%                         end
                         
                     else
                         C = {'No Graphical Analysis tasks in scenario.'};
-                        [~,name,~] = fileparts(obj.lvdFilePath);
+                        obj.taskOutputData = C;
+%                         [~,name,~] = fileparts(obj.lvdFilePath);
 
-                        fileWritten = false;
-                        tFileWriteTimeStart = tic;
-                        while(fileWritten == false && toc(tFileWriteTimeStart) < 10)
-                            try
-                                writecell(C, outputXlsFile, 'WriteMode','overwritesheet', 'Sheet',name, 'UseExcel',false);
-                                pause(0.1);
-                                fclose('all');
-                                fileWritten = true;
-                            catch ME
-                                fileWritten = false;
-                            end
-                        end
-
-                        if(fileWritten == false)
-                            writecell(C, outputXlsFile, 'WriteMode','overwritesheet', 'Sheet',name, 'UseExcel',false);
-                            pause(0.1);
-                            fclose('all');
-                        end
+%                         fileWritten = false;
+%                         tFileWriteTimeStart = tic;
+%                         while(fileWritten == false && toc(tFileWriteTimeStart) < 10)
+%                             try
+%                                 fclose('all');
+%                                 pause(2);
+%                                 writecell(C, outputXlsFile, 'WriteMode','overwritesheet', 'Sheet',name, 'UseExcel',false);
+%                                 pause(2);
+%                                 fclose('all');
+%                                 fileWritten = true;
+%                             catch ME
+%                                 fileWritten = false;
+%                             end
+%                         end
+% 
+%                         if(fileWritten == false)
+%                             fclose('all');
+%                             pause(2);
+%                             writecell(C, outputXlsFile, 'WriteMode','overwritesheet', 'Sheet',name, 'UseExcel',false);
+%                             pause(2);
+%                             fclose('all');
+%                         end
                     end
 
                 catch ME

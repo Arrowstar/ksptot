@@ -110,10 +110,6 @@ classdef LvdCaseMatrix < matlab.mixin.SetGet
   
                     fH = @(runStatus,message,task) LvdCaseMatrix.processTaskOutputs(fToRun, runStatus,message,task);
                     F(end+1) = afterEach(fToRun,fH,0); %#ok<AGROW> 
-                    
-%                     [runFinalStatus, message] = nextTask.runTask(xlsFile);
-%                     nextTask.setTaskAsFinished(runFinalStatus, message);
-
                 else                    
                     pause(0.5); %process button clicks
                 end
@@ -338,9 +334,15 @@ classdef LvdCaseMatrix < matlab.mixin.SetGet
             [path, name, ~] = fileparts(task.lvdFilePath);
             logFile = fullfile(path, [name, '.log']);
             
+            txt = eraseTags(f.Diary);
+
             fid = fopen(logFile,'w+'); 
-            fprintf(fid, '%s', eraseTags(f.Diary)); 
+            fprintf(fid, '%s', txt); 
             fclose(fid);
+
+            disp(txt);
+
+            writecell(task.taskOutputData, task.taskOutputXlsFile, 'WriteMode','overwritesheet', 'Sheet',name, 'UseExcel',false);
         end
     end
 end
