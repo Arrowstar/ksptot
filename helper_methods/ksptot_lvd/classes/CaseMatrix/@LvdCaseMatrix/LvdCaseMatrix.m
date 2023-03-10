@@ -340,6 +340,7 @@ classdef LvdCaseMatrix < matlab.mixin.SetGet
             fprintf(fid, '%s', txt); 
             fclose(fid);
 
+            fprintf('Output for %s:\n', name);
             disp(txt);
 
             writecell(task.taskOutputData, task.taskOutputXlsFile, 'WriteMode','overwritesheet', 'Sheet',name, 'UseExcel',false);
