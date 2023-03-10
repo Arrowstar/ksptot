@@ -326,7 +326,7 @@ classdef LvdCaseMatrix < matlab.mixin.SetGet
     methods(Static,Access='private')
         function processTaskOutputs(f, runStatus,message,task)
             [path, name, ~] = fileparts(task.lvdFilePath);
-            
+
             disp('a');
             FTask = f.InputArguments{1};
             disp('b');
@@ -343,9 +343,10 @@ classdef LvdCaseMatrix < matlab.mixin.SetGet
             
             logFile = fullfile(path, [name, '.log']);
             disp('f');
+
+            try
             txt = eraseTags(f.Diary);
             disp('g');
-            try
             fid = fopen(logFile,'w+'); 
             disp('h');
             fprintf(fid, '%s', txt);
