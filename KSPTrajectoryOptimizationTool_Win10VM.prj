@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.ezdeploy" plugin-version="1.0">
-  <configuration build-checksum="107712945" file="C:\Users\harde\OneDrive\Documents\ksptot\KSPTrajectoryOptimizationTool_Win10VM.prj" location="C:\Users\harde\OneDrive\Documents\ksptot" name="KSPTrajectoryOptimizationTool_Win10VM" preferred-package-location="C:\Users\harde\OneDrive\Documents\ksptot\deploy\KSPTrajectoryOptimizationTool\for_redistribution" preferred-package-type="package.type.exe" target="target.ezdeploy.standalone" target-name="Application Compiler">
+  <configuration build-checksum="3093908628" file="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\KSPTrajectoryOptimizationTool_Win10VM.prj" location="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool" name="KSPTrajectoryOptimizationTool_Win10VM" preferred-package-location="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\deploy\KSPTrajectoryOptimizationTool\for_redistribution" preferred-package-type="package.type.exe" target="target.ezdeploy.standalone" target-name="Application Compiler">
     <param.appname>KSPTrajectoryOptimizationTool</param.appname>
     <param.icon>${PROJECT_ROOT}\KSPTrajectoryOptimizationTool_Win10VM_resources\icon.ico</param.icon>
     <param.icons>
@@ -91,11 +91,12 @@
       <file>${MATLAB_ROOT}\toolbox\local\restoredefaultpath.m</file>
       <file>${MATLAB_ROOT}\toolbox\local\userpath.m</file>
       <file>${MATLAB_ROOT}\toolbox\matlab\demos\bucky.m</file>
+      <file>C:\Users\Adam\Dropbox\Documents\MATLAB\uiinspect.m</file>
     </fileset.depfun>
     <build-deliverables>
-      <file location="${PROJECT_ROOT}\deploy\KSPTrajectoryOptimizationTool\for_testing" name="readme.txt" optional="true">C:\Users\harde\OneDrive\Documents\ksptot\deploy\KSPTrajectoryOptimizationTool\for_testing\readme.txt</file>
-      <file location="${PROJECT_ROOT}\deploy\KSPTrajectoryOptimizationTool\for_testing" name="splash.png" optional="false">C:\Users\harde\OneDrive\Documents\ksptot\deploy\KSPTrajectoryOptimizationTool\for_testing\splash.png</file>
-      <file location="${PROJECT_ROOT}\deploy\KSPTrajectoryOptimizationTool\for_testing" name="KSPTrajectoryOptimizationTool.exe" optional="false">C:\Users\harde\OneDrive\Documents\ksptot\deploy\KSPTrajectoryOptimizationTool\for_testing\KSPTrajectoryOptimizationTool.exe</file>
+      <file location="${PROJECT_ROOT}\deploy\KSPTrajectoryOptimizationTool\for_testing" name="readme.txt" optional="true">C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\deploy\KSPTrajectoryOptimizationTool\for_testing\readme.txt</file>
+      <file location="${PROJECT_ROOT}\deploy\KSPTrajectoryOptimizationTool\for_testing" name="KSPTrajectoryOptimizationTool.exe" optional="false">C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\deploy\KSPTrajectoryOptimizationTool\for_testing\KSPTrajectoryOptimizationTool.exe</file>
+      <file location="${PROJECT_ROOT}\deploy\KSPTrajectoryOptimizationTool\for_testing" name="splash.png" optional="false">C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\deploy\KSPTrajectoryOptimizationTool\for_testing\splash.png</file>
     </build-deliverables>
     <workflow />
     <matlab>

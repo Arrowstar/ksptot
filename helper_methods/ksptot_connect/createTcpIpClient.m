@@ -39,7 +39,7 @@ function [tcpipClient] = createTcpIpClient(varargin)
     set(tcpipClient, 'InputBufferSize',120480);
     set(tcpipClient, 'OutputBufferSize',120480);
     set(tcpipClient, 'Timeout',10);
-    set(tcpipClient, 'ReadAsyncMode', 'continuous');
+%     set(tcpipClient, 'ReadAsyncMode', 'continuous');
 
     try
         set(tcpipClient, 'BytesAvailableFcnMode', 'byte');
