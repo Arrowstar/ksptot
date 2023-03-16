@@ -158,7 +158,8 @@ classdef KeplerianElementSet < AbstractElementSet
             m0 = obj(eccBool).getMeanAnomaly();
             n = obj(eccBool).getMeanMotion();
 
-            m1 = pi;
+            m1(m0 <= pi) = pi;
+            m1(m0 > pi) = 3*pi;
             timeToApo(eccBool) = (m1-m0)/n;
         end
 

@@ -167,7 +167,7 @@ classdef NomadOptimizer < AbstractOptimizer
                 if(M > 0 && numEvals > 1)
                     pp = gcp();
                     opts = parforOptions(pp,'RangePartitionMethod','fixed','SubrangeSize',ceil(pp.NumWorkers/numEvals));
-                    parfor(i=1:numEvals,opts)
+                    parfor(i=1:numEvals)
                         xI = x(i,:);
                         [fcRow, stateLog] = NomadOptimizer.loopInternal(xI, objFun, nonlcon);
 

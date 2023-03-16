@@ -31,11 +31,20 @@ function [tcpipClient] = createTcpIpClient(varargin)
 
 %     tcpipClient = tcpip(rHost,port,'NetworkRole',role);
 
-    tcpipClient.ByteOrder = 'bigEndian';
+    try
+        tcpipClient.ByteOrder = 'bigEndian';
+    catch 
+        tcpipClient.ByteOrder = 'big-endian';
+    end
     set(tcpipClient, 'InputBufferSize',120480);
     set(tcpipClient, 'OutputBufferSize',120480);
     set(tcpipClient, 'Timeout',10);
     set(tcpipClient, 'ReadAsyncMode', 'continuous');
-    set(tcpipClient, 'BytesAvailableFcnMode', 'byte');
-    set(tcpipClient, 'BytesAvailableFcnCount', 120240);
+
+    try
+        set(tcpipClient, 'BytesAvailableFcnMode', 'byte');
+        set(tcpipClient, 'BytesAvailableFcnCount', 120240);
+    catch
+        configureCallback(tcpipClient, 'byte', 120240, @() 1);
+    end
 end

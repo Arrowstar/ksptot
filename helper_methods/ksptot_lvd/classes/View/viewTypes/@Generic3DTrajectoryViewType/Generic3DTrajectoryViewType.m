@@ -427,7 +427,7 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
 %                 end
 %                 
             else
-                cameratoolbar('ResetCamera');
+                cameratoolbar(hFig, 'ResetCamera');
                 view(dAxes, 3);
             end
                         

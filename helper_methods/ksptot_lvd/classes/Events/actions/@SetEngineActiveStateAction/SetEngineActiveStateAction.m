@@ -28,7 +28,7 @@ classdef SetEngineActiveStateAction < AbstractEventAction
             stgState = newStateLogEntry.stageStates([newStateLogEntry.stageStates.stage] == stage);
             
             engineState = stgState.engineStates([stgState.engineStates.engine] == obj.engine);
-            engineState.active = obj.activeStateToSet;
+            engineState(1).active = obj.activeStateToSet;
         end
         
         function initAction(obj, initialStateLogEntry)

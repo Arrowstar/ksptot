@@ -5,19 +5,16 @@ function [rVectB, vVectB] = getPositOfBodyWRTSun(time, bodyInfo, celBodyData)
         celBodyData
     end
 
-    if(numel(time) == 1 && bodyInfo.lastComputedSunTime == time)
-        rVectB = bodyInfo.lastComputedSunRVect;
-        vVectB =  bodyInfo.lastComputedSunVVect;
-        return;
-    end
+%     if(numel(time) == 1 && bodyInfo.lastComputedSunTime == time)
+%         rVectB = bodyInfo.lastComputedSunRVect;
+%         vVectB =  bodyInfo.lastComputedSunVVect;
+%         return;
+%     end
 
     try
         if(bodyInfo.propTypeIsTwoBody || (numel(time) == 1 && time == bodyInfo.epoch))
             chain = getOrbitElemsChain(bodyInfo);
             [rVectB, vVectB] = getPositOfBodyWRTSun_alg_fast_mex(time, chain{:});
-%             [rVectB, vVectB] = getPositOfBodyWRTSun_alg_fast_mex_OpenMP(time, chain{:});
-%             [rVectB, vVectB] = getPositOfBodyWRTSun_alg_fast_mex_AVX2(time, chain{:});
-%             [rVectB, vVectB] = Copy_of_getPositOfBodyWRTSun_alg_fast_mex(time, chain{:});
             
         elseif(bodyInfo.propTypeIsNumerical)
             parentBodyInfo = bodyInfo.getParBodyInfo(celBodyData);
