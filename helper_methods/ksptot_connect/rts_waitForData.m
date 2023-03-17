@@ -5,7 +5,7 @@ function rts_waitForData(tcpipClient)
     elapsedTime = 0;
 %     pause(0.05);
     tic;
-    while(tcpipClient.BytesAvailable <= 0 && elapsedTime<tcpipClient.TimeOut)
+    while(tcpipClient.BytesAvailable <= 0 && elapsedTime<tcpipClient.Timeout)
         elapsedTime = toc;
         pause(0.025);
     end
