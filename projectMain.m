@@ -43,8 +43,11 @@ warning('off','MATLAB:Axes:UpVector');
 %Turn off warning for recursive close
 warning('off','MATLAB:Figure:RecursionOnClose');
 
-%Turn off warning for "unable to save App Designer object
+%Turn off warning for "unable to save App Designer object"
 warning('off','MATLAB:appdesigner:appdesigner:SaveObjWarning');
+
+%Turn off warning for "tcpip" class going to be removed.
+warning('off','instrument:tcpip:ClassToBeRemoved');
 
 %Populate initial ksptot log file
 writeKsptotLogFileHeaderToConsole();

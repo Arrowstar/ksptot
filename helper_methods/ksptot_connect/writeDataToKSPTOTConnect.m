@@ -42,9 +42,8 @@ function writeDataToKSPTOTConnect(dataType, data, varargin)
         end
         
         if(closeOnFinish)
-%             fclose(tcpipClient);
-            clear tcpipClient;
-%             delete(tcpipClient);
+            fclose(tcpipClient);
+            delete(tcpipClient);
         end
     catch ME
         error(['Write to KSPTOT Connect failed: ', ME.message]);

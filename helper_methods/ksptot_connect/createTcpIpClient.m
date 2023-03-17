@@ -21,30 +21,13 @@ function [tcpipClient] = createTcpIpClient(varargin)
         end
     end
     
-    if(strcmpi(role,'client'))
-        tcpipClient = tcpclient(rHost,port);
-    elseif(strcmpi(role,'server'))
-        tcpipClient = tcpserver(rHost,port);
-    else
-        error('Unknown tcpip network role: %s', role);
-    end
+    tcpipClient = tcpip(rHost,port,'NetworkRole',role);
 
-%     tcpipClient = tcpip(rHost,port,'NetworkRole',role);
-
-    try
-        tcpipClient.ByteOrder = 'bigEndian';
-    catch 
-        tcpipClient.ByteOrder = 'big-endian';
-    end
+    tcpipClient.ByteOrder = 'bigEndian';
     set(tcpipClient, 'InputBufferSize',120480);
     set(tcpipClient, 'OutputBufferSize',120480);
     set(tcpipClient, 'Timeout',10);
-%     set(tcpipClient, 'ReadAsyncMode', 'continuous');
-
-    try
-        set(tcpipClient, 'BytesAvailableFcnMode', 'byte');
-        set(tcpipClient, 'BytesAvailableFcnCount', 120240);
-    catch
-        configureCallback(tcpipClient, 'byte', 120240, @() 1);
-    end
+    set(tcpipClient, 'ReadAsyncMode', 'continuous');
+    set(tcpipClient, 'BytesAvailableFcnMode', 'byte');
+    set(tcpipClient, 'BytesAvailableFcnCount', 120240);
 end

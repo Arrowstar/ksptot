@@ -5,7 +5,7 @@ function [FileName,PathName] = getBodiesINIFileFromKSP()
     sDelimiter =  -8888888888888;
 %     dataLength = 17;
     
-    c = readDoublesFromKSPTOTConnect('GetCelestialBodyData',' ',true);
+    c = readDoublesFromKSPTOTConnect('GetCelestialBodyData','',true);
     cInds = find(c==delimiter);
     
     bodiesData = {};
