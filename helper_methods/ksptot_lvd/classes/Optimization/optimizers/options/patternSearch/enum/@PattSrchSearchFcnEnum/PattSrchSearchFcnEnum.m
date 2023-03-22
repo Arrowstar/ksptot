@@ -11,6 +11,7 @@ classdef PattSrchSearchFcnEnum < matlab.mixin.SetGet
         MADSPositiveBasis2N(@MADSPositiveBasis2N, 'MADSPositiveBasis2N');
         MADSPositiveBasisNp1(@MADSPositiveBasisNp1, 'MADSPositiveBasisNp1');
         LatinHypercube(@searchlhs, 'Latin Hypercube');
+        RBFSurrogate(@rbfsurrogate, 'Radial Basis Function Surrogate')
     end
     
     properties

@@ -9,6 +9,8 @@ classdef PattSrchPollMethodEnum < matlab.mixin.SetGet
         GSSPositiveBasisNp1('GSSPositiveBasisNp1', 'GSSPositiveBasisNp1')
         MADSPositiveBasis2N('MADSPositiveBasis2N', 'MADSPositiveBasis2N')
         MADSPositiveBasisNp1('MADSPositiveBasisNp1', 'MADSPositiveBasisNp1')
+        OrthoMADSPositiveBasis2N('OrthoMADSPositiveBasis2N','OrthoMADSPositiveBasis2N')
+        OrthoMADSPositiveBasisNp1('OrthoMADSPositiveBasisNp1','OrthoMADSPositiveBasisNp1');
     end
     
     properties
