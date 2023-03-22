@@ -18,6 +18,8 @@ classdef LineSpecEnum < matlab.mixin.SetGet
         function obj = LineSpecEnum(name, linespec)
             obj.name = name;
             obj.linespec = linespec;
+
+            [A,~,~]=imread('square_gradient.png', 'BackgroundColor',[1,1,1]);
         end
     end
     

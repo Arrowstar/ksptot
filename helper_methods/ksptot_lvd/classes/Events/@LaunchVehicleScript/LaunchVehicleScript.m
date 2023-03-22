@@ -158,13 +158,11 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
             events = obj.evts;
         end
 
-        function [htmlListboxStr, events] = getHtmlListboxStr(obj)  
+        function [htmlListboxStrEvts, events] = getHtmlListboxStr(obj)  
             htmlListboxStrEvts = cell(length(obj.evts),1);
             for(i=1:length(obj.evts))
                 htmlListboxStrEvts{i} = obj.evts(i).getHtmlListboxStr();
             end
-
-            htmlListboxStr = sprintf('<select name="ab" size="%u">\n%s\n</select>', length(obj.evts), strjoin(htmlListboxStrEvts,'\n'));
             
             events = obj.evts;
         end

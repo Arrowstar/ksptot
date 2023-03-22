@@ -23,12 +23,46 @@ classdef ColorSpecEnum < matlab.mixin.SetGet
     properties
         name char = '';
         color(1,3) double;
+
+        iconBaseTemplateFile(1,:) char = 'square_gradient.png';
+        iconImageHSV double
+        iconImageRBG double
     end
     
     methods
         function obj = ColorSpecEnum(name,color)
             obj.name = name;
             obj.color = color;
+
+            [A,~,~]=imread(obj.iconBaseTemplateFile, 'BackgroundColor',[1,1,1]);
+            RGB = double(A)/255;
+            obj.iconImageHSV = rgb2hsv(RGB);
+            obj.iconImageRBG = obj.getIconForColorSpecEnum();
+        end
+
+        function RGB_color = getIconForColorSpecEnum(obj)
+            arguments
+                obj(1,1) ColorSpecEnum
+            end
+
+            chsv = rgb2hsv(obj.color);
+        
+            HSV_color = obj.iconImageHSV;
+            HSV_color_1 = HSV_color(:,:,1);
+            HSV_color_3 = HSV_color(:,:,3);
+            HSV_color_1(HSV_color_3 ~= 1) = chsv(1);
+            HSV_color(:,:,1) = HSV_color_1;
+            RGB_color = hsv2rgb(HSV_color);
+        end
+
+        function lbBgColorRgb = getListboxBackgroundColor(obj)
+            hsv = rgb2hsv(obj.color);
+
+            if(hsv(3) > 0.5)
+                lbBgColorRgb = hsv2rgb([0,0,0.4]);
+            else
+                lbBgColorRgb = hsv2rgb([0,0,0.6]);
+            end
         end
     end
     
@@ -48,6 +82,22 @@ classdef ColorSpecEnum < matlab.mixin.SetGet
             m = enumeration('ColorSpecEnum');
             ind = find(ismember({m.name},name),1,'first');
             enum = m(ind);
+        end
+
+        function bgColorRgb = getBestGreyBackgroundColor(colorEnums)
+            arguments
+                colorEnums ColorSpecEnum
+            end
+
+            cRGB = vertcat(colorEnums(:).color);
+            cHSV = rgb2hsv(cRGB);
+
+            values = unique(sort([0;cHSV(:,3);1]));
+            valueDiffs = diff(values);
+            [~,I] = max(valueDiffs);
+
+            useThisValue = mean([values(I), values(I+1)]);
+            bgColorRgb = hsv2rgb([0,0,useThisValue]);
         end
     end
 end

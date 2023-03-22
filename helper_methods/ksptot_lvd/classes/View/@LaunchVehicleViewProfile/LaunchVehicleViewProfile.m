@@ -19,6 +19,9 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         plotAllEvents(1,1) logical = true;
         eventsToPlot(1,:) LaunchVehicleEvent = LaunchVehicleEvent.empty(1,0);
 
+        %user interface
+        scriptBoxUseEventColors(1,1) logical = true;
+
         %render mode
         renderer(1,1) FigureRendererEnum = FigureRendererEnum.OpenGL;
         
