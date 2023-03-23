@@ -17,8 +17,9 @@ classdef OptimizationVariablesNearBoundsValidator < AbstractLaunchVehicleDataVal
             
             varSet = obj.lvdData.optimizer.vars;
             varSet.sortVarsByEvtNum();
-            [x, ~, varNameStrs, ~] = varSet.getTotalScaledXVector();
-            [lb, ub] = varSet.getTotalScaledBndsVector();
+            [x, ~, varNameStrs, xUnscaled] = varSet.getTotalScaledXVector();
+            [lb, ub, LwrBndsUnscaled, UprBndsUnscaled] = varSet.getTotalScaledBndsVector();
+            varSet.get
             
             warnInd = [];
             for(i=1:length(x)) %#ok<*NO4LP>
@@ -33,8 +34,9 @@ classdef OptimizationVariablesNearBoundsValidator < AbstractLaunchVehicleDataVal
                 return;
             end
 
+            varNames = string.empty(1,0);
             for(i=1:length(warnInd))
-                varNames{i} = varNameStrs{warnInd(i)}; %#ok<AGROW>
+                varNames(i) = sprintf("%s (%0.3f <= %0.3f <= %0.3f)", varNameStrs{warnInd(i)}, LwrBndsUnscaled(warnInd(i)), xUnscaled(warnInd(i)), UprBndsUnscaled(warnInd(i))); %#ok<AGROW>
             end
             
             varNamesSubStr = strjoin(varNames,'\n');

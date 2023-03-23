@@ -97,11 +97,25 @@ classdef LaunchVehicleDataValidation < matlab.mixin.SetGet
             end
 
             data = string.empty(1,0);
+            s = matlab.ui.style.Style.empty(1,0);
             for(i=1:length(obj.outputs))
-                [data(i,1), s(i)] = obj.outputs(i).getUiTableStringAndRowStyle(); %#ok<AGROW> 
+                [dd, ss] = obj.outputs(i).getUiTableStringAndRowStyle(); 
+                dd = string(dd);
+
+                ddArr = strsplit(strtrim(dd),'\n');
+                for(j=1:numel(ddArr))
+                    subDD = ddArr(j);
+
+                    if(j >= 2)
+                        subDD = sprintf("‏‏‎ ‎‏‏‎ ‎‏‏‎ ‎‏‏‎ ‎‎‎‎‎%s",subDD);
+                    end
+
+                    data(end+1) = subDD; %#ok<AGROW>
+                    s(end+1) = ss; %#ok<AGROW>
+                end
             end
 
-            hTable.Data = data;
+            hTable.Data = data(:);
             for(i=1:length(s))
                 addStyle(hTable, s(i), "row", i);
             end

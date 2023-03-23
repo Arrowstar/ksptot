@@ -17,7 +17,7 @@ classdef LaunchVehicleDataValidationOK < AbstractLaunchVehicleValidatorOutput
 
         function [str, style] = getUiTableStringAndRowStyle(obj)
             str = obj.str;
-            style = uistyle('BackgroundColor',[34,139,34]/255, 'FontColor',[1,1,1], 'FontWeight','bold');
+            style = uistyle('BackgroundColor',[34,139,34]/255, 'FontColor',[1,1,1], 'FontWeight','bold', 'Icon','success', 'IconAlignment','leftmargin');
         end
     end
 end

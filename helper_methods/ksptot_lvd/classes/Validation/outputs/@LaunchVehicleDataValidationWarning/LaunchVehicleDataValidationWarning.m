@@ -17,7 +17,7 @@ classdef LaunchVehicleDataValidationWarning < AbstractLaunchVehicleValidatorOutp
 
         function [str, style] = getUiTableStringAndRowStyle(obj)
             str = string(obj.str);
-            style = uistyle('BackgroundColor',[1,1,0], 'FontColor',[0,0,0], 'FontWeight','bold');
+            style = uistyle('BackgroundColor',[238,210,2]/255, 'FontColor',[0,0,0], 'FontWeight','bold', 'Icon','yellowalert_blackoutline.png', 'IconAlignment','leftmargin');
         end
     end
 end
