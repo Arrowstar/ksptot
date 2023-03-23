@@ -29,6 +29,7 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         dispXAxis(1,1) logical = false;
         dispYAxis(1,1) logical = false;
         dispZAxis(1,1) logical = false;
+        showAxesBox(1,1) logical = true;
         
         %trajectory view options
         trajEvtsViewType(1,1) ViewEventsTypeEnum = ViewEventsTypeEnum.All %either chunked by event/SoI or all

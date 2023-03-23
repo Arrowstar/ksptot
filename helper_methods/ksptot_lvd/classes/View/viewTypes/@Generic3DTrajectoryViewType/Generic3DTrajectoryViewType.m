@@ -375,11 +375,25 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             dAxes.GridColor = viewProfile.majorGridColor.color;
             dAxes.MinorGridColor = viewProfile.minorGridColor.color;
             dAxes.GridAlpha = viewProfile.gridTransparency;
-%             axis(dAxes,'equal');
-%             axis(dAxes,'vis3d');
-            
-%             xlabel(dAxes, '');
-%             ylabel(dAxes, '');
+            dAxes.XColor = viewProfile.majorGridColor.color;
+            dAxes.YColor = viewProfile.majorGridColor.color;
+            dAxes.ZColor = viewProfile.majorGridColor.color;
+
+            if(viewProfile.showAxesBox)
+                dAxes.Box = 'on';
+                dAxes.XGrid = 'on';
+                dAxes.YGrid = 'on';
+                dAxes.ZGrid = 'on';
+                dAxes.Visible = 'on';
+            else
+                dAxes.Box = 'off';
+                dAxes.XGrid = 'off';
+                dAxes.YGrid = 'off';
+                dAxes.ZGrid = 'off';
+                dAxes.Visible = 'off';
+            end
+
+            app.DisplayAxesGridLayout.BackgroundColor = viewProfile.backgroundColor.color;
             
             set(dAxes,'XTickLabel',[]);
             set(dAxes,'YTickLabel',[]);
