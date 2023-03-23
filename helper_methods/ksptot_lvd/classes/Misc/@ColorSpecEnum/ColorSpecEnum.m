@@ -92,11 +92,19 @@ classdef ColorSpecEnum < matlab.mixin.SetGet
             cRGB = vertcat(colorEnums(:).color);
             cHSV = rgb2hsv(cRGB);
 
-            values = unique(sort([0;cHSV(:,3);1]));
+            origValues = cHSV(:,3);
+            values = unique(sort([0;origValues;1]));
             valueDiffs = diff(values);
             [~,I] = max(valueDiffs);
 
-            useThisValue = mean([values(I), values(I+1)]);
+            if(I == 1 && not(ismember(0,origValues)))
+                useThisValue = 0;
+            elseif(I == numel(valueDiffs) && not(ismember(1,origValues)))
+                useThisValue = 1;
+            else
+                useThisValue = mean([values(I), values(I+1)]);
+            end
+            
             bgColorRgb = hsv2rgb([0,0,useThisValue]);
         end
     end
