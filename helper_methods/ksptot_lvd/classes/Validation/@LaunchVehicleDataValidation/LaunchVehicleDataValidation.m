@@ -115,6 +115,7 @@ classdef LaunchVehicleDataValidation < matlab.mixin.SetGet
                 end
             end
 
+            removeStyle(hTable);
             hTable.Data = data(:);
             for(i=1:length(s))
                 addStyle(hTable, s(i), "row", i);

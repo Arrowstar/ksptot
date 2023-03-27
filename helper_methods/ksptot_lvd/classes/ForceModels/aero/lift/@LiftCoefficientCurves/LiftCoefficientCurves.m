@@ -23,7 +23,7 @@ classdef LiftCoefficientCurves
                          0.5	    0.9026583
                          0.7071068	0.5926583
                          1	        0];
-            obj.defaultGiLift = griddedInterpolant(liftCurve(:,1),liftCurve(:,2), 'pchip', 'nearest');
+            obj.defaultGiLift = griddedInterpolant(liftCurve(:,1),liftCurve(:,2), 'linear', 'nearest');
 
             %liftMach
             machLiftCurve = [0	    1
@@ -31,7 +31,7 @@ classdef LiftCoefficientCurves
                              1	    0.125
                              5	    0.0625
                              25	    0.05];
-            obj.defaultMachCurve = griddedInterpolant(machLiftCurve(:,1),machLiftCurve(:,2), 'pchip', 'nearest');
+            obj.defaultMachCurve = griddedInterpolant(machLiftCurve(:,1),machLiftCurve(:,2), 'linear', 'nearest');
 
             %body lift curves
             %lift
@@ -41,7 +41,7 @@ classdef LiftCoefficientCurves
                          0.7071068	1
                          0.8910065	0.809017
                          1	        0];
-            obj.bodyLiftGiLift = griddedInterpolant(liftCurve(:,1),liftCurve(:,2), 'pchip', 'nearest');
+            obj.bodyLiftGiLift = griddedInterpolant(liftCurve(:,1),liftCurve(:,2), 'linear', 'nearest');
 
             %liftMach
             machLiftCurve = [0.3	0.167
@@ -49,7 +49,7 @@ classdef LiftCoefficientCurves
                             1	    0.125
                             5	    0.0625
                             25	    0.05];
-            obj.bodyLiftMachCurve = griddedInterpolant(machLiftCurve(:,1),machLiftCurve(:,2), 'pchip', 'nearest');
+            obj.bodyLiftMachCurve = griddedInterpolant(machLiftCurve(:,1),machLiftCurve(:,2), 'linear', 'nearest');
         end
     end
 end

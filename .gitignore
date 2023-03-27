@@ -5,6 +5,7 @@
 # Windows default autosave extension
 *.asv
 appOptions.ini
+appThemeData.mat
 Thumbs.db
 
 # OSX / *nix default autosave extension

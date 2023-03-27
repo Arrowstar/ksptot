@@ -5,11 +5,11 @@ function themeApp(app)
 
     figPropStrs=properties(app);
     
-    bgColor = [0,0,0];
-    fontColor = [1,1,1];
-    buttonBgColor = [0,1,0];
-    buttonFontColor = [0,0,1];
-    textBgColor = [0.1,0.1,0.1];
+    bgColor = [33,33,33]/255;
+    fontColor = [0.9,0.9,0.9];
+    buttonBgColor = [66,66,66]/255;
+    buttonFontColor = [0.9,0.9,0.9];
+    textBgColor = [66,66,66]/255;
     textFontColor = [0.9,0.9,0.9];
     
     for(i=1:length(figPropStrs)) %#ok<*NO4LP> 
@@ -54,8 +54,10 @@ function themeApp(app)
 
             case 'matlab.ui.control.ListBox'
                 themeListbox(prop, textBgColor, textFontColor)
+
+            case 'matlab.ui.control.Table'
+                themeTable(prop, bgColor);
         end
-    
     end
 end
 
@@ -206,4 +208,14 @@ function themeListbox(hListbox, bgColor, fontColor)
 
     hListbox.BackgroundColor = bgColor;
     hListbox.FontColor = fontColor;
+end
+
+
+function themeTable(hTable, bgColor)
+    arguments
+        hTable(1,1) matlab.ui.control.Table
+        bgColor(1,3) double
+    end
+
+    hTable.BackgroundColor = bgColor;               
 end
