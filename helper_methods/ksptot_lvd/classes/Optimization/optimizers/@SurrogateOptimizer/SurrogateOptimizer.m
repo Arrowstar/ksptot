@@ -182,6 +182,7 @@ classdef SurrogateOptimizer < AbstractOptimizer
         end
         
         function generatePlots(x, optimValues, state, hDispAxes, lb, ub, varLabels, lbUsAll, ubUsAll)
+            global GLOBAL_AppThemer %#ok<GVMIS>
             persistent fValPlotIsLog tLayout hPlot1 hPlot2 hPlot3
 
             if(isempty(fValPlotIsLog))
@@ -246,6 +247,10 @@ classdef SurrogateOptimizer < AbstractOptimizer
 
             grid on;
             grid minor;
+
+            GLOBAL_AppThemer.themeWidget(hPlot1, GLOBAL_AppThemer.selTheme);
+            % GLOBAL_AppThemer.themeWidget(hPlot2, GLOBAL_AppThemer.selTheme);
+            GLOBAL_AppThemer.themeWidget(hPlot3, GLOBAL_AppThemer.selTheme);
         end
     end
 end

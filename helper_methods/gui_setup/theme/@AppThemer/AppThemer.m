@@ -98,10 +98,10 @@ classdef AppThemer < matlab.mixin.SetGet
                 case 'matlab.ui.control.CheckBox'
                     AppThemer.themeCheckbox(prop, theme.fontColor)
 
-                case 'matlab.ui.control.UIAxes'
+                case {'matlab.ui.control.UIAxes', 'matlab.graphics.axis.Axes'}
                     AppThemer.themeAxes(prop, theme.axesBgColor, theme.axesGridColor, theme.fontColor);
         
-                case 'matlab.ui.control.Button'
+                case {'matlab.ui.control.Button', 'matlab.ui.control.StateButton'}
                     AppThemer.themeButton(prop, theme.buttonBgColor, theme.buttonFontColor);
         
                 case 'matlab.ui.control.EditField'
@@ -209,7 +209,7 @@ classdef AppThemer < matlab.mixin.SetGet
         
         function themeButton(hButton, bgColor, fontColor)
             arguments
-                hButton(1,1) matlab.ui.control.Button
+                hButton(1,1) %matlab.ui.control.Button or matlab.ui.control.StateButton
                 bgColor(1,3) double
                 fontColor(1,3) double
             end
@@ -343,7 +343,7 @@ classdef AppThemer < matlab.mixin.SetGet
 
         function themeAxes(hAx, bgColor, gridColor, fontColor)
             arguments
-                hAx (1,1) matlab.ui.control.UIAxes
+                hAx (1,1) %matlab.ui.control.UIAxes or matlab.graphics.axis.Axes
                 bgColor(1,3) double
                 gridColor(1,3) double
                 fontColor(1,3) double
@@ -356,10 +356,10 @@ classdef AppThemer < matlab.mixin.SetGet
             hAx.YColor = fontColor;
             hAx.ZColor = fontColor;
             hAx.Title.Color = fontColor;
-
-		    colorbar = hAx.Colorbar;
-            if(not(isempty(colorbar)))
-                colorbar.Color = fontColor;
+            
+		    hColorbar = hAx.Colorbar;
+            if(not(isempty(hColorbar)))
+                hColorbar.Color = fontColor;
             end
         end
 
