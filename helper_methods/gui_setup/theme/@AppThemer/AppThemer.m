@@ -8,6 +8,10 @@ classdef AppThemer < matlab.mixin.SetGet
         selTheme AppColorTheme
     end
 
+    events
+        ThemeAppliedToApp
+    end
+
     methods
         function obj = AppThemer()
             obj.themes = AppThemer.createDefaultThemes();
@@ -67,6 +71,9 @@ classdef AppThemer < matlab.mixin.SetGet
             
                 obj.themeWidget(prop, obj.selTheme);
             end
+
+            data = ThemeAppliedToAppEventData(app, obj.selTheme);
+            notify(obj, 'ThemeAppliedToApp', data);
         end
 
         function themeWidget(obj, prop, theme)
