@@ -124,7 +124,7 @@ classdef AppThemer < matlab.mixin.SetGet
                     AppThemer.themeDropdown(prop, theme.dropDownBgColor, theme.dropDownFontColor);
         
                 case 'matlab.ui.container.ButtonGroup'
-                    AppThemer.themeButtonGroup(prop, theme.bgColor, theme.fontColor);
+                    AppThemer.themeButtonGroup(prop, theme.bgColor, theme.fontColor, theme.borderColor);
         
                 case 'matlab.ui.control.RadioButton'
                     AppThemer.themeRadioButton(prop, theme.fontColor);
@@ -139,10 +139,13 @@ classdef AppThemer < matlab.mixin.SetGet
                     AppThemer.themeListbox(prop, theme.listboxBgColor, theme.listboxFontColor)
 
                 case 'matlab.ui.control.Table'
-                    AppThemer.themeTable(prop, theme.bgColor, theme.fontColor);
+                    AppThemer.themeTable(prop, theme.tableBgColor1, theme.tableBgColor2, theme.tableFontColor);
 
                 case 'matlab.ui.container.Toolbar'
                     AppThemer.themeToolbar(prop, theme.bgColor)
+
+                case 'wt.FileSelector'
+                    AppThemer.themeThemeFileSelector(prop, theme.bgColor, theme.editTextBgColor, theme.fontColor, theme.buttonBgColor);
             end
         end
     end
@@ -154,11 +157,11 @@ classdef AppThemer < matlab.mixin.SetGet
         end
         
         function theme = createDefaultLightTheme()
-            theme = AppColorTheme('Default Light Theme', [0.94,0.94,0.94], [0.00,0.00,0.00], [0.96,0.96,0.96], [0.00,0.00,0.00], [0.94,0.94,0.94], [0.00,0.00,0.00], [1,1,1], [0.00,0.00,0.00], [1,1,1], [0.00,0.00,0.00], [0.49,0.49,0.49], [0.00,0.00,0.00], [1,1,1], [0,0,0]);
+            theme = AppColorTheme('Default Light Theme', [0.94,0.94,0.94], [0.00,0.00,0.00], [0.96,0.96,0.96], [0.00,0.00,0.00], [0.94,0.94,0.94], [0.00,0.00,0.00], [1,1,1], [0.00,0.00,0.00], [1,1,1], [0.00,0.00,0.00], [0.49,0.49,0.49], [0.00,0.00,0.00], [1,1,1], [0,0,0], [1,1,1], [0.94,0.94,0.94], [0,0,0]);
         end
 
         function theme = createDefaultDarkTheme()
-            theme = AppColorTheme('Default Dark Theme', [33,33,33]/255, [0.9,0.9,0.9], [66,66,66]/255, [0.9,0.9,0.9], [66,66,66]/255, [0.9,0.9,0.9], [66,66,66]/255, [0.9,0.9,0.9], [66,66,66]/255, [0.9,0.9,0.9], [0.49,0.49,0.49], [0.9,0.9,0.9], [66,66,66]/255, [0.9,0.9,0.9]);
+            theme = AppColorTheme('Default Dark Theme', [33,33,33]/255, [0.9,0.9,0.9], [66,66,66]/255, [0.9,0.9,0.9], [66,66,66]/255, [0.9,0.9,0.9], [66,66,66]/255, [0.9,0.9,0.9], [66,66,66]/255, [0.9,0.9,0.9], [0.49,0.49,0.49], [0.9,0.9,0.9], [66,66,66]/255, [0.9,0.9,0.9], [66,66,66]/255, [99,99,99]/255, [0.9,0.9,0.9]);
         end
     end
 
@@ -277,15 +280,17 @@ classdef AppThemer < matlab.mixin.SetGet
             hDropdown.BackgroundColor = bgColor;
         end
         
-        function themeButtonGroup(hButtonGrp, bgColor, fontColor)
+        function themeButtonGroup(hButtonGrp, bgColor, fontColor, borderColor)
             arguments
                 hButtonGrp(1,1) matlab.ui.container.ButtonGroup
                 bgColor(1,3) double
                 fontColor(1,3) double
-            end
+                borderColor(1,3) double
+            end 
         
             hButtonGrp.ForegroundColor = fontColor;
             hButtonGrp.BackgroundColor = bgColor;
+            hButtonGrp.BorderColor = borderColor;
         end
         
         function themeRadioButton(hRadioButton, fontColor)
@@ -328,15 +333,16 @@ classdef AppThemer < matlab.mixin.SetGet
             hListbox.FontColor = fontColor;
         end
 
-        function themeTable(hTable, bgColor, fontColor)
+        function themeTable(hTable, tableBgColor1, tableBgColor2, tableFontColor)
             arguments
                 hTable(1,1) matlab.ui.control.Table
-                bgColor(1,3) double
-                fontColor(1,3) double
+                tableBgColor1(1,3) double
+                tableBgColor2(1,3) double
+                tableFontColor(1,3) double
             end
         
-            hTable.BackgroundColor = bgColor;   
-            hTable.ForegroundColor = fontColor;
+            hTable.BackgroundColor = [tableBgColor1; tableBgColor2];   
+            hTable.ForegroundColor = tableFontColor;
         end
 
         function themeToolbar(hToolbar, bgColor)
@@ -377,6 +383,21 @@ classdef AppThemer < matlab.mixin.SetGet
             end
 
             hCheckbox.FontColor = fontColor;
+        end
+
+        function themeThemeFileSelector(hFileSelector, bgColor, textEditBgColor, fontColor, buttonColor)
+            arguments
+                hFileSelector(1,1) wt.FileSelector
+                bgColor(1,3) double
+                textEditBgColor(1,3) double
+                fontColor(1,3) double
+                buttonColor(1,3) double
+            end
+        
+            hFileSelector.BackgroundColor = bgColor;   
+            hFileSelector.FieldColor = textEditBgColor;
+            hFileSelector.FontColor = fontColor;
+            hFileSelector.ButtonColor = buttonColor;
         end
     end
 end

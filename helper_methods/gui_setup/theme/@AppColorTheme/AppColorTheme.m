@@ -23,13 +23,17 @@ classdef AppColorTheme < matlab.mixin.SetGet
         listboxFontColor(1,3) double = [0.9,0.9,0.9];
 
         sliderFontColor(1,3) double = [0.9,0.9,0.9];
+
+        tableBgColor1(1,3) double = [33,33,33]/255;
+        tableBgColor2(1,3) double = [66,66,66]/255;
+        tableFontColor(1,3) double = [0.9,0.9,0.9];
         
         axesBgColor(1,3) double = [0.9, 0.9, 0.9];
         axesGridColor(1,3) double  = [0.9, 0.9, 0.9];
     end
 
     methods
-        function obj = AppColorTheme(name, bgColor, fontColor, buttonBgColor, buttonFontColor, dropDownBgColor, dropDownFontColor, editTextBgColor, editTextFontColor, listboxBgColor, listboxFontColor, borderColor, sliderFontColor, axesBgColor, axesGridColor)
+        function obj = AppColorTheme(name, bgColor, fontColor, buttonBgColor, buttonFontColor, dropDownBgColor, dropDownFontColor, editTextBgColor, editTextFontColor, listboxBgColor, listboxFontColor, borderColor, sliderFontColor, axesBgColor, axesGridColor, tableBgColor1, tableBgColor2, tableFontColor)
             obj.name = name;
 
             obj.bgColor = bgColor;
@@ -52,6 +56,10 @@ classdef AppColorTheme < matlab.mixin.SetGet
             
             obj.axesBgColor = axesBgColor;
             obj.axesGridColor = axesGridColor;
+
+            obj.tableBgColor1 = tableBgColor1;
+            obj.tableBgColor2 = tableBgColor2;
+            obj.tableFontColor = tableFontColor;
         end
     end
 end
