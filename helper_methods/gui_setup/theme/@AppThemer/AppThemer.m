@@ -80,7 +80,7 @@ classdef AppThemer < matlab.mixin.SetGet
             arguments
                 obj(1,1) AppThemer
                 prop(1,1)
-                theme(1,1) AppColorTheme
+                theme(1,1) AppColorTheme = obj.selTheme;
             end
 
             switch class(prop)

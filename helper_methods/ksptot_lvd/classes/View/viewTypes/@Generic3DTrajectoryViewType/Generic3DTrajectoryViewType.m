@@ -21,6 +21,8 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                 app ma_LvdMainGUI_App
             end
 
+            global GLOBAL_AppThemer %#ok<GVMIS>
+
 %             dAxes = app.dispAxes;
             dAxes = handles.dispAxes;
             hFig = app.ma_LvdMainGUI;
@@ -482,6 +484,11 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                 otherwise
                     error('Unknown projection type: %s', viewProfile.projType.name);
 
+            end
+
+            if(viewProfile.useThemeForAxes)
+                GLOBAL_AppThemer.themeWidget(dAxes, GLOBAL_AppThemer.selTheme);
+                GLOBAL_AppThemer.themeWidget(app.DisplayAxesGridLayout, GLOBAL_AppThemer.selTheme);
             end
         end
     end

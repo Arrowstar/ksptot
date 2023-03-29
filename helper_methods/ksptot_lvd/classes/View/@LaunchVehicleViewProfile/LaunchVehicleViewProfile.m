@@ -8,6 +8,7 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         desc(1,1) string = "";
         
         %axes properties
+        useThemeForAxes(1,1) logical = true;
         backgroundColor(1,1) ColorSpecEnum = ColorSpecEnum.White;
         gridType(1,1) ViewGridTypeEnum = ViewGridTypeEnum.Major;
         majorGridColor(1,1) ColorSpecEnum = ColorSpecEnum.DarkGrey;
@@ -20,7 +21,7 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         eventsToPlot(1,:) LaunchVehicleEvent = LaunchVehicleEvent.empty(1,0);
 
         %user interface
-        scriptBoxUseEventColors(1,1) logical = true;
+        scriptBoxUseEventColors(1,1) logical = false;
 
         %render mode
         renderer(1,1) FigureRendererEnum = FigureRendererEnum.OpenGL;
