@@ -1,12 +1,11 @@
-function updateAppOptions(hMainUI, header, key, value)
+function updateAppOptions(header, key, value)
 %updateAppOptions Summary of this function goes here
 %   Detailed explanation goes here
     key = lower(key);
 
-    appOptions = getappdata(hMainUI,'appOptions');
+    appOptions = getAppOptionsFromFile();
     appOptions.(header).(key) = value;
-    setappdata(hMainUI,'appOptions',appOptions);
-    
+  
     appOptionsFromINI = getIniCellsFromStruct(appOptions);
     inifile('appOptions.ini','write',appOptionsFromINI);
 end

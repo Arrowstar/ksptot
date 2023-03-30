@@ -49,7 +49,7 @@ function generatePorkChopPlot(mainGUIHandle)
     options.porkchopnumsynperiods = numSynPeriods;
     userData{1,9} = options;
     set(mainGUIHandle,'UserData',userData);
-    updateAppOptions(mainGUIHandle, 'ksptot', 'porkchopnumsynperiods', options.porkchopnumsynperiods);
+    updateAppOptions('ksptot', 'porkchopnumsynperiods', options.porkchopnumsynperiods);
     
     hPlotBtnGrp = findobj(mainGUIHandle,'Tag','porkchopPlotTypeButtonGroup');
     hTypeBtn = get(hPlotBtnGrp,'SelectedObject');

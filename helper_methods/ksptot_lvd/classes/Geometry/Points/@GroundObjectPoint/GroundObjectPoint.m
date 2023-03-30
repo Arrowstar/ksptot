@@ -36,7 +36,7 @@ classdef GroundObjectPoint < AbstractGeometricPoint
             listboxStr = sprintf('%s (Ground Object: %s)', obj.getName(), obj.groundObj.name);
         end
         
-        function useTf = openEditDialog(obj, ~)
+        function useTf = openEditDialog(obj)
 %             useTf = lvd_EditGroundObjPointGUI(obj);
 
             output = AppDesignerGUIOutput({false});

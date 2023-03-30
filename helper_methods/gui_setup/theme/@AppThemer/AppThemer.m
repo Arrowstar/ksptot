@@ -262,7 +262,10 @@ classdef AppThemer < matlab.mixin.SetGet
                 hLabel.BackgroundColor = bgColor;
                 hLabel.FontColor = fontColor;
             else
-                if(all(hLabel.BackgroundColor ~= [0.6, 1, 0.6]))
+                % if(all(hLabel.BackgroundColor ~= [0.6, 1, 0.6]))
+                if(not(hLabel.BackgroundColor(1) == 0.6 && ...
+                   hLabel.BackgroundColor(2) == 1.0 && ...
+                   hLabel.BackgroundColor(3) == 0.6))
                     hLabel.BackgroundColor = bgColor;
                     hLabel.FontColor = fontColor;
                 end

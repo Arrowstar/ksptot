@@ -114,7 +114,7 @@ classdef LvdDataPoint < AbstractGeometricPoint
             listboxStr = sprintf('%s (LVD Trajectory)', obj.getName());
         end
         
-        function useTf = openEditDialog(obj, ~)            
+        function useTf = openEditDialog(obj)            
             output = AppDesignerGUIOutput({false});
             lvd_EditLvdTrajectoryPointGUI_App(obj, output, obj.lvdData);
             useTf = output.output{1};

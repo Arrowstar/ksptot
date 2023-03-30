@@ -47,7 +47,7 @@ classdef FixedPointInFrame < AbstractGeometricPoint
             listboxStr = sprintf('%s (Fixed in Frame: %s)', obj.getName(), obj.cartElem.frame.getNameStr());
         end
         
-        function useTf = openEditDialog(obj, ~)
+        function useTf = openEditDialog(obj)
 %             useTf = lvd_EditFixedInFramePointGUI(obj, obj.lvdData);
 
             output = AppDesignerGUIOutput({false});

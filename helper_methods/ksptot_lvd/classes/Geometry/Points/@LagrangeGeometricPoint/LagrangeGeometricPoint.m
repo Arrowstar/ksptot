@@ -85,7 +85,7 @@ classdef LagrangeGeometricPoint < AbstractGeometricPoint
             listboxStr = sprintf('%s (%s - %s Lagrange Point: %s)', obj.getName(), primBodyName, secBodyName, obj.lpoint.name);
         end
         
-        function useTf = openEditDialog(obj, ~)
+        function useTf = openEditDialog(obj)
             output = AppDesignerGUIOutput({false});
             lvd_EditLagrangePointGUI_App(obj, obj.lvdData, output);
             useTf = output.output{1};

@@ -101,7 +101,7 @@ function testConnection(handles)
     setappdata(handles.rts_VesselSelectGUI, 'RHost', rHost);
     
     mainGUIFig = getappdata(handles.rts_VesselSelectGUI,'mainGUIFig');
-    updateAppOptions(mainGUIFig, 'ksptot', 'rtshostname', rHost);
+    updateAppOptions('ksptot', 'rtshostname', rHost);
 end
 
 function populateVesselSelectCombo(handles)
@@ -149,7 +149,7 @@ function varargout = rts_VesselSelectGUI_OutputFcn(hObject, eventdata, handles)
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-    global rHost;
+    global rHost; %#ok<GVMIS>
     
 % Get default command line output from handles structure
     if(~isempty(handles))
@@ -168,8 +168,8 @@ function varargout = rts_VesselSelectGUI_OutputFcn(hObject, eventdata, handles)
         end
         
         rHost = getappdata(handles.rts_VesselSelectGUI, 'RHost');
-        mainGUIFig = getappdata(handles.rts_VesselSelectGUI,'mainGUIFig');
-        updateAppOptions(mainGUIFig, 'ksptot', 'rtshostname', rHost);
+        % mainGUIFig = getappdata(handles.rts_VesselSelectGUI,'mainGUIFig');
+        updateAppOptions('ksptot', 'rtshostname', rHost);
         
         varargout{1} = selGUID;
         varargout{2} = rHost;
