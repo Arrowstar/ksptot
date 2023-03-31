@@ -56,8 +56,7 @@ global warn_error_label_handles warn_error_slider_handle;
 clc;
 
 % Set Prefs
-handles.ksptotMainGUI = varargin{1};
-celBodyData = varargin{2};
+celBodyData = varargin{1};
 celBodyData = CelestialBodyData(celBodyData);
 
 % Choose default command line output for ma_MainGUI
@@ -112,8 +111,7 @@ function initializeOutputWindowText(handles, hOutputText)
     end
     
 function celBodyData = getCelBodyDataFromMainGui(handles)    
-    mainGUIUserData = get(handles.ksptotMainGUI, 'UserData');
-    celBodyData = mainGUIUserData{1,1};
+    celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
 
 
 function maData = generateCleanMissionPlan(handles) 
@@ -277,7 +275,7 @@ function scriptListbox_Callback(hObject, eventdata, handles)
         eventNew = [];
         switch event.type
             case 'Set_State'
-                eventNew = ma_InsertStateGUI(handles.ma_MainGUI, handles.ksptotMainGUI, event, initialState);
+                eventNew = ma_InsertStateGUI(handles.ma_MainGUI, event, initialState);
             case 'Coast'
                 eventNew = ma_InsertCoastGUI(handles.ma_MainGUI, event);
             case 'DV_Maneuver'
@@ -363,7 +361,7 @@ function eventInsertCombo_Callback(hObject, eventdata, handles)
     event = [];
     switch selected
         case 'Initial State / Set State'
-            event = ma_InsertStateGUI(handles.ma_MainGUI, handles.ksptotMainGUI, [], initialState);
+            event = ma_InsertStateGUI(handles.ma_MainGUI, [], initialState);
         case 'Coast'
             event = ma_InsertCoastGUI(handles.ma_MainGUI);
         case 'Mass Dump'
@@ -1369,7 +1367,7 @@ function otherSCMenu_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
     ma_UndoRedoAddState(handles, 'Edit Other Spacecraft');
-    ma_OtherSpacecraftGUI(handles.ma_MainGUI,handles.ksptotMainGUI);
+    ma_OtherSpacecraftGUI(handles.ma_MainGUI);
     
     celBodyData = getappdata(handles.ma_MainGUI,'celBodyData');
     maData = getappdata(handles.ma_MainGUI,'ma_data');
@@ -1868,7 +1866,7 @@ function launchWindowAnalysisMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to launchWindowAnalysisMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-    ma_launchWindowAnalysisToolGUI(handles.ma_MainGUI, handles.ksptotMainGUI);
+    ma_launchWindowAnalysisToolGUI(handles.ma_MainGUI);
 
 
 % --------------------------------------------------------------------

@@ -146,6 +146,12 @@ classdef AppThemer < matlab.mixin.SetGet
 
                 case 'wt.FileSelector'
                     AppThemer.themeThemeFileSelector(prop, theme.bgColor, theme.editTextBgColor, theme.fontColor, theme.buttonBgColor);
+
+                case 'matlab.ui.container.Tree'
+                    AppThemer.themeTree(prop, theme.bgColor, theme.fontColor);
+
+                otherwise
+                    % warning('Skipping theming of class "%s".\n', class(prop));
             end
         end
     end
@@ -401,6 +407,17 @@ classdef AppThemer < matlab.mixin.SetGet
             hFileSelector.FieldColor = textEditBgColor;
             hFileSelector.FontColor = fontColor;
             hFileSelector.ButtonColor = buttonColor;
+        end
+
+        function themeTree(hTree, bgColor, fontColor)
+            arguments
+                hTree(1,1) matlab.ui.container.Tree
+                bgColor(1,3) double
+                fontColor(1,3) double
+            end
+    
+            hTree.BackgroundColor = bgColor;
+            hTree.FontColor = fontColor;
         end
     end
 end

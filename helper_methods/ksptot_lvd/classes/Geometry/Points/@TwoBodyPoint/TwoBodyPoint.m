@@ -225,9 +225,7 @@ classdef TwoBodyPoint < AbstractGeometricPoint
             listboxStr = sprintf('%s (Two Body Point)', obj.getName());
         end
         
-        function useTf = openEditDialog(obj)
-%             useTf = lvd_EditTwoBodyPointGUI(obj, obj.lvdData, hKsptotMainGUI);
-            
+        function useTf = openEditDialog(obj)           
             output = AppDesignerGUIOutput({false});
             lvd_EditTwoBodyPointGUI_App(obj, obj.lvdData, output);
             useTf = output.output{1};

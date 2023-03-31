@@ -15,7 +15,7 @@ classdef AbstractGeometricPoint < matlab.mixin.SetGet & matlab.mixin.Heterogeneo
         
         listboxStr = getListboxStr(obj)
         
-        useTf = openEditDialog(obj, hKsptotMainGUI)
+        useTf = openEditDialog(obj)
         
         tf = isVehDependent(obj)
         

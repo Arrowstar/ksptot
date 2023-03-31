@@ -88,6 +88,7 @@ end
 % mainGUIHandle = mainGUI(celBodyData, bodyNames, hS, appOptions);
 % mainGUIHandle = mainGUI_App(celBodyData, bodyNames, hS, appOptions);
 newMainGUI_App(celBodyData);
+
 if(isvalid(hS))
     delete(hS);
 end

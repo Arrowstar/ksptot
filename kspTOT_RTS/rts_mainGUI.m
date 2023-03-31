@@ -63,9 +63,6 @@ setappdata(handles.rtsMainGUI,'ChildGUIs',{});
 rtsHost = varargin{2};
 setappdata(handles.rtsMainGUI,'RHost',rtsHost);
 
-mainGUIFig = varargin{3};
-setappdata(handles.rtsMainGUI,'mainGUIFig',mainGUIFig);
-
 rtsOpts = struct();
 rtsOpts.tmTransRate = '1';
 rtsOpts.procExecMode = 'fixedRate';

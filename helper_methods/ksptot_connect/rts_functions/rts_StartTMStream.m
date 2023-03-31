@@ -49,14 +49,13 @@ function hardStart(hRtsMainGUI)
     tcpips = {};
     
     rHost = getappdata(hRtsMainGUI,'RHost');
-    mainGUIFig = getappdata(hRtsMainGUI,'mainGUIFig');
     
     rts_pageCloseStopTimers(hRtsMainGUI);
     mainGUIHandles = guidata(hRtsMainGUI);
     
     rtsOpts = getappdata(hRtsMainGUI,'RTSOptions');
 
-    [vGUID, rHost] = rts_VesselSelectGUI(mainGUIFig, rHost);
+    [vGUID, rHost] = rts_VesselSelectGUI(rHost);
     mainGUIHandles.vesselGUID = vGUID;
     setappdata(hRtsMainGUI,'VesselGUID',mainGUIHandles.vesselGUID);
     setappdata(hRtsMainGUI,'RHost',rHost);

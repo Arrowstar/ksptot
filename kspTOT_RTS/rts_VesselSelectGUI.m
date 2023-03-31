@@ -59,10 +59,8 @@ function rts_VesselSelectGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 
     % Update handles structure
     guidata(hObject, handles);
-    
-    setappdata(hObject,'mainGUIFig',varargin{1});
-    
-    rHost = varargin{2};
+        
+    rHost = varargin{1};
     if(~isempty(rHost)) %should always be populated
         set(handles.remoteHostText,'String',rHost);
         setappdata(handles.rts_VesselSelectGUI, 'RHost',rHost);
@@ -100,7 +98,6 @@ function testConnection(handles)
     populateVesselSelectCombo(handles);
     setappdata(handles.rts_VesselSelectGUI, 'RHost', rHost);
     
-    mainGUIFig = getappdata(handles.rts_VesselSelectGUI,'mainGUIFig');
     updateAppOptions('ksptot', 'rtshostname', rHost);
 end
 
@@ -168,7 +165,6 @@ function varargout = rts_VesselSelectGUI_OutputFcn(hObject, eventdata, handles)
         end
         
         rHost = getappdata(handles.rts_VesselSelectGUI, 'RHost');
-        % mainGUIFig = getappdata(handles.rts_VesselSelectGUI,'mainGUIFig');
         updateAppOptions('ksptot', 'rtshostname', rHost);
         
         varargout{1} = selGUID;

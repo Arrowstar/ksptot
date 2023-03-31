@@ -58,7 +58,6 @@ handles.output = hObject;
 % Update handles structure
 guidata(hObject, handles);
 handles.ma_MainGUI = varargin{1};
-handles.ksptotMainGUI = varargin{2};
 guidata(hObject, handles);
 
 %GUI setup
@@ -445,7 +444,7 @@ function getOrbitFromSFSFileContextMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to getOrbitFromSFSFileContextMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-    orbitPanelGetOrbitFromSFSContextCallBack(handles.ksptotMainGUI, [], [], handles.targetIncText, handles.targetRAANText, []);
+    orbitPanelGetOrbitFromSFSContextCallBack([], [], handles.targetIncText, handles.targetRAANText, []);
 
 % --------------------------------------------------------------------
 function getOrbitFromKSPTOTConnectContextMenu_Callback(hObject, eventdata, handles)

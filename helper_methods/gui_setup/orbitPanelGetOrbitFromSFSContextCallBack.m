@@ -1,5 +1,7 @@
 function [refBody, scName] = orbitPanelGetOrbitFromSFSContextCallBack(hSMA, hECC, hINC, hRAAN, hARG, varargin)
 %orbitPanelGetOrbitFromSFSContextCallBack Summary of this function goes here
+    global GLOBAL_prevPathName %#ok<GVMIS>
+
 %   Detailed explanation goes here
     % if(not(isempty(mainGUIHandle)))
     %     mainUserData = get(mainGUIHandle,'UserData');
@@ -9,7 +11,7 @@ function [refBody, scName] = orbitPanelGetOrbitFromSFSContextCallBack(hSMA, hECC
     %     prevPathName = [];
     % end
 
-    prevPathName = [];
+    prevPathName = GLOBAL_prevPathName;
     
     refBody = [];
 %     [orbit,PathName,scName] = importOrbitGUI(1, prevPathName);
@@ -54,6 +56,7 @@ function [refBody, scName] = orbitPanelGetOrbitFromSFSContextCallBack(hSMA, hECC
         %     mainUserData{3,1} = PathName;
         %     set(mainGUIHandle,'UserData',mainUserData);
         % end
+        GLOBAL_prevPathName = PathName;
     end
 end
 

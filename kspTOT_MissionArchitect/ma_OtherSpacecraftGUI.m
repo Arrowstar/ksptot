@@ -55,7 +55,6 @@ function ma_OtherSpacecraftGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 % Choose default command line output for ma_OtherSpacecraftGUI
 handles.output = hObject;
 handles.ma_MainGUI = varargin{1};
-handles.ksptotMainGUI = varargin{2};
 
 populateBodiesCombo(getappdata(handles.ma_MainGUI,'celBodyData'), handles.centralBodyCombo);
 bodyComboValue = findValueFromComboBox('Kerbin', handles.centralBodyCombo);
@@ -713,7 +712,7 @@ function getOrbitFromSFSFileContextMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to getOrbitFromSFSFileContextMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-    [refBodyID, scName] = orbitPanelGetOrbitFromSFSContextCallBack(handles.ksptotMainGUI, handles.smaText, handles.eccText, handles.incText, handles.raanText, handles.argText, handles.truText, handles.epochText);
+    [refBodyID, scName] = orbitPanelGetOrbitFromSFSContextCallBack(handles.smaText, handles.eccText, handles.incText, handles.raanText, handles.argText, handles.truText, handles.epochText);
     tru = computeTrueAnomFromMean(deg2rad(str2double(get(handles.truText,'String'))), str2double(get(handles.eccText,'String')));
     set(handles.truText,'String',num2str(rad2deg(tru)));
 

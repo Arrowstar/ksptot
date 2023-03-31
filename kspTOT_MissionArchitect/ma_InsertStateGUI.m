@@ -55,7 +55,6 @@ function ma_InsertStateGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 % Choose default command line output for ma_InsertStateGUI
 handles.output = hObject;
 handles.ma_MainGUI = varargin{1};
-handles.ksptotMainGUI = varargin{2};
 
 % Update handles structure
 guidata(hObject, handles);
@@ -66,15 +65,15 @@ populateBodiesCombo(getappdata(handles.ma_MainGUI,'celBodyData'), handles.bodies
 populateBodiesCombo(getappdata(handles.ma_MainGUI,'celBodyData'), handles.launchBodiesCombo);
 initStateTypeBtnGrp_SelectionChangedFcn(handles.setStateRadioBtn, [], handles);
 
-if(length(varargin) > 2) 
-    if(length(varargin) > 3)
-        initialState = varargin{4};
+if(length(varargin) > 1) 
+    if(length(varargin) > 2)
+        initialState = varargin{3};
     else
         initialState = [];
     end
     setappdata(hObject,'initialState', initialState);
     
-    event = varargin{3};
+    event = varargin{2};
     if(~isempty(event))
         populateGUIWithEvent(handles, event);
     end
@@ -1393,7 +1392,7 @@ function getOrbitFromSFSFileContextMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to getOrbitFromSFSFileContextMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-    refBodyID = orbitPanelGetOrbitFromSFSContextCallBack(handles.ksptotMainGUI, handles.smaText, handles.eccText, handles.incText, handles.raanText, handles.argText, handles.truText, handles.epochText);
+    refBodyID = orbitPanelGetOrbitFromSFSContextCallBack(handles.smaText, handles.eccText, handles.incText, handles.raanText, handles.argText, handles.truText, handles.epochText);
     tru = computeTrueAnomFromMean(deg2rad(str2double(get(handles.truText,'String'))), str2double(get(handles.eccText,'String')));
     set(handles.truText,'String',fullAccNum2Str(rad2deg(tru)));
 
