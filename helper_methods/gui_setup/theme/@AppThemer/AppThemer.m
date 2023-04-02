@@ -179,6 +179,7 @@ classdef AppThemer < matlab.mixin.SetGet
             end
         
             hFig.Color = bgColor;
+            hFig.Icon = 'ksptot_logo4_transparent.png';
         end
         
         function themeUiPanel(hPanel, bgColor, fontColor, borderColor)
