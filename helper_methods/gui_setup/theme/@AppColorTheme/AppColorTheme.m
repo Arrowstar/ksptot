@@ -9,6 +9,7 @@ classdef AppColorTheme < matlab.mixin.SetGet
         bgColor(1,3) double = [33,33,33]/255;
         fontColor(1,3) double = [0.9,0.9,0.9];
         borderColor(1,3) double = [0.7,1,1];
+        borderWidth(1,1) double = 1;
 
         buttonBgColor(1,3) double = [66,66,66]/255;
         buttonFontColor(1,3) double = [0.9,0.9,0.9];

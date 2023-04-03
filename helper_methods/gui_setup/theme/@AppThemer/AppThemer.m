@@ -88,7 +88,7 @@ classdef AppThemer < matlab.mixin.SetGet
                     AppThemer.themeUiFigure(prop, theme.bgColor);
         
                 case 'matlab.ui.container.Panel'
-                    AppThemer.themeUiPanel(prop, theme.bgColor, theme.fontColor, theme.borderColor);
+                    AppThemer.themeUiPanel(prop, theme.bgColor, theme.fontColor, theme.borderColor, theme.borderWidth);
         
                 case 'matlab.ui.container.GridLayout'
                     AppThemer.themeGridLayout(prop, theme.bgColor);
@@ -124,7 +124,7 @@ classdef AppThemer < matlab.mixin.SetGet
                     AppThemer.themeDropdown(prop, theme.dropDownBgColor, theme.dropDownFontColor);
         
                 case 'matlab.ui.container.ButtonGroup'
-                    AppThemer.themeButtonGroup(prop, theme.bgColor, theme.fontColor, theme.borderColor);
+                    AppThemer.themeButtonGroup(prop, theme.bgColor, theme.fontColor, theme.borderColor, theme.borderWidth);
         
                 case 'matlab.ui.control.RadioButton'
                     AppThemer.themeRadioButton(prop, theme.fontColor);
@@ -164,10 +164,12 @@ classdef AppThemer < matlab.mixin.SetGet
         
         function theme = createDefaultLightTheme()
             theme = AppColorTheme('Default Light Theme', [0.94,0.94,0.94], [0.00,0.00,0.00], [0.96,0.96,0.96], [0.00,0.00,0.00], [0.94,0.94,0.94], [0.00,0.00,0.00], [1,1,1], [0.00,0.00,0.00], [1,1,1], [0.00,0.00,0.00], [0.49,0.49,0.49], [0.00,0.00,0.00], [1,1,1], [0,0,0], [1,1,1], [0.94,0.94,0.94], [0,0,0]);
+            theme.desc = "The default light theme of KSPTOT.";
         end
 
         function theme = createDefaultDarkTheme()
             theme = AppColorTheme('Default Dark Theme', [33,33,33]/255, [0.9,0.9,0.9], [66,66,66]/255, [0.9,0.9,0.9], [66,66,66]/255, [0.9,0.9,0.9], [66,66,66]/255, [0.9,0.9,0.9], [66,66,66]/255, [0.9,0.9,0.9], [0.49,0.49,0.49], [0.9,0.9,0.9], [66,66,66]/255, [0.9,0.9,0.9], [66,66,66]/255, [99,99,99]/255, [0.9,0.9,0.9]);
+            theme.desc = "The default dark theme of KSPTOT.";
         end
     end
 
@@ -182,17 +184,19 @@ classdef AppThemer < matlab.mixin.SetGet
             hFig.Icon = 'ksptot_logo4_transparent.png';
         end
         
-        function themeUiPanel(hPanel, bgColor, fontColor, borderColor)
+        function themeUiPanel(hPanel, bgColor, fontColor, borderColor, borderWidth)
             arguments
                 hPanel(1,1) matlab.ui.container.Panel
                 bgColor(1,3) double
                 fontColor(1,3) double
                 borderColor(1,3) double
+                borderWidth(1,1) double {mustBeGreaterThanOrEqual(borderWidth,0)} = 1;
             end
         
             hPanel.BackgroundColor = bgColor;
             hPanel.ForegroundColor = fontColor;
             hPanel.BorderColor = borderColor;
+            hPanel.BorderWidth = borderWidth;
         end
         
         function themeGridLayout(gridLayout, bgColor)
@@ -290,17 +294,19 @@ classdef AppThemer < matlab.mixin.SetGet
             hDropdown.BackgroundColor = bgColor;
         end
         
-        function themeButtonGroup(hButtonGrp, bgColor, fontColor, borderColor)
+        function themeButtonGroup(hButtonGrp, bgColor, fontColor, borderColor, borderWidth)
             arguments
                 hButtonGrp(1,1) matlab.ui.container.ButtonGroup
                 bgColor(1,3) double
                 fontColor(1,3) double
                 borderColor(1,3) double
+                borderWidth(1,3) double
             end 
         
             hButtonGrp.ForegroundColor = fontColor;
             hButtonGrp.BackgroundColor = bgColor;
             hButtonGrp.BorderColor = borderColor;
+            hButtonGrp.BorderWidth = borderWidth;
         end
         
         function themeRadioButton(hRadioButton, fontColor)
