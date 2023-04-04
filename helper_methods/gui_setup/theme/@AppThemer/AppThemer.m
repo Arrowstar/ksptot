@@ -300,7 +300,7 @@ classdef AppThemer < matlab.mixin.SetGet
                 bgColor(1,3) double
                 fontColor(1,3) double
                 borderColor(1,3) double
-                borderWidth(1,3) double
+                borderWidth(1,1) double
             end 
         
             hButtonGrp.ForegroundColor = fontColor;
