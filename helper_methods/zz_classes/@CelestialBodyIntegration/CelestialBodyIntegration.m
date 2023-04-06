@@ -94,6 +94,8 @@ classdef CelestialBodyIntegration
 %                 if(isvalid(hFig))
 %                     close(hFig);
 %                 end
+            else
+                warning('No celestial bodies in the loaded bodies.ini file are using numerical propagation.');
             end
         end
     end
