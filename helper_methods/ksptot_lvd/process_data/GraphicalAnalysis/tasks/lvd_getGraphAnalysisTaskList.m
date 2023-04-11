@@ -81,6 +81,11 @@ function [taskList] = lvd_getGraphAnalysisTaskList(lvdData, excludeList)
 
     taskList{end+1} = 'Time To Periapsis';
     taskList{end+1} = 'Time to Apoapsis';
+
+    taskList{end+1} = 'Body Angular Rate X';
+    taskList{end+1} = 'Body Angular Rate Y';
+    taskList{end+1} = 'Body Angular Rate Z';
+    taskList{end+1} = 'Total Body Angular Rate';
     
     [fluidTypesGAStr, ~] = lvdData.launchVehicle.tankTypes.getFluidTypesGraphAnalysisTaskStrs();
     taskList = horzcat(taskList, fluidTypesGAStr);

@@ -52,7 +52,7 @@ classdef PointSensorTargetModel < AbstractSensorTarget
         end
         
         function listboxStr = getListboxStr(obj)
-            listboxStr = obj.name;
+            listboxStr = sprintf('%s (%s)', obj.name, obj.point.getName());
         end
         
         function shape = getMarkerShape(obj)

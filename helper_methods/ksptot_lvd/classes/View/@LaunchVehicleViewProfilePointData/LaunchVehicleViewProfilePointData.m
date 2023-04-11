@@ -67,8 +67,11 @@ classdef LaunchVehicleViewProfilePointData < matlab.mixin.SetGet
             
             totalTimesArr = sort(totalTimesArr);
             
-%             rVectsToPlot = NaN(3,length(totalTimesArr));
-            rVectsToPlot = obj.getPositionAtTime(totalTimesArr);
+            if(not(isempty(totalTimesArr)))
+                rVectsToPlot = obj.getPositionAtTime(totalTimesArr);
+            else
+                rVectsToPlot = double.empty(3,0);
+            end
         end
     end
     

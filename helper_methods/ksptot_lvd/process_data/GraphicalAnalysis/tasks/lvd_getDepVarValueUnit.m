@@ -239,6 +239,22 @@ function [depVarValue, depVarUnit, taskStr, refBodyInfo] = lvd_getDepVarValueUni
         case 'Time to Apoapsis'
             depVarValue = lvd_KinematicStateTasks(subLog(i), 'timeToApoapsis', inFrame);
             depVarUnit = 'sec';
+
+        case 'Body Angular Rate X'
+            depVarValue = lvd_AttitudeRateTasks(subLog(i), 'bodyAngVelX', inFrame);
+            depVarUnit = 'deg/s';
+
+        case 'Body Angular Rate Y'
+            depVarValue = lvd_AttitudeRateTasks(subLog(i), 'bodyAngVelY', inFrame);
+            depVarUnit = 'deg/s';
+
+        case 'Body Angular Rate Z'
+            depVarValue = lvd_AttitudeRateTasks(subLog(i), 'bodyAngVelZ', inFrame);
+            depVarUnit = 'deg/s';
+
+        case 'Total Body Angular Rate'
+            depVarValue = lvd_AttitudeRateTasks(subLog(i), 'totalAngularVel', inFrame);
+            depVarUnit = 'deg/s';
  
         otherwise %is a programmatically generated string that we'll handle here
             fluidTypeMassPattern = '^Fluid Type (\d+?) Mass - ".*"';

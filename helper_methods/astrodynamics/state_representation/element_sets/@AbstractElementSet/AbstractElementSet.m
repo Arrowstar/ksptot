@@ -89,7 +89,7 @@ classdef (Abstract) AbstractElementSet < matlab.mixin.SetGet & matlab.mixin.Cust
             rVect2 = posOffsetOrigin12 + squeeze(pagemtimes(rotMatToInertial12, permute(rVect1, [1 3 2])));
             vVect2 = velOffsetOrigin12 + squeeze(pagemtimes(rotMatToInertial12, (permute(vVect1 + cross(angVelWrtOrigin12, rVect1), [1 3 2]))));
                        
-            %get iffsets from frame 3 to frame 2
+            %get offsets from frame 3 to frame 2
             if(numel(times) == 1 && numel(toFrame.timeCache) > 0 && toFrame.timeCache(1) == times) %#ok<BDSCI>
                 posOffsetOrigin32 = toFrame.posOffsetOriginCache(:,1);
                 velOffsetOrigin32 = toFrame.velOffsetOriginCache(:,1);
