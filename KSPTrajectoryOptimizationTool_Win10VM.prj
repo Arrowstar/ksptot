@@ -14,7 +14,7 @@
     <param.company />
     <param.summary>An advanced mission planning and maneuver planning software for Kerbal Space Program.</param.summary>
     <param.description />
-    <param.screenshot>${PROJECT_ROOT}\images\icons\ksptot_logo_new\ksptot_logo_banner_20230402_noUpperLeftCorner.png</param.screenshot>
+    <param.screenshot>${PROJECT_ROOT}\images\icons\ksptot_logo_new\ksptot_logo_banner_20230402_noUpperLeftCorner_600px.png</param.screenshot>
     <param.guid />
     <param.installpath.string>\KSPTrajectoryOptimizationTool\</param.installpath.string>
     <param.installpath.combo>option.installpath.programfiles</param.installpath.combo>
