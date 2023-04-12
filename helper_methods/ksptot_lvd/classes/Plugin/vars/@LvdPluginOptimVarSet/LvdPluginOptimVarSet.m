@@ -54,7 +54,7 @@ classdef LvdPluginOptimVarSet < matlab.mixin.SetGet
         end
         
         function numPluginVars = getNumPluginVars(obj)
-            numPluginVars = length(obj.pluginVar);
+            numPluginVars = length(obj.pluginVars);
         end
 
         function varValues = getPluginVarValues(obj)

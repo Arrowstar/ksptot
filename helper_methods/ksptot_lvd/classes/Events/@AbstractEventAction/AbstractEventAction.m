@@ -14,19 +14,33 @@ classdef(Abstract) AbstractEventAction < matlab.mixin.SetGet & matlab.mixin.Hete
         
         name = getName(obj)
         
-        tf = usesStage(obj, stage)
+        function tf = usesStage(obj, stage)
+            tf = false;
+        end
         
-        tf = usesEngine(obj, engine)
+        function tf = usesEngine(obj, engine)
+            tf = false;
+        end
         
-        tf = usesTank(obj, tank)
+        function tf = usesTank(obj, tank)
+            tf = false;
+        end
         
-        tf = usesEngineToTankConn(obj, engineToTank)
+        function tf = usesEngineToTankConn(obj, engineToTank)
+            tf = false;
+        end
         
-        tf = usesStopwatch(obj, stopwatch)
+        function tf = usesStopwatch(obj, stopwatch)
+            tf = false;
+        end
         
-        tf = usesExtremum(obj, extremum)
+        function tf = usesExtremum(obj, extremum)
+            tf = false;
+        end
         
-        tf = usesTankToTankConn(obj, tankToTank)
+        function tf = usesTankToTankConn(obj, tankToTank)
+            tf = false;
+        end
         
         function tf = usesCalculusCalc(obj, calculusCalc)
             tf = false;
@@ -49,6 +63,15 @@ classdef(Abstract) AbstractEventAction < matlab.mixin.SetGet & matlab.mixin.Hete
         end
         
         function tf = usesSensor(obj, sensor)
+            tf = false;
+        end
+
+        function tf = usesPlugin(obj, plugin)
+            arguments
+                obj(1,1) AbstractEventAction
+                plugin(1,1) LvdPlugin
+            end
+
             tf = false;
         end
         
