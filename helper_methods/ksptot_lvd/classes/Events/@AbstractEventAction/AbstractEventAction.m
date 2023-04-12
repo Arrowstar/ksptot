@@ -66,10 +66,10 @@ classdef(Abstract) AbstractEventAction < matlab.mixin.SetGet & matlab.mixin.Hete
             tf = false;
         end
 
-        function tf = usesPlugin(obj, plugin)
+        function tf = usesPluginVariable(obj, pluginVar)
             arguments
                 obj(1,1) AbstractEventAction
-                plugin(1,1) LvdPlugin
+                pluginVar(1,1) LvdPluginOptimVarWrapper
             end
 
             tf = false;

@@ -36,7 +36,7 @@ classdef SetLvdPluginVarValueAction < AbstractEventAction
             name = sprintf('Set Plugin Variable Value (%s => %0.3f)', obj.pluginVar.name, obj.pluginValueToSet);
         end
         
-        function tf = usesPlugin(obj, pluginVar)
+        function tf = usesPluginVariable(obj, pluginVar)
             arguments
                 obj(1,1) AbstractEventAction
                 pluginVar(1,1) LvdPluginOptimVarWrapper

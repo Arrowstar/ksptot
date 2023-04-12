@@ -161,6 +161,10 @@ classdef LvdData < matlab.mixin.SetGet
         function tf = usesPlugin(obj, plugin)
             tf = obj.optimizer.usesPlugin(plugin);
         end 
+
+        function tf = usesPluginVariable(obj, pluginVar)
+            tf = obj.script.usesPluginVariable(pluginVar);
+        end 
         
         function tf = usesSensor(obj, sensor)
             tf = obj.script.usesSensor(sensor);

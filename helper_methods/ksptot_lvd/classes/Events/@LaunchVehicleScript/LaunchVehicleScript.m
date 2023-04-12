@@ -286,6 +286,21 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
             
             tf = tf || obj.nonSeqEvts.usesSensor(sensor);
         end
+
+        function tf = usesPluginVariable(obj, pluginVar)
+            arguments
+                obj(1,1) 
+                pluginVar(1,1) LvdPluginOptimVarWrapper
+            end
+
+            tf = false;
+            
+            for(i=1:length(obj.evts))
+                tf = tf || obj.evts(i).usesPluginVariable(pluginVar);
+            end
+            
+            tf = tf || obj.nonSeqEvts.usesPluginVariable(pluginVar);
+        end
         
         function stateLog = executeScript(obj, isSparseOutput, evtToStartScriptExecAt, evalConstraints, allowInterrupt, dispEvtPropTimes, notifyScriptEvents)
             arguments

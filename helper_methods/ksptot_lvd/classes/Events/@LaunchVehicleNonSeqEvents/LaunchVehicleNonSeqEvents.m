@@ -223,8 +223,20 @@ classdef LaunchVehicleNonSeqEvents < matlab.mixin.SetGet & matlab.mixin.Copyable
         function tf = usesTankToTankConn(obj, tankToTank)
             tf = false;
             
-            for(i=1:length(obj.nonSeqEvts))
-                tf = tf || obj.nonSeqEvts(i).usesTankToTankConn(tankToTank);
+            for(i=1:length(obj.evts))
+                tf = tf || obj.evts(i).usesTankToTankConn(tankToTank);
+            end
+        end
+
+        function tf = usesPluginVariable(obj, pluginVar)
+            arguments
+                obj(1,1) 
+                pluginVar(1,1) LvdPluginOptimVarWrapper
+            end
+
+            tf = false;
+            for(i=1:length(obj.evts))
+                tf = tf || obj.evts(i).usesPluginVariable(pluginVar);
             end
         end
     end
