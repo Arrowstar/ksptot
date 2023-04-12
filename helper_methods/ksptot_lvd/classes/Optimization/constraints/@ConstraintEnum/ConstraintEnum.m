@@ -104,6 +104,11 @@ classdef ConstraintEnum < matlab.mixin.SetGet
         Plugin('Plugin Value', 'PluginConstraint', []);
 
         HeightAboveTerrain('Height Above Terrain', 'GenericMAConstraint','Height Above Terrain');
+
+        BodyXAngVel('Body X-axis Angular Velocity', 'BodyAngularVelXConstraint', []);
+        BodyYAngVel('Body Y-axis Angular Velocity', 'BodyAngularVelYConstraint', []);
+        BodyZAngVel('Body Z-axis Angular Velocity', 'BodyAngularVelZConstraint', []);
+        TotBodyAngVel('Total Body Angular Velocity', 'TotalBodyAngularVelConstraint',[]);
     end
     
     enumeration(Hidden)
