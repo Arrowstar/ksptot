@@ -24,6 +24,8 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
         throttleModel AbstractThrottleModel = ThrottlePolyModel.getDefaultThrottleModel();
         
         sensorStates AbstractSensorState = AbstractSensorState.empty(1,0);
+
+        integrationGroup(1,1) IntegrationGroup = IntegrationGroup(0);
     end
     
     properties(Dependent)
@@ -281,6 +283,8 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             newStateLogEntry.aero = obj.aero.deepCopy();
             newStateLogEntry.thirdBodyGravity = obj.thirdBodyGravity.copy();
             newStateLogEntry.srp = obj.srp.deepCopy();
+
+            newStateLogEntry.integrationGroup = IntegrationGroup(newStateLogEntry.integrationGroup.integrationGroupNum);
         end
         
         function obj = createCopiesOfCopyableInternals(obj, deepCopyState)

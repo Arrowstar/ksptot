@@ -82,10 +82,6 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                         inertialFrame = bodyInfo.getBodyCenteredInertialFrame();
                         
                         elemSet = CartesianElementSet(subStateLog(:,1), subStateLog(:,2:4)', subStateLog(:,5:7)', inertialFrame);
-%                         elemSet = repmat(CartesianElementSet.getDefaultElements(), [1, size(subStateLog,1)]);
-%                         for(j=1:size(subStateLog,1))
-%                             elemSet(j) = CartesianElementSet(subStateLog(j,1), subStateLog(j,2:4)', subStateLog(j,5:7)', inertialFrame);
-%                         end
                         elemSet = convertToFrame(elemSet, viewInFrame);
 
                         subStateLog(:,2:4) = [elemSet.rVect]';
@@ -108,9 +104,6 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                     end
 
                     numTotMissionSegs = size(chunkedStateLog,1);
-                    
-%                     curMissionSegStr = num2str(orbitNumToPlot);
-%                     totalMissionSegStr = num2str(numTotMissionSegs);
                 
                     if(numTotMissionSegs <= 1)
                         app.decrOrbitToPlotNum.Enable = 'off';
@@ -133,30 +126,22 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                     end
 
                     numRows = size(maStateLogMatrix,1);
-%                     subStateLogsMat = NaN(numRows, 13);
                     
                     cartesianEntry = convertToFrame(getCartesianElementSetRepresentation(entries, false),viewInFrame);
                     times = [cartesianEntry.time]';
                     rVect = [cartesianEntry.rVect]';
                     vVect = [cartesianEntry.vVect]';
                     bodyId = viewCentralBody.id + zeros(numRows,1);
-                    subStateLogsMat = [times, rVect, vVect, bodyId, maStateLogMatrix(:,9:13)];
-%                     for(i=1:numRows)
-%                         tempMaMatrix = entries(i).getMAFormattedStateLogMatrix(false);
-% 
-%                         cartesianEntry = 
-%                         cartesianEntry = cartesianEntry.convertToFrame(viewInFrame); 
-% 
-%                         subStateLogsMat(i,:) = [entries(i).time, cartesianEntry.rVect', cartesianEntry.vVect', viewCentralBody.id, maStateLogMatrix(i,9:13)];
-%                     end
+
+                    ig = [entries.integrationGroup];
+                    igNums = [ig.integrationGroupNum];
+
+                    subStateLogsMat = [times, rVect, vVect, bodyId, maStateLogMatrix(:,9:13), igNums(:)];
 
                     subStateLogs = {};
-                    for(evtNum=1:max(subStateLogsMat(:,13)))
-                        subStateLogs{evtNum} = subStateLogsMat(subStateLogsMat(:,13) == evtNum,:); %#ok<AGROW>
+                    for(igNum=1:max(igNums))
+                        subStateLogs{igNum} = subStateLogsMat(subStateLogsMat(:,14) == igNum,:); %#ok<AGROW>
                     end
-
-%                     curMissionSegStr = num2str(1);
-%                     totalMissionSegStr = num2str(1);
                     
                     lvdStateLogEntries = entries;
                 otherwise

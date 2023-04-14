@@ -18,6 +18,10 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
         
         nonSeqEvts LaunchVehicleNonSeqEvents 
     end
+
+    properties(Transient)
+        nextEventToRun LaunchVehicleEvent
+    end
         
     properties(Constant)
         emptyEvtArr = LaunchVehicleEvent.empty(1,0);
@@ -329,6 +333,7 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
                 stateLog.clearStateLog();
                 initStateLogEntry = obj.lvdData.initialState; 
                 initStateLogEntry.event = obj.lvdData.script.getEventForInd(evtStartNum);
+                initStateLogEntry.integrationGroup = IntegrationGroup(1);
                 obj.nonSeqEvts.resetAllNumExecsRemaining();
             else
                 stateLog.clearStateLogAtOrAfterEvent(evtToStartScriptExecAt);
@@ -350,87 +355,15 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
             if(~isempty(obj.evts))                
                 tStartSimTime = initStateLogEntry.time;
                 tStartPropTime = tic();
-                for(i=evtStartNum:length(obj.evts)) %#ok<*NO4LP>
-                    ttt = tic;
-                    evt = obj.evts(i);
-                    
-                    %notify that event propagation has started
-                    if(notifyScriptEvents && isOnParallelWorker() == false)
-                        notify(obj, 'EventPropagationStarted', ScriptEventPropagationData(evt));
-                    end
-                    
-                    initStateLogEntry.event = obj.evts(i); %need to set the event on the initial state
-                    
-                    %allow interrupting script execution with figure
-                    %callbacks on every other event
-                    if(allowInterrupt && logical(mod(i,2)) && usejava('desktop'))
-                        drawnow;
-                    end
-                    
-                    %Set event correctly
-                    initStateLogEntry.event = evt;
+                
+                obj.nextEventToRun = obj.evts(1);
+                maxIntegrationDuration = obj.simDriver.maxPropTime;
+                integrationNum = 1;
+                while(not(isempty(obj.nextEventToRun)) && toc(tStartPropTime) < maxIntegrationDuration)
+                    initStateLogEntry = obj.executeEvent(initStateLogEntry, stateLog, tStartSimTime, tStartPropTime, integrationNum, notifyScriptEvents, allowInterrupt, isSparseOutput, dispEvtPropTimes);
+                    initStateLogEntry = initStateLogEntry.deepCopy();
 
-                    %execute plugins that occur before event
-                    obj.lvdData.plugins.executePluginsBeforeEvent(stateLog, evt);
-                                       
-                    if(evt.execActionsNode == ActionExecNodeEnum.BeforeProp)
-                        tActions = tic;
-                        %Execute Actions
-                        initStateLogEntry = initStateLogEntry.deepCopy(); %this state log entry must be copied or the answers will change
-                        stateLog.appendStateLogEntries(initStateLogEntry);
-                        actionStateLogEntries = evt.cleanupEvent(initStateLogEntry); %this executes the actions
-
-                        %Add state log entries to state log
-                        if(not(isempty(actionStateLogEntries)))
-                            stateLog.appendStateLogEntries(actionStateLogEntries);
-                            initStateLogEntry = actionStateLogEntries(end).deepCopy(); %this state log entry must be copied or the answers will change;
-                        end
-                        ttActions = toc(tActions);
-                    end
-                    
-                    %Get applicable non sequential events and initialize
-                    activeNonSeqEvts = obj.nonSeqEvts.getNonSeqEventsForScriptEvent(evt);
-                    for(j=1:length(activeNonSeqEvts))
-                        activeNonSeqEvts(j).initEvent(initStateLogEntry);
-                    end
-                    
-                    %Init Event
-                    evt.initEvent(initStateLogEntry);
-                                        
-                    %Execute Event (propagation)
-                    tPropagate = tic;
-                    newStateLogEntries = evt.executeEvent(initStateLogEntry, obj.simDriver, tStartPropTime, tStartSimTime, isSparseOutput, activeNonSeqEvts);
-                    stateLog.appendStateLogEntries(newStateLogEntries);
-                    ttPropagate = toc(tPropagate);
-                    
-                    initStateLogEntry = newStateLogEntries(end).deepCopy();  %this state log entry must be copied or the answers will change
-                    if(evt.execActionsNode == ActionExecNodeEnum.AfterProp)
-                        tActions = tic;
-                        %Execute Actions
-                        actionStateLogEntries = evt.cleanupEvent(initStateLogEntry);
-
-                        %Add state log entries to state log
-                        if(not(isempty(actionStateLogEntries)))
-                            stateLog.appendStateLogEntries(actionStateLogEntries);
-                            initStateLogEntry = actionStateLogEntries(end).deepCopy(); %this state log entry must be copied or the answers will change;
-                        end
-                        ttActions = toc(tActions);
-                    end
-                    
-                    stateLog.appendNonSeqEvtsState(obj.nonSeqEvts.copy(), evt);
-                    
-                    %execute plugins that occur after event
-                    obj.lvdData.plugins.executePluginsAfterEvent(stateLog, evt);
-                    
-                    %notify that event propagation has ended
-                    if(notifyScriptEvents && isOnParallelWorker() == false)
-                        notify(obj, 'EventPropagationEnded', ScriptEventPropagationData(evt));
-                    end
-                    
-                    evtTime = toc(ttt);
-                    if(dispEvtPropTimes)
-                        fprintf('(%s) Duration to execute Event %u: %0.3f s (Propagation: %0.3f s; Actions: %0.3f s) (Evt Dur: %0.3f s)\n', datestr(now,'hh:MM:ss'), i, evtTime, ttPropagate, ttActions, newStateLogEntries(end).time-newStateLogEntries(1).time);
-                    end
+                    integrationNum = integrationNum + 1;
                 end
                 
                 tPropTime = toc(tStartPropTime);
@@ -457,6 +390,115 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
             %notify that script propagation has ended
             if(notifyScriptEvents && isOnParallelWorker() == false)
                 notify(obj, 'ScriptPropagationFinished');
+            end
+        end
+
+        function [initStateLogEntry] = executeEvent(obj, initStateLogEntry, stateLog, tStartSimTime, tStartPropTime, integrationNum, notifyScriptEvents, allowInterrupt, isSparseOutput, dispEvtPropTimes)
+            arguments(Input)
+                obj(1,1) LaunchVehicleScript
+                initStateLogEntry(1,1) LaunchVehicleStateLogEntry
+                stateLog(1,1) LaunchVehicleStateLog
+                tStartSimTime(1,1) double
+                tStartPropTime(1,1) uint64
+                integrationNum(1,1) double
+                notifyScriptEvents(1,1) logical
+                allowInterrupt(1,1) logical
+                isSparseOutput(1,1) logical
+                dispEvtPropTimes(1,1) logical
+            end
+
+            arguments(Output)
+                initStateLogEntry(1,1) LaunchVehicleStateLogEntry
+            end
+
+            ttt = tic();
+            evt = obj.nextEventToRun;
+            evtNum = evt.getEventNum();
+
+            %Set this first so if an action or plugin modifies it, that'll
+            %take effect
+            obj.nextEventToRun = obj.getEventForInd(evtNum + 1);
+            defaultNextEventToRun = obj.nextEventToRun;
+            
+            %notify that event propagation has started
+            if(notifyScriptEvents && isOnParallelWorker() == false)
+                notify(obj, 'EventPropagationStarted', ScriptEventPropagationData(evt));
+            end
+            
+            intGroup = IntegrationGroup(integrationNum);
+            initStateLogEntry.event = evt; %need to set the event on the initial state
+            initStateLogEntry.integrationGroup = intGroup;
+            
+            %allow interrupting script execution with figure
+            if(allowInterrupt && usejava('desktop'))
+                drawnow;
+            end
+            
+            %execute plugins that occur before event
+            obj.lvdData.plugins.executePluginsBeforeEvent(stateLog, evt);
+                               
+            if(evt.execActionsNode == ActionExecNodeEnum.BeforeProp)
+                tActions = tic;
+                %Execute Actions
+                initStateLogEntry = initStateLogEntry.deepCopy(); %this state log entry must be copied or the answers will change
+                initStateLogEntry.integrationGroup = intGroup;
+                stateLog.appendStateLogEntries(initStateLogEntry);
+                actionStateLogEntries = evt.cleanupEvent(initStateLogEntry); %this executes the actions
+
+                %Add state log entries to state log
+                if(not(isempty(actionStateLogEntries)))
+                    stateLog.appendStateLogEntries(actionStateLogEntries);
+                    initStateLogEntry = actionStateLogEntries(end).deepCopy(); %this state log entry must be copied or the answers will change;
+                    initStateLogEntry.integrationGroup = intGroup;
+                end
+                ttActions = toc(tActions);
+            end
+            
+            %Get applicable non sequential events and initialize
+            activeNonSeqEvts = obj.nonSeqEvts.getNonSeqEventsForScriptEvent(evt);
+            for(j=1:length(activeNonSeqEvts))
+                activeNonSeqEvts(j).initEvent(initStateLogEntry);
+            end
+            
+            %Init Event
+            evt.initEvent(initStateLogEntry);
+                                
+            %Execute Event (propagation)
+            tPropagate = tic;
+            newStateLogEntries = evt.executeEvent(initStateLogEntry, obj.simDriver, tStartPropTime, tStartSimTime, isSparseOutput, activeNonSeqEvts);
+            stateLog.appendStateLogEntries(newStateLogEntries);
+            ttPropagate = toc(tPropagate);
+            
+            %Execute Actions After Event Propagation
+            initStateLogEntry = newStateLogEntries(end).deepCopy();  %this state log entry must be copied or the answers will change
+            initStateLogEntry.integrationGroup = intGroup;
+            if(evt.execActionsNode == ActionExecNodeEnum.AfterProp)
+                tActions = tic;
+                %Execute Actions
+                actionStateLogEntries = evt.cleanupEvent(initStateLogEntry);
+
+                %Add state log entries to state log
+                if(not(isempty(actionStateLogEntries)))
+                    stateLog.appendStateLogEntries(actionStateLogEntries);
+                    initStateLogEntry = actionStateLogEntries(end).deepCopy(); %this state log entry must be copied or the answers will change;
+                    initStateLogEntry.integrationGroup = intGroup;
+                end
+                ttActions = toc(tActions);
+            end
+
+            stateLog.appendNonSeqEvtsState(obj.nonSeqEvts.copy(), evt);
+            
+            %execute plugins that occur after event
+            obj.lvdData.plugins.executePluginsAfterEvent(stateLog, evt);
+            
+            %notify that event propagation has ended
+            if(notifyScriptEvents && isOnParallelWorker() == false)
+                notify(obj, 'EventPropagationEnded', ScriptEventPropagationData(evt));
+            end
+            
+            evtTime = toc(ttt);
+            if(dispEvtPropTimes)
+                fprintf('(%s) Duration to execute Event %u: %0.3f s (Propagation: %0.3f s; Actions: %0.3f s) (Evt Dur: %0.3f s)\n', datestr(now,'hh:MM:ss'), evtNum, evtTime, ttPropagate, ttActions, newStateLogEntries(end).time-newStateLogEntries(1).time);
             end
         end
     end

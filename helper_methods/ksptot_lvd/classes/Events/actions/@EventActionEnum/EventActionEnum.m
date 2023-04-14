@@ -31,6 +31,8 @@ classdef EventActionEnum < matlab.mixin.SetGet
         SetRectangularSensorDecAngle('Set Rectangular Sensor Declination Angle','SetRectangularlSensorDecAngleAction');
         SetSolarRadPressModelAction('Set Solar Radiation Pressure Model', 'SetSolarRadPressPropertiesAction');
         SetPluginVarValueAction('Set Plugin Variable Value', 'SetLvdPluginVarValueAction');
+        SetNextEventAction('Set Next Event', 'SetNextEventAction');
+        ConditionalAction('Conditional Action', 'ConditionalAction');
     end
     
     properties
