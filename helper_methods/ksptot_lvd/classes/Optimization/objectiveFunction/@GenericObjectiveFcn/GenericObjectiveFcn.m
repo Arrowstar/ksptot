@@ -50,8 +50,13 @@ classdef GenericObjectiveFcn < AbstractObjectiveFcn
             listBoxStr = sprintf('%s - Event %u', obj.fcn.getConstraintType(), obj.event.getEventNum());
         end
         
-        function [f, fUnscaled] = evalObjFcn(obj, stateLog)            
-            [~, ~, value, ~, ~, ~, ~] = obj.fcn.evalConstraint(stateLog, obj.lvdData.celBodyData);
+        function [f, fUnscaled] = evalObjFcn(obj, stateLog)    
+            try
+                [~, ~, value, ~, ~, ~, ~] = obj.fcn.evalConstraint(stateLog, obj.lvdData.celBodyData);
+            catch ME
+                warning(ME.message);
+                value = NaN;
+            end
             
             f = value/obj.scaleFactor;
             fUnscaled = value;

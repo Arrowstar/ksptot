@@ -359,7 +359,7 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
                 obj.nextEventToRun = obj.evts(1);
                 maxIntegrationDuration = obj.simDriver.maxPropTime;
                 integrationNum = 1;
-                while(not(isempty(obj.nextEventToRun)) && toc(tStartPropTime) < maxIntegrationDuration)
+                while(not(isempty(obj.nextEventToRun)) && toc(tStartPropTime) < maxIntegrationDuration) 
                     initStateLogEntry = obj.executeEvent(initStateLogEntry, stateLog, tStartSimTime, tStartPropTime, integrationNum, notifyScriptEvents, allowInterrupt, isSparseOutput, dispEvtPropTimes);
                     initStateLogEntry = initStateLogEntry.deepCopy();
 
@@ -418,7 +418,6 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
             %Set this first so if an action or plugin modifies it, that'll
             %take effect
             obj.nextEventToRun = obj.getEventForInd(evtNum + 1);
-            defaultNextEventToRun = obj.nextEventToRun;
             
             %notify that event propagation has started
             if(notifyScriptEvents && isOnParallelWorker() == false)
@@ -447,6 +446,10 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
 
                 %Add state log entries to state log
                 if(not(isempty(actionStateLogEntries)))
+                    for(i=1:length(actionStateLogEntries))
+                        actionStateLogEntries(i).integrationGroup = intGroup;
+                    end
+
                     stateLog.appendStateLogEntries(actionStateLogEntries);
                     initStateLogEntry = actionStateLogEntries(end).deepCopy(); %this state log entry must be copied or the answers will change;
                     initStateLogEntry.integrationGroup = intGroup;
@@ -479,6 +482,10 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
 
                 %Add state log entries to state log
                 if(not(isempty(actionStateLogEntries)))
+                    for(i=1:length(actionStateLogEntries))
+                        actionStateLogEntries(i).integrationGroup = intGroup;
+                    end
+
                     stateLog.appendStateLogEntries(actionStateLogEntries);
                     initStateLogEntry = actionStateLogEntries(end).deepCopy(); %this state log entry must be copied or the answers will change;
                     initStateLogEntry.integrationGroup = intGroup;

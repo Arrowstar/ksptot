@@ -14,6 +14,7 @@ classdef TerminationConditionEnum < matlab.mixin.SetGet
         FlightPathAngle('Flight Path Angle','FlightPathAngleTermCondition');
         HeightAboveTerrain('Height Above Terrain','HeightAboveTerrainCondition');
         Latitude('Latitude','LatitudeTermCondition');
+        Longitude('Longitude','LongitudeTermCondition');
         PeriAlt('Periapsis Altitude','PeriapsisAltitudeTermCondition');
         PitchAngle('Pitch Angle','PitchTermCondition');
         NetChargeRate('Power Net Charge Rate','PowerNetChargeRateTermCondition');

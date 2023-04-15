@@ -122,6 +122,9 @@ classdef ConstraintSet < matlab.mixin.SetGet
                     stateLog = obj.lvdData.stateLog;
                 end
 
+                entries = stateLog.entries;
+                eventsWithStates = unique([entries.event]);
+
                 constCnt = 1;
                 for(i=1:length(obj.consts)) %#ok<*NO4LP>
                     constraint = obj.consts(i);
@@ -129,14 +132,34 @@ classdef ConstraintSet < matlab.mixin.SetGet
                     if(obj.isEventOptimDisabled(constraint) || constraint.active == false)
                         continue;
                     end
-                    
-                    [c1, ceq1, value1, lb1, ub1, type1, eventNum1, valueStateComp1] = constraint.evalConstraint(stateLog, celBodyData);
+
+                    event = constraint.getConstraintEvent();
+                    if(ismember(event, eventsWithStates))   
+                        [c1, ceq1, value1, lb1, ub1, type1, eventNum1, valueStateComp1] = constraint.evalConstraint(stateLog, celBodyData);
+                    else
+                        bool = obj.lastRunValues.consts == constraint;
+                        constInd = find(bool);
+
+                        cBool = obj.lastRunValues.cCInds == constInd;
+                        cEqBool = obj.lastRunValues.cCeqInds == constInd;
+
+                        c1 = NaN(size(obj.lastRunValues.c(cBool)));
+                        ceq1 = NaN(size(obj.lastRunValues.ceq(cEqBool)));
+                        value1 = obj.lastRunValues.value(bool);
+                        lb1 = obj.lastRunValues.lb(bool);
+                        ub1 = obj.lastRunValues.ub(bool);
+                        type1 = obj.lastRunValues.type{bool};
+                        eventNum1 = obj.lastRunValues.eventNum(bool);
+                        valueStateComp1 = obj.lastRunValues.valueStateComps(bool);
+                    end
+
                     c1 = c1(:)';
                     ceq1 = ceq1(:)';
                     value1 = value1(:)';
                     lb1 = lb1(:)';
                     ub1 = ub1(:)';
                     
+                        
                     for(j=1:length(c1))
                         cEventInds(end+1) = eventNum1; %#ok<AGROW>
                         cCInds(end+1) = constCnt; %#ok<AGROW>
@@ -161,6 +184,8 @@ classdef ConstraintSet < matlab.mixin.SetGet
                     constCnt = constCnt+1;
                 end
             end
+
+            obj.lastRunValues.updateValues(c, ceq, value, lb, ub, type, eventNum, cEventInds, ceqEventInds, constraints, cCInds, cCeqInds, valueStateComps);
         end
 
         function [cAtX0, cEqAtX0, DC, DCeq] = evalConstraintsWithGradients(obj, x, tfRunScript, evtToStartScriptExecAt, allowInterrupt, stateLogToEval)

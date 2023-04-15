@@ -82,7 +82,7 @@ classdef LvdGraphicalAnalysis < matlab.mixin.SetGet
             end
         end
         
-        function [depVarValues, depVarUnits, dataEvtNums, utTimeForDepVarValues, taskLabels] = executeTasks(obj, hFig, startTimeUT, endTimeUT, otherSCId, stationID)
+        function [depVarValues, depVarUnits, dataEvtNums, utTimeForDepVarValues, taskLabels, integrationGroupNums] = executeTasks(obj, hFig, startTimeUT, endTimeUT, otherSCId, stationID)
             propNames = obj.lvdData.launchVehicle.tankTypes.getFirstThreeTypesCellArr();
             celBodyData = obj.lvdData.celBodyData;
             
@@ -102,6 +102,7 @@ classdef LvdGraphicalAnalysis < matlab.mixin.SetGet
             
             dataEvtNums = [];
             prevDistTraveled = 0;
+            integrationGroupNums = [];
             for(i=1:numel(lvdSubLog)) %#ok<*NO4LP> 
                 lvdStateLogEntry = lvdSubLog(i);
                 
@@ -123,6 +124,7 @@ classdef LvdGraphicalAnalysis < matlab.mixin.SetGet
 
                 dataEvtNums(i) = lvdStateLogEntry.event.getEventNum(); %#ok<AGROW>
                 utTimeForDepVarValues(i) = lvdStateLogEntry.time;
+                integrationGroupNums(i) = lvdStateLogEntry.integrationGroup.integrationGroupNum; %#ok<AGROW>
             end
             
             for(i=1:length(obj.tasks))

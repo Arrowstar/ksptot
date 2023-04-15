@@ -307,6 +307,7 @@ function [depVarValue, depVarUnit, taskStr, refBodyInfo] = lvd_getDepVarValueUni
             geoPlaneNormZPattern = '^Plane (\d+?) Normal Vector Z Component - ".*"';
             
             pluginValuePattern = '^Plugin (\d+?) Value - ".*"';
+            pluginVarValuePattern = '^Plugin Variable (\d+?) Value - ".*"';
             
             if(not(isempty(regexpi(taskStr, fluidTypeMassPattern)))) %#ok<*RGXPI> 
                 tokens = regexpi(taskStr, fluidTypeMassPattern, 'tokens');
@@ -723,8 +724,22 @@ function [depVarValue, depVarUnit, taskStr, refBodyInfo] = lvd_getDepVarValueUni
                 
                 depVarValue = lvd_PluginValueTask(subLog(i), 'plugin_value', plugin, lvdData, inFrame);
                 depVarUnit = '';
+
+            elseif(not(isempty(regexpi(taskStr, pluginVarValuePattern))))
+                tokens = regexpi(taskStr, pluginVarValuePattern, 'tokens');
+                tokens = tokens{1};
+                tokens = tokens{1};
+                pluginVarInd = str2double(tokens);
+
+                lvdData = subLog(i).lvdData;
+                [~, pluginVars] = lvdData.pluginVars.getAllPluginVariableGraphAnalysisTaskStrs();
+                pluginVar = pluginVars(pluginVarInd);
+
+                depVarValue = lvd_PluginVarValueTask(subLog(i), 'plugin_var_value', pluginVar, lvdData, inFrame);
+                depVarUnit = '';
+                
             else
                 error('Unknown LVD task string: "%s"', taskStr);                
             end
     end
-end
+end 

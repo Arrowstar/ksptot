@@ -76,5 +76,14 @@ classdef LvdPluginOptimVarSet < matlab.mixin.SetGet
                 tf = true;
             end
         end
+
+        function [pluginVarGAStr, pluginVars] = getAllPluginVariableGraphAnalysisTaskStrs(obj)
+            pluginVarGAStr = {};
+            for(i=1:length(obj.pluginVars))
+                pluginVarGAStr{i} = sprintf('Plugin Variable %u Value - "%s"', i, obj.pluginVars(i).name); %#ok<AGROW>
+            end
+            
+            pluginVars = obj.pluginVars;
+        end
     end
 end

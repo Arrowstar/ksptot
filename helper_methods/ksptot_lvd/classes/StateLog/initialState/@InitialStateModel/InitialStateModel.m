@@ -103,6 +103,8 @@ classdef InitialStateModel < matlab.mixin.SetGet
             
             stateLogEntry.centralBody = obj.getCentralBodyForStateLog();
             stateLogEntry.lvState = obj.lvState.deepCopy();
+
+            lvdData = stateLogEntry.launchVehicle.lvdData;
         
             for(i=1:length(obj.stageStates))
                 stateLogEntry.stageStates(i) = obj.stageStates(i).deepCopy(true);
@@ -140,10 +142,21 @@ classdef InitialStateModel < matlab.mixin.SetGet
             stateLogEntry.steeringModel = obj.steeringModels.selectedModel;
             stateLogEntry.throttleModel = obj.throttleModels.selectedModel;
             
-            [~,sensors] = stateLogEntry.launchVehicle.lvdData.sensors.getListboxStr();
+            [~,sensors] = lvdData.sensors.getListboxStr();
             for(i=1:length(sensors))
                 stateLogEntry.sensorStates(end+1) = sensors(i).getInitialState();
             end
+
+            pluginVarsSet = lvdData.pluginVars;
+            numPluginVars = pluginVarsSet.getNumPluginVars();
+            for(i=1:numPluginVars)
+                pluginVar = pluginVarsSet.getPluginVarAtInd(i);
+                pluginVarValue = pluginVar.value;
+
+                stateLogEntry.pluginVarStates(end+1) = LaunchVehiclePluginVarState(pluginVar, pluginVarValue);
+            end
+
+            stateLogEntry.integrationGroup = IntegrationGroup(1);
         end
         
         function optVar = getNewOptVar(obj)

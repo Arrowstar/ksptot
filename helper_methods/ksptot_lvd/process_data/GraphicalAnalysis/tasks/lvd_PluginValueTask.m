@@ -7,9 +7,13 @@ function datapt = lvd_PluginValueTask(stateLogEntry, subTask, plugin, lvdData, i
     stateLog = lvdData.stateLog;
     event = stateLogEntry.event;
     pluginSet = lvdData.plugins;
+    pluginVarSet = lvdData.pluginVars;
     
     switch subTask
         case 'plugin_value'
             datapt = plugin.executePlugin(lvdData, stateLog, event, LvdPluginExecLocEnum.GraphAnalysis, [],[],[], pluginSet.userData, stateLogEntry, inFrame);
+
+        case 'plugin_var_value'
+            pluginVarSet
     end
 end

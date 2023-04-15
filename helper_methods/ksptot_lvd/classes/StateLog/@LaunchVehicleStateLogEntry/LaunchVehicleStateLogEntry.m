@@ -9,7 +9,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
         velocity double = [0;0;0];
         centralBody KSPTOT_BodyInfo
         lvState LaunchVehicleState
-        stageStates = LaunchVehicleStageState.empty(1,0); %LaunchVehicleStageState
+        stageStates LaunchVehicleStageState = LaunchVehicleStageState.empty(1,0);
         event LaunchVehicleEvent
         
         aero LaunchVehicleAeroState
@@ -24,6 +24,8 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
         throttleModel AbstractThrottleModel = ThrottlePolyModel.getDefaultThrottleModel();
         
         sensorStates AbstractSensorState = AbstractSensorState.empty(1,0);
+
+        pluginVarStates(1,:) LaunchVehiclePluginVarState = LaunchVehiclePluginVarState.empty(1,0);
 
         integrationGroup(1,1) IntegrationGroup = IntegrationGroup(0);
     end
@@ -266,6 +268,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             newStateLogEntry.steeringModel = obj.steeringModel;
             newStateLogEntry.throttleModel = obj.throttleModel;
             newStateLogEntry.sensorStates = obj.sensorStates;
+            newStateLogEntry.pluginVarStates = obj.pluginVarStates;
             
             %stuff that requires it's own copy
             newStateLogEntry.lvState = obj.lvState.deepCopy();
@@ -311,7 +314,10 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                 obj.thirdBodyGravity = obj.thirdBodyGravity.copy();
                 obj.srp = obj.srp.copy();
                 obj.sensorStates = obj.sensorStates.copy();
+                obj.pluginVarStates = obj.pluginVarStates.copy();
             end
+
+            obj.integrationGroup = IntegrationGroup(obj.integrationGroup.integrationGroupNum);
         end
         
         function cartElemSet = getCartesianElementSetRepresentation(obj, createObjOfArray)
@@ -430,6 +436,21 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                 end
             end
         end
+
+        function pluginVarState = getPluginVarStateForPluginVar(obj, pluginVar)
+            arguments
+                obj(1,1) LaunchVehicleStateLogEntry
+                pluginVar(1,1) LvdPluginOptimVarWrapper
+            end
+
+            pluginVarState = LaunchVehiclePluginVarState.empty(1,0);
+            for(i=1:length(obj.pluginVarStates))
+                if(pluginVar == obj.pluginVarStates(i).pluginVar)
+                    pluginVarState = obj.pluginVarStates(i);
+                    break;
+                end
+            end
+        end
     end
     
     methods(Access=protected)
@@ -495,10 +516,10 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                 
                 for(j=1:length(stateLogEntry.extremaStates))
                     if(i == 1)
-                        newValue = stateLogEntry.extremaStates(j).value;
+                        newValue(j) = stateLogEntry.extremaStates(j).value; %#ok<AGROW>
                     end
                     
-                    [newValue] = stateLogEntry.extremaStates(j).updateExtremaStateWithStateLogEntry(stateLogEntry, newValue);
+                    newValue(j) = stateLogEntry.extremaStates(j).updateExtremaStateWithStateLogEntry(stateLogEntry, newValue(j)); %#ok<AGROW>
                 end
                 
                 stateLogEntries(i) = stateLogEntry;

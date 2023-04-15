@@ -127,8 +127,11 @@ classdef ConditionalAction < AbstractEventAction
         end
         
         function initAction(obj, initialStateLogEntry)
+            event = initialStateLogEntry.event;
+
             %IF
             for(i=1:length(obj.ifActions))
+                obj.ifActions(i).event = event;
                 obj.ifActions(i).initAction(initialStateLogEntry);
             end
 
@@ -138,12 +141,14 @@ classdef ConditionalAction < AbstractEventAction
                 theseElseIfActions = obj.elseifActions{elseIfCondition};
                     
                 for(j=1:length(theseElseIfActions))
+                    theseElseIfActions(j).event = event;
                     theseElseIfActions(j).initAction(initialStateLogEntry);
                 end                
             end
 
             %ELSE
             for(i=1:length(obj.elseActions))
+                obj.elseActions(i).event = event;
                 obj.elseActions(i).initAction(initialStateLogEntry);
             end
         end
@@ -155,6 +160,35 @@ classdef ConditionalAction < AbstractEventAction
         function [tf, vars] = hasActiveOptimVar(obj)
             tf = false;
             vars = AbstractOptimizationVariable.empty(0,1);
+
+            %IF
+            for(i=1:numel(obj.ifActions))
+                [thisTf, theseVars] = obj.ifActions(i).hasActiveOptimVar();
+
+                tf = tf || thisTf;
+                vars = horzcat(vars, theseVars(:)'); %#ok<AGROW>
+            end
+
+            %ELSE IF
+            for(i=1:numel(obj.elseifConditions))
+                elseifCondition = obj.elseifConditions(i);
+                condElseIfActions = obj.elseifActions(elseifCondition);
+
+                for(j=1:nume(condElseIfActions))
+                    [thisTf, theseVars] = condElseIfActions(j).hasActiveOptimVar();
+    
+                    tf = tf || thisTf;
+                    vars = horzcat(vars, theseVars(:)'); %#ok<AGROW>
+                end
+            end
+
+            %ELSE
+            for(i=1:numel(obj.elseActions))
+                [thisTf, theseVars] = obj.elseActions(i).hasActiveOptimVar();
+
+                tf = tf || thisTf;
+                vars = horzcat(vars, theseVars(:)'); %#ok<AGROW>
+            end
         end
     end
     

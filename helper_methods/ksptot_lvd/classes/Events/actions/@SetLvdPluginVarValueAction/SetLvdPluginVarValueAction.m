@@ -26,6 +26,9 @@ classdef SetLvdPluginVarValueAction < AbstractEventAction
             newStateLogEntry = stateLogEntry;
 
             obj.pluginVar.value = obj.pluginValueToSet;
+
+            pluginVarState = newStateLogEntry.getPluginVarStateForPluginVar(obj.pluginVar);
+            pluginVarState.valueAtState = obj.pluginValueToSet;
         end
         
         function initAction(obj, initialStateLogEntry)

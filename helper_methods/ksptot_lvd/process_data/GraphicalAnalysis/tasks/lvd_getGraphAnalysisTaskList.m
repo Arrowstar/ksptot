@@ -1,6 +1,11 @@
 function [taskList] = lvd_getGraphAnalysisTaskList(lvdData, excludeList)
 %lvd_getGraphAnalysisTaskList Summary of this function goes here
 %   Detailed explanation goes here
+    arguments
+        lvdData(1,1) LvdData
+        excludeList
+    end
+
     taskList = ma_getGraphAnalysisTaskList(excludeList);
     taskList = setdiff(taskList,excludeList);
 
@@ -143,6 +148,9 @@ function [taskList] = lvd_getGraphAnalysisTaskList(lvdData, excludeList)
     
     pluginGAStr = lvdData.plugins.getAllPluginGraphAnalysisTaskStrs();
     taskList = horzcat(taskList, pluginGAStr);
+
+    pluginVarGAStr = lvdData.pluginVars.getAllPluginVariableGraphAnalysisTaskStrs();
+    taskList = horzcat(taskList, pluginVarGAStr);
     
     taskList = sort(taskList);
 end
