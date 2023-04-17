@@ -89,7 +89,7 @@ classdef LogicalAndActionConditional < AbstractActionConditional
         end
 
         function nodes = getTreeNodes(obj, parent)
-            nodes(1) = uitreenode(parent, 'Text','AND', 'NodeData',obj);
+            nodes(1) = uitreenode(parent, 'Text','AND', 'NodeData',obj, 'Icon','ampersand.png');
             for(i=1:numel(obj.conditionals))
                 newNodes = obj.conditionals(i).getTreeNodes(nodes(1)); 
                 nodes = horzcat(nodes, newNodes(:)'); %#ok<AGROW>

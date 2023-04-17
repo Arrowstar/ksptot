@@ -89,7 +89,7 @@ classdef LogicalOrActionConditional < AbstractActionConditional
         end
 
         function nodes = getTreeNodes(obj, parent)
-            nodes(1) = uitreenode(parent, 'Text','OR', 'NodeData',obj);
+            nodes(1) = uitreenode(parent, 'Text','OR', 'NodeData',obj, 'Icon','venn-diagram_logical_or.png');
             for(i=1:numel(obj.conditionals))
                 newNodes = obj.conditionals(i).getTreeNodes(nodes(1)); 
                 nodes = horzcat(nodes, newNodes(:)'); %#ok<AGROW>

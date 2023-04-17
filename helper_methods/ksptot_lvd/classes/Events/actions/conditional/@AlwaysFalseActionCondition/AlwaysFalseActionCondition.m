@@ -33,7 +33,7 @@ classdef AlwaysFalseActionCondition < AbstractActionConditional
         end
 
         function node = getTreeNodes(obj, parent)
-            node = uitreenode(parent, 'Text',obj.getListboxStr(), 'NodeData',obj);
+            node = uitreenode(parent, 'Text',obj.getListboxStr(), 'NodeData',obj, 'Icon','cancel.png');
         end
     end
 end

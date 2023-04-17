@@ -7,6 +7,7 @@ classdef QuantityComparisonActionCondition < AbstractActionConditional
         tgtValue(1,1) double
         comparisonType ComparisonTypeEnum
         tol(1,1) double = 0;
+        frame AbstractReferenceFrame
 
         enum(1,1) ConditionalTypeEnum = ConditionalTypeEnum.QuantityComparison;
     end
@@ -16,11 +17,17 @@ classdef QuantityComparisonActionCondition < AbstractActionConditional
     end
 
     methods
-        function obj = QuantityComparisonActionCondition(task, tgtValue, conditionalType, tol)
+        function obj = QuantityComparisonActionCondition(task, tgtValue, conditionalType, tol, frame)
             obj.task = task;
             obj.tgtValue = tgtValue;
             obj.comparisonType = conditionalType;
             obj.tol = tol;
+            obj.frame = frame;
+        end
+
+        function set.frame(obj, newFrame)
+            obj.frame = newFrame;
+            obj.task.frame = newFrame; %#ok<MCSUP>
         end
 
         function [tf, unitStr] = evaluateConditional(obj, stateLogEntry)
@@ -42,6 +49,11 @@ classdef QuantityComparisonActionCondition < AbstractActionConditional
 
             propNames = lvdData.launchVehicle.tankTypes.getFirstThreeTypesCellArr();
             celBodyData = lvdData.celBodyData;
+
+            if(isempty(obj.frame))
+                obj.frame = lvdData.initStateModel.centralBody.getBodyCenteredInertialFrame();
+            end
+            obj.task.frame = obj.frame;
             
             [curStateValue, unitStr, ~] = obj.task.executeTask(stateLogEntry, obj.maTaskList, prevDistTraveled, otherSCId, stationID, propNames, celBodyData);
             
@@ -75,7 +87,7 @@ classdef QuantityComparisonActionCondition < AbstractActionConditional
         end
 
         function node = getTreeNodes(obj, parent)
-            node = uitreenode(parent, 'Text',obj.getListboxStr(), 'NodeData',obj);
+            node = uitreenode(parent, 'Text',obj.getListboxStr(), 'NodeData',obj, 'Icon','calculator.png');
         end
     end
 end
