@@ -32,6 +32,7 @@ classdef EventActionEnum < matlab.mixin.SetGet
         SetSolarRadPressModelAction('Set Solar Radiation Pressure Model', 'SetSolarRadPressPropertiesAction');
         SetPluginVarValueAction('Set Plugin Variable Value', 'SetLvdPluginVarValueAction');
         AddValueToLvdPluginVarValueAction('Add Value to Plugin Variable', 'AddValueToLvdPluginVarValueAction');
+        SetLvdPluginVarGaTaskValueAction('Set Plugin Variable Value to Quantity', 'SetLvdPluginVarGaTaskValueAction');
         SetNextEventAction('Set Next Event', 'SetNextEventAction');
         ConditionalAction('Conditional Action', 'ConditionalAction');
     end
@@ -49,13 +50,11 @@ classdef EventActionEnum < matlab.mixin.SetGet
     end
     
     methods(Static)
-        function termCondStrs = getActionTypeNameStrs()
-            [m,~] = enumeration('EventActionEnum');
-            
-            termCondStrs = {};
-            for(i=1:length(m)) %#ok<*NO4LP>
-                termCondStrs{end+1} = m(i).nameStr; %#ok<AGROW>
-            end
+        function [termCondStrs, m] = getActionTypeNameStrs()
+            m = enumeration('EventActionEnum');
+            [~,I] = sort({m.nameStr});
+            termCondStrs = {m(I).nameStr};
+            m = m(I);
         end
         
         function ind = getIndOfListboxStrsForAction(action)

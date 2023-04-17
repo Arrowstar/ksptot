@@ -103,7 +103,7 @@ classdef BodyFixedFrame < AbstractReferenceFrame
                            
             if(ok == 1)
                 newBodyInfo = sortedBodyInfoArr(selection);
-                newFrame = BodyFixedFrame(newBodyInfo, obj.celBodyData);
+                newFrame = newBodyInfo.getBodyFixedFrame();
             else
                 newFrame = obj;
             end

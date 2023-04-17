@@ -64,7 +64,7 @@ classdef AppThemer < matlab.mixin.SetGet
                 app(1,1) matlab.apps.AppBase
             end
 
-            figPropStrs=properties(app);
+            figPropStrs = properties(app);
 
             for(i=1:length(figPropStrs)) %#ok<*NO4LP> 
                 prop = app.(figPropStrs{i});
@@ -151,7 +151,12 @@ classdef AppThemer < matlab.mixin.SetGet
                     AppThemer.themeTree(prop, theme.bgColor, theme.fontColor);
 
                 otherwise
-                    % warning('Skipping theming of class "%s".\n', class(prop));
+                    if(isa(prop, 'matlab.ui.componentcontainer.ComponentContainer'))
+                        m = methods(class(prop));
+                        if(ismember('themeKsptotComp', m))
+                            prop.themeKsptotComp(obj, theme);
+                        end
+                    end
             end
         end
     end

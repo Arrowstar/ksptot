@@ -730,7 +730,11 @@ classdef LvdData < matlab.mixin.SetGet
             lvdOptim.objFcn.dirType = ObjFcnDirectionTypeEnum.Maximize;
         end
         
-        function initBody = getDefaultInitialBodyInfo(celBodyData)           
+        function initBody = getDefaultInitialBodyInfo(celBodyData)     
+            arguments
+                celBodyData(1,1) CelestialBodyData
+            end
+
             if(isfield(celBodyData,'kerbin'))
                 initBody = celBodyData.kerbin;
             elseif(isfield(celBodyData,'earth'))

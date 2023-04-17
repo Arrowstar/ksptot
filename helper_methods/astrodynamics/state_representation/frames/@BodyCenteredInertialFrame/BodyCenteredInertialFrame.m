@@ -91,7 +91,7 @@ classdef BodyCenteredInertialFrame < AbstractReferenceFrame
                            
             if(ok == 1)
                 newBodyInfo = sortedBodyInfoArr(selection);
-                newFrame = BodyCenteredInertialFrame(newBodyInfo, obj.celBodyData);
+                newFrame = newBodyInfo.getBodyCenteredInertialFrame();
             else
                 newFrame = obj;
             end
