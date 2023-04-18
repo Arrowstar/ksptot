@@ -81,7 +81,7 @@ function datapt = lvd_ThrottleTask(stateLogEntry, subTask, inFrame)
 end
 
 function [totalThrust, thrustForceVector] = getThrustParameters(stateLogEntry)    
-    if(stateLogEntry.event.propagatorObj.canProduceThrust())
+    if(not(isempty(stateLogEntry.event)) && stateLogEntry.event.propagatorObj.canProduceThrust())
         ut = stateLogEntry.time;
         rVect = stateLogEntry.position;
         vVect = stateLogEntry.velocity;
