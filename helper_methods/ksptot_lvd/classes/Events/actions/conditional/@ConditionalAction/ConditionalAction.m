@@ -28,6 +28,7 @@ classdef ConditionalAction < AbstractEventAction
         end
 
         function removeIfAction(obj, action)
+            obj.removeActionVariables(action);
             obj.ifActions(obj.ifActions == action) = [];
         end
 
@@ -50,6 +51,8 @@ classdef ConditionalAction < AbstractEventAction
         end
 
         function addElseIfAction(obj, elseIfCond, action)
+            obj.removeActionVariables(action);
+
             if(obj.elseifActions.isKey(elseIfCond))
                 elseIfActions = obj.elseifActions{elseIfCond};
 
@@ -86,7 +89,17 @@ classdef ConditionalAction < AbstractEventAction
         end
 
         function removeElseAction(obj, action)
+            obj.removeActionVariables(action);
             obj.elseActions(obj.elseActions == action) = [];
+        end
+
+        function removeActionVariables(app, action)
+            [~, vars] = action.hasActiveOptimVar();
+            if(not(isempty(vars)))
+                for(i=1:length(vars))
+                    app.lvdData.optimizer.vars.removeVariable(vars(i));
+                end
+            end
         end
         
         function newStateLogEntry = executeAction(obj, stateLogEntry)
@@ -174,7 +187,11 @@ classdef ConditionalAction < AbstractEventAction
                 elseifCondition = obj.elseifConditions(i);
                 condElseIfActions = obj.elseifActions(elseifCondition);
 
-                for(j=1:nume(condElseIfActions))
+                if(iscell(condElseIfActions))
+                    condElseIfActions = [condElseIfActions{:}];
+                end
+
+                for(j=1:numel(condElseIfActions))
                     [thisTf, theseVars] = condElseIfActions(j).hasActiveOptimVar();
     
                     tf = tf || thisTf;

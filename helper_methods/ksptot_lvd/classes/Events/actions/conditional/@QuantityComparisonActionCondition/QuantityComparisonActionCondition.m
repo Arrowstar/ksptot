@@ -4,16 +4,28 @@ classdef QuantityComparisonActionCondition < AbstractActionConditional
 
     properties
         task GraphicalAnalysisTask
-        tgtValue(1,1) double
-        comparisonType ComparisonTypeEnum
-        tol(1,1) double = 0;
         frame AbstractReferenceFrame
+        comparisonType ComparisonTypeEnum = ComparisonTypeEnum.Equals
+        compareAgainst CompareAgainstEnum = CompareAgainstEnum.NumericConstant;
 
+        %numerical
+        tgtValue(1,1) double
+        
+        %quantity
+        quantCompareTaskStr(1,:) char
+        quantCompareFrame AbstractReferenceFrame
+
+        %tolerance
+        tol(1,1) double = 0;
+    end
+
+    properties(Constant)
+        maTaskList = ma_getGraphAnalysisTaskList(getLvdGAExcludeList());
         enum(1,1) ConditionalTypeEnum = ConditionalTypeEnum.QuantityComparison;
     end
 
-    properties(Constant, Transient)
-        maTaskList = ma_getGraphAnalysisTaskList(getLvdGAExcludeList());
+    properties(Dependent)
+        qcTask(1,1) GraphicalAnalysisTask
     end
 
     methods
@@ -28,6 +40,10 @@ classdef QuantityComparisonActionCondition < AbstractActionConditional
         function set.frame(obj, newFrame)
             obj.frame = newFrame;
             obj.task.frame = newFrame; %#ok<MCSUP>
+        end
+
+        function value = get.qcTask(obj)
+            value = GraphicalAnalysisTask(obj.quantCompareTaskStr, obj.quantCompareFrame);
         end
 
         function [tf, unitStr] = evaluateConditional(obj, stateLogEntry)
@@ -57,21 +73,39 @@ classdef QuantityComparisonActionCondition < AbstractActionConditional
             
             [curStateValue, unitStr, ~] = obj.task.executeTask(stateLogEntry, obj.maTaskList, prevDistTraveled, otherSCId, stationID, propNames, celBodyData);
             
+            if(obj.compareAgainst == CompareAgainstEnum.NumericConstant)
+                compareAgainstValue = obj.tgtValue;
+
+            elseif(obj.compareAgainst == CompareAgainstEnum.GaTaskQuantity)
+                if(isempty(obj.quantCompareTaskStr))
+                    lvdTaskList = lvd_getGraphAnalysisTaskList(lvdData, getLvdGAExcludeList());
+                    obj.quantCompareTaskStr = lvdTaskList{1};
+                end
+
+                if(isempty(obj.quantCompareFrame))
+                    obj.quantCompareFrame = lvdData.initStateModel.centralBody.getBodyCenteredInertialFrame();
+                end
+
+                [compareAgainstValue, ~, ~] = obj.qcTask.executeTask(stateLogEntry, obj.maTaskList, prevDistTraveled, otherSCId, stationID, propNames, celBodyData);
+            else
+                error('Uknown comparison against type: %s', obj.compareAgainst.name);
+            end
+
             switch obj.comparisonType
                 case ComparisonTypeEnum.Equals
-                    tf = abs(obj.tgtValue - curStateValue) < obj.tol; 
+                    tf = abs(compareAgainstValue - curStateValue) < obj.tol; 
 
                 case ComparisonTypeEnum.GreaterThan
-                    tf = curStateValue > obj.tgtValue - obj.tol;
+                    tf = curStateValue > compareAgainstValue - obj.tol;
 
                 case ComparisonTypeEnum.LessThan
-                    tf = curStateValue < obj.tgtValue + obj.tol;
+                    tf = curStateValue < compareAgainstValue + obj.tol;
     
                 case ComparisonTypeEnum.GreaterThanOrEquals
-                    tf = curStateValue >= obj.tgtValue - obj.tol;
+                    tf = curStateValue >= compareAgainstValue - obj.tol;
 
                 case ComparisonTypeEnum.LessThanOrEquals
-                    tf = curStateValue <= obj.tgtValue + obj.tol;
+                    tf = curStateValue <= compareAgainstValue + obj.tol;
 
                 otherwise
                     error('Unknown conditional type: %s\n', obj.comparisonType.name);
@@ -79,11 +113,19 @@ classdef QuantityComparisonActionCondition < AbstractActionConditional
         end
 
         function listboxStr = getListboxStr(obj)
-            listboxStr = sprintf('%s %s %0.3f (+/- %0.3f)', obj.task.getListBoxStr(), obj.comparisonType.symbol, obj.tgtValue, obj.tol);
+            if(obj.compareAgainst == CompareAgainstEnum.NumericConstant)
+                listboxStr = sprintf('%s %s %0.3f (+/- %0.3f)', obj.task.getListBoxStr(), obj.comparisonType.symbol, obj.tgtValue, obj.tol);
+
+            elseif(obj.compareAgainst == CompareAgainstEnum.GaTaskQuantity)
+                listboxStr = sprintf('%s %s %s (+/- %0.3f)', obj.task.getListBoxStr(), obj.comparisonType.symbol, obj.qcTask.getListBoxStr(), obj.tol);
+
+            else
+                error('Uknown comparison against type: %s', obj.compareAgainst.name);
+            end
         end
 
         function condStr = getConditionalString(obj)
-            condStr = sprintf('%s %s %0.3f (+/- %0.3f)', obj.task.getListBoxStr(), obj.comparisonType.symbol, obj.tgtValue, obj.tol);
+            condStr = obj.getListboxStr();
         end
 
         function node = getTreeNodes(obj, parent)

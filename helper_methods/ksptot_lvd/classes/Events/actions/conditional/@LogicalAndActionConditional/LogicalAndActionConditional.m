@@ -26,7 +26,7 @@ classdef LogicalAndActionConditional < AbstractActionConditional
             if(length(obj.conditionals) >= 1)
                 tf = obj.conditionals(1).evaluateConditional(stateLogEntry);
                 for(i=2:length(obj.conditionals))
-                    tf = tf || obj.conditionals(i).evaluateConditional(stateLogEntry);
+                    tf = tf && obj.conditionals(i).evaluateConditional(stateLogEntry);
     
                     if(tf == false)
                         break;
