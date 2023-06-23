@@ -469,6 +469,7 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
             %Execute Event (propagation)
             tPropagate = tic;
             newStateLogEntries = evt.executeEvent(initStateLogEntry, obj.simDriver, tStartPropTime, tStartSimTime, isSparseOutput, activeNonSeqEvts);
+            [newStateLogEntries.integrationGroup] = deal(intGroup);
             stateLog.appendStateLogEntries(newStateLogEntries);
             ttPropagate = toc(tPropagate);
             

@@ -7,8 +7,6 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
     end
     
     properties(Dependent)
-%         relTol(1,1) double
-%         absTol(1,1) double
         simMaxDur(1,1) double
         minAltitude(1,1) double
         maxPropTime(1,1) double
@@ -19,14 +17,6 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
         function obj = LaunchVehicleSimulationDriver(lvdData)
             obj.lvdData = lvdData;
         end
-        
-%         function value = get.relTol(obj)
-%             value = obj.lvdData.settings.intRelTol;
-%         end
-%         
-%         function value = get.absTol(obj)
-%             value = obj.lvdData.settings.intAbsTol;
-%         end
         
         function value = get.simMaxDur(obj)
             value = obj.lvdData.settings.simMaxDur;
