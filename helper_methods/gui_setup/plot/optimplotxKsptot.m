@@ -25,7 +25,7 @@ function stop = optimplotxKsptot(x,optimValues,state,lb,ub,varLabels,lbUsAll,ubU
             lbUsAll = reshape(lbUsAll,size(x));
             ubUsAll = reshape(ubUsAll,size(x));
             xLength = length(x);
-            xlabelText = getString(message('MATLAB:optimfun:funfun:optimplots:LabelNumberOfVariables',sprintf('%g',xLength)));
+            % xlabelText = getString(message('MATLAB:optimfun:funfun:optimplots:LabelNumberOfVariables',sprintf('%g',xLength)));
 
             % Display up to the first 100 values
             if length(x) > 100
@@ -33,7 +33,7 @@ function stop = optimplotxKsptot(x,optimValues,state,lb,ub,varLabels,lbUsAll,ubU
                 lb = lb(1:100);
                 ub = ub(1:100);
                 xLength = length(x);
-                xlabelText = {xlabelText,getString(message('MATLAB:optimfun:funfun:optimplots:LabelShowingOnlyFirst100Variables'))};
+                % xlabelText = {xlabelText,getString(message('MATLAB:optimfun:funfun:optimplots:LabelShowingOnlyFirst100Variables'))};
             end
 
             x = (x-lb)./(ub-lb);
@@ -45,7 +45,7 @@ function stop = optimplotxKsptot(x,optimValues,state,lb,ub,varLabels,lbUsAll,ubU
                 plotxParent = plotx.Parent;
                 title(getString(message('MATLAB:optimfun:funfun:optimplots:TitleCurrentPoint')),'interp','none');
                 ylabel(getString(message('MATLAB:optimfun:funfun:optimplots:LabelCurrentPoint')),'interp','none');
-                xlabel(xlabelText,'interp','none');
+                xlabel('Variable Number','interp','none');
                 set(plotx,'edgecolor','none')
                 set(plotxParent,'xlim',[0,1 + xLength])
                 set(plotx,'Tag','optimplotxksptot');
