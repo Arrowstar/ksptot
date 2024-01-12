@@ -34,6 +34,10 @@ classdef NomadOptions < matlab.mixin.SetGet
         %latin hypercube
         lhSearchInitEvals(1,1) double = NaN;
         lhSearchEvals(1,1) double = NaN;
+
+        %DiscoMADS
+        useDiscoMads(1,1) logical = false;
+        useDiscoMadsRevealHiddenConstrs(1,1) logical = false;
     end
     
     methods 
@@ -97,16 +101,20 @@ classdef NomadOptions < matlab.mixin.SetGet
             options.DISPLAY_STATS = 'BBE TIME OBJ CONS_H H_MAX';
             options.SGTELIB_MODEL_SEARCH = obj.useSurrogateModelSearch;
 
-            % options.DISCO_MADS_OPTIMIZATION = true;
-            % options.DISCO_MADS_HID_CONST = true;
-            % options.QUAD_MODEL_SEARCH = false;
-            % options.BB_MAX_BLOCK_SIZE = 1;
+            options.DISCO_MADS_OPTIMIZATION = obj.useDiscoMads;
+            options.DISCO_MADS_HID_CONST = obj.useDiscoMadsRevealHiddenConstrs;
+            if(obj.useDiscoMads)
+                options.QUAD_MODEL_SEARCH = false;
+                options.BB_MAX_BLOCK_SIZE = 1;
+
+                warning('DiscoMADS functionality is enabled.  This disables parallel processing and the quad model search.');
+            end
 
             if(obj.useSurrogateModelSearch)
                 options.SGTELIB_MODEL_DEFINITION = obj.surrogateOptions.getSurrogateModelDefinitionString();
             end
 
-            if(obj.usesParallel())
+            if(obj.usesParallel() && obj.useDiscoMads == false)
                 options.MEGA_SEARCH_POLL = true;
                 options.MAX_ITERATION_PER_MEGAITERATION = 1;
             end
