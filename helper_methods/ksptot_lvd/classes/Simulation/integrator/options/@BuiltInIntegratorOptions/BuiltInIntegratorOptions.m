@@ -26,6 +26,14 @@ classdef BuiltInIntegratorOptions < AbstractIntegratorOptions
                 options = odeset('MaxStep', obj.MaxStep);
             end
             
+            if(islogical(options.NormControl))
+                if(options.NormControl)
+                    options.NormControl = "on";
+                else
+                    options.NormControl = "off";
+                end
+            end
+
             integratorStepSize = obj.integratorStepSize;
         end
         
