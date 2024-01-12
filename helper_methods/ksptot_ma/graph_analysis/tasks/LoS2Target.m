@@ -34,10 +34,10 @@ function LoS = LoS2Target(stateLogEntry, bodyInfo, eclipseBodyInfo, targetBodyIn
     rVectBodySCwrtSun = scElemSetSun.rVect;
     rVectEclipseBodyBodywrtSun = getPositOfBodyWRTSun(time, eclipseBodyInfo, celBodyData);
 
-    if(norm(rVectBodySCwrtSun) < (norm(rVectEclipseBodyBodywrtSun) - eBodyRad))
-        LoS = 1;
-        return;
-    end
+    % if(norm(rVectBodySCwrtSun) < (norm(rVectEclipseBodyBodywrtSun) - eBodyRad))
+    %     LoS = 1;
+    %     return;
+    % end
 
     rVectTargetwrtSun = getPositOfBodyWRTSun(time, targetBodyInfo, celBodyData);
 
