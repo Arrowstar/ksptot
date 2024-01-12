@@ -93,16 +93,17 @@ classdef NomadOptions < matlab.mixin.SetGet
             options.nm_search = 0;
             options.display_degree = 2;
             options.display_all_eval = 1;
-            options.BB_MAX_BLOCK_SIZE = 100000000;
+            options.BB_MAX_BLOCK_SIZE = 100000000; 
             options.DISPLAY_STATS = 'BBE TIME OBJ CONS_H H_MAX';
             options.SGTELIB_MODEL_SEARCH = obj.useSurrogateModelSearch;
 
+            % options.DISCO_MADS_OPTIMIZATION = true;
+            % options.DISCO_MADS_HID_CONST = true;
+            % options.QUAD_MODEL_SEARCH = false;
+            % options.BB_MAX_BLOCK_SIZE = 1;
+
             if(obj.useSurrogateModelSearch)
                 options.SGTELIB_MODEL_DEFINITION = obj.surrogateOptions.getSurrogateModelDefinitionString();
-%                 options.SGTELIB_MODEL_SEARCH_TRIALS = 1000;
-%                 options.SGTELIB_MAX_POINTS_FOR_MODEL = 100000;
-%                 options.SGTELIB_MIN_POINTS_FOR_MODEL = 1;
-%                 options.SGTELIB_MODEL_RADIUS_FACTOR = 10;
             end
 
             if(obj.usesParallel())
