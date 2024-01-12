@@ -36,8 +36,8 @@ switch state
                 plotconstrviolationParent = plotconstrviolation.Parent;
                 title(getString(message('optim:optimplot:TitleMaxConstrViol', ...
                     sprintf('%g',optimValues.constrviolation))),'interp','none');
-                xlabel(getString(message('optim:optimplot:XlabelIter')),'interp','none');
-                ylabel(getString(message('optim:optimplot:YlabelConstrViol')),'interp','none');
+                xlabel('Iteration','interp','none');
+                ylabel('Constraint Violation','interp','none');
                 set(plotconstrviolation,'Tag','optimplotconstrviolation');
             else
 %                 plotconstrviolation = findobj(get(gca,'Children'),'Tag','optimplotconstrviolation');
