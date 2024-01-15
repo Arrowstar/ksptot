@@ -26,7 +26,7 @@
     <param.output>${PROJECT_ROOT}\deploy\KSPTrajectoryOptimizationTool\for_redistribution</param.output>
     <param.logdir>${PROJECT_ROOT}\deploy\KSPTrajectoryOptimizationTool</param.logdir>
     <param.enable.clean.build>false</param.enable.clean.build>
-    <param.user.defined.mcr.options>-K -R -startmsg,-completemsg</param.user.defined.mcr.options>
+    <param.user.defined.mcr.options>-j -K -R -startmsg,-completemsg</param.user.defined.mcr.options>
     <param.target.type>subtarget.standalone</param.target.type>
     <param.support.packages />
     <param.web.mcr>true</param.web.mcr>
@@ -101,7 +101,7 @@
     </build-deliverables>
     <workflow />
     <matlab>
-      <root>C:\Program Files\MATLAB\R2023a</root>
+      <root>C:\Program Files\MATLAB\R2023b</root>
       <toolboxes>
         <toolbox name="matlabcoder" />
         <toolbox name="embeddedcoder" />

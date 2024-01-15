@@ -24,14 +24,16 @@ classdef ThirdBodyGravityValidator < AbstractLaunchVehicleDataValidator
                     forceModels = evt.forceModelPropagator.forceModels;
                     stateLogEntry = obj.lvdData.stateLog.getFirstStateLogForEvent(evt);
                     
-                    if(ismember(ForceModelsEnum.Gravity3rdBody, forceModels) && ...
-                       isempty(stateLogEntry.thirdBodyGravity.bodies))
-                        warnEvtNoBodiesNums(end+1) =  evt.getEventNum(); %#ok<AGROW>
-                    end
-                    
-                    if(not(ismember(ForceModelsEnum.Gravity3rdBody, forceModels)) && ...
-                       not(isempty(stateLogEntry.thirdBodyGravity.bodies)))
-                        warnEvtHasBodiesNums(end+1) =  evt.getEventNum(); %#ok<AGROW>
+                    if(not(isempty(stateLogEntry)))
+                        if(ismember(ForceModelsEnum.Gravity3rdBody, forceModels) && ...
+                           isempty(stateLogEntry.thirdBodyGravity.bodies))
+                            warnEvtNoBodiesNums(end+1) =  evt.getEventNum(); %#ok<AGROW>
+                        end
+                        
+                        if(not(ismember(ForceModelsEnum.Gravity3rdBody, forceModels)) && ...
+                           not(isempty(stateLogEntry.thirdBodyGravity.bodies)))
+                            warnEvtHasBodiesNums(end+1) =  evt.getEventNum(); %#ok<AGROW>
+                        end
                     end
                 end
             end

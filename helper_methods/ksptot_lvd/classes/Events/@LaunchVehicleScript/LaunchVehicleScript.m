@@ -373,6 +373,24 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
             else
                 stateLog.appendStateLogEntries(initStateLogEntry.deepCopy());
             end
+
+            %basically, if we run out of time and not all events run, then
+            %just grab the last state and set all events to use that as
+            %their one state.  This means all events will have states,
+            %which avoids issues with constraints and objective function
+            %eval.
+            if(not(isempty(obj.nextEventToRun)))
+                eventsWithStates = unique([stateLog.entries.event]);
+                eventsWithNoStates = setdiff(obj.evts, eventsWithStates);
+
+                finalState = stateLog.entries(end);
+                for(i=1:length(eventsWithNoStates))
+                    evtNoState = eventsWithNoStates(i);
+                    finalStateHere = finalState.deepCopy();
+                    finalStateHere.event = evtNoState;
+                    stateLog.appendStateLogEntries(finalStateHere);
+                end
+            end
             
             obj.lastRunExecTime = tPropTime;
             

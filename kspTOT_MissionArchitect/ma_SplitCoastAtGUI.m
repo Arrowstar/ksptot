@@ -91,7 +91,7 @@ function setUpGUIForType(handles, type, minMax)
             getUtTTS = @(a,b) getUtTextTooltip(a,b,handles.splitAtText);
             getUtTTS([],[]);
             
-            hcmenu = uicontextmenu;
+            hcmenu = uicontextmenu(handles.ma_SplitCoastAtGUI);
             hcb1 = @(a,b) getUtAsDateTime(a,b,handles.splitAtText);
             item1 = uimenu(hcmenu,'Label','Enter UT as Date/Time','Callback',hcb1);
             set(handles.splitAtText,'uicontextmenu',hcmenu,'Callback',getUtTTS);
