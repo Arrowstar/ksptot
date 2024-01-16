@@ -118,7 +118,14 @@ classdef LvdCaseMatrixTask < matlab.mixin.SetGet
             obj.taskOutputMessage = '';
         end
         
-        function [runFinalStatus, message, obj] = runTask(obj, outputXlsFile)            
+        function [runFinalStatus, message, obj] = runTask(obj, outputXlsFile)
+            [folderName,name,~] = fileparts(obj.lvdFilePath);
+            dName = fullfile(folderName,sprintf('%s_running.log',name));
+            diary('off'); 
+            diary(dName);
+            disp(dName);
+            disp('This log file records the MATLAB diary for each run as it processes it.');
+
             if(obj.areAllPreReqsSatisfied())
                 if(obj.numAttempts <= 1)
                     lvdData = obj.caseMatrix.getNearestCompletedTaskLvdDataToTask(obj);
@@ -148,6 +155,8 @@ classdef LvdCaseMatrixTask < matlab.mixin.SetGet
                 catch ME
                     exitflag = -Inf;
                     message = sprintf('Run failed due to error: %s', ME.message);
+                    disp(message);
+                    disp(ME.stack(1));
                 end
                 
                 if(exitflag > 0)
@@ -241,6 +250,8 @@ classdef LvdCaseMatrixTask < matlab.mixin.SetGet
                 catch ME
                     runFinalStatus = LvdCaseMatrixTaskRunStatusEnum.RunFailedDueToError;
                     message = sprintf('Run failed due to error: %s', ME.message);
+                    disp(message);
+                    disp(ME.stack(1));
                 end
             end
             

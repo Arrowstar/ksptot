@@ -388,19 +388,12 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             
             hold(dAxes,'off');
             
-            if(not(viewProfile.updateViewAxesLimits))
-%                 setappdata(handles.ma_LvdMainGUI,'dispOrbitXLim',xlim(dAxes));
-%                 setappdata(handles.ma_LvdMainGUI,'dispOrbitYLim',ylim(dAxes));
-%                 setappdata(handles.ma_LvdMainGUI,'dispOrbitZLim',zlim(dAxes));
-                
-%                 zoom reset;
-                
-%                 view(dAxes,viewProfile.viewAzEl);
-                
+            if(not(viewProfile.updateViewAxesLimits))                
                 camPos = viewProfile.viewCameraPosition;
                 camTgt = viewProfile.viewCameraTarget;
                 camUpVec = viewProfile.viewCameraUpVector;
                 camVA = viewProfile.viewCameraViewAngle;
+                
                 if(not(any(isnan(camPos))))
                     dAxes.CameraPosition = camPos;
                 end
@@ -415,18 +408,7 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                 
                 if(not(any(isnan(camVA))))
                     dAxes.CameraViewAngle = camVA;
-                end
-                
-%                 if(any(isnan(viewProfile.viewZoomAxLims)))
-%                     viewProfile.viewZoomAxLims = [xlim(dAxes);
-%                                                   ylim(dAxes);
-%                                                   zlim(dAxes)];
-%                 else
-%                     dAxes.XLim = viewProfile.viewZoomAxLims(1,:);
-%                     dAxes.YLim = viewProfile.viewZoomAxLims(2,:);
-%                     dAxes.ZLim = viewProfile.viewZoomAxLims(3,:);
-%                 end
-%                 
+                end           
             else
                 cameratoolbar(hFig, 'ResetCamera');
                 view(dAxes, 3);

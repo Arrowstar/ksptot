@@ -163,7 +163,8 @@ classdef LvdCaseMatrix < matlab.mixin.SetGet
                     try
                         obj.updateFailedTaskWithFitXVector(task);
                     catch ME
-                        %nothing, just don't do anything here
+                        disp(message);
+                        disp(ME.stack(1));
                     end
                 end
             end
