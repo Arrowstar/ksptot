@@ -641,12 +641,17 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
                         
             obj.setPropTypeEnum();
             
-            if(isempty(obj.bodyInertialFrameCache) || isempty(obj.bodyInertialFrameCache.getOriginBody()))
+            if(isempty(obj.bodyInertialFrameCache))
                 obj.bodyInertialFrameCache = BodyCenteredInertialFrame(obj, obj.celBodyData);
+
+            elseif(isempty(obj.bodyInertialFrameCache.getOriginBody()))
+                obj.bodyInertialFrameCache.setOriginBody(obj);
             end
             
-            if(isempty(obj.bodyFixedFrameCache) || isempty(obj.bodyFixedFrameCache.getOriginBody()))
+            if(isempty(obj.bodyFixedFrameCache))
                 obj.bodyFixedFrameCache = BodyFixedFrame(obj, obj.celBodyData);
+            elseif(isempty(obj.bodyFixedFrameCache.getOriginBody()))
+                obj.bodyFixedFrameCache.setOriginBody(obj);
             end
             
             if(obj.propTypeEnum == BodyPropagationTypeEnum.TwoBody)
