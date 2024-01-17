@@ -412,6 +412,11 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             else
                 cameratoolbar(hFig, 'ResetCamera');
                 view(dAxes, 3);
+
+                viewProfile.viewCameraPosition = dAxes.CameraPosition;
+                viewProfile.viewCameraTarget = dAxes.CameraTarget;
+                viewProfile.viewCameraUpVector = dAxes.CameraUpVector;
+                viewProfile.viewCameraViewAngle = dAxes.CameraViewAngle;
             end
                         
             vehPosVelData = LaunchVehicleViewProfile.createVehPosVelData(subStateLogs, lvdData.script.evts, viewInFrame);

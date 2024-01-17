@@ -329,7 +329,11 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
             parentGM = obj.parentGmuCache;
         end
         
-        function chain = getOrbitElemsChain(obj)            
+        function chain = getOrbitElemsChain(obj)
+            if(obj.orbitElemsChainCache{1}(end) ~= 0)
+                obj.generateOrbitChainCache();
+            end
+
             chain = obj.orbitElemsChainCache;
         end
 
