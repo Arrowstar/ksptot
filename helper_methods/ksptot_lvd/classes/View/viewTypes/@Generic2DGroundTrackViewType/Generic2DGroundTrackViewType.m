@@ -94,8 +94,8 @@ classdef Generic2DGroundTrackViewType < AbstractTrajectoryViewType
                 c.DataTipTemplate.DataTipRows(1).Label = 'Longitude [deg]';
                 c.DataTipTemplate.DataTipRows(2).Label = 'Latitude [deg]';
                 c.DataTipTemplate.DataTipRows(3).Label = 'Terrain Elevation [km]';
-                c.FaceAlpha = 0.20;
-                c.EdgeAlpha = 0.20;
+                c.FaceAlpha = 0.25;
+                c.EdgeAlpha = 0.25;
                 colormap(dAxes, 'gray');
 
                 cb = contourcbar(dAxes, "eastoutside", "HitTest","off", "PickableParts","none");

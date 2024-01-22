@@ -70,18 +70,18 @@ classdef LaunchVehicleViewProfileGrdTrkCelBodyData < matlab.mixin.SetGet
                         obj.markerPlot.XData = lonGrd;
                         obj.markerPlot.YData = latGrd;
                     else
-                        l = plot(hAx, lonGrd,latGrd, 'MarkerEdgeColor','k', 'Marker','o', 'MarkerFaceColor',bodyColor);
-                        obj.markerPlot = l;
+                        obj.markerPlot = plot(hAx, lonGrd,latGrd, 'MarkerEdgeColor','k', 'Marker','o', 'MarkerFaceColor',bodyColor);
+                        % obj.markerPlot = l;
                     end
 
                     [year, day, hour, minute, sec] = convertSec2YearDayHrMnSec(time);
                     tString = string(formDateStr(year, day, hour, minute, sec));
 
-                    l.DataTipTemplate.DataTipRows = [dataTipTextRow("Celestial Body", repmat(string(obj.bodyInfo.name), size(obj.markerPlot.XData)));
-                                                      dataTipTextRow("Epoch", tString); 
-                                                      dataTipTextRow("Longitude [deg]", lonGrd);
-                                                      dataTipTextRow("Latitude [deg]", latGrd);
-                                                      dataTipTextRow("Altitude [km]", altGrd)];
+                    obj.markerPlot.DataTipTemplate.DataTipRows = [dataTipTextRow("Celestial Body", repmat(string(obj.bodyInfo.name), size(obj.markerPlot.XData)));
+                                                                  dataTipTextRow("Epoch", tString); 
+                                                                  dataTipTextRow("Longitude [deg]", lonGrd);
+                                                                  dataTipTextRow("Latitude [deg]", latGrd);
+                                                                  dataTipTextRow("Altitude [km]", altGrd)];
                 end
             end
         end

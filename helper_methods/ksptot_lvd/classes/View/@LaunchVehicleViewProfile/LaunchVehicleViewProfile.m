@@ -115,6 +115,10 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         viewCameraTarget(1,3) double = NaN(1,3);
         viewCameraUpVector(1,3) double = NaN(1,3);
         viewCameraViewAngle(1,1) double = NaN(1,1);
+
+        %Grd Track terrain contours
+        showTerrainContours(1,1) logical = false;
+        numTerrainContourLevels(1,1) double = 10;
     end
     
     properties(Transient)
@@ -139,10 +143,6 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         grdObjGrdTrackData(1,:) LaunchVehicleViewProfileGrdTrkGroundObjData = LaunchVehicleViewProfileGrdTrkGroundObjData.empty(1,0);
         celBodyGrdTrackData(1,:) LaunchVehicleViewProfileGrdTrkCelBodyData = LaunchVehicleViewProfileGrdTrkCelBodyData.empty(1,0);
         grdTrackLighting(1,:) LaunchVehicleViewProfileGrdTrackSunLighting = LaunchVehicleViewProfileGrdTrackSunLighting.empty(1,0);
-
-        %Grd Track terrain contours
-        showTerrainContours(1,1) logical = false;
-        numTerrainContourLevels(1,1) double = 10;
 
         userDefinedRefFrames(1,:) 
     end
