@@ -10,9 +10,6 @@ classdef LaunchVehicleViewProfileGroundObjData < matlab.mixin.SetGet
         xInterps(1,:) cell = {};
         yInterps(1,:) cell = {};
         zInterps(1,:) cell = {};
-%         xInterpsSc(1,:) cell = {};
-%         yInterpsSc(1,:) cell = {};
-%         zInterpsSc(1,:) cell = {};
 
         vehPosVelData LaunchVehicleViewPosVelInterp
         
@@ -36,10 +33,6 @@ classdef LaunchVehicleViewProfileGroundObjData < matlab.mixin.SetGet
             obj.xInterps{end+1} = griddedInterpolant(times, rVectsGrdObj(1,:), 'spline', 'linear');
             obj.yInterps{end+1} = griddedInterpolant(times, rVectsGrdObj(2,:), 'spline', 'linear');
             obj.zInterps{end+1} = griddedInterpolant(times, rVectsGrdObj(3,:), 'spline', 'linear');
-            
-%             obj.xInterpsSc{end+1} = griddedInterpolant(times, rVectsSc(1,:), 'spline', 'linear');
-%             obj.yInterpsSc{end+1} = griddedInterpolant(times, rVectsSc(2,:), 'spline', 'linear');
-%             obj.zInterpsSc{end+1} = griddedInterpolant(times, rVectsSc(3,:), 'spline', 'linear');
             
             obj.viewFrames(end+1) = viewInFrame;
             obj.showGrdObjLoS(end+1) = showGrdObjLoS;
@@ -83,16 +76,7 @@ classdef LaunchVehicleViewProfileGroundObjData < matlab.mixin.SetGet
                         hold(hAx,'off');
                     end
                     
-                    if(obj.showGrdObjLoS(i))
-%                         xInterp = obj.xInterpsSc{i};
-%                         xSc = xInterp(time);
-%                         
-%                         yInterp = obj.yInterpsSc{i};
-%                         ySc = yInterp(time);
-%                         
-%                         zInterp = obj.zInterpsSc{i};
-%                         zSc = zInterp(time);
-                        
+                    if(obj.showGrdObjLoS(i))                        
                         xSc = rVect(1, rVectInd);
                         ySc = rVect(2, rVectInd);
                         zSc = rVect(3, rVectInd);

@@ -42,9 +42,10 @@ function timeSliderStateChanged(src,evt, lvdData, handles, app)
         catch ME
             time = src.Value;
         end
-%         disp(time);
+
         time = double(time);
-        hAx = handles.dispAxes;        
+        hAx = app.dispAxes;
+        grdTrkAx = app.GroundTrackAxes;
 
         markerTrajData = lvdData.viewSettings.selViewProfile.markerTrajData;
         markerBodyData = lvdData.viewSettings.selViewProfile.markerBodyData;
@@ -58,6 +59,9 @@ function timeSliderStateChanged(src,evt, lvdData, handles, app)
         planeData = lvdData.viewSettings.selViewProfile.planeData;
         sensorData = lvdData.viewSettings.selViewProfile.sensorData;
         sensorTgtData = lvdData.viewSettings.selViewProfile.sensorTgtData;
+        vehGrdTrkData = lvdData.viewSettings.selViewProfile.vehicleGrdTrackData;
+        celBodyGrdTrackData = lvdData.viewSettings.selViewProfile.celBodyGrdTrackData;
+        grdObjGrdTrkData = lvdData.viewSettings.selViewProfile.grdObjGrdTrackData;
         
 %         notify(app, 'GenericStatusLabelUpdate', GenericStatusLabelUpdate('Drawing Scene...'));
         
@@ -117,11 +121,27 @@ function timeSliderStateChanged(src,evt, lvdData, handles, app)
                 sensorTgtData(i).plotTargetResults(mergedResults, hAx);
             end
         end
+
+        %set vehicle location on ground track
+        if(not(isempty(vehGrdTrkData)))
+            vehGrdTrkData.plotBodyMarkerAtTime(time,grdTrkAx);
+        end
+
+        %plot celestial bodies on ground track
+        for(i=1:length(celBodyGrdTrackData))
+            celBodyGrdTrackData(i).plotCelBodyMarkerAtTime(time, grdTrkAx);
+        end
+
+        %plot grd obj on ground track
+        for(i=1:length(grdObjGrdTrkData))
+            grdObjGrdTrkData(i).plotGrdObjMarkerAtTime(time, grdTrkAx);
+        end
         
         centralBodyData.setCentralBodyRotation(time);
         
 %         notify(app, 'GenericStatusLabelUpdate', GenericStatusLabelUpdate('Creating Light Source...'));
         lvdData.viewSettings.selViewProfile.updateLightPosition(time);
+        lvdData.viewSettings.selViewProfile.grdTrackLighting.updateSunLightingPosition(time);
         
         [year, day, hour, minute, sec] = convertSec2YearDayHrMnSec(time);
         epochStr = formDateStr(year, day, hour, minute, sec);
@@ -140,8 +160,8 @@ function timeSliderStateChanged(src,evt, lvdData, handles, app)
         
         tooltipStr = sprintf('UT = %0.3f sec\n%s\n%s', time, dashes, evtsStr);
         
-        handles.timeSliderValueLabel.String = epochStr;
-        handles.timeSliderValueLabel.TooltipString = tooltipStr;
+        app.timeSliderValueLabel.Text = epochStr;
+        app.timeSliderValueLabel.Tooltip = tooltipStr;
         
         setappdata(app.DispAxesTimeSlider,'lastTime',time);
         drawnow limitrate;

@@ -59,8 +59,16 @@ classdef LaunchVehicleViewProfileTrajectoryData < matlab.mixin.SetGet
                         
                         evtColor = obj.evtColors(i).color;
                         hold(hAx,'on');
-                        obj.markerPlot(end+1) = plot3(hAx, x,y,z, 'd', 'MarkerEdgeColor','k', 'MarkerFaceColor',evtColor);
+                        l = plot3(hAx, x,y,z, 'd', 'MarkerEdgeColor','k', 'MarkerFaceColor',evtColor);
+                        obj.markerPlot(end+1) = l;
                         hold(hAx,'off');
+
+                        [year, day, hour, minute, sec] = convertSec2YearDayHrMnSec(time);
+                        epochStr = string(formDateStr(year, day, hour, minute, sec));
+                        l.DataTipTemplate.DataTipRows = [dataTipTextRow("Epoch", epochStr);
+                                                         dataTipTextRow("X Pos [km]", x);
+                                                         dataTipTextRow("Y Pos [km]", y);
+                                                         dataTipTextRow("Z Pos [km]", z)];
                     end
                 end
             end

@@ -133,12 +133,23 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         
         sensorData(1,:) LaunchVehicleViewProfileSensorData = LaunchVehicleViewProfileSensorData.empty(1,0);
         sensorTgtData(1,:) LaunchVehicleViewProfileSensorTargetData = LaunchVehicleViewProfileSensorTargetData.empty(1,0);
-        
+
+        %Grd Track stuff
+        vehicleGrdTrackData(1,:) LaunchVehicleViewProfileVehicleGrdTrkData = LaunchVehicleViewProfileVehicleGrdTrkData.empty(1,0);
+        grdObjGrdTrackData(1,:) LaunchVehicleViewProfileGrdTrkGroundObjData = LaunchVehicleViewProfileGrdTrkGroundObjData.empty(1,0);
+        celBodyGrdTrackData(1,:) LaunchVehicleViewProfileGrdTrkCelBodyData = LaunchVehicleViewProfileGrdTrkCelBodyData.empty(1,0);
+        grdTrackLighting(1,:) LaunchVehicleViewProfileGrdTrackSunLighting = LaunchVehicleViewProfileGrdTrackSunLighting.empty(1,0);
+
+        %Grd Track terrain contours
+        showTerrainContours(1,1) logical = false;
+        numTerrainContourLevels(1,1) double = 10;
+
         userDefinedRefFrames(1,:) 
     end
     
     properties(Access=private)
         generic3DTrajView(1,1) Generic3DTrajectoryViewType = Generic3DTrajectoryViewType();
+        generic2DGroundTrackView(1,1) Generic2DGroundTrackViewType = Generic2DGroundTrackViewType();
     end
     
     methods
@@ -178,8 +189,19 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
             obj.sensorTgtsToPlot([obj.sensorTgtsToPlot] == target) = [];
         end
         
-        function plotTrajectory(obj, lvdData, handles, app)
-            obj.generic3DTrajView.plotStateLog(obj.orbitNumToPlot, lvdData, obj, handles, app);
+        function plotTrajectory(obj, lvdData, handles, lvdApp)
+            arguments
+                obj(1,1) LaunchVehicleViewProfile
+                lvdData(1,1) LvdData
+                handles(1,1) struct
+                lvdApp(1,1) ma_LvdMainGUI_App
+            end 
+
+            obj.generic3DTrajView.plotStateLog(obj.orbitNumToPlot, lvdData, obj, handles, lvdApp);
+            obj.generic2DGroundTrackView.plotGroundTrack(lvdData, lvdApp);
+
+            timeSlider = lvdApp.DispAxesTimeSlider;
+            timeSlider.ValueChangingFcn(timeSlider, matlab.ui.eventdata.ValueChangingData(timeSlider.Value));
         end
         
         function createTrajectoryMarkerData(obj, subStateLogs, evts)
@@ -452,8 +474,6 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
             lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
             timeSliderCb = @(src,evt) timeSliderStateChanged(src,evt, lvdData, handles, app);
             timeSlider.ValueChangingFcn = timeSliderCb; 
-            
-            timeSlider.ValueChangingFcn(timeSlider, matlab.ui.eventdata.ValueChangingData(timeSlider.Value));
         end
         
         function trajData = createTrajData(obj)

@@ -1,5 +1,5 @@
 classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
-    %Inertial3DTrajectoryViewType Summary of this class goes here
+    %Generic3DTrajectoryViewType Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
@@ -504,10 +504,12 @@ function [childrenHGs] = plotSubStateLog(subStateLog, prevSubStateLog, lvdData, 
             z = z(I);
 
         case EventPlottingMethodEnum.SkipFirstState
+            t = subStateLog(2:end,1);
             x = subStateLog(2:end,2);
             y = subStateLog(2:end,3);
             z = subStateLog(2:end,4);
         case EventPlottingMethodEnum.DoNotPlot
+            t = [];
             x = [];
             y = [];
             z = [];
@@ -515,7 +517,24 @@ function [childrenHGs] = plotSubStateLog(subStateLog, prevSubStateLog, lvdData, 
             error('Unknown event plotting method enum: %s', plotMethodEnum.name);
     end
 
-    plot3(dAxes, x, y, z, 'Color', plotLineColor, 'LineStyle', plotLineStyle, 'LineWidth',plotLineWidth, 'Marker',plotMarkerType, 'MarkerSize',plotMarkerSize, 'MarkerEdgeColor','none', 'MarkerFaceColor',plotLineColor);   
+    l = plot3(dAxes, x, y, z, 'Color', plotLineColor, 'LineStyle', plotLineStyle, 'LineWidth',plotLineWidth, 'Marker',plotMarkerType, 'MarkerSize',plotMarkerSize, 'MarkerEdgeColor','none', 'MarkerFaceColor',plotLineColor);   
+    
+    if(~isempty(t))
+        [year, day, hour, minute, sec] = convertSec2YearDayHrMnSec(t);
+        
+        epochStr = string.empty(1,0);
+        for(i=1:length(t))
+            epochStr(i) = string(formDateStr(year(i), day(i), hour(i), minute(i), sec(i))); %#ok<AGROW>
+        end
+        
+        l.DataTipTemplate.DataTipRows = [dataTipTextRow("Epoch", epochStr);
+                                         dataTipTextRow("X Pos [km]", x);
+                                         dataTipTextRow("Y Pos [km]", y);
+                                         dataTipTextRow("Z Pos [km]", z);
+                                         dataTipTextRow("Event", repmat(string(event.getListboxStr()), size(x)))];
+    end
+    
+    
     childrenHGs = cell(0,4);
 end
 

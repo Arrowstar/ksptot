@@ -5,6 +5,7 @@ classdef LaunchVehicleViewProfileSunLighting < matlab.mixin.SetGet
     properties
         dAxes matlab.graphics.axis.Axes
         viewInFrame AbstractReferenceFrame
+
         hLight(1,:) matlab.graphics.primitive.Light = matlab.graphics.primitive.Light.empty(1,0);
         hSunVectArrow = matlab.graphics.GraphicsPlaceholder.empty(1,0)
     end
@@ -52,4 +53,3 @@ classdef LaunchVehicleViewProfileSunLighting < matlab.mixin.SetGet
         end
     end
 end
-
