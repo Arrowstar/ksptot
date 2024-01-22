@@ -28,6 +28,10 @@ classdef Generic2DGroundTrackViewType < AbstractTrajectoryViewType
             %Grab important properties for reuse
             viewProfile = lvdData.viewSettings.selViewProfile;
 
+            %Set allowed interactions
+            disableDefaultInteractivity(dAxes);
+            dAxes.Interactions = [regionZoomInteraction('Dimensions','xy'), dataTipInteraction];
+
             %Place image of central body on axes
             originBody = viewProfile.frame.getOriginBody();
             I = originBody.getSurfaceTexture();
