@@ -79,7 +79,7 @@ classdef Generic2DGroundTrackViewType < AbstractTrajectoryViewType
                 xl.HitTest="off";
             end
 
-            %Plot contours
+            %Plot terrain elevation contour map, if user desires
             hgi = originBody.getHeightMap();
             if(viewProfile.showTerrainContours && not(isempty(hgi)))               
                 lat = linspace(-pi/2,pi/2,1000);
@@ -88,20 +88,53 @@ classdef Generic2DGroundTrackViewType < AbstractTrajectoryViewType
                 LAT = LAT';
                 LONG = LONG';
     
-                Z = hgi(LAT, LONG);
+                Z = flipud(hgi(LAT, LONG));
 
                 if(all(Z == 0,"all"))
                     warning('When plotting ground track terrain contour map, all elevations were zero.  No terrain has been loaded for %s.', originBody.name);
                 end
 
-                [~,c] = contourf(dAxes, rad2deg(LONG), rad2deg(LAT), flipud(Z), viewProfile.numTerrainContourLevels, '-');
+                %Compute the slope at each point
+                oRad = originBody.radius;
+
+                longDirRad = (long(2) - long(1));
+                lonDirHKm = longDirRad * oRad;
+                latDirHRad = (lat(2) - lat(1));
+                latDirHKm = latDirHRad * oRad;
+                [GX,GY] = gradient(Z, lonDirHKm, latDirHKm); %km/km
+
+                %  Compute the three points needed to find the plane whose
+                %  normal vector we are looking for
+                P1 = cat(3, LONG*oRad, LAT*oRad, Z);
+
+                P2 = P1;
+                P2(:,:,1) = P2(:,:,1) + lonDirHKm;
+                P2(:,:,3) = P2(:,:,3) + GX;
+
+                P3 = P1;
+                P3(:,:,2) = P3(:,:,2) + latDirHKm;
+                P3(:,:,3) = P3(:,:,3) + GY;
+
+                Dir = cross((P2 - P1), (P3 - P1), 3);
+                DirMag = vecnorm(Dir,2,3);
+                DirNorm = Dir .* (1./DirMag);
+
+                upVect = zeros(1,1,3);
+                upVect(1,1,3) = 1;
+                upVectMat = repmat(upVect, width(DirNorm), height(DirNorm));
+                slopeAngles = rad2deg(atan2(vecnorm(cross(DirNorm,upVectMat,3),2,3), dot(DirNorm,upVectMat,3)));
+
+                %Create contour plot and set data labels
+                [~,c] = contourf(dAxes, rad2deg(LONG), rad2deg(LAT), Z, viewProfile.numTerrainContourLevels, '-');
                 c.DataTipTemplate.DataTipRows(1).Label = 'Longitude [deg]';
                 c.DataTipTemplate.DataTipRows(2).Label = 'Latitude [deg]';
                 c.DataTipTemplate.DataTipRows(3).Label = 'Terrain Elevation [km]';
+                c.DataTipTemplate.DataTipRows(4) = dataTipTextRow("Slope [deg]", slopeAngles, '%0.3f');
                 c.FaceAlpha = 0.25;
-                c.EdgeAlpha = 0.25;
+                c.EdgeAlpha = 0.20;
                 colormap(dAxes, 'gray');
 
+                %Create contour plot color bar
                 cb = contourcbar(dAxes, "eastoutside", "HitTest","off", "PickableParts","none");
                 cb.Label.String = "Terrain Elevation [km]";
             end
