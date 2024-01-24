@@ -107,10 +107,6 @@ classdef LaunchVehicleViewProfilePointData < matlab.mixin.SetGet
                     vVect = [vx(:)'; vy(:)'; vz(:)'];
                     
                     subCartElems = CartesianElementSet(boolTimes, rVect, vVect, obj.viewFrame);
-%                     subCartElems = repmat(CartesianElementSet.getDefaultElements(), [1, length(boolTimes)]);
-%                     for(j=1:length(boolTimes))
-%                         subCartElems(j) = CartesianElementSet(boolTimes(j), [x(j);y(j);z(j)], [0;0;0], obj.viewFrame);
-%                     end
 
                     vehElemSet(bool) = subCartElems;
                 end

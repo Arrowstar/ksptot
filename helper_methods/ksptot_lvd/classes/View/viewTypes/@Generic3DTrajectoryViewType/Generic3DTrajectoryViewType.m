@@ -5,7 +5,7 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
     properties
 
     end
-    
+
     methods
         function obj = Generic3DTrajectoryViewType()
             
@@ -20,6 +20,10 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                 handles
                 app ma_LvdMainGUI_App
             end
+
+            %TODO: Add some usful tooltips to data plotted in here (ground objs,
+            %celetial body orbits ,etc.  Turn off tool tips for the mesh spheres
+            %of bodies and atmospheres.
 
             global GLOBAL_AppThemer %#ok<GVMIS>
 

@@ -1,9 +1,9 @@
-classdef LaunchVehicleViewProfileGrdTrkGroundObjData < matlab.mixin.SetGet
-    %LaunchVehicleViewProfileGrdTrkGroundObjData Summary of this class goes here
+classdef LaunchVehicleViewProfileGrdTrkGeomPointData < matlab.mixin.SetGet
+    %LaunchVehicleViewProfileGrdTrkGeomPointData Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
-        groundObj LaunchVehicleGroundObject
+        point AbstractGeometricPoint
         
         timesArr(1,:) cell = {};
         lonInterps(1,:) cell = {};
@@ -14,8 +14,8 @@ classdef LaunchVehicleViewProfileGrdTrkGroundObjData < matlab.mixin.SetGet
     end
     
     methods
-        function obj = LaunchVehicleViewProfileGrdTrkGroundObjData(groundObj)
-            obj.groundObj = groundObj;
+        function obj = LaunchVehicleViewProfileGrdTrkGeomPointData(point)
+            obj.point = point;
             obj.markerPlot = matlab.graphics.GraphicsPlaceholder.empty(1,0);
         end
         
@@ -49,7 +49,7 @@ classdef LaunchVehicleViewProfileGrdTrkGroundObjData < matlab.mixin.SetGet
             obj.altInterps{end+1} = griddedInterpolant(times, alts, 'spline', 'linear');
         end
         
-        function plotGrdObjMarkerAtTime(obj, time, hAx)   
+        function plotGeomPtMarkerAtTime(obj, time, hAx)   
             % delete(obj.markerPlot);
             for(i=1:length(obj.timesArr))
                 times = obj.timesArr{i};
@@ -68,14 +68,13 @@ classdef LaunchVehicleViewProfileGrdTrkGroundObjData < matlab.mixin.SetGet
                         obj.markerPlot.XData = lonGrd;
                         obj.markerPlot.YData = latGrd;
                     else
-                        obj.markerPlot = plot(hAx, lonGrd,latGrd, 'MarkerEdgeColor','k', 'Marker',obj.groundObj.markerShape.shape, 'MarkerFaceColor',obj.groundObj.markerColor.color);
+                        obj.markerPlot = plot(hAx, lonGrd,latGrd, 'MarkerEdgeColor','k', 'Marker',obj.point.markerShape.shape, 'MarkerFaceColor',obj.point.markerColor.color);
                     end
 
                     [year, day, hour, minute, sec] = convertSec2YearDayHrMnSec(time);
                     tString = string(formDateStr(year, day, hour, minute, sec));
 
-                    obj.markerPlot.DataTipTemplate.DataTipRows = [dataTipTextRow("Ground Object", repmat(string(obj.groundObj.name), size(obj.markerPlot.XData)));
-                                                                  dataTipTextRow("Celestial Body", repmat(string(obj.groundObj.centralBodyInfo.name), size(obj.markerPlot.XData)));
+                    obj.markerPlot.DataTipTemplate.DataTipRows = [dataTipTextRow("Geometric Point", repmat(string(obj.point.getName()), size(obj.markerPlot.XData)));
                                                                   dataTipTextRow("Epoch", tString); 
                                                                   dataTipTextRow("Longitude [deg]", lonGrd);
                                                                   dataTipTextRow("Latitude [deg]", latGrd);

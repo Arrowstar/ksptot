@@ -143,6 +143,7 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         grdObjGrdTrackData(1,:) LaunchVehicleViewProfileGrdTrkGroundObjData = LaunchVehicleViewProfileGrdTrkGroundObjData.empty(1,0);
         celBodyGrdTrackData(1,:) LaunchVehicleViewProfileGrdTrkCelBodyData = LaunchVehicleViewProfileGrdTrkCelBodyData.empty(1,0);
         grdTrackLighting(1,:) LaunchVehicleViewProfileGrdTrackSunLighting = LaunchVehicleViewProfileGrdTrackSunLighting.empty(1,0);
+        geomPtGrdTrackData(1,:) LaunchVehicleViewProfileGrdTrkGeomPointData = LaunchVehicleViewProfileGrdTrkGeomPointData.empty(1,0);
 
         userDefinedRefFrames(1,:) 
     end

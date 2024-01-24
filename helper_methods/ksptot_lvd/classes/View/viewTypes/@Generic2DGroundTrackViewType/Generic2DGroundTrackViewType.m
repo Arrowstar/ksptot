@@ -238,8 +238,8 @@ classdef Generic2DGroundTrackViewType < AbstractTrajectoryViewType
             %Plot ground objects on body
             for(i=1:length(viewProfile.groundObjsToPlot))
                 grdObj = viewProfile.groundObjsToPlot(i);
-                grdObjGrdTrackData = LaunchVehicleViewProfileGrdTrkGroundObjData(grdObj);
-                viewProfile.grdObjGrdTrackData(end+1) = grdObjGrdTrackData;
+                geomPtGrdTrackData = LaunchVehicleViewProfileGrdTrkGroundObjData(grdObj);
+                viewProfile.grdObjGrdTrackData(end+1) = geomPtGrdTrackData;
 
                 waypts = grdObj.wayPts;
                 totalTransitTime = [waypts.timeToNextWayPt];
@@ -268,7 +268,43 @@ classdef Generic2DGroundTrackViewType < AbstractTrajectoryViewType
                     lines(j).DataTipTemplate.DataTipRows = [dataTipTextRow("Ground Object", repmat(string(grdObj.name), size(lines(j).XData))); ...
                                                             dataTipTextRow("Celestial Body", repmat(string(grdObj.centralBodyInfo.name), size(lines(j).XData))); ...
                                                             lines(j).DataTipTemplate.DataTipRows];
-                    grdObjGrdTrackData.addData(subTimesOut{j}, subLongsDegOut{j}, subLatsDegOut{j}, subAltsKmOut{j});
+                    geomPtGrdTrackData.addData(subTimesOut{j}, subLongsDegOut{j}, subLatsDegOut{j}, subAltsKmOut{j});
+                end
+            end
+
+            %Plot geometric points on body
+            entries = lvdData.stateLog.getAllEntries();
+            allTimes = unique([entries.time], 'sorted');
+            for(i=1:length(viewProfile.pointsToPlot))
+                pointToPlot = viewProfile.pointsToPlot(i);
+
+                if(pointToPlot.canBePlotted)
+                    geomPtGrdTrackData = LaunchVehicleViewProfileGrdTrkGeomPointData(pointToPlot);
+                    viewProfile.geomPtGrdTrackData(end+1) = geomPtGrdTrackData;
+
+                    ce = pointToPlot.getPositionAtTime(allTimes, [], originBody.getBodyFixedFrame());
+                    ceBodyFixed = ce.convertToFrame(originBody.getBodyFixedFrame());
+                    ge = ceBodyFixed.convertToGeographicElementSet();
+    
+                    allLongsDeg = wrapTo180(rad2deg([ge.long]));
+                    allLatsDeg = rad2deg([ge.lat]);
+                    allAltsKm = [ge.alt];
+    
+                    plotLineColor = pointToPlot.trkLineColor.color;
+                    plotLineStyle = pointToPlot.trkLineSpec.linespec;
+                    plotLineWidth = 1.5;
+                    plotMarkerColor = pointToPlot.markerColor.color;
+                    plotMarkerType = pointToPlot.markerShape.shape;
+                    plotMarkerSize = 1;
+                    plotMethodEnum = EventPlottingMethodEnum.PlotContinuous;
+    
+                    [lines, subLongsDegOut, subLatsDegOut, subAltsKmOut, subTimesOut] = plotLatLongWithAngleWrapping(allTimes, allLongsDeg, allLatsDeg, allAltsKm, dAxes, plotLineColor, plotLineStyle, plotLineWidth, plotMarkerType, plotMarkerSize, plotMethodEnum);
+                    for(j=1:length(lines))
+                        lines(j).MarkerFaceColor = plotMarkerColor;
+                        lines(j).DataTipTemplate.DataTipRows = [dataTipTextRow("Geometric Point", repmat(string(pointToPlot.name), size(lines(j).XData))); ...
+                                                                lines(j).DataTipTemplate.DataTipRows];
+                        geomPtGrdTrackData.addData(subTimesOut{j}, subLongsDegOut{j}, subLatsDegOut{j}, subAltsKmOut{j});
+                    end
                 end
             end
 

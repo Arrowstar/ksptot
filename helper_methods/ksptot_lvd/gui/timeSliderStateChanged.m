@@ -62,6 +62,7 @@ function timeSliderStateChanged(src,evt, lvdData, handles, app)
         vehGrdTrkData = lvdData.viewSettings.selViewProfile.vehicleGrdTrackData;
         celBodyGrdTrackData = lvdData.viewSettings.selViewProfile.celBodyGrdTrackData;
         grdObjGrdTrkData = lvdData.viewSettings.selViewProfile.grdObjGrdTrackData;
+        geomPtGrdTrackData = lvdData.viewSettings.selViewProfile.geomPtGrdTrackData;
         
 %         notify(app, 'GenericStatusLabelUpdate', GenericStatusLabelUpdate('Drawing Scene...'));
         
@@ -135,6 +136,11 @@ function timeSliderStateChanged(src,evt, lvdData, handles, app)
         %plot grd obj on ground track
         for(i=1:length(grdObjGrdTrkData))
             grdObjGrdTrkData(i).plotGrdObjMarkerAtTime(time, grdTrkAx);
+        end
+
+        %plot geometric points on ground track
+        for(i=1:length(geomPtGrdTrackData))
+            geomPtGrdTrackData(i).plotGeomPtMarkerAtTime(time, grdTrkAx);
         end
         
         centralBodyData.setCentralBodyRotation(time);

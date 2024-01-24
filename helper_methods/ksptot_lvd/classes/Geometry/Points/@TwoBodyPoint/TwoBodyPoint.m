@@ -21,12 +21,6 @@ classdef TwoBodyPoint < AbstractGeometricPoint
     
     properties
         timesArr(1,:) cell = {};
-%         xInterps(1,:) cell = {};
-%         yInterps(1,:) cell = {};
-%         zInterps(1,:) cell = {};
-%         vxInterps(1,:) cell = {};
-%         vyInterps(1,:) cell = {};
-%         vzInterps(1,:) cell = {};
 
         smaInterps(1,:) cell = {};
         eccInterps(1,:) cell = {};
@@ -58,24 +52,6 @@ classdef TwoBodyPoint < AbstractGeometricPoint
                 if(any(bool))  
                     boolTimes = time(bool);
                     
-%                     xInterp = obj.xInterps{i};
-%                     x = xInterp(boolTimes);
-%                     
-%                     yInterp = obj.yInterps{i};
-%                     y = yInterp(boolTimes);
-%                     
-%                     zInterp = obj.zInterps{i};
-%                     z = zInterp(boolTimes);
-%                     
-%                     vxInterp = obj.vxInterps{i};
-%                     vx = vxInterp(boolTimes);
-%                     
-%                     vyInterp = obj.vyInterps{i};
-%                     vy = vyInterp(boolTimes);
-%                     
-%                     vzInterp = obj.vzInterps{i};
-%                     vz = vzInterp(boolTimes);
-
                     smaInterp = obj.smaInterps{i};
                     sma = smaInterp(boolTimes);
                     
@@ -96,9 +72,6 @@ classdef TwoBodyPoint < AbstractGeometricPoint
                     
                     bodyInfo = obj.cbArr(i);
                     
-%                     rVect = [x(:)'; y(:)'; z(:)'];
-%                     vVect = [vx(:)'; vy(:)'; vz(:)'];
-                    
                     tru = computeTrueAnomFromMean(mean, ecc);
                     subKepElems = KeplerianElementSet.empty(1,0);
                     for(j=1:length(sma))
@@ -106,11 +79,6 @@ classdef TwoBodyPoint < AbstractGeometricPoint
                     end
                     subCartElems = convertToCartesianElementSet(subKepElems);
 
-%                     subCartElems = CartesianElementSet(boolTimes, rVect, vVect, bodyInfo.getBodyCenteredInertialFrame());
-%                     subCartElems = repmat(CartesianElementSet.getDefaultElements(), [1, length(boolTimes)]);
-%                     for(j=1:length(boolTimes))
-%                         subCartElems(j) = CartesianElementSet(boolTimes(j), [x(j);y(j);z(j)], [vx(j);vy(j);vz(j)], bodyInfo.getBodyCenteredInertialFrame());
-%                     end
                     newCartElems(bool) = subCartElems;
                 end
             end
@@ -322,7 +290,6 @@ classdef TwoBodyPoint < AbstractGeometricPoint
         function addDataToCache(obj, times, smas, eccs, incs, raans, args, means, bodyInfo)
             obj.timesArr{end+1} = times;
             obj.cbArr(end+1) = bodyInfo;
-%             obj.rVectArr{end+1} = rVects;
             
 %             if(length(times) >= 3)
 %                 method = 'linear';
@@ -330,13 +297,6 @@ classdef TwoBodyPoint < AbstractGeometricPoint
 %                 method = 'linear';
 %             end
             method = 'linear';
-            
-%             obj.xInterps{end+1} = griddedInterpolant(times, rVects(:,1), method, 'nearest');
-%             obj.yInterps{end+1} = griddedInterpolant(times, rVects(:,2), method, 'nearest');
-%             obj.zInterps{end+1} = griddedInterpolant(times, rVects(:,3), method, 'nearest');
-%             obj.vxInterps{end+1} = griddedInterpolant(times, vVects(:,1), method, 'nearest');
-%             obj.vyInterps{end+1} = griddedInterpolant(times, vVects(:,2), method, 'nearest');
-%             obj.vzInterps{end+1} = griddedInterpolant(times, vVects(:,3), method, 'nearest');
 
             obj.smaInterps{end+1} = griddedInterpolant(times, smas, method, 'nearest');
             obj.eccInterps{end+1} = griddedInterpolant(times, eccs, method, 'nearest');
@@ -348,13 +308,6 @@ classdef TwoBodyPoint < AbstractGeometricPoint
         
         function clearCache(obj)
             obj.timesArr = {};
-%             
-%             obj.xInterps = {};
-%             obj.yInterps = {};
-%             obj.zInterps = {};
-%             obj.vxInterps = {};
-%             obj.vyInterps = {};
-%             obj.vzInterps = {};
 
             obj.smaInterps = {};
             obj.eccInterps = {};
