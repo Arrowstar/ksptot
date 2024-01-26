@@ -673,7 +673,6 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             
             if(nargout >= 3)
                 if(norm(bodyThrust) > 0)
-%                     body2InertDcm = steeringModel.getBody2InertialDcmAtTime(ut, rVect, vVect, bodyInfo);
                     body2InertDcm = attState.dcm;
                     forceVect = body2InertDcm * bodyThrust;
                 else

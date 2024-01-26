@@ -1,7 +1,7 @@
 function [bodyX, bodyY, bodyZ, R_total] = computeBodyAxesFromEuler(ut, rVect, vVect, bodyInfo, rollAng, pitchAng, yawAng)   
-    R_body_2_ned = eul2rotmARH_mex([yawAng,pitchAng,rollAng],'zyx');
-    [R_ned_2_inert, ~, ~, ~] = computeNedFrame(ut, rVect, bodyInfo);
-	R_total = R_ned_2_inert * R_body_2_ned;
+    R_vehBody_2_ned = eul2rotmARH_mex([yawAng,pitchAng,rollAng],'zyx'); %Vehicle Body Frame -> NED
+    [R_ned_2_bodyInertial, ~, ~, ~] = computeNedFrame(ut, rVect, bodyInfo); %NED -> Body Inertial
+	R_total = R_ned_2_bodyInertial * R_vehBody_2_ned; % Vehicle body -> body inertial
     
     bodyX = R_total(:,1);
     bodyY = R_total(:,2);

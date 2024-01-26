@@ -5,7 +5,9 @@ classdef BodyCenteredInertialFrame < AbstractReferenceFrame
     properties
         bodyInfo KSPTOT_BodyInfo
         celBodyData
-        
+    end
+
+    properties(Dependent)
         bodyRotMatFromGlobalInertialToBodyInertial(3,3) double
     end
     
@@ -17,7 +19,10 @@ classdef BodyCenteredInertialFrame < AbstractReferenceFrame
         function obj = BodyCenteredInertialFrame(bodyInfo, celBodyData)
             obj.bodyInfo = bodyInfo;
             obj.celBodyData = celBodyData;
-            obj.bodyRotMatFromGlobalInertialToBodyInertial = obj.bodyInfo.bodyRotMatFromGlobalInertialToBodyInertial;
+        end
+
+        function value = get.bodyRotMatFromGlobalInertialToBodyInertial(obj)
+            value = obj.bodyInfo.bodyRotMatFromGlobalInertialToBodyInertial;
         end
         
         function [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = getOffsetsWrtInertialOrigin(obj, time, ~, ~)            
@@ -29,12 +34,12 @@ classdef BodyCenteredInertialFrame < AbstractReferenceFrame
             [angVelWrtOrigin, rotMatToInertial] = obj.getAngVelWrtOriginAndRotMatToInertial(time, [], []);
         end
 
-        function rotMatToInertial = getRotMatToInertialAtTime(obj, time, ~, ~)
+        function R_BodyInertial_to_GlobalInertial = getRotMatToInertialAtTime(obj, time, ~, ~)
             if(numel(obj) == 1)
-                rotMatToInertial = repmat(obj.bodyRotMatFromGlobalInertialToBodyInertial, [1, 1, length(time)]);
+                R_BodyInertial_to_GlobalInertial = repmat(obj.bodyRotMatFromGlobalInertialToBodyInertial', [1, 1, length(time)]);
                 
             else
-                rotMatToInertial = NaN([3, 3, length(time)]);
+                R_BodyInertial_to_GlobalInertial = NaN([3, 3, length(time)]);
                 
                 [uniObj,~,ic] = unique(obj,'stable');
                 for(i=1:length(uniObj)) %#ok<*NO4LP> 
@@ -42,7 +47,7 @@ classdef BodyCenteredInertialFrame < AbstractReferenceFrame
                     bool = i == ic;
                     subTimes = time(bool);
                     
-                    rotMatToInertial(:,:,bool) = repmat(subObj.bodyRotMatFromGlobalInertialToBodyInertial, [1, 1, numel(subTimes)]);
+                    R_BodyInertial_to_GlobalInertial(:,:,bool) = repmat(subObj.bodyRotMatFromGlobalInertialToBodyInertial', [1, 1, numel(subTimes)]);
                 end
             end
         end
@@ -119,8 +124,8 @@ classdef BodyCenteredInertialFrame < AbstractReferenceFrame
     end
     
     methods(Static)
-        function obj = loadobj(obj)
-            obj.bodyRotMatFromGlobalInertialToBodyInertial = obj.bodyInfo.bodyRotMatFromGlobalInertialToBodyInertial;
-        end
+        % function obj = loadobj(obj)
+        % 
+        % end
     end
 end

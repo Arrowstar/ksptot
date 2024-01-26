@@ -64,12 +64,14 @@ classdef LaunchVehicleViewProfileRefFrameData < matlab.mixin.SetGet
                     vz = vzInterp(time);
                     
                     vehElemSet = CartesianElementSet(time, [x;y;z], [vx;vy;vz], obj.viewFrame);
-                    [posOffsetOrigin, ~, ~, rotMatToInertial] = obj.refFrame.getRefFrameAtTime(time, vehElemSet, obj.viewFrame);
+                    [posOffsetOrigin, ~, ~, R_RefFrame_to_GlobalInertial] = obj.refFrame.getRefFrameAtTime(time, vehElemSet, obj.viewFrame);
+                    [~, ~, ~, R_ViewFrame_to_GlobalInertial] = obj.viewFrame.getOffsetsWrtInertialOrigin(time, vehElemSet);
+                    VF_M = (R_ViewFrame_to_GlobalInertial' * R_RefFrame_to_GlobalInertial);
                     
                     scaleFactor = obj.refFrame.scaleFactor;
-                    xAxis = [posOffsetOrigin(:), posOffsetOrigin(:) + rotMatToInertial(:,1)*scaleFactor];
-                    yAxis = [posOffsetOrigin(:), posOffsetOrigin(:) + rotMatToInertial(:,2)*scaleFactor];
-                    zAxis = [posOffsetOrigin(:), posOffsetOrigin(:) + rotMatToInertial(:,3)*scaleFactor];
+                    xAxis = [posOffsetOrigin(:), posOffsetOrigin(:) + VF_M(:,1)*scaleFactor];
+                    yAxis = [posOffsetOrigin(:), posOffsetOrigin(:) + VF_M(:,2)*scaleFactor];
+                    zAxis = [posOffsetOrigin(:), posOffsetOrigin(:) + VF_M(:,3)*scaleFactor];
                     
                     if(isempty(obj.markerPlot))
                         hold(hAx,'on');

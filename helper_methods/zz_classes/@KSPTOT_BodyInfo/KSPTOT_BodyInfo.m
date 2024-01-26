@@ -53,8 +53,8 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
         heightmapdeformity(1,1) double = 0; %m
         
         %orientation of inertial frame (spin axis handling)
-        bodyZAxis(3,1) double = [0;0;1];
-        bodyXAxis(3,1) double = [1;0;0];
+        bodyzaxis(3,1) double = [0;0;1];
+        bodyxaxis(3,1) double = [1;0;0];
         bodyRotMatFromGlobalInertialToBodyInertial = [];
         
         %Propagation type
@@ -230,12 +230,12 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
         
         function rotMat = get.bodyRotMatFromGlobalInertialToBodyInertial(obj)
             if(isempty(obj.bodyRotMatFromGlobalInertialToBodyInertial))
-                obj.bodyZAxis = normVector(obj.bodyZAxis);
-                obj.bodyXAxis = normVector(obj.bodyXAxis);
+                obj.bodyzaxis = normVector(obj.bodyzaxis);
+                obj.bodyxaxis = normVector(obj.bodyxaxis);
                 
-                rotY = normVector(crossARH(obj.bodyZAxis, obj.bodyXAxis));
-                rotX = normVector(crossARH(rotY, obj.bodyZAxis));
-                rotMat = [rotX, rotY, obj.bodyZAxis];
+                rotY = normVector(crossARH(obj.bodyzaxis, obj.bodyxaxis));
+                rotX = normVector(crossARH(rotY, obj.bodyzaxis));
+                rotMat = [rotX, rotY, obj.bodyzaxis];
                 
                 obj.bodyRotMatFromGlobalInertialToBodyInertial = rotMat;
             else
@@ -330,7 +330,7 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
         end
         
         function chain = getOrbitElemsChain(obj)
-            if(obj.orbitElemsChainCache{1}(end) ~= 0)
+            if(isempty(obj.orbitElemsChainCache) || obj.orbitElemsChainCache{1}(end) ~= 0)
                 obj.generateOrbitChainCache();
             end
 

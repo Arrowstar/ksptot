@@ -64,52 +64,52 @@ classdef (Abstract) AbstractElementSet < matlab.mixin.SetGet & matlab.mixin.Cust
                     posOffsetOrigin12 = frameToUse.posOffsetOriginCache(:,1);
                     velOffsetOrigin12 = frameToUse.velOffsetOriginCache(:,1);
                     angVelWrtOrigin12 = frameToUse.angVelWrtOriginCache(:,1);
-                    rotMatToInertial12 = frameToUse.rotMatToInertialCache(:,:,1);
+                    R_FrameToUse_to_GlobalInertial = frameToUse.rotMatToInertialCache(:,:,1); %F1 to GI
                 else
-                    [posOffsetOrigin12, velOffsetOrigin12, angVelWrtOrigin12, rotMatToInertial12] = getOffsetsWrtInertialOrigin(frameToUse, times, convertCartElemSet);
+                    [posOffsetOrigin12, velOffsetOrigin12, angVelWrtOrigin12, R_FrameToUse_to_GlobalInertial] = getOffsetsWrtInertialOrigin(frameToUse, times, convertCartElemSet);
 
                     if(numel(times) == 1)
                         frameToUse.timeCache = times;
                         frameToUse.posOffsetOriginCache = posOffsetOrigin12;
                         frameToUse.velOffsetOriginCache = velOffsetOrigin12;
                         frameToUse.angVelWrtOriginCache = angVelWrtOrigin12;
-                        frameToUse.rotMatToInertialCache = rotMatToInertial12;                        
+                        frameToUse.rotMatToInertialCache = R_FrameToUse_to_GlobalInertial;                        
                     end
                 end
             else
                 posOffsetOrigin12 = NaN(3,num);
                 velOffsetOrigin12 = NaN(3,num);
                 angVelWrtOrigin12 = NaN(3,num);
-                rotMatToInertial12 = NaN(3,3,num);
+                R_FrameToUse_to_GlobalInertial = NaN(3,3,num);
                 for(i=1:num) %#ok<*NO4LP> 
-                    [posOffsetOrigin12(:,i), velOffsetOrigin12(:,i), angVelWrtOrigin12(:,i), rotMatToInertial12(:,:,i)] = obj(i).frame.getOffsetsWrtInertialOrigin(obj(i).time, convertCartElemSet(i));
+                    [posOffsetOrigin12(:,i), velOffsetOrigin12(:,i), angVelWrtOrigin12(:,i), R_FrameToUse_to_GlobalInertial(:,:,i)] = obj(i).frame.getOffsetsWrtInertialOrigin(obj(i).time, convertCartElemSet(i));
                 end
             end
 
-            rVect2 = posOffsetOrigin12 + squeeze(pagemtimes(rotMatToInertial12, permute(rVect1, [1 3 2])));
-            vVect2 = velOffsetOrigin12 + squeeze(pagemtimes(rotMatToInertial12, (permute(vVect1 + cross(angVelWrtOrigin12, rVect1), [1 3 2]))));
+            rVect2 = posOffsetOrigin12 + squeeze(pagemtimes(R_FrameToUse_to_GlobalInertial, permute(rVect1, [1 3 2])));
+            vVect2 = velOffsetOrigin12 + squeeze(pagemtimes(R_FrameToUse_to_GlobalInertial, (permute(vVect1 + cross(angVelWrtOrigin12, rVect1), [1 3 2]))));
                        
             %get offsets from frame 3 to frame 2
             if(numel(times) == 1 && numel(toFrame.timeCache) > 0 && toFrame.timeCache(1) == times) %#ok<BDSCI>
                 posOffsetOrigin32 = toFrame.posOffsetOriginCache(:,1);
                 velOffsetOrigin32 = toFrame.velOffsetOriginCache(:,1);
                 angVelWrtOrigin32 = toFrame.angVelWrtOriginCache(:,1);
-                rotMatToInertial32 = toFrame.rotMatToInertialCache(:,:,1);
+                R_ToFrame_To_GlobalInertial = toFrame.rotMatToInertialCache(:,:,1); %VF to GI
             else
-                [posOffsetOrigin32, velOffsetOrigin32, angVelWrtOrigin32, rotMatToInertial32] = getOffsetsWrtInertialOrigin(toFrame, times, convertCartElemSet);
+                [posOffsetOrigin32, velOffsetOrigin32, angVelWrtOrigin32, R_ToFrame_To_GlobalInertial] = getOffsetsWrtInertialOrigin(toFrame, times, convertCartElemSet);
 
                 if(numel(times) == 1)
                     toFrame.timeCache = times;
                     toFrame.posOffsetOriginCache = posOffsetOrigin32;
                     toFrame.velOffsetOriginCache = velOffsetOrigin32;
                     toFrame.angVelWrtOriginCache = angVelWrtOrigin32;
-                    toFrame.rotMatToInertialCache = rotMatToInertial32;                        
+                    toFrame.rotMatToInertialCache = R_ToFrame_To_GlobalInertial;                        
                 end
             end
             
-            rotMatToInertial32_Transpose = permute(rotMatToInertial32, [2 1 3]);
-            rVect3 = squeeze(pagemtimes(rotMatToInertial32_Transpose, permute(rVect2 - posOffsetOrigin32, [1 3 2])));
-            vVect3 = squeeze(pagemtimes(rotMatToInertial32_Transpose, permute(vVect2 - velOffsetOrigin32, [1 3 2]))) - cross(angVelWrtOrigin32, rVect3);
+            R_GlobalInertial_to_ToFrame = permute(R_ToFrame_To_GlobalInertial, [2 1 3]);
+            rVect3 = squeeze(pagemtimes(R_GlobalInertial_to_ToFrame, permute(rVect2 - posOffsetOrigin32, [1 3 2])));
+            vVect3 = squeeze(pagemtimes(R_GlobalInertial_to_ToFrame, permute(vVect2 - velOffsetOrigin32, [1 3 2]))) - cross(angVelWrtOrigin32, rVect3);
 
             createObjOfArrayVal = false;
             if(numel(obj) == 1 && obj.createObjOfArray == true && obj.typeEnum == ElementSetEnum.CartesianElements)

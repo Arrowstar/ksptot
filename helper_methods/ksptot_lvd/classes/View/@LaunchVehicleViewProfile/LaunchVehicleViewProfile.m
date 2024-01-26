@@ -409,7 +409,7 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                                 elemSet(end+1) = ge; %#ok<AGROW>
                             end
                         end
-                        elemSet = convertToFrame(convertToCartesianElementSet(elemSet), viewInFrame);
+                        elemSet = elemSet.convertToCartesianElementSet().convertToFrame(viewInFrame);
 
                         times = [elemSet.time];
                         rVectsGrdObj = [elemSet.rVect];
@@ -701,12 +701,12 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                     entry = evtStateLogEntries(j);
                     
                     %get body axes in view frame
-                    rotMatBodyToInertial = entry.steeringModel.getBody2InertialDcmAtTime(entry.time, entry.position, entry.velocity, entry.centralBody);
+                    R_VehicleBody_2_BodyInertial = entry.steeringModel.getBody2InertialDcmAtTime(entry.time, entry.position, entry.velocity, entry.centralBody);
                     
-                    [~, ~, ~, rotMatToInertial12] = viewInFrame.getOffsetsWrtInertialOrigin(entry.time, cartElem(j));
-                    [~, ~, ~, rotMatToInertial32] = entry.centralBody.getBodyCenteredInertialFrame().getOffsetsWrtInertialOrigin(entry.time, cartElem(j));
+                    [~, ~, ~, R_ViewFrame_to_GlobalInertial] = viewInFrame.getOffsetsWrtInertialOrigin(entry.time, cartElem(j));
+                    [~, ~, ~, R_BodyInertial_to_GlobalInertial] = entry.centralBody.getBodyCenteredInertialFrame().getOffsetsWrtInertialOrigin(entry.time, cartElem(j));
                     
-                    rotMatsBodyToView(:,:,j) = rotMatToInertial12' * rotMatToInertial32 * rotMatBodyToInertial; %body to inertial -> inertial to inertial -> inertial to view frame
+                    rotMatsBodyToView(:,:,j) = R_ViewFrame_to_GlobalInertial' * R_BodyInertial_to_GlobalInertial * R_VehicleBody_2_BodyInertial; %vehicle body to body inertial -> body_inertial -> global inertial -> global inertial to view frame
                 end
                                 
                 switch(evt.plotMethod)

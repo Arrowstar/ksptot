@@ -27,28 +27,22 @@ classdef BodyFixedFrame < AbstractReferenceFrame
             [angVelWrtOrigin, rotMatToInertial] = obj.getAngVelWrtOriginAndRotMatToInertial(time, [], []);
         end
 
-        function rotMatToInertial = getRotMatToInertialAtTime(obj, time, ~, ~)
+        function R_BodyFixed_to_GlobalInertial = getRotMatToInertialAtTime(obj, time, ~, ~)
             if(numel(time) == 1 && obj.rotMatToInertialCacheTime == time)
-                rotMatToInertial = obj.rotMatToInertialCache2;
+                R_BodyFixed_to_GlobalInertial = obj.rotMatToInertialCache2;
             else
                 bi = obj.bodyInfo;
     
                 spinAngle = getBodySpinAngle(bi, time);
                 spinAngle = spinAngle(:)';
                 
-                if(numel(time) == 1)
-                    c = cos(spinAngle);
-                    s = sin(spinAngle);
-                    rotMatToInertial = [c -s 0;  s c 0;  0 0 1] * bi.bodyRotMatFromGlobalInertialToBodyInertial;
+                axang = [repmat([0 0 1], length(time), 1), spinAngle(:)];
+                R_BodyInertialFrame_to_BodyFixedFrame = pagetranspose(axang2rotmARH(axang)); %I'm not sure why this transpose is required here but I assume it has to do with the definition of the frame coming out of axang2rotm().  In any event, it's definitely needed, things get backwards without it.
+                R_BodyFixed_to_GlobalInertial = pagetranspose(pagemtimes(R_BodyInertialFrame_to_BodyFixedFrame, repmat(bi.bodyRotMatFromGlobalInertialToBodyInertial, [1 1 length(time)]))); 
 
+                if(numel(time) == 1)
                     obj.rotMatToInertialCacheTime = time;
-                    obj.rotMatToInertialCache2 = rotMatToInertial;
-                else
-                    zero = permute(zeros(size(spinAngle)), [1 3 2]);
-                    one  = zero + 1;
-                    c = permute(cos(spinAngle), [1 3 2]);
-                    s = permute(sin(spinAngle), [1 3 2]);
-                    rotMatToInertial = pagemtimes([c -s zero;  s c zero;  zero zero one], repmat(bi.bodyRotMatFromGlobalInertialToBodyInertial, [1 1 length(time)]));
+                    obj.rotMatToInertialCache2 = R_BodyFixed_to_GlobalInertial;
                 end
             end
         end
@@ -127,6 +121,13 @@ classdef BodyFixedFrame < AbstractReferenceFrame
         
         function bool = ne(A,B)
             bool = not(eq(A,B));
+        end
+    end
+
+    methods(Static)
+        function obj = loadobj(obj)
+            obj.rotMatToInertialCacheTime = NaN;
+            obj.rotMatToInertialCache2 = NaN(3,3);
         end
     end
 end

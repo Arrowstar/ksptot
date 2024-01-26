@@ -1,5 +1,6 @@
 function [R_ned_2_frame, ned_x, ned_y, ned_z] = computeNedFrameInFrame(rVect)
     %Source: https://en.wikipedia.org/wiki/North_east_down
+    %Returns the rotation from the NED frame to the frame that rVect is in.
     
     rNorm = norm(rVect);
     lambda = AngleZero2Pi(atan2(rVect(2),rVect(1)));

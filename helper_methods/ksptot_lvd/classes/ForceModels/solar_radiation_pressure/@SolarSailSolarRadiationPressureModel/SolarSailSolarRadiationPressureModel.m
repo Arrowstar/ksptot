@@ -87,7 +87,7 @@ classdef SolarSailSolarRadiationPressureModel < AbstractSolarRadiationPressureMo
                 ut = elemSet.time;
                 R_sunif_to_global_inertial = sunif.getRotMatToInertialAtTime(ut,[],[]);
                 R_bci_to_global_inertial = bci.getRotMatToInertialAtTime(ut,[],[]);
-                R_sunif_to_bci = R_bci_to_global_inertial' * R_sunif_to_global_inertial;
+                R_sunif_to_bci = R_bci_to_global_inertial' * R_sunif_to_global_inertial; %<-- Sun inertial frame to central body inertial frame
         
                 fSR = R_sunif_to_bci * fSR;
 

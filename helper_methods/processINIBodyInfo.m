@@ -69,6 +69,19 @@ function [celBodyData] = processINIBodyInfo(celBodyDataFromINI, varargin)
             
         elseif(any(strcmpi(row{3}, {'atmoPressPresses', 'atmoTempTemps', 'atmoTempSunMults', 'latTempBiases', 'latTempSunMults', 'axialtemperaturesunbiases', 'axialtemperaturesunmults', 'eccentricitytemperaturebiases'})))
             continue;
+        elseif(strcmpi(row{3}, 'bodyzaxis') || strcmpi(row{3}, 'bodyxaxis'))
+            entry = str2double(strsplit(row{4},','));
+            entry = entry(:);
+
+            if(isfield(celBodyData,row{1}))
+                celBodyData.(row{1}).(row{3}) = entry;
+            else 
+                celBodyData.(row{1}) = struct();
+                celBodyData.(row{1}) = getNewObjForDataType(dataType);
+                celBodyData.(row{1}).(row{3}) = entry;
+            end
+
+            celBodyData.(row{1}).bodyRotMatFromGlobalInertialToBodyInertial=[];
         else
             if(~checkStrIsNumeric(row{4})) 
                 entry = row{4};

@@ -34,7 +34,7 @@ classdef UserDefinedGeometricFrame < AbstractReferenceFrame
             [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = obj.geometricFrame.getRefFrameAtTime(time, vehElemSet,  baseFrame);
         end
 
-        function rotMatToInertial = getRotMatToInertialAtTime(obj, time, vehElemSet, bodyInfoInertialOrigin)
+        function rotMatToGlobalInertial = getRotMatToInertialAtTime(obj, time, vehElemSet, bodyInfoInertialOrigin)
             arguments
                 obj UserDefinedGeometricFrame
                 time double
@@ -48,7 +48,7 @@ classdef UserDefinedGeometricFrame < AbstractReferenceFrame
                 baseFrame = bodyInfoInertialOrigin.getBodyCenteredInertialFrame();
             end
             
-            rotMatToInertial = obj.geometricFrame.getRotMatToInertialAtTime(time, vehElemSet,  baseFrame);
+            rotMatToGlobalInertial = obj.geometricFrame.getRotMatToInertialAtTime(time, vehElemSet,  baseFrame);
         end
 
         function [angVelWrtOrigin, rotMatToInertial] = getAngVelWrtOriginAndRotMatToInertial(obj, time, vehElemSet, bodyInfoInertialOrigin)

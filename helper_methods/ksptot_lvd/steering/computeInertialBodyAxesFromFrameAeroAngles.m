@@ -10,16 +10,24 @@ function [bodyX, bodyY, bodyZ, R_body_2_inertial] = computeInertialBodyAxesFromF
         baseFrame(1,1) AbstractReferenceFrame
     end
 
-    frame = bodyInfo.getBodyCenteredInertialFrame();
-    ce = CartesianElementSet(ut, rVect, vVect, frame);
+    body_inertial_frame = bodyInfo.getBodyCenteredInertialFrame();
+    ce = CartesianElementSet(ut, rVect, vVect, body_inertial_frame);
     ce = ce.convertToFrame(baseFrame, true);
-    rVectFrame = ce.rVect;
-    vVectFrame = ce.vVect;
+    rVectBaseFrame = ce.rVect;
+    vVectBaseFrame = ce.vVect;
 
-    [R_wind_2_frame, ~, ~, ~] = computeWindFrame(rVectFrame, vVectFrame);
-    R_body_2_wind = eul2rotmARH_mex([angOfSideslip,angOfAttack,bankAng],'zyx');
-    [~,~,~, R_frame_2_inertial] = baseFrame.getOffsetsWrtInertialOrigin(ut, ce);
-    R_body_2_inertial = real(R_frame_2_inertial * R_wind_2_frame * R_body_2_wind);
+    [R_wind_2_BaseFrame, ~, ~, ~] = computeWindFrame(rVectBaseFrame, vVectBaseFrame);
+
+    R_vehicleBodyFrame_2_wind = eul2rotmARH_mex([angOfSideslip,angOfAttack,bankAng],'zyx');
+
+    [~,~,~, R_baseFrame_2_GlobalInertial] = baseFrame.getOffsetsWrtInertialOrigin(ut, ce);
+
+    R_bodyInertialFrame_2_GlobalInertial = body_inertial_frame.getRotMatToInertialAtTime(ut, ce, []);
+    R_GlobalInertial_2_bodyInertialFrame = R_bodyInertialFrame_2_GlobalInertial';
+
+    R_baseFrame_2_BodyInertialFrame = R_GlobalInertial_2_bodyInertialFrame * R_baseFrame_2_GlobalInertial;
+
+    R_body_2_inertial = real(R_baseFrame_2_BodyInertialFrame * R_wind_2_BaseFrame * R_vehicleBodyFrame_2_wind);
     
     bodyX = R_body_2_inertial(:,1);
     bodyY = R_body_2_inertial(:,2);

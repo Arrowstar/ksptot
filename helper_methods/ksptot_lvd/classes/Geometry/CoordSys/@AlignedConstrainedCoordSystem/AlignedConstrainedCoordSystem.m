@@ -25,7 +25,7 @@ classdef AlignedConstrainedCoordSystem < AbstractGeometricCoordSystem
             obj.lvdData = lvdData;
         end
         
-        function [rotMatToInertial] = getCoordSysAtTime(obj, time, vehElemSet, inFrame)
+        function [R_CoordSys_to_GlobalInertial] = getCoordSysAtTime(obj, time, vehElemSet, inFrame)
             aVect = obj.aVector.getVectorAtTime(time, vehElemSet, inFrame);
             
             bool = vecNormARH(aVect) == 0;
@@ -70,7 +70,9 @@ classdef AlignedConstrainedCoordSystem < AbstractGeometricCoordSystem
             end
             aVectR = axang2rotmARH(aVectAA);
 
-            rotMatToInertial = permute(pagemtimes(aVectR, cVectR), [2 1 3]);
+            R_CoordSys_to_InFrame = permute(pagemtimes(aVectR, cVectR), [2 1 3]);
+            R_InFrame_to_GlobalInertial = inFrame.getRotMatToInertialAtTime(time);
+            R_CoordSys_to_GlobalInertial = R_InFrame_to_GlobalInertial * R_CoordSys_to_InFrame;
         end
         
         function name = getName(obj)
