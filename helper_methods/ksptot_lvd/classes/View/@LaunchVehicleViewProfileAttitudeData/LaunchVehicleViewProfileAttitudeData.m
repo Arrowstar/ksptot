@@ -29,7 +29,12 @@ classdef LaunchVehicleViewProfileAttitudeData < matlab.mixin.SetGet
             
         end
         
-        function addData(obj, times, rotMatsBodyToView)            
+        function addData(obj, times, rotMatsBodyToView)     
+            if(length(unique(times)) == 1)
+                times = [times, times+10*eps(times(1))];
+                rotMatsBodyToView = cat(3,rotMatsBodyToView,rotMatsBodyToView);
+            end
+
             obj.timesArr(end+1) = {times};
             
             if(length(times) >= 3)

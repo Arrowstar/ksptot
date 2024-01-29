@@ -25,6 +25,12 @@ classdef LaunchVehicleViewProfilePointData < matlab.mixin.SetGet
         end
         
         function addData(obj, times, rVects, vVects)
+            if(length(unique(times)) == 1)
+                times = [times, times+10*eps(times(1))];
+                rVects = [rVects; rVects];
+                vVects = [vVects; vVects];
+            end
+
             obj.timesArr{end+1} = times;
             
             if(length(times) >= 3)

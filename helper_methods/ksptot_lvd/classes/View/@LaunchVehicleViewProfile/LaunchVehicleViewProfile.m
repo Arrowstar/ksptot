@@ -305,7 +305,7 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                     times = timesInner;
                     rVects = rVectsInner;
 
-                    if(length(unique(times)) > 1)
+                    if(length(unique(times)) >= 1)
                         plot3(dAxes, rVects(1,:), rVects(2,:), rVects(3,:), '-', 'Color',bColorRGB, 'LineWidth',1.5);
                         bodyMarkerData.addData(times, rVects);
                     end
@@ -437,7 +437,7 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                                 error('Unknown event plotting method: %s', EventPlottingMethodEnum.DoNotPlot.name);
                         end
                         
-                        if(length(times) >= 2 && all(diff(times)>0))
+                        if(length(times) >= 1)
                             grdObjData.addData(times, rVectsGrdObj, viewInFrame, obj.showGrdObjLoS);
                         
                             if(obj.showGndTracks)
@@ -503,7 +503,7 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                 if(size(subStateLogs{i},1) > 0)
                     [times, rVects, ~, vVects] = LaunchVehicleViewProfile.parseTrajDataFromSubStateLogs(subStateLogs, i, evts);
                     
-                    if(length(unique(times)) > 1)
+                    if(length(unique(times)) >= 1)
                         for(j=1:length(obj.pointData))
                             obj.pointData(j).addData(times, rVects, vVects);
                         end
@@ -524,7 +524,7 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                 if(size(subStateLogs{i},1) > 0)
                     [times, rVects, ~, vVects] = LaunchVehicleViewProfile.parseTrajDataFromSubStateLogs(subStateLogs, i, evts);
                     
-                    if(length(unique(times)) > 1)
+                    if(length(unique(times)) >= 1)
                         for(j=1:length(obj.vectorData))
                             obj.vectorData(j).addData(times, rVects, vVects);
                         end
@@ -545,7 +545,7 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                 if(size(subStateLogs{i},1) > 0)
                     [times, rVects, ~, vVects] = LaunchVehicleViewProfile.parseTrajDataFromSubStateLogs(subStateLogs, i, evts);
                     
-                    if(length(unique(times)) > 1)
+                    if(length(unique(times)) >= 1)
                         for(j=1:length(obj.refFrameData))
                             obj.refFrameData(j).addData(times, rVects, vVects);
                         end
@@ -566,7 +566,7 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                 if(size(subStateLogs{i},1) > 0)
                     [times, rVects, ~, vVects] = LaunchVehicleViewProfile.parseTrajDataFromSubStateLogs(subStateLogs, i, evts);
                     
-                    if(length(unique(times)) > 1)
+                    if(length(unique(times)) >= 1)
                         for(j=1:length(obj.angleData))
                             obj.angleData(j).addData(times, rVects, vVects);
                         end
@@ -587,7 +587,7 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                 if(size(subStateLogs{i},1) > 0)
                     [times, rVects, ~, vVects] = LaunchVehicleViewProfile.parseTrajDataFromSubStateLogs(subStateLogs, i, evts);
                     
-                    if(length(unique(times)) > 1)
+                    if(length(unique(times)) >= 1)
                         for(j=1:length(obj.planeData))
                             obj.planeData(j).addData(times, rVects, vVects);
                         end
@@ -671,7 +671,7 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                 if(size(subStateLogs{i},1) > 0)
                     [times, rVects, ~, vVects] = LaunchVehicleViewProfile.parseTrajDataFromSubStateLogs(subStateLogs, i, evts);
                     
-                    if(length(unique(times)) > 1)
+                    if(length(unique(times)) >= 1)
                         vehPosVelData.addData(times, rVects, vVects);
                     end
                 end
@@ -731,7 +731,7 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                 [times,I] = sort(times);
                 rotMatsBodyToView = rotMatsBodyToView(:,:,I);
                 
-                if(length(times) >= 2 && all(diff(times)>0))
+                if(length(times) >= 1)
                     vehAttData.addData(times, rotMatsBodyToView);
                 end
             end

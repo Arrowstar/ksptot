@@ -88,12 +88,17 @@ classdef LaunchVehicleViewProfileSensorData < matlab.mixin.SetGet
             obj.timesArr = {};
             obj.sensorStateArr = {};
             
-            events = unique([lvdStateLogEntries.event],'stable');
-            for(i=1:numel(events))
-                event = events(i);
-                eventLogEntries = lvdStateLogEntries([lvdStateLogEntries.event] == event);
+            % events = unique([lvdStateLogEntries.event],'stable');
+            intGroups = unique([lvdStateLogEntries.integrationGroup]);
+            for(i=1:numel(intGroups))
+                intGrp = intGroups(i);
+
+                eventLogEntries = lvdStateLogEntries([lvdStateLogEntries.integrationGroup] == intGrp);
+                event = eventLogEntries(1).event;
                 
                 times = [eventLogEntries.time];
+                [times,ia,~] = unique(times, "stable");
+                eventLogEntries = eventLogEntries(ia);
                 
                 sensorState = AbstractSensorState.empty(1,0);
                 for(j=1:length(eventLogEntries))
@@ -116,7 +121,12 @@ classdef LaunchVehicleViewProfileSensorData < matlab.mixin.SetGet
                         error('Unknown event plotting method: %s', event.plotMethod);
                 end
                 
-                if(length(times) >= 2 && length(unique(times)) > 1)
+                if(length(times) >= 1)
+                    if(length(unique(times)) == 1)
+                        times = [times, times+10*eps(times(1))]; %#ok<AGROW>
+                        sensorState = [sensorState, sensorState]; %#ok<AGROW>
+                    end
+
                     obj.timesArr{end+1} = times;
                     obj.sensorStateArr{end+1} = sensorState;
                 end
