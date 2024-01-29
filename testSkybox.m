@@ -25,8 +25,13 @@ hAx.XTick = [];
 hAx.YTick = [];
 hAx.ZTick = [];
 hAx.Box = "off";
+hAx.XColor = "none";
+hAx.YColor = "none";
+hAx.ZColor = "none";
 camproj(hAx, 'perspective'); %THIS IS REQUIRED TO MAKE A "SKYBOX" WORK!!!
 cameratoolbar(hFig);
+hAx.Clipping = "off";
+hAx.ClippingStyle = "3dbox";
 
 lFh = @(src,evt) updateSkyboxPos(src,evt, hAx);
 addlistener(hAx,'CameraPosition','PostSet', lFh);
@@ -40,7 +45,7 @@ function updateSkyboxPos(~,~, hAx)
 
     cameraPos = campos(hAx);
 
-    if(isempty(skyboxOrigin) || isempty(skyboxRadius) || norm(cameraPos - skyboxOrigin) > 0.9*skyboxRadius) %only update skybox sphere if we get too close to the edge
+    if(isempty(skyboxOrigin) || isempty(skyboxRadius) || norm(cameraPos - skyboxOrigin) > 0.5*skyboxRadius) %only update skybox sphere if we get too close to the edge
         if(not(isempty(SkyBoxSurfHandle)) && isvalid(SkyBoxSurfHandle))
             SkyBoxSurfHandle.Visible = 'off'; %This makes sure that the axes bounds are set without including the skybox.  Just turn the skybox back on later. 
         end
@@ -49,7 +54,7 @@ function updateSkyboxPos(~,~, hAx)
         yBndMaxDistToCamPos = max(abs(cameraPos(2) - ylim(hAx)));
         zBndMaxDistToCamPos = max(abs(cameraPos(3) - zlim(hAx)));
         
-        skyboxSize = 2*max([xBndMaxDistToCamPos, yBndMaxDistToCamPos, zBndMaxDistToCamPos]);
+        skyboxSize = 10*max([xBndMaxDistToCamPos, yBndMaxDistToCamPos, zBndMaxDistToCamPos]);
         
         skyboxOrigin = cameraPos;
         skyboxRadius = skyboxSize;
