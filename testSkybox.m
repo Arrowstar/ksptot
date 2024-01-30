@@ -19,6 +19,7 @@ cameraPos = [-10*scale2,0,0];
 campos(hAx, cameraPos);
 camtarget(hAx, [1,0,0]);
 camva(hAx, 45);
+
 grid(hAx,'off');
 axis(hAx,'equal');
 hAx.XTick = [];
@@ -61,8 +62,7 @@ function updateSkyboxPos(~,~, hAx)
 
         [X,Y,Z] = sphere(30);
         if(isempty(SkyBoxSurfHandle) || not(isvalid(SkyBoxSurfHandle)))
-            I = imread('eso0932a.tif');
-            % I = imread('peppers.png');
+            I = imread('DefaultKspSkyBox.png');
             I = flipud(I);
     
             hold(hAx,'on');

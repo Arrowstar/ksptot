@@ -448,7 +448,6 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             viewProfile.createSensorTargetData(viewInFrame);
             
             viewProfile.configureTimeSlider(minTime, maxTime, subStateLogs, handles, app);
-            hold(dAxes,'off');
 
             switch viewProfile.projType
                 case ViewProjectionTypeEnum.Orthographic
@@ -462,6 +461,28 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
 
             end
 
+            % Experimental skybox
+            if(true || viewProfile.useSkybox)
+                hold(dAxes, 'on');
+                grid(dAxes,'off');
+                axis(dAxes,'equal');
+                dAxes.XTick = [];
+                dAxes.YTick = [];
+                dAxes.ZTick = [];
+                dAxes.Box = "off";
+                dAxes.XColor = "none";
+                dAxes.YColor = "none";
+                dAxes.ZColor = "none";
+                camproj(dAxes, 'perspective'); %THIS IS REQUIRED TO MAKE A "SKYBOX" WORK!!!
+                dAxes.Clipping = "off";
+                dAxes.ClippingStyle = "3dbox";
+
+                lFh = @(src,evt) updateSkyboxPos(src,evt, dAxes, viewProfile);
+                addlistener(dAxes,'CameraPosition','PostSet', lFh);
+                lFh([],[]);
+            end
+
+            %Retheme app to apply axes styling
             if(viewProfile.useThemeForAxes)
                 GLOBAL_AppThemer.themeWidget(dAxes, GLOBAL_AppThemer.selTheme);
                 GLOBAL_AppThemer.themeWidget(app.DisplayAxesGridLayout, GLOBAL_AppThemer.selTheme);
@@ -601,5 +622,51 @@ function plotBodyFixedGrid(dAxes, bodyInfo)
 
     for(i=1:length(xunitTxt))
         text(dAxes, xunitTxt(i),yunitTxt(i),zunitTxt(i), sprintf('%.0f%s', th(i), char(176)));
+    end
+end
+
+function updateSkyboxPos(src,evt, hAx, viewProfile)
+    arguments
+        src
+        evt
+        hAx(1,1) matlab.graphics.axis.Axes
+        viewProfile(1,1) LaunchVehicleViewProfile
+    end
+
+    cameraPos = campos(hAx);
+    cameraTgt = camtarget(hAx);
+    cameraVa = camva(hAx);
+
+    if(isempty(viewProfile.skyboxOrigin) || isempty(viewProfile.skyboxRadius) || isempty(viewProfile.skyBoxSurfHandle) || ~isvalid(viewProfile.skyBoxSurfHandle) || norm(cameraPos - viewProfile.skyboxOrigin) > 0.5*viewProfile.skyboxRadius) %only update skybox sphere if we get too close to the edge
+        if(not(isempty(viewProfile.skyBoxSurfHandle)) && isvalid(viewProfile.skyBoxSurfHandle))
+            viewProfile.skyBoxSurfHandle.Visible = 'off'; %This makes sure that the axes bounds are set without including the skybox.  Just turn the skybox back on later. 
+        end
+    
+        xBndMaxDistToCamPos = max(abs(cameraPos(1) - xlim(hAx)));
+        yBndMaxDistToCamPos = max(abs(cameraPos(2) - ylim(hAx)));
+        zBndMaxDistToCamPos = max(abs(cameraPos(3) - zlim(hAx)));
+        
+        skyboxSize = 1.5*max([xBndMaxDistToCamPos, yBndMaxDistToCamPos, zBndMaxDistToCamPos]);
+        
+        viewProfile.skyboxOrigin = cameraPos;
+        viewProfile.skyboxRadius = skyboxSize;
+
+        [X,Y,Z] = sphere(30);
+        if(isempty(viewProfile.skyBoxSurfHandle) || not(isvalid(viewProfile.skyBoxSurfHandle)))
+            I = imread(viewProfile.skyBoxImgFileName);
+            I = flipud(I);
+    
+            hold(hAx,'on');
+            viewProfile.skyBoxSurfHandle = surf(hAx, skyboxSize*X+cameraPos(1),skyboxSize*Y+cameraPos(2),skyboxSize*Z+cameraPos(3), "EdgeColor","none", "FaceColor","texturemap", 'CData',I, 'FaceLighting','none');
+        else
+            viewProfile.skyBoxSurfHandle.XData = skyboxSize*X+cameraPos(1);
+            viewProfile.skyBoxSurfHandle.YData = skyboxSize*Y+cameraPos(2);
+            viewProfile.skyBoxSurfHandle.ZData = skyboxSize*Z+cameraPos(3);
+            viewProfile.skyBoxSurfHandle.Visible = 'on';
+        end
+
+        campos(hAx, cameraPos);
+        camtarget(hAx, cameraTgt);
+        camva(hAx, cameraVa);
     end
 end

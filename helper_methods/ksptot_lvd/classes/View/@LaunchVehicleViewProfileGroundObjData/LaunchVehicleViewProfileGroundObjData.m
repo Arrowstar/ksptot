@@ -34,10 +34,16 @@ classdef LaunchVehicleViewProfileGroundObjData < matlab.mixin.SetGet
             end
 
             obj.timesArr(end+1) = {times};
+
+            if(length(times) >= 3)
+                method = 'spline';
+            else
+                method = 'linear';
+            end
             
-            obj.xInterps{end+1} = griddedInterpolant(times, rVectsGrdObj(1,:), 'spline', 'linear');
-            obj.yInterps{end+1} = griddedInterpolant(times, rVectsGrdObj(2,:), 'spline', 'linear');
-            obj.zInterps{end+1} = griddedInterpolant(times, rVectsGrdObj(3,:), 'spline', 'linear');
+            obj.xInterps{end+1} = griddedInterpolant(times, rVectsGrdObj(1,:), method, 'linear');
+            obj.yInterps{end+1} = griddedInterpolant(times, rVectsGrdObj(2,:), method, 'linear');
+            obj.zInterps{end+1} = griddedInterpolant(times, rVectsGrdObj(3,:), method, 'linear');
             
             obj.viewFrames(end+1) = viewInFrame;
             obj.showGrdObjLoS(end+1) = showGrdObjLoS;

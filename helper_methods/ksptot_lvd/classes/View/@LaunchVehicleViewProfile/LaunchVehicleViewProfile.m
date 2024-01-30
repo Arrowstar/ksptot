@@ -119,6 +119,10 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         %Grd Track terrain contours
         showTerrainContours(1,1) logical = false;
         numTerrainContourLevels(1,1) double = 10;
+
+        %Skybox
+        useSkybox(1,1) logical = false;
+        skyBoxImgFileName(1,1) string = "DarkStarsSkyBox.png";
     end
     
     properties(Transient)
@@ -146,6 +150,11 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         geomPtGrdTrackData(1,:) LaunchVehicleViewProfileGrdTrkGeomPointData = LaunchVehicleViewProfileGrdTrkGeomPointData.empty(1,0);
 
         userDefinedRefFrames(1,:) 
+
+        %Skybox stuff
+        skyBoxSurfHandle
+        skyboxOrigin 
+        skyboxRadius
     end
     
     properties(Access=private)
@@ -417,6 +426,9 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                         
                         [times,ia,~] = unique(times);
                         rVectsGrdObj = rVectsGrdObj(:,ia);
+                        if(numel(times) == 1 && numel(ia)>1)
+                            rVectsGrdObj = rVectsGrdObj(:,1);
+                        end
 %                         rVectsSc = rVectsSc(:,ia);
 
                         switch(evt.plotMethod)
@@ -425,13 +437,11 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
 
                             case EventPlottingMethodEnum.SkipFirstState
                                 times = times(2:end);
-                                rVectsGrdObj = rVectsGrdObj(2:end,:);
-%                                 rVectsSc = rVectsSc(2:end,:);
+                                rVectsGrdObj = rVectsGrdObj(:,2:end);
                                 
                             case EventPlottingMethodEnum.DoNotPlot
                                 times = [];
                                 rVectsGrdObj = [];
-%                                 rVectsSc = [];
 
                             otherwise
                                 error('Unknown event plotting method: %s', EventPlottingMethodEnum.DoNotPlot.name);
