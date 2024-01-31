@@ -123,6 +123,7 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         %Skybox
         useSkybox(1,1) logical = false;
         skyBoxImgFileName(1,1) string = "DarkStarsSkyBox.png";
+        skyboxRadiusMultiplier(1,1) double {mustBeGreaterThanOrEqual(skyboxRadiusMultiplier,1)} = 1.5;
     end
     
     properties(Transient)
@@ -152,6 +153,7 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         userDefinedRefFrames(1,:) 
 
         %Skybox stuff
+        skyBoxImageI
         skyBoxSurfHandle
         skyboxOrigin 
         skyboxRadius
@@ -164,7 +166,8 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
     
     methods
         function obj = LaunchVehicleViewProfile()
-            
+            % f = @(src,evt) viewprofiletest(src,evt);
+            % addlistener(obj,'viewCameraPosition','PostSet',f);
         end
         
         function removeGrdObjFromList(obj, grdObj)
@@ -795,4 +798,8 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
             end
         end
     end
+end
+
+function viewprofiletest(src,evt)
+    a=1;
 end

@@ -24,7 +24,8 @@ function timeSliderStateChanged(src,evt, lvdData, handles, app)
     if(not(isempty(m)))
         cameratoolbar(app.ma_LvdMainGUI, 'SetMode','nomode');
         app.panPushMenuToggle.State ="off";
-        app.rotatePushMenuToggle.State ="off";
+        app.orbitCameraPushMenuToggle.State ="off";
+        app.rotateCameraPushMenuToggle.State ="off";
         app.zoomOutPushMenuToggle.State ="off";
         app.zoomInPushMenuToggle.State ="off";
     end

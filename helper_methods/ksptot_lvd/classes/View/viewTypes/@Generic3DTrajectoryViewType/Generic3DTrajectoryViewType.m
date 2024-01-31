@@ -2,8 +2,8 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
     %Generic3DTrajectoryViewType Summary of this class goes here
     %   Detailed explanation goes here
     
-    properties
-
+    properties(Transient)
+        skyboxPostCameraPosSetListener
     end
 
     methods
@@ -28,16 +28,20 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             global GLOBAL_AppThemer %#ok<GVMIS>
 
 %             dAxes = app.dispAxes;
-            dAxes = handles.dispAxes;
+            dAxes = app.dispAxes;
             hFig = app.ma_LvdMainGUI;
             celBodyData = lvdData.celBodyData;
             stateLog = lvdData.stateLog;
             
 %             axes(dAxes);
 %             cla(dAxes);
-%             cla(dAxes,'reset');
+            % cla(dAxes,'reset');
             delete(dAxes.Children);
             dAxes.Color = viewProfile.backgroundColor.color;
+
+            % dAxes.CameraPositionMode = "manual";
+            % dAxes.CameraTargetMode = "manual";
+            % dAxes.CameraViewAngleMode = "manual";
             
             hFig.Renderer = viewProfile.renderer.renderer;
             if(viewProfile.renderer == FigureRendererEnum.OpenGL && ~isunix())
@@ -389,40 +393,7 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             set(dAxes,'XTickLabel',[]);
             set(dAxes,'YTickLabel',[]);
             set(dAxes,'ZTickLabel',[]);
-            
-            hold(dAxes,'off');
-            
-            if(not(viewProfile.updateViewAxesLimits))                
-                camPos = viewProfile.viewCameraPosition;
-                camTgt = viewProfile.viewCameraTarget;
-                camUpVec = viewProfile.viewCameraUpVector;
-                camVA = viewProfile.viewCameraViewAngle;
-                
-                if(not(any(isnan(camPos))))
-                    dAxes.CameraPosition = camPos;
-                end
-                
-                if(not(any(isnan(camTgt))))
-                    dAxes.CameraTarget = camTgt;
-                end
-                
-                if(not(any(isnan(camUpVec))))
-                    dAxes.CameraUpVector = camUpVec;
-                end
-                
-                if(not(any(isnan(camVA))))
-                    dAxes.CameraViewAngle = camVA;
-                end           
-            else
-                cameratoolbar(hFig, 'ResetCamera');
-                view(dAxes, 3);
-
-                viewProfile.viewCameraPosition = dAxes.CameraPosition;
-                viewProfile.viewCameraTarget = dAxes.CameraTarget;
-                viewProfile.viewCameraUpVector = dAxes.CameraUpVector;
-                viewProfile.viewCameraViewAngle = dAxes.CameraViewAngle;
-            end
-                        
+                                               
             vehPosVelData = LaunchVehicleViewProfile.createVehPosVelData(subStateLogs, lvdData.script.evts, viewInFrame);
             vehAttData = LaunchVehicleViewProfile.createVehAttitudeData(vehPosVelData, lvdStateLogEntries, lvdData.script.evts, viewInFrame);
             
@@ -462,7 +433,7 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             end
 
             % Experimental skybox
-            if(true || viewProfile.useSkybox)
+            if(viewProfile.useSkybox)
                 hold(dAxes, 'on');
                 grid(dAxes,'off');
                 axis(dAxes,'equal');
@@ -477,9 +448,46 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                 dAxes.Clipping = "off";
                 dAxes.ClippingStyle = "3dbox";
 
-                lFh = @(src,evt) updateSkyboxPos(src,evt, dAxes, viewProfile);
-                addlistener(dAxes,'CameraPosition','PostSet', lFh);
+                delete(obj.skyboxPostCameraPosSetListener);
+
+                lFh = @(src,evt) updateSkyboxPos(src,evt, dAxes, lvdData);
                 lFh([],[]);
+
+                obj.skyboxPostCameraPosSetListener = addlistener(dAxes,'CameraPosition','PostSet', lFh);
+            else
+                delete(obj.skyboxPostCameraPosSetListener);
+                delete(viewProfile.skyBoxSurfHandle);
+            end
+
+            if(not(viewProfile.updateViewAxesLimits))                
+                camPos = viewProfile.viewCameraPosition;
+                camTgt = viewProfile.viewCameraTarget;
+                camUpVec = viewProfile.viewCameraUpVector;
+                camVA = viewProfile.viewCameraViewAngle;
+                
+                if(not(any(isnan(camPos))))
+                    dAxes.CameraPosition = camPos;
+                end
+                
+                if(not(any(isnan(camTgt))))
+                    dAxes.CameraTarget = camTgt;
+                end
+                
+                if(not(any(isnan(camUpVec))))
+                    dAxes.CameraUpVector = camUpVec;
+                end
+                
+                if(not(any(isnan(camVA))))
+                    dAxes.CameraViewAngle = camVA;
+                end           
+            else
+                cameratoolbar(hFig, 'ResetCamera');
+                view(dAxes, 3);
+
+                viewProfile.viewCameraPosition = dAxes.CameraPosition;
+                viewProfile.viewCameraTarget = dAxes.CameraTarget;
+                viewProfile.viewCameraUpVector = dAxes.CameraUpVector;
+                viewProfile.viewCameraViewAngle = dAxes.CameraViewAngle;
             end
 
             %Retheme app to apply axes styling
@@ -625,48 +633,61 @@ function plotBodyFixedGrid(dAxes, bodyInfo)
     end
 end
 
-function updateSkyboxPos(src,evt, hAx, viewProfile)
+function updateSkyboxPos(src,evt, hAx, lvdData)
     arguments
         src
         evt
         hAx(1,1) matlab.graphics.axis.Axes
-        viewProfile(1,1) LaunchVehicleViewProfile
+        lvdData(1,1) LvdData
     end
+
+    viewProfile = lvdData.viewSettings.selViewProfile;
 
     cameraPos = campos(hAx);
     cameraTgt = camtarget(hAx);
     cameraVa = camva(hAx);
 
-    if(isempty(viewProfile.skyboxOrigin) || isempty(viewProfile.skyboxRadius) || isempty(viewProfile.skyBoxSurfHandle) || ~isvalid(viewProfile.skyBoxSurfHandle) || norm(cameraPos - viewProfile.skyboxOrigin) > 0.5*viewProfile.skyboxRadius) %only update skybox sphere if we get too close to the edge
-        if(not(isempty(viewProfile.skyBoxSurfHandle)) && isvalid(viewProfile.skyBoxSurfHandle))
-            viewProfile.skyBoxSurfHandle.Visible = 'off'; %This makes sure that the axes bounds are set without including the skybox.  Just turn the skybox back on later. 
-        end
-    
-        xBndMaxDistToCamPos = max(abs(cameraPos(1) - xlim(hAx)));
-        yBndMaxDistToCamPos = max(abs(cameraPos(2) - ylim(hAx)));
-        zBndMaxDistToCamPos = max(abs(cameraPos(3) - zlim(hAx)));
+    if(viewProfile.useSkybox)
+        if(isempty(viewProfile.skyboxOrigin) || isempty(viewProfile.skyboxRadius) || isempty(viewProfile.skyBoxSurfHandle) || ~isvalid(viewProfile.skyBoxSurfHandle) || norm(cameraPos - viewProfile.skyboxOrigin) > 0.5*viewProfile.skyboxRadius) %only update skybox sphere if we get too close to the edge
+            if(not(isempty(viewProfile.skyBoxSurfHandle)) && isvalid(viewProfile.skyBoxSurfHandle))
+                viewProfile.skyBoxSurfHandle.Visible = 'off'; %This makes sure that the axes bounds are set without including the skybox.  Just turn the skybox back on later. 
+            end
         
-        skyboxSize = 1.5*max([xBndMaxDistToCamPos, yBndMaxDistToCamPos, zBndMaxDistToCamPos]);
+            xBndMaxDistToCamPos = max(abs(cameraPos(1) - xlim(hAx)));
+            yBndMaxDistToCamPos = max(abs(cameraPos(2) - ylim(hAx)));
+            zBndMaxDistToCamPos = max(abs(cameraPos(3) - zlim(hAx)));
+            
+            skyboxSize = viewProfile.skyboxRadiusMultiplier * max([xBndMaxDistToCamPos, yBndMaxDistToCamPos, zBndMaxDistToCamPos]);
+            
+            viewProfile.skyboxOrigin = cameraPos;
+            viewProfile.skyboxRadius = skyboxSize;
+
+            [X,Y,Z] = sphere(30);
+            if(isempty(viewProfile.skyBoxSurfHandle) || not(isvalid(viewProfile.skyBoxSurfHandle)))
+                if(isempty(viewProfile.skyBoxImageI))
+                    I = imread(viewProfile.skyBoxImgFileName);
+                    I = flipud(I);
+                    % I = imresize(I, 1, "bilinear","Antialiasing",true);
+
+                    viewProfile.skyBoxImageI = I;
+                else
+                    I = viewProfile.skyBoxImageI;
+                end
         
-        viewProfile.skyboxOrigin = cameraPos;
-        viewProfile.skyboxRadius = skyboxSize;
-
-        [X,Y,Z] = sphere(30);
-        if(isempty(viewProfile.skyBoxSurfHandle) || not(isvalid(viewProfile.skyBoxSurfHandle)))
-            I = imread(viewProfile.skyBoxImgFileName);
-            I = flipud(I);
+                hold(hAx,'on');
+                viewProfile.skyBoxSurfHandle = surf(hAx, skyboxSize*X+cameraPos(1),skyboxSize*Y+cameraPos(2),skyboxSize*Z+cameraPos(3), "EdgeColor","none", "FaceColor","texturemap", 'CData',I, 'FaceLighting','none');
+            else
+                viewProfile.skyBoxSurfHandle.XData = skyboxSize*X+cameraPos(1);
+                viewProfile.skyBoxSurfHandle.YData = skyboxSize*Y+cameraPos(2);
+                viewProfile.skyBoxSurfHandle.ZData = skyboxSize*Z+cameraPos(3);
+                viewProfile.skyBoxSurfHandle.Visible = 'on';
+            end
     
-            hold(hAx,'on');
-            viewProfile.skyBoxSurfHandle = surf(hAx, skyboxSize*X+cameraPos(1),skyboxSize*Y+cameraPos(2),skyboxSize*Z+cameraPos(3), "EdgeColor","none", "FaceColor","texturemap", 'CData',I, 'FaceLighting','none');
-        else
-            viewProfile.skyBoxSurfHandle.XData = skyboxSize*X+cameraPos(1);
-            viewProfile.skyBoxSurfHandle.YData = skyboxSize*Y+cameraPos(2);
-            viewProfile.skyBoxSurfHandle.ZData = skyboxSize*Z+cameraPos(3);
-            viewProfile.skyBoxSurfHandle.Visible = 'on';
+            camtarget(hAx, cameraTgt);
+            camva(hAx, cameraVa);
+            campos(hAx, cameraPos);
         end
-
-        campos(hAx, cameraPos);
-        camtarget(hAx, cameraTgt);
-        camva(hAx, cameraVa);
+    else
+        delete(viewProfile.skyBoxSurfHandle);
     end
 end
