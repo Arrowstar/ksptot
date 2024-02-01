@@ -18,8 +18,7 @@ plot(hAx, x,y, 'Color','g');
 cameraPos = [-10*scale2,0,0];
 campos(hAx, cameraPos);
 camtarget(hAx, [1,0,0]);
-camva(hAx, 45);
-
+camva(hAx, 10);
 grid(hAx,'off');
 axis(hAx,'equal');
 hAx.XTick = [];
@@ -32,7 +31,7 @@ hAx.ZColor = "none";
 camproj(hAx, 'perspective'); %THIS IS REQUIRED TO MAKE A "SKYBOX" WORK!!!
 cameratoolbar(hFig);
 hAx.Clipping = "off";
-hAx.ClippingStyle = "3dbox";
+hAx.ClippingStyle = "rectangle";
 
 lFh = @(src,evt) updateSkyboxPos(src,evt, hAx);
 addlistener(hAx,'CameraPosition','PostSet', lFh);
@@ -41,28 +40,51 @@ lFh([],[]);
 lFh = @(src,evt) updateCamTgtPos(src,evt, hAx, hFig);
 addlistener(hAx,'CameraPosition','PostSet', lFh);
 
+%
+lFh = @(src,evt) showCameraPosTgtVaTextPreSet(src,evt, hAx, hFig);
+addlistener(hAx,'CameraPosition','PreSet', lFh);
+
+lFh = @(src,evt) showCameraPosTgtVaTextPreSet(src,evt, hAx, hFig);
+addlistener(hAx,'CameraTarget','PreSet', lFh);
+
+lFh = @(src,evt) showCameraPosTgtVaTextPreSet(src,evt, hAx, hFig);
+addlistener(hAx,'CameraViewAngle','PreSet', lFh);
+
+%
+lFh = @(src,evt) showCameraPosTgtVaTextPostSet(src,evt, hAx, hFig);
+addlistener(hAx,'CameraPosition','PostSet', lFh);
+
+lFh = @(src,evt) showCameraPosTgtVaTextPostSet(src,evt, hAx, hFig);
+addlistener(hAx,'CameraTarget','PostSet', lFh);
+
+lFh = @(src,evt) showCameraPosTgtVaTextPostSet(src,evt, hAx, hFig);
+addlistener(hAx,'CameraViewAngle','PostSet', lFh);
+
 function updateSkyboxPos(~,~, hAx)
     global SkyBoxSurfHandle skyboxOrigin skyboxRadius
 
     cameraPos = campos(hAx);
+    cameraTgt = camtarget(hAx);
+    cameraVa = camva(hAx);
 
     if(isempty(skyboxOrigin) || isempty(skyboxRadius) || norm(cameraPos - skyboxOrigin) > 0.5*skyboxRadius) %only update skybox sphere if we get too close to the edge
         if(not(isempty(SkyBoxSurfHandle)) && isvalid(SkyBoxSurfHandle))
-            SkyBoxSurfHandle.Visible = 'off'; %This makes sure that the axes bounds are set without including the skybox.  Just turn the skybox back on later. 
+            SkyBoxSurfHandle.Visible = 'off'; %This makes sure that the axes bounds are set without including the skybox.  Just turn the skybox back o0n later. 
         end
     
         xBndMaxDistToCamPos = max(abs(cameraPos(1) - xlim(hAx)));
         yBndMaxDistToCamPos = max(abs(cameraPos(2) - ylim(hAx)));
         zBndMaxDistToCamPos = max(abs(cameraPos(3) - zlim(hAx)));
         
-        skyboxSize = 10*max([xBndMaxDistToCamPos, yBndMaxDistToCamPos, zBndMaxDistToCamPos]);
+        skyboxSize = 15*max([xBndMaxDistToCamPos, yBndMaxDistToCamPos, zBndMaxDistToCamPos]);
         
         skyboxOrigin = cameraPos;
         skyboxRadius = skyboxSize;
 
         [X,Y,Z] = sphere(30);
         if(isempty(SkyBoxSurfHandle) || not(isvalid(SkyBoxSurfHandle)))
-            I = imread('DefaultKspSkyBox.png');
+            I = imread('eso0932a.tif');
+            % I = imread('peppers.png');
             I = flipud(I);
     
             hold(hAx,'on');
@@ -73,6 +95,10 @@ function updateSkyboxPos(~,~, hAx)
             SkyBoxSurfHandle.ZData = skyboxSize*Z+cameraPos(3);
             SkyBoxSurfHandle.Visible = 'on';
         end
+
+        campos(hAx, cameraPos);
+        camtarget(hAx, cameraTgt);
+        camva(hAx, cameraVa);
     end
 end
 
@@ -90,4 +116,32 @@ function updateCamTgtPos(~,~, hAx, hFig)
             camtarget(hAx, newCamTgt);
         end
     end
+end
+
+function showCameraPosTgtVaTextPreSet(src,evt, hAx,hFig)
+    global hAnnotationCamPosTgtVa
+
+    if(isempty(hAnnotationCamPosTgtVa) || ~isvalid(hAnnotationCamPosTgtVa))
+        hAnnotationCamPosTgtVa = annotation(hFig, 'textbox',[0 0 1 0.1], 'String','Test Text', 'FitBoxToText','off', 'BackgroundColor','w');
+    end
+
+    hAnnotationCamPosTgtVa.Visible = true;
+end
+
+function showCameraPosTgtVaTextPostSet(src,evt, hAx,hFig)
+    global hAnnotationCamPosTgtVa
+
+    cameraPos = campos(hAx);
+    cameraTgt = camtarget(hAx);
+    cameraVa = camva(hAx);
+    [caz,cel] = view(hAx);
+
+    s = sprintf("Camera Position: [%0.3f %0.3f %0.3f] km | Camera Target: [%0.3f %0.3f %0.3f] km | Camera Azimuth: %0.3f deg | Camera Elevation: %0.3f deg | Camera View Angle: %0.3f deg", ...
+                cameraPos(1), cameraPos(2), cameraPos(3), ...
+                cameraTgt(1), cameraTgt(2), cameraTgt(3), ...
+                caz, ...
+                cel, ...
+                cameraVa);
+
+    hAnnotationCamPosTgtVa.String = s;
 end
