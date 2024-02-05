@@ -1,0 +1,486 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>runBeamGVslp</title><meta name="generator" content="MATLAB 8.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2016-11-14"><meta name="DC.source" content="runBeamGVslp.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>runBeamGVslp</h1><!--introduction--><p>Script to Run Gary Vanderplaats cantilever Beam with slp_trust. N beam segments and 2N design variables, taken from Vanderplaats (1984) Example 5-1, pp. 147-150.</p><pre>Trust Region (TR) Strategy follows
+Nocedal, J., and Wright, S.J. Numerical Optimization.
+New York: Springer, 2006.
+Algorithm  4.1 for TR and
+Algorithm 15.1 for filter; and
+Equation (15.4) for the simple L1 merit function</pre><p>TR Approximate Model (TRAM) for adaptive move limits roughly follows Wujek, B. A., and Renaud, J. E. "New Adaptive Move-Limit Management Strategy for Approximate Optimization, Part I," AIAA J. Vol. 36, No. 10, 1998, pp. 1911-1921 except that quadratic approximations are used for objective and constraints and a linear approximation for the merit penalty function (instead of TANA for the merit function) during the "line search" that determines the trust region radius. Also, a custom TR algorithm is used for multi-penalty L1 merit function.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Initialize variables</a></li><li><a href="#2">SLP Trust</a></li><li><a href="#3">other SLP TR methods - 'simple-filter' combination</a></li><li><a href="#4">TrustRegion='merit' - multiple-penalty parameter L1 merit function</a></li><li><a href="#5">TrustRegion='TRAM' - TR adaptive move limit bounds (with merit)</a></li><li><a href="#6">TrustRegion='filter' - TR filter instead of merit descent function</a></li><li><a href="#7">TrustRegion='TRAM-filter' combination</a></li></ul></div><h2>Initialize variables<a name="1"></a></h2><pre class="codeinput">clear; clc
+N = 10;<span class="comment">%[5 10 20 40 50 100 200]; % number of beam segments</span>
+x0 = [5*ones(1,N), 40*ones(1,N)];
+xlb = [ ones(1,N),  5*ones(1,N)];
+</pre><h2>SLP Trust<a name="2"></a></h2><pre>'simple' = exact L1 single penalty, mu*max(0,g) (default)</pre><pre class="codeinput">options.Display = <span class="string">'Iter'</span>;
+options.TolX = .5;
+options.TolFun = 0.5;
+options.TolCon = 1e-4;
+options.MoveLimit = 0.2;
+options.MaxIter = 40;
+<span class="comment">% default options for simple merit function TR algorithm</span>
+[dv1,f1,sta1,out1,lambda1] = slp_trust(@fbeamGV,x0,options,xlb,[],@gbeamGV);
+</pre><pre class="codeoutput"> 
+         Sequential Linear Programming Iteration History
+Iteration      Objective MaxConstraint    Index   Step-size   Merit      MoveLimit  TrustRatio
+        0          1e+05        0.5625     11           0   3.721e+05
+        1          84865         0.328     11           8   2.165e+05        0.2      0.5405  *
+        2          70954        0.2401      9           8   1.995e+05        0.2      0.1179  *
+        3          69210       0.07143     10           4   1.131e+05        0.1      0.6639  *
+        4          65508        0.0427     10           4   9.032e+04        0.1      0.4819  *
+        5          63799       0.05956     10           4   9.032e+04        0.1     -0.4002  + Rejected
+        6          65099       0.01605     10           2   7.461e+04       0.05      0.6232  +
+        7          64215       0.01755     10           2   7.247e+04       0.05      0.2055  +
+        8          64224       0.00331     10           1   6.569e+04      0.025      0.8213  +
+        9          64221      0.003367      8           1   6.569e+04      0.025    -0.06304  + Rejected
+       10          64254     0.0007431     11         0.5   6.448e+04     0.0125      0.8369  +
+       11          64233     0.0007469     11         0.5   6.441e+04     0.0125      0.3073  +
+       12          64232      0.000728     11         0.5   6.441e+04     0.0125     0.02921  + Rejected
+       13          64243     0.0001778     11        0.25   6.428e+04    0.00625      0.7418  +
+       14          64242     0.0001833     11        0.25   6.428e+04    0.00625    0.005044  + Rejected
+       15          64245     4.655e-05     11       0.125   6.426e+04   0.003125      0.7209  +
+       16          64244     4.637e-05     11       0.125   6.426e+04   0.003125     0.09443  + Rejected
+       17          64245     1.168e-05     11      0.0625   6.425e+04   0.001563      0.7413  +
+       18          64245     1.123e-05     11      0.0625   6.425e+04   0.001563     0.09644  + Rejected
+       19          64245       2.8e-06     11     0.03125   6.425e+04  0.0007813      0.7483  +
+       20          64245     2.904e-06     11     0.03125   6.425e+04  0.0007813      0.1554  +
+       21          64245     6.783e-07     11     0.01563   6.425e+04  0.0003906      0.7552  + Bound
+              ----------  ------------         ----------
+    Criteria         0.5        0.0001                0.5
+SLP slowed.    Final objective function value = 64244.9248
+               Lagrangian gradient   2-norm = 2.6499
+               Lagrangian gradient inf-norm = 2.2157
+               Lagrange Multipliers   (j)
+                             74.73     9
+                               578    10
+                          3.16e+04    11
+                             80.85    12
+                             77.05    13
+                             73.94    14
+                             70.54    15
+                             66.66    16
+                             62.01    17
+                             57.37    18
+                             51.23    19
+                             43.21    20
+                             29.52    21
+               Lower    Upper         (i)
+                 3.058           0    11
+                 0.124           0    13
+                0.2319           0    14
+                     0    0.004195    15
+                     0       1.192    16
+                     0     0.01993    17
+                     0      0.3927    18
+Trust Region Strategy uses simple Merit function
+* Dominates prior points
++ Nondominated
+- Dominated by prior point(s)
+</pre><h2>other SLP TR methods - 'simple-filter' combination<a name="3"></a></h2><pre class="codeinput">options.TrustRegion = <span class="string">'simple-filter'</span>;
+options.Contract = 0.2;
+slp_trust(@fbeamGV,x0,options,xlb,[],@gbeamGV);
+</pre><pre class="codeoutput"> 
+         Sequential Linear Programming Iteration History
+Iteration      Objective MaxConstraint    Index   Step-size   Merit      MoveLimit  TrustRatio
+        0          1e+05        0.5625     11           0   3.721e+05
+        1          84865         0.328     11           8   2.165e+05        0.2      0.4168  g *
+        2          70954        0.2401      9           8   1.995e+05        0.2      0.2449  g *
+        3          63631        0.2567     10           8   2.688e+05        0.2     0.07852  g +
+        4          64958        0.0797     10           4   9.849e+04        0.1      0.6896  g +
+        5          64449       0.03887     11           4   9.835e+04        0.1     -0.1494  g +
+        6          64326       0.01176     11           2   6.717e+04       0.05      0.6773  f +
+        7          64023       0.01385     11           2   6.839e+04       0.05      -0.178  g +
+        8          64198      0.002848     11           1   6.486e+04      0.025      0.7944  g +
+        9          64179      0.002776     11           1   6.482e+04      0.025      0.0254  g +
+       10          64227     0.0006981     11         0.5   6.439e+04     0.0125      0.7485  g +
+       11          64234     0.0007318     11         0.5   6.439e+04     0.0125    -0.04837  g - Rejected
+       12          64241     0.0001874     11        0.25   6.428e+04    0.00625      0.7316  g +
+       13          64242      0.000181     11        0.25   6.428e+04    0.00625     0.03385  g +
+       14          64244     4.679e-05     11       0.125   6.425e+04   0.003125      0.7416  g +
+       15          64244     4.902e-05     11       0.125   6.426e+04   0.003125     -0.0478  g +
+       16          64245     1.231e-05     11      0.0625   6.425e+04   0.001563      0.7488  g +
+       17          64245     1.095e-05     11      0.0625   6.425e+04   0.001563      -0.286  f +
+       18          64245     2.709e-06     11     0.03125   6.425e+04  0.0007813      0.7526  g +
+       19          64245      2.73e-06     11     0.03125   6.425e+04  0.0007813      -1.319  f - Rejected
+       20          64245      6.82e-07     11     0.01562   6.424e+04  0.0003906      0.7483  g + Bound
+              ----------  ------------         ----------
+    Criteria         0.5        0.0001                0.5
+SLP converged. Final objective function value = 64244.8144
+               Lagrangian gradient   2-norm = 0.66468
+               Lagrangian gradient inf-norm = 0.39538
+               Lagrange Multipliers   (j)
+                             72.65     9
+                             577.2    10
+                         3.163e+04    11
+                             80.18    12
+                             77.06    13
+                             73.96    14
+                             70.39    15
+                             66.86    16
+                             62.17    17
+                             57.25    18
+                             51.34    19
+                             43.22    20
+                             29.52    21
+               Lower    Upper         (i)
+                  0.71           0    11
+                0.1517           0    13
+                     0      0.3017    14
+                0.6317           0    15
+                     0      0.6817    16
+                     0      0.4572    17
+                     0     0.04702    18
+Trust Region Strategy uses simple filter
+* Dominates prior points
++ Nondominated
+- Dominated by prior point(s)
+f/g/m Objective/Constraint/Merit governs Trust Ratio
+</pre><h2>TrustRegion='merit' - multiple-penalty parameter L1 merit function<a name="4"></a></h2><pre class="codeinput">options.TrustRegion = <span class="string">'merit'</span>;
+slp_trust(@fbeamGV,x0,options,xlb,[],@gbeamGV);
+</pre><pre class="codeoutput"> 
+         Sequential Linear Programming Iteration History
+Iteration      Objective MaxConstraint    Index   Step-size   Merit      MoveLimit  TrustRatio
+        0          1e+05        0.5625     11           0   1.406e+05
+        1          84865         0.328     11           8   1.104e+05        0.2      0.5347  *
+        2          70954        0.2401      9           8   1.119e+05        0.2    -0.03895  *
+        3          69210       0.07143     10           4   9.522e+04        0.1      0.3924  *
+        4          65508        0.0427     10           4   7.903e+04        0.1      0.5501  *
+        5          63799       0.05956     10           4   7.903e+04        0.1     -0.2938  + Rejected
+        6          65099       0.01605     10           2   7.075e+04       0.05      0.5945  +
+        7          64215       0.01755     10           2   7.075e+04       0.05           0  +
+        8          64224       0.00331     10           1   6.539e+04      0.025      0.8202  +
+        9          64221      0.003367      8           1   6.539e+04      0.025           0  +
+       10          64246     0.0007168     11         0.5   6.428e+04     0.0125      0.9678  +
+       11          64229     0.0007662     11         0.5   6.428e+04     0.0125           0  +
+       12          64242      0.000178     11        0.25   6.425e+04    0.00625      0.6618  +
+       13          64241     0.0001837     11        0.25   6.425e+04    0.00625           0  +
+       14          64244     4.552e-05     11       0.125   6.425e+04   0.003125      0.6606  +
+       15          64244     4.913e-05     11       0.125   6.425e+04   0.003125   -0.005603  +
+       16          64245     1.109e-05     11      0.0625   6.425e+04   0.001563      0.6978  +
+       17          64245     1.222e-05     11      0.0625   6.425e+04   0.001563     -0.2142  - Rejected
+       18          64245     3.077e-06     11     0.03125   6.424e+04  0.0007813      0.5996  + Bound
+              ----------  ------------         ----------
+    Criteria         0.5        0.0001                0.5
+SLP converged. Final objective function value = 64244.7691
+               Lagrangian gradient   2-norm = 1.5041
+               Lagrangian gradient inf-norm = 0.78084
+               Lagrange Multipliers   (j)
+                              74.3     9
+                             577.8    10
+                          3.16e+04    11
+                             79.95    12
+                             76.86    13
+                             74.14    14
+                              70.6    15
+                             66.93    16
+                             62.09    17
+                              57.9    18
+                             51.35    19
+                             43.21    20
+                             29.52    21
+               Lower    Upper         (i)
+                     0     0.02328    11
+                     0      0.6487    12
+                0.7916           0    13
+                0.4244           0    14
+                0.8972           0    15
+                     0      0.9577    16
+                 1.799           0    17
+Trust Region Strategy uses Merit function
+* Dominates prior points
++ Nondominated
+- Dominated by prior point(s)
+</pre><h2>TrustRegion='TRAM' - TR adaptive move limit bounds (with merit)<a name="5"></a></h2><pre class="codeinput">options.TrustRegion = <span class="string">'TRAM'</span>;
+slp_trust(@fbeamGV,x0,options,xlb,[],@gbeamGV);
+</pre><pre class="codeoutput"> 
+         Sequential Linear Programming Iteration History
+Iteration      Objective MaxConstraint    Index   Step-size   Merit      MoveLimit  TrustRatio
+        0          1e+05        0.5625     11           0   1.406e+05
+        1          84865         0.328     11           8   1.104e+05        0.2      0.5347  *
+        2          70954        0.2401      9           8   1.119e+05        0.2    -0.03895  * _g
+        3          66358         0.231     10       5.297   1.436e+05     0.1324     -0.7022  * _g
+        4          66303       0.04518     10       2.765   8.168e+04    0.06914      0.8015  *
+        5          64688       0.02651     10       2.765   7.435e+04    0.06914      0.4304  *
+        6          63824       0.03466     10       2.765   7.435e+04    0.06914           0  + _g
+        7          64183      0.003224     11       1.058    6.47e+04    0.02645      0.9472  +
+        8          64180       0.00328     11       1.058    6.47e+04    0.02645           0  + _m
+        9          64253     0.0002359     11      0.2801   6.429e+04   0.007003      0.9135  +
+       10          64242     0.0002317     11      0.2801   6.428e+04   0.007003      0.2287  +
+       11          64241     0.0002359     11      0.2801   6.428e+04   0.007003           0  + _g
+       12          64243     5.762e-05     11      0.1375   6.425e+04   0.003439      0.7288  +
+       13          64244     5.338e-05     11      0.1375   6.425e+04   0.003439     0.01683  + _m
+       14          64244     1.384e-05     11     0.06995   6.425e+04   0.001749      0.7157  +
+       15          64245     1.407e-05     11     0.06995   6.425e+04   0.001749     -0.1202  - _m Rejected
+       16          64245     2.814e-06     11     0.03122   6.425e+04  0.0007806      0.7564  + Bound
+              ----------  ------------         ----------
+    Criteria         0.5        0.0001                0.5
+SLP slowed.    Final objective function value = 64244.7977
+               Lagrangian gradient   2-norm = 1.8644
+               Lagrangian gradient inf-norm = 1.0131
+               Lagrange Multipliers   (j)
+                             73.03     9
+                             577.4    10
+                         3.163e+04    11
+                             79.99    12
+                             77.06    13
+                             73.67    14
+                             70.34    15
+                             66.56    16
+                             62.96    17
+                             57.46    18
+                             51.46    19
+                             43.22    20
+                             29.52    21
+               Lower    Upper         (i)
+               0.06637           0    11
+                     0      0.8418    13
+                     0      0.4819    14
+                     0      0.3779    15
+                 2.024           0    16
+                 0.251           0    17
+                0.3694           0    18
+Trust Region Strategy uses Merit function
+* Dominates prior points
++ Nondominated
+- Dominated by prior point(s)
+! Trust Radius set by Merit function minimization
+_ Trust Radius set by target Trust Ratio
+f/g/m Objective/Constraint/Merit governs Trust Ratio
+</pre><h2>TrustRegion='filter' - TR filter instead of merit descent function<a name="6"></a></h2><pre class="codeinput">options.TrustRegion = <span class="string">'filter'</span>;
+slp_trust(@fbeamGV,x0,options,xlb,[],@gbeamGV);
+</pre><pre class="codeoutput"> 
+         Sequential Linear Programming Iteration History
+Iteration      Objective MaxConstraint    Index   Step-size   Merit      MoveLimit  TrustRatio
+        0          1e+05        0.5625     11           0   1.406e+05
+        1          84865         0.328     11           8   1.104e+05        0.2      0.4168  g *
+        2          70954        0.2401      9           8   1.119e+05        0.2      0.2449  g *
+        3          63631        0.2567     10           8   1.584e+05        0.2     0.07852  g +
+        4          64958        0.0797     10           4   8.602e+04        0.1      0.6896  g +
+        5          64449       0.03887     11           4   7.705e+04        0.1     -0.1494  g +
+        6          64326       0.01176     11           2   6.499e+04       0.05      0.6773  f +
+        7          64023       0.01385     11           2   6.523e+04       0.05      -0.178  g +
+        8          64198      0.002848     11           1   6.433e+04      0.025      0.7944  g +
+        9          64179      0.002776     11           1    6.43e+04      0.025      0.0254  g +
+       10          64227     0.0006981     11         0.5   6.426e+04     0.0125      0.7485  g +
+       11          64234     0.0007318     11         0.5   6.426e+04     0.0125    -0.04837  g - Rejected
+       12          64241     0.0001874     11        0.25   6.425e+04    0.00625      0.7316  g +
+       13          64242      0.000181     11        0.25   6.425e+04    0.00625     0.03385  g +
+       14          64244     4.679e-05     11       0.125   6.425e+04   0.003125      0.7416  g +
+       15          64244     4.902e-05     11       0.125   6.425e+04   0.003125     -0.0478  g +
+       16          64245     1.231e-05     11      0.0625   6.425e+04   0.001563      0.7488  g +
+       17          64245     1.095e-05     11      0.0625   6.425e+04   0.001563      -0.286  f + Bound
+              ----------  ------------         ----------
+    Criteria         0.5        0.0001                0.5
+SLP slowed.    Final objective function value = 64244.6438
+               Lagrangian gradient   2-norm = 3.1114
+               Lagrangian gradient inf-norm = 1.6419
+               Lagrange Multipliers   (j)
+                             72.19     9
+                               577    10
+                         3.164e+04    11
+                             79.89    12
+                             76.77    13
+                             74.53    14
+                             70.48    15
+                             66.02    16
+                             62.43    17
+                             57.51    18
+                              51.6    19
+                             43.23    20
+                             29.53    21
+               Lower    Upper         (i)
+                     0      0.3024    11
+                     0       1.012    12
+                 2.066           0    13
+                     0       2.251    15
+                0.1977           0    16
+                0.4262           0    17
+                0.8406           0    18
+Trust Region Strategy uses filter
+* Dominates prior points
++ Nondominated
+- Dominated by prior point(s)
+f/g/m Objective/Constraint/Merit governs Trust Ratio
+</pre><h2>TrustRegion='TRAM-filter' combination<a name="7"></a></h2><pre class="codeinput">options.TrustRegion = <span class="string">'TRAMfilter'</span>;
+slp_trust(@fbeamGV,x0,options,xlb,[],@gbeamGV);
+</pre><pre class="codeoutput"> 
+         Sequential Linear Programming Iteration History
+Iteration      Objective MaxConstraint    Index   Step-size   Merit      MoveLimit  TrustRatio
+        0          1e+05        0.5625     11           0   1.406e+05
+        1          84865         0.328     11           8   1.104e+05        0.2      0.4168  g *
+        2          70954        0.2401      9           8   1.119e+05        0.2      0.2449  g *
+        3          63631        0.2567     10           8   1.584e+05        0.2     0.07852  g + _g
+        4          64575        0.0947     10       4.341   8.958e+04     0.1085      0.6312  g +
+        5          64083       0.04875     11       4.341   7.614e+04     0.1085     -0.1568  g + _g
+        6          64340       0.01081     11       1.876    6.49e+04     0.0469      0.7783  g +
+        7          64031       0.01161     11       1.876   6.561e+04     0.0469    -0.07444  g + _g
+        8          64204      0.002253     11      0.8731   6.431e+04    0.02183       0.806  g +
+        9          64205      0.002325     11      0.8731   6.431e+04    0.02183    -0.05868  f - _f Rejected
+       10          64238     0.0005187     11      0.4124   6.426e+04    0.01031      0.7698  g +
+       11          64234     0.0004995     11      0.4124   6.426e+04    0.01031     0.03691  g + _g
+       12          64242     0.0001296     11      0.2141   6.425e+04   0.005352      0.7405  g +
+       13          64243     0.0001307     11      0.2141   6.425e+04   0.005352   -0.008752  g - _g Rejected
+       14          64244     3.189e-05     11      0.1061   6.425e+04   0.002653       0.754  g +
+       15          64244      3.31e-05     11      0.1061   6.425e+04   0.002653      -0.038  g + _g
+       16          64245     7.722e-06     11     0.05112   6.425e+04   0.001278      0.7667  g +
+       17          64245      7.62e-06     11     0.05112   6.425e+04   0.001278      -3.137  f + ! Bound
+              ----------  ------------         ----------
+    Criteria         0.5        0.0001                0.5
+SLP slowed.    Final objective function value = 64244.6898
+               Lagrangian gradient   2-norm = 2.4741
+               Lagrangian gradient inf-norm = 1.3379
+               Lagrange Multipliers   (j)
+                             73.36     9
+                             577.5    10
+                         3.162e+04    11
+                             80.19    12
+                             76.96    13
+                             73.92    14
+                             70.31    15
+                             66.91    16
+                             62.09    17
+                             57.47    18
+                             51.71    19
+                             43.22    20
+                             29.52    21
+               Lower    Upper         (i)
+                0.7642           0    11
+                     0      0.3347    12
+                     0      0.5758    14
+                0.8265           0    15
+                     0      0.9706    16
+                0.3016           0    17
+                 1.231           0    18
+Trust Region Strategy uses filter
+* Dominates prior points
++ Nondominated
+- Dominated by prior point(s)
+! Trust Radius set by Merit function minimization
+_ Trust Radius set by target Trust Ratio
+f/g/m Objective/Constraint/Merit governs Trust Ratio
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2015b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% runBeamGVslp
+% Script to Run Gary Vanderplaats cantilever Beam with slp_trust. 
+% N beam segments and 2N design variables, taken from 
+% Vanderplaats (1984) Example 5-1, pp. 147-150.
+%
+%  Trust Region (TR) Strategy follows
+%  Nocedal, J., and Wright, S.J. Numerical Optimization. 
+%  New York: Springer, 2006.
+%  Algorithm  4.1 for TR and
+%  Algorithm 15.1 for filter; and 
+%  Equation (15.4) for the simple L1 merit function
+%
+% TR Approximate Model (TRAM) for adaptive move limits roughly follows 
+% Wujek, B. A., and Renaud, J. E. "New Adaptive Move-Limit Management
+% Strategy for Approximate Optimization, Part I," AIAA J. Vol. 36, No. 10,
+% 1998, pp. 1911-1921 
+% except that quadratic approximations are used for objective and
+% constraints and a linear approximation for the merit penalty function
+% (instead of TANA for the merit function)
+% during the "line search" that determines the trust region radius.
+% Also, a custom TR algorithm is used for multi-penalty L1 merit function. 
+
+%% Initialize variables
+clear; clc
+N = 10;%[5 10 20 40 50 100 200]; % number of beam segments
+x0 = [5*ones(1,N), 40*ones(1,N)];
+xlb = [ ones(1,N),  5*ones(1,N)];
+
+%% SLP Trust
+%  'simple' = exact L1 single penalty, mu*max(0,g) (default)
+options.Display = 'Iter';
+options.TolX = .5;
+options.TolFun = 0.5;
+options.TolCon = 1e-4;
+options.MoveLimit = 0.2;
+options.MaxIter = 40;
+% default options for simple merit function TR algorithm
+[dv1,f1,sta1,out1,lambda1] = slp_trust(@fbeamGV,x0,options,xlb,[],@gbeamGV);
+
+%% other SLP TR methods - 'simple-filter' combination
+options.TrustRegion = 'simple-filter';
+options.Contract = 0.2;
+slp_trust(@fbeamGV,x0,options,xlb,[],@gbeamGV);
+
+%% TrustRegion='merit' - multiple-penalty parameter L1 merit function
+options.TrustRegion = 'merit';
+slp_trust(@fbeamGV,x0,options,xlb,[],@gbeamGV);
+
+%% TrustRegion='TRAM' - TR adaptive move limit bounds (with merit)
+options.TrustRegion = 'TRAM';
+slp_trust(@fbeamGV,x0,options,xlb,[],@gbeamGV);
+
+%% TrustRegion='filter' - TR filter instead of merit descent function
+options.TrustRegion = 'filter';
+slp_trust(@fbeamGV,x0,options,xlb,[],@gbeamGV);
+
+%% TrustRegion='TRAM-filter' combination
+options.TrustRegion = 'TRAMfilter';
+slp_trust(@fbeamGV,x0,options,xlb,[],@gbeamGV);
+##### SOURCE END #####
+--></body></html>

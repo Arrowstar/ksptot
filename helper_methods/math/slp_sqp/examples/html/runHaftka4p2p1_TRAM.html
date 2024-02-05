@@ -1,0 +1,333 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Uncsontrained, 2-DV, Quadratic Objective - Haftka Example 4.2.1</title><meta name="generator" content="MATLAB 8.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2016-11-07"><meta name="DC.source" content="runHaftka4p2p1.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Uncsontrained, 2-DV, Quadratic Objective - Haftka Example 4.2.1</h1><!--introduction--><p>Haftka, R. T. and Z. Gurdal (1992), Elements of Structural Optimization, Kluwer Academic Publishers</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Initialize starting point and options</a></li><li><a href="#2">Steepest Descent (slow) with Finite Difference</a></li><li><a href="#3">SLP with Trust Region Strategy (not as slow)</a></li><li><a href="#4">BFGS Quasi-Newton (theoretically converges in 3 iterations) Finite Diff.</a></li><li><a href="#5">SQP (handles unconstrained by adding dummy constraint) Analytic Gradient</a></li><li><a href="#6">Source code</a></li></ul></div><h2>Initialize starting point and options<a name="1"></a></h2><pre class="codeinput">x0=[-1; -2] <span class="comment">%#ok&lt;*NOPTS&gt;</span>
+options=optimset(<span class="string">'HessUpdate'</span>,<span class="string">'steepdesc'</span>,<span class="string">'Display'</span>,<span class="string">'iter'</span>,<span class="keyword">...</span>
+                 <span class="string">'TolFun'</span>,1e-4,<span class="string">'TolX'</span>,1e-4,<span class="keyword">...</span>
+                 <span class="string">'MaxIter'</span>,100,<span class="string">'MaxFunEvals'</span>,500,<span class="string">'LargeScale'</span>,<span class="string">'off'</span>);
+</pre><pre class="codeoutput">
+x0 =
+
+    -1
+    -2
+
+</pre><h2>Steepest Descent (slow) with Finite Difference<a name="2"></a></h2><pre class="codeinput">[x_SD,~,~,outSD]=fminunc(@fHaftka4p2p1,x0,options)
+</pre><pre class="codeoutput">                                                        First-order 
+ Iteration  Func-count       f(x)        Step-size       optimality
+     0           3                2                             4
+     1           9          1.51923      0.0480769           2.62  
+     2          15          1.14302            0.1            3.4  
+     3          24         0.798154      0.0432764           1.85  
+     4          30         0.533847       0.112452           2.61  
+     5          39         0.331281      0.0432764           1.42  
+     6          45         0.176032       0.112452              2  
+     7          54        0.0570482      0.0432764           1.08  
+     8          60       -0.0341418       0.112452           1.53  
+     9          69        -0.104031      0.0432764          0.831  
+    10          75        -0.157594       0.112452           1.17  
+    11          84        -0.198645      0.0432764          0.637  
+    12          90        -0.230107       0.112452          0.899  
+    13          99         -0.25422      0.0432764          0.488  
+    14         105          -0.2727       0.112452          0.689  
+    15         114        -0.286864      0.0432764          0.374  
+    16         120        -0.297719       0.112451          0.528  
+    17         129        -0.306038      0.0432764          0.287  
+    18         135        -0.312414       0.112451          0.405  
+    19         144        -0.317301      0.0432764           0.22  
+                                                        First-order 
+ Iteration  Func-count       f(x)        Step-size       optimality
+    20         150        -0.321046       0.112451           0.31  
+    21         159        -0.323916      0.0432765          0.168  
+    22         165        -0.326116       0.112451          0.238  
+    23         174        -0.327802      0.0432765          0.129  
+    24         180        -0.329094       0.112451          0.182  
+    25         189        -0.330084      0.0432766         0.0989  
+    26         195        -0.330843        0.11245           0.14  
+    27         204        -0.331425      0.0432766         0.0758  
+    28         210        -0.331871        0.11245          0.107  
+    29         219        -0.332212      0.0432767         0.0581  
+    30         225        -0.332474       0.112449          0.082  
+    31         234        -0.332675      0.0432768         0.0445  
+    32         240        -0.332829       0.112448         0.0629  
+    33         249        -0.332947      0.0432769         0.0341  
+    34         255        -0.333037       0.112447         0.0482  
+    35         264        -0.333106      0.0432771         0.0262  
+    36         270        -0.333159       0.112446         0.0369  
+    37         279          -0.3332      0.0432774         0.0201  
+    38         285        -0.333231       0.112444         0.0283  
+    39         294        -0.333255      0.0432777         0.0154  
+                                                        First-order 
+ Iteration  Func-count       f(x)        Step-size       optimality
+    40         300        -0.333273       0.112441         0.0217  
+    41         309        -0.333287      0.0432782         0.0118  
+    42         315        -0.333298       0.112438         0.0166  
+    43         324        -0.333306      0.0432786        0.00903  
+    44         330        -0.333313       0.112435         0.0127  
+    45         339        -0.333317       0.043279        0.00692  
+    46         345        -0.333321       0.112431        0.00976  
+    47         354        -0.333324      0.0432798         0.0053  
+    48         360        -0.333326       0.112426        0.00748  
+    49         369        -0.333328      0.0432809        0.00407  
+    50         375        -0.333329       0.112417        0.00574  
+    51         384         -0.33333      0.0432825        0.00312  
+    52         390        -0.333331       0.112405         0.0044  
+    53         399        -0.333331      0.0432845        0.00239  
+    54         405        -0.333332       0.112385        0.00337  
+    55         414        -0.333332      0.0432873        0.00183  
+
+Local minimum possible.
+
+fminunc stopped because the size of the current step is less than
+the selected value of the step size tolerance.
+
+
+
+
+x_SD =
+
+   -0.3339
+   -0.5010
+
+
+outSD = 
+
+       iterations: 55
+        funcCount: 414
+         stepsize: 1.7122e-04
+     lssteplength: 0.0433
+    firstorderopt: 0.0018
+        algorithm: 'quasi-newton'
+          message: 'Local minimum possible....'
+
+</pre><h2>SLP with Trust Region Strategy (not as slow)<a name="3"></a></h2><pre class="codeinput">x_SLP=slp_trust(@fHaftka4p2p1,x0,options,[],[],@gHaftka4p2p1)
+</pre><pre class="codeoutput"> 
+         Sequential Linear Programming Iteration History
+Iteration      Objective MaxConstraint    Index   Step-size   Merit      MoveLimit  TrustRatio
+        0              2   -1.798e+308      1           0           2
+        1           2.08   -1.798e+308      1         0.4           2        0.2       -0.04  Rejected
+        2           1.52   -1.798e+308      1         0.2        1.52        0.1        0.48  
+        3           1.04   -1.798e+308      1         0.2        1.04        0.1      0.9231  
+        4           0.32   -1.798e+308      1         0.4        0.32        0.2      0.8182  
+        5           1.12   -1.798e+308      1         0.4        0.32        0.4     -0.7143  Rejected
+        6           0.24   -1.798e+308      1         0.2        0.24        0.2      0.1429  
+        7           0.96   -1.798e+308      1         0.4        0.24        0.2     -0.5294  Rejected
+        8           0.08   -1.798e+308      1         0.2        0.08        0.1      0.2353  
+        9           0.24   -1.798e+308      1         0.2        0.08        0.1     -0.4445  Rejected
+       10       0.030001   -1.798e+308      1         0.1        0.03       0.05      0.2778  
+       11      -0.079999   -1.798e+308      1         0.1       -0.08       0.05      0.9167  
+       12          -0.24   -1.798e+308      1         0.2       -0.24        0.1         0.8  
+       13          -0.32   -1.798e+308      1         0.4       -0.32        0.2      0.3333  
+       14           1.52   -1.798e+308      1         0.4       -0.32        0.2      -7.667  Rejected
+       15       0.080002   -1.798e+308      1         0.2       -0.32        0.1      -3.333  Rejected
+       16          -0.25   -1.798e+308      1         0.1       -0.32       0.05      -1.167  Rejected
+       17        -0.3175   -1.798e+308      1        0.05       -0.32      0.025    -0.08335  Rejected
+       18       -0.32688   -1.798e+308      1       0.025     -0.3269     0.0125      0.4583  
+       19          -0.33   -1.798e+308      1       0.025       -0.33     0.0125      0.8333  
+       20        -0.3025   -1.798e+308      1        0.05       -0.33      0.025      -5.499  Rejected
+       21       -0.32438   -1.798e+308      1       0.025       -0.33     0.0125       -2.25  Rejected
+       22       -0.32922   -1.798e+308      1      0.0125       -0.33    0.00625     -0.6248  Rejected
+       23       -0.33012   -1.798e+308      1     0.00625     -0.3301   0.003125      0.1876  
+       24       -0.33078   -1.798e+308      1     0.00625     -0.3308   0.003125      0.9444  
+       25       -0.33188   -1.798e+308      1      0.0125     -0.3319    0.00625       0.875  
+       26       -0.33312   -1.798e+308      1       0.025     -0.3331     0.0125      0.6667  
+       27       -0.32563   -1.798e+308      1       0.025     -0.3331     0.0125      -11.99  Rejected
+       28       -0.33141   -1.798e+308      1      0.0125     -0.3331    0.00625      -5.497  Rejected
+       29       -0.33277   -1.798e+308      1     0.00625     -0.3331   0.003125      -2.249  Rejected
+       30       -0.33308   -1.798e+308      1    0.003125     -0.3331   0.001563     -0.6243  Rejected
+       31       -0.33313   -1.798e+308      1    0.001562     -0.3331  0.0007813      0.1878  
+       32       -0.33317   -1.798e+308      1    0.001562     -0.3332  0.0007813      0.9444  
+       33       -0.33324   -1.798e+308      1    0.003125     -0.3332   0.001563       0.875  
+       34       -0.33332   -1.798e+308      1     0.00625     -0.3333   0.003125      0.6666  
+       35       -0.33285   -1.798e+308      1     0.00625     -0.3333   0.003125      -11.98  Rejected
+       36       -0.33321   -1.798e+308      1    0.003125     -0.3333   0.001563      -5.489  Rejected
+       37        -0.3333   -1.798e+308      1    0.001562     -0.3333  0.0007813      -2.244  Rejected
+       38       -0.33332   -1.798e+308      1   0.0007812     -0.3333  0.0003906     -0.6222  Rejected
+       39       -0.33332   -1.798e+308      1   0.0003906     -0.3333  0.0001953      0.1889  
+       40       -0.33332   -1.798e+308      1   0.0003906     -0.3333  0.0001953      0.9444  
+       41       -0.33333   -1.798e+308      1   0.0007812     -0.3333  0.0003906       0.875  
+       42       -0.33333   -1.798e+308      1    0.001562     -0.3333  0.0007813      0.6666  
+       43        -0.3333   -1.798e+308      1    0.001562     -0.3333  0.0007813      -11.91  Rejected
+       44       -0.33333   -1.798e+308      1   0.0007812     -0.3333  0.0003906      -5.456  Rejected
+       45       -0.33333   -1.798e+308      1   0.0003906     -0.3333  0.0001953      -2.228  Rejected
+       46       -0.33333   -1.798e+308      1   0.0001953     -0.3333  9.766e-05      -0.614  Rejected
+       47       -0.33333   -1.798e+308      1   9.766e-05     -0.3333  4.883e-05       0.193  Bound
+              ----------  ------------         ----------
+    Criteria      0.0001         1e-06             0.0001
+SLP converged. Final objective function value = -0.33333
+               Lagrangian gradient   2-norm = 0.0015742
+               Lagrangian gradient inf-norm = 0.0013612
+
+x_SLP =
+
+   -0.3329
+   -0.4991
+
+</pre><h2>BFGS Quasi-Newton (theoretically converges in 3 iterations) Finite Diff.<a name="4"></a></h2><pre class="codeinput">options=optimset(options,<span class="string">'HessUpdate'</span>,<span class="string">'BFGS'</span>);
+x_BFGS=fminunc(@fHaftka4p2p1,x0,options)
+</pre><pre class="codeoutput">                                                        First-order 
+ Iteration  Func-count       f(x)        Step-size       optimality
+     0           3                2                             4
+     1           9          1.51923      0.0480769           2.62  
+     2          15        -0.241374             10          0.583  
+     3          18        -0.333333              1       2.98e-08  
+
+Local minimum found.
+
+Optimization completed because the size of the gradient is less than
+the selected value of the function tolerance.
+
+
+
+
+x_BFGS =
+
+   -0.3333
+   -0.5000
+
+</pre><h2>SQP (handles unconstrained by adding dummy constraint) Analytic Gradient<a name="5"></a></h2><pre class="codeinput">x_SQP=sqp(@fHaftka4p2p1,[-1; -2],options,[],[],@gHaftka4p2p1)
+</pre><pre class="codeoutput"> 
+                                       Termination Criteria
+                                      1e-06        0.0001    0.0001
+                                -----------------------------------
+f-CNT         FUNC      STEP NAC     max{g}  j        KTO    max(S)
+    1            2         0   0  -1.8e+308  1         20         4
+    4       1.5192    0.0481   0  -1.8e+308  1       8.55      3.02
+    6     -0.33333     0.433   0  -1.8e+308  1          0  1.11e-15
+Optimization Terminated Successfully from sqp
+ 
+
+x_SQP =
+
+   -0.3333
+   -0.5000
+
+</pre><h2>Source code<a name="6"></a></h2><pre class="codeinput"><span class="comment">% Function evaluation</span>
+<span class="comment">% (N.B., MATLAB optimization toolbox 2nd output is gradient,</span>
+<span class="comment">% instead of 2nd output being a dummy constraint vector like this one.)</span>
+type <span class="string">fHaftka4p2p1</span>
+
+<span class="comment">% Gradient evaluation</span>
+<span class="comment">% (N.B., MATLAB optimization toolbox has separate function</span>
+<span class="comment">% for nonlinear constraints and their gradients instead of</span>
+<span class="comment">% a second function for gradients of objective and constraints</span>
+<span class="comment">% like this one, which has a dummy constraint for use with SQP.)</span>
+type <span class="string">gHaftka4p2p1</span>
+</pre><pre class="codeoutput">
+function [f,g] = fHaftka4p2p1( x )
+% Haftka Example 4.2.1 objective evaluation
+f = 12*x(1)^2 + 4*x(2)^2 - 12*x(1)*x(2) + 2*x(1); % Eq.(4.2.18)
+g = -realmax;
+end
+
+function [gradf,gradg] = gHaftka4p2p1( x )
+% Haftka Example 4.2.1 objective gradient evaluation
+gradf = [24*x(1) - 12*x(2) + 2;
+          8*x(2) - 12*x(1)];
+gradg = [0; 0];
+end
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2015b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Uncsontrained, 2-DV, Quadratic Objective - Haftka Example 4.2.1
+% Haftka, R. T. and Z. Gurdal (1992), Elements of Structural Optimization, 
+% Kluwer Academic Publishers
+
+%% Initialize starting point and options
+x0=[-1; -2] %#ok<*NOPTS>
+options=optimset('HessUpdate','steepdesc','Display','iter',...
+                 'TolFun',1e-4,'TolX',1e-4,...
+                 'MaxIter',100,'MaxFunEvals',500,'LargeScale','off');
+
+%% Steepest Descent (slow) with Finite Difference
+[x_SD,~,~,outSD]=fminunc(@fHaftka4p2p1,x0,options)
+
+%% SLP with Trust Region Strategy (not as slow)
+x_SLP=slp_trust(@fHaftka4p2p1,x0,options,[],[],@gHaftka4p2p1)
+
+%% BFGS Quasi-Newton (theoretically converges in 3 iterations) Finite Diff.
+options=optimset(options,'HessUpdate','BFGS');
+x_BFGS=fminunc(@fHaftka4p2p1,x0,options)
+
+%% SQP (handles unconstrained by adding dummy constraint) Analytic Gradient
+x_SQP=sqp(@fHaftka4p2p1,[-1; -2],options,[],[],@gHaftka4p2p1)
+
+%% Source code
+
+% Function evaluation 
+% (N.B., MATLAB optimization toolbox 2nd output is gradient,
+% instead of 2nd output being a dummy constraint vector like this one.)
+type fHaftka4p2p1
+
+% Gradient evaluation
+% (N.B., MATLAB optimization toolbox has separate function 
+% for nonlinear constraints and their gradients instead of
+% a second function for gradients of objective and constraints
+% like this one, which has a dummy constraint for use with SQP.)
+type gHaftka4p2p1
+
+##### SOURCE END #####
+--></body></html>

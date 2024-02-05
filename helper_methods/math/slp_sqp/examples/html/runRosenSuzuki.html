@@ -1,0 +1,485 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Rosen-Suzuki four-variable constrained optimization problem</title><meta name="generator" content="MATLAB 8.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2016-11-15"><meta name="DC.source" content="runRosenSuzuki.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Rosen-Suzuki four-variable constrained optimization problem</h1><!--introduction--><p>Hock W., Schittkowski K. (1981): Test Examples for Nonlinear Programming Codes, Willi Hock, Klaus Schittkowski, Springer, Lecture Notes in Economics and Mathematical Systems, Vol. 187</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Initialize variables</a></li><li><a href="#2">Sequential Linear Programming with Trust Region Strategy</a></li><li><a href="#3">Schittkowski's SQP coded in MATLAB by Spillman &amp; Canfield</a></li><li><a href="#4">Spillman &amp; Canfield SQP with fmincon data structure</a></li><li><a href="#5">fmincon algorithms</a></li><li><a href="#6">Quadratic Objective function, Linear constraints, 4-DV</a></li></ul></div><h2>Initialize variables<a name="1"></a></h2><pre class="codeinput">clear; clc
+
+ndv = 4;
+x0  = (2:5)';
+xlb = repmat(-100,ndv,1);
+xub = repmat( 100,ndv,1);
+
+options.Display=<span class="string">'iter'</span>;
+options.MaxIter=100;
+options.TolFun = 5e-5;
+options.TolX   = 1e-3;
+</pre><h2>Sequential Linear Programming with Trust Region Strategy<a name="2"></a></h2><pre class="codeinput">disp(<span class="string">'SLP'</span>)
+options.TrustRegion=<span class="string">'merit'</span>; <span class="comment">% performs better than default 'simple'</span>
+[xopt,fopt]=slp_trust(@fRosenSuzuki,x0,options,xlb,xub,@gRosenSuzuki)
+[fopt,gopt]=fRosenSuzuki(xopt) <span class="comment">%#ok&lt;*ASGLU,*NOPTS&gt;</span>
+</pre><pre class="codeoutput">SLP
+ 
+         Sequential Linear Programming Iteration History
+Iteration      Objective MaxConstraint    Index   Step-size   Merit      MoveLimit  TrustRatio
+        0             46            71      2           0       183.2
+        1         34.483         23.92      2       1.563        74.3        0.2      0.7858  *
+        2         13.328         4.602      1           2       26.24        0.4      0.7141  *
+        3         6.1454         4.308      3           2       16.91        0.4      0.3178  *
+        4         1.2689          4.35      3       1.277       16.91        0.4    -0.07933  + Rejected
+        5         9.0943         1.148      2           1       14.49        0.2      0.2529  +
+        6         3.0953         1.253      1         0.8       14.49        0.2           0  +
+        7          5.474        0.1932      3         0.3       7.108        0.1      0.8022  +
+        8         6.0626        0.2053      3         0.3       7.108        0.1     -0.6527  - Rejected
+        9         5.9658       0.04664      3        0.15       6.373       0.05      0.6185  +
+       10         5.8632       0.05614      1        0.15       6.373       0.05   -0.007801  + Rejected
+       11         5.9602        0.0154      1       0.075       6.099      0.025      0.6342  +
+       12           5.99       0.01454      1       0.075       6.123      0.025     -0.1909  +
+       13         5.9934      0.003482      1      0.0375       6.025     0.0125      0.7296  +
+       14         5.9933      0.003565      1      0.0375       6.025     0.0125    -0.01721  + Rejected
+       15         5.9974     0.0008718      1     0.01875       6.005    0.00625      0.6871  +
+       16         6.0003     0.0006784      3     0.01875       6.006    0.00625     -0.1072  +
+       17              6     0.0001692      3    0.009375       6.001   0.003125      0.7438  +
+       18         5.9995     0.0001693      3    0.009375       6.001   0.003125           0  +
+       19              6     4.238e-05      3    0.004688           6   0.001563       0.659  +
+       20         5.9999     4.231e-05      3    0.004688           6   0.001563      0.1234  +
+       21              6     1.058e-05      3    0.002344           6  0.0007813      0.6778  +
+       22              6     1.058e-05      3    0.002344           6  0.0007813    -0.03018  +
+       23              6     2.644e-06      3    0.001172           6  0.0003906      0.7096  +
+       24              6      3.48e-06      1    0.001172           6  0.0003906     -0.8065  - Rejected
+       25              6     8.693e-07      1   0.0005859           6  0.0001953      0.5215  + Bound
+              ----------  ------------         ----------
+    Criteria       5e-05         1e-06              0.001
+SLP converged. Final objective function value = 6
+               Lagrangian gradient   2-norm = 0.0068194
+               Lagrangian gradient inf-norm = 0.0044573
+Trust Region Strategy uses Merit function
+* Dominates prior points
++ Nondominated
+- Dominated by prior point(s)
+
+xopt =
+
+   -0.0004
+    0.9996
+    2.0004
+   -0.9996
+
+
+fopt =
+
+    6.0000
+
+
+fopt =
+
+    6.0000
+
+
+gopt =
+
+    0.0000
+   -1.0014
+    0.0000
+
+</pre><h2>Schittkowski's SQP coded in MATLAB by Spillman &amp; Canfield<a name="3"></a></h2><pre class="codeinput">disp(<span class="string">'Schittkowski''s SQP with complex step gradients'</span>)
+options.ComplexStep = <span class="string">'on'</span>;
+options.DerivativeCheck=<span class="string">'on'</span>;
+[xopt,fopt]=sqp(@fRosenSuzuki,x0,options,xlb,xub)<span class="comment">%,@gRosenSuzuki) complex step</span>
+[fopt,gopt]=fRosenSuzuki(xopt)
+</pre><pre class="codeoutput">Schittkowski's SQP with complex step gradients
+Function gradient
+Maximum discrepancy between derivatives  = 6.27802e-07
+Constraint gradients
+Maximum discrepancy between derivatives  = 2.48221e-07
+ 
+                                       Termination Criteria
+                                      1e-06         5e-05     0.001
+                                -----------------------------------
+f-CNT         FUNC      STEP NAC     max{g}  j        KTO    max(S)
+    5           46         0  11         71  2        299      16.5
+   11      -7.4064     0.252  11       20.3  3       46.8      5.03
+   17      -13.395     0.371  11       14.3  3       18.9      2.44
+   22     -0.71871         1  11       8.55  1       20.9      2.14
+   27      -4.7231         1  11       5.85  2       17.4     0.862
+   32       3.3588         1  11       1.02  3       4.62     0.344
+   37       5.6499         1  11      0.228  3      0.788     0.245
+   43       5.6171     0.497  11      0.161  3      0.509     0.303
+   49        5.664      0.36  11      0.119  3      0.669    0.0252
+   54       5.9966         1  11    0.00129  1    0.00682  0.000879
+   59            6         1  11   1.83e-06  3   1.03e-05   0.00011
+   64            6         1  11    3.2e-08  3   1.82e-07  6.88e-07
+Optimization Terminated Successfully from sqp
+ 
+
+xopt =
+
+   -0.0000
+    1.0000
+    2.0000
+   -1.0000
+
+
+fopt = 
+
+          fval: 6.0000
+     funcCount: 64
+     gradCount: 12
+    iterations: 11
+       options: [1x18 double]
+
+
+fopt =
+
+    6.0000
+
+
+gopt =
+
+    0.0000
+   -1.0000
+    0.0000
+
+</pre><h2>Spillman &amp; Canfield SQP with fmincon data structure<a name="4"></a></h2><pre class="codeinput">disp(<span class="string">'Schittkowski''s SQP with fmincon problem structure'</span>)
+options.DerivativeCheck=<span class="string">'off'</span>;
+prob.objective=@objRosenSuzuki;
+prob.nonlcon=@cRosenSuzuki;
+prob.x0=x0;
+prob.lb=xlb;
+prob.ub=xub;
+prob.options=options;
+prob.solver=<span class="string">'fmincon'</span>;
+[xopt,fopt]=sqp(prob)
+</pre><pre class="codeoutput">Schittkowski's SQP with fmincon problem structure
+ 
+                                       Termination Criteria
+                                      1e-06         5e-05     0.001
+                                -----------------------------------
+f-CNT         FUNC      STEP NAC     max{g}  j        KTO    max(S)
+    1           46         0  11         71  2        299      16.5
+    3      -7.4064     0.252  11       20.3  3       46.8      5.03
+    5      -13.395     0.371  11       14.3  3       18.9      2.44
+    6     -0.71871         1  11       8.55  1       20.9      2.14
+    7      -4.7231         1  11       5.85  2       17.4     0.862
+    8       3.3588         1  11       1.02  3       4.62     0.344
+    9       5.6499         1  11      0.228  3      0.788     0.245
+   11       5.6171     0.497  11      0.161  3      0.509     0.303
+   13        5.664      0.36  11      0.119  3      0.669    0.0252
+   14       5.9966         1  11    0.00129  1    0.00682  0.000879
+   15            6         1  11   1.83e-06  3   1.03e-05   0.00011
+   16            6         1  11    3.2e-08  3   1.82e-07  6.88e-07
+Optimization Terminated Successfully from sqp
+ 
+
+xopt =
+
+   -0.0000
+    1.0000
+    2.0000
+   -1.0000
+
+
+fopt = 
+
+          fval: 6.0000
+     funcCount: 16
+     gradCount: 12
+    iterations: 11
+       options: [1x18 double]
+
+</pre><h2>fmincon algorithms<a name="5"></a></h2><pre class="codeinput">options = optimset(options,<span class="string">'GradObj'</span>,<span class="string">'on'</span>, <span class="string">'GradConstr'</span>,<span class="string">'on'</span>);
+Algorithm = {<span class="string">'active-set'</span>,<span class="string">'interior-point'</span>,<span class="string">'sqp'</span>};
+<span class="keyword">for</span> n=1:length(Algorithm)
+   options = optimset(options,<span class="string">'Algorithm'</span>,Algorithm{n});
+   disp(Algorithm{n})
+   [xopt,fval]=fmincon(@objRosenSuzuki,x0,[],[],[],[],xlb,xub,@cRosenSuzuki,options)
+   [fopt,gopt]=fRosenSuzuki(xopt)
+<span class="keyword">end</span>
+</pre><pre class="codeoutput">active-set
+
+                                Max     Line search  Directional  First-order 
+ Iter F-count        f(x)   constraint   steplength   derivative   optimality Procedure 
+    0      1           46           71                                         Infeasible start point
+    1      4      -22.793        40.26          0.5        -16.7         9.67   
+    2      7     -18.7968        24.48          0.5        -1.22         5.23   
+    3      9     -5.65876        8.036            1         1.95         5.05   
+    4     12     -4.22487        5.043          0.5         0.12         7.57   
+    5     15    -0.961725        2.937          0.5         3.99         2.22   
+    6     17      5.02042        0.434            1          9.5         2.46   
+    7     19      5.80534      0.09981            1         2.06        0.572   
+    8     21      5.96815      0.01293            1         1.34        0.303   
+    9     23      5.99344     0.002493            1        0.454        0.121   
+   10     25       5.9993    0.0002459            1        0.353       0.0302   
+   11     27      5.99998    7.336e-06            1        0.272      0.00319   
+   12     29            6    6.395e-08            1       0.0853     9.34e-05  Hessian modified  
+
+Local minimum possible. Constraints satisfied.
+
+fmincon stopped because the size of the current search direction is less than
+twice the selected value of the step size tolerance and constraints are 
+satisfied to within the default value of the constraint tolerance.
+
+
+
+Active inequalities (to within options.TolCon = 1e-06):
+  lower      upper     ineqlin   ineqnonlin
+                                     1
+                                     3
+
+xopt =
+
+   -0.0000
+    1.0000
+    2.0000
+   -1.0000
+
+
+fval =
+
+    6.0000
+
+
+fopt =
+
+    6.0000
+
+
+gopt =
+
+    0.0000
+   -1.0000
+    0.0000
+
+interior-point
+                                            First-order      Norm of
+ Iter F-count            f(x)  Feasibility   optimality         step
+    0       1    4.600000e+01    7.100e+01    1.642e+01
+    1       4    1.934860e+01    6.120e+01    1.108e+01    4.213e+00
+    2       5    4.249382e+00    3.781e+01    8.789e+00    2.032e+00
+    3       6    4.698110e+00    9.773e+00    8.340e+00    2.569e+00
+    4       7    1.499358e-01    7.932e+00    7.029e+00    5.245e-01
+    5       8    1.402151e+00    4.675e+00    4.236e+00    1.151e+00
+    6       9    1.852085e+00    2.454e+00    2.868e+00    2.954e-01
+    7      11    3.297912e+00    1.200e+00    1.588e+00    5.359e-01
+    8      12    5.397409e+00    2.450e-01    3.388e-01    2.175e-01
+    9      13    6.007760e+00    3.745e-03    4.029e-01    8.627e-02
+   10      14    6.038612e+00    0.000e+00    2.008e-02    2.763e-02
+   11      15    6.000787e+00    3.146e-05    3.569e-03    1.059e-02
+   12      16    6.000402e+00    0.000e+00    2.003e-04    3.343e-04
+
+Local minimum found that satisfies the constraints.
+
+Optimization completed because the objective function is non-decreasing in 
+feasible directions, to within the selected value of the function tolerance,
+and constraints are satisfied to within the default value of the constraint tolerance.
+
+
+
+
+xopt =
+
+    0.0000
+    0.9999
+    2.0000
+   -1.0000
+
+
+fval =
+
+    6.0004
+
+
+fopt =
+
+    6.0004
+
+
+gopt =
+
+   -0.0002
+   -1.0005
+   -0.0001
+
+sqp
+                                                          Norm of First-order
+ Iter F-count            f(x) Feasibility  Steplength        step  optimality
+    0       1    4.600000e+01   7.100e+01                           1.700e+01
+    1       4   -2.289062e+01   3.802e+01   4.900e-01   8.470e+00   3.771e+00
+    2       8   -2.125209e+01   2.697e+01   3.430e-01   1.393e+00   3.858e+00
+    3      10   -1.061463e+01   1.126e+01   7.000e-01   1.784e+00   3.683e+00
+    4      12   -2.497092e+00   5.106e+00   7.000e-01   1.440e+00   4.949e+00
+    5      14   -1.598383e-01   2.786e+00   7.000e-01   1.120e+00   3.650e+00
+    6      15    4.431558e+00   7.849e-01   1.000e+00   8.641e-01   3.030e+00
+    7      16    5.348670e+00   2.763e-01   1.000e+00   5.257e-01   1.230e+00
+    8      17    5.927257e+00   2.682e-02   1.000e+00   1.539e-01   4.030e-01
+    9      18    5.995699e+00   1.514e-03   1.000e+00   3.863e-02   6.941e-02
+   10      19    5.999804e+00   7.084e-05   1.000e+00   8.417e-03   8.584e-03
+   11      20    5.999993e+00   2.251e-06   1.000e+00   1.464e-03   2.234e-03
+
+Local minimum possible. Constraints satisfied.
+
+fmincon stopped because the size of the current step is less than
+the selected value of the step size tolerance and constraints are 
+satisfied to within the default value of the constraint tolerance.
+
+
+
+
+xopt =
+
+   -0.0001
+    1.0001
+    2.0000
+   -0.9999
+
+
+fval =
+
+    6.0000
+
+
+fopt =
+
+    6.0000
+
+
+gopt =
+
+    0.0000
+   -0.9998
+    0.0000
+
+</pre><h2>Quadratic Objective function, Linear constraints, 4-DV<a name="6"></a></h2><pre class="codeinput">type <span class="string">fRosenSuzuki</span>
+</pre><pre class="codeoutput">
+function [f,g]=fRosenSuzuki(x)
+% Objective and constraints for Rosen-Suzuki four-variable problem.
+x=x(:);
+f = 50 + [-5, -5, -21, 7]*x + [1, 1, 2, 1]*x.^2;
+g = [ [1, -1, 1, -1]*x + [1, 1, 1, 1]*x.^2 - 8
+      [-1, 0, 0, -1]*x + [1, 2, 1, 2]*x.^2 - 10
+      [2, -1, 0, -1]*x + [2, 1, 1, 0]*x.^2 - 5];
+end
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2015b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Rosen-Suzuki four-variable constrained optimization problem
+% Hock W., Schittkowski K. (1981): 
+% Test Examples for Nonlinear Programming Codes, 
+% Willi Hock, Klaus Schittkowski, 
+% Springer, Lecture Notes in Economics and Mathematical Systems, Vol. 187
+
+%% Initialize variables
+clear; clc
+
+ndv = 4;
+x0  = (2:5)';
+xlb = repmat(-100,ndv,1);
+xub = repmat( 100,ndv,1);
+
+options.Display='iter';
+options.MaxIter=100;
+options.TolFun = 5e-5;
+options.TolX   = 1e-3;
+
+%% Sequential Linear Programming with Trust Region Strategy
+disp('SLP')
+options.TrustRegion='merit'; % performs better than default 'simple'
+[xopt,fopt]=slp_trust(@fRosenSuzuki,x0,options,xlb,xub,@gRosenSuzuki)
+[fopt,gopt]=fRosenSuzuki(xopt) %#ok<*ASGLU,*NOPTS>
+
+
+%% Schittkowski's SQP coded in MATLAB by Spillman & Canfield
+disp('Schittkowski''s SQP with complex step gradients')
+options.ComplexStep = 'on';
+options.DerivativeCheck='on';
+[xopt,fopt]=sqp(@fRosenSuzuki,x0,options,xlb,xub)%,@gRosenSuzuki) complex step
+[fopt,gopt]=fRosenSuzuki(xopt)
+
+%% Spillman & Canfield SQP with fmincon data structure
+disp('Schittkowski''s SQP with fmincon problem structure')
+options.DerivativeCheck='off';
+prob.objective=@objRosenSuzuki;
+prob.nonlcon=@cRosenSuzuki;
+prob.x0=x0;
+prob.lb=xlb; 
+prob.ub=xub;
+prob.options=options;
+prob.solver='fmincon';
+[xopt,fopt]=sqp(prob)
+
+%% fmincon algorithms
+options = optimset(options,'GradObj','on', 'GradConstr','on');
+Algorithm = {'active-set','interior-point','sqp'};
+for n=1:length(Algorithm)
+   options = optimset(options,'Algorithm',Algorithm{n});
+   disp(Algorithm{n})
+   [xopt,fval]=fmincon(@objRosenSuzuki,x0,[],[],[],[],xlb,xub,@cRosenSuzuki,options)
+   [fopt,gopt]=fRosenSuzuki(xopt)
+end
+
+%% Quadratic Objective function, Linear constraints, 4-DV
+type fRosenSuzuki
+##### SOURCE END #####
+--></body></html>

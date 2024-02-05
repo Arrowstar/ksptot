@@ -1,0 +1,324 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>runSvanbergSQP.m script to run SQP for Svanberg's 5-segment beam.</title><meta name="generator" content="MATLAB 9.7"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2020-03-08"><meta name="DC.source" content="runSvanbergSQP.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>runSvanbergSQP.m script to run SQP for Svanberg's 5-segment beam.</h1><!--introduction--><p>Svanberg, Krister, "The Method of Moving Asymptotes--A New Method for Structural Optimization," Intl. J. Num. Meth. Vol. 24, 1987, pp. 359-373.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Initialize Variables &amp; options</a></li><li><a href="#2">Schittkowski SQP with line search</a></li><li><a href="#3">SLP with Trust Region</a></li><li><a href="#4">MPEA</a></li><li><a href="#5">QMEA in sub-space</a></li><li><a href="#6">SQP QMA with Trust Region</a></li></ul></div><h2 id="1">Initialize Variables &amp; options</h2><pre class="codeinput">Nsegments=5;
+Xinitial=5;
+X0=repmat(Xinitial,Nsegments,1); vlb=zeros(Nsegments,1);
+options=optimset(<span class="string">'fmincon'</span>);
+options.Display=<span class="string">'iter'</span>;
+options.MaxIter=30;
+options.TolX=0.1;
+options.TolFun=0.001;
+options.TolCon=0.001;
+</pre><h2 id="2">Schittkowski SQP with line search</h2><pre class="codeinput">[x,output]=sqp(@fSvanbergBeam,X0,options,vlb,[],@gSvanbergBeam);
+disp(<span class="string">'Final Design Variables, X'</span>)
+disp(x)
+</pre><pre class="codeoutput"> 
+                                         Termination Criteria
+                                       0.001           0.001       0.1
+                                  -------------------------------------
+f-CNT         FUNC      STEP  NAC     max{g}    j        KTO    max(S)
+    1         1.56         0    6          0    1    0.00841     0.061
+    2       1.5516         1    6   0.000166    1      0.041     0.304
+    3       1.5106         1    6    0.00414    1      0.165      1.31
+    4       1.3483         1    6        0.1    1       0.13     0.207
+    5       1.3934         1    6    0.00827    1     0.0331     0.457
+    6        1.364         1    6     0.0116    1     0.0507      0.99
+    7       1.3186         1    6     0.0873    1     0.0538     0.355
+    8       1.3377         1    6      0.025    1     0.0194    0.0605
+    9       1.3463         1    6   0.000845    1    0.00222     0.096
+   10       1.3444         1    6   0.000941    1    0.00496     0.169
+   11       1.3398         1    6    0.00507    1     0.0024    0.0999
+   12       1.3401         1    6    0.00126    1   0.000801    0.0874
+   13       1.3398         1    6   0.000882    1   0.000753   0.00428
+Optimization Terminated Successfully from sqp
+ 
+Final Design Variables, X
+    6.0756
+    5.2553
+    4.4505
+    3.5446
+    2.1457
+</pre><h2 id="3">SLP with Trust Region</h2><pre class="codeinput">[x1,~,~,output1]=slp_trust(@fSvanbergBeam,X0,options,vlb,[],@gSvanbergBeam) <span class="comment">%#ok&lt;NOPTS&gt;</span>
+</pre><pre class="codeoutput"> 
+         Sequential Linear Programming (SLP) Iteration History
+Iteration      Objective MaxConstraint    Index   Step-size   Merit      MoveLimit  TrustRatio
+        0           1.56             0      1           0        1.56
+        1         1.3779        0.2486      1           1        1.56        0.2      0.2806  m +
+        2         1.2764        0.2933      1           1        1.56        0.2     -0.1796  g +
+        3         1.3198       0.08866      1         0.5       1.406        0.1      0.6977  g +
+        4          1.311       0.07319      1         0.5       1.382        0.1      0.1745  g +
+        5         1.3232       0.08125      1         0.5       1.382        0.1     -0.1101  g - Rejected
+        6         1.3317       0.02424      1        0.25       1.355       0.05      0.6688  g +
+        7         1.3335        0.0203      1        0.25       1.353       0.05      0.1623  g +
+        8         1.3378      0.005979      1       0.125       1.344      0.025      0.7055  g +
+Move limits contract &lt; TolX
+        9         1.3391      0.005094      1       0.125       1.344      0.025      0.1479  g +
+       10         1.3397      0.001215      1      0.0625       1.341     0.0125      0.7614  g +
+       11         1.3396      0.001212      1      0.0625       1.341     0.0125    0.002391  g + Bound
+Move limits contract &lt; TolX
+       12         1.3396      0.001142      1      0.0625       1.341     0.0125     0.05791  g + Bound
+       13         1.3398     0.0003076      1     0.03125        1.34    0.00625      0.7307  g + Bound
+              ----------  ------------         ----------
+    Criteria       0.001         0.001                0.1
+SLP slowed.    Final objective function value = 1.3398
+               Lagrangian gradient   2-norm = 0.0016601
+               Lagrangian gradient inf-norm = 0.0012152
+               Optimality Tolerance         = 0.001
+Trust Region Strategy uses filter
+* Dominates prior points
++ Nondominated
+- Dominated by prior point(s)
+f/g/m Objective/Constraint/Merit governs Trust Ratio
+x1 =
+    6.0087
+    5.3171
+    4.4738
+    3.5160
+    2.1562
+output1 = 
+  struct with fields:
+
+             f: [1&times;14 double]
+             g: [1&times;14 double]
+      rejected: [0 0 0 0 0 1 0 0 0 0 0 0 0 0]
+    iterations: 13
+     funcCount: 14
+     gradCount: 13
+       message: 1
+            TR: [1&times;1 struct]
+</pre><h2 id="4">MPEA</h2><pre class="codeinput">options.MPEA=<span class="string">'on'</span>;
+[xM,~,~,outputM]=slp_trust(@fSvanbergBeam,X0,options,vlb,[],@gSvanbergBeam) <span class="comment">%#ok&lt;NOPTS&gt;</span>
+</pre><pre class="codeoutput"> 
+         Sequential MPEA Optimization Iteration History
+Iteration      Objective MaxConstraint    Index   Step-size   Merit      MoveLimit  TrustRatio
+        0           1.56             0      1           0        1.56
+        1         1.3779        0.2486      1           1        1.56        0.2      0.2806  m +
+        2         1.3492       0.08888      1           1        2.76        0.2      0.3981  f +
+        3         1.3257        0.1046      1           1       2.986        0.2     -0.1769  g +
+        4         1.3309       0.02161      1         0.5       1.674        0.1     -0.7086  f +
+        5         1.3367       0.01928      1        0.25       1.643       0.05      0.1081  g +
+        6         1.3404      0.002479      1       0.125        1.38      0.025      0.8714  g +
+        7         1.3398       0.00107      1       0.125       1.357      0.025      0.2572  f +
+Move limits contract &lt; TolX
+        8         1.3403      0.002012      1       0.125       1.357      0.025     -0.8807  g - Rejected
+Move limits contract &lt; TolX
+        9         1.3399     0.0004902      1      0.0625       1.348     0.0125     -0.6404  f + Bound
+              ----------  ------------         ----------
+    Criteria       0.001         0.001                0.1
+MPEA slowed.    Final objective function value = 1.3399
+               Lagrangian gradient   2-norm = 0.0048575
+               Lagrangian gradient inf-norm = 0.0038775
+               Optimality Tolerance         = 0.001
+Trust Region Strategy uses filter
+* Dominates prior points
++ Nondominated
+- Dominated by prior point(s)
+f/g/m Objective/Constraint/Merit governs Trust Ratio
+xM =
+    5.9787
+    5.3218
+    4.5625
+    3.4652
+    2.1453
+outputM = 
+  struct with fields:
+
+             f: [1&times;10 double]
+             g: [1&times;10 double]
+      rejected: [0 0 0 0 0 0 0 0 1 0]
+    iterations: 9
+     funcCount: 10
+     gradCount: 9
+       message: 1
+            TR: [1&times;1 struct]
+</pre><h2 id="5">QMEA in sub-space</h2><pre class="codeinput">options.QMEA=<span class="string">'on'</span>;
+[xQ,~,~,outputQ]=sqp_trust(@fSvanbergBeam,X0,options,vlb,[],@gSvanbergBeam) <span class="comment">%#ok&lt;NOPTS&gt;</span>
+</pre><pre class="codeoutput"> 
+         Sequential QMEA Optimization Iteration History
+Iteration      Objective MaxConstraint    Index   Step-size   Merit      MoveLimit  TrustRatio
+        0           1.56             0      1           0        1.56
+        1         1.3779        0.2486      1           1        1.56        0.2      0.2806  m +
+        2         1.4147    -1.036e-09      1           1       1.415        0.2           1  g +
+        3         1.3687     2.021e-07      1      0.7266       1.369        0.2           1  m +
+        4         1.3403     3.143e-08      1      0.7547        1.34        0.2           1  f +
+        5           1.34     2.125e-07      1     0.09373        1.34        0.2           1  f + Unbound
+              ----------  ------------         ----------
+    Criteria       0.001         0.001                0.1
+QMEA converged. Final objective function value = 1.34
+               Lagrangian gradient   2-norm = 0.00011156
+               Lagrangian gradient inf-norm = 9.1482e-05
+               Optimality Tolerance         = 0.001
+Trust Region Strategy uses filter
+* Dominates prior points
++ Nondominated
+- Dominated by prior point(s)
+f/g/m Objective/Constraint/Merit governs Trust Ratio
+xQ =
+    6.0168
+    5.3094
+    4.4939
+    3.5018
+    2.1518
+outputQ = 
+  struct with fields:
+
+             f: [1.5600 1.3779 1.4147 1.3687 1.3403 1.3400]
+             g: [0 0.2486 -1.0361e-09 2.0214e-07 3.1428e-08 2.1247e-07]
+      rejected: [0 0 0 0 0 0]
+    iterations: 5
+     funcCount: 6
+     gradCount: 6
+       message: 1
+            TR: [1&times;1 struct]
+</pre><h2 id="6">SQP QMA with Trust Region</h2><pre class="codeinput">options.MPEA=<span class="string">'off'</span>;
+options.QMEA=<span class="string">'on'</span>;
+[x2,~,~,output2]=sqp_trust(@fSvanbergBeam,X0,options,vlb,[],@gSvanbergBeam) <span class="comment">%#ok&lt;NOPTS&gt;</span>
+</pre><pre class="codeoutput"> 
+         Sequential QMA Optimization Iteration History
+Iteration      Objective MaxConstraint    Index   Step-size   Merit      MoveLimit  TrustRatio
+        0           1.56             0      1           0        1.56
+        1         1.3779        0.2486      1           1        1.56        0.2      0.2806  m +
+        2         1.2775        0.2907      1           1       1.714        0.2     -0.1692  g +
+Augmented Search direction failed after 3 tries.
+   f,gapx=        1.3202      0.004096      1  sqp failed in qmeaprog
+        3         1.3202       0.08867      1         0.5       1.961        0.1      0.7049  g +
+        4         1.3199       0.04944      1         0.5       1.677        0.1      0.4425  g +
+        5         1.3372       0.01189      1      0.3459       1.423        0.1      0.7595  g +
+        6         1.3385      0.009415      1      0.3725       1.406        0.1       0.208  g +
+        7         1.3379      0.008502      1      0.3353       1.399        0.1     0.09698  g +
+        8         1.3396      0.001226      1      0.2153       1.348        0.1      0.8558  g +
+        9         1.3399     0.0001724      1     0.06787       1.341        0.1      0.8596  g +
+       10           1.34     1.298e-06      1     0.01915        1.34        0.1      0.9925  g + Unbound
+              ----------  ------------         ----------
+    Criteria       0.001         0.001                0.1
+QMA slowed.    Final objective function value = 1.34
+               Lagrangian gradient   2-norm = 0.001594
+               Lagrangian gradient inf-norm = 0.0012602
+               Optimality Tolerance         = 0.001
+Trust Region Strategy uses filter
+* Dominates prior points
++ Nondominated
+- Dominated by prior point(s)
+f/g/m Objective/Constraint/Merit governs Trust Ratio
+x2 =
+    6.0153
+    5.3343
+    4.4760
+    3.4989
+    2.1496
+output2 = 
+  struct with fields:
+
+             f: [1&times;11 double]
+             g: [1&times;11 double]
+      rejected: [0 0 0 0 0 0 0 0 0 0 0]
+    iterations: 10
+     funcCount: 11
+     gradCount: 11
+       message: 1
+            TR: [1&times;1 struct]
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% runSvanbergSQP.m script to run SQP for Svanberg's 5-segment beam. 
+% Svanberg, Krister, "The Method of Moving AsymptotesREPLACE_WITH_DASH_DASHA New Method for
+% Structural Optimization," Intl. J. Num. Meth. Vol. 24, 1987, pp. 359-373.
+
+%% Initialize Variables & options
+Nsegments=5;
+Xinitial=5;
+X0=repmat(Xinitial,Nsegments,1); vlb=zeros(Nsegments,1);
+options=optimset('fmincon');
+options.Display='iter';
+options.MaxIter=30;
+options.TolX=0.1;
+options.TolFun=0.001;
+options.TolCon=0.001;
+
+%% Schittkowski SQP with line search
+[x,output]=sqp(@fSvanbergBeam,X0,options,vlb,[],@gSvanbergBeam);
+disp('Final Design Variables, X')
+disp(x)
+
+%% SLP with Trust Region
+[x1,~,~,output1]=slp_trust(@fSvanbergBeam,X0,options,vlb,[],@gSvanbergBeam) %#ok<NOPTS>
+
+%% MPEA
+options.MPEA='on';
+[xM,~,~,outputM]=slp_trust(@fSvanbergBeam,X0,options,vlb,[],@gSvanbergBeam) %#ok<NOPTS>
+
+%% QMEA in sub-space
+options.QMEA='on';
+[xQ,~,~,outputQ]=sqp_trust(@fSvanbergBeam,X0,options,vlb,[],@gSvanbergBeam) %#ok<NOPTS>
+
+%% SQP QMA with Trust Region
+options.MPEA='off';
+options.QMEA='on';
+[x2,~,~,output2]=sqp_trust(@fSvanbergBeam,X0,options,vlb,[],@gSvanbergBeam) %#ok<NOPTS>
+##### SOURCE END #####
+--></body></html>

@@ -1,0 +1,209 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>runSpringExampleTrust.m</title><meta name="generator" content="MATLAB 9.1"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2017-04-18"><meta name="DC.source" content="runSpringExampleTrust.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>runSpringExampleTrust.m</h1><!--introduction--><p>Example problem taken from Vanderplaats textbook, example 3-1. Unconstrained potential energy minimization of two springs. Complex-step gradient.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Initialize tolerances</a></li><li><a href="#2">SQP</a></li><li><a href="#3">SLP gradually reduced move limits (no Trust Region Strategy)</a></li><li><a href="#4">SLP Trust Region</a></li></ul></div><h2 id="1">Initialize tolerances</h2><pre class="codeinput">clear; clc;
+options.ComplexStep = <span class="string">'on'</span>;
+options.Display = <span class="string">'iter'</span>;
+options.MaxIter = 50;
+options.TypicalX = [5;5];
+options.TolFun  = 0.001; <span class="comment">% 0.0001 for SLP slow termination criterion</span>
+options.TolX    = 0.1;
+</pre><h2 id="2">SQP</h2><pre class="codeinput">[x,out]=sqp(      @fVanderplaatsSpringEx3d1,[5 5],options)
+</pre><pre class="codeoutput"> 
+                                         Termination Criteria
+                                       1e-06           0.001       0.1
+                                  -------------------------------------
+f-CNT         FUNC      STEP  NAC     max{g}    j        KTO    max(S)
+    1       1.2007         0    0         -1    1        681      19.7
+    5      -39.431     0.119    0         -1    1       5.41      1.69
+    8      -41.347         1    0         -1    1       1.07     0.542
+   11      -41.777         1    0         -1    1      0.049     0.132
+   14      -41.806         1    0         -1    1    0.00334    0.0452
+   17      -41.808         1    0         -1    1   2.64e-05   0.00189
+Optimization Terminated Successfully from sqp
+ 
+x =
+    8.6329    4.5299
+out = 
+  struct with fields:
+
+          fval: -41.8082
+     funcCount: 17
+     gradCount: 6
+    iterations: 5
+       options: [1&times;18 double]
+</pre><h2 id="3">SLP gradually reduced move limits (no Trust Region Strategy)</h2><pre class="codeinput">options.TrustRegion = <span class="string">'off'</span>;
+slp_trust(@fVanderplaatsSpringEx3d1,[5 5],options)
+</pre><pre class="codeoutput"> 
+         Sequential Linear Programming Iteration History
+Iteration      Objective MaxConstraint    Index   Step-size   Merit      MoveLimit  TrustRatio
+        0         1.2007            -1      1           0       1.201
+        1        -27.138            -1      1           1      -27.14        0.2  *
+        2        -38.217            -1      1         0.9      -38.22       0.18  *
+        3        -36.572            -1      1        0.81      -36.57      0.162  *
+        4        -38.546            -1      1       0.729      -38.55     0.1458  *
+        5        -40.497            -1      1      0.6561       -40.5     0.1312  *
+        6        -39.438            -1      1      0.5905      -39.44     0.1181  *
+        7        -40.653            -1      1      0.5314      -40.65     0.1063  *
+        8        -41.512            -1      1      0.4783      -41.51    0.09566  *
+        9        -40.565            -1      1      0.4305      -40.56    0.08609  *
+       10        -41.555            -1      1      0.3874      -41.55    0.07748  *
+       11        -41.795            -1      1      0.3487      -41.79    0.06974  *
+       12        -41.073            -1      1      0.3138      -41.07    0.06276  *
+       13        -41.794            -1      1      0.2824      -41.79    0.05649  *
+       14         -41.77            -1      1      0.2542      -41.77    0.05084  *
+       15        -41.472            -1      1      0.2288      -41.47    0.04575  *
+       16        -41.778            -1      1      0.2059      -41.78    0.04118  *
+       17        -41.801            -1      1      0.1853       -41.8    0.03706  *
+       18        -41.649            -1      1      0.1668      -41.65    0.03335  *
+       19        -41.806            -1      1      0.1501      -41.81    0.03002  *
+       20        -41.681            -1      1      0.1351      -41.68    0.02702  *
+       21        -41.807            -1      1      0.1216      -41.81    0.02432  *
+       22        -41.796            -1      1      0.1094       -41.8    0.02188  *
+       23        -41.756            -1      1     0.09848      -41.76     0.0197  *
+       24        -41.799            -1      1     0.08863       -41.8    0.01773  *
+       25        -41.808            -1      1     0.07977      -41.81    0.01595  * Bound
+              ----------  ------------         ----------
+    Criteria       0.001         1e-06                0.1
+SLP converged. Final objective function value = -41.8082
+               Lagrangian gradient   2-norm = 0.01146
+               Lagrangian gradient inf-norm = 0.009814
+               Optimality Tolerance         = 0.01
+* Dominates prior points
++ Nondominated
+- Dominated by prior point(s)
+ans =
+    8.6308
+    4.5324
+</pre><h2 id="4">SLP Trust Region</h2><pre class="codeinput">options.TrustRegion = <span class="string">'TRAM'</span>; <span class="comment">% Trust Region Adaptive Move Limits</span>
+options.MoveLimit   = 0.5;
+options.OptimalityTolerance = 0.1;
+[X,PE] =slp_trust(@fVanderplaatsSpringEx3d1,[5 5],options)
+</pre><pre class="codeoutput"> 
+         Sequential Linear Programming Iteration History
+Iteration      Objective MaxConstraint    Index   Step-size   Merit      MoveLimit  TrustRatio
+        0         1.2007            -1      1           0       1.201
+        1        -38.052            -1      1         2.5      -38.05        0.5      0.4265  *
+        2         1.2007            -1      1         2.5      -38.05        0.5      -2.966  - _f Rejected
+        3        -38.093            -1      1       0.625      -38.09      0.125     0.01232  * _m
+        4         -38.89            -1      1      0.3085      -38.89     0.0617      0.4999  *
+        5        -39.901            -1      1      0.3085       -39.9     0.0617      0.9078  * !
+        6        -41.678            -1      1       1.234      -41.68     0.2468      0.4891  *
+        7        -31.941            -1      1       1.234      -41.68     0.2468      -3.869  - _f Rejected
+        8        -41.537            -1      1      0.3085      -41.68     0.0617     -0.2233  - ! Rejected
+        9        -41.806            -1      1      0.1261      -41.81    0.02522      0.4996  *
+       10        -41.794            -1      1      0.1261      -41.81    0.02522     -0.9853  - ! Rejected
+       11        -41.808            -1      1     0.03175      -41.81   0.006351      0.5071  * Unbound
+              ----------  ------------         ----------
+    Criteria       0.001         1e-06                0.1
+SLP converged. Final objective function value = -41.8079
+               Lagrangian gradient   2-norm = 0.066858
+               Lagrangian gradient inf-norm = 0.047842
+               Optimality Tolerance         = 0.1
+Trust Region Strategy uses Merit function
+* Dominates prior points
++ Nondominated
+- Dominated by prior point(s)
+! Trust Radius set by Merit function minimization
+_ Trust Radius set by target Trust Ratio
+f/g/m Objective/Constraint/Merit governs Trust Ratio
+X =
+    8.6316
+    4.5168
+PE =
+  -41.8079
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2016b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% runSpringExampleTrust.m
+% Example problem taken from Vanderplaats textbook, example 3-1. 
+% Unconstrained potential energy minimization of two springs.
+% Complex-step gradient.
+
+%% Initialize tolerances
+clear; clc;
+options.ComplexStep = 'on';
+options.Display = 'iter';
+options.MaxIter = 50;
+options.TypicalX = [5;5];
+options.TolFun  = 0.001; % 0.0001 for SLP slow termination criterion
+options.TolX    = 0.1;
+
+%% SQP
+[x,out]=sqp(      @fVanderplaatsSpringEx3d1,[5 5],options)
+
+%% SLP gradually reduced move limits (no Trust Region Strategy)
+options.TrustRegion = 'off';
+slp_trust(@fVanderplaatsSpringEx3d1,[5 5],options)
+
+%% SLP Trust Region
+options.TrustRegion = 'TRAM'; % Trust Region Adaptive Move Limits
+options.MoveLimit   = 0.5;
+options.OptimalityTolerance = 0.1;
+[X,PE] =slp_trust(@fVanderplaatsSpringEx3d1,[5 5],options)
+##### SOURCE END #####
+--></body></html>

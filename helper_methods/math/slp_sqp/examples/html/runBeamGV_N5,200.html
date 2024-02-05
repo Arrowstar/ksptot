@@ -1,0 +1,783 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>runBeamGV</title><meta name="generator" content="MATLAB 8.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2016-11-14"><meta name="DC.source" content="runBeamGV.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>runBeamGV</h1><!--introduction--><p>Script to Run Gary Vanderplaats cantilever Beam with SQP and SLP. N beam segments and 2N design variables, taken from Vanderplaats (1984) Example 5-1, pp. 147-150.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Initialize variables</a></li><li><a href="#3">SQP with BFGS</a></li><li><a href="#4">SQP with Exact Hessian</a></li><li><a href="#5">SLP Trust</a></li><li><a href="#6">fmincon with analytic gradients</a></li><li><a href="#7">fmincon, tight tolerances</a></li></ul></div><h2>Initialize variables<a name="1"></a></h2><pre class="codeinput">clear; clc
+options.Display = <span class="string">'iter'</span>;
+options.MaxIter = 40;
+options.TolX   = 0.5;
+options.TolFun = 0.5;
+options.TolCon = 1e-4;
+options.MoveLimit = 0.2;
+<span class="keyword">for</span> N = [5 200]; <span class="comment">% number of beam segments</span>
+</pre><pre class="codeinput">   x0 = [5*ones(1,N), 40*ones(1,N)];
+   xlb = [ ones(1,N),  5*ones(1,N)];
+   options.TypicalX = x0;
+   disp(<span class="string">' '</span>)
+   disp([<span class="string">'N='</span>,num2str(N),<span class="string">' beam segments'</span>])
+</pre><pre class="codeoutput"> 
+N=5 beam segments
+</pre><pre class="codeoutput"> 
+N=200 beam segments
+</pre><h2>SQP with BFGS<a name="3"></a></h2><pre class="codeinput">   disp(<span class="string">'SQP with BFGS'</span>), tic
+   [dv2,out2,lam2] = sqp(@fbeamGV,x0,options,xlb,[],@gbeamGV); toc
+   disp(out2)
+</pre><pre class="codeoutput">SQP with BFGS
+ 
+                                       Termination Criteria
+                                     0.0001           0.5       0.5
+                                -----------------------------------
+f-CNT         FUNC      STEP NAC     max{g}  j        KTO    max(S)
+    1        1e+05         0  20      0.562  6   1.35e+05        35
+    3        93901       0.1  21      0.514  6   8.27e+04      19.7
+    5        90002       0.1  21      0.468  6   7.17e+04      14.6
+    6        53951         1  21      0.585  4    1.9e+04      5.73
+    7        62838         1  21      0.119  4   4.82e+03      5.74
+    8        64748         1  21     0.0434  6   1.86e+03       6.6
+   10        64685     0.356  21     0.0359  6   2.16e+03      5.05
+   12        64582     0.489  21     0.0278  6   1.64e+03     0.777
+   13        65394         1  20   0.000862  6       51.1     0.214
+   14        65418         1  21   4.93e-05  6       2.51    0.0757
+   15        65419         1  21   7.37e-06  6      0.457  0.000298
+Optimization Terminated Successfully from sqp
+ 
+Elapsed time is 0.262413 seconds.
+          fval: 6.5419e+04
+     funcCount: 15
+     gradCount: 11
+    iterations: 10
+       options: [1x18 double]
+
+</pre><pre class="codeoutput">SQP with BFGS
+ 
+                                       Termination Criteria
+                                     0.0001           0.5       0.5
+                                -----------------------------------
+f-CNT         FUNC      STEP NAC     max{g}  j        KTO    max(S)
+    1        1e+05         0 759      0.562 201   1.08e+05      25.2
+    3        72442     0.477 784      0.526 201   4.27e+04      15.6
+    4        55333         1 799       2.31 176      1e+04      14.5
+    5        55503         1 798      0.769 176   1.31e+04      25.1
+    7        55925     0.121 798      0.369 201    1.4e+04      22.1
+    9        56337       0.1 798      0.336 201   1.33e+04      19.9
+   10        62122         1 801       8.24 177   1.69e+04      9.97
+   12        59702     0.255 801       4.87 177   1.26e+04      10.8
+   14        57161     0.423 801       2.14 178   7.99e+03      25.6
+   17        56699     0.159 801       1.42 177   1.23e+04      12.7
+   18        62210         1 801       3.62 178   2.79e+03      17.1
+   19        62204         1 801       6.21 177   1.31e+04      9.85
+   22        61906    0.0328 801       4.52 177   3.39e+03      8.56
+   23        62826         1 801       1.86 177   3.54e+03      7.92
+   24        62512         1 801      0.619 177   3.08e+03      3.35
+   25        63708         1 801      0.195 200        233      3.57
+   26        63758         1 801     0.0099 177       92.4      2.13
+   27        63797         1 801    0.00186 200       5.12     0.438
+   28        63798         1 801   2.62e-05 201       9.57     0.803
+   29        63789         1 801   5.91e-05 201       17.5       1.6
+   30        63774         1 801   0.000147 201       18.3      1.78
+   31        63759         1 801   0.000179 201       16.3      1.57
+   32        63748         1 801   0.000496 178       35.7      4.34
+   33        63709         1 801   0.000454 201       54.5      4.36
+   34        63679         1 801   0.000286 201       13.9      1.11
+   35        63675         1 801   7.94e-05 201       14.5      1.38
+   36        63664         1 801   0.000178 201       10.7       0.3
+   37        63669         1 801   7.63e-06 201       0.34     0.143
+Optimization Terminated Successfully from sqp
+ 
+Elapsed time is 8.187800 seconds.
+          fval: 6.3669e+04
+     funcCount: 37
+     gradCount: 28
+    iterations: 27
+       options: [1x18 double]
+
+</pre><h2>SQP with Exact Hessian<a name="4"></a></h2><pre class="codeinput">   disp(<span class="string">'SQP with exact Hessians'</span>)
+   options.HessFun=@HbeamGV; tic
+   [dv3,out3,lam3] = sqp(@fbeamGV,x0,options,xlb,[],@gbeamGV); toc
+   disp(out3)
+   options=rmfield(options,<span class="string">'HessFun'</span>);
+</pre><pre class="codeoutput">SQP with exact Hessians
+ 
+                                       Termination Criteria
+                                     0.0001           0.5       0.5
+                                -----------------------------------
+f-CNT         FUNC      STEP NAC     max{g}  j        KTO    max(S)
+    1        1e+05         0   6      0.562  6    9.1e+04      16.3
+    2        70046         1  21       2.23  5   3.61e+04      9.63
+    3        61442         1   9      0.744  5   1.32e+04      5.24
+    4        63790         1   8      0.176  5    3.4e+03       1.7
+    5        65245         1   8     0.0162  5        350     0.199
+    6        65418         1   8   0.000171  5       3.68   0.00204
+    7        65420         1   8   1.95e-08  5    0.00039  2.28e-07
+Optimization Terminated Successfully from sqp
+ 
+Elapsed time is 0.326080 seconds.
+          fval: 6.5420e+04
+     funcCount: 7
+     gradCount: 7
+    iterations: 6
+       options: [1x18 double]
+
+</pre><pre class="codeoutput">SQP with exact Hessians
+ 
+                                       Termination Criteria
+                                     0.0001           0.5       0.5
+                                -----------------------------------
+f-CNT         FUNC      STEP NAC     max{g}  j        KTO    max(S)
+    1        1e+05         0 211      0.562 201   2.13e+05        35
+    2        68325         1 801       26.9 188   1.71e+05      7.87
+    3        70421         1 801       11.4 188   9.63e+04      11.1
+    4        60010         1 801       4.56 188   4.23e+04      9.99
+    5        61919         1 801        1.7 188   1.33e+04      3.08
+    6        63907         1 801      0.523 188   1.88e+03      4.44
+    7        64244         1 801       0.22 197        306      3.74
+    8        64022         1 801      0.516 194        565      5.27
+   10        63987       0.1 801      0.461 194        535      5.35
+   12        63922     0.192 801      0.362 194        472       5.3
+   14        63812     0.375 801      0.197 194        342      5.03
+   15        63605         1 801      0.181 188        138      2.22
+   16        63653         1 801   0.000544 201       32.1     0.795
+   17        63668         1 801   3.19e-05 201       2.02    0.0712
+   18        63669         1 801   1.57e-07 201    0.00998  0.000496
+Optimization Terminated Successfully from sqp
+ 
+Elapsed time is 12.562141 seconds.
+          fval: 6.3669e+04
+     funcCount: 18
+     gradCount: 15
+    iterations: 14
+       options: [1x18 double]
+
+</pre><h2>SLP Trust<a name="5"></a></h2><pre>with and without active set strategy</pre><pre class="codeinput">   <span class="keyword">if</span> N&gt;50
+      options.TrustRegion=<span class="string">'TRAMfilter'</span>;
+      tic
+      [~,fa,stat,outa] = slp_trust(@fbeamGVa,x0,options,xlb,[],@gbeamGVa), toc
+   <span class="keyword">else</span>
+      options.TrustRegion=<span class="string">'filter'</span>; tic
+      [~,f1,sta1,out1] = slp_trust(@fbeamGV,x0,options,xlb,[],@gbeamGV)
+   <span class="keyword">end</span>
+</pre><pre class="codeoutput"> 
+         Sequential Linear Programming Iteration History
+Iteration      Objective MaxConstraint    Index   Step-size   Merit      MoveLimit  TrustRatio
+        0          1e+05        0.5625      6           0   1.396e+05
+        1          86438        0.3037      6           8   1.068e+05        0.2      0.4601  g *
+        2          73122        0.2401      5           8   1.195e+05        0.2       0.483  g *
+        3          64957        0.0784      6           8   8.156e+04        0.2      0.4687  g *
+        4          64871       0.04005      6       5.804   7.061e+04        0.2      0.3879  f *
+        5          64121       0.06975      2       6.896   7.061e+04        0.2     -0.4509  g +
+        6          64646       0.03038      6           4   6.603e+04        0.1      0.4772  g +
+        7          65009       0.02236      6           4   6.688e+04        0.1      0.2641  g +
+        8          64817       0.02686      6           4   6.688e+04        0.1     -0.2015  g +
+        9          65210      0.007001      6           2   6.575e+04       0.05      0.7393  g +
+       10          65392       0.00504      6           2   6.603e+04       0.05        0.28  g +
+       11          65255      0.006365      6           2   6.603e+04       0.05     -0.2628  g +
+       12          65381      0.001588      6           1   6.558e+04      0.025      0.7505  g +
+       13          65391      0.001616      6           1   6.558e+04      0.025    -0.01749  g - Rejected
+       14          65408     0.0004104      6         0.5   6.546e+04     0.0125      0.7416  g +
+       15          65416     0.0004046      6         0.5   6.547e+04     0.0125     0.01425  g +
+       16          65418     0.0001006      6        0.25   6.543e+04    0.00625      0.7512  g +
+       17          65417     0.0001009      6        0.25   6.543e+04    0.00625   -0.002696  g +
+       18          65419      2.53e-05      6       0.125   6.542e+04   0.003125      0.7493  g +
+       19          65419     2.562e-05      6       0.125   6.542e+04   0.003125    -0.01246  g - Rejected
+       20          65420     6.391e-06      6      0.0625   6.542e+04   0.001563      0.7474  g +
+       21          65420     6.411e-06      6      0.0625   6.542e+04   0.001563   -0.003155  g +
+       22          65420     1.601e-06      6     0.03125   6.542e+04  0.0007813      0.7503  g + Bound
+              ----------  ------------         ----------
+    Criteria         0.5        0.0001                0.5
+SLP converged. Final objective function value = 65419.6141
+               Lagrangian gradient   2-norm = 0.75712
+               Lagrangian gradient inf-norm = 0.5419
+Trust Region Strategy uses filter
+* Dominates prior points
++ Nondominated
+- Dominated by prior point(s)
+f/g/m Objective/Constraint/Merit governs Trust Ratio
+
+f1 =
+
+   6.5420e+04
+
+
+sta1 =
+
+     1
+
+
+out1 = 
+
+             f: [1x23 double]
+             g: [11x23 double]
+    iterations: 22
+       message: 1
+
+</pre><pre class="codeoutput"> 
+         Sequential Linear Programming Iteration History
+Iteration      Objective MaxConstraint    Index   Step-size   Merit      MoveLimit  TrustRatio
+        0          1e+05        0.5625    201           0   1.749e+05
+        1          85009         0.363    201           8   1.406e+05        0.2      0.3546  g *
+        2          71739         0.342    157           8   2.023e+05        0.2      0.2449  g *
+        3          64553        0.6741    185           8   4.656e+05        0.2     -0.2295  g + _g
+        4          68620        0.2154    195       3.253   1.168e+05    0.08133      0.6985  g +
+        5          67308         0.233    198       3.253   1.844e+05    0.08133      0.6032  g +
+        6          65393        0.3759    200       3.253    5.09e+05    0.08133    -0.05922  g + _g
+        7          65186       0.01285    189       1.536   6.666e+04    0.03839      0.7233  g +
+        8          64519       0.01201    200       1.536   7.818e+04    0.03839     0.01833  g * _g
+        9          64292      0.003121    189      0.7822   6.476e+04    0.01955      0.6988  g *
+       10          64070      0.002132    201      0.7822   6.417e+04    0.01955     -0.0263  g * _g
+       11          64026     0.0005307    201      0.3811   6.405e+04   0.009527      0.7511  g *
+       12          63956      0.000536    201      0.3811   6.405e+04   0.009527   -0.009858  g + _g
+       13          63935     0.0001318    201      0.1887   6.396e+04   0.004717      0.7541  g *
+       14          63907     0.0001317    201      0.1887   6.393e+04   0.004717    0.001118  g * _g
+       15          63897      3.35e-05    201     0.09445    6.39e+04   0.002361      0.7456  g *
+       16          63885     3.321e-05    201     0.09445   6.389e+04   0.002361    0.008494  g * _g
+       17          63880     8.449e-06    201     0.04763   6.388e+04   0.001191      0.7456  g *
+       18          63874     8.451e-06    201     0.04763   6.388e+04   0.001191  -0.0002235  g + _g
+       19          63872     2.121e-06    201     0.02381   6.387e+04  0.0005952       0.749  g *
+       20          63869     2.113e-06    201     0.02381   6.387e+04  0.0005952    0.004079  g * _g
+       21          63867     5.328e-07    201     0.01195   6.387e+04  0.0002988      0.7478  g *
+       22          63866     5.351e-07    201     0.01195   6.387e+04  0.0002988   -0.004285  g + _g
+       23          63865      1.32e-07    201    0.005951   6.387e+04  0.0001488      0.7533  g *
+       24          63865     1.323e-07    201    0.005951   6.386e+04  0.0001488   -0.002401  g + _g
+       25          63864     3.286e-08    201    0.002968   6.386e+04  7.421e-05      0.7517  g * Bound
+              ----------  ------------         ----------
+    Criteria         0.5        0.0001                0.5
+SLP slowed.    Final objective function value = 63864.251
+               Lagrangian gradient   2-norm = 183.9117
+               Lagrangian gradient inf-norm = 64.267
+Trust Region Strategy uses filter
+* Dominates prior points
++ Nondominated
+- Dominated by prior point(s)
+! Trust Radius set by Merit function minimization
+_ Trust Radius set by target Trust Ratio
+f/g/m Objective/Constraint/Merit governs Trust Ratio
+
+fa =
+
+   6.3864e+04
+
+
+stat =
+
+     1
+
+
+outa = 
+
+             f: [1x26 double]
+             g: [401x26 double]
+    iterations: 25
+       message: 1
+
+Elapsed time is 0.929543 seconds.
+</pre><h2>fmincon with analytic gradients<a name="6"></a></h2><pre class="codeinput">   A = [diag(-20.*ones(N,1)),diag(ones(N,1))]; <span class="comment">% Linear Constraints</span>
+   b_U     = zeros(N,1);                       <span class="comment">% Bound on linear constraints</span>
+   disp(<span class="string">' '</span>)
+   disp(<span class="string">'fmincon fails with looser tolerances used for SQP and SLP_Trust'</span>)
+   Options=optimoptions(@fmincon,<span class="string">'Display'</span>,<span class="string">'iter'</span>,<span class="string">'GradObj'</span>,<span class="string">'on'</span>,<span class="string">'GradConstr'</span>,<span class="string">'on'</span>,<span class="keyword">...</span>
+                                 <span class="string">'TolX'</span>,0.5,<span class="string">'TolFun'</span>,0.5,<span class="string">'TolCon'</span>,1e-4);
+   [~,~,flag,out]=fmincon(@GVbeam_obj,x0,A,b_U,[],[],xlb,[],<span class="keyword">...</span>
+                          @GVbeam_nlcon,Options)
+   Options=optimoptions(Options,<span class="string">'Algorithm'</span>,<span class="string">'sqp'</span>);
+   [~,~,flag,out]=fmincon(@GVbeam_obj,x0,A,b_U,[],[],xlb,[],<span class="keyword">...</span>
+                          @GVbeam_nlcon,Options)
+</pre><pre class="codeoutput"> 
+fmincon fails with looser tolerances used for SQP and SLP_Trust
+                                            First-order      Norm of
+ Iter F-count            f(x)  Feasibility   optimality         step
+    0       1    1.000000e+05    5.625e-01    3.357e+03
+    1       2    6.242015e+04    3.265e+01    8.209e+04    3.728e+01
+    2       3    5.691764e+04    2.984e+01    5.167e+04    8.345e+00
+
+Converged to an infeasible point.
+
+fmincon stopped because the size of the current step is less than
+the selected value of the step size tolerance but constraints are not
+satisfied to within the selected value of the constraint tolerance.
+
+
+
+
+flag =
+
+    -2
+
+
+out = 
+
+         iterations: 2
+          funcCount: 3
+    constrviolation: 29.8449
+           stepsize: 8.3448
+          algorithm: 'interior-point'
+      firstorderopt: 5.1674e+04
+       cgiterations: 0
+            message: 'Converged to an infeasible point....'
+
+                                                          Norm of First-order
+ Iter F-count            f(x) Feasibility  Steplength        step  optimality
+    0       1    1.000000e+05   5.625e-01                           4.000e+03
+    1       2    4.589283e+04   8.471e+01   1.000e+00   4.113e+01   3.567e+05
+    2       4    5.445246e+04   4.157e+01   7.000e-01   1.236e+00   4.196e+03
+
+Converged to an infeasible point.
+
+fmincon stopped because the size of the current step is less than
+the selected value of the step size tolerance but constraints are not
+satisfied to within the selected value of the constraint tolerance.
+
+
+
+
+flag =
+
+    -2
+
+
+out = 
+
+         iterations: 2
+          funcCount: 4
+          algorithm: 'sqp'
+            message: 'Converged to an infeasible point....'
+    constrviolation: 41.5701
+           stepsize: 1.2357
+       lssteplength: 0.7000
+      firstorderopt: 4.1964e+03
+
+</pre><pre class="codeoutput"> 
+fmincon fails with looser tolerances used for SQP and SLP_Trust
+                                            First-order      Norm of
+ Iter F-count            f(x)  Feasibility   optimality         step
+    0       1    1.000000e+05    5.625e-01    8.522e+01
+    1       2    7.813599e+04    6.381e-01    3.458e+01    2.709e+01
+    2       3    5.554585e+04    6.280e-01    6.971e+01    1.019e+02
+    3       4    5.544879e+04    6.078e-01    4.666e+01    4.257e+00
+
+Converged to an infeasible point.
+
+fmincon stopped because the size of the current step is less than
+the selected value of the step size tolerance but constraints are not
+satisfied to within the selected value of the constraint tolerance.
+
+
+
+
+flag =
+
+    -2
+
+
+out = 
+
+         iterations: 3
+          funcCount: 4
+    constrviolation: 0.6078
+           stepsize: 4.2567
+          algorithm: 'interior-point'
+      firstorderopt: 46.6635
+       cgiterations: 0
+            message: 'Converged to an infeasible point....'
+
+                                                          Norm of First-order
+ Iter F-count            f(x) Feasibility  Steplength        step  optimality
+    0       1    1.000000e+05   5.625e-01                           1.000e+02
+    1       2    4.468310e+04   2.473e+00   1.000e+00   1.894e+02   4.777e+02
+    2       3    5.092954e+04   7.679e-01   1.000e+00   6.480e+01   7.992e+01
+    3       4    5.318400e+04   6.726e-01   1.000e+00   3.162e+01   7.324e+01
+    4       6    5.858385e+04   1.085e+00   7.000e-01   5.379e+01   1.044e+02
+    5       8    5.858385e+04   1.085e+00   7.000e-01   3.811e+01   1.044e+02
+
+Converged to an infeasible point.
+
+fmincon stopped because the size of the current step is less than
+the selected value of the step size tolerance but constraints are not
+satisfied to within the selected value of the constraint tolerance.
+
+
+
+
+flag =
+
+    -2
+
+
+out = 
+
+         iterations: 5
+          funcCount: 8
+          algorithm: 'sqp'
+            message: 'Converged to an infeasible point....'
+    constrviolation: 1.0852
+           stepsize: 38.1065
+       lssteplength: 0.7000
+      firstorderopt: 104.3944
+
+</pre><h2>fmincon, tight tolerances<a name="7"></a></h2><pre class="codeinput">    disp(<span class="string">'fmincon with tighter default tolerances'</span>)
+    Options=optimoptions(@fmincon,<span class="string">'Display'</span>,<span class="string">'iter'</span>,<span class="string">'GradObj'</span>,<span class="string">'on'</span>,<span class="string">'GradConstr'</span>,<span class="string">'on'</span>);
+    tic
+    [~,~,flag,out]=fmincon(@GVbeam_obj,x0,A,b_U,[],[],xlb,[],<span class="keyword">...</span>
+       @GVbeam_nlcon,Options)<span class="comment">%#ok&lt;*ASGLU,*NOPTS&gt;</span>
+    toc
+<span class="comment">%     disp('fmincon treating all constraints as nonlinear')</span>
+<span class="comment">%     tic</span>
+<span class="comment">%     [~,~,flag,out]=fmincon(@GVbeam_obj,x0,[],[],[],[],xlb,[],...</span>
+<span class="comment">%        @GVbeam_con,Options);</span>
+<span class="comment">%     toc</span>
+    Options=optimoptions(Options,<span class="string">'Algorithm'</span>,<span class="string">'sqp'</span>); tic
+    [~,~,flag,out]=fmincon(@GVbeam_obj,x0,A,b_U,[],[],xlb,[],<span class="keyword">...</span>
+                           @GVbeam_nlcon,Options), toc
+</pre><pre class="codeoutput">fmincon with tighter default tolerances
+                                            First-order      Norm of
+ Iter F-count            f(x)  Feasibility   optimality         step
+    0       1    1.000000e+05    5.625e-01    3.357e+03
+    1       2    6.242015e+04    3.265e+01    8.209e+04    3.728e+01
+    2       3    5.691764e+04    2.984e+01    5.167e+04    8.345e+00
+    3       4    5.678414e+04    2.581e+01    4.067e+04    2.202e+00
+    4       5    5.675424e+04    2.571e+01    4.050e+04    1.142e-01
+    5       6    5.538877e+04    2.258e+01    3.292e+04    4.519e+00
+    6       7    5.535629e+04    1.378e+01    1.459e+04    7.071e+00
+    7       8    5.548575e+04    1.329e+01    1.385e+04    1.666e-01
+    8       9    5.810871e+04    6.668e+00    5.282e+03    3.328e+00
+    9      10    6.009383e+04    3.442e+00    2.548e+03    2.029e+00
+   10      11    6.274813e+04    1.366e+00    2.640e+03    2.699e+00
+   11      12    6.278678e+04    1.347e+00    2.640e+03    3.932e-02
+   12      13    6.278701e+04    1.346e+00    2.640e+03    3.650e-04
+   13      14    6.552079e+04    7.564e-01    3.319e+03    3.009e+00
+   14      15    6.999767e+04    1.829e-01    3.120e+03    5.824e+00
+   15      16    6.898496e+04    1.565e-01    4.392e+03    8.816e+00
+   16      17    7.030941e+04    4.594e-02    3.285e+03    7.045e+00
+   17      18    7.153474e+04    3.986e-03    1.827e+03    2.222e+00
+   18      26    7.160226e+04    7.074e-05    5.177e+02    2.454e+00
+   19      27    7.122449e+04    6.415e-03    6.574e+02    2.916e+00
+   20      28    7.070723e+04    4.826e-03    6.109e+02    1.312e+00
+   21      29    6.516536e+04    4.019e-01    2.420e+03    6.930e+00
+   22      30    6.669049e+04    8.065e-02    4.170e+02    2.730e+00
+   23      31    6.668830e+04    8.034e-02    3.990e+02    3.393e-02
+   24      32    6.477656e+04    1.890e-01    1.675e+03    5.467e+00
+   25      33    6.477471e+04    1.868e-01    8.412e+02    6.234e-02
+   26      34    6.479281e+04    1.763e-01    7.851e+02    1.822e-01
+   27      35    6.518328e+04    1.625e-02    1.221e+02    3.028e+00
+   28      36    6.541804e+04    1.693e-04    3.189e+01    2.626e-01
+   29      37    6.541968e+04    1.386e-07    8.001e-01    1.829e-02
+   30      38    6.541966e+04    2.216e-09    1.108e-01    2.076e-03
+
+                                            First-order      Norm of
+ Iter F-count            f(x)  Feasibility   optimality         step
+   31      39    6.541966e+04    0.000e+00    3.023e-03    4.837e-05
+
+Local minimum found that satisfies the constraints.
+
+Optimization completed because the objective function is non-decreasing in 
+feasible directions, to within the default value of the function tolerance,
+and constraints are satisfied to within the default value of the constraint tolerance.
+
+
+
+
+flag =
+
+     1
+
+
+out = 
+
+         iterations: 31
+          funcCount: 39
+    constrviolation: 0
+           stepsize: 4.8367e-05
+          algorithm: 'interior-point'
+      firstorderopt: 0.0030
+       cgiterations: 6
+            message: 'Local minimum found that satisfies the constraints....'
+
+Elapsed time is 0.090671 seconds.
+                                                          Norm of First-order
+ Iter F-count            f(x) Feasibility  Steplength        step  optimality
+    0       1    1.000000e+05   5.625e-01                           4.000e+03
+    1       2    4.589283e+04   8.471e+01   1.000e+00   4.113e+01   3.567e+05
+    2       3    5.445246e+04   4.157e+01   1.000e+00   8.644e+00   4.196e+03
+    3       4    5.648206e+04   2.680e+01   1.000e+00   4.740e+00   2.186e+03
+    4       7    5.697127e+04   1.755e+01   4.900e-01   5.220e-01   1.823e+03
+    5       8    5.795648e+04   7.159e+00   1.000e+00   3.107e+00   3.200e+02
+    6       9    5.917717e+04   2.818e+00   1.000e+00   4.456e+00   1.932e+02
+    7      10    6.001910e+04   1.133e+00   1.000e+00   7.191e+00   6.012e+02
+    8      11    6.386001e+04   3.272e-01   1.000e+00   7.470e+00   1.319e+03
+    9      13    6.421652e+04   1.291e-01   7.000e-01   6.001e+00   1.170e+03
+   10      16    6.459999e+04   6.838e-02   4.900e-01   4.034e+00   1.018e+03
+   11      17    6.478693e+04   3.235e-02   1.000e+00   6.313e+00   6.911e+02
+   12      18    6.510309e+04   1.048e-02   1.000e+00   3.566e+00   1.714e+02
+   13      19    6.540801e+04   4.186e-04   1.000e+00   7.129e-01   9.455e+01
+   14      20    6.541801e+04   5.636e-05   1.000e+00   2.651e-01   3.078e+01
+   15      21    6.541958e+04   2.693e-06   1.000e+00   5.783e-02   2.438e-01
+   16      22    6.541966e+04   9.953e-10   1.000e+00   1.113e-03   6.804e-02
+   17      23    6.541966e+04   3.913e-12   1.000e+00   6.979e-05   5.419e-04
+
+Local minimum found that satisfies the constraints.
+
+Optimization completed because the objective function is non-decreasing in 
+feasible directions, to within the default value of the function tolerance,
+and constraints are satisfied to within the default value of the constraint tolerance.
+
+
+
+
+flag =
+
+     1
+
+
+out = 
+
+         iterations: 17
+          funcCount: 23
+          algorithm: 'sqp'
+            message: 'Local minimum found that satisfies the constraints....'
+    constrviolation: 3.9126e-12
+           stepsize: 6.9790e-05
+       lssteplength: 1
+      firstorderopt: 5.4193e-04
+
+Elapsed time is 0.041683 seconds.
+</pre><pre class="codeoutput">fmincon with tighter default tolerances
+                                            First-order      Norm of
+ Iter F-count            f(x)  Feasibility   optimality         step
+    0       1    1.000000e+05    5.625e-01    8.522e+01
+    1       2    7.813599e+04    6.381e-01    3.458e+01    2.709e+01
+    2       3    5.554585e+04    6.280e-01    6.971e+01    1.019e+02
+    3       4    5.544879e+04    6.078e-01    4.666e+01    4.257e+00
+    4       5    5.566049e+04    4.279e-01    3.304e+01    3.908e+01
+    5       6    5.734346e+04    2.724e-01    1.990e+01    2.991e+01
+    6       7    5.980387e+04    1.480e-01    2.147e+01    2.161e+01
+    7       8    6.258730e+04    3.752e-02    1.909e+01    2.209e+01
+    8       9    6.326099e+04    1.557e-02    1.559e+01    1.346e+01
+    9      11    6.338186e+04    1.028e-02    1.591e+01    4.051e+00
+   10      13    6.346022e+04    7.328e-03    7.327e+00    1.772e+00
+   11      14    6.355833e+04    4.920e-02    3.274e+00    1.793e+00
+   12      15    6.367092e+04    7.490e-05    3.407e+00    1.972e+00
+   13      16    6.367322e+04    4.999e-07    3.349e-01    2.478e-01
+   14      17    6.366933e+04    1.855e-07    3.284e-01    1.020e-01
+   15      18    6.366921e+04    3.811e-08    2.101e-01    6.229e-02
+   16      19    6.366921e+04    4.636e-09    6.315e-02    2.163e-02
+   17      20    6.366921e+04    0.000e+00    5.297e-03    3.711e-03
+   18      21    6.366920e+04    0.000e+00    1.882e-03    8.901e-04
+   19      22    6.366920e+04    0.000e+00    5.871e-04    2.165e-04
+   20      23    6.366920e+04    0.000e+00    2.135e-04    9.138e-05
+   21      24    6.366920e+04    0.000e+00    3.475e-05    1.832e-05
+
+Local minimum found that satisfies the constraints.
+
+Optimization completed because the objective function is non-decreasing in 
+feasible directions, to within the default value of the function tolerance,
+and constraints are satisfied to within the default value of the constraint tolerance.
+
+
+
+
+flag =
+
+     1
+
+
+out = 
+
+         iterations: 21
+          funcCount: 24
+    constrviolation: 0
+           stepsize: 1.8319e-05
+          algorithm: 'interior-point'
+      firstorderopt: 3.4753e-05
+       cgiterations: 0
+            message: 'Local minimum found that satisfies the constraints....'
+
+Elapsed time is 1.066116 seconds.
+                                                          Norm of First-order
+ Iter F-count            f(x) Feasibility  Steplength        step  optimality
+    0       1    1.000000e+05   5.625e-01                           1.000e+02
+    1       2    4.468310e+04   2.473e+00   1.000e+00   1.894e+02   4.777e+02
+    2       3    5.092954e+04   7.679e-01   1.000e+00   6.480e+01   7.992e+01
+    3       4    5.318366e+04   6.726e-01   1.000e+00   3.162e+01   7.324e+01
+    4       5    5.390000e+04   3.971e-01   1.000e+00   1.304e+01   1.958e+01
+    5       7    5.940931e+04   1.556e-01   7.000e-01   3.623e+01   5.942e+01
+    6      11    6.058786e+04   1.067e-01   3.430e-01   1.321e+01   2.010e+01
+    7      12    6.342722e+04   2.871e-02   1.000e+00   1.973e+01   2.888e+01
+    8      13    6.364517e+04   8.270e-04   1.000e+00   6.326e+00   1.475e+01
+    9      14    6.366731e+04   6.522e-05   1.000e+00   1.856e+00   2.696e+00
+   10      15    6.366886e+04   1.477e-05   1.000e+00   9.178e-01   1.865e+00
+   11      16    6.366908e+04   3.658e-06   1.000e+00   4.353e-01   5.654e-01
+   12      17    6.366920e+04   7.352e-08   1.000e+00   6.439e-02   1.911e-01
+   13      18    6.366920e+04   4.965e-09   1.000e+00   1.744e-02   3.118e-02
+   14      19    6.366920e+04   2.367e-10   1.000e+00   4.400e-03   1.104e-02
+   15      20    6.366920e+04   2.217e-11   1.000e+00   1.458e-03   4.797e-03
+   16      21    6.366920e+04   2.233e-12   1.000e+00   4.669e-04   9.730e-04
+   17      22    6.366920e+04   2.127e-13   1.000e+00   1.241e-04   3.226e-04
+   18      23    6.366920e+04   2.127e-13   7.000e-01   1.618e-05   1.159e-05
+
+Local minimum found that satisfies the constraints.
+
+Optimization completed because the objective function is non-decreasing in 
+feasible directions, to within the default value of the function tolerance,
+and constraints are satisfied to within the default value of the constraint tolerance.
+
+
+
+
+flag =
+
+     1
+
+
+out = 
+
+         iterations: 18
+          funcCount: 23
+          algorithm: 'sqp'
+            message: 'Local minimum found that satisfies the constraints....'
+    constrviolation: 2.1272e-13
+           stepsize: 1.6184e-05
+       lssteplength: 0.7000
+      firstorderopt: 1.1591e-05
+
+Elapsed time is 56.301147 seconds.
+</pre><pre class="codeinput"><span class="keyword">end</span>
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2015b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% runBeamGV
+% Script to Run Gary Vanderplaats cantilever Beam with SQP and SLP. 
+% N beam segments and 2N design variables, taken from 
+% Vanderplaats (1984) Example 5-1, pp. 147-150.
+
+%% Initialize variables
+clear; clc
+options.Display = 'iter';
+options.MaxIter = 40;
+options.TolX   = 0.5;
+options.TolFun = 0.5;
+options.TolCon = 1e-4;
+options.MoveLimit = 0.2;
+for N = [5 200]; % number of beam segments
+   x0 = [5*ones(1,N), 40*ones(1,N)];
+   xlb = [ ones(1,N),  5*ones(1,N)];
+   options.TypicalX = x0;
+   disp(' ')
+   disp(['N=',num2str(N),' beam segments'])
+
+%% SQP with BFGS
+   disp('SQP with BFGS'), tic
+   [dv2,out2,lam2] = sqp(@fbeamGV,x0,options,xlb,[],@gbeamGV); toc
+   disp(out2)
+
+%% SQP with Exact Hessian
+   disp('SQP with exact Hessians')
+   options.HessFun=@HbeamGV; tic
+   [dv3,out3,lam3] = sqp(@fbeamGV,x0,options,xlb,[],@gbeamGV); toc
+   disp(out3)
+   options=rmfield(options,'HessFun');
+
+%% SLP Trust
+%  with and without active set strategy
+   if N>50
+      options.TrustRegion='TRAMfilter'; 
+      tic
+      [~,fa,stat,outa] = slp_trust(@fbeamGVa,x0,options,xlb,[],@gbeamGVa), toc
+   else
+      options.TrustRegion='filter'; tic
+      [~,f1,sta1,out1] = slp_trust(@fbeamGV,x0,options,xlb,[],@gbeamGV)
+   end
+
+%% fmincon with analytic gradients
+   A = [diag(-20.*ones(N,1)),diag(ones(N,1))]; % Linear Constraints
+   b_U     = zeros(N,1);                       % Bound on linear constraints
+   disp(' ')
+   disp('fmincon fails with looser tolerances used for SQP and SLP_Trust')
+   Options=optimoptions(@fmincon,'Display','iter','GradObj','on','GradConstr','on',...
+                                 'TolX',0.5,'TolFun',0.5,'TolCon',1e-4);
+   [~,~,flag,out]=fmincon(@GVbeam_obj,x0,A,b_U,[],[],xlb,[],...
+                          @GVbeam_nlcon,Options)
+   Options=optimoptions(Options,'Algorithm','sqp');
+   [~,~,flag,out]=fmincon(@GVbeam_obj,x0,A,b_U,[],[],xlb,[],...
+                          @GVbeam_nlcon,Options)
+
+ %% fmincon, tight tolerances
+    disp('fmincon with tighter default tolerances')
+    Options=optimoptions(@fmincon,'Display','iter','GradObj','on','GradConstr','on');
+    tic
+    [~,~,flag,out]=fmincon(@GVbeam_obj,x0,A,b_U,[],[],xlb,[],...
+       @GVbeam_nlcon,Options)%#ok<*ASGLU,*NOPTS>
+    toc
+%     disp('fmincon treating all constraints as nonlinear')
+%     tic
+%     [~,~,flag,out]=fmincon(@GVbeam_obj,x0,[],[],[],[],xlb,[],...
+%        @GVbeam_con,Options);
+%     toc
+    Options=optimoptions(Options,'Algorithm','sqp'); tic
+    [~,~,flag,out]=fmincon(@GVbeam_obj,x0,A,b_U,[],[],xlb,[],...
+                           @GVbeam_nlcon,Options), toc
+
+end
+##### SOURCE END #####
+--></body></html>

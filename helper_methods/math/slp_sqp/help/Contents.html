@@ -1,0 +1,169 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Contents</title><meta name="generator" content="MATLAB 9.7"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2020-05-28"><meta name="DC.source" content="Contents.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><pre class="codeinput"><span class="comment">% SLP_SQP folder for slp_trust.m, sqp_trust.m and sqp.m optimization functions</span>
+<span class="comment">%</span>
+<span class="comment">% Copyright (c) 2020, Robert A. Canfield. All rights reserved.</span>
+<span class="comment">%                     Virginia Tech and Air Force Institute of Technology</span>
+<span class="comment">%                     bob.canfield@vt.edu</span>
+<span class="comment">%                    &lt;http://www.aoe.vt.edu/people/faculty/canfield.html&gt;</span>
+<span class="comment">%                     See accompanying LICENSE.txt file for conditions.</span>
+<span class="comment">%</span>
+<span class="comment">% m-Files</span>
+<span class="comment">%   slp_trust - Sequential Linear Programming (SLP) with Trust Region Strategy</span>
+<span class="comment">%   sqp_trust - Sequential Quadratic Programming (SQP) with Trust Region Strategy</span>
+<span class="comment">%   sqp       - Schittkowski's Sequential Quadratic Programming method</span>
+<span class="comment">%   foptions  - Default parameters used by the optimization routines</span>
+<span class="comment">%   initOctave- Initialize for Octave by loading packages</span>
+<span class="comment">%   isOctave  - Function to detect Octave environment</span>
+<span class="comment">%   Contents  - This text document describing files</span>
+<span class="comment">%</span>
+<span class="comment">% Documentation</span>
+<span class="comment">%   README.md   - ReadMe text file (markdown format)</span>
+<span class="comment">%   sqp.pdf     - User's Guide for sqp.m (Adobe portable document format)</span>
+<span class="comment">%   LICENSE.txt - Open Source License notice</span>
+<span class="comment">%</span>
+<span class="comment">% Examples</span>
+<span class="comment">%   run*.m    - Scripts to run example problems</span>
+<span class="comment">%   f*.m      - Functions to evaluate objective, f, and constraints, g</span>
+<span class="comment">%   g*.m      - Functions to evaluate gradients of f and g</span>
+<span class="comment">%</span>
+<span class="comment">% Private folder</span>
+<span class="comment">%   Utility functions called by sqp.m, slp_trust.m and sqp_trust.m</span>
+
+type <span class="string">LICENSE.txt</span>
+</pre><pre class="codeoutput">
+Copyright (c) 2015, Robert A. Canfield. All rights reserved.
+                    Virginia Tech and Air Force Institute of Technology
+                    bob.canfield@vt.edu
+                   &lt;http://www.aoe.vt.edu/people/faculty/canfield.html&gt;
+
+sqp.m, slp_trust.m, sqp_trust.m MATLAB package
+----------------------------------------------
+Permission is hereby granted, free of charge, to any person obtaining a
+copy of this software and associated documentation files (the "Software"),
+to deal with the Software without restriction, including without 
+limitation the rights to use, copy, modify, merge, publish, distribute, 
+sublicense, and/or sell copies of the Software, and to permit persons 
+to whom the Software is furnished to do so, subject to the following 
+conditions:
+
+* Redistributions of source code must retain the above copyright notice,
+  this list of conditions and the following disclaimers.
+
+* Redistributions in binary form must reproduce the above copyright notice,
+  this list of conditions and the following disclaimers in the
+  documentation and/or other materials provided with the distribution.
+
+* Neither the names of Robert A. Canfield, Virginia Tech, Mark Spillman,
+  Air Force Institute of Technology, nor the names of its contributors 
+  may be used to endorse or promote products derived from this Software 
+  without specific prior written permission.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT
+OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
+THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+% SLP_SQP folder for slp_trust.m, sqp_trust.m and sqp.m optimization functions
+%
+% Copyright (c) 2020, Robert A. Canfield. All rights reserved.
+%                     Virginia Tech and Air Force Institute of Technology
+%                     bob.canfield@vt.edu
+%                    <http://www.aoe.vt.edu/people/faculty/canfield.html>
+%                     See accompanying LICENSE.txt file for conditions.
+%
+% m-Files
+%   slp_trust - Sequential Linear Programming (SLP) with Trust Region Strategy
+%   sqp_trust - Sequential Quadratic Programming (SQP) with Trust Region Strategy
+%   sqp       - Schittkowski's Sequential Quadratic Programming method
+%   foptions  - Default parameters used by the optimization routines
+%   initOctave- Initialize for Octave by loading packages
+%   isOctave  - Function to detect Octave environment
+%   Contents  - This text document describing files
+%
+% Documentation
+%   README.md   - ReadMe text file (markdown format)
+%   sqp.pdf     - User's Guide for sqp.m (Adobe portable document format)
+%   LICENSE.txt - Open Source License notice
+%
+% Examples
+%   run*.m    - Scripts to run example problems
+%   f*.m      - Functions to evaluate objective, f, and constraints, g
+%   g*.m      - Functions to evaluate gradients of f and g
+%
+% Private folder
+%   Utility functions called by sqp.m, slp_trust.m and sqp_trust.m
+
+type LICENSE.txt
+##### SOURCE END #####
+--></body></html>

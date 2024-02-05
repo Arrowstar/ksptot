@@ -60,7 +60,7 @@ function [exitflag, message] = lvd_executeOptimProblem(celBodyData, writeOutput,
         [x,info] = ipopt(problem.x0, problem.funcs, problem.options);
         exitflag = info.status;
         message = ipoptExitFlagMessageLookup(exitflag);
-        
+       
     elseif(strcmpi(problem.solver,'surrogateopt'))
         [x,fval,exitflag,output,trials] = surrogateopt(problem);
         message = output.message;

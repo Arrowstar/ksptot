@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<demos>
+   <name>slp_sqp</name>
+   <type>toolbox</type>
+   <icon>HelpIcon.DEMOS</icon>
+   <website/>
+   <description>Solve constrained, nonlinear parameter optimization problems using sequential linear programming with a trust region strategy (slp_trust) or sequential quadratic programming (sqp), similarly to fmincon in the Optimization Toolbox. SQP is a second-order method, following Schittkowski's NLPQL Fortran algorithm. SLP is a first-order method, but may be more efficient for large numbers of design variables. Both are implemented using the original calling sequence of the constr.m function in Version 1 of the optim toolbox, but may alternatively accept a problem data structure used by fmincon as an input argument. The original calling sequence had the advantage that one user function computed the objective and constraint values together, with a separate function for their gradients if finite differences were not used. Both slp_trust and sqp offer the feature of complex step derivatives, which can be accurate to machine precision, in place of finite difference derivatives, when the user does not supply a function that computes the derivatives.</description>
+   <demosection>
+      <label>slp_trust and sqp examples</label>
+      <demoitem>
+         <label>Fox 2-bar truss</label>
+         <type>other</type>
+         <source>run2barFox</source>
+         <file>examples/html/run2barFox.html</file>
+      </demoitem>
+      <demoitem>
+         <label>Haftka Example 4.2.1 Unconstrained Potential Energy of Cantilever Beam</label>
+         <type>other</type>
+         <source>runHaftka4p2p1</source>
+         <file>examples/html/runHaftka4p2p1.html</file>
+      </demoitem>
+      <demoitem>
+         <label>Haftka Example 6.3.1 two-design variable SLP</label>
+         <type>other</type>
+         <source>runHaftka6p3p1slp</source>
+         <file>examples/html/runHaftka6p3p1slp.html</file>
+      </demoitem>
+      <demoitem>
+         <label>Rosen-Suzuki 4-design-variable problem</label>
+         <type>other</type>
+         <source>runRosenSuzuki</source>
+         <file>examples/html/runRosenSuzuki.html</file>
+      </demoitem>
+      <demoitem>
+         <label>Complex-step gradient for unconstrained potential energy minimization of two springs.</label>
+         <type>other</type>
+         <source>runSpringExampleTrust</source>
+         <file>examples/html/runSpringExampleTrust.html</file>
+      </demoitem>
+      <demoitem>
+         <label>Svanberg's 5-segment stepped cantilever beam</label>
+         <type>other</type>
+         <source>runSvanbergSLP</source>
+         <file>examples/html/runSvanbergSLP.pdf</file>
+      </demoitem>
+      <demoitem>
+         <label>slp_trust methods for 10-design-variable GV cantilever beam</label>
+         <type>other</type>
+         <source>runBeamGVslp</source>
+         <file>examples/html/runBeamGV.html</file>
+      </demoitem>
+      <demoitem>
+         <label>active-set SLP vs SQP small/large-scale for GV beam</label>
+         <type>other</type>
+         <source>runBeamGV</source>
+         <file>examples/html/runBeamGVslp.html</file>
+      </demoitem>
+      <demoitem>
+         <label>User Output Function and optimtool's options.PlotFcns Example</label>
+         <type>other</type>
+         <source>runOutputFcnExample</source>
+         <file>examples/html/runOutputFcnExample.html</file>
+      </demoitem>
+   </demosection>
+</demos>
