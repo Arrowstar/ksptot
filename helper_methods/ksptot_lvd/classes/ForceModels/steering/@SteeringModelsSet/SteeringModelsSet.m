@@ -6,6 +6,7 @@ classdef SteeringModelsSet < matlab.mixin.SetGet
         polySteering(1,1) AbstractAnglePolySteeringModel = RollPitchYawPolySteeringModel.getDefaultSteeringModel();
         quatInterp(1,1) GenericQuatInterpSteeringModel = GenericQuatInterpSteeringModel.getDefaultSteeringModel();
         genericSelectableModels(1,1) GenericSelectableSteeringModel = GenericSelectableSteeringModel.getDefaultSteeringModel();
+        tabularQuatInterp(1,1) GenericTabularQuatInterpSteeringModel = GenericTabularQuatInterpSteeringModel.getDefaultSteeringModel();
 
         selectedModel(1,1) AbstractSteeringModel = RollPitchYawPolySteeringModel.getDefaultSteeringModel();
     end
@@ -43,6 +44,9 @@ classdef SteeringModelsSet < matlab.mixin.SetGet
 
                 case SteerModelTypeEnum.SelectableModelAngles
                     obj.genericSelectableModels = newSelectedModel; %#ok<MCSUP> 
+
+                case SteerModelTypeEnum.TabularQuaterionInterp
+                    obj.tabularQuatInterp = newSelectedModel; %#ok<MCSUP>
 
                 otherwise
                     error('Unknown steering model type: %s', enum.name);

@@ -5,6 +5,7 @@ classdef SteerModelTypeEnum < matlab.mixin.SetGet
     enumeration
         PolyAngles('Polynomial Euler Angles', "Includes predefined steering models for common use cases, including surface relative roll/pitch/yaw, inertial velocity relative angle of attack, sideslip angle, and bank angle, and the ability to select angle type generically.  Use this if you're not sure what to select.");
         QuaterionInterp('Attitude Interpolation', "Use this when you know your initial attitude and final targeted attitude and want to smoothly transition from one to the other.");
+        TabularQuaterionInterp('Tabular Attitude Interpolation', "Use this when you know your initial attitude and wish to smoothly transition to a series of new attitudes over time.");
         SelectableModelAngles('Selectable Model Euler Angles', "Allows you to set different types of mathematical models for each Euler angle and to define those Euler angles in a very generic way.  The more general but most challenging steering model to use.");
     end
     

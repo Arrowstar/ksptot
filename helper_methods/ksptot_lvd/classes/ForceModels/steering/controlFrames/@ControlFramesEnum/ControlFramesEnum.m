@@ -21,10 +21,11 @@ classdef ControlFramesEnum  < matlab.mixin.SetGet
     end
     
     methods(Static)
-        function listBoxStr = getListBoxStr()
+        function [listBoxStr, m] = getListBoxStr()
             m = enumeration('ControlFramesEnum');
             [~,I] = sort({m.name});
             listBoxStr = {m(I).name};
+            m = m(I);
         end
         
         function [ind, enum] = getIndForName(name)

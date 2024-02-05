@@ -8,8 +8,10 @@ classdef SteeringModelEnum < matlab.mixin.SetGet
         InertialAeroAnglesPoly('Inertial Aero Angles Steering','InertialAeroAnglesPolySteeringModel', true);
         GenericPoly('Generic Angles Steering','GenericPolySteeringModel', true);
         
-        GenericQuatInterp('Generic Angles Quaternion Interp','GenericQuatInterpSteeringModel', false);
+        GenericQuatInterp('Generic Angles Quaternion Interpolation','GenericQuatInterpSteeringModel', false);
         GenericSelectable('Generic Selectable Model Steering','GenericSelectableSteeringModel', false);
+
+        GenericTabularQuatInterp('Generic Tabular Angles Quaternion Interpolation','GenericTabularQuatInterpSteeringModel', false);
     end
     
     enumeration(Hidden)
