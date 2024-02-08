@@ -1,5 +1,5 @@
 classdef ThrottlePolyModel < AbstractThrottleModel
-    %AbstractSteeringModel Summary of this class goes here
+    %ThrottlePolyModel Summary of this class goes here
     %   Detailed explanation goes here
     
     properties

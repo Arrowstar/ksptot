@@ -1,21 +1,22 @@
-classdef ThrottleModelEnum < matlab.mixin.SetGet
-    %ThrottleModelEnum Summary of this class goes here
+classdef ThrottleInterpolatedModelInterpTypeEnum < matlab.mixin.SetGet
+    %ThrottleInterpolatedModelInterpTypeEnum Summary of this class goes here
     %   Detailed explanation goes here
     
     enumeration
-        PolyModel('Polynominal Model','ThrottlePolyModel',"The vehicle throttle varies as a function of a second degree polynomial.  Can set constant throttle here too.");
-        T2WModel('Thrust To Weight Model','T2WThrottleModel',"The vehicle will set the throttle to maintain a fixed thrust to weight ratio.");
-        InterpThrottle('Interpolated Throttle Model','The vehicle throttle is defined as a function of interpolated tabular throttle settings.')
+        Linear('Linear','linear');
+        PChip('Shape-preserving Piecewise Cubic','pchip');
+        Cubic('Cubic','cubic');
+        Spline('Cubic Spline','spline');
+        Makima('Modified Akima cubic Hermite','makima');
     end
     
     properties
         nameStr char = '';
-        classNameStr char = '';
-        desc(1,1) string
+        giModelTypeStr char = '';
     end
     
     methods
-        function obj = ThrottleModelEnum(nameStr,classNameStr,desc)
+        function obj = ThrottleInterpolatedModelInterpTypeEnum(nameStr,classNameStr,desc)
             obj.nameStr = nameStr;
             obj.classNameStr = classNameStr;
             obj.desc = desc;
@@ -24,7 +25,7 @@ classdef ThrottleModelEnum < matlab.mixin.SetGet
     
     methods(Static)
         function [throttleModelNameStrs, m] = getThrottleModelTypeNameStrs()
-            [m,~] = enumeration('ThrottleModelEnum');
+            [m,~] = enumeration('ThrottleInterpolatedModelInterpTypeEnum');
             
             throttleModelNameStrs = {};
             for(i=1:length(m)) %#ok<*NO4LP>
@@ -33,7 +34,7 @@ classdef ThrottleModelEnum < matlab.mixin.SetGet
         end
         
         function ind = getIndOfListboxStrsForThrottleModel(throttleModel)
-            [m,~] = enumeration('ThrottleModelEnum');
+            [m,~] = enumeration('ThrottleInterpolatedModelInterpTypeEnum');
             inputClass = class(throttleModel);
             
             ind = -1;
@@ -46,7 +47,7 @@ classdef ThrottleModelEnum < matlab.mixin.SetGet
         end
         
         function [enum, ind] = getEnumForListboxStr(nameStr)
-            m = enumeration('ThrottleModelEnum');
+            m = enumeration('ThrottleInterpolatedModelInterpTypeEnum');
             ind = find(ismember({m.nameStr},nameStr),1,'first');
             enum = m(ind);
         end

@@ -103,6 +103,26 @@ classdef(Abstract) AbstractOptimizationVariable < matlab.mixin.SetGet & matlab.m
         end
 
         function varsStoredInRad = getVarsStoredInRad(obj)
+            %This function is for variables that are displayed as degrees
+            %but stored in radians.
+            useTf = obj.getUseTfForVariable();
+            varsStoredInRad = false(size(useTf));
+        end
+
+        function varsStoredInRad = getVarsDisplayedAsPercents(obj)
+            %This function is for variables that are displayed as
+            %percentages but stored as numbers 0 -> 1.  For example, 55%
+            %might be the displayed value, but it is stored in the var as
+            %0.55.
+            useTf = obj.getUseTfForVariable();
+            varsStoredInRad = false(size(useTf));
+        end
+
+        function varsStoredInRad = getVarsDisplayedAsMeters(obj)
+            %This function is for variables that are displayed as
+            %meters (or m/s, etc) but stored as kilometers (or km/s, etc).
+            %For example, a DV burn component of 456 m/s might be displayed
+            %that way, but stored internally as "0.456."
             useTf = obj.getUseTfForVariable();
             varsStoredInRad = false(size(useTf));
         end
