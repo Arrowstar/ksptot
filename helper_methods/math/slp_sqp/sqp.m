@@ -366,13 +366,21 @@ end
 
 % Read input options vector or structure
 [opts,v,H,ComplexStep]=sqpcrkopts(Opts,ndv);
-nec=opts(13);
+[~,~,nec] = Fun(x);
+% nec=opts(13);
 scdv=opts(5)<0; scbou=abs(opts(5));
-if opts(7)>0, nlinmax=opts(7); else, nlinmax=300; end
+if opts(7)>0, nlinmax=opts(7); else, nlinmax=30; end
 UserHessian=isfield(Opts,'HessFun') && ~isempty(Opts.HessFun);
 OutputFcn=isfield(Opts,'OutputFcn') && isa(Opts.OutputFcn,'function_handle');
 PlotFcn  =isfield(Opts,'PlotFcns');
 trouble=''; UpdHess=[];
+
+if(not(isempty(Opts.UseParallel)) && Opts.UseParallel == true && not(isempty(gcp('nocreate'))))
+    pp = gcp();
+    ParallelM = pp.NumWorkers;
+else
+    ParallelM = 0;
+end
 
 %% Scale design variables and bounds
 if scdv
@@ -436,7 +444,7 @@ ncs=length(g0);lenv=ncs+lenvlb+lenvub;
 [mg,mj]=max([abs(g0(1:nec));g0(nec+1:ncs)]);
 lb=(ncs+1:ncs+lenvlb)'; ub=(lenv-lenvub+1:lenv)';
 if OutputFcn || PlotFcn
-   out=sqpstructout(opts,[],[],[],mg,0,f0,1,0);
+   out=sqpstructout(opts,[],[],[],mg,0,f0,1,0,0);
 end
 if OutputFcn,           Opts.OutputFcn(x0,out,'init');  end
 if PlotFcn,   plotFcns( Opts.PlotFcns, x0,out,'init' ); end
@@ -476,26 +484,27 @@ gs = gv(1:ncs); % scaled g w/o side constraints
 ACTIVE_CONSTRAINTS=1:ncs; % Evaluate all gradients initially
 if ComplexStep % Check validity of complex step with user code
    ngrd=1;
-   if isOctave
-      [fp,gp] = eval('sqpcsgrd(fun,x,ncs,f,gs)');
-   else
-      [fp,gp] = sqpcsgrd(@funeval,x,ncs,f,gs);
-   end
-   grdhdl = @sqpcsgrd;
-   [fp,gp,gpv]=scalefgp(fp,gp,[],[],[],[],false,[],lenvlb,lenvub);
+   % if isOctave
+   %    [fp,gp] = eval('sqpcsgrd(fun,x,ncs,f,gs)');
+   % else
+        ff = @(x) funeval(x, fun, scf, scg, lscg, nec, vlb, vub, ilb, iub, [], [], opts(4), Best);
+        [fp,gp] = sqpcsgrd(ff,x,ncs,f,gs); % [fp,gp] = sqpcsgrd(@funeval,x,ncs,f,gs);
+   % end
+    grdhdl = @sqpcsgrd;
+    [fp,gp,gpv]=scalefgp(fp,gp,[],[],[],[],false,[],lenvlb,lenvub);
 else
    ngrd=0;
+   u = 0;
+   nit = 0;
    [fp,gp,gpv] = grdeval(x);
    grdhdl = Grd;
+   clear u nit; %these are cleared because they were never meant to be set here
 end
 if length(fp)~=ndv || (~(isempty(g0)&&isempty(gp)) && size(gp,1)~=ndv)
    error('User gradient routine returned vectors non-conformal with # design variables')
 elseif opts(9) && (~fd_gradients || ComplexStep)
-   if isOctave
-      [fpFD,gpFD]=eval(fdstr);
-   else
-      [fpFD,gpFD]=sqpfdgrd(@funeval,x,f,gs,opts(16),opts(17));
-   end
+    ff = @(x) funeval(x, fun, scf, scg, lscg, nec, vlb, vub, ilb, iub, [], [], opts(4), Best);
+   [fpFD,gpFD]=sqpfdgrd(ff,x,f,gs,opts(16),opts(17),ParallelM);
    disp('Function gradient')
    graderr(fpFD, fp, grdhdl);
    disp('Constraint gradients')
@@ -545,7 +554,8 @@ end
 %
 nit=0;
 flag=[];
-mu=1e-4;beta=1e-1;
+mu=1e-4;
+beta=0.7; %1e-1;
 r=1e-2*ones(lenv,1);rub=1e9;rstep=10;s=[];vold=v;
 rholb=1;rhoub=1e6;rhostep=100;rho=1;
 deltaub=.9;alpha=0;min_alpha=sqrt(eps);dx=0;ext_pen=0;aug='f';f0=inf;
@@ -783,7 +793,11 @@ while nit<=opts(15)
    end
    if OutputFcn
       stop = Opts.OutputFcn(x,out,'iter');
-      if stop, return, end
+      % out
+      if stop
+          out.status = 'Stopped by user output function.';
+          return
+      end
    end
    if PlotFcn, plotFcns(Opts.PlotFcns,x,out,'iter'); end
    %
@@ -850,7 +864,8 @@ while nit<=opts(15)
    ext_pen=0;best=0;nlin=0;alpha=1;
    if ~(augfail || z0p1fail)
       x=xold+alpha*s;
-      [f,g,gv]=funeval(x);
+      [f,g,gv] = funeval(x, fun, scf, scg, lscg, nec, vlb, vub, ilb, iub, u, nit, opts(4), Best);
+      % [f,g,gv]=funeval(x);
       %
       % Establish the termination criteria
       %
@@ -864,26 +879,13 @@ while nit<=opts(15)
          a2=((z-z0)/alpha-z0p1)/alpha;
          alpha=max([beta*alpha,-z0p1/2/a2,minalpha]);
          x=xold+alpha*s;v=vold+alpha*(u-vold);
-         [f,g,gv]=funeval(x);
+         [f,g,gv] = funeval(x, fun, scf, scg, lscg, nec, vlb, vub, ilb, iub, u, nit, opts(4), Best);
+         % [f,g,gv]=funeval(x);
          mg=max([abs(g(1:nec)); g(nec+1:ncs); gv(ncs+1:lenv)]);
          z=merit(v,r,nec,f,gv);
       end
       z0p1fail = z>z0+mu*alpha*z0p1; best=alpha;
    end
-%     if nlin >=nlinmax
-%       k=0;
-%       alphas=[-1:.05:1];
-%       ff=zeros(length(alpha),1); g1=ff; zz=ff;
-%       for alfa=alphas
-%          k=k+1;
-%          x=xold+alfa*s;v=vold+alfa*(u-vold);
-%          [ff(k),gg]=feval(fun,sx(x,x1),varargin{:});g=g(:);nfcn=nfcn+1;
-%          g1(k)=gg(1);
-%          zz(k)=merit(v,r,nec,f,gv);
-%       end
-%       plot(alphas,[ff(:),g1(:),zz(:)]), legend('f','g(1)','z')
-%       donothing=1;
-%    end
    %
    % Else L1-merit-function line search to find least infeasible point
    %
@@ -903,7 +905,8 @@ while nit<=opts(15)
       end
       alpha=1;
       x=xold+alpha*s;
-      [f,g,gv]=funeval(x);
+      [f,g,gv] = funeval(x, fun, scf, scg, lscg, nec, vlb, vub, ilb, iub, u, nit, opts(4), Best);
+      % [f,g,gv]=funeval(x);
       mg=max([abs(g(1:nec)); g(nec+1:ncs); gv(ncs+1:lenv)]);
       if mg<leastmg && mg>(-eps)
          leastmg=mg; best=alpha; bestf=f; bestgv=gv; bestx=x;
@@ -921,7 +924,8 @@ while nit<=opts(15)
          a2=((z-z0)/alpha-z0p1)/(alpha);
          alpha=max([beta*alpha,-z0p1/2/a2,minalpha]);
          x=xold+alpha*s; v=vold+alpha*(u-vold);
-         [f,g,gv]=funeval(x);
+         [f,g,gv] = funeval(x, fun, scf, scg, lscg, nec, vlb, vub, ilb, iub, u, nit, opts(4), Best);
+         % [f,g,gv]=funeval(x);
          mg=max([abs(g(1:nec)); g(nec+1:ncs); gv(ncs+1:lenv)]);
          z = merit(vlm,[],nec,[],g);
          z0p1fail = mg>leastmg || mg<(-opts(4)) || z>z0+mu*alpha*z0p1;
@@ -930,8 +934,8 @@ while nit<=opts(15)
          end
       end
    end
-   if nAS>=100 && leastmg>Best.mg
-      flag='Augmented Search direction failed after 100 tries.';
+   if nAS>=3 && leastmg>Best.mg
+      flag='Augmented Search direction failed after 3 tries.';
       status=-5;
       break
    elseif z0p1fail
@@ -941,7 +945,7 @@ while nit<=opts(15)
          if opts(1)>2
             disp(['sqp: Line search: mg0= ' num2str(mg0) ' leastmg=' num2str(leastmg)])
          end
-      elseif alpha==0 %|| best==0
+      elseif alpha==0 || best==0
          flag='No significant improvement found in line search.';
          status=-6;
          break
@@ -1098,6 +1102,8 @@ if opts(1)
    end
    disp(' ')
 end
+
+opts(8)=f;opts(10)=nfcn;opts(11)=ngrd;
 if OutputFcn
    out=sqpstructout(opts,v(1:ncs),v(lb),v(ub),mg,nit);
    Opts.OutputFcn(x,out,'iter');
@@ -1128,31 +1134,31 @@ end
 
 
 %% Nested sub-functions
-   function [f,g,gv] = funeval( x )
-      [f,g] = fun(x); nfcn=nfcn+1;
-      if isempty(g) && isOctave, g=-1; end % Octave dn handle null
-      if nargout<3 % scale g for fd and cs
-         [f,g] = scalefg( f,g, scf, scg, lscg );
-      else % g unscaled, gv is scaled
-         [f,g,gv,Best]=scalefg( f, g, scf, scg, lscg, nec, ...
-                                x, vlb, vub, ilb, iub, u, ...
-                                nit, opts(4), Best );
-      end
-   end
+   % function [f,g,gv] = funeval( x )
+   %    [f,g] = fun(x); 
+   %    nfcn=nfcn+1;
+   % 
+   %    if nargout<3 % scale g for fd and cs
+   %       [f,g] = scalefg( f,g, scf, scg, lscg );
+   %    else % g unscaled, gv is scaled
+   %       [f,g,gv,Best]=scalefg( f, g, scf, scg, lscg, nec, ...
+   %                              x, vlb, vub, ilb, iub, u, ...
+   %                              nit, opts(4), Best );
+   %    end
+   % end
+
    function [fp,gp,gpv] = grdeval( x )
       ngrd=ngrd+1;
       if ComplexStep
-         if isOctave
-            [fp,gp] = eval(grdstr);
-         else
-            [fp,gp] = sqpcsgrd(@funeval,x,ncs);
-         end
+         [fp,gp] = sqpcsgrd(@funeval,x,ncs);
       elseif fd_gradients
          gs=gv(1:ncs);
-         if isOctave
-            [fp,gp] = eval(fdstr);
-         else
-            [fp,gp] = sqpfdgrd(@funeval,x,f,gs,opts(16),opts(17));
+         ff = @(x) funeval(x, fun, scf, scg, lscg, nec, vlb, vub, ilb, iub, u, nit, opts(4), Best);
+         [fp,gp] = sqpfdgrd(ff,x,f,gs,opts(16),opts(17),ParallelM);
+
+         %this adds the correct number of function evaluations if we run the gradient in parallel.
+         if(ParallelM > 0)
+            nfcn = nfcn + numel(x); 
          end
       else
          [fp,gp] = grd(x);
@@ -1185,7 +1191,18 @@ end
 
 end
 % ------------ End of sqp main routine ------------
-
+function [f,g,gv] = funeval(x, fun, scf, scg, lscg, nec, vlb, vub, ilb, iub, u, nit, opts4, Best)
+    [f,g] = fun(x);
+    % nfcn=nfcn+1;
+    
+    if nargout<3 % scale g for fd and cs
+        [f,g] = scalefg( f,g, scf, scg, lscg );
+    else % g unscaled, gv is scaled
+        [f,g,gv,Best]=scalefg( f, g, scf, scg, lscg, nec, ...
+            x, vlb, vub, ilb, iub, u, ...
+            nit, opts4, Best );
+    end
+end
 
 
 %% Sub-function to evaluate the descent merit function
@@ -1412,20 +1429,22 @@ end
 
 
 %% SQP's Finite Difference Gradient sub-function
-function [df,dg] = sqpfdgrd( fcn, x0, f0, g0, xmin, xmax ) 
+function [df,dg] = sqpfdgrd( fcn, x0, f0, g0, xmin, xmax, ParallelM ) 
 % SQPFDGRD      Calculates first forward finite difference gradients
 %               of objective and constraint functions for the
 %               Sequential Quadratic Programming (sqp) routine.
 %
 % usage:        [df,dg]=sqpfdgrd(fcn, x0, f0, g0, xmin, xmax, x1,P1,...,P15)
 %
-% inputs:       fcn      - function evaluation call
-%               x0       - current design variable vector
-%               f0       - objective value at x0
-%               g0       - constraint values at x0
-%               xmin     - minimum finite difference step
-%               xmax     - maximum finite difference step
-%               x1       - scale factor for design variables
+% inputs:       fcn       - function evaluation call
+%               x0        - current design variable vector
+%               f0        - objective value at x0
+%               g0        - constraint values at x0
+%               xmin      - minimum finite difference step
+%               xmax      - maximum finite difference step
+%               x1        - scale factor for design variables
+%               ParallelM - Number of parallel workers to run grad with -
+%                           set to 0 to run in serial.
 %
 % outputs:      df       - finite difference objective gradient vector
 %               dg       - finite difference constraint gradients matrix
@@ -1458,33 +1477,41 @@ function [df,dg] = sqpfdgrd( fcn, x0, f0, g0, xmin, xmax )
 % g........ Perturbed constraint values
 % i........ Loop variable for current design variable perturbation
 
-%--BEGIN
-%
-if nargin<5 || isempty(xmin), xmin=1e-8; end
-if nargin<6 || isempty(xmax), xmax=1e-1; end
-% if nargin<8 || isempty(sx), sx=inline('x','x','x1'); end
+    %--BEGIN
+    %
+    if nargin<5 || isempty(xmin), xmin=1e-8; end
+    if nargin<6 || isempty(xmax), xmax=1e-1; end
+    % if nargin<8 || isempty(sx), sx=inline('x','x','x1'); end
+    
+    % Less stringent relative change in x than 1.e-8 may be
+    % needed for implicit functions that require numeric evaluation.
+    dx = min( max(1.e-8*abs(x0(:)),xmin), xmax );
+    df = zeros(size(x0));
+    dg = zeros(length(x0),length(g0));
+    
+    % Forward Finite Difference loop.
+    numIterations = length(x0(:));
 
-% Less stringent relative change in x than 1.e-8 may be
-% needed for implicit functions that require numeric evaluation.
-dx = min( max(1.e-8*abs(x0(:)),xmin), xmax );
-df = zeros(size(x0));
-dg = zeros(length(x0),length(g0));
+    if(ParallelM > 0)
+        % parfevalOnAll(@warning,0,'off','all'); %necessary to avoid throwing a bunch of errors on the workers having to do with loading AppDesigner base class for some reason.
+        opts = parforOptions(gcp(), "RangePartitionMethod","fixed", "SubrangeSize",1);
+    else
+        opts = ParallelM;
+    end
 
-% Forward Finite Difference loop.
-parfor i=1:length(x0(:))
-   x = x0;
-   x(i) = x(i) + dx(i);
-%    if ~isempty(x1), dx(i)=dx(i)*x1(i); end
-   % if ischar(fcn)
-   %    [f,g] = eval(fcn);
-   % else
-      [f,g] = fcn(x);
-   % end
-   df(i,1) = (f - f0) / dx(i);
-   if ~isempty(g)
-      dg(i,:) = (g(:) - g0(:))'/ dx(i);
-   end
-end
+    parfor(i=1:numIterations, opts) %opts
+        x = x0;
+        x(i) = x(i) + dx(i);
+        [f,g] = fcn(x); %#ok<PFBNS>
+        df(i,1) = (f - f0) / dx(i);
+        if ~isempty(g)
+            dg(i,:) = (g(:) - g0(:))'/ dx(i);
+        end
+    end
+
+    if(ParallelM > 0)
+        parfevalOnAll(@clear, 0);
+    end
 end
 
 

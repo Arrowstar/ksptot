@@ -165,7 +165,8 @@ if all(size(x0)==size(Problem.X0)) % allow for user x0 as matrix instead of vect
 else
    xshape = @(x) reshape(x(:),size(Problem.X0));
 end
-unconstrained = nargout(Fun)<2;
+% unconstrained = nargout(Fun)<2;
+unconstrained = false;
 UserOptionalInp = nargin>5 && ~isempty(varargin);
 UserKnowsActive = nargin(Fun) > 1+numel(varargin);
 if UserKnowsActive && UserOptionalInp
@@ -518,17 +519,16 @@ end
       if UserKnowsActive % reset fun to use current active set
          fun = @(x) Fun(xshape(x),active,varargin{:});
       end
-      if abs(nargout(Fun))==2
-         [f,g] = fun(x);
-         h=[];
-      elseif abs(nargout(Fun))==3 || ...
-            contains(erase(func2str(Fun),' '),'@(x)fghx')
+      % if abs(nargout(Fun))==2
+      %    [f,g] = fun(x);
+      %    h=[];
+      % elseif abs(nargout(Fun))==3
          [f,g,h] = fun(x);
-      else
-         f = fun(x);
-         g = [];
-         h = [];
-      end
+      % else
+      %    f = fun(x);
+      %    g = [];
+      %    h = [];
+      % end
       unconstrained = unconstrained || isempty(g) || ...
                       (length(g)==1 && isinf(g));
       if unconstrained
@@ -588,8 +588,6 @@ end
       elseif abs(nargout(Fun))==3 || ...
             contains(erase(func2str(Fun),' '),'@(x)fghx')
          [gradf,gradg,gradh] = eval(grdstr); gradf=gradf(:);
-      elseif abs(nargout(Fun))==2
-         [gradf,gradg] = eval(grdstr); gradf=gradf(:); gradh=[];
       else
          gradf = eval(grdstr); gradf=gradf(:); gradg=[]; gradh=[];
       end

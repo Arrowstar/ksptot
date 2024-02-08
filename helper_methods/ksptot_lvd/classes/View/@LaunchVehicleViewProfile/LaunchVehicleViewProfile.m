@@ -116,6 +116,11 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         viewCameraUpVector(1,3) double = NaN(1,3);
         viewCameraViewAngle(1,1) double = NaN(1,1);
 
+        %Ground Track Toggles
+        showCelestialBodyGrdTracks(1,1) logical = false;
+        showGroundObjsGrdTracks(1,1) logical = false;
+        showGeomPointsGrdTracks(1,1) logical = false;
+
         %Grd Track terrain contours
         showTerrainContours(1,1) logical = false;
         numTerrainContourLevels(1,1) double = 10;

@@ -21,13 +21,6 @@ if isstruct(options)
    else
       if isOctave
          Options=optimset('fminsearch');
-%        Display = notify
-%        FunValCheck = off
-%        MaxFunEvals =  400
-%        MaxIter =  400
-%        OutputFcn = [](0x0)
-%        TolFun =  0.00000010000
-%        TolX =  0.00010000
       else
          Options=optimset(optimset('fmincon'),options);
          opts(4)=optimget(Options,'TolCon');
@@ -64,7 +57,7 @@ if isstruct(options)
          opts(1)=1;
       case 'iter'
          opts(1)=2;
-      case 'Iter'
+       case 'iter-detailed'
          opts(1)=3;
       case 'debug'
          opts(1)=4;

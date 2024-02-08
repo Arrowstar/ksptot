@@ -3,7 +3,7 @@ classdef CustomFiniteDiffsCalculationMethod < AbstractGradientCalculationMethod
     %   Detailed explanation goes here
     
     properties
-        h(1,1) double = 1E-7;
+        h(1,1) double = 1E-6;
         diffType(1,1) FiniteDiffTypeEnum = FiniteDiffTypeEnum.Forward;
         numPts(1,1) uint64 = 2;
         

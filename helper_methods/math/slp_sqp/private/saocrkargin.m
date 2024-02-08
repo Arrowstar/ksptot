@@ -35,7 +35,7 @@ if numarg==1 % Problem structure argument input
       if isfield(Problem,'objective')
          Obj  = Problem.objective;
          fun = @(x) fun2(x,Obj,Con);
-         grd = @(x) grd2(x,Obj,Con);
+         grd = []; %@(x) grd2(x,Obj,Con);
       elseif isfield(Problem,'fun')
          fun  = Problem.fun;
          if isfield(Problem,'grd')
@@ -295,14 +295,25 @@ end
 
 %% Sub-function to transform user's fmincon function evauluation functions
    function [f,g,h] = fun2(x,Obj,Con)
-      f   = Obj(x);
-      if isempty(Con)
+    arguments(Input)
+        x double
+        Obj(1,1) function_handle
+        Con(1,1) function_handle
+    end
+    arguments(Output)
+        f double
+        g double
+        h double
+    end
+
+    f   = Obj(x);
+    if isempty(Con)
          g = [];
          h = [];
-      else
-         [g,h] = Con(x);
-      end
-   end
+    else
+        [g,h] = Con(x);
+    end
+end
 
 
 

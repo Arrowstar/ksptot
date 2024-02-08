@@ -28,12 +28,12 @@ classdef FminconOptions < matlab.mixin.SetGet
         
         %Interior-Point options
         hessianApproxAlg FminconHessApproxAlgEnum = FminconHessApproxAlgEnum.BFGS;
-        initBarrierParam(1,1) double = 0.1;
+        initBarrierParam(1,1) double = NaN;
         initTrustRegionRadius(1,1) double = NaN;
-        maxProjCGIter(1,1) double = 10000;
+        maxProjCGIter(1,1) double = NaN;
         subproblemAlgorithm FminconIpSubprobAlgEnum = FminconIpSubprobAlgEnum.Factorization;
-        tolProjCG(1,1) double = 1E-10;
-        tolProjCGAbs(1,1) double = 1E-10;
+        tolProjCG(1,1) double = NaN;
+        tolProjCGAbs(1,1) double = NaN;
         barrierParamUpdate FminconBarrierParamUpdateEnum = FminconBarrierParamUpdateEnum.PredictorCorrector;
         feasibilityMode(1,1) logical = false;
         

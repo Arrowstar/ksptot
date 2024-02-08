@@ -170,119 +170,50 @@ classdef Generic2DGroundTrackViewType < AbstractTrajectoryViewType
                 allLatsDeg = rad2deg([subGE.lat]);
                 allAltsKm = [subGE.alt];
 
-                [lines, subLongsDegOut, subLatsDegOut, subAltsKmOut, subTimesOut] = plotLatLongWithAngleWrapping(allTimes, allLongsDeg, allLatsDeg, allAltsKm, dAxes, plotLineColor, plotLineStyle, plotLineWidth, plotMarkerType, plotMarkerSize, plotMethodEnum);
-                for(j=1:length(lines))
-                    lines(j).DataTipTemplate.DataTipRows(end+1) = dataTipTextRow("Event", repmat(string(event.getListboxStr()), size(lines(j).XData)));
-
-                    viewProfile.vehicleGrdTrackData.addData(subTimesOut{j}, subLongsDegOut{j}, subLatsDegOut{j}, subAltsKmOut{j}, event.colorLineSpec.color);
+                [line, subLongsDegOut, subLatsDegOut, subAltsKmOut, subTimesOut] = plotLatLongWithAngleWrapping(allTimes, allLongsDeg, allLatsDeg, allAltsKm, dAxes, plotLineColor, plotLineStyle, plotLineWidth, plotMarkerType, plotMarkerSize, plotMethodEnum);
+                
+                line.DataTipTemplate.DataTipRows(end+1) = dataTipTextRow("Event", repmat(string(event.getListboxStr()), size(line.XData)));
+                
+                for(j=1:length(subLongsDegOut))
+                    if(numel(subLongsDegOut{j}) > 0 && numel(subLatsDegOut{j}) > 0 && numel(subAltsKmOut{j}) > 0 && numel(subTimesOut{j}) > 0)
+                        viewProfile.vehicleGrdTrackData.addData(subTimesOut{j}, subLongsDegOut{j}, subLatsDegOut{j}, subAltsKmOut{j}, event.colorLineSpec.color);
+                    end
                 end
             end
 
             %plot celestial bodies
             minTime = min([entries.time]);
             maxTime = max([entries.time]);
-            for(i=1:length(viewProfile.bodiesToPlot))
-                bodyToPlot = viewProfile.bodiesToPlot(i);
-
-                if(bodyToPlot == originBody)
-                    continue;
-                end
-
-                celBodyGrdTrackData = LaunchVehicleViewProfileGrdTrkCelBodyData(bodyToPlot);
-                viewProfile.celBodyGrdTrackData(end+1) = celBodyGrdTrackData;
-
-                bodyOrbitPeriod = [];
-                if(bodyToPlot.sma > 0)
-                    gmu = bodyToPlot.getParentGmuFromCache();
-                    
-                    if(not(isempty(gmu)) && not(isnan(gmu)) && isfinite(gmu))
-                        bodyOrbitPeriod = computePeriod(bodyToPlot.sma, gmu);
+            if(viewProfile.showCelestialBodyGrdTracks)
+                for(i=1:length(viewProfile.bodiesToPlot))
+                    bodyToPlot = viewProfile.bodiesToPlot(i);
+    
+                    if(bodyToPlot == originBody)
+                        continue;
                     end
-                else
-                    bodyOrbitPeriod = Inf;
-                end
-
-                if(isfinite(bodyOrbitPeriod))
-                    numPeriods = (maxTime - minTime)/bodyOrbitPeriod;
-                    times = linspace(minTime, maxTime, max(10*numPeriods, numel(entries)));
-                else
-                    times = linspace(minTime, maxTime, numel(entries));
-                end
-
-                ce = bodyToPlot.getElementSetsForTimes(times);
-                ceBodyFixed = ce.convertToFrame(originBody.getBodyFixedFrame());
-                ge = ceBodyFixed.convertToGeographicElementSet();
-
-                allLongsDeg = wrapTo180(rad2deg([ge.long]));
-                allLatsDeg = rad2deg([ge.lat]);
-                allAltsKm = [ge.alt];
-
-                bodyColor = bodyToPlot.getBodyRGB();
-
-                plotLineColor = bodyColor;
-                plotLineStyle = '-';
-                plotLineWidth = 1.5;
-                plotMarkerType = "none";
-                plotMarkerSize = 1;
-                plotMethodEnum = EventPlottingMethodEnum.PlotContinuous;
-
-                [lines, subLongsDegOut, subLatsDegOut, subAltsKmOut, subTimesOut] = plotLatLongWithAngleWrapping(times, allLongsDeg, allLatsDeg, allAltsKm, dAxes, plotLineColor, plotLineStyle, plotLineWidth, plotMarkerType, plotMarkerSize, plotMethodEnum);
-                for(j=1:length(lines))
-                    lines(j).DataTipTemplate.DataTipRows = [dataTipTextRow("Celestial Body", repmat(string(bodyToPlot.name), size(lines(j).XData))); ...
-                                                            lines(j).DataTipTemplate.DataTipRows];
-
-                    celBodyGrdTrackData.addData(subTimesOut{j}, subLongsDegOut{j}, subLatsDegOut{j}, subAltsKmOut{j});
-                end
-            end
-
-            %Plot ground objects on body
-            for(i=1:length(viewProfile.groundObjsToPlot))
-                grdObj = viewProfile.groundObjsToPlot(i);
-                geomPtGrdTrackData = LaunchVehicleViewProfileGrdTrkGroundObjData(grdObj);
-                viewProfile.grdObjGrdTrackData(end+1) = geomPtGrdTrackData;
-
-                waypts = grdObj.wayPts;
-                totalTransitTime = [waypts.timeToNextWayPt];
-                numPtsToPlot = min(min(totalTransitTime), 100);
-
-                times = linspace(minTime, maxTime, numPtsToPlot);
-                ge = GeographicElementSet.empty(1,0);
-                for(j=1:length(times))
-                    ge(j) = grdObj.getStateAtTime(times(j));
-                end
-                ge = ge.convertToFrame(originBody.getBodyFixedFrame());
-                
-                allLongsDeg = wrapTo180(rad2deg([ge.long]));
-                allLatsDeg = rad2deg([ge.lat]);
-                allAltsKm = [ge.alt];
-
-                plotLineColor = grdObj.grdTrkLineColor.color;
-                plotLineStyle = grdObj.grdTrkLineSpec.linespec;
-                plotLineWidth = 1.5;
-                plotMarkerType = "none";
-                plotMarkerSize = 1;
-                plotMethodEnum = EventPlottingMethodEnum.PlotContinuous;
-
-                [lines, subLongsDegOut, subLatsDegOut, subAltsKmOut, subTimesOut] = plotLatLongWithAngleWrapping(times, allLongsDeg, allLatsDeg, allAltsKm, dAxes, plotLineColor, plotLineStyle, plotLineWidth, plotMarkerType, plotMarkerSize, plotMethodEnum);
-                for(j=1:length(lines))
-                    lines(j).DataTipTemplate.DataTipRows = [dataTipTextRow("Ground Object", repmat(string(grdObj.name), size(lines(j).XData))); ...
-                                                            dataTipTextRow("Celestial Body", repmat(string(grdObj.centralBodyInfo.name), size(lines(j).XData))); ...
-                                                            lines(j).DataTipTemplate.DataTipRows];
-                    geomPtGrdTrackData.addData(subTimesOut{j}, subLongsDegOut{j}, subLatsDegOut{j}, subAltsKmOut{j});
-                end
-            end
-
-            %Plot geometric points on body
-            entries = lvdData.stateLog.getAllEntries();
-            allTimes = unique([entries.time], 'sorted');
-            for(i=1:length(viewProfile.pointsToPlot))
-                pointToPlot = viewProfile.pointsToPlot(i);
-
-                if(pointToPlot.canBePlotted)
-                    geomPtGrdTrackData = LaunchVehicleViewProfileGrdTrkGeomPointData(pointToPlot);
-                    viewProfile.geomPtGrdTrackData(end+1) = geomPtGrdTrackData;
-
-                    ce = pointToPlot.getPositionAtTime(allTimes, [], originBody.getBodyFixedFrame());
+    
+                    celBodyGrdTrackData = LaunchVehicleViewProfileGrdTrkCelBodyData(bodyToPlot);
+                    viewProfile.celBodyGrdTrackData(end+1) = celBodyGrdTrackData;
+    
+                    bodyOrbitPeriod = [];
+                    if(bodyToPlot.sma > 0)
+                        gmu = bodyToPlot.getParentGmuFromCache();
+                        
+                        if(not(isempty(gmu)) && not(isnan(gmu)) && isfinite(gmu))
+                            bodyOrbitPeriod = computePeriod(bodyToPlot.sma, gmu);
+                        end
+                    else
+                        bodyOrbitPeriod = Inf;
+                    end
+    
+                    if(isfinite(bodyOrbitPeriod))
+                        numPeriods = (maxTime - minTime)/bodyOrbitPeriod;
+                        times = linspace(minTime, maxTime, max(10*numPeriods, numel(entries)));
+                    else
+                        times = linspace(minTime, maxTime, numel(entries));
+                    end
+    
+                    ce = bodyToPlot.getElementSetsForTimes(times);
                     ceBodyFixed = ce.convertToFrame(originBody.getBodyFixedFrame());
                     ge = ceBodyFixed.convertToGeographicElementSet();
     
@@ -290,20 +221,107 @@ classdef Generic2DGroundTrackViewType < AbstractTrajectoryViewType
                     allLatsDeg = rad2deg([ge.lat]);
                     allAltsKm = [ge.alt];
     
-                    plotLineColor = pointToPlot.trkLineColor.color;
-                    plotLineStyle = pointToPlot.trkLineSpec.linespec;
+                    bodyColor = bodyToPlot.getBodyRGB();
+    
+                    plotLineColor = bodyColor;
+                    plotLineStyle = '-';
                     plotLineWidth = 1.5;
-                    plotMarkerColor = pointToPlot.markerColor.color;
-                    plotMarkerType = pointToPlot.markerShape.shape;
+                    plotMarkerType = "none";
                     plotMarkerSize = 1;
                     plotMethodEnum = EventPlottingMethodEnum.PlotContinuous;
     
-                    [lines, subLongsDegOut, subLatsDegOut, subAltsKmOut, subTimesOut] = plotLatLongWithAngleWrapping(allTimes, allLongsDeg, allLatsDeg, allAltsKm, dAxes, plotLineColor, plotLineStyle, plotLineWidth, plotMarkerType, plotMarkerSize, plotMethodEnum);
-                    for(j=1:length(lines))
-                        lines(j).MarkerFaceColor = plotMarkerColor;
-                        lines(j).DataTipTemplate.DataTipRows = [dataTipTextRow("Geometric Point", repmat(string(pointToPlot.name), size(lines(j).XData))); ...
-                                                                lines(j).DataTipTemplate.DataTipRows];
-                        geomPtGrdTrackData.addData(subTimesOut{j}, subLongsDegOut{j}, subLatsDegOut{j}, subAltsKmOut{j});
+                    [line, subLongsDegOut, subLatsDegOut, subAltsKmOut, subTimesOut] = plotLatLongWithAngleWrapping(times, allLongsDeg, allLatsDeg, allAltsKm, dAxes, plotLineColor, plotLineStyle, plotLineWidth, plotMarkerType, plotMarkerSize, plotMethodEnum);
+                    
+                    line.DataTipTemplate.DataTipRows = [dataTipTextRow("Celestial Body", repmat(string(bodyToPlot.name), size(line.XData))); ...
+                                                        line.DataTipTemplate.DataTipRows];
+                    for(j=1:length(subLongsDegOut))
+                        if(numel(subLongsDegOut{j}) > 0 && numel(subLatsDegOut{j}) > 0 && numel(subAltsKmOut{j}) > 0 && numel(subTimesOut{j}) > 0)
+                            celBodyGrdTrackData.addData(subTimesOut{j}, subLongsDegOut{j}, subLatsDegOut{j}, subAltsKmOut{j});
+                        end
+                    end
+                end
+            end
+
+            %Plot ground objects on body
+            if(viewProfile.showGroundObjsGrdTracks)
+                for(i=1:length(viewProfile.groundObjsToPlot))
+                    grdObj = viewProfile.groundObjsToPlot(i);
+                    geomPtGrdTrackData = LaunchVehicleViewProfileGrdTrkGroundObjData(grdObj);
+                    viewProfile.grdObjGrdTrackData(end+1) = geomPtGrdTrackData;
+    
+                    waypts = grdObj.wayPts;
+                    totalTransitTime = [waypts.timeToNextWayPt];
+                    numPtsToPlot = min(min(totalTransitTime), 100);
+    
+                    times = linspace(minTime, maxTime, numPtsToPlot);
+                    ge = GeographicElementSet.empty(1,0);
+                    for(j=1:length(times))
+                        ge(j) = grdObj.getStateAtTime(times(j));
+                    end
+                    ge = ge.convertToFrame(originBody.getBodyFixedFrame());
+                    
+                    allLongsDeg = wrapTo180(rad2deg([ge.long]));
+                    allLatsDeg = rad2deg([ge.lat]);
+                    allAltsKm = [ge.alt];
+    
+                    plotLineColor = grdObj.grdTrkLineColor.color;
+                    plotLineStyle = grdObj.grdTrkLineSpec.linespec;
+                    plotLineWidth = 1.5;
+                    plotMarkerType = "none";
+                    plotMarkerSize = 1;
+                    plotMethodEnum = EventPlottingMethodEnum.PlotContinuous;
+    
+                    [line, subLongsDegOut, subLatsDegOut, subAltsKmOut, subTimesOut] = plotLatLongWithAngleWrapping(times, allLongsDeg, allLatsDeg, allAltsKm, dAxes, plotLineColor, plotLineStyle, plotLineWidth, plotMarkerType, plotMarkerSize, plotMethodEnum);
+                    
+                    line.DataTipTemplate.DataTipRows = [dataTipTextRow("Ground Object", repmat(string(grdObj.name), size(line.XData))); ...
+                                                            dataTipTextRow("Celestial Body", repmat(string(grdObj.centralBodyInfo.name), size(line.XData))); ...
+                                                            line.DataTipTemplate.DataTipRows];
+                    for(j=1:length(subLongsDegOut))
+                        if(numel(subLongsDegOut{j}) > 0 && numel(subLatsDegOut{j}) > 0 && numel(subAltsKmOut{j}) > 0 && numel(subTimesOut{j}) > 0)
+                            geomPtGrdTrackData.addData(subTimesOut{j}, subLongsDegOut{j}, subLatsDegOut{j}, subAltsKmOut{j});
+                        end
+                    end
+                end
+            end
+
+            %Plot geometric points on body
+            entries = lvdData.stateLog.getAllEntries();
+            allTimes = unique([entries.time], 'sorted');
+            if(viewProfile.showGeomPointsGrdTracks)
+                for(i=1:length(viewProfile.pointsToPlot))
+                    pointToPlot = viewProfile.pointsToPlot(i);
+    
+                    if(pointToPlot.canBePlotted)
+                        geomPtGrdTrackData = LaunchVehicleViewProfileGrdTrkGeomPointData(pointToPlot);
+                        viewProfile.geomPtGrdTrackData(end+1) = geomPtGrdTrackData;
+    
+                        ce = pointToPlot.getPositionAtTime(allTimes, [], originBody.getBodyFixedFrame());
+                        ceBodyFixed = ce.convertToFrame(originBody.getBodyFixedFrame());
+                        ge = ceBodyFixed.convertToGeographicElementSet();
+        
+                        allLongsDeg = wrapTo180(rad2deg([ge.long]));
+                        allLatsDeg = rad2deg([ge.lat]);
+                        allAltsKm = [ge.alt];
+        
+                        plotLineColor = pointToPlot.trkLineColor.color;
+                        plotLineStyle = pointToPlot.trkLineSpec.linespec;
+                        plotLineWidth = 1.5;
+                        plotMarkerColor = pointToPlot.markerColor.color;
+                        plotMarkerType = pointToPlot.markerShape.shape;
+                        plotMarkerSize = 1;
+                        plotMethodEnum = EventPlottingMethodEnum.PlotContinuous;
+        
+                        [line, subLongsDegOut, subLatsDegOut, subAltsKmOut, subTimesOut] = plotLatLongWithAngleWrapping(allTimes, allLongsDeg, allLatsDeg, allAltsKm, dAxes, plotLineColor, plotLineStyle, plotLineWidth, plotMarkerType, plotMarkerSize, plotMethodEnum);
+                        
+                        line.MarkerFaceColor = plotMarkerColor;
+                        line.DataTipTemplate.DataTipRows = [dataTipTextRow("Geometric Point", repmat(string(pointToPlot.name), size(line.XData))); ...
+                                                            line.DataTipTemplate.DataTipRows];
+                        
+                        for(j=1:length(subLongsDegOut))
+                            if(numel(subLongsDegOut{j}) > 0 && numel(subLatsDegOut{j}) > 0 && numel(subAltsKmOut{j}) > 0 && numel(subTimesOut{j}) > 0)
+                                geomPtGrdTrackData.addData(subTimesOut{j}, subLongsDegOut{j}, subLatsDegOut{j}, subAltsKmOut{j});
+                            end
+                        end
                     end
                 end
             end
@@ -317,12 +335,17 @@ classdef Generic2DGroundTrackViewType < AbstractTrajectoryViewType
     end
 end
 
-function [lines, subLongsDegOut, subLatsDegOut, subAltsKmOut, subTimesOut] = plotLatLongWithAngleWrapping(allTimes, allLongsDeg, allLatsDeg, allAltsKm, dAxes, plotLineColor, plotLineStyle, plotLineWidth, plotMarkerType, plotMarkerSize, plotMethodEnum)
-    lines = matlab.graphics.GraphicsPlaceholder.empty(1,0);
+function [line, subLongsDegOut, subLatsDegOut, subAltsKmOut, subTimesOut] = plotLatLongWithAngleWrapping(allTimes, allLongsDeg, allLatsDeg, allAltsKm, dAxes, plotLineColor, plotLineStyle, plotLineWidth, plotMarkerType, plotMarkerSize, plotMethodEnum)
+    line = matlab.graphics.GraphicsPlaceholder.empty(1,0);
     subLongsDegOut = {};
     subLatsDegOut = {};
     subTimesOut = {};
     subAltsKmOut = {};
+
+    allT = [];
+    allX = [];
+    allY = [];
+    allZ = [];
 
     %filter out non-unique points
     A = unique([allTimes; allLongsDeg; allLatsDeg; allAltsKm]','rows', 'stable')';
@@ -346,6 +369,13 @@ function [lines, subLongsDegOut, subLatsDegOut, subAltsKmOut, subTimesOut] = plo
         subLongsDeg = allLongsDeg(curLongStart : longJumpInd);
         subLatsDeg = allLatsDeg(curLongStart : longJumpInd);
         subAltsKm = allAltsKm(curLongStart : longJumpInd);
+
+        if(all(subTimes(1) == subTimes(2:end)))
+            subTimes = subTimes(1);
+            subLongsDeg = subLongsDeg(1);
+            subLatsDeg = subLatsDeg(1);
+            subAltsKm = subAltsKm(1);
+        end
 
         %we need to generate missing data up to the edges of
         %the graph (long = +/- 180) or things might look weird
@@ -390,14 +420,26 @@ function [lines, subLongsDegOut, subLatsDegOut, subAltsKmOut, subTimesOut] = plo
             else
                 method = 'makima';
             end
-            newPreLatPtsToAdd = interp1(subLongsDeg, subLatsDeg, newPreLongPtsToAdd, method, 'extrap');
-            newPostLatPtsToAdd = interp1(subLongsDeg, subLatsDeg, newPostLongPtsToAdd, method, 'extrap');
 
-            newPreTimesToAdd = interp1(subLongsDeg, subTimes, newPreLongPtsToAdd, method, 'extrap');
-            newPostTimesToAdd = interp1(subLongsDeg, subTimes, newPostLongPtsToAdd, method, 'extrap');
-
-            newPreAltsToAdd = interp1(subLongsDeg, subAltsKm, newPreLongPtsToAdd, method, 'extrap');
-            newPostAltsToAdd = interp1(subLongsDeg, subAltsKm, newPostLongPtsToAdd, method, 'extrap');
+            try
+                newPreLatPtsToAdd = interp1(subLongsDeg, subLatsDeg, newPreLongPtsToAdd, method, 'extrap');
+                newPostLatPtsToAdd = interp1(subLongsDeg, subLatsDeg, newPostLongPtsToAdd, method, 'extrap');
+    
+                newPreTimesToAdd = interp1(subLongsDeg, subTimes, newPreLongPtsToAdd, method, 'extrap');
+                newPostTimesToAdd = interp1(subLongsDeg, subTimes, newPostLongPtsToAdd, method, 'extrap');
+    
+                newPreAltsToAdd = interp1(subLongsDeg, subAltsKm, newPreLongPtsToAdd, method, 'extrap');
+                newPostAltsToAdd = interp1(subLongsDeg, subAltsKm, newPostLongPtsToAdd, method, 'extrap');
+            catch ME
+                newPreLongPtsToAdd = [];
+                newPostLongPtsToAdd = [];
+                newPreLatPtsToAdd = [];
+                newPostLatPtsToAdd = [];
+                newPreTimesToAdd = [];
+                newPostTimesToAdd = [];
+                newPreAltsToAdd = [];
+                newPostAltsToAdd = [];
+            end
 
             subLongsDeg = [newPreLongPtsToAdd, subLongsDeg, newPostLongPtsToAdd]; %#ok<AGROW>
             subLatsDeg = [newPreLatPtsToAdd, subLatsDeg, newPostLatPtsToAdd]; %#ok<AGROW>
@@ -428,27 +470,32 @@ function [lines, subLongsDegOut, subLatsDegOut, subAltsKmOut, subTimesOut] = plo
                 error('Unknown event plotting method enum: %s', plotMethodEnum.name);
         end
 
-        l = plot(dAxes, x, y, 'Color', plotLineColor, 'LineStyle', plotLineStyle, 'LineWidth',plotLineWidth, 'Marker',plotMarkerType, 'MarkerSize',plotMarkerSize, 'MarkerEdgeColor','none', 'MarkerFaceColor',plotLineColor); %#ok<AGROW>
-        
-        if(not(isempty(l)))
-            tString = string.empty(1,0);
-            for(k=1:length(t))
-                [year, day, hour, minute, sec] = convertSec2YearDayHrMnSec(t(k));
-                tString(k) = formDateStr(year, day, hour, minute, sec);
-            end
+        allT = horzcat(allT,NaN,t); %#ok<AGROW>
+        allX = horzcat(allX,NaN,x); %#ok<AGROW>
+        allY = horzcat(allY,NaN,y); %#ok<AGROW>
+        allZ = horzcat(allZ,NaN,z); %#ok<AGROW>
 
-            l.DataTipTemplate.DataTipRows = [dataTipTextRow("Epoch", tString); ...
-                                             dataTipTextRow('Longitude [deg]', x); ...
-                                             dataTipTextRow('Latitude [deg]', y); ...
-                                             dataTipTextRow('Altitude [km]', z)];
-            lines(end+1) = l; %#ok<AGROW>
-        end
-
-        subLongsDegOut{j} = x;
-        subLatsDegOut{j} = y;
-        subAltsKmOut{j} = z;
-        subTimesOut{j} = t;
+        subLongsDegOut{j} = x; %#ok<AGROW>
+        subLatsDegOut{j} = y; %#ok<AGROW>
+        subAltsKmOut{j} = z; %#ok<AGROW>
+        subTimesOut{j} = t; %#ok<AGROW>
 
         curLongStart = longJumpInd + 1;
+    end
+
+    l = plot(dAxes, allX, allY, 'Color', plotLineColor, 'LineStyle', plotLineStyle, 'LineWidth',plotLineWidth, 'Marker',plotMarkerType, 'MarkerSize',plotMarkerSize, 'MarkerEdgeColor','none', 'MarkerFaceColor',plotLineColor);
+    
+    if(not(isempty(l)))
+        tString = string.empty(1,0);
+        for(k=1:length(allT))
+            [year, day, hour, minute, sec] = convertSec2YearDayHrMnSec(allT(k));
+            tString(k) = formDateStr(year, day, hour, minute, sec);
+        end
+
+        l.DataTipTemplate.DataTipRows = [dataTipTextRow("Epoch", tString); ...
+                                         dataTipTextRow('Longitude [deg]', allX); ...
+                                         dataTipTextRow('Latitude [deg]', allY); ...
+                                         dataTipTextRow('Altitude [km]', allZ)];
+        line = l;
     end
 end

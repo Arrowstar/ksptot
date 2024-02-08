@@ -33,9 +33,13 @@ classdef IpoptOptions < matlab.mixin.SetGet
             ipoptDotOptions.hessian_approximation = 'limited-memory';
             ipoptDotOptions.honor_original_bounds = 'yes';
             ipoptDotOptions.print_timing_statistics = 'yes';
-%             ipoptDotOptions.print_user_options = 'yes';
+            ipoptDotOptions.print_user_options = 'yes';
             ipoptDotOptions.mu_strategy = 'adaptive';
             ipoptDotOptions.linear_solver = 'mumps';
+            % ipoptDotOptions.jacobian_approximation = 'finite-difference-values';
+            % ipoptDotOptions.gradient_approximation = 'finite-difference-values';
+            ipoptDotOptions.nlp_scaling_method = 'none';
+            % ipoptDotOptions.derivative_test = 'first-order';
             
             %Convergence
             if(not(isnan(obj.constr_viol_tol)))

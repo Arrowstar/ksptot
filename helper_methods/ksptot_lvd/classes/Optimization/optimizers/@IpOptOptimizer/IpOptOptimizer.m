@@ -44,7 +44,6 @@ classdef IpOptOptimizer < AbstractGradientOptimizer
             %sparsity calculations
             sparsityTF = gradCalcMethod.shouldComputeSparsity();
             if(sparsityTF && not(isempty(hLvdMainGUI)))
-%                 hMsgBox = msgbox('Computing sparsity.  Please wait...');
                 hMsgBox = uiprogressdlg(hLvdMainGUI, 'Message','Computing sparsity.  Please wait...', 'Title','Computing Sparsity', 'Indeterminate',true, 'Icon','info');
             else
                 hMsgBox = NaN;
@@ -63,7 +62,7 @@ classdef IpOptOptimizer < AbstractGradientOptimizer
             funcs.constraints = cFun;
             funcs.jacobian = @(x) obj.computeJacobian(cFun, x, gradCalcMethod, obj.usesParallel());
             funcs.jacobianstructure = @() obj.computeJacobianStruct(length(x0All), numConstrs);
-            
+
             optionsStruct.lb = lbAll;
             optionsStruct.ub = ubAll;
             optionsStruct.cl = [-Inf * ones(numIneq,1); zeros(numEq,1)];
@@ -83,7 +82,6 @@ classdef IpOptOptimizer < AbstractGradientOptimizer
             
             if(callOutputFcn)
                 propNames = lvdOpt.lvdData.launchVehicle.tankTypes.getFirstThreeTypesCellArr();
-%                 handlesObsOptimGui = ma_ObserveOptimGUI(celBodyData, problem, true, writeOutput, [], varNameStrs, lbUsAll, ubUsAll);
 
                 out = AppDesignerGUIOutput();
                 ma_ObserveOptimGUI_App(out);
@@ -115,9 +113,7 @@ classdef IpOptOptimizer < AbstractGradientOptimizer
             obj.gradCalcMethod = newGradCalcMethod;
         end
         
-        function openOptionsDialog(obj)
-%             lvd_editIpoptOptionsGUI(obj);
-            
+        function openOptionsDialog(obj)           
             output = AppDesignerGUIOutput({false});
             lvd_editIpoptOptionsGUI_App(obj, output);
         end
@@ -169,7 +165,9 @@ classdef IpOptOptimizer < AbstractGradientOptimizer
             global ipoptFuncCount ipoptLastXVect
             
             x = ipoptLastXVect;
-            cOut = constrFunc(x);
+            [cOut, numIneq, numEq] = constrFunc(x);
+            eqInds = 1+numIneq : (numIneq+numEq);
+            cOut(eqInds) = abs(cOut(eqInds));
             cMax = max([0, max(cOut)]);
             
             optimValues.constrviolation = cMax;

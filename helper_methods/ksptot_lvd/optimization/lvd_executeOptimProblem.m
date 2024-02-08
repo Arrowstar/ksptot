@@ -30,6 +30,13 @@ function [exitflag, message] = lvd_executeOptimProblem(celBodyData, writeOutput,
         [x,fval,exitflag,output,lambda,grad,hessian] = fmincon(problem);
         message = output.message;
         
+    elseif(strcmpi(problem.solver,'sqp'))
+        problem = rmfield(problem,'lvdData');
+        problem.options.MaxLineSearchFun = 300;
+        problem.options.Scale = 1;
+        [x,out,v,H,exitflag] = sqp(problem);
+        message = out.status;
+
     elseif(strcmpi(problem.solver,'patternsearch'))
         [x,fval,exitflag,output] = patternsearch(problem);
         message = output.message;
