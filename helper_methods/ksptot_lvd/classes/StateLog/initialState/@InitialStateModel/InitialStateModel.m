@@ -135,12 +135,13 @@ classdef InitialStateModel < matlab.mixin.SetGet
             for(i=1:length(calcObjs))
                 stateLogEntry.calcObjStates(end+1) = calcObjs(i).createInitialState();
             end
-            
-            obj.steeringModels.selectedModel.setT0(obj.time);
-            obj.throttleModels.selectedModel.setT0(obj.time);
-            
+                       
             stateLogEntry.steeringModel = obj.steeringModels.selectedModel;
+            stateLogEntry.steeringModel.setT0(obj.time);
+
             stateLogEntry.throttleModel = obj.throttleModels.selectedModel;
+            stateLogEntry.throttleModel.setT0(obj.time);
+            stateLogEntry.throttleModel.initThrottleModel(stateLogEntry);
             
             [~,sensors] = lvdData.sensors.getListboxStr();
             for(i=1:length(sensors))

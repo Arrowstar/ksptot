@@ -31,6 +31,9 @@ function [throttleModel, ok] = promptForThrottleModelType(selectedEnum)
                 
             case ThrottleModelEnum.T2WModel
                 throttleModel = T2WThrottleModel.getDefaultThrottleModel();
+
+            case ThrottleModelEnum.InterpThrottle
+                throttleModel = ThrottleInterpolatedModel.getDefaultThrottleModel();
                 
             otherwise
                 error('Unknown throttle model type: %s', enum.nameStr);

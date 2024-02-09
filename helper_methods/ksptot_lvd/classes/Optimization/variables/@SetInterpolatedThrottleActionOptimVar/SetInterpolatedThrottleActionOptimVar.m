@@ -16,9 +16,9 @@
         lbThrottles(:,1) double = 0;
 
         %Upper Bounds
-        ubThrottle0(1,1) double = 0;
-        ubTDur(:,1) double = 0;
-        ubThrottles(:,1) double = 0;
+        ubThrottle0(1,1) double = 1;
+        ubTDur(:,1) double = 1;
+        ubThrottles(:,1) double = 1;
     end
     
     methods
@@ -38,7 +38,7 @@
             numTabularVarRows = numel(obj.varTDur);
     
             xTDur = NaN(1, numTabularVarRows);
-            xTDur(obj.varTDur) = obj.varObj.tDurs(obj.varTDur);
+            xTDur(obj.varTDur) = obj.varObj.durations(obj.varTDur);
 
             xThrottles = NaN(1, numTabularVarRows);
             xThrottles(obj.varThrottles) = obj.varObj.throttles(obj.varThrottles);
@@ -115,7 +115,7 @@
 
             if(any(obj.varTDur))
                 inds = ind:ind+sum(obj.varTDur)-1;
-                obj.varObj.tDurs(obj.varTDur) = x(inds);
+                obj.varObj.durations(obj.varTDur) = x(inds);
                 ind = inds(end)+1;
             end
             if(any(obj.varThrottles))

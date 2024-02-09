@@ -35,55 +35,53 @@ classdef SQPOptimizer < AbstractGradientOptimizer
             opts = obj.options.getOptionsForOptimizer(typicalX);
 
             objFuncWrapper = @(x) lvdOpt.objFcn.evalObjFcn(x, evtToStartScriptExecAt);
-
-            % if(opts.SpecifyConstraintGradient)
-            %     nonlcon = @(x) lvdOpt.constraints.evalConstraintsWithGradients(x, true, evtToStartScriptExecAt, true, []);
-            % else
-                nonlcon = @(x) lvdOpt.constraints.evalConstraints(x, true, evtToStartScriptExecAt, true, []);
-            % end
                             
             % if(obj.options.computeOptimalStepSizes == true)
             %     optimalStepSizes = CustomFiniteDiffsCalculationMethod.determineOptimalStepSizes(@(x) CustomFiniteDiffsCalculationMethod.combinedConstrFun(x, lvdOpt.lvdData), x0All, hLvdMainGUI);
             % 
             %     if(not(isempty(optimalStepSizes)))
             %         opts.FiniteDifferenceStepSize = optimalStepSizes;
-            %         opts.TypicalX = ones(length(optimalStepSizes),1);
             %     end
             % end
             
-            % if(lvdOpt.gradAlgo == LvdOptimizerGradientCalculationAlgoEnum.BuiltIn)
+            opts.SpecifyObjectiveGradient = false;
+            if(lvdOpt.gradAlgo == LvdOptimizerGradientCalculationAlgoEnum.BuiltIn)
                 objFunToPass = objFuncWrapper;
-                % opts = optimoptions(opts, 'SpecifyObjectiveGradient',false);
-            % elseif(lvdOpt.gradAlgo == LvdOptimizerGradientCalculationAlgoEnum.FiniteDifferences)
-            %     gradCalcMethod = lvdOpt.customFiniteDiffsCalcMethod;
-            %     objFunToPass = @(x) obj.objFuncWithGradient(objFuncWrapper, x, gradCalcMethod, obj.usesParallel());
-            %     opts = optimoptions(opts, 'SpecifyObjectiveGradient',true);
-            % 
-            %     sparsityTF = gradCalcMethod.shouldComputeSparsity();
-            %     if(sparsityTF && not(isempty(hLvdMainGUI)))
-            %         hMsgBox = uiprogressdlg(hLvdMainGUI, 'Message','Computing sparsity.  Please wait...', 'Title','Computing Sparsity', 'Indeterminate',true, 'Icon','info');
-            %     else
-            %         hMsgBox = NaN;
-            %     end
-            % 
-            %     fAtX0 = objFunToPass(x0All);
-            %     gradCalcMethod.computeGradientSparsity(objFuncWrapper, x0All, fAtX0, obj.usesParallel());
-            % 
-            %     if(sparsityTF && isgraphics(hMsgBox))
-            %         close(hMsgBox); drawnow;
-            %     end
-            % 
-            % elseif(lvdOpt.gradAlgo == LvdOptimizerGradientCalculationAlgoEnum.DerivEst)
-            %     opts = optimoptions(opts, 'SpecifyObjectiveGradient',true);
-            %     gradCalcMethod = lvdOpt.derivEstFiniteDiffCalcMethod;
-            %     objFunToPass = @(x) obj.objFuncWithGradient(objFuncWrapper, x, gradCalcMethod, obj.usesParallel());
-            % 
-            % else
-            %     error('Unknown gradient algorithm: %s', lvdOpt.gradAlgo.name);
-            % end
+                opts.SpecifyObjectiveGradient = false;
+
+                nonlcon = @(x) lvdOpt.constraints.evalConstraints(x, true, evtToStartScriptExecAt, true, []);
+            elseif(lvdOpt.gradAlgo == LvdOptimizerGradientCalculationAlgoEnum.FiniteDifferences)
+                gradCalcMethod = lvdOpt.customFiniteDiffsCalcMethod;
+                objFunToPass = @(x) obj.objFuncWithGradient(objFuncWrapper, x, gradCalcMethod, obj.usesParallel());
+                opts.SpecifyObjectiveGradient = true;
+
+                sparsityTF = gradCalcMethod.shouldComputeSparsity();
+                if(sparsityTF && not(isempty(hLvdMainGUI)))
+                    hMsgBox = uiprogressdlg(hLvdMainGUI, 'Message','Computing sparsity.  Please wait...', 'Title','Computing Sparsity', 'Indeterminate',true, 'Icon','info');
+                else
+                    hMsgBox = NaN;
+                end
+
+                fAtX0 = objFunToPass(x0All);
+                gradCalcMethod.computeGradientSparsity(objFuncWrapper, x0All, fAtX0, obj.usesParallel());
+
+                if(sparsityTF && isgraphics(hMsgBox))
+                    close(hMsgBox); drawnow;
+                end
+
+                nonlcon = @(x) lvdOpt.constraints.evalConstraintsWithGradients(x, true, evtToStartScriptExecAt, true, []);
+
+            elseif(lvdOpt.gradAlgo == LvdOptimizerGradientCalculationAlgoEnum.DerivEst)
+                opts.SpecifyObjectiveGradient = false;
+                gradCalcMethod = lvdOpt.derivEstFiniteDiffCalcMethod;
+                objFunToPass = @(x) obj.objFuncWithGradient(objFuncWrapper, x, gradCalcMethod, obj.usesParallel());
+
+                nonlcon = @(x) lvdOpt.constraints.evalConstraintsWithGradients(x, true, evtToStartScriptExecAt, true, []);
+            else
+                error('Unknown gradient algorithm: %s', lvdOpt.gradAlgo.name);
+            end
             
-            %need to fix issues with variables being on bounds causing
-            %fmincon to go crazy on setting the initial condition
+            %need to fix issues with variables being on bounds
             bool = x0All >= ubAll;
             x0All(bool) = ubAll(bool) - 10*eps;
 
@@ -205,6 +203,12 @@ classdef SQPOptimizer < AbstractGradientOptimizer
                 optStr = 'N/A';
             end
 
+            if(isfield(optimValues,'stepsize'))
+                stepSizeStr = num2str(optimValues.stepsize);
+            else
+                stepSizeStr = '0';
+            end
+
             outStr = {};
             outStr{end+1} = ['State                = ', state];
             outStr{end+1} = '                        ';
@@ -213,7 +217,7 @@ classdef SQPOptimizer < AbstractGradientOptimizer
             outStr{end+1} = ['Objective Value      = ', num2str(optimValues.fval)];
             outStr{end+1} = ['Constraint Violation = ', num2str(optimValues.constrviolation)];
             outStr{end+1} = ['Optimality           = ', optStr];
-            outStr{end+1} = ['Step Size            = ', num2str(optimValues.stepsize)];
+            outStr{end+1} = ['Step Size            = ', stepSizeStr];
             outStr{end+1} = '                       ';
             outStr{end+1} = ['Elapsed Time         = ', num2str(elapTime), ' sec'];
             

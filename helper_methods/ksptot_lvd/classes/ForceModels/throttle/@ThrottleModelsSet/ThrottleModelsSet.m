@@ -5,6 +5,7 @@ classdef ThrottleModelsSet < matlab.mixin.SetGet
     properties
         polyThrottle(1,1) ThrottlePolyModel = ThrottlePolyModel.getDefaultThrottleModel();
         t2wThrottle(1,1) T2WThrottleModel = T2WThrottleModel.getDefaultThrottleModel();
+        tabularInterpThrottle(1,1) ThrottleInterpolatedModel = ThrottleInterpolatedModel.getDefaultThrottleModel();
 
         selectedModel(1,1) AbstractThrottleModel = ThrottlePolyModel.getDefaultThrottleModel();
     end
@@ -37,6 +38,9 @@ classdef ThrottleModelsSet < matlab.mixin.SetGet
 
                 case ThrottleModelEnum.T2WModel
                     obj.t2wThrottle = newSelectedModel; %#ok<MCSUP> 
+
+                case ThrottleModelEnum.InterpThrottle
+                    obj.tabularInterpThrottle = newSelectedModel; %#ok<MCSUP> 
 
                 otherwise
                     error('Unknown throttle model type: %s', enum.name);

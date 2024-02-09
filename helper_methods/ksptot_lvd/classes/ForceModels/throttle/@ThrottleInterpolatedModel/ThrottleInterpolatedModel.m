@@ -4,10 +4,10 @@ classdef ThrottleInterpolatedModel < AbstractThrottleModel
     
     properties
         t0(1,1) double = 0;
-        initThrottle(1,1) double {mustBeInRange(initThrottle,0,1)} = 0;
+        initThrottle(1,1) double = 0;
 
-        durations(:,1) double {mustBeGreaterThan(durations,0)} = 1;
-        throttles(:,1) double {mustBeInRange(throttles,0,1)} = 0;
+        durations(:,1) double = 1;
+        throttles(:,1) double = 0;
 
         interpolationType(1,1) ThrottleInterpolatedModelInterpTypeEnum = ThrottleInterpolatedModelInterpTypeEnum.Linear;
         gi
@@ -29,9 +29,15 @@ classdef ThrottleInterpolatedModel < AbstractThrottleModel
         end
         
         function initThrottleModel(obj, initialStateLogEntry)
+            if(obj.throttleContinuity)
+                throttle = initialStateLogEntry.throttle;
+                obj.initThrottle = throttle;
+            end
+
             obj.setT0(initialStateLogEntry.time);
-            times = obj.t0 + cumsum(obj.durations);
-            obj.gi = griddedInterpolant(times, obj.throttles, obj.interpolationType.giModelTypeStr, 'nearest');
+            allTimes     = [obj.t0,           obj.t0 + cumsum(obj.durations(:)')];
+            allThrottles = [obj.initThrottle, obj.throttles(:)'];
+            obj.gi = griddedInterpolant(allTimes, allThrottles, obj.interpolationType.giModelTypeStr, 'nearest');
         end
         
         function setInitialThrottleFromState(obj, stateLogEntry, tOffsetDelta)
@@ -59,10 +65,10 @@ classdef ThrottleInterpolatedModel < AbstractThrottleModel
         end
 
         function [addActionTf, throttleModel] = openEditThrottleModelUI(obj, lv, useContinuity)
-            output = AppDesignerGUIOutput({false});
-            % lvd_EditActionSetThrottleModelGUI_App(obj, lv, useContinuity, output);
-            % addActionTf = output.output{1};
-            % throttleModel = output.output{2};
+            output = AppDesignerGUIOutput({false, obj});
+            lvd_EditTabularInterpThrottleModelGUI_App(obj, lv, useContinuity, output);
+            addActionTf = output.output{1};
+            throttleModel = output.output{2};
         end
     end
     

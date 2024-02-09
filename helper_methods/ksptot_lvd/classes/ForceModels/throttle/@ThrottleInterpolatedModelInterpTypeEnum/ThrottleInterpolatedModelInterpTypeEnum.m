@@ -16,10 +16,9 @@ classdef ThrottleInterpolatedModelInterpTypeEnum < matlab.mixin.SetGet
     end
     
     methods
-        function obj = ThrottleInterpolatedModelInterpTypeEnum(nameStr,classNameStr,desc)
+        function obj = ThrottleInterpolatedModelInterpTypeEnum(nameStr,giModelTypeStr)
             obj.nameStr = nameStr;
-            obj.classNameStr = classNameStr;
-            obj.desc = desc;
+            obj.giModelTypeStr = giModelTypeStr;
         end
     end
     
