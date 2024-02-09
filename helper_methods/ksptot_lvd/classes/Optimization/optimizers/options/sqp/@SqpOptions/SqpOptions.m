@@ -13,7 +13,7 @@ classdef SqpOptions < matlab.mixin.SetGet
         maxFuncEvals(1,1) double = 3000;
         
         %Parallel
-        useParallel(1,1) SqpUseParallelEnum = SqpUseParallelEnum.UseParallel;
+        useParallel(1,1) SqpUseParallelEnum = SqpUseParallelEnum.DoNotUseParallel;
         numWorkers(1,1) double = feature('numCores');
         
         %Finite Differences
@@ -22,7 +22,7 @@ classdef SqpOptions < matlab.mixin.SetGet
         
         %SQP Algo Specific
         terminationType(1,1) SqpTerminationCondEnum = SqpTerminationCondEnum.Schittkowski;
-        maxLineSearchFun(1,1) double = 300;
+        maxLineSearchFun(1,1) double = 30;
     end
     
     methods 
