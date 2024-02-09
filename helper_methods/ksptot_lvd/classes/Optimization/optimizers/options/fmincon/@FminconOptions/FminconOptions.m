@@ -144,7 +144,7 @@ classdef FminconOptions < matlab.mixin.SetGet
         end
         
         function tf = usesParallel(obj)
-            tf = obj.useParallel;
+            tf = obj.useParallel.optionVal;
         end
         
         function numWorkers = getNumParaWorkers(obj)

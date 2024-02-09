@@ -5,7 +5,7 @@ classdef ThrottleModelEnum < matlab.mixin.SetGet
     enumeration
         PolyModel('Polynominal Model','ThrottlePolyModel',"The vehicle throttle varies as a function of a second degree polynomial.  Can set constant throttle here too.");
         T2WModel('Thrust To Weight Model','T2WThrottleModel',"The vehicle will set the throttle to maintain a fixed thrust to weight ratio.");
-        InterpThrottle('Interpolated Throttle Model','The vehicle throttle is defined as a function of interpolated tabular throttle settings.')
+        InterpThrottle('Interpolated Throttle Model','ThrottleInterpolatedModel',"The vehicle throttle is defined as a function of interpolated tabular throttle settings.")
     end
     
     properties

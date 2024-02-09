@@ -136,7 +136,7 @@ classdef SQPOptimizer < AbstractGradientOptimizer
         
         function openOptionsDialog(obj)           
             output = AppDesignerGUIOutput({false});
-            % lvd_editFminconOptionsGUI_App(obj, output);
+            lvd_editSqpOptOptionsGUI_App(obj.options, output);
         end
         
         function tf = usesParallel(obj)

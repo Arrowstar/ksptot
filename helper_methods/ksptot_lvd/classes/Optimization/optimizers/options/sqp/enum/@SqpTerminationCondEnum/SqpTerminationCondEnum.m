@@ -22,14 +22,15 @@ classdef SqpTerminationCondEnum < matlab.mixin.SetGet
     end
     
     methods(Static)
-        function listBoxStr = getListBoxStr()
-            m = enumeration('FminconUseParallelEnum');
+        function [listBoxStr, m] = getListBoxStr()
+            m = enumeration('SqpTerminationCondEnum');
             [~,I] = sort({m.name});
             listBoxStr = {m(I).name};
+            m = m(I);
         end
         
         function [ind, enum] = getIndForName(name)
-            m = enumeration('FminconUseParallelEnum');
+            m = enumeration('SqpTerminationCondEnum');
             [~,I] = sort({m.name});
             m = m(I);
             ind = find(ismember({m.name},name),1,'first');
@@ -37,7 +38,7 @@ classdef SqpTerminationCondEnum < matlab.mixin.SetGet
         end
         
         function [enum, ind] = getEnumForListboxStr(nameStr)
-            m = enumeration('FminconUseParallelEnum');
+            m = enumeration('SqpTerminationCondEnum');
             ind = find(ismember({m.name},nameStr),1,'first');
             enum = m(ind);
         end
