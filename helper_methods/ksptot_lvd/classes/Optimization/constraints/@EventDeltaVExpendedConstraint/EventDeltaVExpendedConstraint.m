@@ -112,8 +112,6 @@ classdef EventDeltaVExpendedConstraint < AbstractConstraint
         end
         
         function addConstraintTf = openEditConstraintUI(obj, lvdData)
-%             addConstraintTf = lvd_EditGenericMAConstraintGUI(obj, lvdData);
-            
             output = AppDesignerGUIOutput({false});
             lvd_EditGenericMAConstraintGUI_App(obj, lvdData, output);
             addConstraintTf = output.output{1}; 
@@ -147,6 +145,8 @@ classdef EventDeltaVExpendedConstraint < AbstractConstraint
                     throttleModel = stateLogEntry1.throttleModel;
                     steeringModel = stateLogEntry1.steeringModel;
 
+                    attitude = stateLogEntry1.attitude;
+
                     altitude = norm(rVect) - bodyInfo.radius;
                     pressure = getPressureAtAltitude(bodyInfo, altitude); 
 
@@ -158,7 +158,7 @@ classdef EventDeltaVExpendedConstraint < AbstractConstraint
                     
                     throttle = throttleModel.getThrottleAtTime(ut, rVect, vVect, tankStatesMasses, dryMass, stageStates, lvState, tankStates, bodyInfo, storageSoCs, powerStorageStates);
 
-                    [tankMDots, totalThrust, ~] = LaunchVehicleStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, tankStatesMasses, stageStates, throttle, lvState, pressure, ut, rVect, vVect, bodyInfo, steeringModel, storageSoCs, powerStorageStates, []);
+                    [tankMDots, totalThrust, ~] = LaunchVehicleStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, tankStatesMasses, stageStates, throttle, lvState, pressure, ut, rVect, vVect, bodyInfo, steeringModel, storageSoCs, powerStorageStates, attitude);
 
                     if(abs(sum(tankMDots)) > 0)
                         tankMDotsKgS = tankMDots * 1000;

@@ -213,6 +213,38 @@ classdef OptimizationVariableSet < matlab.mixin.SetGet
             end
         end
 
+        function varsDisplayedAsPercent = getVarsDisplayedAsPercents(obj)
+            varsDisplayedAsPercent = [];
+            
+            for(i=1:length(obj.vars)) %#ok<*NO4LP>
+                var = obj.vars(i);
+                
+                if(obj.isVarEventOptimDisabled(var))
+                    continue;
+                end
+                
+                useTf = var.getUseTfForVariable();
+                varDisplayedAsPercent = var.getVarsDisplayedAsPercents();
+                varsDisplayedAsPercent = horzcat(varsDisplayedAsPercent, varDisplayedAsPercent(useTf)); %#ok<AGROW>
+            end
+        end
+
+        function varsDisplayedAsMeters = getVarsDisplayedAsMeters(obj)
+            varsDisplayedAsMeters = [];
+            
+            for(i=1:length(obj.vars)) %#ok<*NO4LP>
+                var = obj.vars(i);
+                
+                if(obj.isVarEventOptimDisabled(var))
+                    continue;
+                end
+                
+                useTf = var.getUseTfForVariable();
+                varDisplayedAsMeters = var.getVarsDisplayedAsMeters();
+                varsDisplayedAsMeters = horzcat(varsDisplayedAsMeters, varDisplayedAsMeters(useTf)); %#ok<AGROW>
+            end
+        end
+
         function removeUselessVars(obj)
             indsToRemove = [];
             for(i=1:length(obj.vars))

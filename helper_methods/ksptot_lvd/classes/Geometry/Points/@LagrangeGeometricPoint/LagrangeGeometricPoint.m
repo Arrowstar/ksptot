@@ -100,7 +100,7 @@ classdef LagrangeGeometricPoint < AbstractGeometricPoint
         end
         
         function bodyInfo = getOriginBody(obj)
-            bodyInfo = obj.cartElem.frame.getOriginBody();
+            bodyInfo = obj.frame.getOriginBody();
         end
         
         function tf = usesGroundObj(~, ~)

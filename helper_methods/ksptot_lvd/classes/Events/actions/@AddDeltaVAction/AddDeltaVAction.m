@@ -53,8 +53,16 @@ classdef AddDeltaVAction < AbstractEventAction
 
                     deltaMassPerTankMT = deltaMassMT * (abs(tankMDots) / abs(sum(tankMDots)));
 
+                    if(newStateLogEntry.event.propDir == PropagationDirectionEnum.Forward)
+                        massMult = -1; %subtract mass
+                    elseif(newStateLogEntry.event.propDir == PropagationDirectionEnum.Backward)
+                        massMult = +1; %add mass because we are propagating backwards in time
+                    else
+                        error('Unknown propagation direction: %s.', newStateLogEntry.event.propDir.name);
+                    end
+
                     for(i=1:length(tankStates))
-                        tankStates(i).setTankMass(tankStates(i).getTankMass() - deltaMassPerTankMT(i));
+                        tankStates(i).setTankMass(tankStates(i).getTankMass() + massMult*deltaMassPerTankMT(i));
                     end
                 end
             end

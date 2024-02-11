@@ -99,5 +99,13 @@ classdef AddDeltaVActionVariable < AbstractOrbitModelVariable
                     
             nameStrs = nameStrs(obj.getUseTfForVariable());
         end
+
+        function varsDisplayedAsMeters = getVarsDisplayedAsMeters(obj)
+            %This function is for variables that are displayed as
+            %meters (or m/s, etc) but stored as kilometers (or km/s, etc).
+            %For example, a DV burn component of 456 m/s might be displayed
+            %that way, but stored internally as "0.456."
+            varsDisplayedAsMeters = [true true true];
+        end
     end
 end

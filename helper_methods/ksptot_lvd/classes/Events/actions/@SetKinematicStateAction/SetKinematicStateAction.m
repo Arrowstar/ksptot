@@ -169,9 +169,10 @@ classdef SetKinematicStateAction < AbstractEventAction
                    obj.inheritStateElemsFromEvent.getEventNum() > 0)
                
                     stateElemsEvtState = obj.stateLog.getLastStateLogForEvent(obj.inheritStateElemsFromEvent);
-                    stateElemsEvtState = stateElemsEvtState(end);
                     
                     if(not(isempty(stateElemsEvtState)))
+                        stateElemsEvtState = stateElemsEvtState(end);
+
                         newStateLogEntry.aero = stateElemsEvtState.aero.deepCopy();
                         newStateLogEntry.thirdBodyGravity = stateElemsEvtState.thirdBodyGravity.copy();
                         newStateLogEntry.stopwatchStates = stateElemsEvtState.stopwatchStates.copy();

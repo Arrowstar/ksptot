@@ -57,5 +57,13 @@ classdef ThrottleTermCondOptimVar < AbstractOptimizationVariable
         function nameStrs = getStrNamesOfVars(obj, evtNum, varLocType)
             nameStrs = {sprintf('Event %i Throttle Termination Condition', evtNum)};
         end
+
+        function varsDisplayedAsPercent = getVarsDisplayedAsPercents(obj)
+            %This function is for variables that are displayed as
+            %percentages but stored as numbers 0 -> 1.  For example, 55%
+            %might be the displayed value, but it is stored in the var as
+            %0.55.
+            varsDisplayedAsPercent = true;
+        end
     end
 end
