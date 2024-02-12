@@ -17,11 +17,11 @@ function [rVectB, vVectB] = getPositOfBodyWRTSun(time, bodyInfo, celBodyData)
             [rVectB, vVectB] = getPositOfBodyWRTSun_alg_fast_mex(time, chain{:});
             
         elseif(bodyInfo.propTypeIsNumerical)
-            parentBodyInfo = bodyInfo.getParBodyInfo(celBodyData);
+            parentBodyInfo = bodyInfo.getParBodyInfo(bodyInfo.celBodyData);
 
             [rVect, vVect] = getStateAtTime(bodyInfo, time, []);
             cartElem = CartesianElementSet(time, rVect, vVect, parentBodyInfo.getBodyCenteredInertialFrame(), true);
-            cartElem = convertToFrame(cartElem, celBodyData.getTopLevelBody().getBodyCenteredInertialFrame());
+            cartElem = convertToFrame(cartElem, bodyInfo.celBodyData.getTopLevelBody().getBodyCenteredInertialFrame());
 
             rVectB = [cartElem.rVect];
             vVectB = [cartElem.vVect];
