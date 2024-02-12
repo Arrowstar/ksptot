@@ -21,8 +21,8 @@ classdef CelestialBodySunRelStateDataCache < matlab.mixin.SetGet
             obj.times = times;
             obj.stateVects = stateVects;
             obj.relFrame = relFrame;
-            
-            obj.gi = griddedInterpolant(obj.times, obj.stateVects, 'spline');
+        
+            obj.gi = griddedInterpolant(obj.times, obj.stateVects, 'spline', 'none');
         end
         
         function [rVect, vVect] = getCachedBodyStateAtTime(obj, time)

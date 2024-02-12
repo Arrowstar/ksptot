@@ -9,6 +9,10 @@ classdef BodyFixedFrame < AbstractReferenceFrame
         rotMatToInertialCacheTime = NaN;
         rotMatToInertialCache2 = NaN(3,3);
     end
+
+    properties(Transient)
+        cachedFnc1
+    end
     
     properties(Constant)
         typeEnum = ReferenceFrameEnum.BodyFixedRotating
@@ -21,14 +25,23 @@ classdef BodyFixedFrame < AbstractReferenceFrame
         end
         
         function [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = getOffsetsWrtInertialOrigin(obj, time, ~, ~)
-            bi = obj.bodyInfo;
+            % if(isempty(obj.cachedFnc1))
+            %     obj.cachedFnc1 = memoize(@(time) obj.getOffsetsWrtInertialOriginForCache(time));
+            %     obj.cachedFnc1.CacheSize = 10;
+            %     obj.cachedFnc1.Enabled = true;
+            % end
+            % 
+            % [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = obj.cachedFnc1(time);
+            [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = obj.getOffsetsWrtInertialOriginForCache(time);         
+        end
 
-            [posOffsetOrigin, velOffsetOrigin] = getPositOfBodyWRTSun(time, bi, obj.celBodyData);
+        function [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = getOffsetsWrtInertialOriginForCache(obj, time)  
+            [posOffsetOrigin, velOffsetOrigin] = getPositOfBodyWRTSun(time, [obj.bodyInfo], obj(1).celBodyData);           
             [angVelWrtOrigin, rotMatToInertial] = obj.getAngVelWrtOriginAndRotMatToInertial(time, [], []);
         end
 
         function R_BodyFixed_to_GlobalInertial = getRotMatToInertialAtTime(obj, time, ~, ~)
-            if(numel(time) == 1 && obj.rotMatToInertialCacheTime == time)
+            if(isscalar(time) && obj.rotMatToInertialCacheTime == time)
                 R_BodyFixed_to_GlobalInertial = obj.rotMatToInertialCache2;
             else
                 bi = obj.bodyInfo;
@@ -40,7 +53,7 @@ classdef BodyFixedFrame < AbstractReferenceFrame
                 R_BodyInertialFrame_to_BodyFixedFrame = pagetranspose(axang2rotmARH(axang)); %I'm not sure why this transpose is required here but I assume it has to do with the definition of the frame coming out of axang2rotm().  In any event, it's definitely needed, things get backwards without it.
                 R_BodyFixed_to_GlobalInertial = pagetranspose(pagemtimes(R_BodyInertialFrame_to_BodyFixedFrame, repmat(bi.bodyRotMatFromGlobalInertialToBodyInertial, [1 1 length(time)]))); 
 
-                if(numel(time) == 1)
+                if(isscalar(time))
                     obj.rotMatToInertialCacheTime = time;
                     obj.rotMatToInertialCache2 = R_BodyFixed_to_GlobalInertial;
                 end
@@ -107,14 +120,14 @@ classdef BodyFixedFrame < AbstractReferenceFrame
     methods
         function bool = eq(A,B)
             try
-                if(numel(A) == 1 && numel(B) == 1 && ...
+                if(isscalar(A) && isscalar(B) && ...
                    A.typeEnum == ReferenceFrameEnum.BodyFixedRotating && ...
                    B.typeEnum == ReferenceFrameEnum.BodyFixedRotating)
                     bool = A.bodyInfo == B.bodyInfo;
                 else
                     bool = eq@handle(A,B);
                 end
-            catch ME %#ok<NASGU>
+            catch ME 
                 bool = eq@handle(A,B);
             end
         end

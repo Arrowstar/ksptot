@@ -55,7 +55,10 @@ classdef CelestialBodyData < matlab.mixin.SetGet & dynamicprops
             obj.bodyIdCacheArr = [obj.bodies.id];
             
             obj.ci = CelestialBodyIntegration(obj);
-            obj.ci.integrateCelestialBodies(0, obj.numIntBlockSize);
+
+            if(any([obj.bodies.propTypeIsNumerical]))
+                obj.ci.integrateCelestialBodies(0, obj.numIntBlockSize);
+            end
         end
         
         function resetAllParentNeedsUpdateFlags(obj)

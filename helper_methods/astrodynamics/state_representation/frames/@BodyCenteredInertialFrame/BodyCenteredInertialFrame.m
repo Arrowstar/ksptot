@@ -7,6 +7,10 @@ classdef BodyCenteredInertialFrame < AbstractReferenceFrame
         celBodyData
     end
 
+    properties(Transient)
+        cachedFnc1
+    end
+
     properties(Dependent)
         bodyRotMatFromGlobalInertialToBodyInertial(3,3) double
     end
@@ -25,17 +29,24 @@ classdef BodyCenteredInertialFrame < AbstractReferenceFrame
             value = obj.bodyInfo.bodyRotMatFromGlobalInertialToBodyInertial;
         end
         
-        function [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = getOffsetsWrtInertialOrigin(obj, time, ~, ~)            
-            [rVectB, vVectB] = getPositOfBodyWRTSun(time, [obj.bodyInfo], obj(1).celBodyData);
+        function [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = getOffsetsWrtInertialOrigin(obj, time, ~, ~)       
+            % if(isempty(obj.cachedFnc1))
+            %     obj.cachedFnc1 = memoize(@(time) obj.getOffsetsWrtInertialOriginForCache(time));
+            %     obj.cachedFnc1.CacheSize = 10;
+            %     obj.cachedFnc1.Enabled = true;
+            % end
+            % 
+            % [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = obj.cachedFnc1(time);        
+            [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = obj.getOffsetsWrtInertialOriginForCache(time);
+        end
 
-            posOffsetOrigin = rVectB;
-            velOffsetOrigin = vVectB;
-            
+        function [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = getOffsetsWrtInertialOriginForCache(obj, time)  
+            [posOffsetOrigin, velOffsetOrigin] = getPositOfBodyWRTSun(time, [obj.bodyInfo], obj(1).celBodyData);           
             [angVelWrtOrigin, rotMatToInertial] = obj.getAngVelWrtOriginAndRotMatToInertial(time, [], []);
         end
 
         function R_BodyInertial_to_GlobalInertial = getRotMatToInertialAtTime(obj, time, ~, ~)
-            if(numel(obj) == 1)
+            if(isscalar(obj))
                 R_BodyInertial_to_GlobalInertial = repmat(obj.bodyRotMatFromGlobalInertialToBodyInertial', [1, 1, length(time)]);
                 
             else

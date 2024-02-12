@@ -28,8 +28,6 @@ classdef CelestialBodyIntegration
             
             bool = [allBodies.propTypeEnum] == BodyPropagationTypeEnum.Numerical;
             if(any(bool))
-%                 hFig = uifigure('Position',[0,0,400,125], 'WindowStyle','modal', 'Icon','logoSquare_48px_transparentBg.png');
-%                 centerUIFigure(hFig);
                 drawnow;
                 
                 numericBodies = allBodies(bool);
@@ -39,7 +37,7 @@ classdef CelestialBodyIntegration
                 analyticInds = 1:sum(not(bool));
                 
                 epochs = [numericBodies.epoch];
-                if(numel(unique(epochs)) == 1)
+                if(isscalar(unique(epochs)))
                     t0 = unique(epochs);
                     
                     [y0, numericMasses] = CelestialBodyIntegration.getInitialStates(numericBodies);                   
