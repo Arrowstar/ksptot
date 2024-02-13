@@ -63,7 +63,7 @@ function [rVectB, vVectB] = getPositOfBodyWRTSun(time, bodyInfo, celBodyData)
         end
     end
 
-    if(numel(time) == 1)
+    if(isscalar(time))
         bodyInfo.lastComputedSunTime = time;
         bodyInfo.lastComputedSunRVect = rVectB;
         bodyInfo.lastComputedSunVVect = vVectB;

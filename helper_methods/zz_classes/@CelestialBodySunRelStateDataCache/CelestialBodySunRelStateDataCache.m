@@ -10,23 +10,37 @@ classdef CelestialBodySunRelStateDataCache < matlab.mixin.SetGet
         relFrame AbstractReferenceFrame
         
         gi %gridded interpolant
+
+        maxTime(1,1) double
+        minTime(1,1) double
     end
     
     methods
         function obj = CelestialBodySunRelStateDataCache(bodyInfo)
             obj.bodyInfo = bodyInfo;
         end
+
+        function set.times(obj, newTimes)
+            obj.times = newTimes;
+
+            obj.maxTime = max(obj.times); %#ok<MCSUP>
+            obj.minTime = min(obj.times); %#ok<MCSUP>
+        end
         
         function setStateData(obj, times, stateVects, relFrame)
             obj.times = times;
             obj.stateVects = stateVects;
             obj.relFrame = relFrame;
+
+            obj.maxTime = max(obj.times);
+            obj.minTime = min(obj.times);
         
             obj.gi = griddedInterpolant(obj.times, obj.stateVects, 'spline', 'none');
         end
         
         function [rVect, vVect] = getCachedBodyStateAtTime(obj, time)
-            if(numel(obj.times) <= 1 || any(time > max(obj.times)) || any(time < min(obj.times)))
+            bool = numel(obj.times) <= 1 || any(time > obj.maxTime) || any(time < obj.minTime);
+            if(bool)
                 maxUT = max(obj.times);
                 boolMaxUT = maxUT - time < 0;
                 worstMaxUTViolation = max(time(boolMaxUT));
