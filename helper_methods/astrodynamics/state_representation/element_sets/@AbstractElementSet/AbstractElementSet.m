@@ -47,7 +47,7 @@ classdef (Abstract) AbstractElementSet < matlab.mixin.SetGet & matlab.mixin.Cust
             rVect1 = [convertCartElemSet.rVect];
             vVect1 = [convertCartElemSet.vVect];
             
-            if(numel(obj) == 1)
+            if(isscalar(obj))
                 framesBool = true;
                 frameToUse = obj.frame;
 
@@ -60,7 +60,7 @@ classdef (Abstract) AbstractElementSet < matlab.mixin.SetGet & matlab.mixin.Cust
                        
             %get offsets from frame 1 to frame 2
             if(all(framesBool))  %are all the input frames the same?
-                if(numel(times) == 1 && numel(frameToUse.timeCache) > 0 && frameToUse.timeCache(1) == times) %#ok<BDSCI>
+                if(isscalar(times) && numel(frameToUse.timeCache) > 0 && frameToUse.timeCache(1) == times) %#ok<BDSCI>
                     posOffsetOrigin12 = frameToUse.posOffsetOriginCache(:,1);
                     velOffsetOrigin12 = frameToUse.velOffsetOriginCache(:,1);
                     angVelWrtOrigin12 = frameToUse.angVelWrtOriginCache(:,1);
@@ -68,7 +68,7 @@ classdef (Abstract) AbstractElementSet < matlab.mixin.SetGet & matlab.mixin.Cust
                 else
                     [posOffsetOrigin12, velOffsetOrigin12, angVelWrtOrigin12, R_FrameToUse_to_GlobalInertial] = getOffsetsWrtInertialOrigin(frameToUse, times, convertCartElemSet);
 
-                    if(numel(times) == 1)
+                    if(isscalar(times))
                         frameToUse.timeCache = times;
                         frameToUse.posOffsetOriginCache = posOffsetOrigin12;
                         frameToUse.velOffsetOriginCache = velOffsetOrigin12;
@@ -90,7 +90,7 @@ classdef (Abstract) AbstractElementSet < matlab.mixin.SetGet & matlab.mixin.Cust
             vVect2 = velOffsetOrigin12 + squeeze(pagemtimes(R_FrameToUse_to_GlobalInertial, (permute(vVect1 + cross(angVelWrtOrigin12, rVect1), [1 3 2]))));
                        
             %get offsets from frame 3 to frame 2
-            if(numel(times) == 1 && numel(toFrame.timeCache) > 0 && toFrame.timeCache(1) == times) %#ok<BDSCI>
+            if(isscalar(times) && numel(toFrame.timeCache) > 0 && toFrame.timeCache(1) == times) %#ok<BDSCI>
                 posOffsetOrigin32 = toFrame.posOffsetOriginCache(:,1);
                 velOffsetOrigin32 = toFrame.velOffsetOriginCache(:,1);
                 angVelWrtOrigin32 = toFrame.angVelWrtOriginCache(:,1);
@@ -98,7 +98,7 @@ classdef (Abstract) AbstractElementSet < matlab.mixin.SetGet & matlab.mixin.Cust
             else
                 [posOffsetOrigin32, velOffsetOrigin32, angVelWrtOrigin32, R_ToFrame_To_GlobalInertial] = getOffsetsWrtInertialOrigin(toFrame, times, convertCartElemSet);
 
-                if(numel(times) == 1)
+                if(isscalar(times))
                     toFrame.timeCache = times;
                     toFrame.posOffsetOriginCache = posOffsetOrigin32;
                     toFrame.velOffsetOriginCache = velOffsetOrigin32;
@@ -112,7 +112,7 @@ classdef (Abstract) AbstractElementSet < matlab.mixin.SetGet & matlab.mixin.Cust
             vVect3 = squeeze(pagemtimes(R_GlobalInertial_to_ToFrame, permute(vVect2 - velOffsetOrigin32, [1 3 2]))) - cross(angVelWrtOrigin32, rVect3);
 
             createObjOfArrayVal = false;
-            if(numel(obj) == 1 && obj.createObjOfArray == true && obj.typeEnum == ElementSetEnum.CartesianElements)
+            if(isscalar(obj) && obj.createObjOfArray == true && obj.typeEnum == ElementSetEnum.CartesianElements)
                 createObjOfArrayVal = true;
             end
             
