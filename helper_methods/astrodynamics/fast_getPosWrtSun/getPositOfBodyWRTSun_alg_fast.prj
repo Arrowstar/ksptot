@@ -1,5 +1,5 @@
-<deployment-project plugin="plugin.coder" plugin-version="R2023a">
-  <configuration build-checksum="1527313499" file="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\helper_methods\astrodynamics\fast_getPosWrtSun\getPositOfBodyWRTSun_alg_fast.prj" location="C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\helper_methods\astrodynamics\fast_getPosWrtSun" name="getPositOfBodyWRTSun_alg_fast" target="target.unifiedcoder" target-name="MATLAB Coder">
+<deployment-project plugin="plugin.coder" plugin-version="R2024a">
+  <configuration build-checksum="4225765986" file="C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\astrodynamics\fast_getPosWrtSun\getPositOfBodyWRTSun_alg_fast.prj" location="C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\astrodynamics\fast_getPosWrtSun" name="getPositOfBodyWRTSun_alg_fast" target="target.unifiedcoder" target-name="MATLAB Coder">
     <profile key="profile.mex">
       <param.BuiltInstrumentedMex>false</param.BuiltInstrumentedMex>
       <param.RanInstrumentedMex>false</param.RanInstrumentedMex>
@@ -11,6 +11,7 @@
       <var.SimdQueryHardwareVendor>Generic</var.SimdQueryHardwareVendor>
       <var.SimdQueryHardwareType>MATLAB Host Computer</var.SimdQueryHardwareType>
       <param.InstructionSetExtensionsAvailableInUI>true</param.InstructionSetExtensionsAvailableInUI>
+      <param.InstructionSetExtensionsConfig.FMA>false</param.InstructionSetExtensionsConfig.FMA>
       <param.ResponsivenessChecks>false</param.ResponsivenessChecks>
       <param.ExtrinsicCalls>false</param.ExtrinsicCalls>
       <param.IntegrityChecks>false</param.IntegrityChecks>
@@ -32,6 +33,8 @@
       <param.EliminateSingleDimensions>false</param.EliminateSingleDimensions>
       <param.StackUsageMax>200000</param.StackUsageMax>
       <param.FilePartitionMethod>option.FilePartitionMethod.MapMFileToCFile</param.FilePartitionMethod>
+      <param.LargeConstantGeneration>option.LargeConstantGeneration.WriteOnlyDNNConstantsToDataFiles</param.LargeConstantGeneration>
+      <param.LargeConstantThreshold>128000</param.LargeConstantThreshold>
       <param.GenerateComments>true</param.GenerateComments>
       <param.MATLABSourceComments>false</param.MATLABSourceComments>
       <param.MATLABSourceCommentLineNumbers>true</param.MATLABSourceCommentLineNumbers>
@@ -98,6 +101,7 @@
         <var.SimdQueryHardwareVendor />
         <var.SimdQueryHardwareType />
         <param.InstructionSetExtensionsAvailableInUI />
+        <param.InstructionSetExtensionsConfig.FMA />
         <param.EnableAutoParallelization />
         <param.EnableVariableSizing />
         <param.EnableDynamicMemoryAllocation />
@@ -111,6 +115,8 @@
         <param.EliminateSingleDimensions />
         <param.StackUsageMax />
         <param.FilePartitionMethod />
+        <param.LargeConstantGeneration />
+        <param.LargeConstantThreshold />
         <param.GenerateComments />
         <param.MATLABSourceComments />
         <param.MATLABSourceCommentLineNumbers />
@@ -176,7 +182,8 @@
       <var.SimdQueryHardwareVendor>Generic</var.SimdQueryHardwareVendor>
       <var.SimdQueryHardwareType>MATLAB Host Computer</var.SimdQueryHardwareType>
       <param.InstructionSetExtensionsAvailableInUI>true</param.InstructionSetExtensionsAvailableInUI>
-      <param.InstructionSetExtensions>None</param.InstructionSetExtensions>
+      <param.InstructionSetExtensions>Auto</param.InstructionSetExtensions>
+      <param.InstructionSetExtensionsConfig.FMA>false</param.InstructionSetExtensionsConfig.FMA>
       <param.SaturateOnIntegerOverflow>false</param.SaturateOnIntegerOverflow>
       <param.PurelyIntegerCode />
       <param.SupportNonFinite />
@@ -198,6 +205,8 @@
       <param.MultiInstanceCode />
       <param.PreserveUnusedStructFields />
       <param.FilePartitionMethod>option.FilePartitionMethod.MapMFileToCFile</param.FilePartitionMethod>
+      <param.LargeConstantGeneration>option.LargeConstantGeneration.WriteOnlyDNNConstantsToDataFiles</param.LargeConstantGeneration>
+      <param.LargeConstantThreshold>128000</param.LargeConstantThreshold>
       <param.GenerateComments>true</param.GenerateComments>
       <param.CommentStyle />
       <param.MATLABSourceComments>false</param.MATLABSourceComments>
@@ -214,7 +223,7 @@
       <param.CodeFormattingTool>option.CodeFormattingTool.Auto</param.CodeFormattingTool>
       <param.ClangFormatFile />
       <param.DataTypeReplacement />
-      <param.EnableCustomReplacementTypes>false</param.EnableCustomReplacementTypes>
+      <param.EnableCustomReplacementTypes />
       <param.ReplacementTypes.double />
       <param.ReplacementTypes.single />
       <param.ReplacementTypes.uint8 />
@@ -227,7 +236,7 @@
       <param.ReplacementTypes.int64 />
       <param.ReplacementTypes.char />
       <param.ReplacementTypes.logical />
-      <param.ReplacementTypes.ImportCustomTypes>false</param.ReplacementTypes.ImportCustomTypes>
+      <param.ReplacementTypes.ImportCustomTypes />
       <param.ReplacementTypes.HeaderFiles />
       <param.CppInterfaceStyle>option.CppInterfaceStyle.Functions</param.CppInterfaceStyle>
       <param.CppInterfaceClassName />
@@ -261,8 +270,8 @@
       <param.CodeProfilingInstrumentation />
       <param.CodeProfilingSaveOptions />
       <param.CodeStackProfiling />
-      <param.CodeCoverage />
       <param.EnableInstrumentCode />
+      <param.CodeCoverage />
       <param.DefaultTestFile />
       <param.MergeInstrumentationResults>false</param.MergeInstrumentationResults>
       <param.RanPilSilVerification>false</param.RanPilSilVerification>
@@ -276,9 +285,9 @@
       <param.CustomSource />
       <param.CustomLibrary />
       <param.PostCodeGenCommand />
-      <param.TargetLangStandard>Auto</param.TargetLangStandard>
-      <param.CodeReplacementLibrary>None</param.CodeReplacementLibrary>
-      <param.DeprecatedCRLFlag>false</param.DeprecatedCRLFlag>
+      <param.TargetLangStandard />
+      <param.CodeReplacementLibrary />
+      <param.DeprecatedCRLFlag />
       <param.SameHardware>true</param.SameHardware>
       <param.Toolchain>Automatically locate an installed toolchain</param.Toolchain>
       <param.BuildConfiguration />
@@ -393,6 +402,7 @@
         <var.SimdQueryHardwareType />
         <param.InstructionSetExtensionsAvailableInUI />
         <param.InstructionSetExtensions />
+        <param.InstructionSetExtensionsConfig.FMA />
         <param.PurelyIntegerCode />
         <param.SupportNonFinite />
         <param.LoopUnrollThreshold />
@@ -411,6 +421,8 @@
         <param.MultiInstanceCode />
         <param.PreserveUnusedStructFields />
         <param.FilePartitionMethod />
+        <param.LargeConstantGeneration />
+        <param.LargeConstantThreshold />
         <param.GenerateComments />
         <param.CommentStyle />
         <param.MATLABSourceComments />
@@ -474,8 +486,8 @@
         <param.CodeProfilingInstrumentation />
         <param.CodeProfilingSaveOptions />
         <param.CodeStackProfiling />
-        <param.CodeCoverage />
         <param.EnableInstrumentCode />
+        <param.CodeCoverage />
         <param.DefaultTestFile />
         <param.MergeInstrumentationResults />
         <param.RanPilSilVerification />
@@ -584,7 +596,7 @@
       </unset>
     </profile>
     <param.objective>option.objective.c</param.objective>
-    <param.WorkflowStep>workflowSummary</param.WorkflowStep>
+    <param.WorkflowStep>generateCode</param.WorkflowStep>
     <param.TestSnippets>
       <item>[rVectB, vVectB] = getPositOfBodyWRTSun_alg_fast([0 1 2], chain{:});</item>
     </param.TestSnippets>
@@ -593,7 +605,7 @@
     <param.outputfile>${PROJECT_ROOT}\getPositOfBodyWRTSun_alg_fast_mex.mexw64</param.outputfile>
     <param.version>R2012a</param.version>
     <param.HasECoderFeatures>true</param.HasECoderFeatures>
-    <param.HasGpuCoder>true</param.HasGpuCoder>
+    <param.HasGpuCoder>false</param.HasGpuCoder>
     <var.HasNeuralNetworkToolbox>true</var.HasNeuralNetworkToolbox>
     <param.mex.mainhtml />
     <param.grt.mainhtml />
@@ -615,13 +627,13 @@
     <param.hdlParamStorage />
     <var.gc.lastOutputRoot>codegen\mex\getPositOfBodyWRTSun_alg_fast</var.gc.lastOutputRoot>
     <var.gc.lastOutputType>MEX_FILE</var.gc.lastOutputType>
-    <var.gc.preBuildChecksum>1527313499</var.gc.preBuildChecksum>
+    <var.gc.preBuildChecksum>4225765986</var.gc.preBuildChecksum>
     <var.cfi.lastOutputRoot>codegen\mex\getPositOfBodyWRTSun_alg_fast</var.cfi.lastOutputRoot>
     <var.cfi.preBuildChecksum>4206226447</var.cfi.preBuildChecksum>
     <var.lastCfiTestSnippet>[rVectB, vVectB] = getPositOfBodyWRTSun_alg_fast([0 1 2], chain{:});</var.lastCfiTestSnippet>
     <var.outdatedOnRestore>false</var.outdatedOnRestore>
-    <var.lastUserSourceChecksum>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;checksum&gt;&lt;includedFiles&gt;&lt;file&gt;C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\helper_methods\astrodynamics\computeMeanMotion.m&lt;/file&gt;&lt;file&gt;C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\helper_methods\astrodynamics\fast_getPosWrtSun\getPositOfBodyWRTSun_alg_fast.m&lt;/file&gt;&lt;file&gt;C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\helper_methods\math\AngleZero2Pi.m&lt;/file&gt;&lt;file&gt;C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\helper_methods\math\deg2rad.m&lt;/file&gt;&lt;/includedFiles&gt;&lt;value&gt;2277295886&lt;/value&gt;&lt;/checksum&gt;</var.lastUserSourceChecksum>
-    <var.sourceSetState>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;sourceModel&gt;&lt;primarySourceFiles&gt;&lt;file&gt;C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\helper_methods\astrodynamics\computeMeanMotion.m&lt;/file&gt;&lt;file&gt;C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\helper_methods\astrodynamics\fast_getPosWrtSun\getPositOfBodyWRTSun_alg_fast.m&lt;/file&gt;&lt;file&gt;C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\helper_methods\math\AngleZero2Pi.m&lt;/file&gt;&lt;file&gt;C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\helper_methods\math\deg2rad.m&lt;/file&gt;&lt;/primarySourceFiles&gt;&lt;fixedPointSourceFiles/&gt;&lt;fixedPointSourceRegistered&gt;false&lt;/fixedPointSourceRegistered&gt;&lt;fixedPointSourceSelected&gt;false&lt;/fixedPointSourceSelected&gt;&lt;/sourceModel&gt;</var.sourceSetState>
+    <var.lastUserSourceChecksum>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;checksum&gt;&lt;includedFiles&gt;&lt;file&gt;C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\astrodynamics\computeMeanMotion.m&lt;/file&gt;&lt;file&gt;C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\astrodynamics\fast_getPosWrtSun\getPositOfBodyWRTSun_alg_fast.m&lt;/file&gt;&lt;file&gt;C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\math\AngleZero2Pi.m&lt;/file&gt;&lt;file&gt;C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\math\deg2rad.m&lt;/file&gt;&lt;/includedFiles&gt;&lt;value&gt;3743245172&lt;/value&gt;&lt;/checksum&gt;</var.lastUserSourceChecksum>
+    <var.sourceSetState>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;sourceModel&gt;&lt;primarySourceFiles&gt;&lt;file&gt;C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\astrodynamics\computeMeanMotion.m&lt;/file&gt;&lt;file&gt;C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\astrodynamics\fast_getPosWrtSun\getPositOfBodyWRTSun_alg_fast.m&lt;/file&gt;&lt;file&gt;C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\math\AngleZero2Pi.m&lt;/file&gt;&lt;file&gt;C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\math\deg2rad.m&lt;/file&gt;&lt;/primarySourceFiles&gt;&lt;fixedPointSourceFiles/&gt;&lt;fixedPointSourceRegistered&gt;false&lt;/fixedPointSourceRegistered&gt;&lt;fixedPointSourceSelected&gt;false&lt;/fixedPointSourceSelected&gt;&lt;/sourceModel&gt;</var.sourceSetState>
     <param.forceMexBuild>false</param.forceMexBuild>
     <param.NoDefaultJIT>false</param.NoDefaultJIT>
     <param.configImportActive>false</param.configImportActive>
@@ -640,15 +652,15 @@
     <param.artifact>option.target.artifact.mex</param.artifact>
     <param.outputfile>${PROJECT_ROOT}\getPositOfBodyWRTSun_alg_fast_mex.mexw64</param.outputfile>
     <param.CppNamespace />
-    <param.CppPackagesToNamespaces>true</param.CppPackagesToNamespaces>
+    <param.CppPreserveNamespaces>true</param.CppPreserveNamespaces>
     <param.CppNamespaceForMathworksCode>coder</param.CppNamespaceForMathworksCode>
     <param.CppPreserveClasses>true</param.CppPreserveClasses>
     <param.CppGenerateEnumClass>true</param.CppGenerateEnumClass>
     <param.gpu.Enabled>false</param.gpu.Enabled>
     <param.gpu.SelectCudaDevice>-1</param.gpu.SelectCudaDevice>
-    <param.gpu.ComputeCapability>3.5</param.gpu.ComputeCapability>
+    <param.gpu.ComputeCapability />
     <param.gpu.CustomComputeCapability />
-    <param.gpu.MallocMode>discrete</param.gpu.MallocMode>
+    <param.gpu.MallocMode />
     <param.gpu.MallocThreshold>200</param.gpu.MallocThreshold>
     <param.gpu.StackLimitPerThread>1024</param.gpu.StackLimitPerThread>
     <param.gpu.MaximumBlocksPerKernel>0</param.gpu.MaximumBlocksPerKernel>
@@ -656,14 +668,10 @@
     <param.gpu.SafeBuild>false</param.gpu.SafeBuild>
     <param.gpu.KernelNamePrefix />
     <param.gpu.CompilerFlags />
-    <param.gpu.EnableCUBLAS>true</param.gpu.EnableCUBLAS>
-    <param.gpu.EnableCUSOLVER>true</param.gpu.EnableCUSOLVER>
-    <param.gpu.EnableCUFFT>true</param.gpu.EnableCUFFT>
+    <param.gpu.EnableCUBLAS>false</param.gpu.EnableCUBLAS>
+    <param.gpu.EnableCUSOLVER>false</param.gpu.EnableCUSOLVER>
+    <param.gpu.EnableCUFFT>false</param.gpu.EnableCUFFT>
     <param.gpu.EnableMemoryManager>false</param.gpu.EnableMemoryManager>
-    <param.gpu.BlockAlignment>256</param.gpu.BlockAlignment>
-    <param.gpu.FreeMode>Never</param.gpu.FreeMode>
-    <param.gpu.MinPoolSize>8</param.gpu.MinPoolSize>
-    <param.gpu.MaxPoolSize>2048</param.gpu.MaxPoolSize>
     <var.checkIssuesGpu>false</var.checkIssuesGpu>
     <var.hasGpu>false</var.hasGpu>
     <var.isDeepLearningForMatlabCoderEnabled>true</var.isDeepLearningForMatlabCoderEnabled>
@@ -671,8 +679,8 @@
     <param.deeplearning.DeepLearningCustomCallback />
     <param.deeplearning.TargetLib>option.deeplearning.targetlibrary.mkldnn</param.deeplearning.TargetLib>
     <var.cfiTargetLibSuppression>false</var.cfiTargetLibSuppression>
-    <var.hasMatlabDeepLearningSupportPackage>true</var.hasMatlabDeepLearningSupportPackage>
-    <var.hasGpuDeepLearningSupportPackage>true</var.hasGpuDeepLearningSupportPackage>
+    <var.hasMatlabDeepLearningSupportPackage>false</var.hasMatlabDeepLearningSupportPackage>
+    <var.hasGpuDeepLearningSupportPackage>false</var.hasGpuDeepLearningSupportPackage>
     <param.tensorrt.DataType>option.tensorrt.datatype.fp32</param.tensorrt.DataType>
     <param.tensorrt.DataPath />
     <param.tensorrt.NumCalibrationBatches>0</param.tensorrt.NumCalibrationBatches>
@@ -777,7 +785,7 @@
       <param.grt.outputfile />
       <param.artifact />
       <param.CppNamespace />
-      <param.CppPackagesToNamespaces />
+      <param.CppPreserveNamespaces />
       <param.CppNamespaceForMathworksCode />
       <param.CppPreserveClasses />
       <param.CppGenerateEnumClass />
@@ -797,18 +805,12 @@
       <param.gpu.EnableCUSOLVER />
       <param.gpu.EnableCUFFT />
       <param.gpu.EnableMemoryManager />
-      <param.gpu.BlockAlignment />
-      <param.gpu.FreeMode />
-      <param.gpu.MinPoolSize />
-      <param.gpu.MaxPoolSize />
       <var.checkIssuesGpu />
       <var.hasGpu />
       <var.isDeepLearningForMatlabCoderEnabled />
       <param.deeplearning.EnableDeepLearning />
       <param.deeplearning.DeepLearningCustomCallback />
       <var.cfiTargetLibSuppression />
-      <var.hasMatlabDeepLearningSupportPackage />
-      <var.hasGpuDeepLearningSupportPackage />
       <param.tensorrt.DataType />
       <param.tensorrt.DataPath />
       <param.tensorrt.NumCalibrationBatches />
@@ -903,17 +905,15 @@
       </file>
     </fileset.inputtypes>
     <build-deliverables>
-      <file location="${PROJECT_ROOT}" name="getPositOfBodyWRTSun_alg_fast_mex.mexw64" optional="false">C:\Users\Adam\Dropbox\Documents\homework\Personal Projects\KSP Trajectory Optimization Tool\helper_methods\astrodynamics\fast_getPosWrtSun\getPositOfBodyWRTSun_alg_fast_mex.mexw64</file>
+      <file location="${PROJECT_ROOT}" name="getPositOfBodyWRTSun_alg_fast_mex.mexw64" optional="false">C:\Users\aharden\OneDrive - NASA\Documents\MATLAB\tot\helper_methods\astrodynamics\fast_getPosWrtSun\getPositOfBodyWRTSun_alg_fast_mex.mexw64</file>
     </build-deliverables>
     <workflow />
     <matlab>
-      <root>C:\Program Files\MATLAB\R2023a</root>
+      <root>C:\Program Files\MATLAB\R2024a_PR</root>
       <toolboxes>
         <toolbox name="matlabcoder" />
         <toolbox name="embeddedcoder" />
-        <toolbox name="gpucoder" />
         <toolbox name="fixedpoint" />
-        <toolbox name="matlabhdlcoder" />
         <toolbox name="neuralnetwork" />
       </toolboxes>
       <toolbox>
@@ -927,19 +927,9 @@
         </embeddedcoder>
       </toolbox>
       <toolbox>
-        <gpucoder>
-          <enabled>true</enabled>
-        </gpucoder>
-      </toolbox>
-      <toolbox>
         <fixedpoint>
           <enabled>true</enabled>
         </fixedpoint>
-      </toolbox>
-      <toolbox>
-        <matlabhdlcoder>
-          <enabled>true</enabled>
-        </matlabhdlcoder>
       </toolbox>
       <toolbox>
         <neuralnetwork>
