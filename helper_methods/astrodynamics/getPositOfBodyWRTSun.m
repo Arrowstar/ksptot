@@ -12,7 +12,7 @@ function [rVectB, vVectB] = getPositOfBodyWRTSun(time, bodyInfo, celBodyData)
 %     end
 
     try
-        if(bodyInfo.propTypeIsTwoBody || (numel(time) == 1 && time == bodyInfo.epoch))
+        if(bodyInfo.propTypeIsTwoBody || (isscalar(time) && time == bodyInfo.epoch))
             chain = getOrbitElemsChain(bodyInfo);
             [rVectB, vVectB] = getPositOfBodyWRTSun_alg_fast_mex(time, chain{:});
             
@@ -20,8 +20,12 @@ function [rVectB, vVectB] = getPositOfBodyWRTSun(time, bodyInfo, celBodyData)
             parentBodyInfo = bodyInfo.getParBodyInfo(bodyInfo.celBodyData);
 
             [rVect, vVect] = getStateAtTime(bodyInfo, time, []);
-            cartElem = CartesianElementSet(time, rVect, vVect, parentBodyInfo.getBodyCenteredInertialFrame(), true);
-            cartElem = convertToFrame(cartElem, bodyInfo.celBodyData.getTopLevelBody().getBodyCenteredInertialFrame());
+            if(~isempty(parentBodyInfo))
+                cartElem = CartesianElementSet(time, rVect, vVect, parentBodyInfo.getBodyCenteredInertialFrame(), true);
+                cartElem = convertToFrame(cartElem, bodyInfo.celBodyData.getTopLevelBody().getBodyCenteredInertialFrame());
+            else
+                cartElem = CartesianElementSet(time, rVect, vVect, bodyInfo.celBodyData.globalBaseFrame, true);
+            end
 
             rVectB = [cartElem.rVect];
             vVectB = [cartElem.vVect];
