@@ -9,10 +9,6 @@ classdef BodyFixedFrame < AbstractReferenceFrame
         rotMatToInertialCacheTime = NaN;
         rotMatToInertialCache2 = NaN(3,3);
     end
-
-    properties(Transient)
-        cachedFnc1
-    end
     
     properties(Constant)
         typeEnum = ReferenceFrameEnum.BodyFixedRotating
@@ -25,13 +21,6 @@ classdef BodyFixedFrame < AbstractReferenceFrame
         end
         
         function [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = getOffsetsWrtInertialOrigin(obj, time, ~, ~)
-            % if(isempty(obj.cachedFnc1))
-            %     obj.cachedFnc1 = memoize(@(time) obj.getOffsetsWrtInertialOriginForCache(time));
-            %     obj.cachedFnc1.CacheSize = 10;
-            %     obj.cachedFnc1.Enabled = true;
-            % end
-            % 
-            % [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = obj.cachedFnc1(time);
             [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = obj.getOffsetsWrtInertialOriginForCache(time);         
         end
 

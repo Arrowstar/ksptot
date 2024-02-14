@@ -7,10 +7,6 @@ classdef BodyCenteredInertialFrame < AbstractReferenceFrame
         celBodyData
     end
 
-    properties(Transient)
-        cachedFnc1
-    end
-
     properties(Dependent)
         bodyRotMatFromGlobalInertialToBodyInertial(3,3) double
     end
@@ -29,14 +25,7 @@ classdef BodyCenteredInertialFrame < AbstractReferenceFrame
             value = obj.bodyInfo.bodyRotMatFromGlobalInertialToBodyInertial;
         end
         
-        function [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = getOffsetsWrtInertialOrigin(obj, time, ~, ~)       
-            % if(isempty(obj.cachedFnc1))
-            %     obj.cachedFnc1 = memoize(@(time) obj.getOffsetsWrtInertialOriginForCache(time));
-            %     obj.cachedFnc1.CacheSize = 10;
-            %     obj.cachedFnc1.Enabled = true;
-            % end
-            % 
-            % [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = obj.cachedFnc1(time);        
+        function [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = getOffsetsWrtInertialOrigin(obj, time, ~, ~)           
             [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = obj.getOffsetsWrtInertialOriginForCache(time);
         end
 
