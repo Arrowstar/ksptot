@@ -81,7 +81,12 @@ classdef Generic2DGroundTrackViewType < AbstractTrajectoryViewType
 
             %Plot terrain elevation contour map, if user desires
             hgi = originBody.getHeightMap();
-            if(viewProfile.showTerrainContours && not(isempty(hgi)))               
+            if(viewProfile.showTerrainContours && not(isempty(hgi)))    
+                %Create contour plot color bar
+                cb = contourcbar(dAxes, "eastoutside", "HitTest","off", "PickableParts","none");
+                cb.Label.String = "Terrain Elevation [km]";
+
+                %Get lat/longs to plot
                 lat = linspace(-pi/2,pi/2,1000);
                 long = linspace(-pi,pi,1000);
                 [LAT,LONG] = meshgrid(lat,long);
@@ -133,10 +138,6 @@ classdef Generic2DGroundTrackViewType < AbstractTrajectoryViewType
                 c.FaceAlpha = 0.25;
                 c.EdgeAlpha = 0.20;
                 colormap(dAxes, 'gray');
-
-                %Create contour plot color bar
-                cb = contourcbar(dAxes, "eastoutside", "HitTest","off", "PickableParts","none");
-                cb.Label.String = "Terrain Elevation [km]";
             end
 
             %Plot ground track
