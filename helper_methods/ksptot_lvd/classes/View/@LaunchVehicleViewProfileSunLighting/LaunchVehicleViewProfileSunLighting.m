@@ -31,19 +31,29 @@ classdef LaunchVehicleViewProfileSunLighting < matlab.mixin.SetGet
         end
         
         function updateSunLightingPosition(obj, time)
+            % bodyInfo = obj.viewInFrame.getOriginBody();
+            % rVectBodyToSun = -1.0 * getPositOfBodyWRTSun(time, bodyInfo, bodyInfo.celBodyData);
+            % 
+            % ce = CartesianElementSet(time, rVectBodyToSun, [0;0;0], bodyInfo.getBodyCenteredInertialFrame());
+            % ce = ce.convertToFrame(obj.viewInFrame);
+            % rVectBodyToSun = ce.rVect;
+
             bodyInfo = obj.viewInFrame.getOriginBody();
-            rVectBodyToSun = -1.0 * getPositOfBodyWRTSun(time, bodyInfo, bodyInfo.celBodyData);
-            
-            ce = CartesianElementSet(time, rVectBodyToSun, [0;0;0], bodyInfo.getBodyCenteredInertialFrame());
-            ce = ce.convertToFrame(obj.viewInFrame);
-            rVectBodyToSun = ce.rVect;
-            
+            sunBodyInfo = bodyInfo.celBodyData.getTopLevelBody();
+
+            ce = sunBodyInfo.getElementSetsForTimes(time);
+            ge = ce.convertToFrame(obj.viewInFrame).convertToGeographicElementSet();
+
+            r = ge.alt + bodyInfo.radius;
+            [sx,sy,sz] = sph2cart(ge.long, ge.lat, r);
+            sunVectInViewFrame = [sx,sy,sz];
+            sunUnitVect = normVector(sunVectInViewFrame);
+
             if(not(isempty(obj.hLight)) && isvalid(obj.hLight) && isa(obj.hLight, 'matlab.graphics.primitive.Light'))
-                obj.hLight.Position = reshape(rVectBodyToSun,1,3);
+                obj.hLight.Position = reshape(sunVectInViewFrame,1,3);
             end
             
             if(not(isempty(obj.hSunVectArrow)) && isvalid(obj.hSunVectArrow))
-                sunUnitVect = normVector(rVectBodyToSun);
                 sunVectToPlot = 2 * bodyInfo.radius * sunUnitVect;
                 
                 obj.hSunVectArrow.UData = sunVectToPlot(1);

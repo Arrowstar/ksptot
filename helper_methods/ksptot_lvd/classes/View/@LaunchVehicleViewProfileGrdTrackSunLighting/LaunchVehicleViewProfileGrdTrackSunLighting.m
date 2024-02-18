@@ -7,6 +7,8 @@ classdef LaunchVehicleViewProfileGrdTrackSunLighting < matlab.mixin.SetGet
         bodyInfo KSPTOT_BodyInfo
         hGrdTrkNightPatch(1,:) matlab.graphics.primitive.Patch = matlab.graphics.primitive.Patch.empty(1,0);
         showLighting(1,1) logical = false;
+
+        hGrdTrkSunLoc(1,:) matlab.graphics.chart.primitive.Line = matlab.graphics.chart.primitive.Line.empty(1,0);
     end
     
     methods
@@ -35,9 +37,25 @@ classdef LaunchVehicleViewProfileGrdTrackSunLighting < matlab.mixin.SetGet
                         obj.plotNightLatLongArea(hourAngle, declination);
                         obj.hGrdTrkNightPatch.Visible = "on";
                     end
+
+                    if(not(isempty(obj.hGrdTrkSunLoc)) && isvalid(obj.hGrdTrkSunLoc))
+                        obj.hGrdTrkSunLoc.XData = wrapTo180(rad2deg(ge.long));
+                        obj.hGrdTrkSunLoc.YData = rad2deg(ge.lat);
+                        obj.hGrdTrkSunLoc.Visible = "on";
+                    else
+                        obj.hGrdTrkSunLoc = plot(obj.dAxes, wrapTo180(rad2deg(ge.long)), rad2deg(ge.lat), 'Marker','o','MarkerFaceColor','y', 'MarkerEdgeColor','none');
+                    end
+
+                    obj.hGrdTrkSunLoc.DataTipTemplate.DataTipRows = [dataTipTextRow('Sun Longitude [deg]:', wrapTo180(rad2deg(ge.long))), ...
+                                                                     dataTipTextRow('Sun Latitude [deg]:', rad2deg(ge.lat))];
+
                 else
                     if(not(isempty(obj.hGrdTrkNightPatch)) && isvalid(obj.hGrdTrkNightPatch))
                         obj.hGrdTrkNightPatch.Visible = "off";
+                    end
+
+                    if(not(isempty(obj.hGrdTrkSunLoc)) && isvalid(obj.hGrdTrkSunLoc))
+                        obj.hGrdTrkSunLoc.Visible = "off";
                     end
                 end
             end
