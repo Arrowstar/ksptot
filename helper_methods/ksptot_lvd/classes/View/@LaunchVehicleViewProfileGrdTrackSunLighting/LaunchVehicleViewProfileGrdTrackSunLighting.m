@@ -46,8 +46,8 @@ classdef LaunchVehicleViewProfileGrdTrackSunLighting < matlab.mixin.SetGet
                         obj.hGrdTrkSunLoc = plot(obj.dAxes, wrapTo180(rad2deg(ge.long)), rad2deg(ge.lat), 'Marker','o','MarkerFaceColor','y', 'MarkerEdgeColor','none');
                     end
 
-                    obj.hGrdTrkSunLoc.DataTipTemplate.DataTipRows = [dataTipTextRow('Sun Longitude [deg]:', wrapTo180(rad2deg(ge.long))), ...
-                                                                     dataTipTextRow('Sun Latitude [deg]:', rad2deg(ge.lat))];
+                    obj.hGrdTrkSunLoc.DataTipTemplate.DataTipRows = [dataTipTextRow(sprintf('%s Longitude [deg]:', sunBodyInfo.name), wrapTo180(rad2deg(ge.long))), ...
+                                                                     dataTipTextRow(sprintf('%s Latitude [deg]:', sunBodyInfo.name), rad2deg(ge.lat))];
 
                 else
                     if(not(isempty(obj.hGrdTrkNightPatch)) && isvalid(obj.hGrdTrkNightPatch))
