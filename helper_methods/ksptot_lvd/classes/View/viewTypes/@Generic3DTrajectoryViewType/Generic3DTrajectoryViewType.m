@@ -366,7 +366,7 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             
             set(dAxes,'LineWidth',1);
             set(dAxes,'Box','on');
-            grid(dAxes,viewProfile.gridType.gridStr);
+            grid(dAxes,'off'); grid(dAxes,viewProfile.gridType.gridStr);
             dAxes.GridColor = viewProfile.majorGridColor.color;
             dAxes.MinorGridColor = viewProfile.minorGridColor.color;
             dAxes.GridAlpha = viewProfile.gridTransparency;
@@ -457,6 +457,10 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             else
                 delete(obj.skyboxPostCameraPosSetListener);
                 delete(viewProfile.skyBoxSurfHandle);
+
+                dAxes.XTickMode = 'auto';
+                dAxes.YTickMode = 'auto';
+                dAxes.ZTickMode = 'auto';
             end
 
             if(not(viewProfile.updateViewAxesLimits))                
