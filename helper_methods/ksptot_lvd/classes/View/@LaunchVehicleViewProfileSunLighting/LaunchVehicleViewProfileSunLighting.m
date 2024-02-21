@@ -47,6 +47,11 @@ classdef LaunchVehicleViewProfileSunLighting < matlab.mixin.SetGet
             r = ge.alt + bodyInfo.radius;
             [sx,sy,sz] = sph2cart(ge.long, ge.lat, r);
             sunVectInViewFrame = [sx,sy,sz];
+
+            if(any(isnan(sunVectInViewFrame)))
+                sunVectInViewFrame = [0,0,0];
+            end
+
             sunUnitVect = normVector(sunVectInViewFrame);
 
             if(not(isempty(obj.hLight)) && isvalid(obj.hLight) && isa(obj.hLight, 'matlab.graphics.primitive.Light'))

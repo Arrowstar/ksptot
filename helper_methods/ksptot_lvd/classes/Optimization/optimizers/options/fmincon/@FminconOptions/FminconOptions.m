@@ -6,9 +6,9 @@ classdef FminconOptions < matlab.mixin.SetGet
         algorithm(1,1) LvdFminconAlgorithmEnum = LvdFminconAlgorithmEnum.InteriorPoint;
         
         %Tolerances
-        optTol(1,1) double = 1E-4;
-        stepTol(1,1) double = 1E-6;
-        tolCon(1,1) double = 1E-10;
+        optTol(1,1) double = NaN;
+        stepTol(1,1) double = NaN;
+        tolCon(1,1) double = NaN;
         
         %Maximums
         maxIter(1,1) double = 500;
@@ -38,11 +38,11 @@ classdef FminconOptions < matlab.mixin.SetGet
         feasibilityMode(1,1) logical = false;
         
         %Active-Set options
-        funcTol(1,1) double = 1E-10;
+        funcTol(1,1) double = NaN;
         maxSQPIter(1,1) double = NaN;
         relLineSrchBnd(1,1) double = NaN;
-        relLineSrchBndDuration(1,1) double = 1;
-        tolConSQP(1,1) double = 1E-6;
+        relLineSrchBndDuration(1,1) double = NaN;
+        tolConSQP(1,1) double = NaN;
 
         %Constraints
         specifyConstraintGradient(1,1) logical = false;

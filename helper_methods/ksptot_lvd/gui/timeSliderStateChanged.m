@@ -124,31 +124,34 @@ function timeSliderStateChanged(src,evt, lvdData, handles, app)
             end
         end
 
-        %set vehicle location on ground track
-        if(not(isempty(vehGrdTrkData)))
-            vehGrdTrkData.plotBodyMarkerAtTime(time,grdTrkAx);
-        end
-
-        %plot celestial bodies on ground track
-        for(i=1:length(celBodyGrdTrackData))
-            celBodyGrdTrackData(i).plotCelBodyMarkerAtTime(time, grdTrkAx);
-        end
-
-        %plot grd obj on ground track
-        for(i=1:length(grdObjGrdTrkData))
-            grdObjGrdTrkData(i).plotGrdObjMarkerAtTime(time, grdTrkAx);
-        end
-
-        %plot geometric points on ground track
-        for(i=1:length(geomPtGrdTrackData))
-            geomPtGrdTrackData(i).plotGeomPtMarkerAtTime(time, grdTrkAx);
-        end
-        
         centralBodyData.setCentralBodyRotation(time);
         
 %         notify(app, 'GenericStatusLabelUpdate', GenericStatusLabelUpdate('Creating Light Source...'));
         lvdData.viewSettings.selViewProfile.updateLightPosition(time);
-        lvdData.viewSettings.selViewProfile.grdTrackLighting.updateSunLightingPosition(time);
+
+        if(lvdData.viewSettings.selViewProfile.showGrdTrk)
+            %set vehicle location on ground track
+            if(not(isempty(vehGrdTrkData)))
+                vehGrdTrkData.plotBodyMarkerAtTime(time,grdTrkAx);
+            end
+    
+            %plot celestial bodies on ground track
+            for(i=1:length(celBodyGrdTrackData))
+                celBodyGrdTrackData(i).plotCelBodyMarkerAtTime(time, grdTrkAx);
+            end
+    
+            %plot grd obj on ground track
+            for(i=1:length(grdObjGrdTrkData))
+                grdObjGrdTrkData(i).plotGrdObjMarkerAtTime(time, grdTrkAx);
+            end
+    
+            %plot geometric points on ground track
+            for(i=1:length(geomPtGrdTrackData))
+                geomPtGrdTrackData(i).plotGeomPtMarkerAtTime(time, grdTrkAx);
+            end
+
+            lvdData.viewSettings.selViewProfile.grdTrackLighting.updateSunLightingPosition(time);
+        end
         
         [year, day, hour, minute, sec] = convertSec2YearDayHrMnSec(time);
         epochStr = formDateStr(year, day, hour, minute, sec);

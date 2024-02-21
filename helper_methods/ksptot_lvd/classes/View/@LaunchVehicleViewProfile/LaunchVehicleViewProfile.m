@@ -117,6 +117,7 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         viewCameraViewAngle(1,1) double = NaN(1,1);
 
         %Ground Track Toggles
+        showGrdTrk(1,1) logical = false;
         showCelestialBodyGrdTracks(1,1) logical = false;
         showGroundObjsGrdTracks(1,1) logical = false;
         showGeomPointsGrdTracks(1,1) logical = false;
@@ -155,6 +156,9 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         grdTrackLighting(1,:) LaunchVehicleViewProfileGrdTrackSunLighting = LaunchVehicleViewProfileGrdTrackSunLighting.empty(1,0);
         geomPtGrdTrackData(1,:) LaunchVehicleViewProfileGrdTrkGeomPointData = LaunchVehicleViewProfileGrdTrkGeomPointData.empty(1,0);
 
+        grdTrkNotRenderedWarn
+
+        %Ref frame
         userDefinedRefFrames(1,:) 
 
         %Skybox stuff
@@ -215,8 +219,33 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                 lvdApp(1,1) ma_LvdMainGUI_App
             end 
 
+            global GLOBAL_AppThemer
+
             obj.generic3DTrajView.plotStateLog(obj.orbitNumToPlot, lvdData, obj, handles, lvdApp);
-            obj.generic2DGroundTrackView.plotGroundTrack(lvdData, lvdApp);
+
+            if(obj.showGrdTrk)
+                obj.generic2DGroundTrackView.plotGroundTrack(lvdData, lvdApp);
+            else
+                cla(lvdApp.GroundTrackAxes,"reset");
+                view(lvdApp.GroundTrackAxes, 2);
+                
+                xlim(lvdApp.GroundTrackAxes,[0 2]);
+                ylim(lvdApp.GroundTrackAxes,[0 2]);
+                lvdApp.GroundTrackAxes.XTick = [];
+                lvdApp.GroundTrackAxes.YTick = [];
+                lvdApp.GroundTrackAxes.ZTick = [];
+                disableDefaultInteractivity(lvdApp.GroundTrackAxes); 
+                lvdApp.GroundTrackAxes.Interactions = [];
+
+                lvdApp.GroundTrackLabel.Text = '';
+
+                text(lvdApp.GroundTrackAxes, 1,1, ["Enable Ground Track Rendering in", "View Profile to Display Ground Track"], "HorizontalAlignment","center", "VerticalAlignment","middle", "HitTest","off", ...
+                     "PickableParts","none", "Color",GLOBAL_AppThemer.selTheme.fontColor);
+
+                GLOBAL_AppThemer.themeWidget(lvdApp.GroundTrackAxes, GLOBAL_AppThemer.selTheme);
+
+                drawnow;
+            end
 
             timeSlider = lvdApp.DispAxesTimeSlider;
             timeSlider.ValueChangingFcn(timeSlider, matlab.ui.eventdata.ValueChangingData(timeSlider.Value));
