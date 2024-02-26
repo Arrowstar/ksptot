@@ -20,15 +20,42 @@ classdef ForceModelPropagator < AbstractPropagator
                                             tStartPropTime, maxPropTime)
                                        
             plugins = eventInitStateLogEntry.lvdData.plugins;         
+
+            %Get initial states
+            [t0,y0, ~] = eventInitStateLogEntry.getFirstOrderIntegratorStateRepresentation();
+
+            %Get scale factors
+            tankStates = eventInitStateLogEntry.getAllActiveTankStates();
+            totalMass = eventInitStateLogEntry.getTotalVehicleMass();
+            pwrStorageStates = eventInitStateLogEntry.getAllActivePwrStorageStates();
+            [~, rVect0, vVect0, ~, ~] = AbstractPropagator.decomposeIntegratorTandY(t0,y0, length(tankStates), length(pwrStorageStates));
             
+            %%% Kinematics
+            lStar = norm(rVect0);
+            vStar = norm(vVect0);
+            tStar = lStar / vStar;
+            aStar = vStar / tStar;
+
+            %Mass flow
+            mStar = totalMass;
+            mDotStar = mStar/tStar;
+
+            %Electrical charge
+            pwrStorageStates = eventInitStateLogEntry.getAllActivePwrStorageStates();
+            if(not(isempty(pwrStorageStates)))
+                cStar = max(1, sum(pwrStorageStates.getStateOfCharge()));
+                cDotStar = cStar/tStar;
+            else
+                cStar = 1;
+                cDotStar = 1;
+            end
+
             %Create function handles
             odefun = obj.getOdeFunctionHandle(eventInitStateLogEntry);
             evtsFunc = obj.getOdeEventsFunctionHandle(eventInitStateLogEntry, eventTermCondFuncHandle, termCondDir, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, minAltitude, celBodyData);
             odeOutputFun = obj.getOdeOutputFunctionHandle(tStartPropTime, maxPropTime, eventInitStateLogEntry, plugins);
             
             %Propagate!
-            [t0,y0, ~] = eventInitStateLogEntry.getFirstOrderIntegratorStateRepresentation();
-
             if(eventInitStateLogEntry.isHoldDownEnabled())
                 %Integrate in the body-fixed frame with zero rates
                 %For performance reasons
@@ -114,9 +141,6 @@ classdef ForceModelPropagator < AbstractPropagator
             [ut, rVect, vVect, tankStatesMasses, storageSoCs] = AbstractPropagator.decomposeIntegratorTandY(t,y, length(tankStates), length(powerStorageStates));
             altitude = norm(rVect) - bodyInfo.radius;
             
-%             tankStatesMasses = reshape(tankStatesMasses,size(tankStates));
-%             storageSoCs = reshape(storageSoCs, size(powerStorageStates));
-
             stageStates = eventInitStateLogEntry.stageStates;
             lvState = eventInitStateLogEntry.lvState;
             t2tConnStates = lvState.t2TConns;

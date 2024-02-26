@@ -29,7 +29,7 @@ classdef LaunchVehicleBasicElectricalBatteryState < AbstractLaunchVehicleEpsStor
         end
         
         function stateOfCharge = getStateOfCharge(obj)
-            stateOfCharge = obj.stateOfCharge;
+            stateOfCharge = [obj.stateOfCharge];
         end
         
         function setStateOfCharge(obj, stateOfCharge)
