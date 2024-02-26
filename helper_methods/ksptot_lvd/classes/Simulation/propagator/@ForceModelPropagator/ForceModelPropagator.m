@@ -23,32 +23,14 @@ classdef ForceModelPropagator < AbstractPropagator
 
             %Get initial states
             [t0,y0, ~] = eventInitStateLogEntry.getFirstOrderIntegratorStateRepresentation();
+            tankStates = eventInitStateLogEntry.getAllActiveTankStates();
+            pwrStorageStates = eventInitStateLogEntry.getAllActivePwrStorageStates();
 
             %Get scale factors
-            tankStates = eventInitStateLogEntry.getAllActiveTankStates();
-            totalMass = eventInitStateLogEntry.getTotalVehicleMass();
-            pwrStorageStates = eventInitStateLogEntry.getAllActivePwrStorageStates();
-            [~, rVect0, vVect0, ~, ~] = AbstractPropagator.decomposeIntegratorTandY(t0,y0, length(tankStates), length(pwrStorageStates));
-            
-            %%% Kinematics
-            lStar = norm(rVect0);
-            vStar = norm(vVect0);
-            tStar = lStar / vStar;
-            aStar = vStar / tStar;
+            [tStar, lStar, vStar, ~, mStar, ~, cStar, ~] = ForceModelPropagator.getScaleFactors(eventInitStateLogEntry);
 
-            %Mass flow
-            mStar = totalMass;
-            mDotStar = mStar/tStar;
-
-            %Electrical charge
-            pwrStorageStates = eventInitStateLogEntry.getAllActivePwrStorageStates();
-            if(not(isempty(pwrStorageStates)))
-                cStar = max(1, sum(pwrStorageStates.getStateOfCharge()));
-                cDotStar = cStar/tStar;
-            else
-                cStar = 1;
-                cDotStar = 1;
-            end
+            %Scale tspan
+            tspanS = tspan / tStar;
 
             %Create function handles
             odefun = obj.getOdeFunctionHandle(eventInitStateLogEntry);
@@ -63,7 +45,9 @@ classdef ForceModelPropagator < AbstractPropagator
                 [rVectECEF, vVectECEF] = getFixedFrameVectFromInertialVect(t0, y0(1:3)', bodyInfo, y0(4:6)');
                 y0 = [rVectECEF', vVectECEF', y0(:,7:end)];
 
-                [t,y,te,ye,ie] = integrator.integrate(odefun, tspan, y0, evtsFunc, odeOutputFun);
+                [~, yS0] = ForceModelPropagator.scaleTAndY(t0,y0, lStar, tStar, vStar, mStar, cStar, tankStates, pwrStorageStates);
+                [tS,yS,teS,yeS,ie] = integrator.integrate(odefun, tspanS, yS0, evtsFunc, odeOutputFun);
+                [t,y,te,ye] = ForceModelPropagator.unscaleOdeResults(tS, yS, teS, yeS, lStar, tStar, vStar, mStar, cStar, tankStates, pwrStorageStates);
 
                 [rVectECI, vVectECI] = getInertialVectFromFixedFrameVect(t, y(:,1:3)', bodyInfo, y(:,4:6)');
                 y = [rVectECI', vVectECI', y(:,7:end)];
@@ -72,8 +56,11 @@ classdef ForceModelPropagator < AbstractPropagator
                     [rVectECIe, vVectECIe] = getInertialVectFromFixedFrameVect(te, ye(:,1:3)', bodyInfo, ye(:,4:6)');
                     ye = [rVectECIe', vVectECIe', ye(:,7:end)];
                 end
+
             else
-                [t,y,te,ye,ie] = integrator.integrate(odefun, tspan, y0, evtsFunc, odeOutputFun);
+                [~, yS0] = ForceModelPropagator.scaleTAndY(t0,y0, lStar, tStar, vStar, mStar, cStar, tankStates, pwrStorageStates);
+                [tS,yS,teS,yeS,ie] = integrator.integrate(odefun, tspanS, yS0, evtsFunc, odeOutputFun);
+                [t,y,te,ye] = ForceModelPropagator.unscaleOdeResults(tS, yS, teS, yeS, lStar, tStar, vStar, mStar, cStar, tankStates, pwrStorageStates);
             end   
         end
         
@@ -81,20 +68,43 @@ classdef ForceModelPropagator < AbstractPropagator
             tankStates = eventInitStateLogEntry.getAllActiveTankStates();
             dryMass = eventInitStateLogEntry.getTotalVehicleDryMass();
             pwrStorageStates = eventInitStateLogEntry.getAllActivePwrStorageStates();
-            odeFH = @(t,y) ForceModelPropagator.odefun(t,y, eventInitStateLogEntry, tankStates, dryMass, pwrStorageStates, obj.forceModels);
+            
+            [tStar, lStar, vStar, aStar, mStar, mDotStar, cStar, cDotStar] = ForceModelPropagator.getScaleFactors(eventInitStateLogEntry);
+
+            % odeFH = @(t,y) ForceModelPropagator.odefun(t,y, eventInitStateLogEntry, tankStates, dryMass, pwrStorageStates, obj.forceModels);
+            odeFH = @(tS,yS) ForceModelPropagator.scaledOdeFun(tS,yS, eventInitStateLogEntry, tankStates, dryMass, pwrStorageStates, obj.forceModels, lStar, tStar, vStar, aStar, mStar, mDotStar, cStar, cDotStar);
         end
-        
+       
         function odeEventsFH = getOdeEventsFunctionHandle(~, eventInitStateLogEntry, eventTermCondFuncHandle, termCondDir, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, minAltitude, celBodyData)
-            odeEventsFH = @(t,y) AbstractPropagator.odeEvents(t,y, eventInitStateLogEntry, eventTermCondFuncHandle, termCondDir, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, minAltitude, celBodyData);
+            tankStates = eventInitStateLogEntry.getAllActiveTankStates();
+            pwrStorageStates = eventInitStateLogEntry.getAllActivePwrStorageStates();
+            
+            [tStar, lStar, vStar, ~, mStar, ~, cStar, ~] = ForceModelPropagator.getScaleFactors(eventInitStateLogEntry);
+
+            odeEventsFH = @(tS,yS) ForceModelPropagator.scaledOdeEvents(tS,yS, eventInitStateLogEntry, eventTermCondFuncHandle, termCondDir, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, minAltitude, celBodyData, lStar, tStar, vStar, mStar, cStar, tankStates, pwrStorageStates);
+            % odeEventsFH = @(t,y) AbstractPropagator.odeEvents(t,y, eventInitStateLogEntry, eventTermCondFuncHandle, termCondDir, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, minAltitude, celBodyData);
         end
         
-        function odeOutputFH = getOdeOutputFunctionHandle(~, tStartPropTime, maxPropTime, eventInitStateLogEntry, plugins)           
-            odeOutputFH = @(t,y,flag) ForceModelPropagator.odeOutput(t,y,flag, tStartPropTime, maxPropTime, eventInitStateLogEntry, plugins);
+        function odeOutputFH = getOdeOutputFunctionHandle(~, tStartPropTime, maxPropTime, eventInitStateLogEntry, plugins)       
+            [tStar, lStar, vStar, ~, mStar, ~, cStar, ~] = ForceModelPropagator.getScaleFactors(eventInitStateLogEntry);
+
+            tankStates = eventInitStateLogEntry.getAllActiveTankStates();
+            pwrStorageStates = eventInitStateLogEntry.getAllActivePwrStorageStates();
+
+            % odeOutputFH = @(t,y,flag) ForceModelPropagator.odeOutput(t,y,flag, tStartPropTime, maxPropTime, eventInitStateLogEntry, plugins);
+            odeOutputFH = @(tS,yS,flag) ForceModelPropagator.scaledOdeOutput(tS,yS,flag, tStartPropTime, maxPropTime, eventInitStateLogEntry, plugins, lStar, tStar, vStar, mStar, cStar, tankStates, pwrStorageStates);
         end
         
         function [value,isterminal,direction,causes] = callEventsFcn(obj, odeEventsFun, stateLogEntry)
             [t,y, ~] = stateLogEntry.getFirstOrderIntegratorStateRepresentation();
-            [value,isterminal,direction,causes] = odeEventsFun(t,y);
+    
+            [tStar, lStar, vStar, ~, mStar, ~, cStar, ~] = ForceModelPropagator.getScaleFactors(stateLogEntry);
+            tankStates = stateLogEntry.getAllActiveTankStates();
+            powerStorageStates = stateLogEntry.getAllActivePwrStorageStates();
+
+            [tS, yS] = ForceModelPropagator.scaleTAndY(t,y, lStar, tStar, vStar, mStar, cStar, tankStates, powerStorageStates);
+
+            [value,isterminal,direction,causes] = odeEventsFun(tS,yS);
         end
         
         function openOptionsDialog(obj)
@@ -209,6 +219,17 @@ classdef ForceModelPropagator < AbstractPropagator
                 dydt(4:6) = accelVect;
             end
         end
+
+        function yDotS = scaledOdeFun(tS,yS, eventInitStateLogEntry, tankStates, dryMass, powerStorageStates, fmEnums, lStar, tStar, vStar, aStar, mStar, mDotStar, cStar, cDotStar)
+            [t, y] = ForceModelPropagator.unscaleTAndY(tS,yS, lStar, tStar, vStar, mStar, cStar, tankStates, powerStorageStates);            
+            yDot = ForceModelPropagator.odefun(t,y, eventInitStateLogEntry, tankStates, dryMass, powerStorageStates, fmEnums);
+
+            [mInds, cInds] = ForceModelPropagator.getMandCInds(tankStates, powerStorageStates);
+            yDotS = [yDot(1:3) / vStar;
+                     yDot(4:6) / aStar;
+                     yDot(mInds) / mDotStar;
+                     yDot(cInds) / cDotStar];
+        end
         
         %%%
         %ODE Output
@@ -222,6 +243,117 @@ classdef ForceModelPropagator < AbstractPropagator
             if(integrationDuration > maxIntegrationDuration)
                 status = 1;
             end
+        end
+
+        function status = scaledOdeOutput(tS,yS,flag, intStartTime, maxIntegrationDuration, eventInitStateLogEntry, plugins, lStar, tStar, vStar, mStar, cStar, tankStates, powerStorageStates)
+            [t, y] = ForceModelPropagator.unscaleTAndY(tS,yS, lStar, tStar, vStar, mStar, cStar, tankStates, powerStorageStates);
+            status = ForceModelPropagator.odeOutput(t,y,flag, intStartTime, maxIntegrationDuration, eventInitStateLogEntry, plugins);
+        end
+
+        %%%
+        %Scaled ODE Events
+        %%%
+        function [value,isterminal,direction, causes] = scaledOdeEvents(tS,yS, eventInitStateLogEntry, evtTermCond, termCondDir, maxSimTime, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, minAltitude, celBodyData, lStar, tStar, vStar, mStar, cStar, tankStates, powerStorageStates)
+            [t, y] = ForceModelPropagator.unscaleTAndY(tS,yS, lStar, tStar, vStar, mStar, cStar, tankStates, powerStorageStates);
+            
+            [value,isterminal,direction, causes] = AbstractPropagator.odeEvents(t,y, eventInitStateLogEntry, evtTermCond, termCondDir, maxSimTime, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, minAltitude, celBodyData);
+        end
+
+        %%%
+        %Scale factors
+        %%%
+        function [tStar, lStar, vStar, aStar, mStar, mDotStar, cStar, cDotStar] = getScaleFactors(eventInitStateLogEntry)
+            %Get initial states
+            [t0,y0, ~] = eventInitStateLogEntry.getFirstOrderIntegratorStateRepresentation();
+
+            %Get scale factors
+            tankStates = eventInitStateLogEntry.getAllActiveTankStates();
+            totalMass = eventInitStateLogEntry.getTotalVehicleMass();
+            pwrStorageStates = eventInitStateLogEntry.getAllActivePwrStorageStates();
+            [~, rVect0, vVect0, ~, ~] = AbstractPropagator.decomposeIntegratorTandY(t0,y0, length(tankStates), length(pwrStorageStates));
+            
+            %%% Kinematics
+            lStar = norm(rVect0);
+            vStar = norm(vVect0);
+            tStar = lStar / vStar;
+            aStar = vStar / tStar;
+
+            %Mass flow
+            mStar = totalMass;
+            mDotStar = mStar/tStar;
+
+            %Electrical charge
+            pwrStorageStates = eventInitStateLogEntry.getAllActivePwrStorageStates();
+            if(not(isempty(pwrStorageStates)))
+                cStar = max(1, sum(pwrStorageStates.getStateOfCharge()));
+                cDotStar = cStar/tStar;
+            else
+                cStar = 1;
+                cDotStar = 1;
+            end
+        end
+
+        function [tS, yS] = scaleTAndY(t,y, lStar, tStar, vStar, mStar, cStar, tankStates, powerStorageStates)
+            [mInds, cInds] = ForceModelPropagator.getMandCInds(tankStates, powerStorageStates);
+
+            if(isempty(t))
+                tS = [];
+                yS = [];
+            else
+                tS = t / tStar;
+    
+                if(height(y) > 1)
+                    yS = [y(1:3) / lStar; ...
+                          y(4:6) / vStar; ...
+                          y(mInds) / mStar; ...
+                          y(cInds) / cStar];
+
+                else
+                    yS = [y(1:3) / lStar, ...
+                          y(4:6) / vStar, ...
+                          y(mInds) / mStar, ...
+                          y(cInds) / cStar];
+                end
+            end
+        end
+
+        function [t, y] = unscaleTAndY(tS,yS, lStar, tStar, vStar, mStar, cStar, tankStates, powerStorageStates)
+            [mInds, cInds] = ForceModelPropagator.getMandCInds(tankStates, powerStorageStates);
+
+            if(isempty(tS))
+                t = [];
+                y = [];
+            else
+                t = tS * tStar;
+    
+                if(height(yS) > 1)
+                    y = [yS(1:3) * lStar; ...
+                         yS(4:6) * vStar; ...
+                         yS(mInds) * mStar; ...
+                         yS(cInds) * cStar];
+
+                else
+                    y = [yS(1:3) * lStar, ...
+                         yS(4:6) * vStar, ...
+                         yS(mInds) * mStar, ...
+                         yS(cInds) * cStar];
+                end
+            end
+        end
+
+        function [t,y,te,ye] = unscaleOdeResults(tS, yS, teS, yeS, lStar, tStar, vStar, mStar, cStar, tankStates, powerStorageStates)
+            [mInds, cInds] = ForceModelPropagator.getMandCInds(tankStates, powerStorageStates);
+
+            t = tS .* tStar;
+            y = [yS(:,1:3)*lStar, yS(:,4:6)*vStar, yS(:,mInds)*mStar, yS(:,cInds)*cStar];
+
+            te = teS .* tStar;
+            ye = [yeS(:,1:3)*lStar, yeS(:,4:6)*vStar, yeS(:,mInds)*mStar, yeS(:,cInds)*cStar];
+        end
+
+        function [mInds, cInds] = getMandCInds(tankStates, powerStorageStates)
+            mInds = 7:6+length(tankStates);
+            cInds = 6+length(tankStates)+1 : 6+length(tankStates)+length(powerStorageStates);
         end
     end
 end

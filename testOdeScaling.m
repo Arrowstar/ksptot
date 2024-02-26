@@ -14,7 +14,7 @@ y0 = [1000;
       sqrt(muKerbin/1000);
       0];
 
-options = odeset('RelTol',5e-14, 'AbsTol',5E-14);
+options = odeset('RelTol',1e-8, 'AbsTol',1E-8);
 
 tic;
 [t,y] = ode113(odefun,tspan,y0,options);
@@ -25,10 +25,16 @@ toc;
 % tStar = sqrt(lStar^3/muKerbin);
 % vStar = lStar / tStar;
 % aStar = vStar / tStar;
+
 lStar = norm(y0(1:3)); %km
 vStar = norm(y0(4:6));
 tStar = lStar / vStar;
 aStar = vStar / tStar;
+
+% lStar = norm(y0(1:3)); %km
+% tStar = abs(max(tspan) - min(tspan));
+% vStar = lStar / tStar;
+% aStar = vStar / tStar;
 
 odeFunS = @(tS,yS) scaledOdeFun(tS,yS, tStar, lStar, vStar, aStar, odefun);
 tspanS = tspan/tStar;

@@ -85,7 +85,7 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
                     end
                 end
 
-                if(length(tspan) == 1)
+                if(isscalar(tspan))
                     tspan = [tspan(1), tspan(1)+integrationStep];
                 end
                 
@@ -117,7 +117,7 @@ classdef LaunchVehicleSimulationDriver < matlab.mixin.SetGet
                     end
                 end
 
-                if(length(tspan) == 1)
+                if(isscalar(tspan))
                     tspan = [tspan(1), tspan(1)-integrationStep];
                 end
                 
