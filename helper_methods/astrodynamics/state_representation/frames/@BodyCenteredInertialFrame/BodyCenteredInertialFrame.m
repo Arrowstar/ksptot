@@ -35,11 +35,16 @@ classdef BodyCenteredInertialFrame < AbstractReferenceFrame
         end
 
         function R_BodyInertial_to_GlobalInertial = getRotMatToInertialAtTime(obj, time, ~, ~)
+            numTimes = numel(time);
             if(isscalar(obj))
-                R_BodyInertial_to_GlobalInertial = repmat(obj.bodyRotMatFromGlobalInertialToBodyInertial', [1, 1, length(time)]);
+                if(numTimes == 1)
+                    R_BodyInertial_to_GlobalInertial = obj.bodyRotMatFromGlobalInertialToBodyInertial';
+                else
+                    R_BodyInertial_to_GlobalInertial = repmat(obj.bodyRotMatFromGlobalInertialToBodyInertial', [1, 1, numTimes]);
+                end
                 
             else
-                R_BodyInertial_to_GlobalInertial = NaN([3, 3, length(time)]);
+                R_BodyInertial_to_GlobalInertial = NaN([3, 3, numTimes]);
                 
                 [uniObj,~,ic] = unique(obj,'stable');
                 for(i=1:length(uniObj)) %#ok<*NO4LP> 
@@ -53,7 +58,7 @@ classdef BodyCenteredInertialFrame < AbstractReferenceFrame
         end
 
         function [angVelWrtOrigin, rotMatToInertial] = getAngVelWrtOriginAndRotMatToInertial(obj, time, vehElemSet, bodyInfoInertialOrigin)
-            angVelWrtOrigin = repmat([0;0;0], [1, length(time)]);
+            angVelWrtOrigin = zeros([3,length(time)]); %repmat([0;0;0], [1, length(time)]);
             rotMatToInertial = obj.getRotMatToInertialAtTime(time, vehElemSet, bodyInfoInertialOrigin);
         end
 
