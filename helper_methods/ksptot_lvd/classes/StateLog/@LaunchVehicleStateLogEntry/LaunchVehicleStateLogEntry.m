@@ -588,13 +588,13 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                             engine = engineState.engine;
                             adjustedThrottle = engine.adjustThrottle(throttle, []);
                             if(adjustedThrottle > 0)
-                                [baseThrust, baseMdot] = getThrustFlowRateForPressure(engine, presskPa); %total mass flow through engine
+                                [baseThrust, baseMdot] = engine.getThrustFlowRateForPressure(presskPa); %total mass flow through engine
                                 mdot = adjustedThrottle * baseMdot;
                                 
                                 flowFromTankInds = zeros(size(tankStates));
                                 if(mdot < 0 && ... %negative because we're flowing out
                                    (engine.reqsElecCharge == false || (engine.reqsElecCharge == true && numel(storageSoCs)>0 && sum(storageSoCs)>0))) %handle engines that require EC to function 
-                                    tanks = getTanksConnectedToEngine(lvState, engine);
+                                    tanks = lvState.getTanksConnectedToEngine(engine);
                                     
                                     totalConnTankCapacity = 0;
                                     totalConnTankMass = 0;
@@ -630,7 +630,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                                     %rerun the calculations for thrust and
                                     %flow rate, this time incorporating the
                                     %fuel remaining in all connected tanks
-                                    adjustedThrottle = adjustThrottle(engine, throttle, fuelRemainPct);
+                                    adjustedThrottle = engine.adjustThrottle(throttle, fuelRemainPct);
                                     if(totalConnTankMass <= 0)
                                         adjustedThrottle = 0;
                                     end

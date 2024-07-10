@@ -140,8 +140,8 @@ classdef ForceModelPropagator < AbstractPropagator
 
                 [tankMassDotsEngines,~,~,ecStgDots] = eventInitStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, tankStatesMasses, stageStates, throttle, lvState, pressure, ut, rVect, vVect, bodyInfo, steeringModel, storageSoCs, powerStorageStates, attState);
 
-                tankMassDots = tankMassDotsEngines + tankMassDotsT2TConns;
-                storageRates = storageRates + ecStgDots;
+                tankMassDots = tankMassDotsEngines(:) + tankMassDotsT2TConns(:);
+                storageRates = storageRates(:) + ecStgDots(:);
 
                 %launch clamp is enabled, only motion is circular motion
                 %(fixed to body)
@@ -169,8 +169,8 @@ classdef ForceModelPropagator < AbstractPropagator
                     [forceSum, tankMassDotsForceModels, ecStgDots] = TotalForceModel.getForce(fmEnums, ut, rVect, vVect, totalMass, bodyInfo, aero, throttleModel, steeringModel, tankStates, stageStates, lvState, dryMass, tankStatesMasses, thirdBodyGravity, storageSoCs, powerStorageStates, srp);
                     accelVect = forceSum/totalMass; %F = dp/dt = d(mv)/dt = m*dv/dt + v*dm/dt, but since the thrust force causes us to shed mass, we actually account for the v*dm/dt term there and therefore don't need it!  See: https://en.wikipedia.org/wiki/Variable-mass_system         
 
-                    tankMassDots = tankMassDotsForceModels + tankMassDotsT2TConns;
-                    storageRates = storageRates + ecStgDots;
+                    tankMassDots = tankMassDotsForceModels(:) + tankMassDotsT2TConns(:);
+                    storageRates = storageRates(:) + ecStgDots(:);
                     
                     dydt(7:6+length(tankMassDots)) = tankMassDots;
                     dydt(6+length(tankMassDots)+1 : 6+length(tankMassDots)+length(storageRates)) = storageRates;

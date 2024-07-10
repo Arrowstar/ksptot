@@ -32,11 +32,6 @@ classdef(Abstract) AbstractThrottleCurve < matlab.mixin.SetGet & matlab.mixin.Co
                 x = [obj.elems.indepVar];
                 y = [obj.elems.depVar];
 
-%                 xc = [max(x)];
-%                 yc = [0];
-%                 cc = [0;1];
-%                 con = struct('xc',xc,'cc',cc,'yc',yc);
-%                 obj.curve = splinefit(x,y,x,2); %I set things to use a piecewise linear interpolation now. 2020/12/18
                 obj.curve = griddedInterpolant(x,y,'linear','nearest');
                 
                 if(all(not(diff(y))))
@@ -48,7 +43,6 @@ classdef(Abstract) AbstractThrottleCurve < matlab.mixin.SetGet & matlab.mixin.Co
                 x = [obj.elems.indepVar];
                 y = [obj.elems.depVar];
 
-%                 obj.curve = splinefit(x,y,1,2);
                 obj.curve = griddedInterpolant(x,y,'linear','nearest');
                 
                 if(y(1) == y(2))

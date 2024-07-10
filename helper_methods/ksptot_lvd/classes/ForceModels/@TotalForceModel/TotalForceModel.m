@@ -33,11 +33,11 @@ classdef TotalForceModel < matlab.mixin.SetGet
                     forceVect = forceVect + fv;
                     
                     if(not(isempty(mdots)))
-                        tankMdots = tankMdots + mdots;
+                        tankMdots = tankMdots + mdots(:);
                     end
                     
                     if(not(isempty(ecDots)))
-                        ecStgDots = ecStgDots + ecDots; 
+                        ecStgDots = ecStgDots + ecDots(:); 
                     end
                 end
             end

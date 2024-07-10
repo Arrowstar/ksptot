@@ -136,15 +136,11 @@ classdef LaunchVehicleEngine < matlab.mixin.SetGet
         end
         
         function [thrust, isp] = getThrustIspForPressure(obj, presskPa)
-            thrust = evalCurve(obj.thrustPressCurve, presskPa);
-            if(thrust < 0)
-                thrust = 0;
-            end
+            thrust = obj.thrustPressCurve.evalCurve(presskPa);
+            thrust = max(thrust, 0);
             
-            isp = evalCurve(obj.ispPressCurve, presskPa);
-            if(isp < 1E-6)
-                isp = 1E-6;
-            end
+            isp = obj.ispPressCurve.evalCurve(presskPa);
+            isp = max(isp, 1E-6);
         end
         
         function [thrust, mdot] = getThrustFlowRateForPressure(obj, presskPa)
@@ -154,13 +150,14 @@ classdef LaunchVehicleEngine < matlab.mixin.SetGet
         end
         
         function newThrottle = adjustThrottle(obj, inputThrottle, fuelRemainingPct)
-            if(inputThrottle < obj.minThrottle)
-                newThrottle = obj.minThrottle;
-            elseif(inputThrottle > obj.maxThrottle)
-                newThrottle = obj.maxThrottle;
-            else
-                newThrottle = inputThrottle;
-            end
+            % if(inputThrottle < obj.minThrottle)
+            %     newThrottle = obj.minThrottle;
+            % elseif(inputThrottle > obj.maxThrottle)
+            %     newThrottle = obj.maxThrottle;
+            % else
+            %     newThrottle = inputThrottle;
+            % end
+            newThrottle = min(max(inputThrottle, obj.minThrottle), obj.maxThrottle);
             
             if(not(isempty(fuelRemainingPct)))
                 newThrottle = newThrottle * obj.fuelThrottleCurve.evalCurve(fuelRemainingPct);
