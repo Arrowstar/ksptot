@@ -86,8 +86,13 @@ classdef (Abstract) AbstractElementSet < matlab.mixin.SetGet & matlab.mixin.Cust
                 end
             end
 
-            rVect2 = posOffsetOrigin12 + squeeze(pagemtimes(R_FrameToUse_to_GlobalInertial, permute(rVect1, [1 3 2])));
-            vVect2 = velOffsetOrigin12 + squeeze(pagemtimes(R_FrameToUse_to_GlobalInertial, (permute(vVect1 + cross(angVelWrtOrigin12, rVect1), [1 3 2]))));
+            if(numel(rVect1) == 3)
+                rVect2 = posOffsetOrigin12 + (R_FrameToUse_to_GlobalInertial * rVect1);
+                vVect2 = velOffsetOrigin12 +  R_FrameToUse_to_GlobalInertial * (vVect1 + cross(angVelWrtOrigin12, rVect1));
+            else
+                rVect2 = posOffsetOrigin12 + squeeze(pagemtimes(R_FrameToUse_to_GlobalInertial, permute(rVect1, [1 3 2])));
+                vVect2 = velOffsetOrigin12 + squeeze(pagemtimes(R_FrameToUse_to_GlobalInertial, (permute(vVect1 + cross(angVelWrtOrigin12, rVect1), [1 3 2]))));
+            end
                        
             %get offsets from frame 3 to frame 2
             if(isscalar(times) && numel(toFrame.timeCache) > 0 && toFrame.timeCache(1) == times) %#ok<BDSCI>
@@ -107,9 +112,15 @@ classdef (Abstract) AbstractElementSet < matlab.mixin.SetGet & matlab.mixin.Cust
                 end
             end
             
-            R_GlobalInertial_to_ToFrame = permute(R_ToFrame_To_GlobalInertial, [2 1 3]);
-            rVect3 = squeeze(pagemtimes(R_GlobalInertial_to_ToFrame, permute(rVect2 - posOffsetOrigin32, [1 3 2])));
-            vVect3 = squeeze(pagemtimes(R_GlobalInertial_to_ToFrame, permute(vVect2 - velOffsetOrigin32, [1 3 2]))) - cross(angVelWrtOrigin32, rVect3);
+            if(size(R_ToFrame_To_GlobalInertial,3) == 1)
+                R_GlobalInertial_to_ToFrame = R_ToFrame_To_GlobalInertial';
+                rVect3 = R_GlobalInertial_to_ToFrame * (rVect2 - posOffsetOrigin32);
+                vVect3 = R_GlobalInertial_to_ToFrame * (vVect2 - velOffsetOrigin32) - cross(angVelWrtOrigin32, rVect3);
+            else
+                R_GlobalInertial_to_ToFrame = permute(R_ToFrame_To_GlobalInertial, [2 1 3]);
+                rVect3 = squeeze(pagemtimes(R_GlobalInertial_to_ToFrame, permute(rVect2 - posOffsetOrigin32, [1 3 2])));
+                vVect3 = squeeze(pagemtimes(R_GlobalInertial_to_ToFrame, permute(vVect2 - velOffsetOrigin32, [1 3 2]))) - cross(angVelWrtOrigin32, rVect3);
+            end
 
             createObjOfArrayVal = false;
             if(isscalar(obj) && obj.createObjOfArray == true && obj.typeEnum == ElementSetEnum.CartesianElements)

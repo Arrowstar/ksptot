@@ -43,15 +43,15 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             % dAxes.CameraTargetMode = "manual";
             % dAxes.CameraViewAngleMode = "manual";
             
-            hFig.Renderer = viewProfile.renderer.renderer;
-            if(viewProfile.renderer == FigureRendererEnum.OpenGL && ~isunix())
-                d = opengl('data');
-                if(strcmpi(d.HardwareSupportLevel,'full'))
-                    opengl hardware;
-                elseif(strcmpi(d.HardwareSupportLevel,'basic'))
-                    opengl hardwarebasic;
-                end
-            end
+            % hFig.Renderer = viewProfile.renderer.renderer;
+            % if(viewProfile.renderer == FigureRendererEnum.OpenGL && ~isunix())
+            %     d = opengl('data');
+            %     if(strcmpi(d.HardwareSupportLevel,'full'))
+            %         opengl hardware;
+            %     elseif(strcmpi(d.HardwareSupportLevel,'basic'))
+            %         opengl hardwarebasic;
+            %     end
+            % end
             
             hFig.GraphicsSmoothing = 'on';
             
