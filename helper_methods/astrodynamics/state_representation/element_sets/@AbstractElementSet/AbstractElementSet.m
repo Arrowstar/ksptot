@@ -66,7 +66,7 @@ classdef (Abstract) AbstractElementSet < matlab.mixin.SetGet & matlab.mixin.Cust
                     angVelWrtOrigin12 = frameToUse.angVelWrtOriginCache(:,1);
                     R_FrameToUse_to_GlobalInertial = frameToUse.rotMatToInertialCache(:,:,1); %F1 to GI
                 else
-                    [posOffsetOrigin12, velOffsetOrigin12, angVelWrtOrigin12, R_FrameToUse_to_GlobalInertial] = getOffsetsWrtInertialOrigin(frameToUse, times, convertCartElemSet);
+                    [posOffsetOrigin12, velOffsetOrigin12, angVelWrtOrigin12, R_FrameToUse_to_GlobalInertial] = frameToUse.getOffsetsWrtInertialOrigin(times, convertCartElemSet);
 
                     if(isscalar(times))
                         frameToUse.timeCache = times;
@@ -101,7 +101,7 @@ classdef (Abstract) AbstractElementSet < matlab.mixin.SetGet & matlab.mixin.Cust
                 angVelWrtOrigin32 = toFrame.angVelWrtOriginCache(:,1);
                 R_ToFrame_To_GlobalInertial = toFrame.rotMatToInertialCache(:,:,1); %VF to GI
             else
-                [posOffsetOrigin32, velOffsetOrigin32, angVelWrtOrigin32, R_ToFrame_To_GlobalInertial] = getOffsetsWrtInertialOrigin(toFrame, times, convertCartElemSet);
+                [posOffsetOrigin32, velOffsetOrigin32, angVelWrtOrigin32, R_ToFrame_To_GlobalInertial] = toFrame.getOffsetsWrtInertialOrigin(times, convertCartElemSet);
 
                 if(isscalar(times))
                     toFrame.timeCache = times;
