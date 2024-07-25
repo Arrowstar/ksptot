@@ -19,10 +19,11 @@ classdef ForceModelPropagatorWithNoForceModelsValidator < AbstractLaunchVehicleD
             evts = obj.lvdData.script.evts;
             for(i=1:length(evts))
                 evt = evts(i);
+                stateLogEntries = obj.lvdData.stateLog.getAllStateLogEntriesForEvent(evt);
                 
                 if(evt.propagatorObj == evt.forceModelPropagator)
                     forceModels = evt.forceModelPropagator.forceModels;
-                    if(length(forceModels) == 1 && forceModels == ForceModelsEnum.Gravity)
+                    if(length(forceModels) == 1 && forceModels == ForceModelsEnum.Gravity && (numel(stateLogEntries(1)) >= 1 && stateLogEntries(1).centralBody.usenonsphericalgrav == false))
                         warnEvtNums(end+1) =  evt.getEventNum(); %#ok<AGROW>
                     end
                 end
