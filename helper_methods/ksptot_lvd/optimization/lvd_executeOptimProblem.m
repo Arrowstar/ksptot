@@ -56,8 +56,12 @@ function [exitflag, message] = lvd_executeOptimProblem(celBodyData, writeOutput,
             end
         end
 
-        iterFun = o.iterfun;
-        o = rmfield(o,'iterfun');
+        if(isfield(o,'iterfun'))
+            iterFun = o.iterfun;
+            o = rmfield(o,'iterfun');
+        else
+            iterFun = [];
+        end
 
 %         [x,fval,exitflag,iter,nfval] = nomad(problem.objective, problem.x0, problem.lb, problem.ub, problem.options);
         [x,fval,exitflag,iter,nfval] = nomadOpt(problem.objective, problem.x0, problem.lb, problem.ub, o, iterFun);

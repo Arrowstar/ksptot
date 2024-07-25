@@ -63,7 +63,8 @@ function findBestIntegrator(lvdData, app)
         end
 
         data(i,:) = [runTimeOde45, runTimeOde113, runTimeOde23, runTimeOde78, runTimeOde89]; %#ok<AGROW>
-        switch min(data(i,:))
+        minRunTime = min(data(i,:));
+        switch minRunTime
             case runTimeOde45
                 evt.integratorObj = evt.ode45Integrator;
 
@@ -80,7 +81,7 @@ function findBestIntegrator(lvdData, app)
                 evt.integratorObj = evt.ode89Integrator;
         end
 
-        fprintf('Done with event %u of %u.\n', i, length(lvdData.script.evts));
+        fprintf('Done with event %u of %u (Current Run Time: %0.3f s).\n', i, length(lvdData.script.evts), minRunTime);
     end
 
     % disp(runAndTimeScript(lvdData));
