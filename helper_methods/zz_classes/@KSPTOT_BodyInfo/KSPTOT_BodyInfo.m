@@ -357,6 +357,7 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
             means = [];
             epochs = [];
             parentGMs = [];
+            rotFramesBodyToGI = zeros(3,3,0);
 
             loop = true;
             bodyInfo = obj;
@@ -368,6 +369,7 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
                 args(end+1) = bodyInfo.arg; %#ok<AGROW>
                 means(end+1) = bodyInfo.mean; %#ok<AGROW>
                 epochs(end+1) = bodyInfo.epoch; %#ok<AGROW>
+                rotFramesBodyToGI(:,:,end+1)  = bodyInfo.bodyRotMatFromGlobalInertialToBodyInertial'; %#ok<AGROW>
 
                 try
                     thisParentBodyInfo = bodyInfo.getParBodyInfo(obj.celBodyData);
@@ -386,7 +388,7 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
                 end
             end
             
-            obj.orbitElemsChainCache = {smas, eccs, incs, raans, args, means, epochs, parentGMs};
+            obj.orbitElemsChainCache = {smas, eccs, incs, raans, args, means, epochs, parentGMs, rotFramesBodyToGI};
         end
         
         function inputs = getFixedFrameFromInertialFrameInputsCache(obj)

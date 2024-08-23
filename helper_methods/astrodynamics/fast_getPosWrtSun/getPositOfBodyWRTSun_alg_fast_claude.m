@@ -1,4 +1,4 @@
-function [rVectB, vVectB] = getPositOfBodyWRTSun_alg_fast_claude(time, smas, eccs, incs, raans, args, means, epochs, parentGMs)
+function [rVectB, vVectB] = getPositOfBodyWRTSun_alg_fast_claude(time, smas, eccs, incs, raans, args, means, epochs, parentGMs, rotFramesBodyToGI)
     %This function written with the help of Claude: https://claude.ai/chat/d0071dbd-3599-4d2a-884f-bfeeb07abde4
     numBodies = length(parentGMs);
     numTimes = length(time);
@@ -28,9 +28,15 @@ function [rVectB, vVectB] = getPositOfBodyWRTSun_alg_fast_claude(time, smas, ecc
     
     for i = 1:numBodies-1
         for j = 1:numTimes
-            [rVect, vVect] = getStateAtTime_alg_fast(M(j,i), smas(i), eccs(i), incs(i), raans(i), args(i), p(i), sqrtMuOverP(i));
-            rVectB(:,j) = rVectB(:,j) + rVect;
-            vVectB(:,j) = vVectB(:,j) + vVect;
+            [rVect1, vVect1] = getStateAtTime_alg_fast(M(j,i), smas(i), eccs(i), incs(i), raans(i), args(i), p(i), sqrtMuOverP(i));
+            
+            R_BodyInertialFrame_to_GlobalInertial = rotFramesBodyToGI(:,:,i+1);
+
+            rVect2 = R_BodyInertialFrame_to_GlobalInertial * rVect1;
+            vVect2 = R_BodyInertialFrame_to_GlobalInertial * vVect1;
+            
+            rVectB(:,j) = rVectB(:,j) + rVect2;
+            vVectB(:,j) = vVectB(:,j) + vVect2;
         end
     end
 end
