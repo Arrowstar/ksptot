@@ -1,5 +1,5 @@
 classdef DynamicPressureTermCondition < AbstractEventTerminationCondition
-    %AltitudeTermCondition Summary of this class goes here
+    %DynamicPressureTermCondition Summary of this class goes here
     %   Detailed explanation goes here
     
     properties

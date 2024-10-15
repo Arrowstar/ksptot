@@ -26,7 +26,9 @@ classdef LaunchVehicleNonSeqEvent <  matlab.mixin.SetGet & matlab.mixin.Copyable
         end
         
         function termCond = getTerminationCondition(obj)
-            termCond = obj.evt.termCond.getEventTermCondFuncHandle();
+            termCondTemp = obj.evt.termCond.getEventTermCondFuncHandle();
+
+            termCond = @(t,y) nonSeqEvtTermCond(t,y, termCondTemp, obj.evt.termCondDir.direction);
         end
         
         function decrementNumExecsRemaining(obj)
@@ -43,4 +45,15 @@ classdef LaunchVehicleNonSeqEvent <  matlab.mixin.SetGet & matlab.mixin.Copyable
             cpObj = copyElement@matlab.mixin.Copyable(obj); 
         end
 	end
+end
+
+function [value,isterminal,direction] = nonSeqEvtTermCond(t,y, termCond, direction)
+    arguments
+        t double
+        y double
+        termCond(1,1) function_handle
+        direction(1,1) double
+    end
+
+    [value,isterminal] = termCond(t,y);
 end

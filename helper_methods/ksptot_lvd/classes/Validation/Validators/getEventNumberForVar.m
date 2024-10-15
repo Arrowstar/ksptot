@@ -22,8 +22,28 @@ function [evtNum, varLocType] = getEventNumberForVar(var, lvdData)
             break;
         end
     end
+
+    nonSeqEvts = lvdData.script.nonSeqEvts.evts;
+    for(i=1:length(nonSeqEvts))
+        nonSeqEvt = nonSeqEvts(i);
+
+        [~, eVars] = nonSeqEvt.hasActiveOptVars();
+        
+        for(j=1:length(eVars)) %#ok<*NO4LP> 
+            eVar = eVars(j);
+            
+            if(strcmpi(class(var), class(eVar)) && var == eVar)
+                varLocType = sprintf('Nonsequential Event %u', i);
+                break;
+            end
+        end
+
+        if(not(isempty(varLocType)))
+            break;
+        end
+    end
     
-    if(isempty(evtNum))
+    if(isempty(evtNum) && isempty(varLocType))
         if(lvdData.initStateModel.isVarFromInitialState(var))
             varLocType = 'Initial State';
             

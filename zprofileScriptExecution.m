@@ -16,6 +16,12 @@ addpath(genpath('kos_scripts'));
 load('lvdExample_TwoStageToOrbit.mat');
 
 %%
+for(i=1:length(lvdData.script.evts))
+    lvdData.script.evts(i).integratorObj.options.AbsTol = 1E-6;
+    lvdData.script.evts(i).integratorObj.options.RelTol = 1E-6;
+end
+
+%%
 tic; 
 profile off; profile on;
 for(i=1:15) %#ok<*NO4LP> 

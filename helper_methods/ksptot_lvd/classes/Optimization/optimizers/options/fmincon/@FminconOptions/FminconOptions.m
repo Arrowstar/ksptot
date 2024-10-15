@@ -46,6 +46,9 @@ classdef FminconOptions < matlab.mixin.SetGet
 
         %Constraints
         specifyConstraintGradient(1,1) logical = false;
+
+        %Scale Problem
+        scaleProblem(1,1) logical = false;
     end
     
     methods 
@@ -140,7 +143,8 @@ classdef FminconOptions < matlab.mixin.SetGet
                                    'HessianApproximation', obj.hessianApproxAlg.optionStr, ...
                                    'SubproblemAlgorithm', obj.subproblemAlgorithm.optionStr, ...
                                    'BarrierParamUpdate', obj.barrierParamUpdate.optionStr, ...
-                                   'EnableFeasibilityMode',obj.feasibilityMode);    
+                                   'EnableFeasibilityMode',obj.feasibilityMode, ...
+                                   'ScaleProblem',obj.scaleProblem);    
         end
         
         function tf = usesParallel(obj)
