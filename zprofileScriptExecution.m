@@ -12,8 +12,8 @@ addpath(genpath('images'));
 addpath(genpath('kos_scripts'));
 
 %%
-% load('C:\Users\Adam\Desktop\JoolTourLVD2.mat')
-load('lvdExample_TwoStageToOrbit.mat');
+load('C:\Users\Adam\Desktop\SLS.mat')
+% load('lvdExample_TwoStageToOrbit.mat');
 
 %%
 for(i=1:length(lvdData.script.evts))
