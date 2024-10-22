@@ -27,6 +27,8 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
         axialtempsunmultcurve = griddedInterpolant([0 1]',[0 0]','spline', 'nearest');
         ecctempbiascurve = griddedInterpolant([0 1]',[0 0]','spline', 'nearest');
         atmomolarmass double
+
+        densityGI = []; %atmo density/pressure/temp gridded interp <- Based on the above curves and a UT = 0
         
         %Rotation
         rotperiod double
@@ -619,6 +621,51 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
                 obj.heightmapoffset = -900;
                 obj.heightmapdeformity = 5840;
             end
+        end
+    end
+
+    methods
+        function createDensityGriddedInterp(obj)
+            arguments
+                obj(1,1) KSPTOT_BodyInfo
+            end
+
+            lats = linspace(-pi/2,pi/2,100);
+            longs = linspace(0,2*pi,100);
+            alts = linspace(0,obj.atmohgt,100);
+            
+            combos = combvec(lats, longs, alts)';
+            numRuns = height(combos);
+            
+            density = NaN(numRuns,1);
+            pressureKPA = NaN(numRuns,1);
+            temperature = NaN(numRuns,1);
+            ut = 0;
+
+            pp=gcp('nocreate');
+            if(isempty(pp))
+                M = 0;
+            else
+                M = pp.NumWorkers;
+            end
+
+            obj.densityGI = []; %clears the existing interpolant so that the actual functions get called
+            parfor(i=1:numRuns, M)
+                lat = combos(i,1);
+                long = combos(i,2);
+                altitude = combos(i,3);
+            
+                [density(i), pressureKPA(i), temperature(i)] = getAtmoDensityAtAltitude(obj, altitude, lat, ut, long);
+            end
+
+            densityRS = reshape(density, [length(lats), length(longs), length(alts)]);
+            pressureKPA_RS = reshape(pressureKPA, [length(lats), length(longs), length(alts)]);
+            temperatureRS = reshape(temperature, [length(lats), length(longs), length(alts)]);
+            V(:,:,:,1) = densityRS;
+            V(:,:,:,2) = pressureKPA_RS;
+            V(:,:,:,3) = temperatureRS;
+
+            obj.densityGI = griddedInterpolant({lats',longs',alts'}, V, "linear","nearest");
         end
     end
     

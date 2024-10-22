@@ -5,11 +5,11 @@ function [rVectB, vVectB] = getPositOfBodyWRTSun(time, bodyInfo, celBodyData)
         celBodyData
     end
 
-%     if(numel(time) == 1 && bodyInfo.lastComputedSunTime == time)
-%         rVectB = bodyInfo.lastComputedSunRVect;
-%         vVectB =  bodyInfo.lastComputedSunVVect;
-%         return;
-%     end
+    % if(isscalar(time) && bodyInfo.lastComputedSunTime == time)
+    %     rVectB = bodyInfo.lastComputedSunRVect;
+    %     vVectB =  bodyInfo.lastComputedSunVVect;
+    %     return;
+    % end
 
     try
         if(bodyInfo.propTypeIsTwoBody || (isscalar(time) && time == bodyInfo.epoch))
