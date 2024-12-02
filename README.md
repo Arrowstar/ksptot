@@ -1,4 +1,4 @@
-# KSP Trajectory Optimization Tool 
+# KSP Trajectory Optimization Tool [![Open in MATLAB Online](https://www.mathworks.com/images/responsive/global/open-in-matlab-online.svg)](https://matlab.mathworks.com/open/github/v1?repo=Arrowstar/ksptot&file=projectMain.m)
 The KSP Trajectory Optimization Tool (KSPTOT) is a stand-alone, MATLAB-based software toolkit for advanced KSP pilots and astrodynamicists.  Contained within this suite are tools for end-to-end spacecraft and launch vehicle mission design, gravity assist maneuver design, rendezvous maneuver design, celestial body data, and more.
 ###### KSPTOT runs via the MATLAB Compiler Runtime.  Ownership of MATLAB is not required to use KSPTOT.
 ![Launch Vehicle Designer](https://i.imgur.com/gzom2yV.png)
@@ -44,5 +44,3 @@ KSP Trajectory Optimization Tool has always been free, is free today, and will a
 To use, just click the "Buy Me a Coffee" button. You'll be taken to a page where you can enter an amount (in units of $3), a message, and make it public or private.
 
 As a disclaimer, such donations don't imply any agreement for me to provide you with goods or services. (You already have the software!) They are merely another way for you to say "Thank You" and are completely optional and voluntary.
-
-[![Open in MATLAB Online](https://www.mathworks.com/images/responsive/global/open-in-matlab-online.svg)](https://matlab.mathworks.com/open/github/v1?repo=Arrowstar/ksptot/tree/v1.6.10&file=projectMain.m) 
