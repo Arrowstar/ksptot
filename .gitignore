@@ -39,3 +39,5 @@ octave-workspace
 
 
 # End of https://www.gitignore.io/api/matlab
+
+/.MATLABDriveTag
