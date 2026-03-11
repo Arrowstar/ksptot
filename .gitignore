@@ -39,3 +39,7 @@ octave-workspace
 
 
 # End of https://www.gitignore.io/api/matlab
+
+/.aider.tags.cache.v3/
+
+/helper_methods/ksptot_lvd/.claude/
