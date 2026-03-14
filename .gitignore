@@ -47,3 +47,9 @@ helper_methods/ksptot_lvd/classes/ForceModels/steering/@PoweredExplicitGuidance/
 untitled2.m
 getSolarSystemXAxisZAxisVectors.m
 gitlog-to-changelog
+/.claude
+/.playwright-mcp
+/node_modules
+package.json
+package-lock.json
+.claudeignore
