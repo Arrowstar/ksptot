@@ -12,6 +12,9 @@ function runHistoricalBenchmark(commits, lvdCases)
         };
     end
 
+    % Store current directory as project root
+    projectRoot = strrep(pwd(), '\', '/');
+
     % Get current branch to restore later
     [status, cmdOut] = system('git rev-parse --abbrev-ref HEAD');
     if status ~= 0
@@ -20,25 +23,28 @@ function runHistoricalBenchmark(commits, lvdCases)
     originalBranch = strtrim(cmdOut);
     fprintf('Original branch is %s. Will restore after benchmark.\n', originalBranch);
 
-    % NO STASHING HERE - Recommend user to commit/stash first to avoid conflicts
-    fprintf('Warning: This script assumes a clean workspace for git checkouts to succeed.\n');
-
     % Results directory
     resultsDir = fullfile('tests', 'benchmark', 'results');
     if ~exist(resultsDir, 'dir')
         mkdir(resultsDir);
     end
 
+    % Persistence: Copy benchmarkLvdPerformance to a temp location so it's
+    % available even if the current commit doesn't have it.
+    tempBenchDir = fullfile(tempdir, ['lvd_bench_', char(regexp(tempname, '(?<=\\)[^\\]+$', 'match'))]);
+    mkdir(tempBenchDir);
+    copyfile(fullfile(pwd, 'tests', 'benchmark', 'benchmarkLvdPerformance.m'), tempBenchDir);
+    fprintf('Persisted benchmark script to %s\n', tempBenchDir);
+
     try
         for i = 1:length(commits)
             commit = commits{i};
             fprintf('\n--- Benchmarking Commit: %s ---\n', commit);
             
-            % Checkout commit (force if necessary, but careful)
-            [status, cmdOut] = system(sprintf('git checkout %s', commit));
+            % Checkout commit (FORCE to handle changes in benchmark scripts)
+            [status, cmdOut] = system(sprintf('git checkout -f %s', commit));
             if status ~= 0
                 fprintf('Failed to checkout %s: %s\n', commit, cmdOut);
-                fprintf('Skipping this commit. Please ensure workspace is clean.\n');
                 continue;
             end
             
@@ -47,14 +53,16 @@ function runHistoricalBenchmark(commits, lvdCases)
                 casePath = lvdCases{j};
                 [~, caseName] = fileparts(casePath);
                 
-                outputFile = fullfile(pwd, resultsDir, sprintf('results_%s_%s.mat', commit, caseName));
+                outputFile = fullfile(pwd(), resultsDir, sprintf('results_%s_%s.mat', commit, caseName));
                 
-                % Construct MATLAB batch command
-                % Use full paths for robustness
-                benchDir = fullfile(pwd, 'tests', 'benchmark');
+                % Use forward slashes for the MATLAB command string to avoid escaping hell on Windows
+                forwardTempDir = strrep(tempBenchDir, '\', '/');
+                forwardCasePath = strrep(casePath, '\', '/');
+                forwardOutputFile = strrep(outputFile, '\', '/');
+                forwardProjectRoot = projectRoot;
                 
-                matlabCmd = sprintf('matlab -batch "addpath(genpath(''%s'')); benchmarkLvdPerformance(''%s'', ''%s'', true); exit;"', ...
-                                    benchDir, casePath, outputFile);
+                matlabCmd = sprintf('matlab -batch "addpath(''%s''); fprintf(''Running from: %%s\\n'', which(''benchmarkLvdPerformance'')); benchmarkLvdPerformance(''%s'', ''%s'', true, ''%s''); exit;"', ...
+                                    forwardTempDir, forwardCasePath, forwardOutputFile, forwardProjectRoot);
                 
                 fprintf('Running benchmark for %s...\n', caseName);
                 tic;
@@ -73,9 +81,14 @@ function runHistoricalBenchmark(commits, lvdCases)
         fprintf('Error during historical benchmark: %s\n', ME.message);
     end
 
-    % Restore original branch
+    % Restore original branch (FORCE)
     fprintf('\nRestoring original branch: %s\n', originalBranch);
-    system(sprintf('git checkout %s', originalBranch));
+    system(sprintf('git checkout -f %s', originalBranch));
+    
+    % Cleanup temp script
+    if exist(tempBenchDir, 'dir')
+        rmdir(tempBenchDir, 's');
+    end
     
     fprintf('\nHistorical benchmark run complete.\n');
 end

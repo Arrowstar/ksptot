@@ -1,9 +1,10 @@
-function benchmarkLvdPerformance(lvdCasePath, outputPath, runProfile)
+function benchmarkLvdPerformance(lvdCasePath, outputPath, runProfile, projectRoot)
     % benchmarkLvdPerformance Runs an LVD case and records performance metrics
     %
     % lvdCasePath: Path to the .mat LVD case file
     % outputPath: Path to save the results (.mat file)
     % runProfile: Boolean, whether to run the MATLAB profiler
+    % projectRoot: (Optional) Path to the KSPTOT project root
 
     if nargin < 3
         runProfile = false;
@@ -11,13 +12,17 @@ function benchmarkLvdPerformance(lvdCasePath, outputPath, runProfile)
 
     % Set up paths
     if ~isdeployed
-        % Get the project root assuming this script is in tests/benchmark
-        scriptPath = mfilename('fullpath');
-        projectRoot = fileparts(fileparts(fileparts(scriptPath)));
+        if nargin < 4 || isempty(projectRoot)
+            % Fallback to deriving from script location
+            scriptPath = mfilename('fullpath');
+            projectRoot = fileparts(fileparts(fileparts(scriptPath)));
+        end
         
+        fprintf('Setting up paths for project root: %s\n', projectRoot);
         origDir = pwd();
         cd(projectRoot);
         
+        % Add required directories to path
         addpath(genpath('helper_methods'));
         addpath(genpath('formsGUIs'));
         addpath(genpath('kspTOT_RTS'));
@@ -52,6 +57,7 @@ function benchmarkLvdPerformance(lvdCasePath, outputPath, runProfile)
     lvdData.script.executeScript(false, lvdData.script.getEventForInd(1), true, false, false, false);
 
     % Main execution tracking
+    % User updated this to 15
     numRuns = 15;
     runTimes = zeros(numRuns, 1);
     
@@ -66,15 +72,11 @@ function benchmarkLvdPerformance(lvdCasePath, outputPath, runProfile)
         runTimes(i) = toc(tRun);
     end
     
-    totalExecutionTime = sum(runTimes);
-    avgExecutionTime = mean(runTimes);
-    stdExecutionTime = std(runTimes);
-    
     results = struct();
     results.casePath = lvdCasePath;
     results.runTimes = runTimes;
-    results.avgExecutionTime = avgExecutionTime;
-    results.stdExecutionTime = stdExecutionTime;
+    results.avgExecutionTime = mean(runTimes);
+    results.stdExecutionTime = std(runTimes);
     results.timestamp = datetime('now');
     
     if runProfile
