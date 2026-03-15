@@ -39,12 +39,13 @@ classdef UniversalElementSet < AbstractElementSet
         %vectorized
         function kepElemSet = convertToKeplerianElementSet(obj)
 %             gmu = obj.frame.getOriginBody().gm;
-            gmu = NaN(length(obj), 1);
+            gmu = NaN(1, length(obj));
             for(i=1:length(obj))
                 gmu(i) = obj(i).frame.getOriginBody().gm;
             end
             
             sma = -gmu./[obj.c3];
+            sma([obj.c3] == 0) = 1E12; %Handle parabolic with large finite SMA
             ecc = abs(1 - [obj.rP]./sma);
             
             n = computeMeanMotion(sma, gmu);

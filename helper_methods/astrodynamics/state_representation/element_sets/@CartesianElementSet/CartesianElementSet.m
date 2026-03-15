@@ -71,12 +71,11 @@ classdef CartesianElementSet < AbstractElementSet
         %vectorized
         function kepElemSet = convertToKeplerianElementSet(obj)
 %             gmu = obj.frame.getOriginBody().gm;
-            gmu = NaN(length(obj), 1);
+            gmu = NaN(1, length(obj));
             for(i=1:length(obj))
                 gmu(i) = obj(i).frame.getOriginBody().gm;
             end
-            [sma, ecc, inc, raan, arg, tru] = getKeplerFromState([obj.rVect], [obj.vVect], gmu);
-%             [sma, ecc, inc, raan, arg, tru] = vect_getKeplerFromState([obj.rVect], [obj.vVect], gmu);
+            [sma, ecc, inc, raan, arg, tru] = vect_getKeplerFromState([obj.rVect], [obj.vVect], gmu);
             
 %             kepElemSet = repmat(KeplerianElementSet.getDefaultElements(), size(obj));
             for(i=1:length(obj))

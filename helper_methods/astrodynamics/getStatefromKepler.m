@@ -26,13 +26,6 @@ end
 
 [rVect, vVect] = getStatefromKepler_Alg(sma, ecc, inc, raan, arg, tru, gmu);
 
-% specialCase = false;
-% if((ecc >= 1E-10 && (inc < 1E-10 || abs(inc-pi) < 1E-10)) || ...
-%    (ecc < 1E-10 && inc >= 1E-10 && abs(inc-pi) >= 1E-10)  || ...        
-%    (ecc < 1E-10 && (inc < 1E-10 || abs(inc-pi) < 1E-10)))
-%     specialCase = true;
-% end
-
 tol = 1E-6;
 if(consistencyCheck)
     [sma2, ecc2, inc2, raan2, arg2, tru2] = getKeplerFromState_Alg(rVect,vVect,gmu);

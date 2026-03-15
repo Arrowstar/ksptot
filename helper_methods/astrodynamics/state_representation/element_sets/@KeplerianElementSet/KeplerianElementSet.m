@@ -33,7 +33,7 @@ classdef KeplerianElementSet < AbstractElementSet
         
         %vectorized
         function cartElemSet = convertToCartesianElementSet(obj)
-            gmu = NaN(length(obj), 1);
+            gmu = NaN(1, length(obj));
             for(i=1:length(obj))
                 gmu(i) = obj(i).frame.getOriginBody().gm;
             end
@@ -56,7 +56,7 @@ classdef KeplerianElementSet < AbstractElementSet
         
         %vectorized
         function univElemSet = convertToUniversalElementSet(obj)
-            gmu = NaN(length(obj), 1);
+            gmu = NaN(1, length(obj));
             for(i=1:length(obj))
                 gmu(i) = obj(i).frame.getOriginBody().gm;
             end

@@ -4,9 +4,9 @@ function [rVect, vVect] = vect_getStatefromKepler_Alg(sma, ecc, inc, raan, arg, 
     numOrb = length(tru);
 
     %%%%%%%%%%
-    % Special Case: Circular Equitorial
+    % Special Case: Circular Equatorial (Prograde Only)
     %%%%%%%%%%
-    bool = ecc < 1E-10 & (inc < 1E-10 | abs(inc-pi) < 1E-10);
+    bool = ecc < 1E-10 & (inc < 1E-10);
     if(any(bool))
         l = zeros(size(bool));
         l(bool) = raan(bool) + arg(bool) + tru(bool);
@@ -27,10 +27,11 @@ function [rVect, vVect] = vect_getStatefromKepler_Alg(sma, ecc, inc, raan, arg, 
     end
 
     %%%%%%%%%%
-    % Special Case: Elliptical Equitorial
+    % Special Case: Elliptical Equatorial (Prograde Only)
     %%%%%%%%%%
-    bool = ecc >= 1E-10 & (inc < 1E-10 | abs(inc-pi) < 1E-10);
+    bool = ecc >= 1E-10 & (inc < 1E-10);
     if(any(bool))
+        arg(bool) = raan(bool) + arg(bool); % Transfer the rotation to arg
         raan(bool) = 0;
     end
 
@@ -56,9 +57,6 @@ function [rVect, vVect] = vect_getStatefromKepler_Alg(sma, ecc, inc, raan, arg, 
 %     TransMatrix = reshape(TransMatrix,3,3,numOrb);
     rPQW = reshape(rPQW, 3,1,numOrb);
     vPQW = reshape(vPQW, 3,1,numOrb);
-
-%     rVect = mtimesx(TransMatrix, rPQW);
-%     vVect = mtimesx(TransMatrix, vPQW);
 
     rVect = pagemtimes(TransMatrix, rPQW);
     vVect = pagemtimes(TransMatrix, vPQW);

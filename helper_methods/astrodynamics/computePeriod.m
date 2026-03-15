@@ -4,7 +4,7 @@ function [period] = computePeriod(sma, gmu)
     if(sma > 0)
         period = 2*pi* sqrt(sma.^3./gmu);
     else
-        error('Orbit sma must be greater than zero to compute period.');
+        error('MATLAB:computePeriod:smaMustBePositive', 'Orbit sma must be greater than zero to compute period.');
     end
 end
 

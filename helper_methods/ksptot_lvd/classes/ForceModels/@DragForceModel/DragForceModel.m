@@ -10,8 +10,7 @@ classdef DragForceModel < AbstractForceModel
         function obj = DragForceModel()
 
         end
-        
-        function [forceVect,tankMdots, ecStgDots] = getForce(obj, ut, rVect, vVect, mass, bodyInfo, aero, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, attState, ~, altitude, pressure, density)
+        function [forceVect,tankMdots, ecStgDots] = getForce(obj, ut, rVect, vVect, mass, bodyInfo, aero, throttleModel, steeringModel, tankStates, stageStates, lvState, dryMass, tankStatesMasses, grav3Body, storageSoCs, powerStorageStates, attState, srp, altitude, pressure, density)
             if(nargin < 20)
                 altitude = norm(rVect) - bodyInfo.radius;
             end

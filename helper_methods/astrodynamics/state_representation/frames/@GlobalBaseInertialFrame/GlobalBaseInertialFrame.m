@@ -11,8 +11,10 @@ classdef GlobalBaseInertialFrame < AbstractReferenceFrame
     end
     
     methods
-        function obj = BodyCenteredInertialFrame(celBodyData)
-            obj.celBodyData = celBodyData;
+        function obj = GlobalBaseInertialFrame(celBodyData)
+            if(nargin > 0)
+                obj.celBodyData = celBodyData;
+            end
         end
         
         function [posOffsetOrigin, velOffsetOrigin, angVelWrtOrigin, rotMatToInertial] = getOffsetsWrtInertialOrigin(obj, time, ~, ~)            
