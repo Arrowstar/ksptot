@@ -54,3 +54,4 @@ package.json
 package-lock.json
 .claudeignore
 plans/profiling-investigation.md
+/tests/benchmark/results
