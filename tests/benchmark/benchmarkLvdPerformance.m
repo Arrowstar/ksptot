@@ -52,7 +52,7 @@ function benchmarkLvdPerformance(lvdCasePath, outputPath, runProfile)
     lvdData.script.executeScript(false, lvdData.script.getEventForInd(1), true, false, false, false);
 
     % Main execution tracking
-    numRuns = 5;
+    numRuns = 15;
     runTimes = zeros(numRuns, 1);
     
     if runProfile
