@@ -1,4 +1,4 @@
-function benchmarkLvdPerformance(lvdCasePath, outputPath, runProfile, projectRoot)
+function results = benchmarkLvdPerformance(lvdCasePath, outputPath, runProfile, projectRoot)
     % benchmarkLvdPerformance Runs an LVD case and records performance metrics
     %
     % lvdCasePath: Path to the .mat LVD case file
