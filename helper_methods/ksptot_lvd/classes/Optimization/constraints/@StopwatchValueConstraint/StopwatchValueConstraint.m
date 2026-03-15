@@ -46,7 +46,7 @@ classdef StopwatchValueConstraint < AbstractConstraint
             end
             
             stopWatchStates = stateLogEntry.getAllStopwatchStates();
-            stopWatchState = stopWatchStates(stopWatchStates.stopwatch == obj.stopwatch);
+            stopWatchState = stopWatchStates([stopWatchStates.stopwatch] == obj.stopwatch);
             
             value = stopWatchState.value;
                        

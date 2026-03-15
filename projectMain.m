@@ -49,6 +49,10 @@ warning('off','MATLAB:appdesigner:appdesigner:SaveObjWarning');
 %Turn off warning for "tcpip" class going to be removed.
 warning('off','instrument:tcpip:ClassToBeRemoved');
 
+%Turn off warning for KSPTOT_BodyInfo getParBodyInfo field missing (it
+%shows up later)
+warning("off",'MATLAB:nonExistentField');
+
 %Populate initial ksptot log file
 writeKsptotLogFileHeaderToConsole();
 

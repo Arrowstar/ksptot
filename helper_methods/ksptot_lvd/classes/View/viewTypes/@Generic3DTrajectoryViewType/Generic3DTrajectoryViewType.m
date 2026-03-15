@@ -653,10 +653,6 @@ function updateSkyboxPos(src,evt, hAx, lvdData)
 
     if(viewProfile.useSkybox)
         if(isempty(viewProfile.skyboxOrigin) || isempty(viewProfile.skyboxRadius) || isempty(viewProfile.skyBoxSurfHandle) || ~isvalid(viewProfile.skyBoxSurfHandle) || norm(cameraPos - viewProfile.skyboxOrigin) > 0.5*viewProfile.skyboxRadius) %only update skybox sphere if we get too close to the edge
-            if(not(isempty(viewProfile.skyBoxSurfHandle)) && isvalid(viewProfile.skyBoxSurfHandle))
-                viewProfile.skyBoxSurfHandle.Visible = 'off'; %This makes sure that the axes bounds are set without including the skybox.  Just turn the skybox back on later. 
-            end
-        
             xBndMaxDistToCamPos = max(abs(cameraPos(1) - xlim(hAx)));
             yBndMaxDistToCamPos = max(abs(cameraPos(2) - ylim(hAx)));
             zBndMaxDistToCamPos = max(abs(cameraPos(3) - zlim(hAx)));
@@ -680,11 +676,13 @@ function updateSkyboxPos(src,evt, hAx, lvdData)
         
                 hold(hAx,'on');
                 viewProfile.skyBoxSurfHandle = surf(hAx, skyboxSize*X+cameraPos(1),skyboxSize*Y+cameraPos(2),skyboxSize*Z+cameraPos(3), "EdgeColor","none", "FaceColor","texturemap", 'CData',I, 'FaceLighting','none');
+                viewProfile.skyBoxSurfHandle.XLimInclude = 'off';
+                viewProfile.skyBoxSurfHandle.YLimInclude = 'off';
+                viewProfile.skyBoxSurfHandle.ZLimInclude = 'off';
             else
                 viewProfile.skyBoxSurfHandle.XData = skyboxSize*X+cameraPos(1);
                 viewProfile.skyBoxSurfHandle.YData = skyboxSize*Y+cameraPos(2);
                 viewProfile.skyBoxSurfHandle.ZData = skyboxSize*Z+cameraPos(3);
-                viewProfile.skyBoxSurfHandle.Visible = 'on';
             end
     
             camtarget(hAx, cameraTgt);

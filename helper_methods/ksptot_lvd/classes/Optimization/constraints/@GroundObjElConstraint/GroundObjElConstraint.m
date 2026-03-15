@@ -32,7 +32,7 @@ classdef GroundObjElConstraint < AbstractGroundObjectConstraint
             ub = obj.ub;
         end
         
-        function [c, ceq, value, lwrBnd, uprBnd, type, eventNum, stateLogEntryStateComp] = evalConstraint(obj, stateLog, celBodyData)           
+        function [c, ceq, value, lwrBnd, uprBnd, type, eventNum, valueStateComp] = evalConstraint(obj, stateLog, celBodyData)           
             type = obj.getConstraintType();
             
             switch obj.eventNode

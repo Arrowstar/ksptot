@@ -63,7 +63,7 @@ classdef ExtremumValueConstraint < AbstractConstraint
                 end
                 
                 extremaStates = stateLogEntryStateComp.getAllExtremaStates();
-                extremaState = extremaStates(extremaStates.extrema == obj.extremum);
+                extremaState = extremaStates([extremaStates.extrema] == obj.extremum);
 
                 valueStateComp = extremaState.value;
             else
