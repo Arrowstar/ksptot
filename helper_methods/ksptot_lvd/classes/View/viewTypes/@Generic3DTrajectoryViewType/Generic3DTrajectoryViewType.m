@@ -667,7 +667,6 @@ function updateSkyboxPos(src,evt, hAx, lvdData)
                 if(isempty(viewProfile.skyBoxImageI))
                     I = imread(viewProfile.skyBoxImgFileName);
                     I = flipud(I);
-                    % I = imresize(I, 1, "bilinear","Antialiasing",true);
 
                     viewProfile.skyBoxImageI = I;
                 else
@@ -675,21 +674,27 @@ function updateSkyboxPos(src,evt, hAx, lvdData)
                 end
         
                 hold(hAx,'on');
-                viewProfile.skyBoxSurfHandle = surf(hAx, skyboxSize*X+cameraPos(1),skyboxSize*Y+cameraPos(2),skyboxSize*Z+cameraPos(3), "EdgeColor","none", "FaceColor","texturemap", 'CData',I, 'FaceLighting','none');
+                viewProfile.skyBoxTransformHandle = hgtransform('Parent', hAx);
+                viewProfile.skyBoxSurfHandle = surf(hAx, skyboxSize*X, skyboxSize*Y, skyboxSize*Z, "EdgeColor","none", "FaceColor","texturemap", 'CData',I, 'FaceLighting','none', 'Parent', viewProfile.skyBoxTransformHandle);
                 viewProfile.skyBoxSurfHandle.XLimInclude = 'off';
                 viewProfile.skyBoxSurfHandle.YLimInclude = 'off';
                 viewProfile.skyBoxSurfHandle.ZLimInclude = 'off';
+                
+                viewProfile.skyBoxTransformHandle.Matrix = makehgtform('translate', cameraPos);
             else
-                viewProfile.skyBoxSurfHandle.XData = skyboxSize*X+cameraPos(1);
-                viewProfile.skyBoxSurfHandle.YData = skyboxSize*Y+cameraPos(2);
-                viewProfile.skyBoxSurfHandle.ZData = skyboxSize*Z+cameraPos(3);
+                viewProfile.skyBoxSurfHandle.XData = skyboxSize*X;
+                viewProfile.skyBoxSurfHandle.YData = skyboxSize*Y;
+                viewProfile.skyBoxSurfHandle.ZData = skyboxSize*Z;
+                
+                viewProfile.skyBoxTransformHandle.Matrix = makehgtform('translate', cameraPos);
             end
-    
-            camtarget(hAx, cameraTgt);
-            camva(hAx, cameraVa);
-            campos(hAx, cameraPos);
+        else
+            if(~isempty(viewProfile.skyBoxTransformHandle) && isvalid(viewProfile.skyBoxTransformHandle))
+                viewProfile.skyBoxTransformHandle.Matrix = makehgtform('translate', cameraPos);
+            end
         end
     else
         delete(viewProfile.skyBoxSurfHandle);
+        delete(viewProfile.skyBoxTransformHandle);
     end
 end

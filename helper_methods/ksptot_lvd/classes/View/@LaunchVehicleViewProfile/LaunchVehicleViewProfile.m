@@ -164,6 +164,7 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         %Skybox stuff
         skyBoxImageI
         skyBoxSurfHandle
+        skyBoxTransformHandle
         skyboxOrigin 
         skyboxRadius
     end
