@@ -85,106 +85,85 @@ classdef ConstraintSet < matlab.mixin.SetGet
         end
         
         function [c, ceq, value, lb, ub, type, eventNum, cEventInds, ceqEventInds, typeNumConstrArr, constraints, cCInds, cCeqInds, valueStateComps] = evalConstraints(obj, x, tfRunScript, evtToStartScriptExecAt, allowInterrupt, stateLogToEval)
-            c = [];
-            ceq = [];
-            value = [];
-            lb = [];
-            ub = [];
-            type = {};
-            eventNum = [];
-            cEventInds = [];
-            ceqEventInds = [];
-            typeNumConstrArr = {};
-            constraints = AbstractConstraint.empty(1,0);
-            cCInds = [];
-            cCeqInds = [];
-            valueStateComps = [];
+            persistent stateLogCache;
+            if(isempty(stateLogCache))
+                stateLogCache.x = [];
+                stateLogCache.stateLog = [];
+            end
+            
+            c = []; ceq = []; value = []; lb = []; ub = []; type = {};
+            eventNum = []; cEventInds = []; ceqEventInds = [];
+            typeNumConstrArr = {}; constraints = AbstractConstraint.empty(1,0);
+            cCInds = []; cCeqInds = []; valueStateComps = [];
             
             celBodyData = obj.lvdData.celBodyData;
             
-            if(~isempty(obj.consts))
-                if(tfRunScript == true)                   
-                    obj.lvdOptim.vars.updateObjsWithScaledVarValues(x);
-                    useSparse = obj.canUseSparseOutput();
-                    
-                    try
-                        stateLog = obj.lvdData.script.executeScript(useSparse, evtToStartScriptExecAt, false, allowInterrupt, false, false);
-                    catch ME
-                        c = NaN;
-                        ceq = NaN;
-
-                        return;
-                    end
-
-                elseif(not(isempty(stateLogToEval)) && isa(stateLogToEval, 'LaunchVehicleStateLog'))
-                    stateLog = stateLogToEval;
-                else
-                    stateLog = obj.lvdData.stateLog;
-                end
-
-                entries = stateLog.entries;
-                eventsWithStates = unique([entries.event]);
-
-                constCnt = 1;
-                for(i=1:length(obj.consts)) %#ok<*NO4LP>
-                    constraint = obj.consts(i);
-                    
-                    if(obj.isEventOptimDisabled(constraint) || constraint.active == false)
-                        continue;
-                    end
-
-                    event = constraint.getConstraintEvent();
-                    if(ismember(event, eventsWithStates))   
-                        [c1, ceq1, value1, lb1, ub1, type1, eventNum1, valueStateComp1] = constraint.evalConstraint(stateLog, celBodyData);
-                    else
-                        bool = obj.lastRunValues.consts == constraint;
-                        constInd = find(bool);
-
-                        cBool = obj.lastRunValues.cCInds == constInd;
-                        cEqBool = obj.lastRunValues.cCeqInds == constInd;
-
-                        c1 = NaN(size(obj.lastRunValues.c(cBool)));
-                        ceq1 = NaN(size(obj.lastRunValues.ceq(cEqBool)));
-                        value1 = obj.lastRunValues.value(bool);
-                        lb1 = obj.lastRunValues.lb(bool);
-                        ub1 = obj.lastRunValues.ub(bool);
-                        type1 = obj.lastRunValues.type{bool};
-                        eventNum1 = obj.lastRunValues.eventNum(bool);
-                        valueStateComp1 = obj.lastRunValues.valueStateComps(bool);
-                    end
-
-                    c1 = c1(:)';
-                    ceq1 = ceq1(:)';
-                    value1 = value1(:)';
-                    lb1 = lb1(:)';
-                    ub1 = ub1(:)';
-                    
-                        
-                    for(j=1:length(c1))
-                        cEventInds(end+1) = eventNum1; %#ok<AGROW>
-                        cCInds(end+1) = constCnt; %#ok<AGROW>
-                    end
-                    
-                    for(j=1:length(ceq1))
-                        ceqEventInds(end+1) = eventNum1; %#ok<AGROW>
-                        cCeqInds(end+1) = constCnt; %#ok<AGROW>
-                    end
-                    
-                    c   = [c, c1]; %#ok<AGROW>
-                    ceq = [ceq, ceq1]; %#ok<AGROW>
-                    value = [value, value1]; %#ok<AGROW>
-                    lb = [lb, lb1]; %#ok<AGROW>
-                    ub = [ub, ub1]; %#ok<AGROW>
-                    type = horzcat(type, type1); %#ok<AGROW>
-                    typeNumConstrArr = horzcat(typeNumConstrArr, repmat({type1}, 1, numel(c1)+numel(ceq1))); %#ok<AGROW>
-                    eventNum = [eventNum, eventNum1]; %#ok<AGROW>
-                    constraints = [constraints, constraint]; %#ok<AGROW>
-                    valueStateComps = [valueStateComps, valueStateComp1]; %#ok<AGROW>
-                    
-                    constCnt = constCnt+1;
-                end
+            if(isempty(obj.consts))
+                return;
             end
 
+            if(tfRunScript)
+                if(~isempty(stateLogCache.x) && all(x == stateLogCache.x))
+                    stateLog = stateLogCache.stateLog;
+                else
+                    obj.lvdOptim.vars.updateObjsWithScaledVarValues(x);
+                    useSparse = obj.canUseSparseOutput();
+                    try
+                        stateLog = obj.lvdData.script.executeScript(useSparse, evtToStartScriptExecAt, false, allowInterrupt, false, false);
+                        stateLogCache.x = x;
+                        stateLogCache.stateLog = stateLog;
+                    catch ME
+                        c = NaN; ceq = NaN; return;
+                    end
+                end
+            elseif(~isempty(stateLogToEval) && isa(stateLogToEval, 'LaunchVehicleStateLog'))
+                stateLog = stateLogToEval;
+            else
+                stateLog = obj.lvdData.stateLog;
+            end
+
+            entries = stateLog.entries;
+            if(isempty(entries))
+                c = NaN(1, length(obj.lastRunValues.c));
+                ceq = NaN(1, length(obj.lastRunValues.ceq));
+                return;
+            end
+            eventsWithStates = unique([entries.event]);
+
+            constCnt = 1;
+            for i = 1:length(obj.consts)
+                constraint = obj.consts(i);
+                
+                if(~constraint.active || obj.isEventOptimDisabled(constraint))
+                    continue;
+                end
+
+                event = constraint.getConstraintEvent();
+                if(ismember(event, eventsWithStates))
+                    [c1, ceq1, value1, lb1, ub1, type1, eventNum1, valueStateComp1] = constraint.evalConstraint(stateLog, celBodyData);
+                else
+                    % If the event did not run, use NaN values to indicate this
+                    c1 = NaN; ceq1 = NaN; value1 = NaN; lb1 = constraint.lb; ub1 = constraint.ub;
+                    type1 = constraint.getConstraintType(); eventNum1 = event.getEventNum(); valueStateComp1 = NaN;
+                end
+
+                c1 = c1(:)'; ceq1 = ceq1(:)'; value1 = value1(:)'; lb1 = lb1(:)'; ub1 = ub1(:)';
+                
+                cEventInds = [cEventInds, repmat(eventNum1, 1, length(c1))];
+                cCInds = [cCInds, repmat(constCnt, 1, length(c1))];
+                ceqEventInds = [ceqEventInds, repmat(eventNum1, 1, length(ceq1))];
+                cCeqInds = [cCeqInds, repmat(constCnt, 1, length(ceq1))];
+                
+                c = [c, c1]; ceq = [ceq, ceq1]; value = [value, value1]; lb = [lb, lb1]; ub = [ub, ub1];
+                type = [type, type1];
+                typeNumConstrArr = [typeNumConstrArr, repmat({type1}, 1, numel(c1)+numel(ceq1))];
+                eventNum = [eventNum, eventNum1];
+                constraints = [constraints, constraint];
+                valueStateComps = [valueStateComps, valueStateComp1];
+                
+                constCnt = constCnt + 1;
+            end
+            
             obj.lastRunValues.updateValues(c, ceq, value, lb, ub, type, eventNum, cEventInds, ceqEventInds, constraints, cCInds, cCeqInds, valueStateComps);
         end
 

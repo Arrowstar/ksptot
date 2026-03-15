@@ -135,7 +135,10 @@ classdef ForceModelPropagator < AbstractPropagator
                 pressure = getPressureAtAltitude(bodyInfo, altitude);
                 throttle = throttleModel.getThrottleAtTime(ut, rVect, vVect, tankStatesMasses, dryMass, stageStates, lvState, tankStates, bodyInfo, storageSoCs, powerStorageStates);
 
-                attState = LaunchVehicleAttitudeState();
+                persistent attState;
+                if(isempty(attState))
+                    attState = LaunchVehicleAttitudeState();
+                end
                 attState.dcm = steeringModel.getBody2InertialDcmAtTime(ut, rVect, vVect, bodyInfo);
 
                 [tankMassDotsEngines,~,~,ecStgDots] = eventInitStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, tankStatesMasses, stageStates, throttle, lvState, pressure, ut, rVect, vVect, bodyInfo, steeringModel, storageSoCs, powerStorageStates, attState);
@@ -163,10 +166,18 @@ classdef ForceModelPropagator < AbstractPropagator
                 thirdBodyGravity = eventInitStateLogEntry.thirdBodyGravity;
                 srp = eventInitStateLogEntry.srp;
 
+                if(altitude <= bodyInfo.atmohgt && altitude >= 0)
+                    [lat, long, ~, ~, ~, ~, ~, vVectECEF] = getLatLongAltFromInertialVect(ut, rVect, bodyInfo, vVect);
+                    [density, pressure, ~] = getAtmoDensityAtAltitude(bodyInfo, altitude, lat, ut, long); 
+                else
+                    pressure = 0;
+                    density = 0;
+                end
+
                 totalMass = dryMass + sum(tankStatesMasses);
 
                 if(totalMass > 0)
-                    [forceSum, tankMassDotsForceModels, ecStgDots] = TotalForceModel.getForce(fmEnums, ut, rVect, vVect, totalMass, bodyInfo, aero, throttleModel, steeringModel, tankStates, stageStates, lvState, dryMass, tankStatesMasses, thirdBodyGravity, storageSoCs, powerStorageStates, srp);
+                    [forceSum, tankMassDotsForceModels, ecStgDots] = TotalForceModel.getForce(fmEnums, ut, rVect, vVect, totalMass, bodyInfo, aero, throttleModel, steeringModel, tankStates, stageStates, lvState, dryMass, tankStatesMasses, thirdBodyGravity, storageSoCs, powerStorageStates, srp, altitude, pressure, density);
                     accelVect = forceSum/totalMass; %F = dp/dt = d(mv)/dt = m*dv/dt + v*dm/dt, but since the thrust force causes us to shed mass, we actually account for the v*dm/dt term there and therefore don't need it!  See: https://en.wikipedia.org/wiki/Variable-mass_system         
 
                     tankMassDots = tankMassDotsForceModels(:) + tankMassDotsT2TConns(:);

@@ -8,10 +8,19 @@ function [value, isterminal, direction, causes] = getSoITransitionOdeEvents(ut, 
             createCausesArr(1,1) logical = true
         end
 
-        persistent soiDownCauseEmpty emptyCauses
+        persistent soiDownCauseEmpty emptyCauses cache;
 
         if(isempty(soiDownCauseEmpty))
             soiDownCauseEmpty = SoITransitionDownIntTermCause();
+            cache.keplerUt = NaN;
+            cache.keplerRVect = [NaN;NaN;NaN];
+            cache.keplerVVect = [NaN;NaN;NaN];
+            cache.rApSC = NaN;
+            cache.rPeSC = NaN;
+            cache.children = KSPTOT_BodyInfo.empty(0,1);
+            cache.rSOIs = [];
+            cache.rApCBs = [];
+            cache.rPeCBs = [];
         end
 
         if(isnumeric(emptyCauses) && isempty(emptyCauses))
@@ -21,7 +30,7 @@ function [value, isterminal, direction, causes] = getSoITransitionOdeEvents(ut, 
         value = [];
         isterminal = [];
         direction = [];
-            
+
         %Max Radius (SoI Radius) Constraint (Leave SOI Upwards)
         parentBodyInfo = bodyInfo.getParBodyInfo(celBodyData);
         rSOI = bodyInfo.getCachedSoIRadius();
@@ -39,14 +48,22 @@ function [value, isterminal, direction, causes] = getSoITransitionOdeEvents(ut, 
         end
 
         %Leave SoI Downwards
-%         [sma, ecc, ~, ~, ~, ~] = getKeplerFromState(rVect, vVect, bodyInfo.gm, false);
-        [sma, ecc, ~, ~, ~, ~] = getKeplerFromState_Alg(rVect, vVect, bodyInfo.gm);
-        [rApSC, rPeSC] = computeApogeePerigee(sma, ecc);
-        
-        if(ecc >= 1)
-            rApSC = Inf;
+        if(ut == cache.keplerUt && all(rVect == cache.keplerRVect) && all(vVect == cache.keplerVVect))
+            rApSC = cache.rApSC;
+            rPeSC = cache.rPeSC;
+        else
+            [sma, ecc, ~, ~, ~, ~] = getKeplerFromState_Alg(rVect, vVect, bodyInfo.gm);
+            [rApSC, rPeSC] = computeApogeePerigee(sma, ecc);
+            if(ecc >= 1)
+                rApSC = Inf;
+            end
+            cache.keplerUt = ut;
+            cache.keplerRVect = rVect;
+            cache.keplerVVect = vVect;
+            cache.rApSC = rApSC;
+            cache.rPeSC = rPeSC;
         end
-        
+
         bodyChainSc = bodyInfo.getOrbitElemsChain();
 
         children = bodyInfo.getChildrenBodyInfo(celBodyData);
@@ -55,8 +72,19 @@ function [value, isterminal, direction, causes] = getSoITransitionOdeEvents(ut, 
                 soiDownCauses = repmat(soiDownCauseEmpty, [1,length(children)]);
             end
 
-            rSOIs = getCachedSoIRadius(children);
-            [rApCBs, rPeCBs] = computeApogeePerigee([children.sma], [children.ecc]);
+            if(isequal(children, cache.children))
+                rSOIs = cache.rSOIs;
+                rApCBs = cache.rApCBs;
+                rPeCBs = cache.rPeCBs;
+            else
+                rSOIs = getCachedSoIRadius(children);
+                [rApCBs, rPeCBs] = computeApogeePerigee([children.sma], [children.ecc]);
+                cache.children = children;
+                cache.rSOIs = rSOIs;
+                cache.rApCBs = rApCBs;
+                cache.rPeCBs = rPeCBs;
+            end
+
             downValue = NaN(1,length(children));
             downDirection = NaN(1,length(children));
             downIsterminal = NaN(1,length(children));
@@ -65,11 +93,11 @@ function [value, isterminal, direction, causes] = getSoITransitionOdeEvents(ut, 
                 rSOI = rSOIs(i);
                 rApCB = rApCBs(i);
                 rPeCB = rPeCBs(i);
-                
+
                 if((rApSC < (rPeCB - rSOI)) || ...
                     rPeSC > (rApCB + rSOI))
                     val = realmax;
-                    
+
                 else
                     % dVect = getAbsPositBetweenSpacecraftAndBody(ut, rVect, bodyInfo, childBodyInfo, celBodyData);
                     dVect = getAbsPositBetweenSpacecraftAndBody_fast_mex(ut, rVect, bodyChainSc, childBodyInfo.getOrbitElemsChain(), vVect);

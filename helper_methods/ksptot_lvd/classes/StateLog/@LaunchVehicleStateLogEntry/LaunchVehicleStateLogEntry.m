@@ -437,6 +437,37 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             end
         end
 
+        function cpObj = lightCopy(obj)
+            cpObj = LaunchVehicleStateLogEntry();
+            
+            cpObj.time = obj.time;
+            cpObj.position = obj.position;
+            cpObj.velocity = obj.velocity;
+            cpObj.centralBody = obj.centralBody;
+            cpObj.lvState = obj.lvState; %Share
+            cpObj.event = obj.event; %Share
+            
+            %Must deep copy stage states because tank masses/charge change
+            for(i=1:length(obj.stageStates))
+                cpObj.stageStates(i) = obj.stageStates(i).deepCopy(false);
+            end
+            
+            cpObj.aero = obj.aero; %Share
+            cpObj.thirdBodyGravity = obj.thirdBodyGravity; %Share
+            cpObj.srp = obj.srp; %Share
+            
+            cpObj.stopwatchStates = obj.stopwatchStates.copy(); %Mutable
+            cpObj.extremaStates = obj.extremaStates.copy(); %Mutable
+            cpObj.calcObjStates = obj.calcObjStates; %Share
+            
+            cpObj.steeringModel = obj.steeringModel; %Share
+            cpObj.throttleModel = obj.throttleModel; %Share
+            
+            cpObj.sensorStates = obj.sensorStates; %Share
+            cpObj.pluginVarStates = obj.pluginVarStates; %Share
+            cpObj.integrationGroup = obj.integrationGroup; %Share
+        end
+
         function pluginVarState = getPluginVarStateForPluginVar(obj, pluginVar)
             arguments
                 obj(1,1) LaunchVehicleStateLogEntry
@@ -468,17 +499,11 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
     methods(Static)
         function stateLogEntries = createStateLogEntryFromIntegratorOutputRow(t,y, eventInitStateLogEntry)
             y = reshape(y,length(t), numel(y)/length(t));
+            numT = length(t);
             
-            stateLogEntries = repmat(eventInitStateLogEntry,1,length(t));
-            
-            if(length(t) > 1)
-                for(i=1:length(stateLogEntries)-1)
-                    stateLogEntries(i) = stateLogEntries(i).copyElement(false);
-                end
-                
-                stateLogEntries(end) = stateLogEntries(end).copyElement(true);
-            else
-                stateLogEntries = stateLogEntries.copy();
+            stateLogEntries = LaunchVehicleStateLogEntry.empty(0, numT);
+            for(i=1:numT)
+                stateLogEntries(i) = eventInitStateLogEntry.lightCopy();
             end
             
             stopwatchStates = eventInitStateLogEntry.stopwatchStates;
@@ -494,7 +519,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             numTankStates = eventInitStateLogEntry.getNumActiveTankStates();
             numPwrStorageStates = eventInitStateLogEntry.getNumActivePwrStorageStates();
             
-            for(i=1:length(t))
+            for(i=1:numT)
                 stateLogEntry = stateLogEntries(i);
                 
                 [ut, rVect, vVect, tankStates, pwrStorageStates] = AbstractPropagator.decomposeIntegratorTandY(t(i),y(i,:), numTankStates, numPwrStorageStates);
@@ -521,14 +546,11 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                     
                     newValue(j) = stateLogEntry.extremaStates(j).updateExtremaStateWithStateLogEntry(stateLogEntry, newValue(j)); %#ok<AGROW>
                 end
-                
-                stateLogEntries(i) = stateLogEntry;
             end
             
             calcObjStates = stateLogEntries(1).calcObjStates;
             for(i=1:length(calcObjStates))
                 calcObjStates(i).createDataFromStates(stateLogEntries);
-                
                 
                 if(calcObjStates(i).calcObj.type == CalculusCalculationEnum.Integral)
                     calcObjStates(i).constant = eventInitStateLogEntry.calcObjStates(i).getValueAtTime(eventInitStateLogEntry.time);

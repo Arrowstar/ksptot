@@ -53,3 +53,4 @@ gitlog-to-changelog
 package.json
 package-lock.json
 .claudeignore
+plans/profiling-investigation.md

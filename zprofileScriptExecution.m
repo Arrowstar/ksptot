@@ -12,8 +12,7 @@ addpath(genpath('images'));
 addpath(genpath('kos_scripts'));
 
 %%
-load('C:\Users\Adam\Desktop\SLS.mat')
-% load('lvdExample_TwoStageToOrbit.mat');
+load('examples\LaunchVehicleDesigner\lvdExample_L2HaloOrbit.mat');
 
 %%
 for(i=1:length(lvdData.script.evts))
@@ -22,10 +21,12 @@ for(i=1:length(lvdData.script.evts))
 end
 
 %%
-tic; 
-profile off; profile on;
+% tic; 
+% profile off; profile on;
 for(i=1:15) %#ok<*NO4LP> 
+    tic;
 stateLog = lvdData.script.executeScript(false, lvdData.script.evts(1), true, false, false, false); 
-end
-profile viewer;
 toc;
+end
+% profile viewer;
+% toc;

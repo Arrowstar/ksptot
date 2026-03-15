@@ -13,6 +13,11 @@ classdef RollPitchYawPolySteeringModel < AbstractAnglePolySteeringModel
 
         dcmCacheTime(1,1) double = NaN;
         dcmCache(3,3) double = NaN(3,3);
+
+        lastUt(1,1) double = NaN;
+        lastRoll(1,1) double = NaN;
+        lastPitch(1,1) double = NaN;
+        lastYaw(1,1) double = NaN;
     end
     
     methods       
@@ -20,9 +25,20 @@ classdef RollPitchYawPolySteeringModel < AbstractAnglePolySteeringModel
             if(numel(ut) == 1 && ut == obj.dcmCacheTime)
                 dcm = obj.dcmCache;
             else
-                rollAng = obj.rollModel.getValueAtTime(ut);
-                pitchAng = obj.pitchModel.getValueAtTime(ut);
-                yawAng = obj.yawModel.getValueAtTime(ut);
+                if(numel(ut) == 1 && ut == obj.lastUt)
+                    rollAng = obj.lastRoll;
+                    pitchAng = obj.lastPitch;
+                    yawAng = obj.lastYaw;
+                else
+                    rollAng = obj.rollModel.getValueAtTime(ut);
+                    pitchAng = obj.pitchModel.getValueAtTime(ut);
+                    yawAng = obj.yawModel.getValueAtTime(ut);
+                    
+                    obj.lastUt = ut;
+                    obj.lastRoll = rollAng;
+                    obj.lastPitch = pitchAng;
+                    obj.lastYaw = yawAng;
+                end
                             
                 baseFrame = bodyInfo.getBodyFixedFrame();
                 [~, ~, ~, dcm] = computeInertialBodyAxesFromFrameEuler(ut, rVect, vVect, bodyInfo, rollAng, pitchAng, yawAng, baseFrame);

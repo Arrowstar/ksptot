@@ -4,6 +4,18 @@ classdef LaunchVehicleAttitudeState < matlab.mixin.SetGet
     
     properties
         dcm(3,3) double = eye(3)
+        
+        %Aero Angle Cache
+        lastAeroUt(1,1) double = NaN;
+        lastAeroRVect(3,1) double = [NaN;NaN;NaN];
+        lastAeroVVect(3,1) double = [NaN;NaN;NaN];
+        lastAeroFrame AbstractReferenceFrame = AbstractReferenceFrame.empty(1,0);
+        lastAeroDcm(3,3) double = NaN(3,3);
+        
+        lastBank(1,1) double = NaN;
+        lastAoA(1,1) double = NaN;
+        lastSideslip(1,1) double = NaN;
+        lastTotalAoA(1,1) double = NaN;
     end
 
     properties(Dependent)
@@ -117,6 +129,14 @@ classdef LaunchVehicleAttitudeState < matlab.mixin.SetGet
                 inFrame(1,1) AbstractReferenceFrame
             end
 
+            if(ut == obj.lastAeroUt && all(rVect == obj.lastAeroRVect) && all(vVect == obj.lastAeroVVect) && inFrame == obj.lastAeroFrame && all(obj.dcm == obj.lastAeroDcm, 'all'))
+                bankAng = obj.lastBank;
+                angOfAttack = obj.lastAoA;
+                angOfSideslip = obj.lastSideslip;
+                totalAoA = obj.lastTotalAoA;
+                return;
+            end
+
             frame = bodyInfo.getBodyCenteredInertialFrame();
             ce = CartesianElementSet(ut, rVect, vVect, frame);
             ce = ce.convertToFrame(inFrame, true);
@@ -135,6 +155,16 @@ classdef LaunchVehicleAttitudeState < matlab.mixin.SetGet
             [bankAng,angOfAttack,angOfSideslip,totalAoA] = computeAeroAnglesFromFrameBodyAxes(rVectFrame, vVectFrame, bodyXFrame, bodyYFrame, bodyZFrame);
             bankAng = AngleZero2Pi(bankAng);
             angOfSideslip = AngleZero2Pi(angOfSideslip);
+
+            obj.lastAeroUt = ut;
+            obj.lastAeroRVect = rVect;
+            obj.lastAeroVVect = vVect;
+            obj.lastAeroFrame = inFrame;
+            obj.lastAeroDcm = obj.dcm;
+            obj.lastBank = bankAng;
+            obj.lastAoA = angOfAttack;
+            obj.lastSideslip = angOfSideslip;
+            obj.lastTotalAoA = totalAoA;
         end
         
         function [inertBankAng,inertAngOfAttack,insertAngOfSideslip] = getInertialAeroAngles(obj, ut, rVect, vVect, bodyInfo)       

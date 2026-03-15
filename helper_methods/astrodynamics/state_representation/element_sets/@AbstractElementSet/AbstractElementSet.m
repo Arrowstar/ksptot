@@ -32,6 +32,25 @@ classdef (Abstract) AbstractElementSet < matlab.mixin.SetGet & matlab.mixin.Cust
                 toFrame AbstractReferenceFrame
                 overwriteElemSetValues(1,1) logical = false;
             end
+            
+            persistent cache;
+            if(isempty(cache))
+                cache.obj = CartesianElementSet.empty(0,1);
+                cache.toFrame = AbstractReferenceFrame.empty(0,1);
+                cache.overwrite = [];
+                cache.res = CartesianElementSet.empty(0,1);
+                cache.maxSize = 10;
+                cache.ptr = 1;
+            end
+
+            if(isscalar(obj) && ~overwriteElemSetValues)
+                for i=1:length(cache.obj)
+                    if(cache.obj(i) == obj && cache.toFrame(i) == toFrame)
+                        convertedElemSet = cache.res(i);
+                        return;
+                    end
+                end
+            end
 
             num = length(obj);
             if(num > 1)
@@ -163,6 +182,17 @@ classdef (Abstract) AbstractElementSet < matlab.mixin.SetGet & matlab.mixin.Cust
                     
                 otherwise
                     error('Unknown element set: %s', string(obj(1).typeEnum));
+            end
+
+            if(isscalar(obj) && ~overwriteElemSetValues)
+                cache.obj(cache.ptr) = obj;
+                cache.toFrame(cache.ptr) = toFrame;
+                cache.res(cache.ptr) = convertedElemSet;
+                
+                cache.ptr = cache.ptr + 1;
+                if(cache.ptr > cache.maxSize)
+                    cache.ptr = 1;
+                end
             end
         end
         

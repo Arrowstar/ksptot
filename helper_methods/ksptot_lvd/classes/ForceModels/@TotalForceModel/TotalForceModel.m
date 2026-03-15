@@ -14,22 +14,27 @@ classdef TotalForceModel < matlab.mixin.SetGet
     end
     
    methods (Static)
-        function [forceVect, tankMdots, ecStgDots] = getForce(fmEnums, ut, rVect, vVect, mass, bodyInfo, aero, throttleModel, steeringModel, tankStates, stageStates, lvState, dryMass, tankStatesMasses, thirdBodyGravity, storageSoCs, powerStorageStates, srp)
+        function [forceVect, tankMdots, ecStgDots] = getForce(fmEnums, ut, rVect, vVect, mass, bodyInfo, aero, throttleModel, steeringModel, tankStates, stageStates, lvState, dryMass, tankStatesMasses, thirdBodyGravity, storageSoCs, powerStorageStates, srp, altitude, pressure, density)
             forceVect = [0;0;0];
             tankMdots = zeros(length(tankStates),1);
             ecStgDots = zeros(length(powerStorageStates),1);
             
+            persistent attState;
+            if(isempty(attState))
+                attState = LaunchVehicleAttitudeState();
+            end
+
             if(mass > 0)
                 if(any([fmEnums.usesAttitudeState]))
-                    attState = LaunchVehicleAttitudeState();
                     attState.dcm = steeringModel.getBody2InertialDcmAtTime(ut, rVect, vVect, bodyInfo);
+                    attStateToUse = attState;
                 else
-                    attState = [];
+                    attStateToUse = [];
                 end
 
                 for(i=1:length(fmEnums)) %#ok<*NO4LP>
                     %all thrusts should be in units of mT*km/s^2
-                    [fv, mdots, ecDots] = fmEnums(i).model.getForce(ut, rVect, vVect, mass, bodyInfo, aero, throttleModel, steeringModel, tankStates, stageStates, lvState, dryMass, tankStatesMasses, thirdBodyGravity, storageSoCs, powerStorageStates, attState, srp);
+                    [fv, mdots, ecDots] = fmEnums(i).model.getForce(ut, rVect, vVect, mass, bodyInfo, aero, throttleModel, steeringModel, tankStates, stageStates, lvState, dryMass, tankStatesMasses, thirdBodyGravity, storageSoCs, powerStorageStates, attStateToUse, srp, altitude, pressure, density);
                     forceVect = forceVect + fv;
                     
                     if(not(isempty(mdots)))
