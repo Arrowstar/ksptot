@@ -28,9 +28,6 @@ classdef CartesianElementSet < AbstractElementSet
                     num = length(time);
                     if(num > 1)
                         obj(num) = obj;
-                    end
-
-                    if(numel(time) > 1)
                         obj(1) = CartesianElementSet();
                     end
 
