@@ -7,8 +7,8 @@ function runHistoricalBenchmark(commits, lvdCases)
     if nargin < 2
         % Default cases if none provided
         lvdCases = {
-            fullfile('examples', 'LaunchVehicleDesigner', 'lvdExample_SimpleHohmannTransfer.mat'),
-            fullfile('examples', 'LaunchVehicleDesigner', 'lvdExample_MunarLanding.mat')
+            fullfile('examples', 'LaunchVehicleDesigner', 'ComplexDragModel', 'lvdExample_ComplexDrag_AsparagusStaging.mat'),
+            fullfile('examples', 'LaunchVehicleDesigner', 'lvdExample_L2HaloOrbit.mat')
         };
     end
 
