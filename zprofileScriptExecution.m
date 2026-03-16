@@ -12,7 +12,7 @@ addpath(genpath('images'));
 addpath(genpath('kos_scripts'));
 
 %%
-load('examples\LaunchVehicleDesigner\lvdExample_L2HaloOrbit.mat');
+load('lvdExample_ComplexDrag_AsparagusStaging.mat');
 
 %%
 for(i=1:length(lvdData.script.evts))
@@ -21,6 +21,11 @@ for(i=1:length(lvdData.script.evts))
 end
 
 %%
+% Warm up
+for(i=1:3) %#ok<*NO4LP> 
+    stateLog = lvdData.script.executeScript(false, lvdData.script.evts(1), true, false, false, false); 
+end
+
 % tic; 
 % profile off; profile on;
 for(i=1:15) %#ok<*NO4LP> 

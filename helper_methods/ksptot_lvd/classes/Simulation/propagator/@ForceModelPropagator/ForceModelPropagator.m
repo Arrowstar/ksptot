@@ -54,7 +54,10 @@ classdef ForceModelPropagator < AbstractPropagator
             tankStates = eventInitStateLogEntry.getAllActiveTankStates();
             dryMass = eventInitStateLogEntry.getTotalVehicleDryMass();
             pwrStorageStates = eventInitStateLogEntry.getAllActivePwrStorageStates();
-            odeFH = @(t,y) ForceModelPropagator.odefun(t,y, eventInitStateLogEntry, tankStates, dryMass, pwrStorageStates, obj.forceModels);
+            
+            engineToTankCache = ForceModelPropagator.getEngineToTankCache(eventInitStateLogEntry, tankStates, pwrStorageStates);
+            
+            odeFH = @(t,y) ForceModelPropagator.odefun(t,y, eventInitStateLogEntry, tankStates, dryMass, pwrStorageStates, obj.forceModels, engineToTankCache);
         end
         
         function odeEventsFH = getOdeEventsFunctionHandle(~, eventInitStateLogEntry, eventTermCondFuncHandle, termCondDir, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, minAltitude, celBodyData)
@@ -105,7 +108,7 @@ classdef ForceModelPropagator < AbstractPropagator
         %%%
         %ODE Function
         %%%
-        function dydt = odefun(t,y, eventInitStateLogEntry, tankStates, dryMass, powerStorageStates, fmEnums)
+        function dydt = odefun(t,y, eventInitStateLogEntry, tankStates, dryMass, powerStorageStates, fmEnums, engineToTankCache)
             bodyInfo = eventInitStateLogEntry.centralBody;
             if(isstruct(bodyInfo.celBodyData) || isempty(bodyInfo.celBodyData))
                 bodyInfo.celBodyData = eventInitStateLogEntry.celBodyData;
@@ -141,7 +144,7 @@ classdef ForceModelPropagator < AbstractPropagator
                 end
                 attState.dcm = steeringModel.getBody2InertialDcmAtTime(ut, rVect, vVect, bodyInfo);
 
-                [tankMassDotsEngines,~,~,ecStgDots] = eventInitStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, tankStatesMasses, stageStates, throttle, lvState, pressure, ut, rVect, vVect, bodyInfo, steeringModel, storageSoCs, powerStorageStates, attState);
+                [tankMassDotsEngines,~,~,ecStgDots] = eventInitStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, tankStatesMasses, stageStates, throttle, lvState, pressure, ut, rVect, vVect, bodyInfo, steeringModel, storageSoCs, powerStorageStates, attState, engineToTankCache);
 
                 tankMassDots = tankMassDotsEngines(:) + tankMassDotsT2TConns(:);
                 storageRates = storageRates(:) + ecStgDots(:);
@@ -177,7 +180,7 @@ classdef ForceModelPropagator < AbstractPropagator
                 totalMass = dryMass + sum(tankStatesMasses);
 
                 if(totalMass > 0)
-                    [forceSum, tankMassDotsForceModels, ecStgDots] = TotalForceModel.getForce(fmEnums, ut, rVect, vVect, totalMass, bodyInfo, aero, throttleModel, steeringModel, tankStates, stageStates, lvState, dryMass, tankStatesMasses, thirdBodyGravity, storageSoCs, powerStorageStates, srp, altitude, pressure, density);
+                    [forceSum, tankMassDotsForceModels, ecStgDots] = TotalForceModel.getForce(fmEnums, ut, rVect, vVect, totalMass, bodyInfo, aero, throttleModel, steeringModel, tankStates, stageStates, lvState, dryMass, tankStatesMasses, thirdBodyGravity, storageSoCs, powerStorageStates, srp, altitude, pressure, density, engineToTankCache);
                     accelVect = forceSum/totalMass; %F = dp/dt = d(mv)/dt = m*dv/dt + v*dm/dt, but since the thrust force causes us to shed mass, we actually account for the v*dm/dt term there and therefore don't need it!  See: https://en.wikipedia.org/wiki/Variable-mass_system         
 
                     tankMassDots = tankMassDotsForceModels(:) + tankMassDotsT2TConns(:);
@@ -209,6 +212,57 @@ classdef ForceModelPropagator < AbstractPropagator
             if(integrationDuration > maxIntegrationDuration)
                 status = 1;
             end
+        end
+
+        function engineToTankCache = getEngineToTankCache(eventInitStateLogEntry, tankStates, pwrStorageStates)
+            stageStates = eventInitStateLogEntry.stageStates;
+            lvState = eventInitStateLogEntry.lvState;
+            
+            engineToTankCache.engines = struct('engine', {}, 'tankIndices', {}, 'totalConnTankCapacity', {}, 'reqsElecCharge', {}, 'bodyFrameThrustVect', {});
+            
+            k = 1;
+            for(i = 1:length(stageStates))
+                if(stageStates(i).active)
+                    engineStates = stageStates(i).engineStates;
+                    for(j = 1:length(engineStates))
+                        engineState = engineStates(j);
+                        if(engineState.active)
+                            engine = engineState.engine;
+                            
+                            tanks = lvState.getTanksConnectedToEngine(engine);
+                            tankIndices = [];
+                            totalConnTankCapacity = 0;
+                            for(m = 1:length(tanks))
+                                tank = tanks(m);
+                                % Find index in tankStates
+                                for(n = 1:length(tankStates))
+                                    if(tankStates(n).tank == tank)
+                                        tankIndices(end+1) = n; %#ok<AGROW>
+                                        totalConnTankCapacity = totalConnTankCapacity + tank.initialMass;
+                                        break;
+                                    end
+                                end
+                            end
+                            
+                            if(~isempty(tankIndices))
+                                engineToTankCache.engines(k).engine = engine;
+                                engineToTankCache.engines(k).tankIndices = tankIndices;
+                                engineToTankCache.engines(k).totalConnTankCapacity = totalConnTankCapacity;
+                                engineToTankCache.engines(k).reqsElecCharge = engine.reqsElecCharge;
+                                engineToTankCache.engines(k).bodyFrameThrustVect = engine.bodyFrameThrustVect;
+                                k = k + 1;
+                            end
+                        end
+                    end
+                end
+            end
+
+            maxEcCapacities = NaN(size(pwrStorageStates));
+            for(i=1:length(pwrStorageStates))
+                pwrStorage = pwrStorageStates(i).getEpsStorageComponent();
+                maxEcCapacities(i) = pwrStorage.getMaximumCapacity();
+            end
+            engineToTankCache.maxEcCapacities = maxEcCapacities;
         end
     end
 end

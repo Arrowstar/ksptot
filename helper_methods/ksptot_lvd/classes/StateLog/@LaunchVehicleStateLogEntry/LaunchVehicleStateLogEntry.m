@@ -562,7 +562,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             end
         end
         
-        function [tankMDots, totalThrust, forceVect, ecStorageRates] = getTankMassFlowRatesDueToEngines(tankStates, tankStatesMasses, stgStates, throttle, lvState, presskPa, ut, rVect, vVect, bodyInfo, steeringModel, storageSoCs, powerStorageStates, attState)
+        function [tankMDots, totalThrust, forceVect, ecStorageRates] = getTankMassFlowRatesDueToEngines(tankStates, tankStatesMasses, stgStates, throttle, lvState, presskPa, ut, rVect, vVect, bodyInfo, steeringModel, storageSoCs, powerStorageStates, attState, engineToTankCache)
             arguments
                 tankStates LaunchVehicleTankState
                 tankStatesMasses double
@@ -578,6 +578,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                 storageSoCs double
                 powerStorageStates AbstractLaunchVehicleEpsStorageState
                 attState LaunchVehicleAttitudeState
+                engineToTankCache struct = struct('engines',[])
             end
             
             tankMDots = zeros(size(tankStates));
@@ -588,102 +589,170 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             storageSoCs = storageSoCs(:);
             ecStorageRates = zeros(size(storageSoCs));
             
-            maxEcCapacities = NaN(size(powerStorageStates));
-            for(i=1:length(powerStorageStates))
-                pwrStorage = powerStorageStates(i).getEpsStorageComponent();
-                maxEcCapacities(i) = pwrStorage.getMaximumCapacity();
+            if(isfield(engineToTankCache, 'maxEcCapacities') && ~isempty(engineToTankCache.maxEcCapacities))
+                maxEcCapacities = engineToTankCache.maxEcCapacities;
+            else
+                maxEcCapacities = NaN(size(powerStorageStates));
+                for(i=1:length(powerStorageStates))
+                    pwrStorage = powerStorageStates(i).getEpsStorageComponent();
+                    maxEcCapacities(i) = pwrStorage.getMaximumCapacity();
+                end
             end
             maxEcCapacities = maxEcCapacities(:);
 
-            tankStateTanksArr = [tankStates.tank];
-            
-            for(i=1:length(stgStates)) %#ok<*NO4LP>
-%                 stgState = stgStates(i);
-                
-                if(stgStates(i).active)
-                    engineStates = stgStates(i).engineStates;
+            if(isfield(engineToTankCache, 'engines') && ~isempty(engineToTankCache.engines))
+                for(i=1:length(engineToTankCache.engines))
+                    eEntry = engineToTankCache.engines(i);
+                    engine = eEntry.engine;
                     
-                    for(j=1:length(engineStates))
-                        engineState = engineStates(j);
+                    adjustedThrottle = engine.adjustThrottle(throttle, []);
+                    if(adjustedThrottle > 0)
+                        [baseThrust, baseMdot] = engine.getThrustFlowRateForPressure(presskPa); %total mass flow through engine
                         
-                        if(engineState.active)
-                            engine = engineState.engine;
-                            adjustedThrottle = engine.adjustThrottle(throttle, []);
-                            if(adjustedThrottle > 0)
-                                [baseThrust, baseMdot] = engine.getThrustFlowRateForPressure(presskPa); %total mass flow through engine
-                                mdot = adjustedThrottle * baseMdot;
+                        if(baseMdot < 0 && ... %negative because we're flowing out
+                           (eEntry.reqsElecCharge == false || (eEntry.reqsElecCharge == true && numel(storageSoCs)>0 && sum(storageSoCs)>0))) %handle engines that require EC to function 
+                            
+                            totalConnTankMass = sum(tankStatesMasses(eEntry.tankIndices));
+                            
+                            if(eEntry.totalConnTankCapacity > 0 && totalConnTankMass > 0)
+                                fuelRemainPct = 100 * totalConnTankMass / eEntry.totalConnTankCapacity; %it's a percent
+                            else
+                                fuelRemainPct = 0;
+                            end
+                            
+                            %rerun the calculations for thrust and
+                            %flow rate, this time incorporating the
+                            %fuel remaining in all connected tanks
+                            adjustedThrottle = engine.adjustThrottle(throttle, fuelRemainPct);
+                            if(totalConnTankMass <= 0)
+                                adjustedThrottle = 0;
+                            end
+                            
+                            mdot = adjustedThrottle * baseMdot;
+                            totalThrust = totalThrust + adjustedThrottle*baseThrust;
+                            
+                            numTanksToPullFrom = length(eEntry.tankIndices);
+                            if(numTanksToPullFrom > 0)
+                                bodyThrust = bodyThrust + (baseThrust * adjustedThrottle * eEntry.bodyFrameThrustVect)/1000; %1/1000 to convert kN=mT*m/s^2 to mT*km/s^2 (see also ma_executeDVManeuver_finite_inertial())
                                 
-                                flowFromTankInds = zeros(size(tankStates));
-                                if(mdot < 0 && ... %negative because we're flowing out
-                                   (engine.reqsElecCharge == false || (engine.reqsElecCharge == true && numel(storageSoCs)>0 && sum(storageSoCs)>0))) %handle engines that require EC to function 
-                                    tanks = lvState.getTanksConnectedToEngine(engine);
+                                mDotPerTank = mdot/numTanksToPullFrom;
+                                tankMDots(eEntry.tankIndices) = tankMDots(eEntry.tankIndices) + mDotPerTank;
+                            end
+
+                            if(numel(storageSoCs) > 0)
+                                pwrRate = engine.getPowerRate(throttle);
+                                if(pwrRate > 0)
+                                    bool = storageSoCs < maxEcCapacities;
+                                    numStorage = sum(bool);
+                                    if(numStorage > 0)
+                                        eachStgRate = pwrRate/numStorage;
+                                        ecStorageRates(bool) = ecStorageRates(bool) + eachStgRate;
+                                    end
+                                elseif(pwrRate < 0)
+                                    bool = storageSoCs > 0;
+                                    numStorage = sum(bool);
+                                    if(numStorage > 0)
+                                        eachStgRate = pwrRate/numStorage;
+                                        ecStorageRates(bool) = ecStorageRates(bool) + eachStgRate;
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            else
+                tankStateTanksArr = [tankStates.tank];
+                
+                for(i=1:length(stgStates)) %#ok<*NO4LP>
+                    if(stgStates(i).active)
+                        engineStates = stgStates(i).engineStates;
+                        
+                        for(j=1:length(engineStates))
+                            engineState = engineStates(j);
+                            
+                            if(engineState.active)
+                                engine = engineState.engine;
+                                adjustedThrottle = engine.adjustThrottle(throttle, []);
+                                if(adjustedThrottle > 0)
+                                    [baseThrust, baseMdot] = engine.getThrustFlowRateForPressure(presskPa); %total mass flow through engine
+                                    mdot = adjustedThrottle * baseMdot;
                                     
-                                    totalConnTankCapacity = 0;
-                                    totalConnTankMass = 0;
-                                    for(k=1:length(tanks))
-                                        if(not(isempty(tankStates)))
-                                            tank = tanks(k);
-                                            tankBool = tankStateTanksArr == tank;
-                                            tankState = tankStates(tankBool);
-                                            
-                                            if(not(isempty(tankState)))
-                                                tankStageState = tankState.stageState;
+                                    flowFromTankInds = zeros(size(tankStates));
+                                    if(mdot < 0 && ... %negative because we're flowing out
+                                       (engine.reqsElecCharge == false || (engine.reqsElecCharge == true && numel(storageSoCs)>0 && sum(storageSoCs)>0))) %handle engines that require EC to function 
+                                        tanks = lvState.getTanksConnectedToEngine(engine);
+                                        
+                                        totalConnTankCapacity = 0;
+                                        totalConnTankMass = 0;
+                                        for(k=1:length(tanks))
+                                            if(not(isempty(tankStates)))
+                                                tank = tanks(k);
+                                                tankBool = tankStateTanksArr == tank;
+                                                tankState = tankStates(tankBool);
                                                 
-                                                if(tankStageState.active)
-                                                    tankMass = tankStatesMasses(tankBool);
+                                                if(not(isempty(tankState)))
+                                                    tankStageState = tankState.stageState;
                                                     
-                                                    totalConnTankCapacity = totalConnTankCapacity + tank.initialMass;
-                                                    totalConnTankMass = totalConnTankMass + tankMass;
-                                                    
-                                                    if(tankMass > 0)
-                                                        flowFromTankInds(tankStates == tankState) = 1;
+                                                    if(tankStageState.active)
+                                                        tankMass = tankStatesMasses(tankBool);
+                                                        
+                                                        totalConnTankCapacity = totalConnTankCapacity + tank.initialMass;
+                                                        totalConnTankMass = totalConnTankMass + tankMass;
+                                                        
+                                                        if(tankMass > 0)
+                                                            flowFromTankInds(tankStates == tankState) = 1;
+                                                        end
                                                     end
                                                 end
                                             end
                                         end
-                                    end
-                                    
-                                    if(totalConnTankCapacity > 0 && totalConnTankMass > 0)
-                                        fuelRemainPct = 100 * totalConnTankMass / totalConnTankCapacity; %it's a percent
-                                    else
-                                        fuelRemainPct = 0;
-                                    end
-                                    
-                                    %rerun the calculations for thrust and
-                                    %flow rate, this time incorporating the
-                                    %fuel remaining in all connected tanks
-                                    adjustedThrottle = engine.adjustThrottle(throttle, fuelRemainPct);
-                                    if(totalConnTankMass <= 0)
-                                        adjustedThrottle = 0;
-                                    end
-                                    
-                                    %                                     [thrust, mdot] = engine.getThrustFlowRateForPressure(presskPa); %total mass flow through engine
-                                    mdot = adjustedThrottle * baseMdot;
-                                    totalThrust = totalThrust + adjustedThrottle*baseThrust;
-                                    
-                                    numTanksToPullFrom = sum(flowFromTankInds);
-                                    if(numTanksToPullFrom > 0)
-                                        bodyThrust = bodyThrust + (baseThrust * adjustedThrottle * engine.bodyFrameThrustVect)/1000; %1/1000 to convert kN=mT*m/s^2 to mT*km/s^2 (see also ma_executeDVManeuver_finite_inertial())
-                                    end
-                                    
-                                    mDotPerTank = mdot/numTanksToPullFrom;
-                                    
-                                    flowFromTankInds = logical(flowFromTankInds);
-                                    tankMDots(flowFromTankInds) = tankMDots(flowFromTankInds) + mDotPerTank;
-
-                                    if(numel(storageSoCs) > 0)
-                                        pwrRate = engine.getPowerRate(throttle);
-                                        if(pwrRate > 0)
-                                            bool = storageSoCs < maxEcCapacities;
-                                            numStorage = sum(bool);
-                                            eachStgRate = pwrRate/numStorage;
-                                            ecStorageRates(bool) = ecStorageRates(bool) + eachStgRate;
-
-                                        elseif(pwrRate < 0)
-                                            bool = storageSoCs > 0;
-                                            numStorage = sum(bool);
-                                            eachStgRate = pwrRate/numStorage;
-                                            ecStorageRates(bool) = ecStorageRates(bool) + eachStgRate;
+                                        
+                                        if(totalConnTankCapacity > 0 && totalConnTankMass > 0)
+                                            fuelRemainPct = 100 * totalConnTankMass / totalConnTankCapacity; %it's a percent
+                                        else
+                                            fuelRemainPct = 0;
+                                        end
+                                        
+                                        %rerun the calculations for thrust and
+                                        %flow rate, this time incorporating the
+                                        %fuel remaining in all connected tanks
+                                        adjustedThrottle = engine.adjustThrottle(throttle, fuelRemainPct);
+                                        if(totalConnTankMass <= 0)
+                                            adjustedThrottle = 0;
+                                        end
+                                        
+                                        %                                     [thrust, mdot] = engine.getThrustFlowRateForPressure(presskPa); %total mass flow through engine
+                                        mdot = adjustedThrottle * baseMdot;
+                                        totalThrust = totalThrust + adjustedThrottle*baseThrust;
+                                        
+                                        numTanksToPullFrom = sum(flowFromTankInds);
+                                        if(numTanksToPullFrom > 0)
+                                            bodyThrust = bodyThrust + (baseThrust * adjustedThrottle * engine.bodyFrameThrustVect)/1000; %1/1000 to convert kN=mT*m/s^2 to mT*km/s^2 (see also ma_executeDVManeuver_finite_inertial())
+                                        end
+                                        
+                                        mDotPerTank = mdot/numTanksToPullFrom;
+                                        
+                                        flowFromTankInds = logical(flowFromTankInds);
+                                        tankMDots(flowFromTankInds) = tankMDots(flowFromTankInds) + mDotPerTank;
+    
+                                        if(numel(storageSoCs) > 0)
+                                            pwrRate = engine.getPowerRate(throttle);
+                                            if(pwrRate > 0)
+                                                bool = storageSoCs < maxEcCapacities;
+                                                numStorage = sum(bool);
+                                                if(numStorage > 0)
+                                                    eachStgRate = pwrRate/numStorage;
+                                                    ecStorageRates(bool) = ecStorageRates(bool) + eachStgRate;
+                                                end
+    
+                                            elseif(pwrRate < 0)
+                                                bool = storageSoCs > 0;
+                                                numStorage = sum(bool);
+                                                if(numStorage > 0)
+                                                    eachStgRate = pwrRate/numStorage;
+                                                    ecStorageRates(bool) = ecStorageRates(bool) + eachStgRate;
+                                                end
+                                            end
                                         end
                                     end
                                 end
