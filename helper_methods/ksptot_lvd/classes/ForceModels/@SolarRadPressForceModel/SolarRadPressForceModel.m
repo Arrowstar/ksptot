@@ -11,7 +11,7 @@ classdef SolarRadPressForceModel < AbstractForceModel
 
         end
         
-        function [forceVect, tankMdots, ecStgDots] = getForce(obj, ut, rVect, vVect, mass, bodyInfo, CdA, throttleModel, steeringModel, tankStates, stageStates, lvState, dryMass, tankStatesMasses, grav3Body, storageSoCs, powerStorageStates, attState, srp, altitude, pressure, density)
+        function [forceVect, tankMdots, ecStgDots] = getForce(obj, ut, rVect, vVect, mass, bodyInfo, aero, throttleModel, steeringModel, tankStates, stageStates, lvState, dryMass, tankStatesMasses, thirdBodyGravity, storageSoCs, powerStorageStates, attState, srp, atmoState, engineToTankCache)
             forceVect = srp.getSolarRadiationForce(ut, rVect, vVect, bodyInfo, steeringModel);
             
             tankMdots = [];

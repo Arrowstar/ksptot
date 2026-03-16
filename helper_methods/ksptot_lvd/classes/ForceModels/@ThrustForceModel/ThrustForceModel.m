@@ -8,8 +8,8 @@ classdef ThrustForceModel < AbstractForceModel
         cacheVVect(3,1) double = [NaN;NaN;NaN];
         
         cacheForceVect(3,1) double = [0;0;0];
-        cacheTankMdots(1,:) double = [];
-        cacheEcDots(1,:) double = [];
+        cacheTankMdots double = [];
+        cacheEcDots double = [];
     end
     
     methods
@@ -17,46 +17,21 @@ classdef ThrustForceModel < AbstractForceModel
             
         end
         
-        function [forceVect, tankMdots, ecDots] = getForce(obj, ut, rVect, vVect, mass, bodyInfo, aero, throttleModel, steeringModel, tankStates, stageStates, lvState, dryMass, tankStatesMasses, thirdBodyGravity, storageSoCs, powerStorageStates, attState, srp, altitude, pressure, density, engineToTankCache)    
-            arguments
-                obj
-                ut
-                rVect
-                vVect
-                mass
-                bodyInfo
-                aero
-                throttleModel
-                steeringModel
-                tankStates
-                stageStates
-                lvState
-                dryMass
-                tankStatesMasses
-                thirdBodyGravity
-                storageSoCs
-                powerStorageStates
-                attState
-                srp
-                altitude = NaN
-                pressure = NaN
-                density = []
-                engineToTankCache struct = struct('engines',[])
-            end
-
-            if(ut == obj.cacheUt && all(rVect == obj.cacheRVect) && all(vVect == obj.cacheVVect))
+        function [forceVect, tankMdots, ecDots] = getForce(obj, ut, rVect, vVect, mass, bodyInfo, aero, throttleModel, steeringModel, tankStates, stageStates, lvState, dryMass, tankStatesMasses, thirdBodyGravity, storageSoCs, powerStorageStates, attState, srp, atmoState, engineToTankCache)    
+            if(ut == obj.cacheUt && ...
+               all(rVect == obj.cacheRVect) && ...
+               all(vVect == obj.cacheVVect) && ...
+               length(tankStates) == length(obj.cacheTankMdots) && ...
+               length(powerStorageStates) == length(obj.cacheEcDots))
+                
                 forceVect = obj.cacheForceVect;
                 tankMdots = obj.cacheTankMdots;
                 ecDots = obj.cacheEcDots;
                 return;
             end
 
-            if(isnan(altitude))
-                altitude = norm(rVect) - bodyInfo.radius;
-            end
-            if(isnan(pressure))
-                pressure = bodyInfo.getBodyAtmoPressure(altitude);
-            end
+            altitude = atmoState.altitude;
+            pressure = atmoState.pressure;
 
             throttle = throttleModel.getThrottleAtTime(ut, rVect, vVect, tankStatesMasses, dryMass, stageStates, lvState, tankStates, bodyInfo, storageSoCs, powerStorageStates);
             

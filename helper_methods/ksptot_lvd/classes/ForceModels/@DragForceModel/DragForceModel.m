@@ -10,19 +10,11 @@ classdef DragForceModel < AbstractForceModel
         function obj = DragForceModel()
 
         end
-        function [forceVect,tankMdots, ecStgDots] = getForce(obj, ut, rVect, vVect, mass, bodyInfo, aero, throttleModel, steeringModel, tankStates, stageStates, lvState, dryMass, tankStatesMasses, grav3Body, storageSoCs, powerStorageStates, attState, srp, altitude, pressure, density)
-            if(nargin < 20)
-                altitude = norm(rVect) - bodyInfo.radius;
-            end
-
-            if(altitude - (bodyInfo.atmohgt) > 0)
+        function [forceVect,tankMdots, ecStgDots] = getForce(obj, ut, rVect, vVect, mass, bodyInfo, aero, throttleModel, steeringModel, tankStates, stageStates, lvState, dryMass, tankStatesMasses, thirdBodyGravity, storageSoCs, powerStorageStates, attState, srp, atmoState, engineToTankCache)
+            if(atmoState.altitude - (bodyInfo.atmohgt) > 0)
                 forceVect = [0;0;0];
             else
-                if(nargin < 21 || nargin < 22)
-                    forceVect = getDragForce(bodyInfo, ut, rVect, vVect, aero, mass, attState);
-                else
-                    forceVect = getDragForce(bodyInfo, ut, rVect, vVect, aero, mass, attState, altitude, pressure, density);
-                end
+                forceVect = getDragForce(bodyInfo, ut, rVect, vVect, aero, mass, attState, atmoState);
             end
             
             tankMdots = [];
@@ -31,7 +23,7 @@ classdef DragForceModel < AbstractForceModel
     end
 end
 
-function dragForce = getDragForce(bodyInfo, ut, rVectECI, vVectECI, aero, mass, attState, altitude, pressureKPA, density)
+function dragForce = getDragForce(bodyInfo, ut, rVectECI, vVectECI, aero, mass, attState, atmoState)
 %getDragForce Summary of this function goes here
 %   Detailed explanation goes here
     arguments
@@ -42,9 +34,7 @@ function dragForce = getDragForce(bodyInfo, ut, rVectECI, vVectECI, aero, mass, 
         aero(1,1) LaunchVehicleAeroState
         mass(1,1) double
         attState(1,1) LaunchVehicleAttitudeState
-        altitude double = NaN
-        pressureKPA double = NaN
-        density double = NaN
+        atmoState struct
     end
 
     persistent cache;
@@ -63,24 +53,12 @@ function dragForce = getDragForce(bodyInfo, ut, rVectECI, vVectECI, aero, mass, 
 
     rVectECI = reshape(rVectECI,3,1);
     vVectECI = reshape(vVectECI,3,1);
-
-    if(isnan(altitude))
-        altitude = norm(rVectECI) - bodyInfo.radius;
-    end
     
-    if(altitude <= bodyInfo.atmohgt && altitude >= 0)
-        [lat, long, ~, ~, ~, ~, ~, vVectECEF, R_Eci_2_Ecef] = getLatLongAltFromInertialVect(ut, rVectECI, bodyInfo, vVectECI);
-        
-        if(isnan(density) || isnan(pressureKPA))
-            [density, pressureKPA, ~] = getAtmoDensityAtAltitude(bodyInfo, altitude, lat, ut, long); 
-        end
-    elseif(altitude <= 0)
-        density = 0;
-        pressureKPA = 0; %Added this
-    else 
-        density = 0;
-        pressureKPA = 0; %Added this
-    end
+    density = atmoState.density;
+    pressureKPA = atmoState.pressure;
+    altitude = atmoState.altitude;
+    vVectECEF = atmoState.vVectECEF;
+    R_Eci_2_Ecef = atmoState.REci2Ecef;
 
     if(density > 0)                
         vVectEcefMag = norm(vVectECEF);
@@ -116,4 +94,4 @@ function dragForce = getDragForce(bodyInfo, ut, rVectECI, vVectECI, aero, mass, 
     cache.vVectECI = vVectECI;
     cache.aero = aero;
     cache.dragForce = dragForce;
-    end
+end

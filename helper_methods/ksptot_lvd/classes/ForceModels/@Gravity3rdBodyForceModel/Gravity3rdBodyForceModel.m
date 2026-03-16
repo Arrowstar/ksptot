@@ -12,7 +12,8 @@ classdef Gravity3rdBodyForceModel < AbstractForceModel
             
         end
         
-        function [forceVect, tankMdots, ecStgDots] = getForce(obj, ut, rVectSC, vVectSC, mass, bodySC, ~, ~, ~, ~, ~, ~, ~, ~, grav3Body, ~, ~, ~, ~, altitude, pressure, density)      
+        function [forceVect, tankMdots, ecStgDots] = getForce(obj, ut, rVect, vVect, mass, bodyInfo, aero, throttleModel, steeringModel, tankStates, stageStates, lvState, dryMass, tankStatesMasses, thirdBodyGravity, storageSoCs, powerStorageStates, attState, srp, atmoState, engineToTankCache)
+      
             persistent cache;
             if(isempty(cache))
                 cache.ut = NaN;
@@ -27,21 +28,21 @@ classdef Gravity3rdBodyForceModel < AbstractForceModel
                 cache.term2Sum = [0;0;0];
             end
 
-            if(ut == cache.ut && all(rVectSC == cache.rVectSC) && bodySC == cache.bodySC && grav3Body == cache.grav3Body)
+            if(ut == cache.ut && all(rVect == cache.rVectSC) && bodyInfo == cache.bodySC && thirdBodyGravity == cache.grav3Body)
                 forceVect = mass * cache.accelVect;
                 tankMdots = [];
                 ecStgDots = [];
                 return;
             end
 
-            bodyScFrame = bodySC.getBodyCenteredInertialFrame();
+            bodyScFrame = bodyInfo.getBodyCenteredInertialFrame();
             bodyScFrameOriginChain = bodyScFrame.getOriginBody().getOrbitElemsChain();
             
-            bodies = grav3Body.bodies;
-            bodies = bodies(bodies ~= bodySC);
-            bodySCChain = bodySC.getOrbitElemsChain();
+            bodies = thirdBodyGravity.bodies;
+            bodies = bodies(bodies ~= bodyInfo);
+            bodySCChain = bodyInfo.getOrbitElemsChain();
 
-            if(ut == cache.term2Ut && bodySC == cache.term2BodySC && grav3Body == cache.term2Grav3Body)
+            if(ut == cache.term2Ut && bodyInfo == cache.term2BodySC && thirdBodyGravity == cache.term2Grav3Body)
                 term2Sum = cache.term2Sum;
             else
                 term2Sum = [0;0;0];
@@ -56,8 +57,8 @@ classdef Gravity3rdBodyForceModel < AbstractForceModel
                     end
                 end
                 cache.term2Ut = ut;
-                cache.term2BodySC = bodySC;
-                cache.term2Grav3Body = grav3Body;
+                cache.term2BodySC = bodyInfo;
+                cache.term2Grav3Body = thirdBodyGravity;
                 cache.term2Sum = term2Sum;
             end
             
@@ -66,7 +67,7 @@ classdef Gravity3rdBodyForceModel < AbstractForceModel
                 bodyInfoJ = bodies(i);
                 bodyInfoJChain = bodyInfoJ.getOrbitElemsChain();
 
-                r_sat_to_j = getAbsPositBetweenSpacecraftAndBody_fast_mex(ut, rVectSC, bodySCChain, bodyInfoJChain, NaN(size(rVectSC)));
+                r_sat_to_j = getAbsPositBetweenSpacecraftAndBody_fast_mex(ut, rVect, bodySCChain, bodyInfoJChain, NaN(size(rVect)));
 
                 if(norm(r_sat_to_j) > 0)
                     accelVect = accelVect + bodyInfoJ.gm * (r_sat_to_j/norm(r_sat_to_j)^3);
@@ -75,11 +76,11 @@ classdef Gravity3rdBodyForceModel < AbstractForceModel
             accelVect = accelVect - term2Sum;
             
             cache.ut = ut;
-            cache.rVectSC = rVectSC;
-            cache.bodySC = bodySC;
-            cache.grav3Body = grav3Body;
+            cache.rVectSC = rVect;
+            cache.bodySC = bodyInfo;
+            cache.grav3Body = thirdBodyGravity;
             cache.accelVect = accelVect;
-
+            
             forceVect = mass * accelVect;
             tankMdots = [];
             ecStgDots = [];

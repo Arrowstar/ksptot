@@ -11,7 +11,7 @@ classdef NormalForceModel < AbstractForceModel
             
         end
         
-        function [forceVect ,tankMdots, ecStgDots] = getForce(obj, ~, rVect, vVect, mass, bodyInfo, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, altitude, pressure, density)  
+        function [forceVect, tankMdots, ecStgDots] = getForce(obj, ut, rVect, vVect, mass, bodyInfo, aero, throttleModel, steeringModel, tankStates, stageStates, lvState, dryMass, tankStatesMasses, thirdBodyGravity, storageSoCs, powerStorageStates, attState, srp, atmoState, engineToTankCache)  
             r = norm(rVect);
             alt = r - bodyInfo.radius;
             

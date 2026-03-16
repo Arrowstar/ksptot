@@ -14,7 +14,7 @@ classdef TotalForceModel < matlab.mixin.SetGet
     end
     
    methods (Static)
-        function [forceVect, tankMdots, ecStgDots] = getForce(fmEnums, ut, rVect, vVect, mass, bodyInfo, aero, throttleModel, steeringModel, tankStates, stageStates, lvState, dryMass, tankStatesMasses, thirdBodyGravity, storageSoCs, powerStorageStates, srp, altitude, pressure, density, engineToTankCache)
+        function [forceVect, tankMdots, ecStgDots] = getForce(fmEnums, ut, rVect, vVect, mass, bodyInfo, aero, throttleModel, steeringModel, tankStates, stageStates, lvState, dryMass, tankStatesMasses, thirdBodyGravity, storageSoCs, powerStorageStates, srp, atmoState, engineToTankCache)
             arguments
                 fmEnums ForceModelsEnum
                 ut
@@ -34,9 +34,7 @@ classdef TotalForceModel < matlab.mixin.SetGet
                 storageSoCs
                 powerStorageStates
                 srp
-                altitude
-                pressure
-                density
+                atmoState
                 engineToTankCache struct = struct('engines',[])
             end
 
@@ -59,12 +57,9 @@ classdef TotalForceModel < matlab.mixin.SetGet
 
                 for(i=1:length(fmEnums)) %#ok<*NO4LP>
                     %all thrusts should be in units of mT*km/s^2
-                    if(isa(fmEnums(i).model, 'ThrustForceModel'))
-                        [fv, mdots, ecDots] = fmEnums(i).model.getForce(ut, rVect, vVect, mass, bodyInfo, aero, throttleModel, steeringModel, tankStates, stageStates, lvState, dryMass, tankStatesMasses, thirdBodyGravity, storageSoCs, powerStorageStates, attStateToUse, srp, altitude, pressure, density, engineToTankCache);
-                    else
-                        [fv, mdots, ecDots] = fmEnums(i).model.getForce(ut, rVect, vVect, mass, bodyInfo, aero, throttleModel, steeringModel, tankStates, stageStates, lvState, dryMass, tankStatesMasses, thirdBodyGravity, storageSoCs, powerStorageStates, attStateToUse, srp, altitude, pressure, density);
-                    end
-                    forceVect = forceVect + fv;
+                    [fv, mdots, ecDots] = fmEnums(i).model.getForce(ut, rVect, vVect, mass, bodyInfo, aero, throttleModel, steeringModel, tankStates, stageStates, lvState, dryMass, tankStatesMasses, thirdBodyGravity, storageSoCs, powerStorageStates, attStateToUse, srp, atmoState, engineToTankCache);
+
+                    forceVect = forceVect + fv(:);
                     
                     if(not(isempty(mdots)))
                         tankMdots = tankMdots + mdots(:);

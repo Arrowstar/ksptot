@@ -75,9 +75,18 @@ classdef testForceModels < matlab.unittest.TestCase
             
             aero = stateLogEntry.aero;
             altitude = norm(rVect) - centralBody.radius;
-            [lat, long, ~, ~, ~, ~, ~, vVectECEF] = getLatLongAltFromInertialVect(ut, rVect, centralBody, vVect);
+            % Setup atmoState
+            [lat, long, ~, ~, ~, ~, ~, vVectECEF, REci2Ecef] = getLatLongAltFromInertialVect(ut, rVect, centralBody, vVect);
             [density, pressure, ~] = getAtmoDensityAtAltitude(centralBody, altitude, lat, ut, long); 
             
+            atmoState.altitude = altitude;
+            atmoState.lat = lat;
+            atmoState.long = long;
+            atmoState.pressure = pressure;
+            atmoState.density = density;
+            atmoState.vVectECEF = vVectECEF;
+            atmoState.REci2Ecef = REci2Ecef;
+
             % Get CdA manually for verification
             vVectEcefMag = norm(vVectECEF);
             CdA = aero.getDragCoeff(ut, rVect, vVect, centralBody, mass, altitude, pressure, density, vVectEcefMag, 0, 0, 0);
@@ -85,7 +94,7 @@ classdef testForceModels < matlab.unittest.TestCase
             % Get force from model
             attState = stateLogEntry.attitude;
             srp = stateLogEntry.srp;
-            [forceVect, ~] = dragModel.getForce(ut, rVect, vVect, mass, centralBody, aero, [], [], [], [], [], [], [], [], [], [], attState, srp, altitude, pressure, density);
+            [forceVect, ~] = dragModel.getForce(ut, rVect, vVect, mass, centralBody, aero, [], [], [], [], [], [], [], [], [], [], attState, srp, atmoState);
             
             % Restore rotation
             centralBody.rotperiod = centralBodyRotPeriod;

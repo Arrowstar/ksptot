@@ -7,6 +7,6 @@ classdef (Abstract) AbstractForceModel < matlab.mixin.SetGet & matlab.mixin.Hete
     end
     
     methods
-        [forceVect, tankMdots] = getForce(obj, ut, rVect, vVect, mass, bodyInfo, CdA, throttleModel, steeringModel, tankStates, stageStates, lvState, dryMass, tankStatesMasses, grav3Body, storageSoCs, powerStorageStates, attState, srp, altitude, pressure, density);
+        [forceVect, tankMdots, ecDots] = getForce(obj, ut, rVect, vVect, mass, bodyInfo, aero, throttleModel, steeringModel, tankStates, stageStates, lvState, dryMass, tankStatesMasses, thirdBodyGravity, storageSoCs, powerStorageStates, attState, srp, atmoState, engineToTankCache);
     end
 end
