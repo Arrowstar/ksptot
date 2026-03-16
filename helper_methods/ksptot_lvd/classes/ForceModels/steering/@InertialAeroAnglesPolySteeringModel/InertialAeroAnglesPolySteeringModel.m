@@ -16,7 +16,11 @@ classdef InertialAeroAnglesPolySteeringModel < AbstractAnglePolySteeringModel
     end
     
     methods       
-        function R_body_2_inertial = getBody2InertialDcmAtTime(obj, ut, rVect, vVect, bodyInfo)
+        function R_body_2_inertial = getBody2InertialDcmAtTime(obj, ut, rVect, vVect, bodyInfo, atmoState)
+            if(nargin < 6)
+                atmoState = struct();
+            end
+            
             if(numel(ut) == 1 && ut == obj.dcmCacheTime)
                 R_body_2_inertial = obj.dcmCache;
             else
@@ -25,7 +29,7 @@ classdef InertialAeroAnglesPolySteeringModel < AbstractAnglePolySteeringModel
                 angOfSideslip = obj.slipModel.getValueAtTime(ut);
                 
                 baseFrame = bodyInfo.getBodyCenteredInertialFrame();
-                [~, ~, ~, R_body_2_inertial] = computeInertialBodyAxesFromFrameAeroAngles(ut, rVect, vVect, bodyInfo, bankAng, angOfAttack, angOfSideslip, baseFrame);
+                [~, ~, ~, R_body_2_inertial] = computeInertialBodyAxesFromFrameAeroAngles(ut, rVect, vVect, bodyInfo, bankAng, angOfAttack, angOfSideslip, baseFrame, atmoState);
 
                 obj.dcmCacheTime = ut;
                 obj.dcmCache = R_body_2_inertial;

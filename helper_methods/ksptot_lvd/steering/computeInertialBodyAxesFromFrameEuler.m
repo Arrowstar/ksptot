@@ -1,4 +1,4 @@
-function [bodyX, bodyY, bodyZ, R_body_2_inertial] = computeInertialBodyAxesFromFrameEuler(ut, rVect, vVect, bodyInfo, rollAng, pitchAng, yawAng, baseFrame) 
+function [bodyX, bodyY, bodyZ, R_body_2_inertial] = computeInertialBodyAxesFromFrameEuler(ut, rVect, vVect, bodyInfo, rollAng, pitchAng, yawAng, baseFrame, atmoState) 
     arguments
         ut(1,1) double
         rVect(3,1) double
@@ -8,6 +8,7 @@ function [bodyX, bodyY, bodyZ, R_body_2_inertial] = computeInertialBodyAxesFromF
         pitchAng(1,1) double
         yawAng(1,1) double
         baseFrame(1,1) AbstractReferenceFrame
+        atmoState struct = struct()
     end
 
     persistent lastInputs;
@@ -40,36 +41,50 @@ function [bodyX, bodyY, bodyZ, R_body_2_inertial] = computeInertialBodyAxesFromF
         R_baseFrame_2_BodyInertialFrame = eye(3);
     else
         % We need an element set for some frame conversions
-        if(isempty(ceProxy))
-            ceProxy = CartesianElementSet(ut, rVect, vVect, bodyInertialFrame);
-        else
-            ceProxy.time = ut;
-            ceProxy.rVect = rVect;
-            ceProxy.vVect = vVect;
-            ceProxy.frame = bodyInertialFrame;
-        end
-
-        if(baseFrame.getOriginBody() == bodyInfo)
-            % Optimized path for frames sharing the same origin (typical for steering)
-            % Avoids expensive conversion, but still needs rotation matrix
-            R_baseFrame_2_GlobalInertial = baseFrame.getRotMatToInertialAtTime(ut, ceProxy, []);
-            R_bodyInertialFrame_2_GlobalInertial = bodyInertialFrame.getRotMatToInertialAtTime(ut, ceProxy, []);
+        if(not(isempty(atmoState)) && isfield(atmoState,'REci2Ecef') && ...
+           baseFrame.typeEnum == ReferenceFrameEnum.BodyFixedRotating && baseFrame.getOriginBody() == bodyInfo)
+            
+            % Optimized path using atmoState to avoid expensive recalculations
+            R_baseFrame_2_GlobalInertial = atmoState.REci2Ecef';
+            R_bodyInertialFrame_2_GlobalInertial = bodyInertialFrame.getRotMatToInertialAtTime(ut, [], []);
 
             R_GlobalInertial_2_bodyInertialFrame = R_bodyInertialFrame_2_GlobalInertial';
             R_baseFrame_2_BodyInertialFrame = R_GlobalInertial_2_bodyInertialFrame * R_baseFrame_2_GlobalInertial;
             
             % rVectBaseFrame = R_baseFrame_to_Global' * R_bodyInertialFrame_to_Global * rVect
-            rVectBaseFrame = R_baseFrame_2_GlobalInertial' * (R_bodyInertialFrame_2_GlobalInertial * rVect);
+            rVectBaseFrame = atmoState.REci2Ecef * (R_bodyInertialFrame_2_GlobalInertial * rVect);
         else
-            % Fallback for different origins
-            ce = ceProxy.convertToFrame(baseFrame, true);
-            rVectBaseFrame = ce.rVect;
-            
-            R_baseFrame_2_GlobalInertial = baseFrame.getRotMatToInertialAtTime(ut, ce, []);
-            R_bodyInertialFrame_2_GlobalInertial = bodyInertialFrame.getRotMatToInertialAtTime(ut, ce, []);
+            if(isempty(ceProxy))
+                ceProxy = CartesianElementSet(ut, rVect, vVect, bodyInertialFrame);
+            else
+                ceProxy.time = ut;
+                ceProxy.rVect = rVect;
+                ceProxy.vVect = vVect;
+                ceProxy.frame = bodyInertialFrame;
+            end
 
-            R_GlobalInertial_2_bodyInertialFrame = R_bodyInertialFrame_2_GlobalInertial';
-            R_baseFrame_2_BodyInertialFrame = R_GlobalInertial_2_bodyInertialFrame * R_baseFrame_2_GlobalInertial;
+            if(baseFrame.getOriginBody() == bodyInfo)
+                % Optimized path for frames sharing the same origin (typical for steering)
+                % Avoids expensive conversion, but still needs rotation matrix
+                R_baseFrame_2_GlobalInertial = baseFrame.getRotMatToInertialAtTime(ut, ceProxy, []);
+                R_bodyInertialFrame_2_GlobalInertial = bodyInertialFrame.getRotMatToInertialAtTime(ut, ceProxy, []);
+
+                R_GlobalInertial_2_bodyInertialFrame = R_bodyInertialFrame_2_GlobalInertial';
+                R_baseFrame_2_BodyInertialFrame = R_GlobalInertial_2_bodyInertialFrame * R_baseFrame_2_GlobalInertial;
+                
+                % rVectBaseFrame = R_baseFrame_to_Global' * R_bodyInertialFrame_to_Global * rVect
+                rVectBaseFrame = R_baseFrame_2_GlobalInertial' * (R_bodyInertialFrame_2_GlobalInertial * rVect);
+            else
+                % Fallback for different origins
+                ce = ceProxy.convertToFrame(baseFrame, true);
+                rVectBaseFrame = ce.rVect;
+                
+                R_baseFrame_2_GlobalInertial = baseFrame.getRotMatToInertialAtTime(ut, ce, []);
+                R_bodyInertialFrame_2_GlobalInertial = bodyInertialFrame.getRotMatToInertialAtTime(ut, ce, []);
+
+                R_GlobalInertial_2_bodyInertialFrame = R_bodyInertialFrame_2_GlobalInertial';
+                R_baseFrame_2_BodyInertialFrame = R_GlobalInertial_2_bodyInertialFrame * R_baseFrame_2_GlobalInertial;
+            end
         end
     end
 

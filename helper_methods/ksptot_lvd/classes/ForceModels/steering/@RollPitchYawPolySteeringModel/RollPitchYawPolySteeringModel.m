@@ -21,7 +21,11 @@ classdef RollPitchYawPolySteeringModel < AbstractAnglePolySteeringModel
     end
     
     methods       
-        function dcm = getBody2InertialDcmAtTime(obj, ut, rVect, vVect, bodyInfo)
+        function dcm = getBody2InertialDcmAtTime(obj, ut, rVect, vVect, bodyInfo, atmoState)
+            if(nargin < 6)
+                atmoState = struct();
+            end
+            
             if(numel(ut) == 1 && ut == obj.dcmCacheTime)
                 dcm = obj.dcmCache;
             else
@@ -41,7 +45,7 @@ classdef RollPitchYawPolySteeringModel < AbstractAnglePolySteeringModel
                 end
                             
                 baseFrame = bodyInfo.getBodyFixedFrame();
-                [~, ~, ~, dcm] = computeInertialBodyAxesFromFrameEuler(ut, rVect, vVect, bodyInfo, rollAng, pitchAng, yawAng, baseFrame);
+                [~, ~, ~, dcm] = computeInertialBodyAxesFromFrameEuler(ut, rVect, vVect, bodyInfo, rollAng, pitchAng, yawAng, baseFrame, atmoState);
                 dcm = real(dcm);
 
                 obj.dcmCacheTime = ut;

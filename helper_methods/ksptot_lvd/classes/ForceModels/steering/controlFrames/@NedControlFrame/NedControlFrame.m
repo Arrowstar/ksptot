@@ -14,7 +14,7 @@ classdef NedControlFrame < AbstractControlFrame
             enum = ControlFramesEnum.NedFrame;
         end
         
-        function R_body_2_inertial = computeDcmToInertialFrame(obj, ut, rVect, vVect, bodyInfo, gammaAng, betaAng, alphaAng, baseFrame)
+        function R_body_2_inertial = computeDcmToInertialFrame(obj, ut, rVect, vVect, bodyInfo, gammaAng, betaAng, alphaAng, baseFrame, atmoState)
             arguments
                 obj(1,1) NedControlFrame
                 ut(1,1) double
@@ -25,10 +25,11 @@ classdef NedControlFrame < AbstractControlFrame
                 betaAng(1,1) double
                 alphaAng(1,1) double
                 baseFrame(1,1) AbstractReferenceFrame
+                atmoState struct = struct()
             end
 
 %             [~, ~, ~, dcm] = computeBodyAxesFromEuler(ut, rVect, vVect, bodyInfo, gammaAng, betaAng, alphaAng, baseFrame);
-            [~, ~, ~, R_body_2_inertial] = computeInertialBodyAxesFromFrameEuler(ut, rVect, vVect, bodyInfo, gammaAng, betaAng, alphaAng, baseFrame);
+            [~, ~, ~, R_body_2_inertial] = computeInertialBodyAxesFromFrameEuler(ut, rVect, vVect, bodyInfo, gammaAng, betaAng, alphaAng, baseFrame, atmoState);
         end
         
         function [gammaAngle, betaAngle, alphaAngle] = getAnglesFromInertialBodyAxes(obj, attState, ut, rVect, vVect, bodyInfo, inFrame)

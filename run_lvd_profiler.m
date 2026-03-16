@@ -16,7 +16,7 @@ profile off;
 
 p = profile('info');
 
-funcsToFind = {'ForceModelPropagator.odefun', 'TotalForceModel.getForce', 'DragForceModel.getForce', 'ThrustForceModel.getForce', 'RollPitchYawPolySteeringModel.getBody2InertialDcmAtTime'};
+funcsToFind = {'ForceModelPropagator.odefun', 'TotalForceModel.getForce', 'DragForceModel.getForce', 'DragForceModel.DragForceModel>getDragForce', 'ThrustForceModel.getForce', 'RollPitchYawPolySteeringModel.getBody2InertialDcmAtTime'};
 
 for k=1:length(funcsToFind)
     funcIdx = find(contains({p.FunctionTable.FunctionName}, funcsToFind{k}));

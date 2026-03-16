@@ -24,7 +24,11 @@ classdef GenericQuatInterpSteeringModel < AbstractSteeringModel
     end
     
     methods       
-        function dcm = getBody2InertialDcmAtTime(obj, ut, rVect, vVect, bodyInfo)
+        function dcm = getBody2InertialDcmAtTime(obj, ut, rVect, vVect, bodyInfo, atmoState)
+            if(nargin < 6)
+                atmoState = struct();
+            end
+            
             if(obj.tDur > 0)
                 if(ut < obj.t0)
                     f = 0;
@@ -52,7 +56,7 @@ classdef GenericQuatInterpSteeringModel < AbstractSteeringModel
             
             [alphaAng, betaAng, gammaAng] = quat2angle(q, 'ZYX');
             
-            dcm = obj.controlFrame.computeDcmToInertialFrame(ut, rVect, vVect, bodyInfo, gammaAng, betaAng, alphaAng, obj.refFrame);
+            dcm = obj.controlFrame.computeDcmToInertialFrame(ut, rVect, vVect, bodyInfo, gammaAng, betaAng, alphaAng, obj.refFrame, atmoState);
             dcm = real(dcm);
         end
         

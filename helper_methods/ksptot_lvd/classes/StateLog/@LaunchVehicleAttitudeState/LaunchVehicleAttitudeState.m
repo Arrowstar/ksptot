@@ -107,19 +107,20 @@ classdef LaunchVehicleAttitudeState < matlab.mixin.SetGet
             yawAngle = AngleZero2Pi(yawAngle);
         end
 
-        function [bankAng,angOfAttack,angOfSideslip,totalAoA] = getAeroAngles(obj, ut, rVect, vVect, bodyInfo)    
+        function [bankAng,angOfAttack,angOfSideslip,totalAoA] = getAeroAngles(obj, ut, rVect, vVect, bodyInfo, atmoState)    
             arguments
                 obj(1,1) LaunchVehicleAttitudeState
                 ut(1,1) double
                 rVect(3,1) double
                 vVect(3,1) double
                 bodyInfo(1,1) KSPTOT_BodyInfo
+                atmoState struct = struct()
             end
             inFrame = bodyInfo.getBodyFixedFrame();
-            [bankAng,angOfAttack,angOfSideslip,totalAoA] = obj.getAeroAnglesInFrame(ut, rVect, vVect, bodyInfo, inFrame);
+            [bankAng,angOfAttack,angOfSideslip,totalAoA] = obj.getAeroAnglesInFrame(ut, rVect, vVect, bodyInfo, inFrame, atmoState);
         end
 
-        function [bankAng,angOfAttack,angOfSideslip,totalAoA] = getAeroAnglesInFrame(obj, ut, rVect, vVect, bodyInfo, inFrame)            
+        function [bankAng,angOfAttack,angOfSideslip,totalAoA] = getAeroAnglesInFrame(obj, ut, rVect, vVect, bodyInfo, inFrame, atmoState)            
             arguments
                 obj(1,1) LaunchVehicleAttitudeState
                 ut(1,1) double
@@ -127,6 +128,7 @@ classdef LaunchVehicleAttitudeState < matlab.mixin.SetGet
                 vVect(3,1) double
                 bodyInfo(1,1) KSPTOT_BodyInfo
                 inFrame(1,1) AbstractReferenceFrame
+                atmoState struct = struct()
             end
 
             if(ut == obj.lastAeroUt && all(rVect == obj.lastAeroRVect) && all(vVect == obj.lastAeroVVect) && inFrame == obj.lastAeroFrame && all(obj.dcm == obj.lastAeroDcm, 'all'))
@@ -138,15 +140,25 @@ classdef LaunchVehicleAttitudeState < matlab.mixin.SetGet
             end
 
             frame = bodyInfo.getBodyCenteredInertialFrame();
-            ce = CartesianElementSet(ut, rVect, vVect, frame);
-            ce = ce.convertToFrame(inFrame, true);
-            rVectFrame = ce.rVect;
-            vVectFrame = ce.vVect;
+            
+            useFastPath = false;
+            if(inFrame.typeEnum == ReferenceFrameEnum.BodyFixedRotating && inFrame.bodyInfo == bodyInfo && isfield(atmoState, 'REci2Ecef') && not(isempty(atmoState.REci2Ecef)))
+                useFastPath = true;
+                
+                rVectFrame = atmoState.REci2Ecef * rVect;
+                vVectFrame = atmoState.vVectECEF;
+                R_1_to_2 = atmoState.REci2Ecef;
+            else
+                ce = CartesianElementSet(ut, rVect, vVect, frame);
+                ce = ce.convertToFrame(inFrame, true);
+                rVectFrame = ce.rVect;
+                vVectFrame = ce.vVect;
 
-            R_1_to_inert = frame.getRotMatToInertialAtTime(ut,ce);
-            R_2_to_inert = inFrame.getRotMatToInertialAtTime(ut,ce);
+                R_1_to_inert = frame.getRotMatToInertialAtTime(ut,ce);
+                R_2_to_inert = inFrame.getRotMatToInertialAtTime(ut,ce);
 
-            R_1_to_2 = R_2_to_inert' * R_1_to_inert;
+                R_1_to_2 = R_2_to_inert' * R_1_to_inert;
+            end
 
             bodyXFrame = R_1_to_2 * obj.bodyX;
             bodyYFrame = R_1_to_2 * obj.bodyY;

@@ -11,7 +11,7 @@ classdef(Abstract) AbstractSteeringModel < matlab.mixin.SetGet & matlab.mixin.He
         
         setT0(obj, newT0)
         
-        dcm = getBody2InertialDcmAtTime(obj, ut, rVect, vVect, bodyInfo)
+        dcm = getBody2InertialDcmAtTime(obj, ut, rVect, vVect, bodyInfo, atmoState)
                 
         setConstsFromDcmAndContinuitySettings(obj, dcm, ut, rVect, vVect, bodyInfo) 
         

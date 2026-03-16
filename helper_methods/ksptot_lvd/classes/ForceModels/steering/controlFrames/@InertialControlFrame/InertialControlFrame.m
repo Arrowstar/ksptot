@@ -14,7 +14,7 @@ classdef InertialControlFrame < AbstractControlFrame
             enum = ControlFramesEnum.InertialFrame;
         end
         
-        function dcm = computeDcmToInertialFrame(obj, ut, rVect, vVect, bodyInfo, gammaAng, betaAng, alphaAng, baseFrame)
+        function dcm = computeDcmToInertialFrame(obj, ut, rVect, vVect, bodyInfo, gammaAng, betaAng, alphaAng, baseFrame, atmoState)
             arguments
                 obj(1,1) InertialControlFrame
                 ut(1,1) double
@@ -25,6 +25,7 @@ classdef InertialControlFrame < AbstractControlFrame
                 betaAng(1,1) double
                 alphaAng(1,1) double
                 baseFrame(1,1) AbstractReferenceFrame
+                atmoState struct = struct()
             end
 
             frame = bodyInfo.getBodyCenteredInertialFrame();

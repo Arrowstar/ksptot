@@ -16,7 +16,11 @@ classdef GenericLinearTangentSteeringModel < AbstractSteeringModel
     end
     
     methods       
-        function dcm = getBody2InertialDcmAtTime(obj, ut, rVect, vVect, bodyInfo)
+        function dcm = getBody2InertialDcmAtTime(obj, ut, rVect, vVect, bodyInfo, atmoState)
+            if(nargin < 6)
+                atmoState = struct();
+            end
+            
             gammaAng = obj.gammaAngleModel.getValueAtTime(ut);
             betaAng = obj.betaAngleModel.getValueAtTime(ut);
             alphaAng = obj.alphaAngleModel.getValueAtTime(ut);
@@ -26,7 +30,7 @@ classdef GenericLinearTangentSteeringModel < AbstractSteeringModel
 %                 elemSet = elemSet.convertToFrame(obj.refFrame);
 %             end
             
-            dcm = real(obj.controlFrame.computeDcmToInertialFrame(ut, rVect, vVect, bodyInfo, gammaAng, betaAng, alphaAng, obj.refFrame));
+            dcm = real(obj.controlFrame.computeDcmToInertialFrame(ut, rVect, vVect, bodyInfo, gammaAng, betaAng, alphaAng, obj.refFrame, atmoState));
         end
 
         function [angleModel, continuity] = getAngleNModel(obj, n)

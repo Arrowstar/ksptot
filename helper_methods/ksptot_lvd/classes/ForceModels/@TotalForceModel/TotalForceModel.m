@@ -49,7 +49,7 @@ classdef TotalForceModel < matlab.mixin.SetGet
 
             if(mass > 0)
                 if(any([fmEnums.usesAttitudeState]))
-                    attState.dcm = steeringModel.getBody2InertialDcmAtTime(ut, rVect, vVect, bodyInfo);
+                    attState.dcm = steeringModel.getBody2InertialDcmAtTime(ut, rVect, vVect, bodyInfo, atmoState);
                     attStateToUse = attState;
                 else
                     attStateToUse = [];

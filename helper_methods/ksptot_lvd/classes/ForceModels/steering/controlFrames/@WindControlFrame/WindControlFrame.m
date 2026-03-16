@@ -14,7 +14,7 @@ classdef WindControlFrame < AbstractControlFrame
             enum = ControlFramesEnum.WindFrame;
         end
         
-        function R_body_2_inertial = computeDcmToInertialFrame(obj, ut, rVect, vVect, bodyInfo, gammaAng, betaAng, alphaAng, baseFrame)
+        function R_body_2_inertial = computeDcmToInertialFrame(obj, ut, rVect, vVect, bodyInfo, gammaAng, betaAng, alphaAng, baseFrame, atmoState)
             arguments
                 obj(1,1) WindControlFrame
                 ut(1,1) double
@@ -25,11 +25,12 @@ classdef WindControlFrame < AbstractControlFrame
                 betaAng(1,1) double
                 alphaAng(1,1) double
                 baseFrame(1,1) AbstractReferenceFrame
+                atmoState struct = struct()
             end
 
 %             [~, ~, ~, dcm] = computeBodyAxesFromInertialAeroAngles(ut, rVect, vVect, bodyInfo, betaAng, alphaAng, gammaAng);
 
-            [~, ~, ~, R_body_2_inertial] = computeInertialBodyAxesFromFrameAeroAngles(ut, rVect, vVect, bodyInfo, gammaAng, betaAng, alphaAng, baseFrame);
+            [~, ~, ~, R_body_2_inertial] = computeInertialBodyAxesFromFrameAeroAngles(ut, rVect, vVect, bodyInfo, gammaAng, betaAng, alphaAng, baseFrame, atmoState);
         end
         
         function [gammaAngle, betaAngle, alphaAngle] = getAnglesFromInertialBodyAxes(obj, attState, ut, rVect, vVect, bodyInfo, inFrame)

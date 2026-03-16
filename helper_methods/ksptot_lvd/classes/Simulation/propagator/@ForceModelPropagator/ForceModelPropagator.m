@@ -134,15 +134,39 @@ classdef ForceModelPropagator < AbstractPropagator
             storageRates = LaunchVehicleStateLogEntry.getStorageChargeRatesDueToSourcesSinks(storageSoCs, powerStorageStates, stageStates, ut, rVect, vVect, bodyInfo, steeringModel);
             
             dydt = zeros(length(y),1);
+
+            if(altitude <= bodyInfo.atmohgt && altitude >= 0)
+                [lat, long, ~, ~, ~, ~, ~, vVectECEF, REci2Ecef] = getLatLongAltFromInertialVect(ut, rVect, bodyInfo, vVect);
+                [density, pressure, ~] = getAtmoDensityAtAltitude(bodyInfo, altitude, lat, ut, long); 
+                
+                atmoState.altitude = altitude;
+                atmoState.lat = lat;
+                atmoState.long = long;
+                atmoState.pressure = pressure;
+                atmoState.density = density;
+                atmoState.vVectECEF = vVectECEF;
+                atmoState.REci2Ecef = REci2Ecef;
+            else
+                atmoState.altitude = altitude;
+                atmoState.lat = NaN;
+                atmoState.long = NaN;
+                atmoState.pressure = 0;
+                atmoState.density = 0;
+                atmoState.vVectECEF = [NaN;NaN;NaN];
+                atmoState.REci2Ecef = eye(3);
+                
+                pressure = 0;
+                density = 0;
+            end
+
             if(holdDownEnabled)
-                pressure = getPressureAtAltitude(bodyInfo, altitude);
                 throttle = throttleModel.getThrottleAtTime(ut, rVect, vVect, tankStatesMasses, dryMass, stageStates, lvState, tankStates, bodyInfo, storageSoCs, powerStorageStates);
 
                 persistent attState;
                 if(isempty(attState))
                     attState = LaunchVehicleAttitudeState();
                 end
-                attState.dcm = steeringModel.getBody2InertialDcmAtTime(ut, rVect, vVect, bodyInfo);
+                attState.dcm = steeringModel.getBody2InertialDcmAtTime(ut, rVect, vVect, bodyInfo, atmoState);
 
                 [tankMassDotsEngines,~,~,ecStgDots] = eventInitStateLogEntry.getTankMassFlowRatesDueToEngines(tankStates, tankStatesMasses, stageStates, throttle, lvState, pressure, ut, rVect, vVect, bodyInfo, steeringModel, storageSoCs, powerStorageStates, attState, engineToTankCache);
 
@@ -168,27 +192,6 @@ classdef ForceModelPropagator < AbstractPropagator
                 aero = eventInitStateLogEntry.aero;
                 thirdBodyGravity = eventInitStateLogEntry.thirdBodyGravity;
                 srp = eventInitStateLogEntry.srp;
-
-                if(altitude <= bodyInfo.atmohgt && altitude >= 0)
-                    [lat, long, ~, ~, ~, ~, ~, vVectECEF, REci2Ecef] = getLatLongAltFromInertialVect(ut, rVect, bodyInfo, vVect);
-                    [density, pressure, ~] = getAtmoDensityAtAltitude(bodyInfo, altitude, lat, ut, long); 
-                    
-                    atmoState.altitude = altitude;
-                    atmoState.lat = lat;
-                    atmoState.long = long;
-                    atmoState.pressure = pressure;
-                    atmoState.density = density;
-                    atmoState.vVectECEF = vVectECEF;
-                    atmoState.REci2Ecef = REci2Ecef;
-                else
-                    atmoState.altitude = altitude;
-                    atmoState.lat = NaN;
-                    atmoState.long = NaN;
-                    atmoState.pressure = 0;
-                    atmoState.density = 0;
-                    atmoState.vVectECEF = [NaN;NaN;NaN];
-                    atmoState.REci2Ecef = eye(3);
-                end
 
                 totalMass = dryMass + sum(tankStatesMasses);
 

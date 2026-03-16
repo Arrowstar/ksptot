@@ -66,7 +66,7 @@ function dragForce = getDragForce(bodyInfo, ut, rVectECI, vVectECI, aero, mass, 
         %helps to prevent wasting time on the potentially expensive total
         %AoA calculation if it's not needed
         if(aero.dragCoeffModel.usesTotalAoA() || aero.dragCoeffModel.usesAoaAndSideslip())
-            [~,angOfAttack,angOfSideslip,totalAoA] = attState.getAeroAngles(ut, rVectECI, vVectECI, bodyInfo);
+            [~,angOfAttack,angOfSideslip,totalAoA] = attState.getAeroAngles(ut, rVectECI, vVectECI, bodyInfo, atmoState);
         else
             angOfAttack = 0;
             angOfSideslip = 0;
@@ -78,10 +78,7 @@ function dragForce = getDragForce(bodyInfo, ut, rVectECI, vVectECI, aero, mass, 
         %all forces are returned in units of mT*km/s^2
         Fd = -(1/2) * density * (vVectEcefMag^2) * CdA; %kg/m^3 * (km^2/s^2) * m^2 = kg/m * km^2/s^2 = kg*(1000)*km/s^2 = kg*(1000)*km/s^2 * (1 mT/1000 kg) = mT*km/s^2
 
-        bci = bodyInfo.getBodyCenteredInertialFrame();
-        R_bci_to_global_inertial = bci.getRotMatToInertialAtTime(ut,[],[]);
-
-        R_ecef_to_bci = R_bci_to_global_inertial' * R_Eci_2_Ecef';
+        R_ecef_to_bci = R_Eci_2_Ecef';
 
         dragForceECEF = Fd * (vVectECEF / vVectEcefMag);
         dragForce = R_ecef_to_bci * dragForceECEF;
