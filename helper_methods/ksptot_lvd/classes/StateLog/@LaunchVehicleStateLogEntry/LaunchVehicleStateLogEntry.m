@@ -567,7 +567,34 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                 powerStorageStates AbstractLaunchVehicleEpsStorageState
                 attState LaunchVehicleAttitudeState
             end
-            
+
+            persistent cachedEngTankInds cachedEngTankKey
+
+            engTankKey = [numel(tankStates), sum([stgStates.active])];
+            if(isempty(cachedEngTankInds) || ~isequal(engTankKey, cachedEngTankKey))
+                cachedEngTankKey = engTankKey;
+                tankStateTanksLocal = [tankStates.tank];
+                cachedEngTankInds = cell(length(stgStates), 1);
+                for(ii=1:length(stgStates)) %#ok<*NO4LP>
+                    engineStates_ii = stgStates(ii).engineStates;
+                    cachedEngTankInds{ii} = cell(length(engineStates_ii), 1);
+                    for(jj=1:length(engineStates_ii))
+                        engine_jj = engineStates_ii(jj).engine;
+                        tanks_jj = lvState.getTanksConnectedToEngine(engine_jj);
+                        inds = zeros(1, length(tanks_jj));
+                        numValid = 0;
+                        for(kk=1:length(tanks_jj))
+                            idx = find(tankStateTanksLocal == tanks_jj(kk), 1);
+                            if(~isempty(idx))
+                                numValid = numValid + 1;
+                                inds(numValid) = idx;
+                            end
+                        end
+                        cachedEngTankInds{ii}{jj} = inds(1:numValid);
+                    end
+                end
+            end
+
             tankMDots = zeros(size(tankStates));
             tankMDots = tankMDots(:);
             totalThrust = 0;
@@ -583,8 +610,6 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             end
             maxEcCapacities = maxEcCapacities(:);
 
-            tankStateTanksArr = [tankStates.tank];
-            
             for(i=1:length(stgStates)) %#ok<*NO4LP>
 %                 stgState = stgStates(i);
                 
@@ -603,30 +628,23 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                                 
                                 flowFromTankInds = zeros(size(tankStates));
                                 if(mdot < 0 && ... %negative because we're flowing out
-                                   (engine.reqsElecCharge == false || (engine.reqsElecCharge == true && numel(storageSoCs)>0 && sum(storageSoCs)>0))) %handle engines that require EC to function 
-                                    tanks = lvState.getTanksConnectedToEngine(engine);
-                                    
+                                   (engine.reqsElecCharge == false || (engine.reqsElecCharge == true && numel(storageSoCs)>0 && sum(storageSoCs)>0))) %handle engines that require EC to function
+                                    connTankInds = cachedEngTankInds{i}{j};
+
                                     totalConnTankCapacity = 0;
                                     totalConnTankMass = 0;
-                                    for(k=1:length(tanks))
-                                        if(not(isempty(tankStates)))
-                                            tank = tanks(k);
-                                            tankBool = tankStateTanksArr == tank;
-                                            tankState = tankStates(tankBool);
-                                            
-                                            if(not(isempty(tankState)))
-                                                tankStageState = tankState.stageState;
-                                                
-                                                if(tankStageState.active)
-                                                    tankMass = tankStatesMasses(tankBool);
-                                                    
-                                                    totalConnTankCapacity = totalConnTankCapacity + tank.initialMass;
-                                                    totalConnTankMass = totalConnTankMass + tankMass;
-                                                    
-                                                    if(tankMass > 0)
-                                                        flowFromTankInds(tankStates == tankState) = 1;
-                                                    end
-                                                end
+                                    for(k=1:length(connTankInds))
+                                        idx = connTankInds(k);
+                                        tankState = tankStates(idx);
+
+                                        if(tankState.stageState.active)
+                                            tankMass = tankStatesMasses(idx);
+
+                                            totalConnTankCapacity = totalConnTankCapacity + tankState.tank.initialMass;
+                                            totalConnTankMass = totalConnTankMass + tankMass;
+
+                                            if(tankMass > 0)
+                                                flowFromTankInds(idx) = 1;
                                             end
                                         end
                                     end
