@@ -475,12 +475,19 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                 for(i=1:length(stateLogEntries)-1)
                     stateLogEntries(i) = stateLogEntries(i).copyElement(false);
                 end
-                
+
                 stateLogEntries(end) = stateLogEntries(end).copyElement(true);
+
+                % Entries 2..N get their calcObjStates replaced below (lines 528-540).
+                % Release the N-1 copies made by copyElement to avoid wasted allocations.
+                initCalcObjStates = eventInitStateLogEntry.calcObjStates;
+                for(i=2:length(stateLogEntries))
+                    stateLogEntries(i).calcObjStates = initCalcObjStates;
+                end
             else
                 stateLogEntries = stateLogEntries.copy();
             end
-            
+
             stopwatchStates = eventInitStateLogEntry.stopwatchStates;
             initSwValues = [stopwatchStates.value];
             initSwRunningEnums = [stopwatchStates.running];
@@ -514,12 +521,15 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                     end
                 end
                 
-                for(j=1:length(stateLogEntry.extremaStates))
-                    if(i == 1)
-                        newValue(j) = stateLogEntry.extremaStates(j).value; %#ok<AGROW>
+                if(~isempty(stateLogEntry.extremaStates))
+                    maSubLog_i = stateLogEntry.getMAFormattedStateLogMatrix(true);
+                    for(j=1:length(stateLogEntry.extremaStates))
+                        if(i == 1)
+                            newValue(j) = stateLogEntry.extremaStates(j).value; %#ok<AGROW>
+                        end
+
+                        newValue(j) = stateLogEntry.extremaStates(j).updateExtremaStateWithStateLogEntry(stateLogEntry, newValue(j), maSubLog_i); %#ok<AGROW>
                     end
-                    
-                    newValue(j) = stateLogEntry.extremaStates(j).updateExtremaStateWithStateLogEntry(stateLogEntry, newValue(j)); %#ok<AGROW>
                 end
                 
                 stateLogEntries(i) = stateLogEntry;
@@ -684,21 +694,29 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
         end
         
         function storageRates = getStorageChargeRatesDueToSourcesSinks(storageSoCs, powerStorageStates, stgStates, ut, rVect, vVect, bodyInfo, steeringModel)
+            persistent cachedHasPanels cachedStgKey
+
             if(length(storageSoCs) >= 1)
                 elemSet = CartesianElementSet(ut, rVect(:), vVect(:), bodyInfo.getBodyCenteredInertialFrame());
-                
-                hasPanels = false;
-                for(i=1:length(stgStates))
-                    for(j=1:length([stgStates(i).powerSrcStates]))
-                        if(isa(stgStates(i).powerSrcStates(j).getEpsSrcComponent(), 'AbstractLaunchVehicleSolarPanel'))
-                            hasPanels = true;
-                            break;
+
+                % hasPanels is fixed for a given active-stage configuration; cache it to avoid
+                % a nested object-traversal loop on every ODE step.
+                stgKey = [numel(stgStates), sum([stgStates.active])];
+                if(isempty(cachedHasPanels) || ~isequal(stgKey, cachedStgKey))
+                    cachedStgKey = stgKey;
+                    hasPanels = false;
+                    for(i=1:length(stgStates)) %#ok<*NO4LP>
+                        for(j=1:length(stgStates(i).powerSrcStates))
+                            if(isa(stgStates(i).powerSrcStates(j).getEpsSrcComponent(), 'AbstractLaunchVehicleSolarPanel'))
+                                hasPanels = true;
+                                break;
+                            end
                         end
+                        if(hasPanels); break; end
                     end
-                    
-                    if(hasPanels)
-                        break;
-                    end
+                    cachedHasPanels = hasPanels;
+                else
+                    hasPanels = cachedHasPanels;
                 end
                 
                 if(hasPanels)

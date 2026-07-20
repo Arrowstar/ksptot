@@ -1,15 +1,4 @@
-function [bodyX, bodyY, bodyZ, R_body_2_inertial] = computeInertialBodyAxesFromFrameEuler(ut, rVect, vVect, bodyInfo, rollAng, pitchAng, yawAng, baseFrame) 
-    arguments
-        ut(1,1) double
-        rVect(3,1) double
-        vVect(3,1) double
-        bodyInfo(1,1) KSPTOT_BodyInfo
-        rollAng(1,1) double
-        pitchAng(1,1) double
-        yawAng(1,1) double
-        baseFrame(1,1) AbstractReferenceFrame
-    end
-
+function [bodyX, bodyY, bodyZ, R_body_2_inertial] = computeInertialBodyAxesFromFrameEuler(ut, rVect, vVect, bodyInfo, rollAng, pitchAng, yawAng, baseFrame)
     bodyInertialFrame = bodyInfo.getBodyCenteredInertialFrame();
     ce = CartesianElementSet(ut, rVect, vVect, bodyInertialFrame);
     ce = ce.convertToFrame(baseFrame, true);

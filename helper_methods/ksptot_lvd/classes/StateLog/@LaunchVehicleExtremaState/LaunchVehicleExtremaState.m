@@ -21,11 +21,16 @@ classdef LaunchVehicleExtremaState < matlab.mixin.SetGet & matlab.mixin.Copyable
             val = obj.value;
         end
                 
-        function [newValue] = updateExtremaStateWithStateLogEntry(obj, stateLogEntry, prevValue)    
-            if(obj.active == LaunchVehicleExtremaRecordingEnum.Recording) %if it's not recording, then we can just return the exState as it is b/c it won't change     
+        function [newValue] = updateExtremaStateWithStateLogEntry(obj, stateLogEntry, prevValue, maSubLog)
+            if(nargin < 4)
+                maSubLog = [];
+            end
+            if(obj.active == LaunchVehicleExtremaRecordingEnum.Recording) %if it's not recording, then we can just return the exState as it is b/c it won't change
                 maTaskList = LaunchVehicleExtremaState.gaTaskList;
-                
-                maSubLog = stateLogEntry.getMAFormattedStateLogMatrix(true);
+
+                if(isempty(maSubLog))
+                    maSubLog = stateLogEntry.getMAFormattedStateLogMatrix(true);
+                end
                 taskStr = obj.extrema.quantStr;
                 prevDistTraveled = 0;
                 refBodyId = obj.extrema.frame.getOriginBody().id;

@@ -1,15 +1,4 @@
 function [bodyX, bodyY, bodyZ, R_body_2_inertial] = computeInertialBodyAxesFromFrameAeroAngles(ut, rVect, vVect, bodyInfo, bankAng, angOfAttack, angOfSideslip, baseFrame)
-    arguments
-        ut(1,1) double
-        rVect(3,1) double
-        vVect(3,1) double
-        bodyInfo(1,1) KSPTOT_BodyInfo
-        bankAng(1,1) double
-        angOfAttack(1,1) double
-        angOfSideslip(1,1) double
-        baseFrame(1,1) AbstractReferenceFrame
-    end
-
     body_inertial_frame = bodyInfo.getBodyCenteredInertialFrame();
     ce = CartesianElementSet(ut, rVect, vVect, body_inertial_frame);
     ce = ce.convertToFrame(baseFrame, true);
