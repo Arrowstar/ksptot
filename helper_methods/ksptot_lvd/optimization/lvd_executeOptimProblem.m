@@ -30,6 +30,12 @@ function [exitflag, message] = lvd_executeOptimProblem(celBodyData, writeOutput,
         [x,fval,exitflag,output,lambda,grad,hessian] = fmincon(problem);
         message = output.message;
         
+    elseif(strcmpi(problem.solver,'adamnlopt'))
+        [x,fval,exitflag,output,lambda,grad,hessian] = adamnlopt.solve(problem.objective, problem.x0, ...
+                                                                      problem.Aineq, problem.bineq, problem.Aeq, problem.beq, ...
+                                                                      problem.lb, problem.ub, problem.nonlcon, problem.options);
+        message = output.message;
+
     elseif(strcmpi(problem.solver,'sqp'))
         problem = rmfield(problem,'lvdData');
         problem.options.MaxLineSearchFun = 300;

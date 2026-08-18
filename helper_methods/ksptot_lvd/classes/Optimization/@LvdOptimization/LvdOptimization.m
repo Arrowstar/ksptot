@@ -20,7 +20,8 @@ classdef LvdOptimization < matlab.mixin.SetGet
         ipoptOpt(1,1) IpOptOptimizer = IpOptOptimizer();
         surragateOpt(1,1) SurrogateOptimizer = SurrogateOptimizer();
         sqpOpt(1,1) SQPOptimizer = SQPOptimizer();
-        
+        adamNlOptOpt(1,1) AdamNlOptOptimizer = AdamNlOptOptimizer();
+
         %Gradient Calc Algo Selection
         gradAlgo(1,1) LvdOptimizerGradientCalculationAlgoEnum = LvdOptimizerGradientCalculationAlgoEnum.BuiltIn;
 
@@ -44,7 +45,8 @@ classdef LvdOptimization < matlab.mixin.SetGet
             obj.nomadOpt = NomadOptimizer();
             obj.ipoptOpt = IpOptOptimizer();
             obj.surragateOpt = SurrogateOptimizer();
-            
+            obj.adamNlOptOpt = AdamNlOptOptimizer();
+
             obj.builtInGradMethod = BuiltInGradientCalculationMethod();
             obj.customFiniteDiffsCalcMethod = CustomFiniteDiffsCalculationMethod();
         end
@@ -96,6 +98,8 @@ classdef LvdOptimization < matlab.mixin.SetGet
                 optimizer = obj.surragateOpt;
             elseif(optAlgorithm == LvdOptimizerAlgoEnum.SQP)
                 optimizer = obj.sqpOpt;
+            elseif(optAlgorithm == LvdOptimizerAlgoEnum.AdamNlOpt)
+                optimizer = obj.adamNlOptOpt;
             else
                 error('Unknown LVD optimization algorithm!');
             end
