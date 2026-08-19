@@ -37,7 +37,14 @@ function [celBodyData] = processINIBodyInfo(celBodyDataFromINI, varargin)
         row = celBodyDataFromINI(i,:);
         row{1} = lower(matlab.lang.makeValidName(row{1}));
         row{3} = lower(matlab.lang.makeValidName(row{3}));
-        
+
+        if(strcmpi(row{1},'time'))
+            %The [Time] section defines the time/calendar system, not a
+            %celestial body.  It is handled separately by the time system
+            %loader (see getTimeSystemFromConfig).
+            continue;
+        end
+
         if(~isfield(celBodyData,row{1}))
 %             celBodyData.(row{1}) = struct();
             celBodyData.(row{1}) = getNewObjForDataType(dataType);

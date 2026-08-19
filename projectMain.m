@@ -70,6 +70,11 @@ celBodyData = CelestialBodyData(celBodyData);
 [goodTF, celBodyWarnMsgs] = verifyCelBodyData(celBodyData);  
 bodyNames = fieldnames(celBodyData);
 
+%Initialize KSPTOT time system
+global ksptot_TimeSystem options_UseEarthTimeSystem; %#ok<GVMIS>
+ksptot_TimeSystem = getTimeSystemFromConfig(appOptions, celBodyDataFromINI);
+options_UseEarthTimeSystem = strcmpi(ksptot_TimeSystem.system,'earth_stock');
+
 if(not(goodTF))
     msg = {sprintf('Potential issues were found with the loaded celestial body information: \n')};
     for(i=1:length(celBodyWarnMsgs)) %#ok<*NO4LP> 

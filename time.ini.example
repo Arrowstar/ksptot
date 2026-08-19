@@ -1,0 +1,51 @@
+; ============================================================================
+; KSPTOT Custom Time System - SAMPLE FILE (INSTRUCTIVE ONLY)
+; ============================================================================
+;
+; This file is NOT loaded by KSPTOT.  It is provided as a reference for
+; defining a custom time/calendar system.  To actually use a custom time
+; system, create a file named "time.ini" in the KSPTOT root folder (next to
+; bodies.ini and appOptions.ini), or add a [Time] section to the active
+; bodies.ini file.
+;
+; KSPTOT always propagates spacecraft and celestial bodies in UT seconds.
+; The constants below are used ONLY for the Kerbin/Earth time display and
+; for UI fields that accept days/years.  UT seconds remains the truth for
+; propagation.
+;
+; Resolution order when KSPTOT starts:
+;   1. time.ini [Time] section (if the file exists)
+;   2. [Time] section of the active bodies.ini file
+;   3. appOptions.ini [ksptot] timesystem selection (Earth/Kerbin/custom)
+;   4. Stock Kerbin time (21600 s/day, 9201600 s/year)
+;
+; ============================================================================
+
+[Time]
+; built-ins: kerbin_stock, earth_stock, custom
+system = custom
+
+; base conversion constants used ONLY for UI + "days/years" entry fields.
+; UT seconds remains the truth for propagation.
+secondsPerDay = 43200
+secondsPerYear = 16459200
+
+; optional: purely display/formatting preferences
+hoursPerDay = 12
+minutesPerHour = 60
+secondsPerMinute = 60
+
+; ============================================================================
+; Popular configuration examples
+; ============================================================================
+; Stock Kerbin:             system = kerbin_stock  (21600 s/day, 9201600 s/year)
+; Stock Earth:              system = earth_stock   (86400 s/day, 31536000 s/year)
+; JNSQ (native ~2.7x):      secondsPerDay = 43200,  secondsPerYear = 15768000
+; JNSQ Rescale 10x:         secondsPerDay = 86400,  secondsPerYear = 31536000
+; JNSQ Rescale 1x:          secondsPerDay = 21600,  secondsPerYear = 9972540
+; Rescale! 2.5x:            secondsPerDay = 36000,  secondsPerYear = 14544000
+; Rescale! 3.2x:            secondsPerDay = 43200,  secondsPerYear = 16459200
+; Rescale! 6.4x:            secondsPerDay = 64800,  secondsPerYear = 23284800
+; Rescale! 10x:             secondsPerDay = 86400,  secondsPerYear = 29116800
+; Rescale! 10.625x:         secondsPerDay = 86400,  secondsPerYear = 29980800
+; ============================================================================
