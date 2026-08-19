@@ -13,16 +13,16 @@ classdef Gravity3rdBodyForceModel < AbstractForceModel
         end
         
         function [forceVect, tankMdots, ecStgDots] = getForce(obj, ut, rVectSC, vVectSC, mass, bodySC, ~, ~, ~, ~, ~, ~, ~, ~, grav3Body, ~, ~, ~, ~)
-            persistent cachedGrav3BodyId cachedGrav3ScChain cachedGrav3OriChain cachedGrav3BodyChains cachedGrav3NumBodies
+            persistent cachedGrav3BodyId cachedGrav3ScChain cachedGrav3OriChain cachedGrav3BodyChains cachedGrav3BodyIds
 
             bodies = grav3Body.bodies;
             bodies = bodies(bodies ~= bodySC);
 
             % Cache orbit element chains — they describe the fixed celestial body hierarchy and
-            % never change during a session. Invalidate when the central body or body count changes.
-            if(isempty(cachedGrav3BodyId) || cachedGrav3BodyId ~= bodySC.id || numel(bodies) ~= cachedGrav3NumBodies)
+            % never change during a session. Invalidate when the central body or body set changes.
+            if(isempty(cachedGrav3BodyId) || cachedGrav3BodyId ~= bodySC.id || ~isequal(cachedGrav3BodyIds, [bodies.id]))
                 cachedGrav3BodyId    = bodySC.id;
-                cachedGrav3NumBodies = numel(bodies);
+                cachedGrav3BodyIds   = [bodies.id];
                 bodyScFrame          = bodySC.getBodyCenteredInertialFrame();
                 cachedGrav3ScChain   = bodySC.getOrbitElemsChain();
                 cachedGrav3OriChain  = bodyScFrame.getOriginBody().getOrbitElemsChain();

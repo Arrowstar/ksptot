@@ -6,10 +6,18 @@ function [rVect, vVect] = vect_getStatefromKepler_Alg(sma, ecc, inc, raan, arg, 
     %%%%%%%%%%
     % Special Case: Circular Equitorial
     %%%%%%%%%%
-    bool = ecc < 1E-10 & (inc < 1E-10 | abs(inc-pi) < 1E-10);
+    bool = ecc < 1E-10 & (inc < 1E-4 | abs(inc-pi) < 1E-4);
     if(any(bool))
         l = zeros(size(bool));
         l(bool) = raan(bool) + arg(bool) + tru(bool);
+
+        retBool = bool & abs(inc-pi) < 1E-4;
+        if(any(retBool))
+            l(retBool) = tru(retBool) + arg(retBool) - raan(retBool);
+        end
+
+        inc(bool) = 0;
+        inc(retBool) = pi;
         tru(bool) = l(bool);
         raan(bool) = 0;
         arg(bool) = 0;
@@ -18,7 +26,7 @@ function [rVect, vVect] = vect_getStatefromKepler_Alg(sma, ecc, inc, raan, arg, 
     %%%%%%%%%%
     % Special Case: Circular Inclined
     %%%%%%%%%%
-    bool = ecc < 1E-10 & inc >= 1E-10 & abs(inc-pi) >= 1E-10;
+    bool = ecc < 1E-10 & inc >= 1E-4 & abs(inc-pi) >= 1E-4;
     if(any(bool))
         u = zeros(size(tru));
         u(bool) = arg(bool) + tru(bool);
@@ -29,8 +37,21 @@ function [rVect, vVect] = vect_getStatefromKepler_Alg(sma, ecc, inc, raan, arg, 
     %%%%%%%%%%
     % Special Case: Elliptical Equitorial
     %%%%%%%%%%
-    bool = ecc >= 1E-10 & (inc < 1E-10 | abs(inc-pi) < 1E-10);
+    bool = ecc >= 1E-10 & (inc < 1E-4 | abs(inc-pi) < 1E-4);
     if(any(bool))
+        proBool = bool & inc < 1E-4;
+        retBool = bool & abs(inc-pi) < 1E-4;
+
+        if(any(proBool))
+            arg(proBool) = arg(proBool) + raan(proBool);
+        end
+
+        if(any(retBool))
+            arg(retBool) = arg(retBool) - raan(retBool);
+        end
+
+        inc(bool) = 0;
+        inc(retBool) = pi;
         raan(bool) = 0;
     end
 

@@ -52,7 +52,7 @@ function [sma, ecc, inc, raan, arg, tru] = vect_getKeplerFromState_Alg(rVect,vVe
     %%%%%%%%%%
     % Special Case: Elliptical Equitorial
     %%%%%%%%%%
-    bool2 = (ecc >= 1E-10) & ((inc < 1E-10) | (abs(inc-pi) < 1E-10));
+    bool2 = (ecc >= 1E-10) & ((inc < 1E-4) | (abs(inc-pi) < 1E-4));
     if(any(bool2))
         longPeri = real(acos(complex(eVect(1,:)./sqrt(sum(abs(eVect).^2,1)))));
         if(any(eVect(2,:) < 0))
@@ -60,12 +60,17 @@ function [sma, ecc, inc, raan, arg, tru] = vect_getKeplerFromState_Alg(rVect,vVe
         end  
         raan(bool2) = 0;
         arg(bool2) = longPeri(bool2);
+        
+        retBool = bool2 & (abs(inc-pi) < 1E-4);
+        if(any(retBool))
+            arg(retBool) = mod(2*pi - arg(retBool), 2*pi);
+        end
     end
 
     %%%%%%%%%%
     % Special Case: Circular Inclined
     %%%%%%%%%%
-    bool2 = (ecc < 1E-10) & (inc >= 1E-10) & (abs(inc-pi) >= 1E-10);
+    bool2 = (ecc < 1E-10) & (inc >= 1E-4) & (abs(inc-pi) >= 1E-4);
     if(any(bool2))
         u = real(acos(complex(dot(nVect,rVect)./(sqrt(sum(abs(nVect).^2,1)).*sqrt(sum(abs(rVect).^2,1)) ))));
         if(any(rVect(3,:) < 0))
@@ -78,13 +83,18 @@ function [sma, ecc, inc, raan, arg, tru] = vect_getKeplerFromState_Alg(rVect,vVe
     %%%%%%%%%%
     % Special Case: Circular Equitorial
     %%%%%%%%%%
-    bool2 = (ecc < 1E-10) & ((inc < 1E-10) | (abs(inc-pi) < 1E-10));
+    bool2 = (ecc < 1E-10) & ((inc < 1E-4) | (abs(inc-pi) < 1E-4));
     if(any(bool2))
         l = real(acos(complex(rVect(1,:)./sqrt(sum(abs(rVect).^2,1)) )));
         if(any(rVect(2,:)<0))
             l(rVect(2,:)<0) = 2*pi-l(rVect(2,:)<0);
         end
         tru(bool2) = l(bool2);
+
+        retBool = bool2 & (abs(inc-pi) < 1E-4);
+        if(any(retBool))
+            tru(retBool) = mod(2*pi - tru(retBool), 2*pi);
+        end
 
         raan(bool2) = 0;
         arg(bool2) = 0;

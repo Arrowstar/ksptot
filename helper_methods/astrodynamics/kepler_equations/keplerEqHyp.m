@@ -16,8 +16,17 @@ function [H] = keplerEqHyp(M,e, eps)
         end
     end
     
-    Hn = M;
-    Hn1 = H;
+    Hn = H;
+    Hn1 = Hn + (M - e*sinh(Hn) + Hn)/(e*cosh(Hn) - 1);
+
+    if(isnan(Hn1))
+        if(-e*sinh(Hn) == Inf)
+            Hn1 = Hn + 1;
+        elseif(-e*sinh(Hn) == -Inf)
+            Hn1 = Hn - 1;
+        end
+    end
+
     while(abs(Hn1 - Hn) > eps)
         Hn = Hn1;
         Hn1 = Hn + (M - e*sinh(Hn) + Hn)/(e*cosh(Hn) - 1);

@@ -46,9 +46,10 @@ function [EccA] = vect_solveKepler(meanALL, eccALL)
             H0(not(bool)) = mean(not(bool)) + ecc(not(bool));
         end
         if(any(ecc >= 1.6)) 
-            bool = ecc<3.6 & abs(mean) > pi;
+            bigBool = ecc >= 1.6;
+            bool = bigBool & ecc < 3.6 & abs(mean) > pi;
             H0(bool) = mean(bool) - sign(mean(bool)).*ecc(bool);
-            H0(not(bool)) = mean(not(bool))./(ecc(not(bool))-1);
+            H0(bigBool & not(bool)) = mean(bigBool & not(bool))./(ecc(bigBool & not(bool))-1);
         end
 
         first = true;

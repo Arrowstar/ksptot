@@ -43,3 +43,4 @@ octave-workspace
 /.aider.tags.cache.v3/
 /helper_methods/ksptot_lvd/.claude/
 *.MATLABDriveTag
+/.claude

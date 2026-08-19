@@ -20,10 +20,10 @@ classdef RKN1210Integrator < AbstractSecondOrderIntegrator
             odeSetOptions = obj.options.getIntegratorOptions();
             optionsToUse = odeset(odeSetOptions, 'Events',evtsFunc, 'OutputFcn',odeOutputFun);
             
-            [t,y,yp,te,ye,ype,ie] = rkn1210(odefun, tspan, y0, yp0, optionsToUse);
+            [t,y,yp,te,ye,ype,ie,exitflag] = rkn1210(odefun, tspan, y0, yp0, optionsToUse);
 
-            if(not(isempty(te)))
-                bool = t == te;
+            if(not(isempty(te)) && exitflag == 3)
+                bool = any(abs(t - te(:).') < 1e-10, 2);
                 if(any(bool))
                     inds = 1 : find(bool,1,'first');
 

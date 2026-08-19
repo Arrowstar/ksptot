@@ -1,6 +1,10 @@
 function [mean, ehAnom] = computeMeanFromTrueAnom(tru, ecc)
 %computeMeanFromTrueAnom Summary of this function goes here
 %   Detailed explanation goes here
+    if(isscalar(ecc) && numel(tru) > 1)
+        ecc = repmat(ecc, size(tru));
+    end
+
     mean = NaN(size(tru));
     ehAnom = NaN(size(tru));
     
@@ -11,8 +15,7 @@ function [mean, ehAnom] = computeMeanFromTrueAnom(tru, ecc)
         
         EA = (atan2(sqrt(1-eccBool.^2).*sin(truBool), eccBool+cos(truBool)));
         
-        tru2PiBool = truBool < 2*pi;
-        EA(tru2PiBool) = AngleZero2Pi(EA(tru2PiBool));
+        EA = AngleZero2Pi(EA);
 
         mean(bool) = AngleZero2Pi(EA - eccBool.*sin(EA));
         ehAnom(bool)=EA;
@@ -29,4 +32,3 @@ function [mean, ehAnom] = computeMeanFromTrueAnom(tru, ecc)
         ehAnom(bool) = HA;
     end
 end
-

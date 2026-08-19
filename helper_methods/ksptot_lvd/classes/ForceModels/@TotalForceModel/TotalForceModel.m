@@ -18,11 +18,23 @@ classdef TotalForceModel < matlab.mixin.SetGet
             forceVect = [0;0;0];
             tankMdots = zeros(length(tankStates),1);
             ecStgDots = zeros(length(powerStorageStates),1);
-            
+
+            persistent cachedAttState cachedNeedsAtt cachedFmEnums
+
             if(mass > 0)
-                if(any([fmEnums.usesAttitudeState]))
-                    attState = LaunchVehicleAttitudeState();
-                    attState.dcm = steeringModel.getBody2InertialDcmAtTime(ut, rVect, vVect, bodyInfo);
+                if(isempty(cachedFmEnums) || ~isequal(cachedFmEnums, fmEnums))
+                    cachedFmEnums = fmEnums;
+                    cachedNeedsAtt = any([fmEnums.usesAttitudeState]);
+                    if(cachedNeedsAtt)
+                        cachedAttState = LaunchVehicleAttitudeState();
+                    else
+                        cachedAttState = [];
+                    end
+                end
+
+                if(cachedNeedsAtt)
+                    cachedAttState.dcm = steeringModel.getBody2InertialDcmAtTime(ut, rVect, vVect, bodyInfo);
+                    attState = cachedAttState;
                 else
                     attState = [];
                 end

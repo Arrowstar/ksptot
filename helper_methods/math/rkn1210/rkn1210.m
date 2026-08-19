@@ -1,5 +1,5 @@
 function varargout = rkn1210(funfcn, tspan, y0, yp0, options, varargin)
-% RKN1210       12th/10th order Runge-Kutta-Nyström integrator
+% RKN1210       12th/10th order Runge-Kutta-Nystrï¿½m integrator
 %
 % RKN1210() is a 12th/10th order numerical integrator for second-order
 % ordinary differential equations of the form
@@ -11,7 +11,7 @@ function varargout = rkn1210(funfcn, tspan, y0, yp0, options, varargin)
 %   y (t0) = y0                       (2)
 %   y'(t0) = yp0
 %
-% This second-order ODE is integrated with a Runge-Kutta-Nyström method,
+% This second-order ODE is integrated with a Runge-Kutta-Nystrï¿½m method,
 % with 17 function evaluations per step. The RKN-class of integrators is
 % especially suited for this purpose, since compared to a classic
 % Runge-Kutta integration scheme, the same accuracy can be obtained with
@@ -210,9 +210,9 @@ Coefficients obtained from
 [2] http://www.tampa.phys.ucl.ac.uk/rmat/test/rknint.f
 These are also available in any format on request to these authors.
 
-[3] CHEAP ERROR ESTIMATION FOR RUNGE–KUTTA METHODS
+[3] CHEAP ERROR ESTIMATION FOR RUNGEï¿½KUTTA METHODS
 CH. TSITOURAS AND S. N. PAPAKOSTAS
-SIAM J. SCI. COMPUT. Vol. 20, No. 6, pp. 2067–2088
+SIAM J. SCI. COMPUT. Vol. 20, No. 6, pp. 2067ï¿½2088
 %}
 
 
@@ -221,7 +221,7 @@ SIAM J. SCI. COMPUT. Vol. 20, No. 6, pp. 2067–2088
 %{
 Rody Oldenhuis, orcid.org/0000-0002-3162-3660. "RKN1210" <version>,
 <date you last used it>. MATLAB implementation of an embedded 12/10th order
-Runge-Kutta-Nyström integrator for second-order ordinary differential equations.
+Runge-Kutta-Nystrï¿½m integrator for second-order ordinary differential equations.
 https://nl.mathworks.com/matlabcentral/fileexchange/25291-rkn1210
 %}
 
@@ -1042,8 +1042,8 @@ function output = detect_Event(input, output,which_event, value)
 
     % The zero has been found! insert values into proper arrays
     % TODO: (Rody Oldenhuis) Also grow these
-    output.TE  = [output.TE; tt];   output.YPE = [output.YPE; dy0];
-    output.YE  = [output.YE; y0];   output.IE  = [output.IE; which_event];
+    output.TE  = [output.TE; tt];   output.YPE = [output.YPE; dy0.'];
+    output.YE  = [output.YE; y0.'];   output.IE  = [output.IE; which_event];
 
     % The integrand first overshoots the zero; that's how it's
     % detected. We want the zero to be in the final arrays, but we also

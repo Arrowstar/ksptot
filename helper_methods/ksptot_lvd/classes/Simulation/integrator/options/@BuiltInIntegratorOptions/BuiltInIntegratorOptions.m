@@ -23,7 +23,7 @@ classdef BuiltInIntegratorOptions < AbstractIntegratorOptions
             options = odeset('AbsTol',obj.AbsTol, 'RelTol',obj.RelTol, 'NormControl',obj.NormControl, 'Refine', obj.Refine, 'InitialStep',obj.InitialStep);
             
             if(isfinite(obj.MaxStep))
-                options = odeset('MaxStep', obj.MaxStep);
+                options = odeset(options, 'MaxStep', obj.MaxStep);
             end
             
             if(islogical(options.NormControl))
