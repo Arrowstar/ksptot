@@ -49,7 +49,7 @@ function datapt = ma_GADistToRefSCTask(stateLogEntry, subTask, otherSC, celBodyD
             rVect = -getAbsPositBetweenSpacecraftAndBody(stateLogEntry(1), stateLogEntry(2:4)',...
                     bodyInfo, otherSC, celBodyData);
             
-            oScBodyInfo = getBodyInfoByNumber(otherSC.parentID, celBodyData);
+            oScBodyInfo = getBodyInfoByNumber(otherSC.parentid, celBodyData);
             [rVectOsc, vVectOsc] = getStateAtTime(otherSC, stateLogEntry(1), oScBodyInfo.gm);
                 
             lvlhPosDeputy = computeLvlhCurviPos(rVectOsc, vVectOsc, rVect, oScBodyInfo.gm);
@@ -59,7 +59,7 @@ function datapt = ma_GADistToRefSCTask(stateLogEntry, subTask, otherSC, celBodyD
             rVect = -getAbsPositBetweenSpacecraftAndBody(stateLogEntry(1), stateLogEntry(2:4)',...
                     bodyInfo, otherSC, celBodyData);
             
-            oScBodyInfo = getBodyInfoByNumber(otherSC.parentID, celBodyData);
+            oScBodyInfo = getBodyInfoByNumber(otherSC.parentid, celBodyData);
             [rVectOsc, vVectOsc] = getStateAtTime(otherSC, stateLogEntry(1), oScBodyInfo.gm);
                 
             lvlhPosDeputy = computeLvlhCurviPos(rVectOsc, vVectOsc, rVect, oScBodyInfo.gm);
@@ -69,7 +69,7 @@ function datapt = ma_GADistToRefSCTask(stateLogEntry, subTask, otherSC, celBodyD
             rVect = -getAbsPositBetweenSpacecraftAndBody(stateLogEntry(1), stateLogEntry(2:4)',...
                     bodyInfo, otherSC, celBodyData);
                 
-            oScBodyInfo = getBodyInfoByNumber(otherSC.parentID, celBodyData);
+            oScBodyInfo = getBodyInfoByNumber(otherSC.parentid, celBodyData);
             [rVectOsc, vVectOsc] = getStateAtTime(otherSC, stateLogEntry(1), oScBodyInfo.gm);
                 
             lvlhPosDeputy = computeLvlhCurviPos(rVectOsc, vVectOsc, rVect, oScBodyInfo.gm);

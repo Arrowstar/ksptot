@@ -10,6 +10,9 @@ function [depVarValue, depVarUnit, prevDistTraveled, taskStr, refBodyInfo, other
     
     if(~isempty(oscId))
         otherSC = getOtherSCInfoByID(maData, oscId);
+        if(~isempty(otherSC) && isstruct(otherSC))
+            otherSC = convertOtherSCStructToBodyInfo(otherSC, celBodyData);
+        end
     else
         otherSC = [];
     end
