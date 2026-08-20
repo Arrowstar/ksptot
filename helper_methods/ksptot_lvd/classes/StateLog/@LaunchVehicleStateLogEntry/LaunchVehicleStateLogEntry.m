@@ -253,7 +253,9 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
         function updateTankStatesWithNewMasses(obj, newTankMasses)
             tankStates = obj.getAllActiveTankStates();
             
-            [tankStates.tankMass] = disperse(newTankMasses);
+            for(i=1:numel(tankStates))
+                tankStates(i).tankMass = newTankMasses(i);
+            end
         end
         
         function newStateLogEntry = deepCopy(obj)
@@ -307,7 +309,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                 obj.extremaStates = obj.extremaStates.copy();
             end
             
-            if(~isempty(obj.calcObjStates))
+            if(deepCopyState && ~isempty(obj.calcObjStates))
                 obj.calcObjStates = obj.calcObjStates.copy();
             end
             
@@ -479,8 +481,11 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             % Entries 2..N get their calcObjStates replaced below (lines 528-540).
             % Release the N-1 copies made by copyElement to avoid wasted allocations.
             initCalcObjStates = eventInitStateLogEntry.calcObjStates;
-            for(i=2:length(stateLogEntries))
-                stateLogEntries(i).calcObjStates = initCalcObjStates;
+            if(~isempty(initCalcObjStates))
+                stateLogEntries(1).calcObjStates = initCalcObjStates.copy();
+                for(i=2:length(stateLogEntries))
+                    stateLogEntries(i).calcObjStates = initCalcObjStates;
+                end
             end
 
             stopwatchStates = eventInitStateLogEntry.stopwatchStates;

@@ -245,7 +245,7 @@ classdef LaunchVehicleStageState < matlab.mixin.SetGet & matlab.mixin.Copyable
 
                 
                 if(not(isempty(obj.tankStates)))
-                    newTankStates = copyTankStateArray(obj.tankStates, newStageState);
+                    newTankStates = copyTankStateArray(obj.tankStates, newStageState, deepCopyState);
                     newStageState.tankStates = newTankStates;
                 end
                                
@@ -281,13 +281,18 @@ classdef LaunchVehicleStageState < matlab.mixin.SetGet & matlab.mixin.Copyable
     end
 end
 
-function newArr = copyTankStateArray(arr, stageState)
+function newArr = copyTankStateArray(arr, stageState, copyValues)
+    if(nargin < 3)
+        copyValues = true;
+    end
     n = numel(arr);
     newArr = LaunchVehicleTankState.empty(1,0);
     newArr(1,n) = LaunchVehicleTankState(stageState);
     for(i=1:n)
         newArr(i).tank = arr(i).tank;
-        newArr(i).tankMass = arr(i).tankMass;
+        if(copyValues)
+            newArr(i).tankMass = arr(i).tankMass;
+        end
     end
 end
 

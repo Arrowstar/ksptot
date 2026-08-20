@@ -39,8 +39,20 @@ function gInertial = gravitysphericalharmonicARH(elemSet, gravBodyInfo)
     %Get position in cartesian elements in body fixed frame
     bci = getBodyCenteredInertialFrame(gravBodyInfo);
     bff = getBodyFixedFrame(gravBodyInfo);
-    ceBF = convertToFrame(convertToCartesianElementSet(elemSet), bff, true);
-    p = ceBF.rVect';
+    cartElemSet = convertToCartesianElementSet(elemSet);
+    if(isscalar(cartElemSet) && cartElemSet.frame == bci)
+        posOff = getPositOfBodyWRTSun(ut, gravBodyInfo, gravBodyInfo.celBodyData);
+        R_bci_to_GI = gravBodyInfo.bodyRotMatFromGlobalInertialToBodyInertial';
+        spinAngle = getBodySpinAngle(gravBodyInfo, ut);
+        R_bff_to_GI = getBodyFixedToGlobalInertialFrame_mex(ut, spinAngle(:)', gravBodyInfo.bodyRotMatFromGlobalInertialToBodyInertial);
+        rVect2 = posOff + (R_bci_to_GI * cartElemSet.rVect);
+        p = (R_bff_to_GI' * (rVect2 - posOff))';
+    else
+        ceBF = convertToFrame(cartElemSet, bff, true);
+        p = ceBF.rVect';
+        R_bci_to_GI = bci.getRotMatToInertialAtTime(ut,[],[]);
+        R_bff_to_GI = bff.getRotMatToInertialAtTime(ut,[],[]);
+    end
     
     %Get body data
     Re = gravBodyInfo.radius;
@@ -54,9 +66,7 @@ function gInertial = gravitysphericalharmonicARH(elemSet, gravBodyInfo)
 
     gBodyFixed = [gx(:)'; gy(:)'; gz(:)'];
     
-    R_ecef_to_global_inertial = bff.getRotMatToInertialAtTime(ut,[],[]);
-    R_bci_to_global_inertial = bci.getRotMatToInertialAtTime(ut,[],[]);
-    R_ecef_to_bci = R_bci_to_global_inertial' * R_ecef_to_global_inertial;
+    R_ecef_to_bci = R_bci_to_GI' * R_bff_to_GI;
     
     gInertial = R_ecef_to_bci * gBodyFixed;
 end
