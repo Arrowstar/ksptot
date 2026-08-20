@@ -44,3 +44,6 @@ octave-workspace
 /helper_methods/ksptot_lvd/.claude/
 *.MATLABDriveTag
 /.claude
+/probe
+/probe3
+/probe2
