@@ -2,13 +2,6 @@ function [density, pressure, temperature] = getAtmoDensityAtAltitude(bodyInfo, a
 %getAtmoDensityAtAltitude Summary of this function goes here
 %   Detailed explanation goes here
 %   See here for math: https://forum.kerbalspaceprogram.com/index.php?/topic/142686-modeling-atmospheres-in-ksp/
-    arguments
-        bodyInfo(1,1) KSPTOT_BodyInfo
-        altitude(1,1) double
-        lat(1,1) double
-        ut(1,1) double
-        long(1,1) double
-    end
 
     if(altitude <= bodyInfo.atmohgt && altitude >= 0)
         if(not(isempty(bodyInfo.densityGI)))

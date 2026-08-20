@@ -96,37 +96,24 @@ classdef LaunchVehicleAttitudeState < matlab.mixin.SetGet
         end
 
         function [bankAng,angOfAttack,angOfSideslip,totalAoA] = getAeroAngles(obj, ut, rVect, vVect, bodyInfo)    
-            arguments
-                obj(1,1) LaunchVehicleAttitudeState
-                ut(1,1) double
-                rVect(3,1) double
-                vVect(3,1) double
-                bodyInfo(1,1) KSPTOT_BodyInfo
-            end
             inFrame = bodyInfo.getBodyFixedFrame();
             [bankAng,angOfAttack,angOfSideslip,totalAoA] = obj.getAeroAnglesInFrame(ut, rVect, vVect, bodyInfo, inFrame);
         end
 
         function [bankAng,angOfAttack,angOfSideslip,totalAoA] = getAeroAnglesInFrame(obj, ut, rVect, vVect, bodyInfo, inFrame)            
-            arguments
-                obj(1,1) LaunchVehicleAttitudeState
-                ut(1,1) double
-                rVect(3,1) double
-                vVect(3,1) double
-                bodyInfo(1,1) KSPTOT_BodyInfo
-                inFrame(1,1) AbstractReferenceFrame
-            end
 
             frame = bodyInfo.getBodyCenteredInertialFrame();
-            ce = CartesianElementSet(ut, rVect, vVect, frame);
-            ce = ce.convertToFrame(inFrame, true);
-            rVectFrame = ce.rVect;
-            vVectFrame = ce.vVect;
 
-            R_1_to_inert = frame.getRotMatToInertialAtTime(ut,ce);
-            R_2_to_inert = inFrame.getRotMatToInertialAtTime(ut,ce);
+            [posOffsetOrigin1, velOffsetOrigin1, angVelWrtOrigin1, R_1_to_inert] = getFrameOffsetsFromCache(frame, ut);
+            [posOffsetOrigin2, velOffsetOrigin2, angVelWrtOrigin2, R_2_to_inert] = getFrameOffsetsFromCache(inFrame, ut);
+
+            rVectGI = posOffsetOrigin1 + R_1_to_inert * rVect;
+            vVectGI = velOffsetOrigin1 + R_1_to_inert * (vVect + cross(angVelWrtOrigin1, rVect));
 
             R_1_to_2 = R_2_to_inert' * R_1_to_inert;
+
+            rVectFrame = R_2_to_inert' * (rVectGI - posOffsetOrigin2);
+            vVectFrame = R_2_to_inert' * (vVectGI - velOffsetOrigin2) - cross(angVelWrtOrigin2, rVectFrame);
 
             bodyXFrame = R_1_to_2 * obj.bodyX;
             bodyYFrame = R_1_to_2 * obj.bodyY;

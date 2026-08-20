@@ -225,53 +225,99 @@ classdef LaunchVehicleStageState < matlab.mixin.SetGet & matlab.mixin.Copyable
         end
         
         function newStageState = deepCopy(obj, deepCopyState)
-            arguments
-                obj LaunchVehicleStageState
-                deepCopyState(1,1) logical
+            if(nargin < 2)
+                deepCopyState = true;
             end
 
             if(deepCopyState || obj.active)   
-                newStageState = copy(obj);
+                newStageState = LaunchVehicleStageState(obj.stage);
+                newStageState.active = obj.active;
             
                 %Copy Engine States
                 if(deepCopyState)
                     if(not(isempty(obj.engineStates)))
-                        newEngineStates = obj.engineStates.copy();
-                        [newEngineStates.stageState] = deal(newStageState);
+                        newEngineStates = copyEngineStateArray(obj.engineStates, newStageState);
                         newStageState.engineStates = newEngineStates;
                     end
+                else
+                    newStageState.engineStates = obj.engineStates;
                 end
 
                 
                 if(not(isempty(obj.tankStates)))
-                    newTankStates = copy(obj.tankStates);
-                    [newTankStates.stageState] = deal(newStageState);
+                    newTankStates = copyTankStateArray(obj.tankStates, newStageState);
                     newStageState.tankStates = newTankStates;
                 end
                                
                 %Copy Power Sink States
-                if(deepCopyState && not(isempty(obj.powerSinkStates)))
-                    newPwrSinkStates = obj.powerSinkStates.copy();
-                    [newPwrSinkStates.stageState] = deal(newStageState);
-                    newStageState.powerSinkStates = newPwrSinkStates;
+                if(deepCopyState)
+                    if(not(isempty(obj.powerSinkStates)))
+                        newPwrSinkStates = copyPwrSinkStateArray(obj.powerSinkStates, newStageState);
+                        newStageState.powerSinkStates = newPwrSinkStates;
+                    end
+                else
+                    newStageState.powerSinkStates = obj.powerSinkStates;
                 end
                 
                 %Copy Power Source States
-                if(deepCopyState && not(isempty(obj.powerSrcStates)))
-                    newPwrSrcStates = obj.powerSrcStates.copy();
-                    [newPwrSrcStates.stageState] = deal(newStageState);
-                    newStageState.powerSrcStates = newPwrSrcStates;
+                if(deepCopyState)
+                    if(not(isempty(obj.powerSrcStates)))
+                        newPwrSrcStates = copyPwrSrcStateArray(obj.powerSrcStates, newStageState);
+                        newStageState.powerSrcStates = newPwrSrcStates;
+                    end
+                else
+                    newStageState.powerSrcStates = obj.powerSrcStates;
                 end
                 
                 %Copy Power Storage States
                 if(not(isempty(obj.powerStorageStates)))
-                    newPwrStorageStates = obj.powerStorageStates.copy();
-                    [newPwrStorageStates.stageState] = deal(newStageState);
+                    newPwrStorageStates = copyPwrStorageStateArray(obj.powerStorageStates, newStageState);
                     newStageState.powerStorageStates = newPwrStorageStates;
                 end
             else
                 newStageState = obj;
             end
         end
+    end
+end
+
+function newArr = copyTankStateArray(arr, stageState)
+    n = numel(arr);
+    newArr = LaunchVehicleTankState.empty(1,0);
+    newArr(1,n) = LaunchVehicleTankState(stageState);
+    for(i=1:n)
+        newArr(i).tank = arr(i).tank;
+        newArr(i).tankMass = arr(i).tankMass;
+    end
+end
+
+function newArr = copyEngineStateArray(arr, stageState)
+    n = numel(arr);
+    newArr = LaunchVehicleEngineState.empty(1,0);
+    newArr(1,n) = LaunchVehicleEngineState(stageState);
+    for(i=1:n)
+        newArr(i).engine = arr(i).engine;
+        newArr(i).active = arr(i).active;
+    end
+end
+
+function newArr = copyPwrSinkStateArray(arr, stageState)
+    newArr = arr.copy();
+    for(i=1:numel(newArr))
+        newArr(i).stageState = stageState;
+    end
+end
+
+function newArr = copyPwrSrcStateArray(arr, stageState)
+    newArr = arr.copy();
+    for(i=1:numel(newArr))
+        newArr(i).stageState = stageState;
+    end
+end
+
+function newArr = copyPwrStorageStateArray(arr, stageState)
+    newArr = arr.copy();
+    for(i=1:numel(newArr))
+        newArr(i).stageState = stageState;
     end
 end

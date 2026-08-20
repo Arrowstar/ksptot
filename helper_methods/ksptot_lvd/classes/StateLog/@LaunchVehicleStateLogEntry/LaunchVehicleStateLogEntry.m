@@ -292,9 +292,11 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
         
         function obj = createCopiesOfCopyableInternals(obj, deepCopyState)
             %stuff that requires it's own copy
-            for(i=1:length(obj.stageStates))
-                obj.stageStates(i) = obj.stageStates(i).deepCopy(deepCopyState);
+            stgStates = obj.stageStates;
+            for(i=1:length(stgStates))
+                stgStates(i) = stgStates(i).deepCopy(deepCopyState);
             end
+            obj.stageStates = stgStates;
 %             obj.stageStates = deepCopy(obj.stageStates, deepCopyState);
             
             if(~isempty(obj.stopwatchStates))
@@ -455,9 +457,8 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
     
     methods(Access=protected)
         function cpObj = copyElement(obj, deepCopyStageState)
-            arguments
-                obj LaunchVehicleStateLogEntry
-                deepCopyStageState(1,1) logical = true;
+            if(nargin < 2)
+                deepCopyStageState = true;
             end
             
             cpObj = copyElement@matlab.mixin.Copyable(obj);
@@ -471,21 +472,15 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             
             stateLogEntries = repmat(eventInitStateLogEntry,1,length(t));
             
-            if(length(t) > 1)
-                for(i=1:length(stateLogEntries)-1)
-                    stateLogEntries(i) = stateLogEntries(i).copyElement(false);
-                end
+            for(i=1:length(stateLogEntries))
+                stateLogEntries(i) = stateLogEntries(i).copyElement(false);
+            end
 
-                stateLogEntries(end) = stateLogEntries(end).copyElement(true);
-
-                % Entries 2..N get their calcObjStates replaced below (lines 528-540).
-                % Release the N-1 copies made by copyElement to avoid wasted allocations.
-                initCalcObjStates = eventInitStateLogEntry.calcObjStates;
-                for(i=2:length(stateLogEntries))
-                    stateLogEntries(i).calcObjStates = initCalcObjStates;
-                end
-            else
-                stateLogEntries = stateLogEntries.copy();
+            % Entries 2..N get their calcObjStates replaced below (lines 528-540).
+            % Release the N-1 copies made by copyElement to avoid wasted allocations.
+            initCalcObjStates = eventInitStateLogEntry.calcObjStates;
+            for(i=2:length(stateLogEntries))
+                stateLogEntries(i).calcObjStates = initCalcObjStates;
             end
 
             stopwatchStates = eventInitStateLogEntry.stopwatchStates;
