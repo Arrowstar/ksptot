@@ -85,14 +85,18 @@ classdef HeightAboveTerrainCondition < AbstractEventTerminationCondition
         function [value,isterminal,direction] = eventTermCond(obj, t,y)             
             rVect = y(1:3);
             vVect = y(4:6);
-            cartElem = CartesianElementSet(t, rVect(:), vVect(:), obj.bodyInfo.getBodyCenteredInertialFrame());
-            geoElemSet = cartElem.convertToFrame(obj.frame.getOriginBody().getBodyFixedFrame(), true).convertToGeographicElementSet();
-            
-            lat = geoElemSet.lat;
-            lon = geoElemSet.long;
+            if(obj.frame.getOriginBody() == obj.bodyInfo)
+                [lat, lon, alt] = getLatLongAltFromInertialVect(t, rVect(:), obj.bodyInfo);
+            else
+                cartElem = CartesianElementSet(t, rVect(:), vVect(:), obj.bodyInfo.getBodyCenteredInertialFrame());
+                geoElemSet = cartElem.convertToFrame(obj.frame.getOriginBody().getBodyFixedFrame(), true).convertToGeographicElementSet();
+                lat = geoElemSet.lat;
+                lon = geoElemSet.long;
+                alt = geoElemSet.alt;
+            end
             heightMapGI = obj.bodyInfo.getHeightMap();
 
-            actualHeightAboveTerrain = geoElemSet.alt - heightMapGI(angleNegPiToPi(lat), angleNegPiToPi(lon)); %subtract because it's our alt relative to terrain height
+            actualHeightAboveTerrain = alt - heightMapGI(angleNegPiToPi(lat), angleNegPiToPi(lon)); %subtract because it's our alt relative to terrain height
             
             value = actualHeightAboveTerrain - obj.heightAboveTerrain;
             isterminal = 1;
