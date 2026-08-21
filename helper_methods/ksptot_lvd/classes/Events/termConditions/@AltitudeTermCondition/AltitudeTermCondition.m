@@ -84,12 +84,15 @@ classdef AltitudeTermCondition < AbstractEventTerminationCondition
     methods(Access=private)
         function [value,isterminal,direction] = eventTermCond(obj, t,y)           
             rVect = y(1:3);
-            vVect = y(4:6);
-            cartElem = CartesianElementSet(t, rVect(:), vVect(:), obj.bodyInfo.getBodyCenteredInertialFrame());
-            geoElem = convertToGeographicElementSet(convertToFrame(cartElem, obj.frame, true));
-            
-            actualAltitude = geoElem.alt;
-            
+
+            [posOffset1, ~, ~, R1] = getFrameOffsetsFromCache(obj.bodyInfo.getBodyCenteredInertialFrame(), t);
+            [posOffset2, ~, ~, R2] = getFrameOffsetsFromCache(obj.frame, t);
+
+            rVect2 = posOffset1 + (R1 * rVect);
+            rVect3 = R2' * (rVect2 - posOffset2);
+
+            actualAltitude = vecNormARH(rVect3) - obj.bodyInfo.radius;
+
             value = actualAltitude - obj.altitude;
             isterminal = 1;
             direction = 0;

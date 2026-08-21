@@ -141,28 +141,21 @@ classdef (Abstract) AbstractElementSet < matlab.mixin.SetGet & matlab.mixin.Cust
                 end
             end
             
-            ce = ElementSetEnum.CartesianElements;
-            ke = ElementSetEnum.KeplerianElements;
-            ge = ElementSetEnum.GeographicElements;
-            ue = ElementSetEnum.UniversalElements;
-            
-            enum = obj(1).typeEnum;
-            
-            switch enum
-                case ce
+            if(isa(obj, 'CartesianElementSet'))
+                convertedElemSet = convertCartElemSet;
+            else
+                enum = obj(1).typeEnum;
+                if(enum == ElementSetEnum.CartesianElements)
                     convertedElemSet = convertCartElemSet;
-                    
-                case ke
+                elseif(enum == ElementSetEnum.KeplerianElements)
                     convertedElemSet = convertToKeplerianElementSet(convertCartElemSet);
-                    
-                case ge
+                elseif(enum == ElementSetEnum.GeographicElements)
                     convertedElemSet = convertToGeographicElementSet(convertCartElemSet);
-                    
-                case ue
+                elseif(enum == ElementSetEnum.UniversalElements)
                     convertedElemSet = convertToUniversalElementSet(convertCartElemSet);
-                    
-                otherwise
+                else
                     error('Unknown element set: %s', string(obj(1).typeEnum));
+                end
             end
         end
         
