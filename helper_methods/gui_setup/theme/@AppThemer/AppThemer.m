@@ -151,7 +151,11 @@ classdef AppThemer < matlab.mixin.SetGet
                     AppThemer.themeTree(prop, theme.bgColor, theme.fontColor);
 
                 case 'matlab.ui.container.Menu'
-                    prop.ForegroundColor = theme.fontColor;
+                    if(verLessThan('matlab','R2025b'))
+                        prop.ForegroundColor = 'k';
+                    else
+                        prop.ForegroundColor = theme.fontColor;
+                    end
 
                 otherwise
                     if(isa(prop, 'matlab.ui.componentcontainer.ComponentContainer'))
