@@ -71,9 +71,9 @@ function eventLog = computeLaunchTrajectory(LLA1, initTime, LLA2, tof, bodyInfo)
 
     r1Unit = r1/norm(r1);
     r2Unit = r2/norm(r2);
+    rotMats = vrrotvec2matBatch(r);
     for(i=1:size(r,2)) %#ok<NO4LP>
-        rotMat = vrrotvec2mat(r(:,i));
-        posVects(:,i) = (rotMat * r1Unit) * (rBody + y(i));
+        posVects(:,i) = (rotMats(:,:,i) * r1Unit) * (rBody + y(i));
     end
 
     t_p = (tof/(pi/2))*t - tof;

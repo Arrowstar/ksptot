@@ -56,18 +56,12 @@ classdef AlignedConstrainedCoordSystem < AbstractGeometricCoordSystem
             
             cVectAxis = repmat(obj.cVectorAxis.vect, [1 length(time)]);
             
-            cVectAA = NaN(length(time), 4);
-            for(i=1:length(time))
-                cVectAA(i,:) = vrrotvec(cVect(:,i),cVectAxis(:,i));
-            end
+            cVectAA = vrrotvecBatch(cVect, cVectAxis);
             cVectR = axang2rotmARH(cVectAA);
 
             aVectAR = squeeze(pagemtimes(cVectR, permute(aVect, [1 3 2])));
             
-            aVectAA = NaN(length(time), 4);
-            for(i=1:length(time))
-                aVectAA(i,:) = vrrotvec(aVectAR(:,i),aVectAxis(:,i));
-            end
+            aVectAA = vrrotvecBatch(aVectAR, aVectAxis);
             aVectR = axang2rotmARH(aVectAA);
 
             R_CoordSys_to_InFrame = permute(pagemtimes(aVectR, cVectR), [2 1 3]);
