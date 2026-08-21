@@ -94,7 +94,18 @@ classdef HeightAboveTerrainCondition < AbstractEventTerminationCondition
                 lon = geoElemSet.long;
                 alt = geoElemSet.alt;
             end
-            heightMapGI = obj.bodyInfo.getHeightMap();
+            %getHeightMap() re-reads a cached property on the body object on
+            %every event evaluation; the height map depends only on the
+            %body, so memoize the interpolant here to skip the repeated
+            %getter overhead.  The exact same griddedInterpolant object is
+            %returned, so results are bit-identical.
+            persistent hmapId hmapGI
+            bodyId = obj.bodyInfo.id;
+            if(isempty(hmapGI) || hmapId ~= bodyId)
+                hmapGI = obj.bodyInfo.getHeightMap();
+                hmapId = bodyId;
+            end
+            heightMapGI = hmapGI;
 
             actualHeightAboveTerrain = alt - heightMapGI(angleNegPiToPi(lat), angleNegPiToPi(lon)); %subtract because it's our alt relative to terrain height
             
