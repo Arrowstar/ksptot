@@ -12,7 +12,7 @@ addpath(genpath('images'));
 addpath(genpath('kos_scripts'));
 
 %%
-load('C:\Users\Adam\Desktop\SLS.mat')
+load('lvdExample_ComplexDrag_AsparagusStaging.mat')
 % load('lvdExample_TwoStageToOrbit.mat');
 
 %%
@@ -22,10 +22,13 @@ for(i=1:length(lvdData.script.evts))
 end
 
 %%
-tic; 
-profile off; profile on;
+% tic; 
+% profile off; profile on;
 for(i=1:15) %#ok<*NO4LP> 
+    tic;
 stateLog = lvdData.script.executeScript(false, lvdData.script.evts(1), true, false, false, false); 
+ttt(i)=toc;
 end
-profile viewer;
-toc;
+% profile viewer;
+% toc;
+disp(median(ttt));

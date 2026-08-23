@@ -1,11 +1,9 @@
-clc; clear variables; format long g; close all;
-
-%Include matlabrc, hopefully
-%#function matlabrc
+if(~isdeployed)
+    clc;  clear variables; format long g;  close all;
+end
 
 %set pathes if not deployed
 if(~isdeployed) 
-    restoredefaultpath();
     addpath(genpath('helper_methods'));
     addpath(genpath('formsGUIs'));
     addpath(genpath('kspTOT_RTS'));
@@ -18,16 +16,16 @@ if(~isdeployed)
 %     addpath('zArchive');
 end
 
-%set look and feel if deployed
-if(isdeployed)
-    if(ispc)
-        javax.swing.UIManager.setLookAndFeel(com.sun.java.swing.plaf.windows.WindowsLookAndFeel);
-    elseif(isunix)
-        javax.swing.UIManager.setLookAndFeel(com.jgoodies.looks.plastic.Plastic3DLookAndFeel);
-    elseif(ismac)
-        javax.swing.UIManager.setLookAndFeel(com.apple.laf.AquaLookAndFeel);
-    end
-end
+% %set look and feel if deployed
+% if(isdeployed)
+%     if(ispc)
+%         javax.swing.UIManager.setLookAndFeel(com.sun.java.swing.plaf.windows.WindowsLookAndFeel);
+%     elseif(isunix)
+%         javax.swing.UIManager.setLookAndFeel(com.jgoodies.looks.plastic.Plastic3DLookAndFeel);
+%     elseif(ismac)
+%         javax.swing.UIManager.setLookAndFeel(com.apple.laf.AquaLookAndFeel);
+%     end
+% end
 
 %Turn off class destructor warnings.  These pop up a lot for App Designer
 %UIs when closing while using uiwait().
@@ -53,7 +51,8 @@ warning('off','instrument:tcpip:ClassToBeRemoved');
 writeKsptotLogFileHeaderToConsole();
 
 %display splashscreen
-hS = splashScreenGUI_App(); drawnow;
+hS = splashScreenGUI_App(); 
+drawnow;
 t = tic;
 
 %Initialize KSPTOT options
