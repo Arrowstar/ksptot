@@ -49,7 +49,11 @@ classdef KeplerSolverTest < KsptotTestCase
             %The Newton iteration must converge rather than hang.
             %
             % keplerEq() has no iteration cap, so a non-converging case would
-            % spin forever.  Bounding the wall time turns that into a failure.
+            % spin forever.  Bounding the wall time turns that into a
+            % failure.  The bound is deliberately generous: these solves take
+            % milliseconds even at extreme eccentricity, so the assertion is
+            % a non-termination watchdog, not a performance test, and must
+            % not flake on a loaded CI machine.
 
             meanAnoms = linspace(0, 2 * pi, 73);
 
@@ -59,7 +63,7 @@ classdef KeplerSolverTest < KsptotTestCase
             end
             elapsed = toc(startTime);
 
-            testCase.verifyLessThan(elapsed, 5, sprintf( ...
+            testCase.verifyLessThan(elapsed, 60, sprintf( ...
                 'Solving %d Kepler problems at ecc = %g took %.1f s', ...
                 numel(meanAnoms), ellipticEcc, elapsed));
         end
@@ -94,11 +98,9 @@ classdef KeplerSolverTest < KsptotTestCase
         end
 
         function eccentricAnomalyOutputRangeIsConsistent(testCase)
-            %computeMeanFromTrueAnom's second output must have a stable range.
-            %
-            % The wrap applied to the eccentric anomaly is guarded by
-            % "tru < 2*pi", so inputs at or above 2*pi are returned on a
-            % different branch than equivalent inputs below 2*pi.
+            %computeMeanFromTrueAnom must return E on [0, 2*pi) and M on
+            %[0, 2*pi), independent of how the input true anomaly is
+            %represented: nu and nu + 2*pi must give identical outputs.
 
             ecc = 0.3;
 
@@ -106,19 +108,27 @@ classdef KeplerSolverTest < KsptotTestCase
                 truLow  = deg2rad(truDeg);
                 truHigh = truLow + 2 * pi;
 
-                [~, eccAnomLow]  = computeMeanFromTrueAnom(truLow,  ecc);
-                [~, eccAnomHigh] = computeMeanFromTrueAnom(truHigh, ecc);
+                [meanLow, eccAnomLow]   = computeMeanFromTrueAnom(truLow,  ecc);
+                [meanHigh, eccAnomHigh] = computeMeanFromTrueAnom(truHigh, ecc);
 
-                testCase.verifyAngleEqual(eccAnomHigh, eccAnomLow, 1e-9, sprintf( ...
-                    ['Eccentric anomaly for tru = %g deg (%g rad) and the same ', ...
-                     'angle plus 2*pi differ by more than a full turn: %g vs %g rad'], ...
-                    truDeg, truLow, eccAnomLow, eccAnomHigh));
+                msg = sprintf('at tru = %g deg vs the same angle plus 2*pi', truDeg);
+
+                testCase.verifyEqual(eccAnomHigh, eccAnomLow, 'AbsTol', 1e-12, sprintf( ...
+                    'eccentric anomaly is not periodic in the input: %g vs %g rad %s', ...
+                    eccAnomLow, eccAnomHigh, msg));
+                testCase.verifyEqual(meanHigh, meanLow, 'AbsTol', 1e-12, sprintf( ...
+                    'mean anomaly is not periodic in the input: %g vs %g rad %s', ...
+                    meanLow, meanHigh, msg));
 
                 testCase.verifyGreaterThanOrEqual(eccAnomHigh, 0, sprintf( ...
-                    ['computeMeanFromTrueAnom returned a negative eccentric anomaly ', ...
-                     '(%g rad) for tru = %g rad, but a non-negative one for tru = %g rad. ', ...
-                     'The wrap is gated on "tru < 2*pi".'], ...
-                    eccAnomHigh, truHigh, truLow));
+                    'eccentric anomaly %g rad outside [0, 2*pi) %s', eccAnomHigh, msg));
+                testCase.verifyLessThan(eccAnomHigh, 2 * pi, sprintf( ...
+                    'eccentric anomaly %g rad outside [0, 2*pi) %s', eccAnomHigh, msg));
+
+                testCase.verifyGreaterThanOrEqual(meanHigh, 0, sprintf( ...
+                    'mean anomaly %g rad outside [0, 2*pi) %s', meanHigh, msg));
+                testCase.verifyLessThan(meanHigh, 2 * pi, sprintf( ...
+                    'mean anomaly %g rad outside [0, 2*pi) %s', meanHigh, msg));
             end
         end
 

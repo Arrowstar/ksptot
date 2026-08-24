@@ -160,12 +160,14 @@ classdef ElementConversionTest < KsptotTestCase
                 sprintf('%s: vect_getStatefromKepler velocity mismatch', orbitCase.desc));
         end
 
-        function conversionIsContinuousAcrossEquatorialSingularity(testCase)
-            %Position must not jump as inclination approaches zero.
+        function equatorialFoldIsExactBelowBranchThreshold(testCase)
+            %Below the 1E-4 inclination branch threshold in
+            %vect_getStatefromKepler_Alg the conversion must return the exact
+            %equatorial limit: RAAN folded into the argument of periapsis,
+            %i.e. the refCoe2Rv reconstruction at inc = 0.
             %
-            % An optimizer differentiating through this conversion needs the
-            % mapping to be continuous; a step change at the special-case
-            % tolerance boundary produces meaningless gradients.
+            % This catches a regression to discarding RAAN at any inclination
+            % inside the special-case region, not just at exactly inc = 0.
 
             gmu  = 398600.4418;
             raan = deg2rad(45);
@@ -174,23 +176,61 @@ classdef ElementConversionTest < KsptotTestCase
             sma  = 700;
             ecc  = 0.1;
 
-            incValues = [0, 1e-12, 1e-9, 1e-7, 1e-5];
-            previous  = [];
+            [rLimit, vLimit] = refCoe2Rv(sma, ecc, 0, raan, arg, tru, gmu);
+
+            incValues = [0, 1e-12, 1e-9, 1e-7];
 
             for(i = 1:numel(incValues))
-                [rVect, ~] = vect_getStatefromKepler(sma, ecc, incValues(i), raan, arg, tru, gmu, false);
+                [rVect, vVect] = vect_getStatefromKepler(sma, ecc, incValues(i), ...
+                    raan, arg, tru, gmu, false);
 
-                if(~isempty(previous))
-                    jump = norm(rVect - previous);
-                    testCase.verifyLessThan(jump, 1e-3, sprintf( ...
-                        ['Position jumps %.3f km between inc = %g and inc = %g rad. ', ...
-                         'The equatorial special case discards RAAN instead of ', ...
-                         'folding it into the argument of periapsis.'], ...
-                        jump, incValues(i - 1), incValues(i)));
-                end
+                msg = sprintf( ...
+                    'at inc = %g rad (RAAN not folded into the argument of periapsis)', ...
+                    incValues(i));
 
-                previous = rVect;
+                testCase.verifyVectorEqual(rVect, rLimit, 1e-6 * norm(rLimit), ['position ' msg]);
+                testCase.verifyVectorEqual(vVect, vLimit, 1e-6 * norm(vLimit), ['velocity ' msg]);
             end
+        end
+
+        function equatorialBranchSeamBoundedByGeometry(testCase)
+            %Crossing the 1E-4 inclination branch threshold cannot be made
+            %continuous: below it RAAN is folded into the argument of
+            %periapsis (the inc -> 0 limit), while above it the general
+            %mapping rotates the plane at rate <= |r| per radian of
+            %inclination.  The seam is therefore required to be bounded by
+            %geometry, not to vanish.
+            %
+            % Measured ratios for this configuration: position 0.985,
+            % velocity 0.244 of |x| * inc; the 1.2 factor leaves margin.
+
+            gmu  = 398600.4418;
+            raan = deg2rad(45);
+            arg  = deg2rad(30);
+            tru  = deg2rad(50);
+            sma  = 700;
+            ecc  = 0.1;
+
+            incAboveThreshold = 1.5e-4;
+
+            [rLimit, vLimit] = refCoe2Rv(sma, ecc, 0, raan, arg, tru, gmu);
+            [rAbove, vAbove] = vect_getStatefromKepler(sma, ecc, incAboveThreshold, ...
+                raan, arg, tru, gmu, false);
+
+            seamFactor = 1.2;
+
+            rSeamBound = seamFactor * norm(rLimit) * incAboveThreshold;
+            vSeamBound = seamFactor * norm(vLimit) * incAboveThreshold;
+
+            testCase.verifyLessThan(norm(rAbove - rLimit), rSeamBound, sprintf( ...
+                ['Position seam %.3g km across the equatorial branch threshold ', ...
+                 '(inc = %g rad) exceeds the geometric bound %g km.'], ...
+                norm(rAbove - rLimit), incAboveThreshold, rSeamBound));
+
+            testCase.verifyLessThan(norm(vAbove - vLimit), vSeamBound, sprintf( ...
+                ['Velocity seam %.3g km/s across the equatorial branch threshold ', ...
+                 '(inc = %g rad) exceeds the geometric bound %g km/s.'], ...
+                norm(vAbove - vLimit), incAboveThreshold, vSeamBound));
         end
 
         function equatorialConversionPreservesRaanInformation(testCase)

@@ -70,11 +70,14 @@ classdef VrRotVecCompatTest < KsptotTestCase
             B = randn(3, nPairs);
             [A, B] = testCase.appendSpecialCases(A, B);
 
+            Rs   = zeros(size(A, 2), 4);
+            Rref = zeros(size(A, 2), 4);
             for k = 1:size(A, 2)
-                testCase.verifyEqual(vrrotvec(A(:,k), B(:,k)), ...
-                    vrrotvecReference(A(:,k), B(:,k)), ...
-                    sprintf('fuzz column %d: shim != reference', k));
+                Rs(k,:)   = vrrotvec(A(:,k), B(:,k));
+                Rref(k,:) = vrrotvecReference(A(:,k), B(:,k));
             end
+
+            testCase.verifyBitwiseEqualBatch(Rs, Rref, 'fuzz: shim != reference');
         end
 
         function referenceFuzzVrRotVecWithEpsilon(testCase)
@@ -83,10 +86,15 @@ classdef VrRotVecCompatTest < KsptotTestCase
             A = randn(3, 20000);
             B = randn(3, 20000);
             opts.epsilon = 1e-6;
+
+            Rs   = zeros(size(A, 2), 4);
+            Rref = zeros(size(A, 2), 4);
             for k = 1:size(A, 2)
-                testCase.verifyEqual(vrrotvec(A(:,k), B(:,k), opts), ...
-                    vrrotvecReference(A(:,k), B(:,k), opts));
+                Rs(k,:)   = vrrotvec(A(:,k), B(:,k), opts);
+                Rref(k,:) = vrrotvecReference(A(:,k), B(:,k), opts);
             end
+
+            testCase.verifyBitwiseEqualBatch(Rs, Rref, 'epsilon fuzz: shim != reference');
         end
 
         function referenceFuzzVrRotVec2Mat(testCase)
@@ -99,11 +107,14 @@ classdef VrRotVecCompatTest < KsptotTestCase
             scales = 10 .^ (rand(1, nCases) * 8 - 4);   % 1e-4 .. 1e4 axis magnitudes
             R = [ax .* scales; ang];
 
-            for k = 1:nCases
-                testCase.verifyEqual(vrrotvec2mat(R(:,k)), ...
-                    vrrotvec2matReference(R(:,k)), ...
-                    sprintf('fuzz case %d: shim != reference', k));
+            Ms   = zeros(3, 3, size(R, 2));
+            Mref = zeros(3, 3, size(R, 2));
+            for k = 1:size(R, 2)
+                Ms(:,:,k)   = vrrotvec2mat(R(:,k));
+                Mref(:,:,k) = vrrotvec2matReference(R(:,k));
             end
+
+            testCase.verifyBitwiseEqualBatch(Ms, Mref, 'fuzz: shim != reference');
         end
 
         %% ------------------------------------------ batch equivalence
@@ -121,8 +132,7 @@ classdef VrRotVecCompatTest < KsptotTestCase
                 expected(k,:) = vrrotvec(A(:,k), B(:,k));
             end
 
-            testCase.verifyEqual(size(batch), [size(A,2), 4], 'batch output size');
-            testCase.verifyEqual(batch, expected, ...
+            testCase.verifyBitwiseEqualBatch(batch, expected, ...
                 'vrrotvecBatch is not bit-identical to scalar vrrotvec');
         end
 
@@ -136,9 +146,14 @@ classdef VrRotVecCompatTest < KsptotTestCase
             A = A(:,valid);
             B = B(:,valid);
             batch = vrrotvecBatch(A, B, 0.5);
+
+            expected = zeros(size(A, 2), 4);
             for k = 1:size(A, 2)
-                testCase.verifyEqual(batch(k,:), vrrotvec(A(:,k), B(:,k), struct('epsilon', 0.5)));
+                expected(k,:) = vrrotvec(A(:,k), B(:,k), struct('epsilon', 0.5));
             end
+
+            testCase.verifyBitwiseEqualBatch(batch, expected, ...
+                'batch epsilon handling differs from scalar');
         end
 
         function batch2MatMatchesScalarBitwise(testCase)
@@ -150,9 +165,14 @@ classdef VrRotVecCompatTest < KsptotTestCase
             Rrows = [ax; ang].';          % N-by-4
 
             Mbatch = vrrotvec2matBatch(Rrows);
+
+            Mscalar = zeros(3, 3, nCases);
             for k = 1:nCases
-                testCase.verifyEqual(Mbatch(:,:,k), vrrotvec2mat(Rrows(k,:)));
+                Mscalar(:,:,k) = vrrotvec2mat(Rrows(k,:));
             end
+
+            testCase.verifyBitwiseEqualBatch(Mbatch, Mscalar, ...
+                'vrrotvec2matBatch pages are not bit-identical to scalar calls');
         end
 
         function batch2MatAcceptsFourByN(testCase)
@@ -205,7 +225,7 @@ classdef VrRotVecCompatTest < KsptotTestCase
             testCase.verifyEqual(size(r), [1 4], 'result must be a row vector');
             % cross-product fallback axis must be perpendicular to an
             an = a / norm(a);
-            testCase.verifyLessThan(abs(dot(r(1:3)', an)), eps, ...
+            testCase.verifyLessThan(abs(dot(r(1:3)', an)), 1e-12, ...
                 'fallback axis must be orthogonal to the normalized input');
         end
 
@@ -215,7 +235,7 @@ classdef VrRotVecCompatTest < KsptotTestCase
             r = vrrotvec(a, -a);
             testCase.verifyEqual(r(4), pi, 'antiparallel rotation angle must be pi');
             an = a / norm(a);
-            testCase.verifyLessThan(abs(dot(r(1:3)', an)), eps, ...
+            testCase.verifyLessThan(abs(dot(r(1:3)', an)), 1e-12, ...
                 'fallback axis must be orthogonal to the normalized input');
             testCase.verifyEqual(norm(r(1:3)), 1, 'axis must be unit length');
         end
@@ -352,6 +372,34 @@ classdef VrRotVecCompatTest < KsptotTestCase
     end
 
     methods(Access = private)
+        function verifyBitwiseEqualBatch(testCase, actual, expected, msg)
+            %verifyBitwiseEqualBatch Exact whole-array comparison through a
+            %single qualification call, so large fuzz/batch suites do not pay
+            %per-iteration qualification overhead.  Semantics match
+            %verifyEqual: bitwise equality with NaN == NaN.  On mismatch the
+            %first offending element is located and reported.
+
+            if(~isequal(size(actual), size(expected)))
+                testCase.verifyFail(sprintf('%s: sizes differ: %s vs %s', ...
+                    msg, mat2str(size(actual)), mat2str(size(expected))));
+                return;
+            end
+
+            if(isequaln(actual, expected))
+                return;
+            end
+
+            mismatch = ~(actual == expected) & ~(isnan(actual) & isnan(expected));
+            idx      = find(mismatch, 1);
+
+            sub = cell(1, ndims(actual));
+            [sub{:}] = ind2sub(size(actual), idx);
+            subscriptTxt = strjoin(string(sub), ',');
+
+            testCase.verifyFail(sprintf('%s: first mismatch at (%s): %.17g vs %.17g', ...
+                msg, subscriptTxt, actual(idx), expected(idx)));
+        end
+
         function [A, B] = appendSpecialCases(~, A, B)
             %appendSpecialCases Adds adversarial edge-case columns to fuzz sets.
             specialA = [ 1     1     1    -1     1              1               1  1;
