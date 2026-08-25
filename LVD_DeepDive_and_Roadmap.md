@@ -57,3 +57,29 @@ Gaps verified against the codebase (e.g., no Monte Carlo/heating anywhere):
 16. Mission-plan diff tool (case file comparison), autosave checkpoints (undo/redo exists but not persistence), and inline porkchop plotting inside LVD rather than switching tools.
 
 Items 1–3 give the biggest capability leap: they turn LVD from "design a nominal trajectory" into "certify a vehicle design," which is what real launch-vehicle tools (POST/OTIS-class) differentiate on.
+
+## Part 3: Additional 3DOF-Specific Suggestions
+
+LVD is fundamentally a 3DOF translational tool (r, v, m). These additions stay squarely in that lane — no rotational dynamics required.
+
+### Targeting & Mission Design
+1. **B-plane targeting** — B·T/B·R constraints and optimization variables for flyby and arrival states. Classic 3DOF interplanetary capability; today only two-body impact-point lat/lon/time constraints exist.
+2. **Built-in Lambert solver + inline porkchop plotting** — generate Lambert-arc initial guesses between any two states/bodies to seed optimizations, and scan departure UT × TOF for ΔV-minimal windows without leaving LVD.
+3. **Aerocapture/entry corridor toolkit** — periapsis-altitude sweep vs. capture/no-capture outcome, atmospheric-exit state targeting, and landing-footprint analysis. Purely translational.
+4. **Patched-conic flyby chain generator** — build multi-body gravity-assist event scripts natively (MFMS import exists; a native generator would close the loop).
+
+### Optimization Formulation
+5. **Multiple-shooting / segmented transcription option** — break long coast-heavy arcs into nodes so optimizer sensitivities don't degrade over full-event spans; complements the existing single-shooting-per-event approach.
+6. **Homotopy/continuation assistant** — auto-ramp constraint targets (e.g., final altitude 70→200 km in steps) when convergence stalls. Cheap to build on the existing optimizer plumbing.
+7. **Case Matrix: sweep *any* optimization variable or constraint target** — currently only plugin variables are sweepable. Native sweeps over e.g. T/W, pitch-program coefficients, staging altitudes would make trade studies first-class.
+
+### Performance
+8. **Incremental re-propagation caching** — during optimization, skip re-integrating events whose inputs didn't change since the last iteration. Big speedup for multi-event scripts.
+9. **Centralized parallel finite-difference Jacobians** — fan out FD perturbations across `parpool` regardless of solver (some solvers have their own parallel flags today).
+
+### Analysis Output
+10. **Auto-generated ΔV budget report** — per-event/per-stage table summing impulsive actions + idealized finite-burn ΔV; instant mission cost summary.
+11. **Multi-run comparison overlays in Graphical Analysis** — plot quantities from several saved cases (nominal vs. variant) on shared axes.
+12. **Resonant/repeat-ground-track orbit helper** — given body rotation rate and desired repeat cycle, solve for semimajor axis and inject as initial state (J2-aware where applicable).
+
+Items 1–4 are the strongest pure-3DOF additions — they are standard features of POST/OTIS-class trajectory tools and directly serve interplanetary and aerocapture mission classes that LVD's event engine already supports mechanically.
