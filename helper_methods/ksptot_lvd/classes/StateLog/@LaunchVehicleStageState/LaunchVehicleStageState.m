@@ -287,22 +287,24 @@ function newArr = copyTankStateArray(arr, stageState, copyValues)
     end
     n = numel(arr);
     newArr = LaunchVehicleTankState.empty(1,0);
-    newArr(1,n) = LaunchVehicleTankState(stageState);
     for(i=1:n)
-        newArr(i).tank = arr(i).tank;
+        newState = LaunchVehicleTankState(stageState);
+        newState.tank = arr(i).tank;
         if(copyValues)
-            newArr(i).tankMass = arr(i).tankMass;
+            newState.tankMass = arr(i).tankMass;
         end
+        newArr(end+1) = newState; %#ok<AGROW>
     end
 end
 
 function newArr = copyEngineStateArray(arr, stageState)
     n = numel(arr);
     newArr = LaunchVehicleEngineState.empty(1,0);
-    newArr(1,n) = LaunchVehicleEngineState(stageState);
     for(i=1:n)
-        newArr(i).engine = arr(i).engine;
-        newArr(i).active = arr(i).active;
+        newState = LaunchVehicleEngineState(stageState);
+        newState.engine = arr(i).engine;
+        newState.active = arr(i).active;
+        newArr(end+1) = newState; %#ok<AGROW>
     end
 end
 

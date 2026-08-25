@@ -53,7 +53,9 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             %     end
             % end
             
-            hFig.GraphicsSmoothing = 'on';
+            if(isMATLABReleaseOlderThan("R2026b"))
+                hFig.GraphicsSmoothing = 'on';
+            end
             
             if(stateLog.getNumberOfEntries() == 0)
                 return;

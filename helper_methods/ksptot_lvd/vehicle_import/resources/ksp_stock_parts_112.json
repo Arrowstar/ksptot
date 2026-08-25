@@ -1,0 +1,187 @@
+{
+  "schemaVersion": 1,
+  "databaseName": "ksp_stock_parts_112_mini",
+  "gameVersion": "1.12",
+  "description": "Curated mini part database covering the stock KSP 1.12 parts used by the example craft files in examples/LaunchVehicleDesigner/kOSOpenLoopControlKerbinLaunch/DragData. Values are representative approximations of public stock-part specifications, intended for offline testing and out-of-the-box imports when no KSP installation is available. Masses are dry masses in metric tons; thrust in kN; Isp in seconds.",
+  "resourceDensities_t_per_unit": {
+    "LiquidFuel": 0.005,
+    "Oxidizer": 0.005,
+    "MonoPropellant": 0.004,
+    "XenonGas": 0.0001,
+    "SolidFuel": 0.0075,
+    "ElectricCharge": 0.0
+  },
+  "parts": [
+    {
+      "name": "mk1pod.v2",
+      "title": "Mk1 Command Pod",
+      "mass_t": 0.8,
+      "roles": ["pod"],
+      "resources_u": { "ElectricCharge": 50, "MonoPropellant": 10 },
+      "engines": []
+    },
+    {
+      "name": "parachuteSingle",
+      "title": "Mk16 Parachute",
+      "mass_t": 0.1,
+      "roles": ["parachute"],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "longAntenna",
+      "title": "Communotron 16",
+      "mass_t": 0.005,
+      "roles": ["antenna"],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "dockingPort3",
+      "title": "Clamp-O-Tron Docking Port",
+      "mass_t": 0.05,
+      "roles": ["utility"],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "batteryBankMini",
+      "title": "Z-400 Rechargeable Battery Bank",
+      "mass_t": 0.005,
+      "roles": ["utility"],
+      "resources_u": { "ElectricCharge": 200 },
+      "engines": []
+    },
+    {
+      "name": "radialRCSTank",
+      "title": "C-Store External Radial Tank",
+      "mass_t": 0.06,
+      "roles": ["tank"],
+      "resources_u": { "MonoPropellant": 60 },
+      "engines": []
+    },
+    {
+      "name": "RCSBlock.v2",
+      "title": "RV-105 RCS Thruster Block",
+      "mass_t": 0.05,
+      "roles": ["rcs"],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "Decoupler.1",
+      "title": "TD-12 Decoupler",
+      "mass_t": 0.04,
+      "roles": ["decoupler"],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "fuelTank",
+      "title": "FL-T400 Fuel Tank",
+      "mass_t": 0.25,
+      "roles": ["tank"],
+      "resources_u": { "LiquidFuel": 180, "Oxidizer": 220 },
+      "engines": []
+    },
+    {
+      "name": "fuelTank.long",
+      "title": "FL-T800 Fuel Tank",
+      "mass_t": 0.5,
+      "roles": ["tank"],
+      "resources_u": { "LiquidFuel": 360, "Oxidizer": 440 },
+      "engines": []
+    },
+    {
+      "name": "liquidEngine3.v2",
+      "title": "LV-909 \"Terrier\" Liquid Fuel Engine",
+      "mass_t": 0.5,
+      "roles": ["engine"],
+      "resources_u": {},
+      "engines": [
+        {
+          "maxThrust_kN": 60.0,
+          "ispVac_s": 345.0,
+          "ispSL_s": 85.0,
+          "minThrottle": 0.0,
+          "maxThrottle": 1.0,
+          "propellants": ["LiquidFuel", "Oxidizer"]
+        }
+      ]
+    },
+    {
+      "name": "liquidEngine2",
+      "title": "LV-T45 \"Swivel\" Liquid Fuel Engine",
+      "mass_t": 1.5,
+      "roles": ["engine"],
+      "resources_u": {},
+      "engines": [
+        {
+          "maxThrust_kN": 215.0,
+          "ispVac_s": 320.0,
+          "ispSL_s": 250.0,
+          "minThrottle": 0.0,
+          "maxThrottle": 1.0,
+          "propellants": ["LiquidFuel", "Oxidizer"]
+        }
+      ]
+    },
+    {
+      "name": "radialDecoupler2",
+      "title": "TT-70 Radial Decoupler",
+      "mass_t": 0.1,
+      "roles": ["radialDecoupler"],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "solidBooster.v2",
+      "title": "RT-10 \"Hammer\" Solid Fuel Booster",
+      "mass_t": 0.75,
+      "roles": ["engine", "tank"],
+      "resources_u": { "SolidFuel": 365 },
+      "engines": [
+        {
+          "maxThrust_kN": 227.0,
+          "ispVac_s": 195.0,
+          "ispSL_s": 175.0,
+          "minThrottle": 1.0,
+          "maxThrottle": 1.0,
+          "propellants": ["SolidFuel"]
+        }
+      ]
+    },
+    {
+      "name": "noseCone",
+      "title": "Aerodynamic Nose Cone",
+      "mass_t": 0.03,
+      "roles": ["noseCone"],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "basicFin",
+      "title": "Basic Fin",
+      "mass_t": 0.02,
+      "roles": ["fin"],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "KAL9000",
+      "title": "KAL-9000 Robotic Controller",
+      "mass_t": 0.03,
+      "roles": ["utility"],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "fuelLineSmall",
+      "title": "Fuel Line",
+      "mass_t": 0.001,
+      "roles": ["fuelLine"],
+      "resources_u": {},
+      "engines": []
+    }
+  ]
+}
