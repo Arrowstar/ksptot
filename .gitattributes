@@ -10,6 +10,12 @@
 *.mexa64 -crlf -diff -merge
 *.mexw64 -crlf -diff -merge
 *.mexmaci64 -crlf -diff -merge
+*.sh text eol=lf
+*.dll -crlf -diff -merge
+*.so -crlf -diff -merge
+*.so.* -crlf -diff -merge
+*.a -crlf -diff -merge
+*.lib -crlf -diff -merge
 *.xlsx -crlf -diff -merge
 *.docx -crlf -diff -merge
 *.pdf -crlf -diff -merge
