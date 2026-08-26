@@ -100,12 +100,30 @@ if [[ "$CMAKE_MAJOR" -lt 3 ]] || { [[ "$CMAKE_MAJOR" -eq 3 ]] && [[ "$CMAKE_MINO
 fi
 
 # --- Check compiler ---
-if command -v g++ >/dev/null 2>&1; then
+# Prefer system g++ over conda's x86_64-conda-linux-gnu-c++ (which breaks MATLAB libstdc++ compat)
+# If conda is active, g++ will be the conda one (e.g., /home/aharden/miniforge3/bin/x86_64-conda-linux-gnu-c++)
+# Force use of /usr/bin/g++ if available
+if [[ -n "${CONDA_PREFIX:-}" ]] && [[ -x "/usr/bin/g++" ]]; then
+    echo "Conda detected at $CONDA_PREFIX - preferring system g++ at /usr/bin/g++ for MATLAB compat"
+    echo "  (conda's g++ links against conda's libstdc++ which MATLAB's bundled libstdc++ may not satisfy)"
+    echo "  To use conda's compiler anyway, run: CONDA_PREFIX= ./build_nomad46_linux_mex.sh"
+    export CC=/usr/bin/gcc
+    export CXX=/usr/bin/g++
+    GPP_VER="$(/usr/bin/g++ --version | head -n1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -n1)"
+    echo "g++ (system): $GPP_VER (from /usr/bin/g++)"
+    GPP_MAJOR="$(echo "$GPP_VER" | cut -d. -f1)"
+elif command -v g++ >/dev/null 2>&1; then
     GPP_VER="$(g++ --version | head -n1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -n1)"
-    echo "g++: $GPP_VER"
+    echo "g++: $GPP_VER ($(command -v g++))"
     GPP_MAJOR="$(echo "$GPP_VER" | cut -d. -f1)"
     if [[ "$GPP_MAJOR" -lt 8 ]]; then
         echo "WARNING: g++ $GPP_VER < 8 may not be supported by NOMAD." >&2
+    fi
+    # If g++ is conda's, warn
+    if [[ "$(command -v g++)" == *"conda"* ]]; then
+        echo "WARNING: Using conda's g++ ($(command -v g++)). This may cause 'GLIBCXX_3.4.xx not found' at runtime." >&2
+        echo "         Prefer: conda deactivate && ./build_nomad46_linux_mex.sh"
+        echo "         Or:     CC=/usr/bin/gcc CXX=/usr/bin/g++ ./build_nomad46_linux_mex.sh"
     fi
 elif command -v clang++ >/dev/null 2>&1; then
     echo "clang++: $(clang++ --version | head -n1)"
@@ -151,8 +169,15 @@ echo "Configuring NOMAD (TEST_OPENMP=OFF, BUILD_INTERFACE_MATLAB=ON)..."
 rm -rf "$BUILD_DIR"
 mkdir -p "$BUILD_DIR"
 
+# Unset MATLAB_ROOT env var to avoid CMP0144 warning (CMake now uses Matlab_ROOT_DIR)
+# Keep it for our script's logic, but hide from CMake's find_package
+if [[ -n "${MATLAB_ROOT:-}" ]]; then
+    echo "Unsetting MATLAB_ROOT env var for CMake (using -DMatlab_ROOT_DIR instead) to avoid CMP0144"
+    unset MATLAB_ROOT
+fi
+
 # NOMAD's CMake warns if build dir is under /tmp (MSB8029 on Windows, harmless on Linux but we avoid it by using SRC_DIR/build)
-cmake -DTEST_OPENMP=OFF \
+cmake -Wno-dev -DTEST_OPENMP=OFF \
       -DBUILD_INTERFACE_MATLAB=ON \
       -DMatlab_ROOT_DIR="$MATLAB_ROOT_DIR" \
       -DCMAKE_BUILD_TYPE=Release \
@@ -170,12 +195,12 @@ cmake --install "$BUILD_DIR" --config Release || cmake --install "$BUILD_DIR"
 # --- Locate artifacts ---
 echo "Locating built MEX and libs..."
 
-# Find mex
+# Find mex - PREFER the installed one (lib64/lib) which has correct RPATH=$ORIGIN, not the build-tree one which points to /tmp
 MEX_CANDIDATES=(
+    "$BUILD_DIR/lib64/nomadOpt.mexa64"
+    "$BUILD_DIR/lib/nomadOpt.mexa64"
     "$BUILD_DIR/interfaces/Matlab_MEX/nomadOpt.mexa64"
     "$BUILD_DIR/interfaces/Matlab_MEX/Release/nomadOpt.mexa64"
-    "$BUILD_DIR/lib/nomadOpt.mexa64"
-    "$BUILD_DIR/lib64/nomadOpt.mexa64"
 )
 MEX_SRC=""
 for cand in "${MEX_CANDIDATES[@]}"; do
@@ -223,6 +248,21 @@ echo "Deploying to $DEST_LINUX..."
 # Copy MEX
 cp -v "$MEX_SRC" "$DEST_LINUX/nomadOpt.mexa64"
 chmod 644 "$DEST_LINUX/nomadOpt.mexa64"
+# Fix RPATH to $ORIGIN so MATLAB finds the libs next to the MEX regardless of LD_LIBRARY_PATH
+# The build-tree MEX has RPATH=/tmp/... which is wrong after deploy; the installed one has RPATH=lib64 but we want $ORIGIN
+if command -v patchelf >/dev/null 2>&1; then
+    echo "Fixing RPATH to \$ORIGIN via patchelf..."
+    patchelf --set-rpath '$ORIGIN' "$DEST_LINUX/nomadOpt.mexa64" || echo "patchelf failed, will rely on LD_LIBRARY_PATH"
+    patchelf --print-rpath "$DEST_LINUX/nomadOpt.mexa64" || true
+else
+    echo "patchelf not found (sudo dnf install patchelf) - RPATH will remain as built; you may need LD_LIBRARY_PATH"
+fi
+# Also fix the libs' RPATH to $ORIGIN if needed
+for lib in "$DEST_LINUX"/libnomad*.so* "$DEST_LINUX"/libsgtelib.so*; do
+    if [[ -f "$lib" ]] && command -v patchelf >/dev/null 2>&1; then
+        patchelf --set-rpath '$ORIGIN' "$lib" 2>/dev/null || true
+    fi
+done
 
 # Copy shared libs - try to find all versioned .so
 # Prefer the installed lib dir (BUILD_DIR/lib)
@@ -294,8 +334,14 @@ if [[ -x "$DEST_LINUX/nomad" ]]; then
 fi
 
 # --- Optional MATLAB smoke test ---
-if command -v matlab >/dev/null 2>&1; then
-    echo "Running MATLAB smoke test (may take 10s)..."
+# Use the detected MATLAB_BIN if available, otherwise try `matlab` on PATH
+MATLAB_FOR_SMOKE="${MATLAB_BIN:-}"
+if [[ -z "$MATLAB_FOR_SMOKE" ]] && command -v matlab >/dev/null 2>&1; then
+    MATLAB_FOR_SMOKE="$(command -v matlab)"
+fi
+if [[ -n "$MATLAB_FOR_SMOKE" && -x "$MATLAB_FOR_SMOKE" ]]; then
+    echo "Running MATLAB smoke test via $MATLAB_FOR_SMOKE (may take 10s)..."
+    echo "  (with LD_LIBRARY_PATH=$DEST_LINUX for the MEX libs)"
     SMOKE_TMP="$(mktemp /tmp/nomad_smoke_XXXX.m)"
     cat > "$SMOKE_TMP" <<'MATLAB_EOF'
 try
@@ -321,16 +367,29 @@ catch ME
     exit(1);
 end
 MATLAB_EOF
-    # Run with a timeout
-    if timeout 30 matlab -batch "run('$SMOKE_TMP')" 2>&1 | tail -n 50; then
+    # Run with LD_LIBRARY_PATH set so the MEX finds its libs even if RPATH is not $ORIGIN
+    if timeout 60 env LD_LIBRARY_PATH="$DEST_LINUX:${LD_LIBRARY_PATH:-}" "$MATLAB_FOR_SMOKE" -batch "run('$SMOKE_TMP')" 2>&1 | tail -n 50; then
         echo "MATLAB smoke test passed"
     else
-        echo "MATLAB smoke test failed or timed out (check manually)"
+        echo "MATLAB smoke test failed or timed out"
+        echo "Try manually with:"
+        echo "  LD_LIBRARY_PATH=$DEST_LINUX:\$LD_LIBRARY_PATH $MATLAB_FOR_SMOKE -batch \"addpath(genpath('helper_methods')); addpath('helper_methods/math/nomad/v4.6/linux','-begin'); obj=@(x)sum((x-3).^2); [x,fval]=nomadOpt(obj,[0 0],[0 0],[10 10],struct('MAX_BB_EVAL','30','BB_OUTPUT_TYPE','OBJ'),[]); disp(x)\""
+        echo "If you see 'libstdc++.so.6: version GLIBCXX_3.4.xx not found', rebuild with system g++:"
+        echo "  conda deactivate && ./build_nomad46_linux_mex.sh"
+        echo "  # or: CC=/usr/bin/gcc CXX=/usr/bin/g++ ./build_nomad46_linux_mex.sh"
     fi
     rm -f "$SMOKE_TMP"
+    # Also show the MEX's RPATH for debugging
+    if command -v readelf >/dev/null 2>&1; then
+        echo "MEX RPATH (should be \$ORIGIN or $DEST_LINUX):"
+        readelf -d "$DEST_LINUX/nomadOpt.mexa64" | grep -i rpath || echo "  (no RPATH, will rely on LD_LIBRARY_PATH)"
+    elif command -v patchelf >/dev/null 2>&1; then
+        patchelf --print-rpath "$DEST_LINUX/nomadOpt.mexa64" || true
+    fi
 else
-    echo "MATLAB not on PATH, skipping smoke test. Run manually:"
-    echo "  matlab -batch \"addpath(genpath('helper_methods')); addpath('helper_methods/math/nomad/v4.6/linux','-begin'); obj=@(x)sum((x-3).^2); [x,fval]=nomadOpt(obj,[0 0],[0 0],[10 10],struct('MAX_BB_EVAL','30','BB_OUTPUT_TYPE','OBJ'),[]); disp(x)\""
+    echo "MATLAB not found (checked \$MATLAB_BIN=$MATLAB_BIN and PATH), skipping smoke test."
+    echo "Run manually after fixing PATH or setting MATLAB_ROOT:"
+    echo "  LD_LIBRARY_PATH=$DEST_LINUX:\$LD_LIBRARY_PATH /home/_matlab/R2025b/bin/matlab -batch \"addpath(genpath('helper_methods')); addpath('helper_methods/math/nomad/v4.6/linux','-begin'); obj=@(x)sum((x-3).^2); [x,fval]=nomadOpt(obj,[0 0],[0 0],[10 10],struct('MAX_BB_EVAL','30','BB_OUTPUT_TYPE','OBJ'),[]); disp(x)\""
 fi
 
 echo "=== Done ==="
