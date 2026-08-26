@@ -14,6 +14,9 @@ classdef LvdSettings < matlab.mixin.SetGet
         
         %event propagation times
         disEvtPropTimes(1,1) logical = false;
+        
+        %incremental re-propagation during optimization
+        enableIncrementalRepropagation(1,1) logical = true;
     end
     
     methods

@@ -40,7 +40,7 @@ classdef CompositeObjectiveFcn < AbstractObjectiveFcn
             useSparse = obj.canUseSparseOutput();
 
             try
-                stateLog = obj.lvdData.script.executeScript(useSparse, evtToStartScriptExecAt, false, true, false, false);
+                stateLog = obj.lvdData.script.executeScript(useSparse, evtToStartScriptExecAt, false, true, false, false, obj.lvdData.settings.enableIncrementalRepropagation);
             catch ME
                 f = NaN;
                 stateLog = obj.lvdData.stateLog;

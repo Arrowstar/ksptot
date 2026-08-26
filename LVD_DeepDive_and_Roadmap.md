@@ -74,7 +74,7 @@ LVD is fundamentally a 3DOF translational tool (r, v, m). These additions stay s
 7. **Case Matrix: sweep *any* optimization variable or constraint target** — currently only plugin variables are sweepable. Native sweeps over e.g. T/W, pitch-program coefficients, staging altitudes would make trade studies first-class.
 
 ### Performance
-8. **Incremental re-propagation caching** — during optimization, skip re-integrating events whose inputs didn't change since the last iteration. Big speedup for multi-event scripts.
+8. **Incremental re-propagation caching** — *(implemented 2026)* during optimization, objective/constraint evaluations skip re-integrating events whose inputs did not change since the last evaluation. Resume point is derived per-evaluation from which variables actually changed (variables not owned by an event, scripts using SetNextEventAction, or any plugin presence force a full re-propagation). Unchanged-x repeat evaluations serve the cached state log without integrating. Controlled by the `enableIncrementalRepropagation` setting (default on); measured 2-3.4x wall-time reductions on multi-event example missions with late-event variables, neutral on controls. See `tests/perf/lvdRepropBenchOpt.m`, golden state-log regression suite (`tests/perf/lvdRepropGoldenRunner.m`), and `IncrementalRepropagationTest`.
 9. **Centralized parallel finite-difference Jacobians** — fan out FD perturbations across `parpool` regardless of solver (some solvers have their own parallel flags today).
 
 ### Analysis Output

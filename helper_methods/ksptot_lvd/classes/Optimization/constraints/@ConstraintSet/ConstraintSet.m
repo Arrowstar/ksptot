@@ -108,7 +108,7 @@ classdef ConstraintSet < matlab.mixin.SetGet
                     useSparse = obj.canUseSparseOutput();
                     
                     try
-                        stateLog = obj.lvdData.script.executeScript(useSparse, evtToStartScriptExecAt, false, allowInterrupt, false, false);
+                        stateLog = obj.lvdData.script.executeScript(useSparse, evtToStartScriptExecAt, false, allowInterrupt, false, false, obj.lvdData.settings.enableIncrementalRepropagation);
                     catch ME
                         c = NaN;
                         ceq = NaN;

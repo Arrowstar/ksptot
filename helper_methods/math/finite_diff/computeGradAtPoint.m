@@ -40,7 +40,12 @@ function [g] = computeGradAtPoint(fun, x0, fAtX0, h, diffType, numPts, sparsity,
         end
     else
         M = 0;
-        C.Value{1} = fun;
+        %Store the function in a cell so the same indexing works below for
+        %both pool Constants and plain serial execution.  (The previous
+        %trick of dot-indexing an undefined variable happened to work for
+        %simple closures but broke for handles closing over large object
+        %graphs once they crossed the parfor body boundary.)
+        C = {fun};
     end
     
     numFunOutputs = length(fAtX0);
@@ -65,12 +70,12 @@ function [g] = computeGradAtPoint(fun, x0, fAtX0, h, diffType, numPts, sparsity,
                     if(not(isempty(fAtX0)) && all(x0 == xToEvalAt(:,j)))
                         fAtX = fAtX0;
                     else
-%                         if(useParallel)
-                            f = C.Value{1}; %#ok<PFBNS> 
-                            fAtX = f(xToEvalAt(:,j)); %#ok<PFBNS>
-%                         else
-%                             fAtX = fun(xToEvalAt(:,j)); %#ok<PFBNS>
-%                         end
+                        if(isa(C, 'parallel.pool.Constant'))
+                            f = C.Value{1}; %#ok<PFBNS>
+                        else
+                            f = C{1}; %#ok<PFBNS>
+                        end
+                        fAtX = f(xToEvalAt(:,j)); %#ok<PFBNS>
                     end
                     numerator = numerator + diffCoeff(j) .* fAtX(:)'; 
                 end

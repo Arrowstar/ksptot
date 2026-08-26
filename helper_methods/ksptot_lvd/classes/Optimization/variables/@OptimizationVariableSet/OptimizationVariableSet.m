@@ -10,6 +10,12 @@ classdef OptimizationVariableSet < matlab.mixin.SetGet
     properties(Transient)
         cachedVars AbstractOptimizationVariable
         cachedVarEventDis logical
+
+        %Incremental re-propagation support: records the scaled x vector
+        %most recently pushed onto the variable objects (pending) and the
+        %one for which propagation results were last produced (committed).
+        pendingX double
+        committedX double
     end
     
    events
@@ -136,6 +142,71 @@ classdef OptimizationVariableSet < matlab.mixin.SetGet
                     initInd = inds(end) + 1;
                 end
             end  
+            
+            %Always record as a row vector: callers may pass x as a row or
+            %a column (e.g. finite-difference machinery slicing columns out
+            %of a perturbation matrix), and change detection compares this
+            %against previously recorded vectors element-wise.
+            obj.pendingX = reshape(x, 1, []);
+        end
+        
+        function commitPendingX(obj)
+            %COMMITPENDINGX Promotes the pending x vector to committed.
+            %
+            %   Called by the script runner after propagation results have
+            %   been produced for the pending x vector, marking it as the
+            %   baseline against which the next evaluation's changes are
+            %   measured.
+            
+            if(isempty(obj.pendingX))
+                return;
+            end
+            
+            obj.committedX = obj.pendingX;
+        end
+        
+        function x = getPendingX(obj)
+            x = obj.pendingX;
+        end
+        
+        function x = getCommittedX(obj)
+            x = obj.committedX;
+        end
+        
+        function evtNums = getXElementEvtNums(obj)
+            %GETXELEMENTEVTNUMS Event number owning each element of the x vector.
+            %
+            %   Returns an array aligned element-for-element with the scaled
+            %   x vector (same filtering and ordering as
+            %   updateObjsWithScaledVarValues).  Each entry is the number of
+            %   the event whose objects consume that variable value, or 0
+            %   when the variable is not event-owned (launch vehicle,
+            %   initial state, plugins, non-sequential events), meaning it
+            %   may affect any event.
+            
+            evtNums = [];
+            
+            for(i=1:length(obj.vars)) %#ok<*NO4LP>
+                var = obj.vars(i);
+                
+                if(obj.isVarEventOptimDisabled(var))
+                    continue;
+                end
+                
+                numVars = var.getNumOfVars();
+                
+                if(numVars <= 0)
+                    continue;
+                end
+                
+                evtNum = getEventNumberForVar(var, obj.lvdData);
+                
+                if(isempty(evtNum))
+                    evtNum = 0;
+                end
+                
+                evtNums = horzcat(evtNums, repmat(evtNum, 1, numVars)); %#ok<AGROW>
+            end
         end
         
         function perturbVarsAndUpdate(obj, pPct)
@@ -177,6 +248,11 @@ classdef OptimizationVariableSet < matlab.mixin.SetGet
         function clearCachedVarEvtDisabledStatus(obj)
             obj.cachedVars = AbstractOptimizationVariable.empty(1,0);
             obj.cachedVarEventDis = logical([]);
+            
+            %Var set membership/order changed: x bookkeeping is no longer
+            %aligned, so force a full re-baseline on the next evaluation.
+            obj.pendingX = [];
+            obj.committedX = [];
         end
         
         function sortVarsByEvtNum(obj)

@@ -65,7 +65,6 @@ function lvdRepropGoldenRunner(mode)
 
         %Load first: files that cannot be loaded are skipped in both modes
         %(pre-existing broken examples must not mask regressions).
-        lvdData = [];
         try
             lvdData = loadLvdExample(thisFile(exampleFiles(k)));
         catch loadME

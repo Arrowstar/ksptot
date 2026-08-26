@@ -21,6 +21,13 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
 
     properties(Transient)
         nextEventToRun LaunchVehicleEvent
+        
+        %Incremental re-propagation bookkeeping (see executeScript).
+        lastRunSparseFlag(1,1) logical = false
+        lastRunCompletedFully(1,1) logical = false
+        lastRunUsedIncremental(1,1) logical = false
+        lastNumEvtsIntegrated(1,1) double = 0
+        lastNumEvtsSkipped(1,1) double = 0
     end
         
     properties(Constant)
@@ -306,7 +313,7 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
             tf = tf || obj.nonSeqEvts.usesPluginVariable(pluginVar);
         end
         
-        function stateLog = executeScript(obj, isSparseOutput, evtToStartScriptExecAt, evalConstraints, allowInterrupt, dispEvtPropTimes, notifyScriptEvents)
+        function stateLog = executeScript(obj, isSparseOutput, evtToStartScriptExecAt, evalConstraints, allowInterrupt, dispEvtPropTimes, notifyScriptEvents, allowIncrementalReuse)
             arguments
                 obj(1,1) LaunchVehicleScript
                 isSparseOutput(1,1) logical
@@ -315,33 +322,92 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
                 allowInterrupt(1,1) logical
                 dispEvtPropTimes(1,1) logical
                 notifyScriptEvents(1,1) logical = true;
+                allowIncrementalReuse(1,1) logical = false;
             end
             
             stateLog = obj.lvdData.stateLog;
-            
-            if(not(isempty(evtToStartScriptExecAt)))
-                evtStartNum = evtToStartScriptExecAt.getEventNum();
+            vars = obj.lvdData.optimizer.vars;
+
+            %Capture the previous run's completion state before resetting:
+            %the resolver needs it to decide whether the cache is trustworthy.
+            prevCompletedFully = obj.lastRunCompletedFully;
+            obj.lastRunCompletedFully = false;
+
+            %Resolve where propagation must begin for this evaluation.
+            incrementalAllowed = allowIncrementalReuse && obj.lvdData.settings.enableIncrementalRepropagation;
+            useIncremental = incrementalAllowed;
+
+            if(useIncremental)
+                [useIncremental, evtStartNum, skipPropagation] = obj.resolvePropagationStartPoint(evtToStartScriptExecAt, isSparseOutput, prevCompletedFully);
             else
+                %Classic behavior: always propagate the full script.
                 evtStartNum = 1;
+                skipPropagation = false;
+            end
+            
+            if(skipPropagation)
+                %No variable inputs changed since the last committed
+                %evaluation and the cached log has the right granularity:
+                %serve it as-is without re-integrating anything.
+                vars.commitPendingX();
+                
+                obj.lastRunUsedIncremental = true;
+                obj.lastNumEvtsIntegrated = 0;
+                obj.lastNumEvtsSkipped = obj.getTotalNumOfEvents();
+                obj.lastRunCompletedFully = true;
+                
+                return;
             end
             
             %execute plugins that occur before propagation
             obj.lvdData.plugins.executePluginsBeforeProp(stateLog);
 
-            if(isempty(evtStartNum) || evtStartNum <= 1)
-                evtStartNum = 1;  %disable the event start exec time optimization for now, it is buggy/broken
+            if(evtStartNum <= 1 || not(obj.canResumeFromCachedLog(evtStartNum)))
+                evtStartNum = 1;
                 stateLog.clearStateLog();
                 initStateLogEntry = obj.lvdData.initialState; 
                 initStateLogEntry.event = obj.lvdData.script.getEventForInd(evtStartNum);
                 initStateLogEntry.integrationGroup = IntegrationGroup(1);
                 obj.nonSeqEvts.resetAllNumExecsRemaining();
             else
-                stateLog.clearStateLogAtOrAfterEvent(evtToStartScriptExecAt);
+                %Reuse the cached propagation results for all events before
+                %evtStartNum: clear them out of the working log and pick up
+                %from the last state they produced.
+                stateLog.clearStateLogAtOrAfterEvent(obj.getEventForInd(evtStartNum));
                 initStateLogEntry = stateLog.getFinalStateLogEntry().deepCopy();
-                obj.nonSeqEvts = stateLog.getFinalNonSeqEvtsState().nonSeqEvts.copy();
+                
+                if(not(isempty(stateLog.nonSeqEvtsStates)))
+                    obj.nonSeqEvts = stateLog.getFinalNonSeqEvtsState().nonSeqEvts.copy();
+                end
             end
             
-            stateLog.appendStateLogEntries(initStateLogEntry);
+            %Continue integration group numbering from the cached entries so
+            %that resumed logs match full-run logs entry for entry.
+            integrationNum = 1;
+            if(evtStartNum > 1 && stateLog.getNumberOfEntries() > 0)
+                cachedEntries = stateLog.getAllEntries();
+                grpNums = zeros(1, length(cachedEntries));
+                for(i = 1:length(cachedEntries))
+                    grpNums(i) = cachedEntries(i).integrationGroup.integrationGroupNum;
+                end
+
+                integrationNum = max(grpNums) + 1;
+            end
+            
+            %Seed the working state's event and integration group so that
+            %entries produced by the resumed tail are tagged identically to
+            %a full propagation run.
+            if(evtStartNum > 1)
+                initStateLogEntry.event = obj.getEventForInd(evtStartNum);
+                initStateLogEntry.integrationGroup = IntegrationGroup(integrationNum);
+            end
+
+            %A cold start logs its initial-state entry; a resumed run must
+            %not, or an extra boundary entry would be duplicated into the
+            %log relative to a full run.
+            if(evtStartNum <= 1)
+                stateLog.appendStateLogEntries(initStateLogEntry);
+            end
             initStateLogEntry = initStateLogEntry.deepCopy();
             
             %notify that script propagation has started
@@ -356,14 +422,15 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
                 tStartSimTime = initStateLogEntry.time;
                 tStartPropTime = tic();
                 
-                obj.nextEventToRun = obj.evts(1);
+                obj.nextEventToRun = obj.getEventForInd(evtStartNum);
                 maxIntegrationDuration = obj.simDriver.maxPropTime;
-                integrationNum = 1;
+                numEvtsExecuted = 0;
                 while(not(isempty(obj.nextEventToRun)) && toc(tStartPropTime) < maxIntegrationDuration) 
                     initStateLogEntry = obj.executeEvent(initStateLogEntry, stateLog, tStartSimTime, tStartPropTime, integrationNum, notifyScriptEvents, allowInterrupt, isSparseOutput, dispEvtPropTimes);
                     initStateLogEntry = initStateLogEntry.deepCopy();
 
                     integrationNum = integrationNum + 1;
+                    numEvtsExecuted = numEvtsExecuted + 1;
                 end
                 
                 tPropTime = toc(tStartPropTime);
@@ -393,6 +460,29 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
             end
             
             obj.lastRunExecTime = tPropTime;
+            
+            %Bookkeeping for incremental re-propagation: mark the pending x
+            %vector as committed (propagation results now exist for it) and
+            %record how much of the script was re-integrated.  The commit
+            %happens whenever incremental mode was allowed, even when this
+            %evaluation propagated everything: a full run is a perfectly
+            %good baseline for the next evaluation's change detection.
+            obj.lastRunSparseFlag = isSparseOutput;
+            obj.lastNumEvtsIntegrated = numEvtsExecuted;
+            if(evtStartNum <= 1)
+                obj.lastNumEvtsSkipped = 0;
+            else
+                obj.lastNumEvtsSkipped = evtStartNum - 1;
+            end
+            obj.lastRunUsedIncremental = useIncremental && evtStartNum > 1;
+
+            %Only a run whose while-loop exhausted the event list (no
+            %watchdog timeout) leaves a cache that is safe to skip against.
+            obj.lastRunCompletedFully = isempty(obj.nextEventToRun);
+
+            if(incrementalAllowed)
+                vars.commitPendingX();
+            end
             
             if(evalConstraints)
                 x=obj.lvdData.optimizer.vars.getTotalScaledXVector();
@@ -529,6 +619,139 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
         end
     end
 
+    methods(Access=private)
+        function evtStartNum = normalizeStartEvtNum(obj, evtToStartScriptExecAt)
+            if(isempty(evtToStartScriptExecAt))
+                evtStartNum = 1;
+            else
+                evtStartNum = evtToStartScriptExecAt.getEventNum();
+            end
+
+            if(isempty(evtStartNum) || not(isnumeric(evtStartNum)) || isnan(evtStartNum) || evtStartNum < 1)
+                evtStartNum = 1;
+            end
+
+            totalEvts = obj.getTotalNumOfEvents();
+            if(totalEvts > 0 && evtStartNum > totalEvts)
+                evtStartNum = totalEvts;
+            end
+        end
+
+        function [useIncremental, evtStartNum, skipPropagation] = resolvePropagationStartPoint(obj, evtToStartScriptExecAt, isSparseOutput, prevCompletedFully)
+            %RESOLVEPROPAGATIONSTARTPOINT Decides how much of the script to
+            %re-propagate for this evaluation.
+            %
+            %   Returns:
+            %       useIncremental  - true when cached results are being
+            %                         leveraged at all this evaluation (the
+            %                         pending x vector should be committed).
+            %       evtStartNum     - the event number to begin propagation
+            %                         from.
+            %       skipPropagation - true when nothing changed and the
+            %                         existing state log can be served as-is.
+            %
+            %   Reuse is only ever attempted when the caller explicitly
+            %   allowed it AND the setting is enabled; the guards below then
+            %   reject any script whose execution cannot be assumed
+            %   deterministic given unchanged optimization variables.
+
+            useIncremental = false;
+            evtStartNum = obj.normalizeStartEvtNum(evtToStartScriptExecAt);
+            skipPropagation = false;
+
+            floorEvtNum = evtStartNum;
+
+            %Guard: script looping / flow modification invalidates all
+            %static reuse assumptions.  Force a full run.
+            if(scriptContainsSetNextEventAction(obj.lvdData))
+                useIncremental = false;
+                evtStartNum = 1;
+                return;
+            end
+
+            %Guard: plugins execute arbitrary code each evaluation and may
+            %mutate anything; do not assume unchanged inputs.
+            if(obj.lvdData.plugins.getNumPlugins() > 0)
+                useIncremental = false;
+                evtStartNum = 1;
+                return;
+            end
+
+            vars = obj.lvdData.optimizer.vars;
+            pendingX = vars.getPendingX();
+            committedX = vars.getCommittedX();
+
+            %No committed baseline yet (first evaluation, or the variable
+            %set changed): fall back to a STATIC resume floor derived from
+            %where the active variables live.  Events hosting no active
+            %variables cannot have changed since the cached results were
+            %produced, so reuse remains valid; anything else forces a full
+            %run.  A caller-provided floor event is ignored in favor of
+            %this internally-derived one, which can only be more safe.
+            if(isempty(pendingX) || isempty(committedX) || numel(pendingX) ~= numel(committedX))
+                evtNums = vars.getXElementEvtNums();
+
+                if(isempty(pendingX) || numel(evtNums) ~= numel(pendingX))
+                    evtStartNum = floorEvtNum;
+                else
+                    evtStartNum = min(max(evtNums, 1));
+                end
+
+                useIncremental = evtStartNum > 1;
+                return;
+            end
+
+            changedInds = find(pendingX(:).' ~= committedX(:).');
+
+            if(isempty(changedInds))
+                %Nothing changed since the last committed evaluation.  The
+                %entire cached log can be reused as-is when it was produced
+                %by a complete run with matching output granularity;
+                %otherwise re-run the tail per the static floor.
+                if(prevCompletedFully && obj.lastRunSparseFlag == isSparseOutput)
+                    useIncremental = true;
+                    skipPropagation = true;
+                    return;
+                end
+
+                evtStartNum = floorEvtNum;
+                useIncremental = evtStartNum > 1;
+                return;
+            end
+
+            %Some inputs changed: resume from the earliest event that hosts
+            %a changed variable.  Variables not owned by a specific event
+            %(vehicle, initial state, plugin wrappers) map to 0 -> event 1,
+            %forcing a full run whenever they change.
+            evtNums = vars.getXElementEvtNums();
+
+            if(numel(evtNums) ~= numel(pendingX))
+                evtStartNum = floorEvtNum;
+                useIncremental = evtStartNum > 1;
+                return;
+            end
+
+            evtStartNum = min(max(evtNums(changedInds), 1));
+            useIncremental = true;
+        end
+
+        function tf = canResumeFromCachedLog(obj, evtStartNum)
+            %CANRESUMEFROMCACHEDLOG True when the current state log contains
+            %propagation results for every event before evtStartNum, so the
+            %script can pick up from there.
+
+            tf = obj.lvdData.stateLog.getNumberOfEntries() > 0;
+
+            for(i = 1:(evtStartNum-1))
+                evt = obj.getEventForInd(i);
+                if(isempty(evt) || isempty(obj.lvdData.stateLog.getAllStateLogEntriesForEvent(evt)))
+                    tf = false;
+                    return;
+                end
+            end
+        end
+    end
+
    methods (Static)
       function s = loadobj(s)
          if(isempty(s.nonSeqEvts))
@@ -537,3 +760,4 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
       end
    end
 end
+
