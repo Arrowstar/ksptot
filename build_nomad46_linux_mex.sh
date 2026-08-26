@@ -343,11 +343,11 @@ if [[ -n "$MATLAB_FOR_SMOKE" && -x "$MATLAB_FOR_SMOKE" ]]; then
     echo "Running MATLAB smoke test via $MATLAB_FOR_SMOKE (may take 10s)..."
     echo "  (with LD_LIBRARY_PATH=$DEST_LINUX for the MEX libs)"
     SMOKE_TMP="$(mktemp /tmp/nomad_smoke_XXXX.m)"
-    cat > "$SMOKE_TMP" <<'MATLAB_EOF'
+    cat > "$SMOKE_TMP" <<MATLAB_EOF
 try
-    addpath(genpath('helper_methods'));
-    % Prioritize v4.6
-    v46 = fullfile(pwd,'helper_methods','math','nomad','v4.6','linux');
+    addpath(genpath('$REPO_ROOT/helper_methods'));
+    % Prioritize v4.6 (use absolute DEST_LINUX, not pwd which is $BUILD_DIR)
+    v46 = '$DEST_LINUX';
     addpath(v46, '-begin');
     fprintf('which nomadOpt: %s\n', which('nomadOpt'));
     obj = @(x) sum((x-3).^2);
