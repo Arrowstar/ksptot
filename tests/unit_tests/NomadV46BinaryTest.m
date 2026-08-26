@@ -244,6 +244,34 @@ classdef NomadV46BinaryTest < matlab.unittest.TestCase
             testCase.verifyTrue(has46Mex || ~ispc, 'At least one v4.6 MEX (win or linux) should be present after builds');
         end
         
+        function globalPathPointsToV46(testCase)
+            % Verify that ksptotAddProjectPaths prioritizes v4.6 over v4.4.
+            % This is the user-facing check that LVD will actually use v4.6 by default.
+            % See tests/helpers/ksptotAddProjectPaths.m:29 and projectMain.m:11
+            clear ksptotAddProjectPaths %#ok<CLFUNC> % reset persistent so path is re-evaluated
+            % Do not clear mex here - we want to test the path as LVD sees it
+            ksptotAddProjectPaths();
+            mexPath = which('nomadOpt');
+            testCase.verifyTrue(~isempty(mexPath), 'nomadOpt not found on path after ksptotAddProjectPaths');
+            if ispc
+                testCase.verifyTrue(contains(mexPath, 'v4.6'), sprintf('Global which should be v4.6, got %s (ksptotAddProjectPaths not prioritizing)', mexPath));
+                % Also verify size is 74240 (v4.6) not 70144 (v4.4)
+                if isfile(mexPath)
+                    d = dir(mexPath);
+                    testCase.verifyEqual(d.bytes, 74240, 'Global MEX size should be 74240 for v4.6');
+                end
+            elseif isunix
+                % On Linux, check that v4.6 is before v4.4 in path
+                p = strsplit(path, pathsep);
+                idx46 = find(contains(p, 'v4.6'), 1, 'first');
+                idx44 = find(contains(p, 'v4.4'), 1, 'first');
+                if ~isempty(idx46) && ~isempty(idx44)
+                    testCase.verifyTrue(idx46 < idx44, sprintf('v4.6 (idx %d) should be before v4.4 (idx %d)', idx46, idx44));
+                end
+                testCase.verifyTrue(contains(mexPath, 'v4.6'), sprintf('Linux global which should be v4.6, got %s', mexPath));
+            end
+        end
+        
         function nomadOptSmokeTestIfMexAvailable(testCase)
             % Smoke test for the v4.6 MEX (prioritized). Handles DLL hell
             % by clearing previous MEX and ensuring v4.6 is at front of path.

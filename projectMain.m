@@ -14,6 +14,15 @@ if(~isdeployed)
     addpath(genpath('images'));
     addpath(genpath('kos_scripts'));
 %     addpath('zArchive');
+    % Prioritize NOMAD v4.6 (see tests/helpers/ksptotAddProjectPaths.m:29 for rationale)
+    try
+        if ispc && isfolder('helper_methods/math/nomad/v4.6/win64')
+            addpath('helper_methods/math/nomad/v4.6/win64', '-begin');
+        elseif isunix && isfolder('helper_methods/math/nomad/v4.6/linux')
+            addpath('helper_methods/math/nomad/v4.6/linux', '-begin');
+        end
+    catch
+    end
 end
 
 % %set look and feel if deployed
