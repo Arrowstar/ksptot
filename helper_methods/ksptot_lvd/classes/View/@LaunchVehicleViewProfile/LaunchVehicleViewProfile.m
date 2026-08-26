@@ -126,9 +126,11 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         showTerrainContours(1,1) logical = false;
         numTerrainContourLevels(1,1) double = 10;
 
-        %Skybox
+        %Skybox - typed API (SkyboxTextureEnum preferred)
         useSkybox(1,1) logical = false;
-        skyBoxImgFileName(1,1) string = "DarkStarsSkyBox.png";
+        skyboxTexture(1,1) SkyboxTextureEnum = SkyboxTextureEnum.DarkStars;
+        skyboxCustomTexturePath(1,1) string = "";
+        skyBoxImgFileName(1,1) string = "DarkStarsSkyBox.png"; % DEPRECATED: use skyboxTexture; kept for 1 release compat
         skyboxRadiusMultiplier(1,1) double {mustBeGreaterThanOrEqual(skyboxRadiusMultiplier,1)} = 1.5;
     end
     
@@ -161,11 +163,12 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         %Ref frame
         userDefinedRefFrames(1,:) 
 
-        %Skybox stuff
-        skyBoxImageI
-        skyBoxSurfHandle
-        skyboxOrigin 
-        skyboxRadius
+        %Skybox stuff - Manager (per-profile) + deprecated transients (1 release)
+        skyboxManager % SkyboxManager - per-profile manager (Transient)
+        skyBoxImageI  % DEPRECATED: use skyboxManager.skyImage
+        skyBoxSurfHandle % DEPRECATED: use skyboxManager.hSurf
+        skyboxOrigin  % DEPRECATED: use skyboxManager.origin
+        skyboxRadius  % DEPRECATED: use skyboxManager.radius
     end
     
     properties(Access=private)
@@ -177,6 +180,101 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         function obj = LaunchVehicleViewProfile()
             % f = @(src,evt) viewprofiletest(src,evt);
             % addlistener(obj,'viewCameraPosition','PostSet',f);
+            % Initialize per-profile skybox manager lazily via getter
+        end
+
+        function mgr = getSkyboxManager(obj)
+            %getSkyboxManager  Lazy per-profile SkyboxManager getter
+            if isempty(obj.skyboxManager) || ~isvalid(obj.skyboxManager)
+                obj.skyboxManager = SkyboxManager(obj);
+                % Sync deprecated string -> enum on first creation (backward compat)
+                obj.syncSkyboxTextureFromDeprecated();
+            end
+            mgr = obj.skyboxManager;
+        end
+
+        function path = getSkyboxImageFullPath(obj)
+            %getSkyboxImageFullPath  Resolve full path for current texture selection
+            try
+                mgr = obj.getSkyboxManager();
+                % Delegate to manager's resolver for consistent logic
+                path = mgr.resolveDesiredImagePath();
+            catch
+                % Fallback direct enum resolution
+                try
+                    if obj.skyboxTexture.isCustom()
+                        if strlength(obj.skyboxCustomTexturePath) > 0
+                            path = obj.skyboxCustomTexturePath;
+                        else
+                            path = string(obj.skyBoxImgFileName);
+                            if ~isfile(path)
+                                path = obj.skyboxTexture.getFullPath();
+                            end
+                        end
+                    else
+                        path = obj.skyboxTexture.getFullPath();
+                    end
+                catch
+                    path = "DarkStarsSkyBox.png";
+                end
+            end
+        end
+
+        function syncSkyboxTextureFromDeprecated(obj)
+            % Sync deprecated skyBoxImgFileName -> skyboxTexture if enum still default
+            try
+                dep = string(obj.skyBoxImgFileName);
+                if strlength(dep)==0
+                    return;
+                end
+                % If texture is default and deprecated is non-default, infer
+                isDefaultTex = (obj.skyboxTexture == SkyboxTextureEnum.DarkStars);
+                isDepDefault = (dep == "DarkStarsSkyBox.png");
+                if isDefaultTex && ~isDepDefault
+                    try
+                        [enumVal, ~] = SkyboxTextureEnum.getEnumForFileName(dep);
+                        if enumVal ~= SkyboxTextureEnum.Custom
+                            obj.skyboxTexture = enumVal;
+                        else
+                            % Unknown file -> treat as custom path
+                            obj.skyboxTexture = SkyboxTextureEnum.Custom;
+                            obj.skyboxCustomTexturePath = dep;
+                        end
+                    catch
+                    end
+                elseif obj.skyboxTexture.isCustom() && strlength(obj.skyboxCustomTexturePath)==0 && ~isDepDefault
+                    % Custom enum but no path yet -> use deprecated
+                    obj.skyboxCustomTexturePath = dep;
+                end
+            catch
+            end
+        end
+
+        function setSkyboxTextureAndSync(obj, tex, customPath)
+            arguments
+                obj(1,1) LaunchVehicleViewProfile
+                tex(1,1) SkyboxTextureEnum
+                customPath(1,1) string = ""
+            end
+            obj.skyboxTexture = tex;
+            if tex.isCustom()
+                if strlength(customPath) > 0
+                    obj.skyboxCustomTexturePath = customPath;
+                    obj.skyBoxImgFileName = customPath;
+                end
+            else
+                obj.skyboxCustomTexturePath = "";
+                obj.skyBoxImgFileName = tex.fileName;
+            end
+            % Invalidate cached image in manager so it reloads
+            try
+                obj.skyBoxImageI = [];
+                mgr = obj.getSkyboxManager();
+                if mgr.getIsAttached()
+                    mgr.scheduleUpdate(true);
+                end
+            catch
+            end
         end
         
         function removeGrdObjFromList(obj, grdObj)
@@ -708,9 +806,87 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         function removeEventFromListOfPlottedEvents(obj, event)
             obj.eventsToPlot(obj.eventsToPlot == event) = [];
         end
+
+        function delete(obj)
+            % Clean up per-profile skybox manager
+            try
+                if ~isempty(obj.skyboxManager) && isvalid(obj.skyboxManager)
+                    delete(obj.skyboxManager);
+                end
+            catch
+            end
+        end
     end
-    
+
     methods(Static)
+        function obj = loadobj(obj)
+            % Handle backward compat for skyboxTexture and init manager
+            % Support both struct (pre-class-change) and object cases.
+            if isstruct(obj)
+                % Struct case: old MAT file without new props
+                if ~isfield(obj,'skyboxTexture')
+                    obj.skyboxTexture = SkyboxTextureEnum.DarkStars;
+                end
+                if ~isfield(obj,'skyboxCustomTexturePath')
+                    obj.skyboxCustomTexturePath = "";
+                end
+                % skyboxManager is Transient, not saved - nothing to do
+                % Attempt to map deprecated string -> enum
+                if isfield(obj,'skyBoxImgFileName') && isfield(obj,'skyboxTexture')
+                    try
+                        dep = string(obj.skyBoxImgFileName);
+                        tex = obj.skyboxTexture;
+                        if isempty(tex) || tex == SkyboxTextureEnum.DarkStars
+                            if dep ~= "DarkStarsSkyBox.png" && strlength(dep)>0
+                                try
+                                    [enumVal, ~] = SkyboxTextureEnum.getEnumForFileName(dep);
+                                    if enumVal ~= SkyboxTextureEnum.Custom
+                                        obj.skyboxTexture = enumVal;
+                                    else
+                                        obj.skyboxTexture = SkyboxTextureEnum.Custom;
+                                        obj.skyboxCustomTexturePath = dep;
+                                    end
+                                catch
+                                end
+                            end
+                        end
+                    catch
+                    end
+                end
+                % Also ensure radius multiplier exists
+                if ~isfield(obj,'skyboxRadiusMultiplier')
+                    obj.skyboxRadiusMultiplier = 1.5;
+                end
+                return;
+            end
+
+            % Object case
+            try
+                % If loaded object was saved before skyboxTexture existed, create it from deprecated string
+                if ~isprop(obj,'skyboxTexture') || isempty(obj.skyboxTexture)
+                    obj.skyboxTexture = SkyboxTextureEnum.DarkStars;
+                end
+            catch
+            end
+            try
+                if isempty(obj.skyboxManager) || ~isvalid(obj.skyboxManager)
+                    obj.skyboxManager = SkyboxManager(obj);
+                end
+                % Sync deprecated -> enum
+                try
+                    obj.syncSkyboxTextureFromDeprecated();
+                catch
+                end
+            catch
+            end
+            % Fix frame if needed (existing loadobj logic was in Settings, but keep here too)
+            try
+                if isempty(obj.frame)
+                    % leave for Settings to fix with lvdData context
+                end
+            catch
+            end
+        end
         function vehPosVelData = createVehPosVelData(subStateLogs, evts, viewFrame)
             vehPosVelData = LaunchVehicleViewPosVelInterp(viewFrame);
                         

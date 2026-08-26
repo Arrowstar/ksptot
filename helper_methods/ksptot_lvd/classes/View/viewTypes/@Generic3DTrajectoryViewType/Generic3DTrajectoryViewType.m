@@ -2,8 +2,14 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
     %Generic3DTrajectoryViewType Summary of this class goes here
     %   Detailed explanation goes here
     
-    properties(Transient)
+    properties(Transient, Hidden)
+        % DEPRECATED: per-profile SkyboxManager now owns listeners.  Kept for 1 release compat.
         skyboxPostCameraPosSetListener
+    end
+
+    properties(Constant, Access=private)
+        SkyboxTransformTag = "KSPTOT_SkyboxTransform"
+        SkyboxSurfTag      = "KSPTOT_Skybox"
     end
 
     methods
@@ -36,7 +42,79 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
 %             axes(dAxes);
 %             cla(dAxes);
             % cla(dAxes,'reset');
-            delete(dAxes.Children);
+            % --- Skybox-aware selective delete: preserve skybox transform if it will be reused ---
+            try
+                % Detach managers of other profiles that might still be attached to this axes
+                try
+                    allProfiles = lvdData.viewSettings.viewProfiles;
+                    for pIdx = 1:numel(allProfiles)
+                        p = allProfiles(pIdx);
+                        if p ~= viewProfile && ~isempty(p.skyboxManager) && isvalid(p.skyboxManager)
+                            try
+                                p.skyboxManager.detach();
+                            catch
+                            end
+                        end
+                    end
+                catch
+                end
+                % If skybox disabled for this profile, detach now so it will be deleted
+                if ~viewProfile.useSkybox
+                    try
+                        if ~isempty(viewProfile.skyboxManager) && isvalid(viewProfile.skyboxManager)
+                            viewProfile.getSkyboxManager().detach();
+                        end
+                    catch
+                    end
+                else
+                    % Ensure deprecated string -> enum sync before we decide to keep graphics
+                    try
+                        viewProfile.syncSkyboxTextureFromDeprecated();
+                    catch
+                    end
+                end
+            catch
+            end
+            try
+                kids = dAxes.Children;
+                if ~isempty(kids)
+                    if viewProfile.useSkybox
+                        keepTags = [obj.SkyboxTransformTag, obj.SkyboxSurfTag];
+                        tags = string({kids.Tag});
+                        toDelete = kids(~ismember(tags, keepTags));
+                    else
+                        toDelete = kids;
+                    end
+                    if ~isempty(toDelete)
+                        delete(toDelete);
+                    end
+                    % When skybox disabled, also purge any hidden skybox graphics
+                    if ~viewProfile.useSkybox
+                        try
+                            delete(findall(dAxes,'Tag',obj.SkyboxTransformTag));
+                            delete(findall(dAxes,'Tag',obj.SkyboxSurfTag));
+                        catch
+                        end
+                    else
+                        % Clean orphan surf not under transform (legacy path)
+                        try
+                            orphanSurfs = findall(dAxes,'Tag',obj.SkyboxSurfTag);
+                            for k=1:numel(orphanSurfs)
+                                if ~isempty(orphanSurfs(k).Parent) && ~strcmp(orphanSurfs(k).Parent.Tag, obj.SkyboxTransformTag)
+                                    delete(orphanSurfs(k));
+                                end
+                            end
+                        catch
+                        end
+                    end
+                end
+            catch
+                % Fallback: legacy delete
+                try
+                    delete(dAxes.Children);
+                catch
+                end
+            end
             dAxes.Color = viewProfile.backgroundColor.color;
 
             % dAxes.CameraPositionMode = "manual";
@@ -434,35 +512,67 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
 
             end
 
-            % Experimental skybox
-            if(viewProfile.useSkybox)
-                hold(dAxes, 'on');
-                grid(dAxes,'off');
-                axis(dAxes,'equal');
-                dAxes.XTick = [];
-                dAxes.YTick = [];
-                dAxes.ZTick = [];
-                dAxes.Box = "off";
-                dAxes.XColor = "none";
-                dAxes.YColor = "none";
-                dAxes.ZColor = "none";
-                camproj(dAxes, 'perspective'); %THIS IS REQUIRED TO MAKE A "SKYBOX" WORK!!!
-                dAxes.Clipping = "off";
-                dAxes.ClippingStyle = "3dbox";
-
-                delete(obj.skyboxPostCameraPosSetListener);
-
-                lFh = @(src,evt) updateSkyboxPos(src,evt, dAxes, lvdData);
-                lFh([],[]);
-
-                obj.skyboxPostCameraPosSetListener = addlistener(dAxes,'CameraPosition','PostSet', lFh);
-            else
-                delete(obj.skyboxPostCameraPosSetListener);
-                delete(viewProfile.skyBoxSurfHandle);
-
-                dAxes.XTickMode = 'auto';
-                dAxes.YTickMode = 'auto';
-                dAxes.ZTickMode = 'auto';
+            % --- Skybox (per-profile SkyboxManager, timer-debounced, hgtransform) ---
+            try
+                try
+                    viewProfile.syncSkyboxTextureFromDeprecated();
+                catch
+                end
+                skyMgr = viewProfile.getSkyboxManager();
+                if viewProfile.useSkybox
+                    try
+                        camproj(dAxes, 'perspective'); % required for skybox illusion
+                    catch
+                    end
+                    % Detach managers of other profiles that might be attached to this axes
+                    try
+                        allProfiles = lvdData.viewSettings.viewProfiles;
+                        for pIdx2 = 1:numel(allProfiles)
+                            p2 = allProfiles(pIdx2);
+                            if p2 ~= viewProfile && ~isempty(p2.skyboxManager) && isvalid(p2.skyboxManager)
+                                try
+                                    p2.skyboxManager.detach();
+                                catch
+                                end
+                            end
+                        end
+                    catch
+                    end
+                    skyMgr.attach(dAxes, lvdData);
+                else
+                    try
+                        skyMgr.detach();
+                    catch
+                    end
+                    try
+                        if ~isempty(viewProfile.skyBoxSurfHandle) && isvalid(viewProfile.skyBoxSurfHandle)
+                            delete(viewProfile.skyBoxSurfHandle);
+                        end
+                    catch
+                    end
+                    % Legacy listener cleanup (1-release)
+                    try
+                        if ~isempty(obj.skyboxPostCameraPosSetListener) && isvalid(obj.skyboxPostCameraPosSetListener)
+                            delete(obj.skyboxPostCameraPosSetListener);
+                        end
+                    catch
+                    end
+                    obj.skyboxPostCameraPosSetListener = event.listener.empty(1,0);
+                    try
+                        if strcmp(dAxes.XTickMode,'manual') || isempty(dAxes.XTick)
+                            dAxes.XTickMode = 'auto';
+                            dAxes.YTickMode = 'auto';
+                            dAxes.ZTickMode = 'auto';
+                        end
+                    catch
+                    end
+                end
+            catch ME
+                warning('Generic3DTrajectoryViewType:skyboxFailed','Skybox handling failed: %s', ME.message);
+                try
+                    delete(obj.skyboxPostCameraPosSetListener);
+                catch
+                end
             end
 
             if(not(viewProfile.updateViewAxesLimits))                
@@ -496,10 +606,46 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                 viewProfile.viewCameraViewAngle = dAxes.CameraViewAngle;
             end
 
+            % Force immediate skybox resync after any camera/limits change (reset or restore)
+            % Ensures skybox radius accounts for new limits and camera is centered without debounce lag
+            if viewProfile.useSkybox
+                try
+                    skyMgrPostCam = viewProfile.getSkyboxManager();
+                    if skyMgrPostCam.getIsAttached() && skyMgrPostCam.getAttachedAxes() == dAxes
+                        skyMgrPostCam.scheduleUpdate(true);
+                    elseif viewProfile.useSkybox
+                        skyMgrPostCam.attach(dAxes, lvdData);
+                    end
+                catch
+                end
+            end
+
             %Retheme app to apply axes styling
             if(viewProfile.useThemeForAxes)
                 GLOBAL_AppThemer.themeWidget(dAxes, GLOBAL_AppThemer.selTheme);
                 GLOBAL_AppThemer.themeWidget(app.DisplayAxesGridLayout, GLOBAL_AppThemer.selTheme);
+            end
+
+            % Re-apply skybox axes settings after theming to ensure Box/Tick hidden state persists
+            if viewProfile.useSkybox
+                try
+                    skyMgrAfterTheme = viewProfile.getSkyboxManager();
+                    if skyMgrAfterTheme.getIsAttached()
+                        skyMgrAfterTheme.reapplyAxesSettings();
+                        try
+                            camproj(dAxes,'perspective');
+                        catch
+                        end
+                        try
+                            hT = findall(dAxes,'Tag',obj.SkyboxTransformTag);
+                            if ~isempty(hT) && isvalid(hT(1))
+                                uistack(hT(1),'bottom');
+                            end
+                        catch
+                        end
+                    end
+                catch
+                end
             end
         end
     end
@@ -640,60 +786,36 @@ function plotBodyFixedGrid(dAxes, bodyInfo)
 end
 
 function updateSkyboxPos(src,evt, hAx, lvdData)
+    % DEPRECATED (1-release): Skybox is now managed by SkyboxManager per-profile.
+    % This wrapper forwards to the manager for backward compat.
     arguments
         src
         evt
         hAx(1,1) matlab.graphics.axis.Axes
         lvdData(1,1) LvdData
     end
-
-    viewProfile = lvdData.viewSettings.selViewProfile;
-
-    cameraPos = campos(hAx);
-    cameraTgt = camtarget(hAx);
-    cameraVa = camva(hAx);
-
-    if(viewProfile.useSkybox)
-        if(isempty(viewProfile.skyboxOrigin) || isempty(viewProfile.skyboxRadius) || isempty(viewProfile.skyBoxSurfHandle) || ~isvalid(viewProfile.skyBoxSurfHandle) || norm(cameraPos - viewProfile.skyboxOrigin) > 0.5*viewProfile.skyboxRadius) %only update skybox sphere if we get too close to the edge
-            if(not(isempty(viewProfile.skyBoxSurfHandle)) && isvalid(viewProfile.skyBoxSurfHandle))
-                viewProfile.skyBoxSurfHandle.Visible = 'off'; %This makes sure that the axes bounds are set without including the skybox.  Just turn the skybox back on later. 
-            end
-        
-            xBndMaxDistToCamPos = max(abs(cameraPos(1) - xlim(hAx)));
-            yBndMaxDistToCamPos = max(abs(cameraPos(2) - ylim(hAx)));
-            zBndMaxDistToCamPos = max(abs(cameraPos(3) - zlim(hAx)));
-            
-            skyboxSize = viewProfile.skyboxRadiusMultiplier * max([xBndMaxDistToCamPos, yBndMaxDistToCamPos, zBndMaxDistToCamPos]);
-            
-            viewProfile.skyboxOrigin = cameraPos;
-            viewProfile.skyboxRadius = skyboxSize;
-
-            [X,Y,Z] = sphere(30);
-            if(isempty(viewProfile.skyBoxSurfHandle) || not(isvalid(viewProfile.skyBoxSurfHandle)))
-                if(isempty(viewProfile.skyBoxImageI))
-                    I = imread(viewProfile.skyBoxImgFileName);
-                    I = flipud(I);
-                    % I = imresize(I, 1, "bilinear","Antialiasing",true);
-
-                    viewProfile.skyBoxImageI = I;
-                else
-                    I = viewProfile.skyBoxImageI;
-                end
-        
-                hold(hAx,'on');
-                viewProfile.skyBoxSurfHandle = surf(hAx, skyboxSize*X+cameraPos(1),skyboxSize*Y+cameraPos(2),skyboxSize*Z+cameraPos(3), "EdgeColor","none", "FaceColor","texturemap", 'CData',I, 'FaceLighting','none');
-            else
-                viewProfile.skyBoxSurfHandle.XData = skyboxSize*X+cameraPos(1);
-                viewProfile.skyBoxSurfHandle.YData = skyboxSize*Y+cameraPos(2);
-                viewProfile.skyBoxSurfHandle.ZData = skyboxSize*Z+cameraPos(3);
-                viewProfile.skyBoxSurfHandle.Visible = 'on';
-            end
-    
-            camtarget(hAx, cameraTgt);
-            camva(hAx, cameraVa);
-            campos(hAx, cameraPos);
+    try
+        viewProfile = lvdData.viewSettings.selViewProfile;
+        mgr = viewProfile.getSkyboxManager();
+        % If the manager is attached to this axes, just schedule an update.
+        % Otherwise attach now.
+        try
+            isAtt = mgr.getIsAttached();
+            attAx = mgr.getAttachedAxes();
+        catch
+            isAtt = false;
+            attAx = matlab.graphics.axis.Axes.empty(1,0);
         end
-    else
-        delete(viewProfile.skyBoxSurfHandle);
+        if isAtt && isvalid(hAx) && isvalid(attAx) && attAx == hAx
+            mgr.scheduleUpdate(false);
+        else
+            if viewProfile.useSkybox
+                mgr.attach(hAx, lvdData);
+            else
+                mgr.detach();
+            end
+        end
+    catch ME
+        warning('Generic3DTrajectoryViewType:deprecatedUpdateSkyboxPosFailed','Deprecated updateSkyboxPos failed: %s', ME.message);
     end
 end

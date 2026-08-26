@@ -151,13 +151,57 @@ classdef LaunchVehicleViewSettings < matlab.mixin.SetGet
     
     methods(Static)
         function obj = loadobj(obj)
+            % Handle struct case from older MAT files where viewProfiles is struct array
+            if isstruct(obj)
+                % ViewSettings was saved as struct? Nothing to do - will be converted via default
+                return;
+            end
             for(i=1:length(obj.viewProfiles))
                 profile = obj.viewProfiles(i);
 
                 if(isempty(profile.frame))
-%                     profile.frame = BodyCenteredInertialFrame(obj.lvdData.initialState.centralBody, obj.lvdData.celBodyData);       
-                    profile.frame = obj.lvdData.initialState.centralBody.getBodyCenteredInertialFrame();
+                    try
+                        profile.frame = obj.lvdData.initialState.centralBody.getBodyCenteredInertialFrame();
+                    catch
+                    end
                 end
+
+                % Skybox migration: ensure skyboxTexture /Custom path and manager exist
+                try
+                    % If struct array element is still struct (due to class change), convert?
+                    if isstruct(profile)
+                        continue;
+                    end
+                    if isempty(profile.skyboxManager) || ~isvalid(profile.skyboxManager)
+                        profile.skyboxManager = SkyboxManager(profile);
+                    end
+                    % Sync deprecated string -> enum (handles both previous string and new enum)
+                    try
+                        profile.syncSkyboxTextureFromDeprecated();
+                    catch
+                    end
+                    % Ensure deprecated handle transients are cleared (they are transient anyway)
+                catch
+                end
+            end
+
+            % Validate selViewProfile still exists in list; if not, reset to first
+            try
+                if ~isempty(obj.selViewProfile)
+                    found = false;
+                    for i=1:length(obj.viewProfiles)
+                        if obj.viewProfiles(i) == obj.selViewProfile
+                            found = true;
+                            break;
+                        end
+                    end
+                    if ~found && ~isempty(obj.viewProfiles)
+                        obj.selViewProfile = obj.viewProfiles(1);
+                    end
+                elseif ~isempty(obj.viewProfiles)
+                    obj.selViewProfile = obj.viewProfiles(1);
+                end
+            catch
             end
         end
     end
