@@ -5,12 +5,13 @@ function [partDB, warnings] = lvd_import_getPartDatabase(source)
 %   parts database shipped with KSPTOT (no KSP installation required).
 %
 %   partDB = lvd_import_getPartDatabase(source) loads from:
-%       - char path to a .json or .mat part database file
+%       - char path to a .json/.mat database file, a single .cfg part
+%         file, or a GameData/KSP root folder (recursively scans
+%         GameData/**/*.cfg via sfsParse)
 %       - struct with optional fields:
-%           .filePath  - path to a database file (as above)
-%           .kspRoot   - KSP install root; reserved for future
-%                        partdatabase.cfg/GameData providers, currently
-%                        errors with guidance to use a database file.
+%           .filePath      - path to a database file (as above)
+%           .kspRoot       - KSP install root (expects GameData inside)
+%           .gameDataPath  - direct GameData folder path
 %
 %   The returned PARTDB struct contains:
 %       .schemaVersion  - database schema version (1)
@@ -40,11 +41,30 @@ function [partDB, warnings] = lvd_import_getPartDatabase(source)
     if(isstruct(source))
         filePath = getFieldOrDefault(source, 'filePath', '');
         kspRoot = getFieldOrDefault(source, 'kspRoot', '');
+        gameDataPath = getFieldOrDefault(source, 'gameDataPath', '');
+
+        if(~isempty(gameDataPath) && isfolder(gameDataPath))
+            [partDB, loadWarnings] = loadGameDataDatabase(gameDataPath);
+            warnings = [warnings, loadWarnings]; %#ok<AGROW>
+            return;
+        end
+
+        if(~isempty(kspRoot))
+            candidate = kspRoot;
+            if(isfolder(fullfile(kspRoot, 'GameData')))
+                candidate = fullfile(kspRoot, 'GameData');
+            end
+            if(isfolder(candidate))
+                [partDB, loadWarnings] = loadGameDataDatabase(candidate);
+                warnings = [warnings, loadWarnings]; %#ok<AGROW>
+                return;
+            end
+        end
 
         if(~isempty(kspRoot) && isempty(filePath))
             error('lvd_import:gameDataNotSupported', ...
-                ['Parsing a KSP install (%s) is not supported yet. ' ...
-                 'Provide a .json/.mat part database file instead.'], ...
+                ['GameData folder not found under KSP root (%s). ' ...
+                 'Provide a .json/.mat database or a valid GameData path.'], ...
                 kspRoot);
         end
 
@@ -62,6 +82,16 @@ function [partDB, warnings] = lvd_import_getPartDatabase(source)
             'source must be omitted, a file path char, or an options struct.');
     end
 
+    if(isfolder(source))
+        gameDataPath = source;
+        if(isfolder(fullfile(source, 'GameData')))
+            gameDataPath = fullfile(source, 'GameData');
+        end
+        [partDB, loadWarnings] = loadGameDataDatabase(gameDataPath);
+        warnings = [warnings, loadWarnings]; %#ok<AGROW>
+        return;
+    end
+
     if(~isfile(source))
         error('lvd_import:fileNotFound', 'Part database file not found: %s', source);
     end
@@ -72,9 +102,11 @@ function [partDB, warnings] = lvd_import_getPartDatabase(source)
             [partDB, loadWarnings] = loadJsonDatabase(source);
         case '.mat'
             [partDB, loadWarnings] = loadMatDatabase(source);
+        case '.cfg'
+            [partDB, loadWarnings] = loadSingleCfgDatabase(source);
         otherwise
             error('lvd_import:unsupportedExtension', ...
-                'Unsupported part database extension "%s" (use .json or .mat).', ext);
+                'Unsupported part database extension "%s" (use .json, .mat, or .cfg).', ext);
     end
 
     warnings = [warnings, loadWarnings]; %#ok<AGROW>
@@ -82,9 +114,43 @@ function [partDB, warnings] = lvd_import_getPartDatabase(source)
 end
 
 function [partDB, warnings] = loadBundledDatabase()
-    dbPath = fullfile(fileparts(mfilename('fullpath')), 'resources', ...
-                      'ksp_stock_parts_112.json');
+    % Robust lookup that survives MATLAB Compiler deployment (ctfroot)
+    dbPath = getBundledDbPath();
     [partDB, warnings] = loadJsonDatabase(dbPath);
+
+end
+
+function dbPath = getBundledDbPath()
+%getBundledDbPath Returns the full path to the bundled stock database,
+% handling both development and deployed (isdeployed/ctfroot) layouts.
+
+    baseName = 'partsDatabaseStockKSP.json';
+
+    % 1) Alongside this m-file (development layout)
+    cand1 = fullfile(fileparts(mfilename('fullpath')), 'resources', baseName);
+    if(isfile(cand1))
+        dbPath = cand1;
+        return;
+    end
+
+    % 2) Deployed CTF layout
+    if(isdeployed)
+        cand2 = fullfile(ctfroot, 'helper_methods', 'ksptot_lvd', 'vehicle_import', 'resources', baseName);
+        if(isfile(cand2))
+            dbPath = cand2;
+            return;
+        end
+    end
+
+    % 3) Search on MATLAB path (additional files)
+    cand3 = which(baseName);
+    if(~isempty(cand3) && isfile(cand3))
+        dbPath = cand3;
+        return;
+    end
+
+    % Fallback to cand1 (will error with file-not-found downstream if missing)
+    dbPath = cand1;
 
 end
 
@@ -291,6 +357,421 @@ function out = coerceCellStr(in)
         out = in;
     else
         out = {};
+    end
+end
+
+function [partDB, warnings] = loadGameDataDatabase(gameDataPath)
+%loadGameDataDatabase Recursively scans GameData/**/*.cfg and builds a part DB.
+
+    warnings = {};
+
+    if(~isfolder(gameDataPath))
+        error('lvd_import:gameDataNotFound', 'GameData folder not found: %s', gameDataPath);
+    end
+
+    densities = lvd_import_resourceDensities();
+    partsMap = containers.Map('KeyType', 'char', 'ValueType', 'any');
+
+    cfgFiles = findCfgFilesRecursive(gameDataPath);
+
+    if(isempty(cfgFiles))
+        warnings{end+1} = sprintf('No .cfg files found under %s', gameDataPath); %#ok<AGROW>
+    end
+
+    for(i = 1:numel(cfgFiles))
+        file = cfgFiles{i};
+        try
+            txt = fileread(file);
+            if(isempty(strfind(txt, 'PART')))
+                continue;
+            end
+            root = sfsParse(txt);
+            if(~isfield(root, 'PART'))
+                continue;
+            end
+            for(pIdx = 1:numel(root.PART))
+                partNode = root.PART{pIdx};
+                [entry, entryWarnings] = buildEntryFromCfgPart(partNode, densities);
+                warnings = [warnings, entryWarnings]; %#ok<AGROW>
+                if(isempty(entry))
+                    continue;
+                end
+                key = lower(entry.name);
+                if(isKey(partsMap, key))
+                    continue;
+                else
+                    partsMap(key) = entry;
+                end
+            end
+        catch ME
+            warnings{end+1} = sprintf('Skipping %s: %s', file, ME.message); %#ok<AGROW>
+        end
+    end
+
+    if(partsMap.Count == 0)
+        warnings{end+1} = 'No PART definitions found — GameData may contain only ModuleManager patches or drag-cube cache.'; %#ok<AGROW>
+    end
+
+    % Add dot/underscore aliases so craft files using '.' (liquidEngine3.v2)
+    % match GameData entries using '_' (liquidEngine3_v2) and vice versa.
+    try
+        initialKeys = keys(partsMap);
+        for(kk = 1:numel(initialKeys))
+            k = initialKeys{kk};
+            entry = partsMap(k);
+            a1 = strrep(k, '.', '_');
+            a2 = strrep(k, '_', '.');
+            if(~strcmp(a1, k) && ~isKey(partsMap, a1))
+                partsMap(a1) = entry;
+            end
+            if(~strcmp(a2, k) && ~isKey(partsMap, a2))
+                partsMap(a2) = entry;
+            end
+        end
+    catch
+    end
+
+    % Merge bundled DB for mod parts not in GameData (e.g., KAL9000)
+    try
+        bundled = loadBundledDatabase();
+        bKeys = keys(bundled.parts);
+        for(kk = 1:numel(bKeys))
+            bk = bKeys{kk};
+            if(~isKey(partsMap, bk))
+                partsMap(bk) = bundled.parts(bk);
+            end
+        end
+    catch
+    end
+
+    partDB = struct();
+    partDB.schemaVersion = 1;
+    partDB.databaseName = 'GameData';
+    partDB.sourcePath = gameDataPath;
+    partDB.resourceDensities = densities;
+    partDB.parts = partsMap;
+
+end
+
+function [partDB, warnings] = loadSingleCfgDatabase(cfgPath)
+%loadSingleCfgDatabase Parses a single .cfg file (e.g., a part file or PartDatabase.cfg).
+
+    warnings = {};
+
+    try
+        txt = fileread(cfgPath);
+        root = sfsParse(txt);
+
+        % Detect drag-cube cache (PART with url + DRAG_CUBE, no name/mass)
+        hasRealParts = false;
+        if(isfield(root, 'PART'))
+            for(ii = 1:numel(root.PART))
+                if(isfield(root.PART{ii}, 'name'))
+                    hasRealParts = true;
+                    break;
+                end
+            end
+        end
+        if(~hasRealParts && isfield(root, 'PART'))
+            warnings{end+1} = sprintf('File %s appears to be a drag-cube cache (no PART name/mass fields) and contains no usable part definitions.', cfgPath); %#ok<AGROW>
+        end
+
+        densities = lvd_import_resourceDensities();
+        partsMap = containers.Map('KeyType', 'char', 'ValueType', 'any');
+
+        if(isfield(root, 'PART'))
+            for(pIdx = 1:numel(root.PART))
+                [entry, entryWarnings] = buildEntryFromCfgPart(root.PART{pIdx}, densities);
+                warnings = [warnings, entryWarnings]; %#ok<AGROW>
+                if(isempty(entry))
+                    continue;
+                end
+                key = lower(entry.name);
+                if(~isKey(partsMap, key))
+                    partsMap(key) = entry;
+                end
+            end
+        end
+
+        partDB = struct();
+        partDB.schemaVersion = 1;
+        partDB.databaseName = 'SingleCfg';
+        partDB.sourcePath = cfgPath;
+        partDB.resourceDensities = densities;
+        partDB.parts = partsMap;
+
+        if(partsMap.Count == 0)
+            warnings{end+1} = sprintf('No usable PART definitions found in %s', cfgPath); %#ok<AGROW>
+        end
+    catch ME
+        error('lvd_import:cfgParseFailed', 'Failed to parse %s: %s', cfgPath, ME.message);
+    end
+
+end
+
+function files = findCfgFilesRecursive(root)
+%findCfgFilesRecursive Recursively finds all *.cfg files under root.
+
+    files = {};
+
+    entries = dir(root);
+    for(i = 1:numel(entries))
+        name = entries(i).name;
+        if(strcmp(name, '.') || strcmp(name, '..'))
+            continue;
+        end
+        full = fullfile(root, name);
+        if(entries(i).isdir)
+            sub = findCfgFilesRecursive(full);
+            files = [files, sub]; %#ok<AGROW>
+        else
+            [~,~,ext] = fileparts(name);
+            if(strcmpi(ext, '.cfg'))
+                files{end+1} = full; %#ok<AGROW>
+            end
+        end
+    end
+
+end
+
+function [entry, warnings] = buildEntryFromCfgPart(partNode, densities)
+%buildEntryFromCfgPart Converts a parsed PART config node into a DB entry.
+
+    warnings = {};
+    entry = [];
+
+    name = getCfgStr(partNode, 'name', '');
+    if(isempty(name))
+        return;
+    end
+    if(any(name(1) == ['@','+','!','$','-']) || contains(name, '['))
+        return;
+    end
+
+    title = getCfgStr(partNode, 'title', name);
+    if(isempty(title) || startsWith(title, '#'))
+        title = name;
+    end
+
+    massStr = getCfgStr(partNode, 'mass', '0');
+    mass = str2double(massStr);
+    if(isnan(mass) || mass < 0)
+        mass = 0;
+        warnings{end+1} = sprintf('Part "%s" has invalid mass; defaulting to 0.', name); %#ok<AGROW>
+    end
+
+    resources_u = struct();
+    if(isfield(partNode, 'RESOURCE'))
+        for(rIdx = 1:numel(partNode.RESOURCE))
+            resNode = partNode.RESOURCE{rIdx};
+            rName = getCfgStr(resNode, 'name', '');
+            if(isempty(rName))
+                continue;
+            end
+            maxAmtStr = getCfgStr(resNode, 'maxAmount', '');
+            if(isempty(maxAmtStr))
+                maxAmtStr = getCfgStr(resNode, 'amount', '0');
+            end
+            maxAmt = str2double(maxAmtStr);
+            if(isnan(maxAmt) || maxAmt < 0)
+                continue;
+            end
+            if(maxAmt > 0)
+                resources_u.(rName) = maxAmt;
+            end
+        end
+    end
+
+    roles = {};
+    engines = struct.empty(0,0);
+    hasEngine = false;
+
+    if(isfield(partNode, 'MODULE'))
+        for(mIdx = 1:numel(partNode.MODULE))
+            mod = partNode.MODULE{mIdx};
+            modName = getCfgStr(mod, 'name', '');
+            if(strcmpi(modName, 'ModuleEngines') || strcmpi(modName, 'ModuleEnginesFX'))
+                hasEngine = true;
+                maxThrust = getCfgNum(mod, 'maxThrust', NaN);
+                if(isnan(maxThrust) || maxThrust <= 0)
+                    continue;
+                end
+                ispVac = NaN;
+                ispSL = NaN;
+                if(isfield(mod, 'atmosphereCurve'))
+                    acNode = mod.atmosphereCurve{1};
+                    if(isfield(acNode, 'key'))
+                        keys = acNode.key;
+                        if(ischar(keys))
+                            keys = {keys};
+                        end
+                        for(kIdx = 1:numel(keys))
+                            kStr = keys{kIdx};
+                            toks = strsplit(strtrim(kStr));
+                            if(numel(toks) >= 2)
+                                k = str2double(toks{1});
+                                isp = str2double(toks{2});
+                                if(k == 0)
+                                    ispVac = isp;
+                                elseif(k == 1)
+                                    ispSL = isp;
+                                end
+                            end
+                        end
+                    end
+                end
+                if(isnan(ispVac))
+                    continue;
+                end
+                if(isnan(ispSL))
+                    ispSL = ispVac;
+                end
+                propNames = {};
+                if(isfield(mod, 'PROPELLANT'))
+                    for(pIdx = 1:numel(mod.PROPELLANT))
+                        pNode = mod.PROPELLANT{pIdx};
+                        pName = getCfgStr(pNode, 'name', '');
+                        if(~isempty(pName))
+                            propNames{end+1} = pName; %#ok<AGROW>
+                        end
+                    end
+                end
+                if(isempty(propNames))
+                    engineType = getCfgStr(mod, 'EngineType', '');
+                    if(strcmpi(engineType, 'SolidBooster'))
+                        propNames = {'SolidFuel'};
+                    elseif(~isempty(engineType))
+                        propNames = {engineType};
+                    end
+                end
+                minThrottle = 0;
+                maxThrottle = 1;
+                throttleLockedStr = getCfgStr(mod, 'throttleLocked', 'False');
+                if(strcmpi(throttleLockedStr, 'True'))
+                    minThrottle = 1;
+                else
+                    minThrust = getCfgNum(mod, 'minThrust', 0);
+                    if(~isnan(maxThrust) && maxThrust > 0)
+                        minThrottle = max(0, min(1, minThrust / maxThrust));
+                    end
+                end
+                newEng = struct('maxThrust_kN', maxThrust, 'ispVac_s', ispVac, 'ispSL_s', ispSL, 'minThrottle', minThrottle, 'maxThrottle', maxThrottle, 'propellants', {propNames});
+                if(isempty(engines))
+                    engines = newEng;
+                else
+                    engines(end+1) = newEng; %#ok<AGROW>
+                end
+                if(~any(strcmpi(roles, 'engine')))
+                    roles{end+1} = 'engine'; %#ok<AGROW>
+                end
+            elseif(strcmpi(modName, 'ModuleDecouple'))
+                if(~any(strcmpi(roles, 'decoupler')))
+                    roles{end+1} = 'decoupler'; %#ok<AGROW>
+                end
+            elseif(strcmpi(modName, 'ModuleAnchoredDecoupler'))
+                if(~any(strcmpi(roles, 'radialDecoupler')))
+                    roles{end+1} = 'radialDecoupler'; %#ok<AGROW>
+                end
+            elseif(strcmpi(modName, 'ModuleFuelLine'))
+                if(~any(strcmpi(roles, 'fuelLine')))
+                    roles{end+1} = 'fuelLine'; %#ok<AGROW>
+                end
+            elseif(strcmpi(modName, 'ModuleParachute'))
+                if(~any(strcmpi(roles, 'parachute')))
+                    roles{end+1} = 'parachute'; %#ok<AGROW>
+                end
+            end
+        end
+    end
+
+    if(contains(lower(name), 'fuelline'))
+        if(~any(strcmpi(roles, 'fuelLine')))
+            roles{end+1} = 'fuelLine'; %#ok<AGROW>
+        end
+    end
+
+    hasFuelRes = false;
+    resNames = fieldnames(resources_u);
+    for(ii = 1:numel(resNames))
+        rn = resNames{ii};
+        if(any(strcmpi(rn, {'LiquidFuel','Oxidizer','MonoPropellant','XenonGas','SolidFuel'})) && resources_u.(rn) > 0)
+            hasFuelRes = true;
+            break;
+        end
+    end
+
+    if(hasFuelRes && ~any(strcmpi(roles, 'tank')) && ~any(strcmpi(roles, 'decoupler')) && ~any(strcmpi(roles, 'radialDecoupler')) && ~any(strcmpi(roles, 'fuelLine')))
+        if(hasEngine)
+            if(isfield(resources_u, 'SolidFuel'))
+                roles{end+1} = 'tank'; %#ok<AGROW>
+            end
+        else
+            roles{end+1} = 'tank'; %#ok<AGROW>
+        end
+    end
+
+    if(isempty(roles))
+        category = getCfgStr(partNode, 'category', '');
+        switch lower(category)
+            case 'fueltank'
+                roles = {'tank'};
+            case 'engine'
+                roles = {'engine'};
+            case 'control'
+                roles = {'pod'};
+            otherwise
+                if(hasFuelRes)
+                    roles = {'tank'};
+                else
+                    roles = {'utility'};
+                end
+        end
+    end
+
+    if(hasEngine && ~any(strcmpi(roles, 'engine')))
+        roles{end+1} = 'engine'; %#ok<AGROW>
+    end
+
+    roles = unique(lower(roles), 'stable');
+    resources_u = coerceResourcesStruct(resources_u, name, densities, warnings);
+
+    entry = struct();
+    entry.name = name;
+    entry.title = title;
+    entry.mass_t = mass;
+    entry.roles = roles;
+    entry.resources_u = resources_u;
+    entry.engines = engines;
+
+end
+
+function val = getCfgStr(node, field, defaultVal)
+    val = defaultVal;
+    if(~isfield(node, field))
+        return;
+    end
+    raw = node.(field);
+    if(iscell(raw))
+        if(~isempty(raw))
+            val = raw{1};
+        end
+    elseif(ischar(raw))
+        val = raw;
+    end
+    if(ischar(val))
+        val = strtrim(val);
+    end
+end
+
+function num = getCfgNum(node, field, defaultVal)
+    str = getCfgStr(node, field, '');
+    if(isempty(str))
+        num = defaultVal;
+    else
+        num = str2double(str);
+        if(isnan(num))
+            num = defaultVal;
+        end
     end
 end
 

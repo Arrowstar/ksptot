@@ -66,6 +66,17 @@ function [spec, report] = lvd_import_analyzeCraft(craftSource, partDB)
     idToIdx = containers.Map('KeyType', 'char', 'ValueType', 'double');
     unresolved = {};
 
+    % Fallback DB for mod parts not in GameData (e.g., KAL9000). Loaded
+    % once and reused for every part lookup that misses the primary DB.
+    fallbackDB = [];
+    try
+        if(~strcmp(partDB.databaseName, 'ksp_stock_parts_112_mini'))
+            fallbackDB = lvd_import_getPartDatabase();
+        end
+    catch
+        fallbackDB = [];
+    end
+
     for(i = 1:numParts)
         rawPart = craft.PART{i};
 
@@ -77,10 +88,34 @@ function [spec, report] = lvd_import_analyzeCraft(craftSource, partDB)
         rec.dstg = getNumField(rawPart, 'dstg', -1);
         rec.sepI = getNumField(rawPart, 'sepI', -1);
 
-        key = lower(rec.baseName);
-        if(isKey(partDB.parts, key))
-            rec.db = partDB.parts(key);
-        else
+        % Try primary DB with exact, dot<->underscore normalized, and
+        % fallback DB for mod parts (e.g., KAL9000) that are not in stock
+        % GameData. GameData uses '_' (liquidEngine3_v2) while craft files
+        % use '.' (liquidEngine3.v2), so both must be tried.
+        found = false;
+        candidates = {lower(rec.baseName), ...
+                      lower(strrep(rec.baseName, '.', '_')), ...
+                      lower(strrep(rec.baseName, '_', '.'))};
+        for(cIdx = 1:numel(candidates))
+            k = candidates{cIdx};
+            if(isKey(partDB.parts, k))
+                rec.db = partDB.parts(k);
+                found = true;
+                break;
+            end
+        end
+        if(~found && ~isempty(fallbackDB) && isfield(fallbackDB, 'parts'))
+            for(cIdx = 1:numel(candidates))
+                k = candidates{cIdx};
+                if(isKey(fallbackDB.parts, k))
+                    rec.db = fallbackDB.parts(k);
+                    found = true;
+                    warnings{end+1} = sprintf('Part "%s" not in GameData, using bundled database.', rec.baseName); %#ok<AGROW>
+                    break;
+                end
+            end
+        end
+        if(~found)
             rec.db = blankDbEntry(rec.baseName);
             unresolved{end+1} = rec.baseName; %#ok<AGROW>
             warnings{end+1} = sprintf(['Unknown part "%s" not found in the ' ...
@@ -696,6 +731,20 @@ function [stg, unfedEngineNames] = buildSpecStage(members, inst)
         dryMass = dryMass + inst(m).db.mass_t;
     end
     stg.dryMass_mT = dryMass;
+
+    % Full part list for dry mass breakdown — every KSP part in this
+    % stage, so the preview can show which parts were imported.
+    stg.parts = struct.empty(0,0);
+    for(m = reshape(members, 1, []))
+        rec = inst(m);
+        p = struct();
+        p.displayName = strtrim(rec.db.title);
+        p.partName = rec.baseName;
+        p.instanceID = rec.instanceID;
+        p.mass_t = rec.db.mass_t;
+        p.roles = rec.db.roles;
+        stg.parts = pushStruct(stg.parts, p);
+    end
 
     % Engine-to-tank connections within the stage. An engine whose own
     % part also stores propellant (e.g., solid boosters) connects only to

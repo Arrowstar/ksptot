@@ -26,17 +26,6 @@ if(~isdeployed)
     end
 end
 
-% %set look and feel if deployed
-% if(isdeployed)
-%     if(ispc)
-%         javax.swing.UIManager.setLookAndFeel(com.sun.java.swing.plaf.windows.WindowsLookAndFeel);
-%     elseif(isunix)
-%         javax.swing.UIManager.setLookAndFeel(com.jgoodies.looks.plastic.Plastic3DLookAndFeel);
-%     elseif(ismac)
-%         javax.swing.UIManager.setLookAndFeel(com.apple.laf.AquaLookAndFeel);
-%     end
-% end
-
 %Turn off class destructor warnings.  These pop up a lot for App Designer
 %UIs when closing while using uiwait().
 warning('off','MATLAB:class:DestructorError');

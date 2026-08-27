@@ -24,6 +24,18 @@ function rootNode = sfsParse(source)
         textStr = source;
     end
 
+    % Strip UTF-8 BOM (EF BB BF) which appears as char 65279 or as three
+    % bytes 239/187/191 depending on how fileread decodes it. Without this
+    % the first PART node becomes '_PART' and is rejected as an invalid
+    % field name, causing every GameData file to be skipped.
+    if(~isempty(textStr))
+        if(double(textStr(1)) == 65279)
+            textStr = textStr(2:end);
+        elseif(numel(textStr) >= 3 && isequal(double(textStr(1:3)), [239 187 191]))
+            textStr = textStr(4:end);
+        end
+    end
+
     lines = splitLines(stripComments(textStr));
 
     cursor = 1;
@@ -182,7 +194,7 @@ function nameOut = sanitizeFieldName(nameIn)
 
     nameOut = regexprep(nameIn, '[^A-Za-z0-9_]', '_');
 
-    if(isempty(nameOut) || iskeyword(nameOut))
+    if(isempty(nameOut) || iskeyword(nameOut) || ~isletter(nameOut(1)))
         nameOut = ['x' nameOut];
     end
 

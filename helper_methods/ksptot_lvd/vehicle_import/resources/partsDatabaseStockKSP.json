@@ -1,0 +1,4739 @@
+{
+  "schemaVersion": 1,
+  "databaseName": "GameData export 27-Aug-2026 09:43:31",
+  "gameVersion": "1.12",
+  "description": "Exported from C:\\Users\\aharden\\Downloads\\Data-20260827T114017Z-1-001\\GameData on 27-Aug-2026 09:43:31",
+  "resourceDensities_t_per_unit": {
+    "ElectricCharge": 0,
+    "LiquidFuel": 0.005,
+    "MonoPropellant": 0.004,
+    "Oxidizer": 0.005,
+    "SolidFuel": 0.0075,
+    "XenonGas": 0.0001
+  },
+  "parts": [
+    {
+      "name": "adapterEngines",
+      "title": "adapterEngines",
+      "mass_t": 0.7,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "adapterLargeSmallBi",
+      "title": "adapterLargeSmallBi",
+      "mass_t": 0.1,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "adapterLargeSmallQuad",
+      "title": "adapterLargeSmallQuad",
+      "mass_t": 0.2,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "adapterLargeSmallTri",
+      "title": "adapterLargeSmallTri",
+      "mass_t": 0.15,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "adapterMk3-Mk2",
+      "title": "adapterMk3-Mk2",
+      "mass_t": 1.43,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "LiquidFuel": 900,
+        "Oxidizer": 1100
+      },
+      "engines": []
+    },
+    {
+      "name": "adapterMk3-Size2",
+      "title": "adapterMk3-Size2",
+      "mass_t": 1.79,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "LiquidFuel": 1125,
+        "Oxidizer": 1375
+      },
+      "engines": []
+    },
+    {
+      "name": "adapterMk3-Size2Slant",
+      "title": "adapterMk3-Size2Slant",
+      "mass_t": 1.79,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "LiquidFuel": 1125,
+        "Oxidizer": 1375
+      },
+      "engines": []
+    },
+    {
+      "name": "adapterSize2-Mk2",
+      "title": "adapterSize2-Mk2",
+      "mass_t": 0.57,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "LiquidFuel": 360,
+        "Oxidizer": 440
+      },
+      "engines": []
+    },
+    {
+      "name": "adapterSize2-Size1",
+      "title": "adapterSize2-Size1",
+      "mass_t": 0.57,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "LiquidFuel": 360,
+        "Oxidizer": 440
+      },
+      "engines": []
+    },
+    {
+      "name": "adapterSize2-Size1Slant",
+      "title": "adapterSize2-Size1Slant",
+      "mass_t": 0.57,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "LiquidFuel": 360,
+        "Oxidizer": 440
+      },
+      "engines": []
+    },
+    {
+      "name": "adapterSize3-Mk3",
+      "title": "adapterSize3-Mk3",
+      "mass_t": 1.79,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "LiquidFuel": 1125,
+        "Oxidizer": 1375
+      },
+      "engines": []
+    },
+    {
+      "name": "adapterSmallMiniShort",
+      "title": "adapterSmallMiniShort",
+      "mass_t": 0.04,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "adapterSmallMiniTall",
+      "title": "adapterSmallMiniTall",
+      "mass_t": 0.05,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "AdvancedCanard",
+      "title": "AdvancedCanard",
+      "mass_t": 0.08,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "advSasModule",
+      "title": "advSasModule",
+      "mass_t": 0.1,
+      "roles": [
+        "pod"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "airbrake1",
+      "title": "airbrake1",
+      "mass_t": 0.05,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "airlinerCtrlSrf",
+      "title": "airlinerCtrlSrf",
+      "mass_t": 0.17,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "airlinerMainWing",
+      "title": "airlinerMainWing",
+      "mass_t": 0.78,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "LiquidFuel": 600
+      },
+      "engines": []
+    },
+    {
+      "name": "airlinerTailFin",
+      "title": "airlinerTailFin",
+      "mass_t": 0.36,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "airplaneTail",
+      "title": "airplaneTail",
+      "mass_t": 0.2,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "airplaneTailB",
+      "title": "airplaneTailB",
+      "mass_t": 0.2,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "airScoop",
+      "title": "airScoop",
+      "mass_t": 0.02,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {
+        "IntakeAir": 2
+      },
+      "engines": []
+    },
+    {
+      "name": "asasmodule1-2",
+      "title": "asasmodule1-2",
+      "mass_t": 0.2,
+      "roles": [
+        "pod"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "avionicsNoseCone",
+      "title": "avionicsNoseCone",
+      "mass_t": 0.08,
+      "roles": [
+        "pod"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "basicFin",
+      "title": "basicFin",
+      "mass_t": 0.01,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "batteryBank",
+      "title": "batteryBank",
+      "mass_t": 0.05,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {
+        "ElectricCharge": 1000
+      },
+      "engines": []
+    },
+    {
+      "name": "batteryBankLarge",
+      "title": "batteryBankLarge",
+      "mass_t": 0.2,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {
+        "ElectricCharge": 4000
+      },
+      "engines": []
+    },
+    {
+      "name": "batteryBankMini",
+      "title": "batteryBankMini",
+      "mass_t": 0.01,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {
+        "ElectricCharge": 200
+      },
+      "engines": []
+    },
+    {
+      "name": "batteryPack",
+      "title": "batteryPack",
+      "mass_t": 0.005,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {
+        "ElectricCharge": 100
+      },
+      "engines": []
+    },
+    {
+      "name": "CanardController",
+      "title": "CanardController",
+      "mass_t": 0.1,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "cargoContainer",
+      "title": "cargoContainer",
+      "mass_t": 0.15,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "CargoStorageUnit",
+      "title": "CargoStorageUnit",
+      "mass_t": 0.4,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "CircularIntake",
+      "title": "CircularIntake",
+      "mass_t": 0.04,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {
+        "IntakeAir": 2
+      },
+      "engines": []
+    },
+    {
+      "name": "Clydesdale",
+      "title": "Clydesdale",
+      "mass_t": 21,
+      "roles": [
+        "engine",
+        "tank"
+      ],
+      "resources_u": {
+        "SolidFuel": 16400
+      },
+      "engines": {
+        "maxThrust_kN": 3300,
+        "ispVac_s": 235,
+        "ispSL_s": 210,
+        "minThrottle": 1,
+        "maxThrottle": 1,
+        "propellants": [
+          "SolidFuel"
+        ]
+      }
+    },
+    {
+      "name": "commDish",
+      "title": "commDish",
+      "mass_t": 0.1,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "ConformalStorageUnit",
+      "title": "ConformalStorageUnit",
+      "mass_t": 0.02,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "crewCabin",
+      "title": "crewCabin",
+      "mass_t": 2.25,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "cupola",
+      "title": "cupola",
+      "mass_t": 0.94,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "ElectricCharge": 200,
+        "MonoPropellant": 10
+      },
+      "engines": []
+    },
+    {
+      "name": "Decoupler_0",
+      "title": "Decoupler_0",
+      "mass_t": 0.01,
+      "roles": [
+        "decoupler"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "Decoupler_1",
+      "title": "Decoupler_1",
+      "mass_t": 0.04,
+      "roles": [
+        "decoupler"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "Decoupler_2",
+      "title": "Decoupler_2",
+      "mass_t": 0.16,
+      "roles": [
+        "decoupler"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "Decoupler_3",
+      "title": "Decoupler_3",
+      "mass_t": 0.36,
+      "roles": [
+        "decoupler"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "decoupler1-2",
+      "title": "decoupler1-2",
+      "mass_t": 0.4,
+      "roles": [
+        "decoupler"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "delta_small",
+      "title": "delta_small",
+      "mass_t": 0.05,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "deltaWing",
+      "title": "deltaWing",
+      "mass_t": 0.2,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "dockingPort1",
+      "title": "dockingPort1",
+      "mass_t": 0.1,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "dockingPort2",
+      "title": "dockingPort2",
+      "mass_t": 0.05,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "dockingPort3",
+      "title": "dockingPort3",
+      "mass_t": 0.02,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "dockingPortLarge",
+      "title": "dockingPortLarge",
+      "mass_t": 0.2,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "dockingPortLateral",
+      "title": "dockingPortLateral",
+      "mass_t": 0.3,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "domeLight1",
+      "title": "domeLight1",
+      "mass_t": 0.002,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "elevon2",
+      "title": "elevon2",
+      "mass_t": 0.06,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "elevon3",
+      "title": "elevon3",
+      "mass_t": 0.08,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "elevon5",
+      "title": "elevon5",
+      "mass_t": 0.08,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "engineLargeSkipper",
+      "title": "engineLargeSkipper",
+      "mass_t": 3,
+      "roles": [
+        "engine"
+      ],
+      "resources_u": {},
+      "engines": {
+        "maxThrust_kN": 650,
+        "ispVac_s": 320,
+        "ispSL_s": 280,
+        "minThrottle": 0,
+        "maxThrottle": 1,
+        "propellants": [
+          "LiquidFuel",
+          "Oxidizer"
+        ]
+      }
+    },
+    {
+      "name": "engineLargeSkipper_v2",
+      "title": "engineLargeSkipper_v2",
+      "mass_t": 3,
+      "roles": [
+        "engine"
+      ],
+      "resources_u": {},
+      "engines": {
+        "maxThrust_kN": 650,
+        "ispVac_s": 320,
+        "ispSL_s": 280,
+        "minThrottle": 0,
+        "maxThrottle": 1,
+        "propellants": [
+          "LiquidFuel",
+          "Oxidizer"
+        ]
+      }
+    },
+    {
+      "name": "evaChute",
+      "title": "evaChute",
+      "mass_t": 0.004,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "evaRepairKit",
+      "title": "evaRepairKit",
+      "mass_t": 0.005,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "evaScienceKit",
+      "title": "evaScienceKit",
+      "mass_t": 0.015,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "externalTankCapsule",
+      "title": "externalTankCapsule",
+      "mass_t": 0.03375,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "LiquidFuel": 24.3,
+        "Oxidizer": 29.7
+      },
+      "engines": []
+    },
+    {
+      "name": "externalTankRound",
+      "title": "externalTankRound",
+      "mass_t": 0.01375,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "LiquidFuel": 9.9,
+        "Oxidizer": 12.1
+      },
+      "engines": []
+    },
+    {
+      "name": "externalTankToroid",
+      "title": "externalTankToroid",
+      "mass_t": 0.0375,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "LiquidFuel": 27,
+        "Oxidizer": 33
+      },
+      "engines": []
+    },
+    {
+      "name": "fairingSize1",
+      "title": "fairingSize1",
+      "mass_t": 0.075,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "fairingSize2",
+      "title": "fairingSize2",
+      "mass_t": 0.175,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "fairingSize3",
+      "title": "fairingSize3",
+      "mass_t": 0.475,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "fireworksLauncherBig",
+      "title": "fireworksLauncherBig",
+      "mass_t": 0.03,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "fireworksLauncherSmall",
+      "title": "fireworksLauncherSmall",
+      "mass_t": 0.00125,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "flag",
+      "title": "flag",
+      "mass_t": 0,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "flagPartFlat",
+      "title": "flagPartFlat",
+      "mass_t": 0.00015,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "flagPartSize0",
+      "title": "flagPartSize0",
+      "mass_t": 2.5E-5,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "flagPartSize1",
+      "title": "flagPartSize1",
+      "mass_t": 5E-5,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "flagPartSize2",
+      "title": "flagPartSize2",
+      "mass_t": 0.000225,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "flagPartSize3",
+      "title": "flagPartSize3",
+      "mass_t": 0.0005,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "foldingRadLarge",
+      "title": "foldingRadLarge",
+      "mass_t": 1,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "foldingRadMed",
+      "title": "foldingRadMed",
+      "mass_t": 0.25,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "foldingRadSmall",
+      "title": "foldingRadSmall",
+      "mass_t": 0.05,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "FuelCell",
+      "title": "FuelCell",
+      "mass_t": 0.05,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {
+        "ElectricCharge": 50
+      },
+      "engines": []
+    },
+    {
+      "name": "FuelCellArray",
+      "title": "FuelCellArray",
+      "mass_t": 0.24,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {
+        "ElectricCharge": 300
+      },
+      "engines": []
+    },
+    {
+      "name": "fuelLine",
+      "title": "fuelLine",
+      "mass_t": 0.05,
+      "roles": [
+        "fuelline"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "fuelLineSmall",
+      "title": "Fuel Line",
+      "mass_t": 0.001,
+      "roles": [
+        "fuelLine"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "fuelTank",
+      "title": "fuelTank",
+      "mass_t": 0.25,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "LiquidFuel": 180,
+        "Oxidizer": 220
+      },
+      "engines": []
+    },
+    {
+      "name": "fuelTank_long",
+      "title": "fuelTank_long",
+      "mass_t": 0.5,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "LiquidFuel": 360,
+        "Oxidizer": 440
+      },
+      "engines": []
+    },
+    {
+      "name": "fuelTank1-2",
+      "title": "fuelTank1-2",
+      "mass_t": 2,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "LiquidFuel": 1440,
+        "Oxidizer": 1760
+      },
+      "engines": []
+    },
+    {
+      "name": "fuelTank2-2",
+      "title": "fuelTank2-2",
+      "mass_t": 1,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "LiquidFuel": 720,
+        "Oxidizer": 880
+      },
+      "engines": []
+    },
+    {
+      "name": "fuelTank3-2",
+      "title": "fuelTank3-2",
+      "mass_t": 4,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "LiquidFuel": 2880,
+        "Oxidizer": 3520
+      },
+      "engines": []
+    },
+    {
+      "name": "fuelTank4-2",
+      "title": "fuelTank4-2",
+      "mass_t": 0.5,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "LiquidFuel": 360,
+        "Oxidizer": 440
+      },
+      "engines": []
+    },
+    {
+      "name": "fuelTankSmall",
+      "title": "fuelTankSmall",
+      "mass_t": 0.125,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "LiquidFuel": 90,
+        "Oxidizer": 110
+      },
+      "engines": []
+    },
+    {
+      "name": "fuelTankSmallFlat",
+      "title": "fuelTankSmallFlat",
+      "mass_t": 0.0625,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "LiquidFuel": 45,
+        "Oxidizer": 55
+      },
+      "engines": []
+    },
+    {
+      "name": "GearFixed",
+      "title": "GearFixed",
+      "mass_t": 0.022,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "GearFree",
+      "title": "GearFree",
+      "mass_t": 0.015,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "GearLarge",
+      "title": "GearLarge",
+      "mass_t": 0.6,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "GearMedium",
+      "title": "GearMedium",
+      "mass_t": 0.4,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "GearSmall",
+      "title": "GearSmall",
+      "mass_t": 0.25,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "GooExperiment",
+      "title": "GooExperiment",
+      "mass_t": 0.05,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "GrapplingDevice",
+      "title": "GrapplingDevice",
+      "mass_t": 0.075,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "groundAnchor",
+      "title": "groundAnchor",
+      "mass_t": 0.05,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "groundLight1",
+      "title": "groundLight1",
+      "mass_t": 0.002,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "groundLight2",
+      "title": "groundLight2",
+      "mass_t": 0.003,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "HeatShield0",
+      "title": "HeatShield0",
+      "mass_t": 0.025,
+      "roles": [
+        "decoupler"
+      ],
+      "resources_u": {
+        "Ablator": 50
+      },
+      "engines": []
+    },
+    {
+      "name": "HeatShield1",
+      "title": "HeatShield1",
+      "mass_t": 0.1,
+      "roles": [
+        "decoupler"
+      ],
+      "resources_u": {
+        "Ablator": 200
+      },
+      "engines": []
+    },
+    {
+      "name": "HeatShield2",
+      "title": "HeatShield2",
+      "mass_t": 0.5,
+      "roles": [
+        "decoupler"
+      ],
+      "resources_u": {
+        "Ablator": 800
+      },
+      "engines": []
+    },
+    {
+      "name": "HeatShield3",
+      "title": "HeatShield3",
+      "mass_t": 1,
+      "roles": [
+        "decoupler"
+      ],
+      "resources_u": {
+        "Ablator": 1800
+      },
+      "engines": []
+    },
+    {
+      "name": "HECS2_ProbeCore",
+      "title": "HECS2_ProbeCore",
+      "mass_t": 0.2,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {
+        "ElectricCharge": 1000
+      },
+      "engines": []
+    },
+    {
+      "name": "HighGainAntenna",
+      "title": "HighGainAntenna",
+      "mass_t": 0.075,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "HighGainAntenna5",
+      "title": "HighGainAntenna5",
+      "mass_t": 0.07,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "HighGainAntenna5_v2",
+      "title": "HighGainAntenna5_v2",
+      "mass_t": 0.07,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "InflatableHeatShield",
+      "title": "InflatableHeatShield",
+      "mass_t": 1.5,
+      "roles": [
+        "decoupler"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "InfraredTelescope",
+      "title": "InfraredTelescope",
+      "mass_t": 0.1,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "IntakeRadialLong",
+      "title": "IntakeRadialLong",
+      "mass_t": 0.01,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {
+        "IntakeAir": 0.5
+      },
+      "engines": []
+    },
+    {
+      "name": "ionEngine",
+      "title": "ionEngine",
+      "mass_t": 0.25,
+      "roles": [
+        "engine"
+      ],
+      "resources_u": {},
+      "engines": {
+        "maxThrust_kN": 2,
+        "ispVac_s": 4200,
+        "ispSL_s": 100,
+        "minThrottle": 0,
+        "maxThrottle": 1,
+        "propellants": [
+          "ElectricCharge",
+          "XenonGas"
+        ]
+      }
+    },
+    {
+      "name": "ISRU",
+      "title": "ISRU",
+      "mass_t": 4.25,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "JetEngine",
+      "title": "JetEngine",
+      "mass_t": 1.5,
+      "roles": [
+        "engine"
+      ],
+      "resources_u": {},
+      "engines": {
+        "maxThrust_kN": 120,
+        "ispVac_s": 10500,
+        "ispSL_s": 10500,
+        "minThrottle": 0,
+        "maxThrottle": 1,
+        "propellants": [
+          "IntakeAir",
+          "LiquidFuel"
+        ]
+      }
+    },
+    {
+      "name": "KAL9000",
+      "title": "KAL-9000 Robotic Controller",
+      "mass_t": 0.03,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "kerbalEVA",
+      "title": "kerbalEVA",
+      "mass_t": 0,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "kerbalEVAfemale",
+      "title": "kerbalEVAfemale",
+      "mass_t": 0,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "kerbalEVASlimSuit",
+      "title": "kerbalEVASlimSuit",
+      "mass_t": 0,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "kerbalEVASlimSuitFemale",
+      "title": "kerbalEVASlimSuitFemale",
+      "mass_t": 0,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "ksp_r_largeBatteryPack",
+      "title": "ksp_r_largeBatteryPack",
+      "mass_t": 0.02,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {
+        "ElectricCharge": 400
+      },
+      "engines": []
+    },
+    {
+      "name": "ladder1",
+      "title": "ladder1",
+      "mass_t": 0.005,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "landerCabinSmall",
+      "title": "landerCabinSmall",
+      "mass_t": 0.6,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "ElectricCharge": 50,
+        "MonoPropellant": 15
+      },
+      "engines": []
+    },
+    {
+      "name": "landingLeg1",
+      "title": "landingLeg1",
+      "mass_t": 0.05,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "landingLeg1-2",
+      "title": "landingLeg1-2",
+      "mass_t": 0.1,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "Large_Crewed_Lab",
+      "title": "Large_Crewed_Lab",
+      "mass_t": 3.5,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "largeAdapter",
+      "title": "largeAdapter",
+      "mass_t": 0.1,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "largeAdapter2",
+      "title": "largeAdapter2",
+      "mass_t": 0.08,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "largeSolarPanel",
+      "title": "largeSolarPanel",
+      "mass_t": 0.3,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "LargeTank",
+      "title": "LargeTank",
+      "mass_t": 2,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "Ore": 1500
+      },
+      "engines": []
+    },
+    {
+      "name": "launchClamp1",
+      "title": "launchClamp1",
+      "mass_t": 0.1,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "LaunchEscapeSystem",
+      "title": "LaunchEscapeSystem",
+      "mass_t": 0.9,
+      "roles": [
+        "engine",
+        "tank"
+      ],
+      "resources_u": {
+        "SolidFuel": 30
+      },
+      "engines": {
+        "maxThrust_kN": 750,
+        "ispVac_s": 180,
+        "ispSL_s": 160,
+        "minThrottle": 1,
+        "maxThrottle": 1,
+        "propellants": [
+          "SolidFuel"
+        ]
+      }
+    },
+    {
+      "name": "LgRadialSolarPanel",
+      "title": "LgRadialSolarPanel",
+      "mass_t": 0.04,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "linearRcs",
+      "title": "linearRcs",
+      "mass_t": 0.02,
+      "roles": [
+        "pod"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "liquidEngine",
+      "title": "liquidEngine",
+      "mass_t": 1.25,
+      "roles": [
+        "engine"
+      ],
+      "resources_u": {},
+      "engines": {
+        "maxThrust_kN": 240,
+        "ispVac_s": 310,
+        "ispSL_s": 265,
+        "minThrottle": 0,
+        "maxThrottle": 1,
+        "propellants": [
+          "LiquidFuel",
+          "Oxidizer"
+        ]
+      }
+    },
+    {
+      "name": "liquidEngine_v2",
+      "title": "liquidEngine_v2",
+      "mass_t": 1.25,
+      "roles": [
+        "engine"
+      ],
+      "resources_u": {},
+      "engines": {
+        "maxThrust_kN": 240,
+        "ispVac_s": 310,
+        "ispSL_s": 265,
+        "minThrottle": 0,
+        "maxThrottle": 1,
+        "propellants": [
+          "LiquidFuel",
+          "Oxidizer"
+        ]
+      }
+    },
+    {
+      "name": "liquidEngine1-2",
+      "title": "liquidEngine1-2",
+      "mass_t": 6,
+      "roles": [
+        "engine"
+      ],
+      "resources_u": {},
+      "engines": {
+        "maxThrust_kN": 1500,
+        "ispVac_s": 310,
+        "ispSL_s": 285,
+        "minThrottle": 0,
+        "maxThrottle": 1,
+        "propellants": [
+          "LiquidFuel",
+          "Oxidizer"
+        ]
+      }
+    },
+    {
+      "name": "liquidEngine2",
+      "title": "liquidEngine2",
+      "mass_t": 1.5,
+      "roles": [
+        "engine"
+      ],
+      "resources_u": {},
+      "engines": {
+        "maxThrust_kN": 215,
+        "ispVac_s": 320,
+        "ispSL_s": 250,
+        "minThrottle": 0,
+        "maxThrottle": 1,
+        "propellants": [
+          "LiquidFuel",
+          "Oxidizer"
+        ]
+      }
+    },
+    {
+      "name": "liquidEngine2-2",
+      "title": "liquidEngine2-2",
+      "mass_t": 1.75,
+      "roles": [
+        "engine"
+      ],
+      "resources_u": {},
+      "engines": {
+        "maxThrust_kN": 250,
+        "ispVac_s": 350,
+        "ispSL_s": 90,
+        "minThrottle": 0,
+        "maxThrottle": 1,
+        "propellants": [
+          "LiquidFuel",
+          "Oxidizer"
+        ]
+      }
+    },
+    {
+      "name": "liquidEngine2-2_v2",
+      "title": "liquidEngine2-2_v2",
+      "mass_t": 1.75,
+      "roles": [
+        "engine"
+      ],
+      "resources_u": {},
+      "engines": {
+        "maxThrust_kN": 250,
+        "ispVac_s": 350,
+        "ispSL_s": 90,
+        "minThrottle": 0,
+        "maxThrottle": 1,
+        "propellants": [
+          "LiquidFuel",
+          "Oxidizer"
+        ]
+      }
+    },
+    {
+      "name": "liquidEngine2_v2",
+      "title": "liquidEngine2_v2",
+      "mass_t": 1.5,
+      "roles": [
+        "engine"
+      ],
+      "resources_u": {},
+      "engines": {
+        "maxThrust_kN": 215,
+        "ispVac_s": 320,
+        "ispSL_s": 250,
+        "minThrottle": 0,
+        "maxThrottle": 1,
+        "propellants": [
+          "LiquidFuel",
+          "Oxidizer"
+        ]
+      }
+    },
+    {
+      "name": "liquidEngine3",
+      "title": "liquidEngine3",
+      "mass_t": 0.5,
+      "roles": [
+        "engine"
+      ],
+      "resources_u": {},
+      "engines": {
+        "maxThrust_kN": 60,
+        "ispVac_s": 345,
+        "ispSL_s": 85,
+        "minThrottle": 0,
+        "maxThrottle": 1,
+        "propellants": [
+          "LiquidFuel",
+          "Oxidizer"
+        ]
+      }
+    },
+    {
+      "name": "liquidEngine3_v2",
+      "title": "liquidEngine3_v2",
+      "mass_t": 0.5,
+      "roles": [
+        "engine"
+      ],
+      "resources_u": {},
+      "engines": {
+        "maxThrust_kN": 60,
+        "ispVac_s": 345,
+        "ispSL_s": 85,
+        "minThrottle": 0,
+        "maxThrottle": 1,
+        "propellants": [
+          "LiquidFuel",
+          "Oxidizer"
+        ]
+      }
+    },
+    {
+      "name": "liquidEngineMainsail_v2",
+      "title": "liquidEngineMainsail_v2",
+      "mass_t": 6,
+      "roles": [
+        "engine"
+      ],
+      "resources_u": {},
+      "engines": {
+        "maxThrust_kN": 1500,
+        "ispVac_s": 310,
+        "ispSL_s": 285,
+        "minThrottle": 0,
+        "maxThrottle": 1,
+        "propellants": [
+          "LiquidFuel",
+          "Oxidizer"
+        ]
+      }
+    },
+    {
+      "name": "liquidEngineMini",
+      "title": "liquidEngineMini",
+      "mass_t": 0.1,
+      "roles": [
+        "engine"
+      ],
+      "resources_u": {},
+      "engines": {
+        "maxThrust_kN": 20,
+        "ispVac_s": 320,
+        "ispSL_s": 270,
+        "minThrottle": 0,
+        "maxThrottle": 1,
+        "propellants": [
+          "LiquidFuel",
+          "Oxidizer"
+        ]
+      }
+    },
+    {
+      "name": "liquidEngineMini_v2",
+      "title": "liquidEngineMini_v2",
+      "mass_t": 0.13,
+      "roles": [
+        "engine"
+      ],
+      "resources_u": {},
+      "engines": {
+        "maxThrust_kN": 20,
+        "ispVac_s": 320,
+        "ispSL_s": 265,
+        "minThrottle": 0,
+        "maxThrottle": 1,
+        "propellants": [
+          "LiquidFuel",
+          "Oxidizer"
+        ]
+      }
+    },
+    {
+      "name": "longAntenna",
+      "title": "longAntenna",
+      "mass_t": 0.005,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "Magnetometer",
+      "title": "Magnetometer",
+      "mass_t": 0.05,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "Mark1-2Pod",
+      "title": "Mark1-2Pod",
+      "mass_t": 4,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "ElectricCharge": 150,
+        "MonoPropellant": 30
+      },
+      "engines": []
+    },
+    {
+      "name": "Mark1Cockpit",
+      "title": "Mark1Cockpit",
+      "mass_t": 1.25,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "ElectricCharge": 50,
+        "MonoPropellant": 7.5
+      },
+      "engines": []
+    },
+    {
+      "name": "Mark2Cockpit",
+      "title": "Mark2Cockpit",
+      "mass_t": 1,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "ElectricCharge": 50,
+        "MonoPropellant": 7.5
+      },
+      "engines": []
+    },
+    {
+      "name": "MassiveBooster",
+      "title": "MassiveBooster",
+      "mass_t": 4.5,
+      "roles": [
+        "engine",
+        "tank"
+      ],
+      "resources_u": {
+        "SolidFuel": 2600
+      },
+      "engines": {
+        "maxThrust_kN": 670,
+        "ispVac_s": 220,
+        "ispSL_s": 195,
+        "minThrottle": 1,
+        "maxThrottle": 1,
+        "propellants": [
+          "SolidFuel"
+        ]
+      }
+    },
+    {
+      "name": "mediumDishAntenna",
+      "title": "mediumDishAntenna",
+      "mass_t": 0.05,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "microEngine",
+      "title": "microEngine",
+      "mass_t": 0.02,
+      "roles": [
+        "engine"
+      ],
+      "resources_u": {},
+      "engines": {
+        "maxThrust_kN": 2,
+        "ispVac_s": 315,
+        "ispSL_s": 80,
+        "minThrottle": 0,
+        "maxThrottle": 1,
+        "propellants": [
+          "LiquidFuel",
+          "Oxidizer"
+        ]
+      }
+    },
+    {
+      "name": "microEngine_v2",
+      "title": "microEngine_v2",
+      "mass_t": 0.02,
+      "roles": [
+        "engine"
+      ],
+      "resources_u": {},
+      "engines": {
+        "maxThrust_kN": 2,
+        "ispVac_s": 315,
+        "ispSL_s": 80,
+        "minThrottle": 0,
+        "maxThrottle": 1,
+        "propellants": [
+          "LiquidFuel",
+          "Oxidizer"
+        ]
+      }
+    },
+    {
+      "name": "MiniDrill",
+      "title": "MiniDrill",
+      "mass_t": 0.25,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "miniFuelTank",
+      "title": "miniFuelTank",
+      "mass_t": 0.025,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "LiquidFuel": 18,
+        "Oxidizer": 22
+      },
+      "engines": []
+    },
+    {
+      "name": "miniFuselage",
+      "title": "miniFuselage",
+      "mass_t": 0.025,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "LiquidFuel": 50
+      },
+      "engines": []
+    },
+    {
+      "name": "miniIntake",
+      "title": "miniIntake",
+      "mass_t": 0.007,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {
+        "IntakeAir": 0.5
+      },
+      "engines": []
+    },
+    {
+      "name": "MiniISRU",
+      "title": "MiniISRU",
+      "mass_t": 1.25,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "miniJetEngine",
+      "title": "miniJetEngine",
+      "mass_t": 0.25,
+      "roles": [
+        "engine"
+      ],
+      "resources_u": {},
+      "engines": {
+        "maxThrust_kN": 20,
+        "ispVac_s": 6400,
+        "ispSL_s": 6400,
+        "minThrottle": 0,
+        "maxThrottle": 1,
+        "propellants": [
+          "IntakeAir",
+          "LiquidFuel"
+        ]
+      }
+    },
+    {
+      "name": "miniLandingLeg",
+      "title": "miniLandingLeg",
+      "mass_t": 0.015,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "Mite",
+      "title": "Mite",
+      "mass_t": 0.075,
+      "roles": [
+        "engine",
+        "tank"
+      ],
+      "resources_u": {
+        "SolidFuel": 40
+      },
+      "engines": {
+        "maxThrust_kN": 12.5,
+        "ispVac_s": 210,
+        "ispSL_s": 185,
+        "minThrottle": 1,
+        "maxThrottle": 1,
+        "propellants": [
+          "SolidFuel"
+        ]
+      }
+    },
+    {
+      "name": "mk1-3pod",
+      "title": "mk1-3pod",
+      "mass_t": 2.6,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "ElectricCharge": 150,
+        "MonoPropellant": 30
+      },
+      "engines": []
+    },
+    {
+      "name": "MK1CrewCabin",
+      "title": "MK1CrewCabin",
+      "mass_t": 1,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "MK1Fuselage",
+      "title": "MK1Fuselage",
+      "mass_t": 0.25,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "LiquidFuel": 400
+      },
+      "engines": []
+    },
+    {
+      "name": "Mk1FuselageStructural",
+      "title": "Mk1FuselageStructural",
+      "mass_t": 0.1,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "MK1IntakeFuselage",
+      "title": "MK1IntakeFuselage",
+      "mass_t": 0.17,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "IntakeAir": 2,
+        "LiquidFuel": 200
+      },
+      "engines": []
+    },
+    {
+      "name": "mk1pod",
+      "title": "mk1pod",
+      "mass_t": 0.8,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "ElectricCharge": 50,
+        "MonoPropellant": 10
+      },
+      "engines": []
+    },
+    {
+      "name": "mk1pod_v2",
+      "title": "mk1pod_v2",
+      "mass_t": 0.8,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "ElectricCharge": 50,
+        "MonoPropellant": 10
+      },
+      "engines": []
+    },
+    {
+      "name": "mk2_1m_AdapterLong",
+      "title": "mk2_1m_AdapterLong",
+      "mass_t": 0.57,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "LiquidFuel": 360,
+        "Oxidizer": 440
+      },
+      "engines": []
+    },
+    {
+      "name": "mk2_1m_Bicoupler",
+      "title": "mk2_1m_Bicoupler",
+      "mass_t": 0.29,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "LiquidFuel": 180,
+        "Oxidizer": 220
+      },
+      "engines": []
+    },
+    {
+      "name": "mk2CargoBayL",
+      "title": "mk2CargoBayL",
+      "mass_t": 0.5,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "mk2CargoBayS",
+      "title": "mk2CargoBayS",
+      "mass_t": 0.25,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "mk2Cockpit_Inline",
+      "title": "mk2Cockpit_Inline",
+      "mass_t": 2,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "ElectricCharge": 150,
+        "MonoPropellant": 25
+      },
+      "engines": []
+    },
+    {
+      "name": "mk2Cockpit_Standard",
+      "title": "mk2Cockpit_Standard",
+      "mass_t": 2,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "ElectricCharge": 150,
+        "MonoPropellant": 15
+      },
+      "engines": []
+    },
+    {
+      "name": "mk2CrewCabin",
+      "title": "mk2CrewCabin",
+      "mass_t": 2.03,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "mk2DockingPort",
+      "title": "mk2DockingPort",
+      "mass_t": 0.3,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "MonoPropellant": 75
+      },
+      "engines": []
+    },
+    {
+      "name": "mk2DroneCore",
+      "title": "mk2DroneCore",
+      "mass_t": 0.2,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {
+        "ElectricCharge": 250
+      },
+      "engines": []
+    },
+    {
+      "name": "mk2Fuselage",
+      "title": "mk2Fuselage",
+      "mass_t": 0.57,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "LiquidFuel": 800
+      },
+      "engines": []
+    },
+    {
+      "name": "mk2FuselageLongLFO",
+      "title": "mk2FuselageLongLFO",
+      "mass_t": 0.57,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "LiquidFuel": 360,
+        "Oxidizer": 440
+      },
+      "engines": []
+    },
+    {
+      "name": "mk2FuselageShortLFO",
+      "title": "mk2FuselageShortLFO",
+      "mass_t": 0.29,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "LiquidFuel": 180,
+        "Oxidizer": 220
+      },
+      "engines": []
+    },
+    {
+      "name": "mk2FuselageShortLiquid",
+      "title": "mk2FuselageShortLiquid",
+      "mass_t": 0.29,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "LiquidFuel": 400
+      },
+      "engines": []
+    },
+    {
+      "name": "mk2FuselageShortMono",
+      "title": "mk2FuselageShortMono",
+      "mass_t": 0.29,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "MonoPropellant": 400
+      },
+      "engines": []
+    },
+    {
+      "name": "mk2LanderCabin",
+      "title": "mk2LanderCabin",
+      "mass_t": 2.5,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "ElectricCharge": 100,
+        "MonoPropellant": 40
+      },
+      "engines": []
+    },
+    {
+      "name": "mk2LanderCabin_v2",
+      "title": "mk2LanderCabin_v2",
+      "mass_t": 1.355,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "ElectricCharge": 100,
+        "MonoPropellant": 40
+      },
+      "engines": []
+    },
+    {
+      "name": "mk2SpacePlaneAdapter",
+      "title": "mk2SpacePlaneAdapter",
+      "mass_t": 0.29,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "LiquidFuel": 180,
+        "Oxidizer": 220
+      },
+      "engines": []
+    },
+    {
+      "name": "mk3CargoBayL",
+      "title": "mk3CargoBayL",
+      "mass_t": 6,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "mk3CargoBayM",
+      "title": "mk3CargoBayM",
+      "mass_t": 3,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "mk3CargoBayS",
+      "title": "mk3CargoBayS",
+      "mass_t": 1.5,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "mk3CargoRamp",
+      "title": "mk3CargoRamp",
+      "mass_t": 4,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "mk3Cockpit_Shuttle",
+      "title": "mk3Cockpit_Shuttle",
+      "mass_t": 3.5,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "ElectricCharge": 500,
+        "MonoPropellant": 100
+      },
+      "engines": []
+    },
+    {
+      "name": "mk3CrewCabin",
+      "title": "mk3CrewCabin",
+      "mass_t": 7.9,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "mk3FuselageLF_100",
+      "title": "mk3FuselageLF_100",
+      "mass_t": 7.14,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "LiquidFuel": 10000
+      },
+      "engines": []
+    },
+    {
+      "name": "mk3FuselageLF_25",
+      "title": "mk3FuselageLF_25",
+      "mass_t": 1.79,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "LiquidFuel": 2500
+      },
+      "engines": []
+    },
+    {
+      "name": "mk3FuselageLF_50",
+      "title": "mk3FuselageLF_50",
+      "mass_t": 3.57,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "LiquidFuel": 5000
+      },
+      "engines": []
+    },
+    {
+      "name": "mk3FuselageLFO_100",
+      "title": "mk3FuselageLFO_100",
+      "mass_t": 7.14,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "LiquidFuel": 4500,
+        "Oxidizer": 5500
+      },
+      "engines": []
+    },
+    {
+      "name": "mk3FuselageLFO_25",
+      "title": "mk3FuselageLFO_25",
+      "mass_t": 1.79,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "LiquidFuel": 1125,
+        "Oxidizer": 1375
+      },
+      "engines": []
+    },
+    {
+      "name": "mk3FuselageLFO_50",
+      "title": "mk3FuselageLFO_50",
+      "mass_t": 3.57,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "LiquidFuel": 2250,
+        "Oxidizer": 2750
+      },
+      "engines": []
+    },
+    {
+      "name": "mk3FuselageMONO",
+      "title": "mk3FuselageMONO",
+      "mass_t": 1.4,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "MonoPropellant": 2100
+      },
+      "engines": []
+    },
+    {
+      "name": "MpoProbe",
+      "title": "MpoProbe",
+      "mass_t": 0.395,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "LiquidFuel": 45,
+        "Oxidizer": 55,
+        "ElectricCharge": 1000
+      },
+      "engines": []
+    },
+    {
+      "name": "MtmStage",
+      "title": "MtmStage",
+      "mass_t": 0.415,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "ElectricCharge": 4000,
+        "XenonGas": 3800
+      },
+      "engines": []
+    },
+    {
+      "name": "nacelleBody",
+      "title": "nacelleBody",
+      "mass_t": 0.15,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "IntakeAir": 5,
+        "LiquidFuel": 150
+      },
+      "engines": []
+    },
+    {
+      "name": "navLight1",
+      "title": "navLight1",
+      "mass_t": 0.001,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "noseCone",
+      "title": "noseCone",
+      "mass_t": 0.03,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "noseConeAdapter",
+      "title": "noseConeAdapter",
+      "mass_t": 0.1,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "LiquidFuel": 80
+      },
+      "engines": []
+    },
+    {
+      "name": "nuclearEngine",
+      "title": "nuclearEngine",
+      "mass_t": 3,
+      "roles": [
+        "engine"
+      ],
+      "resources_u": {},
+      "engines": {
+        "maxThrust_kN": 60,
+        "ispVac_s": 800,
+        "ispSL_s": 185,
+        "minThrottle": 0,
+        "maxThrottle": 1,
+        "propellants": [
+          "LiquidFuel"
+        ]
+      }
+    },
+    {
+      "name": "omsEngine",
+      "title": "omsEngine",
+      "mass_t": 0.09,
+      "roles": [
+        "engine"
+      ],
+      "resources_u": {},
+      "engines": {
+        "maxThrust_kN": 20,
+        "ispVac_s": 250,
+        "ispSL_s": 120,
+        "minThrottle": 0,
+        "maxThrottle": 1,
+        "propellants": [
+          "MonoPropellant"
+        ]
+      }
+    },
+    {
+      "name": "OrbitalScanner",
+      "title": "OrbitalScanner",
+      "mass_t": 0.1,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "parachuteDrogue",
+      "title": "parachuteDrogue",
+      "mass_t": 0.2,
+      "roles": [
+        "parachute"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "parachuteLarge",
+      "title": "parachuteLarge",
+      "mass_t": 0.3,
+      "roles": [
+        "parachute"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "parachuteRadial",
+      "title": "parachuteRadial",
+      "mass_t": 0.1,
+      "roles": [
+        "parachute"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "parachuteSingle",
+      "title": "parachuteSingle",
+      "mass_t": 0.1,
+      "roles": [
+        "parachute"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "pointyNoseConeA",
+      "title": "pointyNoseConeA",
+      "mass_t": 0.075,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "pointyNoseConeB",
+      "title": "pointyNoseConeB",
+      "mass_t": 0.075,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "PotatoComet",
+      "title": "A potato like comet",
+      "mass_t": 150,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "PotatoRoid",
+      "title": "PotatoRoid",
+      "mass_t": 150,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "probeCoreCube",
+      "title": "probeCoreCube",
+      "mass_t": 0.07,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {
+        "ElectricCharge": 5
+      },
+      "engines": []
+    },
+    {
+      "name": "probeCoreHex",
+      "title": "probeCoreHex",
+      "mass_t": 0.1,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {
+        "ElectricCharge": 10
+      },
+      "engines": []
+    },
+    {
+      "name": "probeCoreHex_v2",
+      "title": "probeCoreHex_v2",
+      "mass_t": 0.1,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {
+        "ElectricCharge": 10
+      },
+      "engines": []
+    },
+    {
+      "name": "probeCoreOcto",
+      "title": "probeCoreOcto",
+      "mass_t": 0.1,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {
+        "ElectricCharge": 10
+      },
+      "engines": []
+    },
+    {
+      "name": "probeCoreOcto_v2",
+      "title": "probeCoreOcto_v2",
+      "mass_t": 0.1,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {
+        "ElectricCharge": 10
+      },
+      "engines": []
+    },
+    {
+      "name": "probeCoreOcto2",
+      "title": "probeCoreOcto2",
+      "mass_t": 0.04,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {
+        "ElectricCharge": 5
+      },
+      "engines": []
+    },
+    {
+      "name": "probeCoreOcto2_v2",
+      "title": "probeCoreOcto2_v2",
+      "mass_t": 0.04,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {
+        "ElectricCharge": 5
+      },
+      "engines": []
+    },
+    {
+      "name": "probeCoreSphere",
+      "title": "probeCoreSphere",
+      "mass_t": 0.05,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {
+        "ElectricCharge": 10
+      },
+      "engines": []
+    },
+    {
+      "name": "probeCoreSphere_v2",
+      "title": "probeCoreSphere_v2",
+      "mass_t": 0.05,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {
+        "ElectricCharge": 10
+      },
+      "engines": []
+    },
+    {
+      "name": "probeStackLarge",
+      "title": "probeStackLarge",
+      "mass_t": 0.5,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {
+        "ElectricCharge": 30
+      },
+      "engines": []
+    },
+    {
+      "name": "probeStackSmall",
+      "title": "probeStackSmall",
+      "mass_t": 0.1,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {
+        "ElectricCharge": 15
+      },
+      "engines": []
+    },
+    {
+      "name": "R8winglet",
+      "title": "R8winglet",
+      "mass_t": 0.1,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "radialDecoupler",
+      "title": "radialDecoupler",
+      "mass_t": 0.025,
+      "roles": [
+        "radialdecoupler"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "radialDecoupler1-2",
+      "title": "radialDecoupler1-2",
+      "mass_t": 0.4,
+      "roles": [
+        "radialdecoupler"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "radialDecoupler2",
+      "title": "radialDecoupler2",
+      "mass_t": 0.05,
+      "roles": [
+        "radialdecoupler"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "RadialDrill",
+      "title": "RadialDrill",
+      "mass_t": 1.25,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "radialDrogue",
+      "title": "radialDrogue",
+      "mass_t": 0.075,
+      "roles": [
+        "parachute"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "radialEngineBody",
+      "title": "radialEngineBody",
+      "mass_t": 0.15,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "IntakeAir": 5,
+        "LiquidFuel": 40
+      },
+      "engines": []
+    },
+    {
+      "name": "radialEngineMini",
+      "title": "radialEngineMini",
+      "mass_t": 0.02,
+      "roles": [
+        "engine"
+      ],
+      "resources_u": {},
+      "engines": {
+        "maxThrust_kN": 2,
+        "ispVac_s": 290,
+        "ispSL_s": 260,
+        "minThrottle": 0,
+        "maxThrottle": 1,
+        "propellants": [
+          "LiquidFuel",
+          "Oxidizer"
+        ]
+      }
+    },
+    {
+      "name": "radialEngineMini_v2",
+      "title": "radialEngineMini_v2",
+      "mass_t": 0.02,
+      "roles": [
+        "engine"
+      ],
+      "resources_u": {},
+      "engines": {
+        "maxThrust_kN": 2,
+        "ispVac_s": 290,
+        "ispSL_s": 260,
+        "minThrottle": 0,
+        "maxThrottle": 1,
+        "propellants": [
+          "LiquidFuel",
+          "Oxidizer"
+        ]
+      }
+    },
+    {
+      "name": "radialLiquidEngine1-2",
+      "title": "radialLiquidEngine1-2",
+      "mass_t": 0.9,
+      "roles": [
+        "engine"
+      ],
+      "resources_u": {},
+      "engines": {
+        "maxThrust_kN": 120,
+        "ispVac_s": 305,
+        "ispSL_s": 275,
+        "minThrottle": 0,
+        "maxThrottle": 1,
+        "propellants": [
+          "LiquidFuel",
+          "Oxidizer"
+        ]
+      }
+    },
+    {
+      "name": "RadialOreTank",
+      "title": "RadialOreTank",
+      "mass_t": 0.125,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "Ore": 75
+      },
+      "engines": []
+    },
+    {
+      "name": "radialRCSTank",
+      "title": "radialRCSTank",
+      "mass_t": 0.02,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "MonoPropellant": 20
+      },
+      "engines": []
+    },
+    {
+      "name": "radPanelEdge",
+      "title": "radPanelEdge",
+      "mass_t": 0.03,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "radPanelLg",
+      "title": "radPanelLg",
+      "mass_t": 0.05,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "radPanelSm",
+      "title": "radPanelSm",
+      "mass_t": 0.01,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "ramAirIntake",
+      "title": "ramAirIntake",
+      "mass_t": 0.06,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {
+        "IntakeAir": 2
+      },
+      "engines": []
+    },
+    {
+      "name": "RAPIER",
+      "title": "RAPIER",
+      "mass_t": 2,
+      "roles": [
+        "engine"
+      ],
+      "resources_u": {},
+      "engines": [
+        {
+          "maxThrust_kN": 105,
+          "ispVac_s": 3200,
+          "ispSL_s": 3200,
+          "minThrottle": 0,
+          "maxThrottle": 1,
+          "propellants": [
+            "IntakeAir",
+            "LiquidFuel"
+          ]
+        },
+        {
+          "maxThrust_kN": 180,
+          "ispVac_s": 305,
+          "ispSL_s": 275,
+          "minThrottle": 0,
+          "maxThrottle": 1,
+          "propellants": [
+            "LiquidFuel",
+            "Oxidizer"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "RCSBlock",
+      "title": "RCSBlock",
+      "mass_t": 0.05,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "RCSblock_01_small",
+      "title": "RCSblock_01_small",
+      "mass_t": 0.005,
+      "roles": [
+        "pod"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "RCSBlock_v2",
+      "title": "RCSBlock_v2",
+      "mass_t": 0.04,
+      "roles": [
+        "pod"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "RCSFuelTank",
+      "title": "RCSFuelTank",
+      "mass_t": 0.08,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "MonoPropellant": 120
+      },
+      "engines": []
+    },
+    {
+      "name": "RCSLinearSmall",
+      "title": "RCSLinearSmall",
+      "mass_t": 0.00125,
+      "roles": [
+        "pod"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "RCSTank1-2",
+      "title": "RCSTank1-2",
+      "mass_t": 0.4,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "MonoPropellant": 750
+      },
+      "engines": []
+    },
+    {
+      "name": "rcsTankMini",
+      "title": "rcsTankMini",
+      "mass_t": 0.02,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "MonoPropellant": 20
+      },
+      "engines": []
+    },
+    {
+      "name": "rcsTankRadialLong",
+      "title": "rcsTankRadialLong",
+      "mass_t": 0.03,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "MonoPropellant": 50
+      },
+      "engines": []
+    },
+    {
+      "name": "RelayAntenna100",
+      "title": "RelayAntenna100",
+      "mass_t": 0.65,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "RelayAntenna5",
+      "title": "RelayAntenna5",
+      "mass_t": 0.15,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "RelayAntenna50",
+      "title": "RelayAntenna50",
+      "mass_t": 0.3,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "ReleaseValve",
+      "title": "ReleaseValve",
+      "mass_t": 0.01,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "rocketNoseCone",
+      "title": "rocketNoseCone",
+      "mass_t": 0.2,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "rocketNoseCone_v2",
+      "title": "rocketNoseCone_v2",
+      "mass_t": 0.2,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "rocketNoseCone_v3",
+      "title": "rocketNoseCone_v3",
+      "mass_t": 0.2,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "rocketNoseConeSize3",
+      "title": "rocketNoseConeSize3",
+      "mass_t": 0.4,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "Rockomax16_BW",
+      "title": "Rockomax16_BW",
+      "mass_t": 1,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "LiquidFuel": 720,
+        "Oxidizer": 880
+      },
+      "engines": []
+    },
+    {
+      "name": "Rockomax32_BW",
+      "title": "Rockomax32_BW",
+      "mass_t": 2,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "LiquidFuel": 1440,
+        "Oxidizer": 1760
+      },
+      "engines": []
+    },
+    {
+      "name": "Rockomax64_BW",
+      "title": "Rockomax64_BW",
+      "mass_t": 4,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "LiquidFuel": 2880,
+        "Oxidizer": 3520
+      },
+      "engines": []
+    },
+    {
+      "name": "Rockomax8BW",
+      "title": "Rockomax8BW",
+      "mass_t": 0.5,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "LiquidFuel": 360,
+        "Oxidizer": 440
+      },
+      "engines": []
+    },
+    {
+      "name": "roverBody",
+      "title": "roverBody",
+      "mass_t": 0.15,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {
+        "ElectricCharge": 120
+      },
+      "engines": []
+    },
+    {
+      "name": "roverBody_v2",
+      "title": "roverBody_v2",
+      "mass_t": 0.15,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {
+        "ElectricCharge": 120
+      },
+      "engines": []
+    },
+    {
+      "name": "roverWheel1",
+      "title": "roverWheel1",
+      "mass_t": 0.075,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "roverWheel2",
+      "title": "roverWheel2",
+      "mass_t": 0.05,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "roverWheel3",
+      "title": "roverWheel3",
+      "mass_t": 1.25,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "rtg",
+      "title": "rtg",
+      "mass_t": 0.08,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "sasModule",
+      "title": "sasModule",
+      "mass_t": 0.05,
+      "roles": [
+        "pod"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "science_module",
+      "title": "science_module",
+      "mass_t": 0.2,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "ScienceBox",
+      "title": "ScienceBox",
+      "mass_t": 0.05,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "seatExternalCmd",
+      "title": "seatExternalCmd",
+      "mass_t": 0.05,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "sensorAccelerometer",
+      "title": "sensorAccelerometer",
+      "mass_t": 0.005,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "sensorAtmosphere",
+      "title": "sensorAtmosphere",
+      "mass_t": 0.005,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "sensorBarometer",
+      "title": "sensorBarometer",
+      "mass_t": 0.005,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "sensorGravimeter",
+      "title": "sensorGravimeter",
+      "mass_t": 0.005,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "sensorThermometer",
+      "title": "sensorThermometer",
+      "mass_t": 0.005,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "Separator_0",
+      "title": "Separator_0",
+      "mass_t": 0.01,
+      "roles": [
+        "decoupler"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "Separator_1",
+      "title": "Separator_1",
+      "mass_t": 0.05,
+      "roles": [
+        "decoupler"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "Separator_2",
+      "title": "Separator_2",
+      "mass_t": 0.21,
+      "roles": [
+        "decoupler"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "Separator_3",
+      "title": "Separator_3",
+      "mass_t": 0.48,
+      "roles": [
+        "decoupler"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "sepMotor1",
+      "title": "sepMotor1",
+      "mass_t": 0.0125,
+      "roles": [
+        "engine",
+        "tank"
+      ],
+      "resources_u": {
+        "SolidFuel": 8
+      },
+      "engines": {
+        "maxThrust_kN": 18,
+        "ispVac_s": 154,
+        "ispSL_s": 118,
+        "minThrottle": 1,
+        "maxThrottle": 1,
+        "propellants": [
+          "SolidFuel"
+        ]
+      }
+    },
+    {
+      "name": "ServiceBay_125",
+      "title": "ServiceBay_125",
+      "mass_t": 0.1,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "ServiceBay_125_v2",
+      "title": "ServiceBay_125_v2",
+      "mass_t": 0.1,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "ServiceBay_250",
+      "title": "ServiceBay_250",
+      "mass_t": 0.3,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "ServiceBay_250_v2",
+      "title": "ServiceBay_250_v2",
+      "mass_t": 0.3,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "shockConeIntake",
+      "title": "shockConeIntake",
+      "mass_t": 0.12,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {
+        "IntakeAir": 2
+      },
+      "engines": []
+    },
+    {
+      "name": "Shrimp",
+      "title": "Shrimp",
+      "mass_t": 0.15,
+      "roles": [
+        "engine",
+        "tank"
+      ],
+      "resources_u": {
+        "SolidFuel": 90
+      },
+      "engines": {
+        "maxThrust_kN": 30,
+        "ispVac_s": 215,
+        "ispSL_s": 190,
+        "minThrottle": 1,
+        "maxThrottle": 1,
+        "propellants": [
+          "SolidFuel"
+        ]
+      }
+    },
+    {
+      "name": "Size2LFB",
+      "title": "Size2LFB",
+      "mass_t": 10.5,
+      "roles": [
+        "engine"
+      ],
+      "resources_u": {
+        "LiquidFuel": 2880,
+        "Oxidizer": 3520
+      },
+      "engines": {
+        "maxThrust_kN": 2000,
+        "ispVac_s": 300,
+        "ispSL_s": 280,
+        "minThrottle": 0,
+        "maxThrottle": 1,
+        "propellants": [
+          "LiquidFuel",
+          "Oxidizer"
+        ]
+      }
+    },
+    {
+      "name": "Size2LFB_v2",
+      "title": "Size2LFB_v2",
+      "mass_t": 10.5,
+      "roles": [
+        "engine"
+      ],
+      "resources_u": {
+        "LiquidFuel": 2880,
+        "Oxidizer": 3520
+      },
+      "engines": {
+        "maxThrust_kN": 2000,
+        "ispVac_s": 300,
+        "ispSL_s": 280,
+        "minThrottle": 0,
+        "maxThrottle": 1,
+        "propellants": [
+          "LiquidFuel",
+          "Oxidizer"
+        ]
+      }
+    },
+    {
+      "name": "Size3AdvancedEngine",
+      "title": "Size3AdvancedEngine",
+      "mass_t": 9,
+      "roles": [
+        "engine"
+      ],
+      "resources_u": {},
+      "engines": {
+        "maxThrust_kN": 2000,
+        "ispVac_s": 340,
+        "ispSL_s": 205,
+        "minThrottle": 0,
+        "maxThrottle": 1,
+        "propellants": [
+          "LiquidFuel",
+          "Oxidizer"
+        ]
+      }
+    },
+    {
+      "name": "size3Decoupler",
+      "title": "size3Decoupler",
+      "mass_t": 0.8,
+      "roles": [
+        "decoupler"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "Size3EngineCluster",
+      "title": "Size3EngineCluster",
+      "mass_t": 15,
+      "roles": [
+        "engine"
+      ],
+      "resources_u": {},
+      "engines": {
+        "maxThrust_kN": 4000,
+        "ispVac_s": 315,
+        "ispSL_s": 295,
+        "minThrottle": 0,
+        "maxThrottle": 1,
+        "propellants": [
+          "LiquidFuel",
+          "Oxidizer"
+        ]
+      }
+    },
+    {
+      "name": "Size3LargeTank",
+      "title": "Size3LargeTank",
+      "mass_t": 9,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "LiquidFuel": 6480,
+        "Oxidizer": 7920
+      },
+      "engines": []
+    },
+    {
+      "name": "Size3MediumTank",
+      "title": "Size3MediumTank",
+      "mass_t": 4.5,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "LiquidFuel": 3240,
+        "Oxidizer": 3960
+      },
+      "engines": []
+    },
+    {
+      "name": "Size3SmallTank",
+      "title": "Size3SmallTank",
+      "mass_t": 2.25,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "LiquidFuel": 1620,
+        "Oxidizer": 1980
+      },
+      "engines": []
+    },
+    {
+      "name": "Size3to2Adapter",
+      "title": "Size3to2Adapter",
+      "mass_t": 0.2,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "Size3To2Adapter_v2",
+      "title": "Size3To2Adapter_v2",
+      "mass_t": 1.875,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "LiquidFuel": 1350,
+        "Oxidizer": 1650
+      },
+      "engines": []
+    },
+    {
+      "name": "smallCargoContainer",
+      "title": "smallCargoContainer",
+      "mass_t": 0.05,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "smallClaw",
+      "title": "smallClaw",
+      "mass_t": 0.03,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "smallCtrlSrf",
+      "title": "smallCtrlSrf",
+      "mass_t": 0.04,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "SmallGearBay",
+      "title": "SmallGearBay",
+      "mass_t": 0.045,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "smallHardpoint",
+      "title": "smallHardpoint",
+      "mass_t": 0.05,
+      "roles": [
+        "decoupler"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "smallRadialEngine",
+      "title": "smallRadialEngine",
+      "mass_t": 0.09,
+      "roles": [
+        "engine"
+      ],
+      "resources_u": {},
+      "engines": {
+        "maxThrust_kN": 16,
+        "ispVac_s": 290,
+        "ispSL_s": 250,
+        "minThrottle": 0,
+        "maxThrottle": 1,
+        "propellants": [
+          "LiquidFuel",
+          "Oxidizer"
+        ]
+      }
+    },
+    {
+      "name": "smallRadialEngine_v2",
+      "title": "smallRadialEngine_v2",
+      "mass_t": 0.08,
+      "roles": [
+        "engine"
+      ],
+      "resources_u": {},
+      "engines": {
+        "maxThrust_kN": 16,
+        "ispVac_s": 290,
+        "ispSL_s": 275,
+        "minThrottle": 0,
+        "maxThrottle": 1,
+        "propellants": [
+          "LiquidFuel",
+          "Oxidizer"
+        ]
+      }
+    },
+    {
+      "name": "SmallTank",
+      "title": "SmallTank",
+      "mass_t": 0.5,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "Ore": 300
+      },
+      "engines": []
+    },
+    {
+      "name": "solarPanelOX10C",
+      "title": "solarPanelOX10C",
+      "mass_t": 0.09,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "solarPanelOX10L",
+      "title": "solarPanelOX10L",
+      "mass_t": 0.09,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "solarPanels1",
+      "title": "solarPanels1",
+      "mass_t": 0.025,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "solarPanels2",
+      "title": "solarPanels2",
+      "mass_t": 0.025,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "solarPanels3",
+      "title": "solarPanels3",
+      "mass_t": 0.0175,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "solarPanels4",
+      "title": "solarPanels4",
+      "mass_t": 0.0175,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "solarPanels5",
+      "title": "solarPanels5",
+      "mass_t": 0.005,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "solarPanelSP10C",
+      "title": "solarPanelSP10C",
+      "mass_t": 0.13,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "solarPanelSP10L",
+      "title": "solarPanelSP10L",
+      "mass_t": 0.13,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "solidBooster",
+      "title": "solidBooster",
+      "mass_t": 0.75,
+      "roles": [
+        "engine",
+        "tank"
+      ],
+      "resources_u": {
+        "SolidFuel": 375
+      },
+      "engines": {
+        "maxThrust_kN": 227,
+        "ispVac_s": 195,
+        "ispSL_s": 170,
+        "minThrottle": 1,
+        "maxThrottle": 1,
+        "propellants": [
+          "SolidFuel"
+        ]
+      }
+    },
+    {
+      "name": "solidBooster_sm",
+      "title": "solidBooster_sm",
+      "mass_t": 0.45,
+      "roles": [
+        "engine",
+        "tank"
+      ],
+      "resources_u": {
+        "SolidFuel": 140
+      },
+      "engines": {
+        "maxThrust_kN": 192,
+        "ispVac_s": 165,
+        "ispSL_s": 140,
+        "minThrottle": 1,
+        "maxThrottle": 1,
+        "propellants": [
+          "SolidFuel"
+        ]
+      }
+    },
+    {
+      "name": "solidBooster_sm_v2",
+      "title": "solidBooster_sm_v2",
+      "mass_t": 0.45,
+      "roles": [
+        "engine",
+        "tank"
+      ],
+      "resources_u": {
+        "SolidFuel": 140
+      },
+      "engines": {
+        "maxThrust_kN": 192,
+        "ispVac_s": 165,
+        "ispSL_s": 140,
+        "minThrottle": 1,
+        "maxThrottle": 1,
+        "propellants": [
+          "SolidFuel"
+        ]
+      }
+    },
+    {
+      "name": "solidBooster_v2",
+      "title": "solidBooster_v2",
+      "mass_t": 0.75,
+      "roles": [
+        "engine",
+        "tank"
+      ],
+      "resources_u": {
+        "SolidFuel": 375
+      },
+      "engines": {
+        "maxThrust_kN": 227,
+        "ispVac_s": 195,
+        "ispSL_s": 170,
+        "minThrottle": 1,
+        "maxThrottle": 1,
+        "propellants": [
+          "SolidFuel"
+        ]
+      }
+    },
+    {
+      "name": "solidBooster1-1",
+      "title": "solidBooster1-1",
+      "mass_t": 1.5,
+      "roles": [
+        "engine",
+        "tank"
+      ],
+      "resources_u": {
+        "SolidFuel": 820
+      },
+      "engines": {
+        "maxThrust_kN": 300,
+        "ispVac_s": 210,
+        "ispSL_s": 175,
+        "minThrottle": 1,
+        "maxThrottle": 1,
+        "propellants": [
+          "SolidFuel"
+        ]
+      }
+    },
+    {
+      "name": "spotLight1",
+      "title": "spotLight1",
+      "mass_t": 0.015,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "spotLight1_v2",
+      "title": "spotLight1_v2",
+      "mass_t": 0.015,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "spotLight2",
+      "title": "spotLight2",
+      "mass_t": 0.015,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "spotLight2_v2",
+      "title": "spotLight2_v2",
+      "mass_t": 0.015,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "spotLight3",
+      "title": "spotLight3",
+      "mass_t": 0.005,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "SSME",
+      "title": "SSME",
+      "mass_t": 4,
+      "roles": [
+        "engine"
+      ],
+      "resources_u": {},
+      "engines": {
+        "maxThrust_kN": 1000,
+        "ispVac_s": 315,
+        "ispSL_s": 295,
+        "minThrottle": 0,
+        "maxThrottle": 1,
+        "propellants": [
+          "LiquidFuel",
+          "Oxidizer"
+        ]
+      }
+    },
+    {
+      "name": "stackBiCoupler",
+      "title": "stackBiCoupler",
+      "mass_t": 0.1,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "stackBiCoupler_v2",
+      "title": "stackBiCoupler_v2",
+      "mass_t": 0.1,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "stackDecoupler",
+      "title": "stackDecoupler",
+      "mass_t": 0.05,
+      "roles": [
+        "decoupler"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "stackDecouplerMini",
+      "title": "stackDecouplerMini",
+      "mass_t": 0.015,
+      "roles": [
+        "decoupler"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "stackPoint1",
+      "title": "stackPoint1",
+      "mass_t": 0.04,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "stackQuadCoupler",
+      "title": "stackQuadCoupler",
+      "mass_t": 0.175,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "stackSeparator",
+      "title": "stackSeparator",
+      "mass_t": 0.075,
+      "roles": [
+        "decoupler"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "stackSeparatorBig",
+      "title": "stackSeparatorBig",
+      "mass_t": 0.45,
+      "roles": [
+        "decoupler"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "stackSeparatorMini",
+      "title": "stackSeparatorMini",
+      "mass_t": 0.02,
+      "roles": [
+        "decoupler"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "stackTriCoupler",
+      "title": "stackTriCoupler",
+      "mass_t": 0.15,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "stackTriCoupler_v2",
+      "title": "stackTriCoupler_v2",
+      "mass_t": 0.15,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "StandardCtrlSrf",
+      "title": "StandardCtrlSrf",
+      "mass_t": 0.05,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "standardNoseCone",
+      "title": "standardNoseCone",
+      "mass_t": 0.01,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "stationHub",
+      "title": "stationHub",
+      "mass_t": 1.5,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "stripLight1",
+      "title": "stripLight1",
+      "mass_t": 0.001,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "structuralIBeam1",
+      "title": "structuralIBeam1",
+      "mass_t": 0.08,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "structuralIBeam2",
+      "title": "structuralIBeam2",
+      "mass_t": 0.375,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "structuralIBeam3",
+      "title": "structuralIBeam3",
+      "mass_t": 0.1875,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "structuralMiniNode",
+      "title": "structuralMiniNode",
+      "mass_t": 0.15,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "structuralPanel1",
+      "title": "structuralPanel1",
+      "mass_t": 0.075,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "structuralPanel2",
+      "title": "structuralPanel2",
+      "mass_t": 0.3,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "structuralPylon",
+      "title": "structuralPylon",
+      "mass_t": 0.2,
+      "roles": [
+        "decoupler"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "structuralWing",
+      "title": "structuralWing",
+      "mass_t": 0.1,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "structuralWing2",
+      "title": "structuralWing2",
+      "mass_t": 0.1,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "structuralWing3",
+      "title": "structuralWing3",
+      "mass_t": 0.05,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "structuralWing4",
+      "title": "structuralWing4",
+      "mass_t": 0.025,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "strutConnector",
+      "title": "strutConnector",
+      "mass_t": 0.05,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "strutCube",
+      "title": "strutCube",
+      "mass_t": 0.001,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "strutOcto",
+      "title": "strutOcto",
+      "mass_t": 0.001,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "SurfaceScanner",
+      "title": "SurfaceScanner",
+      "mass_t": 0.005,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "SurfAntenna",
+      "title": "SurfAntenna",
+      "mass_t": 0.015,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "SurveyScanner",
+      "title": "SurveyScanner",
+      "mass_t": 0.2,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "sweptWing",
+      "title": "sweptWing",
+      "mass_t": 0.275,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "sweptWing1",
+      "title": "sweptWing1",
+      "mass_t": 0.113,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "sweptWing2",
+      "title": "sweptWing2",
+      "mass_t": 0.226,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "tailfin",
+      "title": "tailfin",
+      "mass_t": 0.125,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "telescopicLadder",
+      "title": "telescopicLadder",
+      "mass_t": 0.005,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "telescopicLadderBay",
+      "title": "telescopicLadderBay",
+      "mass_t": 0.005,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "Thoroughbred",
+      "title": "Thoroughbred",
+      "mass_t": 10,
+      "roles": [
+        "engine",
+        "tank"
+      ],
+      "resources_u": {
+        "SolidFuel": 8000
+      },
+      "engines": {
+        "maxThrust_kN": 1700,
+        "ispVac_s": 230,
+        "ispSL_s": 205,
+        "minThrottle": 1,
+        "maxThrottle": 1,
+        "propellants": [
+          "SolidFuel"
+        ]
+      }
+    },
+    {
+      "name": "toroidalAerospike",
+      "title": "toroidalAerospike",
+      "mass_t": 1,
+      "roles": [
+        "engine"
+      ],
+      "resources_u": {},
+      "engines": {
+        "maxThrust_kN": 180,
+        "ispVac_s": 340,
+        "ispSL_s": 290,
+        "minThrottle": 0,
+        "maxThrottle": 1,
+        "propellants": [
+          "LiquidFuel",
+          "Oxidizer"
+        ]
+      }
+    },
+    {
+      "name": "toroidalFuelTank",
+      "title": "toroidalFuelTank",
+      "mass_t": 0.0375,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "LiquidFuel": 27,
+        "Oxidizer": 33
+      },
+      "engines": []
+    },
+    {
+      "name": "trussAdapter",
+      "title": "trussAdapter",
+      "mass_t": 0.25,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "trussPiece1x",
+      "title": "trussPiece1x",
+      "mass_t": 0.125,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "trussPiece3x",
+      "title": "trussPiece3x",
+      "mass_t": 0.375,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "turboFanEngine",
+      "title": "turboFanEngine",
+      "mass_t": 1.8,
+      "roles": [
+        "engine"
+      ],
+      "resources_u": {},
+      "engines": {
+        "maxThrust_kN": 130,
+        "ispVac_s": 4000,
+        "ispSL_s": 4000,
+        "minThrottle": 0,
+        "maxThrottle": 1,
+        "propellants": [
+          "IntakeAir",
+          "LiquidFuel"
+        ]
+      }
+    },
+    {
+      "name": "turboFanSize2",
+      "title": "turboFanSize2",
+      "mass_t": 4.5,
+      "roles": [
+        "engine"
+      ],
+      "resources_u": {
+        "IntakeAir": 3.4
+      },
+      "engines": {
+        "maxThrust_kN": 360,
+        "ispVac_s": 12600,
+        "ispSL_s": 12600,
+        "minThrottle": 0,
+        "maxThrottle": 1,
+        "propellants": [
+          "IntakeAir",
+          "LiquidFuel"
+        ]
+      }
+    },
+    {
+      "name": "turboJet",
+      "title": "turboJet",
+      "mass_t": 1.2,
+      "roles": [
+        "engine"
+      ],
+      "resources_u": {},
+      "engines": [
+        {
+          "maxThrust_kN": 85,
+          "ispVac_s": 9000,
+          "ispSL_s": 9000,
+          "minThrottle": 0,
+          "maxThrottle": 1,
+          "propellants": [
+            "IntakeAir",
+            "LiquidFuel"
+          ]
+        },
+        {
+          "maxThrust_kN": 130,
+          "ispVac_s": 4000,
+          "ispSL_s": 4000,
+          "minThrottle": 0,
+          "maxThrottle": 1,
+          "propellants": [
+            "IntakeAir",
+            "LiquidFuel"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "vernierEngine",
+      "title": "vernierEngine",
+      "mass_t": 0.08,
+      "roles": [
+        "pod"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "wheelMed",
+      "title": "wheelMed",
+      "mass_t": 0.105,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "wingConnector",
+      "title": "wingConnector",
+      "mass_t": 0.2,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "wingConnector2",
+      "title": "wingConnector2",
+      "mass_t": 0.2,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "wingConnector3",
+      "title": "wingConnector3",
+      "mass_t": 0.1,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "wingConnector4",
+      "title": "wingConnector4",
+      "mass_t": 0.05,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "wingConnector5",
+      "title": "wingConnector5",
+      "mass_t": 0.05,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "winglet",
+      "title": "winglet",
+      "mass_t": 0.037,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "winglet3",
+      "title": "winglet3",
+      "mass_t": 0.078,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "wingShuttleDelta",
+      "title": "wingShuttleDelta",
+      "mass_t": 0.5,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "LiquidFuel": 300
+      },
+      "engines": []
+    },
+    {
+      "name": "wingShuttleElevon1",
+      "title": "wingShuttleElevon1",
+      "mass_t": 0.15,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "wingShuttleElevon2",
+      "title": "wingShuttleElevon2",
+      "mass_t": 0.23,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "wingShuttleRudder",
+      "title": "wingShuttleRudder",
+      "mass_t": 0.45,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "wingShuttleStrake",
+      "title": "wingShuttleStrake",
+      "mass_t": 0.1,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "LiquidFuel": 100
+      },
+      "engines": []
+    },
+    {
+      "name": "wingStrake",
+      "title": "wingStrake",
+      "mass_t": 0.05,
+      "roles": [
+        "utility"
+      ],
+      "resources_u": {},
+      "engines": []
+    },
+    {
+      "name": "xenonTank",
+      "title": "xenonTank",
+      "mass_t": 0.024,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "XenonGas": 720
+      },
+      "engines": []
+    },
+    {
+      "name": "xenonTankLarge",
+      "title": "xenonTankLarge",
+      "mass_t": 0.19,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "XenonGas": 5700
+      },
+      "engines": []
+    },
+    {
+      "name": "xenonTankRadial",
+      "title": "xenonTankRadial",
+      "mass_t": 0.0135,
+      "roles": [
+        "tank"
+      ],
+      "resources_u": {
+        "XenonGas": 405
+      },
+      "engines": []
+    }
+  ]
+}

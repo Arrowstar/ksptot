@@ -62,13 +62,17 @@ classdef lvd_ImportCraftGUI_App < handle
             fig = uifigure('Name', 'Import Craft File', ...
                            'Position', [figX, figY, figW, figH], ...
                            'WindowStyle', 'modal');
+            try
+                fig.Icon = 'ksptot_logo4_transparent.png';
+            catch
+            end
             obj.UIFigure = fig;
 
-            grid = uigridlayout(fig, [7, 3]);
+            grid = uigridlayout(fig, [8, 3]);
             grid.RowSpacing = 8;
             grid.ColumnSpacing = 8;
             grid.Padding = 12;
-            grid.RowHeight = {22, 22, 22, '1x', 22, 90, 34};
+            grid.RowHeight = {22, 22, 22, 22, '1x', 22, 90, 34};
             grid.ColumnWidth = {110, '1x', 235};
 
             h = uilabel(grid);
@@ -94,28 +98,60 @@ classdef lvd_ImportCraftGUI_App < handle
             h.Layout.Row = 2;
             h.Layout.Column = 1;
 
-            defaultDB = fullfile(fileparts(mfilename('fullpath')), ...
-                'resources', 'ksp_stock_parts_112.json');
+            % Robust bundled path that survives MATLAB Compiler (see
+            % lvd_import_getPartDatabase.getBundledDbPath)
+            try
+                tmpDB = lvd_import_getPartDatabase();
+                defaultDB = tmpDB.sourcePath;
+            catch
+                defaultDB = fullfile(fileparts(mfilename('fullpath')), 'resources', 'partsDatabaseStockKSP.json');
+            end
+            if(~isfile(defaultDB))
+                defaultDB = fullfile(fileparts(mfilename('fullpath')), 'resources', 'partsDatabaseStockKSP.json');
+            end
             obj.dbEdit = uieditfield(grid, 'text');
             obj.dbEdit.Value = defaultDB;
-            obj.dbEdit.Tooltip = 'Optional custom part database (.json/.mat). Leave as bundled default if no KSP install is available.';
+            obj.dbEdit.Tooltip = 'Path to a .json/.mat database or a GameData/KSP root folder. Leave as bundled default for stock KSP (partsDatabaseStockKSP.json).';
             obj.dbEdit.Layout.Row = 2;
             obj.dbEdit.Layout.Column = 2;
 
+            dbBtnGrid = uigridlayout(grid, [1, 2]);
+            dbBtnGrid.Layout.Row = 2;
+            dbBtnGrid.Layout.Column = 3;
+            dbBtnGrid.RowHeight = {22};
+            dbBtnGrid.ColumnWidth = {115, 115};
+            dbBtnGrid.Padding = [0, 0, 0, 0];
+            dbBtnGrid.ColumnSpacing = 5;
+
+            h = uibutton(dbBtnGrid);
+            h.Text = 'File...';
+            h.Tooltip = 'Select a .json or .mat part database file';
+            h.ButtonPushedFcn = @(~, ~) obj.browseForDatabaseFile();
+            h.Layout.Row = 1;
+            h.Layout.Column = 1;
+
+            h = uibutton(dbBtnGrid);
+            h.Text = 'Folder...';
+            h.Tooltip = 'Select a GameData or KSP install folder';
+            h.ButtonPushedFcn = @(~, ~) obj.browseForDatabaseFolder();
+            h.Layout.Row = 1;
+            h.Layout.Column = 2;
+
             h = uibutton(grid);
-            h.Text = 'Change...';
-            h.ButtonPushedFcn = @(~, ~) obj.browseForDatabase();
-            h.Layout.Row = 2;
-            h.Layout.Column = 3;
+            h.Text = 'Export GameData to JSON...';
+            h.Tooltip = 'Scan a GameData folder and save a portable .json database for future use';
+            h.ButtonPushedFcn = @(~, ~) obj.exportGameData();
+            h.Layout.Row = 3;
+            h.Layout.Column = [2, 3];
 
             h = uilabel(grid);
             h.Text = 'Preview:';
             h.FontWeight = 'bold';
-            h.Layout.Row = 3;
+            h.Layout.Row = 4;
             h.Layout.Column = 1;
 
             previewContainer = uigridlayout(grid, [1, 2]);
-            previewContainer.Layout.Row = 4;
+            previewContainer.Layout.Row = 5;
             previewContainer.Layout.Column = [1, 3];
             previewContainer.RowHeight = {'1x'};
             previewContainer.ColumnWidth = {'1x', '1x'};
@@ -150,24 +186,24 @@ classdef lvd_ImportCraftGUI_App < handle
             h = uilabel(grid);
             h.Text = 'Warnings:';
             h.FontWeight = 'bold';
-            h.Layout.Row = 5;
+            h.Layout.Row = 6;
             h.Layout.Column = 1;
 
             obj.warningsTextArea = uitextarea(grid);
             obj.warningsTextArea.Editable = false;
-            obj.warningsTextArea.Layout.Row = 6;
+            obj.warningsTextArea.Layout.Row = 7;
             obj.warningsTextArea.Layout.Column = [1, 3];
 
             obj.statusLabel = uilabel(grid);
             obj.statusLabel.Text = 'Select a .craft file to analyze.';
             obj.statusLabel.FontAngle = 'italic';
-            obj.statusLabel.Layout.Row = 7;
+            obj.statusLabel.Layout.Row = 8;
             obj.statusLabel.Layout.Column = [1, 2];
 
             btnGrid = uigridlayout(grid, [1, 2]);
             btnGrid.ColumnWidth = {110, 110};
             btnGrid.RowHeight = {34};
-            btnGrid.Layout.Row = 7;
+            btnGrid.Layout.Row = 8;
             btnGrid.Layout.Column = 3;
             btnGrid.Padding = [0, 0, 0, 0];
             btnGrid.ColumnSpacing = 6;
@@ -200,8 +236,14 @@ classdef lvd_ImportCraftGUI_App < handle
         end
 
         function browseForDatabase(obj)
+            % Legacy entry point — delegates to file picker for backward
+            % compatibility.
+            obj.browseForDatabaseFile();
+        end
+
+        function browseForDatabaseFile(obj)
             [fileName, pathName] = uigetfile({'*.json;*.mat', ...
-                'Part Database (*.json, *.mat)'}, 'Select Part Database');
+                'Part Database (*.json, *.mat)'}, 'Select Part Database File');
             if(isequal(fileName, 0))
                 return;
             end
@@ -209,6 +251,107 @@ classdef lvd_ImportCraftGUI_App < handle
             obj.dbEdit.Value = fullfile(pathName, fileName);
             if(~isempty(obj.craftEdit.Value))
                 obj.analyzeCurrentCraft();
+            end
+        end
+
+        function browseForDatabaseFolder(obj)
+            folder = uigetdir('', 'Select GameData or KSP Install Folder');
+            if(isequal(folder, 0) || isempty(folder))
+                return;
+            end
+
+            obj.dbEdit.Value = folder;
+            if(~isempty(obj.craftEdit.Value))
+                obj.analyzeCurrentCraft();
+            end
+        end
+
+        function exportGameData(obj)
+            startPath = '';
+            if(~isempty(obj.dbEdit.Value) && isfolder(obj.dbEdit.Value))
+                startPath = obj.dbEdit.Value;
+            elseif(~isempty(obj.dbEdit.Value) && isfile(obj.dbEdit.Value))
+                startPath = fileparts(obj.dbEdit.Value);
+            end
+            gameDataPath = uigetdir(startPath, 'Select GameData Folder to Export');
+            if(isequal(gameDataPath, 0) || isempty(gameDataPath))
+                return;
+            end
+            if(isfolder(fullfile(gameDataPath, 'GameData')))
+                gameDataPath = fullfile(gameDataPath, 'GameData');
+            end
+            % Validate that it looks like a GameData folder
+            if(~isfolder(fullfile(gameDataPath, 'Squad')) && isempty(dir(fullfile(gameDataPath, '**', '*.cfg'))))
+                choice = questdlg(sprintf('Selected folder does not look like a GameData folder (no Squad subfolder and no .cfg files found):\n%s\n\nContinue anyway?', gameDataPath), 'Invalid GameData Folder', 'Pick Again', 'Cancel', 'Cancel');
+                if(strcmp(choice, 'Pick Again'))
+                    obj.exportGameData();
+                    return;
+                else
+                    return;
+                end
+            end
+            [outFile, outPath] = uiputfile({'*.json','JSON Database (*.json)';'*.mat','MAT Database (*.mat)'}, 'Save Part Database As', fullfile(fileparts(mfilename('fullpath')), 'resources', 'ksp_parts_export.json'));
+            if(isequal(outFile, 0))
+                return;
+            end
+            outFull = fullfile(outPath, outFile);
+            obj.statusLabel.Text = 'Exporting GameData...';
+            drawnow;
+            try
+                [db, w] = lvd_import_getPartDatabase(gameDataPath);
+                if(db.parts.Count == 0)
+                    errordlg(sprintf('No PART definitions found in %s.\n\nThis folder does not appear to contain valid part configs (expected GameData/Squad/Parts/**/*.cfg).\n\nWarnings:\n%s', gameDataPath, strjoin(w, newline)), 'Export Failed');
+                    obj.statusLabel.Text = 'Export failed: no parts found';
+                    obj.warningsTextArea.Value = w;
+                    return;
+                end
+                [~,~,ext] = fileparts(outFull);
+                if(strcmpi(ext, '.json'))
+                    s = struct();
+                    s.schemaVersion = 1;
+                    s.databaseName = sprintf('GameData export %s', datestr(now));
+                    s.gameVersion = '1.12';
+                    s.description = sprintf('Exported from %s on %s', gameDataPath, datestr(now));
+                    dens = db.resourceDensities;
+                    densStruct = struct();
+                    dKeys = keys(dens);
+                    for(kk = 1:numel(dKeys))
+                        densStruct.(dKeys{kk}) = dens(dKeys{kk});
+                    end
+                    s.resourceDensities_t_per_unit = densStruct;
+                    pKeys = keys(db.parts);
+                    partsArr = struct('name', {}, 'title', {}, 'mass_t', {}, 'roles', {}, 'resources_u', {}, 'engines', {});
+                    seenNames = containers.Map('KeyType','char','ValueType','logical');
+                    for(kk = 1:numel(pKeys))
+                        entry = db.parts(pKeys{kk});
+                        key = lower(entry.name);
+                        if(isKey(seenNames, key))
+                            continue;
+                        end
+                        seenNames(key) = true;
+                        partsArr(end+1) = entry; %#ok<AGROW>
+                    end
+                    s.parts = partsArr;
+                    jsonStr = jsonencode(s, 'PrettyPrint', true);
+                    fid = fopen(outFull, 'w');
+                    fprintf(fid, '%s', jsonStr);
+                    fclose(fid);
+                else
+                    partDB = db;
+                    save(outFull, 'partDB');
+                end
+                obj.dbEdit.Value = outFull;
+                obj.statusLabel.Text = sprintf('Exported %d parts to %s (%d warnings)', db.parts.Count, outFull, numel(w));
+                if(~isempty(w))
+                    obj.warningsTextArea.Value = w;
+                else
+                    obj.warningsTextArea.Value = {'Export succeeded.'};
+                end
+                drawnow;
+            catch ME
+                obj.statusLabel.Text = ['Export failed: ' ME.message];
+                obj.warningsTextArea.Value = {ME.message};
+                errordlg(ME.message, 'Export Failed');
             end
         end
     end
@@ -462,13 +605,20 @@ classdef lvd_ImportCraftGUI_App < handle
 
             try
                 dbPath = strtrim(obj.dbEdit.Value);
-                bundledDir = fullfile(fileparts(mfilename('fullpath')), ...
-                    'resources');
-                if(strcmp(dbPath, '') || strcmp(dbPath, fullfile(bundledDir, ...
-                                                         'ksp_stock_parts_112.json')))
+                if(strcmp(dbPath, ''))
                     partDB = lvd_import_getPartDatabase();
                 else
-                    partDB = lvd_import_getPartDatabase(dbPath);
+                    try
+                        partDB = lvd_import_getPartDatabase(dbPath);
+                    catch ME
+                        % Old bundled file (ksp_stock_parts_112.json) was removed;
+                        % fall back to new stock DB if the saved path is stale.
+                        if(contains(ME.message, 'ksp_stock_parts_112') || contains(ME.message, 'not found'))
+                            partDB = lvd_import_getPartDatabase();
+                        else
+                            rethrow(ME);
+                        end
+                    end
                 end
 
                 [spec, report] = lvd_import_analyzeCraft( ...
@@ -553,6 +703,33 @@ classdef lvd_ImportCraftGUI_App < handle
                     lines{end+1} = sprintf(... %#ok<AGROW>
                         '    [T] %-34s %-16s %7.3f mT', ...
                         tnk.name, tnk.fluidTypeName, tnk.propMass_mT);
+                end
+                % Dry mass breakdown — which KSP parts were imported for this stage
+                if(isfield(stg, 'parts') && ~isempty(stg.parts))
+                    lines{end+1} = sprintf('    Dry parts (%.3f mT):', stg.dryMass_mT); %#ok<AGROW>
+                    partMap = containers.Map('KeyType','char','ValueType','any');
+                    for(pIdx = 1:numel(stg.parts))
+                        pp = stg.parts(pIdx);
+                        key = lower(pp.partName);
+                        if(isKey(partMap, key))
+                            entry = partMap(key);
+                            entry.count = entry.count + 1;
+                            entry.totalMass = entry.totalMass + pp.mass_t;
+                            partMap(key) = entry;
+                        else
+                            partMap(key) = struct('displayName', pp.displayName, 'partName', pp.partName, 'count', 1, 'massEach', pp.mass_t, 'totalMass', pp.mass_t, 'roles', {pp.roles});
+                        end
+                    end
+                    pKeys = keys(partMap);
+                    for(kk = 1:numel(pKeys))
+                        entry = partMap(pKeys{kk});
+                        rolesStr = strjoin(entry.roles, ',');
+                        if(entry.count == 1)
+                            lines{end+1} = sprintf('      - %s (%s) %.3f mT [%s]', entry.displayName, entry.partName, entry.massEach, rolesStr); %#ok<AGROW>
+                        else
+                            lines{end+1} = sprintf('      - %s (%s) x%d  %.3f mT each, %.3f mT total [%s]', entry.displayName, entry.partName, entry.count, entry.massEach, entry.totalMass, rolesStr); %#ok<AGROW>
+                        end
+                    end
                 end
             end
 
