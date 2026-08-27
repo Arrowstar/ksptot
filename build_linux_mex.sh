@@ -355,13 +355,14 @@ echo "Sources written to $SRC_DIR"
 # ---------------------------------------------------------------------------
 # Code generation (MATLAB Coder required)
 # ---------------------------------------------------------------------------
-"$MATLAB_BIN" -batch "
-cd('$SRC_DIR');
+cat > "$SRC_DIR/build_codegen.m" <<EOF
 codegen -config:mex getKeplerFromState_Alg.m -args {coder.typeof(zeros(3,1)), coder.typeof(zeros(3,1)), 398600.4418} -o getKeplerFromState_Alg;
 codegen -config:mex getStatefromKepler_Alg.m -args {8000, 0.2, 0.5, 1.0, 2.0, 3.0, 398600.4418} -o getStatefromKepler_Alg;
 codegen -config:mex vect_getKeplerFromState_Alg.m -args {coder.typeof(zeros(3,1),[3 inf]), coder.typeof(zeros(3,1),[3 inf]), 398600.4418} -o vect_getKeplerFromState_Alg_mex;
 disp('codegen complete');
-"
+EOF
+
+"$MATLAB_BIN" -batch "cd('$SRC_DIR'); build_codegen"
 
 mv "$SRC_DIR/getKeplerFromState_Alg.mexa64" "$MEX_DIR/"
 mv "$SRC_DIR/getStatefromKepler_Alg.mexa64" "$MEX_DIR/"
@@ -373,8 +374,7 @@ ls -la "$MEX_DIR"
 # ---------------------------------------------------------------------------
 # Sanity check: MEX vs .m on a degenerate-orbit corpus + round trips
 # ---------------------------------------------------------------------------
-"$MATLAB_BIN" -batch "
-cd('$BUILD_DIR');
+cat > "$BUILD_DIR/sanity_check.m" <<EOF
 addpath('$MEX_DIR');   % MEX takes precedence
 addpath('$SRC_DIR');   % .m sources
 
@@ -420,7 +420,9 @@ if fail == 0
 else
     error('sanity check FAILED (%d mismatches)', fail);
 end
-"
+EOF
+
+"$MATLAB_BIN" -batch "cd('$BUILD_DIR'); sanity_check"
 
 # ---------------------------------------------------------------------------
 # Deploy
