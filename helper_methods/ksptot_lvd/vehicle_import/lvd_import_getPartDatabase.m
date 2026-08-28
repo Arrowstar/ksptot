@@ -12,6 +12,13 @@ function [partDB, warnings] = lvd_import_getPartDatabase(source)
 %           .filePath      - path to a database file (as above)
 %           .kspRoot       - KSP install root (expects GameData inside)
 %           .gameDataPath  - direct GameData folder path
+%           .language      - localization tag for part titles ('en-us')
+%
+%   When scanning GameData, part titles given as localization tags
+%   (title = #autoLOC_500439) are resolved against the KSP localization
+%   dictionaries under GameData/**/Localization/*.cfg, falling back to the
+%   "//#autoLOC_500439 = ..." comment KSP writes beside the tag, and
+%   finally to the internal part name.
 %
 %   The returned PARTDB struct contains:
 %       .schemaVersion  - database schema version (1)
@@ -38,13 +45,16 @@ function [partDB, warnings] = lvd_import_getPartDatabase(source)
         source = '';
     end
 
+    language = 'en-us';
+
     if(isstruct(source))
         filePath = getFieldOrDefault(source, 'filePath', '');
         kspRoot = getFieldOrDefault(source, 'kspRoot', '');
         gameDataPath = getFieldOrDefault(source, 'gameDataPath', '');
+        language = getFieldOrDefault(source, 'language', language);
 
         if(~isempty(gameDataPath) && isfolder(gameDataPath))
-            [partDB, loadWarnings] = loadGameDataDatabase(gameDataPath);
+            [partDB, loadWarnings] = loadGameDataDatabase(gameDataPath, language);
             warnings = [warnings, loadWarnings]; %#ok<AGROW>
             return;
         end
@@ -55,7 +65,7 @@ function [partDB, warnings] = lvd_import_getPartDatabase(source)
                 candidate = fullfile(kspRoot, 'GameData');
             end
             if(isfolder(candidate))
-                [partDB, loadWarnings] = loadGameDataDatabase(candidate);
+                [partDB, loadWarnings] = loadGameDataDatabase(candidate, language);
                 warnings = [warnings, loadWarnings]; %#ok<AGROW>
                 return;
             end
@@ -87,7 +97,7 @@ function [partDB, warnings] = lvd_import_getPartDatabase(source)
         if(isfolder(fullfile(source, 'GameData')))
             gameDataPath = fullfile(source, 'GameData');
         end
-        [partDB, loadWarnings] = loadGameDataDatabase(gameDataPath);
+        [partDB, loadWarnings] = loadGameDataDatabase(gameDataPath, language);
         warnings = [warnings, loadWarnings]; %#ok<AGROW>
         return;
     end
@@ -360,10 +370,14 @@ function out = coerceCellStr(in)
     end
 end
 
-function [partDB, warnings] = loadGameDataDatabase(gameDataPath)
+function [partDB, warnings] = loadGameDataDatabase(gameDataPath, language)
 %loadGameDataDatabase Recursively scans GameData/**/*.cfg and builds a part DB.
 
     warnings = {};
+
+    if(nargin < 2 || isempty(language))
+        language = 'en-us';
+    end
 
     if(~isfolder(gameDataPath))
         error('lvd_import:gameDataNotFound', 'GameData folder not found: %s', gameDataPath);
@@ -378,6 +392,26 @@ function [partDB, warnings] = loadGameDataDatabase(gameDataPath)
         warnings{end+1} = sprintf('No .cfg files found under %s', gameDataPath); %#ok<AGROW>
     end
 
+    % Localization dictionaries hold the human-readable text behind the
+    % #autoLOC_* tags that part cfgs use for their titles. They never
+    % contain PART nodes, so pull them out of the part scan entirely.
+    isLocFile = false(1, numel(cfgFiles));
+    for(i = 1:numel(cfgFiles))
+        isLocFile(i) = lvd_import_isLocalizationCfg(cfgFiles{i});
+    end
+
+    [locMap, locWarnings] = lvd_import_loadLocalization(cfgFiles(isLocFile), language);
+    warnings = [warnings, locWarnings]; %#ok<AGROW>
+
+    if(locMap.Count == 0)
+        warnings{end+1} = sprintf( ...
+            ['No localization dictionary found under %s; part titles will ' ...
+             'fall back to inline tag comments or internal part names.'], ...
+            gameDataPath); %#ok<AGROW>
+    end
+
+    cfgFiles = cfgFiles(~isLocFile);
+
     for(i = 1:numel(cfgFiles))
         file = cfgFiles{i};
         try
@@ -385,13 +419,14 @@ function [partDB, warnings] = loadGameDataDatabase(gameDataPath)
             if(isempty(strfind(txt, 'PART')))
                 continue;
             end
+            inlineMap = harvestInlineLocalization(txt);
             root = sfsParse(txt);
             if(~isfield(root, 'PART'))
                 continue;
             end
             for(pIdx = 1:numel(root.PART))
                 partNode = root.PART{pIdx};
-                [entry, entryWarnings] = buildEntryFromCfgPart(partNode, densities);
+                [entry, entryWarnings] = buildEntryFromCfgPart(partNode, densities, locMap, inlineMap);
                 warnings = [warnings, entryWarnings]; %#ok<AGROW>
                 if(isempty(entry))
                     continue;
@@ -479,9 +514,14 @@ function [partDB, warnings] = loadSingleCfgDatabase(cfgPath)
         densities = lvd_import_resourceDensities();
         partsMap = containers.Map('KeyType', 'char', 'ValueType', 'any');
 
+        % No GameData tree to pull dictionaries from here, so localization
+        % tags resolve from the inline "//#autoLOC_x = ..." comments only.
+        locMap = containers.Map('KeyType', 'char', 'ValueType', 'char');
+        inlineMap = harvestInlineLocalization(txt);
+
         if(isfield(root, 'PART'))
             for(pIdx = 1:numel(root.PART))
-                [entry, entryWarnings] = buildEntryFromCfgPart(root.PART{pIdx}, densities);
+                [entry, entryWarnings] = buildEntryFromCfgPart(root.PART{pIdx}, densities, locMap, inlineMap);
                 warnings = [warnings, entryWarnings]; %#ok<AGROW>
                 if(isempty(entry))
                     continue;
@@ -534,11 +574,21 @@ function files = findCfgFilesRecursive(root)
 
 end
 
-function [entry, warnings] = buildEntryFromCfgPart(partNode, densities)
+function [entry, warnings] = buildEntryFromCfgPart(partNode, densities, locMap, inlineMap)
 %buildEntryFromCfgPart Converts a parsed PART config node into a DB entry.
+%
+% locMap and inlineMap are optional containers.Map lookups from lower-cased
+% localization tag to display text; see resolveLocalizedString.
 
     warnings = {};
     entry = [];
+
+    if(nargin < 3)
+        locMap = [];
+    end
+    if(nargin < 4)
+        inlineMap = [];
+    end
 
     name = getCfgStr(partNode, 'name', '');
     if(isempty(name))
@@ -548,7 +598,7 @@ function [entry, warnings] = buildEntryFromCfgPart(partNode, densities)
         return;
     end
 
-    title = getCfgStr(partNode, 'title', name);
+    title = resolveLocalizedString(getCfgStr(partNode, 'title', ''), locMap, inlineMap);
     if(isempty(title) || startsWith(title, '#'))
         title = name;
     end
@@ -742,6 +792,63 @@ function [entry, warnings] = buildEntryFromCfgPart(partNode, densities)
     entry.roles = roles;
     entry.resources_u = resources_u;
     entry.engines = engines;
+
+end
+
+function out = resolveLocalizedString(raw, locMap, inlineMap)
+%resolveLocalizedString Turns a "#autoLOC_500439" tag into display text.
+%
+% Returns RAW unchanged when it is not a tag or when no lookup has it, so
+% callers can still detect an unresolved tag by its leading '#'.
+
+    out = strtrim(raw);
+    if(isempty(out) || out(1) ~= '#')
+        return;
+    end
+
+    % The value is the bare tag; guard against trailing junk after it.
+    tag = out;
+    sepInd = find(isspace(tag), 1, 'first');
+    if(~isempty(sepInd))
+        tag = tag(1:sepInd-1);
+    end
+    tag = lower(tag);
+
+    resolved = '';
+    if(isa(locMap, 'containers.Map') && isKey(locMap, tag))
+        resolved = locMap(tag);
+    elseif(isa(inlineMap, 'containers.Map') && isKey(inlineMap, tag))
+        resolved = inlineMap(tag);
+    end
+
+    % Titles are shown on one line, so flatten any embedded whitespace.
+    resolved = strtrim(regexprep(resolved, '\s+', ' '));
+
+    if(~isempty(resolved) && resolved(1) ~= '#')
+        out = resolved;
+    end
+
+end
+
+function map = harvestInlineLocalization(txt)
+%harvestInlineLocalization Reads the "//#autoLOC_x = ..." comments KSP
+%writes next to each localization tag in a part cfg. Used as a fallback
+%when no dictionary covers the tag.
+
+    map = containers.Map('KeyType', 'char', 'ValueType', 'char');
+
+    if(isempty(strfind(txt, '//#'))) %#ok<STREMP>
+        return;
+    end
+
+    toks = regexp(txt, '//\s*(#[A-Za-z0-9_.\-]+)\s*=\s*([^\r\n]*)', 'tokens');
+    for(i = 1:numel(toks))
+        key = lower(strtrim(toks{i}{1}));
+        val = strtrim(toks{i}{2});
+        if(~isempty(val) && ~isKey(map, key))
+            map(key) = val;
+        end
+    end
 
 end
 

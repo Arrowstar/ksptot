@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "databaseName": "GameData export 27-Aug-2026 09:43:31",
+  "databaseName": "GameData export 28-Aug-2026 12:00:56",
   "gameVersion": "1.12",
-  "description": "Exported from C:\\Users\\aharden\\Downloads\\Data-20260827T114017Z-1-001\\GameData on 27-Aug-2026 09:43:31",
+  "description": "Exported from C:\\Users\\aharden\\Downloads\\Data-20260827T114017Z-1-001\\GameData on 28-Aug-2026 12:00:56",
   "resourceDensities_t_per_unit": {
     "ElectricCharge": 0,
     "LiquidFuel": 0.005,
@@ -14,7 +14,7 @@
   "parts": [
     {
       "name": "adapterEngines",
-      "title": "adapterEngines",
+      "title": "Mk3 Engine Mount",
       "mass_t": 0.7,
       "roles": [
         "utility"
@@ -24,7 +24,7 @@
     },
     {
       "name": "adapterLargeSmallBi",
-      "title": "adapterLargeSmallBi",
+      "title": "TVR-200L Stack Bi-Adapter",
       "mass_t": 0.1,
       "roles": [
         "utility"
@@ -34,7 +34,7 @@
     },
     {
       "name": "adapterLargeSmallQuad",
-      "title": "adapterLargeSmallQuad",
+      "title": "TVR-400L Stack Quad-Adapter",
       "mass_t": 0.2,
       "roles": [
         "utility"
@@ -44,7 +44,7 @@
     },
     {
       "name": "adapterLargeSmallTri",
-      "title": "adapterLargeSmallTri",
+      "title": "TVR-300L Stack Tri-Adapter",
       "mass_t": 0.15,
       "roles": [
         "utility"
@@ -54,7 +54,7 @@
     },
     {
       "name": "adapterMk3-Mk2",
-      "title": "adapterMk3-Mk2",
+      "title": "Mk3 to Mk2 Adapter",
       "mass_t": 1.43,
       "roles": [
         "tank"
@@ -67,7 +67,7 @@
     },
     {
       "name": "adapterMk3-Size2",
-      "title": "adapterMk3-Size2",
+      "title": "Mk3 to 2.5m Adapter",
       "mass_t": 1.79,
       "roles": [
         "tank"
@@ -80,7 +80,7 @@
     },
     {
       "name": "adapterMk3-Size2Slant",
-      "title": "adapterMk3-Size2Slant",
+      "title": "Mk3 to 2.5m Adapter Slanted",
       "mass_t": 1.79,
       "roles": [
         "tank"
@@ -93,7 +93,7 @@
     },
     {
       "name": "adapterSize2-Mk2",
-      "title": "adapterSize2-Mk2",
+      "title": "2.5m to Mk2 Adapter",
       "mass_t": 0.57,
       "roles": [
         "tank"
@@ -106,7 +106,7 @@
     },
     {
       "name": "adapterSize2-Size1",
-      "title": "adapterSize2-Size1",
+      "title": "C7 Brand Adapter - 2.5m to 1.25m",
       "mass_t": 0.57,
       "roles": [
         "tank"
@@ -119,7 +119,7 @@
     },
     {
       "name": "adapterSize2-Size1Slant",
-      "title": "adapterSize2-Size1Slant",
+      "title": "C7 Brand Adapter Slanted - 2.5m to 1.25m",
       "mass_t": 0.57,
       "roles": [
         "tank"
@@ -132,7 +132,7 @@
     },
     {
       "name": "adapterSize3-Mk3",
-      "title": "adapterSize3-Mk3",
+      "title": "Mk3 to 3.75m Adapter",
       "mass_t": 1.79,
       "roles": [
         "tank"
@@ -145,7 +145,7 @@
     },
     {
       "name": "adapterSmallMiniShort",
-      "title": "adapterSmallMiniShort",
+      "title": "FL-A5 Adapter",
       "mass_t": 0.04,
       "roles": [
         "utility"
@@ -155,7 +155,7 @@
     },
     {
       "name": "adapterSmallMiniTall",
-      "title": "adapterSmallMiniTall",
+      "title": "FL-A10 Adapter",
       "mass_t": 0.05,
       "roles": [
         "utility"
@@ -165,7 +165,7 @@
     },
     {
       "name": "AdvancedCanard",
-      "title": "AdvancedCanard",
+      "title": "Advanced Canard",
       "mass_t": 0.08,
       "roles": [
         "utility"
@@ -175,7 +175,7 @@
     },
     {
       "name": "advSasModule",
-      "title": "advSasModule",
+      "title": "Advanced Inline Stabilizer",
       "mass_t": 0.1,
       "roles": [
         "pod"
@@ -185,7 +185,7 @@
     },
     {
       "name": "airbrake1",
-      "title": "airbrake1",
+      "title": "A.I.R.B.R.A.K.E.S",
       "mass_t": 0.05,
       "roles": [
         "utility"
@@ -195,7 +195,7 @@
     },
     {
       "name": "airlinerCtrlSrf",
-      "title": "airlinerCtrlSrf",
+      "title": "FAT-455 Aeroplane Control Surface",
       "mass_t": 0.17,
       "roles": [
         "utility"
@@ -205,7 +205,7 @@
     },
     {
       "name": "airlinerMainWing",
-      "title": "airlinerMainWing",
+      "title": "FAT-455 Aeroplane Main Wing",
       "mass_t": 0.78,
       "roles": [
         "tank"
@@ -217,7 +217,7 @@
     },
     {
       "name": "airlinerTailFin",
-      "title": "airlinerTailFin",
+      "title": "FAT-455 Aeroplane Tail Fin",
       "mass_t": 0.36,
       "roles": [
         "utility"
@@ -227,7 +227,7 @@
     },
     {
       "name": "airplaneTail",
-      "title": "airplaneTail",
+      "title": "Tail Connector A",
       "mass_t": 0.2,
       "roles": [
         "utility"
@@ -237,7 +237,7 @@
     },
     {
       "name": "airplaneTailB",
-      "title": "airplaneTailB",
+      "title": "Tail Connector B",
       "mass_t": 0.2,
       "roles": [
         "utility"
@@ -247,7 +247,7 @@
     },
     {
       "name": "airScoop",
-      "title": "airScoop",
+      "title": "XM-G50 Radial Air Intake",
       "mass_t": 0.02,
       "roles": [
         "utility"
@@ -259,7 +259,7 @@
     },
     {
       "name": "asasmodule1-2",
-      "title": "asasmodule1-2",
+      "title": "Advanced Reaction Wheel Module, Large",
       "mass_t": 0.2,
       "roles": [
         "pod"
@@ -269,7 +269,7 @@
     },
     {
       "name": "avionicsNoseCone",
-      "title": "avionicsNoseCone",
+      "title": "CH-J3 Fly-By-Wire Avionics Hub",
       "mass_t": 0.08,
       "roles": [
         "pod"
@@ -279,7 +279,7 @@
     },
     {
       "name": "basicFin",
-      "title": "basicFin",
+      "title": "Basic Fin",
       "mass_t": 0.01,
       "roles": [
         "utility"
@@ -289,7 +289,7 @@
     },
     {
       "name": "batteryBank",
-      "title": "batteryBank",
+      "title": "Z-1k Rechargeable Battery Bank",
       "mass_t": 0.05,
       "roles": [
         "utility"
@@ -301,7 +301,7 @@
     },
     {
       "name": "batteryBankLarge",
-      "title": "batteryBankLarge",
+      "title": "Z-4K Rechargeable Battery Bank",
       "mass_t": 0.2,
       "roles": [
         "utility"
@@ -313,7 +313,7 @@
     },
     {
       "name": "batteryBankMini",
-      "title": "batteryBankMini",
+      "title": "Z-200 Rechargeable Battery Bank",
       "mass_t": 0.01,
       "roles": [
         "utility"
@@ -325,7 +325,7 @@
     },
     {
       "name": "batteryPack",
-      "title": "batteryPack",
+      "title": "Z-100 Rechargeable Battery Pack",
       "mass_t": 0.005,
       "roles": [
         "utility"
@@ -337,7 +337,7 @@
     },
     {
       "name": "CanardController",
-      "title": "CanardController",
+      "title": "Standard Canard",
       "mass_t": 0.1,
       "roles": [
         "utility"
@@ -347,7 +347,7 @@
     },
     {
       "name": "cargoContainer",
-      "title": "cargoContainer",
+      "title": "SEQ-9 Container Module",
       "mass_t": 0.15,
       "roles": [
         "utility"
@@ -357,7 +357,7 @@
     },
     {
       "name": "CargoStorageUnit",
-      "title": "CargoStorageUnit",
+      "title": "SEQ-24 Cargo Storage Unit",
       "mass_t": 0.4,
       "roles": [
         "utility"
@@ -367,7 +367,7 @@
     },
     {
       "name": "CircularIntake",
-      "title": "CircularIntake",
+      "title": "Circular Intake",
       "mass_t": 0.04,
       "roles": [
         "utility"
@@ -379,7 +379,7 @@
     },
     {
       "name": "Clydesdale",
-      "title": "Clydesdale",
+      "title": "S2-33 \"Clydesdale\" Solid Fuel Booster",
       "mass_t": 21,
       "roles": [
         "engine",
@@ -401,7 +401,7 @@
     },
     {
       "name": "commDish",
-      "title": "commDish",
+      "title": "Communotron 88-88",
       "mass_t": 0.1,
       "roles": [
         "utility"
@@ -411,7 +411,7 @@
     },
     {
       "name": "ConformalStorageUnit",
-      "title": "ConformalStorageUnit",
+      "title": "SEQ-3C Conformal Storage Unit",
       "mass_t": 0.02,
       "roles": [
         "utility"
@@ -421,7 +421,7 @@
     },
     {
       "name": "crewCabin",
-      "title": "crewCabin",
+      "title": "PPD-10 Hitchhiker Storage Container",
       "mass_t": 2.25,
       "roles": [
         "utility"
@@ -431,7 +431,7 @@
     },
     {
       "name": "cupola",
-      "title": "cupola",
+      "title": "PPD-12 Cupola Module",
       "mass_t": 0.94,
       "roles": [
         "tank"
@@ -444,7 +444,7 @@
     },
     {
       "name": "Decoupler_0",
-      "title": "Decoupler_0",
+      "title": "TD-06 Decoupler",
       "mass_t": 0.01,
       "roles": [
         "decoupler"
@@ -454,7 +454,7 @@
     },
     {
       "name": "Decoupler_1",
-      "title": "Decoupler_1",
+      "title": "TD-12 Decoupler",
       "mass_t": 0.04,
       "roles": [
         "decoupler"
@@ -464,7 +464,7 @@
     },
     {
       "name": "Decoupler_2",
-      "title": "Decoupler_2",
+      "title": "TD-25 Decoupler",
       "mass_t": 0.16,
       "roles": [
         "decoupler"
@@ -474,7 +474,7 @@
     },
     {
       "name": "Decoupler_3",
-      "title": "Decoupler_3",
+      "title": "TD-37 Decoupler",
       "mass_t": 0.36,
       "roles": [
         "decoupler"
@@ -484,7 +484,7 @@
     },
     {
       "name": "decoupler1-2",
-      "title": "decoupler1-2",
+      "title": "Rockomax Brand Decoupler",
       "mass_t": 0.4,
       "roles": [
         "decoupler"
@@ -494,7 +494,7 @@
     },
     {
       "name": "delta_small",
-      "title": "delta_small",
+      "title": "Small Delta Wing",
       "mass_t": 0.05,
       "roles": [
         "utility"
@@ -504,7 +504,7 @@
     },
     {
       "name": "deltaWing",
-      "title": "deltaWing",
+      "title": "Delta Wing",
       "mass_t": 0.2,
       "roles": [
         "utility"
@@ -514,7 +514,7 @@
     },
     {
       "name": "dockingPort1",
-      "title": "dockingPort1",
+      "title": "Clamp-O-Tron Shielded Docking Port",
       "mass_t": 0.1,
       "roles": [
         "utility"
@@ -524,7 +524,7 @@
     },
     {
       "name": "dockingPort2",
-      "title": "dockingPort2",
+      "title": "Clamp-O-Tron Docking Port",
       "mass_t": 0.05,
       "roles": [
         "utility"
@@ -534,7 +534,7 @@
     },
     {
       "name": "dockingPort3",
-      "title": "dockingPort3",
+      "title": "Clamp-O-Tron Docking Port Jr.",
       "mass_t": 0.02,
       "roles": [
         "utility"
@@ -544,7 +544,7 @@
     },
     {
       "name": "dockingPortLarge",
-      "title": "dockingPortLarge",
+      "title": "Clamp-O-Tron Docking Port Sr.",
       "mass_t": 0.2,
       "roles": [
         "utility"
@@ -554,7 +554,7 @@
     },
     {
       "name": "dockingPortLateral",
-      "title": "dockingPortLateral",
+      "title": "Inline Clamp-O-Tron",
       "mass_t": 0.3,
       "roles": [
         "utility"
@@ -564,7 +564,7 @@
     },
     {
       "name": "domeLight1",
-      "title": "domeLight1",
+      "title": "Domelight Mk1",
       "mass_t": 0.002,
       "roles": [
         "utility"
@@ -574,7 +574,7 @@
     },
     {
       "name": "elevon2",
-      "title": "elevon2",
+      "title": "Elevon 2",
       "mass_t": 0.06,
       "roles": [
         "utility"
@@ -584,7 +584,7 @@
     },
     {
       "name": "elevon3",
-      "title": "elevon3",
+      "title": "Elevon 3",
       "mass_t": 0.08,
       "roles": [
         "utility"
@@ -594,7 +594,7 @@
     },
     {
       "name": "elevon5",
-      "title": "elevon5",
+      "title": "Elevon 5",
       "mass_t": 0.08,
       "roles": [
         "utility"
@@ -604,7 +604,7 @@
     },
     {
       "name": "engineLargeSkipper",
-      "title": "engineLargeSkipper",
+      "title": "RE-I5 \"Skipper\" Liquid Fuel Engine",
       "mass_t": 3,
       "roles": [
         "engine"
@@ -624,7 +624,7 @@
     },
     {
       "name": "engineLargeSkipper_v2",
-      "title": "engineLargeSkipper_v2",
+      "title": "RE-I5 \"Skipper\" Liquid Fuel Engine",
       "mass_t": 3,
       "roles": [
         "engine"
@@ -644,7 +644,7 @@
     },
     {
       "name": "evaChute",
-      "title": "evaChute",
+      "title": "Personal Parachute",
       "mass_t": 0.004,
       "roles": [
         "utility"
@@ -654,7 +654,7 @@
     },
     {
       "name": "evaRepairKit",
-      "title": "evaRepairKit",
+      "title": "EVA Repair Kit",
       "mass_t": 0.005,
       "roles": [
         "utility"
@@ -664,7 +664,7 @@
     },
     {
       "name": "evaScienceKit",
-      "title": "evaScienceKit",
+      "title": "EVA Experiments Kit",
       "mass_t": 0.015,
       "roles": [
         "utility"
@@ -674,7 +674,7 @@
     },
     {
       "name": "externalTankCapsule",
-      "title": "externalTankCapsule",
+      "title": "R-11 'Baguette' External Tank",
       "mass_t": 0.03375,
       "roles": [
         "tank"
@@ -687,7 +687,7 @@
     },
     {
       "name": "externalTankRound",
-      "title": "externalTankRound",
+      "title": "R-4 'Dumpling' External Tank",
       "mass_t": 0.01375,
       "roles": [
         "tank"
@@ -700,7 +700,7 @@
     },
     {
       "name": "externalTankToroid",
-      "title": "externalTankToroid",
+      "title": "R-12 'Doughnut' External Tank",
       "mass_t": 0.0375,
       "roles": [
         "tank"
@@ -713,7 +713,7 @@
     },
     {
       "name": "fairingSize1",
-      "title": "fairingSize1",
+      "title": "AE-FF1 Airstream Protective Shell (1.25m)",
       "mass_t": 0.075,
       "roles": [
         "utility"
@@ -723,7 +723,7 @@
     },
     {
       "name": "fairingSize2",
-      "title": "fairingSize2",
+      "title": "AE-FF2 Airstream Protective Shell (2.5m)",
       "mass_t": 0.175,
       "roles": [
         "utility"
@@ -733,7 +733,7 @@
     },
     {
       "name": "fairingSize3",
-      "title": "fairingSize3",
+      "title": "AE-FF3 Airstream Protective Shell (3.75m)",
       "mass_t": 0.475,
       "roles": [
         "utility"
@@ -743,7 +743,7 @@
     },
     {
       "name": "fireworksLauncherBig",
-      "title": "fireworksLauncherBig",
+      "title": "Starshot-32",
       "mass_t": 0.03,
       "roles": [
         "utility"
@@ -753,7 +753,7 @@
     },
     {
       "name": "fireworksLauncherSmall",
-      "title": "fireworksLauncherSmall",
+      "title": "Starshot-8",
       "mass_t": 0.00125,
       "roles": [
         "utility"
@@ -773,7 +773,7 @@
     },
     {
       "name": "flagPartFlat",
-      "title": "flagPartFlat",
+      "title": "RFP-F Flag Flat",
       "mass_t": 0.00015,
       "roles": [
         "utility"
@@ -783,7 +783,7 @@
     },
     {
       "name": "flagPartSize0",
-      "title": "flagPartSize0",
+      "title": "RFP-0 Flag (.625m)",
       "mass_t": 2.5E-5,
       "roles": [
         "utility"
@@ -793,7 +793,7 @@
     },
     {
       "name": "flagPartSize1",
-      "title": "flagPartSize1",
+      "title": "RFP-1 Flag (1.25m)",
       "mass_t": 5E-5,
       "roles": [
         "utility"
@@ -803,7 +803,7 @@
     },
     {
       "name": "flagPartSize2",
-      "title": "flagPartSize2",
+      "title": "RFP-2 Flag (2.5m)",
       "mass_t": 0.000225,
       "roles": [
         "utility"
@@ -813,7 +813,7 @@
     },
     {
       "name": "flagPartSize3",
-      "title": "flagPartSize3",
+      "title": "RFP-3 Flag (3.75m)",
       "mass_t": 0.0005,
       "roles": [
         "utility"
@@ -823,7 +823,7 @@
     },
     {
       "name": "foldingRadLarge",
-      "title": "foldingRadLarge",
+      "title": "Thermal Control System (large)",
       "mass_t": 1,
       "roles": [
         "utility"
@@ -833,7 +833,7 @@
     },
     {
       "name": "foldingRadMed",
-      "title": "foldingRadMed",
+      "title": "Thermal Control System (medium)",
       "mass_t": 0.25,
       "roles": [
         "utility"
@@ -843,7 +843,7 @@
     },
     {
       "name": "foldingRadSmall",
-      "title": "foldingRadSmall",
+      "title": "Thermal Control System (small)",
       "mass_t": 0.05,
       "roles": [
         "utility"
@@ -853,7 +853,7 @@
     },
     {
       "name": "FuelCell",
-      "title": "FuelCell",
+      "title": "Fuel Cell",
       "mass_t": 0.05,
       "roles": [
         "utility"
@@ -865,7 +865,7 @@
     },
     {
       "name": "FuelCellArray",
-      "title": "FuelCellArray",
+      "title": "Fuel Cell Array",
       "mass_t": 0.24,
       "roles": [
         "utility"
@@ -877,7 +877,7 @@
     },
     {
       "name": "fuelLine",
-      "title": "fuelLine",
+      "title": "FTX-2 External Fuel Duct",
       "mass_t": 0.05,
       "roles": [
         "fuelline"
@@ -897,7 +897,7 @@
     },
     {
       "name": "fuelTank",
-      "title": "fuelTank",
+      "title": "FL-T400 Fuel Tank",
       "mass_t": 0.25,
       "roles": [
         "tank"
@@ -910,7 +910,7 @@
     },
     {
       "name": "fuelTank_long",
-      "title": "fuelTank_long",
+      "title": "FL-T800 Fuel Tank",
       "mass_t": 0.5,
       "roles": [
         "tank"
@@ -923,7 +923,7 @@
     },
     {
       "name": "fuelTank1-2",
-      "title": "fuelTank1-2",
+      "title": "Rockomax X200-32 Fuel Tank",
       "mass_t": 2,
       "roles": [
         "tank"
@@ -936,7 +936,7 @@
     },
     {
       "name": "fuelTank2-2",
-      "title": "fuelTank2-2",
+      "title": "Rockomax X200-16 Fuel Tank",
       "mass_t": 1,
       "roles": [
         "tank"
@@ -949,7 +949,7 @@
     },
     {
       "name": "fuelTank3-2",
-      "title": "fuelTank3-2",
+      "title": "Rockomax Jumbo-64 Fuel Tank",
       "mass_t": 4,
       "roles": [
         "tank"
@@ -962,7 +962,7 @@
     },
     {
       "name": "fuelTank4-2",
-      "title": "fuelTank4-2",
+      "title": "Rockomax X200-8 Fuel Tank",
       "mass_t": 0.5,
       "roles": [
         "tank"
@@ -975,7 +975,7 @@
     },
     {
       "name": "fuelTankSmall",
-      "title": "fuelTankSmall",
+      "title": "FL-T200 Fuel Tank",
       "mass_t": 0.125,
       "roles": [
         "tank"
@@ -988,7 +988,7 @@
     },
     {
       "name": "fuelTankSmallFlat",
-      "title": "fuelTankSmallFlat",
+      "title": "FL-T100 Fuel Tank",
       "mass_t": 0.0625,
       "roles": [
         "tank"
@@ -1001,7 +1001,7 @@
     },
     {
       "name": "GearFixed",
-      "title": "GearFixed",
+      "title": "LY-01 Fixed Landing Gear",
       "mass_t": 0.022,
       "roles": [
         "utility"
@@ -1011,7 +1011,7 @@
     },
     {
       "name": "GearFree",
-      "title": "GearFree",
+      "title": "LY-05 Steerable Landing Gear",
       "mass_t": 0.015,
       "roles": [
         "utility"
@@ -1021,7 +1021,7 @@
     },
     {
       "name": "GearLarge",
-      "title": "GearLarge",
+      "title": "LY-99 Extra Large Landing Gear",
       "mass_t": 0.6,
       "roles": [
         "utility"
@@ -1031,7 +1031,7 @@
     },
     {
       "name": "GearMedium",
-      "title": "GearMedium",
+      "title": "LY-60 Large Landing Gear",
       "mass_t": 0.4,
       "roles": [
         "utility"
@@ -1041,7 +1041,7 @@
     },
     {
       "name": "GearSmall",
-      "title": "GearSmall",
+      "title": "LY-35 Medium Landing Gear",
       "mass_t": 0.25,
       "roles": [
         "utility"
@@ -1051,7 +1051,7 @@
     },
     {
       "name": "GooExperiment",
-      "title": "GooExperiment",
+      "title": "Mystery Goo™ Containment Unit\\u0020",
       "mass_t": 0.05,
       "roles": [
         "utility"
@@ -1061,7 +1061,7 @@
     },
     {
       "name": "GrapplingDevice",
-      "title": "GrapplingDevice",
+      "title": "Advanced Grabbing Unit",
       "mass_t": 0.075,
       "roles": [
         "utility"
@@ -1071,7 +1071,7 @@
     },
     {
       "name": "groundAnchor",
-      "title": "groundAnchor",
+      "title": "Stamp-O-Tron Ground Anchor",
       "mass_t": 0.05,
       "roles": [
         "utility"
@@ -1081,7 +1081,7 @@
     },
     {
       "name": "groundLight1",
-      "title": "groundLight1",
+      "title": "Work Lamp (Small)",
       "mass_t": 0.002,
       "roles": [
         "utility"
@@ -1091,7 +1091,7 @@
     },
     {
       "name": "groundLight2",
-      "title": "groundLight2",
+      "title": "Work Lamp (Stand)",
       "mass_t": 0.003,
       "roles": [
         "utility"
@@ -1101,7 +1101,7 @@
     },
     {
       "name": "HeatShield0",
-      "title": "HeatShield0",
+      "title": "Heat Shield (0.625m)",
       "mass_t": 0.025,
       "roles": [
         "decoupler"
@@ -1113,7 +1113,7 @@
     },
     {
       "name": "HeatShield1",
-      "title": "HeatShield1",
+      "title": "Heat Shield (1.25m)",
       "mass_t": 0.1,
       "roles": [
         "decoupler"
@@ -1125,7 +1125,7 @@
     },
     {
       "name": "HeatShield2",
-      "title": "HeatShield2",
+      "title": "Heat Shield (2.5m)",
       "mass_t": 0.5,
       "roles": [
         "decoupler"
@@ -1137,7 +1137,7 @@
     },
     {
       "name": "HeatShield3",
-      "title": "HeatShield3",
+      "title": "Heat Shield (3.75m)",
       "mass_t": 1,
       "roles": [
         "decoupler"
@@ -1149,7 +1149,7 @@
     },
     {
       "name": "HECS2_ProbeCore",
-      "title": "HECS2_ProbeCore",
+      "title": "Probodobodyne HECS2",
       "mass_t": 0.2,
       "roles": [
         "utility"
@@ -1161,7 +1161,7 @@
     },
     {
       "name": "HighGainAntenna",
-      "title": "HighGainAntenna",
+      "title": "Communotron HG-55",
       "mass_t": 0.075,
       "roles": [
         "utility"
@@ -1171,7 +1171,7 @@
     },
     {
       "name": "HighGainAntenna5",
-      "title": "HighGainAntenna5",
+      "title": "HG-5 High Gain Antenna",
       "mass_t": 0.07,
       "roles": [
         "utility"
@@ -1181,7 +1181,7 @@
     },
     {
       "name": "HighGainAntenna5_v2",
-      "title": "HighGainAntenna5_v2",
+      "title": "HG-5 High Gain Antenna",
       "mass_t": 0.07,
       "roles": [
         "utility"
@@ -1191,7 +1191,7 @@
     },
     {
       "name": "InflatableHeatShield",
-      "title": "InflatableHeatShield",
+      "title": "Heat Shield (10m)",
       "mass_t": 1.5,
       "roles": [
         "decoupler"
@@ -1201,7 +1201,7 @@
     },
     {
       "name": "InfraredTelescope",
-      "title": "InfraredTelescope",
+      "title": "SENTINEL Infrared Telescope",
       "mass_t": 0.1,
       "roles": [
         "utility"
@@ -1211,7 +1211,7 @@
     },
     {
       "name": "IntakeRadialLong",
-      "title": "IntakeRadialLong",
+      "title": "Adjustable Ramp Intake (Radial)",
       "mass_t": 0.01,
       "roles": [
         "utility"
@@ -1223,7 +1223,7 @@
     },
     {
       "name": "ionEngine",
-      "title": "ionEngine",
+      "title": "IX-6315 \"Dawn\" Electric Propulsion System",
       "mass_t": 0.25,
       "roles": [
         "engine"
@@ -1243,7 +1243,7 @@
     },
     {
       "name": "ISRU",
-      "title": "ISRU",
+      "title": "Convert-O-Tron 250",
       "mass_t": 4.25,
       "roles": [
         "utility"
@@ -1253,7 +1253,7 @@
     },
     {
       "name": "JetEngine",
-      "title": "JetEngine",
+      "title": "J-33 \"Wheesley\" Turbofan Engine",
       "mass_t": 1.5,
       "roles": [
         "engine"
@@ -1323,7 +1323,7 @@
     },
     {
       "name": "ksp_r_largeBatteryPack",
-      "title": "ksp_r_largeBatteryPack",
+      "title": "Z-400 Rechargeable Battery",
       "mass_t": 0.02,
       "roles": [
         "utility"
@@ -1335,7 +1335,7 @@
     },
     {
       "name": "ladder1",
-      "title": "ladder1",
+      "title": "Pegasus I Mobility Enhancer",
       "mass_t": 0.005,
       "roles": [
         "utility"
@@ -1345,7 +1345,7 @@
     },
     {
       "name": "landerCabinSmall",
-      "title": "landerCabinSmall",
+      "title": "Mk1 Lander Can",
       "mass_t": 0.6,
       "roles": [
         "tank"
@@ -1358,7 +1358,7 @@
     },
     {
       "name": "landingLeg1",
-      "title": "landingLeg1",
+      "title": "LT-1 Landing Struts",
       "mass_t": 0.05,
       "roles": [
         "utility"
@@ -1368,7 +1368,7 @@
     },
     {
       "name": "landingLeg1-2",
-      "title": "landingLeg1-2",
+      "title": "LT-2 Landing Strut",
       "mass_t": 0.1,
       "roles": [
         "utility"
@@ -1378,7 +1378,7 @@
     },
     {
       "name": "Large_Crewed_Lab",
-      "title": "Large_Crewed_Lab",
+      "title": "Mobile Processing Lab MPL-LG-2",
       "mass_t": 3.5,
       "roles": [
         "utility"
@@ -1388,7 +1388,7 @@
     },
     {
       "name": "largeAdapter",
-      "title": "largeAdapter",
+      "title": "Rockomax Brand Adapter",
       "mass_t": 0.1,
       "roles": [
         "utility"
@@ -1398,7 +1398,7 @@
     },
     {
       "name": "largeAdapter2",
-      "title": "largeAdapter2",
+      "title": "Rockomax Brand Adapter 02",
       "mass_t": 0.08,
       "roles": [
         "utility"
@@ -1408,7 +1408,7 @@
     },
     {
       "name": "largeSolarPanel",
-      "title": "largeSolarPanel",
+      "title": "Gigantor XL Solar Array",
       "mass_t": 0.3,
       "roles": [
         "utility"
@@ -1418,7 +1418,7 @@
     },
     {
       "name": "LargeTank",
-      "title": "LargeTank",
+      "title": "Large Holding Tank",
       "mass_t": 2,
       "roles": [
         "tank"
@@ -1430,7 +1430,7 @@
     },
     {
       "name": "launchClamp1",
-      "title": "launchClamp1",
+      "title": "TT18-A Launch Stability Enhancer",
       "mass_t": 0.1,
       "roles": [
         "utility"
@@ -1440,7 +1440,7 @@
     },
     {
       "name": "LaunchEscapeSystem",
-      "title": "LaunchEscapeSystem",
+      "title": "Launch Escape System",
       "mass_t": 0.9,
       "roles": [
         "engine",
@@ -1462,7 +1462,7 @@
     },
     {
       "name": "LgRadialSolarPanel",
-      "title": "LgRadialSolarPanel",
+      "title": "OX-STAT-XL Photovoltaic Panels",
       "mass_t": 0.04,
       "roles": [
         "utility"
@@ -1472,7 +1472,7 @@
     },
     {
       "name": "linearRcs",
-      "title": "linearRcs",
+      "title": "Place-Anywhere 7 Linear RCS Port",
       "mass_t": 0.02,
       "roles": [
         "pod"
@@ -1482,7 +1482,7 @@
     },
     {
       "name": "liquidEngine",
-      "title": "liquidEngine",
+      "title": "LV-T30 \"Reliant\" Liquid Fuel Engine",
       "mass_t": 1.25,
       "roles": [
         "engine"
@@ -1502,7 +1502,7 @@
     },
     {
       "name": "liquidEngine_v2",
-      "title": "liquidEngine_v2",
+      "title": "LV-T30 \"Reliant\" Liquid Fuel Engine",
       "mass_t": 1.25,
       "roles": [
         "engine"
@@ -1522,7 +1522,7 @@
     },
     {
       "name": "liquidEngine1-2",
-      "title": "liquidEngine1-2",
+      "title": "RE-M3 \"Mainsail\" Liquid Fuel Engine",
       "mass_t": 6,
       "roles": [
         "engine"
@@ -1542,7 +1542,7 @@
     },
     {
       "name": "liquidEngine2",
-      "title": "liquidEngine2",
+      "title": "LV-T45 \"Swivel\" Liquid Fuel Engine",
       "mass_t": 1.5,
       "roles": [
         "engine"
@@ -1562,7 +1562,7 @@
     },
     {
       "name": "liquidEngine2-2",
-      "title": "liquidEngine2-2",
+      "title": "RE-L10 \"Poodle\" Liquid Fuel Engine",
       "mass_t": 1.75,
       "roles": [
         "engine"
@@ -1582,7 +1582,7 @@
     },
     {
       "name": "liquidEngine2-2_v2",
-      "title": "liquidEngine2-2_v2",
+      "title": "RE-L10 \"Poodle\" Liquid Fuel Engine",
       "mass_t": 1.75,
       "roles": [
         "engine"
@@ -1602,7 +1602,7 @@
     },
     {
       "name": "liquidEngine2_v2",
-      "title": "liquidEngine2_v2",
+      "title": "LV-T45 \"Swivel\" Liquid Fuel Engine",
       "mass_t": 1.5,
       "roles": [
         "engine"
@@ -1622,7 +1622,7 @@
     },
     {
       "name": "liquidEngine3",
-      "title": "liquidEngine3",
+      "title": "LV-909 \"Terrier\" Liquid Fuel Engine",
       "mass_t": 0.5,
       "roles": [
         "engine"
@@ -1642,7 +1642,7 @@
     },
     {
       "name": "liquidEngine3_v2",
-      "title": "liquidEngine3_v2",
+      "title": "LV-909 \"Terrier\" Liquid Fuel Engine",
       "mass_t": 0.5,
       "roles": [
         "engine"
@@ -1662,7 +1662,7 @@
     },
     {
       "name": "liquidEngineMainsail_v2",
-      "title": "liquidEngineMainsail_v2",
+      "title": "RE-M3 \"Mainsail\" Liquid Fuel Engine",
       "mass_t": 6,
       "roles": [
         "engine"
@@ -1682,7 +1682,7 @@
     },
     {
       "name": "liquidEngineMini",
-      "title": "liquidEngineMini",
+      "title": "48-7S \"Spark\" Liquid Fuel Engine",
       "mass_t": 0.1,
       "roles": [
         "engine"
@@ -1702,7 +1702,7 @@
     },
     {
       "name": "liquidEngineMini_v2",
-      "title": "liquidEngineMini_v2",
+      "title": "48-7S \"Spark\" Liquid Fuel Engine",
       "mass_t": 0.13,
       "roles": [
         "engine"
@@ -1722,7 +1722,7 @@
     },
     {
       "name": "longAntenna",
-      "title": "longAntenna",
+      "title": "Communotron 16",
       "mass_t": 0.005,
       "roles": [
         "utility"
@@ -1732,7 +1732,7 @@
     },
     {
       "name": "Magnetometer",
-      "title": "Magnetometer",
+      "title": "Magnetometer Boom",
       "mass_t": 0.05,
       "roles": [
         "utility"
@@ -1742,7 +1742,7 @@
     },
     {
       "name": "Mark1-2Pod",
-      "title": "Mark1-2Pod",
+      "title": "Mk1-2 Command Pod",
       "mass_t": 4,
       "roles": [
         "tank"
@@ -1755,7 +1755,7 @@
     },
     {
       "name": "Mark1Cockpit",
-      "title": "Mark1Cockpit",
+      "title": "Mk1 Cockpit",
       "mass_t": 1.25,
       "roles": [
         "tank"
@@ -1768,7 +1768,7 @@
     },
     {
       "name": "Mark2Cockpit",
-      "title": "Mark2Cockpit",
+      "title": "Mk1 Inline Cockpit",
       "mass_t": 1,
       "roles": [
         "tank"
@@ -1781,7 +1781,7 @@
     },
     {
       "name": "MassiveBooster",
-      "title": "MassiveBooster",
+      "title": "S1 SRB-KD25k \"Kickback\" Solid Fuel Booster",
       "mass_t": 4.5,
       "roles": [
         "engine",
@@ -1803,7 +1803,7 @@
     },
     {
       "name": "mediumDishAntenna",
-      "title": "mediumDishAntenna",
+      "title": "Communotron DTS-M1",
       "mass_t": 0.05,
       "roles": [
         "utility"
@@ -1813,7 +1813,7 @@
     },
     {
       "name": "microEngine",
-      "title": "microEngine",
+      "title": "LV-1 \"Ant\" Liquid Fuel Engine",
       "mass_t": 0.02,
       "roles": [
         "engine"
@@ -1833,7 +1833,7 @@
     },
     {
       "name": "microEngine_v2",
-      "title": "microEngine_v2",
+      "title": "LV-1 \"Ant\" Liquid Fuel Engine",
       "mass_t": 0.02,
       "roles": [
         "engine"
@@ -1853,7 +1853,7 @@
     },
     {
       "name": "MiniDrill",
-      "title": "MiniDrill",
+      "title": "'Drill-O-Matic Junior' Mining Excavator",
       "mass_t": 0.25,
       "roles": [
         "utility"
@@ -1863,7 +1863,7 @@
     },
     {
       "name": "miniFuelTank",
-      "title": "miniFuelTank",
+      "title": "Oscar-B Fuel Tank",
       "mass_t": 0.025,
       "roles": [
         "tank"
@@ -1876,7 +1876,7 @@
     },
     {
       "name": "miniFuselage",
-      "title": "miniFuselage",
+      "title": "Mk0 Liquid Fuel Fuselage",
       "mass_t": 0.025,
       "roles": [
         "tank"
@@ -1888,7 +1888,7 @@
     },
     {
       "name": "miniIntake",
-      "title": "miniIntake",
+      "title": "Small Circular Intake",
       "mass_t": 0.007,
       "roles": [
         "utility"
@@ -1900,7 +1900,7 @@
     },
     {
       "name": "MiniISRU",
-      "title": "MiniISRU",
+      "title": "Convert-O-Tron 125",
       "mass_t": 1.25,
       "roles": [
         "utility"
@@ -1910,7 +1910,7 @@
     },
     {
       "name": "miniJetEngine",
-      "title": "miniJetEngine",
+      "title": "J-20 \"Juno\" Basic Jet Engine",
       "mass_t": 0.25,
       "roles": [
         "engine"
@@ -1930,7 +1930,7 @@
     },
     {
       "name": "miniLandingLeg",
-      "title": "miniLandingLeg",
+      "title": "LT-05 Micro Landing Strut",
       "mass_t": 0.015,
       "roles": [
         "utility"
@@ -1940,7 +1940,7 @@
     },
     {
       "name": "Mite",
-      "title": "Mite",
+      "title": "FM1 \"Mite\" Solid Fuel Booster",
       "mass_t": 0.075,
       "roles": [
         "engine",
@@ -1962,7 +1962,7 @@
     },
     {
       "name": "mk1-3pod",
-      "title": "mk1-3pod",
+      "title": "Mk1-3 Command Pod",
       "mass_t": 2.6,
       "roles": [
         "tank"
@@ -1975,7 +1975,7 @@
     },
     {
       "name": "MK1CrewCabin",
-      "title": "MK1CrewCabin",
+      "title": "Mk1 Crew Cabin",
       "mass_t": 1,
       "roles": [
         "utility"
@@ -1985,7 +1985,7 @@
     },
     {
       "name": "MK1Fuselage",
-      "title": "MK1Fuselage",
+      "title": "Mk1 Liquid Fuel Fuselage",
       "mass_t": 0.25,
       "roles": [
         "tank"
@@ -1997,7 +1997,7 @@
     },
     {
       "name": "Mk1FuselageStructural",
-      "title": "Mk1FuselageStructural",
+      "title": "Structural Fuselage",
       "mass_t": 0.1,
       "roles": [
         "utility"
@@ -2007,7 +2007,7 @@
     },
     {
       "name": "MK1IntakeFuselage",
-      "title": "MK1IntakeFuselage",
+      "title": "Mk1 Diverterless Supersonic Intake",
       "mass_t": 0.17,
       "roles": [
         "tank"
@@ -2020,7 +2020,7 @@
     },
     {
       "name": "mk1pod",
-      "title": "mk1pod",
+      "title": "Mk1 Command Pod",
       "mass_t": 0.8,
       "roles": [
         "tank"
@@ -2033,7 +2033,7 @@
     },
     {
       "name": "mk1pod_v2",
-      "title": "mk1pod_v2",
+      "title": "Mk1 Command Pod",
       "mass_t": 0.8,
       "roles": [
         "tank"
@@ -2046,7 +2046,7 @@
     },
     {
       "name": "mk2_1m_AdapterLong",
-      "title": "mk2_1m_AdapterLong",
+      "title": "Mk2 to 1.25m Adapter Long",
       "mass_t": 0.57,
       "roles": [
         "tank"
@@ -2059,7 +2059,7 @@
     },
     {
       "name": "mk2_1m_Bicoupler",
-      "title": "mk2_1m_Bicoupler",
+      "title": "Mk2 Bicoupler",
       "mass_t": 0.29,
       "roles": [
         "tank"
@@ -2072,7 +2072,7 @@
     },
     {
       "name": "mk2CargoBayL",
-      "title": "mk2CargoBayL",
+      "title": "Mk2 Cargo Bay CRG-08",
       "mass_t": 0.5,
       "roles": [
         "utility"
@@ -2082,7 +2082,7 @@
     },
     {
       "name": "mk2CargoBayS",
-      "title": "mk2CargoBayS",
+      "title": "Mk2 Cargo Bay CRG-04",
       "mass_t": 0.25,
       "roles": [
         "utility"
@@ -2092,7 +2092,7 @@
     },
     {
       "name": "mk2Cockpit_Inline",
-      "title": "mk2Cockpit_Inline",
+      "title": "Mk2 Inline Cockpit",
       "mass_t": 2,
       "roles": [
         "tank"
@@ -2105,7 +2105,7 @@
     },
     {
       "name": "mk2Cockpit_Standard",
-      "title": "mk2Cockpit_Standard",
+      "title": "Mk2 Cockpit",
       "mass_t": 2,
       "roles": [
         "tank"
@@ -2118,7 +2118,7 @@
     },
     {
       "name": "mk2CrewCabin",
-      "title": "mk2CrewCabin",
+      "title": "MK2 Crew Cabin",
       "mass_t": 2.03,
       "roles": [
         "utility"
@@ -2128,7 +2128,7 @@
     },
     {
       "name": "mk2DockingPort",
-      "title": "mk2DockingPort",
+      "title": "Mk2 Clamp-O-Tron",
       "mass_t": 0.3,
       "roles": [
         "tank"
@@ -2140,7 +2140,7 @@
     },
     {
       "name": "mk2DroneCore",
-      "title": "mk2DroneCore",
+      "title": "MK2 Drone Core",
       "mass_t": 0.2,
       "roles": [
         "utility"
@@ -2152,7 +2152,7 @@
     },
     {
       "name": "mk2Fuselage",
-      "title": "mk2Fuselage",
+      "title": "Mk2 Liquid Fuel Fuselage",
       "mass_t": 0.57,
       "roles": [
         "tank"
@@ -2164,7 +2164,7 @@
     },
     {
       "name": "mk2FuselageLongLFO",
-      "title": "mk2FuselageLongLFO",
+      "title": "Mk2 Rocket Fuel Fuselage",
       "mass_t": 0.57,
       "roles": [
         "tank"
@@ -2177,7 +2177,7 @@
     },
     {
       "name": "mk2FuselageShortLFO",
-      "title": "mk2FuselageShortLFO",
+      "title": "Mk2 Rocket Fuel Fuselage Short",
       "mass_t": 0.29,
       "roles": [
         "tank"
@@ -2190,7 +2190,7 @@
     },
     {
       "name": "mk2FuselageShortLiquid",
-      "title": "mk2FuselageShortLiquid",
+      "title": "Mk2 Liquid Fuel Fuselage Short",
       "mass_t": 0.29,
       "roles": [
         "tank"
@@ -2202,7 +2202,7 @@
     },
     {
       "name": "mk2FuselageShortMono",
-      "title": "mk2FuselageShortMono",
+      "title": "Mk2 Monopropellant Tank",
       "mass_t": 0.29,
       "roles": [
         "tank"
@@ -2214,7 +2214,7 @@
     },
     {
       "name": "mk2LanderCabin",
-      "title": "mk2LanderCabin",
+      "title": "Mk2 Lander Can",
       "mass_t": 2.5,
       "roles": [
         "tank"
@@ -2227,7 +2227,7 @@
     },
     {
       "name": "mk2LanderCabin_v2",
-      "title": "mk2LanderCabin_v2",
+      "title": "Mk2 Lander Can",
       "mass_t": 1.355,
       "roles": [
         "tank"
@@ -2240,7 +2240,7 @@
     },
     {
       "name": "mk2SpacePlaneAdapter",
-      "title": "mk2SpacePlaneAdapter",
+      "title": "Mk2 to 1.25m Adapter",
       "mass_t": 0.29,
       "roles": [
         "tank"
@@ -2253,7 +2253,7 @@
     },
     {
       "name": "mk3CargoBayL",
-      "title": "mk3CargoBayL",
+      "title": "Mk3 Cargo Bay CRG-100",
       "mass_t": 6,
       "roles": [
         "utility"
@@ -2263,7 +2263,7 @@
     },
     {
       "name": "mk3CargoBayM",
-      "title": "mk3CargoBayM",
+      "title": "Mk3 Cargo Bay CRG-50",
       "mass_t": 3,
       "roles": [
         "utility"
@@ -2273,7 +2273,7 @@
     },
     {
       "name": "mk3CargoBayS",
-      "title": "mk3CargoBayS",
+      "title": "Mk3 Cargo Bay CRG-25",
       "mass_t": 1.5,
       "roles": [
         "utility"
@@ -2283,7 +2283,7 @@
     },
     {
       "name": "mk3CargoRamp",
-      "title": "mk3CargoRamp",
+      "title": "Mk3 Cargo Ramp",
       "mass_t": 4,
       "roles": [
         "utility"
@@ -2293,7 +2293,7 @@
     },
     {
       "name": "mk3Cockpit_Shuttle",
-      "title": "mk3Cockpit_Shuttle",
+      "title": "Mk3 Cockpit",
       "mass_t": 3.5,
       "roles": [
         "tank"
@@ -2306,7 +2306,7 @@
     },
     {
       "name": "mk3CrewCabin",
-      "title": "mk3CrewCabin",
+      "title": "Mk3 Passenger Module",
       "mass_t": 7.9,
       "roles": [
         "utility"
@@ -2316,7 +2316,7 @@
     },
     {
       "name": "mk3FuselageLF_100",
-      "title": "mk3FuselageLF_100",
+      "title": "Mk3 Liquid Fuel Fuselage Long",
       "mass_t": 7.14,
       "roles": [
         "tank"
@@ -2328,7 +2328,7 @@
     },
     {
       "name": "mk3FuselageLF_25",
-      "title": "mk3FuselageLF_25",
+      "title": "Mk3 Liquid Fuel Fuselage Short",
       "mass_t": 1.79,
       "roles": [
         "tank"
@@ -2340,7 +2340,7 @@
     },
     {
       "name": "mk3FuselageLF_50",
-      "title": "mk3FuselageLF_50",
+      "title": "Mk3 Liquid Fuel Fuselage",
       "mass_t": 3.57,
       "roles": [
         "tank"
@@ -2352,7 +2352,7 @@
     },
     {
       "name": "mk3FuselageLFO_100",
-      "title": "mk3FuselageLFO_100",
+      "title": "Mk3 Rocket Fuel Fuselage Long",
       "mass_t": 7.14,
       "roles": [
         "tank"
@@ -2365,7 +2365,7 @@
     },
     {
       "name": "mk3FuselageLFO_25",
-      "title": "mk3FuselageLFO_25",
+      "title": "Mk3 Rocket Fuel Fuselage Short",
       "mass_t": 1.79,
       "roles": [
         "tank"
@@ -2378,7 +2378,7 @@
     },
     {
       "name": "mk3FuselageLFO_50",
-      "title": "mk3FuselageLFO_50",
+      "title": "Mk3 Rocket Fuel Fuselage",
       "mass_t": 3.57,
       "roles": [
         "tank"
@@ -2391,7 +2391,7 @@
     },
     {
       "name": "mk3FuselageMONO",
-      "title": "mk3FuselageMONO",
+      "title": "Mk3 Monopropellant Tank",
       "mass_t": 1.4,
       "roles": [
         "tank"
@@ -2403,7 +2403,7 @@
     },
     {
       "name": "MpoProbe",
-      "title": "MpoProbe",
+      "title": "MPO Probe",
       "mass_t": 0.395,
       "roles": [
         "tank"
@@ -2417,7 +2417,7 @@
     },
     {
       "name": "MtmStage",
-      "title": "MtmStage",
+      "title": "MTM Stage",
       "mass_t": 0.415,
       "roles": [
         "tank"
@@ -2430,7 +2430,7 @@
     },
     {
       "name": "nacelleBody",
-      "title": "nacelleBody",
+      "title": "Engine Nacelle",
       "mass_t": 0.15,
       "roles": [
         "tank"
@@ -2443,7 +2443,7 @@
     },
     {
       "name": "navLight1",
-      "title": "navLight1",
+      "title": "Navigation Light Mk1",
       "mass_t": 0.001,
       "roles": [
         "utility"
@@ -2453,7 +2453,7 @@
     },
     {
       "name": "noseCone",
-      "title": "noseCone",
+      "title": "Aerodynamic Nose Cone",
       "mass_t": 0.03,
       "roles": [
         "utility"
@@ -2463,7 +2463,7 @@
     },
     {
       "name": "noseConeAdapter",
-      "title": "noseConeAdapter",
+      "title": "NCS Adapter",
       "mass_t": 0.1,
       "roles": [
         "tank"
@@ -2475,7 +2475,7 @@
     },
     {
       "name": "nuclearEngine",
-      "title": "nuclearEngine",
+      "title": "LV-N \"Nerv\" Atomic Rocket Motor",
       "mass_t": 3,
       "roles": [
         "engine"
@@ -2494,7 +2494,7 @@
     },
     {
       "name": "omsEngine",
-      "title": "omsEngine",
+      "title": "O-10 \"Puff\" MonoPropellant Fuel Engine",
       "mass_t": 0.09,
       "roles": [
         "engine"
@@ -2513,7 +2513,7 @@
     },
     {
       "name": "OrbitalScanner",
-      "title": "OrbitalScanner",
+      "title": "M4435 Narrow-Band Scanner",
       "mass_t": 0.1,
       "roles": [
         "utility"
@@ -2523,7 +2523,7 @@
     },
     {
       "name": "parachuteDrogue",
-      "title": "parachuteDrogue",
+      "title": "Mk25 Parachute",
       "mass_t": 0.2,
       "roles": [
         "parachute"
@@ -2533,7 +2533,7 @@
     },
     {
       "name": "parachuteLarge",
-      "title": "parachuteLarge",
+      "title": "Mk16-XL Parachute",
       "mass_t": 0.3,
       "roles": [
         "parachute"
@@ -2543,7 +2543,7 @@
     },
     {
       "name": "parachuteRadial",
-      "title": "parachuteRadial",
+      "title": "Mk2-R Radial-Mount Parachute",
       "mass_t": 0.1,
       "roles": [
         "parachute"
@@ -2553,7 +2553,7 @@
     },
     {
       "name": "parachuteSingle",
-      "title": "parachuteSingle",
+      "title": "Mk16 Parachute",
       "mass_t": 0.1,
       "roles": [
         "parachute"
@@ -2563,7 +2563,7 @@
     },
     {
       "name": "pointyNoseConeA",
-      "title": "pointyNoseConeA",
+      "title": "Advanced Nose Cone - Type A",
       "mass_t": 0.075,
       "roles": [
         "utility"
@@ -2573,7 +2573,7 @@
     },
     {
       "name": "pointyNoseConeB",
-      "title": "pointyNoseConeB",
+      "title": "Advanced Nose Cone - Type B",
       "mass_t": 0.075,
       "roles": [
         "utility"
@@ -2593,7 +2593,7 @@
     },
     {
       "name": "PotatoRoid",
-      "title": "PotatoRoid",
+      "title": "A potato like rock",
       "mass_t": 150,
       "roles": [
         "utility"
@@ -2603,7 +2603,7 @@
     },
     {
       "name": "probeCoreCube",
-      "title": "probeCoreCube",
+      "title": "Probodobodyne QBE",
       "mass_t": 0.07,
       "roles": [
         "utility"
@@ -2615,7 +2615,7 @@
     },
     {
       "name": "probeCoreHex",
-      "title": "probeCoreHex",
+      "title": "Probodobodyne HECS",
       "mass_t": 0.1,
       "roles": [
         "utility"
@@ -2627,7 +2627,7 @@
     },
     {
       "name": "probeCoreHex_v2",
-      "title": "probeCoreHex_v2",
+      "title": "Probodobodyne HECS",
       "mass_t": 0.1,
       "roles": [
         "utility"
@@ -2639,7 +2639,7 @@
     },
     {
       "name": "probeCoreOcto",
-      "title": "probeCoreOcto",
+      "title": "Probodobodyne OKTO",
       "mass_t": 0.1,
       "roles": [
         "utility"
@@ -2651,7 +2651,7 @@
     },
     {
       "name": "probeCoreOcto_v2",
-      "title": "probeCoreOcto_v2",
+      "title": "Probodobodyne OKTO",
       "mass_t": 0.1,
       "roles": [
         "utility"
@@ -2663,7 +2663,7 @@
     },
     {
       "name": "probeCoreOcto2",
-      "title": "probeCoreOcto2",
+      "title": "Probodobodyne OKTO2",
       "mass_t": 0.04,
       "roles": [
         "utility"
@@ -2675,7 +2675,7 @@
     },
     {
       "name": "probeCoreOcto2_v2",
-      "title": "probeCoreOcto2_v2",
+      "title": "Probodobodyne OKTO2",
       "mass_t": 0.04,
       "roles": [
         "utility"
@@ -2687,7 +2687,7 @@
     },
     {
       "name": "probeCoreSphere",
-      "title": "probeCoreSphere",
+      "title": "Probodobodyne Stayputnik",
       "mass_t": 0.05,
       "roles": [
         "utility"
@@ -2699,7 +2699,7 @@
     },
     {
       "name": "probeCoreSphere_v2",
-      "title": "probeCoreSphere_v2",
+      "title": "Probodobodyne Stayputnik",
       "mass_t": 0.05,
       "roles": [
         "utility"
@@ -2711,7 +2711,7 @@
     },
     {
       "name": "probeStackLarge",
-      "title": "probeStackLarge",
+      "title": "RC-L01 Remote Guidance Unit",
       "mass_t": 0.5,
       "roles": [
         "utility"
@@ -2723,7 +2723,7 @@
     },
     {
       "name": "probeStackSmall",
-      "title": "probeStackSmall",
+      "title": "RC-001S Remote Guidance Unit",
       "mass_t": 0.1,
       "roles": [
         "utility"
@@ -2735,7 +2735,7 @@
     },
     {
       "name": "R8winglet",
-      "title": "R8winglet",
+      "title": "AV-R8 Winglet",
       "mass_t": 0.1,
       "roles": [
         "utility"
@@ -2745,7 +2745,7 @@
     },
     {
       "name": "radialDecoupler",
-      "title": "radialDecoupler",
+      "title": "TT-38K Radial Decoupler",
       "mass_t": 0.025,
       "roles": [
         "radialdecoupler"
@@ -2755,7 +2755,7 @@
     },
     {
       "name": "radialDecoupler1-2",
-      "title": "radialDecoupler1-2",
+      "title": "Hydraulic Detachment Manifold",
       "mass_t": 0.4,
       "roles": [
         "radialdecoupler"
@@ -2765,7 +2765,7 @@
     },
     {
       "name": "radialDecoupler2",
-      "title": "radialDecoupler2",
+      "title": "TT-70 Radial Decoupler",
       "mass_t": 0.05,
       "roles": [
         "radialdecoupler"
@@ -2775,7 +2775,7 @@
     },
     {
       "name": "RadialDrill",
-      "title": "RadialDrill",
+      "title": "'Drill-O-Matic' Mining Excavator",
       "mass_t": 1.25,
       "roles": [
         "utility"
@@ -2785,7 +2785,7 @@
     },
     {
       "name": "radialDrogue",
-      "title": "radialDrogue",
+      "title": "Mk12-R Radial-Mount Drogue Chute",
       "mass_t": 0.075,
       "roles": [
         "parachute"
@@ -2795,7 +2795,7 @@
     },
     {
       "name": "radialEngineBody",
-      "title": "radialEngineBody",
+      "title": "Engine Pre-cooler",
       "mass_t": 0.15,
       "roles": [
         "tank"
@@ -2808,7 +2808,7 @@
     },
     {
       "name": "radialEngineMini",
-      "title": "radialEngineMini",
+      "title": "LV-1R \"Spider\" Liquid Fuel Engine",
       "mass_t": 0.02,
       "roles": [
         "engine"
@@ -2828,7 +2828,7 @@
     },
     {
       "name": "radialEngineMini_v2",
-      "title": "radialEngineMini_v2",
+      "title": "LV-1R \"Spider\" Liquid Fuel Engine",
       "mass_t": 0.02,
       "roles": [
         "engine"
@@ -2848,7 +2848,7 @@
     },
     {
       "name": "radialLiquidEngine1-2",
-      "title": "radialLiquidEngine1-2",
+      "title": "Mk-55 \"Thud\" Liquid Fuel Engine",
       "mass_t": 0.9,
       "roles": [
         "engine"
@@ -2868,7 +2868,7 @@
     },
     {
       "name": "RadialOreTank",
-      "title": "RadialOreTank",
+      "title": "Radial Holding Tank",
       "mass_t": 0.125,
       "roles": [
         "tank"
@@ -2880,7 +2880,7 @@
     },
     {
       "name": "radialRCSTank",
-      "title": "radialRCSTank",
+      "title": "Stratus-V Roundified Monopropellant Tank",
       "mass_t": 0.02,
       "roles": [
         "tank"
@@ -2892,7 +2892,7 @@
     },
     {
       "name": "radPanelEdge",
-      "title": "radPanelEdge",
+      "title": "Radiator Panel (edge)",
       "mass_t": 0.03,
       "roles": [
         "utility"
@@ -2902,7 +2902,7 @@
     },
     {
       "name": "radPanelLg",
-      "title": "radPanelLg",
+      "title": "Radiator Panel (large)",
       "mass_t": 0.05,
       "roles": [
         "utility"
@@ -2912,7 +2912,7 @@
     },
     {
       "name": "radPanelSm",
-      "title": "radPanelSm",
+      "title": "Radiator Panel (small)",
       "mass_t": 0.01,
       "roles": [
         "utility"
@@ -2922,7 +2922,7 @@
     },
     {
       "name": "ramAirIntake",
-      "title": "ramAirIntake",
+      "title": "Adjustable Ramp Intake",
       "mass_t": 0.06,
       "roles": [
         "utility"
@@ -2934,7 +2934,7 @@
     },
     {
       "name": "RAPIER",
-      "title": "RAPIER",
+      "title": "CR-7 R.A.P.I.E.R. Engine",
       "mass_t": 2,
       "roles": [
         "engine"
@@ -2967,7 +2967,7 @@
     },
     {
       "name": "RCSBlock",
-      "title": "RCSBlock",
+      "title": "RV-105 RCS Thruster Block",
       "mass_t": 0.05,
       "roles": [
         "utility"
@@ -2977,7 +2977,7 @@
     },
     {
       "name": "RCSblock_01_small",
-      "title": "RCSblock_01_small",
+      "title": "RV-1X Variable Thruster Block",
       "mass_t": 0.005,
       "roles": [
         "pod"
@@ -2987,7 +2987,7 @@
     },
     {
       "name": "RCSBlock_v2",
-      "title": "RCSBlock_v2",
+      "title": "RV-105 RCS Thruster Block",
       "mass_t": 0.04,
       "roles": [
         "pod"
@@ -2997,7 +2997,7 @@
     },
     {
       "name": "RCSFuelTank",
-      "title": "RCSFuelTank",
+      "title": "FL-R120 RCS Fuel Tank",
       "mass_t": 0.08,
       "roles": [
         "tank"
@@ -3009,7 +3009,7 @@
     },
     {
       "name": "RCSLinearSmall",
-      "title": "RCSLinearSmall",
+      "title": "Place Anywhere 1 Linear RCS Port",
       "mass_t": 0.00125,
       "roles": [
         "pod"
@@ -3019,7 +3019,7 @@
     },
     {
       "name": "RCSTank1-2",
-      "title": "RCSTank1-2",
+      "title": "FL-R750 RCS Fuel Tank",
       "mass_t": 0.4,
       "roles": [
         "tank"
@@ -3031,7 +3031,7 @@
     },
     {
       "name": "rcsTankMini",
-      "title": "rcsTankMini",
+      "title": "FL-R20 RCS Fuel Tank",
       "mass_t": 0.02,
       "roles": [
         "tank"
@@ -3043,7 +3043,7 @@
     },
     {
       "name": "rcsTankRadialLong",
-      "title": "rcsTankRadialLong",
+      "title": "Stratus-V Cylindrified Monopropellant Tank",
       "mass_t": 0.03,
       "roles": [
         "tank"
@@ -3055,7 +3055,7 @@
     },
     {
       "name": "RelayAntenna100",
-      "title": "RelayAntenna100",
+      "title": "RA-100 Relay Antenna",
       "mass_t": 0.65,
       "roles": [
         "utility"
@@ -3065,7 +3065,7 @@
     },
     {
       "name": "RelayAntenna5",
-      "title": "RelayAntenna5",
+      "title": "RA-2 Relay Antenna",
       "mass_t": 0.15,
       "roles": [
         "utility"
@@ -3075,7 +3075,7 @@
     },
     {
       "name": "RelayAntenna50",
-      "title": "RelayAntenna50",
+      "title": "RA-15 Relay Antenna",
       "mass_t": 0.3,
       "roles": [
         "utility"
@@ -3085,7 +3085,7 @@
     },
     {
       "name": "ReleaseValve",
-      "title": "ReleaseValve",
+      "title": "FTE-1 Drain Valve",
       "mass_t": 0.01,
       "roles": [
         "tank"
@@ -3095,7 +3095,7 @@
     },
     {
       "name": "rocketNoseCone",
-      "title": "rocketNoseCone",
+      "title": "Protective Rocket Nose Cone Mk7",
       "mass_t": 0.2,
       "roles": [
         "utility"
@@ -3105,7 +3105,7 @@
     },
     {
       "name": "rocketNoseCone_v2",
-      "title": "rocketNoseCone_v2",
+      "title": "Protective Rocket Nose Cone Mk7",
       "mass_t": 0.2,
       "roles": [
         "utility"
@@ -3115,7 +3115,7 @@
     },
     {
       "name": "rocketNoseCone_v3",
-      "title": "rocketNoseCone_v3",
+      "title": "Protective Rocket Nose Cone Mk7",
       "mass_t": 0.2,
       "roles": [
         "utility"
@@ -3125,7 +3125,7 @@
     },
     {
       "name": "rocketNoseConeSize3",
-      "title": "rocketNoseConeSize3",
+      "title": "Protective Rocket Nose Cone Mk12A",
       "mass_t": 0.4,
       "roles": [
         "utility"
@@ -3135,7 +3135,7 @@
     },
     {
       "name": "Rockomax16_BW",
-      "title": "Rockomax16_BW",
+      "title": "Rockomax X200-16 Fuel Tank",
       "mass_t": 1,
       "roles": [
         "tank"
@@ -3148,7 +3148,7 @@
     },
     {
       "name": "Rockomax32_BW",
-      "title": "Rockomax32_BW",
+      "title": "Rockomax X200-32 Fuel Tank",
       "mass_t": 2,
       "roles": [
         "tank"
@@ -3161,7 +3161,7 @@
     },
     {
       "name": "Rockomax64_BW",
-      "title": "Rockomax64_BW",
+      "title": "Rockomax Jumbo-64 Fuel Tank",
       "mass_t": 4,
       "roles": [
         "tank"
@@ -3174,7 +3174,7 @@
     },
     {
       "name": "Rockomax8BW",
-      "title": "Rockomax8BW",
+      "title": "Rockomax X200-8 Fuel Tank",
       "mass_t": 0.5,
       "roles": [
         "tank"
@@ -3187,7 +3187,7 @@
     },
     {
       "name": "roverBody",
-      "title": "roverBody",
+      "title": "Probodobodyne RoveMate",
       "mass_t": 0.15,
       "roles": [
         "utility"
@@ -3199,7 +3199,7 @@
     },
     {
       "name": "roverBody_v2",
-      "title": "roverBody_v2",
+      "title": "Probodobodyne RoveMate",
       "mass_t": 0.15,
       "roles": [
         "utility"
@@ -3211,7 +3211,7 @@
     },
     {
       "name": "roverWheel1",
-      "title": "roverWheel1",
+      "title": "RoveMax Model M1",
       "mass_t": 0.075,
       "roles": [
         "utility"
@@ -3221,7 +3221,7 @@
     },
     {
       "name": "roverWheel2",
-      "title": "roverWheel2",
+      "title": "RoveMax Model S2",
       "mass_t": 0.05,
       "roles": [
         "utility"
@@ -3231,7 +3231,7 @@
     },
     {
       "name": "roverWheel3",
-      "title": "roverWheel3",
+      "title": "RoveMax Model XL3",
       "mass_t": 1.25,
       "roles": [
         "utility"
@@ -3241,7 +3241,7 @@
     },
     {
       "name": "rtg",
-      "title": "rtg",
+      "title": "PB-NUK Radioisotope Thermoelectric Generator",
       "mass_t": 0.08,
       "roles": [
         "utility"
@@ -3251,7 +3251,7 @@
     },
     {
       "name": "sasModule",
-      "title": "sasModule",
+      "title": "Small Inline Reaction Wheel",
       "mass_t": 0.05,
       "roles": [
         "pod"
@@ -3261,7 +3261,7 @@
     },
     {
       "name": "science_module",
-      "title": "science_module",
+      "title": "SC-9001 Science Jr.",
       "mass_t": 0.2,
       "roles": [
         "utility"
@@ -3271,7 +3271,7 @@
     },
     {
       "name": "ScienceBox",
-      "title": "ScienceBox",
+      "title": "Experiment Storage Unit",
       "mass_t": 0.05,
       "roles": [
         "utility"
@@ -3281,7 +3281,7 @@
     },
     {
       "name": "seatExternalCmd",
-      "title": "seatExternalCmd",
+      "title": "EAS-1 External Command Seat",
       "mass_t": 0.05,
       "roles": [
         "utility"
@@ -3291,7 +3291,7 @@
     },
     {
       "name": "sensorAccelerometer",
-      "title": "sensorAccelerometer",
+      "title": "Double-C Seismic Accelerometer",
       "mass_t": 0.005,
       "roles": [
         "utility"
@@ -3301,7 +3301,7 @@
     },
     {
       "name": "sensorAtmosphere",
-      "title": "sensorAtmosphere",
+      "title": "Atmospheric Fluid Spectro-Variometer",
       "mass_t": 0.005,
       "roles": [
         "utility"
@@ -3311,7 +3311,7 @@
     },
     {
       "name": "sensorBarometer",
-      "title": "sensorBarometer",
+      "title": "PresMat Barometer",
       "mass_t": 0.005,
       "roles": [
         "utility"
@@ -3321,7 +3321,7 @@
     },
     {
       "name": "sensorGravimeter",
-      "title": "sensorGravimeter",
+      "title": "GRAVMAX Negative Gravioli Detector",
       "mass_t": 0.005,
       "roles": [
         "utility"
@@ -3331,7 +3331,7 @@
     },
     {
       "name": "sensorThermometer",
-      "title": "sensorThermometer",
+      "title": "2HOT Thermometer",
       "mass_t": 0.005,
       "roles": [
         "utility"
@@ -3341,7 +3341,7 @@
     },
     {
       "name": "Separator_0",
-      "title": "Separator_0",
+      "title": "TS-06 Stack Separator",
       "mass_t": 0.01,
       "roles": [
         "decoupler"
@@ -3351,7 +3351,7 @@
     },
     {
       "name": "Separator_1",
-      "title": "Separator_1",
+      "title": "TS-12 Stack Separator",
       "mass_t": 0.05,
       "roles": [
         "decoupler"
@@ -3361,7 +3361,7 @@
     },
     {
       "name": "Separator_2",
-      "title": "Separator_2",
+      "title": "TS-25 Stack Separator",
       "mass_t": 0.21,
       "roles": [
         "decoupler"
@@ -3371,7 +3371,7 @@
     },
     {
       "name": "Separator_3",
-      "title": "Separator_3",
+      "title": "TS-37 Stack Separator",
       "mass_t": 0.48,
       "roles": [
         "decoupler"
@@ -3381,7 +3381,7 @@
     },
     {
       "name": "sepMotor1",
-      "title": "sepMotor1",
+      "title": "Sepratron I",
       "mass_t": 0.0125,
       "roles": [
         "engine",
@@ -3403,7 +3403,7 @@
     },
     {
       "name": "ServiceBay_125",
-      "title": "ServiceBay_125",
+      "title": "Service Bay (1.25m)",
       "mass_t": 0.1,
       "roles": [
         "utility"
@@ -3413,7 +3413,7 @@
     },
     {
       "name": "ServiceBay_125_v2",
-      "title": "ServiceBay_125_v2",
+      "title": "Service Bay (1.25m)",
       "mass_t": 0.1,
       "roles": [
         "utility"
@@ -3423,7 +3423,7 @@
     },
     {
       "name": "ServiceBay_250",
-      "title": "ServiceBay_250",
+      "title": "Service Bay (2.5m)",
       "mass_t": 0.3,
       "roles": [
         "utility"
@@ -3433,7 +3433,7 @@
     },
     {
       "name": "ServiceBay_250_v2",
-      "title": "ServiceBay_250_v2",
+      "title": "Service Bay (2.5m)",
       "mass_t": 0.3,
       "roles": [
         "utility"
@@ -3443,7 +3443,7 @@
     },
     {
       "name": "shockConeIntake",
-      "title": "shockConeIntake",
+      "title": "Shock Cone Intake",
       "mass_t": 0.12,
       "roles": [
         "utility"
@@ -3455,7 +3455,7 @@
     },
     {
       "name": "Shrimp",
-      "title": "Shrimp",
+      "title": "F3S0 \"Shrimp\" Solid Fuel Booster",
       "mass_t": 0.15,
       "roles": [
         "engine",
@@ -3477,7 +3477,7 @@
     },
     {
       "name": "Size2LFB",
-      "title": "Size2LFB",
+      "title": "LFB KR-1x2 \"Twin-Boar\" Liquid Fuel Engine",
       "mass_t": 10.5,
       "roles": [
         "engine"
@@ -3500,7 +3500,7 @@
     },
     {
       "name": "Size2LFB_v2",
-      "title": "Size2LFB_v2",
+      "title": "LFB KR-1x2 \"Twin-Boar\" Liquid Fuel Engine",
       "mass_t": 10.5,
       "roles": [
         "engine"
@@ -3523,7 +3523,7 @@
     },
     {
       "name": "Size3AdvancedEngine",
-      "title": "Size3AdvancedEngine",
+      "title": "Kerbodyne KR-2L+ \"Rhino\" Liquid Fuel Engine",
       "mass_t": 9,
       "roles": [
         "engine"
@@ -3543,7 +3543,7 @@
     },
     {
       "name": "size3Decoupler",
-      "title": "size3Decoupler",
+      "title": "TR-38-D",
       "mass_t": 0.8,
       "roles": [
         "decoupler"
@@ -3553,7 +3553,7 @@
     },
     {
       "name": "Size3EngineCluster",
-      "title": "Size3EngineCluster",
+      "title": "S3 KS-25x4 \"Mammoth\" Liquid Fuel Engine",
       "mass_t": 15,
       "roles": [
         "engine"
@@ -3573,7 +3573,7 @@
     },
     {
       "name": "Size3LargeTank",
-      "title": "Size3LargeTank",
+      "title": "Kerbodyne S3-14400 Tank",
       "mass_t": 9,
       "roles": [
         "tank"
@@ -3586,7 +3586,7 @@
     },
     {
       "name": "Size3MediumTank",
-      "title": "Size3MediumTank",
+      "title": "Kerbodyne S3-7200 Tank",
       "mass_t": 4.5,
       "roles": [
         "tank"
@@ -3599,7 +3599,7 @@
     },
     {
       "name": "Size3SmallTank",
-      "title": "Size3SmallTank",
+      "title": "Kerbodyne S3-3600 Tank",
       "mass_t": 2.25,
       "roles": [
         "tank"
@@ -3612,7 +3612,7 @@
     },
     {
       "name": "Size3to2Adapter",
-      "title": "Size3to2Adapter",
+      "title": "Kerbodyne ADTP-2-3",
       "mass_t": 0.2,
       "roles": [
         "utility"
@@ -3622,7 +3622,7 @@
     },
     {
       "name": "Size3To2Adapter_v2",
-      "title": "Size3To2Adapter_v2",
+      "title": "Kerbodyne ADTP-2-3",
       "mass_t": 1.875,
       "roles": [
         "tank"
@@ -3635,7 +3635,7 @@
     },
     {
       "name": "smallCargoContainer",
-      "title": "smallCargoContainer",
+      "title": "SEQ-3 Cargo Storage Unit",
       "mass_t": 0.05,
       "roles": [
         "utility"
@@ -3645,7 +3645,7 @@
     },
     {
       "name": "smallClaw",
-      "title": "smallClaw",
+      "title": "Advanced Grabbing Unit Jr.",
       "mass_t": 0.03,
       "roles": [
         "utility"
@@ -3655,7 +3655,7 @@
     },
     {
       "name": "smallCtrlSrf",
-      "title": "smallCtrlSrf",
+      "title": "Elevon 4",
       "mass_t": 0.04,
       "roles": [
         "utility"
@@ -3665,7 +3665,7 @@
     },
     {
       "name": "SmallGearBay",
-      "title": "SmallGearBay",
+      "title": "LY-10 Small Landing Gear",
       "mass_t": 0.045,
       "roles": [
         "utility"
@@ -3675,7 +3675,7 @@
     },
     {
       "name": "smallHardpoint",
-      "title": "smallHardpoint",
+      "title": "Small Hardpoint",
       "mass_t": 0.05,
       "roles": [
         "decoupler"
@@ -3685,7 +3685,7 @@
     },
     {
       "name": "smallRadialEngine",
-      "title": "smallRadialEngine",
+      "title": "24-77 \"Twitch\" Liquid Fuel Engine",
       "mass_t": 0.09,
       "roles": [
         "engine"
@@ -3705,7 +3705,7 @@
     },
     {
       "name": "smallRadialEngine_v2",
-      "title": "smallRadialEngine_v2",
+      "title": "24-77 \"Twitch\" Liquid Fuel Engine",
       "mass_t": 0.08,
       "roles": [
         "engine"
@@ -3725,7 +3725,7 @@
     },
     {
       "name": "SmallTank",
-      "title": "SmallTank",
+      "title": "Small Holding Tank",
       "mass_t": 0.5,
       "roles": [
         "tank"
@@ -3737,7 +3737,7 @@
     },
     {
       "name": "solarPanelOX10C",
-      "title": "solarPanelOX10C",
+      "title": "OX-10C Photovoltaic Panels",
       "mass_t": 0.09,
       "roles": [
         "utility"
@@ -3747,7 +3747,7 @@
     },
     {
       "name": "solarPanelOX10L",
-      "title": "solarPanelOX10L",
+      "title": "OX-10L 1x5 Photovoltaic Panels",
       "mass_t": 0.09,
       "roles": [
         "utility"
@@ -3757,7 +3757,7 @@
     },
     {
       "name": "solarPanels1",
-      "title": "solarPanels1",
+      "title": "SP-W 3x2 Photovoltaic Panels",
       "mass_t": 0.025,
       "roles": [
         "utility"
@@ -3767,7 +3767,7 @@
     },
     {
       "name": "solarPanels2",
-      "title": "solarPanels2",
+      "title": "SP-L 1x6 Photovoltaic Panels",
       "mass_t": 0.025,
       "roles": [
         "utility"
@@ -3777,7 +3777,7 @@
     },
     {
       "name": "solarPanels3",
-      "title": "solarPanels3",
+      "title": "OX-4W 3x2 Photovoltaic Panels",
       "mass_t": 0.0175,
       "roles": [
         "utility"
@@ -3787,7 +3787,7 @@
     },
     {
       "name": "solarPanels4",
-      "title": "solarPanels4",
+      "title": "OX-4L 1x6 Photovoltaic Panels",
       "mass_t": 0.0175,
       "roles": [
         "utility"
@@ -3797,7 +3797,7 @@
     },
     {
       "name": "solarPanels5",
-      "title": "solarPanels5",
+      "title": "OX-STAT Photovoltaic Panels",
       "mass_t": 0.005,
       "roles": [
         "utility"
@@ -3807,7 +3807,7 @@
     },
     {
       "name": "solarPanelSP10C",
-      "title": "solarPanelSP10C",
+      "title": "SP-10C Photovoltaic Panels",
       "mass_t": 0.13,
       "roles": [
         "utility"
@@ -3817,7 +3817,7 @@
     },
     {
       "name": "solarPanelSP10L",
-      "title": "solarPanelSP10L",
+      "title": "SP-10L 1x5 Photovoltaic Panels",
       "mass_t": 0.13,
       "roles": [
         "utility"
@@ -3827,7 +3827,7 @@
     },
     {
       "name": "solidBooster",
-      "title": "solidBooster",
+      "title": "RT-10 \"Hammer\" Solid Fuel Booster",
       "mass_t": 0.75,
       "roles": [
         "engine",
@@ -3849,7 +3849,7 @@
     },
     {
       "name": "solidBooster_sm",
-      "title": "solidBooster_sm",
+      "title": "RT-5 \"Flea\" Solid Fuel Booster",
       "mass_t": 0.45,
       "roles": [
         "engine",
@@ -3871,7 +3871,7 @@
     },
     {
       "name": "solidBooster_sm_v2",
-      "title": "solidBooster_sm_v2",
+      "title": "RT-5 \"Flea\" Solid Fuel Booster",
       "mass_t": 0.45,
       "roles": [
         "engine",
@@ -3893,7 +3893,7 @@
     },
     {
       "name": "solidBooster_v2",
-      "title": "solidBooster_v2",
+      "title": "RT-10 \"Hammer\" Solid Fuel Booster",
       "mass_t": 0.75,
       "roles": [
         "engine",
@@ -3915,7 +3915,7 @@
     },
     {
       "name": "solidBooster1-1",
-      "title": "solidBooster1-1",
+      "title": "BACC \"Thumper\" Solid Fuel Booster",
       "mass_t": 1.5,
       "roles": [
         "engine",
@@ -3937,7 +3937,7 @@
     },
     {
       "name": "spotLight1",
-      "title": "spotLight1",
+      "title": "Illuminator Mk1",
       "mass_t": 0.015,
       "roles": [
         "utility"
@@ -3947,7 +3947,7 @@
     },
     {
       "name": "spotLight1_v2",
-      "title": "spotLight1_v2",
+      "title": "Illuminator Mk1",
       "mass_t": 0.015,
       "roles": [
         "utility"
@@ -3957,7 +3957,7 @@
     },
     {
       "name": "spotLight2",
-      "title": "spotLight2",
+      "title": "Illuminator Mk2",
       "mass_t": 0.015,
       "roles": [
         "utility"
@@ -3967,7 +3967,7 @@
     },
     {
       "name": "spotLight2_v2",
-      "title": "spotLight2_v2",
+      "title": "Illuminator Mk2",
       "mass_t": 0.015,
       "roles": [
         "utility"
@@ -3977,7 +3977,7 @@
     },
     {
       "name": "spotLight3",
-      "title": "spotLight3",
+      "title": "Spotlight Mk1",
       "mass_t": 0.005,
       "roles": [
         "utility"
@@ -3987,7 +3987,7 @@
     },
     {
       "name": "SSME",
-      "title": "SSME",
+      "title": "S3 KS-25 \"Vector\" Liquid Fuel Engine",
       "mass_t": 4,
       "roles": [
         "engine"
@@ -4007,7 +4007,7 @@
     },
     {
       "name": "stackBiCoupler",
-      "title": "stackBiCoupler",
+      "title": "TVR-200 Stack Bi-Coupler",
       "mass_t": 0.1,
       "roles": [
         "utility"
@@ -4017,7 +4017,7 @@
     },
     {
       "name": "stackBiCoupler_v2",
-      "title": "stackBiCoupler_v2",
+      "title": "TVR-200 Stack Bi-Coupler",
       "mass_t": 0.1,
       "roles": [
         "utility"
@@ -4027,7 +4027,7 @@
     },
     {
       "name": "stackDecoupler",
-      "title": "stackDecoupler",
+      "title": "TR-18A Stack Decoupler",
       "mass_t": 0.05,
       "roles": [
         "decoupler"
@@ -4037,7 +4037,7 @@
     },
     {
       "name": "stackDecouplerMini",
-      "title": "stackDecouplerMini",
+      "title": "TR-2V Stack Decoupler",
       "mass_t": 0.015,
       "roles": [
         "decoupler"
@@ -4047,7 +4047,7 @@
     },
     {
       "name": "stackPoint1",
-      "title": "stackPoint1",
+      "title": "BZ-52 Radial Attachment Point",
       "mass_t": 0.04,
       "roles": [
         "utility"
@@ -4057,7 +4057,7 @@
     },
     {
       "name": "stackQuadCoupler",
-      "title": "stackQuadCoupler",
+      "title": "TVR-2160C Mk2 Stack Quad-Coupler",
       "mass_t": 0.175,
       "roles": [
         "utility"
@@ -4067,7 +4067,7 @@
     },
     {
       "name": "stackSeparator",
-      "title": "stackSeparator",
+      "title": "TR-18D Stack Separator",
       "mass_t": 0.075,
       "roles": [
         "decoupler"
@@ -4077,7 +4077,7 @@
     },
     {
       "name": "stackSeparatorBig",
-      "title": "stackSeparatorBig",
+      "title": "TR-XL Stack Separator",
       "mass_t": 0.45,
       "roles": [
         "decoupler"
@@ -4087,7 +4087,7 @@
     },
     {
       "name": "stackSeparatorMini",
-      "title": "stackSeparatorMini",
+      "title": "TR-2C Stack Separator",
       "mass_t": 0.02,
       "roles": [
         "decoupler"
@@ -4097,7 +4097,7 @@
     },
     {
       "name": "stackTriCoupler",
-      "title": "stackTriCoupler",
+      "title": "TVR-1180C Mk1 Stack Tri-Coupler",
       "mass_t": 0.15,
       "roles": [
         "utility"
@@ -4107,7 +4107,7 @@
     },
     {
       "name": "stackTriCoupler_v2",
-      "title": "stackTriCoupler_v2",
+      "title": "TVR-1180C Mk1 Stack Tri-Coupler",
       "mass_t": 0.15,
       "roles": [
         "utility"
@@ -4117,7 +4117,7 @@
     },
     {
       "name": "StandardCtrlSrf",
-      "title": "StandardCtrlSrf",
+      "title": "Elevon 1",
       "mass_t": 0.05,
       "roles": [
         "utility"
@@ -4127,7 +4127,7 @@
     },
     {
       "name": "standardNoseCone",
-      "title": "standardNoseCone",
+      "title": "Small Nose Cone",
       "mass_t": 0.01,
       "roles": [
         "utility"
@@ -4137,7 +4137,7 @@
     },
     {
       "name": "stationHub",
-      "title": "stationHub",
+      "title": "Rockomax HubMax Multi-Point Connector",
       "mass_t": 1.5,
       "roles": [
         "utility"
@@ -4147,7 +4147,7 @@
     },
     {
       "name": "stripLight1",
-      "title": "stripLight1",
+      "title": "Lightstrip Mk1",
       "mass_t": 0.001,
       "roles": [
         "utility"
@@ -4157,7 +4157,7 @@
     },
     {
       "name": "structuralIBeam1",
-      "title": "structuralIBeam1",
+      "title": "M-Beam 650 I-Beam",
       "mass_t": 0.08,
       "roles": [
         "utility"
@@ -4167,7 +4167,7 @@
     },
     {
       "name": "structuralIBeam2",
-      "title": "structuralIBeam2",
+      "title": "M-Beam 200 I-Beam",
       "mass_t": 0.375,
       "roles": [
         "utility"
@@ -4177,7 +4177,7 @@
     },
     {
       "name": "structuralIBeam3",
-      "title": "structuralIBeam3",
+      "title": "M-Beam 200 I-Beam Pocket Edition",
       "mass_t": 0.1875,
       "roles": [
         "utility"
@@ -4187,7 +4187,7 @@
     },
     {
       "name": "structuralMiniNode",
-      "title": "structuralMiniNode",
+      "title": "The Not-Rockomax Micronode",
       "mass_t": 0.15,
       "roles": [
         "utility"
@@ -4197,7 +4197,7 @@
     },
     {
       "name": "structuralPanel1",
-      "title": "structuralPanel1",
+      "title": "M-1x1 Structural Panel",
       "mass_t": 0.075,
       "roles": [
         "utility"
@@ -4207,7 +4207,7 @@
     },
     {
       "name": "structuralPanel2",
-      "title": "structuralPanel2",
+      "title": "M-2x2 Structural Panel",
       "mass_t": 0.3,
       "roles": [
         "utility"
@@ -4217,7 +4217,7 @@
     },
     {
       "name": "structuralPylon",
-      "title": "structuralPylon",
+      "title": "Structural Pylon",
       "mass_t": 0.2,
       "roles": [
         "decoupler"
@@ -4227,7 +4227,7 @@
     },
     {
       "name": "structuralWing",
-      "title": "structuralWing",
+      "title": "Structural Wing Type A",
       "mass_t": 0.1,
       "roles": [
         "utility"
@@ -4237,7 +4237,7 @@
     },
     {
       "name": "structuralWing2",
-      "title": "structuralWing2",
+      "title": "Structural Wing Type B",
       "mass_t": 0.1,
       "roles": [
         "utility"
@@ -4247,7 +4247,7 @@
     },
     {
       "name": "structuralWing3",
-      "title": "structuralWing3",
+      "title": "Structural Wing Type C",
       "mass_t": 0.05,
       "roles": [
         "utility"
@@ -4257,7 +4257,7 @@
     },
     {
       "name": "structuralWing4",
-      "title": "structuralWing4",
+      "title": "Structural Wing Type D",
       "mass_t": 0.025,
       "roles": [
         "utility"
@@ -4267,7 +4267,7 @@
     },
     {
       "name": "strutConnector",
-      "title": "strutConnector",
+      "title": "EAS-4 Strut Connector",
       "mass_t": 0.05,
       "roles": [
         "utility"
@@ -4277,7 +4277,7 @@
     },
     {
       "name": "strutCube",
-      "title": "strutCube",
+      "title": "Cubic Octagonal Strut",
       "mass_t": 0.001,
       "roles": [
         "utility"
@@ -4287,7 +4287,7 @@
     },
     {
       "name": "strutOcto",
-      "title": "strutOcto",
+      "title": "Octagonal Strut",
       "mass_t": 0.001,
       "roles": [
         "utility"
@@ -4297,7 +4297,7 @@
     },
     {
       "name": "SurfaceScanner",
-      "title": "SurfaceScanner",
+      "title": "Surface Scanning Module",
       "mass_t": 0.005,
       "roles": [
         "utility"
@@ -4307,7 +4307,7 @@
     },
     {
       "name": "SurfAntenna",
-      "title": "SurfAntenna",
+      "title": "Communotron 16-S",
       "mass_t": 0.015,
       "roles": [
         "utility"
@@ -4317,7 +4317,7 @@
     },
     {
       "name": "SurveyScanner",
-      "title": "SurveyScanner",
+      "title": "M700 Survey Scanner",
       "mass_t": 0.2,
       "roles": [
         "utility"
@@ -4327,7 +4327,7 @@
     },
     {
       "name": "sweptWing",
-      "title": "sweptWing",
+      "title": "Swept Wings",
       "mass_t": 0.275,
       "roles": [
         "utility"
@@ -4337,7 +4337,7 @@
     },
     {
       "name": "sweptWing1",
-      "title": "sweptWing1",
+      "title": "Swept Wing Type A",
       "mass_t": 0.113,
       "roles": [
         "utility"
@@ -4347,7 +4347,7 @@
     },
     {
       "name": "sweptWing2",
-      "title": "sweptWing2",
+      "title": "Swept Wing Type B",
       "mass_t": 0.226,
       "roles": [
         "utility"
@@ -4357,7 +4357,7 @@
     },
     {
       "name": "tailfin",
-      "title": "tailfin",
+      "title": "Tail Fin",
       "mass_t": 0.125,
       "roles": [
         "utility"
@@ -4367,7 +4367,7 @@
     },
     {
       "name": "telescopicLadder",
-      "title": "telescopicLadder",
+      "title": "Kelus Mobility Enhancer",
       "mass_t": 0.005,
       "roles": [
         "utility"
@@ -4377,7 +4377,7 @@
     },
     {
       "name": "telescopicLadderBay",
-      "title": "telescopicLadderBay",
+      "title": "Kelus-LV Bay Mobility Enhancer",
       "mass_t": 0.005,
       "roles": [
         "utility"
@@ -4387,7 +4387,7 @@
     },
     {
       "name": "Thoroughbred",
-      "title": "Thoroughbred",
+      "title": "S2-17 \"Thoroughbred\" Solid Fuel Booster",
       "mass_t": 10,
       "roles": [
         "engine",
@@ -4409,7 +4409,7 @@
     },
     {
       "name": "toroidalAerospike",
-      "title": "toroidalAerospike",
+      "title": "T-1 Toroidal Aerospike \"Dart\" Liquid Fuel Engine",
       "mass_t": 1,
       "roles": [
         "engine"
@@ -4429,7 +4429,7 @@
     },
     {
       "name": "toroidalFuelTank",
-      "title": "toroidalFuelTank",
+      "title": "ROUND-8 Toroidal Fuel Tank",
       "mass_t": 0.0375,
       "roles": [
         "tank"
@@ -4442,7 +4442,7 @@
     },
     {
       "name": "trussAdapter",
-      "title": "trussAdapter",
+      "title": "Modular Girder Adapter",
       "mass_t": 0.25,
       "roles": [
         "utility"
@@ -4452,7 +4452,7 @@
     },
     {
       "name": "trussPiece1x",
-      "title": "trussPiece1x",
+      "title": "Modular Girder Segment",
       "mass_t": 0.125,
       "roles": [
         "utility"
@@ -4462,7 +4462,7 @@
     },
     {
       "name": "trussPiece3x",
-      "title": "trussPiece3x",
+      "title": "Modular Girder Segment XL",
       "mass_t": 0.375,
       "roles": [
         "utility"
@@ -4472,7 +4472,7 @@
     },
     {
       "name": "turboFanEngine",
-      "title": "turboFanEngine",
+      "title": "J-X4 \"Whiplash\" Turbo Ramjet Engine",
       "mass_t": 1.8,
       "roles": [
         "engine"
@@ -4492,7 +4492,7 @@
     },
     {
       "name": "turboFanSize2",
-      "title": "turboFanSize2",
+      "title": "J-90 \"Goliath\" Turbofan Engine",
       "mass_t": 4.5,
       "roles": [
         "engine"
@@ -4514,7 +4514,7 @@
     },
     {
       "name": "turboJet",
-      "title": "turboJet",
+      "title": "J-404 \"Panther\" Afterburning Turbofan",
       "mass_t": 1.2,
       "roles": [
         "engine"
@@ -4547,7 +4547,7 @@
     },
     {
       "name": "vernierEngine",
-      "title": "vernierEngine",
+      "title": "Vernor Engine",
       "mass_t": 0.08,
       "roles": [
         "pod"
@@ -4557,7 +4557,7 @@
     },
     {
       "name": "wheelMed",
-      "title": "wheelMed",
+      "title": "TR-2L Ruggedized Vehicular Wheel",
       "mass_t": 0.105,
       "roles": [
         "utility"
@@ -4567,7 +4567,7 @@
     },
     {
       "name": "wingConnector",
-      "title": "wingConnector",
+      "title": "Wing Connector Type A",
       "mass_t": 0.2,
       "roles": [
         "utility"
@@ -4577,7 +4577,7 @@
     },
     {
       "name": "wingConnector2",
-      "title": "wingConnector2",
+      "title": "Wing Connector Type B",
       "mass_t": 0.2,
       "roles": [
         "utility"
@@ -4587,7 +4587,7 @@
     },
     {
       "name": "wingConnector3",
-      "title": "wingConnector3",
+      "title": "Wing Connector Type C",
       "mass_t": 0.1,
       "roles": [
         "utility"
@@ -4597,7 +4597,7 @@
     },
     {
       "name": "wingConnector4",
-      "title": "wingConnector4",
+      "title": "Wing Connector Type D",
       "mass_t": 0.05,
       "roles": [
         "utility"
@@ -4607,7 +4607,7 @@
     },
     {
       "name": "wingConnector5",
-      "title": "wingConnector5",
+      "title": "Wing Connector Type E",
       "mass_t": 0.05,
       "roles": [
         "utility"
@@ -4617,7 +4617,7 @@
     },
     {
       "name": "winglet",
-      "title": "winglet",
+      "title": "AV-T1 Winglet",
       "mass_t": 0.037,
       "roles": [
         "utility"
@@ -4627,7 +4627,7 @@
     },
     {
       "name": "winglet3",
-      "title": "winglet3",
+      "title": "Delta-Deluxe Winglet",
       "mass_t": 0.078,
       "roles": [
         "utility"
@@ -4637,7 +4637,7 @@
     },
     {
       "name": "wingShuttleDelta",
-      "title": "wingShuttleDelta",
+      "title": "Big-S Delta Wing",
       "mass_t": 0.5,
       "roles": [
         "tank"
@@ -4649,7 +4649,7 @@
     },
     {
       "name": "wingShuttleElevon1",
-      "title": "wingShuttleElevon1",
+      "title": "Big-S Elevon 1",
       "mass_t": 0.15,
       "roles": [
         "utility"
@@ -4659,7 +4659,7 @@
     },
     {
       "name": "wingShuttleElevon2",
-      "title": "wingShuttleElevon2",
+      "title": "Big-S Elevon 2",
       "mass_t": 0.23,
       "roles": [
         "utility"
@@ -4669,7 +4669,7 @@
     },
     {
       "name": "wingShuttleRudder",
-      "title": "wingShuttleRudder",
+      "title": "Big-S Spaceplane Tail Fin",
       "mass_t": 0.45,
       "roles": [
         "utility"
@@ -4679,7 +4679,7 @@
     },
     {
       "name": "wingShuttleStrake",
-      "title": "wingShuttleStrake",
+      "title": "Big-S Wing Strake",
       "mass_t": 0.1,
       "roles": [
         "tank"
@@ -4691,7 +4691,7 @@
     },
     {
       "name": "wingStrake",
-      "title": "wingStrake",
+      "title": "Wing Strake",
       "mass_t": 0.05,
       "roles": [
         "utility"
@@ -4701,7 +4701,7 @@
     },
     {
       "name": "xenonTank",
-      "title": "xenonTank",
+      "title": "PB-X150 Xenon Container",
       "mass_t": 0.024,
       "roles": [
         "tank"
@@ -4713,7 +4713,7 @@
     },
     {
       "name": "xenonTankLarge",
-      "title": "xenonTankLarge",
+      "title": "PB-X750 Xenon Container",
       "mass_t": 0.19,
       "roles": [
         "tank"
@@ -4725,7 +4725,7 @@
     },
     {
       "name": "xenonTankRadial",
-      "title": "xenonTankRadial",
+      "title": "PB-X50R Xenon Container",
       "mass_t": 0.0135,
       "roles": [
         "tank"
