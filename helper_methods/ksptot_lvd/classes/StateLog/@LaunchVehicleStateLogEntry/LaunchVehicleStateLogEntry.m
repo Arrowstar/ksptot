@@ -292,7 +292,18 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             newStateLogEntry.integrationGroup = IntegrationGroup(newStateLogEntry.integrationGroup.integrationGroupNum);
         end
         
-        function obj = createCopiesOfCopyableInternals(obj, deepCopyState)
+        function obj = createCopiesOfCopyableInternals(obj, deepCopyState, newIntegrationGroup)
+            %newIntegrationGroup=false shares the source's IntegrationGroup handle
+            %instead of building a fresh one.  Only the integrator-output row
+            %constructor passes false: LaunchVehicleScript.executeEventPropagation
+            %deals one shared handle over every row it gets back
+            %([newStateLogEntries.integrationGroup] = deal(intGroup)) the instant
+            %that constructor returns, so the per-row objects are discarded
+            %unread.  Default true keeps every other copy() caller unchanged.
+            if(nargin < 3)
+                newIntegrationGroup = true;
+            end
+
             %stuff that requires it's own copy
             stgStates = obj.stageStates;
             for(i=1:length(stgStates))
@@ -321,9 +332,11 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                 obj.pluginVarStates = obj.pluginVarStates.copy();
             end
 
-            obj.integrationGroup = IntegrationGroup(obj.integrationGroup.integrationGroupNum);
+            if(newIntegrationGroup)
+                obj.integrationGroup = IntegrationGroup(obj.integrationGroup.integrationGroupNum);
+            end
         end
-        
+
         function cartElemSet = getCartesianElementSetRepresentation(obj, createObjOfArray)
             arguments
                 obj
@@ -458,13 +471,17 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
     end
     
     methods(Access=protected)
-        function cpObj = copyElement(obj, deepCopyStageState)
+        function cpObj = copyElement(obj, deepCopyStageState, newIntegrationGroup)
             if(nargin < 2)
                 deepCopyStageState = true;
             end
-            
+
+            if(nargin < 3)
+                newIntegrationGroup = true;
+            end
+
             cpObj = copyElement@matlab.mixin.Copyable(obj);
-            cpObj = cpObj.createCopiesOfCopyableInternals(deepCopyStageState);
+            cpObj = cpObj.createCopiesOfCopyableInternals(deepCopyStageState, newIntegrationGroup);
         end
     end
     
@@ -474,8 +491,12 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             
             stateLogEntries = repmat(eventInitStateLogEntry,1,length(t));
             
+            % newIntegrationGroup=false: the caller
+            % (LaunchVehicleScript.executeEventPropagation) overwrites every row's
+            % integrationGroup with one shared handle the moment this returns, so
+            % building a distinct IntegrationGroup per row is dead work.
             for(i=1:length(stateLogEntries))
-                stateLogEntries(i) = stateLogEntries(i).copyElement(false);
+                stateLogEntries(i) = stateLogEntries(i).copyElement(false, false);
             end
 
             % Entries 2..N get their calcObjStates replaced below (lines 528-540).
@@ -531,8 +552,11 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                         newValue(j) = stateLogEntry.extremaStates(j).updateExtremaStateWithStateLogEntry(stateLogEntry, newValue(j), maSubLog_i); %#ok<AGROW>
                     end
                 end
-                
-                stateLogEntries(i) = stateLogEntry;
+
+                % No write-back: stateLogEntry was read out of stateLogEntries(i)
+                % and LaunchVehicleStateLogEntry is a handle class, so every
+                % mutation above already landed in the array. The indexed object
+                % -array store was pure overhead.
             end
             
             calcObjStates = stateLogEntries(1).calcObjStates;
@@ -568,32 +592,11 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                 attState LaunchVehicleAttitudeState
             end
 
-            persistent cachedEngTankInds cachedEngTankKey
-
-            engTankKey = [numel(tankStates), sum([stgStates.active])];
-            if(isempty(cachedEngTankInds) || ~isequal(engTankKey, cachedEngTankKey))
-                cachedEngTankKey = engTankKey;
-                tankStateTanksLocal = [tankStates.tank];
-                cachedEngTankInds = cell(length(stgStates), 1);
-                for(ii=1:length(stgStates)) %#ok<*NO4LP>
-                    engineStates_ii = stgStates(ii).engineStates;
-                    cachedEngTankInds{ii} = cell(length(engineStates_ii), 1);
-                    for(jj=1:length(engineStates_ii))
-                        engine_jj = engineStates_ii(jj).engine;
-                        tanks_jj = lvState.getTanksConnectedToEngine(engine_jj);
-                        inds = zeros(1, length(tanks_jj));
-                        numValid = 0;
-                        for(kk=1:length(tanks_jj))
-                            idx = find(tankStateTanksLocal == tanks_jj(kk), 1);
-                            if(~isempty(idx))
-                                numValid = numValid + 1;
-                                inds(numValid) = idx;
-                            end
-                        end
-                        cachedEngTankInds{ii}{jj} = inds(1:numValid);
-                    end
-                end
-            end
+            %Memoised on the LaunchVehicleState instance so that it is
+            %invalidated by the same events that change the plumbing.  A
+            %persistent here would be session global and would survive a
+            %run-time connection toggle.
+            engTankInds = lvState.getEngineToTankStateIndices(tankStates, stgStates);
 
             tankMDots = zeros(size(tankStates));
             tankMDots = tankMDots(:);
@@ -629,7 +632,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                                 flowFromTankInds = zeros(size(tankStates));
                                 if(mdot < 0 && ... %negative because we're flowing out
                                    (engine.reqsElecCharge == false || (engine.reqsElecCharge == true && numel(storageSoCs)>0 && sum(storageSoCs)>0))) %handle engines that require EC to function
-                                    connTankInds = cachedEngTankInds{i}{j};
+                                    connTankInds = engTankInds{i}{j};
 
                                     totalConnTankCapacity = 0;
                                     totalConnTankMass = 0;
@@ -712,31 +715,33 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
         end
         
         function storageRates = getStorageChargeRatesDueToSourcesSinks(storageSoCs, powerStorageStates, stgStates, ut, rVect, vVect, bodyInfo, steeringModel)
-            persistent cachedHasPanels cachedStgKey
+            persistent cachedHasPanels cachedSrcStates
 
             if(length(storageSoCs) >= 1)
                 elemSet = CartesianElementSet(ut, rVect(:), vVect(:), bodyInfo.getBodyCenteredInertialFrame());
 
-                % hasPanels is fixed for a given active-stage configuration; cache it to avoid
-                % a nested object-traversal loop on every ODE step.
-                stgKey = [numel(stgStates), sum([stgStates.active])];
-                if(isempty(cachedHasPanels) || ~isequal(stgKey, cachedStgKey))
-                    cachedStgKey = stgKey;
+                % Each power source state returns a component of a fixed type, so hasPanels is
+                % a property of the *identity* of the power source state objects.  Key the memo
+                % on those handles, not on counts: [numel(stgStates), sum(active)] collides
+                % across vehicles and misses a source being added to an existing stage.
+                srcStates = [stgStates.powerSrcStates];
+                if(isempty(cachedHasPanels) || ...
+                   numel(cachedSrcStates) ~= numel(srcStates) || ...
+                   not(all(cachedSrcStates(:) == srcStates(:))))
                     hasPanels = false;
-                    for(i=1:length(stgStates)) %#ok<*NO4LP>
-                        for(j=1:length(stgStates(i).powerSrcStates))
-                            if(isa(stgStates(i).powerSrcStates(j).getEpsSrcComponent(), 'AbstractLaunchVehicleSolarPanel'))
-                                hasPanels = true;
-                                break;
-                            end
+                    for(i=1:length(srcStates)) %#ok<*NO4LP>
+                        if(isa(srcStates(i).getEpsSrcComponent(), 'AbstractLaunchVehicleSolarPanel'))
+                            hasPanels = true;
+                            break;
                         end
-                        if(hasPanels); break; end
                     end
+
                     cachedHasPanels = hasPanels;
+                    cachedSrcStates = srcStates;
                 else
                     hasPanels = cachedHasPanels;
                 end
-                
+
                 if(hasPanels)
                     [hasSunLoS, body2InertDcm, elemSetSun] = AbstractLaunchVehicleSolarPanel.getExpensiveSolarPanelInputs(elemSet, bodyInfo, steeringModel);
                 else

@@ -8,7 +8,7 @@ function [value, isterminal, direction, causes] = getSoITransitionOdeEvents(ut, 
             createCausesArr(1,1) logical = true
         end
 
-        persistent soiDownCauseEmpty emptyCauses cachedSoiBodyId cachedUpCause cachedDownCauses
+        persistent soiDownCauseEmpty emptyCauses cachedSoiBody cachedSoiCelBodyData cachedUpCause cachedDownCauses
 
         if(isempty(soiDownCauseEmpty))
             soiDownCauseEmpty = SoITransitionDownIntTermCause();
@@ -18,11 +18,21 @@ function [value, isterminal, direction, causes] = getSoITransitionOdeEvents(ut, 
             emptyCauses = AbstractIntegrationTerminationCause.empty(1,0);
         end
 
-        % Invalidate cause-object caches when the central body changes (e.g. after a SoI transition restart)
-        if(isempty(cachedSoiBodyId) || cachedSoiBodyId ~= bodyInfo.id)
-            cachedSoiBodyId  = bodyInfo.id;
-            cachedUpCause    = [];
-            cachedDownCauses = [];
+        % Invalidate cause-object caches when the central body changes (e.g. after a SoI
+        % transition restart).  Key on OBJECT IDENTITY, not bodyInfo.id: ids are only
+        % unique within one body database, and every mission file carries its own
+        % serialized celBodyData, so two missions opened in the same session hand this
+        % function distinct KSPTOT_BodyInfo objects sharing an id while differing in gm,
+        % SoI radius and orbit elements.  An id-keyed cache hits straight across that
+        % boundary, and the cause objects it hands back are not inert metadata:
+        % SoITransitionUpIntTermCause.getRestartInitialState converts the state using its
+        % stored celBodyData and sets centralBody to its stored toBody, so a stale cause
+        % restarts integration about the PREVIOUS mission's celestial body.
+        if(isempty(cachedSoiBody) || cachedSoiBody ~= bodyInfo || cachedSoiCelBodyData ~= celBodyData)
+            cachedSoiBody        = bodyInfo;
+            cachedSoiCelBodyData = celBodyData;
+            cachedUpCause        = [];
+            cachedDownCauses     = [];
         end
 
         value = [];

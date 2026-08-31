@@ -13,6 +13,10 @@ classdef LaunchVehicleState < matlab.mixin.SetGet & matlab.mixin.Copyable
     properties(Transient)
         cachedEngines LaunchVehicleEngine
         cachedConnTanks cell
+
+        cachedEngTankInds cell
+        cachedEngTankIndsTanks LaunchVehicleTank
+        cachedEngTankIndsStgStates LaunchVehicleStageState
     end
     
     properties(Constant)
@@ -90,6 +94,56 @@ classdef LaunchVehicleState < matlab.mixin.SetGet & matlab.mixin.Copyable
             end
         end
         
+        function engTankInds = getEngineToTankStateIndices(obj, tankStates, stgStates)
+            %Maps every (stage, engine) pair to the indices, within
+            %tankStates, of the tank states that engine draws from.  The map
+            %depends on the fuel line topology and on the identity/order of
+            %tankStates and stgStates, nothing else.
+            %
+            %This memo lives on the LaunchVehicleState instance -- NOT in a
+            %persistent -- for two reasons.  A persistent is session global,
+            %so two different vehicles would silently share a topology, and
+            %it is invisible to clearCachedConnEnginesTanks(), which is what
+            %SetEngineTankConnActiveStateEventAction calls when it toggles a
+            %connection at run time.  Hanging it here means it is invalidated
+            %by exactly the same events that invalidate the connection memo
+            %it is derived from.
+            tankStateTanks = [tankStates.tank];
+
+            if(not(isempty(obj.cachedEngTankInds)) && ...
+               LaunchVehicleState.isSameHandleArray(obj.cachedEngTankIndsTanks, tankStateTanks) && ...
+               LaunchVehicleState.isSameHandleArray(obj.cachedEngTankIndsStgStates, stgStates))
+                engTankInds = obj.cachedEngTankInds;
+                return;
+            end
+
+            engTankInds = cell(length(stgStates), 1);
+            for(i=1:length(stgStates)) %#ok<*NO4LP>
+                engineStates_i = stgStates(i).engineStates;
+                engTankInds{i} = cell(length(engineStates_i), 1);
+
+                for(j=1:length(engineStates_i))
+                    tanks_j = obj.getTanksConnectedToEngine(engineStates_i(j).engine);
+
+                    inds = zeros(1, length(tanks_j));
+                    numValid = 0;
+                    for(k=1:length(tanks_j))
+                        idx = find(tankStateTanks == tanks_j(k), 1);
+                        if(not(isempty(idx)))
+                            numValid = numValid + 1;
+                            inds(numValid) = idx;
+                        end
+                    end
+
+                    engTankInds{i}{j} = inds(1:numValid);
+                end
+            end
+
+            obj.cachedEngTankInds = engTankInds;
+            obj.cachedEngTankIndsTanks = tankStateTanks;
+            obj.cachedEngTankIndsStgStates = stgStates;
+        end
+
         %Tank To Tank Connections
         function addT2TConnState(obj, newConnState)
             obj.t2TConns(end+1) = newConnState;
@@ -165,6 +219,18 @@ classdef LaunchVehicleState < matlab.mixin.SetGet & matlab.mixin.Copyable
         function clearCachedConnEnginesTanks(obj)
             obj.cachedEngines = LaunchVehicleEngine.empty(1,0);
             obj.cachedConnTanks = {};
+
+            obj.cachedEngTankInds = {};
+            obj.cachedEngTankIndsTanks = LaunchVehicleTank.empty(1,0);
+            obj.cachedEngTankIndsStgStates = LaunchVehicleStageState.empty(1,0);
+        end
+    end
+
+    methods(Static, Access=private)
+        function tf = isSameHandleArray(arrA, arrB)
+            %Element-wise handle identity.  Deliberately not isequal(), which
+            %compares property values rather than object identity.
+            tf = numel(arrA) == numel(arrB) && all(arrA(:) == arrB(:));
         end
     end
 end

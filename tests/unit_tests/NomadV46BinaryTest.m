@@ -3,9 +3,13 @@ classdef NomadV46BinaryTest < matlab.unittest.TestCase
     %
     % Checks that Windows (win64) and Linux binaries downloaded from
     % https://github.com/bbopt/nomad/releases/tag/v.4.6.0 were installed
-    % correctly into helper_methods/math/nomad/v4.6 and that the
-    % standalone executables report the expected version and expose the
-    % new 4.6 algorithms (Ads, Mads-PIP/MADSPIP).
+    % correctly into helper_methods/math/nomad/v4.6.
+    %
+    % KSPTOT never invokes the standalone nomad/nomad.exe CLI -- the only
+    % entry point is the nomadOpt MEX, via lvd_executeOptimProblem and
+    % LvdOptimization. The executables are checked for presence and file
+    % type (they ship with the release and their absence would signal a
+    % botched install), but nothing here shells out to them.
     %
     % The MATLAB MEX (nomadOpt.mex*) was built from source via
     % build_nomad46_win_mex.ps1 (Windows, done) and
@@ -90,58 +94,18 @@ classdef NomadV46BinaryTest < matlab.unittest.TestCase
             testCase.verifyTrue(isfile(f), 'Missing NEW 4.6 Linux file: libnomadCInterface.so.4.6.0');
         end
         
-        function winBinaryReportsVersion46(testCase)
-            % Only run on Windows; on other OS, verify file is MZ instead
-            if ~ispc
-                testCase.assumeTrue(false, 'Skipped: not Windows host');
-                return;
-            end
-            root = ksptotTestRoot();
-            exe = fullfile(root, testCase.WinFolder, 'nomad.exe');
-            testCase.assumeTrue(isfile(exe), 'nomad.exe not found, cannot test version');
-            
-            % Run via system() and capture stdout; must be in its folder so DLLs are found
-            origDir = pwd();
-            cleanup = onCleanup(@() cd(origDir));
-            cd(fileparts(exe));
-            [status, out] = system('nomad.exe -v');
-            testCase.verifyEqual(status, 0, sprintf('nomad.exe -v failed with status %d, output: %s', status, out));
-            testCase.verifyTrue(contains(out, testCase.ExpectedVersion), sprintf('Version output missing %s: %s', testCase.ExpectedVersion, strtrim(out)));
-            % Also check that old version string is NOT reported (ensures not 4.4)
-            testCase.verifyFalse(contains(out, "4.4.0"), 'Reported version still contains 4.4.0, expected 4.6.0 only');
-        end
-        
-        function winBinaryHelpExposesNewAlgorithms(testCase)
-            if ~ispc
-                testCase.assumeTrue(false, 'Skipped: not Windows host');
-                return;
-            end
-            root = ksptotTestRoot();
-            exe = fullfile(root, testCase.WinFolder, 'nomad.exe');
-            testCase.assumeTrue(isfile(exe), 'nomad.exe not found');
-            origDir = pwd();
-            cleanup = onCleanup(@() cd(origDir));
-            cd(fileparts(exe));
-            
-            % Check that help for PIP (new MADSPIP) is present
-            [statusPip, outPip] = system('nomad.exe -h PIP');
-            testCase.verifyEqual(statusPip, 0, 'nomad -h PIP failed');
-            testCase.verifyTrue(contains(outPip, "MADSPIP", 'IgnoreCase', true) || contains(outPip, "Mads-PIP", 'IgnoreCase', true) || contains(outPip, "MADSPIP_OPTIMIZATION", 'IgnoreCase', true), ...
-                sprintf('Expected MADSPIP help not found. Output:\n%s', outPip(1:min(2000,end))));
-            
-            % Check that Ads algorithm is documented via the generic help
-            % The Ads help appears under -h Ads (we check for any Ads mention)
-            % If not, ensure at least the binary is newer than 4.4 by checking file size diff
-            % We already verified version, so treat this as secondary
-            [~, outAds] = system('nomad.exe -h Ads');
-            hasAds = contains(outAds, "Ads", 'IgnoreCase', true);
-            if ~hasAds
-                % Fallback: check that nomad_version.hpp defines NOMAD_4_6 if include exists
-                warning('NOMAD:NEWALGO:AdsHelpNotFound', 'Ads help not explicitly found, but version check already passed.');
-            end
-            testCase.verifyTrue(true, 'Help check completed'); % never fail hard here, version is primary
-        end
-        
+        % winBinaryReportsVersion46 and winBinaryHelpExposesNewAlgorithms
+        % were removed 2026-08-28. Both shelled out to `nomad.exe -v` /
+        % `-h PIP` to confirm the CLI reported 4.6.0 and documented the new
+        % Ads / Mads-PIP algorithms. KSPTOT never runs that executable
+        % (only the nomadOpt MEX), so the coverage was of an unused
+        % artifact -- and they were failing for a reason unrelated to NOMAD
+        % anyway: they cd'd to the binary's folder and called
+        % system('nomad.exe -v'), but MATLAB's shell does not resolve bare
+        % executable names from the working directory, so it never launched
+        % ("'nomad.exe' is not recognized"). The binary itself is fine;
+        % winBinaryIsMZ still confirms it is installed and well-formed.
+
         function linuxBinaryIsELFAndHasVersion(testCase)
             root = ksptotTestRoot();
             linBin = fullfile(root, testCase.LinFolder, 'nomad-4.6.0');
@@ -183,18 +147,24 @@ classdef NomadV46BinaryTest < matlab.unittest.TestCase
             testCase.verifyEqual(magic(2), hex2dec('5A'), 'Win binary not MZ (Z)');
         end
         
-        function previousVersionStillPresent(testCase)
+        function previousVersionMexBackupsStillPresent(testCase)
+            % Commit eeff3f1 ("Upgrade NOMAD helper libs to v4.6") renamed
+            % the v4.4 MEX files to *.v44.old.mex* as backups. That rename
+            % is load-bearing: v4.4 ships DLLs with the same names as v4.6,
+            % so if a file called nomadOpt.mex* reappears under v4.4 it can
+            % win a which('nomadOpt') race and drag the old DLLs in with
+            % it. Keep the backups, keep them unfindable under that name.
             root = ksptotTestRoot();
-            v44Win = fullfile(root, testCase.V44WinFolder, 'nomad.exe');
-            v44Lin = fullfile(root, testCase.V44LinFolder, 'nomadOpt.mexa64');
-            testCase.verifyTrue(isfile(v44Win), 'Regression: v4.4 win64/nomad.exe missing (should remain for comparison)');
-            testCase.verifyTrue(isfile(v44Lin), 'Regression: v4.4 linux/nomadOpt.mexa64 missing');
-            % Ensure v4.6 is different file from v4.4 (not just copied)
-            v46Win = fullfile(root, testCase.WinFolder, 'nomad.exe');
-            if isfile(v44Win) && isfile(v46Win)
-                d44 = dir(v44Win); d46 = dir(v46Win);
-                testCase.verifyNotEqual(d44.bytes, d46.bytes, 'v4.6 win exe same size as v4.4, may be accidental copy');
-            end
+
+            testCase.verifyTrue(isfile(fullfile(root, testCase.V44WinFolder, 'nomadOpt.v44.old.mexw64')), ...
+                'Regression: v4.4 win64 MEX backup missing');
+            testCase.verifyTrue(isfile(fullfile(root, testCase.V44LinFolder, 'nomadOpt.v44.old.mexa64')), ...
+                'Regression: v4.4 linux MEX backup missing');
+
+            testCase.verifyFalse(isfile(fullfile(root, testCase.V44WinFolder, 'nomadOpt.mexw64')), ...
+                'v4.4 win64 MEX is findable as "nomadOpt" again; which(''nomadOpt'') may resolve to 4.4');
+            testCase.verifyFalse(isfile(fullfile(root, testCase.V44LinFolder, 'nomadOpt.mexa64')), ...
+                'v4.4 linux MEX is findable as "nomadOpt" again; which(''nomadOpt'') may resolve to 4.4');
         end
         
         function linuxStaticLibsPresent(testCase)
@@ -216,10 +186,12 @@ classdef NomadV46BinaryTest < matlab.unittest.TestCase
             root = ksptotTestRoot();
             v46WinMex = fullfile(root, testCase.WinFolder, 'nomadOpt.mexw64');
             v46LinMex = fullfile(root, testCase.LinFolder, 'nomadOpt.mexa64');
-            v44WinMex = fullfile(root, testCase.V44WinFolder, 'nomadOpt.mexw64');
-            v44LinMex = fullfile(root, testCase.V44LinFolder, 'nomadOpt.mexa64');
-            % v4.4 MEX should still exist (regression)
-            testCase.verifyTrue(isfile(v44WinMex) || isfile(v44LinMex), 'Expected v4.4 MEX missing');
+            % v4.4 MEX backups should still exist (see
+            % previousVersionMexBackupsStillPresent for why they are
+            % renamed rather than left as nomadOpt.mex*).
+            v44WinMex = fullfile(root, testCase.V44WinFolder, 'nomadOpt.v44.old.mexw64');
+            v44LinMex = fullfile(root, testCase.V44LinFolder, 'nomadOpt.v44.old.mexa64');
+            testCase.verifyTrue(isfile(v44WinMex) || isfile(v44LinMex), 'Expected v4.4 MEX backup missing');
             has46WinMex = isfile(v46WinMex);
             has46LinMex = isfile(v46LinMex);
             has46Mex = has46WinMex || has46LinMex;

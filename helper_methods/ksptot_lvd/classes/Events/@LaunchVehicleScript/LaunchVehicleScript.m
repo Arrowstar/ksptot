@@ -418,8 +418,17 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
             obj.lvdData.plugins.initializePlugins();
             
             tPropTime = 0;
-            if(~isempty(obj.evts))                
-                tStartSimTime = initStateLogEntry.time;
+            if(~isempty(obj.evts))
+                %The simulated-duration budget (simDriver.simMaxDur) is
+                %measured from the start of the script, not from wherever
+                %this evaluation happens to begin integrating.  It reaches
+                %the integrator as maxT, which is both the tspan endpoint
+                %and a hard termination condition on every event, so taking
+                %it from a resumed run's seed state would hand the tail
+                %events a fresh budget and terminate them somewhere a full
+                %run would not.  On a cold start initStateLogEntry is
+                %lvdData.initialState, so this is the same value.
+                tStartSimTime = obj.lvdData.initialState.time;
                 tStartPropTime = tic();
                 
                 obj.nextEventToRun = obj.getEventForInd(evtStartNum);

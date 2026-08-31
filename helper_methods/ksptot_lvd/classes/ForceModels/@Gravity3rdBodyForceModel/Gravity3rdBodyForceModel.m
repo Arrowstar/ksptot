@@ -13,16 +13,23 @@ classdef Gravity3rdBodyForceModel < AbstractForceModel
         end
         
         function [forceVect, tankMdots, ecStgDots] = getForce(obj, ut, rVectSC, vVectSC, mass, bodySC, ~, ~, ~, ~, ~, ~, ~, ~, grav3Body, ~, ~, ~, ~)
-            persistent cachedGrav3BodyId cachedGrav3ScChain cachedGrav3OriChain cachedGrav3BodyChains cachedGrav3BodyIds
+            persistent cachedGrav3Body cachedGrav3ScChain cachedGrav3OriChain cachedGrav3BodyChains cachedGrav3Bodies
 
             bodies = grav3Body.bodies;
             bodies = bodies(bodies ~= bodySC);
 
             % Cache orbit element chains — they describe the fixed celestial body hierarchy and
             % never change during a session. Invalidate when the central body or body set changes.
-            if(isempty(cachedGrav3BodyId) || cachedGrav3BodyId ~= bodySC.id || ~isequal(cachedGrav3BodyIds, [bodies.id]))
-                cachedGrav3BodyId    = bodySC.id;
-                cachedGrav3BodyIds   = [bodies.id];
+            %
+            % Key on OBJECT IDENTITY rather than .id: body ids are unique only within a single
+            % body database, and each mission file carries its own serialized celBodyData, so
+            % two missions opened in one session present distinct KSPTOT_BodyInfo objects under
+            % the same id.  An id-keyed cache hits across that boundary and computes third-body
+            % gravity from the previous mission's orbit element chains.
+            if(isempty(cachedGrav3Body) || cachedGrav3Body ~= bodySC || ...
+               numel(cachedGrav3Bodies) ~= numel(bodies) || ~all(cachedGrav3Bodies(:) == bodies(:)))
+                cachedGrav3Body      = bodySC;
+                cachedGrav3Bodies    = bodies;
                 bodyScFrame          = bodySC.getBodyCenteredInertialFrame();
                 cachedGrav3ScChain   = bodySC.getOrbitElemsChain();
                 cachedGrav3OriChain  = bodyScFrame.getOriginBody().getOrbitElemsChain();
