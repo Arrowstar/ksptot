@@ -32,12 +32,12 @@ classdef MaxFixedStepsReachedValidator < AbstractLaunchVehicleDataValidator
                         warnEvtNums(end+1) = evt.getEventNum(); %#ok<AGROW> 
                     end
                 end
+            end
 
-                if(not(isempty(warnEvtNums)))
-                    eventStr = makeEventsStr(unique(warnEvtNums));
-                    str = sprintf('Maximum number of fixed step sizes reached on some events. (Events: %s)\n%s', eventStr);
-                    warnings(end+1) = LaunchVehicleDataValidationWarning(str); %#ok<AGROW> 
-                end
+            if(not(isempty(warnEvtNums)))
+                eventStr = makeEventsStr(unique(warnEvtNums));
+                str = sprintf('Maximum number of fixed step sizes reached on some events. (Events: %s)', eventStr);
+                warnings(end+1) = LaunchVehicleDataValidationWarning(str); %#ok<AGROW>
             end
         end
     end

@@ -43,6 +43,19 @@ function [exitflag, message] = lvd_executeOptimProblem(celBodyData, writeOutput,
         [x,out,v,H,exitflag] = sqp(problem);
         message = out.status;
 
+        if(isempty(message))
+            %sqp.m only populates out.status on a non-converged exit (it
+            %leaves its internal 'flag' empty when everything went well and
+            %just prints the success line to the console).  Every other
+            %solver in this function returns a message in all cases, so give
+            %callers the same string sqp.m prints for itself.
+            if(exitflag == 1)
+                message = 'Optimization terminated successfully from sqp.';
+            else
+                message = sprintf('sqp terminated with status %i.', exitflag);
+            end
+        end
+
     elseif(strcmpi(problem.solver,'patternsearch'))
         [x,fval,exitflag,output] = patternsearch(problem);
         message = output.message;

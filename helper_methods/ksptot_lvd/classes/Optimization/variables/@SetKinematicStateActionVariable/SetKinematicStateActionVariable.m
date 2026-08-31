@@ -88,7 +88,7 @@ classdef SetKinematicStateActionVariable < AbstractOptimizationVariable
         
         function [lb, ub] = getAllBndsForVariable(obj)
             lb = obj.lb;
-            ub = obj.lb;
+            ub = obj.ub;
             
             if(not(isempty(obj.orbitVar)))
                 [oLb, oUb] = obj.orbitVar.getAllBndsForVariable();

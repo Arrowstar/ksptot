@@ -52,8 +52,8 @@ classdef LinearTangentSelectableModel < AbstractSteeringMathModel
         end
           
         function newModel = deepCopy(obj)
-            newModel = LinearTangentModel(obj.t0, obj.a, obj.a_dot, obj.b, obj.b_dot);
-            
+            newModel = LinearTangentSelectableModel(obj.t0, obj.a, obj.a_dot, obj.b, obj.b_dot);
+
             %Time
             newModel.t0 = obj.t0;
             newModel.tOffset = obj.tOffset;

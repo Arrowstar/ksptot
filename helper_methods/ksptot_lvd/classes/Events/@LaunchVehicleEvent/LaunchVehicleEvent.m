@@ -70,9 +70,10 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
             obj.colorLineSpec = EventColorLineSpec();
 
             obj.integratorObj = ODE45Integrator();
-            obj.propagatorObj = ForceModelPropagator();
-            
+
             obj.forceModelPropagator = ForceModelPropagator();
+            obj.propagatorObj = obj.forceModelPropagator;
+
             obj.twoBodyPropagator = TwoBodyPropagator();
             obj.secOrdGravOnlyPropagator = SecondOrderGravOnlyPropagator();
             

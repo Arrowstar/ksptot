@@ -7,7 +7,7 @@ classdef ConicalSensorState < AbstractSensorState
         
         activeTf(1,1) logical = true;
         steeringModel(1,1) AbstractSensorSteeringModel
-        angle(1,1) double {mustBeGreaterThan(angle,0)} = deg2rad(10);
+        angle(1,1) double {mustBeGreaterThanOrEqual(angle,0)} = deg2rad(10);
         range(1,1) double {mustBeGreaterThan(range,0)} = 1;
     end
     

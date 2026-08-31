@@ -52,7 +52,7 @@ classdef LvdCaseMatrix < matlab.mixin.SetGet
             
             [Idx,~] = knnsearch(A,currentPluginValues, 'Distance','seuclidean', 'K',height(A)); 
             
-            numDigits = ceil(log10(abs(max(Idx))));
+            numDigits = floor(log10(abs(max(Idx)))) + 1;
             for(i=1:length(Idx))
 %                 newLvdDataSerialized = getByteStreamFromArray(obj.lvdData); %for now, but need to grab lvdData from the nearest finished case eventually
 %                 newLvdData = getArrayFromByteStream(newLvdDataSerialized);

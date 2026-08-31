@@ -23,7 +23,7 @@ classdef TotalStateOfChargeOptimizationVariable < AbstractOptimizationVariable
             x = [];
             
             if(obj.useTf)
-                x = obj.varObj.perialt;
+                x = obj.varObj.totalStateOfCharge;
             end
         end
         
@@ -33,8 +33,8 @@ classdef TotalStateOfChargeOptimizationVariable < AbstractOptimizationVariable
         end
         
         function [lb, ub] = getAllBndsForVariable(obj)
-            lb = obj.lwrBnd;
-            ub = obj.uprBnd;
+            lb = obj.lb;
+            ub = obj.ub;
         end
         
         function setBndsForVariable(obj, lb, ub)

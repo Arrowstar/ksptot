@@ -99,11 +99,17 @@ classdef HeightAboveTerrainCondition < AbstractEventTerminationCondition
             %body, so memoize the interpolant here to skip the repeated
             %getter overhead.  The exact same griddedInterpolant object is
             %returned, so results are bit-identical.
-            persistent hmapId hmapGI
-            bodyId = obj.bodyInfo.id;
-            if(isempty(hmapGI) || hmapId ~= bodyId)
+            %Keyed on OBJECT IDENTITY, not bodyInfo.id: ids are unique only
+            %within one body database, and every mission file carries its own
+            %serialized celBodyData, so two missions open in the same session
+            %present distinct KSPTOT_BodyInfo objects sharing an id and
+            %carrying different height maps.  An id-keyed cache would hand the
+            %previous mission's terrain to this one.  KSPTOT_BodyInfo is a
+            %handle class, so ~= is an identity test.
+            persistent hmapBody hmapGI
+            if(isempty(hmapGI) || hmapBody ~= obj.bodyInfo)
                 hmapGI = obj.bodyInfo.getHeightMap();
-                hmapId = bodyId;
+                hmapBody = obj.bodyInfo;
             end
             heightMapGI = hmapGI;
 

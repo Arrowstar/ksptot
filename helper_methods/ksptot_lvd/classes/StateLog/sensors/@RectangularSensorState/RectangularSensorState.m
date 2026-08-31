@@ -7,8 +7,8 @@ classdef RectangularSensorState < AbstractSensorState
         
         activeTf(1,1) logical = true;
         steeringModel(1,1) AbstractSensorSteeringModel
-        azAngle(1,1) double {mustBeGreaterThan(azAngle,0)} = deg2rad(10);
-        decAngle(1,1) double {mustBeGreaterThan(decAngle,0)} = deg2rad(10);
+        azAngle(1,1) double {mustBeGreaterThanOrEqual(azAngle,0)} = deg2rad(10);
+        decAngle(1,1) double {mustBeGreaterThanOrEqual(decAngle,0)} = deg2rad(10);
         range(1,1) double {mustBeGreaterThan(range,0)} = 1;
     end
     

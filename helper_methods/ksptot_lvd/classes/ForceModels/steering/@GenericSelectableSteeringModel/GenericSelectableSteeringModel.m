@@ -246,7 +246,30 @@ classdef GenericSelectableSteeringModel < AbstractSteeringModel
         
         function newSteeringModel = deepCopy(obj)
             newSteeringModel = GenericSelectableSteeringModel(obj.gammaAngleModel.deepCopy(), obj.betaAngleModel.deepCopy(), obj.alphaAngleModel.deepCopy());
-            
+
+            %The constructor only routes the *currently selected* model into its
+            %matching slot.  Copy the unselected slots and the selector enums
+            %too, otherwise the copy silently reverts to GenericPoly and the
+            %user's other configured models are lost.
+            newSteeringModel.gammaAngleSumPoly = obj.gammaAngleSumPoly.deepCopy();
+            newSteeringModel.gammaAngleSumSines = obj.gammaAngleSumSines.deepCopy();
+            newSteeringModel.gammaAngleLinearTan = obj.gammaAngleLinearTan.deepCopy();
+            newSteeringModel.gammaAngleFitNet = obj.gammaAngleFitNet.deepCopy();
+
+            newSteeringModel.betaAngleSumPoly = obj.betaAngleSumPoly.deepCopy();
+            newSteeringModel.betaAngleSumSines = obj.betaAngleSumSines.deepCopy();
+            newSteeringModel.betaAngleLinearTan = obj.betaAngleLinearTan.deepCopy();
+            newSteeringModel.betaAngleFitNet = obj.betaAngleFitNet.deepCopy();
+
+            newSteeringModel.alphaAngleSumPoly = obj.alphaAngleSumPoly.deepCopy();
+            newSteeringModel.alphaAngleSumSines = obj.alphaAngleSumSines.deepCopy();
+            newSteeringModel.alphaAngleLinearTan = obj.alphaAngleLinearTan.deepCopy();
+            newSteeringModel.alphaAngleFitNet = obj.alphaAngleFitNet.deepCopy();
+
+            newSteeringModel.gammaSelModel = obj.gammaSelModel;
+            newSteeringModel.betaSelModel = obj.betaSelModel;
+            newSteeringModel.alphaSelModel = obj.alphaSelModel;
+
             newSteeringModel.gammaContinuity = obj.gammaContinuity;
             newSteeringModel.betaContinuity = obj.betaContinuity;
             newSteeringModel.alphaContinuity = obj.alphaContinuity;

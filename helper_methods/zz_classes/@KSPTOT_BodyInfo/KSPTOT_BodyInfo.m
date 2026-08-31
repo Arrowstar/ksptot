@@ -397,8 +397,32 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
             if(isempty(obj.fixedFrameFromInertialFrameCache))
                 obj.fixedFrameFromInertialFrameCache = {obj.rotperiod, obj.rotini};
             end
-            
+
             inputs = obj.fixedFrameFromInertialFrameCache;
+        end
+
+        %The two setters below exist solely to keep
+        %fixedFrameFromInertialFrameCache honest.  That memo snapshots
+        %{rotperiod, rotini}, and it is the ONLY thing the ECI<->ECEF
+        %conversion reads -- getLatLongAltFromInertialVect and
+        %getFixedFrameVectFromInertialVect both feed
+        %getFixedFrameFromInertialFrameInputsCache() straight into
+        %getFixedFrameVectFromInertialVect_alg_mex and never touch the
+        %properties.  Without invalidation, assigning rotperiod or rotini on
+        %a body whose memo is already warm changes the property and nothing
+        %else: the body keeps spinning at its old rate, silently.  Position
+        %still round-trips (the spin *angle* is often unchanged at ut=0), so
+        %the corruption shows up only in the ECEF *velocity* -- i.e. in wind
+        %frame / angle-of-attack / sideslip / bank / dynamic pressure -- which
+        %makes it very hard to spot.
+        function set.rotperiod(obj, val)
+            obj.rotperiod = val;
+            obj.fixedFrameFromInertialFrameCache = {}; %#ok<MCSUP>
+        end
+
+        function set.rotini(obj, val)
+            obj.rotini = val;
+            obj.fixedFrameFromInertialFrameCache = {}; %#ok<MCSUP>
         end
         
         function [surfTexture] = getSurfaceTexture(obj)

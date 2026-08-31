@@ -63,14 +63,14 @@ classdef LaunchVehicleGroundObject < matlab.mixin.SetGet
         end
         
         function moveWayPtAtIndexDown(obj, ind)
-            if(ind < length(obj.loopWayPts))
-                obj.loopWayPts([ind+1,ind]) = obj.loopWayPts([ind,ind+1]);
+            if(ind < length(obj.wayPts))
+                obj.wayPts([ind+1,ind]) = obj.wayPts([ind,ind+1]);
             end
         end
-        
+
         function moveWayPtAtIndexUp(obj, ind)
             if(ind > 1)
-                obj.loopWayPts([ind,ind-1]) = obj.loopWayPts([ind-1,ind]);
+                obj.wayPts([ind,ind-1]) = obj.wayPts([ind-1,ind]);
             end
         end
         
@@ -141,7 +141,7 @@ classdef LaunchVehicleGroundObject < matlab.mixin.SetGet
                         return;
                     end
                     
-                    [f, wayPt1, wayPt2, segTimes, adjustedTime] = obj.getFractionAndWaypointIfLooping(time);
+                    [f, wayPt1, wayPt2, segTimes, adjustedTime] = obj.getFractionAndWaypointsIfLooping(time);
                     
                 elseif(not(obj.extrapolateTimes) && not(obj.loopWayPts))
                     wptTimeOffsets = [obj.wayPts.getTimesToNextWaypt()]; %#ok<NBRAK>
@@ -161,8 +161,7 @@ classdef LaunchVehicleGroundObject < matlab.mixin.SetGet
                     [f, wayPt1, wayPt2, segTimes, adjustedTime] = obj.getFractionAndWaypointsIfNotLooping(time);
                 end
 
-                bodyRadius = obj.centralBodyInfo.radius;
-                [lati,longi] = getIntermediatePt(wayPt1.getLatitude(), wayPt1.getLongitude(), wayPt2.getLatitude(), wayPt2.getLongitude(), f, bodyRadius);
+                [lati,longi] = getIntermediatePt(wayPt1.getLatitude(), wayPt1.getLongitude(), wayPt2.getLatitude(), wayPt2.getLongitude(), f);
 
                 alts = [wayPt1.getAltitude(); wayPt2.getAltitude()];
                 newAlt = interp1qr(segTimes(:),alts, adjustedTime);
@@ -255,23 +254,23 @@ classdef LaunchVehicleGroundObject < matlab.mixin.SetGet
     end
 end
 
-function [lati,longi] = getIntermediatePt(lat1, long1, lat2, long2, f, bodyRadius)
+function [lati,longi] = getIntermediatePt(lat1, long1, lat2, long2, f)
     arguments
         lat1(1,1) double
         long1(1,1) double
         lat2(1,1) double
         long2(1,1) double
         f(1,1) double
-        bodyRadius(1,1) double
     end
 
     if(lat1 == lat2 && long1 == long2)
         lati = lat1;
         longi = long1;
     else
-        d = distance(lat1,long1, lat2,long2, 'radians');
-        delta = d/bodyRadius;
-        
+        %distance(...,'radians') already returns the central angle between the
+        %two points, so it IS delta -- do not divide by the body radius.
+        delta = distance(lat1,long1, lat2,long2, 'radians');
+
         a = sin((1-f)*delta) / sin(delta);
         b = sin(f*delta) / sin(delta);
         

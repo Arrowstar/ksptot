@@ -36,18 +36,43 @@ classdef SecondOrderGravOnlyPropagator < AbstractPropagator
             if(eventInitStateLogEntry.isHoldDownEnabled())
                 %Integrate in the body-fixed frame with zero rates
                 %For performance reasons
+                %
+                %Unlike ForceModelPropagator -- from which this branch was
+                %originally adapted -- y0/yp0 here are the *separate*
+                %second order position and velocity (3x1 each), not one
+                %concatenated first order state.  So position and velocity
+                %must be converted into their own variables and kept
+                %separate: rkn1210 asserts numel(y0) == numel(yp0), and it
+                %is the horzcat at the bottom of this method that
+                %recombines them into the Nx6 state the caller expects.
+                %Packing them together here instead produced a 6-element y0
+                %against an unconverted 3-element inertial yp0, and an Nx9
+                %result on the way back out.
+                %
+                %yp0 is zeroed rather than set to the converted body-fixed
+                %velocity.  This is the second order analogue of what
+                %ForceModelPropagator does when held down: it drives both
+                %dydt(1:3) and dydt(4:6) to zero, freezing the state in the
+                %rotating frame.  Here the only rate the integrator owns is
+                %yp, and odefun already returns d2ydt2 = 0, so carrying a
+                %nonzero yp0 would let the clamped vehicle coast in a
+                %straight line through the body-fixed frame instead of
+                %staying put -- its radius would grow without bound.
                 bodyInfo = eventInitStateLogEntry.centralBody;
-                [rVectECEF, vVectECEF] = getFixedFrameVectFromInertialVect(t0, y0(1:3)', bodyInfo, yp0(1:3)');
-                y0 = [rVectECEF', vVectECEF'];
+                rVectECEF = getFixedFrameVectFromInertialVect(t0, y0(:), bodyInfo, yp0(:));
+                y0 = rVectECEF;
+                yp0 = zeros(size(y0));
 
                 [t,y,yp,te,ye,ype,ie] = integrator.integrate(odefun, tspan, y0, yp0, evtsFunc, odeOutputFun);
 
-                [rVectECI, vVectECI] = getInertialVectFromFixedFrameVect(t, y(:,1:3)', bodyInfo, yp(:,1:3)');
-                y = [rVectECI', vVectECI'];
+                [rVectECI, vVectECI] = getInertialVectFromFixedFrameVect(t, y.', bodyInfo, yp.');
+                y = rVectECI.';
+                yp = vVectECI.';
 
                 if(~isempty(ye))
-                    [rVectECIe, vVectECIe] = getInertialVectFromFixedFrameVect(te, ye(:,1:3)', bodyInfo, ype(:,1:3)');
-                    ye = [rVectECIe', vVectECIe'];
+                    [rVectECIe, vVectECIe] = getInertialVectFromFixedFrameVect(te, ye.', bodyInfo, ype.');
+                    ye = rVectECIe.';
+                    ype = vVectECIe.';
                 end
             else
                 [t, y, yp, te, ye, ype, ie] = integrator.integrate(odefun, tspan, y0, yp0, evtsFunc, odeOutputFun);
@@ -148,10 +173,19 @@ classdef SecondOrderGravOnlyPropagator < AbstractPropagator
 
                 thirdBodyGravity = eventInitStateLogEntry.thirdBodyGravity;
 
-                totalMass = eventInitStateLogEntry.getTotalVehicleMass(); %this isn't the total mass but because we can't 
+                %srp is unused by the force models this propagator allows
+                %(only Gravity and Gravity3rdBody set allowedForSecondOrder),
+                %but TotalForceModel.getForce forwards it unconditionally to
+                %every model, so it must still be bound.  Omitting it left
+                %the trailing parameter undefined and made "Not enough input
+                %arguments" fire on the first derivative evaluation of every
+                %non-hold-down propagation.
+                srp = eventInitStateLogEntry.srp;
+
+                totalMass = eventInitStateLogEntry.getTotalVehicleMass(); %this isn't the total mass but because we can't
 
                 if(totalMass > 0)
-                    [forceSum] = TotalForceModel.getForce(fmEnums, ut, rVect, vVect, totalMass, bodyInfo, [], [], [], [], [], [], dryMass, [], thirdBodyGravity, [], []);
+                    [forceSum] = TotalForceModel.getForce(fmEnums, ut, rVect, vVect, totalMass, bodyInfo, [], [], [], [], [], [], dryMass, [], thirdBodyGravity, [], [], srp);
                     accelVect = forceSum/totalMass; 
                 else
                     accelVect = zeros(3,1);

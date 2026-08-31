@@ -59,9 +59,25 @@ classdef (Abstract) KsptotTestCase < matlab.unittest.TestCase
             %shallow copy is sufficient for the force model tests, which
             %only read scalar body properties.
 
+            %Derived memo properties are deliberately NOT copied. They are
+            %snapshots of other properties, so carrying one over to a fresh
+            %object that a test is about to mutate reintroduces exactly the
+            %staleness the copy was made to avoid. Concretely:
+            %fixedFrameFromInertialFrameCache snapshots {rotperiod, rotini},
+            %and every test that uses the "non-rotating body" trick
+            %(rotperiod=Inf, rotini=0) sets those two properties immediately
+            %after this copy. Copying a warm memo in made the trick a no-op
+            %whenever some earlier test in the same session had already
+            %warmed it -- so those fixtures silently passed or failed
+            %depending on test execution order. Skipping caches keeps the
+            %copy order-independent; matching by name also covers memos added
+            %later.
             bodyInfo = feval(class(bodyInfoIn));
 
             props = properties(bodyInfoIn);
+            isDerivedMemo = endsWith(props, 'Cache') | startsWith(props, 'lastComputed');
+            props = props(~isDerivedMemo);
+
             for(i=1:length(props)) %#ok<*NO4LP>
                 try
                     bodyInfo.(props{i}) = bodyInfoIn.(props{i});

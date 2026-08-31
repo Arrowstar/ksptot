@@ -62,7 +62,7 @@ classdef BodyAngularVelZConstraint < AbstractConstraint
                 cartElem = cartElem.convertToFrame(stateLogEntry.centralBody.getBodyCenteredInertialFrame());
                 stateLogEntryStateComp.setCartesianElementSet(cartElem);
 
-                lvd_AttitudeRateTasks(stateLogEntryStateComp, 'bodyAngVelZ', obj.frame);
+                valueStateComp = lvd_AttitudeRateTasks(stateLogEntryStateComp, 'bodyAngVelZ', obj.frame);
             else
                 valueStateComp = NaN;
             end

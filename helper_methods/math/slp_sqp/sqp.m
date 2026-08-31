@@ -377,7 +377,7 @@ scdv=opts(5)<0; scbou=abs(opts(5));
 if opts(7)>0, nlinmax=opts(7); else, nlinmax=30; end
 UserHessian=isfield(Opts,'HessFun') && ~isempty(Opts.HessFun);
 OutputFcn=isfield(Opts,'OutputFcn') && isa(Opts.OutputFcn,'function_handle');
-PlotFcn  =isfield(Opts,'PlotFcns');
+PlotFcn  =isfield(Opts,'PlotFcns') && ~isempty(Opts.PlotFcns);
 trouble=''; UpdHess=[];
 
 if(not(isempty(Opts.UseParallel)) && Opts.UseParallel == true && not(isempty(gcp('nocreate'))))

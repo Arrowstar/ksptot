@@ -12,7 +12,7 @@ classdef SetRectangularlSensorAzAngleAction < AbstractEventAction
     end
     
     methods
-        function obj = SetRectangularlSensorAngleAction(sensor, sensorAzAngle)
+        function obj = SetRectangularlSensorAzAngleAction(sensor, sensorAzAngle)
             if(nargin > 0)
                 obj.sensor = sensor;
                 obj.sensorAzAngle = sensorAzAngle;

@@ -15,7 +15,7 @@ classdef SetLiftAeroPropertiesAction < AbstractEventAction
     end
     
     methods
-        function obj = SetDragAeroPropertiesAction(liftCoeffModel)
+        function obj = SetLiftAeroPropertiesAction(liftCoeffModel)
             if(nargin > 0)
                 obj.liftCoeffModel = liftCoeffModel;
             else
@@ -27,8 +27,8 @@ classdef SetLiftAeroPropertiesAction < AbstractEventAction
         
         function newStateLogEntry = executeAction(obj, stateLogEntry)
             arguments
-                obj(1,1) SetDragAeroPropertiesAction
-                stateLogEntry(1,1) LaunchVehicleStateLogEntry 
+                obj(1,1) SetLiftAeroPropertiesAction
+                stateLogEntry(1,1) LaunchVehicleStateLogEntry
             end
 
             newStateLogEntry = stateLogEntry;

@@ -47,11 +47,11 @@ classdef LvdSensorTargetSet < matlab.mixin.SetGet
             end
         end
         
-        function indSensor = getPointAtInd(obj, ind)
+        function indTarget = getPointAtInd(obj, ind)
             if(ind > 0 && ind <= length(obj.targets))
-                indSensor = obj.targets(ind);
+                indTarget = obj.targets(ind);
             else
-                indSensor = AbstractSensor.empty(1,0);
+                indTarget = AbstractSensorTarget.empty(1,0);
             end
         end
         

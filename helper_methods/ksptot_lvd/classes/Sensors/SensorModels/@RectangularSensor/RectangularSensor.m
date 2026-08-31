@@ -141,7 +141,7 @@ classdef RectangularSensor < AbstractSensor
         end
         
         function tf = isInUse(obj, lvdData)
-            tf = false;
+            tf = lvdData.usesSensor(obj);
         end
         
         function useTf = openEditDialog(obj)

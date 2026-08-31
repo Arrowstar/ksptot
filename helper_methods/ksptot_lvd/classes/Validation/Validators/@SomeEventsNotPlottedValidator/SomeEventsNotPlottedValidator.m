@@ -26,7 +26,7 @@ classdef SomeEventsNotPlottedValidator < AbstractLaunchVehicleDataValidator
 
                 if(not(isempty(warnEvtNums)))
                     eventStr = makeEventsStr(unique(warnEvtNums));
-                    str = sprintf('The following events are not being plotted. (Events: %s)\n%s', eventStr);
+                    str = sprintf('The following events are not being plotted. (Events: %s)', eventStr);
                     warnings(end+1) = LaunchVehicleDataValidationWarning(str);
                 end
             end

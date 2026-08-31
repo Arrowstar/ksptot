@@ -136,7 +136,7 @@ classdef GenericLinearTangentSteeringModel < AbstractSteeringModel
         end
         
         function newSteeringModel = deepCopy(obj)
-            newSteeringModel = GenericPolySteeringModel(obj.gammaAngleModel.deepCopy(), obj.betaAngleModel.deepCopy(), obj.alphaAngleModel.deepCopy());
+            newSteeringModel = GenericLinearTangentSteeringModel(obj.gammaAngleModel.deepCopy(), obj.betaAngleModel.deepCopy(), obj.alphaAngleModel.deepCopy());
             newSteeringModel.gammaContinuity = obj.gammaContinuity;
             newSteeringModel.betaContinuity = obj.betaContinuity;
             newSteeringModel.alphaContinuity = obj.alphaContinuity;

@@ -140,7 +140,7 @@ classdef GenericObjectiveFcn < AbstractObjectiveFcn
             end
             
             fcn = GenericMAConstraint.getDefaultConstraint('Total Spacecraft Mass');
-            objFcn = GenericObjectiveFcn(event, someFrame, fcn, lvdOptim, lvdData);
+            objFcn = GenericObjectiveFcn(event, someFrame, fcn, 1, lvdOptim, lvdData);
         end
         
         function params = getParams()

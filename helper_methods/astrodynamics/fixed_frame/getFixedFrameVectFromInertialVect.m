@@ -3,6 +3,16 @@ function [rVectECEF, vVectECEF, REci2Ecef] = getFixedFrameVectFromInertialVect(u
 % %   Detailed explanation goes here
 % 
     inputs = bodyInfo.getFixedFrameFromInertialFrameInputsCache();
+
+    %The _alg MEX takes vVectECI as a required positional argument, but callers
+    %that only want the position/rotation outputs legitimately omit it.  NaN is
+    %the established "no velocity" sentinel (see the reference implementation
+    %below and computeHourAngle.m); supply it here so a 3-argument call does
+    %not reach the MEX one argument short.
+    if(isempty(varargin))
+        varargin = {NaN(size(rVectECI))};
+    end
+
 %     [rVectECEF, vVectECEF, REci2Ecef] = getFixedFrameVectFromInertialVect_alg(ut, rVectECI, inputs{:}, varargin{:});
     [rVectECEF, vVectECEF, REci2Ecef] = getFixedFrameVectFromInertialVect_alg_mex(ut, rVectECI, inputs{:}, varargin{:});
 end

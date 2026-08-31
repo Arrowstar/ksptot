@@ -55,7 +55,7 @@ classdef AtmoWithNoDragModelValidator < AbstractLaunchVehicleDataValidator
             
             if(not(isempty(warnEvtNums)))
                 eventStr = makeEventsStr(unique(warnEvtNums));
-                str = sprintf('Drag model is disabled on events that exist in an atmosphere. (Events: %s)\n%s', eventStr);
+                str = sprintf('Drag model is disabled on events that exist in an atmosphere. (Events: %s)', eventStr);
                 warnings(end+1) = LaunchVehicleDataValidationWarning(str);
             end
         end

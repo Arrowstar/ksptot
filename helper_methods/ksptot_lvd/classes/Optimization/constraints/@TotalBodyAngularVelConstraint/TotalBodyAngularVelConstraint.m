@@ -62,7 +62,7 @@ classdef TotalBodyAngularVelConstraint < AbstractConstraint
                 cartElem = cartElem.convertToFrame(stateLogEntry.centralBody.getBodyCenteredInertialFrame());
                 stateLogEntryStateComp.setCartesianElementSet(cartElem);
 
-                lvd_AttitudeRateTasks(stateLogEntryStateComp, 'totalAngularVel', obj.frame);
+                valueStateComp = lvd_AttitudeRateTasks(stateLogEntryStateComp, 'totalAngularVel', obj.frame);
             else
                 valueStateComp = NaN;
             end

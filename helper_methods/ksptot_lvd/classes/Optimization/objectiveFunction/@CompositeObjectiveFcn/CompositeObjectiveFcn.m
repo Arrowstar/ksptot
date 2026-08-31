@@ -205,7 +205,7 @@ classdef CompositeObjectiveFcn < AbstractObjectiveFcn
 
     methods(Static)
         function objFcn = getDefaultObjFcn(event, refBodyInfo, lvdOptim, lvdData)
-            objFcn = CompositeObjectiveFcn(GenericObjectiveFcn.empty(1,0), lvdOptim, lvdData);
+            objFcn = CompositeObjectiveFcn(GenericObjectiveFcn.empty(1,0), ObjFcnDirectionTypeEnum.Minimize, ObjFcnCompositeMethodEnum.Sum, lvdOptim, lvdData);
         end
         
         function params = getParams()

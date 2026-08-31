@@ -208,5 +208,46 @@ classdef RotationFrameTest < KsptotTestCase
                     sprintf('Euler313 periapsis direction mismatch on trial %d', trial));
             end
         end
+
+        function settingSpinRateInvalidatesFixedFrameMemo(testCase)
+            %KSPTOT_BodyInfo memoizes {rotperiod, rotini} into
+            %fixedFrameFromInertialFrameCache, and that memo -- not the
+            %properties -- is what the ECI<->ECEF conversion actually reads.
+            %Assigning either property must therefore invalidate it.
+            %
+            %Regressing this is close to invisible: the spin *angle* at
+            %ut = 0 is unchanged, so position still converts correctly and
+            %only the ECEF velocity is wrong. That silently corrupts the
+            %wind frame (angle of attack / sideslip / bank) and dynamic
+            %pressure, and it corrupts them only once some earlier caller in
+            %the same session has warmed the memo -- which made four
+            %EventTerminationConditionTest cases fail purely as a function of
+            %test execution order.
+
+            bodyInfo = testCase.copyBodyInfo(testCase.kerbin);
+
+            rVect = [800; 0; 0];
+            vVect = [0; 2; 0];
+
+            % Warm the memo against the real spin rate.
+            bodyInfo.rotperiod = 21549.425;
+            bodyInfo.rotini = 0;
+            [~, vEcefSpinning] = getFixedFrameVectFromInertialVect(0, rVect, bodyInfo, vVect);
+
+            testCase.verifyGreaterThan(norm(vEcefSpinning - vVect), 1e-6, ...
+                'Fixture is not exercising the test: a spinning body must give vEcef ~= vEci');
+
+            % Now stop the body.  With the memo invalidated, ECEF must
+            % collapse onto ECI exactly (spin angle 0, spin rate 0).
+            bodyInfo.rotperiod = Inf;
+            bodyInfo.rotini = 0;
+            [rEcef, vEcef] = getFixedFrameVectFromInertialVect(0, rVect, bodyInfo, vVect);
+
+            testCase.verifyVectorEqual(rEcef(:), rVect(:), 1e-12, ...
+                'Setting rotperiod=Inf did not take effect on the ECEF position');
+            testCase.verifyVectorEqual(vEcef(:), vVect(:), 1e-12, ...
+                ['Setting rotperiod=Inf did not take effect on the ECEF velocity: ' ...
+                 'fixedFrameFromInertialFrameCache was not invalidated by set.rotperiod']);
+        end
     end
 end

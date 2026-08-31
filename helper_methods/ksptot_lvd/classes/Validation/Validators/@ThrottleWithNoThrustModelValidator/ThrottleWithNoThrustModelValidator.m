@@ -53,7 +53,7 @@ classdef ThrottleWithNoThrustModelValidator < AbstractLaunchVehicleDataValidator
             
             if(not(isempty(warnEvtNums)))
                 eventStr = makeEventsStr(unique(warnEvtNums));
-                str = sprintf('Throttle is greater than 0%% on Events with Thrust model disabled. (Events: %s)\n%s', eventStr);
+                str = sprintf('Throttle is greater than 0%% on Events with Thrust model disabled. (Events: %s)', eventStr);
                 warnings(end+1) = LaunchVehicleDataValidationWarning(str);
             end
         end

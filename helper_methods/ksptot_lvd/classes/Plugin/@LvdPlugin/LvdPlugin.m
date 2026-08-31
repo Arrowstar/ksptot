@@ -34,24 +34,22 @@ classdef LvdPlugin < matlab.mixin.SetGet
         end
         
         function userData = executePlugin(obj, lvdData, stateLog, event, execLoc, t,y,flag, userData, stateLogEntry, frame)
-            tfBadWords = contains(obj.pluginCode,LvdPlugin.badWords,'IgnoreCase',true);
-            
+            %Detection and itemization must use the SAME predicate, otherwise a
+            %code string can trip the detector while producing an empty index
+            %list.  Word boundaries keep ordinary identifiers such as
+            %"payloadMass", "inputCount" and "deleteFlag" from being rejected
+            %just because they contain a forbidden word as a substring.
             inds = [];
-            if(tfBadWords)
-                for(i=1:length(LvdPlugin.badWords))
-                    if(contains(obj.pluginCode,LvdPlugin.badWords{i}))
-                        inds(end+1) = i; %#ok<AGROW>
-                    end
+            for(i=1:length(LvdPlugin.badWords))
+                if(LvdPlugin.codeUsesBadWord(obj.pluginCode, LvdPlugin.badWords{i}))
+                    inds(end+1) = i; %#ok<AGROW>
                 end
-                
-                if(not(isempty(inds)))
-                    quotedwords = cellfun(@(c) sprintf('"%s"', c), LvdPlugin.badWords(inds), 'UniformOutput',false);
-                    wordList = grammaticalList(quotedwords);
-                else
-                    quotedwords = cellfun(@(c) sprintf('"%s"', c), LvdPlugin.badWords, 'UniformOutput',false);
-                    wordList = grammaticalList(quotedwords);
-                end
- 
+            end
+
+            if(not(isempty(inds)))
+                quotedwords = cellfun(@(c) sprintf('"%s"', c), LvdPlugin.badWords(inds), 'UniformOutput',false);
+                wordList = grammaticalList(quotedwords);
+
                 errMsg = sprintf('String(s) %s is/are not allowed in LVD plugin code.', wordList);
                 errStr = sprintf('An error was encountered executing plugin "%s" at location "%s".  Msg: %s', ...
                                  obj.pluginName, execLoc.name, errMsg);
@@ -81,6 +79,22 @@ classdef LvdPlugin < matlab.mixin.SetGet
     methods(Static)
         function badWords = getDisallowedStrings()
             badWords = LvdPlugin.badWords;
+        end
+
+        function tf = codeUsesBadWord(pluginCode, badWord)
+            %Matches badWord as a whole token so that identifiers which merely
+            %contain it ("payloadMass" vs "load") are not flagged.  Purely
+            %symbolic entries such as "!" have no word boundary, so those are
+            %matched as escaped literals instead.
+            escaped = regexptranslate('escape', badWord);
+
+            if(all(isstrprop(badWord, 'alphanum') | badWord == '_'))
+                pattern = ['\<', escaped, '\>'];
+            else
+                pattern = escaped;
+            end
+
+            tf = not(isempty(regexpi(pluginCode, pattern, 'once')));
         end
     end
 end
