@@ -16,7 +16,7 @@ KSPTOT contains the following software tools:
 
 ## Download & Installation Instructions
 #### To install and run KSPTOT on **Windows**, do the following:
-1.  Download the [Windows 64-bit R2023b MATLAB Compiler Runtime (MCR)](https://www.mathworks.com/products/compiler/matlab-runtime.html).
+1.  Download the [Windows 64-bit R2023b MATLAB Compiler Runtime (MCR)](https://www.mathworks.com/products/compiler/matlab-runtime.html) (it MUST be R2023b, not anything earlier or later).
 2.  Install the MCR package on your computer. **You may need to restart your PC after installing in order to use KSPTOT.**
 3.  **Download the KSPTOT package.
 4.  Unzip the KSPTOT package to a directory of your choosing.
@@ -26,7 +26,7 @@ KSPTOT contains the following software tools:
 8.  To update from a previous version, just repeat steps 3-6. There is no need to re-download the MCR.
 #### **Mac/Linux Users: Follow these instructions instead.**
 1.  (Mac only): [Download VirtualBox for OS X hosts.](https://www.virtualbox.org/wiki/Downloads) Install according to the VirtualBox instructions. Setup and install a distribution of Linux as a virtual machine within VirtualBox. (Ex: [Ubuntu](https://www.ubuntu.com/download/desktop)) All instructions from here on down will reference the virtual machine and it's Linux operating system, not the Mac system.
-2.  Download the [Linux 64-bit R2023b MATLAB Compiler Runtime (MCR).](https://www.mathworks.com/products/compiler/matlab-runtime.html)
+2.  Download the [Linux 64-bit R2023b MATLAB Compiler Runtime (MCR).](https://www.mathworks.com/products/compiler/matlab-runtime.html) (it MUST be R2023b, not anything earlier or later).
 3.  Install the MCR package on your computer. **You may need to restart your PC after installing in order to use KSPTOT.**
     1.  You MUST install the MCR to **"/usr/local/MATLAB/R2023b/"!** The software will not work correctly if this is not done.
 4.  **Download the KSPTOT Package.**
