@@ -23,6 +23,84 @@ classdef IntegratorTest < KsptotTestCase
 
     methods(Test)
 
+        %% Fixed-step framework: tableau plumbing
+
+        function fixedStepBaseClassIsAbstractAndTableauDriven(testCase)
+            %AbstractFixedStepIntegrator.stepOnce used to hard-code the ODE5
+            %tableau ("needs to be generalized"), so the "abstract" fixed-step
+            %framework could only ever run one scheme.  The scheme now comes
+            %in through integrate()'s tableau argument, and the base class is
+            %genuinely abstract.
+            mc = meta.class.fromName('AbstractFixedStepIntegrator');
+            testCase.verifyTrue(mc.Abstract, ...
+                'AbstractFixedStepIntegrator must be declared Abstract.');
+
+            tableau = ODE5Integrator.getTableau();
+            testCase.verifyEqual(sort(fieldnames(tableau)), sort({'A';'B';'C'}), ...
+                'ODE5Integrator.getTableau must return a struct with fields A, B, C.');
+            testCase.verifyEqual(numel(tableau.B), 6, 'Dormand-Prince 5 has six stages.');
+            testCase.verifyEqual(size(tableau.A), [5 5], 'A must be (nstages-1) square.');
+            testCase.verifyEqual(numel(tableau.C), 5, 'C must have nstages-1 nodes.');
+            testCase.verifyEqual(sum(tableau.B), 1, 'AbsTol', 1e-14, ...
+                'Runge-Kutta weights must sum to one.');
+        end
+
+        function fixedStepFrameworkRunsAnArbitraryTableau(testCase)
+            %Independent oracle: one classical RK4 step on y' = y from y0 = 1
+            %with h = 0.1 is 1 + h + h^2/2 + h^3/6 + h^4/24 exactly.  Feeding
+            %an RK4 tableau through the static integrate() must reproduce
+            %that, proving the framework no longer assumes ODE5.
+            A = [1/2, 0,   0;
+                 0,   1/2, 0;
+                 0,   0,   1];
+            B = [1/6, 1/3, 1/3, 1/6];
+            C = [1/2; 1/2; 1];
+            rk4 = AbstractFixedStepIntegrator.makeTableau(A.', B, C);
+
+            h = 0.1;
+            [t, y] = AbstractFixedStepIntegrator.integrate(@(t,y) y, [0, h], 1, odeset(), rk4);
+
+            expected = 1 + h + h^2/2 + h^3/6 + h^4/24;
+            testCase.verifyEqual(t(end), h, 'AbsTol', 1e-15);
+            testCase.verifyEqual(y(end), expected, 'AbsTol', 1e-15, ...
+                'The RK4 tableau must produce the textbook RK4 Taylor polynomial, not an ODE5 step.');
+
+            %And the ODE5 tableau must NOT give the RK4 answer (its 5th order
+            %truncation differs at h^5/120 level).
+            [~, y5] = AbstractFixedStepIntegrator.integrate(@(t,y) y, [0, h], 1, odeset(), ODE5Integrator.getTableau());
+            testCase.verifyNotEqual(y5(end), expected, ...
+                'ODE5 and RK4 tableaus must produce distinguishable steps; the framework is ignoring the tableau argument.');
+            testCase.verifyEqual(y5(end), exp(h), 'AbsTol', 1e-7, ...
+                'The ODE5 tableau must still integrate y''=y to 5th order accuracy.');
+
+            %A malformed tableau is rejected up front rather than failing
+            %somewhere inside the stepper.
+            bad = struct('A', A.', 'B', B(1:3), 'C', C);
+            testCase.verifyError(@() AbstractFixedStepIntegrator.integrate(@(t,y) y, [0, h], 1, odeset(), bad), ?MException, ...
+                'An inconsistent tableau must be rejected.');
+        end
+
+        function ode5IntegratorHonoursItsOptionsObject(testCase)
+            %ODE5Integrator.integrate used to discard its own options and call
+            %bare odeset().  It now reads them through
+            %FixedStepSizeIntegratorOptions.getIntegratorOptions; the two
+            %paths agree bitwise today (that method returns a bare odeset)
+            %and the wrapper must produce exactly the static framework's
+            %answer for the same tableau.
+            [r0, v0, ~, period] = testCase.referenceProblem();
+            tspan = linspace(0, period/50, 21);
+            y0 = [r0; v0];
+
+            integrator = ODE5Integrator(FixedStepSizeIntegratorOptions());
+            [tWrap, yWrap] = integrator.integrate(testCase.twoBodyOdeFunction(), tspan, y0, @refNeverEvent, []);
+
+            optionsToUse = odeset(integrator.getOptions().getIntegratorOptions(), 'Events', @refNeverEvent, 'OutputFcn', []);
+            [tRef, yRef] = AbstractFixedStepIntegrator.integrate(testCase.twoBodyOdeFunction(), tspan, y0, optionsToUse, ODE5Integrator.getTableau());
+
+            testCase.verifyEqual(tWrap, tRef, 'The ODE5 wrapper must step exactly where the framework steps.');
+            testCase.verifyEqual(yWrap, yRef, 'The ODE5 wrapper must reproduce the framework bit for bit.');
+        end
+
         %% Accuracy against the analytic two-body solution
 
         function firstOrderMatchesAnalyticTwoBody(testCase, firstOrderIntegrator)

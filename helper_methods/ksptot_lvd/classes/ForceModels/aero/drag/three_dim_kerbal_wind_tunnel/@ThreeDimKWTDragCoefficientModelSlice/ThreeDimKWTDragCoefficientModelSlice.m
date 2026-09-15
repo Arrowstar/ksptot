@@ -59,14 +59,12 @@ classdef ThreeDimKWTDragCoefficientModelSlice < matlab.mixin.SetGet
         end
     end
 
-    methods(Static, Access=private)
+    methods(Static)
         function tf = isAxisMonotonicallyIncreasing(axis)
-            tf = true;
-            
-            axisDiff = diff(axis);
-            if(any(axisDiff <= 0))
-                tf = true;
-            end
+            %isAxisMonotonicallyIncreasing True only when every consecutive
+            %difference along the axis is strictly positive.
+            axisDiff = diff(axis(:));
+            tf = not(isempty(axisDiff)) && all(axisDiff > 0);
         end
     end
 end

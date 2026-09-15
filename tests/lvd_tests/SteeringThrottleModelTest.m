@@ -85,7 +85,7 @@ classdef SteeringThrottleModelTest < KsptotTestCase
             'InertialControlFrame', 'NedControlFrame', 'WindControlFrame', ...
             'PolynominalTermModel', 'SumOfPolyTermsModel', 'SineModel', 'SumOfSinesModel', ...
             'PolynominalModel', 'LinearTangentModel', 'LinearTangentSelectableModel', ...
-            'ThrottlePolyModel', 'ThrottleInterpolatedModel', 'T2WThrottleModel', ...
+            'ThrottlePolyModel', 'ThrottleInterpolatedModel', 'ThrottleInterpolatedModelTimeOffset', 'T2WThrottleModel', ...
             'GenericLinearTangentSteeringModelDeepCopy', 'GenericSelectableSteeringModelDeepCopy'};
     end
 
@@ -597,6 +597,60 @@ classdef SteeringThrottleModelTest < KsptotTestCase
                 actual = model.getThrottleAtTime(ut, [],[],[],[],[],[],[],[],[],[]);
                 testCase.verifyEqual(actual, expected, 'AbsTol', 1e-9, sprintf( ...
                     'ThrottleInterpolatedModel.getThrottleAtTime does not match hand-rolled linear interpolation at ut=%g', ut));
+            end
+        end
+
+        function checkThrottleInterpolatedModelTimeOffset(testCase)
+            %setTimeOffsets used to assign obj.throttleModel.tOffset, a
+            %property ThrottleInterpolatedModel never had, so any call
+            %errored.  It now stores a real tOffset with the same meaning as
+            %PolynominalModel.tOffset (the table is evaluated at
+            %(ut - t0) + tOffset), applied when initThrottleModel rebuilds the
+            %interpolant.  Independent oracle: hand-shifted knot points.
+            [~, entry] = testCase.buildDefaultEntry();
+            entry.time = 100;
+
+            model = ThrottleInterpolatedModel.getDefaultThrottleModel();
+            model.durations = [10; 10];
+            model.throttles = [0.6; 0.3];
+            model.throttleContinuity = false;
+            model.initThrottle = 0.2;
+
+            %Default offset must be zero so existing missions are unchanged.
+            testCase.verifyEqual(model.getTimeOffsets(), 0, ...
+                'A fresh ThrottleInterpolatedModel must have a zero time offset.');
+
+            model.initThrottleModel(entry);
+            baseline = model.getThrottleAtTime(105, [],[],[],[],[],[],[],[],[],[]);
+            testCase.verifyEqual(baseline, 0.4, 'AbsTol', 1e-10, ...
+                'With zero offset the table must be anchored at t0 (knots at t0, t0+10, t0+20).');
+
+            model.setTimeOffsets(4);
+            testCase.verifyEqual(model.getTimeOffsets(), 4, ...
+                'setTimeOffsets must store the offset on the model.');
+
+            %Not applied until the interpolant is rebuilt...
+            testCase.verifyEqual(model.getThrottleAtTime(105, [],[],[],[],[],[],[],[],[],[]), baseline, 'AbsTol', 1e-12, ...
+                'The offset must only take effect once initThrottleModel rebuilds the interpolant.');
+
+            %...after which throttle(ut) == table((ut - t0) + tOffset).
+            model.initThrottleModel(entry);
+            knotTimes = [0, 10, 20];
+            knotThrottles = [0.2, 0.6, 0.3];
+            probeUts = [96, 101, 105, 110, 116];
+            for i = 1:numel(probeUts)
+                tableTime = (probeUts(i) - entry.time) + 4;
+                idx = find(tableTime >= knotTimes, 1, 'last');
+                if(idx == numel(knotTimes))
+                    expected = knotThrottles(end); %'nearest' extrapolation
+                else
+                    f = (tableTime - knotTimes(idx)) / (knotTimes(idx+1) - knotTimes(idx));
+                    expected = knotThrottles(idx) + f*(knotThrottles(idx+1) - knotThrottles(idx));
+                end
+
+                actual = model.getThrottleAtTime(probeUts(i), [],[],[],[],[],[],[],[],[],[]);
+                testCase.verifyEqual(actual, expected, 'AbsTol', 1e-9, sprintf( ...
+                    'With tOffset = 4 the throttle at ut=%g must equal the table at (ut - t0) + 4 = %g.', probeUts(i), tableTime));
             end
         end
 

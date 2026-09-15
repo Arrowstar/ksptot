@@ -5,7 +5,13 @@ classdef(Abstract) AbstractOptimizationVariable < matlab.mixin.SetGet & matlab.m
     properties
         id(1,1) double
     end
-    
+
+    properties(Constant)
+        %Bound gaps at or below this are treated as a fixed (degenerate)
+        %variable element by the [-1, 1] scaling.
+        degenerateBndTol = 1E-10;
+    end
+
     methods
         x = getXsForVariable(obj)
         
@@ -24,9 +30,15 @@ classdef(Abstract) AbstractOptimizationVariable < matlab.mixin.SetGet & matlab.m
         nameStrs = getStrNamesOfVars(obj, evtNum, varLocType)
         
         function [xS, lbS, ubS] = getScaledXsForVariable(obj)
+            %getScaledXsForVariable Maps each element of the variable onto the
+            %optimizer's [-1, 1] box.  A degenerate element (ub - lb below
+            %AbstractOptimizationVariable.degenerateBndTol) is fixed by its
+            %bounds, so it is represented as 0 with bounds [0, 0] rather than
+            %leaking its raw, arbitrarily scaled value into the x vector next
+            %to the properly scaled ones.
             x = obj.getXsForVariable();
             [lb, ub] = obj.getBndsForVariable();
-            
+
             xS = x;
             lbS = lb;
             ubS = ub;
@@ -34,40 +46,42 @@ classdef(Abstract) AbstractOptimizationVariable < matlab.mixin.SetGet & matlab.m
                 xi = x(i);
                 lbi = lb(i);
                 ubi = ub(i);
-                
+
                 bndDiff = ubi - lbi;
                 bndCenter = (lbi + ubi)/2;
-                if(bndDiff > 1E-10)
+                if(bndDiff > AbstractOptimizationVariable.degenerateBndTol)
                     xS(i) = (xi - bndCenter)/(bndDiff/2);
                     lbS(i) = -1;
-                    ubS(i) = 1; 
+                    ubS(i) = 1;
                 else
-                    xS(i) = xi;
-                    lbS(i) = lbi;
-                    ubS(i) = ubi; 
+                    xS(i) = 0;
+                    lbS(i) = 0;
+                    ubS(i) = 0;
                 end
             end
         end
-        
+
         function updateObjWithScaledVarValue(obj, xS)
             [lb, ub] = obj.getBndsForVariable();
-            
+
             x = xS;
             for(i=1:length(xS))
                 xSi = xS(i);
                 lbi = lb(i);
                 ubi = ub(i);
-                
+
                 bndDiff = ubi - lbi;
                 bndCenter = (lbi + ubi)/2;
-                
-                if(bndDiff > 1E-10)
+
+                if(bndDiff > AbstractOptimizationVariable.degenerateBndTol)
                     x(i) = xSi * (bndDiff/2) + bndCenter;
-                else                    
-                    x(i) = xSi;
+                else
+                    %degenerate bounds pin the value; the scaled coordinate
+                    %carries no information (see getScaledXsForVariable)
+                    x(i) = bndCenter;
                 end
             end
-            
+
             obj.updateObjWithVarValue(x);
         end
         

@@ -12,9 +12,13 @@
 //  1) Develop a mission plan in KSPTOT LVD
 //  2) Create the control CSV file with attitude and throttle data:
 //     Simulation -> "Create kOS Control CSV File"
-//  3) Place the resulting CSV file into your <KSP_root>\Ships\Script folder
-//  4) Edit this file by changing the "fPath" variable to the name of the CSV file in (3).
-//  5) In KSP:
+//     LVD writes the CSV, a copy of this script with "fPath" already set to
+//     that CSV's file name, and the two KSLib library files into the same folder.
+//  3) Copy the CSV, exec_lvd_control.ks, lib_navball.ks, and
+//     lib_num_to_formatted_str.ks into your <KSP_root>\Ships\Script folder.
+//     (If you are using this template directly instead of the copy LVD wrote,
+//     set the "fPath" variable below to the CSV file name yourself.)
+//  4) In KSP:
 //     1) Enter the flight scene.
 //     2) Start the kOS terminal.
 //     3) Enter command "switch to 0." to switch to archive volume.
@@ -24,7 +28,7 @@
 // =================================================
 // INPUTS
 // =================================================
-	set fPath to "bigLauncher1.csv". //change "test.csv" to your CSV file name.  See step (4) above.
+	set fPath to "bigLauncher1.csv". //LVD sets this to your CSV file name when it exports; see step (3) above.
 	set printOutput to true. //set to false to disable output display (time, steering, orbit, etc)
 
 // =================================================

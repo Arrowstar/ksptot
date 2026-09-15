@@ -182,12 +182,38 @@ classdef LaunchVehicleNonSeqEvents < matlab.mixin.SetGet & matlab.mixin.Copyable
                
         function tf = usesCalculusCalc(obj, calculusCalc)
             tf = false;
-            
+
             for(i=1:length(obj.evts))
-                tf = tf || obj.evts(i).usesExtremum(calculusCalc);
+                tf = tf || obj.evts(i).usesCalculusCalc(calculusCalc);
             end
         end
-        
+
+        function tf = usesEvent(obj, event)
+            %usesEvent True when any non-sequential event references the given
+            %sequential event, either through one of its actions or as one of
+            %its lower/upper arming-bound events.
+            tf = false;
+
+            for(i=1:length(obj.nonSeqEvts))
+                nonSeqEvt = obj.nonSeqEvts(i);
+
+                if(not(isempty(nonSeqEvt.lwrBndEvt)) && nonSeqEvt.lwrBndEvt == event)
+                    tf = true;
+                    return;
+                end
+
+                if(not(isempty(nonSeqEvt.uprBndEvt)) && nonSeqEvt.uprBndEvt == event)
+                    tf = true;
+                    return;
+                end
+
+                if(not(isempty(nonSeqEvt.evt)) && nonSeqEvt.evt.usesEvent(event))
+                    tf = true;
+                    return;
+                end
+            end
+        end
+
         function tf = usesPwrSink(obj, powerSink)
             tf = false;
             

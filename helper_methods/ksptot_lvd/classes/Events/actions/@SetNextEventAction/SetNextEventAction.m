@@ -30,10 +30,17 @@ classdef SetNextEventAction < AbstractEventAction
             %nothing
         end
         
-        function name = getName(obj)            
+        function name = getName(obj)
             name = sprintf('Set Next Event (%s)', obj.nextEvent.getListboxStr());
         end
-                        
+
+        function tf = usesEvent(obj, event)
+            %usesEvent True when this action jumps to the given event.  Without
+            %this override the branch target could be deleted out from under
+            %the action, leaving a dangling reference.
+            tf = not(isempty(obj.nextEvent)) && not(isempty(event)) && obj.nextEvent == event;
+        end
+
         function [tf, vars] = hasActiveOptimVar(obj)
             tf = false;
             vars = AbstractOptimizationVariable.empty(0,1);

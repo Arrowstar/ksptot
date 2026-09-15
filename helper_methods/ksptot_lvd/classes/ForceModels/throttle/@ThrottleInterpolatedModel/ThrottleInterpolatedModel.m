@@ -9,6 +9,10 @@ classdef ThrottleInterpolatedModel < AbstractThrottleModel
         durations(:,1) double = 1;
         throttles(:,1) double = 0;
 
+        %Time offset with the same meaning as PolynominalModel.tOffset: the
+        %table is evaluated at (ut - t0) + tOffset.  Zero by default.
+        tOffset(1,1) double = 0;
+
         interpolationType(1,1) ThrottleInterpolatedModelInterpTypeEnum = ThrottleInterpolatedModelInterpTypeEnum.Linear;
         gi
     end
@@ -35,7 +39,8 @@ classdef ThrottleInterpolatedModel < AbstractThrottleModel
             end
 
             obj.setT0(initialStateLogEntry.time);
-            allTimes     = [obj.t0,           obj.t0 + cumsum(obj.durations(:)')];
+            tableStart   = obj.t0 - obj.tOffset; %table time = (ut - t0) + tOffset
+            allTimes     = [tableStart,       tableStart + cumsum(obj.durations(:)')];
             allThrottles = [obj.initThrottle, obj.throttles(:)'];
             obj.gi = griddedInterpolant(allTimes, allThrottles, obj.interpolationType.giModelTypeStr, 'nearest');
         end
@@ -53,7 +58,14 @@ classdef ThrottleInterpolatedModel < AbstractThrottleModel
         end
         
         function setTimeOffsets(obj, timeOffset)
-            obj.throttleModel.tOffset = timeOffset;
+            %setTimeOffsets Same contract as ThrottlePolyModel: shifts the
+            %time argument the table is evaluated at.  Takes effect on the next
+            %initThrottleModel call, which rebuilds the interpolant.
+            obj.tOffset = timeOffset;
+        end
+
+        function timeOffset = getTimeOffsets(obj)
+            timeOffset = obj.tOffset;
         end
         
         function optVar = getNewOptVar(obj)

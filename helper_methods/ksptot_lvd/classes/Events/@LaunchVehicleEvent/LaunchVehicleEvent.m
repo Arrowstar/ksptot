@@ -189,14 +189,27 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
         end
         
         function newStateLogEntries = cleanupEvent(obj, finalStateLogEntry)
+            %cleanupEvent Runs this event's actions in order against the given
+            %state log entry and returns one entry per action.
+            %
+            %   Simple actions mutate finalStateLogEntry in place and return
+            %   that same handle, so for an N-action event the returned array
+            %   holds N references to one object whose contents are the
+            %   post-all-actions state.  This is intentional: the caller
+            %   (LaunchVehicleScript.executeEvent) hands in a deep copy of the
+            %   integrator's final entry, so the pre-action state survives as
+            %   its own log entry and the post-action state is what every
+            %   per-action entry reports.  Actions that need a fresh object
+            %   (SetKinematicStateAction) may return a new handle; the loop
+            %   chains whatever comes back into the next action.
             for(i=1:length(obj.actions)) %#ok<*NO4LP>
                 obj.actions(i).initAction(finalStateLogEntry);
             end
-            
+
             newStateLogEntries = LaunchVehicleStateLogEntry.empty(1,0);
             for(i=1:length(obj.actions))
                 newStateLogEntry = obj.actions(i).executeAction(finalStateLogEntry);
-                
+
                 newStateLogEntries(end+1) = newStateLogEntry; %#ok<AGROW>
                 finalStateLogEntry = newStateLogEntry;
             end

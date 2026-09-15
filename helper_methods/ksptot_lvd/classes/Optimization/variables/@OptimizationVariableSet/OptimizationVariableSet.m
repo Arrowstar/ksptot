@@ -105,21 +105,24 @@ classdef OptimizationVariableSet < matlab.mixin.SetGet
         end
         
         function typicalX = getTypicalScaledXVector(obj)
+            %getTypicalScaledXVector Typical magnitude of each scaled x element
+            %(used for solver TypicalX).  Works on magnitudes so negative
+            %bounds never reach log10 (which would return complex values).
             [LwrBnds, UprBnds] = obj.getTotalScaledBndsVector();
-            
+
             typicalX = zeros(size(LwrBnds));
             for(i=1:length(LwrBnds))
-                lbO = floor(log10(LwrBnds(i)));
-                ubO = floor(log10(UprBnds(i)));
-                
-                if(lbO > ubO)
-                    typicalX(i) = LwrBnds(i);
+                lbMag = abs(LwrBnds(i));
+                ubMag = abs(UprBnds(i));
+
+                if(floor(log10(lbMag)) > floor(log10(ubMag)))
+                    typicalX(i) = lbMag;
                 else
-                    typicalX(i) = UprBnds(i);
+                    typicalX(i) = ubMag;
                 end
             end
-            
-            typicalX(typicalX<eps) = 1;
+
+            typicalX(not(isfinite(typicalX)) | typicalX < eps) = 1;
         end
         
         function updateObjsWithScaledVarValues(obj, x)

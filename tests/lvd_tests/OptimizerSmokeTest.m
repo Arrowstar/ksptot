@@ -403,9 +403,9 @@ classdef OptimizerSmokeTest < KsptotTestCase
             %a working object.  This is what proves the factories are wrong
             %rather than the constructors.
             %The explicit constructor form the live code paths use (see
-            %CompositeObjectiveFcn.upgradeExistingObjFuncs) must keep agreeing
-            %with the factory above -- it is the signature the factory was out
-            %of step with.
+            %LvdOptimization's constructor and LvdData.getDefaultLvdData) must
+            %keep agreeing with the factory above -- it is the signature the
+            %factory was out of step with.
             frame = testCase.kerbinFrame;
             fcn = GenericMAConstraint('Altitude', evt1, 0, 0, [], [], noBody);
             objFcn = GenericObjectiveFcn(evt1, frame, fcn, 1, lvdData.optimizer, lvdData);

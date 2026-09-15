@@ -76,7 +76,67 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
                 obj.removeEvent(obj.evts(ind));
             end
         end
-        
+
+        function [tf, reasons] = getEventUsageReport(obj, evt)
+            %getEventUsageReport Reports every place that references evt and
+            %would be left dangling if it were deleted.
+            %
+            %   tf      - true when at least one reference exists
+            %   reasons - cellstr of human readable descriptions, one per
+            %             referencing object
+            %
+            %Checked: actions on every OTHER sequential event, every
+            %non-sequential event (actions and arming-bound events), and the
+            %objective function.  Constraints and optimization variables are
+            %not reported because the delete path removes those itself.
+            reasons = {};
+
+            evtNum = obj.getNumOfEvent(evt);
+            if(isempty(evtNum))
+                evtNumStr = '?';
+            else
+                evtNumStr = sprintf('%u', evtNum);
+            end
+
+            for(i=1:length(obj.evts))
+                otherEvt = obj.evts(i);
+
+                if(otherEvt == evt)
+                    continue;
+                end
+
+                if(otherEvt.usesEvent(evt))
+                    reasons{end+1} = sprintf('Event %u uses Event %s in an event action.', i, evtNumStr); %#ok<AGROW>
+                end
+            end
+
+            if(not(isempty(obj.nonSeqEvts)) && obj.nonSeqEvts.usesEvent(evt))
+                nonSeqEvts = obj.nonSeqEvts.nonSeqEvts;
+                for(i=1:length(nonSeqEvts))
+                    nonSeqEvt = nonSeqEvts(i);
+
+                    usesAsBnd = (not(isempty(nonSeqEvt.lwrBndEvt)) && nonSeqEvt.lwrBndEvt == evt) || ...
+                                (not(isempty(nonSeqEvt.uprBndEvt)) && nonSeqEvt.uprBndEvt == evt);
+                    usesInAction = not(isempty(nonSeqEvt.evt)) && nonSeqEvt.evt.usesEvent(evt);
+
+                    if(usesAsBnd)
+                        reasons{end+1} = sprintf('Non-sequential event "%s" uses Event %s as a bounding event.', nonSeqEvt.getListboxStr(), evtNumStr); %#ok<AGROW>
+                    end
+
+                    if(usesInAction)
+                        reasons{end+1} = sprintf('Non-sequential event "%s" uses Event %s in an event action.', nonSeqEvt.getListboxStr(), evtNumStr); %#ok<AGROW>
+                    end
+                end
+            end
+
+            if(not(isempty(obj.lvdData)) && not(isempty(obj.lvdData.optimizer)) && ...
+               not(isempty(obj.lvdData.optimizer.objFcn)) && obj.lvdData.optimizer.objFcn.usesEvent(evt))
+                reasons{end+1} = sprintf('The objective function uses Event %s.', evtNumStr); %#ok<AGROW>
+            end
+
+            tf = not(isempty(reasons));
+        end
+
         function evtNum = getNumOfEvent(obj, evt)
             evtNum = [];
             

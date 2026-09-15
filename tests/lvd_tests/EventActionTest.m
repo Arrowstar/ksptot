@@ -18,8 +18,8 @@ classdef EventActionTest < KsptotTestCase
     %       properties, attitude, etc.) are unchanged -- captured into a
     %       plain-value local BEFORE calling executeAction(), since most
     %       actions mutate the state log entry in place rather than
-    %       returning a deep copy (only SetKinematicStateAction and
-    %       ConditionalAction deep-copy).
+    %       returning a deep copy (only SetKinematicStateAction returns a
+    %       fresh object).
     %
     % Object-identity checks (e.g. "the new model was actually assigned")
     % use == directly, since every supporting class here
@@ -230,8 +230,13 @@ classdef EventActionTest < KsptotTestCase
             testCase.verifyEqual(newTankStates(1).tankMass, tankMassBefore, 'AbsTol', 1e-12, ...
                 'ConditionalAction unexpectedly changed unrelated tank mass');
 
-            testCase.verifyNotSameHandle(newEntry, entry, ...
-                'ConditionalAction.executeAction must deep-copy the state log entry');
+            %ConditionalAction used to be the one simple action that
+            %deep-copied its input, so an event's per-action log entries were
+            %aliases of one object for every action except this one.  It now
+            %follows the common contract (mutate in place, return the same
+            %handle); LaunchVehicleEvent.cleanupEvent documents why.
+            testCase.verifySameHandle(newEntry, entry, ...
+                'ConditionalAction.executeAction must return the incoming state log entry handle like every other simple action');
         end
 
         %% ------------------------------------------------------- Extrema

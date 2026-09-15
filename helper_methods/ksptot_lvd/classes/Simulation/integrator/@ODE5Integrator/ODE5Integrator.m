@@ -17,18 +17,26 @@ classdef ODE5Integrator < AbstractFixedStepIntegrator
         end
         
         function [t,y,te,ye,ie] = integrate(obj, odefun, tspan, y0, evtsFunc, odeOutputFun)
-%             odeSetOptions = obj.options.getIntegratorOptions();
-            odeSetOptions = odeset();
+            odeSetOptions = obj.options.getIntegratorOptions();
             optionsToUse = odeset(odeSetOptions, 'Events',evtsFunc, 'OutputFcn',odeOutputFun);
-            
-            [t,y, te,ye,ie] = AbstractFixedStepIntegrator.integrate(odefun, tspan, y0, optionsToUse);
+
+            [t,y, te,ye,ie] = AbstractFixedStepIntegrator.integrate(odefun, tspan, y0, optionsToUse, ODE5Integrator.getTableau());
         end
-        
+
         function options = getOptions(obj)
             options = obj.options;
         end
     end
-    
+
+    methods(Static)
+        function tableau = getTableau()
+            %getTableau The Dormand-Prince 5th order tableau in the struct form
+            %AbstractFixedStepIntegrator.integrate consumes.
+            [A,B,C] = ODE5Integrator.getButcherTableauData();
+            tableau = AbstractFixedStepIntegrator.makeTableau(A, B, C);
+        end
+    end
+
     methods(Static,Access=protected)
         function [A,B,C] = getButcherTableauData()
             A = [  1/5,          0,           0,            0,         0

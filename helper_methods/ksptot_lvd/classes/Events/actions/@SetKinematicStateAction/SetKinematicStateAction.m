@@ -224,33 +224,25 @@ classdef SetKinematicStateAction < AbstractEventAction
         end
         
         function tf = usesEvent(obj, event)
+            %usesEvent True when any inherit-from-specified-event link on this
+            %action (time, position/velocity, other state elements, or any
+            %per-component stage/engine/tank/EPS sink/EPS source/EPS storage
+            %state) points at the given event.
             tf = false;
-            
-            tankEvtsTf = logical([]);
-            for(i=1:length(obj.tankStates))
-                tankState = obj.tankStates(i);
-                if(tankState.inheritTankStateFrom == InheritStateEnum.InheritFromSpecifiedEvent && ...
-                   not(isempty(tankState.inheritTankStateFromEvent)) && tankState.inheritTankStateFromEvent == event)
-                    tankEvtsTf(end+1) = tankState.inheritTankStateFromEvent == event; %#ok<AGROW>
-                end
-            end
 
-            epsSrcEvtsTf = logical([]);
-            for(i=1:length(obj.epsStorageStates))
-                storageState = obj.epsStorageStates(i);
-                
-                if(storageState.inheritStorageStateFrom == InheritStateEnum.InheritFromSpecifiedEvent && ...
-                   not(isempty(storageState.inheritStorageStateFromEvent)) && storageState.inheritStorageStateFromEvent == event)
-                    epsSrcEvtsTf(end+1) = storageState.inheritStorageStateFromEvent == event; %#ok<AGROW>
-                end
-            end
-            
             if((obj.inheritTime && obj.inheritTimeFrom == InheritStateEnum.InheritFromSpecifiedEvent && not(isempty(obj.inheritTimeFromEvent)) && obj.inheritTimeFromEvent == event) || ...
                (obj.inheritPosVel && obj.inheritPosVelFrom == InheritStateEnum.InheritFromSpecifiedEvent && not(isempty(obj.inheritPosVelFromEvent)) && obj.inheritPosVelFromEvent == event) || ...
-               (obj.inheritStateElems && obj.inheritStateElemsFrom == InheritStateEnum.InheritFromSpecifiedEvent && not(isempty(obj.inheritStateElemsFromEvent)) && obj.inheritStateElemsFromEvent == event) || ...
-               any(tankEvtsTf) || any(epsSrcEvtsTf))
+               (obj.inheritStateElems && obj.inheritStateElemsFrom == InheritStateEnum.InheritFromSpecifiedEvent && not(isempty(obj.inheritStateElemsFromEvent)) && obj.inheritStateElemsFromEvent == event))
                 tf = true;
+                return;
             end
+
+            tf = SetKinematicStateAction.anyComponentStateInheritsFromEvent(obj.stageStates,      'inheritStageStateFrom',   'inheritStageStateFromEvent',   event) || ...
+                 SetKinematicStateAction.anyComponentStateInheritsFromEvent(obj.engineStates,     'inheritEngineStateFrom',  'inheritEngineStateFromEvent',  event) || ...
+                 SetKinematicStateAction.anyComponentStateInheritsFromEvent(obj.tankStates,       'inheritTankStateFrom',    'inheritTankStateFromEvent',    event) || ...
+                 SetKinematicStateAction.anyComponentStateInheritsFromEvent(obj.epsSinkStates,    'inheritSinkStateFrom',    'inheritSinkStateFromEvent',    event) || ...
+                 SetKinematicStateAction.anyComponentStateInheritsFromEvent(obj.epsSrcStates,     'inheritSrcStateFrom',     'inheritSrcStateFromEvent',     event) || ...
+                 SetKinematicStateAction.anyComponentStateInheritsFromEvent(obj.epsStorageStates, 'inheritStorageStateFrom', 'inheritStorageStateFromEvent', event);
         end
         
         function [tf, vars] = hasActiveOptimVar(obj)
@@ -439,11 +431,30 @@ classdef SetKinematicStateAction < AbstractEventAction
     methods(Static)
         function addActionTf = openEditActionUI(action, lv)
             action.generateLvComponentElements();
-            
+
             output = AppDesignerGUIOutput({false});
             lvd_EditActionSetKinematicStateGUI_App(action, lv.lvdData, output);
-            
+
             addActionTf = output.output{1};
+        end
+
+        function tf = anyComponentStateInheritsFromEvent(componentStates, fromPropName, fromEventPropName, event)
+            %anyComponentStateInheritsFromEvent True when any element of the
+            %given SetKinematicState*State array is set to inherit from the
+            %specified event.  The property names differ per component class
+            %(inheritStageStateFrom, inheritTankStateFrom, ...) so they are
+            %passed in by name.
+            tf = false;
+
+            for(i=1:length(componentStates))
+                compState = componentStates(i);
+
+                if(compState.(fromPropName) == InheritStateEnum.InheritFromSpecifiedEvent && ...
+                   not(isempty(compState.(fromEventPropName))) && compState.(fromEventPropName) == event)
+                    tf = true;
+                    return;
+                end
+            end
         end
     end
 end

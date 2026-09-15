@@ -109,6 +109,7 @@ classdef OptimizationVariableTest < KsptotTestCase
             'SetRPYSteeringModelVariablePartialMask', ...
             'ScalingIsCenteredAndHalfWidthNormalized', ...
             'DegenerateBoundsSkipScaling', ...
+            'TypicalXIsRealAndPositive', ...
             'InactiveVariableContributesNothing', ...
             'VariableSetAggregatesInOrder', ...
             'VariableSetScaledUpdateSlicesByVarCount', ...
@@ -602,9 +603,13 @@ classdef OptimizationVariableTest < KsptotTestCase
         end
 
         function checkDegenerateBoundsSkipScaling(testCase)
-            %When ub - lb <= 1E-10 the base class refuses to scale (it
-            %would divide by ~zero) and passes the raw value through in
-            %both directions.  Pin both branches of that guard.
+            %When ub - lb <= degenerateBndTol the element is fixed by its
+            %bounds.  It used to be passed through RAW (value 500 with bounds
+            %[500 500] sitting next to properly scaled [-1 1] elements), which
+            %mixed arbitrary magnitudes into the optimizer's x vector and
+            %defeated TypicalX / finite-difference step selection.  It is now
+            %represented as 0 with bounds [0 0], and a scaled write pins the
+            %object back to the bound centre.  Pin both branches of the guard.
             tgt = EventDurationTermCondition(0);
             var = EventDurationOptimizationVariable(tgt);
             var.setUseTfForVariable(true);
@@ -613,23 +618,29 @@ classdef OptimizationVariableTest < KsptotTestCase
             var.updateObjWithVarValue(500);
             [xS, lbS, ubS] = var.getScaledXsForVariable();
 
-            testCase.verifyEqual(xS, 500, ...
-                'Degenerate bounds must leave the value unscaled.');
-            testCase.verifyEqual(lbS, 500, ...
-                'Degenerate bounds must report the raw lower bound, not -1.');
-            testCase.verifyEqual(ubS, 500, ...
-                'Degenerate bounds must report the raw upper bound, not +1.');
+            testCase.verifyEqual(xS, 0, ...
+                'Degenerate bounds must map the element to scaled 0, not leak the raw value.');
+            testCase.verifyEqual(lbS, 0, ...
+                'Degenerate bounds must report a scaled lower bound of 0.');
+            testCase.verifyEqual(ubS, 0, ...
+                'Degenerate bounds must report a scaled upper bound of 0.');
 
-            var.updateObjWithScaledVarValue(500);
+            var.updateObjWithScaledVarValue(0);
             testCase.verifyEqual(tgt.duration, 500, ...
-                'Degenerate-bound scaled write must pass the value through untouched.');
+                'Degenerate-bound scaled write must restore the bound value.');
+
+            %A drifted value must be pulled back onto the (fixed) bound too.
+            var.updateObjWithVarValue(123);
+            var.updateObjWithScaledVarValue(var.getScaledXsForVariable());
+            testCase.verifyEqual(tgt.duration, 500, ...
+                'Round-tripping a degenerate element must pin it to the bound centre.');
 
             %Just inside the guard: a gap of 1E-11 is still "degenerate".
             var.setBndsForVariable(500, 500 + 1E-11);
             var.updateObjWithVarValue(500);
             xSNarrow = var.getScaledXsForVariable();
-            testCase.verifyEqual(xSNarrow, 500, ...
-                'A bound gap of 1E-11 is below the 1E-10 threshold and must not be scaled.');
+            testCase.verifyEqual(xSNarrow, 0, ...
+                'A bound gap of 1E-11 is below the 1E-10 threshold and must map to 0.');
 
             %Just outside the guard: a gap of 1E-9 IS scaled.
             var.setBndsForVariable(500, 500 + 1E-9);
@@ -637,6 +648,39 @@ classdef OptimizationVariableTest < KsptotTestCase
             xSWide = var.getScaledXsForVariable();
             testCase.verifyEqual(xSWide, -1, ...
                 'A bound gap of 1E-9 exceeds the 1E-10 threshold and must scale lb to -1.');
+        end
+
+        function checkTypicalXIsRealAndPositive(testCase)
+            %getTypicalScaledXVector used to take log10 of the scaled LOWER
+            %bound (-1), producing complex intermediates whose real part
+            %happened to give the right answer.  With a degenerate element in
+            %the set the old code also fed a raw negative bound through.  The
+            %result must be a real, finite, positive vector of ones for a
+            %purely [-1, 1] / [0, 0] scaled problem.
+            lvdData = LvdData.getDefaultLvdData(testCase.celBodyData);
+            varSet = lvdData.optimizer.vars;
+
+            tgtA = EventDurationTermCondition(0);
+            varA = EventDurationOptimizationVariable(tgtA);
+            varA.setUseTfForVariable(true);
+            varA.setBndsForVariable(-800, -200);
+            varA.updateObjWithVarValue(-500);
+            varSet.addVariable(varA);
+
+            tgtB = EventDurationTermCondition(0);
+            varB = EventDurationOptimizationVariable(tgtB);
+            varB.setUseTfForVariable(true);
+            varB.setBndsForVariable(-42, -42);
+            varB.updateObjWithVarValue(-42);
+            varSet.addVariable(varB);
+
+            typicalX = varSet.getTypicalScaledXVector();
+
+            testCase.verifyTrue(isreal(typicalX), 'TypicalX must be real.');
+            testCase.verifyTrue(all(isfinite(typicalX)), 'TypicalX must be finite.');
+            testCase.verifyTrue(all(typicalX > 0), 'TypicalX must be strictly positive.');
+            testCase.verifyEqual(typicalX, ones(size(typicalX)), ...
+                'For [-1,1] and degenerate [0,0] scaled elements TypicalX must be all ones.');
         end
 
         function checkInactiveVariableContributesNothing(testCase)
