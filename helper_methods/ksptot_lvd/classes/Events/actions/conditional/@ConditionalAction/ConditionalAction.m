@@ -246,7 +246,15 @@ classdef ConditionalAction < AbstractEventAction
         end
 
         function tf = usesEvent(obj, event)
-            tf = obj.anyBranchAction(@(a) a.usesEvent(event));
+            %The if/elseif conditions can reference an event too (quantity at
+            %event comparisons), not just the branch actions.
+            tf = obj.ifCondition.usesEvent(event);
+
+            for(i=1:numel(obj.elseifConditions))
+                tf = tf || obj.elseifConditions(i).usesEvent(event);
+            end
+
+            tf = tf || obj.anyBranchAction(@(a) a.usesEvent(event));
         end
 
         function tf = usesPwrSink(obj, powerSink)

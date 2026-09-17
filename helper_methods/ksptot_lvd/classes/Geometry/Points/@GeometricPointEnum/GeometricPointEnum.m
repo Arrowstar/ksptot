@@ -9,7 +9,9 @@ classdef GeometricPointEnum < matlab.mixin.SetGet
         Vehicle('Vehicle Point');
         TwoBody('Two Body Propagated Point');
         LvdData('LVD Trajectory Point');
-        LagrangePoint('Lagrange Point')
+        LagrangePoint('Lagrange Point');
+        VectorPlaneIntersection('Vector-Plane Intersection Point');
+        EphemerisFile('Ephemeris File Point');
     end
     
     properties

@@ -519,6 +519,7 @@ classdef VehiclePropulsionMassFlowTest < KsptotTestCase
             tankB = LaunchVehicleTank(stgB);
             tankB.name = 'Second Stage Tank';
             tankB.initialMass = 3;
+            tankB.capacity = 3;
             stgB.addTank(tankB);
 
             lv.addEngineToTankConnection(EngineToTankConnection(tankB, engB));
@@ -538,11 +539,13 @@ classdef VehiclePropulsionMassFlowTest < KsptotTestCase
             tank2 = LaunchVehicleTank(stg);
             tank2.name = 'Split Tank Two';
             tank2.initialMass = 6;
+            tank2.capacity = 6;
             stg.addTank(tank2);
 
             tank3 = LaunchVehicleTank(stg);
             tank3.name = 'Unconnected Tank Three';
             tank3.initialMass = 7;
+            tank3.capacity = 7;
             stg.addTank(tank3);
 
             lv.addEngineToTankConnection(EngineToTankConnection(tank2, engine));
@@ -570,6 +573,7 @@ classdef VehiclePropulsionMassFlowTest < KsptotTestCase
                 tk = LaunchVehicleTank(stg);
                 tk.name = names{i};
                 tk.initialMass = masses(i);
+                tk.capacity = masses(i);
                 stg.addTank(tk);
                 newTanks(end+1) = tk; %#ok<AGROW>
             end

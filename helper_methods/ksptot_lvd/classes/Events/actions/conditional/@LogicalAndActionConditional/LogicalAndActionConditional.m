@@ -88,6 +88,16 @@ classdef LogicalAndActionConditional < AbstractActionConditional
             end
         end
 
+        function tf = usesEvent(obj, event)
+            tf = false;
+            for(i=1:numel(obj.conditionals))
+                if(obj.conditionals(i).usesEvent(event))
+                    tf = true;
+                    return;
+                end
+            end
+        end
+
         function nodes = getTreeNodes(obj, parent)
             nodes(1) = uitreenode(parent, 'Text','AND', 'NodeData',obj, 'Icon','ampersand.png');
             for(i=1:numel(obj.conditionals))

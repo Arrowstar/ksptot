@@ -33,7 +33,7 @@ classdef LaunchVehicleNonSeqEvents < matlab.mixin.SetGet & matlab.mixin.Copyable
             for(i=1:length(obj.nonSeqEvts))
                 nonSeqEvt = obj.nonSeqEvts(i);
                 
-                if(nonSeqEvt.numExecsRemaining > 0)
+                if(nonSeqEvt.isActive())
                     if(not(isempty(nonSeqEvt.lwrBndEvt)))
                         lwrBndEvtNum = nonSeqEvt.lwrBndEvt.getEventNum();
                     else
@@ -58,6 +58,16 @@ classdef LaunchVehicleNonSeqEvents < matlab.mixin.SetGet & matlab.mixin.Copyable
         end
         
         function addEventAtInd(obj, newEvt, ind)
+            %addEventAtInd Inserts newEvt after event number ind (0 puts it
+            %first).  An empty or out-of-range ind (nothing selected in the
+            %non-sequential list box) appends the event; it must never drop
+            %the events already in the list.
+            if(isempty(ind) || not(isfinite(ind(1))) || ind(1) < 0 || ind(1) > length(obj.nonSeqEvts))
+                obj.nonSeqEvts(end+1) = newEvt;
+                return;
+            end
+            ind = ind(1);
+
             if(not(isempty(obj.nonSeqEvts)))
                 if(ind == length(obj.nonSeqEvts))
                     obj.nonSeqEvts(end+1) = newEvt;
@@ -77,9 +87,12 @@ classdef LaunchVehicleNonSeqEvents < matlab.mixin.SetGet & matlab.mixin.Copyable
 
             evt = nonSeqEvt.evt;
 
-            termCondOptVar = evt.termCond.getExistingOptVar();
-            if(not(isempty(termCondOptVar)))
-                obj.lvdData.optimizer.vars.removeVariable(termCondOptVar);
+            evtTermConds = evt.getAllTermConds();
+            for(i=1:numel(evtTermConds)) %#ok<*NO4LP>
+                termCondOptVar = evtTermConds(i).getExistingOptVar();
+                if(not(isempty(termCondOptVar)))
+                    obj.lvdData.optimizer.vars.removeVariable(termCondOptVar);
+                end
             end
             
             actions = evt.actions;
@@ -266,7 +279,33 @@ classdef LaunchVehicleNonSeqEvents < matlab.mixin.SetGet & matlab.mixin.Copyable
             end
         end
     end
-    
+
+    methods(Static)
+        function sortedEvts = sortByPriority(nonSeqEvts)
+            %sortByPriority A8: orders non-sequential events by descending
+            %priority, keeping the user's list order within a priority.  This
+            %decides which event wins when two are armed on the same step.
+            sortedEvts = nonSeqEvts;
+
+            if(numel(sortedEvts) < 2)
+                return;
+            end
+
+            priorities = zeros(1, numel(sortedEvts));
+            for(i=1:numel(sortedEvts)) %#ok<*NO4LP>
+                priorities(i) = sortedEvts(i).priority;
+            end
+
+            if(all(priorities == priorities(1)))
+                %Nothing to do, and this keeps the common case allocation free.
+                return;
+            end
+
+            [~, order] = sort(priorities, 'descend', 'ComparisonMethod', 'real');
+            sortedEvts = sortedEvts(order);
+        end
+    end
+
 	methods(Access = protected)
         function cpObj = copyElement(obj)
             cpObj = copyElement@matlab.mixin.Copyable(obj); 

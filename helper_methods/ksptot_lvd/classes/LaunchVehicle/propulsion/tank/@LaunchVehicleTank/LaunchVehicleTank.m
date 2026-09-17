@@ -5,6 +5,7 @@ classdef LaunchVehicleTank < matlab.mixin.SetGet
     properties
         stage LaunchVehicleStage
         initialMass(1,1) double = 0; %mT
+        capacity(1,1) double {mustBeNonnegative} = 0; %mT; maximum propellant mass the tank can hold
         name char = 'Untitled Tank';
         tankType TankFluidType = TankFluidType.empty(1,0);
         
@@ -40,12 +41,36 @@ classdef LaunchVehicleTank < matlab.mixin.SetGet
         function tankSummStr = getTankSummaryStr(obj)
             tankSummStr = {};
             
-            tankSummStr{end+1} = sprintf('\t\t\t%s (Prop Mass = %.3f mT)', obj.name, obj.initialMass);
+            tankSummStr{end+1} = sprintf('\t\t\t%s (Prop Mass = %.3f mT, Capacity = %.3f mT)', obj.name, obj.initialMass, obj.capacity);
             tankSummStr{end+1} = sprintf('\t\t\t\tFluid Type: %s', obj.tankType.name);
         end
-        
+
         function initialMass = getInitialMass(obj)
             initialMass = obj.initialMass;
+        end
+
+        function capacity = getCapacity(obj)
+            %getCapacity Maximum propellant mass the tank can hold, mT.  The
+            %fuel-remaining percentage that drives engine throttle curves is
+            %measured against it and tank-to-tank crossfeed stops when the
+            %receiving tank reaches it.
+            capacity = obj.capacity;
+        end
+
+        function capacity = getLegacyCapacity(obj)
+            %getLegacyCapacity Capacity for a tank saved before capacities
+            %existed: the initial mass reproduces the old fuel-remaining
+            %percentage exactly, raised to the optimization upper bound when
+            %the initial mass is an active variable so the optimizer can
+            %still reach the whole range it was given.
+            capacity = obj.initialMass;
+
+            if(not(isempty(obj.optVar)) && obj.optVar.getUseTfForVariable())
+                [~, ub] = obj.optVar.getAllBndsForVariable();
+                if(isfinite(ub))
+                    capacity = max(capacity, ub);
+                end
+            end
         end
         
         function tf = isInUse(obj)
@@ -64,6 +89,7 @@ classdef LaunchVehicleTank < matlab.mixin.SetGet
             newTank = LaunchVehicleTank(obj.stage);
         
             newTank.initialMass = obj.initialMass;
+            newTank.capacity = obj.capacity;
             newTank.name = sprintf('Copy of %s', obj.name);
         end
         

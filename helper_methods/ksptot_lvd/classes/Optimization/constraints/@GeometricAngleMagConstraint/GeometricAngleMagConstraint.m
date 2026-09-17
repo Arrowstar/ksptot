@@ -146,7 +146,11 @@ classdef GeometricAngleMagConstraint < AbstractConstraint
         end
         
         function [unit, lbLim, ubLim, usesLbUb, usesCelBody, usesRefSc] = getConstraintStaticDetails(obj)
-            unit = 'deg';
+            if(not(isempty(obj.angle)) && obj.angle.isDimensionless())
+                unit = '';
+            else
+                unit = 'deg';
+            end
             lbLim = -Inf;
             ubLim = Inf;
             usesLbUb = true;

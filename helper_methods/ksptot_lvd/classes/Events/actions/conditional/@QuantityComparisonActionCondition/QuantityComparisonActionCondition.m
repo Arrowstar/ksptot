@@ -15,6 +15,11 @@ classdef QuantityComparisonActionCondition < AbstractActionConditional
         quantCompareTaskStr(1,:) char
         quantCompareFrame AbstractReferenceFrame
 
+        %quantity at event: the comparison quantity is evaluated at the
+        %initial or final state of another event already in the state log
+        compareEvent LaunchVehicleEvent
+        compareEventNode(1,1) ConstraintStateComparisonNodeEnum = ConstraintStateComparisonNodeEnum.FinalState;
+
         %tolerance
         tol(1,1) double = 0;
     end
@@ -43,7 +48,51 @@ classdef QuantityComparisonActionCondition < AbstractActionConditional
         end
 
         function value = get.qcTask(obj)
-            value = GraphicalAnalysisTask(obj.quantCompareTaskStr, obj.quantCompareFrame);
+            %With no comparison quantity configured the comparison uses the
+            %same quantity (and frame) as the primary task.
+            if(isempty(obj.quantCompareTaskStr))
+                taskStr = obj.task.taskStr;
+            else
+                taskStr = obj.quantCompareTaskStr;
+            end
+
+            if(isempty(obj.quantCompareFrame))
+                frame = obj.frame;
+            else
+                frame = obj.quantCompareFrame;
+            end
+
+            value = GraphicalAnalysisTask(taskStr, frame);
+        end
+
+        function [stateLogEntry, tf] = getCompareEventStateLogEntry(obj, lvdData)
+            %getCompareEventStateLogEntry The state log entry the "Quantity at
+            %Event" comparison reads from, or empty (tf=false) when the event
+            %is unset or has not been propagated yet.
+            stateLogEntry = LaunchVehicleStateLogEntry.empty(1,0);
+            tf = false;
+
+            if(isempty(obj.compareEvent) || isempty(lvdData) || isempty(lvdData.stateLog))
+                return;
+            end
+
+            entries = lvdData.stateLog.getAllStateLogEntriesForEvent(obj.compareEvent);
+            if(isempty(entries))
+                return;
+            end
+
+            switch obj.compareEventNode
+                case ConstraintStateComparisonNodeEnum.InitialState
+                    stateLogEntry = entries(1);
+
+                case ConstraintStateComparisonNodeEnum.FinalState
+                    stateLogEntry = entries(end);
+
+                otherwise
+                    error('Unknown state comparison node: %s', obj.compareEventNode.name);
+            end
+
+            tf = true;
         end
 
         function [tf, unitStr] = evaluateConditional(obj, stateLogEntry)
@@ -87,6 +136,18 @@ classdef QuantityComparisonActionCondition < AbstractActionConditional
                 end
 
                 [compareAgainstValue, ~, ~] = obj.qcTask.executeTask(stateLogEntry, obj.maTaskList, prevDistTraveled, otherSCId, stationID, propNames, celBodyData);
+
+            elseif(obj.compareAgainst == CompareAgainstEnum.EventQuantity)
+                [compareEntry, haveEntry] = obj.getCompareEventStateLogEntry(lvdData);
+
+                if(not(haveEntry))
+                    %Nothing to compare against yet (event not propagated or
+                    %not set): the condition simply does not hold.
+                    tf = false;
+                    return;
+                end
+
+                [compareAgainstValue, ~, ~] = obj.qcTask.executeTask(compareEntry, obj.maTaskList, prevDistTraveled, otherSCId, stationID, propNames, celBodyData);
             else
                 error('Uknown comparison against type: %s', obj.compareAgainst.name);
             end
@@ -119,6 +180,25 @@ classdef QuantityComparisonActionCondition < AbstractActionConditional
             elseif(obj.compareAgainst == CompareAgainstEnum.GaTaskQuantity)
                 listboxStr = sprintf('%s %s %s (+/- %0.3f)', obj.task.getListBoxStr(), obj.comparisonType.symbol, obj.qcTask.getListBoxStr(), obj.tol);
 
+            elseif(obj.compareAgainst == CompareAgainstEnum.EventQuantity)
+                if(isempty(obj.compareEvent))
+                    evtStr = '<No Event>';
+                else
+                    try
+                        evtNum = obj.compareEvent.getEventNum();
+                    catch
+                        evtNum = NaN; %event not attached to a script yet
+                    end
+
+                    if(isempty(evtNum) || isnan(evtNum))
+                        evtStr = sprintf('Event "%s"', obj.compareEvent.name);
+                    else
+                        evtStr = sprintf('Event %u', evtNum);
+                    end
+                end
+
+                listboxStr = sprintf('%s %s %s @ %s (%s) (+/- %0.3f)', obj.task.getListBoxStr(), obj.comparisonType.symbol, obj.qcTask.getListBoxStr(), evtStr, obj.compareEventNode.name, obj.tol);
+
             else
                 error('Uknown comparison against type: %s', obj.compareAgainst.name);
             end
@@ -126,6 +206,11 @@ classdef QuantityComparisonActionCondition < AbstractActionConditional
 
         function condStr = getConditionalString(obj)
             condStr = obj.getListboxStr();
+        end
+
+        function tf = usesEvent(obj, event)
+            tf = obj.compareAgainst == CompareAgainstEnum.EventQuantity && ...
+                 not(isempty(obj.compareEvent)) && obj.compareEvent == event;
         end
 
         function node = getTreeNodes(obj, parent)

@@ -1,6 +1,38 @@
 function [g] = computeGradAtPoint(fun, x0, fAtX0, h, diffType, numPts, sparsity, useParallel)
-%computeGradAtPoint Summary of this function goes here
-%   Detailed explanation goes here
+%computeGradAtPoint Finite-difference gradient/Jacobian of fun at x0.
+%
+%   g = computeGradAtPoint(fun, x0, fAtX0, h, diffType, numPts, sparsity, useParallel)
+%   returns g of size [numel(x0) x numel(fAtX0)]: row i holds d(fun)/dx_i.
+%
+%   sparsity may be:
+%     []                        - dense, every x element is perturbed
+%     vector (numel(x0) x 1)    - x element i is skipped (row of zeros) when
+%                                 sparsity(i) == 0
+%     matrix [numel(x0) x numel(fAtX0)] - structural pattern; an x element
+%                                 whose whole row is zero is skipped without
+%                                 any function evaluation, otherwise the
+%                                 column is evaluated and the structurally
+%                                 zero entries are forced to exactly 0.
+%   Dense and vector behaviour is unchanged by the matrix form.
+
+    numFunOutputs = length(fAtX0);
+    x0 = x0(:);
+
+    sparsityMatrix = [];
+    if(not(isempty(sparsity)))
+        %The matrix shape is tested first so that a 1-variable or 1-output
+        %pattern (which is also a vector) is still treated as the pattern.
+        if(isequal(size(sparsity), [numel(x0), numFunOutputs]))
+            sparsityMatrix = logical(sparsity);
+            sparsity = double(any(sparsityMatrix, 2));
+        elseif(isvector(sparsity) && numel(sparsity) == numel(x0))
+            %per-x-element vector: unchanged legacy behaviour
+        else
+            error('computeGradAtPoint:badSparsity', ...
+                  'sparsity must be empty, a vector with numel(x0) = %u elements, or a matrix [numel(x0) x numel(fAtX0)] = [%u x %u].', ...
+                  numel(x0), numel(x0), numFunOutputs);
+        end
+    end
 
     switch diffType
         case FiniteDiffTypeEnum.Central
@@ -48,8 +80,6 @@ function [g] = computeGradAtPoint(fun, x0, fAtX0, h, diffType, numPts, sparsity,
         C = {fun};
     end
     
-    numFunOutputs = length(fAtX0);
-    x0 = x0(:);
     g = nan([numel(x0),numFunOutputs]);
     zeroArr = zeros(1,size(g,1));
 	parfor(i=1:size(g,1), M)
@@ -86,4 +116,8 @@ function [g] = computeGradAtPoint(fun, x0, fAtX0, h, diffType, numPts, sparsity,
             g(i,:) = zeros(1,numFunOutputs);
         end
 	end
+
+    if(not(isempty(sparsityMatrix)))
+        g(not(sparsityMatrix)) = 0;
+    end
 end

@@ -14,6 +14,12 @@ classdef (Abstract) AbstractActionConditional < matlab.mixin.SetGet & matlab.mix
         condStr = getConditionalString(obj);
 
         nodes = getTreeNodes(obj, parent);
+
+        function tf = usesEvent(obj, event)
+            %usesEvent True when this conditional (or any nested conditional)
+            %references the given sequential event.
+            tf = false;
+        end
     end
 
     methods(Sealed)

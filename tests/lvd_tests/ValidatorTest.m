@@ -1,5 +1,5 @@
 classdef ValidatorTest < KsptotTestCase
-    %ValidatorTest All 13 AbstractLaunchVehicleDataValidator subclasses.
+    %ValidatorTest The AbstractLaunchVehicleDataValidator subclasses.
     %
     % SUBJECT UNDER TEST
     %   helper_methods/ksptot_lvd/classes/Validation/Validators/*
@@ -27,8 +27,8 @@ classdef ValidatorTest < KsptotTestCase
     %   re-propagating, which keeps this file fast and keeps the "only one dial
     %   moved" property obvious.
     %
-    %   The baseline mission is deliberately chosen so that twelve of the
-    %   thirteen validators are silent on it: altitude 100 km is above Kerbin's
+    %   The baseline mission is deliberately chosen so that all but one of
+    %   the validators are silent on it: altitude 100 km is above Kerbin's
     %   70 km atmosphere and far inside its sphere of influence, both events
     %   coast on two-body propagators with zero throttle, and the default
     %   settings thresholds are all slack.  The one exception is
@@ -913,7 +913,8 @@ classdef ValidatorTest < KsptotTestCase
                 'ForceModelPropagatorWithNoForceModelsValidator', ...
                 'ThirdBodyGravityValidator', ...
                 'MaxFixedStepsReachedValidator', ...
-                'SomeEventsNotPlottedValidator'};
+                'SomeEventsNotPlottedValidator', ...
+                'TankCapacityValidator'};
 
             testCase.verifyNumElements(validation.validators, numel(expectedOrder), ...
                 'Wrong number of registered validators.');

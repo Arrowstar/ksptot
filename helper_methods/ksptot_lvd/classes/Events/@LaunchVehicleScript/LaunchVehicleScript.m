@@ -16,7 +16,12 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
         
         lvdData LvdData
         
-        nonSeqEvts LaunchVehicleNonSeqEvents 
+        nonSeqEvts LaunchVehicleNonSeqEvents
+
+        %A6: names of the event groups the user has collapsed in the script
+        %list box.  Purely a display preference, but stored with the mission
+        %so a long script opens the way it was left.
+        collapsedGroupNames(1,:) cell = {};
     end
 
     properties(Transient)
@@ -28,6 +33,11 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
         lastRunUsedIncremental(1,1) logical = false
         lastNumEvtsIntegrated(1,1) double = 0
         lastNumEvtsSkipped(1,1) double = 0
+
+        %Monotonic count of executeScript calls.  Consumers that cache the
+        %state log for a given input (LvdOptimization.propagateForX) use it
+        %to detect any propagation they did not perform themselves.
+        propagationCounter(1,1) double = 0
     end
         
     properties(Constant)
@@ -46,6 +56,16 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
         end
         
         function addEventAtInd(obj, newEvt, ind)
+            %addEventAtInd Inserts newEvt after event number ind (0 puts it
+            %first).  An empty or out-of-range ind (nothing selected in the
+            %script list box) appends the event; it must never drop the events
+            %already in the script.
+            if(isempty(ind) || not(isfinite(ind(1))) || ind(1) < 0 || ind(1) > length(obj.evts))
+                obj.evts(end+1) = newEvt;
+                return;
+            end
+            ind = ind(1);
+
             if(not(isempty(obj.evts)))
                 if(ind == length(obj.evts))
                     obj.evts(end+1) = newEvt;
@@ -58,9 +78,12 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
         end
         
         function removeEvent(obj, evt)
-            termCondOptVar = evt.termCond.getExistingOptVar();
-            if(not(isempty(termCondOptVar)))
-                obj.lvdData.optimizer.vars.removeVariable(termCondOptVar);
+            evtTermConds = evt.getAllTermConds();
+            for(i=1:numel(evtTermConds))
+                termCondOptVar = evtTermConds(i).getExistingOptVar();
+                if(not(isempty(termCondOptVar)))
+                    obj.lvdData.optimizer.vars.removeVariable(termCondOptVar);
+                end
             end
             
             actions = evt.actions;
@@ -220,22 +243,100 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
         end
         
         function [listboxStr, events] = getListboxStr(obj)
-            listboxStr = cell(length(obj.evts),1);
-            
-            for(i=1:length(obj.evts))
-                listboxStr{i} = obj.evts(i).getListboxStr();
-            end
-            
-            events = obj.evts;
+            [listboxStr, events] = obj.buildGroupedListbox(false);
         end
 
-        function [htmlListboxStrEvts, events] = getHtmlListboxStr(obj)  
-            htmlListboxStrEvts = cell(length(obj.evts),1);
-            for(i=1:length(obj.evts))
-                htmlListboxStrEvts{i} = obj.evts(i).getHtmlListboxStr();
+        function [htmlListboxStrEvts, events] = getHtmlListboxStr(obj)
+            [htmlListboxStrEvts, events] = obj.buildGroupedListbox(true);
+        end
+
+        function [listboxStr, events] = buildGroupedListbox(obj, useHtml)
+            %buildGroupedListbox A6: the script list box contents, with group
+            %headers folded into the first event of each group and the events
+            %of collapsed groups hidden.  listboxStr and events stay the same
+            %length, so callers can keep using the event objects as ItemsData.
+            listboxStr = {};
+            events = LaunchVehicleEvent.empty(1,0);
+
+            lastGroup = '';
+            for(i=1:length(obj.evts)) %#ok<*NO4LP>
+                evt = obj.evts(i);
+                group = evt.groupName;
+                isNewGroup = not(strcmp(group, lastGroup));
+                lastGroup = group;
+
+                collapsed = not(isempty(group)) && obj.isGroupCollapsed(group);
+                if(collapsed && not(isNewGroup))
+                    %Group already represented by its header row.
+                    continue;
+                end
+
+                if(useHtml)
+                    str = evt.getHtmlListboxStr();
+                else
+                    str = evt.getListboxStr();
+                end
+
+                if(not(isempty(group)) && isNewGroup)
+                    numInGroup = numel(obj.getEventsInGroup(group));
+
+                    if(collapsed)
+                        str = sprintf('▶ [%s] (%u events)', group, numInGroup);
+                    else
+                        str = sprintf('▼ [%s]  %s', group, str);
+                    end
+                end
+
+                listboxStr{end+1} = str; %#ok<AGROW>
+                events(end+1) = evt; %#ok<AGROW>
             end
-            
-            events = obj.evts;
+
+            listboxStr = listboxStr(:);
+        end
+
+        function groupNames = getGroupNames(obj)
+            %getGroupNames The distinct, non-empty group names in script order.
+            groupNames = {};
+
+            for(i=1:length(obj.evts))
+                group = obj.evts(i).groupName;
+
+                if(not(isempty(group)) && not(any(strcmp(groupNames, group))))
+                    groupNames{end+1} = group; %#ok<AGROW>
+                end
+            end
+        end
+
+        function evtsInGroup = getEventsInGroup(obj, groupName)
+            evtsInGroup = LaunchVehicleEvent.empty(1,0);
+
+            for(i=1:length(obj.evts))
+                if(obj.evts(i).isInGroup(groupName))
+                    evtsInGroup(end+1) = obj.evts(i); %#ok<AGROW>
+                end
+            end
+        end
+
+        function tf = isGroupCollapsed(obj, groupName)
+            tf = any(strcmp(obj.collapsedGroupNames, groupName));
+        end
+
+        function setGroupCollapsed(obj, groupName, tf)
+            if(isempty(groupName))
+                return;
+            end
+
+            isCollapsed = obj.isGroupCollapsed(groupName);
+
+            if(tf && not(isCollapsed))
+                obj.collapsedGroupNames{end+1} = groupName;
+            elseif(not(tf) && isCollapsed)
+                obj.collapsedGroupNames(strcmp(obj.collapsedGroupNames, groupName)) = [];
+            end
+        end
+
+        function toggleGroupCollapsed(obj, groupName)
+            obj.setGroupCollapsed(groupName, not(obj.isGroupCollapsed(groupName)));
         end
         
         function tf = usesStage(obj, stage)
@@ -387,6 +488,8 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
             
             stateLog = obj.lvdData.stateLog;
             vars = obj.lvdData.optimizer.vars;
+
+            obj.propagationCounter = obj.propagationCounter + 1;
 
             %Capture the previous run's completion state before resetting:
             %the resolver needs it to decide whether the cache is trustworthy.

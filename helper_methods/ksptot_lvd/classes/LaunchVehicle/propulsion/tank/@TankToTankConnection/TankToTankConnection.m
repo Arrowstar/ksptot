@@ -100,20 +100,26 @@ classdef TankToTankConnection < matlab.mixin.SetGet
                 
                 if(srcStageState && tgtStageState)
                     flowRate = t2tConnState.flowRate;
-                    
+
+                    %A target tank stops accepting propellant once it holds
+                    %its capacity.
+                    tgtIsFull = tgtIsTank && any(tgtBool) && tankStatesMasses(tgtBool) >= tgtTank.getCapacity();
+
                     if(srcIsTank && tgtIsTank)
-                        if(tankStatesMasses(srcBool) > 0)
+                        if(tankStatesMasses(srcBool) > 0 && not(tgtIsFull))
                             tankMassDots(srcBool) = tankMassDots(srcBool) - flowRate;
                             tankMassDots(tgtBool) = tankMassDots(tgtBool) + flowRate;
                         end
-                        
+
                     elseif(srcIsTank && tgtIsTank == false)
                         if(tankStatesMasses(srcBool) > 0)
                             tankMassDots(srcBool) = tankMassDots(srcBool) - flowRate;
                         end
-                        
+
                     elseif(srcIsTank == false && tgtIsTank)
-                        tankMassDots(tgtBool) = tankMassDots(tgtBool) + flowRate;
+                        if(not(tgtIsFull))
+                            tankMassDots(tgtBool) = tankMassDots(tgtBool) + flowRate;
+                        end
                     end
                 end
             end

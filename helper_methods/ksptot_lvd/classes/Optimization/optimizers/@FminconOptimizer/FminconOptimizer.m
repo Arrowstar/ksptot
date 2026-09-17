@@ -97,6 +97,7 @@ classdef FminconOptimizer < AbstractGradientOptimizer
                     
             %%% Run optimizer
             recorder = ma_OptimRecorder();
+            recorder.expectConstraintHistory = lvdOpt.constraints.getNumConstraints() > 0;
             celBodyData = lvdOpt.lvdData.celBodyData;
             
             if(callOutputFcn)
@@ -114,7 +115,7 @@ classdef FminconOptimizer < AbstractGradientOptimizer
                 optimStartTic = tic();
                 
                 outputFnc = @(x, optimValues, state) FminconOptimizer.getOutputFunction(x, optimValues, state, hOptimStatusLabel, hFinalStateOptimLabel, hDispAxes, hCancelButton, ...
-                                                                                        objFuncWrapper, problem.lb, problem.ub, celBodyData, recorder, propNames, writeOutput, varNameStrs, lbUsAll, ubUsAll, optimStartTic);
+                                                                                        objFuncWrapper, problem.lb, problem.ub, celBodyData, recorder, propNames, writeOutput, varNameStrs, lbUsAll, ubUsAll, optimStartTic, lvdOpt, evtToStartScriptExecAt);
                 problem.options.OutputFcn = outputFnc;
             end
             
@@ -159,7 +160,7 @@ classdef FminconOptimizer < AbstractGradientOptimizer
     
     methods(Static, Access=private)
         function stop = getOutputFunction(x, optimValues, state, hOptimStatusLabel, hFinalStateOptimLabel, hDispAxes, hCancelButton, ...
-                                          objFcn, lb, ub, celBodyData, recorder, propNames, writeOutput, varLabels, lbUsAll, ubUsAll, optimStartTic)
+                                          objFcn, lb, ub, celBodyData, recorder, propNames, writeOutput, varLabels, lbUsAll, ubUsAll, optimStartTic, lvdOpt, evtToStartScriptExecAt)
             switch state
                 case 'iter'
                     stop = get(hCancelButton,'Value');
@@ -168,6 +169,7 @@ classdef FminconOptimizer < AbstractGradientOptimizer
                     recorder.xVals(end+1) = {x};
                     recorder.fVals(end+1) = optimValues.fval;            
                     recorder.maxCVal(end+1) = optimValues.constrviolation;
+                    lvd_recordConstraintHistory(recorder, lvdOpt, x, evtToStartScriptExecAt);
                 case {'init','interrupt','done'}
                     stop = get(hCancelButton,'Value');
             end
@@ -192,7 +194,7 @@ classdef FminconOptimizer < AbstractGradientOptimizer
                     hFinalStateOptimLabel.Tooltip = stateTooltipStr;
                     hFinalStateOptimLabel.UserData = clipboardData;
 
-                    FminconOptimizer.generatePlots(x, optimValues, state, hDispAxes, lb, ub, varLabels, lbUsAll, ubUsAll);
+                    FminconOptimizer.generatePlots(x, optimValues, state, hDispAxes, lb, ub, varLabels, lbUsAll, ubUsAll, recorder);
                     drawnow;
                 catch ME
                     warning(ME.message);
@@ -236,7 +238,7 @@ classdef FminconOptimizer < AbstractGradientOptimizer
             end
         end
         
-        function generatePlots(x, optimValues, state, hDispAxes, lb, ub, varLabels, lbUsAll, ubUsAll)
+        function generatePlots(x, optimValues, state, hDispAxes, lb, ub, varLabels, lbUsAll, ubUsAll, recorder)
             global GLOBAL_AppThemer %#ok<GVMIS>
             persistent fValPlotIsLog tLayout hPlot1 hPlot2 hPlot3
 
@@ -249,7 +251,7 @@ classdef FminconOptimizer < AbstractGradientOptimizer
                     if(isvalid(hDispAxes))
 %                         set(hDispAxes,'Visible','on');
 %                         subplot(hDispAxes);
-                        tLayout = tiledlayout(hDispAxes, 3,1);
+                        tLayout = tiledlayout(hDispAxes, lvd_numObserveTiles(recorder),1);
 %                         axes(hDispAxes);
                     end
                     fValPlotIsLog = true;
@@ -325,6 +327,13 @@ classdef FminconOptimizer < AbstractGradientOptimizer
             GLOBAL_AppThemer.themeWidget(hPlot1, GLOBAL_AppThemer.selTheme);
             GLOBAL_AppThemer.themeWidget(hPlot2, GLOBAL_AppThemer.selTheme);
             GLOBAL_AppThemer.themeWidget(hPlot3, GLOBAL_AppThemer.selTheme);
+
+            %Per-constraint violation history (grows the layout to 4 tiles
+            %once the recorder holds constraint data).
+            hPlot4 = lvd_plotConstraintHistoryTile(tLayout, recorder, 4);
+            if(not(isempty(hPlot4)))
+                GLOBAL_AppThemer.themeWidget(hPlot4, GLOBAL_AppThemer.selTheme);
+            end
         end
     end
 end

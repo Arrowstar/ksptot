@@ -30,6 +30,19 @@ classdef LvdOptimization < matlab.mixin.SetGet
         customFiniteDiffsCalcMethod(1,1) CustomFiniteDiffsCalculationMethod = CustomFiniteDiffsCalculationMethod();
         derivEstFiniteDiffCalcMethod(1,1) DERIVEstFiniteDiffsCalculationMethod = DERIVEstFiniteDiffsCalculationMethod();
     end
+
+    properties(Transient, Access=private)
+        %Same-x propagation cache (see propagateForX).  Every field must match
+        %for a hit; propCacheCounter is the script's propagationCounter as it
+        %stood immediately after the cached propagation finished, so any
+        %executeScript call made by anyone else invalidates the entry.
+        propCacheX double = []
+        propCacheSparse logical = false
+        propCacheStartEvt LaunchVehicleEvent = LaunchVehicleEvent.empty(1,0)
+        propCacheCounter double = NaN
+        propCacheHits(1,1) double = 0
+        propCacheMisses(1,1) double = 0
+    end
     
     methods
         function obj = LvdOptimization(lvdData)
@@ -83,6 +96,83 @@ classdef LvdOptimization < matlab.mixin.SetGet
         function optimizer = getSelectedOptimizer(obj)
             optAlgorithm = obj.optAlgo;
             optimizer = obj.getOptimizerForEnum(optAlgorithm);
+        end
+
+        function stateLog = propagateForX(obj, x, useSparse, evtToStartScriptExecAt, allowInterrupt)
+            %propagateForX Applies the scaled x vector to the mission and
+            %propagates it, unless the identical request was the most recent
+            %propagation, in which case the existing state log is returned.
+            %
+            %   The objective function and the constraint set each ask for a
+            %   propagation at the same x in turn.  When incremental
+            %   re-propagation cannot help (loops, plugins, or disabled), that
+            %   is two full propagations per optimizer step; this method
+            %   collapses them to one.
+            %
+            %   Cache validity: x (exact isequal on the column form), the
+            %   sparse-output flag, the start event handle, and the script's
+            %   propagationCounter must all equal the values recorded when
+            %   the cached propagation finished.  Any executeScript call not
+            %   made through this method bumps the counter and forces a miss,
+            %   so edits made through the GUI between evaluations can never
+            %   be served stale results.  Errors from executeScript propagate
+            %   to the caller and leave the cache empty.
+            arguments
+                obj(1,1) LvdOptimization
+                x double
+                useSparse(1,1) logical
+                evtToStartScriptExecAt(1,:) LaunchVehicleEvent
+                allowInterrupt(1,1) logical
+            end
+
+            script = obj.lvdData.script;
+            settings = obj.lvdData.settings;
+            xCol = x(:);
+
+            cacheEnabled = settings.enableSameXPropagationCache;
+
+            if(cacheEnabled && obj.isPropCacheHit(xCol, useSparse, evtToStartScriptExecAt, script.propagationCounter))
+                obj.propCacheHits = obj.propCacheHits + 1;
+
+                %Report the same bookkeeping executeScript uses when it serves
+                %its own cache: nothing was integrated for this call.
+                script.lastNumEvtsIntegrated = 0;
+                script.lastNumEvtsSkipped = script.getTotalNumOfEvents();
+                script.lastRunUsedIncremental = true;
+
+                stateLog = obj.lvdData.stateLog;
+                return;
+            end
+
+            obj.propCacheMisses = obj.propCacheMisses + 1;
+            obj.clearPropagationCache();
+
+            obj.vars.updateObjsWithScaledVarValues(x);
+            stateLog = script.executeScript(useSparse, evtToStartScriptExecAt, false, allowInterrupt, false, false, settings.enableIncrementalRepropagation);
+
+            if(cacheEnabled)
+                obj.propCacheX = xCol;
+                obj.propCacheSparse = useSparse;
+                obj.propCacheStartEvt = evtToStartScriptExecAt;
+                obj.propCacheCounter = script.propagationCounter;
+            end
+        end
+
+        function clearPropagationCache(obj)
+            obj.propCacheX = [];
+            obj.propCacheSparse = false;
+            obj.propCacheStartEvt = LaunchVehicleEvent.empty(1,0);
+            obj.propCacheCounter = NaN;
+        end
+
+        function [hits, misses] = getPropagationCacheStats(obj)
+            hits = obj.propCacheHits;
+            misses = obj.propCacheMisses;
+        end
+
+        function resetPropagationCacheStats(obj)
+            obj.propCacheHits = 0;
+            obj.propCacheMisses = 0;
         end
         
         function optimizer = getOptimizerForEnum(obj, optAlgorithm)
@@ -197,6 +287,32 @@ classdef LvdOptimization < matlab.mixin.SetGet
     end
     
     methods(Access=private)
+        function tf = isPropCacheHit(obj, xCol, useSparse, evtToStartScriptExecAt, currentCounter)
+            tf = false;
+
+            if(isempty(obj.propCacheX) || isnan(obj.propCacheCounter))
+                return;
+            end
+
+            if(obj.propCacheCounter ~= currentCounter)
+                return;
+            end
+
+            if(obj.propCacheSparse ~= useSparse)
+                return;
+            end
+
+            if(numel(obj.propCacheStartEvt) ~= numel(evtToStartScriptExecAt))
+                return;
+            end
+
+            if(not(isempty(evtToStartScriptExecAt)) && not(obj.propCacheStartEvt == evtToStartScriptExecAt))
+                return;
+            end
+
+            tf = isequal(obj.propCacheX, xCol);
+        end
+
         function evtNumToStartScriptExecAt = getEvtNumToStartScriptExecAt(obj, actVars)
             evtNumToStartScriptExecAt = obj.lvdData.script.getTotalNumOfEvents();
             for(i=1:length(actVars)) %#ok<*NO4LP>

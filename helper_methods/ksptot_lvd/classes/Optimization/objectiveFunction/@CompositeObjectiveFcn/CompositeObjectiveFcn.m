@@ -36,11 +36,10 @@ classdef CompositeObjectiveFcn < AbstractObjectiveFcn
                 obj.lvdOptim = obj.lvdData.optimizer;
             end
             
-            obj.lvdOptim.vars.updateObjsWithScaledVarValues(x);
             useSparse = obj.canUseSparseOutput();
 
             try
-                stateLog = obj.lvdData.script.executeScript(useSparse, evtToStartScriptExecAt, false, true, false, false, obj.lvdData.settings.enableIncrementalRepropagation);
+                stateLog = obj.lvdOptim.propagateForX(x, useSparse, evtToStartScriptExecAt, true);
             catch ME
                 f = NaN;
                 stateLog = obj.lvdData.stateLog;

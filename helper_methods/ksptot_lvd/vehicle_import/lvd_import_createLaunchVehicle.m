@@ -36,6 +36,7 @@ function newLv = lvd_import_createLaunchVehicle(lvdData, spec)
             tank = LaunchVehicleTank(stage);
             tank.name = specTank.name;
             tank.initialMass = specTank.propMass_mT;
+            tank.capacity = specTank.propMass_mT; %part database masses are the parts' maxAmount, i.e. full tanks
             tank.tankType = findFluidType(newLv, specTank.fluidTypeName);
 
             stage.addTank(tank);

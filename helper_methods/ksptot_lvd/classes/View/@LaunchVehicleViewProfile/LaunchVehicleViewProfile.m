@@ -702,8 +702,13 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         function createAngleData(obj, viewFrame, subStateLogs, evts)
             obj.clearAngleData();
             angles = obj.anglesToPlot;
-            
+
             for(i=1:length(angles))
+                if(angles(i).isDimensionless())
+                    %A dot-product scalar has no arc to draw.
+                    continue;
+                end
+
                 obj.angleData(end+1) = LaunchVehicleViewProfileAngleData(angles(i), viewFrame);
             end
             

@@ -13,12 +13,16 @@ classdef TwoBodyPropagator < AbstractPropagator
         
         function [t,y,te,ye,ie] = propagate(obj, integrator, tspan, eventInitStateLogEntry, ...
                                             eventTermCondFuncHandle, termCondDir, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, minAltitude, celBodyData, ...
-                                            tStartPropTime, maxPropTime)
+                                            tStartPropTime, maxPropTime, minAltIsTerrainRelative)
+            if(nargin < 15 || isempty(minAltIsTerrainRelative))
+                minAltIsTerrainRelative = false;
+            end
+
             plugins = eventInitStateLogEntry.lvdData.plugins;    
                                         
             %Create function handles
             odefun = obj.getOdeFunctionHandle(eventInitStateLogEntry);
-            evtsFunc = obj.getOdeEventsFunctionHandle(eventInitStateLogEntry, eventTermCondFuncHandle, termCondDir, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, minAltitude, celBodyData);
+            evtsFunc = obj.getOdeEventsFunctionHandle(eventInitStateLogEntry, eventTermCondFuncHandle, termCondDir, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, minAltitude, celBodyData, minAltIsTerrainRelative);
             odeOutputFun = obj.getOdeOutputFunctionHandle(tStartPropTime, maxPropTime, eventInitStateLogEntry, plugins);
             
             %Propagate!
@@ -105,7 +109,11 @@ classdef TwoBodyPropagator < AbstractPropagator
             odeFH = @(t,y) TwoBodyPropagator.odefun(t,y, n, sma, ecc, inc, raan, arg, gmu, eventInitStateLogEntry, tankStates, pwrStorageStates);
         end
         
-        function odeEventsFH = getOdeEventsFunctionHandle(~, eventInitStateLogEntry, eventTermCondFuncHandle, termCondDir, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, minAltitude, celBodyData)
+        function odeEventsFH = getOdeEventsFunctionHandle(~, eventInitStateLogEntry, eventTermCondFuncHandle, termCondDir, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, minAltitude, celBodyData, minAltIsTerrainRelative)
+            if(nargin < 11 || isempty(minAltIsTerrainRelative))
+                minAltIsTerrainRelative = false;
+            end
+
             cartState = eventInitStateLogEntry.getCartesianElementSetRepresentation();
             kepState = cartState.convertToKeplerianElementSet();
 
@@ -117,7 +125,7 @@ classdef TwoBodyPropagator < AbstractPropagator
             
             gmu = kepState.frame.getOriginBody().gm;
             
-            odeEventsFH = @(t,y) TwoBodyPropagator.odeEvents(t,y, sma, ecc, inc, raan, arg, gmu, eventInitStateLogEntry, eventTermCondFuncHandle, termCondDir, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, minAltitude, celBodyData);
+            odeEventsFH = @(t,y) TwoBodyPropagator.odeEvents(t,y, sma, ecc, inc, raan, arg, gmu, eventInitStateLogEntry, eventTermCondFuncHandle, termCondDir, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, minAltitude, celBodyData, minAltIsTerrainRelative);
         end
         
         function odeOutputFH = getOdeOutputFunctionHandle(~, tStartPropTime, maxPropTime, eventInitStateLogEntry, plugins)
@@ -214,7 +222,11 @@ classdef TwoBodyPropagator < AbstractPropagator
         %%%
         %ODE Events
         %%%
-        function [value,isterminal,direction, causes] = odeEvents(t,y, sma, ecc, inc, raan, arg, gmu, eventInitStateLogEntry, evtTermCond, termCondDir, maxSimTime, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, minAltitude, celBodyData)
+        function [value,isterminal,direction, causes] = odeEvents(t,y, sma, ecc, inc, raan, arg, gmu, eventInitStateLogEntry, evtTermCond, termCondDir, maxSimTime, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, minAltitude, celBodyData, minAltIsTerrainRelative)
+            if(nargin < 18 || isempty(minAltIsTerrainRelative))
+                minAltIsTerrainRelative = false;
+            end
+
             numTankStates = eventInitStateLogEntry.getNumActiveTankStates();
             numPwrStorageStates = eventInitStateLogEntry.getNumActivePwrStorageStates();
             [~, mean, tankStatesMasses, pwrStorageSocs] = TwoBodyPropagator.decomposeIntegratorTandY(t,y, numTankStates, numPwrStorageStates);
@@ -223,9 +235,9 @@ classdef TwoBodyPropagator < AbstractPropagator
             y = [rVect(:); vVect(:); tankStatesMasses(:); pwrStorageSocs(:)]';
 
             if(nargout >= 4)
-                [value,isterminal,direction, causes] = AbstractPropagator.odeEvents(t,y, eventInitStateLogEntry, evtTermCond, termCondDir, maxSimTime, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, minAltitude, celBodyData);
+                [value,isterminal,direction, causes] = AbstractPropagator.odeEvents(t,y, eventInitStateLogEntry, evtTermCond, termCondDir, maxSimTime, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, minAltitude, celBodyData, minAltIsTerrainRelative);
             else
-                [value,isterminal,direction] = AbstractPropagator.odeEvents(t,y, eventInitStateLogEntry, evtTermCond, termCondDir, maxSimTime, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, minAltitude, celBodyData);
+                [value,isterminal,direction] = AbstractPropagator.odeEvents(t,y, eventInitStateLogEntry, evtTermCond, termCondDir, maxSimTime, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, minAltitude, celBodyData, minAltIsTerrainRelative);
                 causes = AbstractIntegrationTerminationCause.empty(1,0);
             end
         end

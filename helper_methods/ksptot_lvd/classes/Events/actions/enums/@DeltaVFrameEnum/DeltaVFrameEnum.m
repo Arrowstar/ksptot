@@ -5,6 +5,10 @@ classdef DeltaVFrameEnum < matlab.mixin.SetGet
     enumeration
         Inertial('Inertial Frame', {'X', 'Y', 'Z'});
         OrbitNtw('Orbit Frame (NTW)', {'Prograde', 'Normal', 'Radial'})
+        OrbitRsw('Orbit Frame (RSW / LVLH)', {'Radial', 'Along-Track', 'Cross-Track'})
+        OrbitVnb('Orbit Frame (VNB)', {'Velocity', 'Normal', 'Binormal'})
+        BodyFixed('Body-Fixed Frame', {'X', 'Y', 'Z'})
+        UserFrame('User-Defined Frame', {'X', 'Y', 'Z'})
     end
     
     properties

@@ -17,7 +17,11 @@ classdef SecondOrderGravOnlyPropagator < AbstractPropagator
         
         function [t,y,te,ye,ie] = propagate(obj, integrator, tspan, eventInitStateLogEntry, ...
                                             eventTermCondFuncHandle, termCondDir, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, minAltitude, celBodyData, ...
-                                            tStartPropTime, maxPropTime)
+                                            tStartPropTime, maxPropTime, minAltIsTerrainRelative)
+            if(nargin < 15 || isempty(minAltIsTerrainRelative))
+                minAltIsTerrainRelative = false;
+            end
+
                                        
             if(not(isa(integrator, 'AbstractSecondOrderIntegrator')))
                 error('The selected integrator must be a second order integrator in order to use this propagator.');
@@ -27,7 +31,7 @@ classdef SecondOrderGravOnlyPropagator < AbstractPropagator
             
             %Create function handles
             odefun = obj.getOdeFunctionHandle(eventInitStateLogEntry);
-            evtsFunc = obj.getOdeEventsFunctionHandle(eventInitStateLogEntry, eventTermCondFuncHandle, termCondDir, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, minAltitude, celBodyData);
+            evtsFunc = obj.getOdeEventsFunctionHandle(eventInitStateLogEntry, eventTermCondFuncHandle, termCondDir, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, minAltitude, celBodyData, minAltIsTerrainRelative);
             odeOutputFun = obj.getOdeOutputFunctionHandle(tStartPropTime, maxPropTime, eventInitStateLogEntry, plugins);
             
             %Propagate!
@@ -89,8 +93,12 @@ classdef SecondOrderGravOnlyPropagator < AbstractPropagator
             odeFH = @(t,y) SecondOrderGravOnlyPropagator.odefun(t,y, eventInitStateLogEntry, tankStates, dryMass, pwrStorageStates, obj.forceModels);
         end
         
-        function odeEventsFH = getOdeEventsFunctionHandle(~, eventInitStateLogEntry, eventTermCondFuncHandle, termCondDir, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, minAltitude, celBodyData)
-            odeEventsFH = @(t,y,yp) AbstractPropagator.odeEvents(t,vertcat(y,yp), eventInitStateLogEntry, eventTermCondFuncHandle, termCondDir, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, minAltitude, celBodyData);
+        function odeEventsFH = getOdeEventsFunctionHandle(~, eventInitStateLogEntry, eventTermCondFuncHandle, termCondDir, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, minAltitude, celBodyData, minAltIsTerrainRelative)
+            if(nargin < 11 || isempty(minAltIsTerrainRelative))
+                minAltIsTerrainRelative = false;
+            end
+
+            odeEventsFH = @(t,y,yp) AbstractPropagator.odeEvents(t,vertcat(y,yp), eventInitStateLogEntry, eventTermCondFuncHandle, termCondDir, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, minAltitude, celBodyData, minAltIsTerrainRelative);
         end
         
         function odeOutputFH = getOdeOutputFunctionHandle(~, tStartPropTime, maxPropTime, eventInitStateLogEntry, plugins)           

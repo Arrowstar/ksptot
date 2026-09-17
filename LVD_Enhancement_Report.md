@@ -2,6 +2,8 @@
 
 *Prepared 2026-09-15 against branch `v1.6.11` (HEAD `0b640548`).*
 
+> **Implementation status as of 2026-09-16.** Fifteen items have been built: **H9** (all defects, committed as `ce04b8b5`) and **A1, A6, A8, A9, A10, A11, B2, C1, E1, E2, E4, E7, F6, F9** (in the working tree, uncommitted). A second-pass audit the same day completed F6's remaining sub-items, extended A1 to non-sequential events, and fixed defects in the App Designer dialogs (see `LVD_Enhancement_Implementation_Report.md`, §7). Each item below carries its own status line.
+
 This report is the result of a close read of the LVD engine (`helper_methods/ksptot_lvd/**`) and its App Designer front end (`kspTOT_LaunchVehicleDesigner/**`). It deliberately stays inside LVD's existing architecture: a 3-DOF, event-scripted, force-model-integrating trajectory tool with embedded NLP optimization. Nothing here requires rotational dynamics, a new simulation core, or a new UI framework.
 
 Two earlier idea documents exist in the repository history: `LVD_DeepDive_and_Roadmap.md` (Aug 25, 2026, since removed from the tree) and `kspTOT_LaunchVehicleDesigner/LVD_ENHANCEMENT_IDEAS.md` (Aug 27, 2026, tracked at HEAD). Two of their items have shipped since, craft-file import (`e1588aec`) and incremental re-propagation caching (`0140f712`). Where this report agrees with them (Monte Carlo, wind, heating and load indicators, engine transients, multi-start and continuation, templates, headless runner, ephemeris exchange) the item is kept but given a concrete implementation path in the current code. The bulk of what follows is new: it comes from reading the event, termination, steering, throttle, optimization, analysis, and vehicle classes line by line, and it concentrates on friction and gaps that are invisible from the feature list but obvious from the source, including several stubs and defects.
@@ -29,6 +31,8 @@ The numbers below were counted from the source, not from documentation.
 | Vehicle import | `.craft` parser to stages/tanks/engines/crossfeed with a bundled stock parts DB. No EPS, aero, or staging-event generation. |
 | kOS export | Time-indexed yaw/pitch/roll/throttle/stage-cue CSV + `exec_lvd_control.ks`. Open loop only. |
 
+*The table above is the 2026-09-15 snapshot and has not been re-counted. The 2026-09-16 work changes several rows: events now take any number of termination conditions with first-of/all-of logic (A1), the throttle list gains the q-/g-limited wrapper (B2), ΔV frames go from two to six plus a polar parameterization (A9), and geometry gains two point types, two vector types, two angle-family types and one coordinate-system type (F6).*
+
 **Overall assessment.** LVD's engine is broad and its extension points (`AbstractEventAction`, `AbstractEventTerminationCondition`, `AbstractConstraint`, `AbstractOptimizationVariable`, `AbstractSteeringModel`, `AbstractThrottleModel`, `AbstractGeometricPoint/Vector`, the GA task registry, `LvdPluginExecLocEnum`) are clean enough that most of the items below are additive. The biggest usability drag is not missing physics; it is friction in the event/termination model and in optimization diagnostics. The biggest capability gap for professional users is the absence of interplanetary targeting quantities (B-plane), contact-interval analysis, and dispersion/trade tooling that sweeps anything other than plugin variables.
 
 ---
@@ -39,7 +43,9 @@ Each item gives: **what**, **who benefits** (KSP = advanced KSP player, Pro = as
 
 ### A. Event scripting and termination
 
-**A1. Multiple termination conditions per event (first-of / all-of).**
+**A1. Multiple termination conditions per event (first-of / all-of).** ✅ **Implemented 2026-09-16.**
+*Status: `EventTermCondLogicEnum` (FirstOf / All), `extraTermConds` / `extraTermCondDirs` on `LaunchVehicleEvent` with the `getAllTermConds` / `addTermCond` / `removeTermCondByInd` / `setTermCondByInd` accessor family, one event function per condition, and the firing condition recorded in the state log via `EventTermCondIntTermCause`. Editing is on the Edit Event window itself (`lvd_editEventGUI_App`): its Termination Condition panel is now a list editor (every condition with its crossing direction, Add / Edit... / Remove, direction and first-of/all-of logic selectors), built as real App Designer canvas components. Non-sequential events honour every condition too, always with first-of logic (`LaunchVehicleNonSeqEvent.getTerminationConditions`); the editor locks the logic selector to "Any" for them. Condition 1 stays in the original `termCond` / `termCondDir` properties so single-condition missions are byte-for-byte unchanged. Tests: `EventEnhancementsTest`, `EditEventDialogTest`, `TermCondIndexedAccessorsTest`, `PatchedMlappDialogsTest`.*
+
 KSP, Pro. "Burn until apoapsis = 200 km *or* tank empty *or* 300 s elapsed" is the single most common thing users want and currently requires chaining dummy events. `LaunchVehicleEvent.termCond` is `(1,1)`; `AbstractPropagator.odeEvents` already builds an arbitrary-length events vector (max sim time, min altitude, non-seq conditions, SoI events, then the event's own condition), so the propagator side is nearly free. Add a `termConds` array plus a `termCondLogic` enum (Any / All; "All" is implemented as a latched flag per condition), record *which* condition fired in the state log, and extend `lvd_editEventGUI_App` with a list box. Effort: M.
 
 **A2. "Graphical Analysis quantity" termination condition.**
@@ -54,22 +60,32 @@ Both classes in `Events/termConditions/@AscendingNodeTermCondition` and `@Descen
 **A5. Event bypass flag, event copy/duplicate, action reordering, per-action exec node.**
 KSP, Pro. Today: no way to skip an event without deleting it (`disableOptim` only freezes its variables), no copy/paste or duplicate of events (`grep copyEvent|duplicateEvent` finds nothing), `LaunchVehicleEvent` has add/remove but no `moveAction`, and `execActionsNode` is all-or-nothing per event. All four are small data-model additions with obvious UI hooks in the script list box context menu and the event editor. The bypass flag needs one branch in `LaunchVehicleScript.executeEvent`. Effort: S each.
 
-**A6. Event groups / collapsible sections and per-event notes.**
+**A6. Event groups / collapsible sections and per-event notes.** ✅ **Implemented 2026-09-16.**
+*Status: `groupName` and `notes` on `LaunchVehicleEvent`; `collapsedGroupNames` plus `getGroupNames` / `isGroupCollapsed` / `toggleGroupCollapsed` / `setGroupCollapsed` on `LaunchVehicleScript`; `getListboxStr` folds a collapsed group into one `▶ [Group] (n events)` heading and marks expanded members with `▼`. Done **in the existing list box, not as a uitree migration**, to leave the main window's layout alone. Group/notes editing is on the Advanced tab of the Edit Event window; collapse/expand is a context-menu item on the script list (`ToggleEventGroupMenu`, an App Designer component of the main window). Collapse state is view-only and never reaches the propagator. Tests: `EventEnhancementsTest`, `EditEventDialogTest`, `LvdMainGuiInteractionTest`.*
+
 KSP, Pro. Long missions become flat 60–100 line lists. A lightweight `groupName` string on `LaunchVehicleEvent` with collapse/expand in the list box (or a uitree replacing the list box) plus a per-event notes field costs little and greatly improves readability. Effort: M (uitree migration), S (notes only).
 
 **A7. Loop safety and visibility for `SetNextEventAction`.**
 KSP, Pro. Branching exists but is invisible in the script list and unguarded except for the 5-second wall-clock watchdog, which then silently pads unpropagated events with the final state. Add: a per-action `maxIterations` counter (error when exceeded), a "↺ → Event N" decoration in the list box, and a validator warning when a script contains loops. Also fix `Validators/scriptContainsSetNextEventAction.m` to recurse into `ConditionalAction` branches; today a `SetNextEventAction` inside a conditional (the natural "loop while X" pattern) is not detected, so incremental re-propagation stays enabled and can return stale results. Effort: S.
 
-**A8. Non-sequential events: explicit enable toggle, priority order, logged discontinuities.**
+**A8. Non-sequential events: explicit enable toggle, priority order, logged discontinuities.** ✅ **Implemented 2026-09-16.**
+*Status: `enabled`, `priority` and `logExecutions` on `LaunchVehicleNonSeqEvent`; `LaunchVehicleNonSeqEvents` drops disabled events and sorts the active set by ascending priority, stable within ties so existing order is preserved. The state-log append in `NonSeqEventTermCondIntTermCause` is re-enabled, gated on `logExecutions`. **`logExecutions` defaults to `false` deliberately:** three shipped examples use non-sequential events (`lvdExample_TwoStageToOrbit`, `lvdExample_ComplexDrag_AsparagusStaging`, `SLS`), and logging by default would have changed their golden fingerprints. Edited on the Advanced tab of the Edit Event window, which shows the Non-Sequential Event panel when opened for a non-sequential event. Tests: `EventEnhancementsTest`, `EditEventDialogTest`, `LvdMainGuiInteractionTest`.*
+
 Pro. Today "active" is only `numExecsRemaining > 0`; there is no priority when two fire in the same step; and `NonSeqEventTermCondIntTermCause` has the state-log append commented out, so an impulsive ΔV from a non-seq event never appears as a distinct log entry. Effort: S.
 
-**A9. More ΔV frames for `AddDeltaVAction`.**
+**A9. More ΔV frames for `AddDeltaVAction`.** ✅ **Implemented 2026-09-16.**
+*Status: `DeltaVFrameEnum` now carries Inertial, Orbit NTW, Orbit RSW/LVLH, Orbit VNB, Body-Fixed and User-Defined Frame. New `DeltaVParamTypeEnum` adds the polar parameterization (magnitude, in-plane angle, out-of-plane angle) alongside Cartesian components, and `AddDeltaVActionVariable` optimizes whichever is active with the right bounds and scaling for angles versus components. `lvd_AddDeltaVActionGUI_App.mlapp` updated. Tests: `AddDeltaVFrameTest`.*
+
 KSP, Pro. `DeltaVFrameEnum` has exactly two entries (inertial XYZ, NTW prograde/normal/radial). Add RSW/LVLH, VNB, body-fixed, and any user-defined geometric frame. Termination conditions already accept arbitrary `AbstractReferenceFrame` objects, so the plumbing pattern exists. Also expose the ΔV in polar form (magnitude, in-plane angle, out-of-plane angle) as an alternative parameterization for the optimizer; that is usually better conditioned than three Cartesian components. Effort: S.
 
-**A10. Per-event overrides for min altitude and max duration; terrain-aware minimum altitude.**
+**A10. Per-event overrides for min altitude and max duration; terrain-aware minimum altitude.** ✅ **Implemented 2026-09-16.**
+*Status: `useEvtMinAltitude`, `evtMinAltitude`, `minAltIsTerrainRelative`, `useEvtMaxDur` and `evtMaxDur` on `LaunchVehicleEvent`, honoured in `AbstractPropagator.odeEvents`. An active override replaces the mission-wide `LvdSettings` value for that event only; with the override off the global value is used exactly as before. The terrain-relative option measures against the heightmap `HeightAboveTerrainCondition` already interpolates instead of the mean radius. Edited in the Event Limit Overrides panel on the Advanced tab of the Edit Event window. Tests: `EventEnhancementsTest`, `EditEventDialogTest`.*
+
 KSP, Pro. `LvdSettings.minAltitude`, `simMaxDur`, and `maxScriptPropTime` are global, and `simMaxDur` is measured from script start (commented at `AbstractPropagator.odeEvents`). The min-altitude event uses `norm(r) - radius`, ignoring the terrain heightmap that `HeightAboveTerrainCondition` already interpolates. Add optional per-event overrides and a "use terrain" toggle. Effort: S.
 
-**A11. NOT conditional and cross-event comparisons in conditional actions.**
+**A11. NOT conditional and cross-event comparisons in conditional actions.** ✅ **Implemented 2026-09-16.**
+*Status: new `LogicalNotActionConditional` (single child, inverted) registered in `ConditionalTypeEnum`; `CompareAgainstEnum` extended so `QuantityComparisonActionCondition` can compare against the value a quantity had at the initial or final node of a named earlier event, mirroring `AbstractConstraint`'s StateComparison mode. `lvd_EditActionConditionalGUI_App.mlapp` updated; while doing so a pre-existing defect was fixed — the dialog set `.Enable` on the frame-selector component whose property is `.Enabled`, which errored whenever a non-quantity node (including the default root) was selected. Tests: `ConditionalLogicTest`, `PatchedMlappDialogsTest`.*
+
 Pro. `ConditionalTypeEnum` has AND/OR but no NOT; comparisons are always current state versus constant or current-state quantity. Add `LogicalNot` and an "at event N (initial/final)" option on `QuantityComparisonActionCondition`, mirroring `AbstractConstraint`'s StateComparison mode. Effort: S.
 
 ### B. Guidance, steering and throttle
@@ -77,7 +93,9 @@ Pro. `ConditionalTypeEnum` has AND/OR but no NOT; comparisons are always current
 **B1. Throttle model parity with steering: selectable math models.**
 KSP, Pro. `GenericSelectableSteeringModel` lets each angle use sum-of-poly-terms, sum-of-sines, linear tangent, or `fitnet`; throttle has only const/lin/accel, T/W target, and a table. Add a `SelectableThrottleModel` wrapping the same `steering/math_models` classes (they are already time-only functions). Effort: S–M.
 
-**B2. Dynamic-pressure-limited and acceleration-limited throttle laws.**
+**B2. Dynamic-pressure-limited and acceleration-limited throttle laws.** ✅ **Implemented 2026-09-16.**
+*Status: new `LimitedThrottleModel` built as the recommended **wrapper**, not a standalone law — it holds a `baseModel` (polynomial, T/W or interpolated table) and applies two independent, individually disable-able limiters on top: a max-q ramp (`maxDynPress`, `dynPressRampFrac`, `dynPressMinThrottle`, with q computed exactly as the GA "Dynamic Pressure" quantity) and an acceleration cap (`maxAccel`, solved for the throttle that hits the limit exactly, reusing `T2WThrottleModel`'s thrust evaluation). Time bookkeeping and optimization variables delegate to the base model, so variables on the inner law keep working. Both limits default off, in which case the base throttle passes through unchanged. Registered in `ThrottleModelEnum` / `ThrottleModelsSet` / `promptForThrottleModelType`; new dialog `lvd_EditLimitedThrottleModelGUI_App.m`. Tests: `LimitedThrottleModelTest`.*
+
 KSP, Pro. A "max-Q bucket" (throttle = min(commanded, throttle that holds q ≤ q_max)) and a "g-limit" law (throttle that holds |a| ≤ a_max, which `T2WThrottleModel` almost is) are standard launch-vehicle features. Both are closed-form per step from quantities already available in the ODE function (q from `getAtmoDensityAtAltitude`, current mass, thrust curve). Implement as *modifiers* wrapping an inner throttle model so they compose with any base law. Note the existing `editThrottleModifierProfileGUI_App` suggests a modifier concept already exists in the UI; make it a first-class model. Effort: M.
 
 **B3. Pointing steering models (target-relative attitude).**
@@ -94,7 +112,9 @@ Pro. Continuity flags today carry only the constant term across events (`setCons
 
 ### C. Vehicle modeling
 
-**C1. Separate tank capacity from initial mass.**
+**C1. Separate tank capacity from initial mass.** ✅ **Implemented 2026-09-16.**
+*Status: `LaunchVehicleTank` now distinguishes capacity from the initial propellant load, so `fuelRemainPct` (and therefore `FuelThrottleCurve`) is right for a partially filled tank; `TankToTankConnection` fills against capacity rather than initial mass. New `TankCapacityValidator` warns when the initial mass exceeds capacity. `lvd_EditTankGUI_App.mlapp` updated (capacity row as canvas components; the field is required and must be at least the initial propellant mass). Capacity is **always defined** — there is no blank/"no limit" state: new tanks hold 0 until given a capacity, the stock and imported vehicles are created full, and missions saved before capacities existed get `capacity = initialMass` on load (raised to the optimisation upper bound when the initial mass is an active variable), which reproduces the old fuel-remaining percentage exactly, so existing missions propagate identically. Tests: `TankCapacityTest`, `PatchedMlappDialogsTest`, `LvdMainGuiInteractionTest`, plus `ValidatorTest`.*
+
 KSP, Pro. `LaunchVehicleTank.initialMass` doubles as capacity, so `fuelRemainPct` (which drives `FuelThrottleCurve`) is wrong for any partially filled tank, and crossfeed into a tank can exceed its physical volume. Add `capacity` with a validator. Effort: S.
 
 **C2. Fuel flow priority and fractions on engine-to-tank connections.**
@@ -137,16 +157,22 @@ Pro. `createDensityGriddedInterp` bakes temperature at UT = 0 on a 100³ grid; t
 
 ### E. Optimization
 
-**E1. Single propagation per x for all solvers; single Jacobian pass.**
+**E1. Single propagation per x for all solvers; single Jacobian pass.** ✅ **Implemented 2026-09-16.**
+*Status: `LvdOptimization` now holds an x-keyed evaluation cache, so the objective, every constraint and the state log for a given decision vector come out of one `executeScript` call regardless of whether incremental re-propagation is available; `FminconOptimizer`, `IpOptOptimizer`, `SQPOptimizer` and `AdamNlOptOptimizer` all route through it. `ConstraintSet.evalConstraintsWithGradients` was rewritten to take **one** finite-difference pass over the stacked `[c; ceq]` vector and slice `DC` / `DCeq` out of the single Jacobian, and it now uses the mission's `CustomFiniteDiffsCalculationMethod` step size, difference type and stencil instead of the hard-coded `h = 1e-5` forward 2-point. Tests: `OptimizationEvalCacheAndJacobianTest`.*
+
 KSP, Pro. `CompositeObjectiveFcn.evalObjFcn` and `ConstraintSet.evalConstraints` each call `executeScript`. When incremental re-propagation is enabled and the script has no loops or plugins, the second call is served from cache (`resolvePropagationStartPoint` → `skipPropagation`). For looping scripts and any scenario with plugins the cache is disabled and every x costs two full propagations. Add an x-keyed state-log cache at the `LvdOptimization` level (NOMAD already does this with globals), and stop `evalConstraintsWithGradients` from computing the full constraint Jacobian twice (once for `DC`, once for `DCeq`). Also make it honour the user's finite-difference settings instead of hard-coded `h = 1e-5`, forward, 2-point. Effort: S–M, large speedup for gradient solvers.
 
-**E2. Constraint Jacobian sparsity and unified parallel FD.**
+**E2. Constraint Jacobian sparsity and unified parallel FD.** ✅ **Implemented 2026-09-16.**
+*Status: `ConstraintSet.getConstraintJacobianSparsity` derives the structural pattern from `getXElementEvtNums` (a constraint evaluated at event k is independent of variables owned by later events) and feeds it to `CustomFiniteDiffsCalculationMethod.computeJacobian`, so structurally-zero columns are never perturbed; IPOPT's `jacobianstructure` uses the same pattern instead of declaring dense. All finite-difference Jacobians now go through the shared `computeGradAtPoint` path, with `getGradientUseParallelFlag` resolving the selected optimizer's parallel setting (and degrading to serial rather than erroring when no pool exists), so "parallel" means the same thing for every solver. Numerically a no-op on the examples — the skipped entries were computing zero anyway. Tests: `OptimizationEvalCacheAndJacobianTest`.*
+
 Pro. IPOPT's `jacobianstructure` is declared dense; the objective has a sparsity mask but constraints do not. Detect constraint sparsity at x0 the same way (`getXElementEvtNums` already tells which event owns each x element, so any constraint evaluated at event k is structurally independent of variables owned by events > k), and route all FD Jacobians through `computeGradAtPoint` so "parallel" means the same thing for every solver. Effort: M.
 
 **E3. One-sided constraints and better failure semantics.**
 KSP, Pro. FixedBounds always emits both lower and upper inequalities; a bound of ±Inf yields an `Inf` residual. Add explicit ≤ / ≥ / = modes. Separately, `ConstraintSet.evalConstraints` returns scalar `c = NaN; ceq = NaN` on propagation failure (wrong length), `CompositeObjectiveFcn` returns `NaN` with the error swallowed, and `GenericMAConstraint` returns `0` on evaluation failure (silently "satisfied"). Return correctly sized NaN vectors and surface the message in the output window. Effort: S.
 
-**E4. Variable table and constraint status table.**
+**E4. Variable table and constraint status table.** ✅ **Implemented 2026-09-16.**
+*Status: `lvd_VariableTableGUI_App.m` and `lvd_ConstraintTableGUI_App.m`, backed by a shared `LvdOptimTableModel` under `Optimization/tables/`. Both have inline editing of bounds and active flags through `ColumnEditable` / `CellEditCallback`, colour-coded violation, and live refresh from the `VarsListUpdatedAddedVar` / `VarsListUpdatedRemovedVar` / `ScriptPropagationFinished` events. Both are reachable from new **Optimization menu** items. They are separate windows rather than docked panels, to leave the main window's layout untouched. Tests: `OptimTablesGuiTest`.*
+
 KSP, Pro. There is no single place to see all optimization variables (value, bounds, active, owning event) or all constraints (value, bounds, violation, scale factor); constraint values are visible only in tooltips and a validator warning. `lvd_adjustOptVarGUI_App` covers value sliding but tells the user to reopen it if the variable set changes. Add a dockable table for each, with inline editing of bounds/active flags and color-coded violation, listening to the `VarsListUpdated*` events that already fire. Mission Architect has a `ConstraintDetails` window that serves as a pattern. Effort: M.
 
 **E5. Linked variables and variable groups.**
@@ -155,7 +181,9 @@ Pro. No way to tie two variables together (e.g. same pitch rate for two boosters
 **E6. Solution snapshots, multi-start, and continuation helper.**
 Pro. The scorecard lets the user pick final / lowest-f / lowest-violation iterates, but nothing persists x across sessions except the mission file itself. Add named x snapshots stored on `LvdOptimization`, a "multi-start from N perturbed x0 in parallel, keep best" runner using the existing `perturbVar` machinery and `parfeval`, and a continuation mode that ramps a chosen constraint's bounds from the current value to the target in k steps, re-optimizing each step. All reuse `consoleOptimize`. Effort: M.
 
-**E7. Per-constraint history and objective sensitivity display.**
+**E7. Per-constraint history and objective sensitivity display.** ✅ **Implemented 2026-09-16.**
+*Status: `ma_OptimRecorder` now records the full constraint vector per iteration (gated on `expectConstraintHistory` so runs with no constraints cost nothing); `lvd_recordConstraintHistory.m`, `lvd_plotConstraintHistoryTile.m` and `lvd_numObserveTiles.m` add a per-constraint violation tile to the observe window; `lvd_showSensitivityTornado.m` draws the objective/constraint tornado chart off the existing Jacobian computation and is reachable from a new **Optimization menu** item. Tests: `OptimTablesGuiTest`.*
+
 Pro. `ma_OptimRecorder` stores only fval and max violation per iteration. Record the full constraint vector, plot individual violations over iterations in the observe window, and offer a tornado chart of objective and constraint sensitivities from the existing Jacobian heat-map computation. Effort: S–M.
 
 **E8. Objective evaluation at the initial node and at extrema.**
@@ -187,7 +215,9 @@ Pro. Ground-object LoS and sensor coverage exist only as per-timestep booleans (
 **F5. Sensors as optimization quantities.**
 Pro. Sensors contribute zero GA tasks or constraints (verified: no "sensor" match under `Optimization` or `process_data`). Expose "target in FOV" boolean per target, instantaneous and cumulative coverage fraction, and boresight angle as GA tasks, so sensor pointing and orbit design can be optimized, not just reported. Effort: M.
 
-**F6. Geometry additions.**
+**F6. Geometry additions.** ✅ **Implemented 2026-09-16.**
+*Status: seven new types, each with its own editor dialog and registered in the corresponding enum, browser and dependency graph — `UnitVector`, `VectorSumVector`, `TwoPlaneAngle` (dihedral angle between planes, listed as `AngleBetweenPlanes`), `VectorPlaneIntersectionPoint`, `EphemerisFilePoint` (time-tagged r,v from a CSV, read by the new `lvd_readEphemerisCsv.m`, which is also what F9's export writes), `VectorDotProductAngle` (the dot-product scalar, carried in the angle family as the report suggested; `AbstractGeometricAngle.isDimensionless` tells the GA task, the angle constraint and the 3D view to report it raw and not to draw an arc), and `ThreePointCoordSystem` (origin / primary-axis / plane points with selectable axis assignment, which paired with the origin in the existing `CoordSysPointRefFrame` is the "frame from three points"; "frame from two vectors" is the existing Aligned/Constrained coordinate system). Point-to-plane distance is the magnitude of the existing `PlaneToPointVector`, which is a Graphical Analysis quantity already, so no new type was added for it. Tests: `LvdGeometryTest` (+20 cases).*
+
 Pro. Unit-vector and vector-sum objects, dot-product scalar (as an "angle"-class scalar), point-to-plane distance, vector–plane intersection point, dihedral angle between planes, a "frame from three points / from two vectors" reference frame, and a CSV-ephemeris point (time-tagged r,v in a chosen frame) so external targets can be imported. `LvdDataPoint` already handles other LVD cases; the ephemeris point is the same interface. Effort: S–M.
 
 **F7. Graphical Analysis output and comparison.**
@@ -196,7 +226,9 @@ KSP, Pro. Export is CSV only; add Excel and copy-to-clipboard, a state-log table
 **F8. 3-D view: playback, video export, camera follow, colour-by-quantity.**
 KSP. The time slider works but there is no play button, no `VideoWriter`/GIF export anywhere in LVD, no chase-camera mode, and no colouring of the trajectory by a GA quantity (altitude, throttle, q). All are view-profile options on top of `Generic3DTrajectoryViewType` and the existing marker-update path in `timeSliderStateChanged`. Add an "export image" button while there. Effort: M.
 
-**F9. Ephemeris export.**
+**F9. Ephemeris export.** ✅ **Implemented 2026-09-16.**
+*Status: `lvd_exportEphemeris.m` writes UT, r and v in a chosen frame as CSV or CCSDS OEM, at a uniform step or resampled by interpolation; `lvd_readEphemerisCsv.m` reads it back and is what F6's `EphemerisFilePoint` consumes, so a trajectory can be exported from one case and used as a target in another. `lvd_ExportEphemerisGUI_App.m` is the dialog, reachable from a new **File > Export Ephemeris...** item placed just above Exit. Tests: `EphemerisExportTest`.*
+
 Pro. A CSV/CCSDS-OEM-style state ephemeris export (UT, r, v in a chosen frame, uniform step via the existing `integratorStepSize` or resampled by interpolation) for hand-off to other tools. Effort: S.
 
 **F10. Instantaneous impact point trace.**
@@ -245,7 +277,7 @@ Pro. Plugin code is inline text executed with `eval` under a keyword blacklist t
 **H8. Search, filter, and tagging in the large list boxes.**
 KSP, Pro. Events, constraints, variables, geometry objects, and GA tasks all live in flat list boxes. The GA task picker already has a search field (`SearchTaskText`); give the same treatment to the constraints, variables, and geometry dialogs, and allow free-text tags on events and constraints that the filter honours. Effort: S.
 
-**H9. Defects worth fixing alongside the above.**
+**H9. Defects worth fixing alongside the above.** ✅ **Implemented 2026-09-15** (committed as `ce04b8b5`).
 Found during the review; each is small. *Status 2026-09-15: all items below have been fixed, with regression tests in `tests/lvd_tests` (EventReferenceTrackingTest, KosExportTest, LvdCodebaseHygieneTest, KwtDragSliceTest, plus additions to IntegratorTest, SteeringThrottleModelTest, OptimizationVariableTest, EventActionTest). Example-case propagation was verified bit-identical before and after. Note on the aliasing item: SetKinematicStateAction also returns a fresh object by design; ConditionalAction was brought in line with the simple actions rather than the other way round, because deep-copying every action would have changed the logged intermediate states of existing missions.*
 - `deleteEvent_Callback` checks `evt.usesEvent(evt)` (does the event reference itself) instead of scanning other sequential and non-sequential events; `advanceScriptToSelectedEventMenu_Callback` does the cross-check correctly and is the pattern to copy. `SetNextEventAction` also lacks a `usesEvent` override, so its target can be deleted.
 - `ConditionalAction` overrides none of the `usesX` predicates, so a stage/tank/engine referenced only inside a branch can be deleted; its `removeActionVariables` references a non-existent `lvdData` property.
@@ -263,13 +295,19 @@ Found during the review; each is small. *Status 2026-09-15: all items below have
 
 ## 3. Recommended priorities
 
+✅ marks an item built as of 2026-09-16.
+
 **Tier 1: high value, low-to-medium effort, purely additive.**
-A1 multiple termination conditions · A2 GA-quantity termination condition · A5 bypass/duplicate/reorder · A9 ΔV frames · B2 q-/g-limited throttle · C1 tank capacity · C2 fuel priority · D2 heating and load indicators · E1 single propagation and single Jacobian pass · E3 one-sided constraints and failure semantics · E4 variable/constraint tables · E11 infeasibility diagnostics · F1 B-plane · F2 GA quantities · F3 ΔV budget · H2 autosave · H6 validators · H8 search/filter · H9 defects.
+✅ A1 multiple termination conditions · A2 GA-quantity termination condition · A5 bypass/duplicate/reorder · ✅ A9 ΔV frames · ✅ B2 q-/g-limited throttle · ✅ C1 tank capacity · C2 fuel priority · D2 heating and load indicators · ✅ E1 single propagation and single Jacobian pass · E3 one-sided constraints and failure semantics · ✅ E4 variable/constraint tables · E11 infeasibility diagnostics · F1 B-plane · F2 GA quantities · F3 ΔV budget · H2 autosave · H6 validators · H8 search/filter · ✅ H9 defects.
 
 **Tier 2: substantial capability, medium effort.**
-A3 Nth crossing · A6 groups · A7 loop safety · B1 selectable throttle models · B3 pointing steering · B4 PEG · B5 ascent wizard · B6 angular-acceleration limits · C3 engine transients · C5 craft import completion · D1 wind · D3 quick J2 · E2 sparsity · E6 snapshots/multi-start/continuation · E10 path constraints · F4 contact intervals · F5 sensor quantities · F7 GA output/overlay · F8 view playback/export · F10 IIP trace · F11 launch window tool · G1 generalized Case Matrix · H1 templates · H3 headless runner · H5 halo hand-off/CR3BP.
+A3 Nth crossing · ✅ A6 groups · A7 loop safety · B1 selectable throttle models · B3 pointing steering · B4 PEG · B5 ascent wizard · B6 angular-acceleration limits · C3 engine transients · C5 craft import completion · D1 wind · D3 quick J2 · ✅ E2 sparsity · E6 snapshots/multi-start/continuation · E10 path constraints · F4 contact intervals · F5 sensor quantities · F7 GA output/overlay · F8 view playback/export · F10 IIP trace · F11 launch window tool · G1 generalized Case Matrix · H1 templates · H3 headless runner · H5 halo hand-off/CR3BP.
+
+Items outside the tier lists that were also built: ✅ A8 non-sequential enable/priority/logging · ✅ A10 per-event limit overrides · ✅ A11 NOT and cross-event conditionals · ✅ E7 constraint history and sensitivity tornado · ✅ F6 geometry additions · ✅ F9 ephemeris export.
 
 **Tier 3: larger investments that build on Tier 2.**
 G2 Monte Carlo (needs G1, D1) · G4 child trajectories and engine-out sweeps · E5 linked variables · E9 Pareto sweeps (needs G1) · H7 plugin force/steering hooks · H4 mission diff · C6 live vessel import.
 
 **Suggested first release bundle.** A1 + A2 + A5 + A9 (event model), E1 + E3 + E4 (optimizer usability and speed), F1 + F2 + F3 (analysis), C1 + C2 (vehicle fidelity that fixes wrong answers today), and H6 + H9 (robustness). Together they change the day-to-day experience for both audiences without touching the simulation core.
+
+*Of that bundle, A1, A9, E1, E4, C1 and H9 are done. The remainder — A2 GA-quantity termination condition, A5 bypass/duplicate/reorder, E3 one-sided constraints and failure semantics, F1 B-plane, F2 GA quantities, F3 ΔV budget, C2 fuel priority, H6 validators — is the natural next batch. A2 in particular is now cheaper than it was: A1 already generalized the event to an arbitrary list of conditions, so a new condition type drops straight in.*

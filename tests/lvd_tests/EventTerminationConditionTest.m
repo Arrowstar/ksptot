@@ -618,6 +618,7 @@ classdef EventTerminationConditionTest < KsptotTestCase
             tank2 = LaunchVehicleTank(stg);
             tank2.name = 'Second Tank';
             tank2.initialMass = 9;
+            tank2.capacity = 9;
             stg.addTank(tank2);
 
             lvdData.initStateModel.clearAllTankStatesAndRegenerate();

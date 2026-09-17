@@ -10,13 +10,29 @@ classdef LaunchVehicleNonSeqEvent <  matlab.mixin.SetGet & matlab.mixin.Copyable
         
         maxNumExecs(1,1) double = 1;
         numExecsRemaining(1,1) double = 1;
+
+        %A8: explicit control over non-sequential events.  enabled lets a
+        %non-sequential event be switched off without deleting it or zeroing
+        %its execution count; priority breaks ties when more than one
+        %non-sequential event is armed on the same integration step (higher
+        %fires first); logExecutions surfaces the discontinuity the event's
+        %actions introduce as its own state log entries.  The defaults
+        %reproduce the historical behavior exactly.
+        enabled(1,1) logical = true;
+        priority(1,1) double = 0;
+        logExecutions(1,1) logical = false;
     end
-    
+
     methods
         function obj = LaunchVehicleNonSeqEvent(evt)
             obj.evt = evt;
         end
-        
+
+        function tf = isActive(obj)
+            %isActive True when this non-sequential event can still fire.
+            tf = obj.enabled && obj.numExecsRemaining > 0;
+        end
+
         function resetNumExecsRemaining(obj)
             obj.numExecsRemaining = obj.maxNumExecs;
         end
@@ -26,9 +42,30 @@ classdef LaunchVehicleNonSeqEvent <  matlab.mixin.SetGet & matlab.mixin.Copyable
         end
         
         function termCond = getTerminationCondition(obj)
-            termCondTemp = obj.evt.termCond.getEventTermCondFuncHandle();
+            %getTerminationCondition The event function for the first (or
+            %only) termination condition.  Kept for callers that predate
+            %multiple conditions; getTerminationConditions covers them all.
+            termConds = obj.getTerminationConditions();
+            termCond = termConds{1};
+        end
 
-            termCond = @(t,y) nonSeqEvtTermCond(t,y, termCondTemp, obj.evt.termCondDir.direction);
+        function termConds = getTerminationConditions(obj)
+            %getTerminationConditions One event function per termination
+            %condition on the wrapped event.  A non-sequential event fires
+            %when ANY of them crosses (first-of logic): each handle is armed
+            %separately by the simulation driver, all sharing this event's
+            %termination cause, so the wrapped event's termCondLogic setting
+            %does not apply here.
+            conds = obj.evt.getAllTermConds();
+            dirs = obj.evt.getAllTermCondDirs();
+
+            termConds = cell(1, numel(conds));
+            for(i=1:numel(conds)) %#ok<*NO4LP>
+                termCondTemp = conds(i).getEventTermCondFuncHandle();
+                direction = dirs(i).direction;
+
+                termConds{i} = @(t,y) nonSeqEvtTermCond(t,y, termCondTemp, direction);
+            end
         end
         
         function decrementNumExecsRemaining(obj)
@@ -37,6 +74,14 @@ classdef LaunchVehicleNonSeqEvent <  matlab.mixin.SetGet & matlab.mixin.Copyable
         
         function listBoxStr = getListboxStr(obj)
             listBoxStr = obj.evt.name;
+
+            if(not(obj.enabled))
+                listBoxStr = sprintf('%s [disabled]', listBoxStr);
+            end
+
+            if(obj.priority ~= 0)
+                listBoxStr = sprintf('%s [priority %g]', listBoxStr, obj.priority);
+            end
         end
     end
     

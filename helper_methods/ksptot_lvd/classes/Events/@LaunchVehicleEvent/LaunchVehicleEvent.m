@@ -5,10 +5,29 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
     properties
         termCond(1,1) AbstractEventTerminationCondition = EventDurationTermCondition(0);
         termCondDir(1,1) EventTermCondDirectionEnum = EventTermCondDirectionEnum.NoDir
+
+        %Termination conditions 2..N.  Condition 1 stays in termCond /
+        %termCondDir so that missions saved before multiple termination
+        %conditions existed load and propagate unchanged.
+        extraTermConds(1,:) AbstractEventTerminationCondition = AbstractEventTerminationCondition.empty(1,0);
+        extraTermCondDirs(1,:) EventTermCondDirectionEnum = EventTermCondDirectionEnum.empty(1,0);
+        termCondLogic(1,1) EventTermCondLogicEnum = EventTermCondLogicEnum.Any;
+
         actions AbstractEventAction
-        
+
         name char = 'Untitled Event';
         script LaunchVehicleScript
+
+        %A6: organization of long scripts
+        groupName char = '';
+        notes char = '';
+
+        %A10: per-event overrides of the global LvdSettings limits
+        useEvtMinAltitude(1,1) logical = false;
+        evtMinAltitude(1,1) double = 0;
+        minAltIsTerrainRelative(1,1) logical = false;
+        useEvtMaxDur(1,1) logical = false;
+        evtMaxDur(1,1) double = Inf;
         
         colorLineSpec(1,1) EventColorLineSpec 
         plotMethod(1,1) EventPlottingMethodEnum = EventPlottingMethodEnum.PlotContinuous
@@ -59,6 +78,11 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
     properties(Transient, Access=private)
         hasActiveOptVarsTF logical = false(0);
         hasActiveOptVarsVars AbstractOptimizationVariable = AbstractOptimizationVariable.empty(0,1);
+
+        %A1 "All" logic: one latch per termination condition, cleared by
+        %initEvent and set as each condition fires.  Transient because it is
+        %propagation scratch state, not part of the mission definition.
+        termCondLatched(1,:) logical = false(1,0);
     end
     
     methods
@@ -145,10 +169,20 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
                 optStr = '';
             end
             
+            if(isempty(obj.notes))
+                notesStr = '';
+            else
+                notesStr = ' 🗒';
+            end
+
             totalNumEvents = obj.script.getTotalNumOfEvents();
             numDigits = floor(log10(abs(totalNumEvents)+1)) + 1;
 
-            listboxStr = sprintf('%0*i - %s%s', numDigits, obj.getEventNum(), optStr, obj.name);
+            listboxStr = sprintf('%0*i - %s%s%s', numDigits, obj.getEventNum(), optStr, obj.name, notesStr);
+        end
+
+        function tf = isInGroup(obj, groupNameToTest)
+            tf = strcmp(obj.groupName, groupNameToTest);
         end
 
         function htmlListboxStr = getHtmlListboxStr(obj)
@@ -178,13 +212,193 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
             end
         end
         
-        function initEvent(obj, initialStateLogEntry)
-            obj.termCond.initTermCondition(initialStateLogEntry);
+        function termConds = getAllTermConds(obj)
+            %getAllTermConds Condition 1 (termCond) followed by conditions 2..N.
+            termConds = horzcat(obj.termCond, obj.extraTermConds);
         end
-        
+
+        function dirs = getAllTermCondDirs(obj)
+            dirs = horzcat(obj.termCondDir, obj.extraTermCondDirs);
+
+            %Tolerate a mission whose extra directions array got out of step
+            %with its extra conditions array (hand-edited or partially
+            %constructed): missing entries default to NoDir.
+            numConds = 1 + numel(obj.extraTermConds);
+            if(numel(dirs) < numConds)
+                dirs(numel(dirs)+1:numConds) = EventTermCondDirectionEnum.NoDir;
+            elseif(numel(dirs) > numConds)
+                dirs = dirs(1:numConds);
+            end
+        end
+
+        function num = getNumTermConds(obj)
+            num = 1 + numel(obj.extraTermConds);
+        end
+
+        function str = getTermCondSummaryStr(obj)
+            %getTermCondSummaryStr Condition 1's name, followed by how many
+            %more conditions there are and how they combine.  For a single
+            %condition this is exactly the condition's name, which is what
+            %the event editor showed before multiple conditions existed.
+            str = obj.termCond.getName();
+
+            numExtra = numel(obj.extraTermConds);
+            if(numExtra > 0)
+                switch obj.termCondLogic
+                    case EventTermCondLogicEnum.All
+                        logicStr = 'all must fire';
+                    otherwise
+                        logicStr = 'first to fire ends event';
+                end
+
+                str = sprintf('%s  (+%u more; %s)', str, numExtra, logicStr);
+            end
+        end
+
+        function addTermCond(obj, termCond, termCondDir)
+            if(nargin < 3 || isempty(termCondDir))
+                termCondDir = EventTermCondDirectionEnum.NoDir;
+            end
+
+            existingDirs = obj.getAllTermCondDirs();
+            obj.extraTermConds(end+1) = termCond;
+            obj.extraTermCondDirs = horzcat(existingDirs(2:end), termCondDir);
+
+            obj.clearActiveOptVarsCache();
+        end
+
+        function setTermCondByInd(obj, ind, termCond)
+            %setTermCondByInd Replaces condition ind (1-based, over the
+            %combined list) in place, leaving its direction alone.
+            if(ind < 1 || ind > obj.getNumTermConds())
+                return;
+            end
+
+            if(ind == 1)
+                obj.termCond = termCond;
+            else
+                obj.extraTermConds(ind-1) = termCond;
+            end
+
+            obj.clearActiveOptVarsCache();
+        end
+
+        function setTermCondDirByInd(obj, ind, termCondDir)
+            %setTermCondDirByInd Sets the direction of condition ind (1-based,
+            %over the combined list), normalizing the stored arrays on the way
+            %through so a short extraTermCondDirs cannot go unnoticed.
+            if(ind < 1 || ind > obj.getNumTermConds())
+                return;
+            end
+
+            dirs = obj.getAllTermCondDirs();
+            dirs(ind) = termCondDir;
+
+            obj.termCondDir = dirs(1);
+            obj.extraTermCondDirs = dirs(2:end);
+        end
+
+        function removeTermCondByInd(obj, ind)
+            %removeTermCondByInd Removes condition ind (1-based, over the
+            %combined list).  Removing condition 1 promotes condition 2 into
+            %its place; an event always keeps at least one condition.
+            if(ind < 1 || ind > obj.getNumTermConds() || obj.getNumTermConds() == 1)
+                return;
+            end
+
+            allConds = obj.getAllTermConds();
+            allDirs = obj.getAllTermCondDirs();
+
+            removedCond = allConds(ind);
+            allConds(ind) = [];
+            allDirs(ind) = [];
+
+            obj.termCond = allConds(1);
+            obj.termCondDir = allDirs(1);
+            obj.extraTermConds = allConds(2:end);
+            obj.extraTermCondDirs = allDirs(2:end);
+
+            optVar = removedCond.getExistingOptVar();
+            if(not(isempty(optVar)) && not(isempty(obj.script)) && not(isempty(obj.lvdData)))
+                obj.lvdData.optimizer.vars.removeVariable(optVar);
+            end
+
+            obj.clearActiveOptVarsCache();
+        end
+
+        function [fcnHandles, dirs, condInds] = getActiveTermCondFuncHandles(obj)
+            %getActiveTermCondFuncHandles The termination conditions the
+            %integrator should watch right now.  Under Any logic that is all
+            %of them; under All logic the conditions that have already fired
+            %are dropped so they neither re-trigger nor stop the remaining
+            %ones from being reached.
+            allConds = obj.getAllTermConds();
+            allDirs = obj.getAllTermCondDirs();
+
+            condInds = 1:numel(allConds);
+            if(obj.termCondLogic == EventTermCondLogicEnum.All)
+                latched = obj.getTermCondLatches();
+                condInds = condInds(~latched);
+
+                if(isempty(condInds))
+                    %Everything has fired already: fall back to the last
+                    %condition so the integrator still has a terminal event.
+                    condInds = numel(allConds);
+                end
+            end
+
+            fcnHandles = cell(1, numel(condInds));
+            for(i=1:numel(condInds))
+                fcnHandles{i} = allConds(condInds(i)).getEventTermCondFuncHandle();
+            end
+
+            dirs = allDirs(condInds);
+        end
+
+        function latched = getTermCondLatches(obj)
+            latched = obj.termCondLatched;
+
+            numConds = obj.getNumTermConds();
+            if(numel(latched) ~= numConds)
+                latched = false(1, numConds);
+                obj.termCondLatched = latched;
+            end
+        end
+
+        function latchTermCond(obj, ind)
+            latched = obj.getTermCondLatches();
+            if(ind >= 1 && ind <= numel(latched))
+                latched(ind) = true;
+                obj.termCondLatched = latched;
+            end
+        end
+
+        function tf = allTermCondsLatched(obj)
+            tf = all(obj.getTermCondLatches());
+        end
+
+        function resetTermCondLatches(obj)
+            obj.termCondLatched = false(1, obj.getNumTermConds());
+        end
+
+        function initEvent(obj, initialStateLogEntry)
+            termConds = obj.getAllTermConds();
+            for(i=1:numel(termConds))
+                termConds(i).initTermCondition(initialStateLogEntry);
+            end
+
+            obj.resetTermCondLatches();
+        end
+
         function initEventOnRestart(obj, initialStateLogEntry)
-            if(obj.termCond.shouldBeReinitOnRestart())
-                obj.initEvent(initialStateLogEntry);
+            %Re-initialize only the conditions that ask for it, and never
+            %clear the "All" latches: a restart is a continuation of the same
+            %event, not a new one.
+            termConds = obj.getAllTermConds();
+            for(i=1:numel(termConds))
+                if(termConds(i).shouldBeReinitOnRestart())
+                    termConds(i).initTermCondition(initialStateLogEntry);
+                end
             end
         end
         
@@ -220,7 +434,11 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
         end
         
         function tf = usesStage(obj, stage)
-            tf = obj.termCond.usesStage(stage);
+            tf = false;
+            termConds = obj.getAllTermConds();
+            for(i=1:numel(termConds))
+                tf = tf || termConds(i).usesStage(stage);
+            end
             
             for(i=1:length(obj.actions))
                 tf = tf || obj.actions(i).usesStage(stage);
@@ -228,7 +446,11 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
         end
         
         function tf = usesEngine(obj, engine)
-            tf = obj.termCond.usesEngine(engine);
+            tf = false;
+            termConds = obj.getAllTermConds();
+            for(i=1:numel(termConds))
+                tf = tf || termConds(i).usesEngine(engine);
+            end
             
             for(i=1:length(obj.actions))
                 tf = tf || obj.actions(i).usesEngine(engine);
@@ -236,7 +458,11 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
         end
         
         function tf = usesTank(obj, tank)
-            tf = obj.termCond.usesTank(tank);
+            tf = false;
+            termConds = obj.getAllTermConds();
+            for(i=1:numel(termConds))
+                tf = tf || termConds(i).usesTank(tank);
+            end
             
             for(i=1:length(obj.actions))
                 tf = tf || obj.actions(i).usesTank(tank);
@@ -244,7 +470,11 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
         end
         
         function tf = usesEngineToTankConn(obj, engineToTank)
-            tf = obj.termCond.usesEngineToTankConn(engineToTank);
+            tf = false;
+            termConds = obj.getAllTermConds();
+            for(i=1:numel(termConds))
+                tf = tf || termConds(i).usesEngineToTankConn(engineToTank);
+            end
             
             for(i=1:length(obj.actions))
                 tf = tf || obj.actions(i).usesEngineToTankConn(engineToTank);
@@ -252,7 +482,11 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
         end
         
         function tf = usesStopwatch(obj, stopwatch)
-            tf = obj.termCond.usesStopwatch(stopwatch);
+            tf = false;
+            termConds = obj.getAllTermConds();
+            for(i=1:numel(termConds))
+                tf = tf || termConds(i).usesStopwatch(stopwatch);
+            end
             
             for(i=1:length(obj.actions))
                 tf = tf || obj.actions(i).usesStopwatch(stopwatch);
@@ -292,7 +526,11 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
         end
         
         function tf = usesPwrSink(obj, powerSink)
-            tf = obj.termCond.usesPwrSink(powerSink);
+            tf = false;
+            termConds = obj.getAllTermConds();
+            for(i=1:numel(termConds))
+                tf = tf || termConds(i).usesPwrSink(powerSink);
+            end
             
             for(i=1:length(obj.actions))
                 tf = tf || obj.actions(i).usesPwrSink(powerSink);
@@ -300,7 +538,11 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
         end
         
         function tf = usesPwrSrc(obj, powerSrc)
-            tf = obj.termCond.usesPwrSrc(powerSrc);
+            tf = false;
+            termConds = obj.getAllTermConds();
+            for(i=1:numel(termConds))
+                tf = tf || termConds(i).usesPwrSrc(powerSrc);
+            end
             
             for(i=1:length(obj.actions))
                 tf = tf || obj.actions(i).usesPwrSrc(powerSrc);
@@ -308,7 +550,11 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
         end
         
         function tf = usesPwrStorage(obj, powerStorage)
-            tf = obj.termCond.usesPwrStorage(powerStorage);
+            tf = false;
+            termConds = obj.getAllTermConds();
+            for(i=1:numel(termConds))
+                tf = tf || termConds(i).usesPwrStorage(powerStorage);
+            end
             
             for(i=1:length(obj.actions))
                 tf = tf || obj.actions(i).usesPwrStorage(powerStorage);
@@ -316,7 +562,11 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
         end
         
         function tf = usesSensor(obj, sensor)
-            tf = obj.termCond.usesSensor(sensor);
+            tf = false;
+            termConds = obj.getAllTermConds();
+            for(i=1:numel(termConds))
+                tf = tf || termConds(i).usesSensor(sensor);
+            end
             
             for(i=1:length(obj.actions))
                 tf = tf || obj.actions(i).usesSensor(sensor);
@@ -346,11 +596,14 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
                 tf = false;
                 vars = obj.emptyVarArr;
 
-                tcOptVar = obj.termCond.getExistingOptVar();
-                if(not(isempty(tcOptVar)))
-                    tf = any(tcOptVar.getUseTfForVariable());
+                termConds = obj.getAllTermConds();
+                for(i=1:numel(termConds))
+                    tcOptVar = termConds(i).getExistingOptVar();
+                    if(not(isempty(tcOptVar)))
+                        tf = tf || any(tcOptVar.getUseTfForVariable());
 
-                    vars(end+1) = tcOptVar;
+                        vars(end+1) = tcOptVar; %#ok<AGROW>
+                    end
                 end
 
                 for(i=1:length(obj.actions))

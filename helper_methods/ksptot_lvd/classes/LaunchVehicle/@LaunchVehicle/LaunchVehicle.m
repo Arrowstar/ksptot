@@ -731,7 +731,8 @@ classdef LaunchVehicle < matlab.mixin.SetGet
             firstStgTank = LaunchVehicleTank(firstStg);
             firstStgTank.name = 'First Stage Tank';
             firstStgTank.initialMass = 4;
-                                    
+            firstStgTank.capacity = 4;
+
             firstStg.dryMass = 1.5+0.5; %mT;
             firstStg.tanks(end+1) = firstStgTank;
             firstStg.engines(end+1) = firstStgEngine;
@@ -744,6 +745,19 @@ classdef LaunchVehicle < matlab.mixin.SetGet
         function obj = loadobj(obj)
             if(isempty(obj.tankTypes))
                 obj.tankTypes = TankFluidTypeSet.getDefaultFluidTypeSet().copy();
+            end
+
+            %Tanks saved before capacities existed load with the class
+            %default of 0.  Give them the capacity that reproduces the old
+            %behaviour (see LaunchVehicleTank.getLegacyCapacity).
+            for(i=1:length(obj.stages)) %#ok<*NO4LP>
+                tanks = obj.stages(i).tanks;
+
+                for(j=1:length(tanks))
+                    if(tanks(j).capacity <= 0)
+                        tanks(j).capacity = tanks(j).getLegacyCapacity();
+                    end
+                end
             end
         end
     end

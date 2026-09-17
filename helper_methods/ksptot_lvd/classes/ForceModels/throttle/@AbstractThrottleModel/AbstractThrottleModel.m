@@ -1,13 +1,26 @@
 classdef(Abstract) AbstractThrottleModel < matlab.mixin.SetGet & matlab.mixin.Heterogeneous
     %AbstractSteeringModel Summary of this class goes here
     %   Detailed explanation goes here
-    
+
     properties
         optVar
-        
+
         throttleContinuity = false;
     end
-    
+
+    methods(Sealed)
+        %Sealed so that handle comparisons work on heterogeneous arrays of
+        %throttle models (e.g. ThrottleModelsSet.getAllModels()), the same
+        %way the geometry base classes do it.
+        function tf = eq(a,b)
+            tf = eq@handle(a,b);
+        end
+
+        function tf = ne(a,b)
+            tf = ne@handle(a,b);
+        end
+    end
+
     methods
         initThrottleModel(obj, initialStateLogEntry) 
         

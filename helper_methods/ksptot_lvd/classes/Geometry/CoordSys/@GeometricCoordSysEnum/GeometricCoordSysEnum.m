@@ -6,6 +6,7 @@ classdef GeometricCoordSysEnum < matlab.mixin.SetGet
         AlignedConstrained('Aligned/Constrained');
         ParallelToFrame('Parallel To Reference Frame');
         ParallelToFrameAtTime('Parallel to Reference Frame at Time');
+        ThreePoint('Three Points');
     end
     
     properties

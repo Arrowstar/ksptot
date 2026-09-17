@@ -91,12 +91,12 @@ classdef AddDeltaVActionVariable < AbstractOrbitModelVariable
         end
         
         function nameStrs = getStrNamesOfVars(obj, evtNum, varLocType)
-            compNames = obj.varObj.frame.compNames;
-            
+            compNames = obj.varObj.getComponentNames();
+
             nameStrs = {sprintf('Event %i Delta-V (%s)', evtNum, compNames{1}), ...
                         sprintf('Event %i Delta-V (%s)', evtNum, compNames{2}), ...
                         sprintf('Event %i Delta-V (%s)', evtNum, compNames{3})};
-                    
+
             nameStrs = nameStrs(obj.getUseTfForVariable());
         end
 
@@ -104,8 +104,23 @@ classdef AddDeltaVActionVariable < AbstractOrbitModelVariable
             %This function is for variables that are displayed as
             %meters (or m/s, etc) but stored as kilometers (or km/s, etc).
             %For example, a DV burn component of 456 m/s might be displayed
-            %that way, but stored internally as "0.456."
-            varsDisplayedAsMeters = [true true true];
+            %that way, but stored internally as "0.456."  In polar form only
+            %the magnitude is a speed; the two angles are stored in radians.
+            if(obj.varObj.paramType == DeltaVParamTypeEnum.Polar)
+                varsDisplayedAsMeters = [true false false];
+            else
+                varsDisplayedAsMeters = [true true true];
+            end
+        end
+
+        function varsStoredInRad = getVarsStoredInRad(obj)
+            %The polar in-plane and out-of-plane angles are displayed in
+            %degrees but stored in radians.
+            if(obj.varObj.paramType == DeltaVParamTypeEnum.Polar)
+                varsStoredInRad = [false true true];
+            else
+                varsStoredInRad = [false false false];
+            end
         end
     end
 end

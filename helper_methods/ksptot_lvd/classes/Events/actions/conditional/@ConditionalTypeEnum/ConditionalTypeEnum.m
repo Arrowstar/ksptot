@@ -8,6 +8,7 @@ classdef ConditionalTypeEnum < matlab.mixin.SetGet
         AlwaysFalse('Always False');
         LogicalAnd('Logical And');
         LogicalOr('Logical Or');
+        LogicalNot('Logical Not');
     end
 
     properties

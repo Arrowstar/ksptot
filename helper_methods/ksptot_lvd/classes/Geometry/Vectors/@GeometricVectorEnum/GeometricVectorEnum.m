@@ -12,6 +12,8 @@ classdef GeometricVectorEnum < matlab.mixin.SetGet
         PlaneToPoint('Plane To Point');
         PointVelocityVector('Point Velocity Vector');
         VectorDifference('Vector Difference');
+        UnitVector('Unit Vector');
+        VectorSum('Vector Sum');
     end
     
     properties

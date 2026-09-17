@@ -60,8 +60,8 @@ classdef IpOptOptimizer < AbstractGradientOptimizer
             funcs.objective = @(x) obj.computeObjFun(objFuncWrapper, x);
             funcs.gradient = @(x) obj.computeGrad(funcs.objective, x, gradCalcMethod, obj.usesParallel());
             funcs.constraints = cFun;
-            funcs.jacobian = @(x) obj.computeJacobian(cFun, x, gradCalcMethod, obj.usesParallel());
-            funcs.jacobianstructure = @() obj.computeJacobianStruct(length(x0All), numConstrs);
+            funcs.jacobian = @(x) obj.computeJacobian(cFun, x, gradCalcMethod, obj.usesParallel(), lvdOpt);
+            funcs.jacobianstructure = @() obj.computeJacobianStruct(length(x0All), numConstrs, lvdOpt);
 
             optionsStruct.lb = lbAll;
             optionsStruct.ub = ubAll;
@@ -79,6 +79,7 @@ classdef IpOptOptimizer < AbstractGradientOptimizer
             %%% Run optimizer
             celBodyData = lvdOpt.lvdData.celBodyData;
             recorder = ma_OptimRecorder();
+            recorder.expectConstraintHistory = lvdOpt.constraints.getNumConstraints() > 0;
             
             if(callOutputFcn)
                 propNames = lvdOpt.lvdData.launchVehicle.tankTypes.getFirstThreeTypesCellArr();
@@ -94,7 +95,7 @@ classdef IpOptOptimizer < AbstractGradientOptimizer
                 hCancelButton = handlesObsOptimGui.cancelButton;
                 optimStartTic = tic();
                 
-                outputFnc = @(iterNum, fVal, iterInfo) IpOptOptimizer.outputFunc(iterNum, fVal, iterInfo, hOptimStatusLabel, hFinalStateOptimLabel, hDispAxes, hCancelButton, objFuncWrapper, cFun, lbAll, ubAll, celBodyData, recorder, propNames, writeOutput, varNameStrs, lbUsAll, ubUsAll, optimStartTic);
+                outputFnc = @(iterNum, fVal, iterInfo) IpOptOptimizer.outputFunc(iterNum, fVal, iterInfo, hOptimStatusLabel, hFinalStateOptimLabel, hDispAxes, hCancelButton, objFuncWrapper, cFun, lbAll, ubAll, celBodyData, recorder, propNames, writeOutput, varNameStrs, lbUsAll, ubUsAll, optimStartTic, lvdOpt, evtToStartScriptExecAt);
                 problem.funcs.iterfunc = outputFnc;
             end
             
@@ -149,19 +150,58 @@ classdef IpOptOptimizer < AbstractGradientOptimizer
             numEq = length(ceq);
         end
         
-        function J = computeJacobian(~, cFun, x, gradCalcMethod, useParallel)
+        function J = computeJacobian(~, cFun, x, gradCalcMethod, useParallel, lvdOpt)
+            %computeJacobian Constraint Jacobian [numConstrs x numVars] for IPOPT.
+            %   Structurally zero entries (see computeJacobianStruct) are
+            %   never evaluated and are forced to exactly zero so the value
+            %   pattern stays inside the declared structure.
             cAtX0 = cFun(x);
-            J = gradCalcMethod.computeJacobian(cFun, x, cAtX0, useParallel);
+            sparsity = IpOptOptimizer.getJacobianSparsity(lvdOpt, numel(cAtX0), numel(x));
+
+            if(isa(gradCalcMethod, 'CustomFiniteDiffsCalculationMethod'))
+                J = gradCalcMethod.computeJacobian(cFun, x, cAtX0, useParallel, sparsity);
+            else
+                J = gradCalcMethod.computeJacobian(cFun, x, cAtX0, useParallel);
+                if(isequal(size(J), size(sparsity)))
+                    J(not(sparsity)) = 0;
+                end
+            end
+
             J = sparse(J);
         end
-        
-        function Js = computeJacobianStruct(~, numVars, numConstrs)
-            Js = sparse(ones(numConstrs, numVars));
+
+        function Js = computeJacobianStruct(~, numVars, numConstrs, lvdOpt)
+            %computeJacobianStruct Declared Jacobian nonzero pattern for IPOPT
+            %([numConstrs x numVars]).  Dense when no structural information
+            %is available.
+            Js = sparse(double(IpOptOptimizer.getJacobianSparsity(lvdOpt, numConstrs, numVars)));
         end
     end
     
+    methods(Static)
+        function sparsity = getJacobianSparsity(lvdOpt, numConstrs, numVars)
+            %getJacobianSparsity Structural constraint Jacobian pattern
+            %[numConstrs x numVars]; all-true when the mission's pattern is
+            %unavailable or does not match the requested size.
+            sparsity = true(numConstrs, numVars);
+
+            if(nargin < 1 || isempty(lvdOpt))
+                return;
+            end
+
+            try
+                sp = lvdOpt.constraints.getConstraintJacobianSparsity();
+                if(isequal(size(sp), [numConstrs, numVars]))
+                    sparsity = logical(sp);
+                end
+            catch
+                %fall back to dense
+            end
+        end
+    end
+
     methods(Static, Access=private)
-        function stop = outputFunc(iterNum, fVal, iterInfo, hOptimStatusLabel, hFinalStateOptimLabel, hDispAxes, hCancelButton, objFcn, constrFunc, lb, ub, celBodyData, recorder, propNames, writeOutput, varLabels, lbUsAll, ubUsAll, optimStartTic)
+        function stop = outputFunc(iterNum, fVal, iterInfo, hOptimStatusLabel, hFinalStateOptimLabel, hDispAxes, hCancelButton, objFcn, constrFunc, lb, ub, celBodyData, recorder, propNames, writeOutput, varLabels, lbUsAll, ubUsAll, optimStartTic, lvdOpt, evtToStartScriptExecAt)
             global ipoptFuncCount ipoptLastXVect
             
             x = ipoptLastXVect;
@@ -187,14 +227,14 @@ classdef IpOptOptimizer < AbstractGradientOptimizer
                 state = states{i};
                 
                 stop = IpOptOptimizer.getOutputFunction(x, optimValues, state, hOptimStatusLabel, hFinalStateOptimLabel, hDispAxes, hCancelButton, ...
-                                                        objFcn, lb, ub, celBodyData, recorder, propNames, writeOutput, varLabels, lbUsAll, ubUsAll, optimStartTic);
+                                                        objFcn, lb, ub, celBodyData, recorder, propNames, writeOutput, varLabels, lbUsAll, ubUsAll, optimStartTic, lvdOpt, evtToStartScriptExecAt);
             end
             
             stop = not(logical(stop));
         end
         
         function stop = getOutputFunction(x, optimValues, state, hOptimStatusLabel, hFinalStateOptimLabel, hDispAxes, hCancelButton, ...
-                                                               objFcn, lb, ub, celBodyData, recorder, propNames, writeOutput, varLabels, lbUsAll, ubUsAll, optimStartTic)
+                                                               objFcn, lb, ub, celBodyData, recorder, propNames, writeOutput, varLabels, lbUsAll, ubUsAll, optimStartTic, lvdOpt, evtToStartScriptExecAt)
             switch state
                 case 'iter'
                     stop = get(hCancelButton,'Value');
@@ -203,6 +243,7 @@ classdef IpOptOptimizer < AbstractGradientOptimizer
                     recorder.xVals(end+1) = {x};
                     recorder.fVals(end+1) = optimValues.fval;            
                     recorder.maxCVal(end+1) = optimValues.constrviolation;
+                    lvd_recordConstraintHistory(recorder, lvdOpt, x, evtToStartScriptExecAt);
                 case {'init','interrupt','done'}
                     stop = get(hCancelButton,'Value');
             end
@@ -226,7 +267,7 @@ classdef IpOptOptimizer < AbstractGradientOptimizer
                 hFinalStateOptimLabel.Tooltip = stateTooltipStr;
                 hFinalStateOptimLabel.UserData = clipboardData;
             
-                IpOptOptimizer.generatePlots(x, optimValues, state, hDispAxes, lb, ub, varLabels, lbUsAll, ubUsAll);
+                IpOptOptimizer.generatePlots(x, optimValues, state, hDispAxes, lb, ub, varLabels, lbUsAll, ubUsAll, recorder);
                 
                 drawnow;
             end
@@ -268,7 +309,7 @@ classdef IpOptOptimizer < AbstractGradientOptimizer
             end
         end
         
-        function generatePlots(x, optimValues, state, hDispAxes, lb, ub, varLabels, lbUsAll, ubUsAll)
+        function generatePlots(x, optimValues, state, hDispAxes, lb, ub, varLabels, lbUsAll, ubUsAll, recorder)
             global GLOBAL_AppThemer %#ok<GVMIS>
             persistent fValPlotIsLog tLayout hPlot1 hPlot2 hPlot3
 
@@ -282,7 +323,7 @@ classdef IpOptOptimizer < AbstractGradientOptimizer
 %                         set(hDispAxes,'Visible','on');
 %                         subplot(hDispAxes);
 %                         axes(hDispAxes);
-                        tLayout = tiledlayout(hDispAxes, 3,1);
+                        tLayout = tiledlayout(hDispAxes, lvd_numObserveTiles(recorder),1);
                     end
                     fValPlotIsLog = true;
             end
@@ -357,6 +398,13 @@ classdef IpOptOptimizer < AbstractGradientOptimizer
             GLOBAL_AppThemer.themeWidget(hPlot1, GLOBAL_AppThemer.selTheme);
             GLOBAL_AppThemer.themeWidget(hPlot2, GLOBAL_AppThemer.selTheme);
             GLOBAL_AppThemer.themeWidget(hPlot3, GLOBAL_AppThemer.selTheme);
+
+            %Per-constraint violation history (grows the layout to 4 tiles
+            %once the recorder holds constraint data).
+            hPlot4 = lvd_plotConstraintHistoryTile(tLayout, recorder, 4);
+            if(not(isempty(hPlot4)))
+                GLOBAL_AppThemer.themeWidget(hPlot4, GLOBAL_AppThemer.selTheme);
+            end
         end
     end
 end

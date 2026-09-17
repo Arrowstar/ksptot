@@ -17,6 +17,10 @@ classdef LvdSettings < matlab.mixin.SetGet
         
         %incremental re-propagation during optimization
         enableIncrementalRepropagation(1,1) logical = true;
+
+        %serve the objective's propagation to the constraints (and vice
+        %versa) when both are evaluated at the same x vector
+        enableSameXPropagationCache(1,1) logical = true;
     end
     
     methods

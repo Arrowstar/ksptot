@@ -56,11 +56,21 @@ classdef CustomFiniteDiffsCalculationMethod < AbstractGradientCalculationMethod
             g = g(:)';
         end
         
-        function J = computeJacobian(obj, cFun, x0, cAtX0, useParallel)
-            sparsity = [];
+        function J = computeJacobian(obj, cFun, x0, cAtX0, useParallel, sparsity)
+            %computeJacobian Jacobian [numel(cAtX0) x numel(x0)] of cFun at x0.
+            %   The optional sparsity argument is a structural pattern
+            %   [numel(cAtX0) x numel(x0)] (constraint rows by variables);
+            %   see computeGradAtPoint for how it is used.
+            if(nargin < 6)
+                sparsity = [];
+            end
             
             if(isempty(cAtX0))
                 cAtX0 = cFun(x0);
+            end
+
+            if(not(isempty(sparsity)))
+                sparsity = sparsity'; %computeGradAtPoint wants [numX x numOutputs]
             end
             
             J = computeGradAtPoint(cFun, x0, cAtX0, obj.h, obj.diffType, double(obj.numPts), sparsity, useParallel);

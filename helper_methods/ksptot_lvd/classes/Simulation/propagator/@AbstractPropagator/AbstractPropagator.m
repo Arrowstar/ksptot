@@ -9,11 +9,11 @@ classdef(Abstract) AbstractPropagator < matlab.mixin.SetGet & matlab.mixin.Heter
     methods
         [t,y,te,ye,ie] = propagate(obj, integrator, tspan, eventInitStateLogEntry, ...
                                     eventTermCondFuncHandle, termCondDir, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, minAltitude, celBodyData, ...
-                                    tStartPropTime, maxPropTime)
+                                    tStartPropTime, maxPropTime, minAltIsTerrainRelative)
                                 
         odeFH = getOdeFunctionHandle(obj, eventInitStateLogEntry)
         
-        odeEventsFH = getOdeEventsFunctionHandle(~, eventInitStateLogEntry, eventTermCondFuncHandle, termCondDir, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, minAltitude, celBodyData)
+        odeEventsFH = getOdeEventsFunctionHandle(~, eventInitStateLogEntry, eventTermCondFuncHandle, termCondDir, maxT, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, minAltitude, celBodyData, minAltIsTerrainRelative)
         
         odeOutputFH = getOdeOutputFunctionHandle(~, tStartPropTime, maxPropTime)
         
@@ -25,7 +25,21 @@ classdef(Abstract) AbstractPropagator < matlab.mixin.SetGet & matlab.mixin.Heter
     end
     
     methods(Static)
-        function [value,isterminal,direction, causes] = odeEvents(t,y, eventInitStateLogEntry, evtTermCond, termCondDir, maxSimTime, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, minAltitude, celBodyData)
+        function [value,isterminal,direction, causes] = odeEvents(t,y, eventInitStateLogEntry, evtTermCond, termCondDir, maxSimTime, checkForSoITrans, nonSeqTermConds, nonSeqTermCauses, minAltitude, celBodyData, minAltIsTerrainRelative)
+            %odeEvents Builds the integrator's event vector.
+            %
+            %   evtTermCond may be a single function handle (one termination
+            %   condition, the historical form) or a cell array of handles
+            %   (A1: several conditions on one event).  termCondDir is scalar
+            %   or an array matched to it.
+            %
+            %   minAltIsTerrainRelative (optional, default false) measures the
+            %   minimum-altitude floor against the central body's heightmap
+            %   instead of its mean radius (A10).
+            if(nargin < 12)
+                minAltIsTerrainRelative = false;
+            end
+
             persistent maxSimTimeCause minAltTermCause eventTermCondCause emptyCause
             if(isempty(maxSimTimeCause))
                 maxSimTimeCause = MaxEventSimTimeIntTermCause();
@@ -73,6 +87,14 @@ classdef(Abstract) AbstractPropagator < matlab.mixin.SetGet & matlab.mixin.Heter
             %Min Altitude Constraint
             rMag = norm(rVect);
             altitude = rMag - bodyInfo.radius;
+
+            if(minAltIsTerrainRelative)
+                %Measure the floor against the terrain under the vehicle
+                %rather than the mean radius, the same way
+                %HeightAboveTerrainCondition does.
+                altitude = altitude - AbstractPropagator.getTerrainHeight(ut, rVect, vVect, bodyInfo);
+            end
+
             value(end+1) = altitude - minAltitude;
             isterminal(end+1) = 1;
             direction(end+1) = -1;
@@ -104,13 +126,40 @@ classdef(Abstract) AbstractPropagator < matlab.mixin.SetGet & matlab.mixin.Heter
                 end
             end
 
-            %Event Termination Condition
-            [value(end+1),isterminal(end+1),direction(end+1)] = evtTermCond(t,y);
-            direction(end) = termCondDir.direction;
+            %Event Termination Condition(s)
+            if(iscell(evtTermCond))
+                for(i=1:numel(evtTermCond))
+                    [value(end+1),isterminal(end+1),direction(end+1)] = evtTermCond{i}(t,y); %#ok<AGROW>
+                    direction(end) = termCondDir(i).direction;
 
-            if(createCausesArr)
-                causes(end+1) = eventTermCondCause;
+                    if(createCausesArr)
+                        causes(end+1) = EventTermCondIntTermCause(i); %#ok<AGROW>
+                    end
+                end
+            else
+                [value(end+1),isterminal(end+1),direction(end+1)] = evtTermCond(t,y);
+                direction(end) = termCondDir.direction;
+
+                if(createCausesArr)
+                    causes(end+1) = eventTermCondCause;
+                end
             end
+        end
+
+        function terrainHeight = getTerrainHeight(ut, rVect, vVect, bodyInfo)
+            %getTerrainHeight Heightmap elevation (km) under the given
+            %inertial state, or 0 for a body with no heightmap.
+            heightMapGI = bodyInfo.getHeightMap();
+
+            if(isempty(heightMapGI))
+                terrainHeight = 0;
+                return;
+            end
+
+            cartElem = CartesianElementSet(ut, rVect(:), vVect(:), bodyInfo.getBodyCenteredInertialFrame());
+            geoElemSet = cartElem.convertToFrame(bodyInfo.getBodyFixedFrame(), true).convertToGeographicElementSet();
+
+            terrainHeight = heightMapGI(angleNegPiToPi(geoElemSet.lat), angleNegPiToPi(geoElemSet.long));
         end
         
         function [ut, rVect, vVect, tankStates, pwrStorageStates] = decomposeIntegratorTandY(t,y, numTankStates, numPwrStorageStates)

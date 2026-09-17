@@ -28,6 +28,14 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
         pluginVarStates(1,:) LaunchVehiclePluginVarState = LaunchVehiclePluginVarState.empty(1,0);
 
         integrationGroup(1,1) IntegrationGroup = IntegrationGroup(0);
+
+        %A1: which of the event's termination conditions ended the
+        %propagation segment this entry closes out.  0 / '' on every entry
+        %that is not the last one of a segment, and on segments ended by
+        %something other than a termination condition (max sim time, minimum
+        %altitude, an SoI transition, a non-sequential event).
+        termCondFiredInd(1,1) double = 0;
+        termCondFiredName char = '';
     end
     
     properties(Dependent)
@@ -271,7 +279,9 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             newStateLogEntry.throttleModel = obj.throttleModel;
             newStateLogEntry.sensorStates = obj.sensorStates;
             newStateLogEntry.pluginVarStates = obj.pluginVarStates;
-            
+            newStateLogEntry.termCondFiredInd = obj.termCondFiredInd;
+            newStateLogEntry.termCondFiredName = obj.termCondFiredName;
+
             %stuff that requires it's own copy
             newStateLogEntry.lvState = obj.lvState.deepCopy();
             
@@ -643,7 +653,7 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                                         if(tankState.stageState.active)
                                             tankMass = tankStatesMasses(idx);
 
-                                            totalConnTankCapacity = totalConnTankCapacity + tankState.tank.initialMass;
+                                            totalConnTankCapacity = totalConnTankCapacity + tankState.tank.getCapacity();
                                             totalConnTankMass = totalConnTankMass + tankMass;
 
                                             if(tankMass > 0)

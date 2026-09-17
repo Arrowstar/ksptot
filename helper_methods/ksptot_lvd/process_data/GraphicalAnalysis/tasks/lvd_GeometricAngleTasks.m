@@ -8,9 +8,17 @@ function [datapt, unitStr] = lvd_GeometricAngleTasks(stateLogEntry, subTask, ang
     
     switch subTask
         case 'Mag'
+            isDimensionless = angle.isDimensionless();
             angle = angle.getAngleAtTime(time, stateLogCartElem, inFrame);
-            datapt = rad2deg(angle);
-            unitStr = 'deg';
+
+            if(isDimensionless)
+                %A dimensionless scalar (dot product) is reported as is.
+                datapt = angle;
+                unitStr = '';
+            else
+                datapt = rad2deg(angle);
+                unitStr = 'deg';
+            end
             
         otherwise
             error('Unknown sub task string: %s', subTask);

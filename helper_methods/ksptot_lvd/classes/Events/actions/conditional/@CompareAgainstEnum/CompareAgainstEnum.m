@@ -5,6 +5,7 @@ classdef CompareAgainstEnum < matlab.mixin.SetGet
     enumeration
         NumericConstant('Numeric Constant');
         GaTaskQuantity('Quantity');
+        EventQuantity('Quantity at Event');
     end
 
     properties
