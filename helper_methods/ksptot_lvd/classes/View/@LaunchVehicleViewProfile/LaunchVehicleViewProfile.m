@@ -116,6 +116,19 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         viewCameraUpVector(1,3) double = NaN(1,3);
         viewCameraViewAngle(1,1) double = NaN(1,1);
 
+        %F8: camera modes, camera script, vehicle mesh, playback/export.
+        %The handle-valued settings have NO declaration default on purpose:
+        %a handle default is built once per class load and would be shared
+        %by every profile.  They are created in the constructor and
+        %back-filled by ensureF8Defaults()/loadobj for older missions.
+        cameraMode(1,1) LvdCameraModeEnum = LvdCameraModeEnum.Manual;
+        chaseCamera LvdChaseCameraSettings
+        fixedAnchorCamera LvdFixedAnchorCameraSettings
+        cameraScript LvdCameraScript
+        vehicleMesh LvdVehicleMeshSettings
+        playbackSettings LvdViewPlaybackSettings
+        overlay LvdViewOverlaySettings
+
         %Ground Track Toggles
         showGrdTrk(1,1) logical = false;
         showCelestialBodyGrdTracks(1,1) logical = false;
@@ -151,6 +164,12 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         sensorData(1,:) LaunchVehicleViewProfileSensorData = LaunchVehicleViewProfileSensorData.empty(1,0);
         sensorTgtData(1,:) LaunchVehicleViewProfileSensorTargetData = LaunchVehicleViewProfileSensorTargetData.empty(1,0);
 
+        %F8 runtime objects (rebuilt on every plot)
+        markerVehicleMeshData(1,:) LaunchVehicleViewProfileVehicleMeshData = LaunchVehicleViewProfileVehicleMeshData.empty(1,0);
+        vehPosVelInterp(1,:) LaunchVehicleViewPosVelInterp = LaunchVehicleViewPosVelInterp.empty(1,0);
+        cameraDriver(1,:) LvdSceneCameraDriver = LvdSceneCameraDriver.empty(1,0);
+        markerOverlayData(1,:) LaunchVehicleViewProfileOverlayData = LaunchVehicleViewProfileOverlayData.empty(1,0);
+
         %Grd Track stuff
         vehicleGrdTrackData(1,:) LaunchVehicleViewProfileVehicleGrdTrkData = LaunchVehicleViewProfileVehicleGrdTrkData.empty(1,0);
         grdObjGrdTrackData(1,:) LaunchVehicleViewProfileGrdTrkGroundObjData = LaunchVehicleViewProfileGrdTrkGroundObjData.empty(1,0);
@@ -181,6 +200,77 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
             % f = @(src,evt) viewprofiletest(src,evt);
             % addlistener(obj,'viewCameraPosition','PostSet',f);
             % Initialize per-profile skybox manager lazily via getter
+            obj.ensureF8Defaults();
+        end
+
+        function ensureF8Defaults(obj)
+            %ensureF8Defaults Creates any missing F8 settings object (camera,
+            %script, mesh, playback).  Safe to call repeatedly; used by the
+            %constructor and by loadobj for missions saved before F8.
+            if(isempty(obj.chaseCamera) || not(isvalid(obj.chaseCamera)))
+                obj.chaseCamera = LvdChaseCameraSettings();
+            end
+            if(isempty(obj.fixedAnchorCamera) || not(isvalid(obj.fixedAnchorCamera)))
+                obj.fixedAnchorCamera = LvdFixedAnchorCameraSettings();
+            end
+            if(isempty(obj.cameraScript) || not(isvalid(obj.cameraScript)))
+                obj.cameraScript = LvdCameraScript();
+            end
+            if(isempty(obj.vehicleMesh) || not(isvalid(obj.vehicleMesh)))
+                obj.vehicleMesh = LvdVehicleMeshSettings();
+            end
+            if(isempty(obj.playbackSettings) || not(isvalid(obj.playbackSettings)))
+                obj.playbackSettings = LvdViewPlaybackSettings();
+            end
+            if(isempty(obj.overlay) || not(isvalid(obj.overlay)))
+                obj.overlay = LvdViewOverlaySettings();
+            end
+        end
+
+        function createOverlayData(obj, lvdData)
+            obj.clearAllOverlayData();
+            obj.ensureF8Defaults();
+            obj.markerOverlayData = LaunchVehicleViewProfileOverlayData(obj.overlay, lvdData);
+        end
+
+        function clearAllOverlayData(obj)
+            for(i=1:numel(obj.markerOverlayData))
+                try
+                    obj.markerOverlayData(i).deleteGraphics();
+                catch
+                end
+            end
+            obj.markerOverlayData = LaunchVehicleViewProfileOverlayData.empty(1,0);
+        end
+
+        function driver = getCameraDriver(obj)
+            %getCameraDriver Lazy per-profile camera driver (Transient).
+            if(isempty(obj.cameraDriver) || not(isvalid(obj.cameraDriver)))
+                obj.cameraDriver = LvdSceneCameraDriver(obj);
+            end
+            driver = obj.cameraDriver;
+        end
+
+        function createVehicleMeshData(obj, vehPosVelData, vehAttData)
+            obj.clearAllVehicleMeshData();
+            obj.ensureF8Defaults();
+            obj.vehPosVelInterp = vehPosVelData;
+            obj.markerVehicleMeshData = LaunchVehicleViewProfileVehicleMeshData(vehPosVelData, vehAttData, obj.vehicleMesh);
+        end
+
+        function clearAllVehicleMeshData(obj)
+            for(i=1:numel(obj.markerVehicleMeshData)) %#ok<*NO4LP>
+                try
+                    obj.markerVehicleMeshData(i).deleteGraphics();
+                catch
+                end
+            end
+            obj.markerVehicleMeshData = LaunchVehicleViewProfileVehicleMeshData.empty(1,0);
+        end
+
+        function tf = usesEvent(obj, evt)
+            %usesEvent True when a camera keyframe is anchored to evt.
+            tf = not(isempty(obj.cameraScript)) && obj.cameraScript.usesEvent(evt);
         end
 
         function mgr = getSkyboxManager(obj)
@@ -291,6 +381,15 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         
         function removeGeoRefFrameFromList(obj, refFrame)
             obj.refFramesToPlot([obj.refFramesToPlot] == refFrame) = [];
+
+            %overlay quantities expressed in a frame built on this geometric
+            %frame cannot be evaluated once it is gone
+            if(not(isempty(obj.overlay)))
+                try
+                    obj.overlay.removeItemsUsingFrame(refFrame);
+                catch
+                end
+            end
         end
         
         function removeGeoAngleFromList(obj, angle)
@@ -808,8 +907,21 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
             obj.sensorTgtData = LaunchVehicleViewProfileSensorTargetData.empty(1,0);
         end
         
-        function removeEventFromListOfPlottedEvents(obj, event)
+        function removeEventFromListOfPlottedEvents(obj, event, stateLog)
+            %removeEventFromListOfPlottedEvents Drops the event from the
+            %plotted-events list and freezes any camera keyframe anchored to
+            %it at its current absolute time (the event is about to be
+            %deleted, so nothing may keep a handle to it).
+            arguments
+                obj(1,1) LaunchVehicleViewProfile
+                event
+                stateLog = []
+            end
             obj.eventsToPlot(obj.eventsToPlot == event) = [];
+
+            if(not(isempty(obj.cameraScript)))
+                obj.cameraScript.removeEventReferences(event, stateLog);
+            end
         end
 
         function delete(obj)
@@ -862,6 +974,28 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                 if ~isfield(obj,'skyboxRadiusMultiplier')
                     obj.skyboxRadiusMultiplier = 1.5;
                 end
+                % F8 settings (missions saved before F8 lack these fields)
+                if ~isfield(obj,'cameraMode')
+                    obj.cameraMode = LvdCameraModeEnum.Manual;
+                end
+                if ~isfield(obj,'chaseCamera') || isempty(obj.chaseCamera)
+                    obj.chaseCamera = LvdChaseCameraSettings();
+                end
+                if ~isfield(obj,'fixedAnchorCamera') || isempty(obj.fixedAnchorCamera)
+                    obj.fixedAnchorCamera = LvdFixedAnchorCameraSettings();
+                end
+                if ~isfield(obj,'cameraScript') || isempty(obj.cameraScript)
+                    obj.cameraScript = LvdCameraScript();
+                end
+                if ~isfield(obj,'vehicleMesh') || isempty(obj.vehicleMesh)
+                    obj.vehicleMesh = LvdVehicleMeshSettings();
+                end
+                if ~isfield(obj,'playbackSettings') || isempty(obj.playbackSettings)
+                    obj.playbackSettings = LvdViewPlaybackSettings();
+                end
+                if ~isfield(obj,'overlay') || isempty(obj.overlay)
+                    obj.overlay = LvdViewOverlaySettings();
+                end
                 return;
             end
 
@@ -871,6 +1005,11 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                 if ~isprop(obj,'skyboxTexture') || isempty(obj.skyboxTexture)
                     obj.skyboxTexture = SkyboxTextureEnum.DarkStars;
                 end
+            catch
+            end
+            % F8 settings: build whatever an older mission did not save
+            try
+                obj.ensureF8Defaults();
             catch
             end
             try
@@ -892,6 +1031,24 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
             catch
             end
         end
+        function pos = firstVehPosAtTime(vehPosVelInterp, time)
+            %firstVehPosAtTime Vehicle position (3x1, view frame) of the
+            %primary trajectory segment at `time`, or NaN(3,1) when the
+            %interpolants do not cover it.
+            pos = NaN(3,1);
+            if(isempty(vehPosVelInterp))
+                return;
+            end
+            try
+                [rVect, ~] = vehPosVelInterp(1).getPositionVelocityAtTime(time);
+            catch
+                return;
+            end
+            if(not(isempty(rVect)) && all(isfinite(rVect(:,1))))
+                pos = rVect(:,1);
+            end
+        end
+
         function vehPosVelData = createVehPosVelData(subStateLogs, evts, viewFrame)
             vehPosVelData = LaunchVehicleViewPosVelInterp(viewFrame);
                         

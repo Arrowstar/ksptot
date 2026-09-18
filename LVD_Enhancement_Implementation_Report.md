@@ -640,6 +640,273 @@ Remaining manual check for the user: open the four apps in App Designer and conf
 canvas (AddDeltaV rows 2–3, Conditional's Quantity Comparison panel rows 2–3, Tank row 5, and the five menu items in
 the main window's menu bar / context menu).
 
+### 7.4f 3-D view playback, camera scripting, vehicle mesh and export — F8 (2026-09-17)
+
+The user asked for report item F8 with three changes: no colour-by-quantity; an imported 3-D mesh rendered at the
+vehicle (with scale, rotational offset and translation so the mesh axes can be aligned with the body axes); and a
+scripted camera — an ordered set of camera poses interpolated in time, with holds and with keyframe times tied to
+absolute UT or to an event's start/end. The UI had to be a **separate window written as a programmatic uifigure
+(no new `.mlapp`)**, and everything had to have tests, including App Testing Framework tests. Three design choices
+were confirmed with the user before starting: keyframes may be either scene-fixed (camera position/target/up in the
+view frame) or vehicle-relative (azimuth/elevation/range about the vehicle, looking at it) and a script may mix
+both; the mesh geometry is embedded in the mission (plus the source path for reload); and the one launcher menu item
+goes onto the main window's App Designer canvas through `lvdfixCanvasize`.
+
+**What changed.** Nothing about propagation or optimization; every new setting defaults to the previous behaviour.
+
+| Area | Files | Notes |
+|---|---|---|
+| Saved settings on the view profile | `LaunchVehicleViewProfile` (+ `cameraMode`, `chaseCamera`, `cameraScript`, `vehicleMesh`, `playbackSettings`; `ensureF8Defaults`, `getCameraDriver`, `createVehicleMeshData`, `firstVehPosAtTime`), `LaunchVehicleViewSettings` | The four handle-valued settings deliberately have **no declaration default** — a handle default is built once per class load and would be shared by every profile — so they are constructed in the profile constructor and back-filled by `loadobj` (struct and object branches) for missions saved before F8. |
+| Camera model | `LvdCameraModeEnum`, `LvdCameraKeyframeAnchorEnum`, `LvdCameraKeyframeRefEnum`, `LvdCameraEasingEnum`, `LvdCameraKeyframe`, `LvdCameraScript`, `LvdChaseCameraSettings`, `LvdCameraMath` | `LvdCameraScript.evaluate(time, timeResolverFcn, vehPosFcn, defaultVA)` is a pure function: keyframes are sorted by resolved time, each occupies `[t, t + hold]`, the gap to the next keyframe is blended with the earlier keyframe's easing (linear or smooth-step), the pose is clamped before the first and after the last keyframe. Two vehicle-relative keyframes blend az/el/range (shortest arc in azimuth) so the camera keeps chasing through the transition; any other pair blends Cartesian poses (position/target lerp, up slerp, view-angle lerp). Vehicle-relative geometry is spherical about the vehicle in the view frame (az from +X toward +Y, el from the XY plane), matching Mission Architect's animator. Event-anchored keyframes resolve from the state log honouring `EventPlottingMethodEnum`; an unresolvable anchor falls back to the keyframe's stored absolute time. |
+| Deleting an anchored event | `LaunchVehicleViewProfile.removeEventFromListOfPlottedEvents(evt, stateLog)`, `LvdCameraScript.removeEventReferences` | The main window's delete path already calls the view settings' event-removal hook; the keyframe is frozen at its last resolved absolute time. Deletion is **not** blocked (`getEventUsageReport` is unchanged), which is what `CameraScriptTest/eventDeletionIsNotBlockedByACameraKeyframe` pins. |
+| Runtime camera | `LvdSceneCameraDriver` (Transient, one per profile), `LvdMouseCameraHandler.enabled` | The main window's `PostSet` listeners copy every axes camera change back into the profile's saved manual camera. The driver snapshots that camera when a non-Manual mode is entered, re-asserts the snapshot on the profile immediately after each scripted camera write (the listeners run synchronously), and puts it back on the axes when Manual is re-selected — so Chase/Scripted never corrupts the saved view. Mouse drags are disabled outside Manual mode. |
+| Render path | `lvd_renderSceneAtTime.m` (new), `timeSliderStateChanged.m` (now a throttled wrapper), `Generic3DTrajectoryViewType.plotStateLog` (creates the mesh data; skips the manual camera restore in non-Manual modes) | The slider callback's 50 ms throttle and `drawnow limitrate` would drop frames during export, so its body became `lvd_renderSceneAtTime(time, lvdData, handles, app, drawMode)` with `"limitrate" | "full" | "none"`; slider drags behave as before. |
+| Vehicle mesh | `lvd_readMeshFile.m` (binary/ASCII STL with vertex welding, OBJ with `v/vt/vn` tokens, negative indices and fan triangulation; self-contained because the repo's `z_gptoolbox/external/stlread.m` shadows MATLAB's), `LvdVehicleMeshSettings`, `LaunchVehicleViewProfileVehicleMeshData` | Mesh→body transform is `p_body = scale·Rz(yaw)Ry(pitch)Rx(roll)·p_mesh + t` (`eul2rotmARH(...,'ZYX')`; note that helper returns nothing when the sequence is omitted). The renderer clones `LaunchVehicleViewProfileBodyAxesData`: one `hgtransform` per trajectory segment holding a `patch` tagged `LvdVehicleMesh`, matrix `[R p; 0 1]` where `R` is the pchip-interpolated body→view DCM **re-orthonormalised by SVD** (element-wise interpolation does not preserve SO(3)). `refreshAppearance()` pushes colour/alpha/edges/vertices without a replot. |
+| Playback / export | `LvdViewPlaybackController` (timer state machine; `advance`, `stepTo`, `frameSchedule` are pure and tested without real time), `LvdViewExporter` (frame-exact `VideoWriter` MPEG-4 / Motion JPEG AVI, animated GIF via `rgb2ind`+`imwrite` append, `exportgraphics` stills, `copygraphics`; even-dimension and first-frame-size normalisation; cancel deletes the partial file) | `getframe(uiaxes)` and `exportgraphics(uiaxes)` were verified to work on hidden uifigures in R2025b, so export captures `app.dispAxes` directly. |
+| The window | `kspTOT_LaunchVehicleDesigner/view/lvd_ViewPlaybackGUI_App.m` | Non-modal, singleton (a second open raises the existing window), three tabs — Playback (transport, speed/fps/loop, video/image export), Camera (mode, chase offsets, keyframe table + editor with Add-from-camera / Capture / Preview / Move / Remove), Vehicle Mesh (import/reload/clear, scale + fit-longest-side, yaw/pitch/roll, translation, colour/opacity/edges/lighting, body-frame preview axes with an RGB triad). All components are public (the themer walks them); the two `Constant` name/tag properties had to be made private for the same reason. Public methods (`play`, `stepTo`, `exportVideo(path, opts)`, `exportImage`, `importMeshFromFile`, `addKeyframeFromCurrentCamera`, `applyKeyframeEdits`, …) are the test seam and never open a dialog. The window listens for `ScriptPropagationFinished` (stops playback, adopts the new time range) and for the main window's destruction. (The first build pushed no undo states, matching the other view-profile edits; the follow-up below changed that.) |
+| Launcher | `ma_LvdMainGUI_App.mlapp` via `C:\Users\aharden\lvdfix\lvdfixCanvasizeF8.m` | One `uimenu` `ViewPlaybackMenu` under the View menu after "Pop Out Orbit Display", callback `ViewPlaybackMenuSelected` → `lvd_ViewPlaybackGUI_App(lvdData, app)`. `check` showed 10 added lines and 0 removed; `apply` read back identically; `lvdfixCodeDataDrift` reports the same 7 pre-existing comment-only lines before and after (verified against the tool's own backup), i.e. no new drift. |
+
+**Tests** (nine new classes, 109 tests, all passing on R2025b):
+`CameraMathTest` (18: spherical offsets, slerp, easing, shortest-arc blending, SVD orthonormalisation, axes I/O),
+`MeshFileReaderTest` (10: binary/ASCII STL cube welds to 8 vertices, OBJ quads/fan/relative indices, error ids),
+`VehicleMeshSettingsTest` (13: transform math, file I/O, fit, and the renderer against real
+`LaunchVehicleViewPosVelInterp`/`LaunchVehicleViewProfileAttitudeData` objects), `CameraScriptTest` (20: holds,
+clamps, linear vs smooth-step, ordering, overlaps, vehicle-relative tracking and blending, event anchors on a
+propagated mission, the delete-event fallback, and that deletion is not blocked), `ViewProfileF8PersistenceTest`
+(6: per-profile independence of the settings objects, `loadobj` back-fill, `.mat` round trip incl. a keyframe's
+event handle, a shipped pre-F8 example loading warning-free), `PlaybackControllerTest` (13), `ViewExporterTest`
+(11: frame counts via `VideoReader`/`imfinfo`, cancel, stills), `RenderSceneAtTimeTest` (5, real main window: mesh
+pose against an independent frame-conversion oracle, chase/scripted camera, saved-camera protection, mouse handler,
+slider path) and `ViewPlaybackGuiTest` (13, `matlab.uitest` gestures on the real main window and the new window:
+menu launch, play/pause/stop/step, drop-down camera modes, keyframe add/edit/anchor/move/remove/preview, mesh
+import/fit/appearance/clear, image and video export through the seams, re-propagation, un-propagated mission,
+main-window close). Two App Testing Framework facts cost a round each: gestures need a **visible** window and the
+component's **tab must be selected** first (`testCase.choose(app.CameraTab)`).
+
+**First live use (user report, same day): "I'm not seeing the mesh", with the 3-D display blank.** The user's Orion
+STL (34 511 vertices) imported and previewed correctly, but at its true size — 0.02 km after "Fit" — it is far below
+one pixel in a view that spans the planet, and zooming the camera onto it blanks the whole axes. Reproduced headless
+on R2025b and R2026a: MATLAB's depth buffer covers the scene's full extent (~2700 km here), so anything a few tens of
+metres across collapses into the near clipping plane and every close-up (chase camera at 0.08 km or 0.5 km range)
+renders nothing but the axes background — dark grey under a dark theme, exactly the screenshot. At a 12 km display
+size the same mesh renders cleanly from a 30–50 km chase camera (verified by image). Changes: (1) importing a mesh
+now auto-fits its longest side to the **"Fit longest side to"** length, whose default is **2% of the central body
+radius** (`LvdVehicleMeshSettings.defaultDisplayLengthKm`; Kerbin 12 km), and the status line says so; (2) a
+**"Show in Chase Camera"** button on the Mesh tab switches to Chase mode at four times the mesh's longest side;
+(3) an italic note on the Mesh tab explains that the mesh is a display model and why true scale cannot be drawn;
+(4) the window sets `HandleVisibility = 'callback'` like the other LVD dialogs, so `close all` (and the MCP tool's
+figure sweep, which is how this was noticed) no longer kills it. Tests: `VehicleMeshSettingsTest`
+(+`defaultDisplayLengthIsTwoPercentOfTheBodyRadius`), `ViewPlaybackGuiTest/meshImportShowsThePatchAndThePreview`
+extended for the auto-fit and the chase button.
+
+**Second user report (same day): "pan, orbit and dolly don't work on the 3-D axes any more."** Root cause: the
+first F8 build *disabled* `LvdMouseCameraHandler` whenever the profile's camera mode was not Manual, so that a drag
+would not fight the chase/scripted camera. After "Show in Chase Camera" the profile stays in Chase mode, the flag
+stayed off when the playback window was closed, every slider move re-asserted it, and nothing in the main window
+said why (reproduced headless: fresh open → enabled; after Show in Chase → disabled; after closing the window →
+still disabled; after a slider move → still disabled). The design was wrong, not just the clean-up. Now the mouse
+works in every mode: the handler is never disabled by LVD; it gained public `beginDrag` / `applyDrag` / `endDrag`
+(the window callbacks call these, so tests can drive the exact code path) and a `cameraDragFcn` hook reporting
+`"motion"` and `"end"`. `lvd_renderSceneAtTime` points the hook at the profile's `LvdSceneCameraDriver.onUserCameraDrag`,
+which in **Chase** mode turns the dragged camera into new chase offsets (`LvdChaseCameraSettings.setFromCamera`,
+re-centred on the vehicle, saved manual camera untouched) so the camera keeps following from where the user put it,
+and in **Scripted** mode hands the camera back to the user: the dragged view becomes the saved manual camera and the
+profile drops to Manual (the script is kept). The driver fires `CameraChangedByUser` and the playback window mirrors
+the change on its Camera tab. Regression tests: `RenderSceneAtTimeTest` (+4: drag math and phases for
+orbit/pan/dolly; Chase drag retunes range/azimuth with no snap-back on the next render; Scripted drag takes manual
+control; and the exact reported sequence — Show in Chase, close the window, move the slider — leaves orbit, dolly
+and pan working) and `ViewPlaybackGuiTest/cameraTabMirrorsMouseDrags`.
+
+*Follow-up (user): "in chase mode the target should be on the vehicle so an orbit orbits it — it isn't."* The
+camera **toolbar** modes (orbit / pan / dolly / zoom toggles, which drive `cameratoolbar`) bypass the mouse handler
+entirely, so their changes never reached the driver, and the main window's `updateCamTgtPos` listener moves the
+camera target along the sight line during a toolbar dolly. The driver now `attach`es its own PostSet listeners to the
+axes camera (`CameraPosition/Target/UpVector/ViewAngle`); any change it did not make itself (an `isApplying` guard),
+while the mouse handler is dragging *or* a camera toolbar mode is active, is handled as user input — Chase: the
+camera position becomes the new chase offset and the **target is pinned back onto the vehicle**; Scripted: manual
+control. Programmatic changes with no gesture in progress (plot resets, limit changes) are ignored, so the chase pose
+is simply re-applied on the next frame. `LvdCameraMath.applyPoseToAxes` now writes the position before the target so
+the target write is the final word even under the dolly listener. Tests: `RenderSceneAtTimeTest`
+(+2: toolbar orbit keeps the target on the vehicle and retunes azimuth, toolbar dolly re-pins the target and retunes
+range, a programmatic change is ignored and the pose re-applied; toolbar orbit in Scripted mode hands the camera
+back). *Also requested:* mesh import and reload now show an indeterminate `uiprogressdlg` ("Importing Mesh — Reading
+file… / Drawing N faces…") while the file is read and drawn; the window records every dialog title in a hidden
+`ProgressDialogLog` so `ViewPlaybackGuiTest` can assert it appeared.
+
+*Follow-up (user): "close to the target the mouse dolly is really touchy — a tiny movement rams through the target
+and out the other side."* `LvdMouseCameraHandler` scaled its dolly and pan steps by the **axes limits** (the
+whole scene, ~2700 km here): about 70 km per pixel of dolly, whatever the camera distance. Both are now scaled by
+the camera-to-target distance: dolly multiplies the distance by `exp(-pixels * DollyRatePerPixel)` (default 0.01, so
+100 px ≈ 37% of the distance; it can never cross the target and is exactly reversible), and pan moves the scene
+one-for-one with the pointer at the target's depth (`worldUnitsPerPixel` = visible height / axes pixel height, gain
+`PanGain`). Orbit stays angular (`OrbitDegPerPixel`). `beginDrag` also switches the four camera modes to `manual`, as
+`camdolly`/`camorbit` do: with the view angle left in `auto`, MATLAB re-fits it after every camera move, which partly
+cancels a dolly and changed the pan scale mid-drag (that is what first failed the new drag-math assertion). Tests:
+`RenderSceneAtTimeTest` drag-math case updated to the
+exponential/one-for-one laws, plus `dollyAndPanStayGentleCloseToTheTargetAndNeverPassThroughIt` (camera 50 m from a
+chased vehicle in a planet-scale scene: one pixel = 1% of the distance, a 1000 px drag never crosses the target,
+dragging back returns exactly, the chase target stays on the vehicle, a short pan stays near the vehicle).
+
+*Follow-up (user, same day): three requests — every edit in the window must create a labelled undo state; add a
+user-defined **data overlay** (any Graphical Analysis quantity drawn on the view and so into exported video) with
+control of position, per-quantity precision and font; and make it abundantly clear that all of this lives on the
+current view profile.*
+
+- **Undo.** Every edit made through the window goes through `pushUndo(label)` → the main app's
+  `lvdEnhancementsAddUndo(label)` (the existing `LVD_UndoRedoStateSet.addState`, called *before* the edit as LVD
+  does everywhere), with descriptive labels: "Change Camera Mode", "Edit Chase Camera", "Add / Edit / Remove /
+  Reorder Camera Keyframe", "Import / Reload / Clear Vehicle Mesh", "Edit Vehicle Mesh Transform / Appearance",
+  "Edit Playback Settings", "Toggle Data Overlay", "Add / Edit / Remove / Reorder Data Overlay Quantity", "Edit Data
+  Overlay". Field edits are compared against the profile first (`applyStructIfChanged`, with `isequaln` so blank
+  optional export times do not read as a change) so re-applying unchanged values records nothing. Mouse-driven camera
+  changes record one state per gesture through the driver's `undoFcn` ("Adjust Chase Camera by Mouse", "Take
+  Manual Camera Control"). Because Edit > Undo
+  **replaces the `LvdData` object** in the main window, `lvd_renderSceneAtTime` now calls
+  `lvd_notifyPlaybackWindows(lvdData, app)` on every frame and the window re-binds (`bindToLvdData`: listeners,
+  controller, all tabs) when the object it holds is no longer the one the main window has. A hidden `UndoLog` keeps
+  the labels for tests.
+- **Data overlay.** `LvdViewOverlaySettings` (saved on the profile as `overlay`: enabled, title, epoch / UT / mission
+  elapsed time / current event header lines, the quantity `items`, corner, margin, font name/size/weight/colour,
+  background box + colour) and `LvdViewOverlayItem` (a `GraphicalAnalysisTask` — quantity + reference frame — plus
+  label, decimals, Fixed / Scientific / Auto format, units on/off). The Transient renderer
+  `LaunchVehicleViewProfileOverlayData` evaluates each quantity over the whole state log once with the same
+  `GraphicalAnalysisTask.executeTask` the plots use, grouped by event (a later event owns a shared boundary time so
+  discontinuities are kept) and interpolated linearly inside an event; the block is one `text` object in
+  normalized axes units (tagged `LvdViewOverlayText`) so it stays put under every camera change and is captured by
+  `getframe`. Text backgrounds in MATLAB are opaque, so there is no alpha control. The **Data Overlay** tab offers
+  the full Graphical Analysis quantity list (99 tasks) with a live search box, the standard
+  `referenceFrameSelectComp`, an editable table (Label / Decimals / Format / Units per row), Move Up / Down / Remove,
+  a corner drop-down, margin, font, bold, text and box colour pickers, and a live one-line preview of what the
+  overlay reads at the current time. Adding the first quantity switches the overlay on. Deleting a geometric
+  reference frame removes the overlay items expressed in it or in a frame built on it
+  (`LaunchVehicleViewProfile.removeGeoRefFrameFromList`).
+- **Profile clarity.** The window title is "LVD 3-D View Playback | View Profile: *name*"; a banner under the
+  title says everything in the window belongs to the active view profile and is saved with it, and how to switch
+  profiles; the status line names the profile; the tab tooltips repeat it. `LaunchVehicleViewSettings` now fires an
+  `ActiveProfileChanged` event from `setProfileAsActive` (only on a real change) and the window repopulates every
+  tab from the newly active profile.
+- Bugs found by the tests along the way: `isequal(NaN, NaN)` made "unchanged" playback fields record an undo state;
+  a quantity expressed *directly* in a user-defined geometric frame was not recognised as using that frame
+  (`GraphicalAnalysisTask.usesGeometricRefFrame` only walks the frame's dependencies, so the overlay item checks
+  identity too); and the overlay style panel was clipped at the window's original height, which put the
+  "Background box" checkbox off-screen — the App Testing Framework press then silently did nothing, so the window
+  grew to 800 px and the two overlay panels have fixed content heights.
+- **A pre-existing hazard exposed by the undo test.** Pressing the main window's Edit > Undo with the playback
+  window open threw `Unrecognized field name "ma_LvdMainGUI"` from `editMenu_Callback`. Every GUIDE-migrated callback
+  in the main window gets its `handles` from `convertToGUIDECallbackArguments`, which asks
+  `AppManagementService.getFigure(app)` for the app's figure — and that function ignores `app` and returns the
+  **first registered App Designer figure in the groot children list** (`findall(groot, ..., '-property',
+  'RunningAppInstance')`), i.e. whichever registered window is in front. With the playback window on top, the main
+  window's callbacks built `handles` from the playback window and failed. The same thing can happen with any
+  non-modal `matlab.apps.AppBase` dialog that calls `registerApp` (the Variable Table and Constraint Status windows
+  from H9 are candidates; the modal `uiwait` dialogs are not, because the main window cannot be clicked while they
+  are up). The playback window therefore does **not** call `registerApp`; it reproduces the two things registration
+  did that matter (deleting the app when the figure is destroyed; running `startupFcn`) itself. The other
+  programmatic dialogs were left alone in this batch — worth a follow-up.
+- Tests: new `ViewOverlayTest` (11: formatting, per-event interpolation and boundaries, anchors, copy, frame
+  deletion, active-profile event), `RenderSceneAtTimeTest/overlayTextIsDrawnInTheMainAxesAndFollowsTime`, and in
+  `ViewPlaybackGuiTest` `windowNamesTheActiveProfileAndFollowsProfileChanges`,
+  `editsRecordUndoStatesAndUndoRebindsTheWindow` (presses the real Edit > Undo menu and checks the window follows the
+  restored mission) and `overlayTabAddsFormatsAndRemovesQuantities` (gestures on the tab: search, choose, add, table
+  edits, corner/bold/background, header lines, reorder, remove).
+
+*Follow-up (user, same day): "when I want to create new keyframes I move the camera, but then the camera mode
+goes back to Manual — make the Camera Script easier to use."* Root cause: the mouse-always-works fix treated any
+camera gesture in Camera Script mode as "the user wants the camera back" and dropped the profile to Manual, which
+is right for viewing and wrong for authoring, where moving the camera is how a keyframe is defined. Changes:
+
+- **Detached state instead of Manual.** In Camera Script mode a drag or toolbar move now *detaches* the camera from
+  the script (`LvdSceneCameraDriver.detachFromScript`; the mode stays Camera Script, nothing saved changes, so no
+  undo state). While detached the script does not move the camera: with vehicle-relative authoring (the default)
+  the camera keeps the user's azimuth / elevation / range about the vehicle as the time is scrubbed, so the vehicle
+  stays framed; with scene-fixed authoring it stays where it was left. `resumeScript()` re-attaches. The saved
+  manual camera is protected throughout. A mode change always ends the detachment.
+- **One authoring loop on the Camera tab.** "Add Keyframe Here" (any mode) creates a keyframe at the current time
+  from the current camera; "Update Selected From Camera" overwrites the selected keyframe's pose (time and
+  reference type kept); "Resume Script" re-attaches without a change; playing re-attaches automatically. Add and
+  Update re-attach the script, which now passes through the new pose, so nothing jumps. A bold **state line**
+  always says who is driving the camera and what to do next ("Script is driving the camera (now on
+  'Wide shot')…", "Camera DETACHED from the script: adjust the view, then …", Manual, Chase, empty script), and
+  the buttons enable to match.
+- **"New keyframes are:" [Vehicle-Relative | Scene-Fixed] "anchored to:" [start of the active event + offset |
+  absolute time (UT)].** Defaults: vehicle-relative and event-anchored, so a keyframe reads "start of Event 2
+  +37.5 s" and survives re-optimisation; the later event owns a shared boundary time. Vehicle-relative keyframes
+  can now be created from the camera (`LvdCameraKeyframe.fromCameraRelativeToVehicle`), and the reference choice
+  also sets whether a detached camera follows the vehicle.
+- **Clicking a table row goes to that keyframe** (slider on its time, camera on its pose) and selects it, so
+  "click, nudge, Update Selected" is the edit loop; the Preview button is gone. The table is shown in **play
+  order** (sorted by resolved time, which is how `LvdCameraScript.evaluate` orders keyframes anyway) with the
+  keyframe the script is currently on in **bold**; Move Up / Move Down are gone because they only ever affected
+  ties. The nine position / target / up and az / el / range fields are behind a "Show numeric pose (advanced)"
+  checkbox.
+- Undo labels: "Update Camera Keyframe" joins the list; "Take Manual Camera Control" and "Reorder Camera
+  Keyframes" are no longer produced (detaching / resuming records nothing because nothing saved changes).
+- Tests: `RenderSceneAtTimeTest` — `mouseDragInScriptedModeDetachesTheCameraAndKeepsScriptMode` (mode kept,
+  detached, saved camera untouched, vehicle stays framed at the dragged range while scrubbing, scene-fixed
+  authoring stays put, resume restores the script pose) and `toolbarCameraModesInScriptedModeDetachTheCamera`;
+  `ViewPlaybackGuiTest` — `cameraTabMirrorsMouseDrags` (state line, Resume button), `keyframesCanBeAddedEditedRemovedAndPlayed`
+  (toggles, advanced-pose checkbox, row click navigation, play-order table),
+  `addKeyframeHereDefaultsToVehicleRelativeEventAnchoredAndReattaches` (event 2 anchor with the right offset,
+  az/el/range reproduce the camera, re-attach with no jump), `updateSelectedFromCameraReattachesTheScript`,
+  `playingResumesADetachedScript`.
+- **A last leak found by `toolbarCameraModesInScriptedModeDetachTheCamera`.** With the detach logic in place the test
+  still failed: a toolbar orbit in Camera Script mode detached the camera correctly but the profile's *saved* manual
+  camera changed anyway. Root cause was outside every `.m` file — the main window's own camera write-back handler
+  `recordFinalAxesPanZoomAfterRotation` (a PostSet / `ActionPostCallback` handler that lives **inside the binary
+  `.mlapp`**, so `grep` never sees it) copies the axes camera into `profile.viewCamera*` after every orbit/pan/zoom,
+  with no camera-mode awareness. In Chase mode the driver's `writePose` applies a *different* pose that re-fires the
+  listeners and lets the driver's restore win; in Scripted mode `reassertAxesCamera` writes the *same* dragged value,
+  and a same-value property write does not reliably re-fire PostSet, so the App's handler got the last word and leaked
+  the transient view into the saved camera. Fix: guard that one write-back with
+  `&& lvdData.viewSettings.selViewProfile.cameraMode == LvdCameraModeEnum.Manual` (a single line patched durably
+  through `lvdfixPatchMlapp`), so in Chase/Scripted mode the `LvdSceneCameraDriver` alone owns the saved manual
+  camera. `lvdfixCodeDataDrift` reports the same 7 pre-existing comment-only lines and no new drift; goldens stay
+  bit-identical (the main window does not touch propagation).
+
+**Verification** (after the undo / overlay / profile-clarity batch). `ksptotRunTests('lvd_tests')`: **771 tests,
+770 passed, 0 failed, 1 documented skip** (the FOV mesh-containment case that needs an absent toolbox);
+`ksptotRunTests('all')`: **1295 tests, 1270 passed, 0 failed, 25 documented skips** (the same 25 as before F8). Goldens: the committed `tests/data/goldens` folder is stale
+(21/23 mismatch on an unmodified HEAD, as recorded on 2026-09-15), so a fresh baseline was captured from a clean
+`git worktree` of HEAD `3d7270c3` into `C:\Users\aharden\lvdfix\baseline_goldens_f8` and the working tree verified
+against it: **23/23 bit-identical, 2 known skips** — F8 changes nothing about propagation. `lvdfixCodeDataDrift` on
+the main window is unchanged (7 pre-existing comment-only lines, identical on the pre-F8 backup).
+
+**Final verification (after the Camera-Script-detach batch and its `.mlapp` write-back guard, 2026-09-18).**
+`ksptotRunTests('lvd_tests')`: **773 tests, 772 passed, 0 failed, 1 documented skip**
+(`SensorTest/…ConeContainmentAgainstMeshWhenToolboxPresent`, which needs an absent toolbox); `RenderSceneAtTimeTest`
+13/13 and `ViewPlaybackGuiTest` 19/19. Goldens against `baseline_goldens_f8`: **23/23 bit-identical, 2 known skips**.
+`lvdfixCodeDataDrift` on the main window: the same **7 pre-existing comment-only lines, zero new drift** — the
+`cameraMode == LvdCameraModeEnum.Manual` guard is fully in sync with the App Designer code data.
+
+**Follow-up: a fourth camera mode — Fixed Camera (Tracking) (2026-09-18).** *"Could we also add a camera view
+mode that fixes the position of the camera … but tracks the spacecraft? Sort of like what a camera at a launch
+pad would do? … fix the position of the camera to either a fixed XYZ coordinate, or to a Ground Object, or to a
+Geometric Point."* Added `LvdCameraModeEnum.FixedAnchor` ("Fixed Camera (Tracking)") — the mode appears in the
+dropdown automatically — plus a settings class `LvdFixedAnchorCameraSettings` and an anchor-type enum
+`LvdCameraAnchorTypeEnum` (Fixed Coordinates / Ground Object / Geometric Point). The pose is simply the inverse of
+the chase pose: camera **at the anchor**, **looking at the vehicle**, at a fixed field of view (a new stateless
+`LvdCameraMath.trackPose`). The anchor resolves into the view frame each frame: a **fixed XYZ** coordinate in a
+**user-pickable reference frame** (default = the view's display frame, so a body-fixed frame rotates the anchor
+with the planet like a real pad while an inertial frame keeps it put), one of the mission's **ground objects**, or
+a **vehicle-independent geometric point** (vehicle-dependent points are excluded — a fixed anchor must not depend
+on the thing it tracks). An unresolvable anchor (an orphaned object, or a time outside a ground object's waypoint
+range) degrades to `[]`, and the driver leaves the camera untouched that frame — the same contract Chase has with
+an unknown vehicle position. Opt-in and defaulting to nothing (Manual is still the default), so goldens stay
+bit-identical. The mouse still always works: in the XYZ case a drag retunes the anchor via
+`setFixedPositionFromCamera` and re-pins the target on the vehicle ("Move Fixed Camera by Mouse"); an object anchor
+cannot be dragged, so a drag takes manual control, matching the Scripted-takeover helper. The Camera tab gained a
+**Fixed Camera (Tracking)** panel (anchor-type dropdown, X/Y/Z fields with a `referenceFrameSelectComp` and a "Set
+From Current Camera" button, ground-object and geometric-point dropdowns, and a view-angle field), with the
+public test seams `setCameraAnchorType`, `setFixedAnchorPosition`, `setFixedAnchorFromCamera`,
+`setAnchorGroundObject`, `setAnchorGeometricPoint`, `setFixedAnchorViewAngle`. The panel's anchor-type widget
+groups are held as **private** cell-array properties: `AppThemer.themeApp` iterates the app's public `properties`
+and `themeWidget`'s `arguments prop(1,1)` rejects a non-scalar, so a public cell-array property would break every
+themed open of the window (caught by the existing `closingThePlaybackWindowInChaseModeLeavesTheMouseWorking`
+test). No `.mlapp` change — the launcher menu already exists and the window is fully programmatic. New test
+`FixedAnchorCameraTest` (13 cases: anchor resolution for each type, the tracking pose, `[]` fallbacks, `loadobj`
+upgrade, "set from camera" round-trip, summary string); `CameraMathTest`, `ViewProfileF8PersistenceTest`,
+`RenderSceneAtTimeTest` and `ViewPlaybackGuiTest` extended for the new mode.
+
 ### 7.5 Live check in the interactive session
 
 KSPTOT was started with `projectMain` and LVD opened from it. Confirmed: File menu ends `… Export Ephemeris... |

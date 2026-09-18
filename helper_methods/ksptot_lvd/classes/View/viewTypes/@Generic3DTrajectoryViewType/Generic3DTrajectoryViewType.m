@@ -487,6 +487,8 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             viewProfile.createBodyMarkerData(dAxes, subStateLogs, viewInFrame, showSoI, viewProfile.meshEdgeAlpha, eventsToPlot);           
             viewProfile.createTrajectoryMarkerData(subStateLogs, eventsToPlot);
             viewProfile.createBodyAxesData(vehPosVelData, vehAttData); %lvdStateLogEntries, lvdData.script.evts, viewInFrame
+            viewProfile.createVehicleMeshData(vehPosVelData, vehAttData); %F8 vehicle mesh + vehicle position source for the scene camera
+            viewProfile.createOverlayData(lvdData); %F8 data overlay (Graphical Analysis quantities on the view)
             viewProfile.createSunLightSrc(dAxes, viewInFrame);
             viewProfile.createGroundObjMarkerData(dAxes, lvdStateLogEntries, vehPosVelData, eventsToPlot, viewInFrame, celBodyData);
             viewProfile.createCentralBodyData(viewCentralBody, hCBodySurfXForm, viewInFrame);
@@ -575,7 +577,11 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                 end
             end
 
-            if(not(viewProfile.updateViewAxesLimits))                
+            if(not(viewProfile.updateViewAxesLimits) && viewProfile.cameraMode ~= LvdCameraModeEnum.Manual)
+                %F8: a chase or scripted camera sets the axes camera on the
+                %first rendered frame (fired at the end of plotTrajectory);
+                %restoring the saved manual camera here would only flash it.
+            elseif(not(viewProfile.updateViewAxesLimits))
                 camPos = viewProfile.viewCameraPosition;
                 camTgt = viewProfile.viewCameraTarget;
                 camUpVec = viewProfile.viewCameraUpVector;

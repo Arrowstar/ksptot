@@ -9,7 +9,13 @@ classdef LaunchVehicleViewSettings < matlab.mixin.SetGet
 
         lvdData LvdData
     end
-    
+
+    events
+        %Fired by setProfileAsActive when a different profile becomes active
+        %(the 3-D View Playback window re-reads its settings from it).
+        ActiveProfileChanged
+    end
+
     methods
         function obj = LaunchVehicleViewSettings(lvdData)
             obj.lvdData = lvdData;
@@ -70,7 +76,11 @@ classdef LaunchVehicleViewSettings < matlab.mixin.SetGet
         end
         
         function setProfileAsActive(obj, profile)
+            changed = isempty(obj.selViewProfile) || not(isvalid(obj.selViewProfile)) || obj.selViewProfile ~= profile;
             obj.selViewProfile = profile;
+            if(changed)
+                notify(obj, 'ActiveProfileChanged');
+            end
         end
         
         function ind = getIndOfSelectedProfile(obj)
@@ -143,8 +153,29 @@ classdef LaunchVehicleViewSettings < matlab.mixin.SetGet
                 event(1,1) LaunchVehicleEvent
             end
 
+            stateLog = [];
+            try
+                if(not(isempty(obj.lvdData)))
+                    stateLog = obj.lvdData.stateLog;
+                end
+            catch
+                stateLog = [];
+            end
+
             for(i=1:length(obj.viewProfiles))
-                obj.viewProfiles(i).removeEventFromListOfPlottedEvents(event);
+                obj.viewProfiles(i).removeEventFromListOfPlottedEvents(event, stateLog);
+            end
+        end
+
+        function tf = usesEvent(obj, evt)
+            %usesEvent True when any view profile's camera script is
+            %anchored to evt.
+            tf = false;
+            for(i=1:length(obj.viewProfiles))
+                if(obj.viewProfiles(i).usesEvent(evt))
+                    tf = true;
+                    return;
+                end
             end
         end
     end

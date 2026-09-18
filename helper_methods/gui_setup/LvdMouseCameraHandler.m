@@ -4,11 +4,38 @@ classdef LvdMouseCameraHandler < handle
     % Designed to survive App Designer saves - store state in this object, not in app private props
     % Call LvdMouseCameraHandler.setup(app) from ma_LvdMainGUI_OpeningFcn
     
+    properties (Access=public)
+        % When false, mouse drags over the 3-D axes do not move the camera.
+        % Nothing in LVD clears this any more: the chase and scripted
+        % cameras cooperate with the mouse through cameraDragFcn instead.
+        enabled(1,1) logical = true
+
+        % Called after every camera change made by a mouse drag, as
+        % cameraDragFcn(hAx, phase) with phase "motion" while the button is
+        % held and "end" once when it is released.  The LVD scene camera
+        % driver uses it to turn a drag into chase-camera offsets (Chase
+        % mode) or to hand the camera back to the user (Scripted mode).
+        cameraDragFcn = []
+
+        % Drag sensitivities.  Dolly and pan are scaled by the camera's
+        % distance to its target (not by the axes limits, which span the
+        % whole scene), so the controls feel the same whether the camera is
+        % thousands of km out or a few km from a chased vehicle.
+        OrbitDegPerPixel(1,1) double = 0.5
+        % Dolly multiplies the camera distance by exp(-pixels * rate): 100 px
+        % toward the target brings the camera to ~37% of its distance and it
+        % can never pass through the target.
+        DollyRatePerPixel(1,1) double = 0.01
+        % Pan moves the scene one-for-one with the pointer (fraction of the
+        % visible height per pixel); 1 = exact, <1 slower.
+        PanGain(1,1) double = 1
+    end
+
     properties (Access=private)
         app ma_LvdMainGUI_App
         hFig matlab.ui.Figure
         hAx matlab.ui.control.UIAxes
-        
+
         isDragging = false
         dragMode char = '' % 'orbit','dollyhv','dollyfb'
         startPt double = [0 0]
@@ -158,8 +185,9 @@ classdef LvdMouseCameraHandler < handle
             try selType = obj.hFig.SelectionType; catch, end
             
             % Check if over dispAxes and should handle as camera drag
+            % (skipped entirely while a chase/scripted camera owns the axes)
             try
-                if obj.isMouseOverDispAxes()
+                if obj.enabled && obj.isMouseOverDispAxes()
                     mode = obj.getModeForSelection(selType, event);
                     % Ensure context menu stays disabled for right
                     if strcmpi(mode,'dollyfb')
@@ -176,17 +204,7 @@ classdef LvdMouseCameraHandler < handle
                         end
                     end
                     if ~isempty(mode)
-                        % Store camera state
-                        obj.isDragging = true;
-                        obj.dragMode = mode;
-                        obj.startPt = obj.hFig.CurrentPoint;
-                        try
-                            obj.startPos = obj.hAx.CameraPosition;
-                            obj.startTgt = obj.hAx.CameraTarget;
-                            obj.startUp = obj.hAx.CameraUpVector;
-                            obj.startVA = obj.hAx.CameraViewAngle;
-                        catch
-                        end
+                        obj.beginDrag(mode, obj.hFig.CurrentPoint);
                         % Turn off toolbar toggles visually
                         try
                             obj.app.panPushMenuToggle.State='off';
@@ -232,10 +250,8 @@ classdef LvdMouseCameraHandler < handle
         end
         
         function onWindowButtonUp(obj, ~, event)
-            wasDragging = obj.isDragging;
-            if wasDragging
-                obj.isDragging = false;
-                obj.dragMode = '';
+            if obj.isDragging
+                obj.endDrag();
                 try cameratoolbar(obj.hFig,'SetMode','nomode'); catch, end
                 % Restore toolbar toggles will be handled by original logic if needed
             end
@@ -257,52 +273,124 @@ classdef LvdMouseCameraHandler < handle
             end
         end
         
+        function beginDrag(obj, mode, startPt)
+            % beginDrag Starts a camera drag of the given mode ('orbit',
+            % 'dollyhv' = pan, 'dollyfb' = dolly) from a figure point in
+            % pixels, remembering the camera it started from.  Public so
+            % tests can drive the same code path the mouse does.
+            obj.isDragging = true;
+            obj.dragMode = mode;
+            obj.startPt = startPt;
+            try
+                % freeze the camera (as camdolly/camorbit do): in 'auto' mode
+                % MATLAB re-fits the view angle after every move, which
+                % partly cancels a dolly and changes the pan scale mid-drag
+                obj.hAx.CameraPositionMode = 'manual';
+                obj.hAx.CameraTargetMode = 'manual';
+                obj.hAx.CameraUpVectorMode = 'manual';
+                obj.hAx.CameraViewAngleMode = 'manual';
+            catch
+            end
+            try
+                obj.startPos = obj.hAx.CameraPosition;
+                obj.startTgt = obj.hAx.CameraTarget;
+                obj.startUp = obj.hAx.CameraUpVector;
+                obj.startVA = obj.hAx.CameraViewAngle;
+            catch
+            end
+        end
+
+        function applyDrag(obj, curPt)
+            % applyDrag Moves the camera for the pointer now being at curPt
+            % (figure pixels) and reports the change through cameraDragFcn.
+            if ~obj.isDragging
+                return;
+            end
+            mode = obj.dragMode;
+            try
+                delta = curPt - obj.startPt;
+                if strcmpi(mode,'orbit')
+                    % Custom orbit - incremental
+                    dAz = -delta(1)*obj.OrbitDegPerPixel;
+                    dEl = -delta(2)*obj.OrbitDegPerPixel;
+                    try camorbit(obj.hAx, dAz, dEl, 'data', [0 0 1]); catch, end
+                    obj.startPt = curPt;
+                elseif strcmpi(mode,'dollyhv')
+                    % Pan - translate both pos and tgt so the scene follows the
+                    % pointer one-for-one at the target's depth
+                    pos = obj.startPos(:); tgt = obj.startTgt(:); up = obj.startUp(:);
+                    if any(isnan(pos))||any(isnan(tgt))||any(isnan(up))
+                        pos = obj.hAx.CameraPosition(:); tgt = obj.hAx.CameraTarget(:); up = obj.hAx.CameraUpVector(:);
+                    end
+                    x = (tgt-pos); dist = norm(x); x=x/dist; z=up/norm(up); y=cross(z,x); y=y/norm(y);
+                    z = cross(x, y); z = z/norm(z);   % true screen-up, orthogonal to the sight line
+                    scale = obj.PanGain * obj.worldUnitsPerPixel(dist);
+                    offset = (delta(1)*scale)*y + (delta(2)*scale)*z;
+                    newPos = pos+offset; newTgt = tgt+offset;
+                    obj.hAx.CameraPosition = newPos'; obj.hAx.CameraTarget = newTgt';
+                    if ~any(isnan(up)), obj.hAx.CameraUpVector=up'; end
+                elseif strcmpi(mode,'dollyfb')
+                    % Dolly - scale the camera distance to the target
+                    % exponentially with the vertical drag, so the camera can
+                    % never pass through the target and the feel is the same at
+                    % every scale
+                    deltaY = curPt(2)-obj.startPt(2);
+                    pos = obj.startPos(:); tgt = obj.startTgt(:);
+                    if any(isnan(pos))||any(isnan(tgt))
+                        pos=obj.hAx.CameraPosition(:); tgt=obj.hAx.CameraTarget(:);
+                    end
+                    d0 = norm(tgt-pos);
+                    if d0 > 0
+                        x=(tgt-pos)/d0;
+                        newDist = d0 * exp(-deltaY * obj.DollyRatePerPixel);
+                        newPos = tgt - x*newDist;
+                        obj.hAx.CameraPosition=newPos';
+                    end
+                    up=obj.startUp(:); if ~any(isnan(up)), obj.hAx.CameraUpVector=up'; end
+                end
+            catch
+            end
+            obj.notifyDrag("motion");
+        end
+
+        function w = worldUnitsPerPixel(obj, distToTarget)
+            % worldUnitsPerPixel Scene length covered by one pixel at the
+            % target's depth: visible height (2 d tan(va/2)) over the axes
+            % height in pixels.  Falls back to 400 px when the size is unknown.
+            va = 20;
+            try
+                va = obj.hAx.CameraViewAngle;
+            catch
+            end
+            heightPx = 400;
+            try
+                pos = obj.hAx.InnerPosition;
+                if numel(pos) >= 4 && isfinite(pos(4)) && pos(4) > 10
+                    heightPx = pos(4);
+                end
+            catch
+            end
+            w = 2 * distToTarget * tan(deg2rad(va)/2) / heightPx;
+        end
+
+        function endDrag(obj)
+            % endDrag Finishes the current drag and reports it as "end".
+            if ~obj.isDragging
+                return;
+            end
+            obj.isDragging = false;
+            obj.dragMode = '';
+            obj.notifyDrag("end");
+        end
+
+        function tf = isDragInProgress(obj)
+            tf = obj.isDragging;
+        end
+
         function onWindowButtonMotion(obj, ~, event)
             if obj.isDragging
-                mode = obj.dragMode;
                 try
-                    curPt = obj.hFig.CurrentPoint;
-                    delta = curPt - obj.startPt;
-                    if strcmpi(mode,'orbit')
-                        % Custom orbit - incremental
-                        dAz = -delta(1)*0.5;
-                        dEl = -delta(2)*0.5;
-                        try camorbit(obj.hAx, dAz, dEl, 'data', [0 0 1]); catch, end
-                        obj.startPt = curPt;
-                    elseif strcmpi(mode,'dollyhv')
-                        % Pan - translate both pos and tgt
-                        pos = obj.startPos(:); tgt = obj.startTgt(:); up = obj.startUp(:);
-                        if any(isnan(pos))||any(isnan(tgt))||any(isnan(up))
-                            pos = obj.hAx.CameraPosition(:); tgt = obj.hAx.CameraTarget(:); up = obj.hAx.CameraUpVector(:);
-                        end
-                        x = (tgt-pos); x=x/norm(x); z=up/norm(up); y=cross(z,x); y=y/norm(y);
-                        try
-                            xRng=diff(xlim(obj.hAx)); yRng=diff(ylim(obj.hAx)); zRng=diff(zlim(obj.hAx));
-                            minRng=min([xRng,yRng,zRng]); if ~isfinite(minRng)||minRng==0, minRng=norm(tgt-pos); end
-                        catch, minRng=norm(tgt-pos); end
-                        scale = 0.2*minRng/50;
-                        offset = (delta(1)*scale)*y + (delta(2)*scale)*z;
-                        newPos = pos+offset; newTgt = tgt+offset;
-                        obj.hAx.CameraPosition = newPos'; obj.hAx.CameraTarget = newTgt';
-                        if ~any(isnan(up)), obj.hAx.CameraUpVector=up'; end
-                    elseif strcmpi(mode,'dollyfb')
-                        % Dolly - move pos along view, vertical only
-                        deltaY = curPt(2)-obj.startPt(2);
-                        pos = obj.startPos(:); tgt = obj.startTgt(:);
-                        if any(isnan(pos))||any(isnan(tgt))
-                            pos=obj.hAx.CameraPosition(:); tgt=obj.hAx.CameraTarget(:);
-                        end
-                        x=(tgt-pos); x=x/norm(x);
-                        try
-                            xRng=diff(xlim(obj.hAx)); yRng=diff(ylim(obj.hAx)); zRng=diff(zlim(obj.hAx));
-                            minRng=min([xRng,yRng,zRng]); if ~isfinite(minRng)||minRng==0, minRng=norm(tgt-pos); end
-                        catch, minRng=norm(tgt-pos); end
-                        scale=2.0*minRng/50;
-                        offset=-deltaY*scale*x;
-                        newPos=pos+offset;
-                        obj.hAx.CameraPosition=newPos';
-                        up=obj.startUp(:); if ~any(isnan(up)), obj.hAx.CameraUpVector=up'; end
-                    end
+                    obj.applyDrag(obj.hFig.CurrentPoint);
                 catch
                 end
                 return;
@@ -325,6 +413,18 @@ classdef LvdMouseCameraHandler < handle
             end
         end
         
+        function notifyDrag(obj, phase)
+            fcn = obj.cameraDragFcn;
+            if isempty(fcn) || ~isa(fcn, 'function_handle')
+                return;
+            end
+            try
+                fcn(obj.hAx, string(phase));
+            catch ME
+                warning('LvdMouseCameraHandler:dragCallback', 'Camera drag callback failed: %s', ME.message);
+            end
+        end
+
         function onDispAxesButtonDown(obj, ~, event)
             % Delegate to window down for unified handling (handles clicks directly on axes)
             try
