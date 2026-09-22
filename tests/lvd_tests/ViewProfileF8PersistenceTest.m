@@ -211,6 +211,37 @@ classdef ViewProfileF8PersistenceTest < KsptotTestCase
             testCase.verifyNotSameHandle(p2.getCameraDriver(), d1);
             testCase.verifyEqual(d1.activeMode, LvdCameraModeEnum.Manual);
         end
+
+        function skyboxTexturesResolveToSixFaceFolders(testCase)
+            %Every non-custom skybox texture must resolve to a folder with
+            %all six cubemap faces (cube-only rendering has no fallback).
+            m = enumeration('SkyboxTextureEnum');
+            testCase.verifyNotEmpty(m);
+            faces = ["px","nx","py","ny","pz","nz"];
+            for i = 1:numel(m)
+                if m(i).isCustom()
+                    testCase.verifyFalse(m(i).hasCubemap(), 'Custom has no cubemap folder');
+                    continue;
+                end
+                testCase.verifyTrue(m(i).hasCubemap(), ['hasCubemap: ' char(m(i).displayName)]);
+                d = m(i).getCubemapDir();
+                testCase.verifyTrue(strlength(d) > 0, ['cubemap dir: ' char(m(i).displayName)]);
+                for f = faces
+                    testCase.verifyTrue(isfile(m(i).getFacePath(f)), ...
+                        ['face ' char(f) ' of ' char(m(i).displayName)]);
+                end
+                %legacy filename and folder name both map back to the enum
+                [back, ~] = SkyboxTextureEnum.getEnumForFileName(m(i).fileName);
+                testCase.verifyEqual(back, m(i));
+                [back2, ~] = SkyboxTextureEnum.getEnumForFileName(m(i).cubeFolderName);
+                testCase.verifyEqual(back2, m(i));
+            end
+
+            p = LaunchVehicleViewProfile();
+            p.setSkyboxTextureAndSync(SkyboxTextureEnum.DefaultKsp);
+            testCase.verifyEqual(p.skyboxTexture, SkyboxTextureEnum.DefaultKsp);
+            testCase.verifyTrue(isfile(p.getSkyboxPreviewPath()), 'preview path resolves to a file');
+        end
     end
 
     methods(Access = private)

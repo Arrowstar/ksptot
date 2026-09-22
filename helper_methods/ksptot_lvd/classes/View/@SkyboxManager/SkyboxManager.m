@@ -1,9 +1,15 @@
 classdef SkyboxManager < handle
     %SkyboxManager  Per-profile skybox lifecycle for LVD 3D axes.
     %
-    %   Owns hgtransform+surf, cached sphere, cached image, listeners and
-    %   a coalescing timer.  One instance per LaunchVehicleViewProfile
-    %   (per-profile requirement), attached to a single axes at a time.
+    %   Owns hgtransform + 6 textured cube faces, cached face images,
+    %   listeners and a coalescing timer.  One instance per
+    %   LaunchVehicleViewProfile (per-profile requirement), attached to a
+    %   single axes at a time.
+    %
+    %   Cube faces follow the jaxry panorama-to-cubemap convention
+    %   (px,nx,py,ny,pz,nz), verified against the shipped textures by
+    %   shared-edge pixel continuity (12/12 edges on all 5 sets).  Faces
+    %   are 2x2 texturemap quads on the unit cube; see getCubeQuad.
     %
     %   Usage: profile.getSkyboxManager().attach(ax, lvdData)
 
@@ -11,13 +17,14 @@ classdef SkyboxManager < handle
         viewProfile   % LaunchVehicleViewProfile (weak)
         hAx           % matlab.graphics.axis.Axes
         hTransform    % hgtransform
-        hSurf         % matlab.graphics.primitive.Surface
-        skyImage      % cached uint8 image
-        skyImagePath  % string of loaded image path
+        hFaces        % 1x6 matlab.graphics.primitive.Surface (px,nx,py,ny,pz,nz)
+        skyFaces      % 1x6 cell of cached uint8 face images
+        skyFacesDir(1,1) string = "" % string of loaded cubemap folder
         origin(1,3) double = [NaN NaN NaN]
         radius(1,1) double = NaN
         isUpdating(1,1) logical = false
         isAttached(1,1) logical = false
+        customWarnedFor(1,1) string = "<unwarned>"
         savedAxesState struct = struct.empty(1,0)
     end
 
@@ -29,7 +36,7 @@ classdef SkyboxManager < handle
     end
 
     properties(Constant, Access=private)
-        Tessellation = 96
+        FaceOrder = {'px','nx','py','ny','pz','nz'}
         DebounceDelay = 0.05 % seconds
         MinRadius = 1e3
         MaxRadius = 1e9
@@ -120,7 +127,7 @@ classdef SkyboxManager < handle
             % Apply skybox-required axes settings if enabled
             obj.applySkyboxAxesSettings(hAx);
 
-            % Create hgtransform + surf if needed (lazy)
+            % Create hgtransform + faces if needed (lazy)
             obj.ensureGraphics(hAx);
 
             % Install listeners for camera and limits
@@ -135,8 +142,8 @@ classdef SkyboxManager < handle
 
         function detach(obj)
             % Remove listeners, timer, and optionally hide graphics.
-            % Detach does NOT delete the surf - just hides and disconnects
-            % so that re-attach can reuse it.  Full delete happens on manager delete.
+            % Detach does NOT delete the faces - just hides and disconnects
+            % so that re-attach can reuse them.  Full delete happens on manager delete.
 
             obj.cancelDebounce();
 
@@ -161,12 +168,10 @@ classdef SkyboxManager < handle
             end
             obj.axesDestroyedListener = event.listener.empty(1,0);
 
-            % Hide surf but keep object for reuse; also restore axes state
-            if ~isempty(obj.hSurf) && isvalid(obj.hSurf)
-                try
-                    obj.hSurf.Visible = 'off';
-                catch
-                end
+            % Hide faces but keep objects for reuse; also restore axes state
+            try
+                set(obj.getValidFaces(), 'Visible', 'off');
+            catch
             end
             if ~isempty(obj.hTransform) && isvalid(obj.hTransform)
                 try
@@ -192,28 +197,22 @@ classdef SkyboxManager < handle
                 obj(1,1) SkyboxManager
                 tf(1,1) logical
             end
-            if ~isempty(obj.hSurf) && isvalid(obj.hSurf)
-                if tf
-                    obj.hSurf.Visible = 'on';
-                    if ~isempty(obj.hTransform) && isvalid(obj.hTransform)
-                        obj.hTransform.Visible = 'on';
-                    end
-                    if obj.isAttached && isvalid(obj.hAx)
-                        obj.applySkyboxAxesSettings(obj.hAx);
-                    end
-                else
-                    obj.hSurf.Visible = 'off';
-                    if ~isempty(obj.hTransform) && isvalid(obj.hTransform)
-                        obj.hTransform.Visible = 'off';
-                    end
-                    if obj.isAttached && isvalid(obj.hAx)
-                        obj.restoreAxesState(obj.hAx);
-                    end
+            vis = tf2onoff(tf);
+            validFaces = obj.getValidFaces();
+            if ~isempty(validFaces)
+                try
+                    set(validFaces, 'Visible', vis);
+                catch
+                end
+                if tf && obj.isAttached && isvalid(obj.hAx)
+                    obj.applySkyboxAxesSettings(obj.hAx);
+                elseif ~tf && obj.isAttached && isvalid(obj.hAx)
+                    obj.restoreAxesState(obj.hAx);
                 end
             end
             % Also ensure hgtransform visibility
             if ~isempty(obj.hTransform) && isvalid(obj.hTransform)
-                obj.hTransform.Visible = tf2onoff(tf);
+                obj.hTransform.Visible = vis;
             end
         end
 
@@ -237,6 +236,17 @@ classdef SkyboxManager < handle
                 return;
             end
             if ~obj.viewProfile.useSkybox
+                obj.setVisible(false);
+                return;
+            end
+
+            % No cubemap available (Custom texture or incomplete folder) -> hide
+            try
+                needDir = obj.resolveDesiredCubemapDir();
+            catch
+                needDir = "";
+            end
+            if strlength(needDir)==0
                 obj.setVisible(false);
                 return;
             end
@@ -277,7 +287,7 @@ classdef SkyboxManager < handle
                 % Check if we need to recenter/resize
                 needUpdate = force;
                 if ~needUpdate
-                    if any(isnan(obj.origin)) || isnan(obj.radius) || isempty(obj.hSurf) || ~isvalid(obj.hSurf)
+                    if any(isnan(obj.origin)) || isnan(obj.radius) || ~obj.areFacesValid()
                         needUpdate = true;
                     else
                         distFromOrigin = norm(camPos - obj.origin);
@@ -293,8 +303,8 @@ classdef SkyboxManager < handle
                         end
                     end
                 end
-                % Also check if surf is invalid or transform invalid -> force
-                if isempty(obj.hTransform) || ~isvalid(obj.hTransform) || isempty(obj.hSurf) || ~isvalid(obj.hSurf)
+                % Also check if faces are invalid or transform invalid -> force
+                if isempty(obj.hTransform) || ~isvalid(obj.hTransform) || ~obj.areFacesValid()
                     needUpdate = true;
                     obj.ensureGraphics(hAx);
                 end
@@ -326,10 +336,10 @@ classdef SkyboxManager < handle
                 obj.origin = camPos;
                 obj.radius = newRadius;
 
-                % Ensure image is loaded
-                img = obj.getOrLoadImage();
-                if isempty(img)
-                    % No image -> cannot show skybox
+                % Ensure face images are loaded
+                faces = obj.getOrLoadFaces();
+                if isempty(faces)
+                    % No images (e.g. Custom texture) -> cannot show skybox
                     obj.setVisible(false);
                     return;
                 end
@@ -337,24 +347,17 @@ classdef SkyboxManager < handle
                 % Ensure graphics exists and update transform
                 obj.ensureGraphics(hAx);
                 % Update transform to new scale+translation
-                obj.updateTransform(hAx, camPos, newRadius, img);
+                obj.updateTransform(hAx, camPos, newRadius, faces);
 
                 obj.setVisible(true);
 
                 % Sync deprecated props for backward compat (1 release)
                 obj.syncDeprecatedState();
 
-                % Keep skybox at bottom of render order
+                % Keep skybox at bottom of render order (childorder draw)
                 try
-                    % Use findall to locate even if HandleVisibility off
-                    allKids = findall(hAx,'Type','surface','Tag','KSPTOT_Skybox');
-                    if ~isempty(allKids)
-                        % hgtransform child order matters? Ensure our transform is at bottom
-                        % uistack works on axes children (hgtransform is a child)
-                        try
-                            uistack(obj.hTransform,'bottom');
-                        catch
-                        end
+                    if ~isempty(obj.hTransform) && isvalid(obj.hTransform)
+                        uistack(obj.hTransform,'bottom');
                     end
                 catch
                 end
@@ -436,12 +439,12 @@ classdef SkyboxManager < handle
                         end
                     catch
                     end
-                    try
-                        if ~strcmp(obj.hAx.SortMethod,'childorder')
-                            obj.hAx.SortMethod = 'childorder';
-                        end
-                    catch
-                    end
+                    % try
+                    %     if ~strcmp(obj.hAx.SortMethod,'childorder')
+                    %         obj.hAx.SortMethod = 'childorder';
+                    %     end
+                    % catch
+                    % end
                     try
                         if ~strcmp(obj.hAx.ClippingStyle,'3dbox')
                             obj.hAx.ClippingStyle = '3dbox';
@@ -581,10 +584,10 @@ classdef SkyboxManager < handle
                 end
                 hAx.Projection = 'perspective';
                 % Use childorder so skybox (bottom) is drawn first and never depth-sorted in front of trajectory
-                try
-                    hAx.SortMethod = 'childorder';
-                catch
-                end
+                % try
+                %     hAx.SortMethod = 'childorder';
+                % catch
+                % end
                 % Hide ticks/grid/box for skybox aesthetic; these are intentional per original design
                 % We keep user's gridType etc for other elements? Original code forced grid off + equal + no ticks when skybox on.
                 try
@@ -620,7 +623,7 @@ classdef SkyboxManager < handle
         end
 
         function ensureGraphics(obj, hAx)
-            if ~isempty(obj.hTransform) && isvalid(obj.hTransform) && ~isempty(obj.hSurf) && isvalid(obj.hSurf)
+            if ~isempty(obj.hTransform) && isvalid(obj.hTransform) && obj.areFacesValid()
                 return;
             end
             % Create hgtransform
@@ -651,56 +654,62 @@ classdef SkyboxManager < handle
                 obj.hTransform = [];
             end
 
-            if isempty(obj.hSurf) || ~isvalid(obj.hSurf)
-                % Get unit sphere cached
-                [X0,Y0,Z0] = obj.getUnitSphere();
-                % Get image (may be empty initially)
-                img = obj.getOrLoadImage();
-                if isempty(img)
-                    % Create placeholder gray image to avoid error
-                    img = uint8(128*ones(10,20,3));
+            if ~obj.areFacesValid()
+                % Drop stale faces, then build the 6-face unit cube
+                try
+                    if ~isempty(obj.hFaces)
+                        delete(obj.hFaces(isvalid(obj.hFaces)));
+                    end
+                catch
+                end
+                obj.hFaces = gobjects(1,0);
+                % Get face images (placeholder gray if none yet)
+                faces = obj.getOrLoadFaces();
+                if isempty(faces)
+                    faces = repmat({uint8(128*ones(10,10,3))},1,6);
                 end
                 try
                     hold(hAx,'on');
-                    obj.hSurf = surf(hAx, X0, Y0, Z0, ...
-                        'Parent', obj.hTransform, ...
-                        'EdgeColor','none', ...
-                        'FaceColor','texturemap', ...
-                        'CData', img, ...
-                        'FaceLighting','none', ...
-                        'BackFaceLighting','unlit', ...
-                        'HandleVisibility','on', ...
-                        'HitTest','off', ...
-                        'PickableParts','none', ...
-                        'Tag','KSPTOT_Skybox', ...
-                        'Clipping','off', ...
-                        'XLimInclude','off', ...
-                        'YLimInclude','off', ...
-                        'ZLimInclude','off', ...
-                        'CLimInclude','off', ...
-                        'ALimInclude','off');
-                    % Ensure it doesn't interfere with picking/data tips
-                    try
-                        obj.hSurf.Annotation.LegendInformation.IconDisplayStyle = 'off';
-                    catch
+                    newFaces = gobjects(1,6);
+                    for k = 1:6
+                        [Xq,Yq,Zq] = obj.getCubeQuad(obj.FaceOrder{k});
+                        h = surf(hAx, Xq, Yq, Zq, ...
+                            'Parent', obj.hTransform, ...
+                            'EdgeColor','none', ...
+                            'FaceColor','texturemap', ...
+                            'CData', faces{k}, ...
+                            'FaceLighting','none', ...
+                            'BackFaceLighting','unlit', ...
+                            'HandleVisibility','on', ...
+                            'HitTest','off', ...
+                            'PickableParts','none', ...
+                            'Tag',['KSPTOT_Skybox_' obj.FaceOrder{k}], ...
+                            'Clipping','off', ...
+                            'XLimInclude','off', ...
+                            'YLimInclude','off', ...
+                            'ZLimInclude','off', ...
+                            'CLimInclude','off', ...
+                            'ALimInclude','off');
+                        % Ensure it doesn't interfere with picking/data tips
+                        try
+                            h.Annotation.LegendInformation.IconDisplayStyle = 'off';
+                        catch
+                        end
+                        % Double-check include properties (some MATLAB versions need explicit)
+                        try
+                            h.XLimInclude = 'off';
+                            h.YLimInclude = 'off';
+                            h.ZLimInclude = 'off';
+                            h.CLimInclude = 'off';
+                            h.ALimInclude = 'off';
+                        catch
+                        end
+                        newFaces(k) = h;
                     end
-                    % Ensure interior of sphere is visible from inside (camera at center)
-                    try
-                        obj.hSurf.BackFaceLighting = 'unlit';
-                    catch
-                    end
-                    % Double-check include properties (some MATLAB versions need explicit)
-                    try
-                        obj.hSurf.XLimInclude = 'off';
-                        obj.hSurf.YLimInclude = 'off';
-                        obj.hSurf.ZLimInclude = 'off';
-                        obj.hSurf.CLimInclude = 'off';
-                        obj.hSurf.ALimInclude = 'off';
-                    catch
-                    end
+                    obj.hFaces = newFaces;
                 catch ME
-                    warning('SkyboxManager:createSurfFailed','Failed to create skybox surface: %s', ME.message);
-                    obj.hSurf = [];
+                    warning('SkyboxManager:createFacesFailed','Failed to create skybox faces: %s', ME.message);
+                    obj.hFaces = gobjects(1,0);
                 end
             end
             % Try to keep at bottom
@@ -712,35 +721,42 @@ classdef SkyboxManager < handle
             end
         end
 
-        function updateTransform(obj, ~, camPos, radius, img)
-            % Update hgtransform matrix and ensure surf CData is current
+        function updateTransform(obj, ~, camPos, radius, faces)
+            % Update hgtransform matrix and ensure face CData is current
             try
-                % Update CData if image changed
-                if ~isempty(obj.hSurf) && isvalid(obj.hSurf)
-                    try
-                        if ~isequal(obj.hSurf.CData, img) && ~isempty(img)
-                            obj.hSurf.CData = img;
+                validFaces = obj.getValidFaces();
+                if numel(validFaces)==6 && ~isempty(faces) && numel(faces)==6
+                    for k = 1:6
+                        try
+                            if ~isempty(faces{k}) && ~isequal(validFaces(k).CData, faces{k})
+                                validFaces(k).CData = faces{k};
+                            end
+                        catch
                         end
-                    catch
                     end
                 end
             catch
             end
             try
                 if ~isempty(obj.hTransform) && isvalid(obj.hTransform)
-                    % Scale unit sphere (radius 1) to desired radius and translate to camPos
+                    % Scale unit cube (half-edge 1) to desired radius and translate to camPos
                     % Use makehgtform for correctness
                     M = makehgtform('translate', camPos) * makehgtform('scale', radius);
                     % Alternative manual: but makehgtform handles homogeneous correctly
                     obj.hTransform.Matrix = M;
                 end
             catch
-                % Fallback: directly set XData/YData/ZData (legacy path)
+                % Fallback: directly set quad corners (legacy path)
                 try
-                    [X0,Y0,Z0] = obj.getUnitSphere();
-                    obj.hSurf.XData = radius*X0 + camPos(1);
-                    obj.hSurf.YData = radius*Y0 + camPos(2);
-                    obj.hSurf.ZData = radius*Z0 + camPos(3);
+                    validFaces = obj.getValidFaces();
+                    if numel(validFaces)==6
+                        for k = 1:6
+                            [Xq,Yq,Zq] = obj.getCubeQuad(obj.FaceOrder{k});
+                            validFaces(k).XData = radius*Xq + camPos(1);
+                            validFaces(k).YData = radius*Yq + camPos(2);
+                            validFaces(k).ZData = radius*Zq + camPos(3);
+                        end
+                    end
                 catch
                 end
             end
@@ -770,13 +786,19 @@ classdef SkyboxManager < handle
                     obj.origin = camPos;
                     obj.syncDeprecatedState();
                 else
-                    % Fallback
-                    if ~isempty(obj.hSurf) && isvalid(obj.hSurf) && isfinite(obj.radius)
-                        [X0,Y0,Z0] = obj.getUnitSphere();
-                        obj.hSurf.XData = obj.radius*X0 + camPos(1);
-                        obj.hSurf.YData = obj.radius*Y0 + camPos(2);
-                        obj.hSurf.ZData = obj.radius*Z0 + camPos(3);
-                        obj.origin = camPos;
+                    % Fallback (no hgtransform): move quad corners directly
+                    try
+                        validFaces = obj.getValidFaces();
+                        if numel(validFaces)==6 && isfinite(obj.radius)
+                            for k = 1:6
+                                [Xq,Yq,Zq] = obj.getCubeQuad(obj.FaceOrder{k});
+                                validFaces(k).XData = obj.radius*Xq + camPos(1);
+                                validFaces(k).YData = obj.radius*Yq + camPos(2);
+                                validFaces(k).ZData = obj.radius*Zq + camPos(3);
+                            end
+                            obj.origin = camPos;
+                        end
+                    catch
                     end
                 end
             catch
@@ -786,7 +808,7 @@ classdef SkyboxManager < handle
         function translateTransformOnly(obj, camPos)
             % Like setTransformTranslation but does NOT update obj.origin
             % Used for immediate visual follow without affecting resize logic
-            % that relies on distFromOrigin. Prevents lag-induced outside-sphere.
+            % that relies on distFromOrigin. Prevents lag-induced outside-box.
             try
                 if ~isempty(obj.hTransform) && isvalid(obj.hTransform) && isfinite(obj.radius)
                     curM = obj.hTransform.Matrix;
@@ -811,234 +833,216 @@ classdef SkyboxManager < handle
                     % Do NOT update obj.origin here; keep old origin for resize detection
                     % But still sync deprecated surf handle visibility? No.
                 else
-                    if ~isempty(obj.hSurf) && isvalid(obj.hSurf) && isfinite(obj.radius)
-                        [X0,Y0,Z0] = obj.getUnitSphere();
-                        % Check if already at position
-                        try
-                            curX = obj.hSurf.XData(1,1) - obj.radius*X0(1,1);
-                            if abs(curX - camPos(1)) < 1e-9
-                                return;
+                    % Fallback (no hgtransform): move quad corners directly
+                    try
+                        validFaces = obj.getValidFaces();
+                        if numel(validFaces)==6 && isfinite(obj.radius)
+                            % Check if already at position (first face corner)
+                            [Xq,~,~] = obj.getCubeQuad(obj.FaceOrder{1});
+                            try
+                                curX = validFaces(1).XData(1,1) - obj.radius*Xq(1,1);
+                                if abs(curX - camPos(1)) >= 1e-9
+                                    for k = 1:6
+                                        [Xqk,Yqk,Zqk] = obj.getCubeQuad(obj.FaceOrder{k});
+                                        validFaces(k).XData = obj.radius*Xqk + camPos(1);
+                                        validFaces(k).YData = obj.radius*Yqk + camPos(2);
+                                        validFaces(k).ZData = obj.radius*Zqk + camPos(3);
+                                    end
+                                end
+                            catch
                             end
-                        catch
                         end
-                        obj.hSurf.XData = obj.radius*X0 + camPos(1);
-                        obj.hSurf.YData = obj.radius*Y0 + camPos(2);
-                        obj.hSurf.ZData = obj.radius*Z0 + camPos(3);
+                    catch
                     end
                 end
             catch
             end
         end
 
-        function [X0,Y0,Z0] = getUnitSphere(obj)
-            persistent cachedX cachedY cachedZ cachedN
-            n = obj.Tessellation;
-            if isempty(cachedX) || isempty(cachedY) || isempty(cachedZ) || cachedN ~= n
-                [cachedX, cachedY, cachedZ] = sphere(n);
-                cachedN = n;
+        function h = getValidFaces(obj)
+            % Subset of hFaces that are still valid graphics objects
+            h = gobjects(1,0);
+            try
+                if ~isempty(obj.hFaces)
+                    h = obj.hFaces(isvalid(obj.hFaces));
+                end
+            catch
             end
-            X0 = cachedX;
-            Y0 = cachedY;
-            Z0 = cachedZ;
         end
 
-        function img = getOrLoadImage(obj)
-            % Return cached image or load from profile's texture enum/path
-            if ~isempty(obj.skyImage) && ~isempty(obj.skyImagePath)
-                % Check if profile's requested path changed
-                try
-                    desiredPath = obj.resolveDesiredImagePath();
-                    if desiredPath == obj.skyImagePath
-                        img = obj.skyImage;
-                        return;
-                    end
-                catch
+        function tf = areFacesValid(obj)
+            % True when all 6 cube faces exist and are valid
+            tf = false;
+            try
+                tf = (numel(obj.hFaces)==6) && all(isvalid(obj.hFaces));
+            catch
+            end
+        end
+
+        function [Xq,Yq,Zq] = getCubeQuad(~, face)
+            %getCubeQuad  2x2 corners of one unit-cube face (half-edge 1).
+            %   CData convention: CData(1,1) is the TOP-LEFT image pixel, so
+            %   Xq/Yq/Zq(1,:) is the face top edge and (:,1) its left edge.
+            %   Corner layout follows the jaxry panorama-to-cubemap pixel
+            %   mapping (out.x/out.y/out.z per face); verified by
+            %   shared-edge pixel continuity on all shipped textures
+            %   (12/12 edges on each of the 5 sets).
+            switch char(face)
+                case 'px' % y=-1 side
+                    Xq = [-1  1; -1  1];
+                    Yq = [-1 -1; -1 -1];
+                    Zq = [ 1  1; -1 -1];
+                case 'nx' % y=+1 side
+                    Xq = [ 1 -1;  1 -1];
+                    Yq = [ 1  1;  1  1];
+                    Zq = [ 1  1; -1 -1];
+                case 'py' % top, z=+1
+                    Xq = [ 1  1; -1 -1];
+                    Yq = [ 1 -1;  1 -1];
+                    Zq = [ 1  1;  1  1];
+                case 'ny' % bottom, z=-1
+                    Xq = [-1 -1;  1  1];
+                    Yq = [ 1 -1;  1 -1];
+                    Zq = [-1 -1; -1 -1];
+                case 'pz' % x=-1 side
+                    Xq = [-1 -1; -1 -1];
+                    Yq = [ 1 -1;  1 -1];
+                    Zq = [ 1  1; -1 -1];
+                case 'nz' % x=+1 side
+                    Xq = [ 1  1;  1  1];
+                    Yq = [-1  1; -1  1];
+                    Zq = [ 1  1; -1 -1];
+                otherwise
+                    error('SkyboxManager:badFace','Unknown skybox face %s', char(face));
+            end
+        end
+
+        function faces = getOrLoadFaces(obj)
+            %getOrLoadFaces  Return cached 1x6 face images or load from the
+            %profile texture's cubemap folder.  Returns {} when no cubemap
+            %is available (e.g. Custom textures, which are unsupported).
+            faces = {};
+            % Fast path: cache hit
+            try
+                desiredDir = obj.resolveDesiredCubemapDir();
+                if strlength(desiredDir) > 0 && strlength(obj.skyFacesDir) > 0 ...
+                        && desiredDir == obj.skyFacesDir && ~isempty(obj.skyFaces) && numel(obj.skyFaces)==6
+                    faces = obj.skyFaces;
+                    return;
                 end
+            catch
             end
             % Need to (re)load
             try
-                desiredPath = obj.resolveDesiredImagePath();
+                desiredDir = obj.resolveDesiredCubemapDir();
             catch ME
-                warning('SkyboxManager:resolvePathFailed','Skybox path resolve failed: %s', ME.message);
-                img = obj.skyImage;
-                if isempty(img)
-                    img = [];
+                warning('SkyboxManager:resolveDirFailed','Skybox folder resolve failed: %s', ME.message);
+                if ~isempty(obj.skyFaces)
+                    faces = obj.skyFaces;
                 end
                 return;
             end
-            if strlength(desiredPath)==0 || ~isfile(desiredPath)
-                % Try fallback to default enum?
-                try
-                    fallback = SkyboxTextureEnum.DarkStars.getFullPath();
-                    if isfile(fallback)
-                        desiredPath = fallback;
-                    else
-                        warning('SkyboxManager:imageNotFound','Skybox image not found: %s', desiredPath);
-                        img = obj.skyImage;
-                        if isempty(img)
-                            img = [];
-                        else
-                            img = obj.skyImage;
-                        end
-                        return;
-                    end
-                catch
-                    warning('SkyboxManager:imageNotFound','Skybox image not found: %s', desiredPath);
-                    img = obj.skyImage;
-                    if isempty(img)
-                        img = [];
-                    end
-                    return;
-                end
+            if strlength(desiredDir)==0
+                faces = {};
+                return;
             end
+            loaded = cell(1,6);
             try
-                I = imread(desiredPath);
-                if isempty(I)
-                    error('Empty image');
-                end
-                % Validate dims
-                if ndims(I) == 2
-                    I = repmat(I,1,1,3);
-                elseif size(I,3) == 4
-                    I = I(:,:,1:3);
-                elseif size(I,3) ~= 3
-                    % Convert grayscale to RGB or handle
-                    if size(I,3) ~= 3
+                for k = 1:6
+                    fp = fullfile(char(desiredDir), [obj.FaceOrder{k} '.png']);
+                    if ~isfile(fp)
+                        error('SkyboxManager:faceMissing','Skybox face missing: %s', fp);
+                    end
+                    I = imread(fp);
+                    if isempty(I)
+                        error('SkyboxManager:faceEmpty','Empty skybox face: %s', fp);
+                    end
+                    if ndims(I) == 2
+                        I = repmat(I,1,1,3);
+                    elseif size(I,3) == 4
+                        I = I(:,:,1:3);
+                    elseif size(I,3) ~= 3
                         I = repmat(I(:,:,1),1,1,3);
                     end
+                    % Faces are used as-is: the corner layout in getCubeQuad
+                    % already accounts for the converter pixel mapping.
+                    loaded{k} = I;
                 end
-                % Flip vertical to correct texture orientation (original did flipud)
-                I = flipud(I);
-                obj.skyImage = I;
-                obj.skyImagePath = desiredPath;
-                img = I;
-                % Sync deprecated cache if profile still exposes skyBoxImageI
+                obj.skyFaces = loaded;
+                obj.skyFacesDir = desiredDir;
+                faces = loaded;
+                % Sync deprecated preview cache if profile still exposes skyBoxImageI
                 try
                     if ~isempty(obj.viewProfile) && isprop(obj.viewProfile,'skyBoxImageI')
-                        obj.viewProfile.skyBoxImageI = I;
+                        obj.viewProfile.skyBoxImageI = loaded{1};
                     end
                 catch
                 end
                 return;
             catch ME
-                warning('SkyboxManager:imreadFailed','Failed to load skybox image %s: %s', desiredPath, ME.message);
-                img = obj.skyImage;
-                if isempty(img)
-                    img = [];
-                end
+                warning('SkyboxManager:imreadFailed','Failed to load skybox faces from %s: %s', desiredDir, ME.message);
+                faces = {};
                 return;
             end
         end
 
-        function path = resolveDesiredImagePath(obj)
-            % Map viewProfile's skyboxTexture + custom path + deprecated string to a file path
+        function dirPath = resolveDesiredCubemapDir(obj)
+            %resolveDesiredCubemapDir  Map viewProfile skyboxTexture to a
+            %6-face cubemap folder path.  Returns "" when unavailable.
+            %Custom textures are not supported in this release (warn once
+            %per selection, render nothing).
+            dirPath = "";
             if isempty(obj.viewProfile) || ~isvalid(obj.viewProfile)
-                path = SkyboxTextureEnum.DarkStars.getFullPath();
+                dirPath = SkyboxTextureEnum.DarkStars.getCubemapDir();
                 return;
             end
-            % Prefer new enum if exists
-            if isprop(obj.viewProfile,'skyboxTexture')
-                try
+            tex = SkyboxTextureEnum.DarkStars;
+            try
+                if isprop(obj.viewProfile,'skyboxTexture') && ~isempty(obj.viewProfile.skyboxTexture)
                     tex = obj.viewProfile.skyboxTexture;
-                    if ~isempty(tex) && isvalid(tex) %#ok<ISVLD> enum isvalid?
-                        if tex.isCustom()
-                            % Check custom path prop
-                            if isprop(obj.viewProfile,'skyboxCustomTexturePath')
-                                p = string(obj.viewProfile.skyboxCustomTexturePath);
-                                if strlength(p) > 0
-                                    path = p;
-                                    % If relative, try to resolve
-                                    if ~isfile(path)
-                                        % Try relative to skyboxes folder?
-                                        try
-                                            candidate = string(fullfile(fileparts(which('SkyboxManager.m')),"..","..","..","..","..","images","skyboxes", char(p)));
-                                            candidate = string(GetFullPath(candidate));
-                                            if isfile(candidate)
-                                                path = candidate;
-                                            end
-                                        catch
-                                        end
-                                    end
-                                    return;
-                                end
-                            end
-                            % Fallback to deprecated string if custom path empty
-                            if isprop(obj.viewProfile,'skyBoxImgFileName')
-                                try
-                                    dep = string(obj.viewProfile.skyBoxImgFileName);
-                                    if strlength(dep)>0 && isfile(dep)
-                                        path = dep;
-                                        return;
-                                    elseif strlength(dep)>0
-                                        % Try to resolve bare filename via enum folder
-                                        try
-                                            classFolder = fileparts(mfilename('fullpath'));
-                                            candidate = fullfile(classFolder, '..', '..', '..', '..', '..', 'images', 'skyboxes', char(dep));
-                                            candidate = string(GetFullPath(candidate));
-                                            if isfile(candidate)
-                                                path = candidate;
-                                                return;
-                                            end
-                                        catch
-                                        end
-                                        path = dep;
-                                        return;
-                                    end
-                                catch
-                                end
-                            end
-                            path = SkyboxTextureEnum.DarkStars.getFullPath();
-                            return;
-                        else
-                            % Non-custom enum -> ask enum for full path
-                            path = tex.getFullPath();
-                            if strlength(path)>0
-                                return;
-                            end
+                end
+            catch
+            end
+            if tex.isCustom()
+                % Gate Custom: warn once per selection, render nothing
+                try
+                    key = string(obj.viewProfile.skyboxCustomTexturePath);
+                catch
+                    key = "?";
+                end
+                if obj.customWarnedFor ~= key
+                    obj.customWarnedFor = key;
+                    warning('SkyboxManager:customCubemapUnsupported', ...
+                        ['Custom skybox textures require a 6-face folder (px,nx,py,ny,pz,nz.png) and are not supported in this release. ' ...
+                         'Select a built-in skybox texture instead.']);
+                end
+                dirPath = "";
+                return;
+            end
+            % Non-custom enum: prefer the cubemap folder
+            try
+                d = tex.getCubemapDir();
+                if strlength(d) > 0
+                    % Verify all 6 faces exist before committing to cube rendering
+                    ok = true;
+                    for k = 1:6
+                        if ~isfile(fullfile(char(d), [obj.FaceOrder{k} '.png']))
+                            ok = false;
+                            break;
                         end
                     end
-                catch
-                end
-            end
-            % Fallback: deprecated string prop
-            if isprop(obj.viewProfile,'skyBoxImgFileName')
-                try
-                    dep = string(obj.viewProfile.skyBoxImgFileName);
-                    if strlength(dep)>0
-                        % If absolute and exists, use it
-                        if isfile(dep)
-                            path = dep;
-                            return;
-                        end
-                        % Try enum mapping
-                        try
-                            [enumVal, ~] = SkyboxTextureEnum.getEnumForFileName(dep);
-                            if enumVal ~= SkyboxTextureEnum.Custom
-                                path = enumVal.getFullPath();
-                                if isfile(path)
-                                    return;
-                                end
-                            end
-                        catch
-                        end
-                        % Try bare file in images/skyboxes
-                        try
-                            classFolder = fileparts(mfilename('fullpath'));
-                            candidate = fullfile(classFolder, '..', '..', '..', '..', '..', 'images', 'skyboxes', char(dep));
-                            candidate = string(GetFullPath(candidate));
-                            if isfile(candidate)
-                                path = candidate;
-                                return;
-                            end
-                        catch
-                        end
-                        path = dep;
+                    if ok
+                        dirPath = d;
                         return;
                     end
-                catch
                 end
+            catch
             end
-            path = SkyboxTextureEnum.DarkStars.getFullPath();
+            % Fallback: default texture folder
+            try
+                dirPath = SkyboxTextureEnum.DarkStars.getCubemapDir();
+            catch
+            end
         end
 
         function r = computeSkyboxSize(obj, hAx, camPos, camTgt, camVA, multiplier)
@@ -1181,14 +1185,19 @@ classdef SkyboxManager < handle
             end
             try
                 if isprop(obj.viewProfile,'skyBoxSurfHandle')
-                    obj.viewProfile.skyBoxSurfHandle = obj.hSurf;
+                    vf = obj.getValidFaces();
+                    if ~isempty(vf)
+                        obj.viewProfile.skyBoxSurfHandle = vf(1);
+                    else
+                        obj.viewProfile.skyBoxSurfHandle = gobjects(1,0);
+                    end
                 end
             catch
             end
             try
                 if isprop(obj.viewProfile,'skyBoxImageI')
-                    if ~isempty(obj.skyImage)
-                        obj.viewProfile.skyBoxImageI = obj.skyImage;
+                    if ~isempty(obj.skyFaces) && numel(obj.skyFaces)==6 && ~isempty(obj.skyFaces{1})
+                        obj.viewProfile.skyBoxImageI = obj.skyFaces{1};
                     end
                 end
             catch

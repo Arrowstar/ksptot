@@ -184,8 +184,8 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
 
         %Skybox stuff - Manager (per-profile) + deprecated transients (1 release)
         skyboxManager % SkyboxManager - per-profile manager (Transient)
-        skyBoxImageI  % DEPRECATED: use skyboxManager.skyImage
-        skyBoxSurfHandle % DEPRECATED: use skyboxManager.hSurf
+        skyBoxImageI  % DEPRECATED: use skyboxManager cached faces (px preview)
+        skyBoxSurfHandle % DEPRECATED: use skyboxManager first valid face
         skyboxOrigin  % DEPRECATED: use skyboxManager.origin
         skyboxRadius  % DEPRECATED: use skyboxManager.radius
     end
@@ -284,29 +284,28 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         end
 
         function path = getSkyboxImageFullPath(obj)
-            %getSkyboxImageFullPath  Resolve full path for current texture selection
+            %getSkyboxImageFullPath  DEPRECATED: use getSkyboxPreviewPath.
+            %Returns the preview (+X face) path for the current selection.
+            path = obj.getSkyboxPreviewPath();
+        end
+
+        function path = getSkyboxPreviewPath(obj)
+            %getSkyboxPreviewPath  Full path of an image usable for the
+            %settings-UI skybox preview (+X cubemap face, or the custom file).
+            %Returns "" when nothing is available (UI shows blank, no error).
+            path = "";
             try
-                mgr = obj.getSkyboxManager();
-                % Delegate to manager's resolver for consistent logic
-                path = mgr.resolveDesiredImagePath();
-            catch
-                % Fallback direct enum resolution
-                try
-                    if obj.skyboxTexture.isCustom()
-                        if strlength(obj.skyboxCustomTexturePath) > 0
-                            path = obj.skyboxCustomTexturePath;
-                        else
-                            path = string(obj.skyBoxImgFileName);
-                            if ~isfile(path)
-                                path = obj.skyboxTexture.getFullPath();
-                            end
-                        end
-                    else
-                        path = obj.skyboxTexture.getFullPath();
+                if obj.skyboxTexture.isCustom()
+                    if strlength(obj.skyboxCustomTexturePath) > 0 && isfile(obj.skyboxCustomTexturePath)
+                        path = obj.skyboxCustomTexturePath;
                     end
-                catch
-                    path = "DarkStarsSkyBox.png";
+                else
+                    fp = obj.skyboxTexture.getPreviewFacePath();
+                    if strlength(fp) > 0 && isfile(fp)
+                        path = fp;
+                    end
                 end
+            catch
             end
         end
 

@@ -547,8 +547,11 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                     catch
                     end
                     try
-                        if ~isempty(viewProfile.skyBoxSurfHandle) && isvalid(viewProfile.skyBoxSurfHandle)
-                            delete(viewProfile.skyBoxSurfHandle);
+                        % Delete all skybox faces/transform (cube has 6 faces;
+                        % regexp also catches any legacy single-surf skybox)
+                        resSky = findall(dAxes, '-regexp', 'Tag', '^KSPTOT_Skybox');
+                        if ~isempty(resSky)
+                            delete(resSky);
                         end
                     catch
                     end
