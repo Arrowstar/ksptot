@@ -43,6 +43,9 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
 %             cla(dAxes);
             % cla(dAxes,'reset');
             % --- Skybox-aware selective delete: preserve skybox transform if it will be reused ---
+            % curMgr tracks this plot's manager so stale-manager cleanup
+            % below can exempt it (empty = detach everything).
+            curMgr = [];
             try
                 % Detach managers of other profiles that might still be attached to this axes
                 try
@@ -72,16 +75,46 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                         viewProfile.syncSkyboxTextureFromDeprecated();
                     catch
                     end
+                    try
+                        curMgr = viewProfile.getSkyboxManager();
+                    catch
+                    end
                 end
+            catch
+            end
+            try
+                % Detach managers orphaned by case loads / replaced profiles:
+                % their listeners survive on this reused axes and would
+                % otherwise resurrect a deleted skybox on the next camera
+                % event.  Exempts this plot's manager (if skybox enabled).
+                SkyboxManager.detachStaleManagers(dAxes, curMgr);
             catch
             end
             try
                 kids = dAxes.Children;
                 if ~isempty(kids)
                     if viewProfile.useSkybox
-                        keepTags = [obj.SkyboxTransformTag, obj.SkyboxSurfTag];
-                        tags = string({kids.Tag});
-                        toDelete = kids(~ismember(tags, keepTags));
+                        % Keep ONLY the current manager's transform for reuse
+                        % (faces are its children and survive with it); purge
+                        % any other skybox graphics (stale/legacy).
+                        keepH = gobjects(1,0);
+                        try
+                            th = curMgr.getTransformHandle();
+                            if ~isempty(th) && all(isvalid(th))
+                                keepH = th;
+                            end
+                        catch
+                        end
+                        toDelete = kids;
+                        if ~isempty(keepH)
+                            try
+                                toDelete = kids(kids ~= keepH);
+                            catch
+                                keepTags = [obj.SkyboxTransformTag, obj.SkyboxSurfTag];
+                                tags = string({kids.Tag});
+                                toDelete = kids(~ismember(tags, keepTags));
+                            end
+                        end
                     else
                         toDelete = kids;
                     end
@@ -91,8 +124,7 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                     % When skybox disabled, also purge any hidden skybox graphics
                     if ~viewProfile.useSkybox
                         try
-                            delete(findall(dAxes,'Tag',obj.SkyboxTransformTag));
-                            delete(findall(dAxes,'Tag',obj.SkyboxSurfTag));
+                            delete(findall(dAxes,'-regexp','Tag','^KSPTOT_Skybox'));
                         catch
                         end
                     else

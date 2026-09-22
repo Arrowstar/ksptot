@@ -58,6 +58,10 @@ classdef SkyboxManager < handle
             catch
             end
             try
+                obj.clearImageCache();
+            catch
+            end
+            try
                 if ~isempty(obj.debounceTimer) && isvalid(obj.debounceTimer)
                     stop(obj.debounceTimer);
                     delete(obj.debounceTimer);
@@ -71,6 +75,19 @@ classdef SkyboxManager < handle
                 obj(1,1) SkyboxManager
             end
             tf = obj.isAttached && ~isempty(obj.hAx) && isvalid(obj.hAx) && isgraphics(obj.hAx);
+        end
+
+        function h = getTransformHandle(obj)
+            %getTransformHandle  Owning hgtransform (possibly empty/invalid).
+            %Used by replot cleanup to preserve only the current manager's
+            %graphics while purging stale ones.
+            h = gobjects(1,0);
+            try
+                if ~isempty(obj.hTransform)
+                    h = obj.hTransform;
+                end
+            catch
+            end
         end
 
         function ax = getAttachedAxes(obj)
@@ -411,6 +428,70 @@ classdef SkyboxManager < handle
         end
     end
 
+    methods(Static)
+        function detachStaleManagers(hAx, exceptMgr)
+            %detachStaleManagers  Detach any SkyboxManager owning skybox
+            %graphics on hAx, except exceptMgr (may be empty).
+            %Managers orphaned by case loads or profile replacement keep
+            %listeners on a reused axes; without this they resurrect a
+            %deleted skybox on the next camera event.  Ownership is tracked
+            %via appdata on the skybox hgtransform (see ensureGraphics).
+            try
+                hasExcept = ~isempty(exceptMgr);
+                if hasExcept
+                    try
+                        hasExcept = isvalid(exceptMgr);
+                    catch
+                        hasExcept = false;
+                    end
+                end
+            catch
+                hasExcept = false;
+            end
+            try
+                trs = findall(hAx, 'Tag', 'KSPTOT_SkyboxTransform');
+            catch
+                return;
+            end
+            for k = 1:numel(trs)
+                try
+                    m = getappdata(trs(k), 'KSPTOT_SkyboxManager');
+                catch
+                    continue;
+                end
+                try
+                    alive = isa(m, 'SkyboxManager') && isvalid(m);
+                catch
+                    alive = false;
+                end
+                if ~alive
+                    % Ownerless graphics: purge so it cannot accumulate
+                    try
+                        delete(trs(k));
+                    catch
+                    end
+                    continue;
+                end
+                try
+                    isExcept = hasExcept && (m == exceptMgr);
+                catch
+                    isExcept = false;
+                end
+                if isExcept
+                    continue;
+                end
+                try
+                    m.detach();
+                catch
+                end
+                try
+                    m.clearImageCache();
+                catch
+                end
+            end
+        end
+    end
+
     methods(Access=private)
         function setIsUpdatingFalse(obj)
             obj.isUpdating = false;
@@ -653,6 +734,14 @@ classdef SkyboxManager < handle
             catch
                 obj.hTransform = [];
             end
+            % Tag the transform with its owning manager so stale managers
+            % orphaned by case loads can be found and detached on replot.
+            try
+                if ~isempty(obj.hTransform) && isvalid(obj.hTransform)
+                    setappdata(obj.hTransform, 'KSPTOT_SkyboxManager', obj);
+                end
+            catch
+            end
 
             if ~obj.areFacesValid()
                 % Drop stale faces, then build the 6-face unit cube
@@ -855,6 +944,20 @@ classdef SkyboxManager < handle
                     catch
                     end
                 end
+            catch
+            end
+        end
+
+        function clearImageCache(obj)
+            %clearImageCache  Release cached face images (orphan cleanup /
+            %manager delete).  Normal detach() keeps the cache for fast
+            %re-attach; orphans must not pin tens of MB of images.
+            try
+                obj.skyFaces = {};
+            catch
+            end
+            try
+                obj.skyFacesDir = "";
             catch
             end
         end
