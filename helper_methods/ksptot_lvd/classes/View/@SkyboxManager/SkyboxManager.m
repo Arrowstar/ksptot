@@ -1212,7 +1212,19 @@ classdef SkyboxManager < handle
                 end
             end
             r = multiplier * maxDist;
-            r = min(max(r, obj.MinRadius), obj.MaxRadius);
+            try
+                sSB = LvdSceneNormalizer.getScale(hAx);
+            catch
+                sSB = 1;
+            end
+            if(isfinite(sSB) && sSB < 1)
+                %unit-scaled scene (~1 spans): use unit-appropriate bounds
+                %instead of the kilometre clamps below.
+                r = multiplier * maxDist;
+                r = min(max(r, 2), 100);
+            else
+                r = min(max(r, obj.MinRadius), obj.MaxRadius);
+            end
             if ~isfinite(r) || r<=0
                 r = obj.FallbackRadius;
             end

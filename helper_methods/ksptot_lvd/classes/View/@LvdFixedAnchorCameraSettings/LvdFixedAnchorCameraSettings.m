@@ -91,7 +91,7 @@ classdef LvdFixedAnchorCameraSettings < matlab.mixin.SetGet
                 time(1,1) double
                 viewFrame(1,1) AbstractReferenceFrame
             end
-            camPosView = reshape(hAx.CameraPosition,1,3);
+            camPosView = LvdSceneNormalizer.unscalePos(reshape(hAx.CameraPosition,1,3), hAx);
             fr = obj.anchorFrame;
             if(isempty(fr) || not(all(isvalid(fr))))
                 fr = viewFrame;

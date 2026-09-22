@@ -179,8 +179,9 @@ classdef ViewPlaybackGuiTest < matlab.uitest.TestCase
             app.stepTo(tMid);
             vehPos = LaunchVehicleViewProfile.firstVehPosAtTime(profile.vehPosVelInterp, tMid);
             hAx = mainApp.dispAxes;
-            testCase.verifyEqual(hAx.CameraTarget(:), vehPos, 'AbsTol', 1e-6, 'Chase camera looks at the vehicle');
-            testCase.verifyEqual(norm(hAx.CameraPosition - hAx.CameraTarget), 33, 'AbsTol', 1e-6);
+            sAx = LvdSceneNormalizer.getScale(hAx); %unit-scale: axes show km*sAx
+            testCase.verifyEqual(hAx.CameraTarget(:), vehPos*sAx, 'AbsTol', 1e-6*sAx, 'Chase camera looks at the vehicle');
+            testCase.verifyEqual(norm(hAx.CameraPosition - hAx.CameraTarget), 33*sAx, 'AbsTol', 1e-6*sAx);
 
             testCase.choose(app.CameraModeDropDown, 'Manual');
             testCase.verifyEqual(profile.cameraMode, LvdCameraModeEnum.Manual);
@@ -228,8 +229,9 @@ classdef ViewPlaybackGuiTest < matlab.uitest.TestCase
             app.stepTo(tMid);
             anchor = fa.getAnchorPosAtTime(tMid, profile.frame);
             vehMid = LaunchVehicleViewProfile.firstVehPosAtTime(profile.vehPosVelInterp, tMid);
-            testCase.verifyEqual(hAx.CameraPosition(:), anchor, 'AbsTol', 1e-6, 'Camera sits at the fixed anchor');
-            testCase.verifyEqual(hAx.CameraTarget(:), vehMid, 'AbsTol', 1e-6, 'and looks at the vehicle');
+            sAx = LvdSceneNormalizer.getScale(hAx);
+            testCase.verifyEqual(hAx.CameraPosition(:), anchor*sAx, 'AbsTol', 1e-6*sAx, 'Camera sits at the fixed anchor');
+            testCase.verifyEqual(hAx.CameraTarget(:), vehMid*sAx, 'AbsTol', 1e-6*sAx, 'and looks at the vehicle');
             testCase.verifyEqual(hAx.CameraViewAngle, 9, 'AbsTol', 1e-6, 'The fixed field of view is applied');
 
             %the anchor is inertial: advancing time keeps the camera put but re-aims it
@@ -237,13 +239,13 @@ classdef ViewPlaybackGuiTest < matlab.uitest.TestCase
             app.stepTo(t1);
             vehEnd = LaunchVehicleViewProfile.firstVehPosAtTime(profile.vehPosVelInterp, t1);
             testCase.verifyEqual(hAx.CameraPosition, camAtMid, 'AbsTol', 1e-6, 'An inertial anchor does not move as time advances');
-            testCase.verifyEqual(hAx.CameraTarget(:), vehEnd, 'AbsTol', 1e-6, 'but keeps tracking the vehicle');
+            testCase.verifyEqual(hAx.CameraTarget(:), vehEnd*sAx, 'AbsTol', 1e-6*sAx, 'but keeps tracking the vehicle');
 
             %"Set From Current Camera" grabs the live camera as the anchor
             app.setFixedAnchorFromCamera();
             testCase.verifyTrue(ismember('Set Fixed Anchor from Current View', app.UndoLog));
-            testCase.verifyEqual(fa.getAnchorPosAtTime(app.getCurrentTime(), profile.frame), ...
-                                 hAx.CameraPosition(:), 'AbsTol', 1e-6, 'The grabbed anchor resolves back to the camera position');
+            testCase.verifyEqual(fa.getAnchorPosAtTime(app.getCurrentTime(), profile.frame)*sAx, ...
+                                 hAx.CameraPosition(:), 'AbsTol', 1e-6*sAx, 'The grabbed anchor resolves back to the camera position');
 
             %one undo state per real edit
             testCase.verifyTrue(ismember('Change Camera Mode', app.UndoLog));
@@ -290,9 +292,10 @@ classdef ViewPlaybackGuiTest < matlab.uitest.TestCase
             app.stepTo(tMid);
             anchor = fa.getAnchorPosAtTime(tMid, profile.frame);
             testCase.assertNotEmpty(anchor);
-            testCase.verifyEqual(hAx.CameraPosition(:), anchor, 'AbsTol', 1e-6, 'Camera sits on the ground object');
-            testCase.verifyEqual(hAx.CameraTarget(:), LaunchVehicleViewProfile.firstVehPosAtTime(profile.vehPosVelInterp, tMid), ...
-                'AbsTol', 1e-6, 'and looks at the vehicle');
+            sAx = LvdSceneNormalizer.getScale(hAx);
+            testCase.verifyEqual(hAx.CameraPosition(:), anchor*sAx, 'AbsTol', 1e-6*sAx, 'Camera sits on the ground object');
+            testCase.verifyEqual(hAx.CameraTarget(:), LaunchVehicleViewProfile.firstVehPosAtTime(profile.vehPosVelInterp, tMid)*sAx, ...
+                'AbsTol', 1e-6*sAx, 'and looks at the vehicle');
 
             %--- Geometric Point anchor via the anchor-type dropdown + object seam
             gpStr = pt.getListboxStr();
@@ -311,9 +314,9 @@ classdef ViewPlaybackGuiTest < matlab.uitest.TestCase
             app.stepTo(tMid);
             anchorPt = fa.getAnchorPosAtTime(tMid, profile.frame);
             testCase.assertNotEmpty(anchorPt);
-            testCase.verifyEqual(hAx.CameraPosition(:), anchorPt, 'AbsTol', 1e-6, 'Camera sits on the geometric point');
-            testCase.verifyEqual(hAx.CameraTarget(:), LaunchVehicleViewProfile.firstVehPosAtTime(profile.vehPosVelInterp, tMid), ...
-                'AbsTol', 1e-6, 'and keeps tracking the vehicle');
+            testCase.verifyEqual(hAx.CameraPosition(:), anchorPt*sAx, 'AbsTol', 1e-6*sAx, 'Camera sits on the geometric point');
+            testCase.verifyEqual(hAx.CameraTarget(:), LaunchVehicleViewProfile.firstVehPosAtTime(profile.vehPosVelInterp, tMid)*sAx, ...
+                'AbsTol', 1e-6*sAx, 'and keeps tracking the vehicle');
 
             %the object-anchor edits recorded undo states
             testCase.verifyTrue(ismember('Edit Fixed Anchor Camera', app.UndoLog));
@@ -355,11 +358,12 @@ classdef ViewPlaybackGuiTest < matlab.uitest.TestCase
             app.stepTo(tMid);
             anchor = fa.getAnchorPosAtTime(tMid, profile.frame);
             testCase.assertNotEmpty(anchor);
-            testCase.verifyEqual(hAx.CameraPosition(:), anchor, 'AbsTol', 1e-6, ...
+            sAx = LvdSceneNormalizer.getScale(hAx);
+            testCase.verifyEqual(hAx.CameraPosition(:), anchor*sAx, 'AbsTol', 1e-6*sAx, ...
                 'Camera resolves onto the seeded ground object');
             testCase.verifyEqual(hAx.CameraTarget(:), ...
-                LaunchVehicleViewProfile.firstVehPosAtTime(profile.vehPosVelInterp, tMid), ...
-                'AbsTol', 1e-6, 'and tracks the vehicle');
+                LaunchVehicleViewProfile.firstVehPosAtTime(profile.vehPosVelInterp, tMid)*sAx, ...
+                'AbsTol', 1e-6*sAx, 'and tracks the vehicle');
 
             %likewise a geometric point seeds on choosing its type
             testCase.choose(app.AnchorTypeDropDown, 'Geometric Point');
@@ -368,7 +372,7 @@ classdef ViewPlaybackGuiTest < matlab.uitest.TestCase
             app.stepTo(tMid);
             anchorPt = fa.getAnchorPosAtTime(tMid, profile.frame);
             testCase.assertNotEmpty(anchorPt);
-            testCase.verifyEqual(hAx.CameraPosition(:), anchorPt, 'AbsTol', 1e-6, ...
+            testCase.verifyEqual(hAx.CameraPosition(:), anchorPt*sAx, 'AbsTol', 1e-6*sAx, ...
                 'Camera resolves onto the seeded geometric point');
         end
 
@@ -693,7 +697,9 @@ classdef ViewPlaybackGuiTest < matlab.uitest.TestCase
             testCase.verifyEqual(data{1,2}, 'Keyframe 1');
             testCase.verifyEqual(script.keyframes(1).absTime, t0, 'AbsTol', 1e-9);
             testCase.verifyEqual(script.keyframes(2).absTime, t1, 'AbsTol', 1e-9);
-            testCase.verifyEqual(script.keyframes(1).camPosition, [1000 0 0], 'AbsTol', 1e-9);
+            %keyframes persist km; the axes were posed in scaled units
+            sAx = LvdSceneNormalizer.getScale(mainApp.dispAxes);
+            testCase.verifyEqual(script.keyframes(1).camPosition, [1000 0 0]/sAx, 'AbsTol', 1e-9);
 
             %edit keyframe 1 through the editor: linear easing, a hold, a name
             app.selectKeyframe(1);
@@ -747,8 +753,8 @@ classdef ViewPlaybackGuiTest < matlab.uitest.TestCase
             testCase.verifyEqual(app.getSelectedKeyframeIndex(), 2, 'The row click selected keyframe 2');
             testCase.verifyEqual(mainApp.DispAxesTimeSlider.Value, kf2.resolveTime(lvdData.stateLog), 'AbsTol', 1e-9);
             vehPos = LaunchVehicleViewProfile.firstVehPosAtTime(profile.vehPosVelInterp, mainApp.DispAxesTimeSlider.Value);
-            testCase.verifyEqual(mainApp.dispAxes.CameraTarget(:), vehPos, 'AbsTol', 1e-6);
-            testCase.verifyEqual(norm(mainApp.dispAxes.CameraPosition(:) - vehPos), 8, 'AbsTol', 1e-6);
+            testCase.verifyEqual(mainApp.dispAxes.CameraTarget(:), vehPos*sAx, 'AbsTol', 1e-6*sAx);
+            testCase.verifyEqual(norm(mainApp.dispAxes.CameraPosition(:) - vehPos*sAx), 8*sAx, 'AbsTol', 1e-6*sAx);
             testCase.verifySubstring(app.ScriptStateLabel.Text, 'Keyframe 2', 'The state line names the keyframe the script is on');
 
             %the table is in play order (resolved time), whatever the order in the script
@@ -826,9 +832,10 @@ classdef ViewPlaybackGuiTest < matlab.uitest.TestCase
             testCase.verifySameHandle(kf2.event, evt2, 'Anchored to the event active at that time');
             testCase.verifyEqual(kf2.timeOffset, tIn2 - evt2Entries(1).time, 'AbsTol', 1e-6);
             testCase.verifyEqual(kf2.resolveTime(lvdData.stateLog), tIn2, 'AbsTol', 1e-6, 'and it resolves to the time it was added at');
-            testCase.verifyEqual(kf2.rangeKm, norm(camBefore(:) - vehPos), 'RelTol', 1e-6, 'Range reproduces the camera');
+            sAx = LvdSceneNormalizer.getScale(hAx);
+            testCase.verifyEqual(kf2.rangeKm, norm(camBefore(:)/sAx - vehPos), 'RelTol', 1e-6, 'Range reproduces the camera');
             expectedPose = kf2.getPoseAtVehiclePosition(vehPos);
-            testCase.verifyEqual(expectedPose.position, camBefore, 'AbsTol', 1e-6*max(1, norm(camBefore)), 'Az/el/range reproduce the camera position');
+            testCase.verifyEqual(expectedPose.position*sAx, camBefore, 'AbsTol', 1e-6*max(1, norm(camBefore)), 'Az/el/range reproduce the camera position');
 
             testCase.verifyFalse(app.isScriptDetached(), 'Adding a keyframe re-attaches the script');
             testCase.verifyEqual(hAx.CameraPosition, camBefore, 'AbsTol', 1e-6*max(1, norm(camBefore)), 'No jump: the script now passes through the new keyframe');
@@ -870,14 +877,15 @@ classdef ViewPlaybackGuiTest < matlab.uitest.TestCase
             testCase.verifyEqual(app.UpdateKeyframeButton.Enable, matlab.lang.OnOffSwitchState.on);
 
             testCase.press(app.UpdateKeyframeButton);
-            testCase.verifyEqual(kf1.camPosition, nudged, 'AbsTol', 1e-6, 'The keyframe took the nudged camera');
+            sAx = LvdSceneNormalizer.getScale(hAx);
+            testCase.verifyEqual(kf1.camPosition, nudged/sAx, 'AbsTol', 1e-6, 'The keyframe took the nudged camera');
             testCase.verifyGreaterThan(norm(kf1.camPosition - posBefore), 1e-3);
             testCase.verifyEqual(kf1.absTime, t0, 'AbsTol', 1e-9, 'Its time is kept');
             testCase.verifyFalse(app.isScriptDetached(), 'Updating re-attaches the script');
             testCase.verifyEqual(hAx.CameraPosition, nudged, 'AbsTol', 1e-6, 'No jump');
             testCase.verifyEqual(app.UndoLog(end), {'Update Camera Keyframe'});
             testCase.verifyEqual(script.getNumKeyframes(), 2);
-            testCase.verifyEqual(app.KfPosXEditField.Value, nudged(1), 'AbsTol', 1e-6, 'The (advanced) numeric fields follow');
+            testCase.verifyEqual(app.KfPosXEditField.Value, nudged(1)/sAx, 'AbsTol', 1e-6, 'The (advanced) numeric fields follow');
         end
 
         function keyframeCanUseFixedAnchorTrackingMode(testCase)
@@ -961,9 +969,10 @@ classdef ViewPlaybackGuiTest < matlab.uitest.TestCase
             app.stepTo(tMid);
             anchor = kf.anchor.getAnchorPosAtTime(tMid, profile.frame);
             testCase.assertNotEmpty(anchor);
-            testCase.verifyEqual(hAx.CameraPosition(:), anchor, 'AbsTol', 1e-6, 'Camera sits on the keyframe anchor');
-            testCase.verifyEqual(hAx.CameraTarget(:), LaunchVehicleViewProfile.firstVehPosAtTime(profile.vehPosVelInterp, tMid), ...
-                'AbsTol', 1e-6, 'and tracks the vehicle');
+            sAx = LvdSceneNormalizer.getScale(hAx);
+            testCase.verifyEqual(hAx.CameraPosition(:), anchor*sAx, 'AbsTol', 1e-6*sAx, 'Camera sits on the keyframe anchor');
+            testCase.verifyEqual(hAx.CameraTarget(:), LaunchVehicleViewProfile.firstVehPosAtTime(profile.vehPosVelInterp, tMid)*sAx, ...
+                'AbsTol', 1e-6*sAx, 'and tracks the vehicle');
 
             testCase.choose(app.CameraModeDropDown, 'Manual');
             testCase.verifyEqual(profile.cameraMode, LvdCameraModeEnum.Manual);
@@ -1056,9 +1065,10 @@ classdef ViewPlaybackGuiTest < matlab.uitest.TestCase
             [mn, mx] = mesh.getBodyFrameBounds();
             testCase.verifyEqual(profile.chaseCamera.rangeKm, 4*max(mx - mn), 'AbsTol', 1e-12);
             hAx = mainApp.dispAxes;
-            testCase.verifyEqual(norm(hAx.CameraPosition - hAx.CameraTarget), profile.chaseCamera.rangeKm, 'AbsTol', 1e-6, 'The camera sits at the chase range');
+            sAx = LvdSceneNormalizer.getScale(hAx);
+            testCase.verifyEqual(norm(hAx.CameraPosition - hAx.CameraTarget), profile.chaseCamera.rangeKm*sAx, 'AbsTol', 1e-6*sAx, 'The camera sits at the chase range');
             vehPos = LaunchVehicleViewProfile.firstVehPosAtTime(profile.vehPosVelInterp, app.getCurrentTime());
-            testCase.verifyEqual(hAx.CameraTarget(:), vehPos, 'AbsTol', 1e-6, 'and looks at the vehicle');
+            testCase.verifyEqual(hAx.CameraTarget(:), vehPos*sAx, 'AbsTol', 1e-6*sAx, 'and looks at the vehicle');
             app.setCameraMode(LvdCameraModeEnum.Manual);
 
             %disable via the checkbox hides it

@@ -546,6 +546,16 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
 
             end
 
+            % --- Unit-scale normalization: longest axes span -> ~1 ---
+            %Mission geometry stays in km; a single hgtransform nests the
+            %scene so XLim/YLim/ZLim spans are ~1.  Must run before skybox
+            %sizing (which reads the limits) and before camera restore.
+            try
+                LvdSceneNormalizer.applyForAxes(dAxes);
+            catch ME
+                warning('Generic3DTrajectoryViewType:normalizerFailed','Scene normalization failed: %s', ME.message);
+            end
+
             % --- Skybox (per-profile SkyboxManager, timer-debounced, hgtransform) ---
             try
                 try
@@ -617,17 +627,19 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                 %first rendered frame (fired at the end of plotTrajectory);
                 %restoring the saved manual camera here would only flash it.
             elseif(not(viewProfile.updateViewAxesLimits))
+                %Saved manual camera is in km; the axes show scaled (~1) units.
+                sCam = LvdSceneNormalizer.getScale(dAxes);
                 camPos = viewProfile.viewCameraPosition;
                 camTgt = viewProfile.viewCameraTarget;
                 camUpVec = viewProfile.viewCameraUpVector;
                 camVA = viewProfile.viewCameraViewAngle;
                 
                 if(not(any(isnan(camPos))))
-                    dAxes.CameraPosition = camPos;
+                    dAxes.CameraPosition = camPos*sCam;
                 end
                 
                 if(not(any(isnan(camTgt))))
-                    dAxes.CameraTarget = camTgt;
+                    dAxes.CameraTarget = camTgt*sCam;
                 end
                 
                 if(not(any(isnan(camUpVec))))
@@ -641,8 +653,10 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                 cameratoolbar(hFig, 'ResetCamera');
                 view(dAxes, 3);
 
-                viewProfile.viewCameraPosition = dAxes.CameraPosition;
-                viewProfile.viewCameraTarget = dAxes.CameraTarget;
+                %Axes are scaled (~1); profiles persist km.
+                sCam = LvdSceneNormalizer.getScale(dAxes);
+                viewProfile.viewCameraPosition = dAxes.CameraPosition/sCam;
+                viewProfile.viewCameraTarget = dAxes.CameraTarget/sCam;
                 viewProfile.viewCameraUpVector = dAxes.CameraUpVector;
                 viewProfile.viewCameraViewAngle = dAxes.CameraViewAngle;
             end

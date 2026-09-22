@@ -326,8 +326,14 @@ classdef LvdSceneCameraDriver < handle
         function takeManualControl(obj, hAx)
             %takeManualControl Makes the axes' current camera the saved
             %manual camera and switches the profile to Manual mode.
-            cam = struct('position', reshape(hAx.CameraPosition,1,3), ...
-                         'target', reshape(hAx.CameraTarget,1,3), ...
+            %The axes are unit-scaled; the profile persists km.
+            sCam = 1;
+            try
+                sCam = LvdSceneNormalizer.getScale(hAx);
+            catch
+            end
+            cam = struct('position', reshape(hAx.CameraPosition,1,3)/sCam, ...
+                         'target', reshape(hAx.CameraTarget,1,3)/sCam, ...
                          'up', reshape(hAx.CameraUpVector,1,3), ...
                          'viewAngle', hAx.CameraViewAngle, ...
                          'azEl', obj.profile.viewAzEl, ...
@@ -398,7 +404,12 @@ classdef LvdSceneCameraDriver < handle
         function writePose(obj, pose, hAx)
             %writePose Sets the axes camera, marking the write as the
             %driver's own so the camera listeners ignore it, then protects
-            %the saved manual camera.
+            %the saved manual camera.  Poses are computed in km; the axes
+            %show unit-scaled (~1) units, so scale at the boundary.
+            try
+                pose = LvdSceneNormalizer.scalePoseToAxes(pose, LvdSceneNormalizer.getScale(hAx));
+            catch
+            end
             obj.isApplying = true;
             try
                 LvdCameraMath.applyPoseToAxes(pose, hAx);
@@ -510,6 +521,9 @@ classdef LvdSceneCameraDriver < handle
             %camera once more makes the driver's restore the final word.
             try
                 pose = LvdCameraMath.poseFromAxes(hAx);
+                %poseFromAxes reads scaled axes units; writePose expects km.
+                pose.position = LvdSceneNormalizer.unscalePos(pose.position, hAx);
+                pose.target = LvdSceneNormalizer.unscalePos(pose.target, hAx);
             catch
                 pose = [];
             end
@@ -533,7 +547,9 @@ classdef LvdSceneCameraDriver < handle
             if(isempty(vehPos) || any(not(isfinite(vehPos))))
                 return;
             end
-            [az, el, r] = LvdCameraMath.cartesianToSpherical(reshape(hAx.CameraPosition,1,3) - vehPos(:)');
+            %Axes camera is unit-scaled; offsets are computed in km.
+            camPosKm = LvdSceneNormalizer.unscalePos(reshape(hAx.CameraPosition,1,3), hAx);
+            [az, el, r] = LvdCameraMath.cartesianToSpherical(camPosKm - vehPos(:)');
             obj.detachedOffset = struct('az', az, 'el', el, 'range', max(r, 1e-9), 'viewAngle', hAx.CameraViewAngle);
         end
 
@@ -579,13 +595,14 @@ classdef LvdSceneCameraDriver < handle
                          'zoomAxLims', p.viewZoomAxLims);
 
             %a profile that has never recorded a camera holds NaNs; take the
-            %live axes camera instead so Manual can be restored later
+            %live axes camera instead so Manual can be restored later.
+            %The axes are unit-scaled; the snapshot persists km.
             if(not(isempty(hAx)) && isvalid(hAx))
                 if(any(isnan(cam.position)))
-                    cam.position = reshape(hAx.CameraPosition,1,3);
+                    cam.position = LvdSceneNormalizer.unscalePos(reshape(hAx.CameraPosition,1,3), hAx);
                 end
                 if(any(isnan(cam.target)))
-                    cam.target = reshape(hAx.CameraTarget,1,3);
+                    cam.target = LvdSceneNormalizer.unscalePos(reshape(hAx.CameraTarget,1,3), hAx);
                 end
                 if(any(isnan(cam.up)))
                     cam.up = reshape(hAx.CameraUpVector,1,3);

@@ -291,24 +291,28 @@ function celBodyData = getCelBodyDataFromMainGui(handles)
     
 function recordFinalAxesViewAfterRotation(obj,event_obj, handles)  
     lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    %Axes show unit-scaled (~1) units; profiles persist km.
+    sAx = LvdSceneNormalizer.getScale(handles.dispAxes);
     lvdData.viewSettings.selViewProfile.viewZoomAxLims = [handles.dispAxes.XLim;
                                                           handles.dispAxes.YLim;
-                                                          handles.dispAxes.ZLim];
+                                                          handles.dispAxes.ZLim]/sAx;
     
     [az,el] = view(handles.dispAxes);
     lvdData.viewSettings.selViewProfile.viewAzEl = [az,el];
     
 function recordFinalAxesPanZoomAfterRotation(obj,event_obj, handles)  
     lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
+    %Axes show unit-scaled (~1) units; profiles persist km.
+    sAx = LvdSceneNormalizer.getScale(handles.dispAxes);
     lvdData.viewSettings.selViewProfile.viewZoomAxLims = [handles.dispAxes.XLim;
                                                           handles.dispAxes.YLim;
-                                                          handles.dispAxes.ZLim];
-                                                      
+                                                          handles.dispAxes.ZLim]/sAx;
+                                                       
     [az,el] = view(handles.dispAxes);
     lvdData.viewSettings.selViewProfile.viewAzEl = [az,el];
     
-    lvdData.viewSettings.selViewProfile.viewCameraPosition = handles.dispAxes.CameraPosition;
-	lvdData.viewSettings.selViewProfile.viewCameraTarget = handles.dispAxes.CameraTarget;
+    lvdData.viewSettings.selViewProfile.viewCameraPosition = handles.dispAxes.CameraPosition/sAx;
+	lvdData.viewSettings.selViewProfile.viewCameraTarget = handles.dispAxes.CameraTarget/sAx;
 	lvdData.viewSettings.selViewProfile.viewCameraUpVector = handles.dispAxes.CameraUpVector;
 	lvdData.viewSettings.selViewProfile.viewCameraViewAngle = handles.dispAxes.CameraViewAngle;
     

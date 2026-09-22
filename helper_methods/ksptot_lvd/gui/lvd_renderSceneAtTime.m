@@ -125,6 +125,15 @@ function lvd_renderSceneAtTime(time, lvdData, handles, app, drawMode)
         profile.updateLightPosition(time);
     end
 
+    %F8-unit-scale: nest any newly created scene graphics under the
+    %normalization transform so the longest axes span stays ~1.  Must run
+    %after the per-frame markers are created but before the camera is
+    %driven (the camera works in scaled units).
+    try
+        LvdSceneNormalizer.reparentSceneChildren(hAx);
+    catch
+    end
+
     %F8: scene camera (Chase / Scripted); Manual leaves the camera alone
     try
         driver = profile.getCameraDriver();

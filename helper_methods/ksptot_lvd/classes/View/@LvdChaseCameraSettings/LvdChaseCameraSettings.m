@@ -21,13 +21,15 @@ classdef LvdChaseCameraSettings < matlab.mixin.SetGet
 
         function setFromCamera(obj, hAx, vehPos)
             %setFromCamera Reproduces the axes' current camera position as an
-            %offset from vehPos.
+            %offset from vehPos.  The axes are unit-scaled; vehPos and the
+            %stored range stay in km.
             arguments
                 obj(1,1) LvdChaseCameraSettings
                 hAx
                 vehPos(3,1) double
             end
-            [az, el, r] = LvdCameraMath.cartesianToSpherical(reshape(hAx.CameraPosition,1,3) - vehPos');
+            camPosKm = LvdSceneNormalizer.unscalePos(reshape(hAx.CameraPosition,1,3), hAx);
+            [az, el, r] = LvdCameraMath.cartesianToSpherical(camPosKm - vehPos');
             obj.azDeg = az;
             obj.elDeg = el;
             obj.rangeKm = max(r, 1e-6);

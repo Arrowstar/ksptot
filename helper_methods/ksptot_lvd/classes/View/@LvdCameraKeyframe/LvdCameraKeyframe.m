@@ -258,8 +258,9 @@ classdef LvdCameraKeyframe < matlab.mixin.SetGet
             kf = LvdCameraKeyframe();
             kf.absTime = time;
             kf.refType = LvdCameraKeyframeRefEnum.SceneFixed;
-            kf.camPosition = reshape(hAx.CameraPosition,1,3);
-            kf.camTarget = reshape(hAx.CameraTarget,1,3);
+            %Axes are unit-scaled; keyframes persist km.
+            kf.camPosition = LvdSceneNormalizer.unscalePos(reshape(hAx.CameraPosition,1,3), hAx);
+            kf.camTarget = LvdSceneNormalizer.unscalePos(reshape(hAx.CameraTarget,1,3), hAx);
             kf.camUpVector = reshape(hAx.CameraUpVector,1,3);
             kf.viewAngleDeg = hAx.CameraViewAngle;
         end
@@ -275,7 +276,8 @@ classdef LvdCameraKeyframe < matlab.mixin.SetGet
             kf = LvdCameraKeyframe();
             kf.absTime = time;
             kf.refType = LvdCameraKeyframeRefEnum.VehicleRelative;
-            [az, el, r] = LvdCameraMath.cartesianToSpherical(reshape(hAx.CameraPosition,1,3) - vehPos');
+            camPosKm = LvdSceneNormalizer.unscalePos(reshape(hAx.CameraPosition,1,3), hAx);
+            [az, el, r] = LvdCameraMath.cartesianToSpherical(camPosKm - vehPos');
             kf.azDeg = az;
             kf.elDeg = el;
             kf.rangeKm = max(r, 1e-6);

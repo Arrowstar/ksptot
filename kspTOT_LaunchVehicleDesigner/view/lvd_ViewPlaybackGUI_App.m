@@ -932,8 +932,8 @@ classdef lvd_ViewPlaybackGUI_App < matlab.apps.AppBase
             switch(kf.refType)
                 case LvdCameraKeyframeRefEnum.SceneFixed
                     app.pushUndo('Update Camera Keyframe');
-                    kf.camPosition = reshape(hAx.CameraPosition,1,3);
-                    kf.camTarget = reshape(hAx.CameraTarget,1,3);
+                    kf.camPosition = LvdSceneNormalizer.unscalePos(reshape(hAx.CameraPosition,1,3), hAx);
+                    kf.camTarget = LvdSceneNormalizer.unscalePos(reshape(hAx.CameraTarget,1,3), hAx);
                     kf.camUpVector = reshape(hAx.CameraUpVector,1,3);
                 case LvdCameraKeyframeRefEnum.VehicleRelative
                     vehPos = app.vehiclePositionNow();
@@ -942,7 +942,8 @@ classdef lvd_ViewPlaybackGUI_App < matlab.apps.AppBase
                         return;
                     end
                     app.pushUndo('Update Camera Keyframe');
-                    [kf.azDeg, kf.elDeg, r] = LvdCameraMath.cartesianToSpherical(reshape(hAx.CameraPosition,1,3) - vehPos');
+                    camPosKm = LvdSceneNormalizer.unscalePos(reshape(hAx.CameraPosition,1,3), hAx);
+                    [kf.azDeg, kf.elDeg, r] = LvdCameraMath.cartesianToSpherical(camPosKm - vehPos');
                     kf.rangeKm = max(r, 1e-6);
                 case LvdCameraKeyframeRefEnum.FixedAnchorTracking
                     %park the anchor at the current camera as fixed coordinates,

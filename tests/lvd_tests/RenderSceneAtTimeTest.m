@@ -93,11 +93,12 @@ classdef RenderSceneAtTimeTest < matlab.uitest.TestCase
 
             [t, rView] = testCase.loggedPoseInViewFrame(lvdData, profile, 4);
             lvd_renderSceneAtTime(t, lvdData, handles, app, "full");
+            sAx = LvdSceneNormalizer.getScale(hAx); %unit-scale: axes show km*sAx
 
-            testCase.verifyEqual(hAx.CameraTarget(:), rView, 'AbsTol', 1e-6, 'Chase camera looks at the vehicle');
-            testCase.verifyEqual(norm(hAx.CameraPosition - hAx.CameraTarget), 12, 'AbsTol', 1e-6, 'Chase range');
+            testCase.verifyEqual(hAx.CameraTarget(:), rView*sAx, 'AbsTol', 1e-6*sAx, 'Chase camera looks at the vehicle');
+            testCase.verifyEqual(norm(hAx.CameraPosition - hAx.CameraTarget), 12*sAx, 'AbsTol', 1e-6*sAx, 'Chase range');
             expectedPos = LvdCameraMath.sphericalOffset(rView', 20, 10, 12);
-            testCase.verifyEqual(hAx.CameraPosition, expectedPos, 'AbsTol', 1e-6);
+            testCase.verifyEqual(hAx.CameraPosition, expectedPos*sAx, 'AbsTol', 1e-6*sAx);
             testCase.verifyEqual(hAx.CameraViewAngle, 9, 'AbsTol', 1e-9);
 
             %the main window's PostSet listeners must not have overwritten
@@ -116,8 +117,9 @@ classdef RenderSceneAtTimeTest < matlab.uitest.TestCase
             %back to Manual: the saved camera returns to the axes
             profile.cameraMode = LvdCameraModeEnum.Manual;
             lvd_renderSceneAtTime(t, lvdData, handles, app, "full");
-            testCase.verifyEqual(hAx.CameraPosition, savedPos, 'AbsTol', 1e-9, 'Manual restores the saved camera');
-            testCase.verifyEqual(hAx.CameraTarget, savedTgt, 'AbsTol', 1e-9);
+            sAx = LvdSceneNormalizer.getScale(hAx);
+            testCase.verifyEqual(hAx.CameraPosition, savedPos*sAx, 'AbsTol', 1e-9, 'Manual restores the saved camera');
+            testCase.verifyEqual(hAx.CameraTarget, savedTgt*sAx, 'AbsTol', 1e-9);
             testCase.verifyEqual(profile.viewCameraPosition, savedPos);
             testCase.verifyTrue(handler.enabled, 'Mouse camera is still enabled in Manual mode');
         end
@@ -146,16 +148,17 @@ classdef RenderSceneAtTimeTest < matlab.uitest.TestCase
 
             [t, rView] = testCase.loggedPoseInViewFrame(lvdData, profile, 4);
             lvd_renderSceneAtTime(t, lvdData, handles, app, "full");
-            testCase.verifyEqual(hAx.CameraPosition, anchor, 'AbsTol', 1e-6, 'Camera sits at the fixed anchor');
-            testCase.verifyEqual(hAx.CameraTarget(:), rView, 'AbsTol', 1e-6, 'and looks at the vehicle');
+            sAx = LvdSceneNormalizer.getScale(hAx);
+            testCase.verifyEqual(hAx.CameraPosition, anchor*sAx, 'AbsTol', 1e-6*sAx, 'Camera sits at the fixed anchor');
+            testCase.verifyEqual(hAx.CameraTarget(:), rView*sAx, 'AbsTol', 1e-6*sAx, 'and looks at the vehicle');
             testCase.verifyEqual(hAx.CameraViewAngle, 8, 'AbsTol', 1e-9);
 
             %the camera stays put while the target tracks as time advances
             [t2, rView2] = testCase.loggedPoseInViewFrame(lvdData, profile, max(2, numel(lvdData.stateLog.getAllEntries())-1));
             testCase.assumeTrue(abs(t2 - t) > 0, 'Need two distinct logged times.');
             lvd_renderSceneAtTime(t2, lvdData, handles, app, "full");
-            testCase.verifyEqual(hAx.CameraPosition, anchor, 'AbsTol', 1e-6, 'The fixed camera does not move');
-            testCase.verifyEqual(hAx.CameraTarget(:), rView2, 'AbsTol', 1e-6, 'The target follows the vehicle');
+            testCase.verifyEqual(hAx.CameraPosition, anchor*sAx, 'AbsTol', 1e-6*sAx, 'The fixed camera does not move');
+            testCase.verifyEqual(hAx.CameraTarget(:), rView2*sAx, 'AbsTol', 1e-6*sAx, 'The target follows the vehicle');
             testCase.verifyGreaterThan(norm(rView2 - rView), 1e-3, 'Fixture: the vehicle actually moved between the two frames');
 
             %the saved manual camera is untouched, and Manual restores it
@@ -165,8 +168,8 @@ classdef RenderSceneAtTimeTest < matlab.uitest.TestCase
 
             profile.cameraMode = LvdCameraModeEnum.Manual;
             lvd_renderSceneAtTime(t, lvdData, handles, app, "full");
-            testCase.verifyEqual(hAx.CameraPosition, savedPos, 'AbsTol', 1e-9, 'Manual restores the saved camera');
-            testCase.verifyEqual(hAx.CameraTarget, savedTgt, 'AbsTol', 1e-9);
+            testCase.verifyEqual(hAx.CameraPosition, savedPos*sAx, 'AbsTol', 1e-9, 'Manual restores the saved camera');
+            testCase.verifyEqual(hAx.CameraTarget, savedTgt*sAx, 'AbsTol', 1e-9);
         end
 
         function fixedAnchorGroundObjectMovesWithTheBody(testCase)
@@ -189,16 +192,17 @@ classdef RenderSceneAtTimeTest < matlab.uitest.TestCase
             anchor0 = fa.getAnchorPosAtTime(t, profile.frame);
             testCase.assumeNotEmpty(anchor0, 'The ground object must resolve at the test time.');
             lvd_renderSceneAtTime(t, lvdData, handles, app, "full");
-            testCase.verifyEqual(hAx.CameraPosition(:), anchor0, 'AbsTol', 1e-6, 'Camera at the ground object');
-            testCase.verifyEqual(hAx.CameraTarget(:), rView, 'AbsTol', 1e-6, 'looking at the vehicle');
+            sAx = LvdSceneNormalizer.getScale(hAx);
+            testCase.verifyEqual(hAx.CameraPosition(:), anchor0*sAx, 'AbsTol', 1e-6*sAx, 'Camera at the ground object');
+            testCase.verifyEqual(hAx.CameraTarget(:), rView*sAx, 'AbsTol', 1e-6*sAx, 'looking at the vehicle');
 
             %at a later time the body-fixed anchor has rotated in the view frame
             [t2, rView2] = testCase.loggedPoseInViewFrame(lvdData, profile, max(2, numel(lvdData.stateLog.getAllEntries())-1));
             anchor1 = fa.getAnchorPosAtTime(t2, profile.frame);
             testCase.assumeNotEmpty(anchor1, 'The ground object must resolve at the later time.');
             lvd_renderSceneAtTime(t2, lvdData, handles, app, "full");
-            testCase.verifyEqual(hAx.CameraPosition(:), anchor1, 'AbsTol', 1e-6, 'The camera follows the ground object as the body rotates');
-            testCase.verifyEqual(hAx.CameraTarget(:), rView2, 'AbsTol', 1e-6);
+            testCase.verifyEqual(hAx.CameraPosition(:), anchor1*sAx, 'AbsTol', 1e-6*sAx, 'The camera follows the ground object as the body rotates');
+            testCase.verifyEqual(hAx.CameraTarget(:), rView2*sAx, 'AbsTol', 1e-6*sAx);
             testCase.verifyEqual(norm(anchor1), norm(anchor0), 'RelTol', 1e-6, 'The ground object keeps its distance from the body centre');
             testCase.verifyGreaterThan(norm(anchor1 - anchor0), 1e-6, 'A rotating body moves a body-fixed anchor in the inertial view frame');
         end
@@ -230,8 +234,9 @@ classdef RenderSceneAtTimeTest < matlab.uitest.TestCase
             testCase.verifyEqual(profile.cameraMode, LvdCameraModeEnum.FixedAnchor, 'A FixedXYZ drag stays in FixedAnchor mode');
             testCase.verifyEqual(fa.anchorType, LvdCameraAnchorTypeEnum.FixedXYZ);
             testCase.verifyGreaterThan(norm(fa.fixedPosition - anchorBefore), 1e-3, 'The drag retuned the fixed anchor');
-            testCase.verifyEqual(hAx.CameraTarget(:), rView, 'AbsTol', 1e-6, 'The target is re-pinned on the vehicle');
-            testCase.verifyEqual(hAx.CameraPosition(:), fa.getAnchorPosAtTime(t, profile.frame), 'AbsTol', 1e-6, 'The camera sits at the new anchor');
+            sAx = LvdSceneNormalizer.getScale(hAx);
+            testCase.verifyEqual(hAx.CameraTarget(:), rView*sAx, 'AbsTol', 1e-6*sAx, 'The target is re-pinned on the vehicle');
+            testCase.verifyEqual(hAx.CameraPosition(:), fa.getAnchorPosAtTime(t, profile.frame)*sAx, 'AbsTol', 1e-6*sAx, 'The camera sits at the new anchor');
             testCase.verifyEqual(changed.count(), 1, 'One CameraChangedByUser per drag');
 
             %the next render keeps the mouse-chosen anchor
@@ -346,15 +351,17 @@ classdef RenderSceneAtTimeTest < matlab.uitest.TestCase
             profile.chaseCamera.rangeKm = 0.05; profile.chaseCamera.azDeg = 30; profile.chaseCamera.elDeg = 10;
             [t, rView] = testCase.loggedPoseInViewFrame(lvdData, profile, 4);
             lvd_renderSceneAtTime(t, lvdData, handles, app, "full");
-            testCase.assertGreaterThan(diff(hAx.XLim), 1000, 'Fixture: the scene spans the planet');
+            sAx = LvdSceneNormalizer.getScale(hAx);
+            limSpans = [diff(hAx.XLim), diff(hAx.YLim), diff(hAx.ZLim)];
+            testCase.verifyEqual(max(limSpans), 1, 'RelTol', 0.05, 'Fixture: the unit-scaled scene spans ~1');
             sight0 = hAx.CameraTarget - hAx.CameraPosition;
 
-            %one pixel of dolly moves the camera ~1% of its distance, not 70 km
+            %one pixel of dolly moves the camera ~1% of its distance
             handler.beginDrag('dollyfb', [100 100]);
             handler.applyDrag([100 101]);
             handler.endDrag();
             r = norm(hAx.CameraPosition - hAx.CameraTarget);
-            testCase.verifyEqual(r, 0.05*exp(-handler.DollyRatePerPixel), 'RelTol', 1e-6, 'One pixel is one percent of the distance');
+            testCase.verifyEqual(r, 0.05*sAx*exp(-handler.DollyRatePerPixel), 'RelTol', 1e-6, 'One pixel is one percent of the distance');
             testCase.verifyGreaterThan(dot(hAx.CameraTarget - hAx.CameraPosition, sight0), 0, 'The camera is still on the same side of the target');
 
             %a huge dolly gets very close but never crosses; dragging back returns
@@ -363,14 +370,14 @@ classdef RenderSceneAtTimeTest < matlab.uitest.TestCase
             handler.endDrag();
             rClose = norm(hAx.CameraPosition - hAx.CameraTarget);
             testCase.verifyGreaterThan(rClose, 0);
-            testCase.verifyLessThan(rClose, 1e-3);
+            testCase.verifyLessThan(rClose, 1e-3*sAx);
             testCase.verifyGreaterThan(dot(hAx.CameraTarget - hAx.CameraPosition, sight0), 0, 'Never through the target');
             handler.beginDrag('dollyfb', [100 100]);
             handler.applyDrag([100 -900]);   % 1000 px back out
             handler.endDrag();
             testCase.verifyEqual(norm(hAx.CameraPosition - hAx.CameraTarget), r, 'RelTol', 1e-6, 'Dolly is reversible');
-            testCase.verifyEqual(hAx.CameraTarget(:), rView, 'AbsTol', 1e-6, 'Chase keeps the target on the vehicle throughout');
-            testCase.verifyEqual(profile.chaseCamera.rangeKm, r, 'RelTol', 1e-6, 'The chase range followed the dolly');
+            testCase.verifyEqual(hAx.CameraTarget(:), rView*sAx, 'AbsTol', 1e-6*sAx, 'Chase keeps the target on the vehicle throughout');
+            testCase.verifyEqual(profile.chaseCamera.rangeKm, r/sAx, 'RelTol', 1e-6, 'The chase range followed the dolly');
 
             %pan is proportional to the distance too: 10 px at 0.05 km is a
             %small fraction of a km, not tens of km
@@ -378,8 +385,8 @@ classdef RenderSceneAtTimeTest < matlab.uitest.TestCase
             handler.applyDrag([110 100]);
             handler.endDrag();
             lvd_renderSceneAtTime(t, lvdData, handles, app, "full");   %chase re-pins the target
-            testCase.verifyEqual(hAx.CameraTarget(:), rView, 'AbsTol', 1e-6);
-            testCase.verifyLessThan(norm(hAx.CameraPosition - hAx.CameraTarget), 0.2, 'A short pan near the vehicle stays near the vehicle');
+            testCase.verifyEqual(hAx.CameraTarget(:), rView*sAx, 'AbsTol', 1e-6*sAx);
+            testCase.verifyLessThan(norm(hAx.CameraPosition - hAx.CameraTarget), 0.2*sAx, 'A short pan near the vehicle stays near the vehicle');
         end
 
         function mouseDragInChaseModeRetunesTheChaseOffsets(testCase)
@@ -403,8 +410,9 @@ classdef RenderSceneAtTimeTest < matlab.uitest.TestCase
             handler.endDrag();
             newRange = profile.chaseCamera.rangeKm;
             testCase.verifyNotEqual(newRange, 12, 'The dolly changed the chase range');
-            testCase.verifyEqual(norm(hAx.CameraPosition - hAx.CameraTarget), newRange, 'RelTol', 1e-6, 'Camera distance equals the new chase range');
-            testCase.verifyEqual(hAx.CameraTarget(:), rView, 'AbsTol', 1e-6, 'Still looking at the vehicle');
+            sAx = LvdSceneNormalizer.getScale(hAx);
+            testCase.verifyEqual(norm(hAx.CameraPosition - hAx.CameraTarget), newRange*sAx, 'RelTol', 1e-6, 'Camera distance equals the new chase range');
+            testCase.verifyEqual(hAx.CameraTarget(:), rView*sAx, 'AbsTol', 1e-6*sAx, 'Still looking at the vehicle');
             testCase.verifyEqual(changed.count(), 1, 'One CameraChangedByUser per drag');
 
             %orbit: azimuth follows, range stays
@@ -461,12 +469,13 @@ classdef RenderSceneAtTimeTest < matlab.uitest.TestCase
             %default (vehicle-relative authoring): scrubbing keeps the user's
             %offset from the vehicle, so the vehicle stays framed
             vehMid = LaunchVehicleViewProfile.firstVehPosAtTime(profile.vehPosVelInterp, tMid);
-            range = norm(dragged(:) - vehMid);
+            sAx = LvdSceneNormalizer.getScale(hAx);
+            range = norm(dragged(:) - vehMid(:)*sAx);
             [t4, rView4] = testCase.loggedPoseInViewFrame(lvdData, profile, 4);
             lvd_renderSceneAtTime(t4, lvdData, handles, app, "full");
             testCase.verifyTrue(driver.isScriptDetached(), 'Scrubbing keeps the camera detached');
-            testCase.verifyEqual(hAx.CameraTarget(:), rView4, 'AbsTol', 1e-6, 'A detached camera keeps looking at the vehicle');
-            testCase.verifyEqual(norm(hAx.CameraPosition(:) - rView4), range, 'RelTol', 1e-6, 'at the range the user set');
+            testCase.verifyEqual(hAx.CameraTarget(:), rView4*sAx, 'AbsTol', 1e-6*sAx, 'A detached camera keeps looking at the vehicle');
+            testCase.verifyEqual(norm(hAx.CameraPosition(:) - rView4*sAx), range, 'RelTol', 1e-6, 'at the range the user set');
             testCase.verifyEqual(profile.viewCameraPosition, savedBefore, 'AbsTol', 1e-9, 'Still no leak into the saved manual camera');
 
             %scene-fixed authoring: the camera stays exactly where it was left
@@ -499,14 +508,15 @@ classdef RenderSceneAtTimeTest < matlab.uitest.TestCase
             profile.chaseCamera.azDeg = 30; profile.chaseCamera.elDeg = 15; profile.chaseCamera.rangeKm = 20;
             [t, rView] = testCase.loggedPoseInViewFrame(lvdData, profile, 4);
             lvd_renderSceneAtTime(t, lvdData, handles, app, "full");
-            testCase.assertEqual(hAx.CameraTarget(:), rView, 'AbsTol', 1e-6);
+            sAx = LvdSceneNormalizer.getScale(hAx);
+            testCase.assertEqual(hAx.CameraTarget(:), rView*sAx, 'AbsTol', 1e-6*sAx);
 
             %toolbar orbit: the camera position moves about the target
             cameratoolbar(hFig, 'SetMode', 'orbit');
             cleanup = onCleanup(@() cameratoolbar(hFig, 'SetMode', 'nomode')); %#ok<NASGU>
             camorbit(hAx, 25, 0, 'data', [0 0 1]);
             drawnow;
-            testCase.verifyEqual(hAx.CameraTarget(:), rView, 'AbsTol', 1e-6, 'The target stays on the vehicle through an orbit');
+            testCase.verifyEqual(hAx.CameraTarget(:), rView*sAx, 'AbsTol', 1e-6*sAx, 'The target stays on the vehicle through an orbit');
             testCase.verifyEqual(abs(angleNegPiToPi(deg2rad(profile.chaseCamera.azDeg - 30))), deg2rad(25), 'AbsTol', deg2rad(0.5), 'The orbit retuned the chase azimuth');
             testCase.verifyEqual(profile.chaseCamera.rangeKm, 20, 'RelTol', 1e-6, 'Orbit keeps the range');
 
@@ -515,11 +525,11 @@ classdef RenderSceneAtTimeTest < matlab.uitest.TestCase
             %vehicle and the dolly becomes a range change
             cameratoolbar(hFig, 'SetMode', 'dollyfb');
             dir = (hAx.CameraTarget - hAx.CameraPosition); dir = dir/norm(dir);
-            hAx.CameraPosition = hAx.CameraPosition + 8*dir;   % 8 km closer
+            hAx.CameraPosition = hAx.CameraPosition + (8*sAx)*dir;   % 8 km closer
             drawnow;
-            testCase.verifyEqual(hAx.CameraTarget(:), rView, 'AbsTol', 1e-6, 'The target is re-pinned on the vehicle after a dolly');
+            testCase.verifyEqual(hAx.CameraTarget(:), rView*sAx, 'AbsTol', 1e-6*sAx, 'The target is re-pinned on the vehicle after a dolly');
             testCase.verifyEqual(profile.chaseCamera.rangeKm, 12, 'RelTol', 1e-3, 'The dolly retuned the chase range');
-            testCase.verifyEqual(norm(hAx.CameraPosition - hAx.CameraTarget), profile.chaseCamera.rangeKm, 'RelTol', 1e-6);
+            testCase.verifyEqual(norm(hAx.CameraPosition - hAx.CameraTarget), profile.chaseCamera.rangeKm*sAx, 'RelTol', 1e-6);
 
             %the next frame keeps the user's view
             cameratoolbar(hFig, 'SetMode', 'nomode');
@@ -529,7 +539,7 @@ classdef RenderSceneAtTimeTest < matlab.uitest.TestCase
 
             %a programmatic camera change with no gesture in progress is NOT
             %taken as user input: the next render restores the chase pose
-            hAx.CameraPosition = hAx.CameraPosition + [500 0 0];
+            hAx.CameraPosition = hAx.CameraPosition + (500*sAx)*[1 0 0];
             drawnow;
             testCase.verifyEqual(profile.chaseCamera.rangeKm, 12, 'RelTol', 1e-3, 'Chase offsets untouched by a programmatic change');
             lvd_renderSceneAtTime(t, lvdData, handles, app, "full");
@@ -626,22 +636,41 @@ classdef RenderSceneAtTimeTest < matlab.uitest.TestCase
             profile.cameraMode = LvdCameraModeEnum.Scripted;
 
             lvd_renderSceneAtTime(tStart, lvdData, handles, app, "full");
-            testCase.verifyEqual(hAx.CameraPosition, [1000 0 0], 'AbsTol', 1e-9);
+            sAx = LvdSceneNormalizer.getScale(hAx);
+            testCase.verifyEqual(hAx.CameraPosition, [1000 0 0]*sAx, 'AbsTol', 1e-9);
 
             lvd_renderSceneAtTime((tStart + tEnd)/2, lvdData, handles, app, "full");
-            testCase.verifyEqual(hAx.CameraPosition, [500 500 0], 'AbsTol', 1e-6, 'Linear midpoint of the two keyframes');
-            testCase.verifyEqual(hAx.CameraTarget, [0 0 50], 'AbsTol', 1e-6);
+            testCase.verifyEqual(hAx.CameraPosition, [500 500 0]*sAx, 'AbsTol', 1e-6*sAx, 'Linear midpoint of the two keyframes');
+            testCase.verifyEqual(hAx.CameraTarget, [0 0 50]*sAx, 'AbsTol', 1e-6*sAx);
             testCase.verifyEqual(hAx.CameraViewAngle, 15, 'AbsTol', 1e-9);
 
             lvd_renderSceneAtTime(tEnd, lvdData, handles, app, "full");
-            testCase.verifyEqual(hAx.CameraPosition, [0 1000 0], 'AbsTol', 1e-9);
+            testCase.verifyEqual(hAx.CameraPosition, [0 1000 0]*sAx, 'AbsTol', 1e-9);
 
             %a replot in scripted mode does not flash the saved manual camera
             %over the script: the first frame after the plot is the script's
             app.lvdEnhancementsRefresh(false);
             sliderTime = app.DispAxesTimeSlider.Value;
             expected = profile.cameraScript.evaluate(sliderTime, @(kf) kf.absTime, @(t) NaN(3,1));
-            testCase.verifyEqual(hAx.CameraPosition, expected.position, 'AbsTol', 1e-6);
+            testCase.verifyEqual(hAx.CameraPosition, expected.position*sAx, 'AbsTol', 1e-6*sAx);
+        end
+
+        function sceneIsNormalizedToUnitScale(testCase)
+            %The 3-D view nests the scene under a unit-scale transform so
+            %the longest axes span is ~1 while profiles stay in km.
+            [app, lvdData, handles, profile] = testCase.openPropagatedLvd();
+            hAx = app.dispAxes;
+
+            [t, ~, ~] = testCase.loggedPoseInViewFrame(lvdData, profile, 4);
+            lvd_renderSceneAtTime(t, lvdData, handles, app, "full");
+
+            hNorm = findobj(hAx, 'Tag', 'LvdUnitScale');
+            testCase.assertNotEmpty(hNorm, 'The normalization transform is in the 3-D axes');
+            sAx = LvdSceneNormalizer.getScale(hAx);
+            testCase.verifyGreaterThan(sAx, 0, 'The scale is positive');
+            testCase.verifyLessThan(sAx, 1, 'A planet-scale scene normalizes down');
+            spans = [diff(hAx.XLim), diff(hAx.YLim), diff(hAx.ZLim)];
+            testCase.verifyEqual(max(spans), 1, 'RelTol', 0.05, 'The longest axes span is ~1');
         end
 
         function overlayTextIsDrawnInTheMainAxesAndFollowsTime(testCase)

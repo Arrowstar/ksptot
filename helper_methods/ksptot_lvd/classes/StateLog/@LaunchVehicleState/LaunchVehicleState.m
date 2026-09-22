@@ -108,8 +108,16 @@ classdef LaunchVehicleState < matlab.mixin.SetGet & matlab.mixin.Copyable
             %connection at run time.  Hanging it here means it is invalidated
             %by exactly the same events that invalidate the connection memo
             %it is derived from.
-            tankStateTanks = [tankStates.tank];
-
+            if(isempty(tankStates))
+                %NB: [tankStates.tank] is double [] when tankStates is
+                %empty, which cannot be assigned to the typed
+                %cachedEngTankIndsTanks property.  This happens when
+                %plotting thrust (or T/W, mass flow, etc) over coast arcs
+                %with no active tanks.
+                tankStateTanks = obj.emptyTankArr;
+            else
+                tankStateTanks = [tankStates.tank];
+            end
             if(not(isempty(obj.cachedEngTankInds)) && ...
                LaunchVehicleState.isSameHandleArray(obj.cachedEngTankIndsTanks, tankStateTanks) && ...
                LaunchVehicleState.isSameHandleArray(obj.cachedEngTankIndsStgStates, stgStates))
@@ -230,7 +238,17 @@ classdef LaunchVehicleState < matlab.mixin.SetGet & matlab.mixin.Copyable
         function tf = isSameHandleArray(arrA, arrB)
             %Element-wise handle identity.  Deliberately not isequal(), which
             %compares property values rather than object identity.
-            tf = numel(arrA) == numel(arrB) && all(arrA(:) == arrB(:));
+            if(numel(arrA) ~= numel(arrB))
+                tf = false;
+                return;
+            end
+            if(isempty(arrA) && isempty(arrB))
+                %Avoid == on empty arrays of different types (e.g. double []
+                %vs typed empty), which may error.
+                tf = true;
+                return;
+            end
+            tf = all(arrA(:) == arrB(:));
         end
     end
 end
