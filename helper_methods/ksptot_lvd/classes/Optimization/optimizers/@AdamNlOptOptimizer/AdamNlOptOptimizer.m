@@ -349,7 +349,8 @@ classdef AdamNlOptOptimizer < AbstractGradientOptimizer
             switch state
                 case 'init'
                     if(isvalid(hDispAxes))
-                        tLayout = tiledlayout(hDispAxes, lvd_numObserveTiles(recorder),1);
+                        % tLayout = tiledlayout(hDispAxes, lvd_numObserveTiles(recorder),1);
+                        tLayout = tiledlayout(hDispAxes, 3,1);
                     end
                     fValPlotIsLog = true;
             end
@@ -416,12 +417,12 @@ classdef AdamNlOptOptimizer < AbstractGradientOptimizer
             GLOBAL_AppThemer.themeWidget(hPlot2, GLOBAL_AppThemer.selTheme);
             GLOBAL_AppThemer.themeWidget(hPlot3, GLOBAL_AppThemer.selTheme);
 
-            %Per-constraint violation history (grows the layout to 4 tiles
-            %once the recorder holds constraint data).
-            hPlot4 = lvd_plotConstraintHistoryTile(tLayout, recorder, 4);
-            if(not(isempty(hPlot4)))
-                GLOBAL_AppThemer.themeWidget(hPlot4, GLOBAL_AppThemer.selTheme);
-            end
+            % %Per-constraint violation history (grows the layout to 4 tiles
+            % %once the recorder holds constraint data).
+            % hPlot4 = lvd_plotConstraintHistoryTile(tLayout, recorder, 4);
+            % if(not(isempty(hPlot4)))
+            %     GLOBAL_AppThemer.themeWidget(hPlot4, GLOBAL_AppThemer.selTheme);
+            % end
         end
     end
 end

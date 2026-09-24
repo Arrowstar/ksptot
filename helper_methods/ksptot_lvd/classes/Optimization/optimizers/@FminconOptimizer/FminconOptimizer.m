@@ -278,7 +278,8 @@ classdef FminconOptimizer < AbstractGradientOptimizer
                     if(isvalid(hDispAxes))
 %                         set(hDispAxes,'Visible','on');
 %                         subplot(hDispAxes);
-                        tLayout = tiledlayout(hDispAxes, lvd_numObserveTiles(recorder),1);
+                        % tLayout = tiledlayout(hDispAxes, lvd_numObserveTiles(recorder),1);
+                        tLayout = tiledlayout(hDispAxes, 3,1); %I don't want to plot the time history of the individual constraints right now
 %                         axes(hDispAxes);
                     end
                     fValPlotIsLog = true;
@@ -357,10 +358,10 @@ classdef FminconOptimizer < AbstractGradientOptimizer
 
             %Per-constraint violation history (grows the layout to 4 tiles
             %once the recorder holds constraint data).
-            hPlot4 = lvd_plotConstraintHistoryTile(tLayout, recorder, 4);
-            if(not(isempty(hPlot4)))
-                GLOBAL_AppThemer.themeWidget(hPlot4, GLOBAL_AppThemer.selTheme);
-            end
+            % hPlot4 = lvd_plotConstraintHistoryTile(tLayout, recorder, 4);
+            % if(not(isempty(hPlot4)))
+            %     GLOBAL_AppThemer.themeWidget(hPlot4, GLOBAL_AppThemer.selTheme);
+            % end
         end
     end
 end
