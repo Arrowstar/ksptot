@@ -11,7 +11,15 @@ classdef SurrogateOptimizer < AbstractOptimizer
             obj.options = SurrogateOptimizerOptions();
         end
         
-        function [exitflag, message] = optimize(obj, lvdOpt, writeOutput, callOutputFcn, hLvdMainGUI)
+        function [exitflag, message] = optimize(obj, lvdOpt, writeOutput, callOutputFcn, hLvdMainGUI, progressFcn)
+            arguments
+                obj
+                lvdOpt
+                writeOutput
+                callOutputFcn
+                hLvdMainGUI
+                progressFcn = [];
+            end
             [x0All, actVars, varNameStrs] = lvdOpt.vars.getTotalScaledXVector();
             [lbAll, ubAll, lbUsAll, ubUsAll] = lvdOpt.vars.getTotalScaledBndsVector();
             
@@ -59,6 +67,10 @@ classdef SurrogateOptimizer < AbstractOptimizer
                 outputFnc = @(x, optimValues, state) SurrogateOptimizer.getOutputFunction(x, optimValues, state, hOptimStatusLabel, hFinalStateOptimLabel, hDispAxes, hCancelButton, ...
                                                                                           problem.objective, problem.lb, problem.ub, celBodyData, recorder, propNames, writeOutput, varNameStrs, lbUsAll, ubUsAll, optimStartTic);
                 problem.options.OutputFcn = outputFnc;
+            elseif(not(isempty(progressFcn)))
+                %Headless progress for case runs: no GUI, no extra
+                %propagation, just the numbers.  Never stops the solver.
+                problem.options.OutputFcn = @(x, optimValues, state) SurrogateOptimizer.reportHeadlessProgress(optimValues, state, progressFcn);
             end
             
             [exitflag, message] = lvd_executeOptimProblem(celBodyData, writeOutput, problem, recorder, callOutputFcn);
@@ -106,6 +118,19 @@ classdef SurrogateOptimizer < AbstractOptimizer
             end
         end
         
+        function stop = reportHeadlessProgress(optimValues, state, progressFcn)
+            %reportHeadlessProgress Forwards one solver iteration to a case
+            %run's progress listener.  GUI-free and never stops.
+            stop = false;
+
+            if(strcmp(state, 'iter') || strcmp(state, 'init'))
+                progressFcn(lvd_optimValuesFieldOrNaN(optimValues, 'iteration'), ...
+                            lvd_optimValuesFieldOrNaN(optimValues, 'fval'), ...
+                            lvd_optimValuesFieldOrNaN(optimValues, 'constrviolation'), ...
+                            lvd_optimValuesFieldOrNaN(optimValues, 'firstorderopt'));
+            end
+        end
+
         function stop = getOutputFunction(x, optimValues, state, hOptimStatusLabel, hFinalStateOptimLabel, hDispAxes, hCancelButton, ...
                                           objFcn, lb, ub, celBodyData, recorder, propNames, writeOutput, varLabels, lbUsAll, ubUsAll, optimStartTic)
             switch state

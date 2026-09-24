@@ -11,7 +11,15 @@ classdef PatternSearchOptimizer < AbstractOptimizer
             obj.options = PatternSearchOptions();
         end
         
-        function [exitflag, message] = optimize(obj, lvdOpt, writeOutput, callOutputFcn, hLvdMainGUI)
+        function [exitflag, message] = optimize(obj, lvdOpt, writeOutput, callOutputFcn, hLvdMainGUI, progressFcn)
+            arguments
+                obj
+                lvdOpt
+                writeOutput
+                callOutputFcn
+                hLvdMainGUI
+                progressFcn = [];
+            end
             [x0All, actVars, varNameStrs] = lvdOpt.vars.getTotalScaledXVector();
             [lbAll, ubAll, lbUsAll, ubUsAll] = lvdOpt.vars.getTotalScaledBndsVector();
 %             typicalX = lvdOpt.vars.getTypicalScaledXVector();
@@ -69,6 +77,10 @@ classdef PatternSearchOptimizer < AbstractOptimizer
                 outputFnc = @(optimvalues,options,flag) PatternSearchOptimizer.getOutputFunction(optimvalues,options,flag, hOptimStatusLabel, hFinalStateOptimLabel, hDispAxes, hCancelButton, ...
                                                                                               problem.objective, problem.lb, problem.ub, celBodyData, recorder, propNames, writeOutput, varNameStrs, lbUsAll, ubUsAll, optimStartTic);
                 problem.options.OutputFcn = outputFnc;
+            elseif(not(isempty(progressFcn)))
+                %Headless progress for case runs: no GUI, no extra
+                %propagation, just the numbers.  Never stops the solver.
+                problem.options.OutputFcn = @(optimvalues,options,flag) PatternSearchOptimizer.reportHeadlessProgress(optimvalues,options,flag, progressFcn);
             end
             
             [exitflag, message] = lvd_executeOptimProblem(celBodyData, writeOutput, problem, recorder, callOutputFcn);
@@ -99,6 +111,34 @@ classdef PatternSearchOptimizer < AbstractOptimizer
     end
     
     methods(Static, Access=private)
+        function [stop,options,optchanged] = reportHeadlessProgress(optimvalues,options,flag, progressFcn)
+            %reportHeadlessProgress Forwards one solver iteration to a case
+            %run's progress listener.  GUI-free and never stops.
+            stop = false;
+            optchanged = false;
+
+            if(strcmp(flag, 'iter') || strcmp(flag, 'init'))
+                progressFcn(lvd_optimValuesFieldOrNaN(optimvalues, 'iteration'), ...
+                            lvd_optimValuesFieldOrNaN(optimvalues, 'fval'), ...
+                            PatternSearchOptimizer.getHeadlessConstrViolation(optimvalues), ...
+                            lvd_optimValuesFieldOrNaN(optimvalues, 'firstorderopt'));
+            end
+        end
+
+        function maxConstr = getHeadlessConstrViolation(optimvalues)
+            %getHeadlessConstrViolation Same violation the GUI path reports,
+            %without any GUI.  NaN when the struct carries nothing usable.
+            try
+                maxConstr = PatternSearchOptimizer.getConstrViolation(optimvalues);
+
+                if(not(isnumeric(maxConstr)) || not(isscalar(maxConstr)) || not(isfinite(maxConstr)))
+                    maxConstr = NaN;
+                end
+            catch
+                maxConstr = NaN;
+            end
+        end
+
         function [stop,options,optchanged] = getOutputFunction(optimValues,options,flag, hOptimStatusLabel, hFinalStateOptimLabel, hDispAxes, hCancelButton, ...
                                                                objFcn, lb, ub, celBodyData, recorder, propNames, writeOutput, varLabels, lbUsAll, ubUsAll, optimStartTic)
             

@@ -16,7 +16,15 @@ classdef AdamNlOptOptimizer < AbstractGradientOptimizer
             obj.options = AdamNlOptOptions();
         end
 
-        function [exitflag, message] = optimize(obj, lvdOpt, writeOutput, callOutputFcn, hLvdMainGUI)
+        function [exitflag, message] = optimize(obj, lvdOpt, writeOutput, callOutputFcn, hLvdMainGUI, progressFcn)
+            arguments
+                obj
+                lvdOpt
+                writeOutput
+                callOutputFcn
+                hLvdMainGUI
+                progressFcn = [];
+            end
             [x0All, actVars, varNameStrs] = lvdOpt.vars.getTotalScaledXVector();
             [lbAll, ubAll, lbUsAll, ubUsAll] = lvdOpt.vars.getTotalScaledBndsVector();
             typicalX = lvdOpt.vars.getTypicalScaledXVector();
@@ -145,8 +153,11 @@ classdef AdamNlOptOptimizer < AbstractGradientOptimizer
 
             %An IterationFcn is still needed with no GUI whenever maxTime is
             %finite, because the solver itself never enforces it (see
-            %iterationFunc).
-            if(callOutputFcn || isfinite(maxTime))
+            %iterationFunc).  With a progress listener the headless reporter
+            %takes that over so both happen.
+            if(not(isempty(progressFcn)) && not(callOutputFcn))
+                problem.options.IterationFcn = @(info) AdamNlOptOptimizer.reportHeadlessProgress(info, progressFcn, maxTime, optimStartTic);
+            elseif(callOutputFcn || isfinite(maxTime))
                 problem.options.IterationFcn = @(info) AdamNlOptOptimizer.iterationFunc(info, outputFnc, maxTime, optimStartTic);
             end
 
@@ -190,6 +201,22 @@ classdef AdamNlOptOptimizer < AbstractGradientOptimizer
     end
 
     methods(Static, Access=private)
+        function stop = reportHeadlessProgress(info, progressFcn, maxTime, optimStartTic)
+            %reportHeadlessProgress Forwards one solver iteration to a case
+            %run's progress listener, GUI-free.  Keeps the maxTime budget
+            %enforcement that iterationFunc provides, since this replaces it.
+            stop = false;
+
+            if(isfinite(maxTime) && toc(optimStartTic) > maxTime)
+                stop = true;
+            end
+
+            progressFcn(lvd_optimValuesFieldOrNaN(info, 'iteration'), ...
+                        lvd_optimValuesFieldOrNaN(info, 'fval'), ...
+                        lvd_optimValuesFieldOrNaN(info, 'constrviolation'), ...
+                        lvd_optimValuesFieldOrNaN(info, 'firstorderopt'));
+        end
+
         function stop = iterationFunc(info, outputFnc, maxTime, optimStartTic)
             %iterationFunc Adapt adamnlopt's IterationFcn(info) hook onto LVD's
             %fmincon style output function.

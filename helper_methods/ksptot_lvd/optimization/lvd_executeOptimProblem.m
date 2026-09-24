@@ -11,6 +11,14 @@ function [exitflag, message] = lvd_executeOptimProblem(celBodyData, writeOutput,
             useParallel = problem.UseParallel;
         end
     end
+
+    %Since R2026 optimoptions reports UseParallel as a string ("off") rather
+    %than logical; accept either form so old and new MATLAB agree.
+    if(isstring(useParallel) || ischar(useParallel))
+        useParallel = ismember(lower(string(useParallel)), ["on", "always", "yes", "true"]);
+    else
+        useParallel = logical(useParallel);
+    end
     
     if(useParallel)
         pp=gcp('nocreate');

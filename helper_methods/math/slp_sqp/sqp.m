@@ -380,7 +380,13 @@ OutputFcn=isfield(Opts,'OutputFcn') && isa(Opts.OutputFcn,'function_handle');
 PlotFcn  =isfield(Opts,'PlotFcns') && ~isempty(Opts.PlotFcns);
 trouble=''; UpdHess=[];
 
-if(not(isempty(Opts.UseParallel)) && Opts.UseParallel == true && not(isempty(gcp('nocreate'))))
+%Since R2026 UseParallel arrives as a string ("off"/"on") rather than
+%logical; accept either form.
+useParOpt = Opts.UseParallel;
+if(isstring(useParOpt) || ischar(useParOpt))
+    useParOpt = ismember(lower(string(useParOpt)), ["on", "always", "yes", "true"]);
+end
+if(not(isempty(useParOpt)) && useParOpt && not(isempty(gcp('nocreate'))))
     pp = gcp();
     ParallelM = pp.NumWorkers;
 else

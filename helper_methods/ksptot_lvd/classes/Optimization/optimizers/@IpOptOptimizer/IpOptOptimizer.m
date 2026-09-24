@@ -11,7 +11,15 @@ classdef IpOptOptimizer < AbstractGradientOptimizer
             obj.options = IpoptOptions();
         end
         
-        function [exitflag, message] = optimize(obj, lvdOpt, writeOutput, callOutputFcn, hLvdMainGUI)
+        function [exitflag, message] = optimize(obj, lvdOpt, writeOutput, callOutputFcn, hLvdMainGUI, progressFcn)
+            arguments
+                obj
+                lvdOpt
+                writeOutput
+                callOutputFcn
+                hLvdMainGUI
+                progressFcn = [];
+            end
             global ipoptFuncCount ipoptLastXVect %#ok<GVMIS> 
             ipoptFuncCount = 0;
             
@@ -97,6 +105,11 @@ classdef IpOptOptimizer < AbstractGradientOptimizer
                 
                 outputFnc = @(iterNum, fVal, iterInfo) IpOptOptimizer.outputFunc(iterNum, fVal, iterInfo, hOptimStatusLabel, hFinalStateOptimLabel, hDispAxes, hCancelButton, objFuncWrapper, cFun, lbAll, ubAll, celBodyData, recorder, propNames, writeOutput, varNameStrs, lbUsAll, ubUsAll, optimStartTic, lvdOpt, evtToStartScriptExecAt);
                 problem.funcs.iterfunc = outputFnc;
+            elseif(not(isempty(progressFcn)))
+                %Headless progress for case runs: primal/dual infeasibilities
+                %straight off the solver info, no extra propagation.  IPOPT's
+                %iterfunc returns "keep going", so this returns true.
+                problem.funcs.iterfunc = @(iterNum, fVal, iterInfo) IpOptOptimizer.reportHeadlessProgress(iterNum, fVal, iterInfo, progressFcn);
             end
             
             [exitflag, message] = lvd_executeOptimProblem(celBodyData, writeOutput, problem, recorder, callOutputFcn);
@@ -201,6 +214,25 @@ classdef IpOptOptimizer < AbstractGradientOptimizer
     end
 
     methods(Static, Access=private)
+        function keepGoing = reportHeadlessProgress(iterNum, fVal, iterInfo, progressFcn)
+            %reportHeadlessProgress Forwards one solver iteration to a case
+            %run's progress listener: primal infeasibility as the violation,
+            %dual infeasibility as optimality, no extra propagation.
+            %IPOPT's iterfunc returns "keep going", so this returns true.
+            keepGoing = true;
+
+            if(not(isnumeric(iterNum)) || not(isscalar(iterNum)) || not(isfinite(iterNum)))
+                iterNum = NaN;
+            end
+            if(not(isnumeric(fVal)) || not(isscalar(fVal)) || not(isfinite(fVal)))
+                fVal = NaN;
+            end
+
+            progressFcn(iterNum, fVal, ...
+                        lvd_optimValuesFieldOrNaN(iterInfo, 'inf_pr'), ...
+                        lvd_optimValuesFieldOrNaN(iterInfo, 'inf_du'));
+        end
+
         function stop = outputFunc(iterNum, fVal, iterInfo, hOptimStatusLabel, hFinalStateOptimLabel, hDispAxes, hCancelButton, objFcn, constrFunc, lb, ub, celBodyData, recorder, propNames, writeOutput, varLabels, lbUsAll, ubUsAll, optimStartTic, lvdOpt, evtToStartScriptExecAt)
             global ipoptFuncCount ipoptLastXVect
             

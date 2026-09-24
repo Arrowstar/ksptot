@@ -507,6 +507,76 @@ classdef LvdOptimTableModel
                 end
             end
         end
+
+        function [xAll, nameStrs] = getAllElementValuesAndNames(var, evtNum, varLocType)
+            %getAllElementValuesAndNames Values and names for EVERY element.
+            %
+            %Variables report values and names only for their active
+            %elements, so the use flags are temporarily set to all-true and
+            %restored afterwards.  The variable objects are handles but no
+            %listeners hang off the use flags, so this is side-effect free.
+            useTf0 = var.getUseTfForVariable();
+            restore = onCleanup(@() var.setUseTfForVariable(useTf0));
+
+            var.setUseTfForVariable(true(size(useTf0)));
+            xAll = var.getXsForVariable();
+            xAll = xAll(:)';
+            nameStrs = var.getStrNamesOfVars(evtNum, varLocType);
+
+            clear restore;
+        end
+
+        function x = getElementValue(var, elemInd)
+            %getElementValue The stored value of one element of a variable,
+            %active or not.
+            arguments
+                var(1,1) AbstractOptimizationVariable
+                elemInd(1,1) double
+            end
+
+            useTf0 = var.getUseTfForVariable();
+            restore = onCleanup(@() var.setUseTfForVariable(useTf0));
+
+            var.setUseTfForVariable(true(size(useTf0)));
+            xAll = var.getXsForVariable();
+            xAll = xAll(:)';
+
+            clear restore;
+
+            if(elemInd >= 1 && elemInd <= numel(xAll))
+                x = xAll(elemInd);
+            else
+                x = NaN;
+            end
+        end
+
+        function setElementValue(var, elemInd, value)
+            %setElementValue Writes one element of a variable without
+            %disturbing the others.
+            %
+            %   updateObjWithVarValue consumes its input positionally over
+            %   the ACTIVE elements only, so a one-hot use mask makes it
+            %   write exactly the element asked for.  That works for every
+            %   AbstractOptimizationVariable subclass without any of them
+            %   knowing about it, which is the whole reason a sweep can
+            %   target an arbitrary variable element.
+            arguments
+                var(1,1) AbstractOptimizationVariable
+                elemInd(1,1) double
+                value(1,1) double
+            end
+
+            useTf0 = var.getUseTfForVariable();
+            restore = onCleanup(@() var.setUseTfForVariable(useTf0));
+
+            oneHot = false(size(useTf0));
+            oneHot(elemInd) = true;
+
+            var.setUseTfForVariable(oneHot);
+            var.updateObjWithVarValue(value);
+
+            clear restore;
+        end
     end
 
     methods(Static, Access=private)
@@ -548,24 +618,6 @@ classdef LvdOptimTableModel
             if(not(isempty(evt)) && evt.disableOptim)
                 tf = true;
             end
-        end
-
-        function [xAll, nameStrs] = getAllElementValuesAndNames(var, evtNum, varLocType)
-            %getAllElementValuesAndNames Values and names for EVERY element.
-            %
-            %Variables report values and names only for their active
-            %elements, so the use flags are temporarily set to all-true and
-            %restored afterwards.  The variable objects are handles but no
-            %listeners hang off the use flags, so this is side-effect free.
-            useTf0 = var.getUseTfForVariable();
-            restore = onCleanup(@() var.setUseTfForVariable(useTf0));
-
-            var.setUseTfForVariable(true(size(useTf0)));
-            xAll = var.getXsForVariable();
-            xAll = xAll(:)';
-            nameStrs = var.getStrNamesOfVars(evtNum, varLocType);
-
-            clear restore;
         end
 
         function flags = expandFlag(flags, numElems)

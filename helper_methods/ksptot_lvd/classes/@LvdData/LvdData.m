@@ -19,8 +19,21 @@ classdef LvdData < matlab.mixin.SetGet
         graphAnalysis LvdGraphicalAnalysis
         sensors LvdSensorSet
         sensorTgts LvdSensorTargetSet
-        
-        celBodyData 
+
+        %Trade study and dispersion definitions.  Saved with the mission so a
+        %user does not retype a twenty parameter sweep every time the window
+        %opens.  Neither is read by propagation.
+        caseMatrixSetup LvdSweepSetup
+        monteCarloSetup LvdSweepSetup
+
+        %Stored Monte Carlo results, newest last.  Saved with the mission
+        %so past dispersion runs travel with the case that produced them.
+        %A run's inputs/outputs are plain numbers (no mission objects), so
+        %entries stay small.  Case-bound clones shed these (see
+        %clearStoredSweepResults) so per-case files stay lean.
+        monteCarloResults(1,:) LvdSweepResults = LvdSweepResults.empty(1,0);
+
+        celBodyData
         ksptotVer char
 
         userData
@@ -45,6 +58,9 @@ classdef LvdData < matlab.mixin.SetGet
             obj.graphAnalysis = LvdGraphicalAnalysis(obj);
             obj.sensors = LvdSensorSet(obj);
             obj.sensorTgts = LvdSensorTargetSet(obj);
+
+            obj.caseMatrixSetup = LvdSweepSetup();
+            obj.monteCarloSetup = LvdSweepSetup.getDefaultMonteCarloSetup();
 
             obj.id = rand();
         end
@@ -811,11 +827,91 @@ classdef LvdData < matlab.mixin.SetGet
                 nonSeqEvts(i).evt.createUpdatedSetKinematicStateObjs();
             end
 
+            if(isempty(obj.caseMatrixSetup))
+                obj.caseMatrixSetup = LvdSweepSetup();
+            end
+
+            if(isempty(obj.monteCarloSetup))
+                obj.monteCarloSetup = LvdSweepSetup.getDefaultMonteCarloSetup();
+            end
+
+            if(isempty(obj.monteCarloResults))
+                obj.monteCarloResults = LvdSweepResults.empty(1,0);
+            end
+
             if(isempty(obj.id) || obj.id == 0)
                 obj.id = rand();
             end
         end
-        
+    end
+
+    methods
+        function storeMonteCarloResults(obj, results)
+            %storeMonteCarloResults Files one Monte Carlo run's results onto
+            %the mission (newest last), independently of whatever is already
+            %there.  The stored copy is independent of the caller's handle,
+            %and the run name is made unique so repeated stores never merge.
+            arguments
+                obj(1,1) LvdData
+                results(1,1) LvdSweepResults
+            end
+
+            stored = getArrayFromByteStream(getByteStreamFromArray(results));
+            stored.runName = obj.makeUniqueStoredRunName(results.runName);
+            stored.id = rand();
+
+            obj.monteCarloResults(end+1) = stored;
+        end
+
+        function deleteMonteCarloResultsAtInd(obj, ind)
+            %deleteMonteCarloResultsAtInd Drops stored runs by index.
+            arguments
+                obj(1,1) LvdData
+                ind(1,:) double
+            end
+
+            ind = ind(ind >= 1 & ind <= numel(obj.monteCarloResults));
+            obj.monteCarloResults(ind) = [];
+        end
+
+        function clearStoredSweepResults(obj)
+            %clearStoredSweepResults Drops stored sweep results.  Called on
+            %case-bound mission clones (never the template) so per-case
+            %files and worker traffic stay lean.
+            arguments
+                obj(1,1) LvdData
+            end
+
+            obj.monteCarloResults = LvdSweepResults.empty(1,0);
+        end
+
+        function name = makeUniqueStoredRunName(obj, base)
+            %makeUniqueStoredRunName base, base (2), base (3), ... whichever
+            %is free among the stored runs.
+            arguments
+                obj(1,1) LvdData
+                base(1,:) char = 'MonteCarlo'
+            end
+
+            if(isempty(strtrim(base)))
+                base = 'MonteCarlo';
+            end
+
+            taken = {};
+            if(not(isempty(obj.monteCarloResults)))
+                taken = {obj.monteCarloResults.runName};
+            end
+
+            name = base;
+            k = 2;
+            while(ismember(name, taken))
+                name = sprintf('%s (%u)', base, k);
+                k = k + 1;
+            end
+        end
+    end
+
+    methods(Static)
         function obj = saveobj(obj)
             obj.stateLog.clearStateLog();
         end

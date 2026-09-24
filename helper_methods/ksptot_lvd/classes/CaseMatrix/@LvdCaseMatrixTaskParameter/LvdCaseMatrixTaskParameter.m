@@ -1,25 +1,34 @@
-classdef LvdCaseMatrixTaskParameter < matlab.mixin.SetGet
-    %LvdCaseMatrixTaskParameters Summary of this class goes here
-    %   Detailed explanation goes here
-    
+classdef LvdCaseMatrixTaskParameter < LvdSweepPluginVarParameter
+    %LvdCaseMatrixTaskParameter DEPRECATED.  A plugin variable sweep
+    %parameter carrying the value for one case.
+    %
+    %   Superseded by LvdSweepPluginVarParameter, which is one of several
+    %   AbstractLvdSweepParameter kinds, and by LvdCaseMatrixTask's own
+    %   params/paramValues pair.  Kept as a subclass so case files and
+    %   missions saved by an older build still load: an old object
+    %   deserializes into something that is still a usable sweep parameter.
+    %
+    %   Do not use in new code.
+
     properties
-        pluginVar LvdPluginOptimVarWrapper
-        newVal(1,1) double
-        
-        id(1,1) double
+        newVal(1,1) double = 0;
     end
-    
+
     methods
         function obj = LvdCaseMatrixTaskParameter(pluginVar, newVal)
-            obj.pluginVar = pluginVar;
+            arguments
+                pluginVar LvdPluginOptimVarWrapper = LvdPluginOptimVarWrapper.empty(1,0);
+                newVal(1,1) double = 0;
+            end
+
+            obj@LvdSweepPluginVarParameter(pluginVar);
+
             obj.newVal = newVal;
-            
-            obj.id = rand();
         end
-        
+
         function updatePluginVar(obj)
-            obj.pluginVar.value = obj.newVal;
-            obj.pluginVar.setIfVariableIsActive(false); %need to turn off any parameters that could be optimized so they stay put at the fixed value
+            %updatePluginVar DEPRECATED.  Use applyValue.
+            obj.applyValue(obj.newVal);
         end
     end
 end

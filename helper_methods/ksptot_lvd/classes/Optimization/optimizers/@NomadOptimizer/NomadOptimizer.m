@@ -11,7 +11,15 @@ classdef NomadOptimizer < AbstractOptimizer
             obj.options = NomadOptions();
         end
         
-        function [exitflag, message] = optimize(obj, lvdOpt, writeOutput, callOutputFcn, hLvdMainGUI)
+        function [exitflag, message] = optimize(obj, lvdOpt, writeOutput, callOutputFcn, hLvdMainGUI, progressFcn)
+            arguments
+                obj
+                lvdOpt
+                writeOutput
+                callOutputFcn
+                hLvdMainGUI
+                progressFcn = [];
+            end
             [x0All, actVars, varNameStrs] = lvdOpt.vars.getTotalScaledXVector();
             [lbAll, ubAll, lbUsAll, ubUsAll] = lvdOpt.vars.getTotalScaledBndsVector();
             typicalX = lvdOpt.vars.getTypicalScaledXVector();
@@ -91,6 +99,11 @@ classdef NomadOptimizer < AbstractOptimizer
                 nomadOutput2 = @(iter, fval, x) nomadOutput1(iter, fval, x, 'iter');
                 problem.options.iterfun = nomadOutput2;
                 nomadOutput1(0,NaN,x0All,'init');
+            elseif(not(isempty(progressFcn)))
+                %Headless progress for case runs: iteration and fval only
+                %(a violation would cost an extra propagation per iteration;
+                %the final one is harvested at completion).  Never stops.
+                problem.options.iterfun = @(iter, fval, x) NomadOptimizer.reportHeadlessProgress(iter, fval, progressFcn);
             end
             
             problem.UseParallel = useParallel;
@@ -122,6 +135,19 @@ classdef NomadOptimizer < AbstractOptimizer
     end
     
     methods(Static, Access=private)
+        function stop = reportHeadlessProgress(iter, fval, progressFcn)
+            %reportHeadlessProgress Forwards one solver evaluation to a case
+            %run's progress listener.  GUI-free and never stops.  NOMAD
+            %reports evaluations, not major iterations, and no violation
+            %without an extra propagation, so those read NaN here; the
+            %final violation is harvested at completion.
+            stop = false;
+
+            if(isfinite(iter) && isfinite(fval))
+                progressFcn(iter, fval, NaN, NaN);
+            end
+        end
+
         function [f, stateLog] = nomadObjFuncWrapper(x, objFuncWrapper)
             global nomadCachedX nomadCachedStateLog
             

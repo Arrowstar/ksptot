@@ -64,7 +64,15 @@ classdef LvdOptimization < matlab.mixin.SetGet
             obj.customFiniteDiffsCalcMethod = CustomFiniteDiffsCalculationMethod();
         end
         
-        function [exitflag, message] = optimize(obj, writeOutput, callOutputFcn, hLvdMainGUI)     
+        function [exitflag, message] = optimize(obj, writeOutput, callOutputFcn, hLvdMainGUI, progressFcn)
+            arguments
+                obj
+                writeOutput
+                callOutputFcn
+                hLvdMainGUI
+                progressFcn = [];
+            end
+
             obj.vars.removeUselessVars();
             obj.vars.sortVarsByEvtNum();
             optimizer = obj.getSelectedOptimizer();
@@ -72,25 +80,48 @@ classdef LvdOptimization < matlab.mixin.SetGet
             [x0All, actVars, ~] = obj.vars.getTotalScaledXVector();
 
             if(isempty(x0All) && isempty(actVars))
-                uialert(hLvdMainGUI, 'There are no optimization variables enabled in this mission.  Optimization requires at least one variable.  Please enable at least one variable to continue with optimization.', 'Launch Vehicle Designer', 'Icon','error');
+                message = 'There are no optimization variables enabled in this mission.  Optimization requires at least one variable.  Please enable at least one variable to continue with optimization.';
+
+                %consoleOptimize and the case matrix pass an empty handle:
+                %there is no figure to raise a dialog against, and uialert([])
+                %errors, which turned "no variables enabled" into an opaque
+                %crash in every headless run.  -Inf is the exit flag callers
+                %already read as "failed due to error".
+                if(isempty(hLvdMainGUI))
+                    disp(message);
+                else
+                    uialert(hLvdMainGUI, message, 'Launch Vehicle Designer', 'Icon','error');
+                end
+
+                exitflag = -Inf;
 
                 return;
             end
 
-            [exitflag, message] = optimizer.optimize(obj, writeOutput, callOutputFcn, hLvdMainGUI);
+            [exitflag, message] = optimizer.optimize(obj, writeOutput, callOutputFcn, hLvdMainGUI, progressFcn);
         end
-        
-        function [exitflag, message] = consoleOptimize(obj)
-            global options_gravParamType %#ok<GVMIS> 
-            
+
+        function [exitflag, message] = consoleOptimize(obj, progressFcn)
+            %consoleOptimize Headless optimization: no Observe window, no
+            %dialogs.  progressFcn, when given, is called as
+            %progressFcn(iteration, fval, maxConstrViol, optimality) after
+            %every solver iteration the selected optimizer reports; it is
+            %how case-matrix runs watch each case converge.
+            arguments
+                obj
+                progressFcn = [];
+            end
+
+            global options_gravParamType %#ok<GVMIS>
+
             if(isempty(options_gravParamType))
                 options_gravParamType = 'kspStockLike';
             end
-            
+
             writeOutput = @(varargin) disp('');
             callOutputFcn = false;
-            
-            [exitflag, message] = obj.optimize(writeOutput, callOutputFcn, []);
+
+            [exitflag, message] = obj.optimize(writeOutput, callOutputFcn, [], progressFcn);
         end
         
         function optimizer = getSelectedOptimizer(obj)

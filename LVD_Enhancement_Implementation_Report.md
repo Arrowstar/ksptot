@@ -907,6 +907,181 @@ test). No `.mlapp` change — the launcher menu already exists and the window is
 upgrade, "set from camera" round-trip, summary string); `CameraMathTest`, `ViewProfileF8PersistenceTest`,
 `RenderSceneAtTimeTest` and `ViewPlaybackGuiTest` extended for the new mode.
 
+### 7.4g Generalized Case Matrix (G1) and Monte Carlo dispersion (G2) (2026-09-23)
+
+Built on the engine already in the tree (parameters, variations, sampler,
+responses, setup/results, dual dispatch, `LvdData.caseMatrixSetup` /
+`monteCarloSetup`, deprecated `LvdCaseMatrixTaskParameter` subclass,
+`LvdOptimization` diary fix, `LvdOptimTableModel` element accessors) by
+finishing the plan's GUI and test sections. No wind (D1 unbuilt) and no
+constraint bounds as Monte Carlo sources, per the user's scoping decision;
+both remain Case Matrix sweep parameters.
+
+- **`lvd_runCaseMatrix_App.mlapp` rebuilt** with `lvdfixCanvasizeG1`
+  (+ follow-ups `G1b`/`G1c`/`G1d`): the plugin-variable-only `GridLayout2`
+  subtree is gone, replaced by a `CaseMatrixTabs` tab group (Parameters /
+  Sampling and Run / Responses / Output / Status) plus an `OpenResultsButton`
+  on the status bar — all real canvas components, 67 in the model. The
+  private section comes from the plan's `g1_src/editableSection.txt`
+  (setup-backed, no plugin-var gate); ~25 UI callbacks are new. The setup
+  edited is `lvdData.caseMatrixSetup` itself, so trade studies persist.
+- **Fixes found while wiring it:** a listbox with nonempty `ItemsData`
+  reports `Value` in `ItemsData` space, so Add reads indices, not labels
+  (`G1c`, same fix in the Monte Carlo window); `getEnumForListboxStr`
+  returns `[enum, ind]`, which the Add-Response callback had backwards
+  (`G1d`); a `uitabgroup` directly under a `uipanel` does not fill it, so
+  the tabs sit in a `PanelGrid` (`G1b`). Tooling: `lvdfixCanvasize` now
+  ignores blank padding when comparing the editable region with the code
+  data (the untouched app differed by blank lines only) and
+  `LvdfixCanvasCtx.deleteComponent` callers must purge stale order-map keys
+  after a cascading delete (new `purgeStaleKeys` step in `G1`).
+- **New programmatic windows** (F8 rule: no `registerApp`):
+  `lvd_runMonteCarlo_App.m` (dispersion table, N/seed/workers, responses,
+  run/cancel/progress, Open Results; edits a deep copy, writes
+  `monteCarloSetup` back on Run) and `lvd_SweepResultsGUI_App.m` (data
+  table + CSV, scatter with a two-input-grid carpet overlay, histogram/CDF,
+  percentile table, 1/2/3σ covariance ellipses). Scatter vectors are
+  row-aligned across NaN responses so inputs stay with their own case.
+- **Main GUI:** `RunMonteCarloMenu` + `OpenSweepResultsMenu` in the
+  Simulation menu after `RunCaseMatrixMenu` (`lvdfixCanvasizeG2`, canvas
+  components with tooltips). Drift still exactly the 7 known pre-existing
+  comment lines; case matrix app drift 0.
+- **Tests (29 new):** `CaseMatrixGuiTest` (11), `MonteCarloGuiTest` (12, incl.
+  a 3-sample serial run and a 2-sample button run), `SweepResultsGuiTest` (6). Engine classes 75/75,
+  `CaseMatrixPluginGroundObjTest` 24/24, `OptimTablesGuiTest` 14/14.
+- **Not yet done:** fresh golden baseline + full-suite run (goldens are
+  stale; engine changes are sweep-only so propagation is untouched, but the
+  `LvdData` properties and `executeScript` arg fix warrant the proof), and
+  the interactive live check (open LVD, small propagate-only sweep +
+  50-sample Monte Carlo, open results, confirm percentiles and ellipse).
+
+### 7.4h G1/G2 follow-up fixes (2026-09-23, same day)
+
+Live use found four defects, all fixed and covered:
+
+- **Response double-click** adds the response in both windows
+  (`RespTaskListbox.DoubleClickedFcn`; `lvdfixCanvasizeG1h` for the
+  `.mlapp`, direct edit for `lvd_runMonteCarlo_App.m`), with a test in each
+  GUI class.
+- **Clipped button grids**: every nested grid in a fixed-height row now has
+  zero padding (`lvdfixCanvasizeG1g` was a no-op — the G1 spec already had
+  them; the MC/Results `.m` windows needed it).
+- **`runTimeTic` saga (real root cause: `tic` returns `uint64`).** The MC
+  Run button died with "Unrecognized property 'runTimeTic'". A long hunt
+  through names, positions, closures and stale classes ended at the type
+  system: writing the `uint64` `tic` token into a property defaulting to
+  double `0` with no validation fails on R2026a/R2026b with that
+  misleading error; with matching `uint64` validation it works, and the
+  timer's `toc` needs the unconverted token anyway. Fix: `LastRunTic
+  uint64 = uint64(0)` (renamed off the confusing name along the way).
+  Lesson for this codebase: `tic`/`toc` tokens must live in `uint64`
+  properties, never double-defaulted ones.
+- **Case Matrix run path**: `setSetupControlsEnabled` still named the
+  deleted `RespBodyDropdown` (fixed by `lvdfixCanvasizeG1j`); it assigned
+  logical to `uitable.Enable`, which only takes `'on'`/`'off'`/`'inactive'`
+  (fixed by `lvdfixCanvasizeG1k` with strings); `startParallelPool` crashed
+  on its own error path when `uiprogressdlg` throws (`ishandle(h)` with `h`
+  undefined — now guarded). Both Run buttons are now tested end-to-end:
+  `MonteCarloGuiTest/pressingRunRunsTheDispersionThroughTheButton` and
+  `CaseMatrixGuiTest/pressingRunInPropagateOnlyModeRunsEveryCase` (the
+  latter with one worker and pool/figure teardown).
+
+### 7.4i MC Optimize mode and per-case optimizer status (2026-09-23, same day)
+
+Dispersion of the optimum, not just of the trajectory: the Monte Carlo
+window gained an Optimize run mode (each case re-runs the optimizer,
+warm-started like the Case Matrix) with live Iter / Objective / Max Viol /
+Optimality columns in the status table and final objective + exit status
+harvested per case into the results. No constraint-bound dispersions, an
+always-confirm dialog for optimize runs, and the pool stays required.
+
+- **Engine.** Tasks carry `optExitflag/optFval/optMaxViol/optIters/optOptim`
+  (NaN in propagate mode); the final two come off the already-re-propagated
+  log for ~zero extra propagations. `consoleOptimize`/`optimize` take an
+  optional `progressFcn(iter,fval,viol,optim)`; all seven optimizers attach
+  a GUI-free headless reporter next to (never instead of) the Observe-window
+  one, reusing each solver's native hook (OutputFcn, iterfun, IterationFcn).
+  Dispatch sends progress through one per-run DataQueue as a direct parfeval
+  argument; tasks merge the recorded fields back through both merge paths.
+  Results gain `objectiveValues`/`exitflags` (+ table columns, omitted when
+  all-NaN so propagate tables are unchanged) and `exitStatusTag`
+  (Converged/Limit/Failed/Error).
+- **No nested parallelism.** Case runs force the selected optimizer's
+  options to serial on the worker clone (one generic helper over all seven
+  options classes, Adam's `parallel` included) and restore via explicit call
+  before the post-run save plus an `onCleanup` backstop — finish, stop and
+  error paths all covered; the template is never touched.
+- **Windows.** MC Sampling & Run tab gained run mode, max attempts and case
+  files (forced on + locked in Optimize); the Case Matrix window streams the
+  same live columns (`lvdfixCanvasizeG1n`, no model change).
+- **Two R2026 fixes this work required** (both pre-existing, both block any
+  optimization on R2026, both verified by `OptimizerSmokeTest` 12/12):
+  `lvd_executeOptimProblem` choked on string-valued `UseParallel`, and the
+  vendored `sqp` solver on `DerivativeCheck` (guarded) and a string
+  `UseParallel` comparison (guarded) — minimal, behavior-preserving guards
+  with repo precedent for patching the vendored file.
+- **Tests:** `SweepOptimizeRunTest` (5: serial forcing + restore, one real
+  single-task fmincon run harvesting everything incl. the live listener,
+  exit tags, propagate-table stability, header/data width match),
+  `MonteCarloGuiTest` gains (mode/persist/attempts logic, progress routing,
+  pool-gated optimize button run), `CaseMatrixGuiTest` gains (pool-managed
+  propagate button run), legacy table guards updated to the widened shape.
+
+### 7.4j Seed control, setup persistence, tooltips (2026-09-23, same day)
+
+- **Random vs fixed seed.** Both windows have "Random each run" next to the
+  Seed field (`LvdSweepSetup.randomizeSeedEachRun`, persisted, backfilled on
+  load). On: the field + one-shot button disable and a fresh seed is drawn
+  at run start, recorded in the results. Off: the field value is used.
+  Headless `runHeadless` stays deterministic (no draw). Case Matrix via
+  `lvdfixCanvasizeG1o`.
+- **Sampling mode now sticks.** The MC window edits a deep copy that only
+  reached the mission on Run, so sampling/mode/response edits were lost
+  when the window closed first (reproduced headless). The close path now
+  writes the copy back (`onCloseRequest` + destroy listener, both
+  idempotent), so every edit persists across save/load.
+- **Tooltips everywhere.** Audited all three windows; every button, field,
+  dropdown, checkbox, listbox and table now has one (Case Matrix via
+  `lvdfixCanvasizeG1p`, drift 0).
+
+### 7.4k Stored Monte Carlo runs on the mission (2026-09-23, same day)
+
+- `LvdData.monteCarloResults`: named runs accumulate newest-last and travel
+  with the mission file (results are plain numbers, no mission objects).
+  Managed in a new Stored Runs tab (Store Results on Status, Open/Delete on
+  the tab); names auto-unique (`X`, `X (2)`, ...); independent copies, so
+  later runs never rewrite stored ones.
+- Case-bound clones shed stored results (`setCaseLvdData`,
+  `prepareAndRunCase`) so per-case files and worker traffic stay lean; the
+  template keeps everything. Covered by save/load roundtrip, uniqueness,
+  delete, and leanness tests.
+
+### 7.4l Excluded-case banners and editable run titles (2026-09-23, same day)
+
+- Failed/unconverged cases appear in both tables but were silently dropped
+  from scatter, histogram, CDF and ellipses. The Scatter and Statistics tabs
+  now banner "N of M plotted/valid (K excluded...)" from the same validity
+  masks, so survivorship bias is visible.
+- Runs are titled via `LvdSweepSetup.runName` (MC default `MonteCarlo`),
+  editable in a new Run Name field and used for the results files; the Case
+  Matrix uses its setup value instead of the `Sweep` literal
+  (  `lvdfixCanvasizeG1q`).
+
+### 7.4m Coverage sweep: banners, titles, callback wiring (2026-09-23, same day)
+
+A coverage audit of the newest UI found real gaps, all closed: banner
+branches (all-valid, empty, dropdown-following), run-name file naming both
+windows, stored rename incl. taken-name suffixing, the Store button's own
+wiring (its closure passed `(src,evt)` to an `(app,evt)` method -- the
+dispersion-table edit callback had the same latent arity bug, also fixed
+and now tested), dispersion cell edits, grid cell edits, stored-open
+wiring, setup name defaults, blank-name fallback and out-of-range deletes.
+`SweepResultsGuiTest` 10/10, `MonteCarloGuiTest` 29/30 (1 pool-gated skip),
+`CaseMatrixGuiTest` 13/13, all fresh. Stored runs rename inline in the Stored Runs table
+  with uniqueness enforced. Also fixed en passant: two CellEdit callbacks
+  passed `(src,evt)` to `(app,evt)` methods (same arity bug as the Store
+  button), found by auditing every closure in both programmatic windows.
+
 ### 7.5 Live check in the interactive session
 
 KSPTOT was started with `projectMain` and LVD opened from it. Confirmed: File menu ends `… Export Ephemeris... |

@@ -24,7 +24,13 @@ if isstruct(options)
       else
          Options=optimset(optimset('fmincon'),options);
          opts(4)=optimget(Options,'TolCon');
-         opts(9)=strcmpi(optimget(Options,'DerivativeCheck'),'on');
+         try
+            opts(9)=strcmpi(optimget(Options,'DerivativeCheck'),'on');
+         catch
+            %DerivativeCheck left optimset in R2026; without it there is
+            %nothing to check the derivatives against.
+            opts(9)=false;
+         end
          opts(16)=optimget(Options,'DiffMinChange');
          opts(17)=optimget(Options,'DiffMaxChange');
       end

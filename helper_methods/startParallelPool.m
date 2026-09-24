@@ -33,7 +33,7 @@ function startParallelPool(appFigure, writeOutput, numWorkers)
             writeOutput('Parallel optimization mode enabled.','append');
             beep on;
         catch ME
-            if(ishandle(h))
+            if(exist('h','var') && ishandle(h))
                 close(h);
             end
             msg = sprintf('Parallel mode start failed.  Optimization will run in serial.  Message:\n\n%s',ME.message);

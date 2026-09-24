@@ -252,12 +252,15 @@ classdef InitialStateModel < matlab.mixin.SetGet
             lvdData = stateLogEntry.lvdData;
             varSet = lvdData.optimizer.vars;
             
-            %remove variables
-            orbitVar = obj.optVar.orbitVar;
-            varSet.removeVariable(orbitVar);
-            
-            initStateVar = obj.optVar;
-            varSet.removeVariable(initStateVar);
+            %remove variables (the initial state may have no optimization
+            %variables at all, in which case there is nothing to remove)
+            if(not(isempty(obj.optVar)))
+                orbitVar = obj.optVar.orbitVar;
+                varSet.removeVariable(orbitVar);
+                
+                initStateVar = obj.optVar;
+                varSet.removeVariable(initStateVar);
+            end
             
             steerVar = obj.steeringModels.selectedModel.getExistingOptVar();
             varSet.removeVariable(steerVar);
