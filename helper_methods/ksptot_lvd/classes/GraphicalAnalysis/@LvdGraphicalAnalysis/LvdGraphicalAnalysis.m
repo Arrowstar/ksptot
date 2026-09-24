@@ -82,7 +82,7 @@ classdef LvdGraphicalAnalysis < matlab.mixin.SetGet
             end
         end
         
-        function [depVarValues, depVarUnits, dataEvtNums, utTimeForDepVarValues, taskLabels, integrationGroupNums] = executeTasks(obj, hFig, startTimeUT, endTimeUT, otherSCId, stationID)
+        function [depVarValues, depVarUnits, dataEvtNums, utTimeForDepVarValues, taskLabels, integrationGroupNums, taskFailureMask, taskFailureMessages] = executeTasks(obj, hFig, startTimeUT, endTimeUT, otherSCId, stationID)
             propNames = obj.lvdData.launchVehicle.tankTypes.getFirstThreeTypesCellArr();
             celBodyData = obj.lvdData.celBodyData;
             
@@ -91,6 +91,8 @@ classdef LvdGraphicalAnalysis < matlab.mixin.SetGet
             depVarValues = zeros(numel(lvdSubLog), length(obj.tasks));
             depVarUnits = cell(1,length(obj.tasks));
             utTimeForDepVarValues = NaN(numel(lvdSubLog),1);
+            taskFailureMask = false(numel(lvdSubLog), length(obj.tasks));
+            taskFailureMessages = cell(numel(lvdSubLog), length(obj.tasks));
             
             if(not(isempty(hFig)))
                 hWaitBar = uiprogressdlg(hFig, 'Value',0, 'Message','Computing Dependent Variables...', 'Title','Computing Dependent Variables');
@@ -116,9 +118,11 @@ classdef LvdGraphicalAnalysis < matlab.mixin.SetGet
 
                     try
                         [depVarValues(i,j), depVarUnits{j}, prevDistTraveled] = task.executeTask(lvdStateLogEntry, maTaskList, prevDistTraveled, otherSCId, stationID, propNames, celBodyData);
-                    catch ME %#ok<NASGU> 
+                    catch ME
                         depVarValues(i,j) = -1;
                         depVarUnits{j} = '';
+                        taskFailureMask(i,j) = true;
+                        taskFailureMessages{i,j} = ME.message;
                     end
                 end
 

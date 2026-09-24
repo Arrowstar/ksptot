@@ -272,7 +272,8 @@ Pro. Compare two `.mat` cases and list differences in vehicle, script, variables
 **H5. Halo Orbit Constructor hand-off and CR3BP initial states.**
 Pro. The constructor computes a manifold state but only fills fields in its own Results tab; the user must copy numbers by hand. Add "Use as initial state" and "Create geometric point". Related: `InitialStateModel.set.orbitModel` errors on legacy `CR3BPOrbitStateModel` and `ElementSetEnum` has no CR3BP entry, so CR3BP initial states are unreachable in new files. Add a CR3BP element set. Effort: S–M.
 
-**H6. Validators for silent failure modes.**
+**H6. Validators for silent failure modes.** ✅ **Implemented 2026-09-24.**
+*Status: implemented the eight self-contained checks — engine with no connected tank, tank feeding nothing, engine activated while its stage is inactive, throttle below `minThrottle`, zero or negative dry mass, EC exhausted with an electric engine commanded on, zero-area lift model, and GA task evaluation failure. Tests: `H6ValidatorTest`, `ValidatorTest`, plus related `SweepResponseTest` coverage for the GA failure-seam change. The D3-, A7-, and A4-linked checks remain deferred because those dependencies are not implemented.*
 KSP, Pro. Add checks for: engine with no connected tank (zero thrust with no warning), tank feeding nothing, engine active on an inactive stage, throttle below `minThrottle`, zero or negative dry mass, EC exhausted with electric engines commanded on, lift model with zero area, GA task returning the failure sentinel, harmonics file missing (D3), loops present (A7), stub termination conditions selected (A4). Each validator is a ~30-line class under `Validation/Validators`. Effort: S.
 
 **H7. Plugin improvements.**
@@ -302,7 +303,7 @@ Found during the review; each is small. *Status 2026-09-15: all items below have
 ✅ marks an item built as of 2026-09-16.
 
 **Tier 1: high value, low-to-medium effort, purely additive.**
-✅ A1 multiple termination conditions · A2 GA-quantity termination condition · A5 bypass/duplicate/reorder · ✅ A9 ΔV frames · ✅ B2 q-/g-limited throttle · ✅ C1 tank capacity · C2 fuel priority · D2 heating and load indicators · ✅ E1 single propagation and single Jacobian pass · E3 one-sided constraints and failure semantics · ✅ E4 variable/constraint tables · E11 infeasibility diagnostics · F1 B-plane · F2 GA quantities · F3 ΔV budget · H2 autosave · H6 validators · H8 search/filter · ✅ H9 defects.
+✅ A1 multiple termination conditions · A2 GA-quantity termination condition · A5 bypass/duplicate/reorder · ✅ A9 ΔV frames · ✅ B2 q-/g-limited throttle · ✅ C1 tank capacity · C2 fuel priority · D2 heating and load indicators · ✅ E1 single propagation and single Jacobian pass · E3 one-sided constraints and failure semantics · ✅ E4 variable/constraint tables · E11 infeasibility diagnostics · F1 B-plane · F2 GA quantities · F3 ΔV budget · H2 autosave · ✅ H6 validators · H8 search/filter · ✅ H9 defects.
 
 **Tier 2: substantial capability, medium effort.**
 A3 Nth crossing · ✅ A6 groups · A7 loop safety · B1 selectable throttle models · B3 pointing steering · B4 PEG · B5 ascent wizard · B6 angular-acceleration limits · C3 engine transients · C5 craft import completion · D1 wind · D3 quick J2 · ✅ E2 sparsity · E6 snapshots/multi-start/continuation · E10 path constraints · F4 contact intervals · F5 sensor quantities · F7 GA output/overlay · ✅ F8 view playback/export · F10 IIP trace · F11 launch window tool · G1 generalized Case Matrix · H1 templates · H3 headless runner · H5 halo hand-off/CR3BP.
@@ -314,4 +315,4 @@ G2 Monte Carlo (needs G1, D1) · G4 child trajectories and engine-out sweeps · 
 
 **Suggested first release bundle.** A1 + A2 + A5 + A9 (event model), E1 + E3 + E4 (optimizer usability and speed), F1 + F2 + F3 (analysis), C1 + C2 (vehicle fidelity that fixes wrong answers today), and H6 + H9 (robustness). Together they change the day-to-day experience for both audiences without touching the simulation core.
 
-*Of that bundle, A1, A9, E1, E4, C1 and H9 are done. The remainder — A2 GA-quantity termination condition, A5 bypass/duplicate/reorder, E3 one-sided constraints and failure semantics, F1 B-plane, F2 GA quantities, F3 ΔV budget, C2 fuel priority, H6 validators — is the natural next batch. A2 in particular is now cheaper than it was: A1 already generalized the event to an arbitrary list of conditions, so a new condition type drops straight in.*
+*Of that bundle, A1, A9, E1, E4, C1, H6 and H9 are done. The remainder — A2 GA-quantity termination condition, A5 bypass/duplicate/reorder, E3 one-sided constraints and failure semantics, F1 B-plane, F2 GA quantities, F3 ΔV budget, C2 fuel priority — is the natural next batch. A2 in particular is now cheaper than it was: A1 already generalized the event to an arbitrary list of conditions, so a new condition type drops straight in.*
