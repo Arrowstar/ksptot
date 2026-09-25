@@ -160,5 +160,78 @@ function datapt = lvd_KinematicStateTasks(stateLogEntry, subTask, inFrame)
         case 'timeToPeriapsis'
             kepElemSet = cartElem.convertToKeplerianElementSet();
             datapt = kepElemSet.getTimeToPeriapsis();
+
+        case 'specEnergy'
+            mu = inFrame.getOriginBody().gm;
+            rVect = cartElem.rVect(:);
+            vVect = cartElem.vVect(:);
+            datapt = 0.5*dot(vVect,vVect) - mu/norm(rVect);
+
+        case 'specAngMom'
+            rVect = cartElem.rVect(:);
+            vVect = cartElem.vVect(:);
+            datapt = norm(cross(rVect, vVect));
+
+        case 'specAngMomX'
+            rVect = cartElem.rVect(:);
+            vVect = cartElem.vVect(:);
+            hVect = cross(rVect, vVect);
+            datapt = hVect(1);
+
+        case 'specAngMomY'
+            rVect = cartElem.rVect(:);
+            vVect = cartElem.vVect(:);
+            hVect = cross(rVect, vVect);
+            datapt = hVect(2);
+
+        case 'specAngMomZ'
+            rVect = cartElem.rVect(:);
+            vVect = cartElem.vVect(:);
+            hVect = cross(rVect, vVect);
+            datapt = hVect(3);
+
+        case 'argLat'
+            kepElemSet = cartElem.convertToKeplerianElementSet();
+            datapt = rad2deg(AngleZero2Pi(kepElemSet.arg + kepElemSet.tru));
+
+        case 'trueLon'
+            kepElemSet = cartElem.convertToKeplerianElementSet();
+            datapt = rad2deg(AngleZero2Pi(kepElemSet.raan + kepElemSet.arg + kepElemSet.tru));
+
+        case 'periLat'
+            pHat = lvd_getPeriapsisUnitVector(cartElem);
+            datapt = rad2deg(asin(max(-1, min(1, pHat(3)))));
+
+        case 'periLon'
+            pHat = lvd_getPeriapsisUnitVector(cartElem);
+            datapt = rad2deg(AngleZero2Pi(atan2(pHat(2), pHat(1))));
+
+        case 'apoLat'
+            pHat = lvd_getPeriapsisUnitVector(cartElem);
+            datapt = rad2deg(asin(max(-1, min(1, -pHat(3)))));
+
+        case 'apoLon'
+            pHat = lvd_getPeriapsisUnitVector(cartElem);
+            datapt = rad2deg(AngleZero2Pi(atan2(-pHat(2), -pHat(1))));
     end
+end
+
+function pHatBf = lvd_getPeriapsisUnitVector(cartElem)
+%lvd_getPeriapsisUnitVector Unit vector pointing at periapsis, expressed in
+%the origin body's body-fixed frame (so lat/lon read straight off it).
+    kepElemSet = cartElem.convertToKeplerianElementSet();
+
+    cO = cos(kepElemSet.raan); sO = sin(kepElemSet.raan);
+    cw = cos(kepElemSet.arg);  sw = sin(kepElemSet.arg);
+    ci = cos(kepElemSet.inc);  si = sin(kepElemSet.inc);
+
+    %first column of the perifocal-to-inertial rotation (unit vector)
+    pHatInert = [cO*cw - sO*sw*ci;
+                 sO*cw + cO*sw*ci;
+                 sw*si];
+
+    bodyFixedFrame = cartElem.frame.getOriginBody().getBodyFixedFrame();
+    pElem = CartesianElementSet(cartElem.time, pHatInert, [0;0;0], cartElem.frame);
+    pElemBf = pElem.convertToFrame(bodyFixedFrame).convertToCartesianElementSet();
+    pHatBf = pElemBf.rVect(:) / norm(pElemBf.rVect(:));
 end

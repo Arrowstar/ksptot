@@ -97,7 +97,7 @@ classdef LvdSweepResponse < matlab.mixin.SetGet
 
                 for(i=1:numel(entries)) %#ok<*NO4LP>
                     [depVarValue, depVarUnit, prevDistTraveled] = ...
-                        obj.task.executeTask(entries(i), maTaskList, prevDistTraveled, [], [], propNames, celBodyData);
+                        obj.task.executeTask(entries(i), maTaskList, prevDistTraveled, [], [], propNames, celBodyData, entries, i);
 
                     values(i) = depVarValue;
 

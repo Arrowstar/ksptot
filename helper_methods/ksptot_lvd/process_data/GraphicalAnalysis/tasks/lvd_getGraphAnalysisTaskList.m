@@ -91,6 +91,27 @@ function [taskList] = lvd_getGraphAnalysisTaskList(lvdData, excludeList)
     taskList{end+1} = 'Body Angular Rate Y';
     taskList{end+1} = 'Body Angular Rate Z';
     taskList{end+1} = 'Total Body Angular Rate';
+
+    taskList{end+1} = 'Specific Orbital Energy';
+    taskList{end+1} = 'Specific Angular Momentum';
+    taskList{end+1} = 'Specific Angular Momentum (X)';
+    taskList{end+1} = 'Specific Angular Momentum (Y)';
+    taskList{end+1} = 'Specific Angular Momentum (Z)';
+    taskList{end+1} = 'Argument of Latitude';
+    taskList{end+1} = 'True Longitude';
+    taskList{end+1} = 'Periapsis Latitude (North)';
+    taskList{end+1} = 'Periapsis Longitude (East)';
+    taskList{end+1} = 'Apoapsis Latitude (North)';
+    taskList{end+1} = 'Apoapsis Longitude (East)';
+
+    taskList{end+1} = 'Sensed Acceleration (Total)';
+    taskList{end+1} = 'Sensed Acceleration (Axial)';
+    taskList{end+1} = 'Sensed Acceleration (Normal)';
+
+    taskList{end+1} = 'Remaining Delta-V Capability';
+    taskList{end+1} = 'Cumulative Delta-V Expended';
+
+    taskList{end+1} = 'Sun Phase Angle';
     
     [fluidTypesGAStr, ~] = lvdData.launchVehicle.tankTypes.getFluidTypesGraphAnalysisTaskStrs();
     taskList = horzcat(taskList, fluidTypesGAStr);
@@ -121,6 +142,15 @@ function [taskList] = lvd_getGraphAnalysisTaskList(lvdData, excludeList)
     
     [grdObjLoSGAStr, ~] = lvdData.groundObjs.getGrdObjLoSGraphAnalysisTaskStrs();
     taskList = horzcat(taskList, grdObjLoSGAStr);
+    
+    [grdObjRngRateGAStr, ~] = lvdData.groundObjs.getGrdObjRangeRateGraphAnalysisTaskStrs();
+    taskList = horzcat(taskList, grdObjRngRateGAStr);
+    
+    [grdObjElRateGAStr, ~] = lvdData.groundObjs.getGrdObjElevRateGraphAnalysisTaskStrs();
+    taskList = horzcat(taskList, grdObjElRateGAStr);
+    
+    [grdObjDownrangeGAStr, ~] = lvdData.groundObjs.getGrdObjDownrangeGraphAnalysisTaskStrs();
+    taskList = horzcat(taskList, grdObjDownrangeGAStr);
     
     [calcObjsGAStr, ~] = lvdData.launchVehicle.getCalculusCalcObjGraphAnalysisTaskStrs();
     taskList = horzcat(taskList, calcObjsGAStr);

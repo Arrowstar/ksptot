@@ -251,12 +251,27 @@ classdef LaunchVehicle < matlab.mixin.SetGet
     
         function [engineGAStr, engines] = getEnginesGraphAnalysisTaskStrs(obj)
             [~, engines] = obj.getEnginesListBoxStr();
-            
-            engineGAStr = cell(1,length(engines));
+
+            %Block ordered: Active State (1..N, historical order preserved),
+            %then Thrust, Isp and Mass Flow Rate.  The dispatcher maps the
+            %string index back to an engine with the matching block offset.
+            engineGAStr = cell(1,4*length(engines));
             A = length(engines);
             formSpec = sprintf('%%0%uu',floor(log10(abs(A)+1)) + 1);
             for(i=1:length(engines))
                 engineGAStr{i} = sprintf(sprintf('Engine %s Active State - "%s"',formSpec, engines(i).name), i);
+            end
+
+            for(i=1:length(engines))
+                engineGAStr{A+i} = sprintf(sprintf('Engine %s Thrust - "%s"',formSpec, engines(i).name), i);
+            end
+
+            for(i=1:length(engines))
+                engineGAStr{2*A+i} = sprintf(sprintf('Engine %s Isp - "%s"',formSpec, engines(i).name), i);
+            end
+
+            for(i=1:length(engines))
+                engineGAStr{3*A+i} = sprintf(sprintf('Engine %s Mass Flow Rate - "%s"',formSpec, engines(i).name), i);
             end
         end
         

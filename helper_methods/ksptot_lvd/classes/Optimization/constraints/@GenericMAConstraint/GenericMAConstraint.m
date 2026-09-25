@@ -61,8 +61,14 @@ classdef GenericMAConstraint < AbstractConstraint
             else
                 refBodyId = [];
             end
-                                   
-            value = obj.getValueForConstraint(stateLogEntry, type, maTaskList, refBodyId, celBodyData, frame);
+                                    
+            if(strcmp(obj.constraintType, 'Cumulative Delta-V Expended'))
+                %History-dependent: integrate over the full log up to the
+                %constrained node rather than evaluating the lone entry.
+                value = GenericMAConstraint.getCumulativeDeltaVUpToNode(stateLog, obj.event, obj.eventNode);
+            else
+                value = obj.getValueForConstraint(stateLogEntry, type, maTaskList, refBodyId, celBodyData, frame);
+            end
                     
             if(obj.evalType == ConstraintEvalTypeEnum.StateComparison)
                 switch obj.stateCompNode
@@ -79,7 +85,11 @@ classdef GenericMAConstraint < AbstractConstraint
                 cartElem = stateLogEntryStateComp.getCartesianElementSetRepresentation().convertToFrame(frame);
                 stateLogEntryStateComp.setCartesianElementSet(cartElem);
 
-                valueStateComp = obj.getValueForConstraint(stateLogEntryStateComp, type, maTaskList, refBodyId, celBodyData, frame);
+                if(strcmp(obj.constraintType, 'Cumulative Delta-V Expended'))
+                    valueStateComp = GenericMAConstraint.getCumulativeDeltaVUpToNode(stateLog, obj.stateCompEvent, obj.stateCompNode);
+                else
+                    valueStateComp = obj.getValueForConstraint(stateLogEntryStateComp, type, maTaskList, refBodyId, celBodyData, frame);
+                end
             else
                 valueStateComp = NaN;
             end
@@ -189,6 +199,35 @@ classdef GenericMAConstraint < AbstractConstraint
     end
     
     methods(Static)
+        function value = getCumulativeDeltaVUpToNode(stateLog, event, node)
+            %getCumulativeDeltaVUpToNode Cumulative Delta-V expended from
+            %script start through the given event node, integrated over the
+            %full state log (the lone node entry carries no history).
+            entries = stateLog.getAllEntries();
+            subEntries = entries([entries.event] == event);
+            
+            if(isempty(subEntries))
+                value = NaN;
+                return;
+            end
+            
+            switch node
+                case ConstraintStateComparisonNodeEnum.FinalState
+                    targetEntry = subEntries(end);
+                case ConstraintStateComparisonNodeEnum.InitialState
+                    targetEntry = subEntries(1);
+                otherwise
+                    error('Unknown event node.');
+            end
+            
+            ind = find(entries == targetEntry, 1, 'first');
+            if(isempty(ind))
+                value = NaN;
+            else
+                [value, ~] = lvd_CumulativeDeltaVTasks(ind, entries);
+            end
+        end
+
         function constraint = getDefaultConstraint(constraintType, lvdData)            
             constraint = GenericMAConstraint(constraintType, LaunchVehicleEvent.empty(1,0), 0, 0, [], [], KSPTOT_BodyInfo.empty(1,0));
         end

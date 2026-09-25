@@ -255,6 +255,59 @@ function [depVarValue, depVarUnit, taskStr, refBodyInfo] = lvd_getDepVarValueUni
         case 'Total Body Angular Rate'
             depVarValue = lvd_AttitudeRateTasks(subLog(i), 'totalAngularVel', inFrame);
             depVarUnit = 'deg/s';
+
+        case 'Specific Orbital Energy'
+            depVarValue = lvd_KinematicStateTasks(subLog(i), 'specEnergy', inFrame);
+            depVarUnit = 'km^2/s^2';
+        case 'Specific Angular Momentum'
+            depVarValue = lvd_KinematicStateTasks(subLog(i), 'specAngMom', inFrame);
+            depVarUnit = 'km^2/s';
+        case 'Specific Angular Momentum (X)'
+            depVarValue = lvd_KinematicStateTasks(subLog(i), 'specAngMomX', inFrame);
+            depVarUnit = 'km^2/s';
+        case 'Specific Angular Momentum (Y)'
+            depVarValue = lvd_KinematicStateTasks(subLog(i), 'specAngMomY', inFrame);
+            depVarUnit = 'km^2/s';
+        case 'Specific Angular Momentum (Z)'
+            depVarValue = lvd_KinematicStateTasks(subLog(i), 'specAngMomZ', inFrame);
+            depVarUnit = 'km^2/s';
+        case 'Argument of Latitude'
+            depVarValue = lvd_KinematicStateTasks(subLog(i), 'argLat', inFrame);
+            depVarUnit = 'deg';
+        case 'True Longitude'
+            depVarValue = lvd_KinematicStateTasks(subLog(i), 'trueLon', inFrame);
+            depVarUnit = 'deg';
+        case 'Periapsis Latitude (North)'
+            depVarValue = lvd_KinematicStateTasks(subLog(i), 'periLat', inFrame);
+            depVarUnit = 'deg';
+        case 'Periapsis Longitude (East)'
+            depVarValue = lvd_KinematicStateTasks(subLog(i), 'periLon', inFrame);
+            depVarUnit = 'deg';
+        case 'Apoapsis Latitude (North)'
+            depVarValue = lvd_KinematicStateTasks(subLog(i), 'apoLat', inFrame);
+            depVarUnit = 'deg';
+        case 'Apoapsis Longitude (East)'
+            depVarValue = lvd_KinematicStateTasks(subLog(i), 'apoLon', inFrame);
+            depVarUnit = 'deg';
+
+        case 'Sensed Acceleration (Total)'
+            depVarValue = lvd_SensedAccelTasks(subLog(i), 'totalAccel');
+            depVarUnit = 'g';
+        case 'Sensed Acceleration (Axial)'
+            depVarValue = lvd_SensedAccelTasks(subLog(i), 'axialAccel');
+            depVarUnit = 'g';
+        case 'Sensed Acceleration (Normal)'
+            depVarValue = lvd_SensedAccelTasks(subLog(i), 'normalAccel');
+            depVarUnit = 'g';
+
+        case 'Remaining Delta-V Capability'
+            depVarValue = lvd_PropulsionTasks(subLog(i), 'remainingDeltaV');
+            depVarUnit = 'km/s';
+        case 'Cumulative Delta-V Expended'
+            [depVarValue, depVarUnit] = lvd_CumulativeDeltaVTasks(i, subLog);
+
+        case 'Sun Phase Angle'
+            [depVarValue, depVarUnit] = lvd_SunTasks(subLog(i), 'sunPhaseAngle', celBodyData);
  
         otherwise %is a programmatically generated string that we'll handle here
             fluidTypeMassPattern = '^Fluid Type (\d+?) Mass - ".*"';
@@ -266,6 +319,9 @@ function [depVarValue, depVarUnit, taskStr, refBodyInfo] = lvd_getDepVarValueUni
             stageActivePattern = '^Stage (\d+?) Active State - ".*"';
             
             engineActivePattern = '^Engine (\d+?) Active State - ".*"';
+            engineThrustPattern = '^Engine (\d+?) Thrust - ".*"';
+            engineIspPattern = '^Engine (\d+?) Isp - ".*"';
+            engineMdotPattern = '^Engine (\d+?) Mass Flow Rate - ".*"';
             
             stopwatchValuePattern = '^Stopwatch (\d+?) Value - ".*"';
             
@@ -275,6 +331,9 @@ function [depVarValue, depVarUnit, taskStr, refBodyInfo] = lvd_getDepVarValueUni
             grdObjElValuePattern = '^Ground Object (\d+?) Elevation to S/C - ".*"';
             grdObjRngValuePattern = '^Ground Object (\d+?) Range to S/C - ".*"';
             grdObjLoSValuePattern = '^Ground Object (\d+?) Line of Sight to S/C - ".*"';
+            grdObjRngRateValuePattern = '^Ground Object (\d+?) Range Rate to S/C - ".*"';
+            grdObjElRateValuePattern = '^Ground Object (\d+?) Elevation Rate to S/C - ".*"';
+            grdObjDownrangeValuePattern = '^Ground Object (\d+?) Downrange Distance - ".*"';
             
             calcObjValuePattern = '^Calculus (\d+?) Value - ".*"';
             
@@ -378,8 +437,40 @@ function [depVarValue, depVarUnit, taskStr, refBodyInfo] = lvd_getDepVarValueUni
                 [~,engines] = subLog(i).launchVehicle.getEnginesGraphAnalysisTaskStrs();
                 engine = engines(engineInd);
                 
-                depVarValue = lvd_EngineTasks(subLog(i), 'active', engine);
-                depVarUnit = '';
+                [depVarValue, depVarUnit] = lvd_EngineTasks(subLog(i), 'active', engine);
+                
+            elseif(not(isempty(regexpi(taskStr, engineThrustPattern))))
+                tokens = regexpi(taskStr, engineThrustPattern, 'tokens');
+                tokens = tokens{1};
+                tokens = tokens{1};
+                engineInd = str2double(tokens);
+                
+                [~,engines] = subLog(i).launchVehicle.getEnginesGraphAnalysisTaskStrs();
+                engine = engines(engineInd);
+                
+                [depVarValue, depVarUnit] = lvd_EngineTasks(subLog(i), 'thrust', engine);
+                
+            elseif(not(isempty(regexpi(taskStr, engineIspPattern))))
+                tokens = regexpi(taskStr, engineIspPattern, 'tokens');
+                tokens = tokens{1};
+                tokens = tokens{1};
+                engineInd = str2double(tokens);
+                
+                [~,engines] = subLog(i).launchVehicle.getEnginesGraphAnalysisTaskStrs();
+                engine = engines(engineInd);
+                
+                [depVarValue, depVarUnit] = lvd_EngineTasks(subLog(i), 'isp', engine);
+                
+            elseif(not(isempty(regexpi(taskStr, engineMdotPattern))))
+                tokens = regexpi(taskStr, engineMdotPattern, 'tokens');
+                tokens = tokens{1};
+                tokens = tokens{1};
+                engineInd = str2double(tokens);
+                
+                [~,engines] = subLog(i).launchVehicle.getEnginesGraphAnalysisTaskStrs();
+                engine = engines(engineInd);
+                
+                [depVarValue, depVarUnit] = lvd_EngineTasks(subLog(i), 'mdot', engine);
                 
             elseif(not(isempty(regexpi(taskStr, stopwatchValuePattern))))
                 tokens = regexpi(taskStr, stopwatchValuePattern, 'tokens');
@@ -447,6 +538,39 @@ function [depVarValue, depVarUnit, taskStr, refBodyInfo] = lvd_getDepVarValueUni
                 grdObj = grdObjs(ind);
                 
                 [depVarValue, depVarUnit] = lvd_GrdObjTasks(subLog(i), 'LoS', grdObj, inFrame);
+                
+            elseif(not(isempty(regexpi(taskStr, grdObjRngRateValuePattern))))
+                tokens = regexpi(taskStr, grdObjRngRateValuePattern, 'tokens');
+                tokens = tokens{1};
+                tokens = tokens{1};
+                ind = str2double(tokens);
+                
+                [~, grdObjs] = subLog(i).lvdData.groundObjs.getGrdObjAzGraphAnalysisTaskStrs();
+                grdObj = grdObjs(ind);
+                
+                [depVarValue, depVarUnit] = lvd_GrdObjTasks(subLog(i), 'rangeRate', grdObj, inFrame);
+                
+            elseif(not(isempty(regexpi(taskStr, grdObjElRateValuePattern))))
+                tokens = regexpi(taskStr, grdObjElRateValuePattern, 'tokens');
+                tokens = tokens{1};
+                tokens = tokens{1};
+                ind = str2double(tokens);
+                
+                [~, grdObjs] = subLog(i).lvdData.groundObjs.getGrdObjAzGraphAnalysisTaskStrs();
+                grdObj = grdObjs(ind);
+                
+                [depVarValue, depVarUnit] = lvd_GrdObjTasks(subLog(i), 'elevRate', grdObj, inFrame);
+                
+            elseif(not(isempty(regexpi(taskStr, grdObjDownrangeValuePattern))))
+                tokens = regexpi(taskStr, grdObjDownrangeValuePattern, 'tokens');
+                tokens = tokens{1};
+                tokens = tokens{1};
+                ind = str2double(tokens);
+                
+                [~, grdObjs] = subLog(i).lvdData.groundObjs.getGrdObjAzGraphAnalysisTaskStrs();
+                grdObj = grdObjs(ind);
+                
+                [depVarValue, depVarUnit] = lvd_GrdObjTasks(subLog(i), 'downrange', grdObj, inFrame);
                 
             elseif(not(isempty(regexpi(taskStr, calcObjValuePattern))))
                 tokens = regexpi(taskStr, calcObjValuePattern, 'tokens');

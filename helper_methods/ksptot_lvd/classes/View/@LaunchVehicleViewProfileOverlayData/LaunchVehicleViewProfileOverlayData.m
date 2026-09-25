@@ -76,7 +76,7 @@ classdef LaunchVehicleViewProfileOverlayData < matlab.mixin.SetGet
                 prevDistTraveled = 0;
                 for(i=1:numel(entries))
                     try
-                        [values(i,j), unit, prevDistTraveled] = task.executeTask(entries(i), maTaskList, prevDistTraveled, [], [], propNames, celBodyData);
+                        [values(i,j), unit, prevDistTraveled] = task.executeTask(entries(i), maTaskList, prevDistTraveled, [], [], propNames, celBodyData, entries, i);
                         if(ischar(unit) || isstring(unit))
                             units{j} = char(unit);
                         end

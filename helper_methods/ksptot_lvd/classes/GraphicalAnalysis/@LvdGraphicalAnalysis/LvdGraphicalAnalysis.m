@@ -117,7 +117,7 @@ classdef LvdGraphicalAnalysis < matlab.mixin.SetGet
                     end
 
                     try
-                        [depVarValues(i,j), depVarUnits{j}, prevDistTraveled] = task.executeTask(lvdStateLogEntry, maTaskList, prevDistTraveled, otherSCId, stationID, propNames, celBodyData);
+                        [depVarValues(i,j), depVarUnits{j}, prevDistTraveled] = task.executeTask(lvdStateLogEntry, maTaskList, prevDistTraveled, otherSCId, stationID, propNames, celBodyData, lvdSubLog, i);
                     catch ME
                         depVarValues(i,j) = -1;
                         depVarUnits{j} = '';

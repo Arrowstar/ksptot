@@ -44,7 +44,22 @@ classdef GraphicalAnalysisTask < matlab.mixin.SetGet
             end
         end
         
-        function [depVarValue, depVarUnit, prevDistTraveled] = executeTask(obj, lvdStateLogEntry, maTaskList, prevDistTraveled, otherSCId, stationID, propNames, celBodyData)                        
+        function [depVarValue, depVarUnit, prevDistTraveled] = executeTask(obj, lvdStateLogEntry, maTaskList, prevDistTraveled, otherSCId, stationID, propNames, celBodyData, fullSubLog, entryInd)
+            %executeTask Evaluate this task at one state log entry.
+            %   fullSubLog/entryInd are optional history context for
+            %   history-dependent tasks (currently only Cumulative Delta-V
+            %   Expended, which integrates from fullSubLog(1) to
+            %   fullSubLog(entryInd)).  Callers that hold the entry array
+            %   (plots, sweep responses, overlays) should pass them;
+            %   single-entry callers (action conditionals evaluated during
+            %   propagation, plugin-var actions) omit them, in which case
+            %   history-dependent tasks evaluate over the lone entry and
+            %   report 0.
+            if(nargin < 10)
+                fullSubLog = lvdStateLogEntry;
+                entryInd = 1;
+            end
+
             refBodyId = obj.frame.getOriginBody().id;
             
             if(ismember(obj.taskStr,maTaskList))
@@ -52,7 +67,7 @@ classdef GraphicalAnalysisTask < matlab.mixin.SetGet
                 [depVarValue, depVarUnit, prevDistTraveled] = ma_getDepVarValueUnit(1, maStateLogEntry, obj.taskStr, prevDistTraveled, refBodyId, otherSCId, stationID, propNames, [], celBodyData, false);
                 
             else
-                [depVarValue, depVarUnit] = lvd_getDepVarValueUnit(1, lvdStateLogEntry, obj.taskStr, refBodyId, celBodyData, false, obj.frame);
+                [depVarValue, depVarUnit] = lvd_getDepVarValueUnit(entryInd, fullSubLog, obj.taskStr, refBodyId, celBodyData, false, obj.frame);
             end
         end
         

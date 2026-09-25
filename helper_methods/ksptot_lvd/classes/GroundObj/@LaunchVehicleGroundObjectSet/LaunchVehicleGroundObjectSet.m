@@ -95,6 +95,39 @@ classdef LaunchVehicleGroundObjectSet < matlab.mixin.SetGet
                 grdObjLoSGAStr{i} = sprintf(sprintf('Ground Object %s Line of Sight to S/C - "%s"',formSpec, grdObjs(i).name), i);
             end
         end
+        
+        function [grdObjRngRateGAStr, grdObjs] = getGrdObjRangeRateGraphAnalysisTaskStrs(obj)
+            grdObjs = obj.groundObjs;
+            
+            grdObjRngRateGAStr = cell(1,length(grdObjs));
+            A = length(grdObjs);
+            formSpec = sprintf('%%0%uu',floor(log10(abs(A)+1)) + 1);
+            for(i=1:length(grdObjs))
+                grdObjRngRateGAStr{i} = sprintf(sprintf('Ground Object %s Range Rate to S/C - "%s"',formSpec, grdObjs(i).name), i);
+            end
+        end
+        
+        function [grdObjElRateGAStr, grdObjs] = getGrdObjElevRateGraphAnalysisTaskStrs(obj)
+            grdObjs = obj.groundObjs;
+            
+            grdObjElRateGAStr = cell(1,length(grdObjs));
+            A = length(grdObjs);
+            formSpec = sprintf('%%0%uu',floor(log10(abs(A)+1)) + 1);
+            for(i=1:length(grdObjs))
+                grdObjElRateGAStr{i} = sprintf(sprintf('Ground Object %s Elevation Rate to S/C - "%s"',formSpec, grdObjs(i).name), i);
+            end
+        end
+        
+        function [grdObjDownrangeGAStr, grdObjs] = getGrdObjDownrangeGraphAnalysisTaskStrs(obj)
+            grdObjs = obj.groundObjs;
+            
+            grdObjDownrangeGAStr = cell(1,length(grdObjs));
+            A = length(grdObjs);
+            formSpec = sprintf('%%0%uu',floor(log10(abs(A)+1)) + 1);
+            for(i=1:length(grdObjs))
+                grdObjDownrangeGAStr{i} = sprintf(sprintf('Ground Object %s Downrange Distance - "%s"',formSpec, grdObjs(i).name), i);
+            end
+        end
     end
     
     methods(Static)

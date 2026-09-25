@@ -105,6 +105,24 @@ classdef ConstraintEnum < matlab.mixin.SetGet
 
         HeightAboveTerrain('Height Above Terrain', 'GenericMAConstraint','Height Above Terrain');
 
+        SpecOrbitalEnergy('Specific Orbital Energy','GenericMAConstraint','Specific Orbital Energy')
+        SpecAngMom('Specific Angular Momentum','GenericMAConstraint','Specific Angular Momentum')
+        ArgLatitude('Argument of Latitude','GenericMAConstraint','Argument of Latitude')
+        TrueLongitude('True Longitude','GenericMAConstraint','True Longitude')
+        PeriapsisLat('Periapsis Latitude (North)','GenericMAConstraint','Periapsis Latitude (North)')
+        PeriapsisLon('Periapsis Longitude (East)','GenericMAConstraint','Periapsis Longitude (East)')
+        ApoapsisLat('Apoapsis Latitude (North)','GenericMAConstraint','Apoapsis Latitude (North)')
+        ApoapsisLon('Apoapsis Longitude (East)','GenericMAConstraint','Apoapsis Longitude (East)')
+
+        SensedAccelTotal('Sensed Acceleration (Total)','GenericMAConstraint','Sensed Acceleration (Total)')
+        SensedAccelAxial('Sensed Acceleration (Axial)','GenericMAConstraint','Sensed Acceleration (Axial)')
+        SensedAccelNormal('Sensed Acceleration (Normal)','GenericMAConstraint','Sensed Acceleration (Normal)')
+
+        RemainingDeltaV('Remaining Delta-V Capability','GenericMAConstraint','Remaining Delta-V Capability')
+        CumulativeDeltaV('Cumulative Delta-V Expended','GenericMAConstraint','Cumulative Delta-V Expended')
+
+        SunPhaseAngle('Sun Phase Angle','GenericMAConstraint','Sun Phase Angle');
+
         BodyXAngVel('Body X-axis Angular Velocity', 'BodyAngularVelXConstraint', []);
         BodyYAngVel('Body Y-axis Angular Velocity', 'BodyAngularVelYConstraint', []);
         BodyZAngVel('Body Z-axis Angular Velocity', 'BodyAngularVelZConstraint', []);

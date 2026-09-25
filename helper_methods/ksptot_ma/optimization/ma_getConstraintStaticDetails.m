@@ -1054,6 +1054,175 @@ function [unit, lbLim, ubLim, lbVal, ubVal, body, othersc, usesLbUb, usesCelBody
             usesLbUb = true;
             usesCelBody = false;
             usesRefSc = false;
+
+        case 'Specific Orbital Energy'
+            unit = 'km^2/s^2';
+            lbLim = -Inf;
+            ubLim = Inf;
+            lbVal = 0;
+            ubVal = 0;
+            body = -1;
+            othersc = -1;
+
+            usesLbUb = true;
+            usesCelBody = true;
+            usesRefSc = false;
+        case 'Specific Angular Momentum'
+            unit = 'km^2/s';
+            lbLim = 0;
+            ubLim = Inf;
+            lbVal = 0;
+            ubVal = 0;
+            body = -1;
+            othersc = -1;
+
+            usesLbUb = true;
+            usesCelBody = true;
+            usesRefSc = false;
+        case 'Argument of Latitude'
+            unit = 'deg';
+            lbLim = 0;
+            ubLim = 360;
+            lbVal = 0;
+            ubVal = 0;
+            body = -1;
+            othersc = -1;
+
+            usesLbUb = true;
+            usesCelBody = true;
+            usesRefSc = false;
+        case 'True Longitude'
+            unit = 'deg';
+            lbLim = 0;
+            ubLim = 360;
+            lbVal = 0;
+            ubVal = 0;
+            body = -1;
+            othersc = -1;
+
+            usesLbUb = true;
+            usesCelBody = true;
+            usesRefSc = false;
+        case 'Periapsis Latitude (North)'
+            unit = 'deg';
+            lbLim = -90;
+            ubLim = 90;
+            lbVal = 0;
+            ubVal = 0;
+            body = -1;
+            othersc = -1;
+
+            usesLbUb = true;
+            usesCelBody = true;
+            usesRefSc = false;
+        case 'Periapsis Longitude (East)'
+            unit = 'deg';
+            lbLim = -180;
+            ubLim = 360;
+            lbVal = 0;
+            ubVal = 0;
+            body = -1;
+            othersc = -1;
+
+            usesLbUb = true;
+            usesCelBody = true;
+            usesRefSc = false;
+        case 'Apoapsis Latitude (North)'
+            unit = 'deg';
+            lbLim = -90;
+            ubLim = 90;
+            lbVal = 0;
+            ubVal = 0;
+            body = -1;
+            othersc = -1;
+
+            usesLbUb = true;
+            usesCelBody = true;
+            usesRefSc = false;
+        case 'Apoapsis Longitude (East)'
+            unit = 'deg';
+            lbLim = -180;
+            ubLim = 360;
+            lbVal = 0;
+            ubVal = 0;
+            body = -1;
+            othersc = -1;
+
+            usesLbUb = true;
+            usesCelBody = true;
+            usesRefSc = false;
+        case 'Sensed Acceleration (Total)'
+            unit = 'g';
+            lbLim = 0;
+            ubLim = Inf;
+            lbVal = 0;
+            ubVal = 0;
+            body = -1;
+            othersc = -1;
+
+            usesLbUb = true;
+            usesCelBody = false;
+            usesRefSc = false;
+        case 'Sensed Acceleration (Axial)'
+            unit = 'g';
+            lbLim = -Inf;
+            ubLim = Inf;
+            lbVal = 0;
+            ubVal = 0;
+            body = -1;
+            othersc = -1;
+
+            usesLbUb = true;
+            usesCelBody = false;
+            usesRefSc = false;
+        case 'Sensed Acceleration (Normal)'
+            unit = 'g';
+            lbLim = 0;
+            ubLim = Inf;
+            lbVal = 0;
+            ubVal = 0;
+            body = -1;
+            othersc = -1;
+
+            usesLbUb = true;
+            usesCelBody = false;
+            usesRefSc = false;
+        case 'Remaining Delta-V Capability'
+            unit = 'km/s';
+            lbLim = 0;
+            ubLim = Inf;
+            lbVal = 0;
+            ubVal = 0;
+            body = -1;
+            othersc = -1;
+
+            usesLbUb = true;
+            usesCelBody = false;
+            usesRefSc = false;
+        case 'Cumulative Delta-V Expended'
+            unit = 'km/s';
+            lbLim = 0;
+            ubLim = Inf;
+            lbVal = 0;
+            ubVal = 0;
+            body = -1;
+            othersc = -1;
+
+            usesLbUb = true;
+            usesCelBody = false;
+            usesRefSc = false;
+        case 'Sun Phase Angle'
+            unit = 'deg';
+            lbLim = 0;
+            ubLim = 180;
+            lbVal = 0;
+            ubVal = 0;
+            body = -1;
+            othersc = -1;
+
+            usesLbUb = true;
+            usesCelBody = false;
+            usesRefSc = false;
             
         otherwise
             error(['Unrecongized Constraint Type: ', type]);

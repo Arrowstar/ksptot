@@ -1538,23 +1538,29 @@ classdef CaseMatrixPluginGroundObjTest < KsptotTestCase
                     sprintf('"%s" is on the LVD exclusion list but survived into the task list.', mustNotHave{i}));
             end
 
-            %Adding ground objects adds exactly four entries each -- azimuth,
-            %elevation, range and line of sight -- named after the object.
+            %Adding ground objects adds exactly seven entries each --
+            %azimuth, elevation, range, line of sight, range rate,
+            %elevation rate and downrange distance (F2) -- named after the
+            %object.
             baseCount = numel(taskList);
             grdObj = LaunchVehicleGroundObject.getDefaultObj(testCase.celBodyData);
             grdObj.name = 'Woomera';
             lvdData.groundObjs.addGroundObj(grdObj);
 
             taskList2 = lvd_getGraphAnalysisTaskList(lvdData, excludeList);
-            testCase.verifyEqual(numel(taskList2), baseCount + 4, ...
-                'Adding one ground object should add exactly four graphical analysis tasks (azimuth, elevation, range, line of sight).');
+            testCase.verifyEqual(numel(taskList2), baseCount + 7, ...
+                'Adding one ground object should add exactly seven graphical analysis tasks (azimuth, elevation, range, line of sight, range rate, elevation rate, downrange distance).');
 
             ind = lvdData.groundObjs.getIndsForGroundObjs(grdObj);
-            for(pattern = {'Azimuth to S/C', 'Elevation to S/C', 'Range to S/C', 'Line of Sight to S/C'})
+            for(pattern = {'Azimuth to S/C', 'Elevation to S/C', 'Range to S/C', 'Line of Sight to S/C', ...
+                           'Range Rate to S/C', 'Elevation Rate to S/C'})
                 expected = sprintf('Ground Object %u %s - "Woomera"', ind, pattern{1});
                 testCase.verifyTrue(any(strcmp(taskList2, expected)), ...
                     sprintf('The task list is missing the expected per-ground-object entry "%s".', expected));
             end
+            expected = sprintf('Ground Object %u Downrange Distance - "Woomera"', ind);
+            testCase.verifyTrue(any(strcmp(taskList2, expected)), ...
+                sprintf('The task list is missing the expected per-ground-object entry "%s".', expected));
 
             %Same for plugins and plugin variables.
             plugin = LvdPlugin();
@@ -1566,7 +1572,7 @@ classdef CaseMatrixPluginGroundObjTest < KsptotTestCase
             lvdData.pluginVars.addPluginVar(pluginVar);
 
             taskList3 = lvd_getGraphAnalysisTaskList(lvdData, excludeList);
-            testCase.verifyEqual(numel(taskList3), baseCount + 6, ...
+            testCase.verifyEqual(numel(taskList3), baseCount + 9, ...
                 'Adding one plugin and one plugin variable should add exactly one graphical analysis task each.');
             testCase.verifyTrue(any(strcmp(taskList3, 'Plugin 1 Value - "Telemetry"')), ...
                 'The task list is missing the per-plugin graphical analysis entry.');
