@@ -439,6 +439,7 @@ classdef LvdMainGuiWidgetSmokeTest < matlab.uitest.TestCase
         end
 
         function pluginsManageOpensWithoutHang(testCase)
+            testCase.assumeTrue(usejava('jvm'), 'Java is required for the plugin code editor.');
             app = testCase.openLvd();
             %GUIDE dialog (uicontrol buttons): the catch-all may not find a
             %Cancel button, so success = opened without hanging; the figure
