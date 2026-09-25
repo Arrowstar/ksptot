@@ -8,6 +8,8 @@ classdef(Abstract) AbstractConstraint < matlab.mixin.SetGet & matlab.mixin.Heter
         frame AbstractReferenceFrame
         
         active(1,1) logical = true
+
+        tags char = ''
         
         id(1,1) double = 0;
         
@@ -84,6 +86,25 @@ classdef(Abstract) AbstractConstraint < matlab.mixin.SetGet & matlab.mixin.Heter
         
         function name = getName(obj)
             name = sprintf('%s - Event %i', obj.getConstraintType(), obj.getConstraintEvent().getEventNum());
+        end
+
+        function searchText = getSearchText(obj)
+            if obj.active
+                activeStr = 'active';
+            else
+                activeStr = 'inactive';
+            end
+
+            searchText = strjoin({obj.getName(), obj.tags, activeStr}, ' ');
+        end
+
+        function tagStr = getTagsDisplayStr(obj)
+            tagText = strtrim(obj.tags);
+            if isempty(tagText)
+                tagStr = '';
+            else
+                tagStr = [' [#' tagText ']'];
+            end
         end
         
         function str = getListboxTooltipStr(obj, scaledValue)

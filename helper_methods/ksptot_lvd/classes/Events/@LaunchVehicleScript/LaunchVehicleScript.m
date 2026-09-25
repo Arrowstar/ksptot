@@ -246,24 +246,47 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
             [listboxStr, events] = obj.buildGroupedListbox(false);
         end
 
+        function [listboxStr, events] = getFilteredListboxStr(obj, query)
+            if(nargin < 2)
+                query = '';
+            end
+
+            if(isempty(strtrim(char(string(query)))))
+                keep = true(1, length(obj.evts));
+            else
+                corpus = arrayfun(@(e) e.getSearchText(), obj.evts, 'UniformOutput', false);
+                keep = lvd_filterListboxItems(query, corpus);
+            end
+
+            [listboxStr, events] = obj.buildGroupedListbox(false, keep);
+        end
+
         function [htmlListboxStrEvts, events] = getHtmlListboxStr(obj)
             [htmlListboxStrEvts, events] = obj.buildGroupedListbox(true);
         end
 
-        function [listboxStr, events] = buildGroupedListbox(obj, useHtml)
+        function [listboxStr, events] = buildGroupedListbox(obj, useHtml, keep)
             %buildGroupedListbox A6: the script list box contents, with group
             %headers folded into the first event of each group and the events
             %of collapsed groups hidden.  listboxStr and events stay the same
             %length, so callers can keep using the event objects as ItemsData.
+            if(nargin < 3)
+                keep = true(1, length(obj.evts));
+            end
+
             listboxStr = {};
             events = LaunchVehicleEvent.empty(1,0);
 
-            lastGroup = '';
+            lastVisibleGroup = '';
             for(i=1:length(obj.evts)) %#ok<*NO4LP>
+                if(not(keep(i)))
+                    continue;
+                end
+
                 evt = obj.evts(i);
                 group = evt.groupName;
-                isNewGroup = not(strcmp(group, lastGroup));
-                lastGroup = group;
+                isNewGroup = not(strcmp(group, lastVisibleGroup));
+                lastVisibleGroup = group;
 
                 collapsed = not(isempty(group)) && obj.isGroupCollapsed(group);
                 if(collapsed && not(isNewGroup))
@@ -278,7 +301,7 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
                 end
 
                 if(not(isempty(group)) && isNewGroup)
-                    numInGroup = numel(obj.getEventsInGroup(group));
+                    numInGroup = nnz(keep & arrayfun(@(e) e.isInGroup(group), obj.evts));
 
                     if(collapsed)
                         str = sprintf('▶ [%s] (%u events)', group, numInGroup);

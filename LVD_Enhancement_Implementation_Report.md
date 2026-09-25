@@ -1106,4 +1106,33 @@ and the Advanced Event Options dialog no longer exists.)
 model" tool), `lvdfixDumpModelTree` (prints an app's component model), plus backups of every `.mlapp` before each
 write (`backup_*` folders).
 
+### 7.7 H8 — search, filter and tagging in the large list boxes (2026-09-24)
+
+Live filtering remains in the constraints, variable, geometry and GA task dialogs; the sequential and
+non-sequential event lists intentionally have no search controls. Every remaining search field uses
+`uieditfield` `ValueChangingFcn` (filtered on `event.Value`; the field's own `Value` is never written from the
+callback) with `ValueChangedFcn` as the programmatic/focus-loss fallback, mirroring the F8 data-overlay
+search box. Filtering is strictly view-only — labels are filtered, the domain arrays are never reordered,
+and selection is tracked by object handle (constraint/geometry/GA handles; variable handle plus x-vector
+index), with prior-selection restore when a query broadens and no silent auto-select of the first match.
+
+- **Shared matching** — `helper_methods/ksptot_lvd/gui/lvd_filterListboxItems.m` provides trimmed,
+  case-insensitive substring matching with a logical keep-mask; `lvd_selectVisibleListValue.m` preserves
+  object-based selection in the constraints, variable and geometry dialogs.
+- **Model** — `LaunchVehicleEvent.tags` and inherited `AbstractConstraint.tags` remain `char = ''`, so old
+  missions load unchanged. Event tag suffixes (`[#...]`) appear in event rows, and constraint tag suffixes
+  appear in constraint rows. `getSearchText` and `getFilteredListboxStr` remain available as model-level
+  helpers, but no main-window callback consumes them after the event search areas were removed.
+- **Apps (10 `.mlapp`, all real canvas components via the §7.4c serializer round trip)** — `EventTagsText` on
+  the Edit Event Advanced tab, search + tags/Apply in the constraints dialog, search in the variable dialog
+  (dropdown carries original x-indices in `ItemsData`), search in all six geometry browsers, and the GA picker
+  keeps `SearchTaskText` with selection-preserving, custom-propellant-name-preserving filtering. Modal
+  Enter-to-close handlers ignore the search/tag fields.
+- **Tests (13 new)** — `H8ListFilterTest` (8 model-level matcher/filter/tag tests) and `H8SearchGuiTest`
+  (5 dialog tests covering event-tag round trips plus constraints, variables, geometry and GA search, including
+  no-match `ValueChanging`/`ValueChanged` paths, disabled-control behavior, query recovery and warning-free
+  empty filtering). Code-data drift is maintained for the ten modified apps; the main app was restored to its
+  last valid H6 model after the two event search fields were removed.
+
+---
 ---

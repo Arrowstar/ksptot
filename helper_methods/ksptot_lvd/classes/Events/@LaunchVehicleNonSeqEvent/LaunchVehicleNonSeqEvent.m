@@ -73,7 +73,7 @@ classdef LaunchVehicleNonSeqEvent <  matlab.mixin.SetGet & matlab.mixin.Copyable
         end
         
         function listBoxStr = getListboxStr(obj)
-            listBoxStr = obj.evt.name;
+            listBoxStr = [obj.evt.name, obj.evt.getTagsDisplayStr()];
 
             if(not(obj.enabled))
                 listBoxStr = sprintf('%s [disabled]', listBoxStr);
@@ -82,6 +82,16 @@ classdef LaunchVehicleNonSeqEvent <  matlab.mixin.SetGet & matlab.mixin.Copyable
             if(obj.priority ~= 0)
                 listBoxStr = sprintf('%s [priority %g]', listBoxStr, obj.priority);
             end
+        end
+
+        function searchText = getSearchText(obj)
+            if(obj.enabled)
+                enabledStr = 'enabled';
+            else
+                enabledStr = 'disabled';
+            end
+
+            searchText = strjoin({obj.evt.getSearchText(), enabledStr, sprintf('priority %g', obj.priority)}, ' ');
         end
     end
     

@@ -280,7 +280,9 @@ KSP, Pro. Add checks for: engine with no connected tank (zero thrust with no war
 **H7. Plugin improvements.**
 Pro. Plugin code is inline text executed with `eval` under a keyword blacklist that also blocks legitimate `load`; there is no way to reference a `.m` file, and no plugin hook for a custom force, steering, or throttle law (only observation and value return). Add file-backed plugins, an allow-listed data-load helper, and `CustomForce`, `CustomSteering`, `CustomThrottle` exec locations that return a force vector or DCM/throttle. Also fill in `PluginConstraint`'s missing unit. Effort: M.
 
-**H8. Search, filter, and tagging in the large list boxes.**
+**H8. Search, filter, and tagging in the large list boxes.** ✅ **Implemented 2026-09-24, with main event-list search areas intentionally removed.**
+*Status: live `ValueChangingFcn` search fields remain in the constraints dialog, variable adjustment dialog, all six geometry browsers and the GA task picker. Free-text `tags` remain on `LaunchVehicleEvent` (edited on the Edit Event Advanced tab and shown in event rows) and on `AbstractConstraint` (edited in the constraints dialog). The sequential and non-sequential event lists intentionally have no search controls; their event tags are metadata only. Filtering is view-only, preserves object-handle selection (plus prior-selection restore and x-index mapping for variables), and never reorders the model. Tests: `H8ListFilterTest`, `H8SearchGuiTest`.*
+
 KSP, Pro. Events, constraints, variables, geometry objects, and GA tasks all live in flat list boxes. The GA task picker already has a search field (`SearchTaskText`); give the same treatment to the constraints, variables, and geometry dialogs, and allow free-text tags on events and constraints that the filter honours. Effort: S.
 
 **H9. Defects worth fixing alongside the above.** ✅ **Implemented 2026-09-15** (committed as `ce04b8b5`).
@@ -304,7 +306,7 @@ Found during the review; each is small. *Status 2026-09-15: all items below have
 ✅ marks an item built as of 2026-09-16.
 
 **Tier 1: high value, low-to-medium effort, purely additive.**
-✅ A1 multiple termination conditions · A2 GA-quantity termination condition · A5 bypass/duplicate/reorder · ✅ A9 ΔV frames · ✅ B2 q-/g-limited throttle · ✅ C1 tank capacity · C2 fuel priority · D2 heating and load indicators · ✅ E1 single propagation and single Jacobian pass · E3 one-sided constraints and failure semantics · ✅ E4 variable/constraint tables · E11 infeasibility diagnostics · F1 B-plane · F2 GA quantities · F3 ΔV budget · H2 autosave · ✅ H6 validators · H8 search/filter · ✅ H9 defects.
+✅ A1 multiple termination conditions · A2 GA-quantity termination condition · A5 bypass/duplicate/reorder · ✅ A9 ΔV frames · ✅ B2 q-/g-limited throttle · ✅ C1 tank capacity · C2 fuel priority · D2 heating and load indicators · ✅ E1 single propagation and single Jacobian pass · E3 one-sided constraints and failure semantics · ✅ E4 variable/constraint tables · E11 infeasibility diagnostics · F1 B-plane · F2 GA quantities · F3 ΔV budget · H2 autosave · ✅ H6 validators · ✅ H8 search/filter (main event-list search intentionally omitted) · ✅ H9 defects.
 
 **Tier 2: substantial capability, medium effort.**
 A3 Nth crossing · ✅ A6 groups · A7 loop safety · B1 selectable throttle models · B3 pointing steering · B4 PEG · B5 ascent wizard · B6 angular-acceleration limits · C3 engine transients · C5 craft import completion · D1 wind · D3 quick J2 · ✅ E2 sparsity · E6 snapshots/multi-start/continuation · E10 path constraints · F4 contact intervals · F5 sensor quantities · F7 GA output/overlay · ✅ F8 view playback/export · F10 IIP trace · F11 launch window tool · G1 generalized Case Matrix · H1 templates · H3 headless runner · H5 halo hand-off/CR3BP.

@@ -138,6 +138,18 @@ classdef LaunchVehicleNonSeqEvents < matlab.mixin.SetGet & matlab.mixin.Copyable
             
             events = obj.nonSeqEvts;
         end
+
+        function [listboxStr, events] = getFilteredListboxStr(obj, query)
+            if(nargin < 2)
+                query = '';
+            end
+
+            [listboxStr, events] = obj.getListboxStr();
+            corpus = arrayfun(@(e) e.getSearchText(), events, 'UniformOutput', false);
+            keep = lvd_filterListboxItems(query, corpus);
+            listboxStr = listboxStr(keep);
+            events = events(keep);
+        end
         
         function resetAllNumExecsRemaining(obj)
             for(i=1:length(obj.nonSeqEvts))

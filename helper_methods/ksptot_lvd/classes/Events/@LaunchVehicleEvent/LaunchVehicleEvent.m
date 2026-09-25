@@ -21,6 +21,7 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
         %A6: organization of long scripts
         groupName char = '';
         notes char = '';
+        tags char = '';
 
         %A10: per-event overrides of the global LvdSettings limits
         useEvtMinAltitude(1,1) logical = false;
@@ -178,7 +179,20 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
             totalNumEvents = obj.script.getTotalNumOfEvents();
             numDigits = floor(log10(abs(totalNumEvents)+1)) + 1;
 
-            listboxStr = sprintf('%0*i - %s%s%s', numDigits, obj.getEventNum(), optStr, obj.name, notesStr);
+            listboxStr = sprintf('%0*i - %s%s%s%s', numDigits, obj.getEventNum(), optStr, obj.name, notesStr, obj.getTagsDisplayStr());
+        end
+
+        function searchText = getSearchText(obj)
+            searchText = strjoin({obj.name, obj.groupName, obj.tags, obj.notes}, ' ');
+        end
+
+        function tagStr = getTagsDisplayStr(obj)
+            tagText = strtrim(obj.tags);
+            if isempty(tagText)
+                tagStr = '';
+            else
+                tagStr = [' [#' tagText ']'];
+            end
         end
 
         function tf = isInGroup(obj, groupNameToTest)

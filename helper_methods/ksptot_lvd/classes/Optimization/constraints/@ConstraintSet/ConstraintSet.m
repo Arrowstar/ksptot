@@ -48,10 +48,24 @@ classdef ConstraintSet < matlab.mixin.SetGet
                     prefStr = '** ';
                 end
                 
-                listBoxStr{end+1} = [prefStr,obj.consts(i).getName()]; %#ok<AGROW>
+                listBoxStr{end+1} = [prefStr,obj.consts(i).getName(),obj.consts(i).getTagsDisplayStr()]; %#ok<AGROW>
             end
             
             consts = obj.consts;
+        end
+
+        function [listBoxStr, consts, tooltipStrs] = getFilteredListboxStr(obj, query)
+            if(nargin < 2)
+                query = '';
+            end
+
+            [listBoxStr, consts] = obj.getListboxStr();
+            tooltipStrs = obj.getToolboxStrs();
+            corpus = arrayfun(@(c) c.getSearchText(), consts, 'UniformOutput', false);
+            keep = lvd_filterListboxItems(query, corpus);
+            listBoxStr = listBoxStr(keep);
+            consts = consts(keep);
+            tooltipStrs = tooltipStrs(keep);
         end
         
         function tooltipStrs = getToolboxStrs(obj)
