@@ -4,6 +4,7 @@ classdef LiftCoefficientModelEnum < matlab.mixin.SetGet
 
     enumeration
         KSPCylinder('KSP Cylinder',"Models the vehicle as a circular cylinder with constant radius and height whose long axis is the body X axis.  Uses the KSP 'lifting body' lift coefficient curves in physics.cfg.");
+        UserTabulated('User Tabulated',"User-supplied Cl*S table over Mach, angle of attack, and sideslip from a CSV file (mach, AoA_deg, sideslip_deg, ClS_m2).");
     end
 
     properties

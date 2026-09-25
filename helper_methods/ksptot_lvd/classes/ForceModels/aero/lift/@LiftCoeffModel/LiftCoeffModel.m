@@ -4,6 +4,7 @@ classdef LiftCoeffModel < matlab.mixin.SetGet & matlab.mixin.Copyable
 
     properties
         cylinderModel(1,:) CylindricalLiftModel 
+        tabularLiftModel(1,:) UserTabulatedLiftModel
 
         liftCoeffObj(1,:) AbstractLiftCoefficientModel = AbstractLiftCoefficientModel.empty(1,0);
     end
@@ -11,6 +12,7 @@ classdef LiftCoeffModel < matlab.mixin.SetGet & matlab.mixin.Copyable
     methods
         function obj = LiftCoeffModel()
             obj.cylinderModel = CylindricalLiftModel(1, 1);
+            obj.tabularLiftModel = UserTabulatedLiftModel('');
 
             obj.liftCoeffObj = obj.cylinderModel;
         end
@@ -44,6 +46,10 @@ classdef LiftCoeffModel < matlab.mixin.SetGet & matlab.mixin.Copyable
         function obj = loadobj(obj)
             if(isempty(obj.cylinderModel))
                 obj.cylinderModel = CylindricalLiftModel(1, 1);
+            end
+
+            if(isempty(obj.tabularLiftModel))
+                obj.tabularLiftModel = UserTabulatedLiftModel('');
             end
 
             if(isempty(obj.liftCoeffObj))

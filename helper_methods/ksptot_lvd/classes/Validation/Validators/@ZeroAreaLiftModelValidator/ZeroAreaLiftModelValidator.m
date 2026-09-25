@@ -50,6 +50,8 @@ classdef ZeroAreaLiftModelValidator < AbstractLaunchVehicleDataValidator
             model = aero.liftCoeffModel.liftCoeffObj(1);
             if(isa(model, 'CylindricalLiftModel'))
                 tf = model.cylinderRadius <= 0;
+            elseif(isa(model, 'UserTabulatedLiftModel'))
+                tf = isempty(model.data) || isempty(model.giClS) || ~any(model.data(:,4) ~= 0);
             end
         end
     end
