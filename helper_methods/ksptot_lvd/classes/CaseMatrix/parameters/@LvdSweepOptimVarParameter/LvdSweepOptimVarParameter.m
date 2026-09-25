@@ -19,6 +19,12 @@ classdef LvdSweepOptimVarParameter < AbstractLvdSweepParameter
 
         varName(1,:) char = '';
         unitType(1,:) char = 'none';
+
+        %The variable's class at the time the parameter was picked.  Ids
+        %are not unique across variable classes, so rebinds match id AND
+        %class.  Empty on setups written before the class was recorded, in
+        %which case resolve falls back to the old id-only first hit.
+        varClass(1,:) char = '';
     end
 
     properties(Transient)
@@ -38,6 +44,7 @@ classdef LvdSweepOptimVarParameter < AbstractLvdSweepParameter
             if(not(isempty(var)))
                 obj.var = var(1);
                 obj.varId = var(1).id;
+                obj.varClass = class(var(1));
                 obj.isResolved = true;
             end
 
@@ -85,7 +92,8 @@ classdef LvdSweepOptimVarParameter < AbstractLvdSweepParameter
 
             vars = lvdData.optimizer.vars.vars;
             for(i=1:length(vars)) %#ok<*NO4LP>
-                if(vars(i).id == obj.varId)
+                if(vars(i).id == obj.varId && ...
+                   (isempty(obj.varClass) || strcmp(class(vars(i)), obj.varClass)))
                     obj.var = vars(i);
                     obj.isResolved = true;
                     break;
@@ -126,6 +134,18 @@ classdef LvdSweepOptimVarParameter < AbstractLvdSweepParameter
             if(not(isempty(obj.lvdData)))
                 LvdOptimTableModel.clearOptimCaches(obj.lvdData);
             end
+        end
+
+        function pairs = getPinnedOptimElements(obj)
+            %The swept element is what applyValue pins off.
+            pairs = struct('key', {}, 'var', {}, 'elem', {});
+
+            if(isempty(obj.var))
+                return;
+            end
+
+            pairs(end+1) = struct('key', AbstractLvdSweepParameter.optimVarKey(obj.var), ...
+                                  'var', obj.var, 'elem', obj.elemInd); %#ok<AGROW>
         end
 
         function [lb, ub] = getSuggestedBounds(obj)

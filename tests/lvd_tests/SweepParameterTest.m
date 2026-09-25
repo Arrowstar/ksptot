@@ -416,6 +416,95 @@ classdef SweepParameterTest < KsptotTestCase
             testCase.verifyError(@() knobParam.applyValue(1), 'LvdSweepParameter:unresolved');
         end
 
+        function optimVarRebindMatchesClassAsWellAsId(testCase)
+            %Ids are not unique across variable classes: missions in the
+            %wild carry distinct variables that share one.  The rebind must
+            %follow the class recorded when the parameter was picked, not
+            %the first id hit in the set.
+            [lvdData, ctx] = testCase.sweepMission();
+
+            ctx.steerVar.id = ctx.initStateVar.id;
+
+            param = LvdSweepOptimVarParameter(ctx.initStateVar, 3, 'Initial State Ry', 'none');
+            testCase.assertFalse(isempty(param.varClass), 'The parameter must record the variable class');
+
+            testCase.verifyTrue(param.resolve(lvdData));
+            testCase.verifyTrue(param.var == ctx.initStateVar, ...
+                'Rebinding by id alone grabbed the wrong variable class');
+
+            pairs = param.getPinnedOptimElements();
+            testCase.verifyEqual(numel(pairs), 1, 'An element parameter pins exactly its element');
+            testCase.verifyTrue(pairs(1).var == ctx.initStateVar);
+            testCase.verifyEqual(pairs(1).elem, 3);
+        end
+
+        function legacyRebindWithoutAClassFallsBackToFirstIdHit(testCase)
+            %Setups written before the class was recorded carry no class;
+            %they must keep resolving exactly as before.
+            [lvdData, ctx] = testCase.sweepMission();
+
+            ctx.steerVar.id = ctx.initStateVar.id;
+
+            param = LvdSweepOptimVarParameter(ctx.initStateVar, 3, 'Initial State Ry', 'none');
+            param.varClass = '';
+            testCase.verifyTrue(param.resolve(lvdData), 'Old setups must keep resolving');
+            testCase.verifyTrue(param.var == ctx.initStateVar, ...
+                'The first id hit in this mission must still win');
+        end
+
+        function knobPinLandsOnTheSetMemberNotADetachedTwin(testCase)
+            %A stage's optVar handle can be a detached twin the optimizer
+            %never reads.  Pinning the twin silently does nothing and the
+            %optimizer moves the "dispersed" mass anyway; the pin must land
+            %on the optimizer's own set member.
+            [lvdData, ctx] = testCase.sweepMission();
+            stage = ctx.stage;
+
+            live = StageDryMassOptimizationVariable(stage);
+            live.setUseTfForVariable(true);
+            lvdData.optimizer.vars.addVariable(live);
+
+            twin = StageDryMassOptimizationVariable(stage);
+            twin.id = live.id;
+            testCase.assertTrue(stage.optVar == twin, 'Fixture broken: the twin did not take the stage handle');
+
+            enabledBefore = numel(lvdData.optimizer.vars.getTotalScaledXVector());
+
+            param = LvdSweepVehicleKnobParameter(LvdSweepVehicleKnobEnum.StageDryMass, stage);
+            testCase.verifyTrue(param.resolve(lvdData));
+            param.applyValue(param.getCurrentValue());
+
+            testCase.verifyFalse(logical(live.getUseTfForVariable()), ...
+                'The pin must land on the optimizer set member, not the detached twin');
+            testCase.verifyEqual(numel(lvdData.optimizer.vars.getTotalScaledXVector()), enabledBefore - 1, ...
+                'Exactly the dispersed variable must go dark');
+
+            pairs = param.getPinnedOptimElements();
+            testCase.verifyEqual(numel(pairs), 1, 'A mass knob pins its whole (single-element) variable');
+            testCase.verifyTrue(pairs(1).var == live);
+        end
+
+        function pluginPinAndPairsFollowTheBackingVariable(testCase)
+            [lvdData, ctx] = testCase.sweepMission();
+
+            param = LvdSweepPluginVarParameter(ctx.pluginVars(2));
+            ctx.pluginVars(2).setIfVariableIsActive(true);
+            testCase.verifyTrue(param.resolve(lvdData));
+
+            live = param.findBackingSetVar();
+            testCase.verifyTrue(live == ctx.pluginVars(2).optVar, ...
+                'With no set member to redirect to, the pin stays on the wrapper handle');
+
+            param.applyValue(999);
+
+            testCase.verifyFalse(ctx.pluginVars(2).isVariableActive(), ...
+                'A swept plugin variable must be deactivated');
+
+            pairs = param.getPinnedOptimElements();
+            testCase.verifyEqual(numel(pairs), 1, 'A plugin parameter pins its whole backing variable');
+            testCase.verifyTrue(pairs(1).var == ctx.pluginVars(2).optVar);
+        end
+
         function suggestedBoundsComeFromTheTargetAndFallBackToTenPercent(testCase)
             [lvdData, ctx] = testCase.sweepMission();
 

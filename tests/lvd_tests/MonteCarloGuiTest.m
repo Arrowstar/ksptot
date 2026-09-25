@@ -182,6 +182,16 @@ classdef MonteCarloGuiTest < KsptotTestCase
             app = testCase.hiddenWindow(fx.lvdData);
             app.ConfirmOptimizeRuns = false;
 
+            %Optimize mode needs something to vary: the default mission
+            %ships with no enabled optimization variables, and the pre-run
+            %guard rightly refuses such a setup before anything runs.
+            initStateVar = InitialStateVariable(fx.lvdData.initStateModel);
+            nElem = numel(initStateVar.getUseTfForVariable());
+            useTf = false(1, nElem);
+            useTf(1:min(2, nElem)) = true;
+            initStateVar.setUseTfForVariable(useTf);
+            fx.lvdData.optimizer.vars.addVariable(initStateVar);
+
             app.addFirstAvailableParameter();
             app.addResponseByTaskStr('Altitude');
             app.setNumSamples(2);

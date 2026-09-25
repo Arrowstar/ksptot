@@ -11,8 +11,13 @@ classdef LvdSweepPluginVarParameter < AbstractLvdSweepParameter
         pluginVarName(1,:) char = '';
     end
 
-    properties(Transient)
+        properties(Transient)
         pluginVar LvdPluginOptimVarWrapper
+
+        %The mission pluginVar was resolved against.  Stored so the pin
+        %lands on the optimizer's own set member rather than on whatever
+        %backing-variable handle the wrapper happens to carry.
+        lvdData LvdData
     end
 
     methods
@@ -55,6 +60,7 @@ classdef LvdSweepPluginVarParameter < AbstractLvdSweepParameter
 
             obj.pluginVar = LvdPluginOptimVarWrapper.empty(1,0);
             obj.isResolved = false;
+            obj.lvdData = LvdData.empty(1,0);
 
             pluginVars = lvdData.pluginVars.getPluginVarsArray();
             for(i=1:length(pluginVars)) %#ok<*NO4LP>
@@ -63,6 +69,10 @@ classdef LvdSweepPluginVarParameter < AbstractLvdSweepParameter
                     obj.isResolved = true;
                     break;
                 end
+            end
+
+            if(obj.isResolved)
+                obj.lvdData = lvdData;
             end
 
             tf = obj.isResolved;
@@ -83,7 +93,53 @@ classdef LvdSweepPluginVarParameter < AbstractLvdSweepParameter
             end
 
             obj.pluginVar.value = value;
-            obj.pluginVar.setIfVariableIsActive(false);
+
+            liveVar = obj.findBackingSetVar();
+
+            if(not(isempty(liveVar)))
+                useTf = liveVar.getUseTfForVariable();
+                liveVar.setUseTfForVariable(false(size(useTf)));
+            else
+                obj.pluginVar.setIfVariableIsActive(false);
+            end
+        end
+
+        function liveVar = findBackingSetVar(obj)
+            %findBackingSetVar The optimizer set member the pin must land
+            %on.  Falls back to the wrapper's own handle when there is no
+            %mission to look it up in, which keeps the old behaviour for
+            %direct applies outside a run.
+            liveVar = AbstractOptimizationVariable.empty(1,0);
+
+            if(isempty(obj.pluginVar) || isempty(obj.pluginVar.optVar))
+                return;
+            end
+
+            if(not(isempty(obj.lvdData)))
+                liveVar = AbstractLvdSweepParameter.findSetOptimVar(obj.lvdData, obj.pluginVar.optVar);
+            end
+
+            if(isempty(liveVar))
+                liveVar = obj.pluginVar.optVar;
+            end
+        end
+
+        function pairs = getPinnedOptimElements(obj)
+            %The whole backing variable goes dark when a plugin value applies.
+            pairs = struct('key', {}, 'var', {}, 'elem', {});
+
+            liveVar = obj.findBackingSetVar();
+
+            if(isempty(liveVar))
+                return;
+            end
+
+            useTf = liveVar.getUseTfForVariable();
+
+            for(e=1:numel(useTf)) %#ok<*NO4LP>
+                pairs(end+1) = struct('key', AbstractLvdSweepParameter.optimVarKey(liveVar), ...
+                                      'var', liveVar, 'elem', e); %#ok<AGROW>
+            end
         end
 
         function [lb, ub] = getSuggestedBounds(obj)

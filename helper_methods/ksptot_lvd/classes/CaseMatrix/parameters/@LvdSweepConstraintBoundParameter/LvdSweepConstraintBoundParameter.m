@@ -19,6 +19,11 @@ classdef LvdSweepConstraintBoundParameter < AbstractLvdSweepParameter
 
         constName(1,:) char = '';
         constUnit(1,:) char = '';
+
+        %The constraint's class at the time the parameter was picked.
+        %Rebinds match id AND class; empty on older setups, which fall back
+        %to the old id-only first hit.
+        constClass(1,:) char = '';
     end
 
     properties(Transient)
@@ -35,6 +40,7 @@ classdef LvdSweepConstraintBoundParameter < AbstractLvdSweepParameter
             if(not(isempty(const)))
                 obj.const = const(1);
                 obj.constId = const(1).id;
+                obj.constClass = class(const(1));
                 obj.constName = const(1).getName();
                 obj.constUnit = LvdSweepConstraintBoundParameter.getConstraintUnit(const(1));
                 obj.isResolved = true;
@@ -74,7 +80,8 @@ classdef LvdSweepConstraintBoundParameter < AbstractLvdSweepParameter
 
             consts = lvdData.optimizer.constraints.consts;
             for(i=1:length(consts)) %#ok<*NO4LP>
-                if(consts(i).id == obj.constId)
+                if(consts(i).id == obj.constId && ...
+                   (isempty(obj.constClass) || strcmp(class(consts(i)), obj.constClass)))
                     obj.const = consts(i);
                     obj.isResolved = true;
                     break;

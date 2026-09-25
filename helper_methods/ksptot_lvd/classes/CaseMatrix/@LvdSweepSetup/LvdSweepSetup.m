@@ -214,10 +214,87 @@ classdef LvdSweepSetup < matlab.mixin.SetGet
                                   strjoin(unresolved, ', '));
                     return;
                 end
+
+                if(obj.runMode == LvdCaseMatrixRunModeEnum.Optimize)
+                    [tf, msg] = obj.checkOptimVarsSurvive(lvdData);
+
+                    if(not(tf))
+                        return;
+                    end
+                end
             end
 
             tf = true;
             msg = '';
+        end
+
+        function [tf, msg] = checkOptimVarsSurvive(obj, lvdData)
+            %checkOptimVarsSurvive Refuses an Optimize run whose dispersions
+            %would switch off every enabled optimization variable.
+            %
+            %   Each case pins its dispersed quantities off the optimizer so
+            %   the solver cannot move them back off the sampled values.  When
+            %   the dispersed set covers everything the mission has enabled,
+            %   every case fails with "no optimization variables enabled".
+            %   The accounting here mirrors exactly what the cases would do:
+            %   the same getPinnedOptimElements each parameter's applyValue
+            %   acts through, counted against the same scaled-x vector the
+            %   optimizer reads.  Nothing is written; the mission is untouched.
+            arguments
+                obj(1,1) LvdSweepSetup
+                lvdData(1,1) LvdData
+            end
+
+            tf = true;
+            msg = '';
+
+            varSet = lvdData.optimizer.vars;
+            total = numel(varSet.getTotalScaledXVector());
+
+            if(total == 0)
+                tf = false;
+                msg = ['This mission has no optimization variables enabled, so Optimize mode has nothing to vary. ', ...
+                       'Enable at least one variable in the variable table, or switch to Propagate Only.'];
+                return;
+            end
+
+            seen = {};
+            doomed = 0;
+            offenders = {};
+
+            for(i=1:numel(obj.params))
+                pairs = obj.params(i).getPinnedOptimElements();
+
+                for(j=1:numel(pairs))
+                    tag = sprintf('%s#%d', pairs(j).key, pairs(j).elem);
+
+                    if(ismember(tag, seen))
+                        continue;
+                    end
+                    seen{end+1} = tag; %#ok<AGROW>
+
+                    member = pairs(j).var;
+
+                    if(isempty(member) || varSet.isEventOptimDisabled(member))
+                        continue;
+                    end
+
+                    useTf = logical(member.getUseTfForVariable());
+
+                    if(pairs(j).elem >= 1 && pairs(j).elem <= numel(useTf) && useTf(pairs(j).elem))
+                        doomed = doomed + 1;
+                        offenders{end+1} = obj.params(i).getName(); %#ok<AGROW>
+                    end
+                end
+            end
+
+            if(total - doomed < 1)
+                tf = false;
+                msg = sprintf(['In Optimize mode these dispersions switch off every enabled optimization variable, ', ...
+                               'leaving the optimizer nothing to vary: %s. ', ...
+                               'Remove one from the dispersions, enable another variable, or switch to Propagate Only.'], ...
+                              strjoin(unique(offenders, 'stable'), ', '));
+            end
         end
 
         function newObj = deepCopy(obj)

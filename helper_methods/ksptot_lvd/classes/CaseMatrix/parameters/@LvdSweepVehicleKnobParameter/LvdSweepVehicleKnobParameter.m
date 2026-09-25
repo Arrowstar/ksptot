@@ -26,8 +26,14 @@ classdef LvdSweepVehicleKnobParameter < AbstractLvdSweepParameter
         baseline(1,:) double = [];
     end
 
-    properties(Transient)
+        properties(Transient)
         target
+
+        %The mission target was resolved against.  Stored because the pin
+        %has to land on the optimizer's own set member, not on target.optVar
+        %directly -- that handle can be a detached twin the optimizer never
+        %reads, in which case pinning it silently does nothing.
+        lvdData LvdData
     end
 
     methods
@@ -86,6 +92,7 @@ classdef LvdSweepVehicleKnobParameter < AbstractLvdSweepParameter
 
             obj.target = [];
             obj.isResolved = false;
+            obj.lvdData = LvdData.empty(1,0);
 
             switch obj.knob.targetKind
                 case 'stage'
@@ -109,6 +116,10 @@ classdef LvdSweepVehicleKnobParameter < AbstractLvdSweepParameter
 
             obj.isResolved = not(isempty(obj.target));
             tf = obj.isResolved;
+
+            if(tf)
+                obj.lvdData = lvdData;
+            end
         end
 
         function captureBaseline(obj, lvdData)
@@ -195,6 +206,24 @@ classdef LvdSweepVehicleKnobParameter < AbstractLvdSweepParameter
 
             [lb, ub] = getSuggestedBounds@AbstractLvdSweepParameter(obj);
         end
+
+        function pairs = getPinnedOptimElements(obj)
+            %The whole mapped variable goes dark when a mass knob applies.
+            pairs = struct('key', {}, 'var', {}, 'elem', {});
+
+            member = obj.findMappedSetVar(obj.target);
+
+            if(isempty(member))
+                return;
+            end
+
+            useTf = member.getUseTfForVariable();
+
+            for(e=1:numel(useTf)) %#ok<*NO4LP>
+                pairs(end+1) = struct('key', AbstractLvdSweepParameter.optimVarKey(member), ...
+                                      'var', member, 'elem', e); %#ok<AGROW>
+            end
+        end
     end
 
     methods(Access=private)
@@ -249,13 +278,39 @@ classdef LvdSweepVehicleKnobParameter < AbstractLvdSweepParameter
             end
         end
 
-        function deactivateOptVar(~, target)
+        function deactivateOptVar(obj, target)
             %A stage dry mass or tank initial mass may also be an active
             %optimization variable, in which case the optimizer would simply
-            %move it back off the swept value.
-            if(isprop(target, 'optVar') && not(isempty(target.optVar)))
-                useTf = target.optVar.getUseTfForVariable();
-                target.optVar.setUseTfForVariable(false(size(useTf)));
+            %move it back off the swept value.  The pin lands on the
+            %optimizer's own set member (matched by id and class), because
+            %target.optVar can be a detached twin the optimizer never reads.
+            member = obj.findMappedSetVar(target);
+
+            if(isempty(member))
+                return;
+            end
+
+            useTf = member.getUseTfForVariable();
+            member.setUseTfForVariable(false(size(useTf)));
+        end
+
+        function member = findMappedSetVar(obj, target)
+            %findMappedSetVar The optimizer set member this knob's pin must
+            %land on.  Falls back to the target's own handle when there is
+            %no mission to look it up in (or no member to find), which keeps
+            %the old behaviour for direct applies outside a run.
+            member = AbstractOptimizationVariable.empty(1,0);
+
+            if(isempty(target) || not(isprop(target, 'optVar')) || isempty(target.optVar))
+                return;
+            end
+
+            if(not(isempty(obj.lvdData)))
+                member = AbstractLvdSweepParameter.findSetOptimVar(obj.lvdData, target.optVar);
+            end
+
+            if(isempty(member))
+                member = target.optVar;
             end
         end
     end

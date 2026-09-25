@@ -324,6 +324,14 @@ classdef OptimizationVariableSet < matlab.mixin.SetGet
             end
         end
 
+        function tf = isEventOptimDisabled(obj, var)
+            %isEventOptimDisabled True when this variable's event has
+            %optimization switched off, so the optimizer skips it even
+            %though its own use mask is on.  Public so run validation can
+            %count exactly the elements the optimizer would see.
+            tf = obj.isVarEventOptimDisabled(var);
+        end
+
         function removeUselessVars(obj)
             indsToRemove = [];
             for(i=1:length(obj.vars))

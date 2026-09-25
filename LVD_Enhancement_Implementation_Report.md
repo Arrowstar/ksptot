@@ -1077,7 +1077,34 @@ dispersion-table edit callback had the same latent arity bug, also fixed
 and now tested), dispersion cell edits, grid cell edits, stored-open
 wiring, setup name defaults, blank-name fallback and out-of-range deletes.
 `SweepResultsGuiTest` 10/10, `MonteCarloGuiTest` 29/30 (1 pool-gated skip),
-`CaseMatrixGuiTest` 13/13, all fresh. Stored runs rename inline in the Stored Runs table
+`CaseMatrixGuiTest` 13/13, all fresh.
+
+### 7.4n Optimize-mode pin fixes and pre-run guard (2026-09-24)
+
+A Monte Carlo Optimize run that dispersed the mission's only enabled
+variables failed every case with "no optimization variables enabled" while
+the untouched template still optimized -- two defects plus a missing guard:
+
+- Rebinds match id AND class.  Variable (and constraint) ids are not
+  unique across classes: the complex-drag mission carries distinct
+  variables sharing one id, so an optimization-variable dispersion
+  rebound onto the wrong variable, wrote its value there, and pinned the
+  wrong mask.  New parameters record the class; older setups without one
+  keep the previous id-only first hit.
+- Knob (and plugin) pins land on the optimizer's own set member, matched
+  by id and class, instead of the target's possibly detached `optVar`
+  twin -- pinning the twin silently did nothing and the optimizer moved
+  the "dispersed" quantity anyway.  Falls back to the twin when no member
+  is found, preserving direct applies outside a run.
+- `LvdSweepSetup.validate` refuses an Optimize run whose dispersions
+  would switch off every enabled element (counted against the same
+  scaled-x vector the optimizer reads, duplicates deduped), naming the
+  offending dispersions; a mission with nothing enabled is refused with
+  its own message.  Both windows gate on `validate`, so both are covered.
+  New `SweepOptimGuardTest` (6 tests); `SweepParameterTest` gains the
+  class-discriminated rebind, the legacy fallback, the detached-twin pin
+  and the plugin pin/pairs tests; the pool-gated MC optimize test now
+  enables a variable first (the default mission ships with none). Stored runs rename inline in the Stored Runs table
   with uniqueness enforced. Also fixed en passant: two CellEdit callbacks
   passed `(src,evt)` to `(app,evt)` methods (same arity bug as the Store
   button), found by auditing every closure in both programmatic windows.

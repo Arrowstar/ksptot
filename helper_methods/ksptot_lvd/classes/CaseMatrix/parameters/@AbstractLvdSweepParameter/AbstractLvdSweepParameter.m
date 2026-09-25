@@ -90,6 +90,21 @@ classdef(Abstract) AbstractLvdSweepParameter < matlab.mixin.SetGet & matlab.mixi
             %they are not variables to begin with.
             tf = true;
         end
+
+        function pairs = getPinnedOptimElements(~)
+            %getPinnedOptimElements The optimizer elements applying a value
+            %switches off, as a struct array with fields:
+            %
+            %   key   class and id of the variable, unique enough to tell
+            %         apart variables that share an id
+            %   var   the variable object the apply would touch
+            %   elem  the 1-based element index switched off
+            %
+            %Empty when the parameter leaves the optimizer alone (constraint
+            %bounds).  LvdSweepSetup.validate uses this to refuse an Optimize
+            %run whose dispersions would leave nothing to optimize.
+            pairs = struct('key', {}, 'var', {}, 'elem', {});
+        end
     end
 
     methods(Static)
@@ -99,6 +114,34 @@ classdef(Abstract) AbstractLvdSweepParameter < matlab.mixin.SetGet & matlab.mixi
             end
 
             obj.isResolved = false;
+        end
+
+        function key = optimVarKey(var)
+            %optimVarKey Identity string for an optimization variable.
+            %Ids alone are not unique: missions in the wild carry distinct
+            %variables that share an id, so the class rides along.
+            key = sprintf('%s|%.17g', class(var), var(1).id);
+        end
+
+        function member = findSetOptimVar(lvdData, sampleVar)
+            %findSetOptimVar The member of the optimizer's variable set
+            %with this variable's id and class.  Empty when the set holds
+            %no such member -- the handle the parameter resolved may be a
+            %detached twin the optimizer never reads, in which case pinning
+            %the twin would silently do nothing.
+            member = AbstractOptimizationVariable.empty(1,0);
+
+            if(isempty(sampleVar))
+                return;
+            end
+
+            vars = lvdData.optimizer.vars.vars;
+            for(i=1:length(vars)) %#ok<*NO4LP>
+                if(vars(i).id == sampleVar(1).id && strcmp(class(vars(i)), class(sampleVar(1))))
+                    member = vars(i);
+                    return;
+                end
+            end
         end
     end
 
