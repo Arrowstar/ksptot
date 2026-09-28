@@ -146,9 +146,8 @@ classdef LvdViewExporter
         function frame = captureAxesFrame(hAx)
             %captureAxesFrame The axes' current pixels as an RGB uint8 image.
             %   Captured from the parent figure cropped to the axes rect so
-            %   the figure-level data overlay annotation is included (an
-            %   axes-targeted capture would miss it).  Falls back to the
-            %   axes-only capture.
+            %   the overlay-axes data overlay is included (an axes-targeted
+            %   capture would miss it).  Falls back to the axes-only capture.
             try
                 img = LvdViewExporter.cropFigureToAxes(hAx);
             catch
@@ -207,22 +206,97 @@ classdef LvdViewExporter
         end
     end
 
+    methods(Static)
+        function rect = figurePixelRect(hAx, hFig)
+            %figurePixelRect hAx's rect in figure pixels (bottom-left
+            %origin), robust to nested layout containers: getpixelposition
+            %of a grid-managed axes is grid-relative, so parent-relative
+            %pixels are accumulated walking up to the figure.  Public so
+            %the overlay data can pin to the same rect.  [] on any failure.
+            rect = [];
+            try
+                if(isempty(hAx) || not(all(isvalid(hAx))))
+                    return;
+                end
+                %Prefer the managed rect: for grid-laid axes getpixelposition
+                %can return the whole grid instead of the cell.
+                try
+                    rect = hAx.Position;
+                    units = hAx.Units;
+                catch
+                    rect = [];
+                    units = 'pixels';
+                end
+                if(numel(rect) < 4 || any(not(isfinite(rect))) || ...
+                   not(ischar(units) && (strcmpi(units, 'pixels') || startsWith(lower(units), 'norm'))))
+                    try
+                        rect = getpixelposition(hAx);
+                        units = 'pixels';
+                    catch
+                        return;
+                    end
+                end
+                if(numel(rect) < 4 || any(not(isfinite(rect))))
+                    rect = [];
+                    return;
+                end
+                try
+                    hParent = hAx.Parent;
+                catch
+                    return;
+                end
+                %Normalized rects are parent-relative fractions: scale into
+                %parent pixels first (uiaxes in grids report pixels already).
+                if(ischar(units) && startsWith(lower(units), 'norm'))
+                    try
+                        ppsz = getpixelposition(hParent);
+                    catch
+                        ppsz = [];
+                    end
+                    if(isempty(ppsz) || numel(ppsz) < 4 || any(not(isfinite(ppsz))) || any(ppsz(3:4) <= 0))
+                        rect = [];
+                        return;
+                    end
+                    rect = [rect(1)*ppsz(3), rect(2)*ppsz(4), rect(3)*ppsz(3), rect(4)*ppsz(4)];
+                end
+                try
+                    p = hParent;
+                catch
+                    return;
+                end
+                while(not(isempty(p)) && all(isvalid(p)) && not(isequal(p, hFig)))
+                    try
+                        pp = getpixelposition(p);
+                    catch
+                        pp = [];
+                    end
+                    if(not(isempty(pp)) && numel(pp) >= 4 && all(isfinite(pp)))
+                        rect(1:2) = rect(1:2) + pp(1:2);
+                    end
+                    try
+                        p = p.Parent;
+                    catch
+                        break;
+                    end
+                end
+            catch
+                rect = [];
+            end
+        end
+    end
+
     methods(Static, Access = private)
         function img = cropFigureToAxes(hAx)
             %cropFigureToAxes Screen-resolution crop of the parent figure to
-            %the axes rect (includes figure-level annotations).  [] on any
-            %failure (callers fall back to axes-only captures).
+            %the axes rect (includes the overlay-axes data overlay).  [] on
+            %any failure (callers fall back to axes-only captures).
             img = [];
             try
                 fig = ancestor(hAx, 'figure');
                 if(isempty(fig) || not(all(isvalid(fig))))
                     return;
                 end
-                try
-                    apx = getpixelposition(hAx);
-                catch
-                    return;
-                end
+                apx = LvdViewExporter.figurePixelRect(hAx, fig);
                 if(numel(apx) < 4 || any(not(isfinite(apx))))
                     return;
                 end
@@ -262,8 +336,8 @@ classdef LvdViewExporter
 
         function done = exportFigureCrop(hAx, filePath, dpi, ext)
             %exportFigureCrop Figure export at `dpi` cropped to the axes rect
-            %(includes the overlay annotation).  False when it cannot be
-            %done (callers fall back to the axes-only export).
+            %(includes the overlay-axes data overlay).  False when it cannot
+            %be done (callers fall back to the axes-only export).
             done = false;
             tmpPath = '';
             try
@@ -272,12 +346,12 @@ classdef LvdViewExporter
                     return;
                 end
                 try
-                    apx = getpixelposition(hAx);
                     fp = getpixelposition(fig);
                     figW = fp(3); figH = fp(4);
                 catch
                     return;
                 end
+                apx = LvdViewExporter.figurePixelRect(hAx, fig);
                 if(any(not(isfinite([apx figW figH]))) || figW <= 0 || figH <= 0)
                     return;
                 end

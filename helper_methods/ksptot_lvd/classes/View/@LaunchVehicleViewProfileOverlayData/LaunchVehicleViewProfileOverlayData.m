@@ -1,7 +1,16 @@
 classdef LaunchVehicleViewProfileOverlayData < matlab.mixin.SetGet
     %LaunchVehicleViewProfileOverlayData Draws the view profile's data
-    %overlay (LvdViewOverlaySettings) as one figure-level annotation textbox
-    %over the 3-D axes and updates it on every rendered frame.
+    %overlay (LvdViewOverlaySettings) as one text block on the 3-D axes and
+    %updates it on every rendered frame.
+    %
+    %   The block lives in a transparent 2-D overlay axes in the 3-D axes'
+    %   own grid cell: the overlay has its own fixed 2-D camera, so unlike
+    %   a normalized 3-D position the block is never re-projected through
+    %   the scene camera (no drift on dolly/orbit, no disappearing at
+    %   range, no occlusion by the planet).  Same-cell stacking also keeps
+    %   the overlay inside every getframe/export capture, and HitTest off
+    %   keeps the mouse on the 3-D view.  A figure annotation would do the
+    %   same job but cannot parent to a uifigure, which the LVD window is.
     %
     %   The Graphical Analysis quantities are evaluated over the whole state
     %   log once (the same GraphicalAnalysisTask.executeTask the plots use),
@@ -15,6 +24,7 @@ classdef LaunchVehicleViewProfileOverlayData < matlab.mixin.SetGet
         lvdData LvdData
 
         hText = [];                 %matlab.graphics.primitive.Text or []
+        hMainAx = [];               %the 3-D view axes (for data-box mapping)
         computed(1,1) logical = false;
         itemSegments(1,:) cell = {};   %per item: struct array (times, interp)
         itemUnits(1,:) cell = {};
@@ -24,6 +34,7 @@ classdef LaunchVehicleViewProfileOverlayData < matlab.mixin.SetGet
 
     properties(Constant)
         TextTag = 'LvdViewOverlayText';
+        OverlayAxesTag = 'LvdViewOverlayAxes';
     end
 
     methods
@@ -192,110 +203,115 @@ classdef LaunchVehicleViewProfileOverlayData < matlab.mixin.SetGet
 
         %% --------------------------------------------------- rendering
         function plotOverlayAtTime(obj, time, hAx)
-            %plotOverlayAtTime Draws the overlay for `time` as a figure-level
-            %annotation textbox floating over hAx.
-            %
-            %   A figure annotation is used deliberately: anything parented to
-            %   the 3-D view axes couples its screen position to the camera /
-            %   projection (tracing showed the block drifting on dolly with no
-            %   code path involved), while a figure annotation is outside the
-            %   axes, scene graph, normalizer and skybox systems entirely.
-            %   Export captures the figure cropped to the axes (see
-            %   LvdViewExporter.cropFigureToAxes) so videos and images keep
-            %   showing the block.
-            hFig = [];
-            try
-                hFig = ancestor(hAx, 'figure');
-            catch
-            end
-            try
-                figOk = not(isempty(hFig)) && all(isvalid(hFig));
-            catch
-                figOk = false;
-            end
-            if(not(figOk))
-                obj.hide();
-                return;
-            end
-            hFig = hFig(1);
-
+            %Lazy: nothing is created while the overlay is off, so a
+            %disabled overlay leaves the figure layout pixel-identical.
             if(isempty(obj.settings) || not(obj.settings.enabled) || not(obj.settings.hasContent()))
+                LaunchVehicleViewProfileOverlayData.hideExisting(hAx);
                 obj.hide();
-                LaunchVehicleViewProfileOverlayData.hideAll(hFig, obj.hText);
                 return;
             end
 
             lines = obj.buildLines(time);
             if(isempty(lines))
+                LaunchVehicleViewProfileOverlayData.hideExisting(hAx);
                 obj.hide();
-                LaunchVehicleViewProfileOverlayData.hideAll(hFig, obj.hText);
                 return;
             end
 
-            if(isempty(obj.hText) || not(isvalid(obj.hText)))
-                %Adopt a surviving annotation (previous data object rebuilt
-                %on replot while its figure graphics outlived it) instead of
-                %stacking a second one.  Anything that is not an annotation
-                %textbox (e.g. a legacy axes text with the same tag) is
-                %dropped so only one block ever exists.
-                adopted = false;
+            ovAx = LaunchVehicleViewProfileOverlayData.getOverlayAxes(hAx);
+            if(isempty(ovAx))
+                obj.hide();
+                return;
+            end
+
+            %Migration: drop figure annotations left by an earlier revision
+            %(a TextBox cannot parent to a uifigure).  The live block lives
+            %in the overlay axes, so anything else with this tag goes.
+            try
+                hFigM = ancestor(hAx, 'figure');
+                if(not(isempty(hFigM)) && all(isvalid(hFigM)))
+                    tagged = findobj(hFigM(1), 'Tag', obj.TextTag);
+                    for(k=1:numel(tagged))
+                        try
+                            if(isvalid(tagged(k)) && (isa(tagged(k), 'matlab.graphics.shape.TextBox') || ...
+                               (isequal(tagged(k).Parent, hAx) && not(isequal(obj.hText, tagged(k))))))
+                                delete(tagged(k));
+                            end
+                        catch
+                        end
+                    end
+                end
+            catch
+            end
+
+            %Adopt the live block (a previous data object rebuilt on replot
+            %while its overlay graphics outlived it) instead of stacking.
+            needsNew = isempty(obj.hText) || not(isvalid(obj.hText));
+            if(not(needsNew))
                 try
-                    existing = findobj(hFig, 'Tag', obj.TextTag);
+                    needsNew = not(isa(obj.hText, 'matlab.graphics.primitive.Text')) || not(isequal(obj.hText.Parent, ovAx));
+                catch
+                    needsNew = true;
+                end
+            end
+            if(needsNew)
+                try
+                    if(not(isempty(obj.hText)) && all(isvalid(obj.hText)))
+                        delete(obj.hText);
+                    end
+                catch
+                end
+                obj.hText = [];
+                try
+                    existing = findobj(ovAx, 'Tag', obj.TextTag);
                     for(k=1:numel(existing))
                         try
-                            if(isvalid(existing(k)))
-                                if(not(adopted) && isa(existing(k), 'matlab.graphics.shape.TextBox'))
-                                    obj.hText = existing(k);
-                                    adopted = true;
-                                else
-                                    delete(existing(k));
-                                end
+                            if(isvalid(existing(k)) && isa(existing(k), 'matlab.graphics.primitive.Text') && isempty(obj.hText))
+                                obj.hText = existing(k);
+                            else
+                                delete(existing(k));
                             end
                         catch
                         end
                     end
                 catch
                 end
-                if(not(adopted))
-                    try
-                        obj.hText = annotation('textbox', [0.02 0.7 0.3 0.25], 'String', lines, 'Tag', obj.TextTag);
-                    catch
-                        obj.hide();
-                        return;
-                    end
-                    try
-                        obj.hText.Parent = hFig;
-                    catch
-                    end
-                    try
-                        obj.hText.HitTest = 'off';
-                    catch
-                    end
-                    try
-                        obj.hText.PickableParts = 'none';
-                    catch
-                    end
-                    try
-                        obj.hText.HandleVisibility = 'on';
-                    catch
-                    end
+                if(isempty(obj.hText))
+                    obj.hText = text(ovAx, 0, 0, 0, lines, ...
+                                     'Units', 'normalized', ...
+                                     'Interpreter', 'none', ...
+                                     'HitTest', 'off', ...
+                                     'PickableParts', 'none', ...
+                                     'Clipping', 'off', ...
+                                     'Margin', 6, ...
+                                     'Tag', obj.TextTag);
                 end
-            else
+                %A newborn block dirties the overlay layout; flush once so
+                %the InnerPosition reads below are settled on this very
+                %frame (plain drawnow: limitrate may legitimately skip, and
+                %stale insets misplace the block until the next frame).
+                %Steady-state frames skip this entirely.
                 try
-                    if(not(isequal(obj.hText.Parent, hFig)))
-                        obj.hText.Parent = hFig;
-                    end
+                    drawnow;
                 catch
                 end
+            else
+                obj.hText.String = lines;
             end
-            obj.hText.String = lines;
-            obj.applyAppearance(hAx, hFig);
-            %Mirror the 3-D view visibility (e.g. the Ground Track tab hides it).
+            obj.applyAppearance(hAx);
+            %Mirror the 3-D view visibility (e.g. the Ground Track tab hides
+            %it).  An invisible figure is an offscreen/test render, where
+            %the axes' own Visible flag is not meaningful (layout passes can
+            %flip it transiently), so the block stays on there.
             try
                 showIt = true;
                 try
-                    showIt = isvisible(hAx);
+                    hFigV = ancestor(hAx, 'figure');
+                    figVisOn = strcmp(hFigV(1).Visible, 'on');
                 catch
+                    figVisOn = true;
+                end
+                if(figVisOn)
                     try
                         showIt = strcmp(hAx.Visible, 'on');
                     catch
@@ -311,88 +327,100 @@ classdef LaunchVehicleViewProfileOverlayData < matlab.mixin.SetGet
             end
         end
 
-        function applyAppearance(obj, hAx, hFig)
-            %applyAppearance Style from the settings, plus corner placement.
-            %   Placement needs the 3-D axes and its figure; without them
-            %   (plain refreshAppearance) only the style is pushed — the
-            %   playback window always re-renders right after, which places.
-            arguments
-                obj(1,1) LaunchVehicleViewProfileOverlayData
-                hAx = []
-                hFig = []
-            end
+        function applyAppearance(obj, hAx)
+            %applyAppearance Placement, font and background from the settings.
+            %   The anchor (fraction of the 3-D view's OUTER box, top corners
+            %   at half margin for optical alignment) is mapped into the
+            %   overlay axes' data box via the overlay InnerPosition, so the
+            %   block lands on the same screen pixels however the two axes'
+            %   insets differ.  Deliberately the OUTER box on the 3-D side:
+            %   its InnerPosition breathes with the 3-D camera (insets are
+            %   projection-derived), which would recouple the block to camera
+            %   moves; the outer rect is layout-managed and never moves with
+            %   the camera.  The mapping only runs on settled geometry —
+            %   outer rects agreeing AND insets matching the previous frame
+            %   (outer agreement alone still admits mid-reflow insets, which
+            %   overshoot the block off the top when maximizing).  Raw
+            %   fractions otherwise: always fully visible, slightly low at
+            %   worst, and the next render re-decides.
             if(isempty(obj.hText) || not(isvalid(obj.hText)))
                 return;
             end
-            if(not(isa(obj.hText, 'matlab.graphics.shape.TextBox')))
-                return;
+            if(nargin < 2 || isempty(hAx) || not(all(isvalid(hAx))))
+                hAx = obj.hMainAx;
             end
-            if(isempty(hFig))
-                try
-                    p = obj.hText.Parent;
-                    if(not(isempty(p)) && all(isvalid(p)))
-                        hFig = p;
-                    end
-                catch
-                end
+            if(not(isempty(hAx)) && all(isvalid(hAx)))
+                obj.hMainAx = hAx;
             end
             s = obj.settings;
-            [xN, yN, hAlign, vAlign] = s.getAnchor();
-            try
-                obj.hText.Units = 'normalized';
-            catch
+            [x, y, hAlign, vAlign] = s.getAnchor();
+            if(strcmpi(vAlign, 'top'))
+                y = 1 - s.marginFrac/2;
             end
             try
-                obj.hText.Interpreter = 'none';
+                hOv = obj.hText.Parent;
+                axOut = hAx.Position;
+                ovOut = hOv.Position;
+                ovIn = hOv.InnerPosition;
+                axUnits = hAx.Units;
+                ovUnits = hOv.Units;
             catch
+                axOut = [];
             end
             try
-                obj.hText.HorizontalAlignment = hAlign;
+                okShapes = not(isempty(axOut)) && numel(axOut) >= 4 && all(isfinite(axOut)) && all(axOut(3:4) > 0) && ...
+                           numel(ovIn) >= 4 && all(isfinite(ovIn)) && all(ovIn(3:4) > 0) && ...
+                           ischar(axUnits) && ischar(ovUnits) && strcmpi(axUnits, ovUnits);
             catch
+                okShapes = false;
+            end
+            %Use the mapped placement only on settled geometry.  Two gates,
+            %both required: the outer rects must agree (mid-reflow the
+            %layout engine hands the two same-cell axes different rects),
+            %AND the full geometry must match the previous frame (outer
+            %rects can agree while the insets are still converging — that
+            %combination overshoots the block off the top, which is exactly
+            %the resize cutoff this guards).  Raw fractions otherwise:
+            %always fully visible, ~12 px low at worst.  The last-seen
+            %geometry rides on the overlay axes so it outlives replots; the
+            %next render always re-decides, so nothing can stick.
+            try
+                outerAgree = max(abs(axOut(1:4) - ovOut(1:4))) <= 1.5;
+            catch
+                outerAgree = false;
             end
             try
-                obj.hText.VerticalAlignment = vAlign;
-            catch
-            end
-            try
-                obj.hText.FontName = s.fontName;
-            catch
-            end
-            try
-                obj.hText.FontSize = s.fontSize;
-            catch
-            end
-            try
-                obj.hText.FontWeight = char(s.fontWeight);
-            catch
-            end
-            try
-                obj.hText.Color = s.fontColor;
-            catch
-            end
-            try
-                obj.hText.BackgroundColor = s.getBackgroundColorSpec();
-            catch
-            end
-            try
-                obj.hText.EdgeColor = 'none';
-            catch
-            end
-            try
-                obj.hText.Margin = 6;
-            catch
-            end
-            try
-                obj.hText.FitBoxToText = 'off';
-            catch
-            end
-            try
-                pos = LaunchVehicleViewProfileOverlayData.cornerBox(hAx, hFig, xN, yN, hAlign, vAlign, obj.hText);
-                if(not(isempty(pos)))
-                    obj.hText.Position = pos;
+                lastGeom = getappdata(hOv, 'LvdOverlayLastGeom');
+                geomNow = [axOut(:)', ovIn(:)'];
+                converged = isequal(geomNow, lastGeom);
+                if(okShapes)
+                    setappdata(hOv, 'LvdOverlayLastGeom', geomNow);
                 end
             catch
+                converged = false;
             end
+            try
+                okMap = okShapes && outerAgree && converged;
+            catch
+                okMap = false;
+            end
+            if(okMap)
+                xn = (axOut(1) + x*axOut(3) - ovIn(1))/ovIn(3);
+                yn = (axOut(2) + y*axOut(4) - ovIn(2))/ovIn(4);
+            else
+                xn = x;
+                yn = y;
+            end
+            obj.hText.Units = 'normalized';
+            obj.hText.Position = [xn, yn, 0];
+            obj.hText.HorizontalAlignment = hAlign;
+            obj.hText.VerticalAlignment = vAlign;
+            obj.hText.FontName = s.fontName;
+            obj.hText.FontSize = s.fontSize;
+            obj.hText.FontWeight = char(s.fontWeight);
+            obj.hText.Color = s.fontColor;
+            obj.hText.BackgroundColor = s.getBackgroundColorSpec();
+            obj.hText.EdgeColor = 'none';
         end
 
         function refreshAppearance(obj)
@@ -415,8 +443,13 @@ classdef LaunchVehicleViewProfileOverlayData < matlab.mixin.SetGet
         end
 
         function deleteGraphics(obj)
-            if(not(isempty(obj.hText)) && isvalid(obj.hText))
-                delete(obj.hText);
+            %deleteGraphics Removes the block (replot rebuilds it on the
+            %next rendered frame).
+            try
+                if(not(isempty(obj.hText)) && all(isvalid(obj.hText)))
+                    delete(obj.hText);
+                end
+            catch
             end
             obj.hText = [];
         end
@@ -451,138 +484,227 @@ classdef LaunchVehicleViewProfileOverlayData < matlab.mixin.SetGet
     end
 
     methods(Static)
-        function hideAll(hFig, exceptHandle)
-            %hideAll Hides overlay annotations in hFig left by another
-            %profile's data object, except exceptHandle.  Never throws.
+        function ovAx = getOverlayAxes(hAx)
+            %getOverlayAxes Transparent 2-D axes in the 3-D axes' own grid
+            %cell that owns the overlay text.  Shared singleton per grid
+            %(adopted across replots); [] on any failure.  Never throws.
+            %
+            %   Two grid footguns are guarded: a fresh axes in a grid
+            %   auto-expands it (halving the 3-D view), and GridLayoutOptions
+            %   is a VALUE class, so the cell must be assigned DIRECTLY on
+            %   the axes (`ovAx.Layout.Row = ...` — staging it in a temp is
+            %   a silent no-op).  The grid geometry and the 3-D axes rect are
+            %   verified afterwards; anything off and the overlay is dropped.
+            ovAx = [];
             try
-                if(isempty(hFig))
+                if(isempty(hAx) || not(all(isvalid(hAx))))
                     return;
                 end
-                others = findobj(hFig, 'Tag', 'LvdViewOverlayText');
-                for(k=1:numel(others))
+                hParent = hAx.Parent;
+                if(isempty(hParent) || not(all(isvalid(hParent))))
+                    return;
+                end
+                try
+                    hFig = ancestor(hAx, 'figure');
+                catch
+                    hFig = [];
+                end
+                if(not(isempty(hFig)))
+                    hFig = hFig(1);
+                end
+                try
+                    found = findobj(hParent, 'Tag', LaunchVehicleViewProfileOverlayData.OverlayAxesTag);
+                catch
+                    found = [];
+                end
+                for(k=1:numel(found))
                     try
-                        if(isvalid(others(k)))
-                            keep = false;
-                            try
-                                keep = not(isempty(exceptHandle)) && all(isvalid(exceptHandle)) && isequal(others(k), exceptHandle);
-                            catch
+                        if(isvalid(found(k)) && (isa(found(k), 'matlab.graphics.axis.Axes') || isa(found(k), 'matlab.ui.control.UIAxes')))
+                            if(isempty(ovAx))
+                                ovAx = found(k);
+                            else
+                                delete(found(k));   %never more than one
                             end
-                            if(not(keep))
-                                others(k).Visible = 'off';
+                        else
+                            try
+                                delete(found(k));
+                            catch
                             end
                         end
                     catch
                     end
                 end
+                createdHere = false;
+                if(isempty(ovAx))
+                    createdHere = true;
+                    %Creating an axes steals CurrentAxes; hand it back so
+                    %the 3-D view keeps whatever it had.
+                    try
+                        prevCA = hFig.CurrentAxes;
+                    catch
+                        prevCA = [];
+                    end
+                    try
+                        isUI = not(isempty(hFig)) && all(isvalid(hFig)) && isa(hFig, 'matlab.ui.Figure');
+                    catch
+                        isUI = false;
+                    end
+                    try
+                        if(isUI)
+                            ovAx = uiaxes(hParent, 'Tag', LaunchVehicleViewProfileOverlayData.OverlayAxesTag);
+                        else
+                            ovAx = axes(hParent, 'Tag', LaunchVehicleViewProfileOverlayData.OverlayAxesTag);
+                        end
+                    catch
+                        ovAx = [];
+                    end
+                    try
+                        if(not(isempty(prevCA)) && all(isvalid(prevCA)) && all(isvalid(hFig)))
+                            hFig.CurrentAxes = prevCA;
+                        end
+                    catch
+                    end
+                    if(isempty(ovAx))
+                        return;
+                    end
+                    try
+                        view(ovAx, 2);
+                    catch
+                        try
+                            ovAx.View = [0 90];
+                        catch
+                        end
+                    end
+                    %Flush once so the new axes' InnerPosition reads settled
+                    %on the very first frame (plain drawnow: limitrate may
+                    %legitimately skip.  Creation is rare — once per replot
+                    %— so this costs nothing per frame).
+                    try
+                        drawnow;
+                    catch
+                    end
+                end
+                %Same cell as the 3-D view (direct assignment — see header).
+                %Figure-parented axes have no Layout — those sync the rect
+                %instead.
+                try
+                    tmpLay = hAx.Layout;
+                    hasLayout = not(isempty(tmpLay));
+                catch
+                    hasLayout = false;
+                end
+                if(hasLayout)
+                    try
+                        ovAx.Layout.Row = hAx.Layout.Row;
+                        ovAx.Layout.Column = hAx.Layout.Column;
+                    catch
+                    end
+                else
+                    try
+                        ovAx.Units = hAx.Units;
+                        ovAx.Position = hAx.Position;
+                    catch
+                    end
+                end
+                %Re-assert the invisibility contract every render (cheap;
+                %also repairs any external theming that recoloured it).
+                try
+                    ovAx.Color = 'none';
+                catch
+                end
+                try
+                    ovAx.XColor = 'none'; ovAx.YColor = 'none'; ovAx.ZColor = 'none';
+                catch
+                end
+                try
+                    ovAx.XTick = []; ovAx.YTick = []; ovAx.ZTick = [];
+                catch
+                end
+                try
+                    ovAx.Box = 'off';
+                catch
+                end
+                try
+                    ovAx.Toolbar.Visible = 'off';
+                catch
+                end
+                try
+                    ovAx.Interactions = [];
+                catch
+                end
+                try
+                    disableDefaultInteractivity(ovAx);
+                catch
+                end
+                try
+                    ovAx.HitTest = 'off';
+                catch
+                end
+                try
+                    ovAx.PickableParts = 'none';
+                catch
+                end
+                try
+                    if(not(isequal(hParent.Children(end), ovAx)))
+                        uistack(ovAx, 'top');
+                    end
+                catch
+                end
+                %Verify: same cell (or same rect without a grid).  Only a
+                %freshly created overlay that refuses its cell is deleted
+                %(it would corrupt the layout); an adopted one is left
+                %alone, and the 3-D rect is never compared — layout passes
+                %triggered by our own drawnow can shift it mid-call, and
+                %deleting over that churns forever with no overlay and no
+                %error.  (We never modify the 3-D axes, so there is nothing
+                %to guard there.)
+                try
+                    if(hasLayout)
+                        okCell = isequal(ovAx.Layout.Row, hAx.Layout.Row) && isequal(ovAx.Layout.Column, hAx.Layout.Column);
+                    else
+                        okCell = isequal(ovAx.Position, hAx.Position);
+                    end
+                catch
+                    okCell = false;
+                end
+                if(not(okCell) && createdHere)
+                    try
+                        delete(ovAx);
+                    catch
+                    end
+                    ovAx = [];
+                    return;
+                end
             catch
+                ovAx = [];
             end
         end
 
-        function pos = cornerBox(hAx, hFig, xN, yN, hAlign, vAlign, hText)
-            %cornerBox Figure-normalized annotation box hugging the content at
-            %the axes corner (xN, yN are axes fractions).  [] when the sizes
-            %cannot be determined (callers keep the previous box).
-            pos = [];
+        function hideExisting(hAx)
+            %hideExisting Hides any live overlay block for hAx's figure
+            %(covers a previous data object's block this object never
+            %adopted).  Never throws, never creates graphics.
             try
-                try
-                    fpx = getpixelposition(hFig);
-                catch
-                    fpx = [];
+                if(isempty(hAx) || not(all(isvalid(hAx))))
+                    return;
                 end
-                if(isempty(fpx) || numel(fpx) < 4)
+                try
+                    hFig = ancestor(hAx, 'figure');
+                catch
+                    return;
+                end
+                if(isempty(hFig) || not(all(isvalid(hFig))))
+                    return;
+                end
+                tx = findobj(hFig(1), 'Tag', LaunchVehicleViewProfileOverlayData.TextTag);
+                for(k=1:numel(tx))
                     try
-                        fpx = hFig.Position;
-                    catch
-                        return;
-                    end
-                end
-                figW = fpx(3); figH = fpx(4);
-                if(not(all(isfinite([figW figH]))) || figW <= 0 || figH <= 0)
-                    return;
-                end
-                try
-                    apx = getpixelposition(hAx);
-                catch
-                    apx = [];
-                end
-                if(isempty(apx) || numel(apx) < 4 || any(not(isfinite(apx))))
-                    return;
-                end
-                [tw, th] = LaunchVehicleViewProfileOverlayData.measureTight(hText);
-                if(not(all(isfinite([tw th]))) || tw <= 0 || th <= 0)
-                    return;
-                end
-                try
-                    mgn = hText.Margin;
-                catch
-                    mgn = 0;
-                end
-                if(isempty(mgn) || not(isfinite(mgn)) || mgn < 0)
-                    mgn = 0;
-                end
-                bw = (tw + 2*mgn) / figW;
-                bh = (th + 2*mgn) / figH;
-                cx = (apx(1) + xN*apx(3)) / figW;
-                cy = (apx(2) + yN*apx(4)) / figH;
-                if(strcmpi(hAlign, 'left'))
-                    bx = cx;
-                else
-                    bx = cx - bw;
-                end
-                if(strcmpi(vAlign, 'top'))
-                    by = cy - bh;
-                else
-                    by = cy;
-                end
-                bx = min(max(bx, 0), max(0, 1 - bw));
-                by = min(max(by, 0), max(0, 1 - bh));
-                pos = [bx by bw bh];
-            catch
-                pos = [];
-            end
-        end
-
-        function [tw, th] = measureTight(hText)
-            %measureTight Tight content size in pixels via a reused hidden
-            %probe (text Extent is font-metric based and synchronous).
-            %[NaN NaN] on failure (callers keep the previous box).
-            tw = NaN; th = NaN;
-            persistent probeFig probeTx;
-            try
-                if(isempty(probeFig) || not(all(isvalid(probeFig))))
-                    probeFig = figure('Visible', 'off', 'HandleVisibility', 'off', ...
-                                      'Tag', 'LvdOverlayProbe', 'MenuBar', 'none', ...
-                                      'ToolBar', 'none', 'NumberTitle', 'off', ...
-                                      'Name', 'KSPTOT overlay measure probe');
-                    probeAx = axes('Parent', probeFig, 'Visible', 'off', 'Tag', 'LvdOverlayProbeAxes');
-                    probeTx = text(probeAx, 0, 0, '', 'Units', 'pixels', 'Visible', 'off', ...
-                                   'Tag', 'LvdOverlayProbeText', 'Interpreter', 'none');
-                end
-                if(isempty(probeTx) || not(all(isvalid(probeTx))))
-                    try
-                        probeTx = findobj(probeFig, 'Tag', 'LvdOverlayProbeText');
+                        if(isvalid(tx(k)) && isa(tx(k), 'matlab.graphics.primitive.Text'))
+                            tx(k).Visible = 'off';
+                        end
                     catch
                     end
-                    if(isempty(probeTx) || not(all(isvalid(probeTx))))
-                        return;
-                    end
-                    probeTx = probeTx(1);
                 end
-                probeTx.String = hText.String;
-                try
-                    probeTx.FontName = hText.FontName;
-                catch
-                end
-                try
-                    probeTx.FontSize = hText.FontSize;
-                catch
-                end
-                try
-                    probeTx.FontWeight = hText.FontWeight;
-                catch
-                end
-                e = probeTx.Extent;
-                tw = e(3); th = e(4);
             catch
             end
         end

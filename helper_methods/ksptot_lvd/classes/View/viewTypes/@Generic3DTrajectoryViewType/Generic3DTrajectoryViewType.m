@@ -521,6 +521,13 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             viewProfile.createBodyAxesData(vehPosVelData, vehAttData); %lvdStateLogEntries, lvdData.script.evts, viewInFrame
             viewProfile.createVehicleMeshData(vehPosVelData, vehAttData); %F8 vehicle mesh + vehicle position source for the scene camera
             viewProfile.createOverlayData(lvdData); %F8 data overlay (Graphical Analysis quantities on the view)
+            try
+                %Build the overlay shell now (empty, transparent, inert) so
+                %its layout is long settled before the first rendered frame
+                %ever reads it.  Never breaks plotting.
+                LaunchVehicleViewProfileOverlayData.getOverlayAxes(dAxes);
+            catch
+            end
             viewProfile.createSunLightSrc(dAxes, viewInFrame);
             viewProfile.createGroundObjMarkerData(dAxes, lvdStateLogEntries, vehPosVelData, eventsToPlot, viewInFrame, celBodyData);
             viewProfile.createCentralBodyData(viewCentralBody, hCBodySurfXForm, viewInFrame);

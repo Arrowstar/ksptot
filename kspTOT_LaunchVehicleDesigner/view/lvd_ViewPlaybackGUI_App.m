@@ -3508,7 +3508,7 @@ classdef lvd_ViewPlaybackGUI_App < matlab.apps.AppBase
             app.OverlayCornerDropDown.Layout.Column = 2;
             app.OverlayCornerDropDown.ValueChangedFcn = @(~,~) app.onOverlayFieldChanged();
             app.makeLabel(gs, 1, 3, 'Margin (% of view):');
-            app.OverlayMarginSpinner = app.makeSpinner(gs, 1, 4, 2, [0 45], 0.5, 'Distance from the corner, as a percentage of the view size.', @(~,~) app.onOverlayFieldChanged());
+            app.OverlayMarginSpinner = app.makeSpinner(gs, 1, 4, 2, [0 45], 0.5, 'Distance from the corner, as a percentage of the view size (top corners use half, for optical alignment).', @(~,~) app.onOverlayFieldChanged());
             app.makeLabel(gs, 2, 1, 'Font:');
             app.OverlayFontNameDropDown = uidropdown(gs);
             app.OverlayFontNameDropDown.Items = {'Helvetica'};

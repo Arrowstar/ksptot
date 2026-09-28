@@ -212,15 +212,21 @@ classdef ViewOverlayTest < KsptotTestCase
             data = LaunchVehicleViewProfileOverlayData(s, lvdData);
 
             data.plotOverlayAtTime(5, hAx);
-            h = findobj(hFig, 'Tag', 'LvdViewOverlayText');
+            ovAx = findobj(hFig, 'Tag', 'LvdViewOverlayAxes');
+            testCase.assertNumElements(ovAx, 1, 'One transparent overlay axes');
+            %first frame stores unsettled geometry (raw fractions); the
+            %second maps exactly once the layout reads match
+            data.plotOverlayAtTime(5, hAx);
+            h = findobj(ovAx, 'Tag', 'LvdViewOverlayText');
             testCase.assertNumElements(h, 1, 'One text block');
-            testCase.verifyTrue(isa(h, 'matlab.graphics.shape.TextBox'), 'The overlay is a figure annotation, immune to the 3-D camera');
-            testCase.verifySameHandle(h.Parent, hFig);
-            [cx, cyTop] = testCase.topLeftCorner(hFig, hAx);
-            testCase.verifyEqual(h.Position(1), cx, 'AbsTol', 0.03);
-            testCase.verifyEqual(h.Position(2) + h.Position(4), cyTop, 'AbsTol', 0.05);
-            testCase.verifyGreaterThan(h.Position(3), 0);
-            testCase.verifyGreaterThan(h.Position(4), 0);
+            testCase.verifyTrue(isa(h, 'matlab.graphics.primitive.Text'), 'The overlay is text in the overlay axes (uifigure-safe, camera-fixed)');
+            testCase.verifySameHandle(h.Parent, ovAx);
+            testCase.verifyEqual(h.Units, 'normalized');
+            %placement is the anchor mapped through both data boxes (top
+            %corners use half the margin — optical alignment with the
+            %bottom corners, which keep the full margin)
+            expTL = testCase.mappedAnchor(hAx, h.Parent, 0.02, 1 - s.marginFrac/2);
+            testCase.verifyEqual(h.Position(1:2), expTL, 'AbsTol', 1e-9);
             testCase.verifyEqual(h.HorizontalAlignment, 'left');
             testCase.verifyEqual(h.VerticalAlignment, 'top');
             testCase.verifyEqual(h.Color, [1 1 1]);
@@ -233,16 +239,28 @@ classdef ViewOverlayTest < KsptotTestCase
             %next frame updates the same object with new text
             str5 = h.String;
             data.plotOverlayAtTime(15, hAx);
-            testCase.verifyNumElements(findobj(hFig, 'Tag', 'LvdViewOverlayText'), 1);
+            testCase.verifyNumElements(findobj(ovAx, 'Tag', 'LvdViewOverlayText'), 1);
             testCase.verifyNotEqual(h.String, str5, 'Text follows the time');
+
+            %the block is screen-fixed: dolly + orbit on the 3-D view leave
+            %the overlay exactly where it was (a normalized 3-D position
+            %would drift and disappear at range)
+            e0 = h.Extent;
+            posBeforeCam = h.Position;
+            hAx.CameraPosition = hAx.CameraPosition*5;
+            camorbit(hAx, 30, 15);
+            drawnow;
+            data.plotOverlayAtTime(15, hAx);
+            testCase.verifySameHandle(data.getTextHandle(), h, 'Still one block, never duplicated');
+            testCase.verifyEqual(h.Position(1:2), posBeforeCam(1:2), 'AbsTol', 1e-9, 'Camera moves do not move the block');
+            testCase.verifyEqual(h.Extent, e0, 'AbsTol', 1e-9, 'Camera moves do not resize the block');
+            testCase.verifyEqual(h.Visible, matlab.lang.OnOffSwitchState.on, 'Dolly far out does not hide the block');
 
             %style/placement changes are pushed by refreshAppearance
             s.corner = "Bottom Right"; s.fontSize = 20; s.fontWeight = "bold"; s.fontColor = [1 1 0]; s.showBackground = false;
             data.refreshAppearance();
-            data.plotOverlayAtTime(15, hAx);   %production re-renders right after a refresh, which places the box
-            [cxR, cyB] = testCase.bottomRightCorner(hFig, hAx);
-            testCase.verifyEqual(h.Position(1) + h.Position(3), cxR, 'AbsTol', 0.05);
-            testCase.verifyEqual(h.Position(2), cyB, 'AbsTol', 0.05);
+            expBR = testCase.mappedAnchor(hAx, h.Parent, 1 - s.marginFrac, s.marginFrac);
+            testCase.verifyEqual(h.Position(1:2), expBR, 'AbsTol', 1e-9);
             testCase.verifyEqual(h.HorizontalAlignment, 'right');
             testCase.verifyEqual(h.FontSize, 20);
             testCase.verifyEqual(h.FontWeight, 'bold');
@@ -264,11 +282,14 @@ classdef ViewOverlayTest < KsptotTestCase
             testCase.verifyEqual(h.Visible, matlab.lang.OnOffSwitchState.on);
 
             %a fresh renderer for a disabled overlay draws nothing
-            hAx2 = axes(hFig);
+            hFig2 = figure('Visible', 'off');
+            cleanup2 = onCleanup(@() delete(hFig2)); %#ok<NASGU>
+            hAx2 = axes(hFig2);
+            plot3(hAx2, [0 700], [0 700], [0 700]);
             s.enabled = false;
             data2 = LaunchVehicleViewProfileOverlayData(s, lvdData);
             data2.plotOverlayAtTime(5, hAx2);
-            testCase.verifyEmpty(findobj(hAx2, 'Tag', 'LvdViewOverlayText'));
+            testCase.verifyEmpty(findobj(hFig2, 'Tag', 'LvdViewOverlayText'));
         end
 
         %% ------------------------------------------------- profile plumbing
@@ -339,20 +360,13 @@ classdef ViewOverlayTest < KsptotTestCase
     end
 
     methods(Access = private)
-        function [cx, cy] = topLeftCorner(~, hFig, hAx)
-            %Figure-normalized axes corner for the default margin (0.02).
-            axPix = getpixelposition(hAx);
-            figPix = getpixelposition(hFig);
-            cx = (axPix(1) + 0.02*axPix(3)) / figPix(3);
-            cy = (axPix(2) + 0.98*axPix(4)) / figPix(4);
-        end
-
-        function [cx, cy] = bottomRightCorner(~, hFig, hAx)
-            %Matches the test's 0.05 margin (right = 1 - 0.05).
-            axPix = getpixelposition(hAx);
-            figPix = getpixelposition(hFig);
-            cx = (axPix(1) + 0.95*axPix(3)) / figPix(3);
-            cy = (axPix(2) + 0.05*axPix(4)) / figPix(4);
+        function pos = mappedAnchor(~, hAx, hOv, xm, ym)
+            %mappedAnchor Where anchor fraction (xm, ym) of the 3-D OUTER box
+            %lands in the overlay axes (mirrors applyAppearance).
+            axOut = hAx.Position;
+            ovIn = hOv.InnerPosition;
+            pos = [(axOut(1) + xm*axOut(3) - ovIn(1))/ovIn(3), ...
+                   (axOut(2) + ym*axOut(4) - ovIn(2))/ovIn(4)];
         end
 
         function [lvdData, stateLog, tD] = propagatedMission(testCase, dur1, dur2)

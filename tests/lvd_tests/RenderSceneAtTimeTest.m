@@ -686,8 +686,10 @@ classdef RenderSceneAtTimeTest < matlab.uitest.TestCase
             lvd_renderSceneAtTime(t, lvdData, handles, app, "full");
 
             h = findobj(app.ma_LvdMainGUI, 'Tag', 'LvdViewOverlayText');
-            testCase.verifyTrue(isa(h, 'matlab.graphics.shape.TextBox'), 'The overlay is a figure annotation');
-            testCase.assertNumElements(h, 1, 'The overlay text block is in the 3-D axes');
+            testCase.assertNumElements(h, 1, 'The overlay text block floats over the 3-D axes');
+            ovAx = findobj(app.ma_LvdMainGUI, 'Tag', 'LvdViewOverlayAxes');
+            testCase.assertNumElements(ovAx, 1, 'One transparent overlay axes');
+            testCase.verifySameHandle(h.Parent, ovAx);
             testCase.verifyEqual(h.Visible, matlab.lang.OnOffSwitchState.on);
             testCase.verifyEqual(h.String{1}, 'Overlay Test');
             altLine = h.String{startsWith(h.String, 'Altitude: ')};

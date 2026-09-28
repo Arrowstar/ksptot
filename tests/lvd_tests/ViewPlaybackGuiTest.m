@@ -543,7 +543,8 @@ classdef ViewPlaybackGuiTest < matlab.uitest.TestCase
             testCase.verifyEqual(data{1,1}, 'Altitude');
             h = findobj(mainApp.ma_LvdMainGUI, 'Tag', 'LvdViewOverlayText');
             testCase.assertNumElements(h, 1, 'The overlay is drawn in the main window');
-            testCase.verifyTrue(isa(h, 'matlab.graphics.shape.TextBox'), 'The overlay is a figure annotation');
+            testCase.verifyTrue(isa(h, 'matlab.graphics.primitive.Text'), 'The overlay is text in the transparent overlay axes');
+            testCase.verifyEqual(h.Parent.Tag, 'LvdViewOverlayAxes');
             testCase.verifyTrue(any(startsWith(h.String, 'Altitude: ')));
             testCase.verifySubstring(app.OverlayPreviewLabel.Text, 'Altitude: ');
 
@@ -576,12 +577,11 @@ classdef ViewPlaybackGuiTest < matlab.uitest.TestCase
             testCase.verifyEqual(ov.fontSize, 18);
             testCase.verifyEqual(h.FontSize, 18);
             testCase.verifyEqual(ov.marginFrac, 0.05, 'AbsTol', 1e-12);
-            axPix = getpixelposition(mainApp.dispAxes);
-            figPix = getpixelposition(mainApp.ma_LvdMainGUI);
-            cxR = (axPix(1) + 0.95*axPix(3)) / figPix(3);
-            cyB = (axPix(2) + 0.05*axPix(4)) / figPix(4);
-            testCase.verifyEqual(h.Position(1) + h.Position(3), cxR, 'AbsTol', 0.05);
-            testCase.verifyEqual(h.Position(2), cyB, 'AbsTol', 0.05);
+            axOutPb = mainApp.dispAxes.Position;
+            ovInPb = h.Parent.InnerPosition;
+            expPb = [(axOutPb(1) + 0.95*axOutPb(3) - ovInPb(1))/ovInPb(3), ...
+                     (axOutPb(2) + 0.05*axOutPb(4) - ovInPb(2))/ovInPb(4)];
+            testCase.verifyEqual(h.Position(1:2), expPb, 'AbsTol', 1e-9);
             app.setOverlayColors([1 0 0], [0 0 1]);
             testCase.verifyEqual(h.Color, [1 0 0]);
             testCase.verifyEqual(h.BackgroundColor(1:3), [0 0 1]);

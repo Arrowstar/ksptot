@@ -135,8 +135,10 @@ classdef LvdSceneNormalizer
 
         function reparentSceneChildren(hAx)
             %reparentSceneChildren Moves any new direct scene children under
-            %the normalization transform.  Skybox graphics and lights stay
-            %parented to the axes.  Safe to call every frame.
+            %the normalization transform.  Skybox graphics, lights and the
+            %data overlay text stay parented to the axes (the overlay uses
+            %normalized units, so nesting it under the scale would move it).
+            %Safe to call every frame.
             try
                 if(isempty(hAx) || not(all(isvalid(hAx))))
                     return;
@@ -162,6 +164,9 @@ classdef LvdSceneNormalizer
                         end
                         if(strlength(tag) > 0 && (tag == "KSPTOT_SkyboxTransform" || startsWith(tag, "KSPTOT_Skybox")))
                             continue;
+                        end
+                        if(strlength(tag) > 0 && tag == "LvdViewOverlayText")
+                            continue; %ponytail: axes-normalized text must not be scaled
                         end
                         if(isa(c, 'matlab.graphics.primitive.Light'))
                             continue; %infinite light: direction preserved at axes level
