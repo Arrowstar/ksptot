@@ -685,7 +685,8 @@ classdef RenderSceneAtTimeTest < matlab.uitest.TestCase
             [t, rView] = testCase.loggedPoseInViewFrame(lvdData, profile, 4);
             lvd_renderSceneAtTime(t, lvdData, handles, app, "full");
 
-            h = findobj(hAx, 'Tag', 'LvdViewOverlayText');
+            h = findobj(app.ma_LvdMainGUI, 'Tag', 'LvdViewOverlayText');
+            testCase.verifyTrue(isa(h, 'matlab.graphics.shape.TextBox'), 'The overlay is a figure annotation');
             testCase.assertNumElements(h, 1, 'The overlay text block is in the 3-D axes');
             testCase.verifyEqual(h.Visible, matlab.lang.OnOffSwitchState.on);
             testCase.verifyEqual(h.String{1}, 'Overlay Test');

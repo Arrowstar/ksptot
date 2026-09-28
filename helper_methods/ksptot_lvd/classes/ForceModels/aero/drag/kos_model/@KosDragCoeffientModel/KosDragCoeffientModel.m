@@ -166,19 +166,32 @@ classdef KosDragCoeffientModel < AbstractDragCoefficientModel
                 hAx = axes(figure());
             end
 
-            dragCubeData = obj.data(:,4);
-
-            maxCdA = max(dragCubeData);
-            minCdA = min(dragCubeData);
-            levels = linspace(minCdA, maxCdA, 50);
-
-            warning("off",'MATLAB:contour:ConstantData');
-
             allVect = combvec(obj.aoa(:)', obj.sideslip(:)')';
             allVect = [machNum*ones(height(allVect), 1), allVect];
             cd = obj.giDragCube(allVect(:,1), allVect(:,2), allVect(:,3));
 
-            [~,hContour] = contour(hAx, rad2deg(obj.aoa), rad2deg(obj.sideslip), reshape(cd, [length(obj.aoa), length(obj.sideslip)]), levels, 'Fill','on');
+            % Levels from THIS Mach slice, not the full tensor: with
+            % global levels the slice occupies a fraction of the
+            % colormap and the plot renders as one flat color (e.g. an
+            % all-blue M=0 slice for a craft table spanning Mach 0-5,
+            % where drag grows severalfold with Mach).
+            maxCdA = max(cd);
+            minCdA = min(cd);
+            if(maxCdA > minCdA)
+                levels = linspace(minCdA, maxCdA, 50);
+            else
+                levels = [];   % constant slice: let contour pick defaults
+            end
+
+            warning("off",'MATLAB:contour:ConstantData');
+
+            % reshape lays AoA fastest (combvec order), so Z0(i,j) is
+            % aoa_i at sideslip_j; contour wants Z(i,j) at (X(j), Y(i)),
+            % hence the transpose. (Without it plotting only works on
+            % square AoA/sideslip grids such as the kOS -30:5:30 tensor;
+            % craft-generated tables like 13x7 fail with a size mismatch.)
+            Z = reshape(cd, [length(obj.aoa), length(obj.sideslip)])';
+            [~,hContour] = contour(hAx, rad2deg(obj.aoa), rad2deg(obj.sideslip), Z, levels, 'Fill','on');
             xlabel(hAx, 'Angle of Attack [deg]');
             ylabel(hAx, 'Sideslip Angle [deg]');
             title(hAx, sprintf('Cd*A for Mach Number = %0.3f', machNum));

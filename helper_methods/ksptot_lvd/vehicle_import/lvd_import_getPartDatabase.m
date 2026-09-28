@@ -31,10 +31,26 @@ function [partDB, warnings] = lvd_import_getPartDatabase(source)
 %           .mass_t      - dry mass in metric tons
 %           .roles       - cellstr of roles (engine, tank, decoupler,
 %                          radialDecoupler, fuelLine, pod, rcs, parachute,
-%                          antenna, fin, noseCone, utility)
+%                          antenna, fin, noseCone, utility, liftingSurface)
 %           .resources_u - struct of resource name -> units stored
 %           .engines     - struct array with fields maxThrust_kN, ispVac_s,
 %                          ispSL_s, minThrottle, maxThrottle, propellants
+%           .liftingSurface - struct harvested from ModuleLiftingSurface /
+%                          ModuleControlSurface (defaults when the part
+%                          has none): .isControl, .deflectionLiftCoeff
+%                          (NaN), .ctrlSurfaceRange (NaN),
+%                          .authorityLimiter (NaN), .deployAngleDeg (NaN),
+%                          .rotationAxis ([]), .liftingSurfaceCurve (''),
+%                          .omnidirectional (NaN), .perpendicularOnly
+%                          (NaN). NaN/empty = absent; KSP module defaults
+%                          (omni true, perp false, curve 'Default') apply
+%                          downstream. Consumed by kwt_buildAeroSpec when
+%                          the craft file does not carry the values (craft
+%                          files usually omit deflectionLiftCoeff). NOTE:
+%                          databases exported before lift harvesting
+%                          (incl. the bundled stock JSON) carry defaults;
+%                          pass a GameData folder for live fin/control-
+%                          surface coefficients.
 %
 %   [partDB, warnings] = ... also returns cellstr of non-fatal loading
 %   issues (e.g., malformed entries that were skipped).
@@ -236,6 +252,19 @@ function [partDB, warnings] = loadMatDatabase(filePath) %#ok<STIN>
     partDB = candidate;
     partDB.sourcePath = filePath;
 
+    % Backfill liftingSurface for databases saved before lift harvesting.
+    try
+        pKeys = keys(partDB.parts);
+        for(kk = 1:numel(pKeys))
+            entry = partDB.parts(pKeys{kk});
+            if(isstruct(entry) && ~isfield(entry, 'liftingSurface'))
+                entry.liftingSurface = absentLiftingSurface();
+                partDB.parts(pKeys{kk}) = entry;
+            end
+        end
+    catch
+    end
+
     if(~isfield(partDB, 'resourceDensities'))
         partDB.resourceDensities = lvd_import_resourceDensities();
     end
@@ -286,7 +315,85 @@ function [entry, warnings] = normalizePartEntry(rawPart, densities)
     entry.roles = roles;
     entry.resources_u = resourcesU;
     entry.engines = engines;
+    entry.liftingSurface = parseLiftingSurfaceJson(rawPart);
 
+end
+
+function liftSurf = parseLiftingSurfaceJson(rawPart)
+%parseLiftingSurfaceJson Reads the optional "liftingSurface" object from a
+%JSON part entry (same field names as the GameData harvest). Missing ->
+%absent defaults.
+
+    liftSurf = absentLiftingSurface();
+
+    if(~isfield(rawPart, 'liftingSurface') || ~isstruct(rawPart.liftingSurface))
+        return;
+    end
+    src = rawPart.liftingSurface;
+
+    if(isfield(src, 'isControl'))
+        liftSurf.isControl = logical(src.isControl);
+    end
+    for(f = {'deflectionLiftCoeff', 'ctrlSurfaceRange', 'authorityLimiter', 'deployAngleDeg'})
+        if(isfield(src, f{1}))
+            v = double(src.(f{1}));
+            if(isscalar(v) && isfinite(v))
+                liftSurf.(f{1}) = v;
+            end
+        end
+    end
+    if(isfield(src, 'rotationAxis'))
+        v = double(src.rotationAxis(:));
+        if(numel(v) == 3 && all(isfinite(v)) && norm(v) > 0)
+            liftSurf.rotationAxis = v / norm(v);
+        end
+    end
+    if(isfield(src, 'liftingSurfaceCurve') && ischar(src.liftingSurfaceCurve) ...
+            && ~isempty(strtrim(src.liftingSurfaceCurve)))
+        liftSurf.liftingSurfaceCurve = strtrim(src.liftingSurfaceCurve);
+    end
+    for(f = {'omnidirectional', 'perpendicularOnly'})
+        if(isfield(src, f{1}))
+            v = src.(f{1});
+            if(islogical(v) && isscalar(v))
+                liftSurf.(f{1}) = double(v);
+            elseif(isnumeric(v) && isscalar(v) && isfinite(v))
+                liftSurf.(f{1}) = double(v ~= 0);
+            end
+        end
+    end
+    if(isfield(src, 'transformDir') && ischar(src.transformDir))
+        d = upper(strtrim(src.transformDir));
+        if(any(strcmp(d, {'X', 'Y', 'Z'})))
+            liftSurf.transformDir = d;
+        end
+    end
+    for(f = {'transformSign', 'nodeEnabled', 'useInternalDragModel'})
+        if(isfield(src, f{1}))
+            v = src.(f{1});
+            if(islogical(v) && isscalar(v))
+                liftSurf.(f{1}) = double(v);
+            elseif(isnumeric(v) && isscalar(v) && isfinite(v))
+                liftSurf.(f{1}) = v;
+            end
+        end
+    end
+    if(isfield(src, 'attachNodeName') && ischar(src.attachNodeName))
+        liftSurf.attachNodeName = strtrim(src.attachNodeName);
+    end
+end
+
+function liftSurf = absentLiftingSurface()
+%absentLiftingSurface Canonical "no data" lifting-surface record (NaN =
+%unknown, resolved downstream to craft value or model default).
+
+    liftSurf = struct('isControl', false, 'deflectionLiftCoeff', NaN, ...
+        'ctrlSurfaceRange', NaN, 'authorityLimiter', NaN, ...
+        'deployAngleDeg', NaN, 'rotationAxis', [], ...
+        'liftingSurfaceCurve', '', 'omnidirectional', NaN, ...
+        'perpendicularOnly', NaN, 'transformDir', '', ...
+        'transformSign', NaN, 'nodeEnabled', NaN, ...
+        'attachNodeName', '', 'useInternalDragModel', NaN);
 end
 
 function engines = parseEngineEntries(rawPart, partName, warnings)
@@ -635,6 +742,7 @@ function [entry, warnings] = buildEntryFromCfgPart(partNode, densities, locMap, 
     roles = {};
     engines = struct.empty(0,0);
     hasEngine = false;
+    liftSurf = absentLiftingSurface();
 
     if(isfield(partNode, 'MODULE'))
         for(mIdx = 1:numel(partNode.MODULE))
@@ -730,6 +838,17 @@ function [entry, warnings] = buildEntryFromCfgPart(partNode, densities, locMap, 
                 if(~any(strcmpi(roles, 'parachute')))
                     roles{end+1} = 'parachute'; %#ok<AGROW>
                 end
+            elseif(strcmpi(modName, 'ModuleLiftingSurface') || ...
+                   strcmpi(modName, 'ModuleControlSurface'))
+                % Wing / control-surface coefficients live here in stock
+                % cfgs (e.g. basicFin deflectionLiftCoeff = 0.12) while
+                % craft files usually omit them. Harvested for
+                % kwt_buildAeroSpec; craft values still win per-field.
+                liftSurf = mergeLiftSurfModule(liftSurf, mod, ...
+                    strcmpi(modName, 'ModuleControlSurface'));
+                if(~any(strcmpi(roles, 'liftingSurface')))
+                    roles{end+1} = 'liftingSurface'; %#ok<AGROW>
+                end
             end
         end
     end
@@ -792,7 +911,82 @@ function [entry, warnings] = buildEntryFromCfgPart(partNode, densities, locMap, 
     entry.roles = roles;
     entry.resources_u = resources_u;
     entry.engines = engines;
+    entry.liftingSurface = liftSurf;
 
+end
+
+function liftSurf = mergeLiftSurfModule(liftSurf, mod, isControl)
+%mergeLiftSurfModule Folds one cfg lifting-surface MODULE into the record
+%(first module wins per field; control flag is sticky).
+
+    if(isControl)
+        liftSurf.isControl = true;
+    end
+    v = getCfgNum(mod, 'deflectionLiftCoeff', NaN);
+    if(isfinite(v) && ~isfinite(liftSurf.deflectionLiftCoeff))
+        liftSurf.deflectionLiftCoeff = v;
+    end
+    v = getCfgNum(mod, 'ctrlSurfaceRange', NaN);
+    if(isfinite(v) && ~isfinite(liftSurf.ctrlSurfaceRange))
+        liftSurf.ctrlSurfaceRange = v;
+    end
+    v = getCfgNum(mod, 'authorityLimiter', NaN);
+    if(isfinite(v) && ~isfinite(liftSurf.authorityLimiter))
+        liftSurf.authorityLimiter = v;
+    end
+    v = getCfgNum(mod, 'deployAngle', NaN);
+    if(isfinite(v) && ~isfinite(liftSurf.deployAngleDeg))
+        liftSurf.deployAngleDeg = v;
+    end
+    if(isempty(liftSurf.rotationAxis))
+        ra = parseCfgVec(getCfgStr(mod, 'rotationAxis', ''));
+        if(numel(ra) == 3 && norm(ra) > 0)
+            liftSurf.rotationAxis = (ra(:) / norm(ra))';
+        end
+    end
+    curveName = getCfgStr(mod, 'liftingSurfaceCurve', '');
+    if(~isempty(curveName))
+        liftSurf.liftingSurfaceCurve = curveName;
+    end
+    omniStr = getCfgStr(mod, 'omnidirectional', '');
+    if(~isempty(omniStr))
+        liftSurf.omnidirectional = double(any(strcmpi(strtrim(omniStr), {'true', '1', 'yes'})));
+    end
+    perpStr = getCfgStr(mod, 'perpendicularOnly', '');
+    if(~isempty(perpStr))
+        liftSurf.perpendicularOnly = double(any(strcmpi(strtrim(perpStr), {'true', '1', 'yes'})));
+    end
+    dirStr = upper(getCfgStr(mod, 'transformDir', ''));
+    if(any(strcmp(dirStr, {'X', 'Y', 'Z'})))
+        liftSurf.transformDir = dirStr;
+    end
+    signStr = getCfgStr(mod, 'transformSign', '');
+    if(~isempty(signStr))
+        liftSurf.transformSign = getCfgNum(mod, 'transformSign', NaN);
+    end
+    nodeStr = getCfgStr(mod, 'nodeEnabled', '');
+    if(~isempty(nodeStr))
+        liftSurf.nodeEnabled = double(any(strcmpi(strtrim(nodeStr), {'true', '1', 'yes'})));
+    end
+    attachStr = getCfgStr(mod, 'attachNodeName', '');
+    if(~isempty(attachStr))
+        liftSurf.attachNodeName = attachStr;
+    end
+    dragStr = getCfgStr(mod, 'useInternalDragModel', '');
+    if(~isempty(dragStr))
+        liftSurf.useInternalDragModel = double(any(strcmpi(strtrim(dragStr), {'true', '1', 'yes'})));
+    end
+end
+
+function v = parseCfgVec(str)
+    v = [];
+    if(~ischar(str) || isempty(strtrim(str)))
+        return;
+    end
+    nums = sscanf(strrep(strtrim(str), ',', ' '), '%f');
+    if(numel(nums) == 3)
+        v = nums(:)';
+    end
 end
 
 function out = resolveLocalizedString(raw, locMap, inlineMap)

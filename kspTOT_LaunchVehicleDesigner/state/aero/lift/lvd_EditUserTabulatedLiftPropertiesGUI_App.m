@@ -13,6 +13,7 @@ classdef lvd_EditUserTabulatedLiftPropertiesGUI_App < matlab.apps.AppBase
         TitleLabel                  matlab.ui.control.Label
         ButtonGrid                  matlab.ui.container.GridLayout
         saveCloseButton             matlab.ui.control.Button
+        generateFromCraftButton     matlab.ui.control.Button
         cancelButton                matlab.ui.control.Button
         MainGrid                    matlab.ui.container.GridLayout
         FilePanel                   matlab.ui.container.Panel
@@ -143,6 +144,62 @@ classdef lvd_EditUserTabulatedLiftPropertiesGUI_App < matlab.apps.AppBase
             close(app.EditLiftPropertiesUIFigure);
         end
 
+        function generateFromCraftButtonPushed(app, ~)
+            %generateFromCraftButtonPushed "Generate from Craft..." button.
+            % Picks a .craft file + PartDatabase.cfg, runs the KWT-replay
+            % sweep (lvd_importAeroTableFromCraft) behind a progress
+            % dialog, and points the file selector at the fresh lift CSV.
+            % The drag sibling CSV lands next to it for the drag UI.
+            % Save & Close still applies.
+            [craftFile, craftPath] = uigetfile({'*.craft', 'KSP Craft Files (*.craft)'}, ...
+                'Select KSP Craft File for Lift Table Generation');
+            if(isequal(craftFile, 0))
+                return;
+            end
+            [cubeFile, cubePath] = uigetfile({'PartDatabase.cfg', 'PartDatabase.cfg (KSP root)'; ...
+                    '*.cfg', 'Config Files (*.cfg)'}, ...
+                'Select PartDatabase.cfg (from the KSP install root)', craftPath);
+            if(isequal(cubeFile, 0))
+                return;
+            end
+            craftFull = fullfile(craftPath, craftFile);
+            cubeFull = fullfile(cubePath, cubeFile);
+            progressDlg = uiprogressdlg(app.EditLiftPropertiesUIFigure, ...
+                'Title', 'Generating Aero Tables', ...
+                'Message', 'Analyzing craft...', ...
+                'Indeterminate', 'off', 'Value', 0);
+            progressCloser = onCleanup(@() close(progressDlg));
+            try
+                result = lvd_importAeroTableFromCraft(app.liftModel, craftFull, ...
+                    struct('cubeDB', cubeFull, 'quiet', true, ...
+                        'onProgress', @(frac, msg) app.updateProgressDlg(progressDlg, frac, msg)));
+                app.FileSelector.Value = result.installedCsv;
+                app.plotData();
+                if(~isempty(result.warnings))
+                    uialert(app.EditLiftPropertiesUIFigure, result.warnings, ...
+                        'Table generated with warnings.', "Icon", "warning");
+                end
+            catch ME
+                uialert(app.EditLiftPropertiesUIFigure, ...
+                    sprintf('Lift table generation failed:\n\n%s', ME.message), ...
+                    'Generation failed.', "Icon", "error");
+            end
+        end
+
+        function updateProgressDlg(app, dlg, frac, msg) %#ok<INUSD>
+            %updateProgressDlg Progress-dialog callback for the generate
+            %button; guards a dialog the user dismissed mid-sweep.
+            if(isvalid(dlg))
+                try
+                    dlg.Value = min(max(frac, 0), 1);
+                    if(nargin >= 4 && ~isempty(msg))
+                        dlg.Message = msg;
+                    end
+                catch
+                end
+            end
+        end
+
         function FileSelectorValueChanged(app, ~)
             app.plotData();
         end
@@ -237,7 +294,7 @@ classdef lvd_EditUserTabulatedLiftPropertiesGUI_App < matlab.apps.AppBase
             app.MachNumSlider.Layout.Column = 2;
 
             app.ButtonGrid = uigridlayout(app.GridLayout);
-            app.ButtonGrid.ColumnWidth = {'1x', '2x', '2x', '1x'};
+            app.ButtonGrid.ColumnWidth = {'1x', '2x', '2x', '2x', '1x'};
             app.ButtonGrid.RowHeight = {'1x'};
             app.ButtonGrid.Padding = [0 0 0 0];
             app.ButtonGrid.Layout.Row = 3;
@@ -249,10 +306,17 @@ classdef lvd_EditUserTabulatedLiftPropertiesGUI_App < matlab.apps.AppBase
             app.saveCloseButton.Layout.Column = 2;
             app.saveCloseButton.Text = 'Save & Close';
 
+            app.generateFromCraftButton = uibutton(app.ButtonGrid, 'push');
+            app.generateFromCraftButton.ButtonPushedFcn = @(src,evt) app.generateFromCraftButtonPushed(evt);
+            app.generateFromCraftButton.Layout.Row = 1;
+            app.generateFromCraftButton.Layout.Column = 3;
+            app.generateFromCraftButton.Text = 'Generate from Craft...';
+            app.generateFromCraftButton.Tooltip = {'Generate lift (and drag) tables from a KSP .craft file using the built-in KSP aero replay. Needs PartDatabase.cfg from the KSP install.'};
+
             app.cancelButton = uibutton(app.ButtonGrid, 'push');
             app.cancelButton.ButtonPushedFcn = @(src,evt) app.cancelButtonPushed(evt);
             app.cancelButton.Layout.Row = 1;
-            app.cancelButton.Layout.Column = 3;
+            app.cancelButton.Layout.Column = 4;
             app.cancelButton.Text = 'Cancel';
 
             app.EditLiftPropertiesUIFigure.Visible = 'on';

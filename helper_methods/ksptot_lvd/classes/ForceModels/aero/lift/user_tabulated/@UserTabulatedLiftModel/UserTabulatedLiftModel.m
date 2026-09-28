@@ -24,9 +24,16 @@ classdef UserTabulatedLiftModel < AbstractLiftCoefficientModel
             if(nargin < 1)
                 dataFile = '';
             end
+            % wt.FileSelector.FullPath is a string; accept both text types
+            % (a string silently failed the old ischar gate and built the
+            % dummy grid, so the lift dialog plotted zeros for any CSV).
+            % NOTE: the (1,:) property validation reshapes an empty file
+            % to 1x0 char, so emptiness checks must use isempty, never
+            % size-strict equality with ''.
+            dataFile = char(string(dataFile));
             obj.dataFile = dataFile;
 
-            if(ischar(dataFile) && ~isempty(dataFile) && isfile(dataFile))
+            if(~isempty(dataFile) && isfile(dataFile))
                 obj.createGriddedInterpFromFile();
             else
                 obj.machNum = [0; 1];
@@ -141,19 +148,31 @@ classdef UserTabulatedLiftModel < AbstractLiftCoefficientModel
                 hAx = axes(figure());
             end
 
-            clsData = obj.data(:,4);
-
-            maxClS = max(clsData);
-            minClS = min(clsData);
-            levels = linspace(minClS, maxClS, 50);
-
-            warning("off",'MATLAB:contour:ConstantData');
-
             allVect = combvec(obj.aoa(:)', obj.sideslip(:)')';
             allVect = [machNum*ones(height(allVect), 1), allVect];
             cls = obj.giClS(allVect(:,1), allVect(:,2), allVect(:,3));
 
-            [~,hContour] = contour(hAx, rad2deg(obj.aoa), rad2deg(obj.sideslip), reshape(cls, [length(obj.aoa), length(obj.sideslip)]), levels, 'Fill','on');
+            % Levels from THIS Mach slice, not the full tensor: with global
+            % levels the slice occupies a fraction of the colormap and the
+            % plot renders as one flat color (e.g. blue at low Mach for
+            % craft tables whose ClS spans a wide Mach range).
+            maxClS = max(cls);
+            minClS = min(cls);
+            if(maxClS > minClS)
+                levels = linspace(minClS, maxClS, 50);
+            else
+                levels = [];   % constant slice: let contour pick defaults
+            end
+
+            warning("off",'MATLAB:contour:ConstantData');
+
+            % reshape lays AoA fastest (combvec order), so Z0(i,j) is
+            % aoa_i at sideslip_j; contour wants Z(i,j) at (X(j), Y(i)),
+            % hence the transpose. (Without it plotting only works on
+            % square AoA/sideslip grids; craft-generated tables such as
+            % 13x7 fail with a size mismatch.)
+            Z = reshape(cls, [length(obj.aoa), length(obj.sideslip)])';
+            [~,hContour] = contour(hAx, rad2deg(obj.aoa), rad2deg(obj.sideslip), Z, levels, 'Fill','on');
             xlabel(hAx, 'Angle of Attack [deg]');
             ylabel(hAx, 'Sideslip Angle [deg]');
             title(hAx, sprintf('Cl*S for Mach Number = %0.3f', machNum));

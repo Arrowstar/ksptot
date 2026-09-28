@@ -520,11 +520,10 @@ classdef ViewPlaybackGuiTest < matlab.uitest.TestCase
             app = testCase.openWindow(mainApp, lvdData);
             profile = lvdData.viewSettings.selViewProfile;
             ov = profile.overlay;
-            hAx = mainApp.dispAxes;
 
             testCase.choose(app.OverlayTab);
             testCase.verifyFalse(ov.enabled);
-            testCase.verifyEmpty(findobj(hAx, 'Tag', 'LvdViewOverlayText'), 'No overlay before it is enabled');
+            testCase.verifyEmpty(findobj(mainApp.ma_LvdMainGUI, 'Tag', 'LvdViewOverlayText'), 'No overlay before it is enabled');
 
             fullCount = numel(app.OverlayTaskListBox.Items);
             testCase.assertGreaterThan(fullCount, 50, 'The full Graphical Analysis quantity list is offered');
@@ -542,8 +541,9 @@ classdef ViewPlaybackGuiTest < matlab.uitest.TestCase
             data = app.getOverlayTableData();
             testCase.verifySize(data, [1 6]);
             testCase.verifyEqual(data{1,1}, 'Altitude');
-            h = findobj(hAx, 'Tag', 'LvdViewOverlayText');
+            h = findobj(mainApp.ma_LvdMainGUI, 'Tag', 'LvdViewOverlayText');
             testCase.assertNumElements(h, 1, 'The overlay is drawn in the main window');
+            testCase.verifyTrue(isa(h, 'matlab.graphics.shape.TextBox'), 'The overlay is a figure annotation');
             testCase.verifyTrue(any(startsWith(h.String, 'Altitude: ')));
             testCase.verifySubstring(app.OverlayPreviewLabel.Text, 'Altitude: ');
 
@@ -576,7 +576,12 @@ classdef ViewPlaybackGuiTest < matlab.uitest.TestCase
             testCase.verifyEqual(ov.fontSize, 18);
             testCase.verifyEqual(h.FontSize, 18);
             testCase.verifyEqual(ov.marginFrac, 0.05, 'AbsTol', 1e-12);
-            testCase.verifyEqual(h.Position(1:2), [0.95 0.05], 'AbsTol', 1e-12);
+            axPix = getpixelposition(mainApp.dispAxes);
+            figPix = getpixelposition(mainApp.ma_LvdMainGUI);
+            cxR = (axPix(1) + 0.95*axPix(3)) / figPix(3);
+            cyB = (axPix(2) + 0.05*axPix(4)) / figPix(4);
+            testCase.verifyEqual(h.Position(1) + h.Position(3), cxR, 'AbsTol', 0.05);
+            testCase.verifyEqual(h.Position(2), cyB, 'AbsTol', 0.05);
             app.setOverlayColors([1 0 0], [0 0 1]);
             testCase.verifyEqual(h.Color, [1 0 0]);
             testCase.verifyEqual(h.BackgroundColor(1:3), [0 0 1]);

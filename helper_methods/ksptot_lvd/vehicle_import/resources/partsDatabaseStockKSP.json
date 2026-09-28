@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "databaseName": "GameData export 28-Aug-2026 12:00:56",
   "gameVersion": "1.12",
-  "description": "Exported from C:\\Users\\aharden\\Downloads\\Data-20260827T114017Z-1-001\\GameData on 28-Aug-2026 12:00:56",
+  "description": "Exported from C:\\Users\\aharden\\Downloads\\Data-20260827T114017Z-1-001\\GameData on 28-Aug-2026 12:00:56 | lift harvesting backfilled 26-Sep-2026 20:16:39",
   "resourceDensities_t_per_unit": {
     "ElectricCharge": 0,
     "LiquidFuel": 0.005,
@@ -20,7 +20,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "adapterLargeSmallBi",
@@ -30,7 +31,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "adapterLargeSmallQuad",
@@ -40,7 +42,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "adapterLargeSmallTri",
@@ -50,7 +53,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "adapterMk3-Mk2",
@@ -63,7 +67,8 @@
         "LiquidFuel": 900,
         "Oxidizer": 1100
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "adapterMk3-Size2",
@@ -76,7 +81,8 @@
         "LiquidFuel": 1125,
         "Oxidizer": 1375
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "adapterMk3-Size2Slant",
@@ -89,7 +95,8 @@
         "LiquidFuel": 1125,
         "Oxidizer": 1375
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "adapterSize2-Mk2",
@@ -102,7 +109,8 @@
         "LiquidFuel": 360,
         "Oxidizer": 440
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "adapterSize2-Size1",
@@ -115,7 +123,8 @@
         "LiquidFuel": 360,
         "Oxidizer": 440
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "adapterSize2-Size1Slant",
@@ -128,7 +137,8 @@
         "LiquidFuel": 360,
         "Oxidizer": 440
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "adapterSize3-Mk3",
@@ -141,7 +151,8 @@
         "LiquidFuel": 1125,
         "Oxidizer": 1375
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "adapterSmallMiniShort",
@@ -151,7 +162,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "adapterSmallMiniTall",
@@ -161,7 +173,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "AdvancedCanard",
@@ -171,7 +184,13 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": true,
+        "deflectionLiftCoeff": 0.4,
+        "ctrlSurfaceRange": 10,
+        "useInternalDragModel": 1
+      }
     },
     {
       "name": "advSasModule",
@@ -181,7 +200,8 @@
         "pod"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "airbrake1",
@@ -191,7 +211,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "airlinerCtrlSrf",
@@ -201,7 +222,13 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": true,
+        "deflectionLiftCoeff": 0.86,
+        "ctrlSurfaceRange": 15,
+        "useInternalDragModel": 1
+      }
     },
     {
       "name": "airlinerMainWing",
@@ -213,7 +240,12 @@
       "resources_u": {
         "LiquidFuel": 600
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": false,
+        "deflectionLiftCoeff": 7.8,
+        "useInternalDragModel": 1
+      }
     },
     {
       "name": "airlinerTailFin",
@@ -223,7 +255,13 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": true,
+        "deflectionLiftCoeff": 2.69,
+        "ctrlSurfaceRange": 15,
+        "useInternalDragModel": 1
+      }
     },
     {
       "name": "airplaneTail",
@@ -233,7 +271,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "airplaneTailB",
@@ -243,7 +282,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "airScoop",
@@ -255,7 +295,8 @@
       "resources_u": {
         "IntakeAir": 2
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "asasmodule1-2",
@@ -265,7 +306,8 @@
         "pod"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "avionicsNoseCone",
@@ -275,7 +317,8 @@
         "pod"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "basicFin",
@@ -285,7 +328,12 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": false,
+        "deflectionLiftCoeff": 0.12,
+        "useInternalDragModel": 1
+      }
     },
     {
       "name": "batteryBank",
@@ -297,7 +345,8 @@
       "resources_u": {
         "ElectricCharge": 1000
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "batteryBankLarge",
@@ -309,7 +358,8 @@
       "resources_u": {
         "ElectricCharge": 4000
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "batteryBankMini",
@@ -321,7 +371,8 @@
       "resources_u": {
         "ElectricCharge": 200
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "batteryPack",
@@ -333,7 +384,8 @@
       "resources_u": {
         "ElectricCharge": 100
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "CanardController",
@@ -343,7 +395,13 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": true,
+        "deflectionLiftCoeff": 0.52,
+        "ctrlSurfaceRange": 15,
+        "useInternalDragModel": 1
+      }
     },
     {
       "name": "cargoContainer",
@@ -353,7 +411,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "CargoStorageUnit",
@@ -363,7 +422,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "CircularIntake",
@@ -375,7 +435,8 @@
       "resources_u": {
         "IntakeAir": 2
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "Clydesdale",
@@ -397,7 +458,8 @@
         "propellants": [
           "SolidFuel"
         ]
-      }
+      },
+      "liftingSurface": []
     },
     {
       "name": "commDish",
@@ -407,7 +469,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "ConformalStorageUnit",
@@ -417,7 +480,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "crewCabin",
@@ -427,7 +491,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "cupola",
@@ -440,7 +505,8 @@
         "ElectricCharge": 200,
         "MonoPropellant": 10
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "Decoupler_0",
@@ -450,7 +516,8 @@
         "decoupler"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "Decoupler_1",
@@ -460,7 +527,8 @@
         "decoupler"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "Decoupler_2",
@@ -470,7 +538,8 @@
         "decoupler"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "Decoupler_3",
@@ -480,7 +549,8 @@
         "decoupler"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "decoupler1-2",
@@ -490,7 +560,8 @@
         "decoupler"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "delta_small",
@@ -500,7 +571,12 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": false,
+        "deflectionLiftCoeff": 0.5,
+        "useInternalDragModel": 1
+      }
     },
     {
       "name": "deltaWing",
@@ -510,7 +586,12 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": false,
+        "deflectionLiftCoeff": 2,
+        "useInternalDragModel": 1
+      }
     },
     {
       "name": "dockingPort1",
@@ -520,7 +601,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "dockingPort2",
@@ -530,7 +612,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "dockingPort3",
@@ -540,7 +623,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "dockingPortLarge",
@@ -550,7 +634,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "dockingPortLateral",
@@ -560,7 +645,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "domeLight1",
@@ -570,7 +656,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "elevon2",
@@ -580,7 +667,13 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": true,
+        "deflectionLiftCoeff": 0.3,
+        "ctrlSurfaceRange": 20,
+        "useInternalDragModel": 1
+      }
     },
     {
       "name": "elevon3",
@@ -590,7 +683,13 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": true,
+        "deflectionLiftCoeff": 0.42,
+        "ctrlSurfaceRange": 20,
+        "useInternalDragModel": 1
+      }
     },
     {
       "name": "elevon5",
@@ -600,7 +699,13 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": true,
+        "deflectionLiftCoeff": 0.4,
+        "ctrlSurfaceRange": 20,
+        "useInternalDragModel": 1
+      }
     },
     {
       "name": "engineLargeSkipper",
@@ -620,7 +725,8 @@
           "LiquidFuel",
           "Oxidizer"
         ]
-      }
+      },
+      "liftingSurface": []
     },
     {
       "name": "engineLargeSkipper_v2",
@@ -640,7 +746,8 @@
           "LiquidFuel",
           "Oxidizer"
         ]
-      }
+      },
+      "liftingSurface": []
     },
     {
       "name": "evaChute",
@@ -650,7 +757,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "evaRepairKit",
@@ -660,7 +768,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "evaScienceKit",
@@ -670,7 +779,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "externalTankCapsule",
@@ -683,7 +793,8 @@
         "LiquidFuel": 24.3,
         "Oxidizer": 29.7
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "externalTankRound",
@@ -696,7 +807,8 @@
         "LiquidFuel": 9.9,
         "Oxidizer": 12.1
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "externalTankToroid",
@@ -709,7 +821,8 @@
         "LiquidFuel": 27,
         "Oxidizer": 33
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "fairingSize1",
@@ -719,7 +832,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "fairingSize2",
@@ -729,7 +843,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "fairingSize3",
@@ -739,7 +854,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "fireworksLauncherBig",
@@ -749,7 +865,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "fireworksLauncherSmall",
@@ -759,7 +876,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "flag",
@@ -769,7 +887,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "flagPartFlat",
@@ -779,7 +898,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "flagPartSize0",
@@ -789,7 +909,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "flagPartSize1",
@@ -799,7 +920,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "flagPartSize2",
@@ -809,7 +931,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "flagPartSize3",
@@ -819,7 +942,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "foldingRadLarge",
@@ -829,7 +953,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "foldingRadMed",
@@ -839,7 +964,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "foldingRadSmall",
@@ -849,7 +975,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "FuelCell",
@@ -861,7 +988,8 @@
       "resources_u": {
         "ElectricCharge": 50
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "FuelCellArray",
@@ -873,7 +1001,8 @@
       "resources_u": {
         "ElectricCharge": 300
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "fuelLine",
@@ -883,7 +1012,8 @@
         "fuelline"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "fuelLineSmall",
@@ -893,7 +1023,8 @@
         "fuelLine"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "fuelTank",
@@ -906,7 +1037,8 @@
         "LiquidFuel": 180,
         "Oxidizer": 220
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "fuelTank_long",
@@ -919,7 +1051,8 @@
         "LiquidFuel": 360,
         "Oxidizer": 440
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "fuelTank1-2",
@@ -932,7 +1065,8 @@
         "LiquidFuel": 1440,
         "Oxidizer": 1760
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "fuelTank2-2",
@@ -945,7 +1079,8 @@
         "LiquidFuel": 720,
         "Oxidizer": 880
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "fuelTank3-2",
@@ -958,7 +1093,8 @@
         "LiquidFuel": 2880,
         "Oxidizer": 3520
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "fuelTank4-2",
@@ -971,7 +1107,8 @@
         "LiquidFuel": 360,
         "Oxidizer": 440
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "fuelTankSmall",
@@ -984,7 +1121,8 @@
         "LiquidFuel": 90,
         "Oxidizer": 110
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "fuelTankSmallFlat",
@@ -997,7 +1135,8 @@
         "LiquidFuel": 45,
         "Oxidizer": 55
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "GearFixed",
@@ -1007,7 +1146,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "GearFree",
@@ -1017,7 +1157,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "GearLarge",
@@ -1027,7 +1168,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "GearMedium",
@@ -1037,7 +1179,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "GearSmall",
@@ -1047,7 +1190,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "GooExperiment",
@@ -1057,7 +1201,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "GrapplingDevice",
@@ -1067,7 +1212,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "groundAnchor",
@@ -1077,7 +1223,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "groundLight1",
@@ -1087,7 +1234,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "groundLight2",
@@ -1097,7 +1245,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "HeatShield0",
@@ -1109,7 +1258,19 @@
       "resources_u": {
         "Ablator": 50
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": false,
+        "deflectionLiftCoeff": 0.0875,
+        "liftingSurfaceCurve": "CapsuleBottom",
+        "omnidirectional": 0,
+        "perpendicularOnly": 1,
+        "transformDir": "Y",
+        "transformSign": -1,
+        "nodeEnabled": 1,
+        "attachNodeName": "bottom",
+        "useInternalDragModel": 0
+      }
     },
     {
       "name": "HeatShield1",
@@ -1121,7 +1282,19 @@
       "resources_u": {
         "Ablator": 200
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": false,
+        "deflectionLiftCoeff": 0.35,
+        "liftingSurfaceCurve": "CapsuleBottom",
+        "omnidirectional": 0,
+        "perpendicularOnly": 1,
+        "transformDir": "Y",
+        "transformSign": -1,
+        "nodeEnabled": 1,
+        "attachNodeName": "bottom",
+        "useInternalDragModel": 0
+      }
     },
     {
       "name": "HeatShield2",
@@ -1133,7 +1306,19 @@
       "resources_u": {
         "Ablator": 800
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": false,
+        "deflectionLiftCoeff": 1.5,
+        "liftingSurfaceCurve": "CapsuleBottom",
+        "omnidirectional": 0,
+        "perpendicularOnly": 1,
+        "transformDir": "Y",
+        "transformSign": -1,
+        "nodeEnabled": 1,
+        "attachNodeName": "bottom",
+        "useInternalDragModel": 0
+      }
     },
     {
       "name": "HeatShield3",
@@ -1145,7 +1330,19 @@
       "resources_u": {
         "Ablator": 1800
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": false,
+        "deflectionLiftCoeff": 3.375,
+        "liftingSurfaceCurve": "CapsuleBottom",
+        "omnidirectional": 0,
+        "perpendicularOnly": 1,
+        "transformDir": "Y",
+        "transformSign": -1,
+        "nodeEnabled": 1,
+        "attachNodeName": "bottom",
+        "useInternalDragModel": 0
+      }
     },
     {
       "name": "HECS2_ProbeCore",
@@ -1157,7 +1354,8 @@
       "resources_u": {
         "ElectricCharge": 1000
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "HighGainAntenna",
@@ -1167,7 +1365,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "HighGainAntenna5",
@@ -1177,7 +1376,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "HighGainAntenna5_v2",
@@ -1187,7 +1387,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "InflatableHeatShield",
@@ -1197,7 +1398,8 @@
         "decoupler"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "InfraredTelescope",
@@ -1207,7 +1409,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "IntakeRadialLong",
@@ -1219,7 +1422,8 @@
       "resources_u": {
         "IntakeAir": 0.5
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "ionEngine",
@@ -1239,7 +1443,8 @@
           "ElectricCharge",
           "XenonGas"
         ]
-      }
+      },
+      "liftingSurface": []
     },
     {
       "name": "ISRU",
@@ -1249,7 +1454,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "JetEngine",
@@ -1269,7 +1475,8 @@
           "IntakeAir",
           "LiquidFuel"
         ]
-      }
+      },
+      "liftingSurface": []
     },
     {
       "name": "KAL9000",
@@ -1279,7 +1486,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "kerbalEVA",
@@ -1289,7 +1497,15 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": false,
+        "deflectionLiftCoeff": 2.5,
+        "omnidirectional": 0,
+        "transformDir": "X",
+        "transformSign": -1,
+        "useInternalDragModel": 0
+      }
     },
     {
       "name": "kerbalEVAfemale",
@@ -1299,7 +1515,15 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": false,
+        "deflectionLiftCoeff": 2.5,
+        "omnidirectional": 0,
+        "transformDir": "X",
+        "transformSign": -1,
+        "useInternalDragModel": 0
+      }
     },
     {
       "name": "kerbalEVASlimSuit",
@@ -1309,7 +1533,15 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": false,
+        "deflectionLiftCoeff": 2.5,
+        "omnidirectional": 0,
+        "transformDir": "X",
+        "transformSign": -1,
+        "useInternalDragModel": 0
+      }
     },
     {
       "name": "kerbalEVASlimSuitFemale",
@@ -1319,7 +1551,15 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": false,
+        "deflectionLiftCoeff": 2.5,
+        "omnidirectional": 0,
+        "transformDir": "X",
+        "transformSign": -1,
+        "useInternalDragModel": 0
+      }
     },
     {
       "name": "ksp_r_largeBatteryPack",
@@ -1331,7 +1571,8 @@
       "resources_u": {
         "ElectricCharge": 400
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "ladder1",
@@ -1341,7 +1582,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "landerCabinSmall",
@@ -1354,7 +1596,8 @@
         "ElectricCharge": 50,
         "MonoPropellant": 15
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "landingLeg1",
@@ -1364,7 +1607,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "landingLeg1-2",
@@ -1374,7 +1618,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "Large_Crewed_Lab",
@@ -1384,7 +1629,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "largeAdapter",
@@ -1394,7 +1640,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "largeAdapter2",
@@ -1404,7 +1651,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "largeSolarPanel",
@@ -1414,7 +1662,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "LargeTank",
@@ -1426,7 +1675,8 @@
       "resources_u": {
         "Ore": 1500
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "launchClamp1",
@@ -1436,7 +1686,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "LaunchEscapeSystem",
@@ -1458,7 +1709,8 @@
         "propellants": [
           "SolidFuel"
         ]
-      }
+      },
+      "liftingSurface": []
     },
     {
       "name": "LgRadialSolarPanel",
@@ -1468,7 +1720,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "linearRcs",
@@ -1478,7 +1731,8 @@
         "pod"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "liquidEngine",
@@ -1498,7 +1752,8 @@
           "LiquidFuel",
           "Oxidizer"
         ]
-      }
+      },
+      "liftingSurface": []
     },
     {
       "name": "liquidEngine_v2",
@@ -1518,7 +1773,8 @@
           "LiquidFuel",
           "Oxidizer"
         ]
-      }
+      },
+      "liftingSurface": []
     },
     {
       "name": "liquidEngine1-2",
@@ -1538,7 +1794,8 @@
           "LiquidFuel",
           "Oxidizer"
         ]
-      }
+      },
+      "liftingSurface": []
     },
     {
       "name": "liquidEngine2",
@@ -1558,7 +1815,8 @@
           "LiquidFuel",
           "Oxidizer"
         ]
-      }
+      },
+      "liftingSurface": []
     },
     {
       "name": "liquidEngine2-2",
@@ -1578,7 +1836,8 @@
           "LiquidFuel",
           "Oxidizer"
         ]
-      }
+      },
+      "liftingSurface": []
     },
     {
       "name": "liquidEngine2-2_v2",
@@ -1598,7 +1857,8 @@
           "LiquidFuel",
           "Oxidizer"
         ]
-      }
+      },
+      "liftingSurface": []
     },
     {
       "name": "liquidEngine2_v2",
@@ -1618,7 +1878,8 @@
           "LiquidFuel",
           "Oxidizer"
         ]
-      }
+      },
+      "liftingSurface": []
     },
     {
       "name": "liquidEngine3",
@@ -1638,7 +1899,8 @@
           "LiquidFuel",
           "Oxidizer"
         ]
-      }
+      },
+      "liftingSurface": []
     },
     {
       "name": "liquidEngine3_v2",
@@ -1658,7 +1920,8 @@
           "LiquidFuel",
           "Oxidizer"
         ]
-      }
+      },
+      "liftingSurface": []
     },
     {
       "name": "liquidEngineMainsail_v2",
@@ -1678,7 +1941,8 @@
           "LiquidFuel",
           "Oxidizer"
         ]
-      }
+      },
+      "liftingSurface": []
     },
     {
       "name": "liquidEngineMini",
@@ -1698,7 +1962,8 @@
           "LiquidFuel",
           "Oxidizer"
         ]
-      }
+      },
+      "liftingSurface": []
     },
     {
       "name": "liquidEngineMini_v2",
@@ -1718,7 +1983,8 @@
           "LiquidFuel",
           "Oxidizer"
         ]
-      }
+      },
+      "liftingSurface": []
     },
     {
       "name": "longAntenna",
@@ -1728,7 +1994,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "Magnetometer",
@@ -1738,7 +2005,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "Mark1-2Pod",
@@ -1751,7 +2019,19 @@
         "ElectricCharge": 150,
         "MonoPropellant": 30
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": false,
+        "deflectionLiftCoeff": 1.4,
+        "liftingSurfaceCurve": "CapsuleBottom",
+        "omnidirectional": 0,
+        "perpendicularOnly": 1,
+        "transformDir": "Y",
+        "transformSign": -1,
+        "nodeEnabled": 1,
+        "attachNodeName": "bottom",
+        "useInternalDragModel": 0
+      }
     },
     {
       "name": "Mark1Cockpit",
@@ -1764,7 +2044,8 @@
         "ElectricCharge": 50,
         "MonoPropellant": 7.5
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "Mark2Cockpit",
@@ -1777,7 +2058,8 @@
         "ElectricCharge": 50,
         "MonoPropellant": 7.5
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "MassiveBooster",
@@ -1799,7 +2081,8 @@
         "propellants": [
           "SolidFuel"
         ]
-      }
+      },
+      "liftingSurface": []
     },
     {
       "name": "mediumDishAntenna",
@@ -1809,7 +2092,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "microEngine",
@@ -1829,7 +2113,8 @@
           "LiquidFuel",
           "Oxidizer"
         ]
-      }
+      },
+      "liftingSurface": []
     },
     {
       "name": "microEngine_v2",
@@ -1849,7 +2134,8 @@
           "LiquidFuel",
           "Oxidizer"
         ]
-      }
+      },
+      "liftingSurface": []
     },
     {
       "name": "MiniDrill",
@@ -1859,7 +2145,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "miniFuelTank",
@@ -1872,7 +2159,8 @@
         "LiquidFuel": 18,
         "Oxidizer": 22
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "miniFuselage",
@@ -1884,7 +2172,8 @@
       "resources_u": {
         "LiquidFuel": 50
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "miniIntake",
@@ -1896,7 +2185,8 @@
       "resources_u": {
         "IntakeAir": 0.5
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "MiniISRU",
@@ -1906,7 +2196,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "miniJetEngine",
@@ -1926,7 +2217,8 @@
           "IntakeAir",
           "LiquidFuel"
         ]
-      }
+      },
+      "liftingSurface": []
     },
     {
       "name": "miniLandingLeg",
@@ -1936,7 +2228,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "Mite",
@@ -1958,7 +2251,8 @@
         "propellants": [
           "SolidFuel"
         ]
-      }
+      },
+      "liftingSurface": []
     },
     {
       "name": "mk1-3pod",
@@ -1971,7 +2265,19 @@
         "ElectricCharge": 150,
         "MonoPropellant": 30
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": false,
+        "deflectionLiftCoeff": 1.4,
+        "liftingSurfaceCurve": "CapsuleBottom",
+        "omnidirectional": 0,
+        "perpendicularOnly": 1,
+        "transformDir": "Y",
+        "transformSign": -1,
+        "nodeEnabled": 1,
+        "attachNodeName": "bottom",
+        "useInternalDragModel": 0
+      }
     },
     {
       "name": "MK1CrewCabin",
@@ -1981,7 +2287,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "MK1Fuselage",
@@ -1993,7 +2300,8 @@
       "resources_u": {
         "LiquidFuel": 400
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "Mk1FuselageStructural",
@@ -2003,7 +2311,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "MK1IntakeFuselage",
@@ -2016,7 +2325,8 @@
         "IntakeAir": 2,
         "LiquidFuel": 200
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "mk1pod",
@@ -2029,7 +2339,19 @@
         "ElectricCharge": 50,
         "MonoPropellant": 10
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": false,
+        "deflectionLiftCoeff": 0.35,
+        "liftingSurfaceCurve": "CapsuleBottom",
+        "omnidirectional": 0,
+        "perpendicularOnly": 1,
+        "transformDir": "Y",
+        "transformSign": -1,
+        "nodeEnabled": 1,
+        "attachNodeName": "bottom",
+        "useInternalDragModel": 0
+      }
     },
     {
       "name": "mk1pod_v2",
@@ -2042,7 +2364,19 @@
         "ElectricCharge": 50,
         "MonoPropellant": 10
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": false,
+        "deflectionLiftCoeff": 0.35,
+        "liftingSurfaceCurve": "CapsuleBottom",
+        "omnidirectional": 0,
+        "perpendicularOnly": 1,
+        "transformDir": "Y",
+        "transformSign": -1,
+        "nodeEnabled": 1,
+        "attachNodeName": "bottom",
+        "useInternalDragModel": 0
+      }
     },
     {
       "name": "mk2_1m_AdapterLong",
@@ -2055,7 +2389,12 @@
         "LiquidFuel": 360,
         "Oxidizer": 440
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": false,
+        "deflectionLiftCoeff": 0.6,
+        "useInternalDragModel": 0
+      }
     },
     {
       "name": "mk2_1m_Bicoupler",
@@ -2068,7 +2407,12 @@
         "LiquidFuel": 180,
         "Oxidizer": 220
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": false,
+        "deflectionLiftCoeff": 0.3,
+        "useInternalDragModel": 0
+      }
     },
     {
       "name": "mk2CargoBayL",
@@ -2078,7 +2422,12 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": false,
+        "deflectionLiftCoeff": 0.7,
+        "useInternalDragModel": 0
+      }
     },
     {
       "name": "mk2CargoBayS",
@@ -2088,7 +2437,12 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": false,
+        "deflectionLiftCoeff": 0.35,
+        "useInternalDragModel": 0
+      }
     },
     {
       "name": "mk2Cockpit_Inline",
@@ -2101,7 +2455,12 @@
         "ElectricCharge": 150,
         "MonoPropellant": 25
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": false,
+        "deflectionLiftCoeff": 0.47,
+        "useInternalDragModel": 0
+      }
     },
     {
       "name": "mk2Cockpit_Standard",
@@ -2114,7 +2473,12 @@
         "ElectricCharge": 150,
         "MonoPropellant": 15
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": false,
+        "deflectionLiftCoeff": 0.6,
+        "useInternalDragModel": 0
+      }
     },
     {
       "name": "mk2CrewCabin",
@@ -2124,7 +2488,12 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": false,
+        "deflectionLiftCoeff": 0.35,
+        "useInternalDragModel": 0
+      }
     },
     {
       "name": "mk2DockingPort",
@@ -2136,7 +2505,12 @@
       "resources_u": {
         "MonoPropellant": 75
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": false,
+        "deflectionLiftCoeff": 0.24,
+        "useInternalDragModel": 0
+      }
     },
     {
       "name": "mk2DroneCore",
@@ -2148,7 +2522,8 @@
       "resources_u": {
         "ElectricCharge": 250
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "mk2Fuselage",
@@ -2160,7 +2535,12 @@
       "resources_u": {
         "LiquidFuel": 800
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": false,
+        "deflectionLiftCoeff": 0.7,
+        "useInternalDragModel": 0
+      }
     },
     {
       "name": "mk2FuselageLongLFO",
@@ -2173,7 +2553,12 @@
         "LiquidFuel": 360,
         "Oxidizer": 440
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": false,
+        "deflectionLiftCoeff": 0.7,
+        "useInternalDragModel": 0
+      }
     },
     {
       "name": "mk2FuselageShortLFO",
@@ -2186,7 +2571,12 @@
         "LiquidFuel": 180,
         "Oxidizer": 220
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": false,
+        "deflectionLiftCoeff": 0.35,
+        "useInternalDragModel": 0
+      }
     },
     {
       "name": "mk2FuselageShortLiquid",
@@ -2198,7 +2588,12 @@
       "resources_u": {
         "LiquidFuel": 400
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": false,
+        "deflectionLiftCoeff": 0.35,
+        "useInternalDragModel": 0
+      }
     },
     {
       "name": "mk2FuselageShortMono",
@@ -2210,7 +2605,12 @@
       "resources_u": {
         "MonoPropellant": 400
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": false,
+        "deflectionLiftCoeff": 0.35,
+        "useInternalDragModel": 0
+      }
     },
     {
       "name": "mk2LanderCabin",
@@ -2223,7 +2623,8 @@
         "ElectricCharge": 100,
         "MonoPropellant": 40
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "mk2LanderCabin_v2",
@@ -2236,7 +2637,8 @@
         "ElectricCharge": 100,
         "MonoPropellant": 40
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "mk2SpacePlaneAdapter",
@@ -2249,7 +2651,12 @@
         "LiquidFuel": 180,
         "Oxidizer": 220
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": false,
+        "deflectionLiftCoeff": 0.28,
+        "useInternalDragModel": 0
+      }
     },
     {
       "name": "mk3CargoBayL",
@@ -2259,7 +2666,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "mk3CargoBayM",
@@ -2269,7 +2677,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "mk3CargoBayS",
@@ -2279,7 +2688,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "mk3CargoRamp",
@@ -2289,7 +2699,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "mk3Cockpit_Shuttle",
@@ -2302,7 +2713,8 @@
         "ElectricCharge": 500,
         "MonoPropellant": 100
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "mk3CrewCabin",
@@ -2312,7 +2724,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "mk3FuselageLF_100",
@@ -2324,7 +2737,8 @@
       "resources_u": {
         "LiquidFuel": 10000
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "mk3FuselageLF_25",
@@ -2336,7 +2750,8 @@
       "resources_u": {
         "LiquidFuel": 2500
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "mk3FuselageLF_50",
@@ -2348,7 +2763,8 @@
       "resources_u": {
         "LiquidFuel": 5000
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "mk3FuselageLFO_100",
@@ -2361,7 +2777,8 @@
         "LiquidFuel": 4500,
         "Oxidizer": 5500
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "mk3FuselageLFO_25",
@@ -2374,7 +2791,8 @@
         "LiquidFuel": 1125,
         "Oxidizer": 1375
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "mk3FuselageLFO_50",
@@ -2387,7 +2805,8 @@
         "LiquidFuel": 2250,
         "Oxidizer": 2750
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "mk3FuselageMONO",
@@ -2399,7 +2818,8 @@
       "resources_u": {
         "MonoPropellant": 2100
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "MpoProbe",
@@ -2413,7 +2833,8 @@
         "Oxidizer": 55,
         "ElectricCharge": 1000
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "MtmStage",
@@ -2426,7 +2847,8 @@
         "ElectricCharge": 4000,
         "XenonGas": 3800
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "nacelleBody",
@@ -2439,7 +2861,8 @@
         "IntakeAir": 5,
         "LiquidFuel": 150
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "navLight1",
@@ -2449,7 +2872,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "noseCone",
@@ -2459,7 +2883,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "noseConeAdapter",
@@ -2471,7 +2896,8 @@
       "resources_u": {
         "LiquidFuel": 80
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "nuclearEngine",
@@ -2490,7 +2916,8 @@
         "propellants": [
           "LiquidFuel"
         ]
-      }
+      },
+      "liftingSurface": []
     },
     {
       "name": "omsEngine",
@@ -2509,7 +2936,8 @@
         "propellants": [
           "MonoPropellant"
         ]
-      }
+      },
+      "liftingSurface": []
     },
     {
       "name": "OrbitalScanner",
@@ -2519,7 +2947,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "parachuteDrogue",
@@ -2529,7 +2958,8 @@
         "parachute"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "parachuteLarge",
@@ -2539,7 +2969,8 @@
         "parachute"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "parachuteRadial",
@@ -2549,7 +2980,8 @@
         "parachute"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "parachuteSingle",
@@ -2559,7 +2991,8 @@
         "parachute"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "pointyNoseConeA",
@@ -2569,7 +3002,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "pointyNoseConeB",
@@ -2579,7 +3013,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "PotatoComet",
@@ -2589,7 +3024,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "PotatoRoid",
@@ -2599,7 +3035,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "probeCoreCube",
@@ -2611,7 +3048,8 @@
       "resources_u": {
         "ElectricCharge": 5
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "probeCoreHex",
@@ -2623,7 +3061,8 @@
       "resources_u": {
         "ElectricCharge": 10
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "probeCoreHex_v2",
@@ -2635,7 +3074,8 @@
       "resources_u": {
         "ElectricCharge": 10
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "probeCoreOcto",
@@ -2647,7 +3087,8 @@
       "resources_u": {
         "ElectricCharge": 10
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "probeCoreOcto_v2",
@@ -2659,7 +3100,8 @@
       "resources_u": {
         "ElectricCharge": 10
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "probeCoreOcto2",
@@ -2671,7 +3113,8 @@
       "resources_u": {
         "ElectricCharge": 5
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "probeCoreOcto2_v2",
@@ -2683,7 +3126,8 @@
       "resources_u": {
         "ElectricCharge": 5
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "probeCoreSphere",
@@ -2695,7 +3139,8 @@
       "resources_u": {
         "ElectricCharge": 10
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "probeCoreSphere_v2",
@@ -2707,7 +3152,8 @@
       "resources_u": {
         "ElectricCharge": 10
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "probeStackLarge",
@@ -2719,7 +3165,8 @@
       "resources_u": {
         "ElectricCharge": 30
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "probeStackSmall",
@@ -2731,7 +3178,8 @@
       "resources_u": {
         "ElectricCharge": 15
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "R8winglet",
@@ -2741,7 +3189,13 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": true,
+        "deflectionLiftCoeff": 0.5,
+        "ctrlSurfaceRange": 15,
+        "useInternalDragModel": 1
+      }
     },
     {
       "name": "radialDecoupler",
@@ -2751,7 +3205,8 @@
         "radialdecoupler"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "radialDecoupler1-2",
@@ -2761,7 +3216,8 @@
         "radialdecoupler"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "radialDecoupler2",
@@ -2771,7 +3227,8 @@
         "radialdecoupler"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "RadialDrill",
@@ -2781,7 +3238,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "radialDrogue",
@@ -2791,7 +3249,8 @@
         "parachute"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "radialEngineBody",
@@ -2804,7 +3263,8 @@
         "IntakeAir": 5,
         "LiquidFuel": 40
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "radialEngineMini",
@@ -2824,7 +3284,8 @@
           "LiquidFuel",
           "Oxidizer"
         ]
-      }
+      },
+      "liftingSurface": []
     },
     {
       "name": "radialEngineMini_v2",
@@ -2844,7 +3305,8 @@
           "LiquidFuel",
           "Oxidizer"
         ]
-      }
+      },
+      "liftingSurface": []
     },
     {
       "name": "radialLiquidEngine1-2",
@@ -2864,7 +3326,8 @@
           "LiquidFuel",
           "Oxidizer"
         ]
-      }
+      },
+      "liftingSurface": []
     },
     {
       "name": "RadialOreTank",
@@ -2876,7 +3339,8 @@
       "resources_u": {
         "Ore": 75
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "radialRCSTank",
@@ -2888,7 +3352,8 @@
       "resources_u": {
         "MonoPropellant": 20
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "radPanelEdge",
@@ -2898,7 +3363,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "radPanelLg",
@@ -2908,7 +3374,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "radPanelSm",
@@ -2918,7 +3385,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "ramAirIntake",
@@ -2930,7 +3398,8 @@
       "resources_u": {
         "IntakeAir": 2
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "RAPIER",
@@ -2963,7 +3432,8 @@
             "Oxidizer"
           ]
         }
-      ]
+      ],
+      "liftingSurface": []
     },
     {
       "name": "RCSBlock",
@@ -2973,7 +3443,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "RCSblock_01_small",
@@ -2983,7 +3454,8 @@
         "pod"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "RCSBlock_v2",
@@ -2993,7 +3465,8 @@
         "pod"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "RCSFuelTank",
@@ -3005,7 +3478,8 @@
       "resources_u": {
         "MonoPropellant": 120
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "RCSLinearSmall",
@@ -3015,7 +3489,8 @@
         "pod"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "RCSTank1-2",
@@ -3027,7 +3502,8 @@
       "resources_u": {
         "MonoPropellant": 750
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "rcsTankMini",
@@ -3039,7 +3515,8 @@
       "resources_u": {
         "MonoPropellant": 20
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "rcsTankRadialLong",
@@ -3051,7 +3528,8 @@
       "resources_u": {
         "MonoPropellant": 50
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "RelayAntenna100",
@@ -3061,7 +3539,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "RelayAntenna5",
@@ -3071,7 +3550,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "RelayAntenna50",
@@ -3081,7 +3561,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "ReleaseValve",
@@ -3091,7 +3572,8 @@
         "tank"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "rocketNoseCone",
@@ -3101,7 +3583,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "rocketNoseCone_v2",
@@ -3111,7 +3594,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "rocketNoseCone_v3",
@@ -3121,7 +3605,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "rocketNoseConeSize3",
@@ -3131,7 +3616,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "Rockomax16_BW",
@@ -3144,7 +3630,8 @@
         "LiquidFuel": 720,
         "Oxidizer": 880
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "Rockomax32_BW",
@@ -3157,7 +3644,8 @@
         "LiquidFuel": 1440,
         "Oxidizer": 1760
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "Rockomax64_BW",
@@ -3170,7 +3658,8 @@
         "LiquidFuel": 2880,
         "Oxidizer": 3520
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "Rockomax8BW",
@@ -3183,7 +3672,8 @@
         "LiquidFuel": 360,
         "Oxidizer": 440
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "roverBody",
@@ -3195,7 +3685,8 @@
       "resources_u": {
         "ElectricCharge": 120
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "roverBody_v2",
@@ -3207,7 +3698,8 @@
       "resources_u": {
         "ElectricCharge": 120
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "roverWheel1",
@@ -3217,7 +3709,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "roverWheel2",
@@ -3227,7 +3720,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "roverWheel3",
@@ -3237,7 +3731,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "rtg",
@@ -3247,7 +3742,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "sasModule",
@@ -3257,7 +3753,8 @@
         "pod"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "science_module",
@@ -3267,7 +3764,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "ScienceBox",
@@ -3277,7 +3775,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "seatExternalCmd",
@@ -3287,7 +3786,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "sensorAccelerometer",
@@ -3297,7 +3797,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "sensorAtmosphere",
@@ -3307,7 +3808,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "sensorBarometer",
@@ -3317,7 +3819,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "sensorGravimeter",
@@ -3327,7 +3830,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "sensorThermometer",
@@ -3337,7 +3841,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "Separator_0",
@@ -3347,7 +3852,8 @@
         "decoupler"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "Separator_1",
@@ -3357,7 +3863,8 @@
         "decoupler"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "Separator_2",
@@ -3367,7 +3874,8 @@
         "decoupler"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "Separator_3",
@@ -3377,7 +3885,8 @@
         "decoupler"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "sepMotor1",
@@ -3399,7 +3908,8 @@
         "propellants": [
           "SolidFuel"
         ]
-      }
+      },
+      "liftingSurface": []
     },
     {
       "name": "ServiceBay_125",
@@ -3409,7 +3919,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "ServiceBay_125_v2",
@@ -3419,7 +3930,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "ServiceBay_250",
@@ -3429,7 +3941,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "ServiceBay_250_v2",
@@ -3439,7 +3952,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "shockConeIntake",
@@ -3451,7 +3965,8 @@
       "resources_u": {
         "IntakeAir": 2
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "Shrimp",
@@ -3473,7 +3988,8 @@
         "propellants": [
           "SolidFuel"
         ]
-      }
+      },
+      "liftingSurface": []
     },
     {
       "name": "Size2LFB",
@@ -3496,7 +4012,8 @@
           "LiquidFuel",
           "Oxidizer"
         ]
-      }
+      },
+      "liftingSurface": []
     },
     {
       "name": "Size2LFB_v2",
@@ -3519,7 +4036,8 @@
           "LiquidFuel",
           "Oxidizer"
         ]
-      }
+      },
+      "liftingSurface": []
     },
     {
       "name": "Size3AdvancedEngine",
@@ -3539,7 +4057,8 @@
           "LiquidFuel",
           "Oxidizer"
         ]
-      }
+      },
+      "liftingSurface": []
     },
     {
       "name": "size3Decoupler",
@@ -3549,7 +4068,8 @@
         "decoupler"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "Size3EngineCluster",
@@ -3569,7 +4089,8 @@
           "LiquidFuel",
           "Oxidizer"
         ]
-      }
+      },
+      "liftingSurface": []
     },
     {
       "name": "Size3LargeTank",
@@ -3582,7 +4103,8 @@
         "LiquidFuel": 6480,
         "Oxidizer": 7920
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "Size3MediumTank",
@@ -3595,7 +4117,8 @@
         "LiquidFuel": 3240,
         "Oxidizer": 3960
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "Size3SmallTank",
@@ -3608,7 +4131,8 @@
         "LiquidFuel": 1620,
         "Oxidizer": 1980
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "Size3to2Adapter",
@@ -3618,7 +4142,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "Size3To2Adapter_v2",
@@ -3631,7 +4156,8 @@
         "LiquidFuel": 1350,
         "Oxidizer": 1650
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "smallCargoContainer",
@@ -3641,7 +4167,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "smallClaw",
@@ -3651,7 +4178,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "smallCtrlSrf",
@@ -3661,7 +4189,13 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": true,
+        "deflectionLiftCoeff": 0.18,
+        "ctrlSurfaceRange": 20,
+        "useInternalDragModel": 1
+      }
     },
     {
       "name": "SmallGearBay",
@@ -3671,7 +4205,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "smallHardpoint",
@@ -3681,7 +4216,8 @@
         "decoupler"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "smallRadialEngine",
@@ -3701,7 +4237,8 @@
           "LiquidFuel",
           "Oxidizer"
         ]
-      }
+      },
+      "liftingSurface": []
     },
     {
       "name": "smallRadialEngine_v2",
@@ -3721,7 +4258,8 @@
           "LiquidFuel",
           "Oxidizer"
         ]
-      }
+      },
+      "liftingSurface": []
     },
     {
       "name": "SmallTank",
@@ -3733,7 +4271,8 @@
       "resources_u": {
         "Ore": 300
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "solarPanelOX10C",
@@ -3743,7 +4282,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "solarPanelOX10L",
@@ -3753,7 +4293,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "solarPanels1",
@@ -3763,7 +4304,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "solarPanels2",
@@ -3773,7 +4315,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "solarPanels3",
@@ -3783,7 +4326,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "solarPanels4",
@@ -3793,7 +4337,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "solarPanels5",
@@ -3803,7 +4348,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "solarPanelSP10C",
@@ -3813,7 +4359,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "solarPanelSP10L",
@@ -3823,7 +4370,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "solidBooster",
@@ -3845,7 +4393,8 @@
         "propellants": [
           "SolidFuel"
         ]
-      }
+      },
+      "liftingSurface": []
     },
     {
       "name": "solidBooster_sm",
@@ -3867,7 +4416,8 @@
         "propellants": [
           "SolidFuel"
         ]
-      }
+      },
+      "liftingSurface": []
     },
     {
       "name": "solidBooster_sm_v2",
@@ -3889,7 +4439,8 @@
         "propellants": [
           "SolidFuel"
         ]
-      }
+      },
+      "liftingSurface": []
     },
     {
       "name": "solidBooster_v2",
@@ -3911,7 +4462,8 @@
         "propellants": [
           "SolidFuel"
         ]
-      }
+      },
+      "liftingSurface": []
     },
     {
       "name": "solidBooster1-1",
@@ -3933,7 +4485,8 @@
         "propellants": [
           "SolidFuel"
         ]
-      }
+      },
+      "liftingSurface": []
     },
     {
       "name": "spotLight1",
@@ -3943,7 +4496,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "spotLight1_v2",
@@ -3953,7 +4507,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "spotLight2",
@@ -3963,7 +4518,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "spotLight2_v2",
@@ -3973,7 +4529,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "spotLight3",
@@ -3983,7 +4540,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "SSME",
@@ -4003,7 +4561,8 @@
           "LiquidFuel",
           "Oxidizer"
         ]
-      }
+      },
+      "liftingSurface": []
     },
     {
       "name": "stackBiCoupler",
@@ -4013,7 +4572,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "stackBiCoupler_v2",
@@ -4023,7 +4583,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "stackDecoupler",
@@ -4033,7 +4594,8 @@
         "decoupler"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "stackDecouplerMini",
@@ -4043,7 +4605,8 @@
         "decoupler"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "stackPoint1",
@@ -4053,7 +4616,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "stackQuadCoupler",
@@ -4063,7 +4627,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "stackSeparator",
@@ -4073,7 +4638,8 @@
         "decoupler"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "stackSeparatorBig",
@@ -4083,7 +4649,8 @@
         "decoupler"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "stackSeparatorMini",
@@ -4093,7 +4660,8 @@
         "decoupler"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "stackTriCoupler",
@@ -4103,7 +4671,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "stackTriCoupler_v2",
@@ -4113,7 +4682,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "StandardCtrlSrf",
@@ -4123,7 +4693,13 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": true,
+        "deflectionLiftCoeff": 0.25,
+        "ctrlSurfaceRange": 20,
+        "useInternalDragModel": 1
+      }
     },
     {
       "name": "standardNoseCone",
@@ -4133,7 +4709,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "stationHub",
@@ -4143,7 +4720,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "stripLight1",
@@ -4153,7 +4731,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "structuralIBeam1",
@@ -4163,7 +4742,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "structuralIBeam2",
@@ -4173,7 +4753,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "structuralIBeam3",
@@ -4183,7 +4764,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "structuralMiniNode",
@@ -4193,7 +4775,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "structuralPanel1",
@@ -4203,7 +4786,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "structuralPanel2",
@@ -4213,7 +4797,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "structuralPylon",
@@ -4223,7 +4808,8 @@
         "decoupler"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "structuralWing",
@@ -4233,7 +4819,12 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": false,
+        "deflectionLiftCoeff": 1,
+        "useInternalDragModel": 1
+      }
     },
     {
       "name": "structuralWing2",
@@ -4243,7 +4834,12 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": false,
+        "deflectionLiftCoeff": 1,
+        "useInternalDragModel": 1
+      }
     },
     {
       "name": "structuralWing3",
@@ -4253,7 +4849,12 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": false,
+        "deflectionLiftCoeff": 0.5,
+        "useInternalDragModel": 1
+      }
     },
     {
       "name": "structuralWing4",
@@ -4263,7 +4864,12 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": false,
+        "deflectionLiftCoeff": 0.25,
+        "useInternalDragModel": 1
+      }
     },
     {
       "name": "strutConnector",
@@ -4273,7 +4879,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "strutCube",
@@ -4283,7 +4890,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "strutOcto",
@@ -4293,7 +4901,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "SurfaceScanner",
@@ -4303,7 +4912,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "SurfAntenna",
@@ -4313,7 +4923,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "SurveyScanner",
@@ -4323,7 +4934,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "sweptWing",
@@ -4333,7 +4945,12 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": false,
+        "deflectionLiftCoeff": 1.37,
+        "useInternalDragModel": 1
+      }
     },
     {
       "name": "sweptWing1",
@@ -4343,7 +4960,12 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": false,
+        "deflectionLiftCoeff": 1.13,
+        "useInternalDragModel": 1
+      }
     },
     {
       "name": "sweptWing2",
@@ -4353,7 +4975,12 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": false,
+        "deflectionLiftCoeff": 2.26,
+        "useInternalDragModel": 1
+      }
     },
     {
       "name": "tailfin",
@@ -4363,7 +4990,13 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": true,
+        "deflectionLiftCoeff": 0.61,
+        "ctrlSurfaceRange": 25,
+        "useInternalDragModel": 1
+      }
     },
     {
       "name": "telescopicLadder",
@@ -4373,7 +5006,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "telescopicLadderBay",
@@ -4383,7 +5017,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "Thoroughbred",
@@ -4405,7 +5040,8 @@
         "propellants": [
           "SolidFuel"
         ]
-      }
+      },
+      "liftingSurface": []
     },
     {
       "name": "toroidalAerospike",
@@ -4425,7 +5061,8 @@
           "LiquidFuel",
           "Oxidizer"
         ]
-      }
+      },
+      "liftingSurface": []
     },
     {
       "name": "toroidalFuelTank",
@@ -4438,7 +5075,8 @@
         "LiquidFuel": 27,
         "Oxidizer": 33
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "trussAdapter",
@@ -4448,7 +5086,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "trussPiece1x",
@@ -4458,7 +5097,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "trussPiece3x",
@@ -4468,7 +5108,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "turboFanEngine",
@@ -4488,7 +5129,8 @@
           "IntakeAir",
           "LiquidFuel"
         ]
-      }
+      },
+      "liftingSurface": []
     },
     {
       "name": "turboFanSize2",
@@ -4510,7 +5152,8 @@
           "IntakeAir",
           "LiquidFuel"
         ]
-      }
+      },
+      "liftingSurface": []
     },
     {
       "name": "turboJet",
@@ -4543,7 +5186,8 @@
             "LiquidFuel"
           ]
         }
-      ]
+      ],
+      "liftingSurface": []
     },
     {
       "name": "vernierEngine",
@@ -4553,7 +5197,8 @@
         "pod"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "wheelMed",
@@ -4563,7 +5208,8 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "wingConnector",
@@ -4573,7 +5219,12 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": false,
+        "deflectionLiftCoeff": 2,
+        "useInternalDragModel": 1
+      }
     },
     {
       "name": "wingConnector2",
@@ -4583,7 +5234,12 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": false,
+        "deflectionLiftCoeff": 2,
+        "useInternalDragModel": 1
+      }
     },
     {
       "name": "wingConnector3",
@@ -4593,7 +5249,12 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": false,
+        "deflectionLiftCoeff": 1,
+        "useInternalDragModel": 1
+      }
     },
     {
       "name": "wingConnector4",
@@ -4603,7 +5264,12 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": false,
+        "deflectionLiftCoeff": 0.5,
+        "useInternalDragModel": 1
+      }
     },
     {
       "name": "wingConnector5",
@@ -4613,7 +5279,12 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": false,
+        "deflectionLiftCoeff": 0.5,
+        "useInternalDragModel": 1
+      }
     },
     {
       "name": "winglet",
@@ -4623,7 +5294,12 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": false,
+        "deflectionLiftCoeff": 0.37,
+        "useInternalDragModel": 1
+      }
     },
     {
       "name": "winglet3",
@@ -4633,7 +5309,13 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": true,
+        "deflectionLiftCoeff": 0.65,
+        "ctrlSurfaceRange": 25,
+        "useInternalDragModel": 1
+      }
     },
     {
       "name": "wingShuttleDelta",
@@ -4645,7 +5327,12 @@
       "resources_u": {
         "LiquidFuel": 300
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": false,
+        "deflectionLiftCoeff": 5,
+        "useInternalDragModel": 1
+      }
     },
     {
       "name": "wingShuttleElevon1",
@@ -4655,7 +5342,13 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": true,
+        "deflectionLiftCoeff": 0.77,
+        "ctrlSurfaceRange": 25,
+        "useInternalDragModel": 1
+      }
     },
     {
       "name": "wingShuttleElevon2",
@@ -4665,7 +5358,13 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": true,
+        "deflectionLiftCoeff": 1.16,
+        "ctrlSurfaceRange": 25,
+        "useInternalDragModel": 1
+      }
     },
     {
       "name": "wingShuttleRudder",
@@ -4675,7 +5374,13 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": true,
+        "deflectionLiftCoeff": 3.49,
+        "ctrlSurfaceRange": 25,
+        "useInternalDragModel": 1
+      }
     },
     {
       "name": "wingShuttleStrake",
@@ -4687,7 +5392,12 @@
       "resources_u": {
         "LiquidFuel": 100
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": false,
+        "deflectionLiftCoeff": 1,
+        "useInternalDragModel": 1
+      }
     },
     {
       "name": "wingStrake",
@@ -4697,7 +5407,12 @@
         "utility"
       ],
       "resources_u": {},
-      "engines": []
+      "engines": [],
+      "liftingSurface": {
+        "isControl": false,
+        "deflectionLiftCoeff": 0.5,
+        "useInternalDragModel": 1
+      }
     },
     {
       "name": "xenonTank",
@@ -4709,7 +5424,8 @@
       "resources_u": {
         "XenonGas": 720
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "xenonTankLarge",
@@ -4721,7 +5437,8 @@
       "resources_u": {
         "XenonGas": 5700
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     },
     {
       "name": "xenonTankRadial",
@@ -4733,7 +5450,8 @@
       "resources_u": {
         "XenonGas": 405
       },
-      "engines": []
+      "engines": [],
+      "liftingSurface": []
     }
   ]
 }

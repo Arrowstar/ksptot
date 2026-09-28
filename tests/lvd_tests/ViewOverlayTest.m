@@ -212,10 +212,15 @@ classdef ViewOverlayTest < KsptotTestCase
             data = LaunchVehicleViewProfileOverlayData(s, lvdData);
 
             data.plotOverlayAtTime(5, hAx);
-            h = findobj(hAx, 'Tag', 'LvdViewOverlayText');
+            h = findobj(hFig, 'Tag', 'LvdViewOverlayText');
             testCase.assertNumElements(h, 1, 'One text block');
-            testCase.verifyEqual(h.Units, 'normalized');
-            testCase.verifyEqual(h.Position(1:2), [0.02 0.98], 'AbsTol', 1e-12);
+            testCase.verifyTrue(isa(h, 'matlab.graphics.shape.TextBox'), 'The overlay is a figure annotation, immune to the 3-D camera');
+            testCase.verifySameHandle(h.Parent, hFig);
+            [cx, cyTop] = testCase.topLeftCorner(hFig, hAx);
+            testCase.verifyEqual(h.Position(1), cx, 'AbsTol', 0.03);
+            testCase.verifyEqual(h.Position(2) + h.Position(4), cyTop, 'AbsTol', 0.05);
+            testCase.verifyGreaterThan(h.Position(3), 0);
+            testCase.verifyGreaterThan(h.Position(4), 0);
             testCase.verifyEqual(h.HorizontalAlignment, 'left');
             testCase.verifyEqual(h.VerticalAlignment, 'top');
             testCase.verifyEqual(h.Color, [1 1 1]);
@@ -228,13 +233,16 @@ classdef ViewOverlayTest < KsptotTestCase
             %next frame updates the same object with new text
             str5 = h.String;
             data.plotOverlayAtTime(15, hAx);
-            testCase.verifyNumElements(findobj(hAx, 'Tag', 'LvdViewOverlayText'), 1);
+            testCase.verifyNumElements(findobj(hFig, 'Tag', 'LvdViewOverlayText'), 1);
             testCase.verifyNotEqual(h.String, str5, 'Text follows the time');
 
             %style/placement changes are pushed by refreshAppearance
             s.corner = "Bottom Right"; s.fontSize = 20; s.fontWeight = "bold"; s.fontColor = [1 1 0]; s.showBackground = false;
             data.refreshAppearance();
-            testCase.verifyEqual(h.Position(1:2), [0.98 0.02], 'AbsTol', 1e-12);
+            data.plotOverlayAtTime(15, hAx);   %production re-renders right after a refresh, which places the box
+            [cxR, cyB] = testCase.bottomRightCorner(hFig, hAx);
+            testCase.verifyEqual(h.Position(1) + h.Position(3), cxR, 'AbsTol', 0.05);
+            testCase.verifyEqual(h.Position(2), cyB, 'AbsTol', 0.05);
             testCase.verifyEqual(h.HorizontalAlignment, 'right');
             testCase.verifyEqual(h.FontSize, 20);
             testCase.verifyEqual(h.FontWeight, 'bold');
@@ -331,6 +339,22 @@ classdef ViewOverlayTest < KsptotTestCase
     end
 
     methods(Access = private)
+        function [cx, cy] = topLeftCorner(~, hFig, hAx)
+            %Figure-normalized axes corner for the default margin (0.02).
+            axPix = getpixelposition(hAx);
+            figPix = getpixelposition(hFig);
+            cx = (axPix(1) + 0.02*axPix(3)) / figPix(3);
+            cy = (axPix(2) + 0.98*axPix(4)) / figPix(4);
+        end
+
+        function [cx, cy] = bottomRightCorner(~, hFig, hAx)
+            %Matches the test's 0.05 margin (right = 1 - 0.05).
+            axPix = getpixelposition(hAx);
+            figPix = getpixelposition(hFig);
+            cx = (axPix(1) + 0.95*axPix(3)) / figPix(3);
+            cy = (axPix(2) + 0.05*axPix(4)) / figPix(4);
+        end
+
         function [lvdData, stateLog, tD] = propagatedMission(testCase, dur1, dur2)
             bodyInfo = testCase.kerbin;
             frame = testCase.kerbinFrame;

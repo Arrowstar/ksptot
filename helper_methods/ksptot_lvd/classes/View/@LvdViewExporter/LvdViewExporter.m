@@ -97,6 +97,9 @@ classdef LvdViewExporter
 
         function exportImage(hAx, filePath, dpi)
             %exportImage Writes the axes as a PNG or JPEG at `dpi`.
+            %   Raster formats capture the parent figure cropped to the axes
+            %   so the figure-level data overlay is included; PDF keeps the
+            %   legacy axes-only vector capture.
             arguments
                 hAx
                 filePath(1,:) char
@@ -106,13 +109,32 @@ classdef LvdViewExporter
             if(not(ismember(lower(ext), {'.png', '.jpg', '.jpeg', '.tif', '.tiff', '.pdf'})))
                 error('LvdViewExporter:badImageExt', 'Unsupported image type "%s". Use .png, .jpg, .tif or .pdf.', ext);
             end
+            if(ismember(lower(ext), {'.png', '.jpg', '.jpeg', '.tif', '.tiff'}))
+                try
+                    if(LvdViewExporter.exportFigureCrop(hAx, filePath, dpi, lower(ext)))
+                        return;
+                    end
+                catch
+                end
+            end
             exportgraphics(hAx, filePath, 'Resolution', dpi, 'BackgroundColor', 'current');
         end
 
         function tf = copyImageToClipboard(hAx)
             %copyImageToClipboard Copies the axes to the system clipboard as
             %an image; false when the clipboard is unavailable (headless).
+            %   Uses the figure cropped to the axes so the overlay travels
+            %   along, falling back to the axes-only copy.
             tf = false;
+            try
+                img = LvdViewExporter.cropFigureToAxes(hAx);
+                if(not(isempty(img)) && exist('imclipboard', 'file') == 2)
+                    imclipboard('copy', img);
+                    tf = true;
+                    return;
+                end
+            catch
+            end
             try
                 copygraphics(hAx, 'BackgroundColor', 'current');
                 tf = true;
@@ -123,8 +145,21 @@ classdef LvdViewExporter
 
         function frame = captureAxesFrame(hAx)
             %captureAxesFrame The axes' current pixels as an RGB uint8 image.
-            f = getframe(hAx);
-            frame = f.cdata;
+            %   Captured from the parent figure cropped to the axes rect so
+            %   the figure-level data overlay annotation is included (an
+            %   axes-targeted capture would miss it).  Falls back to the
+            %   axes-only capture.
+            try
+                img = LvdViewExporter.cropFigureToAxes(hAx);
+            catch
+                img = [];
+            end
+            if(isempty(img))
+                f = getframe(hAx);
+                frame = f.cdata;
+            else
+                frame = img;
+            end
         end
 
         function [t0, t1] = exportTimeRange(settings, sliderLimits)
@@ -173,6 +208,124 @@ classdef LvdViewExporter
     end
 
     methods(Static, Access = private)
+        function img = cropFigureToAxes(hAx)
+            %cropFigureToAxes Screen-resolution crop of the parent figure to
+            %the axes rect (includes figure-level annotations).  [] on any
+            %failure (callers fall back to axes-only captures).
+            img = [];
+            try
+                fig = ancestor(hAx, 'figure');
+                if(isempty(fig) || not(all(isvalid(fig))))
+                    return;
+                end
+                try
+                    apx = getpixelposition(hAx);
+                catch
+                    return;
+                end
+                if(numel(apx) < 4 || any(not(isfinite(apx))))
+                    return;
+                end
+                try
+                    fp = getpixelposition(fig);
+                    figW = fp(3); figH = fp(4);
+                catch
+                    try
+                        figW = fig.Position(3); figH = fig.Position(4);
+                    catch
+                        return;
+                    end
+                end
+                if(not(all(isfinite([figW figH]))) || figW <= 0 || figH <= 0)
+                    return;
+                end
+                f = getframe(fig);
+                if(isempty(f.cdata))
+                    return;
+                end
+                [Hf, Wf, ~] = size(f.cdata);
+                sx = Wf / figW; sy = Hf / figH;
+                c1 = floor(apx(1)*sx) + 1;
+                c2 = c1 + round(apx(3)*sx) - 1;
+                r1 = floor((figH - apx(2) - apx(4))*sy) + 1;
+                r2 = r1 + round(apx(4)*sy) - 1;
+                c1 = max(1, c1); c2 = min(Wf, c2);
+                r1 = max(1, r1); r2 = min(Hf, r2);
+                if(c2 < c1 || r2 < r1)
+                    return;
+                end
+                img = f.cdata(r1:r2, c1:c2, :);
+            catch
+                img = [];
+            end
+        end
+
+        function done = exportFigureCrop(hAx, filePath, dpi, ext)
+            %exportFigureCrop Figure export at `dpi` cropped to the axes rect
+            %(includes the overlay annotation).  False when it cannot be
+            %done (callers fall back to the axes-only export).
+            done = false;
+            tmpPath = '';
+            try
+                fig = ancestor(hAx, 'figure');
+                if(isempty(fig) || not(all(isvalid(fig))))
+                    return;
+                end
+                try
+                    apx = getpixelposition(hAx);
+                    fp = getpixelposition(fig);
+                    figW = fp(3); figH = fp(4);
+                catch
+                    return;
+                end
+                if(any(not(isfinite([apx figW figH]))) || figW <= 0 || figH <= 0)
+                    return;
+                end
+                fx = apx(1)/figW; fy = apx(2)/figH;
+                fw = apx(3)/figW; fh = apx(4)/figH;
+                tmpPath = [tempname() '.png'];
+                exportgraphics(fig, tmpPath, 'Resolution', dpi, 'BackgroundColor', 'current');
+                cleanup = onCleanup(@() LvdViewExporter.deleteTemp(tmpPath)); %#ok<NASGU>
+                img = imread(tmpPath);
+                [H, W, ~] = size(img);
+                c1 = floor(fx*W) + 1; c2 = min(W, c1 + round(fw*W) - 1);
+                r1 = floor((1 - fy - fh)*H) + 1; r2 = min(H, r1 + round(fh*H) - 1);
+                if(c2 < c1 || r2 < r1)
+                    return;
+                end
+                crop = img(r1:r2, c1:c2, :);
+                switch(ext)
+                    case '.png'
+                        imwrite(crop, filePath, 'png');
+                    case {'.jpg', '.jpeg'}
+                        imwrite(crop, filePath, 'jpeg');
+                    case {'.tif', '.tiff'}
+                        imwrite(crop, filePath, 'tiff');
+                    otherwise
+                        return;
+                end
+                done = true;
+            catch
+                try
+                    if(not(isempty(tmpPath)) && isfile(tmpPath))
+                        delete(tmpPath);
+                    end
+                catch
+                end
+                done = false;
+            end
+        end
+
+        function deleteTemp(filePath)
+            %deleteTemp Best-effort temp file removal.  Never throws.
+            try
+                if(not(isempty(filePath)) && isfile(filePath))
+                    delete(filePath);
+                end
+            catch
+            end
+        end
+
         function closeWriter(writer)
             if(not(isempty(writer)))
                 try
