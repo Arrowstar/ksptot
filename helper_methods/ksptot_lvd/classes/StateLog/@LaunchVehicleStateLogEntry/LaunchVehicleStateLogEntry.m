@@ -638,12 +638,16 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                             if(adjustedThrottle > 0)
                                 [baseThrust, baseMdot] = engine.getThrustFlowRateForPressure(presskPa); %total mass flow through engine
                                 mdot = adjustedThrottle * baseMdot;
-                                
-                                flowFromTankInds = zeros(size(tankStates));
+
                                 if(mdot < 0 && ... %negative because we're flowing out
                                    (engine.reqsElecCharge == false || (engine.reqsElecCharge == true && numel(storageSoCs)>0 && sum(storageSoCs)>0))) %handle engines that require EC to function
                                     connTankInds = engTankInds{i}{j};
 
+                                    %Pooled capacity/mass over all connected
+                                    %tanks in active stages; this drives the
+                                    %fuel-remaining throttle curve exactly as
+                                    %before (see computeSplitShares for the
+                                    %per-tank flow assignment).
                                     totalConnTankCapacity = 0;
                                     totalConnTankMass = 0;
                                     for(k=1:length(connTankInds))
@@ -655,10 +659,6 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
 
                                             totalConnTankCapacity = totalConnTankCapacity + tankState.tank.getCapacity();
                                             totalConnTankMass = totalConnTankMass + tankMass;
-
-                                            if(tankMass > 0)
-                                                flowFromTankInds(idx) = 1;
-                                            end
                                         end
                                     end
                                     
@@ -678,17 +678,41 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
                                     
                                     %                                     [thrust, mdot] = engine.getThrustFlowRateForPressure(presskPa); %total mass flow through engine
                                     mdot = adjustedThrottle * baseMdot;
-                                    totalThrust = totalThrust + adjustedThrottle*baseThrust;
-                                    
-                                    numTanksToPullFrom = sum(flowFromTankInds);
-                                    if(numTanksToPullFrom > 0)
-                                        bodyThrust = bodyThrust + (baseThrust * adjustedThrottle * engine.bodyFrameThrustVect)/1000; %1/1000 to convert kN=mT*m/s^2 to mT*km/s^2 (see also ma_executeDVManeuver_finite_inertial())
+
+                                    %Two-level flow split: the engine mixture
+                                    %apportions mdot across fluid species
+                                    %first, then connection priority/weight
+                                    %splits each species across its tanks.
+                                    %With no custom mixture and default
+                                    %priority/weight this reduces to the
+                                    %legacy even split over all connected
+                                    %non-empty tanks.
+                                    if(LaunchVehicleStateLogEntry.isEngineMixtureStarved(engine, lvState, tankStates, tankStatesMasses))
+                                        %A required species is exhausted:
+                                        %flame out exactly like a drained
+                                        %sole tank (zero flow, zero thrust;
+                                        %EC bookkeeping below is untouched).
+                                        mdot = 0;
+                                    else
+                                        totalThrust = totalThrust + adjustedThrottle*baseThrust;
+
+                                        [splitInds, splitShares] = LaunchVehicleStateLogEntry.computeSplitShares(engine, lvState, connTankInds, tankStates, tankStatesMasses);
+
+                                        if(not(isempty(splitInds)))
+                                            bodyThrust = bodyThrust + (baseThrust * adjustedThrottle * engine.bodyFrameThrustVect)/1000; %1/1000 to convert kN=mT*m/s^2 to mT*km/s^2 (see also ma_executeDVManeuver_finite_inertial())
+
+                                            if(all(splitShares == splitShares(1)))
+                                                %Uniform split: scalar
+                                                %division, bitwise identical
+                                                %to the legacy mdot/numTanks
+                                                %computation.
+                                                mDotPerTank = mdot/length(splitInds);
+                                                tankMDots(splitInds) = tankMDots(splitInds) + mDotPerTank;
+                                            else
+                                                tankMDots(splitInds) = tankMDots(splitInds) + mdot*splitShares;
+                                            end
+                                        end
                                     end
-                                    
-                                    mDotPerTank = mdot/numTanksToPullFrom;
-                                    
-                                    flowFromTankInds = logical(flowFromTankInds);
-                                    tankMDots(flowFromTankInds) = tankMDots(flowFromTankInds) + mDotPerTank;
 
                                     if(numel(storageSoCs) > 0)
                                         pwrRate = engine.getPowerRate(throttle);
@@ -722,6 +746,125 @@ classdef LaunchVehicleStateLogEntry < matlab.mixin.SetGet & matlab.mixin.Copyabl
             else
                 forceVect = [NaN;NaN;NaN];
             end
+        end
+
+        function tf = isEngineMixtureStarved(engine, lvState, tankStates, tankStatesMasses)
+            %isEngineMixtureStarved True when the engine has a custom mixture
+            %and at least one required species (fraction > 0) has no
+            %available propellant: no connected tank of that fluid type in
+            %an active stage with mass > 0.  Engines without a custom
+            %mixture are never starved here; the legacy pooled-mass logic
+            %handles their depletion.
+            tf = false;
+
+            if(not(engine.hasCustomMixture()))
+                return;
+            end
+
+            [mixTypes, mixFracs] = deal(engine.mixtureFluidTypes, engine.mixtureFractions);
+            connStates = lvState.e2TConns([lvState.e2TConns.active] == true);
+
+            for(m=1:length(mixTypes))
+                if(mixFracs(m) <= 0)
+                    continue;
+                end
+
+                found = false;
+                for(s=1:length(connStates))
+                    conn = connStates(s).conn;
+                    if(not(conn.engine == engine))
+                        continue;
+                    end
+                    if(not(conn.tank.tankType == mixTypes(m)))
+                        continue;
+                    end
+
+                    for(t=1:length(tankStates))
+                        if(tankStates(t).tank == conn.tank && ...
+                           tankStates(t).stageState.active && ...
+                           tankStatesMasses(t) > 0)
+                            found = true;
+                            break;
+                        end
+                    end
+                    if(found)
+                        break;
+                    end
+                end
+
+                if(not(found))
+                    tf = true;
+                    return;
+                end
+            end
+        end
+
+        function [splitInds, splitShares] = computeSplitShares(engine, lvState, connTankInds, tankStates, tankStatesMasses)
+            %computeSplitShares Tank-state indices and normalized shares
+            %(summing to 1) for one engine's mass flow.  Level 1 apportions
+            %the flow across fluid species per the engine mixture (a single
+            %pool when no custom mixture is set); level 2 drains the highest
+            %non-empty priority level within each species and splits it by
+            %connection weight.  Only tanks in active stages with mass > 0
+            %are assigned.
+            [prios, weights] = lvState.getEngineToTankSplitParams(engine, connTankInds, tankStates);
+
+            n = length(connTankInds);
+            avail = false(1,n);
+            for(k=1:n)
+                idx = connTankInds(k);
+                avail(k) = tankStates(idx).stageState.active && tankStatesMasses(idx) > 0;
+            end
+
+            splitInds = [];
+            splitShares = [];
+
+            if(engine.hasCustomMixture())
+                mixTypes = engine.mixtureFluidTypes;
+                mixFracs = engine.mixtureFractions;
+
+                for(m=1:length(mixTypes))
+                    if(mixFracs(m) <= 0)
+                        continue;
+                    end
+
+                    inSpecies = false(1,n);
+                    for(k=1:n)
+                        inSpecies(k) = avail(k) && tankStates(connTankInds(k)).tank.tankType == mixTypes(m);
+                    end
+                    if(not(any(inSpecies)))
+                        continue; %starved species are handled by isEngineMixtureStarved
+                    end
+
+                    topPrio = max(prios(inSpecies));
+                    level = inSpecies & (prios == topPrio);
+                    w = weights(level);
+                    w = w / sum(w);
+
+                    ks = find(level);
+                    for(q=1:length(ks))
+                        splitInds(end+1) = connTankInds(ks(q)); %#ok<AGROW>
+                        splitShares(end+1) = mixFracs(m) * w(q); %#ok<AGROW>
+                    end
+                end
+            else
+                if(not(any(avail)))
+                    return;
+                end
+
+                topPrio = max(prios(avail));
+                level = avail & (prios == topPrio);
+                w = weights(level);
+                w = w / sum(w);
+
+                ks = find(level);
+                for(q=1:length(ks))
+                    splitInds(end+1) = connTankInds(ks(q)); %#ok<AGROW>
+                    splitShares(end+1) = w(q); %#ok<AGROW>
+                end
+            end
+
+            splitShares = splitShares(:);
         end
         
         function storageRates = getStorageChargeRatesDueToSourcesSinks(storageSoCs, powerStorageStates, stgStates, ut, rVect, vVect, bodyInfo, steeringModel)

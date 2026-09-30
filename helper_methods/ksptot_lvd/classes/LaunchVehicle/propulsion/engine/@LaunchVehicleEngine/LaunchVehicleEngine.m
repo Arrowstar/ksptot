@@ -23,6 +23,17 @@ classdef LaunchVehicleEngine < matlab.mixin.SetGet
         
         name char = 'Untitled Engine';
         id(1,1) double = 0;
+
+        %mixtureFluidTypes/mixtureFractions Engine propellant mixture: each
+        %entry pairs a TankFluidType with its share of the engine's total
+        %mass flow (fractions must be > 0 and sum to 1).  EMPTY (default)
+        %means "legacy single pool": no species split, every connected
+        %non-empty tank shares the flow per connection priority/weight, so
+        %missions saved before mixtures existed propagate identically.  Use
+        %setMixture()/clearMixture() to write; getMixtureSpec() to read
+        %(with the single-type default resolved).
+        mixtureFluidTypes TankFluidType = TankFluidType.empty(1,0);
+        mixtureFractions double = double.empty(1,0);
     end
     
     %deprecated
@@ -167,6 +178,71 @@ classdef LaunchVehicleEngine < matlab.mixin.SetGet
         function tf = isInUse(obj)
             tf = obj.lvdData.usesEngine(obj);
         end
+
+        function tf = hasCustomMixture(obj)
+            %hasCustomMixture True once setMixture() has stored a mixture.
+            %The mass-flow kernel branches on this: false takes the legacy
+            %single-pool path, true the two-level mixture/priority split.
+            tf = not(isempty(obj.mixtureFluidTypes));
+        end
+
+        function [types, fracs] = getMixtureSpec(obj)
+            %getMixtureSpec Stored mixture, or the single-type default
+            %(first fluid type at fraction 1) when none was set.
+            if(obj.hasCustomMixture())
+                types = obj.mixtureFluidTypes;
+                fracs = obj.mixtureFractions;
+            else
+                types = obj.lvdData.launchVehicle.tankTypes.getTypeForInd(1);
+                fracs = 1;
+            end
+        end
+
+        function setMixture(obj, types, fracs)
+            %setMixture Store a propellant mixture.  types is a
+            %TankFluidType array, fracs a matching row of shares that must
+            %be positive and sum to 1 within 1e-9.
+            if(not(isa(types, 'TankFluidType')))
+                error('LaunchVehicleEngine:invalidMixture', ...
+                    'Mixture types must be TankFluidType objects.');
+            end
+            fracs = fracs(:)';
+            if(numel(types) ~= numel(fracs) || isempty(types))
+                error('LaunchVehicleEngine:invalidMixture', ...
+                    'Mixture needs one fraction per fluid type (got %u types, %u fractions).', ...
+                    numel(types), numel(fracs));
+            end
+            if(any(~isfinite(fracs)) || any(fracs <= 0))
+                error('LaunchVehicleEngine:invalidMixture', ...
+                    'Mixture fractions must be finite and positive.');
+            end
+            if(abs(sum(fracs) - 1) > 1e-9)
+                error('LaunchVehicleEngine:invalidMixture', ...
+                    'Mixture fractions must sum to 1 (got %.12g).', sum(fracs));
+            end
+            obj.mixtureFluidTypes = types;
+            obj.mixtureFractions = fracs;
+        end
+
+        function clearMixture(obj)
+            %clearMixture Drop back to the legacy single-pool behavior.
+            obj.mixtureFluidTypes = TankFluidType.empty(1,0);
+            obj.mixtureFractions = double.empty(1,0);
+        end
+
+        function frac = getMixtureFractionForFluidType(obj, fluidType)
+            %getMixtureFractionForFluidType Share for one fluid type, or 0
+            %when the (custom) mixture does not include it.
+            frac = 0;
+            if(obj.hasCustomMixture())
+                bool = obj.mixtureFluidTypes == fluidType;
+                if(any(bool))
+                    frac = obj.mixtureFractions(find(bool, 1));
+                end
+            else
+                frac = 1;
+            end
+        end
         
         function newEngine = copy(obj)
             newEngine = LaunchVehicleEngine(obj.stage);
@@ -184,6 +260,9 @@ classdef LaunchVehicleEngine < matlab.mixin.SetGet
             newEngine.fuelThrottleCurve = obj.fuelThrottleCurve.copy();
             newEngine.thrustPressCurve = obj.thrustPressCurve.copy();
             newEngine.ispPressCurve = obj.ispPressCurve.copy();
+
+            newEngine.mixtureFluidTypes = obj.mixtureFluidTypes;
+            newEngine.mixtureFractions = obj.mixtureFractions;
             
             newEngine.name = sprintf('Copy of %s', obj.name);
         end

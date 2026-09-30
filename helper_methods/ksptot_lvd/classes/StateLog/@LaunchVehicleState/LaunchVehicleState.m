@@ -152,6 +152,36 @@ classdef LaunchVehicleState < matlab.mixin.SetGet & matlab.mixin.Copyable
             obj.cachedEngTankIndsStgStates = stgStates;
         end
 
+        function [prios, weights] = getEngineToTankSplitParams(obj, engine, connTankInds, tankStates)
+            %getEngineToTankSplitParams Priority and effective weight for
+            %each entry of connTankInds (parallel arrays).  Read fresh on
+            %every call -- deliberately NOT memoised alongside
+            %getEngineToTankStateIndices, whose cache key is handle identity
+            %only and would go stale when priority/weight are edited.
+            %Unmatched entries (should not happen: the indices derive from
+            %the same connections) fall back to the legacy 0/even values.
+            prios = zeros(size(connTankInds));
+            weights = ones(size(connTankInds));
+
+            connStates = obj.e2TConns([obj.e2TConns.active] == true);
+            for(k=1:length(connTankInds))
+                idx = connTankInds(k);
+                if(idx < 1 || idx > length(tankStates))
+                    continue;
+                end
+                tank = tankStates(idx).tank;
+
+                for(s=1:length(connStates))
+                    conn = connStates(s).conn;
+                    if(conn.engine == engine && conn.tank == tank)
+                        prios(k) = conn.priority;
+                        weights(k) = conn.getEffectiveWeight();
+                        break;
+                    end
+                end
+            end
+        end
+
         %Tank To Tank Connections
         function addT2TConnState(obj, newConnState)
             obj.t2TConns(end+1) = newConnState;

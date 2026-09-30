@@ -27,6 +27,7 @@ classdef LaunchVehicleDataValidation < matlab.mixin.SetGet
             obj.validators(end+1) = MaxFixedStepsReachedValidator(obj.lvdData);
             obj.validators(end+1) = SomeEventsNotPlottedValidator(obj.lvdData);
             obj.validators(end+1) = TankCapacityValidator(obj.lvdData);
+            obj.validators(end+1) = EngineMixtureValidator(obj.lvdData);
             obj.validators(end+1) = EngineWithoutTankValidator(obj.lvdData);
             obj.validators(end+1) = TankWithoutConsumerValidator(obj.lvdData);
             obj.validators(end+1) = NonPositiveStageDryMassValidator(obj.lvdData);

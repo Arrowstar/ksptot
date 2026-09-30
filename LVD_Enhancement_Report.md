@@ -2,7 +2,7 @@
 
 *Prepared 2026-09-15 against branch `v1.6.11` (HEAD `0b640548`).*
 
-> **Implementation status as of 2026-09-25.** Seventeen items have been built: **H9** (all defects, committed as `ce04b8b5`), **A1, A6, A8, A9, A10, A11, B2, C1, E1, E2, E4, E7, F6, F9** (committed as `3d7270c3`), **F8** (2026-09-17, in the working tree) and **F2** (2026-09-25, in the working tree). A second-pass audit the same day completed F6's remaining sub-items, extended A1 to non-sequential events, and fixed defects in the App Designer dialogs (see `LVD_Enhancement_Implementation_Report.md`, §7). Each item below carries its own status line.
+> **Implementation status as of 2026-09-28.** Eighteen items have been built: **H9** (all defects, committed as `ce04b8b5`), **A1, A6, A8, A9, A10, A11, B2, C1, E1, E2, E4, E7, F6, F9** (committed as `3d7270c3`), **F8** (2026-09-17, in the working tree), **F2** (2026-09-25, in the working tree) and **B1** (2026-09-28, in the working tree). A second-pass audit the same day completed F6's remaining sub-items, extended A1 to non-sequential events, and fixed defects in the App Designer dialogs (see `LVD_Enhancement_Implementation_Report.md`, §7). Each item below carries its own status line.
 
 This report is the result of a close read of the LVD engine (`helper_methods/ksptot_lvd/**`) and its App Designer front end (`kspTOT_LaunchVehicleDesigner/**`). It deliberately stays inside LVD's existing architecture: a 3-DOF, event-scripted, force-model-integrating trajectory tool with embedded NLP optimization. Nothing here requires rotational dynamics, a new simulation core, or a new UI framework.
 
@@ -90,7 +90,9 @@ Pro. `ConditionalTypeEnum` has AND/OR but no NOT; comparisons are always current
 
 ### B. Guidance, steering and throttle
 
-**B1. Throttle model parity with steering: selectable math models.**
+**B1. Throttle model parity with steering: selectable math models.** ✅ **Implemented 2026-09-28** (in the working tree).
+*Status: new `SelectableThrottleModel` wraps the steering `math_models` classes (sum of polynomial terms, sum of sines, linear tangent — FitNet deliberately excluded) as a time-only throttle law clamped to [0, 1], with its own `SetSelectableThrottleModelActionOptimVar`, a programmatic editor dialog, `ThrottleModelEnum`/`ThrottleModelsSet`/`promptForThrottleModelType` registration, and composability with the B2 `LimitedThrottleModel` wrapper. Tests: `SelectableThrottleModelTest` (29 methods, incl. dialog and end-to-end propagation coverage).*
+
 KSP, Pro. `GenericSelectableSteeringModel` lets each angle use sum-of-poly-terms, sum-of-sines, linear tangent, or `fitnet`; throttle has only const/lin/accel, T/W target, and a table. Add a `SelectableThrottleModel` wrapping the same `steering/math_models` classes (they are already time-only functions). Effort: S–M.
 
 **B2. Dynamic-pressure-limited and acceleration-limited throttle laws.** ✅ **Implemented 2026-09-16.**

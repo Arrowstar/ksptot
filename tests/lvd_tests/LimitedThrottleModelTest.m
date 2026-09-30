@@ -233,9 +233,9 @@ classdef LimitedThrottleModelTest < KsptotTestCase
             testCase.verifySameHandle(set.limitedThrottle, model, 'Selecting a limited model must store it in the limited slot.');
             testCase.verifySameHandle(set.getModelForEnum(ThrottleModelEnum.Limited), model);
             testCase.verifySameHandle(set.getModelForEnum(ThrottleModelEnum.PolyModel), set.polyThrottle);
-            all4 = set.getAllModels();
-            testCase.verifyNumElements(all4, 4);
-            testCase.verifySameHandle(all4(end), model);
+            all5 = set.getAllModels();
+            testCase.verifyNumElements(all5, 5);
+            testCase.verifySameHandle(all5(end), model);
 
             model2 = LimitedThrottleModel.getDefaultThrottleModel();
             set.setModelForEnum(ThrottleModelEnum.Limited, model2);
@@ -273,18 +273,18 @@ classdef LimitedThrottleModelTest < KsptotTestCase
         end
 
         function checkHeterogeneousModelArraysCompareAsHandles(testCase)
-            %ThrottleModelsSet.getAllModels() is a heterogeneous array of four
+            %ThrottleModelsSet.getAllModels() is a heterogeneous array of five
             %different AbstractThrottleModel subclasses.  The throttle model
             %dialog filters it with ~= against the selected model, which only
             %works when eq/ne are sealed on the base class.
             models = ThrottleModelsSet();
             all = models.getAllModels();
-            testCase.assertEqual(numel(all), 4);
+            testCase.assertEqual(numel(all), 5);
 
             sel = models.limitedThrottle;
             others = all(all ~= sel);
 
-            testCase.verifyEqual(numel(others), 3, 'Every model but the selected one must survive the filter.');
+            testCase.verifyEqual(numel(others), 4, 'Every model but the selected one must survive the filter.');
             testCase.verifyFalse(any(others == sel));
             testCase.verifyTrue(any(all == sel));
             testCase.verifyTrue(isa(others, 'AbstractThrottleModel'));

@@ -774,6 +774,20 @@ classdef LaunchVehicle < matlab.mixin.SetGet
                     end
                 end
             end
+
+            %Connections saved before priority/weight existed load with the
+            %class defaults already; repair hand-built empties the same way
+            %so every connection reproduces the legacy even split.
+            for(i=1:length(obj.engineTankConns)) %#ok<*NO4LP>
+                if(isempty(obj.engineTankConns(i).priority))
+                    obj.engineTankConns(i).priority = 0;
+                end
+                if(isempty(obj.engineTankConns(i).flowWeight))
+                    obj.engineTankConns(i).flowWeight = NaN;
+                end
+            end
+            %Engines need no migration: an empty mixture means the legacy
+            %single-pool path (see LaunchVehicleEngine.hasCustomMixture).
         end
     end
 end

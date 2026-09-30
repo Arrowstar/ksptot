@@ -6,6 +6,7 @@ classdef ThrottleModelsSet < matlab.mixin.SetGet
         polyThrottle(1,1) ThrottlePolyModel = ThrottlePolyModel.getDefaultThrottleModel();
         t2wThrottle(1,1) T2WThrottleModel = T2WThrottleModel.getDefaultThrottleModel();
         tabularInterpThrottle(1,1) ThrottleInterpolatedModel = ThrottleInterpolatedModel.getDefaultThrottleModel();
+        selectableThrottle(1,1) SelectableThrottleModel = SelectableThrottleModel.getDefaultThrottleModel();
         limitedThrottle(1,1) LimitedThrottleModel = LimitedThrottleModel.getDefaultThrottleModel();
 
         selectedModel(1,1) AbstractThrottleModel = ThrottlePolyModel.getDefaultThrottleModel();
@@ -20,6 +21,7 @@ classdef ThrottleModelsSet < matlab.mixin.SetGet
 
             obj.polyThrottle = polyThrottle;
             obj.t2wThrottle = t2wThrottle;
+            obj.selectableThrottle = SelectableThrottleModel.getDefaultThrottleModel();
             obj.limitedThrottle = LimitedThrottleModel.getDefaultThrottleModel();
 
             obj.selectedModel = obj.polyThrottle;
@@ -43,6 +45,9 @@ classdef ThrottleModelsSet < matlab.mixin.SetGet
 
                 case ThrottleModelEnum.InterpThrottle
                     obj.tabularInterpThrottle = newSelectedModel; %#ok<MCSUP> 
+
+                case ThrottleModelEnum.Selectable
+                    obj.selectableThrottle = newSelectedModel; %#ok<MCSUP> 
 
                 case ThrottleModelEnum.Limited
                     obj.limitedThrottle = newSelectedModel; %#ok<MCSUP> 
@@ -68,6 +73,9 @@ classdef ThrottleModelsSet < matlab.mixin.SetGet
 
                 case ThrottleModelEnum.InterpThrottle
                     model = obj.tabularInterpThrottle;
+
+                case ThrottleModelEnum.Selectable
+                    model = obj.selectableThrottle;
 
                 case ThrottleModelEnum.Limited
                     model = obj.limitedThrottle;
@@ -102,6 +110,9 @@ classdef ThrottleModelsSet < matlab.mixin.SetGet
                 case ThrottleModelEnum.InterpThrottle
                     obj.tabularInterpThrottle = model;
 
+                case ThrottleModelEnum.Selectable
+                    obj.selectableThrottle = model;
+
                 case ThrottleModelEnum.Limited
                     obj.limitedThrottle = model;
 
@@ -116,7 +127,7 @@ classdef ThrottleModelsSet < matlab.mixin.SetGet
 
         function models = getAllModels(obj)
             %getAllModels Every stored model, in enumeration order.
-            models = [obj.polyThrottle, obj.t2wThrottle, obj.tabularInterpThrottle, obj.limitedThrottle];
+            models = [obj.polyThrottle, obj.t2wThrottle, obj.tabularInterpThrottle, obj.selectableThrottle, obj.limitedThrottle];
         end
 
         function useTf = openEditDialog(obj, lvdData, allowContinuity)
@@ -128,10 +139,16 @@ classdef ThrottleModelsSet < matlab.mixin.SetGet
 
     methods(Static)
         function obj = loadobj(obj)
-            %Sets saved before the limited model existed come back holding the
-            %class-level default object, which is one handle shared by every
-            %such set.  Give each of them their own instance instead.
+            %Sets saved before the selectable/limited models existed come
+            %back holding the class-level default object, which is one
+            %handle shared by every such set.  Give each of them their own
+            %instance instead.
             mc = ?ThrottleModelsSet;
+            prop = findobj(mc.PropertyList, 'Name', 'selectableThrottle');
+            if(not(isempty(prop)) && prop.HasDefault && obj.selectableThrottle == prop.DefaultValue)
+                obj.selectableThrottle = SelectableThrottleModel.getDefaultThrottleModel();
+            end
+
             prop = findobj(mc.PropertyList, 'Name', 'limitedThrottle');
             if(not(isempty(prop)) && prop.HasDefault && obj.limitedThrottle == prop.DefaultValue)
                 obj.limitedThrottle = LimitedThrottleModel.getDefaultThrottleModel();

@@ -6,7 +6,8 @@ classdef ThrottleModelEnum < matlab.mixin.SetGet
         PolyModel('Polynominal Model','ThrottlePolyModel',"The vehicle throttle varies as a function of a second degree polynomial.  Can set constant throttle here too.");
         T2WModel('Thrust To Weight Model','T2WThrottleModel',"The vehicle will set the throttle to maintain a fixed thrust to weight ratio.");
         InterpThrottle('Interpolated Throttle Model','ThrottleInterpolatedModel',"The vehicle throttle is defined as a function of interpolated tabular throttle settings.")
-        Limited('Limited Throttle Model (q / accel limits)','LimitedThrottleModel',"A base throttle model (polynomial, thrust to weight, or interpolated) whose output is capped by an optional dynamic pressure limit and an optional acceleration limit.")
+        Selectable('Selectable Throttle Model (poly / sines / linear tangent)','SelectableThrottleModel',"The vehicle throttle varies as a selectable time function: a sum of polynomial terms, a sum of sines, or a linear tangent, mirroring the steering selectable model.")
+        Limited('Limited Throttle Model (q / accel limits)','LimitedThrottleModel',"A base throttle model (polynomial, thrust to weight, interpolated, or selectable) whose output is capped by an optional dynamic pressure limit and an optional acceleration limit.")
     end
     
     properties

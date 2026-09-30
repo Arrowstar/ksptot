@@ -155,6 +155,9 @@ classdef lvd_EditLimitedThrottleModelGUI_App < matlab.apps.AppBase
                     case ThrottleModelEnum.InterpThrottle
                         app.baseCandidates.(key) = ThrottleInterpolatedModel.getDefaultThrottleModel();
 
+                    case ThrottleModelEnum.Selectable
+                        app.baseCandidates.(key) = SelectableThrottleModel.getDefaultThrottleModel();
+
                     otherwise
                         error('Unknown base throttle model type: %s', enum.nameStr);
                 end

@@ -1160,6 +1160,37 @@ index), with prior-selection restore when a query broadens and no silent auto-se
   no-match `ValueChanging`/`ValueChanged` paths, disabled-control behavior, query recovery and warning-free
   empty filtering). Code-data drift is maintained for the ten modified apps; the main app was restored to its
   last valid H6 model after the two event search fields were removed.
+### 7.8 B1 — selectable throttle model (2026-09-28)
 
----
----
+Throttle parity with `GenericSelectableSteeringModel`: new `SelectableThrottleModel`
+(`helper_methods/ksptot_lvd/classes/ForceModels/throttle/@SelectableThrottleModel/`) reuses the steering
+`math_models` classes directly — `SumOfPolyTermsModel`, `SumOfSinesModel`, `LinearTangentSelectableModel` — since
+they are already pure functions of time. The FitNet branch is deliberately not offered (a neural net adds nothing
+to a scalar throttle program the other three cannot fit); selecting it errors. Output is clamped to [0, 1];
+continuity seeds the active branch constant; t0 and time offsets fan out to every stored branch so switching types
+never leaves a stale clock; `deepCopy` copies all slots plus the selector (the `GenericSelectableSteeringModel`
+constructor-only-copy defect, which silently reverted unselected branches, is not repeated — and the private
+constructor mints fresh math-model handles per instance, since property defaults would otherwise share one handle
+across every model).
+
+- **Registration** — `ThrottleModelEnum.Selectable`, the `selectableThrottle` slot of `ThrottleModelsSet` (all
+  switches, fresh instance in the constructor, `loadobj` guard for pre-B1 mission files),
+  `promptForThrottleModelType`, and the `LimitedThrottleModel` base-model picker, so the selectable law composes
+  with the B2 q/accel wrapper. The `.mlapp` set dialog needed no change (it enumerates the enum dynamically).
+- **Optimizer variable** — new `SetSelectableThrottleModelActionOptimVar`, delegating x/bounds/use-flags to the
+  active branch. Two deliberate departures from the steering selectable variable: `getVarsStoredInRad` is all
+  false (throttle fractions are dimensionless, and the shared math classes report radians, which the variable
+  table would display as degrees) and only the 0–1 fractions display as percents. Mismatched flag vectors fail
+  fast; the time offset routes through `setTimeOffset` (the steering version calls the getter).
+- **Dialog** — new programmatic `lvd_EditSelectableThrottleModelGUI_App.m` (no `.mlapp`, B2/F8 precedent): math-model
+  dropdown, continuity checkbox, inline branch editors (constant + terms/sines tables with add/remove and a
+  last-row guard, four linear-tangent fields). The steering branch sub-dialogs are not reused — they round-trip
+  every coefficient through degrees. Validation rejects non-numeric input and a zero sine period on Save.
+- **Tests (29 new)** — `SelectableThrottleModelTest`: closed-form oracles per branch, clamping, continuity seeding,
+  t0/offset fan-out, branch-switch preservation, FitNet rejection, deep-copy and default-instance independence,
+  enum/set round trips, the `loadobj` guard, optimizer round trips/scaling/perturbation, Limited wrapping, an
+  end-to-end `executeScript` propagation check, and dialog tests driving every control (dropdown, both tables,
+  all fields, save/cancel/validation/keypress) plus the Selectable entries in the set and Limited dialogs.
+  Collateral: `LimitedThrottleModelTest` model counts 4 → 5. Related suites re-run green (SteeringThrottle,
+  PatchedMlapp, OptimizationVariable, EventAction); Code Analyzer clean on every new/edited file.
+- **Not yet done:** the full-suite run (≈30 min) with golden-fingerprint comparison — left for the user.

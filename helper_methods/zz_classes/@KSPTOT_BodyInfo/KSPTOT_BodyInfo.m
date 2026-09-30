@@ -237,7 +237,11 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
                 
                 rotY = normVector(crossARH(obj.bodyzaxis, obj.bodyxaxis));
                 rotX = normVector(crossARH(rotY, obj.bodyzaxis));
-                rotMat = [rotX, rotY, obj.bodyzaxis];
+                %Rows are body axes in Global coords => Global->Body (passive).
+                %Columns ([rotX,rotY,z]) would be Body->Global (active) and
+                %breaks pole preservation in getBodyFixedToGlobalInertialFrame
+                %and inverts orbits via rotFramesBodyToGI (500k km Moon error).
+                rotMat = [rotX'; rotY'; obj.bodyzaxis'];
                 
                 obj.bodyRotMatFromGlobalInertialToBodyInertial = rotMat;
             else

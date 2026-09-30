@@ -35,6 +35,9 @@ function [throttleModel, ok] = promptForThrottleModelType(selectedEnum)
             case ThrottleModelEnum.InterpThrottle
                 throttleModel = ThrottleInterpolatedModel.getDefaultThrottleModel();
 
+            case ThrottleModelEnum.Selectable
+                throttleModel = SelectableThrottleModel.getDefaultThrottleModel();
+
             case ThrottleModelEnum.Limited
                 throttleModel = LimitedThrottleModel.getDefaultThrottleModel();
                 

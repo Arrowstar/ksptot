@@ -47,8 +47,9 @@ function [thrust, mdot, isp] = lvd_getPerEngineThrustMdotIsp(stateLogEntry, engi
 %for one engine at the entry's state.  Mirrors the gating in
 %LaunchVehicleStateLogEntry.getTankMassFlowRatesDueToEngines: the engine
 %must be flagged active in an active stage, at least one connected tank
-%must hold propellant, EC-dependent engines need charge, and the throttle
-%is adjusted by min/max limits and the fuel-remaining curve.
+%must hold propellant, custom-mixture engines additionally need every
+%required fluid species available, EC-dependent engines need charge, and
+%the throttle is adjusted by min/max limits and the fuel-remaining curve.
     thrust = 0;
     mdot = 0;
 
@@ -124,6 +125,14 @@ function [thrust, mdot, isp] = lvd_getPerEngineThrustMdotIsp(stateLogEntry, engi
                 end
 
                 if(not(anyNonEmpty))
+                    return;
+                end
+
+                %Mixture-aware flameout, mirroring
+                %LaunchVehicleStateLogEntry.getTankMassFlowRatesDueToEngines:
+                %a custom-mixture engine with an exhausted required species
+                %produces no thrust even while other species remain.
+                if(LaunchVehicleStateLogEntry.isEngineMixtureStarved(engine, lvState, tankStates, tankStatesMasses))
                     return;
                 end
 
