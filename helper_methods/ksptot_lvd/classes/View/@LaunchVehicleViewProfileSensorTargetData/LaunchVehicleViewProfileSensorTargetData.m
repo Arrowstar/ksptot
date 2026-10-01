@@ -21,10 +21,10 @@ classdef LaunchVehicleViewProfileSensorTargetData < matlab.mixin.SetGet
             
             if(isempty(obj.markerPlot))
                 shape = obj.target.getMarkerShape().shape;
-                foundMarkerFaceColor = obj.target.getFoundMarkerFaceColor().color;
-                foundMarkerEdgeolor = obj.target.getFoundMarkerEdgeColor().color;
-                notFoundMarkerFaceColor = obj.target.getNotFoundMarkerFaceColor().color;
-                notFoundMarkerEdgeolor = obj.target.getNotFoundMarkerEdgeColor().color;
+                foundMarkerFaceColor = lvd_colorSpecToRGB(obj.target.getFoundMarkerFaceColor());
+                foundMarkerEdgeolor = lvd_colorSpecToRGB(obj.target.getFoundMarkerEdgeColor());
+                notFoundMarkerFaceColor = lvd_colorSpecToRGB(obj.target.getNotFoundMarkerFaceColor());
+                notFoundMarkerEdgeolor = lvd_colorSpecToRGB(obj.target.getNotFoundMarkerEdgeColor());
                 markerSize = obj.target.getMarkerSize();
                 
                 hold(hAx,'on'); 

@@ -52,7 +52,7 @@ classdef LaunchVehicleViewProfileVectorData < matlab.mixin.SetGet
             if(isempty(obj.markerPlot))
                 hold(hAx,'on'); 
                 for(i=1:size(vect,2))
-                    obj.markerPlot(i) = quiver3(hAx, origin(1,i),origin(2,i),origin(3,i), vect(1,i),vect(2,i),vect(3,i), 'AutoScale','off', 'Color',obj.vector.lineColor.color, 'LineStyle',obj.vector.lineSpec.linespec);
+                    obj.markerPlot(i) = quiver3(hAx, origin(1,i),origin(2,i),origin(3,i), vect(1,i),vect(2,i),vect(3,i), 'AutoScale','off', 'Color',lvd_colorSpecToRGB(obj.vector.lineColor), 'LineStyle',obj.vector.lineSpec.linespec);
                 end
                 hold(hAx,'off');
             else

@@ -9,10 +9,10 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         
         %axes properties
         useThemeForAxes(1,1) logical = true;
-        backgroundColor(1,1) ColorSpecEnum = ColorSpecEnum.White;
+        backgroundColor(1,3) double {mustBeBetween(backgroundColor, 0, 1)} = [1, 1, 1];
         gridType(1,1) ViewGridTypeEnum = ViewGridTypeEnum.Major;
-        majorGridColor(1,1) ColorSpecEnum = ColorSpecEnum.DarkGrey;
-        minorGridColor(1,1) ColorSpecEnum = ColorSpecEnum.DarkGrey;
+        majorGridColor(1,3) double {mustBeBetween(majorGridColor, 0, 1)} = [0.15, 0.15, 0.15];
+        minorGridColor(1,3) double {mustBeBetween(minorGridColor, 0, 1)} = [0.15, 0.15, 0.15];
         gridTransparency(1,1) double = 0.15;
         meshEdgeAlpha(1,1) double = 0.1;
 
@@ -42,21 +42,21 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         
         %thrust vectors
         showThrustVectors(1,1) logical = false;
-        thrustVectColor(1,1) ColorSpecEnum  = ColorSpecEnum.Red;
+        thrustVectColor(1,3) double {mustBeBetween(thrustVectColor, 0, 1)} = [1, 0, 0];
         thrustVectLineType(1,1) LineSpecEnum = LineSpecEnum.SolidLine;
         thrustVectScale(1,1) double = 1;  %km/kN                               
         thrustVectEntryIncr(1,1) double = 1;
 
         %drag force vectors
         showDragVectors(1,1) logical = false;
-        dragVectColor(1,1) ColorSpecEnum  = ColorSpecEnum.Magenta;
+        dragVectColor(1,3) double {mustBeBetween(dragVectColor, 0, 1)} = [178/255, 0, 1];
         dragVectLineType(1,1) LineSpecEnum = LineSpecEnum.SolidLine;
         dragVectScale(1,1) double = 1; %km/kN
         dragVectEntryIncr(1,1) double = 1;
 
         %srp vectors
         showSrpVectors(1,1) logical = false;
-        srpVectColor(1,1) ColorSpecEnum  = ColorSpecEnum.Yellow;
+        srpVectColor(1,3) double {mustBeBetween(srpVectColor, 0, 1)} = [1, 216/255, 0];
         srpVectLineType(1,1) LineSpecEnum = LineSpecEnum.SolidLine;
         srpVectScale(1,1) double = 1000; %km/N
         srpVectEntryIncr(1,1) double = 1;
@@ -685,7 +685,7 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                         
                             if(obj.showGndTracks)
                                 hold(dAxes,'on');
-                                plot3(dAxes, rVectsGrdObj(1,:), rVectsGrdObj(2,:), rVectsGrdObj(3,:), 'Color',grdObj.grdTrkLineColor.color, 'LineStyle',grdObj.grdTrkLineSpec.linespec);
+                                plot3(dAxes, rVectsGrdObj(1,:), rVectsGrdObj(2,:), rVectsGrdObj(3,:), 'Color',lvd_colorSpecToRGB(grdObj.grdTrkLineColor), 'LineStyle',grdObj.grdTrkLineSpec.linespec);
                                 hold(dAxes,'off');
                             end
                         end
@@ -995,6 +995,23 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                 if ~isfield(obj,'overlay') || isempty(obj.overlay)
                     obj.overlay = LvdViewOverlaySettings();
                 end
+                % RGB migration (missions saved with ColorSpecEnum colors)
+                colorProps = {'backgroundColor','majorGridColor','minorGridColor','thrustVectColor','dragVectColor','srpVectColor'};
+                for(j=1:numel(colorProps))
+                    p = colorProps{j};
+                    if(isfield(obj, p))
+                        try
+                            obj.(p) = lvd_colorSpecToRGB(obj.(p));
+                        catch
+                        end
+                    end
+                end
+                % Materialize explicitly: returning the struct would make
+                % MATLAB re-run the constructor with the struct and warn
+                % (MATLAB:class:mustReturnObject) instead of applying it.
+                s = obj;
+                obj = LaunchVehicleViewProfile();
+                obj = lvd_copyMigratedProps(obj, s, colorProps);
                 return;
             end
 
@@ -1009,6 +1026,14 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
             % F8 settings: build whatever an older mission did not save
             try
                 obj.ensureF8Defaults();
+            catch
+            end
+            % RGB migration (missions saved with ColorSpecEnum colors)
+            try
+                colorProps = {'backgroundColor','majorGridColor','minorGridColor','thrustVectColor','dragVectColor','srpVectColor'};
+                for(j=1:numel(colorProps))
+                    obj.(colorProps{j}) = lvd_colorSpecToRGB(obj.(colorProps{j}));
+                end
             catch
             end
             try
@@ -1138,7 +1163,7 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                 return;
             end
             evt = evts(unique([getEventNum(evts)], "stable") == evtNum);
-            evtColor = evt.colorLineSpec.color;
+            evtColor = lvd_colorSpecToRGB(evt.colorLineSpec.color);
 
             switch(evt.plotMethod)
                 case EventPlottingMethodEnum.PlotContinuous

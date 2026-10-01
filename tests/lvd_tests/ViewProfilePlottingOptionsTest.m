@@ -35,10 +35,10 @@ classdef ViewProfilePlottingOptionsTest < KsptotTestCase
 
             %axes appearance
             testCase.verifyTrue(profile.useThemeForAxes);
-            testCase.verifyEqual(profile.backgroundColor, ColorSpecEnum.White);
+            testCase.verifyEqual(profile.backgroundColor, [1, 1, 1]);
             testCase.verifyEqual(profile.gridType, ViewGridTypeEnum.Major);
-            testCase.verifyEqual(profile.majorGridColor, ColorSpecEnum.DarkGrey);
-            testCase.verifyEqual(profile.minorGridColor, ColorSpecEnum.DarkGrey);
+            testCase.verifyEqual(profile.majorGridColor, [0.15, 0.15, 0.15]);
+            testCase.verifyEqual(profile.minorGridColor, [0.15, 0.15, 0.15]);
             testCase.verifyEqual(profile.gridTransparency, 0.15);
             testCase.verifyEqual(profile.meshEdgeAlpha, 0.1);
             testCase.verifyTrue(profile.showAxesBox);
@@ -65,15 +65,15 @@ classdef ViewProfilePlottingOptionsTest < KsptotTestCase
 
             %force vectors
             testCase.verifyFalse(profile.showThrustVectors);
-            testCase.verifyEqual(profile.thrustVectColor, ColorSpecEnum.Red);
+            testCase.verifyEqual(profile.thrustVectColor, [1, 0, 0]);
             testCase.verifyEqual(profile.thrustVectScale, 1);
             testCase.verifyEqual(profile.thrustVectEntryIncr, 1);
             testCase.verifyFalse(profile.showDragVectors);
-            testCase.verifyEqual(profile.dragVectColor, ColorSpecEnum.Magenta);
+            testCase.verifyEqual(profile.dragVectColor, [178/255, 0, 1]);
             testCase.verifyEqual(profile.dragVectScale, 1);
             testCase.verifyEqual(profile.dragVectEntryIncr, 1);
             testCase.verifyFalse(profile.showSrpVectors);
-            testCase.verifyEqual(profile.srpVectColor, ColorSpecEnum.Yellow);
+            testCase.verifyEqual(profile.srpVectColor, [1, 216/255, 0]);
             testCase.verifyEqual(profile.srpVectScale, 1000);
             testCase.verifyEqual(profile.srpVectEntryIncr, 1);
 
@@ -110,9 +110,9 @@ classdef ViewProfilePlottingOptionsTest < KsptotTestCase
         function axesColorsGridTransparencyAndBoxApplyToOffscreenAxes(testCase)
             [lvdData, ~] = testCase.propagatedMission(30, 30);
             profile = lvdData.viewSettings.selViewProfile;
-            profile.backgroundColor = ColorSpecEnum.Black;
-            profile.majorGridColor = ColorSpecEnum.Red;
-            profile.minorGridColor = ColorSpecEnum.Blue;
+            profile.backgroundColor = [0, 0, 0];
+            profile.majorGridColor = [1, 0, 0];
+            profile.minorGridColor = [0, 0, 1];
             profile.gridTransparency = 0.4;
             profile.gridType = ViewGridTypeEnum.Minor;
 
@@ -121,13 +121,13 @@ classdef ViewProfilePlottingOptionsTest < KsptotTestCase
 
             %exact production call (Generic3DTrajectoryViewType:481):
             %grid(dAxes, viewProfile.gridType.gridStr) for each grid mode
-            hAx.Color = profile.backgroundColor.color;
-            hAx.GridColor = profile.majorGridColor.color;
-            hAx.MinorGridColor = profile.minorGridColor.color;
+            hAx.Color = lvd_colorSpecToRGB(profile.backgroundColor);
+            hAx.GridColor = lvd_colorSpecToRGB(profile.majorGridColor);
+            hAx.MinorGridColor = lvd_colorSpecToRGB(profile.minorGridColor);
             hAx.GridAlpha = profile.gridTransparency;
-            hAx.XColor = profile.majorGridColor.color;
-            hAx.YColor = profile.majorGridColor.color;
-            hAx.ZColor = profile.majorGridColor.color;
+            hAx.XColor = lvd_colorSpecToRGB(profile.majorGridColor);
+            hAx.YColor = lvd_colorSpecToRGB(profile.majorGridColor);
+            hAx.ZColor = lvd_colorSpecToRGB(profile.majorGridColor);
 
             testCase.verifyEqual(hAx.Color, [0 0 0]);
             testCase.verifyEqual(hAx.GridColor, [1 0 0]);
@@ -472,10 +472,10 @@ classdef ViewProfilePlottingOptionsTest < KsptotTestCase
             profile = LaunchVehicleViewProfile();
 
             %defaults (LaunchVehicleViewProfile:44-62)
-            testCase.verifyEqual(profile.thrustVectColor, ColorSpecEnum.Red);
+            testCase.verifyEqual(profile.thrustVectColor, [1, 0, 0]);
             testCase.verifyEqual(profile.thrustVectLineType, LineSpecEnum.SolidLine);
-            testCase.verifyEqual(profile.dragVectColor, ColorSpecEnum.Magenta);
-            testCase.verifyEqual(profile.srpVectColor, ColorSpecEnum.Yellow);
+            testCase.verifyEqual(profile.dragVectColor, [178/255, 0, 1]);
+            testCase.verifyEqual(profile.srpVectColor, [1, 216/255, 0]);
             testCase.verifyEqual(profile.srpVectScale, 1000);
 
             %production decimation (Generic3D:305,344,371): 1:entryInc:n
@@ -766,7 +766,7 @@ classdef ViewProfilePlottingOptionsTest < KsptotTestCase
 
             %vehicle track
             vehData = LaunchVehicleViewProfileVehicleGrdTrkData();
-            vehData.addData(times, lons, lats, alts, ColorSpecEnum.Blue);
+            vehData.addData(times, lons, lats, alts, [0, 0, 1]);
             testCase.verifyNumElements(vehData.timesArr, 1);
             [hFig, hAx] = testCase.offscreenAxes();
             cleanup = onCleanup(@() deleteIfValid(hFig)); %#ok<NASGU>

@@ -10,7 +10,7 @@ classdef VehicleStateVector < AbstractGeometricVector
         lvdData LvdData
         
         %vector line
-        lineColor(1,1) ColorSpecEnum = ColorSpecEnum.Black;
+        lineColor(1,3) double {mustBeBetween(lineColor, 0, 1)} = [0, 0, 0];
         lineSpec(1,1) LineSpecEnum = LineSpecEnum.DottedLine;
     end
     
@@ -157,6 +157,13 @@ classdef VehicleStateVector < AbstractGeometricVector
         
         function tf = isInUse(obj, lvdData)
             tf = lvdData.usesGeometricVector(obj);
+        end
+    end
+
+    methods(Static)
+        function obj = loadobj(s)
+            %loadobj Migrates missions saved with ColorSpecEnum colors.
+            obj = lvd_constructMigrated('VehicleStateVector', {'type', 'scaleFactor', 'name', 'lvdData'}, s, {'lineColor'});
         end
     end
 end

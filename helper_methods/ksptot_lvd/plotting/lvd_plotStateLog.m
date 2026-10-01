@@ -103,7 +103,7 @@ function [childrenHGs] = plotSubStateLog(subStateLog, prevSubStateLog, showSoI, 
 
     eventNum = subStateLog(1,13);
     event = lvdData.script.getEventForInd(eventNum);
-    plotLineColor = event.colorLineSpec.color.color;
+    plotLineColor = lvd_colorSpecToRGB(event.colorLineSpec.color);
     plotLineStyle = event.colorLineSpec.lineSpec.linespec;
     plotLineWidth = event.colorLineSpec.lineWidth;
     plotMethodEnum = event.plotMethod;

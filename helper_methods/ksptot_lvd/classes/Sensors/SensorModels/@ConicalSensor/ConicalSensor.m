@@ -16,7 +16,7 @@ classdef ConicalSensor < AbstractSensor
         lvdData LvdData
         
         %drawing properties
-        color(1,1) ColorSpecEnum = ColorSpecEnum.Green;
+        color(1,3) double {mustBeBetween(color, 0, 1)} = [76/255, 220/255, 0];
         alpha(1,1) double = 0.3;
         showMeshEdges(1,1) logical = false;
     end
@@ -165,6 +165,13 @@ classdef ConicalSensor < AbstractSensor
         
         function tf = usesGeometricPoint(obj, point)
             tf = obj.origin == point;
+        end
+    end
+
+    methods(Static)
+        function obj = loadobj(s)
+            %loadobj Migrates missions saved with ColorSpecEnum colors.
+            obj = lvd_constructMigrated('ConicalSensor', {'name', 'angle', 'range', 'origin', 'steeringModel', 'lvdData'}, s, {'color'});
         end
     end
 end

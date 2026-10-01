@@ -374,8 +374,9 @@ classdef LvdData < matlab.mixin.SetGet
             lvdOptim = lvdData.optimizer;
             
             wayPtBodies = [mfmsOutputs.wayPtBodies{:}];
-            
-            [~, colorEnums] = ColorSpecEnum.getListboxStr();
+
+            eventPalette = lvd_defaultEventPalette();
+            nEventColors = size(eventPalette, 1);
             
             %Xfer orbit data
             xferOrbits = mfmsOutputs.xferOrbits; %sma ecc inc raan arg tru tru2 t1 t2 gmu
@@ -409,7 +410,7 @@ classdef LvdData < matlab.mixin.SetGet
             event = lvdData.script.evts(1);
             event.name = sprintf('Departure from %s (+)', departBody.name);
             event.execActionsNode = ActionExecNodeEnum.BeforeProp;
-            event.colorLineSpec.color = colorEnums(1);
+            event.colorLineSpec.color = eventPalette(1, :);
             event.integratorObj = event.ode113Integrator;
             event.integratorObj.options.AbsTol = 1E-7;
             event.integratorObj.options.RelTol = 1E-7;
@@ -467,8 +468,8 @@ classdef LvdData < matlab.mixin.SetGet
                 eventPeri.propDir = PropagationDirectionEnum.Forward;
                 
                 %%%Event line color
-                colorI = mod(2*(i-1), length(colorEnums));
-                eventPeri.colorLineSpec.color = colorEnums(colorI);
+                colorI = mod(2*(i-1)-1, nEventColors)+1;
+                eventPeri.colorLineSpec.color = eventPalette(colorI, :);
                 
                 %%%Set up termination condition
                 termCond = EventDurationTermCondition(0); %/2 so that we can meet a patch point in the middle
@@ -533,8 +534,8 @@ classdef LvdData < matlab.mixin.SetGet
                 eventMinus.integratorObj.options.NormControl = false;
                 
                 %%%Event line color
-                colorI = mod(2*(i-1), length(colorEnums));
-                eventMinus.colorLineSpec.color = colorEnums(colorI);
+                colorI = mod(2*(i-1)-1, nEventColors)+1;
+                eventMinus.colorLineSpec.color = eventPalette(colorI, :);
                 
                 %%%Set up termination condition
                 dur = xferOrbitDurations(i-1)/2;
@@ -565,8 +566,8 @@ classdef LvdData < matlab.mixin.SetGet
                 eventPlus.integratorObj.options.NormControl = false;
                 
                 %%%Event line color
-                colorI = mod(2*(i-1)+1, length(colorEnums));
-                eventPlus.colorLineSpec.color = colorEnums(colorI);
+                colorI = mod(2*(i-1), nEventColors)+1;
+                eventPlus.colorLineSpec.color = eventPalette(colorI, :);
                 
                 %%%Set up termination condition
                 dur = xferOrbitDurations(i)/2; %/2 so that we can meet a patch point in the middle
@@ -659,7 +660,7 @@ classdef LvdData < matlab.mixin.SetGet
             event.integratorObj.options.NormControl = false;
             
             %%%Event line color
-            event.colorLineSpec.color = ColorSpecEnum.Blue;
+            event.colorLineSpec.color = [0, 0, 1];
                 
             %%%Set up termination condition
             dur = 0; %/2 so that we can meet a patch point in the middle
@@ -722,7 +723,7 @@ classdef LvdData < matlab.mixin.SetGet
             event.integratorObj.options.NormControl = false;
             
             %%%Event line color
-            event.colorLineSpec.color = ColorSpecEnum.Blue;
+            event.colorLineSpec.color = [0, 0, 1];
             
             %%%Set up termination condition
             dur = xferOrbitDurations(end)/2; %/2 so that we can meet a patch point in the middle

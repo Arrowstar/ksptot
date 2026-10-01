@@ -8,10 +8,30 @@ classdef LaunchVehicleViewProfileTrajectoryData < matlab.mixin.SetGet
         yInterps(1,:) cell = {};
         zInterps(1,:) cell = {};
         
-        evtColors(1,:) ColorSpecEnum = ColorSpecEnum.empty(1,0);
+        evtColors double = zeros(0,3);
         markerPlot = matlab.graphics.GraphicsPlaceholder.empty(1,0)
     end
-    
+
+    methods(Static)
+        function obj = loadobj(s)
+            %loadobj Migrates profiles saved with ColorSpecEnum evtColors.
+            obj = LaunchVehicleViewProfileTrajectoryData();
+            fields = fieldnames(s);
+            for(i=1:numel(fields))
+                switch(fields{i})
+                    case 'evtColors'
+                        obj.evtColors = lvd_migrateEvtColors(s.evtColors);
+                    otherwise
+                        try
+                            obj.(fields{i}) = s.(fields{i});
+                        catch
+                            %Added/removed properties across versions: keep default.
+                        end
+                end
+            end
+        end
+    end
+
     methods
         function obj = LaunchVehicleViewProfileTrajectoryData()
 
@@ -35,7 +55,7 @@ classdef LaunchVehicleViewProfileTrajectoryData < matlab.mixin.SetGet
                 obj.xInterps{end+1} = griddedInterpolant(times, rVects(:,1), method, 'linear');
                 obj.yInterps{end+1} = griddedInterpolant(times, rVects(:,2), method, 'linear');
                 obj.zInterps{end+1} = griddedInterpolant(times, rVects(:,3), method, 'linear');
-                obj.evtColors(end+1) = evtColor;
+                obj.evtColors(end+1,:) = lvd_colorSpecToRGB(evtColor);
             catch ME
                 warning(ME.message);
             end
@@ -57,7 +77,7 @@ classdef LaunchVehicleViewProfileTrajectoryData < matlab.mixin.SetGet
                         zInterp = obj.zInterps{i};
                         z = zInterp(time);
                         
-                        evtColor = obj.evtColors(i).color;
+                        evtColor = obj.evtColors(i,:);
                         hold(hAx,'on');
                         l = plot3(hAx, x,y,z, 'd', 'MarkerEdgeColor','k', 'MarkerFaceColor',evtColor);
                         obj.markerPlot(end+1) = l;

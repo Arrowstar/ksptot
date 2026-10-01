@@ -32,7 +32,6 @@ classdef lvd_EditTwoPlaneAngleGUI_App < matlab.apps.AppBase
         DisplayLabel           matlab.ui.control.Label
         ColorImage             matlab.ui.control.Image
         LineImage              matlab.ui.control.Image
-        lineColorCombo         matlab.ui.control.DropDown
         lineSpecCombo          matlab.ui.control.DropDown
     end
 
@@ -94,8 +93,7 @@ classdef lvd_EditTwoPlaneAngleGUI_App < matlab.apps.AppBase
                 app.plane2Combo.Value = ind2;
             end
 
-            app.lineColorCombo.Items = ColorSpecEnum.getListboxStr();
-            app.lineColorCombo.Value = app.angle.lineColor.name;
+            lvdSetupColorPicker(app.UIFigure, app.DisplayGrid, 2, 3, matlab.ui.control.DropDown.empty(1,0), app.angle.lineColor, 'The color of the angle''s line on the display.', 'lineColor');
 
             app.lineSpecCombo.Items = LineSpecEnum.getListboxStr();
             app.lineSpecCombo.Value = app.angle.lineSpec.name;
@@ -119,7 +117,7 @@ classdef lvd_EditTwoPlaneAngleGUI_App < matlab.apps.AppBase
             app.angle.setName(app.nameText.Value);
             app.angle.plane1 = app.allPlanes(app.plane1Combo.Value);
             app.angle.plane2 = app.allPlanes(app.plane2Combo.Value);
-            app.angle.lineColor = ColorSpecEnum.getEnumForListboxStr(app.lineColorCombo.Value);
+            app.angle.lineColor = lvdGetColorPickerRGB(app.UIFigure, 'lineColor', app.angle.lineColor);
             app.angle.lineSpec = LineSpecEnum.getEnumForListboxStr(app.lineSpecCombo.Value);
 
             app.output.output = {true};
@@ -318,13 +316,6 @@ classdef lvd_EditTwoPlaneAngleGUI_App < matlab.apps.AppBase
             app.DisplayLabel.Layout.Column = 3;
             app.DisplayLabel.Text = 'Angle Line';
 
-            app.lineColorCombo = uidropdown(app.DisplayGrid);
-            app.lineColorCombo.Items = {};
-            app.lineColorCombo.Tooltip = 'The color of the angle''s line on the display.';
-            app.lineColorCombo.FontSize = 10.6666666666667;
-            app.lineColorCombo.BackgroundColor = [1 1 1];
-            app.lineColorCombo.Layout.Row = 2;
-            app.lineColorCombo.Layout.Column = 3;
 
             app.lineSpecCombo = uidropdown(app.DisplayGrid);
             app.lineSpecCombo.Items = {};

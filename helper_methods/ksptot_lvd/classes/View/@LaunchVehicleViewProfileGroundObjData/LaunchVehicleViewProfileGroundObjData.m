@@ -77,7 +77,7 @@ classdef LaunchVehicleViewProfileGroundObjData < matlab.mixin.SetGet
                     else
                         hold(hAx,'on');
                         obj.markerPlot{i} = hgtransform('Parent', hAx);
-                        hBM = plot3(hAx, 0,0,0, 'MarkerEdgeColor','k', 'Marker',obj.groundObj.markerShape.shape, 'MarkerFaceColor',obj.groundObj.markerColor.color);
+                        hBM = plot3(hAx, 0,0,0, 'MarkerEdgeColor','k', 'Marker',obj.groundObj.markerShape.shape, 'MarkerFaceColor',lvd_colorSpecToRGB(obj.groundObj.markerColor));
                         set(hBM,'Parent',obj.markerPlot{i});
                         
                         M = makehgtform('translate',[xGrd,yGrd,zGrd]);

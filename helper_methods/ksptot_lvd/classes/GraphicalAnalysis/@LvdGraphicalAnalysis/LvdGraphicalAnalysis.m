@@ -17,9 +17,9 @@ classdef LvdGraphicalAnalysis < matlab.mixin.SetGet
         subplotX(1,1) double = 3;
         subplotY(1,1) double = 3;
         lineWidth(1,1) double = 1.5;
-        lineColor(1,1) ColorSpecEnum = ColorSpecEnum.White
+        lineColor(1,3) double {mustBeBetween(lineColor, 0, 1)} = [1, 1, 1]
         useEvtColors(1,1) logical = false;
-        bgColor(1,1) ColorSpecEnum = ColorSpecEnum.Black
+        bgColor(1,3) double {mustBeBetween(bgColor, 0, 1)} = [0, 0, 0]
         lineType(1,1) LineSpecEnum = LineSpecEnum.SolidLine
 
         %plotting options
@@ -145,6 +145,13 @@ classdef LvdGraphicalAnalysis < matlab.mixin.SetGet
             for(i=1:length(obj.tasks))
                 tf = tf || obj.tasks(i).usesGeometricRefFrame(refFrame);
             end
+        end
+    end
+
+    methods(Static)
+        function obj = loadobj(s)
+            %loadobj Migrates missions saved with ColorSpecEnum colors.
+            obj = lvd_constructMigrated('LvdGraphicalAnalysis', {'lvdData'}, s, {'lineColor', 'bgColor'});
         end
     end
 end

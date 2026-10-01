@@ -17,12 +17,12 @@ classdef EphemerisFilePoint < AbstractGeometricPoint
         lvdData LvdData
 
         %marker
-        markerColor(1,1) ColorSpecEnum = ColorSpecEnum.Red;
+        markerColor(1,3) double {mustBeBetween(markerColor, 0, 1)} = [1, 0, 0];
         markerShape(1,1) MarkerStyleEnum = MarkerStyleEnum.RightTriangle;
 
         %track line
         plotTrkLine(1,1) logical = true;
-        trkLineColor(1,1) ColorSpecEnum = ColorSpecEnum.Black;
+        trkLineColor(1,3) double {mustBeBetween(trkLineColor, 0, 1)} = [0, 0, 0];
         trkLineSpec(1,1) LineSpecEnum = LineSpecEnum.DottedLine;
     end
 
@@ -159,6 +159,19 @@ classdef EphemerisFilePoint < AbstractGeometricPoint
 
         function tf = isInUse(obj, lvdData)
             tf = lvdData.usesGeometricPoint(obj);
+        end
+    end
+
+    methods(Static)
+        function obj = loadobj(s)
+            %loadobj Migrates missions saved with ColorSpecEnum colors.
+            %Empty filePath skips the CSV re-read; the saved table is restored below.
+            if(isstruct(s))
+                obj = EphemerisFilePoint('', s.frame, s.name, s.lvdData);
+                obj = lvd_copyMigratedProps(obj, s, {'markerColor','trkLineColor'});
+            else
+                obj = lvd_migrateColorProps(s, {'markerColor','trkLineColor'});
+            end
         end
     end
 end

@@ -13,12 +13,12 @@ classdef VectorPlaneIntersectionPoint < AbstractGeometricPoint
         lvdData LvdData
 
         %marker
-        markerColor(1,1) ColorSpecEnum = ColorSpecEnum.Red;
+        markerColor(1,3) double {mustBeBetween(markerColor, 0, 1)} = [1, 0, 0];
         markerShape(1,1) MarkerStyleEnum = MarkerStyleEnum.RightTriangle;
 
         %track line
         plotTrkLine(1,1) logical = true;
-        trkLineColor(1,1) ColorSpecEnum = ColorSpecEnum.Black;
+        trkLineColor(1,3) double {mustBeBetween(trkLineColor, 0, 1)} = [0, 0, 0];
         trkLineSpec(1,1) LineSpecEnum = LineSpecEnum.DottedLine;
     end
 
@@ -141,6 +141,13 @@ classdef VectorPlaneIntersectionPoint < AbstractGeometricPoint
             t(abs(tDen) <= eps(max(1, vecNormARH(d)))) = NaN;
 
             rVects = o + bsxfun(@times, d, t);
+        end
+    end
+
+    methods(Static)
+        function obj = loadobj(s)
+            %loadobj Migrates missions saved with ColorSpecEnum colors.
+            obj = lvd_constructMigrated('VectorPlaneIntersectionPoint', {'originPoint', 'vector', 'plane', 'name', 'lvdData'}, s, {'markerColor', 'trkLineColor'});
         end
     end
 end

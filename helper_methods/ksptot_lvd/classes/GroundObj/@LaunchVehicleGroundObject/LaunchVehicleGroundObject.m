@@ -13,11 +13,11 @@ classdef LaunchVehicleGroundObject < matlab.mixin.SetGet
         loopWayPts(1,1) logical = true;
         
         %marker
-        markerColor(1,1) ColorSpecEnum = ColorSpecEnum.Red;
+        markerColor(1,3) double {mustBeBetween(markerColor, 0, 1)} = [1, 0, 0];
         markerShape(1,1) MarkerStyleEnum = MarkerStyleEnum.UpTriangle;
         
         %ground track line
-        grdTrkLineColor(1,1) ColorSpecEnum = ColorSpecEnum.Black;
+        grdTrkLineColor(1,3) double {mustBeBetween(grdTrkLineColor, 0, 1)} = [0, 0, 0];
         grdTrkLineSpec(1,1) LineSpecEnum = LineSpecEnum.DashedLine;
         
         groundObjs LaunchVehicleGroundObjectSet
@@ -250,6 +250,13 @@ classdef LaunchVehicleGroundObject < matlab.mixin.SetGet
             wayPts(1) = LaunchVehicleGroundObjectWayPt(elemSet, durToNextWayPt1);
             
             grdObj = LaunchVehicleGroundObject('Default Ground Object', "", 0, wayPts);
+        end
+    end
+
+    methods(Static)
+        function obj = loadobj(s)
+            %loadobj Migrates missions saved with ColorSpecEnum colors.
+            obj = lvd_constructMigrated('LaunchVehicleGroundObject', {'name', 'desc', 'initialTime', 'wayPts'}, s, {'markerColor', 'grdTrkLineColor'});
         end
     end
 end

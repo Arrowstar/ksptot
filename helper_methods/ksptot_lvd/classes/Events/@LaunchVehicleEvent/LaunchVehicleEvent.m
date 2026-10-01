@@ -202,8 +202,8 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
         function htmlListboxStr = getHtmlListboxStr(obj)
             str = getListboxStr(obj);
 
-            colorRGB = obj.colorLineSpec.color.color;
-            colorRGB255 = 255*obj.colorLineSpec.color.color;
+            colorRGB = lvd_colorSpecToRGB(obj.colorLineSpec.color);
+            colorRGB255 = 255*colorRGB;
             colorHSV = rgb2hsv(colorRGB);
 
             if(colorHSV(3) > 0.5)

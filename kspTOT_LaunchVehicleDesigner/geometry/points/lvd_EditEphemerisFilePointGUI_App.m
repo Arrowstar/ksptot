@@ -32,9 +32,7 @@ classdef lvd_EditEphemerisFilePointGUI_App < matlab.apps.AppBase
         DisplayGrid            matlab.ui.container.GridLayout
         MarkerLabel            matlab.ui.control.Label
         TrajLabel              matlab.ui.control.Label
-        pointColorCombo        matlab.ui.control.DropDown
         pointMarkerShapeCombo  matlab.ui.control.DropDown
-        pointLineColorCombo    matlab.ui.control.DropDown
         pointLineSpecCombo     matlab.ui.control.DropDown
         dispTrajCheckbox       matlab.ui.control.CheckBox
         ColorImage             matlab.ui.control.Image
@@ -98,14 +96,12 @@ classdef lvd_EditEphemerisFilePointGUI_App < matlab.apps.AppBase
                 app.FrameSelector.setSelectedFrame(app.point.frame);
             end
 
-            app.pointColorCombo.Items = ColorSpecEnum.getListboxStr();
-            app.pointColorCombo.Value = app.point.markerColor.name;
+            lvdSetupColorPicker(app.UIFigure, app.DisplayGrid, 2, 2, matlab.ui.control.DropDown.empty(1,0), app.point.markerColor, 'The color of the point marker on the display.', 'markerColor');
 
             app.pointMarkerShapeCombo.Items = MarkerStyleEnum.getListboxStr();
             app.pointMarkerShapeCombo.Value = app.point.markerShape.name;
 
-            app.pointLineColorCombo.Items = ColorSpecEnum.getListboxStr();
-            app.pointLineColorCombo.Value = app.point.trkLineColor.name;
+            lvdSetupColorPicker(app.UIFigure, app.DisplayGrid, 2, 3, matlab.ui.control.DropDown.empty(1,0), app.point.trkLineColor, 'The color of the point track line on the display.', 'trkLineColor');
 
             app.pointLineSpecCombo.Items = LineSpecEnum.getListboxStr();
             app.pointLineSpecCombo.Value = app.point.trkLineSpec.name;
@@ -185,9 +181,9 @@ classdef lvd_EditEphemerisFilePointGUI_App < matlab.apps.AppBase
             app.point.times = app.loadedTimes;
             app.point.rvVects = app.loadedRvVects;
 
-            app.point.markerColor = ColorSpecEnum.getEnumForListboxStr(app.pointColorCombo.Value);
+            app.point.markerColor = lvdGetColorPickerRGB(app.UIFigure, 'markerColor', app.point.markerColor);
             app.point.markerShape = MarkerStyleEnum.getEnumForListboxStr(app.pointMarkerShapeCombo.Value);
-            app.point.trkLineColor = ColorSpecEnum.getEnumForListboxStr(app.pointLineColorCombo.Value);
+            app.point.trkLineColor = lvdGetColorPickerRGB(app.UIFigure, 'trkLineColor', app.point.trkLineColor);
             app.point.trkLineSpec = LineSpecEnum.getEnumForListboxStr(app.pointLineSpecCombo.Value);
             app.point.plotTrkLine = logical(app.dispTrajCheckbox.Value);
 
@@ -383,13 +379,6 @@ classdef lvd_EditEphemerisFilePointGUI_App < matlab.apps.AppBase
             app.MarkerLabel.Layout.Column = 2;
             app.MarkerLabel.Text = 'Point Marker';
 
-            app.pointColorCombo = uidropdown(app.DisplayGrid);
-            app.pointColorCombo.Items = {};
-            app.pointColorCombo.Tooltip = 'The color of the point marker on the display.';
-            app.pointColorCombo.FontSize = 10.6666666666667;
-            app.pointColorCombo.BackgroundColor = [1 1 1];
-            app.pointColorCombo.Layout.Row = 2;
-            app.pointColorCombo.Layout.Column = 2;
 
             app.pointMarkerShapeCombo = uidropdown(app.DisplayGrid);
             app.pointMarkerShapeCombo.Items = {};
@@ -409,13 +398,6 @@ classdef lvd_EditEphemerisFilePointGUI_App < matlab.apps.AppBase
             app.TrajLabel.Layout.Column = 3;
             app.TrajLabel.Text = 'Point Trajectory';
 
-            app.pointLineColorCombo = uidropdown(app.DisplayGrid);
-            app.pointLineColorCombo.Items = {};
-            app.pointLineColorCombo.Tooltip = 'The color of the point track line on the display.';
-            app.pointLineColorCombo.FontSize = 10.6666666666667;
-            app.pointLineColorCombo.BackgroundColor = [1 1 1];
-            app.pointLineColorCombo.Layout.Row = 2;
-            app.pointLineColorCombo.Layout.Column = 3;
 
             app.pointLineSpecCombo = uidropdown(app.DisplayGrid);
             app.pointLineSpecCombo.Items = {};

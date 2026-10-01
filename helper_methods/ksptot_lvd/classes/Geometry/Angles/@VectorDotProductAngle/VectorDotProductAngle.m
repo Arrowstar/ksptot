@@ -21,7 +21,7 @@ classdef VectorDotProductAngle < AbstractGeometricAngle
         lvdData LvdData
 
         %Kept for interface parity with the other angles; nothing is drawn.
-        lineColor(1,1) ColorSpecEnum = ColorSpecEnum.Red;
+        lineColor(1,3) double {mustBeBetween(lineColor, 0, 1)} = [1, 0, 0];
         lineSpec(1,1) LineSpecEnum = LineSpecEnum.SolidLine;
     end
 
@@ -119,6 +119,13 @@ classdef VectorDotProductAngle < AbstractGeometricAngle
 
         function tf = isInUse(obj, lvdData)
             tf = lvdData.usesGeometricAngle(obj);
+        end
+    end
+
+    methods(Static)
+        function obj = loadobj(s)
+            %loadobj Migrates missions saved with ColorSpecEnum colors.
+            obj = lvd_constructMigrated('VectorDotProductAngle', {'vector1', 'vector2', 'name', 'lvdData'}, s, {'lineColor'});
         end
     end
 end

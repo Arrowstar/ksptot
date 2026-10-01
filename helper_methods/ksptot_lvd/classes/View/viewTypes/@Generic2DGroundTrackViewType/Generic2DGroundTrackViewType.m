@@ -159,7 +159,7 @@ classdef Generic2DGroundTrackViewType < AbstractTrajectoryViewType
                 subEntries = entries(bool);
                 
                 event = subEntries(1).event;
-                plotLineColor = event.colorLineSpec.color.color;
+                plotLineColor = lvd_colorSpecToRGB(event.colorLineSpec.color);
                 plotLineStyle = event.colorLineSpec.lineSpec.linespec;
                 plotLineWidth = event.colorLineSpec.lineWidth;
                 plotMarkerType = event.colorLineSpec.markerSpec.shape;
@@ -265,7 +265,7 @@ classdef Generic2DGroundTrackViewType < AbstractTrajectoryViewType
                     allLatsDeg = rad2deg([ge.lat]);
                     allAltsKm = [ge.alt];
     
-                    plotLineColor = grdObj.grdTrkLineColor.color;
+                    plotLineColor = lvd_colorSpecToRGB(grdObj.grdTrkLineColor);
                     plotLineStyle = grdObj.grdTrkLineSpec.linespec;
                     plotLineWidth = 1.5;
                     plotMarkerType = "none";
@@ -304,10 +304,10 @@ classdef Generic2DGroundTrackViewType < AbstractTrajectoryViewType
                         allLatsDeg = rad2deg([ge.lat]);
                         allAltsKm = [ge.alt];
         
-                        plotLineColor = pointToPlot.trkLineColor.color;
+                        plotLineColor = lvd_colorSpecToRGB(pointToPlot.trkLineColor);
                         plotLineStyle = pointToPlot.trkLineSpec.linespec;
                         plotLineWidth = 1.5;
-                        plotMarkerColor = pointToPlot.markerColor.color;
+                        plotMarkerColor = lvd_colorSpecToRGB(pointToPlot.markerColor);
                         plotMarkerType = pointToPlot.markerShape.shape;
                         plotMarkerSize = 1;
                         plotMethodEnum = EventPlottingMethodEnum.PlotContinuous;

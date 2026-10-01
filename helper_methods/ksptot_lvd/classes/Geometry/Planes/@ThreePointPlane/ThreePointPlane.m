@@ -11,7 +11,7 @@ classdef ThreePointPlane < AbstractGeometricPlane
         lvdData LvdData
         
         %display
-        lineColor(1,1) ColorSpecEnum = ColorSpecEnum.Green;
+        lineColor(1,3) double {mustBeBetween(lineColor, 0, 1)} = [76/255, 220/255, 0];
         lineSpec(1,1) LineSpecEnum = LineSpecEnum.DashedLine;
         edgeLength(1,1) double = 100; %km
         alpha(1,1) double = 0.5;
@@ -109,6 +109,13 @@ classdef ThreePointPlane < AbstractGeometricPlane
         
         function tf = isInUse(obj, lvdData)
             tf = lvdData.usesGeometricPlane(obj);
+        end
+    end
+
+    methods(Static)
+        function obj = loadobj(s)
+            %loadobj Migrates missions saved with ColorSpecEnum colors.
+            obj = lvd_constructMigrated('ThreePointPlane', {'point1', 'point2', 'point3', 'name', 'lvdData'}, s, {'lineColor'});
         end
     end
 end

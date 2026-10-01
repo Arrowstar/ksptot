@@ -53,7 +53,7 @@ classdef LaunchVehicleViewProfileSensorData < matlab.mixin.SetGet
                     
                     if(numel(obj.sensorMeshPlot) < i || isempty(obj.sensorMeshPlot(i)))
                         hold(hAx,'on');
-                        color = obj.sensor.getMeshColor().color;
+                        color = lvd_colorSpecToRGB(obj.sensor.getMeshColor());
                         alpha = obj.sensor.getMeshAlpha();
                         showMeshEdges = obj.sensor.getDisplayMeshEdges();
                         

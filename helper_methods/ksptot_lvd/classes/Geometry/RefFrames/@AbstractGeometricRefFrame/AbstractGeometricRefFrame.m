@@ -7,17 +7,17 @@ classdef AbstractGeometricRefFrame < matlab.mixin.SetGet & matlab.mixin.Heteroge
         scaleFactor = 100; %km
         
         %x-axis
-        xAxisColor = ColorSpecEnum.Red
+        xAxisColor(1,3) double {mustBeBetween(xAxisColor, 0, 1)} = [1, 0, 0];
         xAxisLineSpec = LineSpecEnum.SolidLine
         xAxisLineWidth = 2
         
         %y-axis
-        yAxisColor = ColorSpecEnum.Green
+        yAxisColor(1,3) double {mustBeBetween(yAxisColor, 0, 1)} = [76/255, 220/255, 0];
         yAxisLineSpec = LineSpecEnum.SolidLine
         yAxisLineWidth = 2
         
         %z-axis
-        zAxisColor = ColorSpecEnum.Blue
+        zAxisColor(1,3) double {mustBeBetween(zAxisColor, 0, 1)} = [0, 0, 1];
         zAxisLineSpec = LineSpecEnum.SolidLine
         zAxisLineWidth = 2
     end

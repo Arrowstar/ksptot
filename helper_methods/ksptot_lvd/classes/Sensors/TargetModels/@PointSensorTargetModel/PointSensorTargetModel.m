@@ -9,10 +9,10 @@ classdef PointSensorTargetModel < AbstractSensorTarget
         
         %display
         markerShape(1,1) MarkerStyleEnum = MarkerStyleEnum.Circle;
-        markerFoundFaceColor(1,1) ColorSpecEnum = ColorSpecEnum.Green;
-        markerFoundEdgeColor(1,1) ColorSpecEnum = ColorSpecEnum.Black;
-        markerNotFoundFaceColor(1,1) ColorSpecEnum = ColorSpecEnum.Black;
-        markerNotFoundEdgeColor(1,1) ColorSpecEnum = ColorSpecEnum.Black;
+        markerFoundFaceColor(1,3) double {mustBeBetween(markerFoundFaceColor, 0, 1)} = [76/255, 220/255, 0];
+        markerFoundEdgeColor(1,3) double {mustBeBetween(markerFoundEdgeColor, 0, 1)} = [0, 0, 0];
+        markerNotFoundFaceColor(1,3) double {mustBeBetween(markerNotFoundFaceColor, 0, 1)} = [0, 0, 0];
+        markerNotFoundEdgeColor(1,3) double {mustBeBetween(markerNotFoundEdgeColor, 0, 1)} = [0, 0, 0];
         markerSize(1,1) double = 3;
         
         lvdData LvdData
@@ -91,6 +91,13 @@ classdef PointSensorTargetModel < AbstractSensorTarget
         
         function tf = usesGeometricPoint(obj, point)
             tf = obj.point == point;
+        end
+    end
+
+    methods(Static)
+        function obj = loadobj(s)
+            %loadobj Migrates missions saved with ColorSpecEnum colors.
+            obj = lvd_constructMigrated('PointSensorTargetModel', {'name', 'point', 'lvdData'}, s, {'markerFoundFaceColor', 'markerFoundEdgeColor', 'markerNotFoundFaceColor', 'markerNotFoundEdgeColor'});
         end
     end
 end

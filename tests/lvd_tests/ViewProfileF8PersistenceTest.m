@@ -60,7 +60,11 @@ classdef ViewProfileF8PersistenceTest < KsptotTestCase
         function loadobjStructBranchAddsTheF8Fields(testCase)
             s = struct('name', 'old profile', 'skyBoxImgFileName', "DarkStarsSkyBox.png");
             out = LaunchVehicleViewProfile.loadobj(s);
-            testCase.verifyTrue(isstruct(out));
+            %The struct branch materializes a real profile (returning the
+            %struct would make MATLAB re-run the constructor with it and
+            %warn MATLAB:class:mustReturnObject on load).
+            testCase.verifyClass(out, 'LaunchVehicleViewProfile');
+            testCase.verifyEqual(out.name, 'old profile');
             testCase.verifyEqual(out.cameraMode, LvdCameraModeEnum.Manual);
             testCase.verifyClass(out.chaseCamera, 'LvdChaseCameraSettings');
             testCase.verifyClass(out.fixedAnchorCamera, 'LvdFixedAnchorCameraSettings');

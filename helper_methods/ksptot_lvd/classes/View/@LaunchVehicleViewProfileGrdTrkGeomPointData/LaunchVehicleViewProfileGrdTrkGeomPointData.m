@@ -68,7 +68,7 @@ classdef LaunchVehicleViewProfileGrdTrkGeomPointData < matlab.mixin.SetGet
                         obj.markerPlot.XData = lonGrd;
                         obj.markerPlot.YData = latGrd;
                     else
-                        obj.markerPlot = plot(hAx, lonGrd,latGrd, 'MarkerEdgeColor','k', 'Marker',obj.point.markerShape.shape, 'MarkerFaceColor',obj.point.markerColor.color);
+                        obj.markerPlot = plot(hAx, lonGrd,latGrd, 'MarkerEdgeColor','k', 'Marker',obj.point.markerShape.shape, 'MarkerFaceColor',lvd_colorSpecToRGB(obj.point.markerColor));
                     end
 
                     [year, day, hour, minute, sec] = convertSec2YearDayHrMnSec(time);

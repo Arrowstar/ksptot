@@ -32,7 +32,6 @@ classdef lvd_EditVectorSumVectorGUI_App < matlab.apps.AppBase
         DisplayLabel           matlab.ui.control.Label
         ColorImage             matlab.ui.control.Image
         LineImage              matlab.ui.control.Image
-        vectorLineColorCombo   matlab.ui.control.DropDown
         vectorLineSpecCombo    matlab.ui.control.DropDown
     end
 
@@ -97,8 +96,7 @@ classdef lvd_EditVectorSumVectorGUI_App < matlab.apps.AppBase
                 app.vector2Combo.Value = ind2;
             end
 
-            app.vectorLineColorCombo.Items = ColorSpecEnum.getListboxStr();
-            app.vectorLineColorCombo.Value = app.vector.lineColor.name;
+            lvdSetupColorPicker(app.UIFigure, app.DisplayGrid, 2, 3, matlab.ui.control.DropDown.empty(1,0), app.vector.lineColor, 'The color of the vector''s line on the display.', 'lineColor');
 
             app.vectorLineSpecCombo.Items = LineSpecEnum.getListboxStr();
             app.vectorLineSpecCombo.Value = app.vector.lineSpec.name;
@@ -122,7 +120,7 @@ classdef lvd_EditVectorSumVectorGUI_App < matlab.apps.AppBase
             app.vector.setName(app.vectorNameText.Value);
             app.vector.vector1 = app.allVectors(app.vector1Combo.Value);
             app.vector.vector2 = app.allVectors(app.vector2Combo.Value);
-            app.vector.lineColor = ColorSpecEnum.getEnumForListboxStr(app.vectorLineColorCombo.Value);
+            app.vector.lineColor = lvdGetColorPickerRGB(app.UIFigure, 'lineColor', app.vector.lineColor);
             app.vector.lineSpec = LineSpecEnum.getEnumForListboxStr(app.vectorLineSpecCombo.Value);
 
             app.output.output = {true};
@@ -321,13 +319,6 @@ classdef lvd_EditVectorSumVectorGUI_App < matlab.apps.AppBase
             app.DisplayLabel.Layout.Column = 3;
             app.DisplayLabel.Text = 'Vector Line';
 
-            app.vectorLineColorCombo = uidropdown(app.DisplayGrid);
-            app.vectorLineColorCombo.Items = {};
-            app.vectorLineColorCombo.Tooltip = 'The color of the vector''s line on the display.';
-            app.vectorLineColorCombo.FontSize = 10.6666666666667;
-            app.vectorLineColorCombo.BackgroundColor = [1 1 1];
-            app.vectorLineColorCombo.Layout.Row = 2;
-            app.vectorLineColorCombo.Layout.Column = 3;
 
             app.vectorLineSpecCombo = uidropdown(app.DisplayGrid);
             app.vectorLineSpecCombo.Items = {};

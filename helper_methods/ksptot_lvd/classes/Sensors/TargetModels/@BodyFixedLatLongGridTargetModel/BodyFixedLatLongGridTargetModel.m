@@ -18,10 +18,10 @@ classdef BodyFixedLatLongGridTargetModel < AbstractBodyFixedSensorTarget
         
         %display
         markerShape(1,1) MarkerStyleEnum = MarkerStyleEnum.Circle;
-        markerFoundFaceColor(1,1) ColorSpecEnum = ColorSpecEnum.Green;
-        markerFoundEdgeColor(1,1) ColorSpecEnum = ColorSpecEnum.Green;
-        markerNotFoundFaceColor(1,1) ColorSpecEnum = ColorSpecEnum.Black;
-        markerNotFoundEdgeColor(1,1) ColorSpecEnum = ColorSpecEnum.Black;
+        markerFoundFaceColor(1,3) double {mustBeBetween(markerFoundFaceColor, 0, 1)} = [76/255, 220/255, 0];
+        markerFoundEdgeColor(1,3) double {mustBeBetween(markerFoundEdgeColor, 0, 1)} = [76/255, 220/255, 0];
+        markerNotFoundFaceColor(1,3) double {mustBeBetween(markerNotFoundFaceColor, 0, 1)} = [0, 0, 0];
+        markerNotFoundEdgeColor(1,3) double {mustBeBetween(markerNotFoundEdgeColor, 0, 1)} = [0, 0, 0];
         markerSize(1,1) double = 3;
         
         lvdData LvdData
@@ -113,6 +113,13 @@ classdef BodyFixedLatLongGridTargetModel < AbstractBodyFixedSensorTarget
             output = AppDesignerGUIOutput({false});
             lvd_EditLatLongRectGridSensorTargetGUI_App(obj, obj.lvdData, output);
             useTf = output.output{1};
+        end
+    end
+
+    methods(Static)
+        function obj = loadobj(s)
+            %loadobj Migrates missions saved with ColorSpecEnum colors.
+            obj = lvd_constructMigrated('BodyFixedLatLongGridTargetModel', {'name', 'bodyInfo', 'nwCornerLong', 'nwCornerLat', 'seCornerLong', 'seCornerLat', 'numPtsLong', 'numPtsLat', 'altitude', 'lvdData'}, s, {'markerFoundFaceColor', 'markerFoundEdgeColor', 'markerNotFoundFaceColor', 'markerNotFoundEdgeColor'});
         end
     end
 end

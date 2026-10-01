@@ -61,7 +61,7 @@ classdef LaunchVehicleViewProfilePlaneData < matlab.mixin.SetGet
                     p3 = [-edgeLength/2, -edgeLength/2, 0];
                     p4 = [-edgeLength/2   edgeLength/2, 0];
                     
-                    color = obj.plane.lineColor.color;
+                    color = lvd_colorSpecToRGB(obj.plane.lineColor);
                     alpha = obj.plane.alpha;
                     linestyle = obj.plane.lineSpec.linespec;
                     patch('Faces',1:4,'Vertices',[p1;p2;p3;p4], 'Parent',xform, 'FaceColor',color, 'EdgeColor',color, 'FaceAlpha',alpha, 'LineStyle',linestyle);

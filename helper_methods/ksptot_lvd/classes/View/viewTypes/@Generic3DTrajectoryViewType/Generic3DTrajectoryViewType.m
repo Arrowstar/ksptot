@@ -147,7 +147,7 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                 catch
                 end
             end
-            dAxes.Color = viewProfile.backgroundColor.color;
+            dAxes.Color = lvd_colorSpecToRGB(viewProfile.backgroundColor);
 
             % dAxes.CameraPositionMode = "manual";
             % dAxes.CameraTargetMode = "manual";
@@ -304,7 +304,7 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             if(viewProfile.showThrustVectors)
                 entryInc = viewProfile.thrustVectEntryIncr;
                 scale = viewProfile.thrustVectScale;
-                color = viewProfile.thrustVectColor.color;
+                color = lvd_colorSpecToRGB(viewProfile.thrustVectColor);
                 lineStyle = viewProfile.thrustVectLineType.linespec;
                 
                 subsetLvdStateLogEntries = lvdStateLogEntries(1:entryInc:length(lvdStateLogEntries));
@@ -343,7 +343,7 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             if(viewProfile.showDragVectors)
                 entryInc = viewProfile.dragVectEntryIncr;
                 scale = viewProfile.dragVectScale;       %km/N
-                color = viewProfile.dragVectColor.color;
+                color = lvd_colorSpecToRGB(viewProfile.dragVectColor);
                 lineStyle = viewProfile.dragVectLineType.linespec;
 
                 subsetLvdStateLogEntries = lvdStateLogEntries(1:entryInc:length(lvdStateLogEntries));
@@ -370,7 +370,7 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             if(viewProfile.showSrpVectors)
                 entryInc = viewProfile.srpVectEntryIncr;
                 scale = viewProfile.srpVectScale;       %km/N
-                color = viewProfile.srpVectColor.color;
+                color = lvd_colorSpecToRGB(viewProfile.srpVectColor);
                 lineStyle = viewProfile.srpVectLineType.linespec;
 
                 subsetLvdStateLogEntries = lvdStateLogEntries(1:entryInc:length(lvdStateLogEntries));
@@ -479,12 +479,12 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
             set(dAxes,'LineWidth',1);
             set(dAxes,'Box','on');
             grid(dAxes,'off'); grid(dAxes,viewProfile.gridType.gridStr);
-            dAxes.GridColor = viewProfile.majorGridColor.color;
-            dAxes.MinorGridColor = viewProfile.minorGridColor.color;
+            dAxes.GridColor = lvd_colorSpecToRGB(viewProfile.majorGridColor);
+            dAxes.MinorGridColor = lvd_colorSpecToRGB(viewProfile.minorGridColor);
             dAxes.GridAlpha = viewProfile.gridTransparency;
-            dAxes.XColor = viewProfile.majorGridColor.color;
-            dAxes.YColor = viewProfile.majorGridColor.color;
-            dAxes.ZColor = viewProfile.majorGridColor.color;
+            dAxes.XColor = lvd_colorSpecToRGB(viewProfile.majorGridColor);
+            dAxes.YColor = lvd_colorSpecToRGB(viewProfile.majorGridColor);
+            dAxes.ZColor = lvd_colorSpecToRGB(viewProfile.majorGridColor);
 
             if(viewProfile.showAxesBox)
                 dAxes.Box = 'on';
@@ -500,7 +500,7 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                 dAxes.Visible = 'off';
             end
 
-            app.DisplayAxesGridLayout.BackgroundColor = viewProfile.backgroundColor.color;
+            app.DisplayAxesGridLayout.BackgroundColor = lvd_colorSpecToRGB(viewProfile.backgroundColor);
             
             set(dAxes,'XTickLabel',[]);
             set(dAxes,'YTickLabel',[]);
@@ -729,7 +729,7 @@ function [childrenHGs] = plotSubStateLog(subStateLog, prevSubStateLog, lvdData, 
         return;
     end
     
-    plotLineColor = event.colorLineSpec.color.color;
+    plotLineColor = lvd_colorSpecToRGB(event.colorLineSpec.color);
     plotLineStyle = event.colorLineSpec.lineSpec.linespec;
     plotLineWidth = event.colorLineSpec.lineWidth;
     plotMarkerType = event.colorLineSpec.markerSpec.shape;

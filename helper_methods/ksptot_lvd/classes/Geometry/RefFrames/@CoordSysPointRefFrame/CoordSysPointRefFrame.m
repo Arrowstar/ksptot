@@ -122,4 +122,11 @@ classdef CoordSysPointRefFrame < AbstractGeometricRefFrame
             tf = lvdData.usesGeometricRefFrame(obj);
         end
     end
+
+    methods(Static)
+        function obj = loadobj(s)
+            %loadobj Migrates missions saved with ColorSpecEnum colors.
+            obj = lvd_constructMigrated('CoordSysPointRefFrame', {'coordSys', 'origin', 'name', 'lvdData'}, s, {'xAxisColor', 'yAxisColor', 'zAxisColor'});
+        end
+    end
 end
