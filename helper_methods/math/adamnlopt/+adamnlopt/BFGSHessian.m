@@ -32,6 +32,7 @@ classdef BFGSHessian < adamnlopt.HessianModel
 %     gammaMax     - ceiling on the one-shot B0 scaling (absolute backstop).
 %     gammaCurvCap - ceiling on B0 relative to the sampled directional curvature.
 %     powellEta    - Powell-damping threshold (fraction of s'Bs).
+%     curvFloor    - minimum s'y / (||s||*||y||) for a pair to be accepted.
 %     autoScaleB0  - scale B0 from the first pair (true) or leave B0 = I.
 %     condMax      - condition-number ceiling before B is rebuilt.
 %     warnDim      - dimension above which the dense storage is warned about.
@@ -52,6 +53,13 @@ classdef BFGSHessian < adamnlopt.HessianModel
 %     nUpdates  - accepted secant pairs since construction or reset.
 %     nResets   - internal conditioning recoveries; should be 0 on a clean run.
 %     nRebases  - curvature-regime rebases; distinct from nResets, not a fault.
+%     nRejected - pairs the curvature guards skipped. A run where this is a
+%                 large fraction of the iteration count is learning almost no
+%                 curvature and is effectively a scaled-identity model.
+%     b0RefreshUnreachable - b0Refresh is on but its refractory and
+%                 learned-fraction gates leave no admissible pair count at this
+%                 n (true for every n <= 25 at the defaults), so the trigger is
+%                 inert rather than declining to fire. Surfaced by solve.
 %     condLast  - condition estimate from the most recent health check.
 %     scaled    - whether B0 has been scaled yet.
 %
@@ -72,6 +80,7 @@ classdef BFGSHessian < adamnlopt.HessianModel
         gammaMax     = 1e8    % ceiling on the B0 scaling (absolute backstop)
         gammaCurvCap = 1e4    % ceiling on B0 relative to directional curvature
         powellEta    = 0.2    % Powell-damping threshold (fraction of s'Bs)
+        curvFloor    = sqrt(eps)  % min s'y/(||s||*||y||): reject noise curvature
         autoScaleB0  = true   % scale B0 once from the first curvature pair
         condMax      = 1e12   % rebuild B when its condition estimate exceeds this
         warnDim      = 5000   % warn about dense storage above this dimension
@@ -91,6 +100,8 @@ classdef BFGSHessian < adamnlopt.HessianModel
         nUpdates  = 0        % accepted pairs since construction or reset
         nResets   = 0        % internal conditioning recoveries (health signal)
         nRebases  = 0        % curvature-regime rebases (not a fault signal)
+        nRejected = 0        % pairs skipped for no usable curvature
+        b0RefreshUnreachable = false  % the refresh gates admit no sinceRebase
         condLast  = NaN      % cond(B) at the most recent health check
         scaled    = false    % has B0 been scaled yet?
     end
@@ -261,11 +272,32 @@ classdef BFGSHessian < adamnlopt.HessianModel
             end
 
             if ~(sy > 0) || ~(sBs > 0) || ~all(isfinite(Bs)) || ~all(isfinite(y))
+                obj.nRejected = obj.nRejected + 1;
                 return;   % damping could not restore curvature; skip the pair
             end
             % Relative floor on s'y: refuse to divide by numerical noise, which
             % would otherwise inject an enormous y*y'/sy rank-1 term.
-            if sy <= eps(sy) * max(1, abs(s.' * y) + norm(y) * sqrt(ss))
+            %
+            % sy/(||s||*||y||) is the cosine of the angle between the step and
+            % the curvature it produced, so a single dimensionless threshold is
+            % the whole test.  The previous form,
+            %
+            %     sy <= eps(sy) * max(1, abs(s.'*y) + norm(y)*sqrt(ss))
+            %
+            % used eps(sy) -- eps OF sy, i.e. ~2.2e-16*sy -- which cancels the
+            % sy on the left and reduces the guard to
+            %
+            %     ||y||*||s|| + sy >= 1/(2.2e-16) ~ 4.5e15
+            %
+            % a condition on the ABSOLUTE magnitude of the pair that has nothing
+            % to do with how small sy is.  It therefore never fired on a normal
+            % problem (letting the noise pairs it was written to catch straight
+            % through) and fired on EVERY pair of a badly scaled one, where it
+            % rejected perfectly good curvature.  Also, abs(s.'*y) is just sy
+            % again -- y was reassigned by the damping above -- so the "max"
+            % compared a quantity with itself.
+            if sy <= obj.curvFloor * norm(s) * norm(y)
+                obj.nRejected = obj.nRejected + 1;
                 return;
             end
 
@@ -370,8 +402,21 @@ classdef BFGSHessian < adamnlopt.HessianModel
                 obj.condLast = inf;   % not SPD: no finite estimate to report
                 obj.resetToScaled();  return;
             end
-            dR = abs(diag(R));
-            kappa = (max(dR) / max(min(dR), realmin))^2;   % cond(B) from the factor
+            % cond(B) = cond(R)^2.  The previous estimate was max(dR)/min(dR)
+            % squared, which is cond(R) only when R is DIAGONAL: for a triangular
+            % factor the diagonal ratio is a lower bound that ignores the
+            % off-diagonal mass entirely, and it is off by orders of magnitude on
+            % exactly the correlated, nearly-dependent curvature that makes B
+            % ill-conditioned in the first place.  The condMax = 1e12 reset
+            % therefore fired far later than configured -- or never.  rcond runs
+            % a norm estimator on the already-computed triangular factor, so it
+            % costs O(n^2) against the O(n^3/3) chol that just ran.
+            rR = rcond(R);
+            if ~isfinite(rR) || rR <= 0
+                kappa = inf;
+            else
+                kappa = (1 / rR)^2;
+            end
             obj.condLast = kappa;
             if ~isfinite(kappa) || kappa > obj.condMax
                 obj.resetToScaled();
@@ -450,6 +495,22 @@ classdef BFGSHessian < adamnlopt.HessianModel
         %   anomalous window cannot cross that cliff in one move; repeated fires
         %   still reach a soft scale, but only through measurements that agree.
             if ~obj.b0Refresh
+                return;
+            end
+            % The refractory and the learned-fraction gate below are
+            % opposite-sided windows on the SAME counter: a rebase needs
+            %   sinceRebase >= b0RefreshRefractory   and
+            %   sinceRebase <  b0RefreshMinLearned*n.
+            % At the defaults (5 and 0.20) that window is EMPTY for every
+            % n <= 25, so on a small problem the trigger can never fire no
+            % matter what the curvature does -- while every option still reads
+            % as enabled and nothing in the output says otherwise.  The
+            % suppression itself is intended (the gate exists because ungated
+            % rebases at ~1.1*n destroyed the convergence rate on a 20-variable
+            % run); what was missing is any way to tell it apart from "the
+            % trigger looked and declined".  Record it so solve can report it.
+            if obj.n > 0 && obj.b0RefreshMinLearned * obj.n <= obj.b0RefreshRefractory
+                obj.b0RefreshUnreachable = true;
                 return;
             end
             obj.sinceRebase = obj.sinceRebase + 1;

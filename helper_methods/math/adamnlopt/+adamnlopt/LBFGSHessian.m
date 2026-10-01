@@ -14,6 +14,8 @@ classdef LBFGSHessian < adamnlopt.HessianModel
 %     m     - memory: maximum number of stored secant pairs.
 %     gamma - scaling of the initial Hessian B0 = gamma*I.
 %     n     - problem dimension (length of s and y).
+%     mRcondMin - rcond(M) below which the oldest pair is dropped.
+%     nDropped  - (read-only) pairs discarded for making M singular.
 %     S     - (private) n-by-k matrix of s vectors, oldest first.
 %     Y     - (private) n-by-k matrix of y vectors, oldest first.
 %
@@ -38,6 +40,10 @@ classdef LBFGSHessian < adamnlopt.HessianModel
         gammaMax  = 1e8      % ceiling on the B0 scaling gamma (absolute backstop)
         gammaCurvCap = 1e4   % ceiling on gamma relative to directional curvature
         powellEta = 0.2      % Powell-damping threshold (fraction of s'Bs)
+        mRcondMin = 1e-12    % rcond(M) below which the oldest pair is dropped
+    end
+    properties (SetAccess = private)
+        nDropped  = 0        % pairs discarded for making M numerically singular
     end
     properties (Access = private)
         S = []           % n-by-k matrix of s vectors (oldest first)
@@ -122,10 +128,16 @@ classdef LBFGSHessian < adamnlopt.HessianModel
                 y   = phi * y + (1 - phi) * Bs;      % damped y-bar
                 sy  = s.' * y;                       % now >= eta*sBs > 0
             end
-            if sy <= 0
-                return;   % damping could not restore curvature (e.g. sBs<=0); skip
+            % Same relative curvature floor the dense BFGS applies: sy > 0 alone
+            % admits pairs whose s'y is pure round-off, and the gamma =
+            % (y'y)/(s'y) scaling below divides by exactly that number.  The
+            % gammaCurvCap and [gammaMin,gammaMax] clamps bound the damage but
+            % the pair still enters S/Y and corrupts the compact M matrix, whose
+            % inverse is what getMatrix actually solves with.
+            if ~(sy > sqrt(eps) * norm(s) * norm(y))
+                accepted = false;   % the degenerate-step test above set it true
+                return;             % no usable curvature (sy is noise); skip
             end
-            accepted = true;
             obj.S = [obj.S, s];
             obj.Y = [obj.Y, y];
             if size(obj.S, 2) > obj.m
@@ -177,15 +189,11 @@ classdef LBFGSHessian < adamnlopt.HessianModel
                 B = g * eye(n_);
                 return;
             end
-            Sm = obj.S;  Ym = obj.Y;
-            SY  = Sm.' * Ym;                 % k-by-k
-            D   = diag(diag(SY));
-            L   = tril(SY, -1);
-            SBS = g * (Sm.' * Sm);           % S'*B0*S
-            M   = [SBS, L; L.', -D];         % 2k-by-2k
-            Phi = [g * Sm, Ym];              % n-by-2k
-            ws = warning('off', 'MATLAB:nearlySingularMatrix');
-            cleanup = onCleanup(@() warning(ws));
+            [Phi, M, k] = obj.compactForm();
+            if k == 0
+                B = g * eye(n_);
+                return;
+            end
             B   = g * eye(n_) - Phi * (M \ Phi.');
             B   = (B + B.') / 2;
         end
@@ -205,19 +213,10 @@ classdef LBFGSHessian < adamnlopt.HessianModel
             % Hessian-vector product B*v without forming B (compact recursion).
             v = v(:);
             g = obj.gamma;
-            k = size(obj.S, 2);
+            [Phi, M, k] = obj.compactForm();
             if k == 0
                 Bv = g * v;  return;
             end
-            Sm = obj.S;  Ym = obj.Y;
-            SY  = Sm.' * Ym;
-            D   = diag(diag(SY));
-            L   = tril(SY, -1);
-            SBS = g * (Sm.' * Sm);
-            M   = [SBS, L; L.', -D];
-            Phi = [g * Sm, Ym];
-            ws = warning('off', 'MATLAB:nearlySingularMatrix');
-            cleanup = onCleanup(@() warning(ws));
             Bv  = g * v - Phi * (M \ (Phi.' * v));
         end
 
@@ -233,6 +232,59 @@ classdef LBFGSHessian < adamnlopt.HessianModel
         %   Outputs:
         %     d - [] (empty).
             d = [];
+        end
+    end
+
+    methods (Access = private)
+        function [Phi, M, k] = compactForm(obj)
+        %COMPACTFORM  Byrd-Nocedal-Schnabel factors, with singular pairs dropped.
+        %   [Phi, M, k] = compactForm(obj) builds Phi = [gamma*S, Y] and the
+        %   2k-by-2k middle matrix M = [gamma*S'S, L; L', -D] of the compact
+        %   representation B = gamma*I - Phi*(M\Phi'), after discarding the
+        %   oldest stored pairs until M is numerically invertible.  k is the
+        %   number of pairs that survived (0 means B = gamma*I, with Phi and M
+        %   empty).
+        %
+        %   M goes singular whenever the stored steps become linearly dependent
+        %   -- routine in the endgame, where consecutive steps shrink along the
+        %   same direction, and immediate whenever two near-identical pairs are
+        %   stored.  getMatrix and apply used to SUPPRESS the resulting
+        %   MATLAB:nearlySingularMatrix warning with a local warning('off') and
+        %   then use the product anyway, so the one signal that the Hessian
+        %   model had become garbage was deleted and a B with entries of order
+        %   1/eps flowed into the KKT assembly, the inertia correction and the
+        %   line search.  Dropping the offending pair costs one curvature pair
+        %   and keeps the model finite; suppressing the warning cost the solve.
+        %
+        %   Inputs:
+        %     obj - the LBFGSHessian handle object.
+        %
+        %   Outputs:
+        %     Phi - n-by-2k factor [gamma*S, Y] ([] when k == 0).
+        %     M   - 2k-by-2k middle matrix ([] when k == 0).
+        %     k   - number of pairs retained.
+            g = obj.gamma;
+            while true
+                k = size(obj.S, 2);
+                if k == 0
+                    Phi = [];  M = [];  return;
+                end
+                Sm = obj.S;  Ym = obj.Y;
+                SY  = Sm.' * Ym;                 % k-by-k
+                D   = diag(diag(SY));
+                L   = tril(SY, -1);
+                SBS = g * (Sm.' * Sm);           % S'*B0*S
+                M   = [SBS, L; L.', -D];         % 2k-by-2k
+                Phi = [g * Sm, Ym];              % n-by-2k
+                r = rcond(M);
+                if isfinite(r) && r > obj.mRcondMin
+                    return;
+                end
+                % Oldest pair first: it carries the least relevant curvature and
+                % is the one the window would evict next anyway.
+                obj.S(:, 1) = [];  obj.Y(:, 1) = [];
+                obj.nDropped = obj.nDropped + 1;
+            end
         end
     end
 end

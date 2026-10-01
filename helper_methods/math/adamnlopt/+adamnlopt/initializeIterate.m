@@ -7,11 +7,15 @@ function state = initializeIterate(ev, problem, opts)
 %
 %   Each x0 component is pushed into the strict interior with a relative margin
 %   (kappa = 1e-2) so bound-barrier terms are finite. Inequality slacks are set
-%   to max(-cI, sMin) with sMin = 1e-2, ensuring strict positivity. Inequality
-%   multipliers are seeded as mu0/s and the bound multipliers (zL, zU) as
-%   mu0/distance-to-bound via the local barrierMult helper. Equality
-%   multipliers start at zero. The remaining fields prime the barrier, trust
-%   region, and bookkeeping counters for the main solve loop.
+%   to max(-cI, sMin) with sMin = max(1e-2*||cI||_inf, 1e-10) -- a floor
+%   relative to the inequality scale actually present, so the natural slack is
+%   preserved on a problem whose residuals are small -- ensuring strict
+%   positivity. Inequality multipliers are seeded as mu0/s and the bound
+%   multipliers (zL, zU) as mu0/distance-to-bound via the local barrierMult
+%   helper. Equality multipliers start at zero; the interior-point core
+%   replaces that seed with a least-squares estimate as soon as it has the
+%   gradient and Jacobian in hand. The remaining fields prime the barrier,
+%   trust region, and bookkeeping counters for the main solve loop.
 %
 %   Inputs:
 %     ev      - Evaluator object; ev.constraints(x) returns [cE, cI] and ev.mE
@@ -52,8 +56,10 @@ for i = 1:n
 end
 
 [~, cI] = ev.constraints(x);
-sMin = 1e-2;
-s = max(-cI, sMin);
+% Relative strict-positivity floor; shared with the post-restoration re-seed in
+% solve, which promises to re-seed "exactly as at start-up" and used to carry
+% its own drifted copy of this formula.
+[s, sMin] = adamnlopt.initSlackSeed(cI);
 
 state = struct();
 state.x = x;

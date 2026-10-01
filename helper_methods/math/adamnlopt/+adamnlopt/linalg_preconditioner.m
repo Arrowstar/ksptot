@@ -8,15 +8,18 @@ function applyP = linalg_preconditioner(op, opts)
 %   (matrix-free H) or a non-Jacobi mode is requested.
 %
 %   Inputs:
-%     op   - kkt_KKTOperator; op.diag supplies the KKT matrix diagonal (empty
-%            when unavailable, e.g. a matrix-free Hessian).
+%     op   - kkt_KKTOperator; op.precondDiag supplies the positive Jacobi
+%            diagonal (primal pivots plus a Schur-complement estimate for the
+%            dual block), falling back to abs(op.diag) for a hand-built
+%            operator struct. Both empty when no cheap diagonal exists (e.g. a
+%            matrix-free Hessian).
 %     opts - (optional) options struct; field .precondition selects the mode
 %            ('jacobi' default, or 'none' for the identity).
 %
 %   Outputs:
 %     applyP - function handle applyP(r) approximating K\r. Jacobi mode scales
-%              by the reciprocal absolute diagonal (guarded against tiny pivots);
-%              otherwise the identity @(r) r.
+%              by the reciprocal diagonal, with pivots floored RELATIVE to the
+%              largest one; otherwise the identity @(r) r.
 %
 %   See also LINALG_SOLVEKKTKRYLOV, KKT_KKTOPERATOR.
 
@@ -26,12 +29,34 @@ else
     mode = opts.precondition;
 end
 
-if strcmpi(mode, 'none') || isempty(op.diag)
+if strcmpi(mode, 'none')
     applyP = @(r) r;
     return;
 end
 
-d = abs(op.diag);
-d(d < 1e-12) = 1e-12;      % guard tiny/zero pivots
+% Prefer the operator's purpose-built positive diagonal.  abs(diag(K)) is NOT a
+% usable Jacobi diagonal for a saddle-point system: the (2,2) block is
+% -gamma*I, gamma is 0 whenever the inertia correction did not fire, and the
+% old absolute guard below then turned every zero dual pivot into 1e-12 and
+% divided by it -- amplifying the dual residual by 1e12 and making MINRES
+% converge on the wrong thing.  op.precondDiag carries a Schur-complement
+% estimate for that block instead.  The abs(op.diag) path is kept only for
+% callers that build a bare operator struct by hand.
+if isfield(op, 'precondDiag') && ~isempty(op.precondDiag)
+    d = op.precondDiag;
+elseif isempty(op.diag)
+    applyP = @(r) r;
+    return;
+else
+    d = abs(op.diag);
+end
+
+% Relative, not absolute: a legitimately well-scaled problem in small units can
+% have every diagonal entry below 1e-12, and clamping those to 1e-12 flattened
+% the preconditioner to a constant.  Anything more than 12 orders below the
+% largest pivot carries no usable information, so pin it at that floor.
+dRef = max(d(isfinite(d)));
+if isempty(dRef) || ~(dRef > 0), dRef = 1; end
+d(~isfinite(d) | d < dRef * 1e-12) = dRef * 1e-12;
 applyP = @(r) r ./ d;
 end

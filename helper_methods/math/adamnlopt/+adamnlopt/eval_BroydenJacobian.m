@@ -1,8 +1,9 @@
 classdef eval_BroydenJacobian < handle
 %EVAL_BROYDENJACOBIAN  Rank-1 secant (Broyden) update for constraint Jacobians.
 %   B = adamnlopt.eval_BroydenJacobian(J0) initialises from the exact Jacobian
-%   J0 (mxn). Call B.update(s, y, cNew) after each step where s=dx, y=dc, and
-%   cNew=c(x+) to advance the secant approximation:
+%   J0 (mxn). Call B.update(s, y, cNew, xRef) after each step where s=dx, y=dc,
+%   cNew=c(x+) and xRef is the point s was taken from, to advance the secant
+%   approximation:
 %
 %       J_new = J_old + (y - J_old*s) * s' / (s'*s)
 %
@@ -65,28 +66,51 @@ classdef eval_BroydenJacobian < handle
             if nargin >= 3 && ~isempty(tol),      obj.tol_      = tol;      end
         end
 
-        function update(obj, s, y, cNew)
+        function accepted = update(obj, s, y, cNew, xRef)
         %UPDATE  Apply a rank-1 secant (Broyden) update to the Jacobian.
-        %   update(obj, s, y, cNew) advances the approximation by
+        %   accepted = update(obj, s, y, cNew) advances the approximation by
         %   J = J + (y - J*s)*s'/(s'*s) and increments the staleness counter.
-        %   A near-zero step s is skipped (staleness still increments). If the
+        %   A negligible step s is skipped (staleness still increments). If the
         %   relative residual ||y - J*s|| / max(1,||cNew||) exceeds tol_, no
         %   update is applied and staleness is forced to maxStale_ to trigger a
         %   refresh on the next needsRefresh query.
+        %
+        %   accepted reports whether the Jacobian actually changed, so the
+        %   caller knows whether its secant anchor advanced.
+        %
+        %   update(obj, s, y, cNew, xRef) supplies the point the step was taken
+        %   from, which sets the scale the "negligible step" test is relative
+        %   to.  That test used to read
+        %
+        %       ss2 < eps*norm(ss)^2 + eps
+        %
+        %   which is tautological -- norm(ss)^2 IS ss2 -- so the intended
+        %   relative guard collapsed to the absolute threshold ||s|| < ~1.5e-8.
+        %   On a problem whose variables are O(1e6) that accepted steps eleven
+        %   orders of magnitude below the variable scale, dividing by an
+        %   effectively zero ss2; on one whose variables are O(1e-6) it rejected
+        %   every legitimate step. The test is now ||s|| <= eps^(1/2)*max(1,||xRef||),
+        %   the same relative convention the finite-difference steps use.
         %
         %   Inputs:
         %     obj  - the eval_BroydenJacobian handle object.
         %     s    - n-by-1 step dx = x+ - x.
         %     y    - m-by-1 constraint change dc = c(x+) - c(x).
         %     cNew - m-by-1 constraint value c(x+), used to scale the residual.
+        %     xRef - (optional) n-by-1 point s was taken from; sets the scale of
+        %            the negligible-step test. Defaults to 0 (absolute test).
         %
         %   Outputs:
-        %     (none) obj is modified in place.
+        %     accepted - logical; true when the Jacobian was updated, false when
+        %                the step was negligible or the residual forced a refresh.
             % s: n-vector (dx), y: m-vector (dc = c(x+)-c(x)), cNew: m-vector.
+            if nargin < 5, xRef = 0; end
             ss = s(:);  yy = y(:);
             ss2 = ss.' * ss;
-            if ss2 < eps * norm(ss)^2 + eps
+            sMin = sqrt(eps) * max(1, norm(xRef(:), inf));
+            if ~(ss2 > sMin^2)
                 obj.stale_ = obj.stale_ + 1;
+                accepted = false;
                 return;
             end
             res = yy - obj.J_ * ss;
@@ -94,10 +118,12 @@ classdef eval_BroydenJacobian < handle
             if resRel > obj.tol_
                 % Residual too large: flag for refresh instead of updating.
                 obj.stale_ = obj.maxStale_;   % forces needsRefresh=true
+                accepted = false;
                 return;
             end
             obj.J_ = obj.J_ + (res * ss.') / ss2;
             obj.stale_ = obj.stale_ + 1;
+            accepted = true;
         end
 
         function v = apply(obj, s)

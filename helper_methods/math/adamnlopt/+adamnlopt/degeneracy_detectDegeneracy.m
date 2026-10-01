@@ -14,8 +14,15 @@ function flags = degeneracy_detectDegeneracy(state, opts)
 %                   multiplier (strict complementarity failure)
 %     .degenerate   true if any of the above degeneracies is present
 %
-%   Detection is via a tolerance on singular values (rank), scaled by the
-%   largest singular value so it is invariant to constraint scaling.
+%   Detection is via a tolerance on the pivoted-QR diagonal (rank), scaled by
+%   its largest entry so it is invariant to constraint scaling.
+%
+%   NOTE ON WHAT ROUTES THE STEP.  Only .linDepE and .linDepActive do;
+%   degeneracy_detectStep reads nothing else.  .weaklyActive and .degenerate
+%   are reported for the trace and for callers, and .degenerate is deliberately
+%   the BROADER condition -- it also fires on a strict-complementarity failure,
+%   which the degenerate-step route does not address.  They are diagnostics,
+%   not switches; do not swap one in for the routing test.
 %
 %   Inputs:
 %     state - iterate struct; uses fields x (current point), JE (mE-by-n
@@ -56,10 +63,15 @@ else
 end
 flags.active = active;
 
-% Active constraint Jacobian and LICQ.
+% Active constraint Jacobian and LICQ.  With no active inequality the active
+% Jacobian IS JE, so the second factorization was re-deriving a rank that had
+% just been computed -- and on an inequality-free problem that is every
+% iteration of the solve.
 Aact = [JE; JI(active, :)];
 if isempty(Aact)
     flags.rankActive = 0;
+elseif ~any(active)
+    flags.rankActive = flags.rankE;
 else
     flags.rankActive = matrixRank(Aact);
 end
@@ -78,10 +90,20 @@ flags.n = n;
 end
 
 function r = matrixRank(A)
-%MATRIXRANK  Numerical rank of A from its singular values.
-%   r = matrixRank(A) counts the singular values of A that exceed a tolerance
-%   scaled by the largest singular value, giving a scale-invariant rank. Returns
-%   0 for an empty matrix.
+%MATRIXRANK  Numerical rank of A from a column-pivoted QR.
+%   r = matrixRank(A) counts the entries of |diag(R)| from a column-pivoted QR
+%   of A that exceed a tolerance scaled by the largest of them, giving a
+%   scale-invariant rank. Returns 0 for an empty matrix.
+%
+%   This used to be a full SVD, and degeneracy detection runs every iteration,
+%   so each solver step paid for up to two complete singular value
+%   decompositions of the constraint Jacobian to answer two integer rank
+%   questions.  Pivoted QR answers the same questions for a fraction of the
+%   work and is what DEGENERACY_DROPCONSTRAINTS and STEP_TANGENTIALSTEP already
+%   use elsewhere in the package, so the three now agree on what "rank" means.
+%   It is the slightly weaker test -- a contrived near-dependency can defeat the
+%   pivoting that would show up in the singular values -- which is the right
+%   trade for a per-iteration heuristic that only routes the step.
 %
 %   Inputs:
 %     A - matrix whose numerical rank is wanted.
@@ -92,9 +114,16 @@ if isempty(A)
     r = 0;
     return;
 end
-s = svd(full(A));
-tol = max(size(A)) * eps(max(s));
-r = sum(s > max(tol, 1e-12 * max(s)));
+[~, R, ~] = qr(full(A), 'vector');   % pivoted: |diag(R)| decays, rank-revealing
+p  = min(size(R));
+dR = abs(diag(R(1:p, 1:p)));
+if isempty(dR)
+    r = 0;
+    return;
+end
+dmax = max(dR);
+tol  = max(size(A)) * eps(dmax);
+r    = sum(dR > max(tol, 1e-12 * dmax));
 end
 
 function v = getf(s, f, dflt)

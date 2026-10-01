@@ -19,10 +19,11 @@ function advice = control_modeController(state, res, history, opts)
 %        slow barrier (muFactor=0.5), preserve trust region.
 %     R2 Near convergence: if opt < 100*optTol and activeSetConf >= 0.8
 %        → mode='nearBoundary', boost barrier (muFactor=2), small delta OK.
-%     R3 Stagnation detection: if |theta_now - theta_old| < 1e-4*theta_now
-%        for stagnWindow consecutive iters → suggestRestore=true.
-%     R4 Trust-region growth: if last step was full (alpha~1) for 2 iters
-%        → deltaFactor=2 (encourage larger steps).
+%     R3 Stagnation detection: if the NET drop in theta across the last
+%        stagnWindow iters is below 1e-4*theta_now → suggestRestore=true.
+%     R4 Trust-region growth: if the last step was full (alpha~1) for 2 iters
+%        → deltaFactor=2 (encourage larger steps).  R4 is evaluated last and
+%        its deltaFactor overrides R1's, in every mode.
 %
 %   R1/R2 test the inf-norm optimality/feasibility residuals (res.opt, res.feas)
 %   that both solver cores populate and that the termination test uses -- NOT the
@@ -76,11 +77,11 @@ if theta == 0
     cE = getf(state, 'cE', zeros(0,1));
     cI = getf(state, 'cI', zeros(0,1));
     s  = getf(state, 's',  zeros(0,1));
+    % The old second branch here was "elseif ~isempty(cE), theta = norm(cE,1)",
+    % byte-identical to the assignment just above it and therefore dead.
     theta = norm(cE, 1);
     if ~isempty(cI) && ~isempty(s)
         theta = theta + norm(cI + s, 1);
-    elseif ~isempty(cE)
-        theta = norm(cE, 1);
     end
 end
 
@@ -118,16 +119,29 @@ if feasNorm <= 100 * feasTol && optNorm < 100 * optTol && conf >= 0.8 && ...
     advice.muFactor = 2.0;   % accelerate barrier reduction
 end
 
-% R3: Stagnation in theta.
+% R3: Stagnation in theta.  The test is NET PROGRESS across the window,
+% recent(1) - recent(end), not the window's spread max(recent) - min(recent).
+% Spread answers "did theta move at all", which is the wrong question twice
+% over: a theta that spikes and falls back to where it started has a large
+% spread and no progress, so the restoration that case most needs was never
+% suggested; and an oscillation around a slowly improving mean was flagged as
+% stagnant purely because of the oscillation's amplitude.  Net progress is
+% what "we are not getting anywhere" actually means.
 if ~isempty(history) && numel(history.theta) >= stagnWindow
     recent = history.theta(end-stagnWindow+1:end);
-    thetaDrop = max(recent) - min(recent);
+    thetaDrop = recent(1) - recent(end);
     if thetaDrop < 1e-4 * max(theta, 1e-10) && theta > feasTol
         advice.suggestRestore = true;
     end
 end
 
-% R4: Consecutive full steps → allow trust-region growth hint.
+% R4: Consecutive full steps → allow trust-region growth hint.  R4 RUNS LAST AND
+% WINS, including over R1's "preserve the trust region" in feasibility mode.
+% That is deliberate and was previously undocumented, which made it read like an
+% accident: two consecutive unclipped steps are direct evidence that the radius,
+% not the model, is what is limiting progress -- and during a feasibility drive
+% that is exactly when the radius most needs to grow.  So R1's deltaFactor is
+% advisory and R4's is the one that survives.
 if ~isempty(history) && numel(history.alpha) >= 2
     if all(history.alpha(end-1:end) >= 0.9)
         advice.deltaFactor = 2.0;

@@ -25,20 +25,31 @@ function [epsf, info] = estimateNoise(fun, x0, dir, ncOpts)
 %                baseSpacing - line spacing h ([] -> 1e-3*max(1,norm(x0))).
 %
 %   Outputs:
-%     epsf - estimated noise level; 0 when noise could not be detected (a clean,
-%            analytic-precision function, or an inconclusive/failed probe).
+%     epsf - estimated noise level; 0 when noise could not be detected.  Check
+%            info.detected before reading anything into a zero: it is also what
+%            an inconclusive or failed probe returns.
 %     info - struct with fields:
-%              epsf    - the returned noise level.
-%              flag    - 'noise'    (detected),
-%                        'analytic' (smooth to machine precision / inconclusive),
-%                        'range'    (spacing too large, could not converge),
-%                        'flat'     (spacing too small, could not converge),
-%                        'error'    (an evaluation threw).
-%              hUsed   - the spacing actually used (after any retry).
-%              levels  - per-level noise estimates sigma_k.
-%              nEvals  - number of evaluations of fun consumed.
+%              epsf     - the returned noise level.
+%              detected - true only when the table actually resolved a noise
+%                         level.  Every other flag returns epsf = 0, and a
+%                         caller that cannot tell "measured as clean" from
+%                         "could not measure" will silently trust a default
+%                         step on a function it never characterised.
+%              flag     - 'noise'        (detected),
+%                         'inconclusive' (two spacings apart, the smooth trend
+%                                         still dominates: either a genuinely
+%                                         analytic-precision function or a
+%                                         spacing more than 1e4 too large --
+%                                         two attempts cannot separate these),
+%                         'flat'         (spacing too small, could not
+%                                         converge),
+%                         'error'        (an evaluation threw).
+%              hUsed    - the spacing the returned result was SAMPLED at, not
+%                         the one the next retry would have used.
+%              levels   - per-level noise estimates sigma_k.
+%              nEvals   - number of evaluations of fun consumed.
 %
-%   See also FINITEDIFFGRADIENT, EVALUATOR/CALIBRATESTEP, COMPUTESCALING.
+%   See also FINITEDIFFGRADIENT, ECNOISECORE, COMPUTESCALING.
 
 if nargin < 4 || isempty(ncOpts), ncOpts = struct(); end
 nf = getfield_default(ncOpts, 'nPts', 7);
@@ -48,8 +59,8 @@ nf = max(nf, 4);                            % need at least a few differences
 x0 = x0(:);
 n  = numel(x0);
 
-info = struct('epsf', 0, 'flag', 'analytic', 'hUsed', 0, ...
-              'levels', zeros(0,1), 'nEvals', 0);
+info = struct('epsf', 0, 'detected', false, 'flag', 'inconclusive', ...
+              'hUsed', 0, 'levels', zeros(0,1), 'nEvals', 0);
 epsf = 0;
 
 % --- Sampling direction (seeded random unit vector when not supplied) ---
@@ -77,11 +88,17 @@ end
 
 % --- Sample, analyse, and retry once if the spacing was off ---
 nEvals = 0;
+% hUsed is the spacing the reported result came from.  It used to be assigned
+% from h after the retry branch had already scaled it, so every non-'noise'
+% return advertised a spacing that was never sampled -- off by the 100x the
+% retry was about to apply, in whichever direction.
+hUsed = h;
 for attempt = 1:2
+    hUsed = h;
     [fval, ok] = sampleLine(fun, x0, p, h, nf);
     nEvals = nEvals + nf;
     if ~ok
-        info.flag = 'error';  info.nEvals = nEvals;  info.hUsed = h;
+        info.flag = 'error';  info.nEvals = nEvals;  info.hUsed = hUsed;
         return;
     end
 
@@ -90,8 +107,8 @@ for attempt = 1:2
 
     if inform == 1
         epsf = fnoise;
-        info.epsf = fnoise;  info.flag = 'noise';
-        info.hUsed = h;      info.nEvals = nEvals;
+        info.epsf = fnoise;  info.flag = 'noise';  info.detected = true;
+        info.hUsed = hUsed;  info.nEvals = nEvals;
         return;
     elseif inform == 2
         % Values essentially identical: spacing too small -> grow it and retry.
@@ -99,19 +116,19 @@ for attempt = 1:2
         h = h * 100;
     else % inform == 3
         % Smooth trend dominates the table: spacing too large -> shrink it.
-        % This is also the outcome for a genuinely clean (analytic-precision)
-        % function, so on the final attempt we report 'analytic' with epsf = 0.
-        info.flag = 'range';
+        info.flag = 'inconclusive';
         h = h / 100;
     end
 end
 
-% No conclusive detection after the retry: treat as analytic precision (epsf=0),
-% which makes the caller keep its default finite-difference step.
-if strcmp(info.flag, 'range')
-    info.flag = 'analytic';
-end
-info.epsf = 0;  info.hUsed = h;  info.nEvals = nEvals;
+% Nothing resolved after the retry.  epsf = 0 makes the caller keep its default
+% finite-difference step, which is the right fallback -- but the flag stays
+% 'inconclusive' or 'flat' rather than being rewritten to a confident
+% 'analytic'.  Two spacings cannot distinguish a clean function from one probed
+% four orders of magnitude too coarsely, and claiming otherwise handed callers
+% a measurement that was never made.
+info.epsf = 0;  info.detected = false;
+info.hUsed = hUsed;  info.nEvals = nEvals;
 epsf = 0;
 end
 

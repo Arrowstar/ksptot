@@ -20,7 +20,8 @@ function [K, rhs, idx] = kkt_assemble(state, res, reg)
 %     res   - residual struct from kkt_residual; fields rStat (n-by-1) and
 %             rFeasE (mE-by-1) form the right-hand side.
 %     reg   - (optional) regularization struct with scalar fields delta
-%             (primal) and gamma (dual); defaults to zeros when empty/omitted.
+%             (primal) and gamma (dual); each defaults to zero when the struct
+%             is empty, omitted, or does not carry that particular field.
 %
 %   Outputs:
 %     K   - (n+mE)-by-(n+mE) symmetric saddle-point KKT matrix.
@@ -30,22 +31,58 @@ function [K, rhs, idx] = kkt_assemble(state, res, reg)
 %
 %   See also KKT_RESIDUAL, KKT_KKTOPERATOR, KKT_INERTIACORRECTION.
 
-if nargin < 3 || isempty(reg)
-    reg = struct('delta', 0, 'gamma', 0);
+if nargin < 3
+    reg = [];
 end
+delta = regTerm(reg, 'delta');
+gamma = regTerm(reg, 'gamma');
 
 H  = state.H;
 JE = state.JE;
 n  = numel(state.x);
 mE = numel(state.lamE);
 
-H = H + reg.delta * eye(n);
+% Regularize the diagonal IN PLACE.  `H + delta*eye(n)` materializes a dense
+% n-by-n identity and, added to a sparse H, hands back a DENSE K -- destroying
+% the one property the LDL' factorization downstream depends on, and doing it
+% up to 40 times per iteration because kkt_inertiaCorrection re-assembles on
+% every correction try.  It happened even at delta = 0, where the whole term is
+% a no-op.  solve.m:1154 already takes exactly this care building W; the care
+% was thrown away one call later.
+if issparse(H)
+    if delta ~= 0
+        H = H + delta * speye(n);
+    end
+else
+    H(1:n+1:end) = H(1:n+1:end) + delta;
+end
 
-K = [ H,        JE.'; ...
-      JE,      -reg.gamma * eye(mE) ];
+% Same reasoning for the dual block: keep it sparse whenever either block it
+% joins is sparse, so a zero gamma costs O(mE) rather than an mE-by-mE dense
+% allocation per assembly.
+if issparse(H) || issparse(JE)
+    G = -gamma * speye(mE);
+else
+    G = -gamma * eye(mE);
+end
+
+K = [ H,   JE.'; ...
+      JE,  G ];
 
 rhs = -[ res.rStat; res.rFeasE ];
 
 idx.x    = 1:n;
 idx.lamE = n + (1:mE);
+end
+
+function v = regTerm(reg, name)
+%REGTERM  One regularization term from REG, or 0 when it is not supplied.
+%   The defaults used to be applied only when REG was entirely empty or
+%   omitted, so a partially populated struct -- delta set, gamma not -- errored
+%   on the missing field instead of taking the documented default of zero.
+if isstruct(reg) && isfield(reg, name) && ~isempty(reg.(name))
+    v = reg.(name);
+else
+    v = 0;
+end
 end

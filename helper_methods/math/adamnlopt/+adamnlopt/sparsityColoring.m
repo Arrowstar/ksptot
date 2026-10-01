@@ -18,10 +18,30 @@ function groups = sparsityColoring(pattern)
 
 pattern = logical(pattern);
 n = size(pattern, 2);
+
+% The coloring is a PURE function of the pattern, and the pattern is fixed for
+% the whole solve -- yet this was recomputed from scratch on every Jacobian
+% evaluation, i.e. once per iteration, for an answer that never changed.  One
+% content-keyed slot is enough: callers alternate between at most a couple of
+% patterns (objective Hessian, constraint Jacobian) and the isequal probe is
+% O(m*n) against the O(n^2)+ coloring it skips.
+persistent lastPattern lastGroups
+if ~isempty(lastPattern) && isequal(lastPattern, pattern)
+    groups = lastGroups;
+    return;
+end
+
 groups = zeros(1, n);
 % Column conflict: two columns conflict if they share any nonzero row.
 % overlap(i,j) nonzero => columns i and j cannot share a color.
-overlap = double(pattern') * double(pattern);   % n-by-n
+%
+% Built in SPARSE arithmetic: double(pattern')*double(pattern) densifies to a
+% full n-by-n product, which on the problems this path exists for (large n, few
+% nonzeros per column) is both the dominant cost here and a quadratic memory
+% spike.  A pattern dense enough for the sparse product to lose is one where
+% the coloring degenerates to n colors and the whole path buys nothing anyway.
+sp = sparse(double(pattern));
+overlap = sp.' * sp;   % n-by-n, sparse
 for j = 1:n
     used = false(1, n);
     conflicts = find(overlap(j, :) > 0);
@@ -34,4 +54,7 @@ for j = 1:n
     if isempty(c), c = max(groups) + 1; end
     groups(j) = c;
 end
+
+lastPattern = pattern;
+lastGroups  = groups;
 end

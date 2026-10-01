@@ -29,13 +29,15 @@ function [x, info] = degeneracy_restorationPhase(ev, x, lb, ub, opts)
 %     x    - n-by-1 starting point (projected onto the box before use).
 %     lb   - (optional) n-by-1 lower bounds; defaults to -inf.
 %     ub   - (optional) n-by-1 upper bounds; defaults to +inf.
-%     opts - options struct; uses opts.feasTol to stop once feasibility is met.
+%     opts - options struct; uses opts.feasTol to stop once feasibility is met
+%            and opts.maxFunEvals to bound the evaluations spent here.
 %
 %   Outputs:
 %     x    - n-by-1 restored (strictly more feasible) point within [lb, ub].
 %     info - struct with .iters (iterations taken), .theta0 (initial l1
-%            violation), .theta (final l1 violation), and .reduced (true if the
-%            violation decreased).
+%            violation), .theta (final l1 violation), .reduced (true if the
+%            violation decreased), .evals (user-function calls consumed) and
+%            .budgetHit (true when maxFunEvals, not convergence, ended it).
 %
 %   See also DEGENERACY_ELASTICVARIABLES, DEGENERACY_REGULARIZEDRECOVERY.
 
@@ -44,11 +46,36 @@ if nargin < 4 || isempty(ub), ub =  inf(size(x)); end
 
 maxIt = 50;
 restTrustRadius = 10;             % ||dx|| <= this * max(1, ||x||) per GN step
+aMin  = 1e-6;                     % Armijo floor: 20 halvings, not 33
 x = min(max(x, lb), ub);          % ensure we start inside the box
+evStart = ev.totalEvals();        % before theta0: that call is restoration's too
 theta0 = viol(ev, x);
 theta  = theta0;
 
+% Restoration spends the user's evaluation budget like any other phase, and on a
+% black-box problem it is the most expensive phase there is: each of up to 50
+% Gauss-Newton iterations costs one constraint evaluation, one JACOBIAN (n or 2n
+% nlcon calls when it is finite-differenced), and up to 20 more evaluations
+% backtracking.  Nothing here consulted maxFunEvals, so a solve that fell into
+% restoration could blow through the budget several times over inside a single
+% call and only notice on return.  Stop at the budget and say so in info.
+if isfield(opts, 'maxFunEvals') && ~isempty(opts.maxFunEvals)
+    evCap = opts.maxFunEvals;
+else
+    evCap = Inf;
+end
+
+% Fully populated up front: every break below used to leave some subset of these
+% fields unset, so a first-iteration exit returned an INFO struct with no .iters
+% at all and any caller that read it errored.
+info = struct('iters', 0, 'theta0', theta0, 'theta', theta0, ...
+              'reduced', false, 'evals', 0, 'budgetHit', false);
+
 for it = 1:maxIt
+    if ev.totalEvals() >= evCap
+        info.budgetHit = true;
+        break;
+    end
     [cE, cI] = ev.constraints(x);
     [JE, JI] = ev.jacobian(x);
     act  = cI > 0;
@@ -77,25 +104,28 @@ for it = 1:maxIt
     end
 
     a = 1;  accepted = false;
-    while a > 1e-10
+    while a >= aMin
         xt  = min(max(x + a * dx, lb), ub);   % projected trial point
         tht = viol(ev, xt);
         if tht < (1 - 1e-4 * a) * theta
             x = xt;  theta = tht;  accepted = true;  break;
         end
+        if ev.totalEvals() >= evCap
+            info.budgetHit = true;
+            break;
+        end
         a = 0.5 * a;
     end
 
     info.iters = it;
-    if ~accepted || theta < opts.feasTol
+    if ~accepted || theta < opts.feasTol || info.budgetHit
         break;
     end
 end
 
-if ~exist('it', 'var'), info.iters = 0; end
-info.theta0  = theta0;
 info.theta   = theta;
 info.reduced = theta < theta0;
+info.evals   = ev.totalEvals() - evStart;
 end
 
 function t = viol(ev, x)

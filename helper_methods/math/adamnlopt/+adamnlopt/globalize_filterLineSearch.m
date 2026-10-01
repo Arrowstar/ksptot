@@ -31,8 +31,9 @@ function [alpha, augment, rho, lsFailed] = globalize_filterLineSearch( ...
 %   both THETACAP and the filter itself -- the backup tightens the acceptance
 %   rule, it does not bypass it.  MULTINFNORM (default 0) is the multiplier
 %   inf-norm used to keep the l1 merit exact (rho >= ||lambda||_inf).  LSFAILED
-%   is true when no trial passed any test, in which case ALPHA is returned as the
-%   minimum step length so the caller can detect a genuine line-search failure.
+%   is true when no trial passed any test, in which case ALPHA is returned as
+%   min(amin, AMAX) -- the minimum step length, never longer than the caller's
+%   fraction-to-boundary cap -- so the caller can detect a genuine failure.
 %
 %   Inputs:
 %     phiTheta    - function handle a -> [phi, theta] evaluating the objective (or
@@ -49,7 +50,7 @@ function [alpha, augment, rho, lsFailed] = globalize_filterLineSearch( ...
 %                   backup; defaults to 0.
 %
 %   Outputs:
-%     alpha    - accepted step length (amin when lsFailed).
+%     alpha    - accepted step length (min(amin, aMax) when lsFailed).
 %     augment  - logical; true when the accepted step must be added to the filter.
 %     rho      - penalty weight, possibly increased by the merit backup.
 %     lsFailed - logical; true when no trial satisfied any acceptance test.
@@ -68,9 +69,22 @@ thetaMin = 1e-4 * max(1, theta0);
 amin = 1e-10;  c = 1e-4;
 lsFailed = false;
 
+% Every trial is cached as [alpha, phi, theta] so the merit backup below can
+% score the identical backtracking sequence without calling PHITHETA again.
+% Both loops start at the same aMax and halve identically, and the filter is
+% not mutated between them (the caller augments only after this function
+% returns), so every value -- and every isAcceptable verdict -- carries over
+% exactly.  Re-deriving them DOUBLED the user objective and constraint calls of
+% every stalled line search: ~34 extra evaluation pairs apiece, on precisely
+% the iterations that can least spare them.
+cache  = zeros(ceil(log2(max(aMax, amin) / amin)) + 2, 3);
+nCache = 0;
+
 alpha = aMax;
 while alpha > amin
     [phiT, thetaT] = phiTheta(alpha);
+    nCache = nCache + 1;
+    cache(nCache, :) = [alpha, phiT, thetaT];
     if thetaT <= thetaCap && filter.isAcceptable(thetaT, phiT)
         switching = gd < 0 && theta0 <= thetaMin && ...
                     alpha * (-gd)^sPhi > delta * theta0^sTheta;
@@ -95,17 +109,25 @@ end
 rho = control_penaltyUpdate(rho, multInfNorm, gd, theta0);
 phiM0 = phi0 + rho * theta0;
 dphiM = gd - rho * theta0;
-alpha = aMax;
-while alpha > amin
-    [phiT, thetaT] = phiTheta(alpha);
+for iT = 1:nCache
+    alpha  = cache(iT, 1);
+    phiT   = cache(iT, 2);
+    thetaT = cache(iT, 3);
     if thetaT <= thetaCap && filter.isAcceptable(thetaT, phiT) && ...
             globalize_meritAccept(phiM0, phiT + rho * thetaT, dphiM, alpha, c)
         augment = true;  return;
     end
-    alpha = 0.5 * alpha;
 end
 
 % Nothing passed.  Report the failure rather than silently returning a step the
 % caller believes was accepted: the restoration trigger keys off exactly this.
-alpha = amin;  augment = true;  lsFailed = true;
+%
+% min(aMax, ...) because amin is a FLOOR on the backtracking, not a licence to
+% exceed the caller's cap.  aMax is the fraction-to-boundary limit, and at the
+% endgame -- an inequality slack or a bound distance on its way to zero -- it
+% can itself fall below amin, in which case neither loop above ran a single
+% trial and the bare amin handed back a step LONGER than the barrier allows.
+% The caller takes it unconditionally, so a slack goes negative and the next
+% log-barrier evaluation is complex or NaN.
+alpha = min(amin, aMax);  augment = true;  lsFailed = true;
 end

@@ -76,8 +76,15 @@ classdef AdamNlOptOptimizer < AbstractGradientOptimizer
                     hMsgBox = NaN;
                 end
 
-                fAtX0 = objFunToPass(x0All);
-                gradCalcMethod.computeGradientSparsity(objFuncWrapper, x0All, fAtX0, obj.usesParallel());
+                %Both of these are only of use when the sparsity pattern is
+                %actually being computed: computeGradientSparsity returns
+                %immediately with an empty pattern otherwise, so the objective
+                %call feeding it was a whole script propagation thrown away on
+                %every run that leaves sparsity off.
+                if(sparsityTF)
+                    fAtX0 = objFunToPass(x0All);
+                    gradCalcMethod.computeGradientSparsity(objFuncWrapper, x0All, fAtX0, obj.usesParallel());
+                end
 
                 if(sparsityTF && isgraphics(hMsgBox))
                     close(hMsgBox); drawnow;
@@ -130,7 +137,6 @@ classdef AdamNlOptOptimizer < AbstractGradientOptimizer
             celBodyData = lvdOpt.lvdData.celBodyData;
 
             optimStartTic = tic();
-            maxTime = obj.options.maxTime;
 
             if(callOutputFcn)
                 propNames = lvdOpt.lvdData.launchVehicle.tankTypes.getFirstThreeTypesCellArr();
@@ -151,14 +157,18 @@ classdef AdamNlOptOptimizer < AbstractGradientOptimizer
                 outputFnc = [];
             end
 
-            %An IterationFcn is still needed with no GUI whenever maxTime is
-            %finite, because the solver itself never enforces it (see
-            %iterationFunc).  With a progress listener the headless reporter
-            %takes that over so both happen.
+            %opts.maxTime is enforced by the solver's own terminationCheck, so
+            %an IterationFcn is only installed when something actually wants to
+            %watch the iterations.  It used to be installed for a finite
+            %maxTime as well, which meant the budget was tested twice and the
+            %wrapper's copy usually won the race -- reporting exitflag -1
+            %("stopped by output function") for a run that had simply used up
+            %its time, which the solver reports as exitflag 0 with a message
+            %saying so.
             if(not(isempty(progressFcn)) && not(callOutputFcn))
-                problem.options.IterationFcn = @(info) AdamNlOptOptimizer.reportHeadlessProgress(info, progressFcn, maxTime, optimStartTic);
-            elseif(callOutputFcn || isfinite(maxTime))
-                problem.options.IterationFcn = @(info) AdamNlOptOptimizer.iterationFunc(info, outputFnc, maxTime, optimStartTic);
+                problem.options.IterationFcn = @(info) AdamNlOptOptimizer.reportHeadlessProgress(info, progressFcn);
+            elseif(callOutputFcn)
+                problem.options.IterationFcn = @(info) AdamNlOptOptimizer.iterationFunc(info, outputFnc);
             end
 
             [exitflag, message] = lvd_executeOptimProblem(celBodyData, writeOutput, problem, recorder, callOutputFcn);
@@ -201,15 +211,11 @@ classdef AdamNlOptOptimizer < AbstractGradientOptimizer
     end
 
     methods(Static, Access=private)
-        function stop = reportHeadlessProgress(info, progressFcn, maxTime, optimStartTic)
+        function stop = reportHeadlessProgress(info, progressFcn)
             %reportHeadlessProgress Forwards one solver iteration to a case
-            %run's progress listener, GUI-free.  Keeps the maxTime budget
-            %enforcement that iterationFunc provides, since this replaces it.
+            %run's progress listener, GUI-free.  Never stops the solve; the
+            %maxTime budget is the solver's own terminationCheck exit.
             stop = false;
-
-            if(isfinite(maxTime) && toc(optimStartTic) > maxTime)
-                stop = true;
-            end
 
             progressFcn(lvd_optimValuesFieldOrNaN(info, 'iteration'), ...
                         lvd_optimValuesFieldOrNaN(info, 'fval'), ...
@@ -217,7 +223,7 @@ classdef AdamNlOptOptimizer < AbstractGradientOptimizer
                         lvd_optimValuesFieldOrNaN(info, 'firstorderopt'));
         end
 
-        function stop = iterationFunc(info, outputFnc, maxTime, optimStartTic)
+        function stop = iterationFunc(info, outputFnc)
             %iterationFunc Adapt adamnlopt's IterationFcn(info) hook onto LVD's
             %fmincon style output function.
             %
@@ -229,14 +235,6 @@ classdef AdamNlOptOptimizer < AbstractGradientOptimizer
             %   nothing and abort every run on its first iteration instead.
 
             stop = false;
-
-            %opts.maxTime is documented in adamnlopt's defaultOptions but
-            %terminationCheck never tests elapsed time -- the field only
-            %surfaces as a display row.  Since AdamNlOptOptions exposes it, the
-            %budget has to be enforced from here.
-            if(isfinite(maxTime) && toc(optimStartTic) > maxTime)
-                stop = true;
-            end
 
             if(not(isempty(outputFnc)))
                 optimValues = struct('iteration', info.iteration, ...

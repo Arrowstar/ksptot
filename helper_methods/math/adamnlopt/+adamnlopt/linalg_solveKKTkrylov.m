@@ -39,7 +39,15 @@ nAll = numel(rhs);
 if isfield(opts, 'krylovMaxIter') && ~isempty(opts.krylovMaxIter)
     maxit = opts.krylovMaxIter;
 else
-    maxit = max(20, min(nAll, 10 * nAll));
+    % min(nAll, 10*nAll) is just nAll for nAll >= 0, so the intended 10x
+    % headroom was a no-op and MINRES was capped at max(20, n+mE) iterations.
+    % The Krylov path exists for problems too large to factor, where an
+    % indefinite saddle-point system in finite precision routinely needs more
+    % than n+mE iterations -- it loses orthogonality and has to rebuild it --
+    % so the cap was silently returning unconverged steps.  Give the headroom
+    % the expression was written to give, bounded so a huge problem cannot turn
+    % one linear solve into an unbounded one.
+    maxit = max(20, min(10 * nAll, nAll + 1000));
 end
 
 afun = @(v) op.apply(v);
@@ -58,6 +66,21 @@ switch method
         iters = (iterv(1) - 1) * restart + iterv(2);
     otherwise   % minres
         [d, flag, relres, iters] = minres(afun, rhs, tol, maxit, mfun);
+end
+
+% MATLAB's gmres/minres test convergence on the PRECONDITIONED residual but
+% report the TRUE relative residual in relres, so flag == 0 does not actually
+% mean the returned step solves K*d = rhs to tol.  On HS71 with
+% krylovMethod = 'gmres', gmres returned flag 0 (converged) at true relres
+% 1.66, 3.57 and, on one iteration, 2.1e+07 -- a "solution" orders of magnitude
+% worse than d = 0 -- and the caller, which only inspects flag, fed it straight
+% into the line search.  The result was a solve that ran 300 iterations and
+% stalled at f = 17.130 against the true 17.0140175.  Believe the number, not
+% the flag.  The 10x band absorbs the genuine preconditioned-versus-true norm
+% mismatch, which is a small constant factor, without absorbing a failure; the
+% floor keeps a numerically exact solve from being rejected when tol is tiny.
+if flag == 0 && relres > max(10 * tol, 1e-8)
+    flag = 4;   % distinct from MATLAB's 1..3 -- "reported converged, did not"
 end
 
 info = struct('iters', iters, 'relres', relres, 'flag', flag, 'method', method);

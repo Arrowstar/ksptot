@@ -1,4 +1,4 @@
-function [hs, sgn, twoSided] = fdBoundedStep(x, hWant, lb, ub)
+function [hs, sgn, twoSided, squeezed] = fdBoundedStep(x, hWant, lb, ub)
 %FDBOUNDEDSTEP  Per-coordinate finite-difference steps that stay inside bounds.
 %   [hs, sgn, twoSided] = adamnlopt.fdBoundedStep(x, hWant, lb, ub) takes the
 %   desired per-coordinate step magnitudes hWant and returns steps that keep
@@ -13,7 +13,14 @@ function [hs, sgn, twoSided] = fdBoundedStep(x, hWant, lb, ub)
 %     3. Only when neither side has room does the step SHRINK, to the larger of
 %        the two gaps.  Shrinking is the last resort because it raises the
 %        cancellation error, whereas flipping does not.
-%     4. A coordinate with no room at all (lb_i == ub_i) is a fixed variable:
+%        Rule 3 has no lower limit of its own, so a box narrower than the
+%        floating-point spacing at x_i used to yield a probe point that is not
+%        representably different from x_i: the function returns the identical
+%        value and the quotient is 0/tiny -- pure round-off entering the
+%        gradient as a derivative, with nothing reported. Such a coordinate is
+%        now handled by rule 4, and every rule-3 shrink is reported in SQUEEZED.
+%     4. A coordinate with no room at all (lb_i == ub_i), or whose step is too
+%        small to move x_i in floating point, is a fixed variable:
 %        hs = 0 and sgn = 0.  Callers must read that as "derivative along the
 %        feasible set is zero" rather than dividing by the step -- previously
 %        such a variable produced a 0/0 gradient entry and the solve returned
@@ -37,6 +44,10 @@ function [hs, sgn, twoSided] = fdBoundedStep(x, hWant, lb, ub)
 %     hs       - n-by-1 step magnitudes, >= 0 (0 only for a fixed variable).
 %     sgn      - n-by-1 of +1 (forward), -1 (backward), or 0 (fixed variable).
 %     twoSided - n-by-1 logical; true where a central difference fits in the box.
+%     squeezed - n-by-1 logical; true where rule 3 had to shrink the step below
+%                hWant. Those entries are the least accurate in the result, and
+%                the ones that went all the way to rule 4 carry no derivative at
+%                all, so a caller that cares can report or refuse them.
 %
 %   See also FINITEDIFFGRADIENT, FINITEDIFFJACOBIAN, PARALLEL_PARALLELFINITEDIFF.
 
@@ -49,6 +60,7 @@ else
 end
 sgn = ones(n, 1);
 
+squeezed = false(n, 1);
 if isempty(lb) && isempty(ub)
     twoSided = true(n, 1);
     return;
@@ -77,8 +89,19 @@ if any(squeeze_)
     hs(squeeze_)  = room;
     sgn(squeeze_) = s;
 end
+squeezed = squeeze_;
 
-fixed = hs <= 0;                         % rule 4: lb == ub, no room in either direction
+% A shrunk step is only useful if it actually moves the point.  When the box is
+% narrower than the floating-point spacing at x_i, x_i + sgn_i*hs_i rounds back
+% to x_i exactly: the user function returns the identical value, and (f-f)/hs is
+% 0 -- or NaN once hs underflows -- which the caller would store as a genuine
+% derivative.  There is no derivative to be had along a coordinate the solver
+% cannot move, which is precisely rule 4's case, so route it there.
+degenerate = (x + sgn .* hs) == x;
+hs(degenerate)  = 0;
+sgn(degenerate) = 0;
+
+fixed = hs <= 0;                         % rule 4: lb == ub, or no representable step
 hs(fixed)  = 0;
 sgn(fixed) = 0;
 

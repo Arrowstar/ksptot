@@ -1,27 +1,36 @@
-function c = linalg_conditionEstimate(A, k)
+function c = linalg_conditionEstimate(A, nMax)
 %LINALG_CONDITIONESTIMATE Cheap 2-norm condition estimate of the KKT system.
 %   c = adamnlopt.linalg_conditionEstimate(A) estimates cond_2(K). A may be a
 %   numeric matrix or a kkt_KKTOperator struct with an .apply handle. For a
-%   matrix, MATLAB's condest (sparse) or cond (dense) is used. For an operator,
-%   a k-step symmetric Lanczos builds a tridiagonal whose extreme Ritz values
-%   approximate the extreme eigenvalues, giving c = max|theta|/min|theta|.
-%   The operator estimate is a diagnostic lower bound, not an exact condition
-%   number; it is used to trigger regularization, not to certify accuracy.
+%   matrix, MATLAB's condest (sparse) or cond (dense) is used. For an operator
+%   small enough to materialize, K is rebuilt one column at a time and the
+%   numeric path is used; above that size the answer is NaN, meaning "not
+%   available", which a caller must not read as a small condition number.
+%
+%   WHY NOT LANCZOS.  This function used to run a 20-step symmetric Lanczos on
+%   the operator and return max|theta| / min|theta| over the Ritz values,
+%   documented as "a diagnostic lower bound".  For an indefinite KKT matrix it
+%   is not a bound in either direction.  The Ritz values interlace inside
+%   [lambda_min, lambda_max], an interval that STRADDLES ZERO for a saddle-point
+%   system, so a Ritz value can land arbitrarily close to 0 on a perfectly
+%   well-conditioned K (unbounded overestimate), while max|theta| <= ||K||_2
+%   always (underestimate of the numerator).  The product of the two errors has
+%   no sign.  A number used to trigger regularization cannot be one that is
+%   wrong in an unknown direction, so the branch no longer produces one.
 %
 %   Inputs:
-%     A - either a numeric (dense or sparse) KKT matrix, or a kkt_KKTOperator
-%         struct exposing A.apply plus dimensions A.n and A.mE for the
-%         matrix-free Lanczos path.
-%     k - (optional) number of Lanczos steps for the operator estimate;
-%         defaults to 20 and is capped at the problem dimension.
+%     A    - either a numeric (dense or sparse) KKT matrix, or a kkt_KKTOperator
+%            struct exposing A.apply plus dimensions A.n and A.mE.
+%     nMax - (optional) largest operator dimension that will be materialized;
+%            defaults to 500.  Materializing costs n mat-vecs.
 %
 %   Outputs:
-%     c - estimated 2-norm condition number cond_2(K). Inf when no nonzero
-%         Ritz value is found.
+%     c - estimated 2-norm condition number cond_2(K); NaN when A is an
+%         operator too large to materialize.
 %
 %   See also LINALG_SOLVEKKTDIRECT, KKT_INERTIACORRECTION, KKT_KKTOPERATOR.
 
-if nargin < 2 || isempty(k), k = 20; end
+if nargin < 2 || isempty(nMax), nMax = 500; end
 
 if isnumeric(A)
     if issparse(A)
@@ -53,42 +62,24 @@ if isnumeric(A)
     return;
 end
 
-% Matrix-free: symmetric Lanczos on the operator.
+% Matrix-free.  This branch has no caller today: the sole caller of this
+% function, traceCondK, passes the matrix from kkt_assemble, which always
+% returns a numeric K.  It exists so the operator path is safe if it is ever
+% wired up.
 n = A.n + A.mE;
-k = min(k, n);
-% The Lanczos start vector is drawn from a PRIVATE stream, not the global one,
-% for the same observational reason as the condest branch above.  Note this
-% branch currently has NO caller: the sole caller of this function, traceCondK,
-% passes the matrix from kkt_assemble, which always returns a numeric K.  The
-% guard is here so the operator path is safe if it is ever wired up -- it is not
-% what fixed the measured orbitRaiseTest perturbation.
-v = randn(RandStream('twister', 'Seed', 42), n, 1);
-nv = norm(v);
-if nv > 0, v = v / nv; end
-alpha = zeros(k, 1);  beta = zeros(k, 1);
-vPrev = zeros(n, 1);  bPrev = 0;
-for j = 1:k
-    w = A.apply(v);
-    a = v.' * w;
-    w = w - a * v - bPrev * vPrev;
-    w = w - (w.' * v) * v;          % one reorthogonalization step
-    b = norm(w);
-    alpha(j) = a;  beta(j) = b;
-    if b < 1e-14, k = j; break; end
-    vPrev = v;  v = w / b;  bPrev = b;
+if n > nMax
+    c = NaN;                    % honest "unknown", not a fabricated number
+    return;
 end
-alpha = alpha(1:k);
-if k > 1
-    off = beta(1:k-1);
-    T = diag(alpha) + diag(off, 1) + diag(off, -1);
-else
-    T = alpha;
+
+% n mat-vecs rebuild K exactly.  Expensive, but this is a traceLevel-2
+% diagnostic, and an exact condition number beats an unsigned-error estimate.
+K = zeros(n, n);
+e = zeros(n, 1);
+for j = 1:n
+    e(j) = 1;
+    K(:, j) = A.apply(e);
+    e(j) = 0;
 end
-theta = abs(eig(T));
-theta = theta(theta > 0);
-if isempty(theta)
-    c = Inf;
-else
-    c = max(theta) / min(theta);
-end
+c = adamnlopt.linalg_conditionEstimate(K);
 end

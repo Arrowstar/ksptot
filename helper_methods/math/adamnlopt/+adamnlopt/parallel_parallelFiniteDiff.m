@@ -1,4 +1,4 @@
-function [g, J] = parallel_parallelFiniteDiff(objFun, conFun, x, f0, c0, h, type, pattern, lb, ub)
+function [g, J, info] = parallel_parallelFiniteDiff(objFun, conFun, x, f0, c0, h, type, pattern, lb, ub)
 %PARALLEL_PARALLELFINITEDIFF Parallel finite-difference gradient and Jacobian.
 %   [g, J] = adamnlopt.parallel_parallelFiniteDiff(objFun, conFun, x, f0, c0,
 %   h, type) computes the gradient g = grad(objFun) and Jacobian J =
@@ -46,8 +46,20 @@ function [g, J] = parallel_parallelFiniteDiff(objFun, conFun, x, f0, c0, h, type
 %     lb, ub  - (optional) n-by-1 bounds; empty or omitted for none.
 %
 %   Outputs:
-%     g - n-by-1 objective gradient, or [] when objFun is empty.
-%     J - m-by-n constraint Jacobian, or [] when conFun/c0 is empty.
+%     g    - n-by-1 objective gradient, or [] when objFun is empty.
+%     J    - m-by-n constraint Jacobian, or [] when conFun/c0 is empty.
+%     info - struct counting the user-function calls actually made:
+%              nObjEvals - objFun calls (0 when objFun is empty),
+%              nConEvals - conFun calls (0 when the Jacobian is skipped),
+%              remote    - true when they ran on parfor WORKERS.
+%            The counts are exact, not n or 2n: bound handling fixes, shrinks
+%            and one-sides individual coordinates, and the colored path
+%            compresses n columns into a handful of groups. remote matters
+%            because a counter living on a handle object passed into the parfor
+%            body is incremented on a WORKER COPY and never comes back, so a
+%            self-counting function handle loses every probe on that path; the
+%            caller must add nConEvals/nObjEvals itself exactly when remote is
+%            true, and must NOT when it is false or it will double-count.
 %
 %   See also FDBOUNDEDSTEP, PARALLEL_BATCHEVALUATE, PARALLEL_ASYNCEVALUATOR.
 
@@ -71,6 +83,7 @@ else
 end
 
 useParfor = parallel_available();
+info = struct('nObjEvals', 0, 'nConEvals', 0, 'remote', useParfor);
 
 % --- Colored (sparse) Jacobian path ------------------------------------------
 % Only for a Jacobian-only call: the gradient has no exploitable sparsity, so a
@@ -85,37 +98,47 @@ if ~isempty(J) && ~isempty(pattern) && isempty(objFun)
     % one perturbation direction over a set of columns.  Without bounds this is
     % one task per color, as before; with bounds a color that needs both
     % directions becomes two tasks and a cornered column becomes its own.
-    taskCols = {};  taskStep = [];  taskCen = [];
+    % taskStep holds one step PER COLUMN, not one per task.  It used to be the
+    % scalar h*max(1, max|x| over the color): the largest variable in a color
+    % set the perturbation for every variable sharing it, so a 1e-6 variable
+    % colored with a 1e6 one was moved by 1e12 times its own scale.  Which
+    % variables share a color is decided by the sparsity pattern, so enabling
+    % JacobPattern -- a performance option -- silently wrecked those columns.
+    % The columns in a color have disjoint row supports, so one evaluation can
+    % carry a different step for each and each column is divided by its own.
+    taskCols = {};  taskStep = {};  taskCen = [];
     for c = 1:nC
         cols = find(groups == c);  cols = cols(:)';
-        hg = h * max(1, max(abs(x(cols))));
-        [hs, sgn, twoSided] = adamnlopt.fdBoundedStep(x(cols), hg, subsetBound(lb, cols), subsetBound(ub, cols));
-        full_ = (hs == hg);
-        batches = { cols(full_ & sgn > 0 &  twoSided & central), +hg, true;  ...
-                    cols(full_ & sgn > 0 & ~(twoSided & central)), +hg, false; ...
-                    cols(full_ & sgn < 0),                         -hg, false };
+        hcol = h * max(1, abs(x(cols(:))));
+        [hs, sgn, twoSided] = adamnlopt.fdBoundedStep(x(cols), hcol, subsetBound(lb, cols), subsetBound(ub, cols));
+        full_ = (hs(:) == hcol(:));
+        batches = { full_ & sgn(:) > 0 &  twoSided(:) & central, +1, true;  ...
+                    full_ & sgn(:) > 0 & ~(twoSided(:) & central), +1, false; ...
+                    full_ & sgn(:) < 0,                           -1, false };
         for k = 1:size(batches, 1)
-            if isempty(batches{k,1}), continue; end
-            taskCols{end+1} = batches{k,1};   %#ok<AGROW>
-            taskStep(end+1) = batches{k,2};   %#ok<AGROW>
-            taskCen(end+1)  = batches{k,3};   %#ok<AGROW>
+            idx = batches{k,1};
+            if ~any(idx), continue; end
+            taskCols{end+1} = cols(idx);                        %#ok<AGROW>
+            taskStep{end+1} = batches{k,2} * hcol(idx);         %#ok<AGROW>
+            taskCen(end+1)  = batches{k,3};                     %#ok<AGROW>
         end
-        % Columns with no room for the full group step get their own shrunk task
-        % rather than dragging the whole group's step down with them.
-        for t = find(~full_ & hs > 0)'
+        % Columns with no room for their full step get their own shrunk task
+        % rather than dragging the rest of the batch down with them.
+        for t = find(~full_ & hs(:) > 0)'
             taskCols{end+1} = cols(t);                          %#ok<AGROW>
-            taskStep(end+1) = sgn(t) * hs(t);                   %#ok<AGROW>
+            taskStep{end+1} = sgn(t) * hs(t);                   %#ok<AGROW>
             taskCen(end+1)  = central && twoSided(t);           %#ok<AGROW>
         end
         % hs == 0 columns are fixed variables (lb == ub) and keep a zero column.
     end
 
     nT   = numel(taskCols);
+    info.nConEvals = nT + nnz(taskCen);   % one call per task, two if central
     dpos = zeros(m, nT);
     dneg = zeros(m, nT);
     if useParfor
         parfor t = 1:nT
-            cols = taskCols{t};  d = taskStep(t);
+            cols = taskCols{t};  d = reshape(taskStep{t}, size(x(cols)));
             xp = x;  xp(cols) = xp(cols) + d;
             dpos(:, t) = conFun(xp);
             if taskCen(t)
@@ -125,7 +148,7 @@ if ~isempty(J) && ~isempty(pattern) && isempty(objFun)
         end
     else
         for t = 1:nT
-            cols = taskCols{t};  d = taskStep(t);
+            cols = taskCols{t};  d = reshape(taskStep{t}, size(x(cols)));
             xp = x;  xp(cols) = xp(cols) + d;
             dpos(:, t) = conFun(xp);
             if taskCen(t)
@@ -135,15 +158,19 @@ if ~isempty(J) && ~isempty(pattern) && isempty(objFun)
         end
     end
     for t = 1:nT
-        d = taskStep(t);
+        d = taskStep{t}(:);
+        colsT = taskCols{t}(:)';
         if taskCen(t)
-            dh = (dpos(:, t) - dneg(:, t)) / (2 * d);
+            dnum = dpos(:, t) - dneg(:, t);  den = 2 * d;
         else
-            dh = (dpos(:, t) - c0v) / d;
+            dnum = dpos(:, t) - c0v;         den = d;
         end
-        for j = taskCols{t}(:)'
+        % Each column divides by its OWN step; the disjoint row supports are
+        % what make that exact within a single shared evaluation.
+        for k = 1:numel(colsT)
+            j = colsT(k);
             rows = pat(:, j);
-            J(rows, j) = dh(rows);
+            J(rows, j) = dnum(rows) / den(k);
         end
     end
     g = [];
@@ -154,6 +181,13 @@ end
 [hs, sgn, twoSided] = adamnlopt.fdBoundedStep(x, h * max(1, abs(x)), lb, ub);
 d2 = sgn .* hs;                 % signed step; 0 for a fixed variable
 cen = central & twoSided;       % per-coordinate central availability
+
+% Exact per-function call count for the dense paths: one call per moving
+% coordinate, plus a second for every coordinate that gets a central difference.
+% Fixed variables (d2 == 0) are skipped by every branch below and cost nothing.
+nCalls = nnz(d2 ~= 0) + nnz(cen & (d2 ~= 0));
+if ~isempty(objFun),            info.nObjEvals = nCalls; end
+if ~isempty(conFun) && ~isempty(c0), info.nConEvals = nCalls; end
 
 if useParfor
     % Perturbed function values: one column per direction.
@@ -212,14 +246,29 @@ if ~isempty(v), v = v(cols); end
 end
 
 function v = parallel_available()
-%PARALLEL_AVAILABLE  Test whether the Parallel Computing Toolbox is installed.
-%   v = parallel_available() returns true when ver('parallel') is non-empty,
-%   used to decide between the parfor path and the sequential fallback.
+%PARALLEL_AVAILABLE  Test whether the Parallel Computing Toolbox is usable.
+%   v = parallel_available() decides between the parfor path and the
+%   sequential fallback. The answer is cached for the session.
+%
+%   ver('parallel') scans the toolbox path, and this was called once per
+%   Jacobian -- i.e. once per solver iteration -- for an answer that cannot
+%   change inside a MATLAB session. It also answers the wrong question:
+%   ver reports INSTALLED, and on a shared license server the toolbox sits on
+%   disk while parfor degrades to serial with a license error. license('test')
+%   is the question the caller is actually asking. Both are now asked once.
+%
+%   The cache means a license checked out after the first call in a session is
+%   not picked up; clear the function to re-probe.
 %
 %   Inputs:
 %     (none)
 %
 %   Outputs:
 %     v - logical; true if the Parallel Computing Toolbox is available.
-v = ~isempty(ver('parallel'));
+persistent avail
+if isempty(avail)
+    avail = ~isempty(ver('parallel')) && ...
+            license('test', 'Distrib_Computing_Toolbox') == 1;
+end
+v = avail;
 end

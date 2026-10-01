@@ -74,26 +74,36 @@ nColors = max(groups);
 for c = 1:nColors
     cols = find(groups == c);
     cols = cols(:)';
-    % Legacy group step: one magnitude for the whole color, scaled by the
-    % largest |x| in the group.
-    hg = hstep * max(1, max(abs(x(cols))));
-    [hs, sgn, twoSided] = fdBoundedStep(x(cols), hg, lb2(lb, cols), lb2(ub, cols));
+    % PER-COLUMN step, not one magnitude for the whole color.  The step used to
+    % be hstep*max(1, max|x| over the group) -- the largest variable in the
+    % color set the step for all of them -- so a variable of size 1e-6 sharing a
+    % color with one of size 1e6 was perturbed by 1e12 times its own scale and
+    % its column of the Jacobian was meaningless.  Which variables share a color
+    % is decided by the SPARSITY PATTERN, so turning on JacobPattern, a purely
+    % computational option, silently destroyed accuracy that the dense path got
+    % right.  The columns in a color have disjoint row supports by construction,
+    % so each can carry its own step and be divided by its own step in the same
+    % evaluation: identical cost, correct relative step everywhere.
+    hcol = hstep * max(1, abs(x(cols(:))));
+    [hs, sgn, twoSided] = fdBoundedStep(x(cols), hcol, lb2(lb, cols), lb2(ub, cols));
 
-    full_ = (hs == hg);                  % columns that keep the full group step
-    batchCols = { cols(full_ & sgn > 0 &  twoSided & central), ...
-                  cols(full_ & sgn > 0 & ~(twoSided & central)), ...
-                  cols(full_ & sgn < 0) };
+    full_ = (hs(:) == hcol(:));          % columns that keep their full step
+    sel = { full_ & sgn(:) > 0 &  twoSided(:) & central, ...
+            full_ & sgn(:) > 0 & ~(twoSided(:) & central), ...
+            full_ & sgn(:) < 0 };
     batchSgn  = [ +1, +1, -1 ];
     batchCen  = [ true, false, false ];  % backward columns are never two-sided
     for k = 1:3
-        bc = batchCols{k};
-        if isempty(bc), continue; end
-        J = applyBatch(J, h, x, base, pattern, bc, batchSgn(k)*hg, batchCen(k));
+        idx = sel{k};
+        if ~any(idx), continue; end
+        J = applyBatch(J, h, x, base, pattern, cols(idx), ...
+                       batchSgn(k) * hcol(idx), batchCen(k));
     end
 
-    % Columns that had to shrink (no room for hg on either side) are differenced
-    % individually so their reduced step does not contaminate the whole group.
-    odd = find(~full_ & hs > 0);
+    % Columns that had to shrink (no room for their step on either side) are
+    % differenced individually: their bound-limited step is no longer the one
+    % the rest of the batch was perturbed by.
+    odd = find(~full_ & hs(:) > 0);
     for t = odd(:)'
         j = cols(t);
         J = applyBatch(J, h, x, base, pattern, j, sgn(t)*hs(t), central && twoSided(t));
@@ -105,19 +115,29 @@ end
 % ------------------------------------------------------------------------
 function J = applyBatch(J, h, x, base, pattern, cols, d, central)
 %APPLYBATCH  Difference one batch of structurally independent columns.
-%   Perturbs every column in COLS by the signed step D at once and scatters the
-%   result into the rows each column actually touches. COLS must have pairwise
-%   disjoint row supports (guaranteed by the coloring) for this to be exact.
-xp = x;  xp(cols) = xp(cols) + d;
+%   Perturbs every column in COLS by its own signed step D(k) at once and
+%   scatters the result into the rows each column actually touches. COLS must
+%   have pairwise disjoint row supports (guaranteed by the coloring) for this to
+%   be exact. D is scalar or one entry per column; because the supports are
+%   disjoint, each column's rows are divided by that column's own step, which is
+%   what lets one evaluation carry a different step per variable.
+cols = cols(:)';
+d    = d(:);
+if isscalar(d), d = repmat(d, numel(cols), 1); end
+dShaped = reshape(d, size(x(cols)));     % x may be a row or a column
+xp = x;  xp(cols) = xp(cols) + dShaped;
 if central
-    xm = x;  xm(cols) = xm(cols) - d;
-    dh = (h(xp) - h(xm)) / (2*d);
+    xm = x;  xm(cols) = xm(cols) - dShaped;
+    dnum = h(xp) - h(xm);
+    den  = 2 * d;
 else
-    dh = (h(xp) - base) / d;
+    dnum = h(xp) - base;
+    den  = d;
 end
-for j = cols(:)'
+for k = 1:numel(cols)
+    j = cols(k);
     rows = pattern(:, j);
-    J(rows, j) = dh(rows);
+    J(rows, j) = dnum(rows) / den(k);
 end
 end
 

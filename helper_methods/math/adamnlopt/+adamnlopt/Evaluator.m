@@ -69,6 +69,10 @@ classdef Evaluator < handle
         mIlin = 0; mElin = 0       % linear-only counts
         fdStep = sqrt(eps)
         fdType = 'forward'
+        % True when the caller supplied a non-default FiniteDifferenceStepSize /
+        % FiniteDifferenceType.  calibrateStep leaves those alone.
+        fdStepUserSet = false
+        fdTypeUserSet = false
         % Bounds the FD probes must stay inside.  Set from problem.lb/ub when
         % opts.HonorBounds is true, and left EMPTY otherwise -- fdBoundedStep
         % treats empty bounds as the identity, so HonorBounds = false takes the
@@ -135,6 +139,14 @@ classdef Evaluator < handle
             obj.mE     = obj.mElin + obj.mEnl;
             obj.fdStep = opts.FiniteDifferenceStepSize;
             obj.fdType = opts.FiniteDifferenceType;
+            % Remember whether the caller moved these off the defaults.  autoFDStep
+            % defaults ON and calibrateStep used to overwrite both unconditionally,
+            % so FiniteDifferenceStepSize and FiniteDifferenceType -- exposed all
+            % the way out to the LVD options dialog -- were inert for anyone who
+            % did not also know to turn autoFDStep off.  An explicitly set value
+            % now wins; see calibrateStep.
+            obj.fdStepUserSet = opts.FiniteDifferenceStepSize ~= sqrt(eps);
+            obj.fdTypeUserSet = ~strcmpi(opts.FiniteDifferenceType, 'forward');
             if adamnlopt.Evaluator.getOpt(opts, 'HonorBounds', true)
                 obj.fdLb = getfielddef(problem, 'lb', []);
                 obj.fdUb = getfielddef(problem, 'ub', []);
@@ -184,24 +196,57 @@ classdef Evaluator < handle
             if nargout > 1
                 if obj.hasObjGrad
                     if ~obj.hasCachedG
+                        % A value-only call cached f with no gradient; this is a
+                        % SECOND user objective call at the same x, so it costs
+                        % one evaluation and must be counted.  It was not, so a
+                        % run that mixes value-only and value+gradient calls
+                        % under-reported funcCount by one per occurrence.
                         [~, gtmp] = obj.objFun(x);
                         obj.gVal = gtmp(:);
                         obj.hasCachedG = true;
+                        obj.nFun = obj.nFun + 1;
                     end
                     g = obj.gVal;
                 else
                     if obj.parallelFD
-                        [g, ~] = parallel_parallelFiniteDiff( ...
+                        % Exact count from the FD routine rather than the n/2n
+                        % estimate: bounds fix, shrink and one-side individual
+                        % coordinates, so the estimate is wrong on a bounded
+                        % problem in both directions.
+                        [g, ~, fdInfo] = parallel_parallelFiniteDiff( ...
                             @(z) obj.objFun(z), [], x, obj.fVal, [], ...
                             obj.fdStep, obj.fdType, [], obj.fdLb, obj.fdUb);
+                        obj.nFun = obj.nFun + fdInfo.nObjEvals;
                     else
                         g = finiteDiffGradient(@(z) obj.objFun(z), x, obj.fVal, ...
                                                obj.fdStep, obj.fdType, ...
                                                obj.fdLb, obj.fdUb);
+                        obj.nFun = obj.nFun + numFDevals(obj, x);
                     end
-                    obj.nFun = obj.nFun + numFDevals(obj, x);
                 end
             end
+        end
+
+        function k = totalEvals(obj)
+        %TOTALEVALS  Total user-function calls made so far (objective + nlcon).
+        %   k = totalEvals(obj) returns nFun + nCon, the measure the maxFunEvals
+        %   budget and output.funcCount are expressed in.
+        %
+        %   nFun alone is the wrong budget on a black-box problem: with no
+        %   analytic constraint Jacobian every Jacobian costs n (forward) or 2n
+        %   (central) nlcon calls, which on the LVD workload is the dominant --
+        %   often overwhelming -- share of the wall clock.  Budgeting on nFun
+        %   let a run spend an unbounded amount of time in constraint
+        %   evaluations while reporting a function count that never approached
+        %   its limit.  output keeps objCount and conCount broken out so the
+        %   split is still visible.
+        %
+        %   Inputs:
+        %     obj - the Evaluator handle object.
+        %
+        %   Outputs:
+        %     k - scalar total user-function evaluation count.
+            k = obj.nFun + obj.nCon;
         end
 
         function info = calibrateStep(obj, x0)
@@ -227,8 +272,10 @@ classdef Evaluator < handle
         %
         %   Probes are skipped for any block with analytic derivatives (objective
         %   when hasObjGrad; constraints when hasConGrad or none are nonlinear).
-        %   All probe evaluations are added to nFun.  Wrapped so a probe failure
-        %   leaves the defaults untouched rather than stopping the solve.
+        %   Objective probe evaluations are added to nFun; constraint probes
+        %   count themselves in nCon via evalNonlinear, so adding them here too
+        %   would double-count them into the wrong counter.  Wrapped so a probe
+        %   failure leaves the defaults untouched rather than stopping the solve.
         %
         %   Inputs:
         %     obj - the Evaluator handle object.
@@ -239,18 +286,34 @@ classdef Evaluator < handle
         %   and calibration is abandoned outright when fewer than 3 steps survive
         %   -- see the comment at the truncation.
         %
+        %   An explicitly supplied FiniteDifferenceStepSize or
+        %   FiniteDifferenceType is treated as a request and left alone; with
+        %   both supplied this returns flag 'userSet' without spending a probe.
+        %
         %   Outputs:
         %     info - struct: flag ('set'|'skipped'|'inconclusive'|'analytic'|
-        %            'boundLimited'), promoted, fdStep, fdType, errFwd (best
+        %            'boundLimited'|'userSet'), promoted, fdStep, fdType, errFwd (best
         %            forward rel error), errCen (best central rel error), nEvals,
-        %            hMax (largest in-bounds step; Inf when unbounded) and
+        %            nEvalsObj (the objective share of nEvals, the part booked to
+        %            nFun), hMax (largest in-bounds step; Inf when unbounded) and
         %            nSweepDropped (candidate steps removed by the bounds).
         %
         %   See also FINITEDIFFGRADIENT, FINITEDIFFJACOBIAN, ESTIMATENOISE.
             info = struct('flag', 'skipped', 'promoted', false, ...
                           'fdStep', obj.fdStep, 'fdType', obj.fdType, ...
                           'errFwd', NaN, 'errCen', NaN, 'nEvals', 0, ...
-                          'hMax', Inf, 'nSweepDropped', 0);
+                          'nEvalsObj', 0, 'hMax', Inf, 'nSweepDropped', 0);
+
+            % An explicit FiniteDifferenceStepSize/Type beats the calibration.
+            % With BOTH pinned there is nothing left for the sweep to decide, so
+            % return before spending a single probe evaluation on it.
+            info.fdStepUserSet = obj.fdStepUserSet;
+            info.fdTypeUserSet = obj.fdTypeUserSet;
+            if obj.fdStepUserSet && obj.fdTypeUserSet
+                info.flag = 'userSet';
+                return;
+            end
+
             x0 = x0(:);  nx = numel(x0);
 
             % Probe functions returning VECTOR outputs: the (scalar) objective and
@@ -262,12 +325,18 @@ classdef Evaluator < handle
             % too small.  The per-component error is combined by the RELATIVE
             % inf-norm below, so the noisiest row governs the step, matching how it
             % will poison its own Jacobian column.
-            probes = {};
+            % probeIsObj marks which probes call the OBJECTIVE.  Constraint
+            % probes route through evalNonlinearStacked -> evalNonlinear, which
+            % advances nCon itself, so adding their count to nFun below would
+            % both double-count them and book them to the wrong counter.
+            probes = {};  probeIsObj = false(1, 0);
             if ~obj.hasObjGrad
                 probes{end+1} = @(z) obj.objFun(z);
+                probeIsObj(end+1) = true;
             end
             if ~obj.hasConGrad && (obj.mEnl + obj.mInl) > 0
                 probes{end+1} = @(z) obj.evalNonlinearStacked(z);
+                probeIsObj(end+1) = false;
             end
             if isempty(probes)
                 return;                      % all-analytic: nothing to calibrate
@@ -327,7 +396,7 @@ classdef Evaluator < handle
             % reference step can itself sit on the noise floor and corrupt the
             % whole curve), and the inf-norm over the vector-valued constraint
             % probe keeps the noisiest component binding.
-            nEv = 0;
+            nEv = 0;  nEvObj = 0;
             % adjacent-change per step, per probe (NaN at k=1: no previous step).
             adjFwdP = nan(nh, numel(probes));
             adjCenP = nan(nh, numel(probes));
@@ -335,13 +404,16 @@ classdef Evaluator < handle
             try
                 for ip = 1:numel(probes)
                     g = probes{ip};
+                    isObj = probeIsObj(ip);
                     g0 = g(x0);  nEv = nEv + 1;
+                    if isObj, nEvObj = nEvObj + 1; end
                     dFprev = [];  dCprev = [];
                     for k = 1:nh
                         h = hSweep(k);
                         gp = g(x0 + h*svec);
                         gm = g(x0 - h*svec);
                         nEv = nEv + 2;
+                        if isObj, nEvObj = nEvObj + 2; end
                         dFwd = (gp - g0) / h;
                         dCen = (gp - gm) / (2*h);
                         if ~isempty(dFprev)
@@ -356,8 +428,9 @@ classdef Evaluator < handle
             catch
                 ok = false;
             end
-            obj.nFun = obj.nFun + nEv;
+            obj.nFun = obj.nFun + nEvObj;   % constraint probes self-count in nCon
             info.nEvals = nEv;
+            info.nEvalsObj = nEvObj;
             if ~ok
                 info.flag = 'skipped';
                 return;                      % probe failed: keep defaults
@@ -401,16 +474,18 @@ classdef Evaluator < handle
             % plateau).  Whenever central is available and meaningfully tighter,
             % promote to it -- the extra n evals/Jacobian buy the accuracy needed
             % to certify tight tolerances on a noisy simulation problem.
+            % setFd honours whichever of the two the caller pinned: a user step
+            % with an auto-chosen scheme, or vice versa, are both coherent.
             if isfinite(bestF) && bestF <= 0.1 * target
-                obj.fdType = 'forward';  obj.fdStep = hSweep(iF);
+                setFd(obj, 'forward', hSweep(iF));
             elseif isfinite(bestC) && bestC < 0.5 * bestF
-                obj.fdType = 'central';  obj.fdStep = hSweep(iC);
-                info.promoted = true;
+                setFd(obj, 'central', hSweep(iC));
+                info.promoted = ~obj.fdTypeUserSet;
             elseif isfinite(bestF)
-                obj.fdType = 'forward';  obj.fdStep = hSweep(iF);
+                setFd(obj, 'forward', hSweep(iF));
             else
-                obj.fdType = 'central';  obj.fdStep = hSweep(iC);
-                info.promoted = true;
+                setFd(obj, 'central', hSweep(iC));
+                info.promoted = ~obj.fdTypeUserSet;
             end
             info.flag = 'set';
             info.fdStep = obj.fdStep;  info.fdType = obj.fdType;
@@ -422,8 +497,9 @@ classdef Evaluator < handle
         %   vectors with linear rows first and nonlinear rows appended:
         %       cE = [Aeq*x - beq ; ceq_nl(x)]   (== 0)
         %       cI = [A*x   - b    ; c_nl(x)]     (<= 0)
-        %   Values are cached at x and the counter nCon is advanced once per new
-        %   point.
+        %   Values are cached at x.  The counter nCon is advanced by
+        %   evalNonlinear, which is the chokepoint every user nlcon call passes
+        %   through -- incrementing here as well would double-count.
         %
         %   Inputs:
         %     obj - the Evaluator handle object.
@@ -439,7 +515,6 @@ classdef Evaluator < handle
                 obj.cIVal = [cIl; cnl(:)];
                 obj.cEVal = [cEl; ceqnl(:)];
                 obj.xc = x;
-                obj.nCon = obj.nCon + 1;
             end
             cE = obj.cEVal;
             cI = obj.cIVal;
@@ -473,12 +548,36 @@ classdef Evaluator < handle
             end
 
             % --- Broyden update path ---
-            if obj.enableBroyden && ~isempty(obj.broyden_) && ~obj.broyden_.needsRefresh()
+            % Gated on ~hasConGrad: a rank-1 secant approximation must never
+            % displace an EXACT user-supplied Jacobian.  This branch ran before
+            % the hasConGrad branch below, so setting enableBroyden silently
+            % replaced analytic Jacobians with an approximation.
+            %
+            % broydenActive() (not enableBroyden) is the gate, so the
+            % costThreshold auto-enable actually serves a Broyden Jacobian.
+            % The build site below already used the auto condition, but this
+            % use site did not, so the auto path paid the extra evalNonlinear
+            % to maintain a Broyden object that was never consulted.
+            if obj.broydenActive() && ~obj.hasConGrad && ...
+                    ~isempty(obj.broyden_) && ~obj.broyden_.needsRefresh()
                 [cnl, ceqnl] = obj.evalNonlinear(x);
                 cNlNew = [cnl(:); ceqnl(:)];
                 s = x - obj.xAtJac_;
                 y = cNlNew - obj.cNlAtJac_;
-                obj.broyden_.update(s, y, cNlNew);
+                accepted = obj.broyden_.update(s, y, cNlNew, obj.xAtJac_);
+                % Advance the secant anchor to the point just evaluated, so the
+                % NEXT pair is the consecutive step (x_{k+1} - x_k).  The anchor
+                % used to stay pinned at the last exact refresh, which made
+                % every update re-impose the secant condition along one
+                % accumulating direction instead of accumulating curvature over
+                % distinct directions -- not the hypothesis Broyden's method
+                % converges under.  Only advance on an accepted update: a
+                % rejected pair left the model unchanged, so the anchor it was
+                % measured from is still the right one.
+                if accepted
+                    obj.xAtJac_   = x;
+                    obj.cNlAtJac_ = cNlNew;
+                end
                 if ~obj.broyden_.needsRefresh()
                     Jstacked = obj.broyden_.full();
                     obj.JIVal = [obj.Aineq;  Jstacked(1:obj.mInl, :)];
@@ -492,18 +591,29 @@ classdef Evaluator < handle
 
             % --- Exact Jacobian path ---
             t0 = tic;
+            baseNl = [];           % stacked [c_nl; ceq_nl] at x, when computed
             if obj.hasConGrad
                 [~, ~, gc, gceq] = obj.nlcon(x);
+                obj.nCon = obj.nCon + 1;
                 Jc   = transposeOrEmpty(gc,   obj.mInl, obj.n);
                 Jceq = transposeOrEmpty(gceq, obj.mEnl, obj.n);
             else
                 [cnl, ceqnl] = obj.evalNonlinear(x);
                 h = @(z) obj.evalNonlinearStacked(z);
                 base = [cnl(:); ceqnl(:)];
+                baseNl = base;
                 if obj.parallelFD
-                    [~, J] = parallel_parallelFiniteDiff( ...
+                    [~, J, fdInfo] = parallel_parallelFiniteDiff( ...
                         [], h, x, [], base, obj.fdStep, obj.fdType, ...
                         obj.jacPattern, obj.fdLb, obj.fdUb);
+                    % h self-counts into nCon, but only in THIS process.  On the
+                    % parfor path the probes run on worker copies of this handle
+                    % object and their increments are discarded, so add them
+                    % back here -- and only here, or the sequential fallback
+                    % (remote == false) would be counted twice.
+                    if fdInfo.remote
+                        obj.nCon = obj.nCon + fdInfo.nConEvals;
+                    end
                 else
                     J = finiteDiffJacobian(h, x, base, obj.fdStep, obj.fdType, ...
                                            obj.jacPattern, obj.fdLb, obj.fdUb);
@@ -518,7 +628,10 @@ classdef Evaluator < handle
             obj.xj = x;
 
             % --- Initialize or refresh Broyden approximation ---
-            if obj.enableBroyden || obj.costModel.tooExpensive(obj.costThreshold)
+            % Same ~hasConGrad gate as the use path: with analytic Jacobians
+            % there is nothing to approximate, and building the model here cost
+            % an extra evalNonlinear per Jacobian for a model never consulted.
+            if obj.broydenActive() && ~obj.hasConGrad
                 Jstacked = [Jc; Jceq];
                 if isempty(obj.broyden_)
                     obj.broyden_ = eval_BroydenJacobian( ...
@@ -526,8 +639,12 @@ classdef Evaluator < handle
                 else
                     obj.broyden_.setExact(Jstacked);
                 end
-                [cnl2, ceqnl2] = obj.evalNonlinear(x);
-                obj.cNlAtJac_ = [cnl2(:); ceqnl2(:)];
+                % The FD branch above already evaluated the constraints at x, so
+                % reuse that vector.  Calling evalNonlinear again here bought
+                % nothing and cost one full user constraint evaluation on every
+                % exact refresh -- on a black-box problem the single most
+                % expensive thing in the package.
+                obj.cNlAtJac_ = baseNl;
                 obj.xAtJac_   = x;
             end
 
@@ -536,11 +653,41 @@ classdef Evaluator < handle
     end
 
     methods (Access = private)
+        function v = broydenActive(obj)
+        %BROYDENACTIVE  Whether secant Jacobian updates are in effect.
+        %   v = broydenActive(obj) is true when Broyden mode was requested
+        %   explicitly (enableBroyden) or auto-enabled because exact Jacobians
+        %   have become expensive (the cost model's windowed average exceeds
+        %   costThreshold seconds).  Both the build site and the use site in
+        %   jacobian() must ask the SAME question: when they disagreed, the auto
+        %   path built and maintained a Broyden model -- at the price of an
+        %   extra constraint evaluation per Jacobian -- that the use site, gated
+        %   on enableBroyden alone, would never consult.
+        %
+        %   Inputs:
+        %     obj - the Evaluator handle object.
+        %
+        %   Outputs:
+        %     v - logical; true when the Broyden path is active.
+            v = obj.enableBroyden || obj.costModel.tooExpensive(obj.costThreshold);
+        end
         function [c, ceq] = evalNonlinear(obj, x)
         %EVALNONLINEAR  Evaluate the raw nonlinear constraints.
         %   [c, ceq] = evalNonlinear(obj, x) calls nlcon and returns the
         %   nonlinear inequality and equality values as columns, or empty
         %   columns when no nonlinear constraint is defined.
+        %
+        %   THIS IS THE SINGLE CHOKEPOINT for every user nlcon call, so the
+        %   constraint counter nCon is advanced HERE rather than in
+        %   constraints().  Counting at the caller missed everything that does
+        %   not go through constraints(): the finite-difference Jacobian probes
+        %   (n or 2n calls per Jacobian, routed through evalNonlinearStacked),
+        %   the Broyden secant and refresh evaluations, and the value
+        %   re-evaluation inside the exact-Jacobian path.  On a black-box
+        %   problem with no analytic constraint Jacobian -- the LVD workload --
+        %   that uncounted set IS the dominant cost of the solve, so it was
+        %   absent from both output.funcCount and the maxFunEvals budget and
+        %   the budget did not bound the run.
         %
         %   Inputs:
         %     obj - the Evaluator handle object.
@@ -550,10 +697,11 @@ classdef Evaluator < handle
         %     c   - mInl-by-1 nonlinear inequality values.
         %     ceq - mEnl-by-1 nonlinear equality values.
             if isempty(obj.nlcon)
-                c = zeros(0,1);  ceq = zeros(0,1);
+                c = zeros(0,1);  ceq = zeros(0,1);   % no user call: no cost
             else
                 [c, ceq] = obj.nlcon(x);
                 c = c(:);  ceq = ceq(:);
+                obj.nCon = obj.nCon + 1;
             end
         end
         function v = evalNonlinearStacked(obj, x)
@@ -646,10 +794,32 @@ function J = transposeOrEmpty(G, m, n)
 %
 %   Outputs:
 %     J - m-by-n Jacobian.
+%
+%   An empty G is only legitimate when m == 0.  It used to be silently turned
+%   into an m-by-n block of ZEROS for any m, which is a valid-looking Jacobian
+%   asserting that every constraint is locally constant: the solver then sees no
+%   way to influence those rows, takes steps that ignore them, and converges to
+%   a point that satisfies first-order conditions for a problem the user did not
+%   pose.  A user who declares SpecifyConstraintGradient and returns [] for one
+%   of the two gradient blocks while that block has rows has a bug, and it must
+%   surface here rather than as a wrong answer.  A wrongly oriented (m-by-n)
+%   gradient is caught by the same check whenever m ~= n.
 % fmincon derivative convention: columns are constraints (n-by-m). Return m-by-n.
 if isempty(G)
+    if m > 0
+        error('adamnlopt:Evaluator:missingConGrad', ...
+              ['Constraint gradient is empty but %d nonlinear constraint(s) ' ...
+               'are defined. With SpecifyConstraintGradient on, nlcon must ' ...
+               'return a %d-by-%d gradient (columns are constraints).'], m, n, m);
+    end
     J = zeros(m, n);
 else
+    if ~isequal(size(G), [n, m])
+        error('adamnlopt:Evaluator:conGradSize', ...
+              ['Constraint gradient is %d-by-%d; expected %d-by-%d ' ...
+               '(fmincon convention: one COLUMN per constraint).'], ...
+              size(G,1), size(G,2), n, m);
+    end
     J = G.';
 end
 end
@@ -678,6 +848,20 @@ if ~any(move)
     hMax = Inf;
 else
     hMax = min(room(move) ./ abs(svec(move)));
+end
+end
+
+function setFd(obj, fdType, fdStep)
+%SETFD  Apply a calibrated FD scheme/step, skipping anything the user pinned.
+%   An explicit FiniteDifferenceType or FiniteDifferenceStepSize is a request,
+%   not a starting guess.  calibrateStep used to overwrite both unconditionally,
+%   which made the two options inert whenever autoFDStep was on -- and it is on
+%   by default, so they were inert for essentially every caller.
+if ~obj.fdTypeUserSet
+    obj.fdType = fdType;
+end
+if ~obj.fdStepUserSet
+    obj.fdStep = fdStep;
 end
 end
 

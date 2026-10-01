@@ -7,9 +7,10 @@ function [fnoise, level, inform] = ecnoiseCore(fval)
 %     inform = 1  noise detected (fnoise valid),
 %     inform = 2  spacing too small (differences vanish -> increase spacing),
 %     inform = 3  spacing too large / inconclusive (decrease spacing).
-%   This is the shared core used both by ESTIMATENOISE (scalar functions along a
-%   random direction) and by EVALUATOR/CALIBRATESTEP (each constraint component
-%   from a single set of vector samples).
+%   ESTIMATENOISE (scalar functions along a random direction) is the caller.
+%   The docstring used to advertise EVALUATOR/CALIBRATESTEP as a second caller
+%   as well; calibrateStep measures the finite-difference error directly with a
+%   step sweep and has never called this.
 %
 %   Reference: J. J. Moré and S. M. Wild, "Estimating Computational Noise",
 %   SIAM J. Sci. Comput. 33(3), 2011.
@@ -22,7 +23,7 @@ function [fnoise, level, inform] = ecnoiseCore(fval)
 %     level  - (nf-1)-by-1 per-difference-level noise estimates.
 %     inform - status code (1 detected, 2 too small, 3 too large/inconclusive).
 %
-%   See also ESTIMATENOISE, EVALUATOR/CALIBRATESTEP.
+%   See also ESTIMATENOISE.
 
 fval  = fval(:);
 nf    = numel(fval);

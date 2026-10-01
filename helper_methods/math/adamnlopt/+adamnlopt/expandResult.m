@@ -72,6 +72,13 @@ if ~isempty(grad)
     if problem.hasObjGrad
         try
             [~, gAll] = problem.objFun(x);
+            % The help has always said this evaluation's cost "is recorded in
+            % output.funcCount".  Nothing recorded it, so a reduced problem
+            % under-reported the user calls it actually made -- by one
+            % objective here and, below, one constraint call from
+            % fixedStationarity.  Counted now, whether or not the gradient
+            % turns out to be usable: the call happened either way.
+            output = bumpCount(output, 'objCount', 1);
             gAll = gAll(:);
             if numel(gAll) == n
                 gFull(fixd) = gAll(fixd);
@@ -97,7 +104,8 @@ end
 
 % --- Multipliers ------------------------------------------------------------
 if ~isempty(lambda) && isstruct(lambda)
-    lambda = expandLambda(lambda, fx, problem, x, grad);
+    [lambda, nCon] = expandLambda(lambda, fx, problem, x, grad);
+    output = bumpCount(output, 'conCount', nCon);
 end
 
 % --- Diagnostics ------------------------------------------------------------
@@ -118,7 +126,7 @@ output.fixedVars = struct( ...
 end
 
 % ------------------------------------------------------------------------
-function lambda = expandLambda(lambda, fx, problem, x, grad)
+function [lambda, nCon] = expandLambda(lambda, fx, problem, x, grad)
 %EXPANDLAMBDA  Re-index multipliers onto the original variables and rows.
 %   Bound multipliers get a zero-padded free block plus the fixed-variable
 %   entries derived from stationarity (see note 1 in the main help). Linear-row
@@ -134,13 +142,15 @@ if isfield(lambda, 'upper') && numel(lambda.upper) == fx.nr
 end
 
 % Re-insert dropped linear rows as zero multipliers BEFORE the fixed-variable
-% split uses them, so J'*lambda below is indexed consistently.
-lambda.eqlin   = padDropped(lambda.eqlin,   fx.keepEqLin);
-lambda.ineqlin = padDropped(lambda.ineqlin, fx.keepIneqLin);
+% split uses them, so J'*lambda below is indexed consistently.  Guarded: the
+% bound-only solves reach here with a lambda struct that has lower/upper and
+% nothing else, and a bare lambda.eqlin read threw on one.
+lambda.eqlin   = padDropped(getLam(lambda, 'eqlin'),   fx.keepEqLin);
+lambda.ineqlin = padDropped(getLam(lambda, 'ineqlin'), fx.keepIneqLin);
 
 % Fixed-variable split.  r = (grad f + JE'*lamE + JI'*lamI) at the solution,
 % restricted to the fixed rows; positive goes to lower, negative to upper.
-r = fixedStationarity(problem, x, lambda, grad, fx);
+[r, nCon] = fixedStationarity(problem, x, lambda, grad, fx);
 if ~isempty(r)
     pos = r > 0;
     zL(fx.idxFixed(pos))  =  r(pos);
@@ -151,13 +161,18 @@ lambda.lower = zL;
 lambda.upper = zU;
 end
 
-function r = fixedStationarity(problem, x, lambda, grad, fx)
+function [r, nCon] = fixedStationarity(problem, x, lambda, grad, fx)
 %FIXEDSTATIONARITY  (grad f + J'*lambda) at the fixed rows, or [] if unavailable.
 %   Uses the analytic objective gradient when the caller supplied one (grad
 %   already holds it); otherwise there is no derivative at a zero-width
 %   coordinate to build from and the multipliers are left at zero rather than
 %   fabricated from a step that was never taken.
+%
+%   nCon is the number of USER CONSTRAINT CALLS this made, for the caller to
+%   add to output.conCount.  It was previously one uncounted call per solve on
+%   any reduced problem with nonlinear constraints.
 r = [];
+nCon = 0;
 idx = fx.idxFixed;
 if isempty(idx)
     return;
@@ -167,21 +182,46 @@ if isempty(grad) || any(~isfinite(grad(idx)))
 end
 
 r = grad(idx);
-r = r + linearPart(problem.Aeqlin, lambda.eqlin,   idx);
-r = r + linearPart(problem.Aineq,  lambda.ineqlin, idx);
+r = r + linearPart(problem.Aeqlin, getLam(lambda, 'eqlin'),   idx);
+r = r + linearPart(problem.Aineq,  getLam(lambda, 'ineqlin'), idx);
 
 % Nonlinear rows need the constraint Jacobian at the solution in FULL space.
 % Only available analytically, for the same reason as the gradient.
 if ~isempty(problem.nlcon) && problem.hasConGrad
     try
         [~, ~, gc, gceq] = problem.nlcon(x);
-        r = r + nlPart(gceq, lambda.eqnonlin,   idx);
-        r = r + nlPart(gc,   lambda.ineqnonlin, idx);
+        nCon = 1;
+        r = r + nlPart(gceq, getLam(lambda, 'eqnonlin'),   idx);
+        r = r + nlPart(gc,   getLam(lambda, 'ineqnonlin'), idx);
     catch
         r = [];   % partial sum would be worse than none
     end
 elseif ~isempty(problem.nlcon)
     r = [];
+end
+end
+
+function v = getLam(lambda, name)
+%GETLAM  lambda.(name) when present, otherwise empty.
+if isstruct(lambda) && isfield(lambda, name)
+    v = lambda.(name);
+else
+    v = [];
+end
+end
+
+function output = bumpCount(output, name, k)
+%BUMPCOUNT  Add k to output.(name) and keep output.funcCount consistent.
+%   funcCount is the total the maxFunEvals budget is spent against, so the
+%   component counters and the total always move together.
+if k <= 0
+    return;
+end
+if isfield(output, name)
+    output.(name) = output.(name) + k;
+end
+if isfield(output, 'funcCount')
+    output.funcCount = output.funcCount + k;
 end
 end
 

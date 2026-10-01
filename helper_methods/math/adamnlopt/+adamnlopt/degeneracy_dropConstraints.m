@@ -32,7 +32,13 @@ end
 
 % Column-pivoted QR of A' ranks the columns of A' (= rows of A) by importance.
 [~, R, e] = qr(A.', 'vector');
-dR = abs(diag(R));
+% Pull the diagonal from the leading square block.  diag(R) alone is wrong for
+% a single-row A: R is then n-by-1, and diag() of a VECTOR builds an n-by-n
+% matrix instead of extracting a diagonal, so r came back as a row vector and
+% e(1:r) threw MATLAB:colon:operandsNotRealScalar.  Same defect, same fix as
+% step_tangentialStep's null-basis block.
+p  = min(size(R));
+dR = abs(diag(R(1:p, 1:p)));
 if isempty(dR)
     keep = zeros(0,1);
     return;

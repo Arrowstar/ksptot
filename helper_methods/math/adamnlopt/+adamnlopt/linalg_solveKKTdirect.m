@@ -88,7 +88,8 @@ function [npos, nneg, nzero, minAbsPivot, maxAbsPivot, medAbsPivot] = blockInert
 %   [npos, nneg, nzero, minAbsPivot, maxAbsPivot] = blockInertia(D) walks the
 %   1x1 and 2x2 diagonal blocks of D, taking each 2x2 block's eigenvalues, and
 %   counts the eigenvalues that are positive, negative and (numerically) zero
-%   relative to a fixed tolerance of 1e-14.
+%   against a tolerance RELATIVE to the largest pivot, k*eps*maxAbsPivot, so
+%   the reported inertia is invariant to a rescaling of the KKT system.
 %
 %   Inputs:
 %     D - block-diagonal factor from ldl, with 1x1 and 2x2 diagonal blocks.
@@ -117,11 +118,25 @@ while i <= n
     end
 end
 ev = ev(1:k);
-tol = 1e-14;
+absEv = abs(ev);
+maxAbsPivot = max(absEv);
+% RELATIVE zero-pivot tolerance.  The inertia computed here IS the descent
+% certificate -- kkt_inertiaCorrection grows delta/gamma until it reads
+% (n, mE, 0) -- so a fixed 1e-14 made that certificate depend on the units the
+% problem is posed in.  Scale the KKT system down by 1e-8 and every pivot falls
+% under the threshold: nzero = N, rankDeficient on every iteration, every step
+% from the lsqminnorm fallback, and the correction loop unable to certify
+% anything no matter how far it grows the regularization.  Scale it up and the
+% opposite: a genuinely singular direction reads as a healthy pivot and is
+% never regularized at all.  maxAbsPivot was already computed and already
+% documented below as the scale "used by callers to form a RELATIVE
+% near-singularity test" -- the test inside this very function was the one that
+% did not use it.  k*eps*maxAbsPivot is the standard rank tolerance and comes
+% out at ~1e-14 on a well-scaled system, so a healthy problem is unaffected.
+tol = k * eps * maxAbsPivot;
 npos  = sum(ev >  tol);
 nneg  = sum(ev < -tol);
-nzero = sum(abs(ev) <= tol);
-minAbsPivot = min(abs(ev));
-maxAbsPivot = max(abs(ev));
-medAbsPivot = median(abs(ev));
+nzero = sum(absEv <= tol);
+minAbsPivot = min(absEv);
+medAbsPivot = median(absEv);
 end

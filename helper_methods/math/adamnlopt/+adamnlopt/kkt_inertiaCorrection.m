@@ -18,7 +18,9 @@ function [d, idx, info, reg] = kkt_inertiaCorrection(state, res, n, mE, reg0, op
 %   The loop also regularizes when the LDL' factor's smallest-magnitude pivot
 %   falls below a tolerance (near-singular Schur complement), because that can
 %   produce correct inertia yet an enormous, divergent dual step. Iteration is
-%   capped at 40 tries.
+%   capped at 40 tries AND at a regularization magnitude of 1e20, past which no
+%   useful step can exist (the step underflows to zero) and further escalation
+%   only hides the failure.
 %
 %   BEFORE that loop runs, a scale-aware dual pre-regularization (Fix A) sizes an
 %   initial gamma in ONE shot from the conditioning of the reduced dual system
@@ -54,7 +56,11 @@ function [d, idx, info, reg] = kkt_inertiaCorrection(state, res, n, mE, reg0, op
 %            solved, inertia, rankDeficient, minAbsPivot, pivotSpread),
 %            augmented here with a record of the correction itself:
 %              .tries          - number of regularize-and-refactorize retries.
-%              .triesExhausted - logical; true when the 40-try cap was hit, in
+%              .regCapped      - logical; true when escalation stopped because
+%                                delta or gamma reached the 1e20 ceiling rather
+%                                than because the inertia came right.
+%              .triesExhausted - logical; true when either cap (40 tries or the
+%                                1e20 magnitude ceiling) was hit, in
 %                                which case D is the step from a factorization
 %                                that never reached the required inertia. This
 %                                had NO signal of any kind before: an invalid
@@ -114,23 +120,50 @@ end
 % not dominated by a few large primal eigenvalues -- so minAbsPivot <
 % pivotRelTol*medAbsPivot flags only a genuine pivot-spread singularity.
 pivotRelTol = 1e-12;   % near-singular when min pivot is this far below the median
+% Cap the escalation.  An unbounded x10 ladder from 1e-8 reaches delta = 1e31
+% after 40 tries, and long before that the regularization has stopped meaning
+% anything: past ~1e20 the (1,1) block is numerically delta*I, the step is
+% dx ~ -rStat/delta which underflows to zero, and the loop goes on factorizing
+% a matrix it has already destroyed.  A zero step is then handed to the line
+% search, which "accepts" it, and the solver stalls for the rest of its
+% iteration budget with no diagnostic.  Stop at a value past which no useful
+% step can exist and report it instead (info.triesExhausted / info.regCapped).
+regMax = 1e20;
+maxTries = 40;
 tries = 0;
-while (~inertiaOK(info, n, mE) || pivotTooSmall(info, pivotRelTol)) && tries < 40
+capped = false;
+while (~inertiaOK(info, n, mE) || pivotTooSmall(info, pivotRelTol)) && tries < maxTries
+    grew = false;
     if info.rankDeficient || (inertiaOK(info, n, mE) && pivotTooSmall(info, pivotRelTol))
         % Near-singular constraint block: grow dual regularization.
         if reg.gamma == 0
-            reg.gamma = 1e-8;
+            newGamma = 1e-8;
         else
-            reg.gamma = reg.gamma * 10;
+            newGamma = reg.gamma * 10;
+        end
+        if newGamma <= regMax
+            reg.gamma = newGamma;  grew = true;
+        else
+            capped = true;
         end
     end
     if ~inertiaOK(info, n, mE)
         % Wrong inertia: grow primal regularization.
         if reg.delta == 0
-            reg.delta = 1e-8;
+            newDelta = 1e-8;
         else
-            reg.delta = reg.delta * 10;
+            newDelta = reg.delta * 10;
         end
+        if newDelta <= regMax
+            reg.delta = newDelta;  grew = true;
+        else
+            capped = true;
+        end
+    end
+    if ~grew
+        % Both knobs are at the cap; another factorization would return the
+        % same answer, so stop rather than spin.
+        break;
     end
     [K, rhs, idx] = kkt_assemble(state, res, reg);
     [d, info] = linalg_solveKKTdirect(K, rhs);
@@ -140,7 +173,8 @@ end
 % Record what the correction did. Purely observational -- nothing below is read
 % back by this function or by its callers to make a decision.
 info.tries          = tries;
-info.triesExhausted = tries >= 40 && ...
+info.regCapped      = capped;
+info.triesExhausted = (capped || tries >= maxTries) && ...
                       (~inertiaOK(info, n, mE) || pivotTooSmall(info, pivotRelTol));
 info.gammaFixA      = gammaScale;
 info.schur          = schurInfo;
@@ -168,18 +202,23 @@ function [gamma, sinfo] = dualRegFromSchur(state, mE, opts)
 %   [gamma, sinfo] = dualRegFromSchur(state, mE, opts) forms the reduced dual system
 %   S = JE*W^{-1}*JE' (W = state.H, JE = state.JE) and returns the smallest
 %   gamma such that cond(S + gamma*I) <= opts.dualCondMax, i.e.
-%   gamma = max(0, sigma_max(S)/dualCondMax - sigma_min(S)).  Returns 0 (no dual
+%   gamma = max(0, lambda_max(S)/dualCondMax - lambda_min(S)).  Returns 0 (no dual
 %   regularization) when Fix A is disabled or inapplicable:
 %     - opts empty / dualCondMax not finite / dualCondMax <= 0  -> disabled,
 %     - mE == 0 (no equality block) or mE > dualCondProbeMaxDim -> skipped
 %       (the O(mE^2*n) probe is too costly; the pivot gate acts instead),
-%     - S ill-formed / singular W / non-finite svd                -> skipped.
-%   Only sigma_max and sigma_min of S are needed, but for the moderate mE this
-%   solver targets a dense svd is simplest and robust; the cost guard bounds it.
+%     - S ill-formed / singular W / non-finite spectrum           -> skipped,
+%     - S indefinite (possible when W is an indefinite secant Hessian) -> skipped,
+%       since no positive shift bounds the condition number of an indefinite S.
+%   Only the extreme eigenvalues of S are needed, but for the moderate mE this
+%   solver targets a dense eig is simplest and robust; the cost guard bounds it.
 %
 %   SINFO reports what the probe saw: ran, sMax, sMin, cond (= sMax/sMin), gamma,
 %   caught (the try/catch fired), and skipReason (0 ran | 1 disabled | 2 mE==0 |
-%   3 over the dimension cap | 4 non-finite svd | 5 caught). sMax and sMin are
+%   3 over the dimension cap | 4 non-finite spectrum | 5 caught |
+%   6 indefinite S). sMax and sMin are reported as MAGNITUDES (max|lambda| and
+%   min|lambda|) so cond stays meaningful on the indefinite branch too; the
+%   shift itself uses the signed minimum. They are
 %   computed exactly here every iteration and were, until now, discarded -- so
 %   the conditioning trajectory of the reduced dual system, which is precisely
 %   what Fix A exists to bound, had never been observed on any problem.
@@ -218,9 +257,23 @@ try
     WiJEt = W \ JE.';
     S = JE * WiJEt;
     S = (S + S.') / 2;                 % symmetrize (kills round-off asymmetry)
-    sv = svd(S);
-    sMax = sv(1);
-    sMin = sv(end);
+    % EIGENVALUES, not singular values.  The shift below is S -> S + gamma*I,
+    % which moves every EIGENvalue up by gamma; "cond(S + gamma*I) <= condMax"
+    % only follows from sigma_max/sigma_min when S is positive semidefinite, and
+    % S is NOT guaranteed PSD here: in the equality core W = state.H is the raw
+    % secant Lagrangian Hessian, which is indefinite away from a solution (that
+    % is precisely why the inertia correction exists).  With an indefinite S,
+    % svd reports |lambda|, so a near-zero NEGATIVE eigenvalue -sMin would be
+    % shifted to gamma - sMin -- TOWARD zero, making the reduced dual system
+    % more singular than it was.  Reading the signed spectrum lets us both apply
+    % the shift to the right quantity and decline the probe outright when S has
+    % a negative eigenvalue, where no positive shift can bound the condition
+    % number and the pivot gate must act instead.
+    evS = eig(S);
+    evS = real(evS);                   % symmetric: imaginary parts are round-off
+    sMax = max(abs(evS));
+    sMinSigned = min(evS);
+    sMin = min(abs(evS));
     sinfo.sMax = sMax;
     sinfo.sMin = sMin;
     if sMin > 0
@@ -228,14 +281,16 @@ try
     else
         sinfo.cond = inf;
     end
-    if ~isfinite(sMax) || ~isfinite(sMin) || sMax <= 0
+    if ~all(isfinite(evS)) || sMax <= 0
         sinfo.skipReason = 4;
+    elseif sMinSigned < 0
+        sinfo.skipReason = 6;          % indefinite S: a positive shift cannot help
     else
         sinfo.ran = true;
         sinfo.skipReason = 0;
-        target = sMax / condMax;       % floor the smallest singular value here
-        if sMin < target
-            gamma = target - sMin;     % shift so cond(S+gamma*I) <= condMax
+        target = sMax / condMax;       % floor the smallest eigenvalue here
+        if sMinSigned < target
+            gamma = target - sMinSigned;   % shift so cond(S+gamma*I) <= condMax
         end
     end
 catch

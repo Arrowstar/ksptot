@@ -21,7 +21,7 @@ classdef AdamNlOptOptions < matlab.mixin.SetGet
         %Limits
         maxIter(1,1) double = 300;
         maxFunEvals(1,1) double = 100000;
-        maxTime(1,1) double = Inf;  %seconds; enforced by AdamNlOptOptimizer, not the solver
+        maxTime(1,1) double = Inf;  %seconds; enforced by the solver's terminationCheck (exitflag 0)
 
         %Objective plateau exit
         objPlateauWindow(1,1) double = 40;
@@ -288,6 +288,14 @@ classdef AdamNlOptOptions < matlab.mixin.SetGet
         function obj = loadobj(obj)
             if(obj.numWorkers < 1 || obj.numWorkers > feature('numCores'))
                 obj.numWorkers = feature('numCores');
+            end
+
+            %'async' was never a distinct evaluation strategy: the solver's
+            %Evaluator routes it through the same parallel finite-difference
+            %path as 'finitediff'.  It is no longer offered, so rewrite saved
+            %cases to the mode they were already getting.
+            if(obj.parallel == AdamNlOptParallelEnum.Async)
+                obj.parallel = AdamNlOptParallelEnum.FiniteDiffs;
             end
         end
     end

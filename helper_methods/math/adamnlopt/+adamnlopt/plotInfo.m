@@ -112,6 +112,11 @@ end
 sd = kktScaleFactor(state);
 optScaled  = res.opt  / sd;
 compScaled = res.comp / sd;
+% opts.compTol is [] until solve resolves it to optTol; mirror that here so a
+% caller driving plotInfo with an unresolved options struct reports the limit
+% the solver would actually use instead of an empty one.  See terminationCheck.
+compTol = opts.compTol;
+if isempty(compTol), compTol = opts.optTol; end
 
 criteria = struct('name', {}, 'value', {}, 'limit', {}, 'kind', {}, ...
                   'satisfied', {}, 'closeness', {}, 'closenessLog', {});
@@ -120,7 +125,7 @@ criteria = addCriterion(criteria, 'First-order optimality', ...
 criteria = addCriterion(criteria, 'Constraint violation', ...
     res.feas, opts.feasTol, 'below', true);
 criteria = addCriterion(criteria, 'Complementarity', ...
-    compScaled, opts.compTol, 'below', true);
+    compScaled, compTol, 'below', true);
 % The objective-plateau exit is interior-point only; the equality core's state
 % carries no plateau counters, so the criteria are simply absent there rather
 % than fabricated.

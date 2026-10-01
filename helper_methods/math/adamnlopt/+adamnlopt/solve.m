@@ -71,6 +71,24 @@ if isempty(opts.compTol), opts.compTol = opts.optTol; end
 
 problem = validateProblem(fun, x0, A, b, Aeq, beq, lb, ub, nonlcon, opts);
 
+% --- Normal/tangential decomposition is not usable with nonlinear inequalities ---
+% The Byrd-Omojokun branch converges on bounds, linear inequalities, linear
+% equalities and nonlinear EQUALITIES, but on a nonlinear inequality the trust
+% radius collapses (4.0 -> 1.2e-4 -> 3.1e-5 -> 3.0e-8 -> 1.1e-16) while ||lamE||
+% grows about ninefold per iteration into the 1e11 range; HS71 stalls at
+% f = 17.3695 against a true 17.0140 and exits 0.  Until that branch is repaired
+% the option is turned off rather than left to return a converged-looking wrong
+% answer -- a warning and a correct solve beats an error on a caller who merely
+% has the flag set in a saved case.  mInl > 0 is the exact trigger, measured
+% across the whole problem catalog, so linear inequality rows are unaffected.
+if opts.useNTdecomp && problem.mInl > 0
+    warning('adamnlopt:useNTdecompUnsupported', ...
+        ['useNTdecomp does not support nonlinear inequality constraints ' ...
+         '(%d present) and has been disabled for this solve; the standard ' ...
+         'composite step is used instead.'], problem.mInl);
+    opts.useNTdecomp = false;
+end
+
 % --- Fixed-variable elimination (transparent; see reduceProblem/expandResult) ---
 % A variable with lb(i) == ub(i) has no interior for the log-barrier to live in,
 % so it is substituted out and the solver runs on the free variables only.  This
@@ -92,6 +110,15 @@ end
 % barrier parameter / stalled solve) do not require the user to hand-normalise.
 % Outputs are mapped back to physical units by unscaleResult below.
 evProbe = Evaluator(solveProblem0, opts);
+if ~isempty(nonlcon)
+    % validateProblem already called nonlcon once at x0 to size c and ceq.
+    % That is a real user evaluation -- on a black-box problem it costs exactly
+    % what every other one does -- and it happened before any Evaluator existed,
+    % so nothing counted it.  Charge it here: evProbe is either ev itself or is
+    % folded into the output counts below, so this reaches funcCount on both
+    % paths.  The objective's analogous setup call is charged in allFixedResult.
+    evProbe.nCon = evProbe.nCon + 1;
+end
 sc = computeScaling(solveProblem0, evProbe, opts);
 if sc.applied
     solveProblem = scaleProblem(solveProblem0, sc);
@@ -113,14 +140,48 @@ end
 % constraint/objective values by their magnitude, which also divides their noise
 % down toward round-off, so the noise is only reliably measurable in physical
 % units.  The estimated step is a scalar base step that finiteDiffGradient scales
-% per coordinate by max(1,|x_i|); because the variable scale Dx is itself ~|x0|,
-% that base step is unit-consistent in either space, so we copy the calibrated
-% fdStep/fdType onto the scaled solver Evaluator ev.
+% per coordinate by max(1,|x_i|).
+%
+% TRANSFERRING IT INTO THE SCALED SPACE IS NOT A STRAIGHT COPY.  It used to be,
+% justified by "the variable scale Dx is itself ~|x0|".  That holds only for the
+% default bound-free Dx = max(1,|x0|).  A variable with finite bounds gets Dx
+% from the BOUND RANGE instead, and the maxSpread compression can move any Dx:
+% x0 = 500 in [0, 1e6] has Dx = 1e6, so x_s = 5e-4 and the scaled differencing
+% perturbs by Dx*h*max(1,|x_s|) = 1e6*h physically, against the h*500 the
+% calibration actually measured -- a step 2000x too large, applied in the name of
+% a noise measurement that argued for the opposite.
+%
+% The per-coordinate transfer factor is exact; a scalar base step cannot carry
+% all n of them, so the geometric mean is used and the spread is reported.  The
+% factor is identically 1 for the default Dx, so well-scaled and bound-free
+% problems see no change.
+%
+% IT APPLIES ONLY TO A STEP THE CALIBRATION ACTUALLY MEASURED (flag 'set').
+% Every other flag -- 'analytic', 'skipped', 'inconclusive', 'boundLimited',
+% 'userSet' -- leaves fdStep at the generic sqrt(eps), which is not a physical
+% length but a RELATIVE step already correct in whichever space it is applied
+% in: finiteDiffGradient perturbs by h*max(1,|x_i|) using the coordinates it is
+% handed.  Transferring that one re-derives it as a displacement it was never
+% measured as; on a bounded box (Dx = range) it came out 10x under sqrt(eps),
+% where forward differencing is cancellation-dominated, and the resulting
+% gradient error moved the equality multiplier on the NT-decomposition fixture
+% from 4.0000 to 4.00013.
 if isfield(opts,'autoFDStep') && opts.autoFDStep
     try
         output_calib = evProbe.calibrateStep(solveProblem0.x0);
-        ev.fdStep = evProbe.fdStep;
+        if isstruct(output_calib) && isfield(output_calib, 'flag') && ...
+                strcmp(output_calib.flag, 'set')
+            [fdFactor, fdSpread] = fdStepTransfer(solveProblem0.x0, sc);
+        else
+            fdFactor = 1;  fdSpread = 1;
+        end
+        ev.fdStep = evProbe.fdStep * fdFactor;
         ev.fdType = evProbe.fdType;
+        if isstruct(output_calib)
+            output_calib.scaleFactor = fdFactor;
+            output_calib.scaleSpread = fdSpread;
+            output_calib.fdStepScaled = ev.fdStep;
+        end
     catch
         output_calib = [];   % advisory: never let calibration failure stop the solve
     end
@@ -175,7 +236,11 @@ end
 output.scaling = sc;
 output.fdCalibration = output_calib;
 if sc.applied && isfield(output,'funcCount')
-    output.funcCount = output.funcCount + evProbe.nFun;  % count the x0 probe
+    % Count the x0 probe. Both counters: the probe Evaluator calibrates the FD
+    % step, whose constraint probes land in nCon, not nFun.
+    output.funcCount = output.funcCount + evProbe.totalEvals();
+    if isfield(output,'objCount'), output.objCount = output.objCount + evProbe.nFun; end
+    if isfield(output,'conCount'), output.conCount = output.conCount + evProbe.nCon; end
 end
 
 % --- Re-index onto the original variables when fixed ones were eliminated ---
@@ -245,6 +310,7 @@ alpha = 0;  hessian = [];  res = [];  rho = 1;  restTheta = inf;
 % placeholders) at iteration 0, before any step has been computed, so the
 % per-iteration info struct can describe the last accepted step uniformly.
 dlamE = zeros(numel(lamE), 1);  aLamE = 0;
+stepNorm = inf;   % ||last accepted primal step||_inf; inf until one is taken
 ksolve = struct('Fprev', [], 'etaPrev', [], 'reg', []);
 history = struct('theta', zeros(0,1), 'alpha', zeros(0,1));
 Delta = opts.delta0;
@@ -263,7 +329,12 @@ warnedIter = false;   % iteration-function error already reported this solve
 for iter = 0:opts.maxIter
     trow = struct('iter', iter);
     primaryInfo = [];  nSolves = 0;
-    state = makeState(x, lamE, f, g, cE, JE, JI, iter, ev.nFun, alpha);
+    state = makeState(x, lamE, f, g, cE, JE, JI, iter, ev.totalEvals(), alpha);
+    % Budget/progress fields the termination test needs but cannot measure:
+    % wall clock (opts.maxTime) and the size of the last accepted step
+    % (opts.stepTol).  Both were settable options that nothing ever read.
+    state.elapsed  = toc(tStart);
+    state.stepNorm = stepNorm;
     res = kkt_residual(state);
     % Report/terminate on the scale-consistent optimality norm (rStat stays raw
     % for the Newton-step RHS).  Inert when scaling is off (optW all ones).
@@ -284,7 +355,7 @@ for iter = 0:opts.maxIter
     end
     logState(state, res, opts, toc(tStart), dbg);
 
-    trow.nFun = ev.nFun;   trow.f = f;      trow.mu = 0;
+    trow.nFun = ev.totalEvals();   trow.f = f;      trow.mu = 0;
     trow.feas = res.feas;  trow.comp = res.comp;
     trow.optPrinted = res.opt;
     trow.optRaw     = util_norms(res.rStat);
@@ -352,7 +423,7 @@ for iter = 0:opts.maxIter
         stepAccepted = false;  alpha = 1;
         dx = zeros(numel(x),1);  dlamE = zeros(numel(lamE),1);
         for trIter = 1:opts.trMaxInner                                          %#ok<FORPERM>
-            [dx, dlamE, predRed_nt] = computeNTStep(H, g, JE_eff, cE_eff, Delta, lamE);
+            [dx, dlamE, ~, ntMdl] = computeNTStep(H, g, JE_eff, cE_eff, Delta, lamE);
             xt = x + dx;
             ft = ev.objective(xt);
             [cEt, ~] = ev.constraints(xt);
@@ -369,9 +440,20 @@ for iter = 0:opts.maxIter
                 dphi  = (g.' * dx) - rho * theta0;
                 ok = globalize_meritAccept(phi0m, phi_tm, dphi, 1);
             end
-            actRed = phi0 - ft;
+            % Trust-region ratio on the l1 MERIT function, not on f alone.
+            % A Byrd-Omojokun step deliberately trades objective value for
+            % feasibility -- that is what the normal component is for -- so
+            % scoring it with actRed = phi0 - ft rejected precisely the steps
+            % the decomposition exists to take: a step that cut ||cE|| sharply
+            % while raising f read as actRed < 0, failed the ratio test, and
+            % shrank Delta. Both sides must measure the same function, so
+            % credit the model with its PREDICTED (linearized) violation
+            % reduction and the outcome with the realized one.
+            rhoTR = max(rho, norm(lamE + dlamE, inf) + 1e-2);
+            [predRedM, actRedM] = ntMeritRatio(ntMdl, 1, rhoTR, ...
+                JE_eff, cE_eff, dx, zeros(0,1), theta0, theta_t, phi0, ft);
             [Delta, tr_ok, ~] = control_trustRegionUpdate( ...
-                Delta, predRed_nt, actRed, norm(dx), opts);
+                Delta, predRedM, actRedM, norm(dx), opts);
             if ok && tr_ok
                 % Augment filter for theta-type steps only (infeasible region).
                 % Switching (f-type) steps do not augment — mirroring the
@@ -433,7 +515,13 @@ for iter = 0:opts.maxIter
         [f, g]  = ev.objective(x);
         [cE, ~] = ev.constraints(x);
         [JE, ~] = ev.jacobian(x);
-        lamE = step_multiplierUpdate(g, JE);
+        % Reseed with the SAME scale weight every other multiplier fit in this
+        % solver uses (line 234, the IP seed, the costate refresh).  Dropping
+        % optW here fit the costates in scaled-gradient units while the
+        % optimality metric measures them in physical ones, so the iterate
+        % leaving restoration started from a dual estimate that was wrong by
+        % the variable-scale spread.  Inert when scaling is off (optW all ones).
+        lamE = step_multiplierUpdate(g, JE, optW);
         if useFilter, filt.reset(); end
         Delta = opts.delta0;
         alpha = 0;
@@ -442,6 +530,7 @@ for iter = 0:opts.maxIter
 
     gOld = g;  JEold = JE;
     x    = x + alpha * dx;
+    stepNorm = norm(alpha * dx, inf);
     % Fix B: cap the equality-multiplier increment (dual trust region); the
     % primal step keeps alpha.  Bounds the dlamE blowup from a near-singular
     % Schur complement without throttling primal progress.
@@ -521,6 +610,20 @@ mu = st.mu;
 [cE, cI] = ev.constraints(x);
 [JE, JI] = ev.jacobian(x);
 
+% Seed the equality costates by least squares, as the equality core does.
+% initializeIterate leaves lamE at zero because it has no gradient to fit
+% against; here g and JE are already in hand, so the seed is free (no extra
+% evaluation) and spares the first several iterations the job of rebuilding
+% from nothing what one solve supplies.  Fit the SAME residual the costate
+% refresh fits -- JE'*lamE = -(g - zL + zU + JI'*lamI) -- in the same weighted
+% metric, so the seed and the refresh agree.  Guarded on an all-zero lamE so a
+% future warm start is never overwritten.
+if mE > 0 && ~any(lamE)
+    bSeed = g - zL + zU;
+    if ev.mI > 0, bSeed = bSeed + JI.' * lamI; end
+    lamE = step_multiplierUpdate(bSeed, JE, optW);
+end
+
 hmodel = makeHessianModel(opts, n);
 useFilter = strcmpi(opts.globalization, 'filter');
 filt = makeFilter(opts, norm([cE; cI + s], 1));
@@ -538,6 +641,7 @@ Delta = opts.delta0;
 dlamE = zeros(mE, 1);  ds = zeros(size(s));  dlamI = zeros(size(lamI));
 dzL = zeros(n, 1);  dzU = zeros(n, 1);
 aD = 0;  aLamE = 0;  tau = 0;
+stepNorm = inf;   % ||last accepted primal step||_inf; inf until one is taken
 bestFeas = inf;  feasStallCount = 0;  % main-iteration feasibility-stall tracker
 feasRegressCount = 0;                 % consecutive iters with feasibility blown up
 bestSnapFeas = inf;  bestSnapF = inf;  bestSnap = [];  % best-iterate snapshot
@@ -576,6 +680,8 @@ for iter = 0:opts.maxIter
     % the metric was verified INERT -- see dbgVerifyFG: G-only was bit-identical to
     % baseline, BOTH bit-identical to F-only -- and removed per verify-each-contributes.)
     activeBnd = false(n,1);
+    activeL   = false(n,1);   % pinned at the LOWER bound (sign matters, see below)
+    activeU   = false(n,1);   % pinned at the UPPER bound
     if opts.activeBoundGapTol > 0
         % Normalize the bound gap by a RELATIVE reference.  max(1,|x|) floors the
         % denominator at 1, which silently turns this into an ABSOLUTE test for
@@ -595,8 +701,9 @@ for iter = 0:opts.maxIter
         relL = inf(n,1);  relU = inf(n,1);
         relL(finL) = dxl(finL) ./ ref(finL);
         relU(finU) = dxu(finU) ./ ref(finU);
-        activeBnd(finL) = activeBnd(finL) | (relL(finL) < opts.activeBoundGapTol);
-        activeBnd(finU) = activeBnd(finU) | (relU(finU) < opts.activeBoundGapTol);
+        activeL(finL) = relL(finL) < opts.activeBoundGapTol;
+        activeU(finU) = relU(finU) < opts.activeBoundGapTol;
+        activeBnd = activeL | activeU;
     end
 
     % Least-squares equality-multiplier (costate) refresh.  When the Newton-
@@ -712,20 +819,42 @@ for iter = 0:opts.maxIter
     rpE = cE;
     rpI = cI + s;
 
-    % Fix F optimality metric: measure stationarity with pinned-bound rows
-    % excluded, so the reported opt is not inflated by a lagging bound dual at an
-    % active-bound (bang-bang) variable.  rd itself (the Newton-step RHS) is
-    % unchanged, so the primal-dual step is untouched.
-    rdMetric = rd;
-    optWmetric = optW;
-    if opts.excludeActiveBoundRows && any(activeBnd)
-        optWmetric = optW .* (~activeBnd);
+    % Fix F optimality metric, as a PROJECTED GRADIENT rather than a row mask.
+    %
+    % The goal is unchanged: at a variable pinned on a bound, stationarity is
+    % carried by the bound multiplier, and the barrier dual zL = mu/(x-lb) lags
+    % its true active value as the gap collapses, so the raw row inflates the
+    % reported opt long after the iterate is optimal.  But zero-weighting the
+    % row was the wrong instrument, in two distinct ways:
+    %
+    %   1. FALSE CONVERGENCE.  With every variable pinned -- the normal state of
+    %      a bang-bang control problem, which is exactly the LVD case -- the
+    %      mask (~activeBnd) is all-false, optWmetric is the zero vector, and
+    %      res.opt is IDENTICALLY ZERO regardless of the true residual.
+    %      terminationCheck then returns exitflag 1 ("first-order optimality
+    %      within tolerances") from a point that may be nowhere near
+    %      stationary.  The sibling mask in the costate fit above carries an
+    %      any(fitRows) guard against exactly this; this one did not.
+    %   2. WRONG-SIDE BLINDNESS.  Masking accepts a row of either sign, so a
+    %      variable sitting on the bound the objective wants it to LEAVE -- a
+    %      genuine first-order violation the solver should be chasing -- is
+    %      reported as satisfied.
+    %
+    % The projected gradient fixes both and needs no guard -- see
+    % util_projectedGradient for the projection itself. rd is untouched, so the
+    % primal-dual step is identical either way.
+    if opts.excludeActiveBoundRows
+        rdMetric = util_projectedGradient(rd, zL, zU, activeL, activeU);
+    else
+        rdMetric = rd;
     end
 
     state = ipState(x, s, lamE, lamI, zL, zU, f, g, cE, cI, JE, JI, ...
-                    iter, ev.nFun, alpha, mu);
+                    iter, ev.totalEvals(), alpha, mu);
+    state.elapsed  = toc(tStart);   % wall-clock exit (opts.maxTime)
+    state.stepNorm = stepNorm;      % step-size exit (opts.stepTol)
     res = ipRes(rd, rpE, rpI, s, lamI, dxl, zL, finL, dxu, zU, finU, optW);
-    res.opt = util_norms(optWmetric .* rdMetric);   % Fix F scale-consistent opt
+    res.opt = util_norms(optW .* rdMetric);   % Fix F scale-consistent opt
 
     % The three optimality metrics, side by side.  optPrinted is what the log
     % shows (Fix-F masked, Dx-weighted); optRaw is the unmasked, unweighted
@@ -848,7 +977,7 @@ for iter = 0:opts.maxIter
     end
     logState(state, res, opts, toc(tStart), dbg);
 
-    trow.nFun = ev.nFun;   trow.f = f;      trow.mu = mu;
+    trow.nFun = ev.totalEvals();   trow.f = f;      trow.mu = mu;
     trow.feas = res.feas;  trow.comp = res.comp;
     trow.normLamE = norm(lamE, inf);        trow.normX = norm(x, inf);
     trow.filterSize = filterCardinality(filt);
@@ -940,9 +1069,9 @@ for iter = 0:opts.maxIter
     % Stationarity measured in the scale-consistent metric (same as res.opt), so
     % the barrier gate and stall detection track the optimality the termination
     % test uses -- not a raw scaled residual inflated by the variable-scale spread
-    % nor by a lagging bound dual at an active bound (Fix F: use rdMetric and the
-    % pinned-row-excluded weight, matching res.opt exactly).
-    statW = norm(optWmetric .* rdMetric, inf);
+    % nor by a lagging bound dual at an active bound (Fix F: use the projected
+    % rdMetric, matching res.opt exactly).
+    statW = norm(optW .* rdMetric, inf);
     Emu = max([statW, norm(rpE, inf), norm(rpI, inf), compErr]);
     muPrev = mu;
     muOpts = opts;
@@ -1040,7 +1169,17 @@ for iter = 0:opts.maxIter
     sigS = lamI ./ s;
     sigL = zeros(n,1);  sigL(finL) = zL(finL) ./ dxl(finL);
     sigU = zeros(n,1);  sigU(finU) = zU(finU) ./ dxu(finU);
-    W = H + sigL .* eye(n) + sigU .* eye(n);
+    % Add the bound-barrier curvature to the DIAGONAL in place.  `sigL.*eye(n)`
+    % materializes a full n-by-n identity (two of them), which costs 2*n^2
+    % doubles per iteration and, worse, turns a sparse H dense -- the one
+    % property every downstream factorization depends on.
+    W = H;
+    sigLU = sigL + sigU;
+    if issparse(W)
+        W = W + spdiags(sigLU, 0, n, n);
+    else
+        W(1:n+1:end) = W(1:n+1:end) + sigLU.';
+    end
     if ev.mI > 0
         W = W + JI.' * (sigS .* JI);
     end
@@ -1061,8 +1200,26 @@ for iter = 0:opts.maxIter
 
     if opts.useNTdecomp
         % NT step: normal (reduce equality violation) + tangential (reduce
-        % condensed barrier objective in null(JE)). W and r1 play the roles of
-        % the Hessian and gradient for the condensed barrier problem.
+        % condensed barrier objective in null(JE)). W is the Hessian of the
+        % condensed barrier problem; its GRADIENT is r1 - JE'*lamE, not r1.
+        %
+        % r1 is the condensed stationarity residual, i.e. the gradient of the
+        % condensed barrier LAGRANGIAN; subtracting JE'*lamE recovers the
+        % gradient of the condensed barrier OBJECTIVE, which is what the model
+        % must use. Two separate defects fall out of the difference:
+        %   - computeNTStep fits lamNew by least squares against -(g + W*dx).
+        %     Fed r1 (which already carries JE'*lamE) the fit returns an
+        %     INCREMENT, and the `lamNew - lamE` inside then subtracted the
+        %     current multipliers a second time, collapsing the accepted update
+        %     to lamE <- dlamE and discarding the costates every NT iteration.
+        %   - predRed is the reduction of whatever model g belongs to. Against
+        %     a Lagrangian-model predRed, the barrier-objective actRed below is
+        %     not a comparable quantity, so the trust-region ratio was noise.
+        % dx is unchanged: Z'*JE_eff' = 0 annihilates the JE'*lamE component of
+        % the tangential step's reduced gradient (JE's rows are a subset of
+        % JE_eff's), and the normal step never sees g at all.
+        gQ = r1;
+        if mE > 0, gQ = gQ - JE.' * lamE; end
         theta_IP0 = norm([cE; cI + s], 1);
         phi0_bar  = barrierObj(f, s, x, lb, ub, finL, finU, mu);
         thetaMinNT_IP = 1e-4 * max(1, theta_IP0);
@@ -1072,7 +1229,7 @@ for iter = 0:opts.maxIter
         ds = zeros(size(s));  dlamI = zeros(size(lamI));
         dzL = zeros(n,1);  dzU = zeros(n,1);
         for trIter = 1:opts.trMaxInner                                          %#ok<FORPERM>
-            [dx, dlamE, predRed_nt] = computeNTStep(W, r1, JE_eff, cE_eff, Delta, lamE);
+            [dx, dlamE, ~, ntMdl] = computeNTStep(W, gQ, JE_eff, cE_eff, Delta, lamE);
             % Back-substitute the eliminated directions.
             if ev.mI > 0
                 JIdx  = JI * dx;
@@ -1102,12 +1259,22 @@ for iter = 0:opts.maxIter
                 rho    = max(rho, norm([lamE + dlamE; lamI + dlamI], inf) + 1e-2);
                 phi0m  = globalize_meritFunction(phi0_bar, theta_IP0, rho);
                 phi_tm = globalize_meritFunction(phi_t_bar, theta_t, rho);
-                dphi   = (r1.' * dx) - rho * theta_IP0;
+                % Directional derivative of the BARRIER OBJECTIVE, matching
+                % phi0_bar/phi_t_bar; r1 would add JE'*lamE, which belongs to
+                % the Lagrangian and not to the merit function being tested.
+                dphi   = (gQ.' * dx) - rho * theta_IP0;
                 ok = globalize_meritAccept(phi0m, phi_tm, dphi, aP);
             end
-            actRed = phi0_bar - phi_t_bar;
+            % Merit-consistent trust-region ratio, evaluated at the fraction
+            % aP actually taken.  Previously this compared a Lagrangian-model
+            % predRed at the FULL step against a barrier-objective actRed at
+            % the aP step -- wrong model and wrong step length -- and ignored
+            % the feasibility reduction that the normal step exists to buy.
+            rhoTR = max(rho, norm([lamE + dlamE; lamI + dlamI], inf) + 1e-2);
+            [predRedM, actRedM] = ntMeritRatio(ntMdl, aP, rhoTR, ...
+                JE_eff, cE_eff, dx, rpI, theta_IP0, theta_t, phi0_bar, phi_t_bar);
             [Delta, tr_ok, ~] = control_trustRegionUpdate( ...
-                Delta, predRed_nt, actRed, aP * norm(dx), opts);
+                Delta, predRedM, actRedM, aP * norm(dx), opts);
             if ok && tr_ok
                 if useFilter && ~isSwitchingIP
                     filt.augment(theta_IP0, phi0_bar);
@@ -1316,8 +1483,24 @@ for iter = 0:opts.maxIter
     % silent throughout).  Keep the aP test for the other step paths, which report
     % only a length.
     feasGenuinelyStalled = feasStallCount >= opts.restStallWindow;
+    % Measure the quantity restoration can actually REDUCE.  This test used to
+    % read norm([cE; cI + s], 1) -- the primal residual of the SLACK-AUGMENTED
+    % system -- while degeneracy_restorationPhase minimizes the true violation
+    % theta(x) = ||cE||_1 + ||max(cI,0)||_1.  The two differ whenever the slacks
+    % drift out of sync with cI, and then the trigger fires on a point where x is
+    % already feasible: restoration evaluates theta = 0, finds cvec empty, returns
+    % immediately with iters = 0, fails the ef=-2 test (theta <= feasTol), resets
+    % the filter and Delta and CONTINUEs -- re-arming itself on the next iteration
+    % forever.  Adding a trivially inactive row (x1 <= 10) to a disk-constrained
+    % 2-variable least squares was enough to hit it: 300 iterations with every
+    % trace column bit-identical from iteration 6 on, alpha pinned at 0, exitflag
+    % 0.  Restoration cannot fix a slack inconsistency -- only the barrier/IP
+    % machinery at the foot of the loop can, and the CONTINUE was skipping it.
+    restTheta0 = 0;
+    if ~isempty(cE),  restTheta0 = restTheta0 + norm(cE, 1);          end
+    if ~isempty(cI),  restTheta0 = restTheta0 + norm(max(cI, 0), 1);  end
     needRestoration = opts.enableRestoration && ...
-        norm([cE; cI + s], 1) > opts.feasTol && ...
+        restTheta0 > opts.feasTol && ...
         feasGenuinelyStalled && (lsFailed || aP <= 1e-10 || advice.suggestRestore);
     if needRestoration
         % Restoration both CONTINUEs and BREAKs past the foot-of-loop record, so
@@ -1327,6 +1510,12 @@ for iter = 0:opts.maxIter
         trow = finishTraceRow(trow, primaryInfo, [], aP, aD, NaN, rho, Delta, ...
                               lsFailed, nSolves, socAdopted, 1);
         recordTrace(trace, trow);
+        % Capture the point restoration is being called FROM, in the filter's own
+        % (theta, phi) coordinates, before the evaluations below overwrite them.
+        % This pair is what gets added to the filter on the way out -- see the
+        % augment at the end of this block.
+        thetaPreRest = norm([cE; cI + s], 1);
+        phiPreRest   = barrierObj(f, s, x, lb, ub, finL, finU, mu);
         [x, rinfo] = degeneracy_restorationPhase(ev, x, lb, ub, opts);
         if rinfo.theta > opts.feasTol && ...
                 (~rinfo.reduced || rinfo.theta >= restTheta - opts.feasTol)
@@ -1347,13 +1536,33 @@ for iter = 0:opts.maxIter
         [cE, cI] = ev.constraints(x);
         [JE, JI] = ev.jacobian(x);
         if ev.mI > 0
-            s    = max(-cI, 1e-4);
-            lamI = mu ./ max(s, 1e-4);
+            % The same RELATIVE strict-positivity floor the start-up seed uses,
+            % not the absolute 1e-4 this copy carried.  "Exactly as at start-up"
+            % is what the comment above promises and what the barrier needs: an
+            % absolute 1e-4 is a vast perturbation on a problem whose inequality
+            % residuals live at 1e6 -- it throws away the natural slack and seeds
+            % sigS = lamI/s eight orders off the scale of everything else in W --
+            % and a negligible one when they live at 1e-6.  Restoration is the
+            % moment the iterate can least afford that: the secant history has
+            % just been discarded.
+            s    = initSlackSeed(cI);
+            lamI = mu ./ s;
         end
         zL = seedBoundMult(lb, x, mu, +1, finL);
         zU = seedBoundMult(ub, x, mu, -1, finU);
         if ~isempty(hmodel) && ismethod(hmodel, 'reset'), hmodel.reset(); end
-        if useFilter, filt.reset(); end
+        % AUGMENT the filter with the point restoration was called from -- do not
+        % CLEAR it.  Waechter-Biegler add (theta_k, phi_k) to the filter before
+        % entering restoration precisely so the main iteration cannot walk back
+        % into the region that sent it there; wiping the filter throws away the
+        % algorithm's only cycle-prevention mechanism.  With the reset, a solve
+        % that restored successfully and then took a step straight back out to
+        % the same infeasible point repeated that pair forever: a bit-identical
+        % period-2 limit cycle (restore -> jump out -> restore -> ...) that ran
+        % to maxIter and reported exitflag 0.  The barrier-decrease reset at the
+        % top of the loop still gives each mu subproblem a fresh filter, which is
+        % the only reset the method actually calls for.
+        if useFilter, filt.augment(thetaPreRest, phiPreRest); end
         Delta = opts.delta0;
         alpha = 0;
         continue;
@@ -1362,6 +1571,7 @@ for iter = 0:opts.maxIter
     gOld = g;  JEold = JE;  JIold = JI;
     x    = x + aP * dx;
     s    = s + aP * ds;
+    stepNorm = norm(aP * dx, inf);
     % Equality multipliers are unconstrained duals (no fraction-to-boundary
     % limit), so they take the full dual step aD -- the standard primal-dual
     % convention.  Throttling them to min(aP,aD) starves dual convergence when
@@ -1658,7 +1868,7 @@ function state = ipState(x, s, lamE, lamI, zL, zU, f, g, cE, cI, JE, JI, ...
 %     cE, cI        - equality and inequality constraint values.
 %     JE, JI        - equality and inequality Jacobians.
 %     iter          - iteration index.
-%     nFun          - cumulative objective evaluation count.
+%     nFun          - cumulative user-function count (objective + nlcon).
 %     alpha         - last accepted (primal) step length.
 %     mu            - current barrier parameter.
 %
@@ -1728,7 +1938,13 @@ while alpha > amin
     end
     alpha = 0.5 * alpha;
 end
-alpha = max(alpha, amin);
+% amin is a FLOOR on the backtracking, not a licence to exceed aMax.  aMax is
+% the fraction-to-boundary cap and at the endgame -- a slack or bound distance
+% on its way to zero -- it can itself fall below amin, in which case the loop
+% above never ran and max(alpha, amin) handed back a step LONGER than the
+% barrier allows.  The caller takes it unconditionally, so a slack goes
+% negative and the next log-barrier evaluation is complex or NaN.
+alpha = min(amin, aMax);
 end
 
 function phi = barrierMerit(f, s, x, lb, ub, finL, finU, mu, rho, theta)
@@ -2128,7 +2344,9 @@ idx.lamE = n + (1:mE);
 rhs = -[res.rStat; res.rFeasE];
 
 % Inertia-consistent regularization from the direct machinery (reg reused).
-[~, ~, kinfo, reg] = kkt_inertiaCorrection(state, res, n, mE, [], opts);
+% This call already factors and solves the regularized KKT system, so its step
+% is available at no extra cost and serves as the fallback below.
+[dDirect, ~, kinfo, reg] = kkt_inertiaCorrection(state, res, n, mE, [], opts);
 
 Fk  = norm(rhs);
 eta = linalg_forcingSequence(Fk, ksolve.Fprev, ksolve.etaPrev, opts);
@@ -2149,6 +2367,16 @@ ksolve.etaPrev = eta;
 % MINRES/GMRES non-convergence was previously invisible: the info output was
 % discarded at the call site, so an unconverged step entered the line search
 % indistinguishably from a converged one.
+if kryinfo.flag ~= 0
+    % Warning alone was not enough: an unconverged step was still handed to
+    % the line search, and a KKT "solution" with relres >= 1 is worse than no
+    % step at all.  The inertia-correction call above already produced a
+    % certified direct step for exactly this system, so fall back to it rather
+    % than search along a direction the linear solver disowns.  This runs
+    % before packSolveInfo so the recorded step is the one actually used.
+    d = dDirect;
+end
+
 ksolve.last = packSolveInfo('krylov', kinfo, reg, d, idx, state, res);
 ksolve.last.krylovFlag   = kryinfo.flag;
 ksolve.last.krylovIters  = kryinfo.iters;
@@ -2156,8 +2384,9 @@ ksolve.last.krylovRelres = kryinfo.relres;
 if kryinfo.flag ~= 0
     ksolve = warnSilentFailure(ksolve, opts, 'krylovNotConverged', ...
         ['Krylov KKT solve did not converge (flag %d, %d iterations, ' ...
-         'relres %.3e against tol %.3e).  Further occurrences are not ' ...
-         'reported -- see output.trace.krylovFlag.'], ...
+         'relres %.3e against tol %.3e); falling back to the direct step.  ' ...
+         'Further occurrences are not reported -- see ' ...
+         'output.trace.krylovFlag.'], ...
         kryinfo.flag, kryinfo.iters, kryinfo.relres, tol);
 end
 end
@@ -2304,6 +2533,11 @@ hinfo.bfgsNUpdates  = readModelProp(hmodel, 'nUpdates');
 hinfo.bfgsGammaLast = readModelProp(hmodel, 'gammaLast');
 hinfo.bfgsGammaBase = readModelProp(hmodel, 'gammaBase');
 hinfo.condB         = readModelProp(hmodel, 'condLast');
+hinfo.bfgsNRejected = readModelProp(hmodel, 'nRejected');
+% True when bfgsB0Refresh is on but its refractory and learned-fraction gates
+% leave no admissible sinceRebase at this n, so the trigger is inert rather
+% than merely declining to fire.  Without this the two are indistinguishable.
+hinfo.bfgsB0RefreshUnreachable = readModelProp(hmodel, 'b0RefreshUnreachable');
 if ~isnan(hinfo.bfgsNResets) && ~isnan(nResetsBefore)
     hinfo.bfgsResetFired = double(hinfo.bfgsNResets > nResetsBefore);
 end
@@ -2421,17 +2655,25 @@ alpha = max(alpha, amin);
 end
 
 % ------------------------------------------------------------------------
-function [dx, dlamE, predRed] = computeNTStep(H, g, JE, cE, Delta, lamE)
+function [dx, dlamE, predRed, mdl] = computeNTStep(H, g, JE, cE, Delta, lamE)
 %COMPUTENTSTEP Byrd-Omojokun normal+tangential step bounded by trust-region Delta.
 %   The normal step v reduces linearized constraint violation; the tangential
-%   step u reduces the quadratic model of the objective in null(JE). For the
-%   interior-point path, pass the condensed Hessian W as H and the condensed
-%   stationarity residual r1 as g so the tangential step correctly optimizes
-%   the condensed barrier objective.
+%   step u reduces the quadratic model of the objective in null(JE).
+%
+%   G MUST BE THE GRADIENT OF THE OBJECTIVE-LIKE FUNCTION BEING MINIMIZED, not
+%   of the Lagrangian: the multiplier estimate below is a least-squares fit of
+%   JE'*lamNew against -(g + H*dx), which only returns an ABSOLUTE multiplier
+%   when g carries no JE'*lamE term of its own. The interior-point caller
+%   therefore passes the condensed barrier-objective gradient r1 - JE'*lamE,
+%   not r1 itself; passing r1 made the fit return an INCREMENT, and the
+%   `- lamE` below then subtracted the current multipliers a second time,
+%   collapsing the accepted update to lamE <- dlamE. (dx is unaffected either
+%   way, since Z'*JE' = 0 kills the JE'*lamE component of the tangential
+%   step's reduced gradient; only the multipliers and predRed change.)
 %
 %   Inputs:
 %     H     - Hessian (or condensed W) of the quadratic model.
-%     g     - gradient (or condensed r1) of the quadratic model.
+%     g     - gradient of the OBJECTIVE model (see above).
 %     JE    - equality Jacobian (possibly augmented with active inequalities).
 %     cE    - equality constraint values matching JE.
 %     Delta - trust-region radius.
@@ -2440,7 +2682,12 @@ function [dx, dlamE, predRed] = computeNTStep(H, g, JE, cE, Delta, lamE)
 %   Outputs:
 %     dx      - combined normal + tangential step.
 %     dlamE   - least-squares multiplier update (first numel(lamE) entries).
-%     predRed - predicted reduction of the quadratic model.
+%     predRed - predicted reduction of the quadratic model at the FULL step.
+%     mdl     - struct with the model's directional pieces gd = g'*dx and
+%               dHd = dx'*H*dx, so a caller that only takes a fraction a of dx
+%               (fraction-to-boundary) can evaluate the model reduction at that
+%               fraction via ntPredRed instead of comparing a full-step
+%               prediction against a partial-step outcome.
 import adamnlopt.*
 v      = step_normalStep(JE, cE, Delta);
 u      = step_tangentialStep(H, g, JE, v, Delta);
@@ -2452,7 +2699,71 @@ nLam  = numel(lamE);
 lamNew = step_multiplierUpdate(g + H * dx, JE);
 dlamE  = lamNew(1:nLam) - lamE;
 % Predicted reduction of the quadratic model.
-predRed = -(g.' * dx + 0.5 * dx.' * (H * dx));
+mdl.gd  = g.' * dx;
+mdl.dHd = dx.' * (H * dx);
+predRed = -(mdl.gd + 0.5 * mdl.dHd);
+end
+
+% ------------------------------------------------------------------------
+function pr = ntPredRed(mdl, a)
+%NTPREDRED Model reduction of the NT quadratic at step fraction a.
+%   The quadratic model along dx is m(a) = a*gd + 0.5*a^2*dHd, so the reduction
+%   at the fraction actually taken is -(a*gd + 0.5*a^2*dHd). Needed because the
+%   interior-point path shortens dx by the fraction-to-boundary rule: scoring a
+%   full-step prediction against an a-step outcome makes the trust-region ratio
+%   meaningless whenever a < 1, which in a barrier method is most of the time.
+%
+%   Inputs:
+%     mdl - struct from computeNTStep with fields gd and dHd.
+%     a   - step fraction actually taken (scalar in (0, 1]).
+%
+%   Outputs:
+%     pr - predicted reduction of the quadratic model over a*dx.
+pr = -(a * mdl.gd + 0.5 * a^2 * mdl.dHd);
+end
+
+% ------------------------------------------------------------------------
+function [predRed, actRed] = ntMeritRatio(mdl, a, rho, JE, cE, dx, rpI, ...
+                                          theta0, thetaT, phi0, phiT)
+%NTMERITRATIO Commensurable predicted/actual reduction for the NT ratio test.
+%   Both outputs measure the SAME l1 merit function phi + rho*theta: predRed
+%   over the quadratic/linear model at step fraction a, actRed over the trial
+%   point actually evaluated. Scoring a Byrd-Omojokun step on the objective
+%   alone (the previous actRed = phi0 - phiT) rejects any step that trades
+%   objective for feasibility -- which is the normal step's entire job -- and
+%   shrinks the trust region in response to the decomposition working.
+%
+%   The predicted violation uses the LINEARIZED constraints at fraction a:
+%   equality rows go to cE + a*JE*dx, and the inequality rows (whose slack step
+%   is chosen as ds = -rpI - JI*dx, so cI + s linearizes to exactly zero at
+%   a = 1) go to (1-a)*rpI. When JE/cE are the mode-switch augmented versions
+%   they carry extra rows that theta0/thetaT do not; the two sides stay
+%   self-consistent because each is a difference within its own measure.
+%
+%   Inputs:
+%     mdl    - model struct from computeNTStep (fields gd, dHd).
+%     a      - step fraction actually taken.
+%     rho    - l1 penalty weight (>= ||lambda||_inf for the model to be exact).
+%     JE, cE - equality Jacobian and values used to build the step.
+%     dx     - full (unscaled by a) primal step.
+%     rpI    - inequality residual cI + s, or empty when there are none.
+%     theta0, thetaT - realized constraint violation before/after the step.
+%     phi0, phiT     - realized objective (or barrier objective) before/after.
+%
+%   Outputs:
+%     predRed - model reduction of phi + rho*theta over a*dx.
+%     actRed  - realized reduction of phi + rho*theta.
+viol0 = 0;  violA = 0;
+if ~isempty(cE)
+    viol0 = viol0 + norm(cE, 1);
+    violA = violA + norm(cE + a * (JE * dx), 1);
+end
+if ~isempty(rpI)
+    viol0 = viol0 + norm(rpI, 1);
+    violA = violA + norm((1 - a) * rpI, 1);
+end
+predRed = ntPredRed(mdl, a) + rho * (viol0 - violA);
+actRed  = (phi0 + rho * theta0) - (phiT + rho * thetaT);
 end
 
 % ------------------------------------------------------------------------
@@ -2595,7 +2906,7 @@ function state = makeState(x, lamE, f, g, cE, JE, JI, iter, nFun, alpha)
 %     JE    - equality Jacobian.
 %     JI    - inequality Jacobian (may be present but unused by this core).
 %     iter  - iteration index.
-%     nFun  - cumulative objective evaluation count.
+%     nFun  - cumulative user-function count (objective + nlcon).
 %     alpha - last accepted step length.
 %
 %   Outputs:
@@ -2609,6 +2920,44 @@ state.cE = cE;  state.cI = zeros(0,1);
 state.JE = JE;  state.JI = JI;
 state.iter = iter;  state.nFunEvals = nFun;  state.alpha = alpha;
 state.mu = 0;  state.mode = 'eq';
+end
+
+function [factor, spread] = fdStepTransfer(x0, sc)
+%FDSTEPTRANSFER  Scalar factor carrying a physical FD base step into scaled space.
+%   finiteDiffGradient perturbs coordinate i by hBase*max(1,|x_i|) in whatever
+%   space it is handed.  In physical space that displacement is
+%   hPhys*max(1,|x0_i|); in the scaled space the same coordinate moves
+%   Dx_i*hScaled*max(1,|x0_i/Dx_i|) physically.  Equating the two gives the
+%   exact per-coordinate factor
+%
+%       r_i = max(1,|x0_i|) / (Dx_i * max(1, |x0_i|/Dx_i)),
+%
+%   which is identically 1 whenever Dx_i <= max(1,|x0_i|) -- the default
+%   scaling's case, and the reason the old straight copy looked correct.  A
+%   scalar base step can carry only one number, so the geometric mean is
+%   returned together with the max/min spread of r, which says how much that
+%   averaging had to paper over.
+%
+%   Inputs:
+%     x0 - n-by-1 PHYSICAL initial point.
+%     sc - scaling struct from computeScaling (fields applied, Dx).
+%
+%   Outputs:
+%     factor - multiply the physical base step by this to get the scaled one.
+%     spread - max(r)/min(r); 1 when the transfer is exact for every coordinate.
+if ~isstruct(sc) || ~isfield(sc, 'applied') || ~sc.applied || isempty(sc.Dx)
+    factor = 1;  spread = 1;  return;
+end
+Dx = sc.Dx(:);
+x0 = x0(:);
+if isscalar(Dx), Dx = repmat(Dx, numel(x0), 1); end
+r = max(1, abs(x0)) ./ (Dx .* max(1, abs(x0) ./ Dx));
+r = r(isfinite(r) & r > 0);
+if isempty(r)
+    factor = 1;  spread = 1;  return;
+end
+factor = exp(mean(log(r)));
+spread = max(r) / min(r);
 end
 
 function logState(state, res, opts, elapsed, dbg)
@@ -2707,7 +3056,9 @@ end
 
 output = struct();
 output.iterations      = 0;
-output.funcCount       = ev.nFun + 1;
+output.funcCount       = ev.totalEvals() + 1;
+output.objCount        = ev.nFun + 1;
+output.conCount        = ev.nCon;
 output.firstOrderOpt   = 0;      % no free direction exists to be stationary in
 output.constrViolation = feas;
 output.complementarity = 0;
@@ -2758,12 +3109,16 @@ function output = makeOutput(state, res, ev, exitflag, msg)
 %     msg      - termination message string.
 %
 %   Outputs:
-%     output - struct with iterations, funcCount, firstOrderOpt,
-%              constrViolation, complementarity, exitflag, message. Callers may
-%              attach hessianModel (the HessianModel handle) for diagnostics.
+%     output - struct with iterations, funcCount (objective + constraint user
+%              calls), objCount and conCount (that total broken out),
+%              firstOrderOpt, constrViolation, complementarity, exitflag,
+%              message. Callers may attach hessianModel (the HessianModel
+%              handle) for diagnostics.
 output = struct();
 output.iterations       = state.iter;
-output.funcCount        = ev.nFun;
+output.funcCount        = ev.totalEvals();
+output.objCount         = ev.nFun;
+output.conCount         = ev.nCon;
 output.firstOrderOpt    = res.opt;
 output.constrViolation  = res.feas;
 output.complementarity  = res.comp;

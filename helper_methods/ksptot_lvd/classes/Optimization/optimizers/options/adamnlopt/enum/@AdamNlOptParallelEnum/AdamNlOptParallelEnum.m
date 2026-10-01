@@ -6,6 +6,13 @@ classdef AdamNlOptParallelEnum < matlab.mixin.SetGet
     enumeration
         DoNotUseParallel('off', 'Do Not Use Parallel', false)
         FiniteDiffs('finitediff', 'Parallel Finite Differences', true)
+
+        %Async is NOT offered in the UI (see selectable).  The solver's
+        %Evaluator routes 'async' through exactly the same parallel
+        %finite-difference path as 'finitediff' -- parallel_asyncEvaluator has
+        %no caller -- so picking it promised a different evaluation strategy
+        %and delivered the other one.  The member stays so saved cases that
+        %already hold it still load; AdamNlOptOptions.loadobj rewrites them.
         Async('async', 'Asynchronous Evaluation', true)
     end
 
@@ -24,17 +31,29 @@ classdef AdamNlOptParallelEnum < matlab.mixin.SetGet
     end
 
     methods(Static)
-        function listBoxStr = getListBoxStr()
+        function m = selectable()
+            %selectable The members a user may actually choose, sorted by name.
+            %   getListBoxStr and getIndForName must agree on both membership
+            %   and order, so they share this one list.
             m = enumeration('AdamNlOptParallelEnum');
+            m = m(m ~= AdamNlOptParallelEnum.Async);
             [~,I] = sort({m.name});
-            listBoxStr = {m(I).name};
+            m = m(I);
+        end
+
+        function listBoxStr = getListBoxStr()
+            m = AdamNlOptParallelEnum.selectable();
+            listBoxStr = {m.name};
         end
 
         function [ind, enum] = getIndForName(name)
-            m = enumeration('AdamNlOptParallelEnum');
-            [~,I] = sort({m.name});
-            m = m(I);
+            m = AdamNlOptParallelEnum.selectable();
             ind = find(ismember({m.name},name),1,'first');
+            if(isempty(ind))
+                %Async, or anything else no longer offered: show the mode it
+                %actually behaves as rather than leaving the control blank.
+                ind = find(m == AdamNlOptParallelEnum.FiniteDiffs,1,'first');
+            end
             enum = m(ind);
         end
 
