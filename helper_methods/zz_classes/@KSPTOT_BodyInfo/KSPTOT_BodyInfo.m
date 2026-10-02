@@ -433,7 +433,12 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
             if(isempty(obj.surfTextureCache))
                 if(not(isempty(obj.surftexturefile)))
                     try
-                        [I,~] = imread(obj.surftexturefile);
+                        [I,map] = imread(obj.surftexturefile);
+                        if(~isempty(map)) % ponytail: indexed -> RGB, else surf texturemaps through axes colormap
+                            I = uint8(255*ind2rgb(I,map));
+                        elseif(ismatrix(I)) % grayscale MxN -> MxNx3 RGB
+                            I = repmat(I,[1 1 3]);
+                        end
                         I = flip(I, 1);
                     catch ME
                         I = NaN;
