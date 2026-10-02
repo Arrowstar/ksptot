@@ -75,6 +75,7 @@ classdef ValidatorTest < KsptotTestCase
             'ForceModelPropagatorWithNoForceModels', ...
             'ThirdBodyGravity', ...
             'MaxFixedStepsReached', ...
+            'IntegratorToleranceTooLoose', ...
             'SomeEventsNotPlotted', ...
             'ConstraintValidatorFixedBounds', ...
             'ValidationOrchestrator', ...
@@ -748,6 +749,98 @@ classdef ValidatorTest < KsptotTestCase
                 'The warning must end with the event list, with no truncated detail after it.');
         end
 
+        function checkIntegratorToleranceTooLoose(testCase)
+            %Rule: the variable-step integrators control LOCAL error against
+            %max(AbsTol, RelTol*|state|), so the per-step position error
+            %floor an event actually runs at is
+            %max(AbsTol, RelTol*maxRadius).  Warn when that exceeds
+            %ToleranceWarnThresholdKm.
+            %
+            %The point of the rule is that RelTol is RELATIVE: the stock
+            %1E-7 is sub-meter in Kerbin orbit and tens of meters at lunar
+            %distance, which is how a mission can accumulate a 30 km
+            %patch-point mismatch while every setting still reads
+            %"default".  So the dial moved below is the RADIUS, not the
+            %tolerance -- same mission, flown further out.
+            lvdData = testCase.makeRunMission();
+            evt1 = lvdData.script.getEventForInd(1);
+            evt2 = lvdData.script.getEventForInd(2);
+            opts1 = evt1.integratorObj.getOptions();
+            opts2 = evt2.integratorObj.getOptions();
+            testCase.assertFalse(opts1 == opts2, ...
+                'Fixture broken: the two events share one integrator options object.');
+
+            v = IntegratorToleranceTooLooseValidator(lvdData);
+            threshold = IntegratorToleranceTooLooseValidator.ToleranceWarnThresholdKm;
+
+            %NEGATIVE: the baseline 700 km orbit at the stock 1E-7 gives
+            %7E-5 km = 7 cm per step, comfortably under the 1 m threshold.
+            testCase.assertEqual(opts1.RelTol, 1E-7, 'Fixture broken: expected the stock RelTol.');
+            [errors, warnings] = v.validate();
+            testCase.verifyEmpty(errors, 'This validator never produces errors.');
+            testCase.verifyEmpty(warnings, ...
+                'A low orbit at the stock tolerance must not warn.');
+
+            %Move event 1 out to lunar distance by rewriting its state log
+            %positions.  Nothing is re-propagated; only the radius changes.
+            entries1 = lvdData.stateLog.getAllStateLogEntriesForEvent(evt1);
+            lunarRadiusKm = 4E5;
+            testCase.scalePositionsTo(entries1, lunarRadiusKm);
+
+            %POSITIVE: 4E5 km * 1E-7 = 0.04 km = 40 m, far over threshold.
+            [~, wFar] = v.validate();
+            testCase.verifyNumElements(wFar, 1, ...
+                'The same tolerance at lunar distance must warn.');
+            testCase.verifyTrue(contains(wFar(1).str, 'Integrator tolerances are loose'), ...
+                'Unexpected message text for the loose-tolerance warning.');
+            testCase.verifyTrue(contains(wFar(1).str, '(Events: 1)'), ...
+                'The warning must name exactly the offending event.');
+            testCase.verifyTrue(contains(wFar(1).str, '40'), ...
+                'The message must quote the estimated per-step error in meters (40 m here).');
+            testCase.verifyFalse(endsWith(wFar(1).str, newline), ...
+                'The warning must not end in a dangling newline from an unsupplied conversion.');
+
+            %NEGATIVE again with only the tolerance moved: tightening to the
+            %suggested value silences it.
+            opts1.RelTol = threshold / lunarRadiusKm / 10;
+            opts1.AbsTol = opts1.RelTol;
+            [~, wTight] = v.validate();
+            testCase.verifyEmpty(wTight, ...
+                'Tightening the tolerance for the distance flown must silence the rule.');
+
+            %BOUNDARY: exactly at the threshold must NOT warn, because the
+            %test is >, not >=.
+            opts1.RelTol = threshold / lunarRadiusKm;
+            opts1.AbsTol = 0;
+            [~, wAt] = v.validate();
+            testCase.verifyEmpty(wAt, ...
+                'An estimated error exactly at the threshold must not warn (the test is >).');
+
+            opts1.RelTol = threshold / lunarRadiusKm * (1 + 1E-9);
+            [~, wJustOver] = v.validate();
+            testCase.verifyNumElements(wJustOver, 1, ...
+                'An estimated error just over the threshold must warn.');
+
+            %AbsTol alone can trip it: the floor is a max of the two.
+            opts1.RelTol = 1E-16;
+            opts1.AbsTol = threshold * 10;
+            [~, wAbs] = v.validate();
+            testCase.verifyNumElements(wAbs, 1, ...
+                'A loose AbsTol must trip the rule even with a tight RelTol.');
+
+            %A fixed-step integrator has no tolerances at all: skipped, not
+            %errored.  Swapping event 2's integrator is enough to prove the
+            %guard, since every event is visited.
+            opts1.RelTol = 1E-16;
+            opts1.AbsTol = 0;
+            evt2.integratorObj = evt2.ode5Integrator;
+            testCase.assertFalse(isa(evt2.integratorObj.getOptions(), 'BuiltInIntegratorOptions'), ...
+                'Fixture broken: ODE5 should carry fixed-step options.');
+            [~, wFixed] = v.validate();
+            testCase.verifyEmpty(wFixed, ...
+                'An event with fixed-step options must be skipped, not crash the validator.');
+        end
+
         function checkSomeEventsNotPlotted(testCase)
             %Rule: warn when the selected view profile has plotAllEvents off
             %AND a non-empty eventsToPlot list that does not cover every event.
@@ -913,6 +1006,7 @@ classdef ValidatorTest < KsptotTestCase
                 'ForceModelPropagatorWithNoForceModelsValidator', ...
                 'ThirdBodyGravityValidator', ...
                 'MaxFixedStepsReachedValidator', ...
+                'IntegratorToleranceTooLooseValidator', ...
                 'SomeEventsNotPlottedValidator', ...
                 'TankCapacityValidator', ...
                 'EngineMixtureValidator', ...
@@ -1144,6 +1238,15 @@ classdef ValidatorTest < KsptotTestCase
 
             testCase.assertNotEmpty(lvdData.stateLog.getAllEntries(), ...
                 'Fixture broken: executeScript left the state log empty.');
+        end
+
+        function scalePositionsTo(~, entries, radiusKm)
+            %Rescales every entry's position vector to the given radius,
+            %leaving direction (and everything else) alone.
+            for(i = 1:numel(entries)) %#ok<*NO4LP>
+                r = entries(i).position(:);
+                entries(i).position = r * (radiusKm / norm(r));
+            end
         end
 
         function var = addDurationVar(~, lvdData, evtInd, lb, ub)

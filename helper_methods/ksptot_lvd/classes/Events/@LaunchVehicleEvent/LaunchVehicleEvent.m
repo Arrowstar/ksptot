@@ -119,8 +119,9 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
         
         function addAction(obj, newAction)
             obj.actions(end+1) = newAction;
+            obj.clearActiveOptVarsCache();
         end
-        
+
         function removeAction(obj, action)
             [~, vars] = action.hasActiveOptimVar();
             if(not(isempty(vars)))
@@ -128,8 +129,9 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
                     obj.lvdData.optimizer.vars.removeVariable(vars(i));
                 end
             end
-            
+
             obj.actions([obj.actions] == action) = [];
+            obj.clearActiveOptVarsCache();
         end
         
         function removeActionByInd(obj, ind)

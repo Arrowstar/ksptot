@@ -389,6 +389,17 @@ classdef LvdOptimTableModel
                 return;
             end
 
+            %The current log is sparse (it was left behind by an
+            %optimization) and some constraint here needs the full
+            %trajectory.  Evaluating anyway would fill the table with
+            %plausible, wrong numbers; evalConstraints would throw.  Say
+            %so instead, same as the not-yet-propagated case.
+            if(lvdData.stateLog.wasSparse && not(lvdData.optimizer.constraints.canUseSparseOutput()))
+                ok = false;
+                msg = 'The current state log is sparse and some constraints need the full trajectory to evaluate correctly.  Run the script to produce a dense state log first.';
+                return;
+            end
+
             try
                 x = lvdData.optimizer.vars.getTotalScaledXVector();
                 lvdData.optimizer.constraints.evalConstraints(x, false, lvdData.script.getEventForInd(1), false, []);

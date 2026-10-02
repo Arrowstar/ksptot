@@ -96,9 +96,16 @@ classdef LaunchVehicleNonSeqEvents < matlab.mixin.SetGet & matlab.mixin.Copyable
             end
             
             actions = evt.actions;
-            for(i=1:length(actions)) %#ok<*NO4LP> 
+            for(i=1:length(actions)) %#ok<*NO4LP>
                 evt.removeAction(actions(i));
             end
+
+            %Same cleanup as the sequential delete path.  This one used to
+            %do none of it: the non-sequential delete button left dangling
+            %constraints, variables and plotted-event references behind.
+            obj.lvdData.optimizer.constraints.removeConstraintsThatUseEvent(evt);
+            obj.lvdData.optimizer.vars.removeVariablesThatUseEvent(evt, obj.lvdData);
+            obj.lvdData.viewSettings.removeEventFromListOfPlottedEvents(evt);
 
             obj.nonSeqEvts(obj.nonSeqEvts == nonSeqEvt) = [];
         end

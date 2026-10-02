@@ -92,13 +92,53 @@ classdef ConstraintSet < matlab.mixin.SetGet
         
         function tf = canUseSparseOutput(obj)
             tf = true;
-            
+
             for(i=1:length(obj.consts))
                 tf = tf && obj.consts(i).canUseSparseOutput();
             end
         end
-        
+
+        function assertStateLogIsDenseEnough(obj, stateLog)
+            %assertStateLogIsDenseEnough Refuses a sparse state log when
+            %any constraint in the set needs the full trajectory.
+            %
+            %A sparse log keeps only event endpoints, so an extremum reads
+            %the extremum of two samples and a path integral reads one
+            %segment.  Both return a plausible, badly wrong number with no
+            %warning -- a violated constraint reported as satisfied.
+            %
+            %This throws rather than silently re-propagating: the caller
+            %handed a log in precisely to avoid a propagation, so quietly
+            %doing one anyway trades a wrong number for a mysterious
+            %slowdown.  Callers that legitimately want cheap values should
+            %check wasSparse themselves and skip the call.
+            if(not(stateLog.wasSparse) || obj.canUseSparseOutput())
+                return;
+            end
+
+            badTypes = {};
+            for(i=1:length(obj.consts))
+                if(not(obj.consts(i).canUseSparseOutput()))
+                    badTypes{end+1} = obj.consts(i).getConstraintType(); %#ok<AGROW>
+                end
+            end
+
+            error('ConstraintSet:sparseStateLog', ...
+                  ['Cannot evaluate constraints against a sparse state log: ', ...
+                   '%s require(s) the full trajectory.  Re-propagate with ', ...
+                   'sparse output disabled before evaluating this set.'], ...
+                  strjoin(unique(badTypes), ', '));
+        end
+
         function [c, ceq, value, lb, ub, type, eventNum, cEventInds, ceqEventInds, typeNumConstrArr, constraints, cCInds, cCeqInds, valueStateComps] = evalConstraints(obj, x, tfRunScript, evtToStartScriptExecAt, allowInterrupt, stateLogToEval)
+            %The Jacobian menus in the main GUI call this with four
+            %arguments and rely on tfRunScript==true short-circuiting
+            %before stateLogToEval is read.  Default it rather than leave
+            %that trap armed for the next person to touch this method.
+            if(nargin < 6)
+                stateLogToEval = [];
+            end
+
             c = [];
             ceq = [];
             value = [];
@@ -135,8 +175,10 @@ classdef ConstraintSet < matlab.mixin.SetGet
 
                 elseif(not(isempty(stateLogToEval)) && isa(stateLogToEval, 'LaunchVehicleStateLog'))
                     stateLog = stateLogToEval;
+                    obj.assertStateLogIsDenseEnough(stateLog);
                 else
                     stateLog = obj.lvdData.stateLog;
+                    obj.assertStateLogIsDenseEnough(stateLog);
                 end
 
                 entries = stateLog.entries;

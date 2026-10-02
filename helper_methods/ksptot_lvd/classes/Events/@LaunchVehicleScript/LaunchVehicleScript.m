@@ -85,12 +85,22 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
                     obj.lvdData.optimizer.vars.removeVariable(termCondOptVar);
                 end
             end
-            
+
             actions = evt.actions;
             for(i=1:length(actions))
                 evt.removeAction(actions(i));
             end
-            
+
+            %Prune everything else that holds this event by handle.  Doing
+            %it here rather than in the GUI callback is what makes all four
+            %delete paths (sequential/non-sequential buttons, delete-by-
+            %index, bulk advance-to-event delete) clean up identically.
+            %All three helpers are handle matched and idempotent, so the
+            %duplicate calls still in the main GUI are no-ops.
+            obj.lvdData.optimizer.constraints.removeConstraintsThatUseEvent(evt);
+            obj.lvdData.optimizer.vars.removeVariablesThatUseEvent(evt, obj.lvdData);
+            obj.lvdData.viewSettings.removeEventFromListOfPlottedEvents(evt);
+
             obj.evts(obj.evts == evt) = [];
         end
         
@@ -110,8 +120,10 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
             %
             %Checked: actions on every OTHER sequential event, every
             %non-sequential event (actions and arming-bound events), and the
-            %objective function.  Constraints and optimization variables are
-            %not reported because the delete path removes those itself.
+            %objective function.  Constraints, optimization variables and
+            %plotted-event references are deliberately NOT reported: both
+            %removeEvent methods prune them, so they are never left
+            %dangling and would only be noise in a "cannot delete" dialog.
             reasons = {};
 
             evtNum = obj.getNumOfEvent(evt);
@@ -663,6 +675,13 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
             %evaluation propagated everything: a full run is a perfectly
             %good baseline for the next evaluation's change detection.
             obj.lastRunSparseFlag = isSparseOutput;
+
+            %Stamp the log itself, so a consumer handed one can tell
+            %whether it is dense enough for what it is about to compute.
+            %Truthful as a single flag because resolvePropagationStartPoint
+            %refuses to splice across a granularity change.
+            stateLog.wasSparse = isSparseOutput;
+
             obj.lastNumEvtsIntegrated = numEvtsExecuted;
             if(evtStartNum <= 1)
                 obj.lastNumEvtsSkipped = 0;
@@ -872,6 +891,20 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
                 return;
             end
 
+            %Guard: the cached log was produced at a different output
+            %granularity.  Splicing new entries onto it would leave a log
+            %that is sparse over its prefix and dense over its tail -- a
+            %state nothing downstream can reason about, and one that
+            %silently under-resolves path integrals and extrema over the
+            %retained prefix.  Force a full run so the log is uniformly one
+            %or the other, which is also what makes
+            %LaunchVehicleStateLog.wasSparse a truthful single flag.
+            if(obj.lastRunSparseFlag ~= isSparseOutput)
+                useIncremental = false;
+                evtStartNum = 1;
+                return;
+            end
+
             vars = obj.lvdData.optimizer.vars;
             pendingX = vars.getPendingX();
             committedX = vars.getCommittedX();
@@ -901,9 +934,10 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
             if(isempty(changedInds))
                 %Nothing changed since the last committed evaluation.  The
                 %entire cached log can be reused as-is when it was produced
-                %by a complete run with matching output granularity;
-                %otherwise re-run the tail per the static floor.
-                if(prevCompletedFully && obj.lastRunSparseFlag == isSparseOutput)
+                %by a complete run; otherwise re-run the tail per the
+                %static floor.  Granularity is already known to match --
+                %a mismatch returned a full run above.
+                if(prevCompletedFully)
                     useIncremental = true;
                     skipPropagation = true;
                     return;

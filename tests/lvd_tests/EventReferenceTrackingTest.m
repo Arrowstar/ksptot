@@ -328,6 +328,158 @@ classdef EventReferenceTrackingTest < KsptotTestCase
             testCase.verifyFalse(tf);
             testCase.verifyEmpty(reasons);
         end
+
+        %% ------------------------------- hasActiveOptVars memo invalidation
+
+        function addingAndRemovingAnActionInvalidatesTheOptVarMemo(testCase)
+            %hasActiveOptVars memoizes "which variables does this event
+            %own".  Nothing used to clear it when an action came or went,
+            %so a removed action's variable stayed visible -- and that
+            %answer drives getEventNumberForVar, which in turn drives
+            %sortVarsByEvtNum, i.e. the ORDER of the x vector.
+            [lvdData, evt1, ~, ~] = testCase.buildThreeEventScript();
+
+            [~, before] = evt1.hasActiveOptVars();   %prime the memo: empty
+            testCase.verifyEmpty(before, 'Fixture sanity: a default event owns no variables.');
+
+            action = AddDeltaVAction([0.1; 0; 0], DeltaVFrameEnum.Inertial, false);
+            var = AddDeltaVActionVariable(action);
+            lvdData.optimizer.vars.addVariable(var);
+            evt1.addAction(action);
+
+            [~, afterAdd] = evt1.hasActiveOptVars();
+            testCase.verifyTrue(any(afterAdd == var), ...
+                'An added action''s variable must be visible immediately, not after the next cache flush.');
+
+            evt1.removeAction(action);
+
+            [~, afterRemove] = evt1.hasActiveOptVars();
+            testCase.verifyFalse(any(afterRemove == var), ...
+                'A removed action''s variable must not keep being reported as owned by the event.');
+        end
+
+        function removingAVariableThroughTheSetInvalidatesTheOptVarMemo(testCase)
+            %The variable-editor dialogs detach a variable from its action
+            %and then prune it from the set, never touching the event.
+            %addVariable/removeVariable is the one chokepoint every such
+            %path routes through, so that is where the memo is invalidated.
+            [lvdData, evt1, ~, ~] = testCase.buildThreeEventScript();
+
+            action = AddDeltaVAction([0.1; 0; 0], DeltaVFrameEnum.Inertial, false);
+            var = AddDeltaVActionVariable(action);
+            lvdData.optimizer.vars.addVariable(var);
+            evt1.addAction(action);
+
+            [~, primed] = evt1.hasActiveOptVars();
+            testCase.verifyTrue(any(primed == var), 'Fixture sanity: the memo must be primed with the variable.');
+
+            action.optVar = AbstractOptimizationVariable.empty(0,1);
+            lvdData.optimizer.vars.removeVariable(var);
+
+            [~, after] = evt1.hasActiveOptVars();
+            testCase.verifyFalse(any(after == var), ...
+                'Pruning a variable from the set must not leave the event reporting it.');
+        end
+
+        %% ------------------------------------ deletion prunes every referrer
+
+        function deletingASequentialEventPrunesItsConstraintsAndVariables(testCase)
+            [lvdData, evt1, evt2, ~] = testCase.buildThreeEventScript();
+            noBody = KSPTOT_BodyInfo.empty(1,0);
+
+            con = GenericMAConstraint('Altitude', evt2, 0, 0, [], [], noBody);
+            lvdData.optimizer.constraints.addConstraint(con);
+
+            action = AddDeltaVAction([0.1; 0; 0], DeltaVFrameEnum.Inertial, false);
+            var = AddDeltaVActionVariable(action);
+            lvdData.optimizer.vars.addVariable(var);
+            evt2.addAction(action);
+
+            lvdData.viewSettings.viewProfiles(1).eventsToPlot(end+1) = evt2;
+
+            lvdData.script.removeEvent(evt2);
+
+            testCase.verifyFalse(any(lvdData.optimizer.constraints.consts == con), ...
+                'Deleting an event must drop the constraints that point at it.');
+            testCase.verifyFalse(any(lvdData.optimizer.vars.vars == var), ...
+                'Deleting an event must drop the optimization variables it owned.');
+            testCase.verifyFalse(any(lvdData.viewSettings.viewProfiles(1).eventsToPlot == evt2), ...
+                'Deleting an event must drop it from the plotted-events list.');
+            testCase.verifyFalse(any(lvdData.script.evts == evt2));
+            testCase.verifyTrue(any(lvdData.script.evts == evt1), 'Other events must survive.');
+        end
+
+        function deletingANonSequentialEventPrunesItsConstraintsAndVariables(testCase)
+            %This delete path used to clean up nothing at all.
+            [lvdData, ~, ~, ~] = testCase.buildThreeEventScript();
+            script = lvdData.script;
+            noBody = KSPTOT_BodyInfo.empty(1,0);
+
+            innerEvt = LaunchVehicleEvent.getDefaultEvent(script);
+            nse = LaunchVehicleNonSeqEvent(innerEvt);
+            script.nonSeqEvts.addEvent(nse);
+
+            con = GenericMAConstraint('Altitude', innerEvt, 0, 0, [], [], noBody);
+            lvdData.optimizer.constraints.addConstraint(con);
+
+            action = AddDeltaVAction([0.1; 0; 0], DeltaVFrameEnum.Inertial, false);
+            var = AddDeltaVActionVariable(action);
+            lvdData.optimizer.vars.addVariable(var);
+            innerEvt.addAction(action);
+
+            script.nonSeqEvts.removeEvent(nse);
+
+            testCase.verifyFalse(any(lvdData.optimizer.constraints.consts == con), ...
+                'Deleting a non-sequential event must drop the constraints that point at it.');
+            testCase.verifyFalse(any(lvdData.optimizer.vars.vars == var), ...
+                'Deleting a non-sequential event must drop the variables it owned.');
+        end
+
+        function removeVariablesThatUseEventWorksForANonSequentialEvent(testCase)
+            %Matching used to go through getEventNumberForVar and compare
+            %against evt.getEventNum(), which is NaN for a non-sequential
+            %event -- so this could never match anything.
+            [lvdData, ~, ~, ~] = testCase.buildThreeEventScript();
+            script = lvdData.script;
+
+            innerEvt = LaunchVehicleEvent.getDefaultEvent(script);
+            script.nonSeqEvts.addEvent(LaunchVehicleNonSeqEvent(innerEvt));
+
+            action = AddDeltaVAction([0.1; 0; 0], DeltaVFrameEnum.Inertial, false);
+            var = AddDeltaVActionVariable(action);
+            lvdData.optimizer.vars.addVariable(var);
+            innerEvt.addAction(action);
+
+            testCase.assertTrue(any(lvdData.optimizer.vars.vars == var), 'Fixture sanity.');
+            testCase.verifyTrue(isnan(innerEvt.getEventNum()), ...
+                'Fixture sanity: a non-sequential event has no sequential number.');
+
+            lvdData.optimizer.vars.removeVariablesThatUseEvent(innerEvt, lvdData);
+
+            testCase.verifyFalse(any(lvdData.optimizer.vars.vars == var), ...
+                'Variables owned by a non-sequential event must be removable.');
+        end
+
+        function getEventNumberForVarDoesNotClobberASequentialHit(testCase)
+            %The non-sequential scan used to run even after a sequential
+            %hit and overwrite varLocType with 'Nonsequential Event n'.
+            [lvdData, evt1, ~, ~] = testCase.buildThreeEventScript();
+            script = lvdData.script;
+
+            script.nonSeqEvts.addEvent(LaunchVehicleNonSeqEvent(LaunchVehicleEvent.getDefaultEvent(script)));
+
+            action = AddDeltaVAction([0.1; 0; 0], DeltaVFrameEnum.Inertial, false);
+            var = AddDeltaVActionVariable(action);
+            lvdData.optimizer.vars.addVariable(var);
+            evt1.addAction(action);
+
+            [evtNum, varLocType, ownerEvt] = getEventNumberForVar(var, lvdData);
+
+            testCase.verifyEqual(evtNum, 1, 'A variable on event 1 must resolve to event number 1.');
+            testCase.verifyEqual(varLocType, 'Event', ...
+                'A sequential hit must not be relabelled by the non-sequential scan.');
+            testCase.verifySameHandle(ownerEvt, evt1, 'The owning event handle must come back.');
+        end
     end
 
     methods(Access=private)

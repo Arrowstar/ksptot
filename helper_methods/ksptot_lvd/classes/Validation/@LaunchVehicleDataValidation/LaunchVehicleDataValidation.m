@@ -25,6 +25,7 @@ classdef LaunchVehicleDataValidation < matlab.mixin.SetGet
             obj.validators(end+1) = ForceModelPropagatorWithNoForceModelsValidator(obj.lvdData);
             obj.validators(end+1) = ThirdBodyGravityValidator(obj.lvdData);
             obj.validators(end+1) = MaxFixedStepsReachedValidator(obj.lvdData);
+            obj.validators(end+1) = IntegratorToleranceTooLooseValidator(obj.lvdData);
             obj.validators(end+1) = SomeEventsNotPlottedValidator(obj.lvdData);
             obj.validators(end+1) = TankCapacityValidator(obj.lvdData);
             obj.validators(end+1) = EngineMixtureValidator(obj.lvdData);

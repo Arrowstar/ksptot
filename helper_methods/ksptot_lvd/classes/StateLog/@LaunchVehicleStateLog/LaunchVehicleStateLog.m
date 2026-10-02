@@ -7,6 +7,18 @@ classdef LaunchVehicleStateLog < matlab.mixin.SetGet
         nonSeqEvtsStates NonSeqEvtsState
 
         lvdData LvdData
+
+        %How this log was produced.  Sparse output keeps only the endpoints
+        %of each event, which silently defeats anything that reads more
+        %than one entry (path integrals, extrema).  Consumers that need a
+        %dense log check this; see ConstraintSet.evalConstraints.
+        %
+        %Default false (= dense = permissive) so missions saved before this
+        %property existed never trip the check on load.  The granularity
+        %bail-out in LaunchVehicleScript.resolvePropagationStartPoint is
+        %what keeps a single flag truthful: a sparse/dense flip forces a
+        %full re-propagation, so a log is never part sparse and part dense.
+        wasSparse(1,1) logical = false
     end
     
     methods
@@ -21,6 +33,7 @@ classdef LaunchVehicleStateLog < matlab.mixin.SetGet
         function clearStateLog(obj)
             obj.entries = LaunchVehicleStateLogEntry.empty(1,0);
             obj.nonSeqEvtsStates = NonSeqEvtsState.empty(1,0);
+            obj.wasSparse = false;
         end
         
         function clearStateLogAtOrAfterEvent(obj, evt)

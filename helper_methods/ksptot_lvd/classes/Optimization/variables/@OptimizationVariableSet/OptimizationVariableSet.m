@@ -29,20 +29,56 @@ classdef OptimizationVariableSet < matlab.mixin.SetGet
         end
         
         function addVariable(obj, newVar)
+            obj.clearEventActiveOptVarsCaches();
+
             obj.vars(end+1) = newVar;
             obj.sortVarsByEvtNum();
-            
+
             obj.clearCachedVarEvtDisabledStatus();
             notify(obj,'VarsListUpdatedAddedVar');
         end
-        
+
         function removeVariable(obj, var)
             if(not(isempty(var)))
+                obj.clearEventActiveOptVarsCaches();
+
                 obj.vars([obj.vars] == var) = [];
                 obj.sortVarsByEvtNum();
 
                 obj.clearCachedVarEvtDisabledStatus();
                 notify(obj,'VarsListUpdatedRemovedVar');
+            end
+        end
+
+        function clearEventActiveOptVarsCaches(obj)
+            %clearEventActiveOptVarsCaches Drops every event's memoized
+            %"which optimization variables do I own" answer.
+            %
+            %Every route by which a variable appears or disappears -- an
+            %action removed, a conditional branch pruned, any of the
+            %variable-editor dialogs -- ends up in addVariable or
+            %removeVariable, so this is the one place that sees them all.
+            %Invalidating here rather than in each of the ~14 mutators is
+            %what keeps the memo honest; a stale one hands deleted
+            %variables back to getEventNumberForVar, which in turn drives
+            %the x-vector ORDERING via sortVarsByEvtNum, not just deletion
+            %bookkeeping.
+            %
+            %Must run BEFORE sortVarsByEvtNum, which reads the memo.
+            if(isempty(obj.lvdData) || isempty(obj.lvdData.script))
+                return;
+            end
+
+            script = obj.lvdData.script;
+
+            evts = script.evts;
+            for(i=1:length(evts)) %#ok<*NO4LP>
+                evts(i).clearActiveOptVarsCache();
+            end
+
+            nonSeqEvts = script.nonSeqEvts.evts;
+            for(i=1:length(nonSeqEvts))
+                nonSeqEvts(i).clearActiveOptVarsCache();
             end
         end
         
@@ -224,27 +260,25 @@ classdef OptimizationVariableSet < matlab.mixin.SetGet
             end
         end
         
-        function removeVariablesThatUseEvent(obj, evt, lvdData)
-            indsToDelete = [];
-            for(i=1:length(obj.vars))
-                var = obj.vars(i);
-                
-                evtNum = getEventNumberForVar(var, lvdData);
-                
-                if(not(isempty(evtNum)))
-                    inputEvtNum = evt.getEventNum();
-                    
-                    if(evtNum == inputEvtNum)
-                        indsToDelete(end+1) = i; %#ok<AGROW>
-                    end
-                end
+        function removeVariablesThatUseEvent(obj, evt, ~)
+            %removeVariablesThatUseEvent Drops every variable owned by evt.
+            %
+            %Matched on the event HANDLE, by asking the event directly
+            %which variables it owns.  The previous implementation went
+            %the long way round -- getEventNumberForVar for each variable,
+            %then compared that number against evt.getEventNum() -- which
+            %could never match a non-sequential event, because
+            %getEventNum() returns NaN for one and NaN == x is always
+            %false.  Asking the event has no such blind spot.
+            %
+            %The third argument is retained for call compatibility (the
+            %main GUI's delete-event callback passes lvdData) and unused.
+            [~, varsToDelete] = evt.hasActiveOptVars();
+
+            for(i=1:length(varsToDelete)) %#ok<*NO4LP>
+                obj.removeVariable(varsToDelete(i));
             end
-            
-            for(i=length(indsToDelete):-1:1)
-                indToDel = indsToDelete(i);
-                obj.removeVariable(obj.vars(indToDel));  
-            end
-            
+
             obj.clearCachedVarEvtDisabledStatus();
         end
         
