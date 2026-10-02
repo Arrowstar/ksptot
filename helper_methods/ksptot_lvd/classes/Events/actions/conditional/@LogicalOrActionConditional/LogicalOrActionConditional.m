@@ -98,6 +98,13 @@ classdef LogicalOrActionConditional < AbstractActionConditional
             end
         end
 
+        function tf = canUseSparseOutput(obj)
+            tf = true;
+            for(i=1:numel(obj.conditionals))
+                tf = tf && obj.conditionals(i).canUseSparseOutput();
+            end
+        end
+
         function nodes = getTreeNodes(obj, parent)
             nodes(1) = uitreenode(parent, 'Text','OR', 'NodeData',obj, 'Icon','venn-diagram_logical_or.png');
             for(i=1:numel(obj.conditionals))

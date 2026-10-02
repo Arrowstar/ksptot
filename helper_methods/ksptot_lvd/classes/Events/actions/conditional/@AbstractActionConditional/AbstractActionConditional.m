@@ -20,6 +20,13 @@ classdef (Abstract) AbstractActionConditional < matlab.mixin.SetGet & matlab.mix
             %references the given sequential event.
             tf = false;
         end
+
+        function tf = canUseSparseOutput(obj) %#ok<MANU>
+            %canUseSparseOutput False when this conditional (or any nested
+            %one) reads a quantity needing the full trajectory.  See
+            %LaunchVehicleScript.canUseSparseOutput.
+            tf = true;
+        end
     end
 
     methods(Sealed)

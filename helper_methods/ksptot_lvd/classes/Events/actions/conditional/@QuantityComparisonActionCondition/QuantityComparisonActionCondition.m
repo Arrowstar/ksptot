@@ -208,6 +208,14 @@ classdef QuantityComparisonActionCondition < AbstractActionConditional
             condStr = obj.getListboxStr();
         end
 
+        function tf = canUseSparseOutput(obj)
+            tf = not(GenericMAConstraint.isHistoryDependentTask(obj.task.taskStr));
+
+            if(obj.compareAgainst ~= CompareAgainstEnum.NumericConstant)
+                tf = tf && not(GenericMAConstraint.isHistoryDependentTask(obj.qcTask.taskStr));
+            end
+        end
+
         function tf = usesEvent(obj, event)
             tf = obj.compareAgainst == CompareAgainstEnum.EventQuantity && ...
                  not(isempty(obj.compareEvent)) && obj.compareEvent == event;

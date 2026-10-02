@@ -257,6 +257,16 @@ classdef ConditionalAction < AbstractEventAction
             tf = tf || obj.anyBranchAction(@(a) a.usesEvent(event));
         end
 
+        function tf = canUseSparseOutput(obj)
+            tf = isempty(obj.ifCondition) || obj.ifCondition.canUseSparseOutput();
+
+            for(i=1:numel(obj.elseifConditions))
+                tf = tf && obj.elseifConditions(i).canUseSparseOutput();
+            end
+
+            tf = tf && not(obj.anyBranchAction(@(a) not(a.canUseSparseOutput())));
+        end
+
         function tf = usesPwrSink(obj, powerSink)
             tf = obj.anyBranchAction(@(a) a.usesPwrSink(powerSink));
         end

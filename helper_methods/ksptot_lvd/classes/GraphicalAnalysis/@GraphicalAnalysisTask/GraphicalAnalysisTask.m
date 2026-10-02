@@ -53,9 +53,15 @@ classdef GraphicalAnalysisTask < matlab.mixin.SetGet
             %   (plots, sweep responses, overlays) should pass them;
             %   single-entry callers (action conditionals evaluated during
             %   propagation, plugin-var actions) omit them, in which case
-            %   history-dependent tasks evaluate over the lone entry and
-            %   report 0.
+            %   the history is recovered from the mission's state log;
+            %   evaluated over the lone entry it would always read 0.
             if(nargin < 10)
+                if(strcmp(obj.taskStr, 'Cumulative Delta-V Expended'))
+                    depVarValue = lvd_cumulativeDeltaVAtEntry(lvdStateLogEntry);
+                    depVarUnit = 'km/s';
+                    return;
+                end
+
                 fullSubLog = lvdStateLogEntry;
                 entryInd = 1;
             end

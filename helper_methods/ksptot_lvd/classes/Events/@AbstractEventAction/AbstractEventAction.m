@@ -74,6 +74,13 @@ classdef(Abstract) AbstractEventAction < matlab.mixin.SetGet & matlab.mixin.Hete
 
             tf = false;
         end
+
+        function tf = canUseSparseOutput(obj) %#ok<MANU>
+            %canUseSparseOutput False for an action that, while the script
+            %runs, reads a quantity needing the full trajectory.  See
+            %LaunchVehicleScript.canUseSparseOutput.
+            tf = true;
+        end
         
         [tf,vars] = hasActiveOptimVar(obj)
     end

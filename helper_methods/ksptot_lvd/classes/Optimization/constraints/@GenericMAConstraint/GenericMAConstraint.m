@@ -62,8 +62,8 @@ classdef GenericMAConstraint < AbstractConstraint
                 refBodyId = [];
             end
                                     
-            if(GenericMAConstraint.isHistoryDependentTask(obj.constraintType))
-                %History-dependent: integrate over the full log up to the
+            if(strcmp(obj.constraintType, LaunchVehicleExtremaState.CumulativeDeltaVTask))
+                %A path integral: integrate over the full log up to the
                 %constrained node rather than evaluating the lone entry.
                 value = GenericMAConstraint.getCumulativeDeltaVUpToNode(stateLog, obj.event, obj.eventNode);
             else
@@ -85,7 +85,7 @@ classdef GenericMAConstraint < AbstractConstraint
                 cartElem = stateLogEntryStateComp.getCartesianElementSetRepresentation().convertToFrame(frame);
                 stateLogEntryStateComp.setCartesianElementSet(cartElem);
 
-                if(GenericMAConstraint.isHistoryDependentTask(obj.constraintType))
+                if(strcmp(obj.constraintType, LaunchVehicleExtremaState.CumulativeDeltaVTask))
                     valueStateComp = GenericMAConstraint.getCumulativeDeltaVUpToNode(stateLog, obj.stateCompEvent, obj.stateCompNode);
                 else
                     valueStateComp = obj.getValueForConstraint(stateLogEntryStateComp, type, maTaskList, refBodyId, celBodyData, frame);
@@ -143,7 +143,7 @@ classdef GenericMAConstraint < AbstractConstraint
         
         function tf = canUseSparseOutput(obj)
             %A history-dependent task reads more than the constrained
-            %entry, so a sparse log silently under-resolves it.
+            %entry, so a sparse log silently gets it wrong.
             tf = not(GenericMAConstraint.isHistoryDependentTask(obj.constraintType));
         end
         
@@ -202,20 +202,28 @@ classdef GenericMAConstraint < AbstractConstraint
     
     methods(Static)
         function tf = isHistoryDependentTask(constraintType)
-            %isHistoryDependentTask True for task types whose value is a
-            %path integral over consecutive state log entries rather than a
-            %function of the single constrained entry.  Such a task cannot
-            %be evaluated on a sparse state log (which keeps only event
-            %endpoints) and must not report itself sparse-safe.
+            %isHistoryDependentTask True for task types whose value depends
+            %on the trajectory between entries, not just the single entry
+            %it is read from.  Such a task is wrong on a sparse state log
+            %(which keeps only event endpoints) and must not report itself
+            %sparse-safe.  Two kinds:
             %
-            %Audited against every LVD and MA task reachable as a
-            %constraint: all the others dispatch as subLog(i), a lone
-            %entry.  MA's 'Distance Traveled' is also a path integral but
-            %has no case in ma_getConstraintStaticDetails, so it cannot be
-            %selected here.  Extrema/Calculus values accumulate during
-            %propagation but are *read* off one entry, so they stay sparse
-            %safe.  Add to this list, do not re-spell the string.
-            tf = ismember(constraintType, {'Cumulative Delta-V Expended'});
+            %  * Cumulative Delta-V Expended: a path integral over
+            %    consecutive state log entries.
+            %  * Extrema n Value / Calculus n Value: read off one entry, but
+            %    accumulated during propagation from the integrator samples
+            %    -- and sparse output drops those samples BEFORE the entries
+            %    are built (LaunchVehicleSimulationDriver.integrateOneEvent),
+            %    so on a sparse run they only ever see event endpoints.
+            %    ExtremumValueConstraint already refuses sparse output for
+            %    the same reason.
+            %
+            %Every other LVD and MA task reachable as a constraint
+            %dispatches as subLog(i), a lone entry.  MA's 'Distance
+            %Traveled' is also a path integral but has no case in
+            %ma_getConstraintStaticDetails, so it cannot be selected.
+            tf = strcmp(constraintType, 'Cumulative Delta-V Expended') || ...
+                 not(isempty(regexp(constraintType, '^(Extrema|Calculus) \d+ Value - ', 'once')));
         end
 
         function value = getCumulativeDeltaVUpToNode(stateLog, event, node)

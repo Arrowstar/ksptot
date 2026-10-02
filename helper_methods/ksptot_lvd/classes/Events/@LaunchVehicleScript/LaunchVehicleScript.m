@@ -508,6 +508,28 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
             
             tf = tf || obj.nonSeqEvts.usesPluginVariable(pluginVar);
         end
+
+        function tf = canUseSparseOutput(obj)
+            %canUseSparseOutput False when some action reads a quantity
+            %that needs the full trajectory (see
+            %GenericMAConstraint.isHistoryDependentTask) while the script
+            %runs.  Such an action steers the mission itself, so on a
+            %sparse log it would branch differently from the dense run --
+            %the optimizer would be solving a different mission than the
+            %one later verified.  executeScript refuses sparse output then.
+            tf = true;
+
+            evtsToCheck = [obj.evts, obj.nonSeqEvts.evts];
+            for(i=1:length(evtsToCheck))
+                actions = evtsToCheck(i).actions;
+                for(j=1:length(actions))
+                    if(not(actions(j).canUseSparseOutput()))
+                        tf = false;
+                        return;
+                    end
+                end
+            end
+        end
         
         function stateLog = executeScript(obj, isSparseOutput, evtToStartScriptExecAt, evalConstraints, allowInterrupt, dispEvtPropTimes, notifyScriptEvents, allowIncrementalReuse)
             arguments
@@ -523,6 +545,14 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
             
             stateLog = obj.lvdData.stateLog;
             vars = obj.lvdData.optimizer.vars;
+
+            %Sparse output is a request, not an order: an action that reads
+            %the trajectory history would steer the mission differently on
+            %a sparse log.  Decided before the incremental-reuse resolver,
+            %so its granularity check sees what will actually run.
+            if(isSparseOutput && not(obj.canUseSparseOutput()))
+                isSparseOutput = false;
+            end
 
             obj.propagationCounter = obj.propagationCounter + 1;
 
@@ -793,6 +823,7 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
             newStateLogEntries = evt.executeEvent(initStateLogEntry, obj.simDriver, tStartPropTime, tStartSimTime, isSparseOutput, activeNonSeqEvts);
             [newStateLogEntries.integrationGroup] = deal(intGroup);
             stateLog.appendStateLogEntries(newStateLogEntries);
+            LaunchVehicleExtremaState.updateCumulativeDeltaVExtrema(stateLog, newStateLogEntries);
             ttPropagate = toc(tPropagate);
             
             %Execute Actions After Event Propagation

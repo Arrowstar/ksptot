@@ -93,6 +93,10 @@ classdef LogicalNotActionConditional < AbstractActionConditional
             tf = not(isempty(obj.conditional)) && obj.conditional(1).usesEvent(event);
         end
 
+        function tf = canUseSparseOutput(obj)
+            tf = isempty(obj.conditional) || obj.conditional(1).canUseSparseOutput();
+        end
+
         function nodes = getTreeNodes(obj, parent)
             nodes(1) = uitreenode(parent, 'Text','NOT', 'NodeData',obj, 'Icon','stop(1).png');
 

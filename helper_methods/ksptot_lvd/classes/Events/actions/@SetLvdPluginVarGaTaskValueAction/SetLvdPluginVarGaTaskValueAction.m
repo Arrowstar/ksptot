@@ -60,6 +60,10 @@ classdef SetLvdPluginVarGaTaskValueAction < AbstractEventAction
 
             tf = obj.pluginVar == pluginVar;
         end
+
+        function tf = canUseSparseOutput(obj)
+            tf = not(GenericMAConstraint.isHistoryDependentTask(obj.task.taskStr));
+        end
                 
         function [tf, vars] = hasActiveOptimVar(obj)
             tf = false;
