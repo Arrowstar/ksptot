@@ -28,7 +28,8 @@ classdef SolarSystemAtmosphereTest < matlab.unittest.TestCase
                 'Saturn',  134.8, 100,    0.185
                 'Uranus',  76.4,  100,    0.416
                 'Neptune', 72,    100,    0.434
-                'Pluto',   39,    0.00115, 9.9e-5};
+                'Pluto',   39,    0.00115, 9.9e-5
+                'Triton',  38,    0.0014,  1.24e-4};
             for i = 1:size(anchors,1)
                 b = testCase.getBody(anchors{i,1});
                 [rho,P,T] = getAtmoDensityAtAltitude(b, 0, 0, 0, 0);
@@ -48,7 +49,8 @@ classdef SolarSystemAtmosphereTest < matlab.unittest.TestCase
                 'Saturn', 106.39, 82.0, 6
                 'Uranus', 49.08, 53, 10
                 'Neptune', 39.32, 52, 10
-                'Pluto',  30, 110, NaN};
+                'Pluto',  30, 110, NaN
+                'Triton', 40, 50.19, 1.163e-4};
             for i = 1:size(checks,1)
                 b = testCase.getBody(checks{i,1});
                 [~,P,T] = getAtmoDensityAtAltitude(b, checks{i,2}, 0, 0, 0);
@@ -60,7 +62,7 @@ classdef SolarSystemAtmosphereTest < matlab.unittest.TestCase
         end
 
         function pressureDecreasesAndDensityVanishesAboveAtmohgt(testCase)
-            names = {'Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto'};
+            names = {'Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto','Triton'};
             for k = 1:numel(names)
                 b = testCase.getBody(names{k});
                 Ps = zeros(1,50);

@@ -31,7 +31,7 @@ classdef SolarSystemRotationPckTest < matlab.unittest.TestCase
             kTl = fullfile(spiceKernelDir,'naif0012.tls');
             kPck = fullfile(spiceKernelDir,'pck00011.tpc');
             testCase.spiceAvailable = exist(kTl,'file')==2 && exist(kPck,'file')==2 ...
-                && (exist(fullfile('C:\spice\mice\lib','mice.mexw64'),'file')==2);
+                && (exist(fullfile('C:\spice\mice\lib','mice.mexw64'),'file')~=0);
             if testCase.spiceAvailable
                 addpath('C:\spice\mice\lib','C:\spice\mice\src\mice');
                 cspice_furnsh(kTl);
@@ -140,7 +140,8 @@ classdef SolarSystemRotationPckTest < matlab.unittest.TestCase
         function names = verifyBodyList(testCase) %#ok<MANU>
             names = {'Mercury','Venus','Moon','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto', ...
                      'Phobos','Deimos','Io','Europa','Ganymede','Callisto', ...
-                     'Mimas','Enceladus','Tethys','Dione','Rhea','Titan','Iapetus'};
+                     'Mimas','Enceladus','Tethys','Dione','Rhea','Titan','Iapetus', ...
+                     'Ariel','Umbriel','Titania','Oberon','Miranda','Triton'};
         end
 
         function b = getBody(testCase, name)
@@ -153,7 +154,8 @@ classdef SolarSystemRotationPckTest < matlab.unittest.TestCase
             ids = struct('Mercury',199,'Venus',299,'Moon',301,'Mars',499,'Jupiter',599, ...
                 'Saturn',699,'Uranus',799,'Neptune',899,'Pluto',999,'Phobos',401,'Deimos',402, ...
                 'Io',501,'Europa',502,'Ganymede',503,'Callisto',504,'Mimas',601,'Enceladus',602, ...
-                'Tethys',603,'Dione',604,'Rhea',605,'Titan',606,'Iapetus',608);
+                'Tethys',603,'Dione',604,'Rhea',605,'Titan',606,'Iapetus',608, ...
+                'Ariel',701,'Umbriel',702,'Titania',703,'Oberon',704,'Miranda',705,'Triton',801);
             id = ids.(name);
         end
     end
