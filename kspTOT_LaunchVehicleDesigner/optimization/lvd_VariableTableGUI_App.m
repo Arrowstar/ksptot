@@ -12,6 +12,11 @@ classdef lvd_VariableTableGUI_App < matlab.apps.AppBase
     %   editable in place; edits are written straight onto the variable
     %   objects (in stored units) through LvdOptimTableModel.
     %
+    %   "Show active only" hides every element that is not in the optimization
+    %   vector, so the table shows exactly what the optimizer is driving.  An
+    %   element whose owning event has optimization disabled is hidden by the
+    %   filter even when its Active box is ticked.
+    %
     %   lvd_VariableTableGUI_App(lvdData, false) builds the window hidden,
     %   which the unit tests use.
 
@@ -22,6 +27,7 @@ classdef lvd_VariableTableGUI_App < matlab.apps.AppBase
         TitleLabel
         VarTable
         ButtonGrid
+        ActiveOnlyCheckBox
         RefreshButton
         CopyButton
         CloseButton
@@ -64,7 +70,9 @@ classdef lvd_VariableTableGUI_App < matlab.apps.AppBase
                 return;
             end
 
-            [data, meta] = LvdOptimTableModel.getVariableRows(app.LvdData);
+            activeOnly = app.ActiveOnlyCheckBox.Value;
+
+            [data, meta] = LvdOptimTableModel.getVariableRows(app.LvdData, activeOnly);
             app.RowMeta = meta;
 
             app.VarTable.Data = data;
@@ -80,13 +88,22 @@ classdef lvd_VariableTableGUI_App < matlab.apps.AppBase
                 addStyle(app.VarTable, uistyle('BackgroundColor', [1.00 0.93 0.75], 'FontColor', [0.10 0.10 0.10]), 'row', onBoundRows(:));
             end
 
-            numInX = nnz([meta.inX]);
-            app.StatusLabel.Text = sprintf('%u variable element(s), %u in the optimization vector, %u on a bound.', ...
-                                           numel(meta), numInX, numel(onBoundRows));
+            if(activeOnly)
+                app.StatusLabel.Text = sprintf('%u variable element(s) in the optimization vector, %u on a bound.  Inactive elements hidden.', ...
+                                               numel(meta), numel(onBoundRows));
+            else
+                numInX = nnz([meta.inX]);
+                app.StatusLabel.Text = sprintf('%u variable element(s), %u in the optimization vector, %u on a bound.', ...
+                                               numel(meta), numInX, numel(onBoundRows));
+            end
         end
 
         function data = getTableData(app)
             data = app.VarTable.Data;
+        end
+
+        function meta = getRowMeta(app)
+            meta = app.RowMeta;
         end
 
         function [ok, msg] = applyCellEdit(app, rowInd, colInd, newValue, prevValue)
@@ -179,7 +196,7 @@ classdef lvd_VariableTableGUI_App < matlab.apps.AppBase
             app.VarTable.ColumnSortable = true;
             app.VarTable.RowName = {};
             app.VarTable.CellEditCallback = @(src, evt) onCellEdit(app, evt);
-            app.VarTable.Tooltip = {'Lower Bound, Upper Bound and Active may be edited in place.  Values are shown in display units (deg, %, m).  Rows highlighted in amber sit on a bound.'};
+            app.VarTable.Tooltip = {'Lower Bound, Upper Bound and Active may be edited in place.  Values are shown in display units (deg, %, m).  Rows highlighted in amber sit on a bound.  "Show active only" hides everything that is not in the optimization vector.'};
             app.VarTable.Layout.Row = 2;
             app.VarTable.Layout.Column = 1;
 
@@ -190,30 +207,38 @@ classdef lvd_VariableTableGUI_App < matlab.apps.AppBase
             app.StatusLabel.Layout.Row = 3;
             app.StatusLabel.Layout.Column = 1;
 
-            app.ButtonGrid = uigridlayout(app.MainGrid, [1 3]);
-            app.ButtonGrid.ColumnWidth = {'1x', '1x', '1x'};
+            app.ButtonGrid = uigridlayout(app.MainGrid, [1 4]);
+            app.ButtonGrid.ColumnWidth = {'fit', '1x', '1x', '1x'};
             app.ButtonGrid.RowHeight = {'1x'};
             app.ButtonGrid.Padding = [0 0 0 0];
             app.ButtonGrid.Layout.Row = 4;
             app.ButtonGrid.Layout.Column = 1;
 
+            app.ActiveOnlyCheckBox = uicheckbox(app.ButtonGrid);
+            app.ActiveOnlyCheckBox.Text = 'Show active only';
+            app.ActiveOnlyCheckBox.Value = false;
+            app.ActiveOnlyCheckBox.Tooltip = {'Lists only the elements in the optimization vector.  An element whose owning event has optimization disabled is hidden even when its Active box is ticked, and un-ticking Active removes a row from the view.'};
+            app.ActiveOnlyCheckBox.ValueChangedFcn = @(~,~) refresh(app);
+            app.ActiveOnlyCheckBox.Layout.Row = 1;
+            app.ActiveOnlyCheckBox.Layout.Column = 1;
+
             app.RefreshButton = uibutton(app.ButtonGrid, 'push');
             app.RefreshButton.Text = 'Refresh';
             app.RefreshButton.ButtonPushedFcn = @(~,~) refresh(app);
             app.RefreshButton.Layout.Row = 1;
-            app.RefreshButton.Layout.Column = 1;
+            app.RefreshButton.Layout.Column = 2;
 
             app.CopyButton = uibutton(app.ButtonGrid, 'push');
             app.CopyButton.Text = 'Copy to Clipboard';
             app.CopyButton.ButtonPushedFcn = @(~,~) copyToClipboard(app);
             app.CopyButton.Layout.Row = 1;
-            app.CopyButton.Layout.Column = 2;
+            app.CopyButton.Layout.Column = 3;
 
             app.CloseButton = uibutton(app.ButtonGrid, 'push');
             app.CloseButton.Text = 'Close';
             app.CloseButton.ButtonPushedFcn = @(~,~) delete(app);
             app.CloseButton.Layout.Row = 1;
-            app.CloseButton.Layout.Column = 3;
+            app.CloseButton.Layout.Column = 4;
         end
 
         function onCellEdit(app, evt)

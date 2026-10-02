@@ -40,7 +40,7 @@ classdef LvdOptimTableModel
     end
 
     methods(Static)
-        function [data, meta] = getVariableRows(lvdData)
+        function [data, meta] = getVariableRows(lvdData, activeOnly)
             %getVariableRows One row per variable element.
             %
             %   data - cell array, columns per LvdOptimTableModel.VarColumns
@@ -50,8 +50,15 @@ classdef LvdOptimTableModel
             %            unitType   'rad' | 'percent' | 'meters' | 'none'
             %            inX        true when the element is part of the x vector
             %            onBound    true when the scaled value sits on a bound
+            %
+            %   activeOnly (default false) keeps only the rows that are in the
+            %   x vector, i.e. the element's own Active flag is set AND its
+            %   owning event does not have optimization disabled.  data and
+            %   meta are filtered together, so meta(i) still describes
+            %   data(i,:).
             arguments
                 lvdData(1,1) LvdData
+                activeOnly(1,1) logical = false
             end
 
             %Events memoize their active-variable lists and the variable set
@@ -148,6 +155,12 @@ classdef LvdOptimTableModel
                     data(end+1, :) = row; %#ok<AGROW>
                     meta(end+1) = struct('var', var, 'elemInd', k, 'unitType', unitType, 'inX', inX, 'onBound', onBound); %#ok<AGROW>
                 end
+            end
+
+            if(activeOnly && not(isempty(meta)))
+                keep = logical([meta.inX]);
+                data = data(keep, :);
+                meta = meta(keep);
             end
         end
 

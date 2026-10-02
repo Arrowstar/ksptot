@@ -178,6 +178,84 @@ classdef OptimTablesGuiTest < KsptotTestCase
             testCase.verifyTrue(meta(r).inX, 'Event 2 is unaffected.');
         end
 
+        function activeOnlyFiltersToTheXVectorElements(testCase)
+            fx = testCase.buildFixture();
+
+            [data0, meta0] = LvdOptimTableModel.getVariableRows(fx.lvdData);
+            keep = [meta0.inX];
+            testCase.assertEqual(nnz(keep), 3, 'Fixture: duration + pitch + delta-v X are in x.');
+
+            [data, meta] = LvdOptimTableModel.getVariableRows(fx.lvdData, true);
+            testCase.verifyEqual(data, data0(keep, :), 'The filtered rows are exactly the unfiltered in-x rows.');
+            testCase.verifyEqual(meta, meta0(keep), 'meta must be filtered in lockstep with data.');
+            testCase.verifyEqual(size(data, 1), numel(fx.lvdData.optimizer.vars.getTotalScaledXVector()), ...
+                'One filtered row per element of the x vector.');
+            testCase.verifyTrue(all([meta.inX]));
+
+            %The filter keys off "in the x vector", not off the Active column:
+            %disabling the event's optimization must drop its rows even though
+            %their use flags are untouched.
+            fx.evt2.toggleOptimDisable(fx.lvdData);
+
+            [dataD, metaD] = LvdOptimTableModel.getVariableRows(fx.lvdData, true);
+            testCase.verifyEmpty(testCase.rowsFor(metaD, fx.durVar), ...
+                'An element in an optimization-disabled event must be hidden by the filter.');
+            testCase.verifyEqual(size(dataD, 1), 2);
+
+            [dataU, metaU] = LvdOptimTableModel.getVariableRows(fx.lvdData);
+            r = testCase.rowsFor(metaU, fx.durVar);
+            testCase.verifyEqual(size(dataU, 1), 5, 'Unfiltered, every element is still listed.');
+            testCase.verifyTrue(dataU{r, testCase.col('Active')}, 'The hidden row''s use flag is unchanged.');
+
+            %Default stays unfiltered so every existing caller is unaffected.
+            testCase.verifyEqual(LvdOptimTableModel.getVariableRows(fx.lvdData), dataU);
+        end
+
+        function activeOnlyToggleKeepsRowMetaAligned(testCase)
+            fx = testCase.buildFixture();
+
+            app = lvd_VariableTableGUI_App(fx.lvdData, false);
+            cleanup = onCleanup(@() delete(app)); %#ok<NASGU>
+
+            testCase.verifyFalse(app.ActiveOnlyCheckBox.Value, 'The filter is off by default.');
+            testCase.verifyEqual(size(app.getTableData(), 1), 5);
+
+            %Drive the real widget callback, not refresh() directly.
+            app.ActiveOnlyCheckBox.Value = true;
+            app.ActiveOnlyCheckBox.ValueChangedFcn([], []);
+
+            meta = app.getRowMeta();
+            testCase.verifyEqual(size(app.getTableData(), 1), 3, 'Ticking the box hides the inactive elements.');
+            testCase.verifyTrue(all([meta.inX]));
+            testCase.verifyTrue(contains(app.StatusLabel.Text, 'Inactive elements hidden'));
+
+            %Alignment: an edit made through the filtered table must land on
+            %the element the row actually describes, not on a neighbour.
+            r = testCase.rowsFor(meta, fx.dvVar);
+            testCase.assertEqual(numel(r), 1, 'Only the active delta-v component is shown.');
+            testCase.assertEqual(meta(r).elemInd, 1);
+
+            [ok, msg] = app.applyCellEdit(r, testCase.col('Upper Bound'), 250, 500);
+            testCase.verifyTrue(ok, msg);
+            testCase.verifyEqual(fx.dvVar.ub, [0.25 0.5 0.5], 'AbsTol', 1e-12, ...
+                'The filtered row must edit its own element only.');
+
+            %The clipboard copies what is on screen.
+            txt = app.copyToClipboard();
+            testCase.verifyEqual(numel(strsplit(txt, newline)), 4, 'Header plus the three shown rows.');
+
+            %Un-ticking Active on a shown row removes it from the filtered view.
+            meta = app.getRowMeta();
+            r = testCase.rowsFor(meta, fx.durVar);
+            [ok, ~] = app.applyCellEdit(r, testCase.col('Active'), false, true);
+            testCase.verifyTrue(ok);
+            testCase.verifyEqual(size(app.getTableData(), 1), 2);
+
+            app.ActiveOnlyCheckBox.Value = false;
+            app.ActiveOnlyCheckBox.ValueChangedFcn([], []);
+            testCase.verifyEqual(size(app.getTableData(), 1), 5, 'Un-ticking restores every row.');
+        end
+
         function constraintRowsReportHandComputedViolations(testCase)
             fx = testCase.buildFixture();
             fx = testCase.addConstraintsAndEvaluate(fx);
