@@ -116,7 +116,8 @@ classdef ViewPlaybackGuiTest < matlab.uitest.TestCase
             tPaused = slider.Value;
             testCase.verifyGreaterThan(tPaused, lims(1) + 2, 'The main window slider advanced while playing');
             testCase.verifyLessThan(tPaused, lims(2), 'Paused before the end');
-            testCase.verifyEqual(getappdata(slider, 'lastTime'), tPaused, 'AbsTol', 1e-9, 'The scene was rendered at the slider time');
+            [at0, at1] = app.getTimeLimits();
+            testCase.verifyEqual(getappdata(slider, 'lastTime'), at0 + tPaused/100*(at1 - at0), 'AbsTol', 1e-9, 'The scene was rendered at the slider time');
             pause(0.15);
             testCase.verifyEqual(slider.Value, tPaused, 'Paused: the slider stays put');
             testCase.verifySubstring(app.TimeLabel.Text, 'UT');
@@ -126,7 +127,7 @@ classdef ViewPlaybackGuiTest < matlab.uitest.TestCase
             testCase.verifyEqual(slider.Value, lims(1), 'AbsTol', 1e-9, 'Stop returns to the start');
 
             testCase.press(app.StepFwdButton);
-            testCase.verifyEqual(slider.Value, lims(1) + 20/20, 'AbsTol', 1e-9, 'One frame = speed/fps seconds');
+            testCase.verifyEqual(slider.Value, lims(1) + 100*(20/20)/(at1 - at0), 'AbsTol', 1e-9, 'One frame = speed/fps seconds');
             testCase.press(app.GoToEndButton);
             testCase.verifyEqual(slider.Value, lims(2), 'AbsTol', 1e-9);
             testCase.press(app.GoToStartButton);
@@ -756,8 +757,10 @@ classdef ViewPlaybackGuiTest < matlab.uitest.TestCase
             app.selectKeyframe(1);
             testCase.choose(app.KeyframeTable, [2 2]);
             testCase.verifyEqual(app.getSelectedKeyframeIndex(), 2, 'The row click selected keyframe 2');
-            testCase.verifyEqual(mainApp.DispAxesTimeSlider.Value, kf2.resolveTime(lvdData.stateLog), 'AbsTol', 1e-9);
-            vehPos = LaunchVehicleViewProfile.firstVehPosAtTime(profile.vehPosVelInterp, mainApp.DispAxesTimeSlider.Value);
+            [vt0, vt1] = app.getTimeLimits();
+            kf2Time = kf2.resolveTime(lvdData.stateLog);
+            testCase.verifyEqual(mainApp.DispAxesTimeSlider.Value, 100*(kf2Time - vt0)/(vt1 - vt0), 'AbsTol', 1e-9);
+            vehPos = LaunchVehicleViewProfile.firstVehPosAtTime(profile.vehPosVelInterp, kf2Time);
             testCase.verifyEqual(mainApp.dispAxes.CameraTarget(:), vehPos*sAx, 'AbsTol', 1e-6*sAx);
             testCase.verifyEqual(norm(mainApp.dispAxes.CameraPosition(:) - vehPos*sAx), 8*sAx, 'AbsTol', 1e-6*sAx);
             testCase.verifySubstring(app.ScriptStateLabel.Text, 'Keyframe 2', 'The state line names the keyframe the script is on');
@@ -872,7 +875,7 @@ classdef ViewPlaybackGuiTest < matlab.uitest.TestCase
 
             %go to keyframe 1, nudge the view, update it
             testCase.choose(app.KeyframeTable, [1 1]);
-            testCase.verifyEqual(mainApp.DispAxesTimeSlider.Value, t0, 'AbsTol', 1e-9);
+            testCase.verifyEqual(mainApp.DispAxesTimeSlider.Value, 0, 'AbsTol', 1e-9, 'Keyframe 1 is at the start of the trajectory');
             handler.beginDrag('orbit', [100 100]);
             handler.applyDrag([140 100]);
             handler.endDrag();
@@ -1093,7 +1096,7 @@ classdef ViewPlaybackGuiTest < matlab.uitest.TestCase
             testCase.assumeVideoProfile('Motion JPEG AVI');
             [mainApp, lvdData] = testCase.openPropagatedLvd();
             app = testCase.openWindow(mainApp, lvdData);
-            [t0, ~] = app.getTimeLimits();
+            [t0, t1] = app.getTimeLimits();
 
             pngPath = [tempname(), '.png'];
             aviPath = [tempname(), '.avi'];
@@ -1120,7 +1123,7 @@ classdef ViewPlaybackGuiTest < matlab.uitest.TestCase
             end
             delete(v);
             testCase.verifyEqual(frames, n);
-            testCase.verifyEqual(mainApp.DispAxesTimeSlider.Value, t0 + 30, 'AbsTol', 1e-9, 'The slider returns to where it was before the export');
+            testCase.verifyEqual(mainApp.DispAxesTimeSlider.Value, 100*30/(t1 - t0), 'AbsTol', 1e-9, 'The slider returns to where it was before the export');
             testCase.verifySubstring(app.StatusLabel.Text, 'frames');
 
             %the per-call overrides did not touch the saved settings

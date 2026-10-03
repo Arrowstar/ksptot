@@ -650,7 +650,9 @@ classdef RenderSceneAtTimeTest < matlab.uitest.TestCase
             %a replot in scripted mode does not flash the saved manual camera
             %over the script: the first frame after the plot is the script's
             app.lvdEnhancementsRefresh(false);
-            sliderTime = app.DispAxesTimeSlider.Value;
+            sliderPct = app.DispAxesTimeSlider.Value;
+            [tLog0, tLog1] = lvdData.stateLog.getStartAndEndTimes();
+            sliderTime = tLog0 + sliderPct/100*(tLog1 - tLog0);
             expected = profile.cameraScript.evaluate(sliderTime, @(kf) kf.absTime, @(t) NaN(3,1));
             testCase.verifyEqual(hAx.CameraPosition, expected.position*sAx, 'AbsTol', 1e-6*sAx);
         end
@@ -714,24 +716,26 @@ classdef RenderSceneAtTimeTest < matlab.uitest.TestCase
         end
 
         function timeSliderCallbackStillRendersThroughTheThrottle(testCase)
-            [app, lvdData, ~, ~] = testCase.openPropagatedLvd(); %#ok<ASGLU>
+            [app, lvdData, ~, ~] = testCase.openPropagatedLvd();
             slider = app.DispAxesTimeSlider;
             lims = slider.Limits;
             t = lims(1) + 0.5*(lims(2) - lims(1));
 
             pause(0.06);   %clear the 50 ms throttle window
             slider.ValueChangingFcn(slider, matlab.ui.eventdata.ValueChangingData(t));
-            testCase.verifyEqual(getappdata(slider, 'lastTime'), t, 'AbsTol', 1e-9, 'The slider callback rendered at the requested time');
+            [tLog0, tLog1] = lvdData.stateLog.getStartAndEndTimes();
+            testCase.verifyEqual(getappdata(slider, 'lastTime'), tLog0 + t/100*(tLog1 - tLog0), 'AbsTol', 1e-9, ...
+                'The slider callback rendered at the requested percent of the trajectory');
             testCase.verifyNotEmpty(app.timeSliderValueLabel.Text);
         end
 
         function renderClampsToTheSliderRange(testCase)
             [app, lvdData, handles, ~] = testCase.openPropagatedLvd();
-            lims = app.DispAxesTimeSlider.Limits;
-            lvd_renderSceneAtTime(lims(2) + 1e6, lvdData, handles, app, "none");
-            testCase.verifyEqual(getappdata(app.DispAxesTimeSlider, 'lastTime'), lims(2), 'AbsTol', 1e-9);
-            lvd_renderSceneAtTime(lims(1) - 1e6, lvdData, handles, app, "none");
-            testCase.verifyEqual(getappdata(app.DispAxesTimeSlider, 'lastTime'), lims(1), 'AbsTol', 1e-9);
+            [t0, t1] = lvdData.stateLog.getStartAndEndTimes();
+            lvd_renderSceneAtTime(t1 + 1e6, lvdData, handles, app, "none");
+            testCase.verifyEqual(getappdata(app.DispAxesTimeSlider, 'lastTime'), t1, 'AbsTol', 1e-9);
+            lvd_renderSceneAtTime(t0 - 1e6, lvdData, handles, app, "none");
+            testCase.verifyEqual(getappdata(app.DispAxesTimeSlider, 'lastTime'), t0, 'AbsTol', 1e-9);
         end
     end
 

@@ -277,20 +277,28 @@ classdef LvdViewPlaybackController < handle
             slider = app.DispAxesTimeSlider;
             renderFcn = @(t) LvdViewPlaybackController.renderMainAppFrame(t, lvdData, handles, app);
 
-            lims = slider.Limits;
+            %The controller works in absolute UT; the slider runs 0-100
+            %percent, so the absolute range is recovered through the epoch
+            %stored on the slider (see lvd_sliderAbsTime).
+            absMin = lvd_sliderAbsTime(slider, 0);
+            absMax = lvd_sliderAbsTime(slider, 100);
+            if(all(isfinite([absMin absMax])) && absMax > absMin)
+                lims = [absMin absMax];
+                curT = lvd_sliderAbsTime(slider, slider.Value);
+            else
+                lims = slider.Limits;
+                curT = slider.Value;
+            end
             if(lvdData.stateLog.getNumberOfEntries() == 0)
                 lims = [NaN NaN];
             end
             ctrl = LvdViewPlaybackController(profile.playbackSettings, lims, renderFcn);
-            ctrl.currentTime = slider.Value;
+            ctrl.currentTime = curT;
         end
 
         function renderMainAppFrame(t, lvdData, handles, app)
             slider = app.DispAxesTimeSlider;
-            lims = slider.Limits;
-            if(all(isfinite(lims)))
-                slider.Value = min(max(t, lims(1)), lims(2));
-            end
+            slider.Value = lvd_sliderPctForTime(slider, t);
             lvd_renderSceneAtTime(t, lvdData, handles, app, "full");
         end
     end

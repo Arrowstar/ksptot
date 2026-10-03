@@ -1,18 +1,28 @@
-function timeSliderStateChanged(src,evt, lvdData, handles, app)
-%timeSliderStateChanged ValueChangingFcn of the LVD 3-D view time slider.
+function timeSliderStateChanged(src,evt, lvdData, handles, app, force)
+%timeSliderStateChanged ValueChangingFcn (and ValueChangedFcn) of the LVD
+%3-D view time slider.
 %
 %   Rate-limits slider drags to one render per 50 ms, switches the camera
 %   toolbar out of any interactive mode (which would otherwise rotate or
 %   pan the axes while the slider moves), and renders the scene through
 %   lvd_renderSceneAtTime.  Playback and video export call
 %   lvd_renderSceneAtTime directly so they are never throttled.
+%
+%   The slider runs 0-100 (percent of the plotted trajectory); the percent
+%   is converted back to absolute UT through the epoch stored on the
+%   slider (see lvd_sliderAbsTime).
+%
+%   force (default false): bypass the 50 ms rate limit.  The slider's
+%   ValueChangedFcn (drag release) always forces, so the final resting
+%   position renders immediately.
 
     arguments
         src matlab.ui.control.Slider
-        evt matlab.ui.eventdata.ValueChangingData
+        evt %untyped: ValueChangingData on drag, ValueChangedData on release, [] for programmatic renders
         lvdData LvdData
         handles struct
         app ma_LvdMainGUI_App
+        force(1,1) logical = false
     end
 
     persistent lastCall
@@ -21,9 +31,11 @@ function timeSliderStateChanged(src,evt, lvdData, handles, app)
         lastCall = tic;
     end
 
-    elapsedTime = toc(lastCall);
-    if(elapsedTime < 0.05)
-        return;
+    if(not(force))
+        elapsedTime = toc(lastCall);
+        if(elapsedTime < 0.05)
+            return;
+        end
     end
 
     %We need to do this because for some reason the slider rotates, pans,
@@ -39,10 +51,11 @@ function timeSliderStateChanged(src,evt, lvdData, handles, app)
     end
 
     try
-        time = evt.Value;
+        pct = evt.Value;
     catch ME %#ok<NASGU>
-        time = src.Value;
+        pct = src.Value;
     end
+    time = lvd_sliderAbsTime(src, pct);
 
     lvd_renderSceneAtTime(double(time), lvdData, handles, app, "limitrate");
 

@@ -25,12 +25,14 @@ function lvd_renderSceneAtTime(time, lvdData, handles, app, drawMode)
     hAx = app.dispAxes;
     grdTrkAx = app.GroundTrackAxes;
 
-    %clamp to the slider range so playback never asks for a time the
-    %interpolants do not cover
+    %clamp to the plotted range so playback never asks for a time the
+    %interpolants do not cover (the slider itself runs 0-100 percent, so
+    %the absolute bounds come from its stored epoch, not its Limits)
     try
-        lims = app.DispAxesTimeSlider.Limits;
-        if(all(isfinite(lims)))
-            time = min(max(time, lims(1)), lims(2));
+        absMin = lvd_sliderAbsTime(app.DispAxesTimeSlider, 0);
+        absMax = lvd_sliderAbsTime(app.DispAxesTimeSlider, 100);
+        if(all(isfinite([absMin absMax])))
+            time = min(max(time, absMin), absMax);
         end
     catch
     end

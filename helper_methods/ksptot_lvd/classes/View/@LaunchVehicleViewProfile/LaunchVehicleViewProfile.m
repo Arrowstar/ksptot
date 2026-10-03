@@ -696,28 +696,48 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
         
         function configureTimeSlider(obj, minTime, maxTime, subStateLogs, handles, app)
             timeSlider = app.DispAxesTimeSlider;
-            curSliderTime = timeSlider.Value;
             if(not(isfinite(minTime) && isfinite(maxTime)) || ...
                minTime == maxTime)
                 onlyTime = subStateLogs{1}(1,1);
-                
+
                 minTime = onlyTime;
                 maxTime = onlyTime + 1;
             end
-            timeSlider.Limits = [minTime maxTime];
-            timeSlider.MajorTicks = linspace(minTime, maxTime, 10);
-            timeSlider.MinorTicks = linspace(minTime, maxTime, 100);
-            timeSlider.MajorTickLabels = "";
-            
-            if(curSliderTime > maxTime)
-                timeSlider.Value = maxTime;
-            elseif(curSliderTime < minTime)
-                timeSlider.Value = minTime;
+            span = maxTime - minTime;
+            if(not(isfinite(span)) || span <= 0)
+                span = 1;
             end
-                       
+
+            %The slider runs 0-100 (percent of the plotted trajectory), not
+            %absolute UT: R2025b uislider drag gestures freeze at large
+            %absolute Limits, while small magnitudes drag fine.  Absolute
+            %time is recovered through the stored epoch below (see
+            %lvd_sliderAbsTime).  Tick marks stay for grip; their numeric
+            %labels are blanked below.
+            oldT0 = getappdata(timeSlider, 'lvdTimeSliderT0');
+            oldSpan = getappdata(timeSlider, 'lvdTimeSliderSpan');
+            if(isempty(oldT0) || isempty(oldSpan))
+                curAbsTime = timeSlider.Value;
+            else
+                curAbsTime = oldT0 + timeSlider.Value/100*oldSpan;
+            end
+
+            timeSlider.Limits = [0 100];
+            setappdata(timeSlider, 'lvdTimeSliderT0', minTime);
+            setappdata(timeSlider, 'lvdTimeSliderSpan', span);
+            timeSlider.Value = min(max(100*(curAbsTime - minTime)/span, 0), 100);
+
+            %Tick marks stay, but with no numeric labels (the epoch readout
+            %below the slider carries the absolute time).
+            timeSlider.MajorTicks = linspace(0, 100, 11);
+            timeSlider.MajorTickLabels = repmat("", 1, 11);
+
             lvdData = getappdata(handles.ma_LvdMainGUI,'lvdData');
             timeSliderCb = @(src,evt) timeSliderStateChanged(src,evt, lvdData, handles, app);
-            timeSlider.ValueChangingFcn = timeSliderCb; 
+            timeSlider.ValueChangingFcn = timeSliderCb;
+            %Drag release renders its resting position at once (forced past
+            %the drag throttle) so quick drags never appear to drop it.
+            timeSlider.ValueChangedFcn = @(src,evt) timeSliderStateChanged(src,evt, lvdData, handles, app, true);
         end
         
         function trajData = createTrajData(obj)
