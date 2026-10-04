@@ -457,7 +457,21 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                 hold(dAxes,'on');
                 atmoRadius = viewCentralBody.radius + viewCentralBody.atmohgt;
                 [X,Y,Z] = sphere(50);
-                hCBodySurf = surf(dAxes, atmoRadius*X,atmoRadius*Y,atmoRadius*Z, 'BackFaceLighting','lit', 'FaceLighting','gouraud', 'FaceColor',[223 223 223]/255, 'FaceAlpha',0.2, 'EdgeLighting','gouraud', 'LineWidth',0.1, 'EdgeColor','none');
+                hAtmoSurf = surf(dAxes, atmoRadius*X,atmoRadius*Y,atmoRadius*Z, 'BackFaceLighting','lit', 'FaceLighting','gouraud', 'FaceColor',[223 223 223]/255, 'FaceAlpha',0.2, 'EdgeLighting','gouraud', 'LineWidth',0.1, 'EdgeColor','none');
+                %The atmosphere must move with the central body.  The body
+                %surface lives under hCBodySurfXForm (which carries the
+                %time-dependent translate+rotate in setCentralBodyRotation),
+                %so parent the atmosphere shell to the same transform.
+                %Otherwise it stays fixed at the axes origin while the body
+                %moves (e.g. Two Body Rotating frame) and appears offset.
+                set(hAtmoSurf, 'Parent', hCBodySurfXForm);
+                try
+                    hAtmoSurf.HandleVisibility = 'off';
+                    hAtmoSurf.HitTest = 'off';
+                    hAtmoSurf.PickableParts = 'none';
+                    hAtmoSurf.Annotation.LegendInformation.IconDisplayStyle = 'off';
+                catch
+                end
                 hold(dAxes,'off');
             end
             

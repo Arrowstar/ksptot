@@ -10,13 +10,16 @@ function hra = computeHourAngle(ut, long, bodyInfo)
 %     end
     [rVectBodyToSun, ~] = getPositOfBodyWRTSun(ut, bodyInfo, bodyInfo.celBodyData);
     rVectBodyToSun = -1.0 * rVectBodyToSun;
-    
+
     rVectBodyToSun = reshape(rVectBodyToSun, 3,numel(ut));
     rVectBodyToSunNorm = sqrt(sum(rVectBodyToSun.^2,1));
-    
-    inputs = bodyInfo.getFixedFrameFromInertialFrameInputsCache();
-%     rVectSunECEF = getFixedFrameVectFromInertialVect_alg(ut, rVectBodyToSun, inputs{:}, NaN(3,1));
-    rVectSunECEF = getFixedFrameVectFromInertialVect_alg_mex(ut, rVectBodyToSun, inputs{:}, NaN(3,1));
+
+    %rVectBodyToSun is Sun w.r.t. body in Global Inertial (GI, ecliptic
+    %J2000) coordinates. Convert GI->BF with tilt + spin. Legacy
+    %spin-only BCI->BF (getFixedFrameVectFromInertialVect_alg_mex) assumed
+    %GI==BCI and ignored the body-axis tilt (Earth 23.44 deg), placing the
+    %Sun up to 23.4 deg off in body-fixed longitude (day/night, temperature).
+    rVectSunECEF = getFixedFrameVectFromGlobalInertialVect(ut(:)', rVectBodyToSun, bodyInfo);
     
     rECEF = getrVectEcefFromLatLongAlt(zeros(size(long)), long, zeros(size(long)), bodyInfo);
 

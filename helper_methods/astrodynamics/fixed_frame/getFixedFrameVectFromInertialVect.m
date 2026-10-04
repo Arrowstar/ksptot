@@ -1,7 +1,22 @@
 function [rVectECEF, vVectECEF, REci2Ecef] = getFixedFrameVectFromInertialVect(ut, rVectECI, bodyInfo, varargin)
-% %getFixedFrameVectFromInertialVect Summary of this function goes here
-% %   Detailed explanation goes here
-% 
+%getFixedFrameVectFromInertialVect Convert body-centered Body-Centered
+%Inertial (BCI, equatorial, standard ECI) vectors to Body-Fixed (BF/ECEF).
+% Spin-only (GMST-like spinAngle from rotperiod/rotini). No tilt term
+% because BCI and BF share the equatorial plane -- tilt cancels.
+%
+% IMPORTANT: "Inertial" here means BCI (BodyCenteredInertialFrame,
+% equatorial), NOT Global Inertial (GI, ecliptic J2000). For untilted
+% bodies (Kerbin stock, bodyRotMat==eye(3)) GI==BCI and the distinction is
+% moot. For tilted bodies (Earth 23.44 deg in bodiesSolarSystem.ini) GI and
+% BCI differ by the constant body-axis tilt. Passing a GI vector (e.g. Sun
+% direction from getPositOfBodyWRTSun, which is ecliptic) directly here
+% ignores tilt by up to 23.4 deg. Use
+% getFixedFrameVectFromGlobalInertialVect (GI->BF, tilt + spin) for those.
+%
+% Spacecraft state in LVD/MA (LaunchVehicleStateLogEntry, BCI) is already
+% BCI, so this spin-only path is correct for propagation, aero, ground
+% tracks, and pad lat/long -- do not add tilt here or KSC would shift.
+%
     inputs = bodyInfo.getFixedFrameFromInertialFrameInputsCache();
 
     %The _alg MEX takes vVectECI as a required positional argument, but callers
