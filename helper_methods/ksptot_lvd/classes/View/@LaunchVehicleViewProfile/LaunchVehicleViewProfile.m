@@ -419,8 +419,24 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
 
             obj.generic3DTrajView.plotStateLog(obj.orbitNumToPlot, lvdData, obj, handles, lvdApp);
 
-            if(obj.showGrdTrk)
-                obj.generic2DGroundTrackView.plotGroundTrack(lvdData, lvdApp);
+            grdTrkAx = lvdApp.GroundTrackAxes;
+            placeholder = findobj(grdTrkAx, 'Tag', 'lvdGrdTrkPlaceholder');
+            if(obj.showGrdTrk && lvdApp.TabGroup.SelectedTab ~= lvdApp.GroundTrackTab)
+                %Hidden tab: plotDeferredGroundTrack draws it when the tab
+                %is selected.  Drop the old track's markers so the time
+                %slider does not keep animating them meanwhile.
+                obj.vehicleGrdTrackData = LaunchVehicleViewProfileVehicleGrdTrkData.empty(1,0);
+                obj.grdObjGrdTrackData = LaunchVehicleViewProfileGrdTrkGroundObjData.empty(1,0);
+                obj.celBodyGrdTrackData = LaunchVehicleViewProfileGrdTrkCelBodyData.empty(1,0);
+                obj.geomPtGrdTrackData = LaunchVehicleViewProfileGrdTrkGeomPointData.empty(1,0);
+                obj.grdTrackLighting = LaunchVehicleViewProfileGrdTrackSunLighting.empty(1,0);
+                setappdata(grdTrkAx, 'lvdGrdTrkStale', true);
+            elseif(obj.showGrdTrk)
+                obj.plotGroundTrackNow(lvdData, lvdApp);
+            elseif(not(isempty(placeholder)))
+                %Placeholder already showing: just follow the theme.
+                placeholder.Color = GLOBAL_AppThemer.selTheme.fontColor;
+                GLOBAL_AppThemer.themeWidget(grdTrkAx, GLOBAL_AppThemer.selTheme);
             else
                 cla(lvdApp.GroundTrackAxes,"reset");
                 view(lvdApp.GroundTrackAxes, 2);
@@ -436,15 +452,32 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                 lvdApp.GroundTrackLabel.Text = '';
 
                 text(lvdApp.GroundTrackAxes, 1,1, ["Enable Ground Track Rendering in", "View Profile to Display Ground Track"], "HorizontalAlignment","center", "VerticalAlignment","middle", "HitTest","off", ...
-                     "PickableParts","none", "Color",GLOBAL_AppThemer.selTheme.fontColor);
+                     "PickableParts","none", "Color",GLOBAL_AppThemer.selTheme.fontColor, "Tag","lvdGrdTrkPlaceholder");
 
                 GLOBAL_AppThemer.themeWidget(lvdApp.GroundTrackAxes, GLOBAL_AppThemer.selTheme);
-
-                drawnow;
             end
 
             timeSlider = lvdApp.DispAxesTimeSlider;
             timeSlider.ValueChangingFcn(timeSlider, matlab.ui.eventdata.ValueChangingData(timeSlider.Value));
+        end
+
+        function plotDeferredGroundTrack(obj, lvdData, lvdApp)
+            %plotDeferredGroundTrack Draws the ground track plotTrajectory
+            %skipped while its tab was hidden (main window TabGroup
+            %SelectionChangedFcn).  No-op when it is already current.
+            if(obj.showGrdTrk && isappdata(lvdApp.GroundTrackAxes, 'lvdGrdTrkStale'))
+                obj.plotGroundTrackNow(lvdData, lvdApp);
+
+                timeSlider = lvdApp.DispAxesTimeSlider;
+                timeSlider.ValueChangingFcn(timeSlider, matlab.ui.eventdata.ValueChangingData(timeSlider.Value));
+            end
+        end
+
+        function plotGroundTrackNow(obj, lvdData, lvdApp)
+            if(isappdata(lvdApp.GroundTrackAxes, 'lvdGrdTrkStale'))
+                rmappdata(lvdApp.GroundTrackAxes, 'lvdGrdTrkStale');
+            end
+            obj.generic2DGroundTrackView.plotGroundTrack(lvdData, lvdApp);
         end
         
         function createTrajectoryMarkerData(obj, subStateLogs, evts)
@@ -1107,36 +1140,25 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
             end
         end
         
-        function vehAttData = createVehAttitudeData(vehPosVelData, lvdStateLogEntries, evts, viewInFrame)
-            vehAttData = LaunchVehicleViewProfileAttitudeData();            
-            
+        function vehAttData = createVehAttitudeData(vehPosVelData, lvdStateLogEntries, evts, viewInFrame) %#ok<INUSL>
+            %Each event's attitude is built on the first getDCMatTime that
+            %lands in it: only body axes, the vehicle mesh and sensors read
+            %it, and evaluating every entry's steering model is the most
+            %expensive part of a refresh.
+            vehAttData = LaunchVehicleViewProfileAttitudeData();
+            entryEvts = [lvdStateLogEntries.event];
+
             for(i=1:length(evts))
                 evt = evts(i);
-                bool = [lvdStateLogEntries.event] == evt;
-                evtStateLogEntries = lvdStateLogEntries(bool);
+                evtStateLogEntries = lvdStateLogEntries(entryEvts == evt);
                 evtStateLogEntries = evtStateLogEntries(:)';
                 
                 if(isempty(evtStateLogEntries))
                     continue;
                 end
                 
-                cartElem = convertToFrame(getCartesianElementSetRepresentation(evtStateLogEntries), viewInFrame);
-                
                 times = [evtStateLogEntries.time];
-                
-                rotMatsBodyToView = NaN(3, 3, length(evtStateLogEntries));
-                for(j=1:length(evtStateLogEntries))
-                    %get body position in view frame
-                    entry = evtStateLogEntries(j);
-                    
-                    %get body axes in view frame
-                    R_VehicleBody_2_BodyInertial = entry.steeringModel.getBody2InertialDcmAtTime(entry.time, entry.position, entry.velocity, entry.centralBody);
-                    
-                    [~, ~, ~, R_ViewFrame_to_GlobalInertial] = viewInFrame.getOffsetsWrtInertialOrigin(entry.time, cartElem(j));
-                    [~, ~, ~, R_BodyInertial_to_GlobalInertial] = entry.centralBody.getBodyCenteredInertialFrame().getOffsetsWrtInertialOrigin(entry.time, cartElem(j));
-                    
-                    rotMatsBodyToView(:,:,j) = R_ViewFrame_to_GlobalInertial' * R_BodyInertial_to_GlobalInertial * R_VehicleBody_2_BodyInertial; %vehicle body to body inertial -> body_inertial -> global inertial -> global inertial to view frame
-                end
+                inds = 1:length(evtStateLogEntries);
                                 
                 switch(evt.plotMethod)
                     case EventPlottingMethodEnum.PlotContinuous
@@ -1144,25 +1166,43 @@ classdef LaunchVehicleViewProfile < matlab.mixin.SetGet
                         
                     case EventPlottingMethodEnum.SkipFirstState
                         times = times(2:end);
-                        rotMatsBodyToView = rotMatsBodyToView(:,:,2:end);
+                        inds = inds(2:end);
                         
                     case EventPlottingMethodEnum.DoNotPlot
                         times = [];
-                        rotMatsBodyToView = [];
+                        inds = [];
                         
                     otherwise
                         error('Unknown event plotting method: %s', evt.plotMethod);
                 end
                 
                 [times,ia,~] = unique(times,'stable');
-                rotMatsBodyToView = rotMatsBodyToView(:,:,ia);
+                inds = inds(ia);
                 
                 [times,I] = sort(times);
-                rotMatsBodyToView = rotMatsBodyToView(:,:,I);
+                inds = inds(I);
                 
                 if(length(times) >= 1)
-                    vehAttData.addData(times, rotMatsBodyToView);
+                    segEntries = evtStateLogEntries(inds);
+                    vehAttData.addLazyData(times, @() LaunchVehicleViewProfile.getRotMatsBodyToView(segEntries, viewInFrame));
                 end
+            end
+        end
+
+        function rotMatsBodyToView = getRotMatsBodyToView(stateLogEntries, viewInFrame)
+            cartElem = convertToFrame(getCartesianElementSetRepresentation(stateLogEntries), viewInFrame);
+
+            rotMatsBodyToView = NaN(3, 3, length(stateLogEntries));
+            for(j=1:length(stateLogEntries))
+                entry = stateLogEntries(j);
+
+                %get body axes in view frame
+                R_VehicleBody_2_BodyInertial = entry.steeringModel.getBody2InertialDcmAtTime(entry.time, entry.position, entry.velocity, entry.centralBody);
+
+                [~, ~, ~, R_ViewFrame_to_GlobalInertial] = viewInFrame.getOffsetsWrtInertialOrigin(entry.time, cartElem(j));
+                [~, ~, ~, R_BodyInertial_to_GlobalInertial] = entry.centralBody.getBodyCenteredInertialFrame().getOffsetsWrtInertialOrigin(entry.time, cartElem(j));
+
+                rotMatsBodyToView(:,:,j) = R_ViewFrame_to_GlobalInertial' * R_BodyInertial_to_GlobalInertial * R_VehicleBody_2_BodyInertial; %vehicle body to body inertial -> body_inertial -> global inertial -> global inertial to view frame
             end
         end
     end

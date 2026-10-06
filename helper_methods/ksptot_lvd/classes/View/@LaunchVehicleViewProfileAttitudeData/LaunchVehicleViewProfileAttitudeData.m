@@ -19,7 +19,11 @@ classdef LaunchVehicleViewProfileAttitudeData < matlab.mixin.SetGet
         dcm13Interps(1,:) cell = {};
         dcm23Interps(1,:) cell = {};
         dcm33Interps(1,:) cell = {};
-        
+
+        %Per-segment @() 3x3xN DCM builders, aligned with timesArr; called
+        %on the first getDCMatTime inside the segment, empty once built.
+        pendingFcns(1,:) cell = {};
+
 %         scale(1,1) double = 100;
 %         markerPlot(1,:) cell = {}
     end
@@ -29,31 +33,49 @@ classdef LaunchVehicleViewProfileAttitudeData < matlab.mixin.SetGet
             
         end
         
-        function addData(obj, times, rotMatsBodyToView)     
+        function addData(obj, times, rotMatsBodyToView)
+            obj.addLazyData(times, []);
+            obj.fillSegment(numel(obj.timesArr), rotMatsBodyToView);
+        end
+
+        function addLazyData(obj, times, rotMatsFcn)
+            %rotMatsFcn() returns the body-to-view DCMs (3x3xN) at times.
+            obj.timesArr(end+1) = {times};
+            obj.pendingFcns(end+1) = {rotMatsFcn};
+            obj.dcm11Interps{end+1} = []; obj.dcm21Interps{end+1} = []; obj.dcm31Interps{end+1} = [];
+            obj.dcm12Interps{end+1} = []; obj.dcm22Interps{end+1} = []; obj.dcm32Interps{end+1} = [];
+            obj.dcm13Interps{end+1} = []; obj.dcm23Interps{end+1} = []; obj.dcm33Interps{end+1} = [];
+        end
+    end
+
+    methods(Access=private)
+        function fillSegment(obj, i, rotMatsBodyToView)
+            times = obj.timesArr{i};
             if(length(unique(times)) == 1)
                 times = [times, times+10*eps(times(1))];
                 rotMatsBodyToView = cat(3,rotMatsBodyToView,rotMatsBodyToView);
+                obj.timesArr{i} = times;
             end
 
-            obj.timesArr(end+1) = {times};
-            
             if(length(times) >= 3)
                 method = 'pchip';
             else
                 method = 'linear';
             end
-            
-            obj.dcm11Interps{end+1} = griddedInterpolant(times, reshape(rotMatsBodyToView(1,1,:),1,length(times)), method, 'linear');
-            obj.dcm21Interps{end+1} = griddedInterpolant(times, reshape(rotMatsBodyToView(2,1,:),1,length(times)), method, 'linear');
-            obj.dcm31Interps{end+1} = griddedInterpolant(times, reshape(rotMatsBodyToView(3,1,:),1,length(times)), method, 'linear');
-            
-            obj.dcm12Interps{end+1} = griddedInterpolant(times, reshape(rotMatsBodyToView(1,2,:),1,length(times)), method, 'linear');
-            obj.dcm22Interps{end+1} = griddedInterpolant(times, reshape(rotMatsBodyToView(2,2,:),1,length(times)), method, 'linear');
-            obj.dcm32Interps{end+1} = griddedInterpolant(times, reshape(rotMatsBodyToView(3,2,:),1,length(times)), method, 'linear');
-            
-            obj.dcm13Interps{end+1} = griddedInterpolant(times, reshape(rotMatsBodyToView(1,3,:),1,length(times)), method, 'linear');
-            obj.dcm23Interps{end+1} = griddedInterpolant(times, reshape(rotMatsBodyToView(2,3,:),1,length(times)), method, 'linear');
-            obj.dcm33Interps{end+1} = griddedInterpolant(times, reshape(rotMatsBodyToView(3,3,:),1,length(times)), method, 'linear');
+
+            obj.dcm11Interps{i} = griddedInterpolant(times, reshape(rotMatsBodyToView(1,1,:),1,length(times)), method, 'linear');
+            obj.dcm21Interps{i} = griddedInterpolant(times, reshape(rotMatsBodyToView(2,1,:),1,length(times)), method, 'linear');
+            obj.dcm31Interps{i} = griddedInterpolant(times, reshape(rotMatsBodyToView(3,1,:),1,length(times)), method, 'linear');
+
+            obj.dcm12Interps{i} = griddedInterpolant(times, reshape(rotMatsBodyToView(1,2,:),1,length(times)), method, 'linear');
+            obj.dcm22Interps{i} = griddedInterpolant(times, reshape(rotMatsBodyToView(2,2,:),1,length(times)), method, 'linear');
+            obj.dcm32Interps{i} = griddedInterpolant(times, reshape(rotMatsBodyToView(3,2,:),1,length(times)), method, 'linear');
+
+            obj.dcm13Interps{i} = griddedInterpolant(times, reshape(rotMatsBodyToView(1,3,:),1,length(times)), method, 'linear');
+            obj.dcm23Interps{i} = griddedInterpolant(times, reshape(rotMatsBodyToView(2,3,:),1,length(times)), method, 'linear');
+            obj.dcm33Interps{i} = griddedInterpolant(times, reshape(rotMatsBodyToView(3,3,:),1,length(times)), method, 'linear');
+
+            obj.pendingFcns{i} = [];
         end
     end
     
@@ -63,7 +85,10 @@ classdef LaunchVehicleViewProfileAttitudeData < matlab.mixin.SetGet
             for(i=1:length(obj.timesArr))
                 times = obj.timesArr{i};
                 
-                if(time >= min(floor(times)) && time <= max(ceil(times)))                                                           
+                if(time >= min(floor(times)) && time <= max(ceil(times)))
+                    if(not(isempty(obj.pendingFcns{i})))
+                        obj.fillSegment(i, obj.pendingFcns{i}());
+                    end
                     dcm(:,:,size(dcm,3)+1) = [obj.dcm11Interps{i}(time), obj.dcm12Interps{i}(time), obj.dcm13Interps{i}(time);
                                               obj.dcm21Interps{i}(time), obj.dcm22Interps{i}(time), obj.dcm23Interps{i}(time);
                                               obj.dcm31Interps{i}(time), obj.dcm32Interps{i}(time), obj.dcm33Interps{i}(time)]; %#ok<AGROW>

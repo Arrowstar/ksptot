@@ -648,6 +648,12 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                 %first rendered frame (fired at the end of plotTrajectory);
                 %restoring the saved manual camera here would only flash it.
             elseif(not(viewProfile.updateViewAxesLimits))
+                %The main window's camera PostSet listeners would copy each
+                %restored property straight back into the profile, forcing
+                %a layout apiece; the camera being restored IS the saved one.
+                setappdata(dAxes, 'lvdSuppressCameraWriteback', true);
+                writebackCleanup = onCleanup(@() rmappdata(dAxes, 'lvdSuppressCameraWriteback'));
+
                 %Saved manual camera is in km; the axes show scaled (~1) units.
                 sCam = LvdSceneNormalizer.getScale(dAxes);
                 camPos = viewProfile.viewCameraPosition;
@@ -669,7 +675,8 @@ classdef Generic3DTrajectoryViewType < AbstractTrajectoryViewType
                 
                 if(not(any(isnan(camVA))))
                     dAxes.CameraViewAngle = camVA;
-                end           
+                end
+                clear writebackCleanup;
             else
                 cameratoolbar(hFig, 'ResetCamera');
                 view(dAxes, 3);
