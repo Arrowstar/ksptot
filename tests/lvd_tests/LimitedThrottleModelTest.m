@@ -145,10 +145,12 @@ classdef LimitedThrottleModelTest < KsptotTestCase
                 aFull, 'RelTol', 1e-12, 'Thrust acceleration at full throttle must be 215 kN over the vehicle mass.');
 
             model.maxAccel = 0.5 * aFull;
-            testCase.verifyEqual(evalModel(), 0.5, 'AbsTol', 1e-6, 'The limited throttle must give exactly maxAccel: 0.5 for half of the full-throttle acceleration.');
+            testCase.verifyEqual(evalModel(), 0.5, 'AbsTol', 1e-12, 'The limited throttle must give exactly maxAccel: 0.5 for half of the full-throttle acceleration.');
 
+            %Exact, not iterative: an fzero-level error (~1e-8) here makes the
+            %integrator RHS noisy and collapses ode45 steps at tight tolerances.
             model.maxAccel = 0.25 * aFull;
-            testCase.verifyEqual(evalModel(), 0.25, 'AbsTol', 1e-6, 'The limited throttle must scale with maxAccel.');
+            testCase.verifyEqual(evalModel(), 0.25, 'AbsTol', 1e-12, 'The limited throttle must scale with maxAccel.');
 
             %The limit never raises the throttle.
             base.setPolyTerms(0.3, 0, 0);
@@ -172,7 +174,7 @@ classdef LimitedThrottleModelTest < KsptotTestCase
             testCase.verifyEqual(actualBoth, 0.5, 'AbsTol', 1e-6, 'With both limits active the tighter (q) cap must win.');
             model.maxAccel = 0.3 * aFullAtm;                          %accel cap 0.3 now tighter
             actualBoth = model.getThrottleAtTime(0, rAtm, vAtm, tankMasses, dryMass, entry.stageStates, entry.lvState, tankStates, bodyInfo, storageSoCs, pwrStates);
-            testCase.verifyEqual(actualBoth, 0.3, 'AbsTol', 1e-6, 'With both limits active the tighter (accel) cap must win.');
+            testCase.verifyEqual(actualBoth, 0.3, 'AbsTol', 1e-12, 'With both limits active the tighter (accel) cap must win.');
         end
 
         function checkDelegationToBaseModel(testCase)
