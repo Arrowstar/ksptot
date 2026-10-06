@@ -162,9 +162,19 @@ classdef LimitedThrottleModel < AbstractThrottleModel
             if(accelAtZero >= obj.maxAccel)
                 throttle = 0;
             else
-                %Thrust is monotone in throttle so the root is bracketed by
-                %[0, commanded throttle].
-                throttle = fzero(@(x) accelFH(x) - obj.maxAccel, [0, throttle], optimset('TolX',1E-8));
+                %Thrust is linear in throttle (throttle x pressure curve x
+                %fuel-throttle curve), so the secant through 0 and the
+                %commanded throttle is the exact root.  An iterative root
+                %(the old fzero at TolX 1e-8) leaves the throttle noisy at
+                %that level, which makes the integrator RHS non-smooth and
+                %collapses ode45's step under tight tolerances.
+                cmdThrottle = throttle;
+                throttle = cmdThrottle * (obj.maxAccel - accelAtZero) / (accelAtCmd - accelAtZero);
+
+                if(abs(accelFH(throttle) - obj.maxAccel) > 1E-10 * max(obj.maxAccel, 1))
+                    %Not linear after all (e.g. a min-throttle clamp): bracket and solve to machine precision.
+                    throttle = fzero(@(x) accelFH(x) - obj.maxAccel, [0, cmdThrottle], optimset('TolX',eps));
+                end
             end
         end
     end
