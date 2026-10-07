@@ -166,8 +166,12 @@ info.slacks     = state.s;
 info.alpha      = state.alpha;
 info.mu         = state.mu;
 info.stepsize   = stepsize;
-info.constrviolation     = res.feas;
-info.constrviolationPhys = constrviolationPhys;
+% constrviolation is PHYSICAL (fmincon's meaning, and what the LVD wrapper
+% shows, records and ranks on).  It used to be res.feas, the row-scaled value,
+% which reads small exactly when a row's gradient is large (D3).
+info.constrviolation       = constrviolationPhys;
+info.constrviolationPhys   = constrviolationPhys;
+info.constrviolationScaled = res.feas;
 info.firstorderopt  = optScaled;
 info.optPrinted     = res.opt;
 info.complementarity = compScaled;

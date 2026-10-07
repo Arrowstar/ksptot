@@ -6,6 +6,8 @@ classdef AdamNlOptReviewFixesTest < AdamNlOptTestCase
 %
 %   Batch 1: D1.1, D2, D8.1, D9, D11.2, D11.3, D24, D26, D27, D29.
 %   Batch 2: D4, D7, D12.1, D12.2, D12.3, A2.
+%   Batch 3: D3 (the LVD dialog side is in tests/lvd_tests/AdamNlOptOptionsDialogTest),
+%            D33 (found while landing D3).
 %   (The D29 restoration resets are exercised end to end by the benchmark
 %   battery; they have no observable unit-level contract.  D13 was tried in
 %   Batch 1 and backed out: it stalled HS71 on the unpreconditioned MINRES arm,
@@ -203,7 +205,7 @@ classdef AdamNlOptReviewFixesTest < AdamNlOptTestCase
             [~, ~, ~, out] = adamnlopt.solve(fun, [0.1; 0.2], [], [], [], [], ...
                 [-1; -1], [1; 1], nl, o);
             testCase.assertEqual(out.fdCalibration.flag, 'set');
-            want = min(1, 1 / (1e3 * out.scaling.Dx(1)));
+            want = min(1, 100 / (1e3 * out.scaling.Dx(1)));   % autoScaleMaxGradient = 100 (D3)
             ratio = out.scaling.Di(1) / want;
             testCase.verifyGreaterThan(ratio, 0.5, sprintf('Di off by %.3g', ratio));
             testCase.verifyLessThan(ratio, 2, sprintf('Di off by %.3g', ratio));
@@ -241,6 +243,17 @@ classdef AdamNlOptReviewFixesTest < AdamNlOptTestCase
             testCase.verifyEqual(calls, n + 2, ...
                 'x0 constraint values and Jacobian must be computed once, not twice');
             testCase.verifyEqual(out.conCount, calls, 'conCount must match the real calls');
+        end
+
+        function testD12SeedingWithLinearRowsAndNoNonlinearEqualities(testCase)
+            % One linear equality, one nonlinear inequality, no nonlinear
+            % equality: sc.Dc is 1x1, and sc.Dc(2:end) is a 1x0 ROW, which made
+            % the Batch 2 seeding error with "Arrays have incompatible sizes".
+            nl = @(x) deal(x(1)^2 + x(2)^2 - 1, []);
+            o = testCase.quietOpts(struct());
+            [~, ~, ef] = adamnlopt.solve(@(x) sum(x.^2), [0.1; 0.1], [], [], ...
+                [1 1], 2, [], [], nl, o);
+            testCase.verifyEqual(ef, -2, 'x1 + x2 = 2 and |x| <= 1 are inconsistent');
         end
 
         %% ---- D12.2: jacobian() reuses the constraints cache ----------------
@@ -299,6 +312,81 @@ classdef AdamNlOptReviewFixesTest < AdamNlOptTestCase
                 x, [cI; cE], h, 'forward');
             testCase.verifyEqual(g, gSep);
             testCase.verifyEqual([JI; JE], Jsep);
+        end
+    end
+
+    methods (Test)
+        %% ==== Batch 3: physical feasibility (D3) ===========================
+        function testD3ReportedViolationIsInPhysicalUnits(testCase)
+            % A steep equality row (gradient 1e7) is scaled by ~1e-5.  Stop
+            % early so the iterate is still infeasible: the reported
+            % constrViolation must be the caller's |ceq|, not the scaled one.
+            fun = @(x) (x(1) - 3)^2 + (x(2) - 1)^2;
+            nl  = @(x) deal([], 1e7 * (x(1) + x(2) - 2) + x(1)^2);
+            o = testCase.quietOpts(struct('maxIter', 1));
+            [x, ~, ~, out] = adamnlopt.solve(fun, [0; 0], [], [], [], [], [], [], nl, o);
+            [~, ceq] = nl(x);
+            testCase.assumeGreaterThan(abs(ceq), 1e-6, 'iterate already feasible');
+            testCase.verifyEqual(out.constrViolation, abs(ceq), 'RelTol', 1e-9);
+            testCase.verifyLessThan(out.constrViolationScaled, out.constrViolation, ...
+                'the scaled value is reported separately');
+        end
+
+        function testD3ConvergenceNeedsPhysicalFeasibility(testCase)
+            state = struct('iter', 3, 'x', [1; 2], 'lamE', 1, 'lamI', zeros(0, 1), ...
+                'f', 0, 'nFunEvals', 10, 'elapsed', 0, 'stepNorm', 1);
+            res = struct('opt', 1e-9, 'feas', 1e-9, 'comp', 0);
+            opts = adamnlopt.defaultOptions();
+            opts.compTol = opts.optTol;
+            stop = adamnlopt.terminationCheck(state, res, opts);
+            testCase.verifyTrue(stop, 'control: no feasPhys means the scaled test alone decides');
+            res.feasPhys = 1e-2;
+            [stop, ef] = adamnlopt.terminationCheck(state, res, opts);
+            testCase.verifyFalse(stop && ef > 0, ...
+                'a point violating its constraints by 1e-2 in physical units is not converged');
+            res.feasPhys = 1e-5;
+            [stop, ef] = adamnlopt.terminationCheck(state, res, opts);
+            testCase.verifyTrue(stop && ef == 1);
+        end
+
+        function testD3RowsFlatterThanMaxGradientAreNotScaled(testCase)
+            nl = @(x) deal([50 * x(1) - 1; 1e4 * x(2) - 1], []);
+            o = testCase.quietOpts(struct('maxIter', 0, 'autoFDStep', false));
+            [~, ~, ~, out] = adamnlopt.solve(@(x) sum(x.^2), [0.01; 0.01], ...
+                [], [], [], [], [], [], nl, o);
+            testCase.verifyEqual(out.scaling.Di(1), 1, 'a gradient-50 row is below the cap: unscaled');
+            testCase.verifyEqual(out.scaling.Di(2), 100 / 1e4, 'RelTol', 1e-6, ...
+                'a gradient-1e4 row is scaled down to the cap');
+        end
+
+        function testD33StepExitWaitsForTheBarrier(testCase)
+            % min (x-3)'(x-3) s.t. x1 + x2 = 2, 0 <= x <= 10: the Newton step is
+            % exact, so the step collapses after two iterations while mu is
+            % still large.  The step-size exit used to report exitflag 2 there
+            % with complementarity 2e-2 and lamE = 4.018 (analytic 4).
+            fun = @(x) deal(sum((x - 3).^2), 2 * (x - 3));
+            o = testCase.quietOpts(struct('SpecifyObjectiveGradient', true));
+            [x, ~, ef, out, lam] = adamnlopt.solve(fun, [0.5; 0.5], [], [], ...
+                [1 1], 2, [0; 0], [10; 10], [], o);
+            testCase.verifyGreaterThan(ef, 0);
+            testCase.verifyEqual(x, [1; 1], 'AbsTol', 1e-6);
+            testCase.verifyLessThanOrEqual(out.complementarity, 1e-5, ...
+                'a converged exit must have finished the barrier');
+            testCase.verifyEqual(lam.eqlin, 4, 'AbsTol', 1e-4);
+        end
+
+        function testD3IterationInfoViolationIsPhysical(testCase)
+            nl  = @(x) deal([], 1e7 * (x(1) + x(2) - 2));
+            infos = {};
+            function stop = rec(info), infos{end+1} = info; stop = false; end
+            testCase.solveProblem(struct('name', 'steep', 'fun', @(x) sum(x.^2), ...
+                'x0', [0; 0], 'A', [], 'b', [], 'Aeq', [], 'beq', [], 'lb', [], 'ub', [], ...
+                'nonlcon', nl, 'hasObjGrad', false, 'hasConGrad', false), ...
+                struct('IterationFcn', @rec, 'maxIter', 2));
+            i0 = infos{1};
+            testCase.verifyEqual(i0.constrviolation, 2e7, 'RelTol', 1e-9, ...
+                'info.constrviolation is |ceq| at x0 in the caller''s units');
+            testCase.verifyTrue(isfield(i0, 'constrviolationScaled'));
         end
     end
 

@@ -629,6 +629,12 @@ where `cloneFrom` builds a new `AdamNlOptOptimizer` and copies the option proper
 
 **Test.** Load two pre-AdamNlOpt examples; assert their `adamNlOptOpt` handles differ; set `maxIter` on one and assert the other is unchanged.
 
+### D33. [High] The step-size exit reports convergence before the barrier is finished
+
+Found while landing D3. `terminationCheck.m` step-size exit (exitflag 2, "Converged: step size ... below StepTolerance") required feasibility and `optScaled <= objPlateauOptTol`, but not complementarity. In the interior-point core a zero step only means the current barrier subproblem is solved; while mu can still fall, the next barrier update moves the iterate. On `min (x-3)'(x-3) s.t. x1 + x2 = 2, 0 <= x <= 10` the Newton step is exact, so the step collapses after two iterations. The solve then returned exitflag 2 with complementarity 2e-2 (tolerance 1e-6) and λ = 4.018 against the analytic 4. With the old row scaling it happened to stop at complementarity 2.8e-3, which is why `testNTDecompInteriorPointCoreMatchesDefaultPath` (λ tolerance 1e-2) used to pass.
+
+**Fix (applied in Batch 3).** The step-size exit additionally requires `compScaled <= compTol`, or `mu <= muMin` (when mu can fall no further the exit is allowed again, so a genuine stall still stops). Guard: `testD33StepExitWaitsForTheBarrier` (exitflag > 0, complementarity ≤ 1e-5, λ = 4 ± 1e-4).
+
 ### T1. [Test hygiene] `testOptionsStructAndOptimoptionsObjectAgree` is Incomplete under a license-test/checkout mismatch
 
 `license('test', ...)` reports 1 but `optimoptions` cannot check out. Replace the guard with `try, optimoptions('fmincon'); catch, testCase.assumeFail('optimoptions unavailable'); end`.
@@ -744,7 +750,19 @@ A batch is accepted when the suites pass and every baseline difference is either
 
 **Batch 2: start-up pipeline** (step 2). D4 → D12.1 → D7 → D12.2/12.3 → A2. Expected effect: fewer evaluations, the same answers. A2 roughly halves propagations per LVD iteration in BuiltIn mode.
 
+*Batch 2 result* (commit `0fef3e39`, `batch2\compare_vs_batch1.txt`). Measured effect of the two calibration fixes, old code against new:
+
+| Probe | Before | After |
+|---|---|---|
+| D7, calibrated gradient rel-err, variables 1e3..2e4, noise 1e-9 | 2.0e-1 | 1.7e-7 |
+| D7, same, variables 1e3, noise 1e-6 | 8.6e+2 | 8.3e-4 |
+| D4, row scale / true row scale, 1e-3 noise on a gradient-1e3 row | 0.094 | 1.00 |
+
+On the battery, every changed catalog and reproduction row kept its exitflag, iterations and answer and used 7–16% fewer evaluations (for example HS71 with FD derivatives, 116 → 106). LVD SpinLaunchOptimization still exits −2, at violation 8.0e-3 in 74 s (Batch 1: 3.6e-2, 365 s); the other four LVD cases are unchanged. *Regression found and fixed in Batch 3:* the x0 seeding raised "Arrays have incompatible sizes" on a problem with linear equality rows and no nonlinear equality. Indexing a 1×1 `sc.Dc` with an empty range returns a 1×0 *row* in MATLAB regardless of orientation, and `1x0 .* 0xn` is a size error. Slices are now `reshape(..., [], 1)`; guard `testD12SeedingWithLinearRowsAndNoNonlinearEqualities`.
+
 **Batch 3: physical feasibility** (step 3). D3. This changes results on purpose: runs that reported convergence while their physical violation exceeded tolerance will now iterate further or report infeasible. Review each baseline diff case by case. Open decision: the `constrViolTol` default (proposed `1e-4`, physical units).
+
+*As implemented:* `constrViolTol = 1e-4` (the proposed default; no other value was specified) and `autoScaleMaxGradient = 100`, both exposed in `AdamNlOptOptions` and the LVD options dialog. `output.constrViolation`, `info.constrviolation` (and so the LVD progress display, `optimValues.constrviolation` and the recorder's `maxCVal`) are now physical; the scaled values are `output.constrViolationScaled` and `info.constrviolationScaled`. A new LVD UI test, `tests/lvd_tests/AdamNlOptOptionsDialogTest.m`, opens the dialog headlessly, checks the new controls, and pins that a no-edit Save changes no option (D2 end to end). Landing the row-scaling cap exposed **D33** (below): the step-size exit declared convergence before the barrier was finished. It is fixed in this batch.
 
 **Batch 4: quasi-Newton and dual-update hygiene.**
 - *Items, in commit order:* D6 (short-pair gate in `updateHessianModel` and skip the update when `lsFailed` or `aP <= 1e-10`), D22 (`aD = aP` on a failed line search), D14 (κ_Σ = 1e10 clamp on `zL`, `zU`, `lamI` after the dual step), D23 (non-monotone ρ, or reset ρ on every mu decrease, and guard the `gd/theta` term with `theta > feasTol`).

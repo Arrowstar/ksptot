@@ -709,8 +709,9 @@ classdef Evaluator < handle
                        'hasJ', false, 'Jc', [], 'Jceq', []);
             if isequal(x, obj.xc)
                 s.hasC  = true;
-                s.cnl   = obj.cIVal(obj.mIlin+1:end);
-                s.ceqnl = obj.cEVal(obj.mElin+1:end);
+                % reshape: an empty-range index of a 1x1 is a 1x0 ROW.
+                s.cnl   = reshape(obj.cIVal(obj.mIlin+1:end), [], 1);
+                s.ceqnl = reshape(obj.cEVal(obj.mElin+1:end), [], 1);
             end
             if isequal(x, obj.xj)
                 s.hasJ = true;
@@ -834,7 +835,9 @@ classdef Evaluator < handle
         %   On a miss the values are evaluated once and the constraints cache is
         %   filled, so the constraints(x) call that usually follows is free.
             if isequal(x, obj.xc)
-                base = [obj.cIVal(obj.mIlin+1:end); obj.cEVal(obj.mElin+1:end)];
+                % reshape: an empty-range index of a 1x1 is a 1x0 ROW.
+                base = [reshape(obj.cIVal(obj.mIlin+1:end), [], 1); ...
+                        reshape(obj.cEVal(obj.mElin+1:end), [], 1)];
             else
                 [c, ceq] = obj.evalNonlinear(x);
                 base = [c(:); ceq(:)];

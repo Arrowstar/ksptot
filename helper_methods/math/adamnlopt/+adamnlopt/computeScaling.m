@@ -145,8 +145,12 @@ end
 
 % Constraint rows measured in the variable-scaled space (row_i(J) .* Dx), so the
 % scaled Jacobian JEs = Dc.*JE*diag(Dx) has O(1) rows.
-sc.Dc = rowScales(JE0, sc.Dx, loClamp, hiClamp);
-sc.Di = rowScales(JI0, sc.Dx, loClamp, hiClamp);
+gmax = 100;
+if isfield(opts, 'autoScaleMaxGradient') && ~isempty(opts.autoScaleMaxGradient)
+    gmax = opts.autoScaleMaxGradient;
+end
+sc.Dc = rowScales(JE0, sc.Dx, loClamp, hiClamp, gmax);
+sc.Di = rowScales(JI0, sc.Dx, loClamp, hiClamp, gmax);
 
 % --- Objective scaling (curvature-based; 'curvature' mode only) ---
 % The row rules balance the constraint block, but a curvature-dominated
@@ -160,19 +164,23 @@ end
 end
 
 % ------------------------------------------------------------------------
-function d = rowScales(J, Dx, loClamp, hiClamp)
-%ROWSCALES  Per-row scale factors making J*diag(Dx) rows O(1).
-%   d_i = min(1, 1/||row_i(J).*Dx||_inf), clamped to [loClamp,hiClamp]; rows that
-%   are all zero (or non-finite) get a unit factor.
+function d = rowScales(J, Dx, loClamp, hiClamp, gmax)
+%ROWSCALES  Per-row scale factors capping the J*diag(Dx) row norms at gmax.
+%   d_i = min(1, gmax/||row_i(J).*Dx||_inf), clamped to [loClamp,hiClamp]; rows
+%   that are all zero (or non-finite) get a unit factor.  gmax is
+%   opts.autoScaleMaxGradient (IPOPT's nlp_scaling_max_gradient, default 100):
+%   rows already flatter than gmax are left in the caller's units (D3).
 %
 %   Inputs:
 %     J       - m-by-n Jacobian block (folded: linear rows first).
 %     Dx      - n-by-1 variable scale.
 %     loClamp - lower clamp on the returned factors.
 %     hiClamp - upper clamp on the returned factors.
+%     gmax    - row-norm cap (rows below it are not scaled).
 %
 %   Outputs:
 %     d - m-by-1 row scale factors.
+if nargin < 5 || isempty(gmax), gmax = 1; end
 m = size(J, 1);
 d = ones(m, 1);
 if m == 0
@@ -182,7 +190,7 @@ rowInf = max(abs(J) .* Dx.', [], 2);   % ||row_i(J).*Dx||_inf
 for i = 1:m
     r = rowInf(i);
     if isfinite(r) && r > 0
-        d(i) = min(1, 1 / r);
+        d(i) = min(1, gmax / r);
     end
 end
 d = min(hiClamp, max(loClamp, d));

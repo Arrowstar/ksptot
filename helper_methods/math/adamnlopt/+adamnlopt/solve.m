@@ -211,7 +211,11 @@ end
 if sc.applied
     pc = evProbe.nonlinearCacheAt(solveProblem0.x0);
     if pc.hasC
-        DcNl = sc.Dc(sc.mElin+1:end);  DiNl = sc.Di(sc.mIlin+1:end);
+        % reshape to columns: indexing a 1x1 Dc with an empty range (one linear
+        % row, no nonlinear rows) returns a 1x0 ROW whatever Dc's orientation,
+        % and 1x0 .* 0xn is a size error.
+        DcNl = reshape(sc.Dc(sc.mElin+1:end), [], 1);
+        DiNl = reshape(sc.Di(sc.mIlin+1:end), [], 1);
         if pc.hasJ
             ev.seedCache(solveProblem.x0, DiNl .* pc.cnl, DcNl .* pc.ceqnl, ...
                 (DiNl .* pc.Jc) .* sc.Dx.', (DcNl .* pc.Jceq) .* sc.Dx.');
@@ -234,6 +238,10 @@ end
 % weight is 1./(wf*Dx).  Inert (all ones) when scaling is off, so well-scaled
 % problems are unchanged.
 solveProblem.optScaleW = 1 ./ (sc.wf * sc.Dx);
+% Physical-units feasibility weights (D3): c_phys = c_scaled ./ D for every
+% folded row (linear rows first, as in the Evaluator).  All ones when scaling
+% is off.
+solveProblem.feasScaleW = struct('E', 1 ./ sc.Dc(:), 'I', 1 ./ sc.Di(:));
 
 hasIneq   = ev.mI > 0;
 hasBounds = any(isfinite(solveProblem.lb)) || any(isfinite(solveProblem.ub));
@@ -325,6 +333,7 @@ if isfield(problem, 'optScaleW') && ~isempty(problem.optScaleW)
 else
     optW = ones(numel(x), 1);
 end
+feasW = feasWeights(problem, ev);
 [f, g]   = ev.objective(x);
 [cE, ~]  = ev.constraints(x);
 [JE, JI] = ev.jacobian(x);
@@ -371,6 +380,7 @@ for iter = 0:opts.maxIter
     % Report/terminate on the scale-consistent optimality norm (rStat stays raw
     % for the Newton-step RHS).  Inert when scaling is off (optW all ones).
     res.opt = util_norms(optW .* res.rStat);
+    res.feasPhys = physViolation(cE, zeros(0,1), feasW);   % D3
 
     advice = modeAdvice(state, res, history, opts);
     state.mode = modeLabel(advice.mode, 'eq');
@@ -640,6 +650,7 @@ else
     optW = ones(n, 1);
 end
 
+feasW = feasWeights(problem, ev);
 st = initializeIterate(ev, problem, opts);
 x = st.x;  s = st.s;
 lamE = st.lamE;  lamI = st.lamI;
@@ -896,6 +907,7 @@ for iter = 0:opts.maxIter
     state.stepNorm = stepNorm;      % step-size exit (opts.stepTol)
     res = ipRes(rd, rpE, rpI, s, lamI, dxl, zL, finL, dxu, zU, finU, optW);
     res.opt = util_norms(optW .* rdMetric);   % Fix F scale-consistent opt
+    res.feasPhys = physViolation(cE, cI, feasW);   % D3: true violation, caller's units
 
     % The three optimality metrics, side by side.  optPrinted is what the log
     % shows (Fix-F masked, Dx-weighted); optRaw is the unmasked, unweighted
@@ -1879,6 +1891,25 @@ v = zeros(0,1);
 if ~isempty(s),  v = [v; s .* lamI]; end
 if any(finL),    v = [v; dxl(finL) .* zL(finL)]; end
 if any(finU),    v = [v; dxu(finU) .* zU(finU)]; end
+end
+
+function w = feasWeights(problem, ev)
+%FEASWEIGHTS  Physical-units row weights (1./Dc, 1./Di) for this core's problem.
+if isfield(problem, 'feasScaleW') && ~isempty(problem.feasScaleW)
+    w = problem.feasScaleW;
+else
+    w = struct('E', ones(ev.mE, 1), 'I', ones(ev.mI, 1));
+end
+end
+
+function v = physViolation(cE, cI, w)
+%PHYSVIOLATION  Max constraint violation in the caller's units (D3).
+%   max(|cE./Dc|, max(cI./Di, 0)) over the folded rows; the inequality part is
+%   the TRUE violation of c(x) <= 0, not the slack residual cI + s.  Bounds are
+%   held strictly by the interior-point iteration and contribute nothing.
+v = 0;
+if ~isempty(cE), v = max(v, max(abs(cE .* w.E))); end
+if ~isempty(cI), v = max(v, max(max(cI .* w.I, 0))); end
 end
 
 function [x, s, lamE, lamI, zL, zU, f, g, cE, cI, JE, JI, res, state] = ...
@@ -3184,7 +3215,11 @@ output.funcCount        = ev.totalEvals();
 output.objCount         = ev.nFun;
 output.conCount         = ev.nCon;
 output.firstOrderOpt    = res.opt;
-output.constrViolation  = res.feas;
+% constrViolation is PHYSICAL (fmincon's meaning, D3); the row-scaled value
+% terminationCheck compares with feasTol is kept alongside.
+if isfield(res, 'feasPhys'), output.constrViolation = res.feasPhys;
+else,                        output.constrViolation = res.feas; end
+output.constrViolationScaled = res.feas;
 output.complementarity  = res.comp;
 output.exitflag         = exitflag;
 output.message          = msg;

@@ -112,6 +112,14 @@ opts.autoFDStep = true;   % calibrate the FD step/type from a V-curve at x0
 % --- Termination tolerances ---
 opts.optTol   = 1e-6;   % stationarity (first-order optimality)
 opts.feasTol  = 1e-6;   % primal feasibility (equality + inequality + bounds)
+% Physical-units feasibility gate (IPOPT's constr_viol_tol).  feasTol is tested
+% on the ROW-SCALED constraints the solver works with (Dc.*c, Dc <= 1), so on a
+% row with gradient 1e4 a physical violation of 1e-2 reads as 1e-6 and passed
+% the convergence test.  Every convergence exit now also requires the max
+% violation in the caller's own units to be <= constrViolTol, and
+% output.constrViolation reports that physical value (the scaled one is
+% output.constrViolationScaled).  Inf restores the scaled-only behaviour.
+opts.constrViolTol = 1e-4;
 opts.compTol  = [];     % complementarity; [] ties it to optTol in solve (see there)
 opts.stepTol  = 1e-12;  % minimum step norm before restoration/stall
 opts.maxIter  = 300;
@@ -424,6 +432,15 @@ opts.autoScale = 'gradient';  % 'gradient' | 'curvature' | 'bounds' | 'none'
 % unchanged, since their raw spreads are already below it.  Set Inf to restore
 % the uncapped bound-range rule.
 opts.autoScaleMaxSpread = 1e4;
+
+% Constraint rows are scaled only when their gradient (in the variable-scaled
+% space) exceeds this, and then down to exactly this size: Dc_i =
+% min(1, autoScaleMaxGradient/||row_i||).  IPOPT's nlp_scaling_max_gradient.
+% The former rule min(1, 1/||row_i||) shrank EVERY row steeper than 1, so
+% already-normalised constraints with O(1..100) gradients were scaled down and
+% feasTol was then applied to a smaller number than the user's own violation.
+% Set 1 for the former behaviour.
+opts.autoScaleMaxGradient = 100;
 
 % Per-constraint cap on the scaled objective curvature in 'curvature' mode.
 %
@@ -850,10 +867,12 @@ opts.Plot = false;
 %     alpha            - last accepted primal step length.
 %     mu               - barrier parameter (0 in the equality core).
 %     stepsize         - physical-unit norm of the last accepted step.
-%     constrviolation  - max constraint violation in the SOLVER's scaled space
+%     constrviolation  - max constraint violation in PHYSICAL units: |ceq|,
+%                        max(0,c), |linEq|, max(0,linIneq) and bound
+%                        violations (the fmincon meaning of the field).
+%     constrviolationPhys - same value (kept for existing callers).
+%     constrviolationScaled - max violation in the SOLVER's row-scaled space
 %                        (the metric terminationCheck compares to feasTol).
-%     constrviolationPhys - max |ceq|, max(0,c), |linEq|, max(0,linIneq) and
-%                        bound distances in physical units.
 %     firstorderopt    - scaled first-order optimality (termination metric).
 %     optPrinted       - the optimality value printed in the iteration table.
 %     complementarity  - scaled complementarity residual (termination metric).
