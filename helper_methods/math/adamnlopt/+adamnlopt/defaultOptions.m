@@ -668,6 +668,10 @@ opts.feasAdmitFactor = 100;     % stall admission floor: feasErr <= max(gateBase
 % kappaSigma].  Inf disables it.
 opts.kappaSigma         = 1e10;
 opts.dualStepMax        = 10;    % Fix B: max ||aD*dlamE|| / max(1,||lamE||) per step
+% D15: the Fix-A dual shift is capped at dualRegFeasFactor*||cE||_inf so it
+% vanishes as the iterate becomes feasible (it otherwise offsets the
+% feasibility row by gamma*dlamE indefinitely).  Inf restores the uncapped shift.
+opts.dualRegFeasFactor = 1;
 opts.dualCondMax        = 1e8;   % Fix A: target ceiling on cond(S) after dual reg
 opts.dualCondProbeMaxDim = 400;  % skip Fix A's Schur probe when mE exceeds this
 

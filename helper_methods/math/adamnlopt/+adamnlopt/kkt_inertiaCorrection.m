@@ -78,10 +78,22 @@ function [d, idx, info, reg] = kkt_inertiaCorrection(state, res, n, mE, reg0, op
 
 import adamnlopt.*
 
-if nargin < 5 || isempty(reg0)
-    reg = struct('delta', 0, 'gamma', 0);
-else
-    reg = reg0;
+% D15: the FIRST factorization always tries delta = 0 (IPOPT Algorithm IC).
+% reg0 -- the previous iteration's accepted regularization -- only seeds the
+% first RETRY.  Applying it up front perturbed every later Newton step once any
+% iteration had needed regularization: the old /10-per-iteration decay kept
+% delta and gamma in the matrix for hundreds of iterations, degrading the local
+% rate and offsetting the feasibility row by gamma*dlamE.
+deltaLast = 0;
+if nargin >= 5 && ~isempty(reg0) && isfield(reg0, 'delta') && ~isempty(reg0.delta)
+    deltaLast = reg0.delta;
+end
+reg = struct('delta', 0, 'gamma', 0);
+% An explicit dual floor (reg0.gammaFloor) is a different thing from a stale
+% previous-iteration gamma: degeneracy_regularizedRecovery asks for it on
+% purpose, sized from the current residual, so honour it from the first try.
+if nargin >= 5 && ~isempty(reg0) && isfield(reg0, 'gammaFloor') && ~isempty(reg0.gammaFloor)
+    reg.gamma = reg0.gammaFloor;
 end
 if nargin < 6
     opts = [];
@@ -95,6 +107,16 @@ end
 % near-null S produces correct inertia and healthy-looking pivots yet a divergent
 % dlamE).  Only the DUAL block is touched, so primal descent is unchanged.
 [gammaScale, schurInfo] = dualRegFromSchur(state, mE, opts);
+% D15: tie the Fix-A shift to how far from feasible the iterate is.  The
+% feasibility row is JE*dx - gamma*dlamE = -cE; in the near-null direction of S,
+% gamma*dlamE -> that component of cE, so a gamma set from cond(S) alone (which
+% depends on geometry, not on convergence) left feasibility stuck at
+% ~gamma*||dlamE|| for the rest of the run.  Capping it at kappaG*||cE||_inf
+% lets it vanish as feasibility is reached, as IPOPT's delta_c ~ mu^0.25 does.
+kappaG = getField(opts, 'dualRegFeasFactor', 1);
+if gammaScale > 0 && isfinite(kappaG) && isfield(res, 'rFeasE') && ~isempty(res.rFeasE)
+    gammaScale = min(gammaScale, max(1e-8, kappaG * norm(res.rFeasE, inf)));
+end
 if gammaScale > reg.gamma
     reg.gamma = gammaScale;
 end
@@ -148,11 +170,17 @@ while (~inertiaOK(info, n, mE) || pivotTooSmall(info, pivotRelTol)) && tries < m
         end
     end
     if ~inertiaOK(info, n, mE)
-        % Wrong inertia: grow primal regularization.
+        % Wrong inertia: grow primal regularization.  First retry from the
+        % previous iteration's value / 3 when there is one (D15, IPOPT
+        % kappa_w^- = 1/3), else 1e-8; then grow x8 (kappa_w^+).
         if reg.delta == 0
-            newDelta = 1e-8;
+            if deltaLast > 0
+                newDelta = max(1e-20, deltaLast / 3);
+            else
+                newDelta = 1e-8;
+            end
         else
-            newDelta = reg.delta * 10;
+            newDelta = reg.delta * 8;
         end
         if newDelta <= regMax
             reg.delta = newDelta;  grew = true;

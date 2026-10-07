@@ -199,9 +199,11 @@ classdef AdamNlOptLinearAlgebraTest < AdamNlOptTestCase
         end
 
         function testCorrectedRegularizationIsReusableAsAWarmStart(testCase)
-            %   solve.m feeds the previous iteration's reg back in as reg0; a
-            %   reg that is not accepted on re-entry would make the warm start
-            %   a source of extra corrections rather than a saving.
+            %   solve.m feeds the previous iteration's reg back in as reg0.
+            %   Since review D15 the first factorization always tries delta = 0
+            %   and reg0 seeds only the first RETRY (delta_last/3, then x8), so
+            %   the warm start must cost no more corrections than a cold start
+            %   and land within the x8 growth step of the cold result.
             n = 4;  mE = 1;
             state = testCase.spdState(n, mE);
             state.H = state.H - 20 * eye(n);
@@ -213,9 +215,12 @@ classdef AdamNlOptLinearAlgebraTest < AdamNlOptTestCase
             [~, ~, info2, reg2] = adamnlopt.kkt_inertiaCorrection( ...
                 state, res, n, mE, reg1, opts);
 
-            testCase.verifyEqual(info2.tries, 0, ...
-                'the regularization it just computed was rejected on re-entry');
-            testCase.verifyEqual(reg2.delta, reg1.delta);
+            [~, ~, info1] = adamnlopt.kkt_inertiaCorrection( ...
+                state, res, n, mE, [], opts);
+            testCase.verifyLessThanOrEqual(info2.tries, info1.tries, ...
+                'a warm start must not cost more corrections than a cold one');
+            testCase.verifyGreaterThan(reg2.delta, 0);
+            testCase.verifyLessThanOrEqual(reg2.delta, 8 * reg1.delta);
         end
 
         %% ================================================================

@@ -557,6 +557,58 @@ classdef AdamNlOptReviewFixesTest < AdamNlOptTestCase
         end
     end
 
+    methods (Test)
+        %% ==== Batch 6.2: regularization policy (D15), SOC re-solve (D17.1) ==
+        function testD15FirstFactorizationIgnoresAStaleRegularization(testCase)
+            rng(3);  n = 5;  mE = 2;
+            B = randn(n);  H = B.' * B + n * eye(n);  JE = randn(mE, n);
+            state = struct('H', H, 'JE', JE, 'x', zeros(n, 1), 'lamE', zeros(mE, 1));
+            res = struct('rStat', randn(n, 1), 'rFeasE', randn(mE, 1));
+            stale = struct('delta', 1e-2, 'gamma', 1e-2);
+            [d, ~, info, reg] = adamnlopt.kkt_inertiaCorrection(state, res, n, mE, ...
+                stale, adamnlopt.defaultOptions());
+            testCase.verifyEqual(info.tries, 0);
+            testCase.verifyEqual([reg.delta reg.gamma], [0 0], ...
+                'a well-posed system must be solved unregularized whatever reg0 says');
+            K = [H, JE.'; JE, zeros(mE)];
+            testCase.verifyEqual(d, K \ (-[res.rStat; res.rFeasE]), 'RelTol', 1e-9);
+        end
+
+        function testD15FixAShiftVanishesNearFeasibility(testCase)
+            % cond(S) ~ 4e10 > dualCondMax = 1e8, so Fix A wants gamma ~ 2e-8.
+            JE = [1 0; 1 1e-5];  H = eye(2);
+            state = struct('H', H, 'JE', JE, 'x', zeros(2, 1), 'lamE', zeros(2, 1));
+            opts = adamnlopt.defaultOptions();
+            far = struct('rStat', [1; 1], 'rFeasE', [1; 1]);
+            [~, ~, iFar] = adamnlopt.kkt_inertiaCorrection(state, far, 2, 2, [], opts);
+            near = struct('rStat', [1; 1], 'rFeasE', [1e-12; 1e-12]);
+            [~, ~, iNear, rNear] = adamnlopt.kkt_inertiaCorrection(state, near, 2, 2, [], opts);
+            testCase.assumeGreaterThan(iFar.schur.gamma, 1e-8, 'Fix A did not fire on the fixture');
+            testCase.verifyLessThanOrEqual(rNear.gamma, 1e-8 * (1 + 1e-12), ...
+                'near feasibility the dual shift must fall to its 1e-8 floor');
+            testCase.verifyEqual(iNear.tries, 0);
+        end
+
+        function testD17SocReSolvesReuseThePrimaryFactorization(testCase)
+            % Maratos-type problem forced into the interior-point core by a box:
+            % SOC is attempted on several iterations.  Each attempt is a solve,
+            % but only the primary step may factor the KKT matrix.
+            fun = @(x) 2 * (x(1)^2 + x(2)^2 - 1) - x(1);
+            p = AdamNlOptTestCase.problem('maratos', fun, [cos(0.8); sin(0.8)]);
+            p.hasObjGrad = false;
+            p.nonlcon = @(x) deal([], x(1)^2 + x(2)^2 - 1);
+            p.lb = [-5; -5];  p.ub = [5; 5];
+            out = testCase.solveProblem(p, struct('maxIter', 100));
+            tr = out.output.trace;
+            k = tr.nSolves > 1;
+            testCase.assumeTrue(any(k), 'SOC was never attempted; fixture no longer exercises D17.1');
+            testCase.verifyEqual(unique(tr.nFactorizations(k)).', 1, ...
+                'an SOC re-solve must re-use the primary factorization');
+            testCase.verifyGreaterThan(out.exitflag, 0);
+            testCase.verifyEqual(out.fval, -1, 'AbsTol', 1e-6);
+        end
+    end
+
     methods (Static)
         function info = callUpdate(B, s, y, ev, x, forced)
             % adamnlopt.updateHessianModel (moved out of solve.m in Batch 4 so

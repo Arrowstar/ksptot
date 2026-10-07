@@ -757,7 +757,7 @@ for iter = 0:opts.maxIter
     % that sets it.  The NT-decomp path never assigns primaryInfo, and a stale
     % value from the previous iteration is worse than no value at all: it would
     % read as a plausible row rather than an obviously missing one.
-    primaryInfo = [];  nSolves = 0;  socAdopted = 0;
+    primaryInfo = [];  nSolves = 0;  socAdopted = 0;  nFactorizations = 0;
     dxl = x - lb;  dxu = ub - x;
 
     % --- Active-bound handling (Fix F row exclusion + Fix G bound-dual repair) ---
@@ -1428,7 +1428,7 @@ for iter = 0:opts.maxIter
         % conditioning to the step -- silently, and precisely on the iterations
         % where SOC fired, which are the interesting ones.
         primaryInfo = ksolve.last;
-        nSolves = 1;
+        nSolves = 1;  nFactorizations = 1;
         trow.condK = traceCondK(trace, cstate, ksolve.reg);
 
         % Recover the eliminated directions.
@@ -1486,10 +1486,22 @@ for iter = 0:opts.maxIter
                     xt = x + aFTB * dx;
                     [cEt, ~] = ev.constraints(xt);
                     cSocE = aFTB * cSocE + cEt;    % WB constraint accumulation
-                    % Re-solve condensed KKT with the corrected constraint RHS.
-                    cstateS = struct('H', W, 'JE', JE, 'x', x, 'lamE', lamE);
-                    cresS   = struct('rStat', r1, 'rFeasE', cSocE);
-                    [dS, idxS, ksolve] = detectStep(cstateS, cresS, n, mE, opts, ksolve);
+                    % Re-solve the condensed KKT with the corrected constraint
+                    % RHS.  Only the RHS changes, so re-use the primary step's
+                    % factorization (D17.1): this used to re-assemble, re-run
+                    % the O(n^3) Fix-A probe and re-factor up to socMax times
+                    % per iteration -- with a regularization that had decayed
+                    % since, so the SOC direction was not even the correction
+                    % of the same Newton matrix.
+                    if isfield(ksolve, 'factors') && ~isempty(ksolve.factors)
+                        dS   = linalg_resolveKKT(ksolve.factors, -[r1; cSocE]);
+                        idxS = ksolve.factorIdx;
+                    else
+                        cstateS = struct('H', W, 'JE', JE, 'x', x, 'lamE', lamE);
+                        cresS   = struct('rStat', r1, 'rFeasE', cSocE);
+                        [dS, idxS, ksolve] = detectStep(cstateS, cresS, n, mE, opts, ksolve);
+                        nFactorizations = nFactorizations + 1;
+                    end
                     nSolves = nSolves + 1;
                     dxC    = dS(idxS.x);
                     dlamEC = dS(idxS.lamE);
@@ -1737,6 +1749,7 @@ for iter = 0:opts.maxIter
 
     % Foot of the loop: the secant update for THIS step has just happened, so
     % this is the first point at which the row is complete.
+    trow.nFactorizations = nFactorizations;   % KKT factorizations this iteration (D17.1)
     trow = finishTraceRow(trow, primaryInfo, hinfo, aP, aD, aLamE, rho, Delta, ...
                           lsFailed, nSolves, socAdopted, 0);
     recordTrace(trace, trow);
@@ -2313,14 +2326,16 @@ else
     % Warm-start regularization from the previous iteration (IPOPT-style):
     % decay by 10x each iteration so we don't over-regularize, but avoid
     % restarting from zero when the problem consistently needs gamma > 0.
+    % reg0 seeds only the first inertia RETRY (D15); kkt_inertiaCorrection
+    % always tries delta = 0 first, so no decay is needed here.
     reg0 = [];
     if isfield(ksolve, 'reg'), reg0 = ksolve.reg; end
-    if ~isempty(reg0)
-        if reg0.delta > 0, reg0.delta = reg0.delta / 10; end
-        if reg0.gamma > 0, reg0.gamma = reg0.gamma / 10; end
-    end
     [d, idx, info, reg] = kkt_inertiaCorrection(state, res, n, mE, reg0, opts);
     ksolve.reg  = reg;
+    % Keep the accepted factorization for right-hand-side-only re-solves
+    % (second-order correction, D17.1).
+    ksolve.factors   = info.factors;
+    ksolve.factorIdx = idx;
     ksolve.last = packSolveInfo('direct', info, reg, d, idx, state, res);
     if isfield(info, 'triesExhausted') && info.triesExhausted
         ksolve = warnSilentFailure(ksolve, opts, 'inertiaCorrectionExhausted', ...
@@ -2520,6 +2535,7 @@ applyP = linalg_preconditioner(op, opts);
 
 ksolve.Fprev   = Fk;
 ksolve.etaPrev = eta;
+ksolve.factors = [];   % the step may be a Krylov solve: no factors to re-use
 
 % MINRES/GMRES non-convergence was previously invisible: the info output was
 % discarded at the call site, so an unconverged step entered the line search
@@ -2865,6 +2881,7 @@ if opts.enableDegeneracyDetection
         % Rank-deficient active Jacobian: use floor-gamma regularized recovery.
         % Note the output order: regularizedRecovery returns [d, idx, reg, info].
         [d, idx, rreg, rinfo] = degeneracy_regularizedRecovery(state, res, n, mE);
+        ksolve.factors = [];
         ksolve.last = packSolveInfo('direct', rinfo, rreg, d, idx, state, res);
         ksolve.last.stepSource = 1;
         return;
@@ -2879,6 +2896,7 @@ if opts.enableDegeneracyDetection
             % Linearized equality system is locally inconsistent; use elastic step.
             d = [dx_e; zeros(mE,1)];
             idx.x = 1:n;  idx.lamE = n + (1:mE);
+            ksolve.factors = [];
             ksolve.last = packSolveInfo('direct', [], [], d, idx, state, res);
             ksolve.last.stepSource = 2;
             return;
@@ -3270,7 +3288,7 @@ cols = { ...
     'minAbsPivot', 'medAbsPivot', 'maxAbsPivot', 'pivotSpread', ...
     'nearlySingular', 'schurRan', 'schurCond', 'schurSMax', 'schurSMin', ...
     'schurCaught', 'schurSkipReason', 'feasRowRes', 'stepSource', ...
-    'pathDirect', 'nSolves', 'socAdopted', ...
+    'pathDirect', 'nSolves', 'nFactorizations', 'socAdopted', ...
     'krylovFlag', 'krylovIters', 'krylovRelres', ...
     ... % --- H3: is the multiplier/metric machinery the problem?  lsFired and
     ... % lsAdopted in particular had no signal whatsoever: the costate refresh
