@@ -95,6 +95,8 @@ classdef ConstraintTest < KsptotTestCase
             'TotalThrustAndThrustToWeightVanishWithEnginesOff', ...
             'ThrustToWeightMatchesHandComputedSeaLevelRatio', ...
             'EventDeltaVExpendedMatchesTsiolkovskyRatio', ...
+            'EventDurationSignedAndAbsoluteValues', ...
+            'EventDurationStateComparisonAgainstOtherEvent', ...
             'ConstraintMetadataAndBoundsAccessors', ...
             'UsesEventTracksBothEventsInStateComparison', ...
             'ConstraintSetSkipsInactiveConstraintsAndKeepsOrder', ...
@@ -787,6 +789,115 @@ classdef ConstraintTest < KsptotTestCase
         %% ---------------------------------------------------------------
         %  Metadata and set-level aggregation
         %  ---------------------------------------------------------------
+
+        function checkEventDurationSignedAndAbsoluteValues(testCase)
+            %Event duration is (last entry time) - (first entry time) of
+            %the constrained event only.  Entries of other events in the
+            %log must not leak in, and a backwards event must come out
+            %negative for the signed constraint and positive for |.|.
+            fx = testCase.buildFixture();
+
+            single = testCase.makeEntry(fx, fx.evt1, 42);
+            singleLog = testCase.makeLog(fx, single);
+            [~, ~, vS] = EventDurationConstraint(fx.evt1, -1e6, 1e6).evalConstraint(singleLog, testCase.celBodyData);
+            [~, ~, vA] = EventAbsDurationConstraint(fx.evt1, 0, 1e6).evalConstraint(singleLog, testCase.celBodyData);
+            testCase.verifyEqual([vS, vA], [0, 0], ...
+                'a single-entry event must have zero duration');
+
+            %Forward: evt1 at t = 10, 25, 70 (duration 60) with evt2
+            %entries at 200 and 500 that must be ignored.
+            fwd = [testCase.makeEntry(fx, fx.evt1, 10), testCase.makeEntry(fx, fx.evt1, 25), ...
+                   testCase.makeEntry(fx, fx.evt1, 70), testCase.makeEntry(fx, fx.evt2, 200), ...
+                   testCase.makeEntry(fx, fx.evt2, 500)];
+            fwdLog = testCase.makeLog(fx, fwd);
+
+            [c, ceq, value] = EventDurationConstraint(fx.evt1, 0, 100).evalConstraint(fwdLog, testCase.celBodyData);
+            testCase.verifyEqual(value, 60, 'AbsTol', testCase.ValueTol, ...
+                'signed duration of a forward event must be last - first entry time');
+            testCase.verifyEqual(c(:)', [0 - 60, 60 - 100], 'AbsTol', testCase.ValueTol);
+            testCase.verifyEmpty(ceq);
+
+            [~, ~, value] = EventAbsDurationConstraint(fx.evt1, 0, 100).evalConstraint(fwdLog, testCase.celBodyData);
+            testCase.verifyEqual(value, 60, 'AbsTol', testCase.ValueTol, ...
+                'absolute duration of a forward event must equal the signed duration');
+
+            %Backward: evt1 at t = 70, 25, 10 (duration -60).
+            bwd = [testCase.makeEntry(fx, fx.evt1, 70), testCase.makeEntry(fx, fx.evt1, 25), ...
+                   testCase.makeEntry(fx, fx.evt1, 10)];
+            bwdLog = testCase.makeLog(fx, bwd);
+
+            [c, ~, value] = EventDurationConstraint(fx.evt1, -100, 0).evalConstraint(bwdLog, testCase.celBodyData);
+            testCase.verifyEqual(value, -60, 'AbsTol', testCase.ValueTol, ...
+                'signed duration of a backward event must be negative');
+            testCase.verifyEqual(c(:)', [-100 - (-60), -60 - 0], 'AbsTol', testCase.ValueTol);
+
+            [~, ceq, value] = EventAbsDurationConstraint(fx.evt1, 60, 60).evalConstraint(bwdLog, testCase.celBodyData);
+            testCase.verifyEqual(value, 60, 'AbsTol', testCase.ValueTol, ...
+                'absolute duration of a backward event must be positive');
+            testCase.verifyEqual(ceq, 0, 'AbsTol', testCase.ValueTol, ...
+                'lb == ub must emit the equality (value - ub)');
+
+            %Metadata, defaults and GUI registration.
+            sCon = EventDurationConstraint.getDefaultConstraint([], []);
+            aCon = EventAbsDurationConstraint.getDefaultConstraint([], []);
+            testCase.verifyClass(sCon, 'EventDurationConstraint');
+            testCase.verifyClass(aCon, 'EventAbsDurationConstraint');
+            testCase.verifyEqual(sCon.getConstraintType(), 'Event Duration');
+            testCase.verifyEqual(aCon.getConstraintType(), 'Event Duration (Absolute Value)');
+            [unitS, lbLimS, ubLimS] = sCon.getConstraintStaticDetails();
+            [unitA, lbLimA, ubLimA] = aCon.getConstraintStaticDetails();
+            testCase.verifyEqual({unitS, lbLimS, ubLimS}, {'sec', -Inf, Inf});
+            testCase.verifyEqual({unitA, lbLimA, ubLimA}, {'sec', 0, Inf});
+
+            [~, enumS] = ConstraintEnum.getIndForName('Event Duration');
+            [~, enumA] = ConstraintEnum.getIndForName('Event Duration (Absolute Value)');
+            testCase.verifyEqual(enumS.class, 'EventDurationConstraint');
+            testCase.verifyEqual(enumA.class, 'EventAbsDurationConstraint');
+        end
+
+        function checkEventDurationStateComparisonAgainstOtherEvent(testCase)
+            %State comparison must evaluate the SAME duration quantity on
+            %stateCompEvent.  evt1 runs forward 60 s (10 -> 70), evt2 runs
+            %backward 90 s (160 -> 70): signed -90, absolute 90.
+            fx = testCase.buildFixture();
+            entries = [testCase.makeEntry(fx, fx.evt1, 10), testCase.makeEntry(fx, fx.evt1, 70), ...
+                       testCase.makeEntry(fx, fx.evt2, 160), testCase.makeEntry(fx, fx.evt2, 100), ...
+                       testCase.makeEntry(fx, fx.evt2, 70)];
+            stateLog = testCase.makeLog(fx, entries);
+
+            sCon = EventDurationConstraint(fx.evt1, 0, 0);
+            sCon.evalType = ConstraintEvalTypeEnum.StateComparison;
+            sCon.stateCompEvent = fx.evt2;
+            sCon.stateCompType = ConstraintStateComparisonTypeEnum.GreaterThan;
+            [c, ceq, value, ~, ~, ~, ~, valueStateComp] = sCon.evalConstraint(stateLog, testCase.celBodyData);
+            testCase.verifyEqual([value, valueStateComp], [60, -90], 'AbsTol', testCase.ValueTol, ...
+                'signed state comparison must read the signed duration of both events');
+            testCase.verifyEqual(c, -90 - 60, 'AbsTol', testCase.ValueTol, ...
+                'GreaterThan must emit valueStateComp - value');
+            testCase.verifyEmpty(ceq);
+
+            aCon = EventAbsDurationConstraint(fx.evt1, 0, 0);
+            aCon.evalType = ConstraintEvalTypeEnum.StateComparison;
+            aCon.stateCompEvent = fx.evt2;
+            aCon.stateCompType = ConstraintStateComparisonTypeEnum.LessThan;
+            aCon.setScaleFactor(10);
+            [c, ~, value, ~, ~, ~, ~, valueStateComp] = aCon.evalConstraint(stateLog, testCase.celBodyData);
+            testCase.verifyEqual([value, valueStateComp], [60, 90], 'AbsTol', testCase.ValueTol, ...
+                'absolute state comparison must read |duration| of both events');
+            testCase.verifyEqual(c, (60 - 90)/10, 'AbsTol', testCase.ValueTol, ...
+                'LessThan must emit (value - valueStateComp)/normFact');
+
+            aCon.stateCompType = ConstraintStateComparisonTypeEnum.Equals;
+            [c, ceq] = aCon.evalConstraint(stateLog, testCase.celBodyData);
+            testCase.verifyEmpty(c);
+            testCase.verifyEqual(ceq, (60 - 90)/10, 'AbsTol', testCase.ValueTol);
+
+            testCase.verifyTrue(aCon.usesEvent(fx.evt1) && aCon.usesEvent(fx.evt2), ...
+                'state comparison duration constraint must report using both events');
+            aCon.evalType = ConstraintEvalTypeEnum.FixedBounds;
+            testCase.verifyFalse(aCon.usesEvent(fx.evt2), ...
+                'fixed-bounds duration constraint must not claim the comparison event');
+        end
 
         function checkConstraintMetadataAndBoundsAccessors(testCase)
             fx = testCase.buildFixture();
