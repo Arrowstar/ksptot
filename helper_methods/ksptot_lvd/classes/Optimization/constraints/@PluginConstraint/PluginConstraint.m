@@ -68,7 +68,7 @@ classdef PluginConstraint < AbstractConstraint
                         error('Unknown event node.');
                 end
 
-                valueStateComp = obj.plugin.executePlugin(lvdData, stateLog, obj.event, LvdPluginExecLocEnum.Constraint, [],[],[], pluginSet.userData, stateLogEntryStateComp, frame);
+                valueStateComp = obj.plugin.executePlugin(lvdData, stateLog, obj.stateCompEvent, LvdPluginExecLocEnum.Constraint, [],[],[], pluginSet.userData, stateLogEntryStateComp, frame);
             else
                 valueStateComp = NaN;
             end

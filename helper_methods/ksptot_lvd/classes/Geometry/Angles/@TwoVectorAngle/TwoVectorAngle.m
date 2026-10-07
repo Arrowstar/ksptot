@@ -39,7 +39,11 @@ classdef TwoVectorAngle < AbstractGeometricAngle
             
             angle = acos(dot(vect1Hat, vect2Hat));
             
-            angle = angle.*sign(dot(vn,vecCrossProd));
+            %sign() is 0 when the cross product is normal to vn; that
+            %case has no handedness to apply, so keep the magnitude.
+            angleSign = sign(dot(vn,vecCrossProd));
+            angleSign(angleSign == 0) = 1;
+            angle = angle.*angleSign;
         end
         
         function startPt = getAngleStartPointAtTime(obj, time, vehElemSet, inFrame)

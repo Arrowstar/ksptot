@@ -35,7 +35,7 @@ function datapt = lvd_TwoBodyImpactPointTasks(stateLogEntry, subTask)
 
         eventLogEnd = eventLog(end,:);
         iptUt = eventLogEnd(1);
-        iptRVect = eventLogEnd(2:4);
+        iptRVect = eventLogEnd(2:4)'; %column: getLatLongAltFromInertialVect requires 3xN
 
         [lat, long, ~, ~, ~, ~, ~, ~] = getLatLongAltFromInertialVect(iptUt, iptRVect, refBody);
         

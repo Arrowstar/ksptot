@@ -63,8 +63,13 @@ classdef CalculusCalculationValueConstraint < AbstractConstraint
                         error('Unknown event node.');
                 end
                 
+                %Each event owns its own calculus state (sampled over that
+                %event only), so read the comparison entry's, not ours.
+                cObjStatesComp = stateLogEntryStateComp.getAllCalculusObjStates();
+                cObjStateComp = cObjStatesComp([cObjStatesComp.calcObj] == obj.calculusCalc);
+
                 time = stateLogEntryStateComp.time;
-                valueStateComp = cObjState.getValueAtTime(time);
+                valueStateComp = cObjStateComp.getValueAtTime(time);
             else
                 valueStateComp = NaN;
             end
