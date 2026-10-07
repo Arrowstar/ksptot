@@ -122,6 +122,18 @@ if gammaScale > reg.gamma
 end
 
 [K, rhs, idx] = kkt_assemble(state, res, reg);
+% A non-finite K or RHS (an Inf barrier term after an iterate reached a bound)
+% used to spin all 40 regularization tries and return a NaN step (D30).
+if ~all(isfinite(nonzeros(K))) || ~all(isfinite(rhs))
+    d = zeros(size(rhs));
+    info = struct('inertia', [0 0 0], 'minAbsPivot', NaN, 'maxAbsPivot', NaN, ...
+        'medAbsPivot', NaN, 'rankDeficient', true, 'pivotSpread', NaN, ...
+        'nearlySingular', true, 'factors', [], 'resRel', NaN, 'solved', false);
+    info.tries = 0;  info.regCapped = false;  info.triesExhausted = true;
+    info.nonFinite = true;  info.gammaFixA = gammaScale;  info.schur = schurInfo;
+    info.reg = reg;  info.dualCapGrows = 0;
+    return;
+end
 [d, info] = linalg_solveKKTdirect(K, rhs);
 
 % Also regularize when the LDL' pivot is tiny: a near-singular Schur
@@ -198,8 +210,36 @@ while (~inertiaOK(info, n, mE) || pivotTooSmall(info, pivotRelTol)) && tries < m
     tries = tries + 1;
 end
 
+% D5.2: enforce the dual-step cap THROUGH the regularization.  When the dual
+% block is already regularized (gamma > 0: near-singular or rank-deficient JE)
+% the step can still carry dlamE ~ cE/gamma; solve.m's Fix B then caps the
+% multiplier increment, but the primal step was solved together with the
+% uncapped dlamE (W*dx = -r - JE'*dlamE) and keeps its amplification.  On the
+% unit circle from x0 = 0 with FD gradients that amplified a 1e-8 FD error into
+% an O(1) step toward the constrained MAXIMUM.  Grow gamma until the coupled
+% solve itself respects the cap, so dx and dlamE stay consistent.
+dualCapGrows = 0;
+capFac = getField(opts, 'dualStepMax', inf);
+if reg.gamma > 0 && isfinite(capFac) && capFac > 0 && mE > 0 && info.solved
+    lamE0 = zeros(mE, 1);
+    if isfield(state, 'lamE') && numel(state.lamE) == mE, lamE0 = state.lamE(:); end
+    cap = capFac * max(1, norm(lamE0, inf));
+    while dualCapGrows < 6
+        nd = norm(d(idx.lamE), inf);
+        if ~(nd > cap), break; end
+        newGamma = reg.gamma * max(10, nd / cap);
+        if newGamma > regMax, break; end
+        reg.gamma = newGamma;
+        [K, rhs, idx] = kkt_assemble(state, res, reg);
+        [d, info] = linalg_solveKKTdirect(K, rhs);
+        dualCapGrows = dualCapGrows + 1;
+        if ~info.solved, break; end
+    end
+end
+
 % Record what the correction did. Purely observational -- nothing below is read
 % back by this function or by its callers to make a decision.
+info.dualCapGrows   = dualCapGrows;
 info.tries          = tries;
 info.regCapped      = capped;
 info.triesExhausted = (capped || tries >= maxTries) && ...

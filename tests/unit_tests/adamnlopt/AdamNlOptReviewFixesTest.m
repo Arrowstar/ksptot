@@ -501,14 +501,14 @@ classdef AdamNlOptReviewFixesTest < AdamNlOptTestCase
 
         function testD10EqualityCoreReportsLineSearchFailures(testCase)
             % lsFailed used to be hard-coded false in the equality core's trace.
-            % The NaN-step case below fails its first line search.
+            % This inconsistent system fails its first line search.  (Before
+            % Batch 6.3's minimum-norm multipliers its KKT step was NaN; the D30
+            % guard for that case is pinned by testD30NonFiniteKktIsRejectedImmediately.)
             nl = @(x) deal([], [x(1) + x(2) - 1; x(1) + x(2) - 3]);
-            o = testCase.quietOpts(struct('maxIter', 5));
+            o = testCase.quietOpts(struct());
             [x, ~, ef, out] = adamnlopt.solve(@(x) sum(x.^2), [0.5; 0.5], [], [], ...
                 [], [], [], [], nl, o);
             testCase.verifyEqual(out.trace.lsFailed(1), 1);
-            % D30 (equality core): an inconsistent rank-deficient JE gave a NaN
-            % KKT step; it must not reach x.
             testCase.verifyTrue(all(isfinite(x)), 'a NaN step must never be taken');
             testCase.verifyEqual(ef, -2, 'x1 + x2 = 1 and = 3 are inconsistent');
         end
@@ -579,6 +579,7 @@ classdef AdamNlOptReviewFixesTest < AdamNlOptTestCase
             JE = [1 0; 1 1e-5];  H = eye(2);
             state = struct('H', H, 'JE', JE, 'x', zeros(2, 1), 'lamE', zeros(2, 1));
             opts = adamnlopt.defaultOptions();
+            opts.dualStepMax = Inf;   % isolate D15 from the D5.2 dual-cap growth
             far = struct('rStat', [1; 1], 'rFeasE', [1; 1]);
             [~, ~, iFar] = adamnlopt.kkt_inertiaCorrection(state, far, 2, 2, [], opts);
             near = struct('rStat', [1; 1], 'rFeasE', [1e-12; 1e-12]);
@@ -606,6 +607,58 @@ classdef AdamNlOptReviewFixesTest < AdamNlOptTestCase
                 'an SOC re-solve must re-use the primary factorization');
             testCase.verifyGreaterThan(out.exitflag, 0);
             testCase.verifyEqual(out.fval, -1, 'AbsTol', 1e-6);
+        end
+    end
+
+    methods (Test)
+        %% ==== Batch 6.3: degenerate Jacobians (D5), non-finite steps (D30) ==
+        function testD5DegenerateStartFindsTheMinimum(testCase)
+            % min x1 + x2 on the unit circle from x0 = 0, FD constraint
+            % gradient: JE(x0) is analytically 0 and the FD value is 1.5e-8.
+            % Both cores converged to the MAXIMUM (f = +sqrt(2)).
+            nl = @(x) deal([], x(1)^2 + x(2)^2 - 1);
+            o = testCase.quietOpts(struct());
+            for box = [false true]
+                if box, lb = [-5; -5]; ub = [5; 5]; else, lb = []; ub = []; end
+                [~, f, ef] = adamnlopt.solve(@(x) x(1) + x(2), [0; 0], [], [], [], [], ...
+                    lb, ub, nl, o);
+                testCase.verifyGreaterThan(ef, 0);
+                testCase.verifyEqual(f, -sqrt(2), 'AbsTol', 1e-6, ...
+                    sprintf('box = %d: converged to the wrong stationary point', box));
+            end
+        end
+
+        function testD5MultiplierFitIsMinimumNorm(testCase)
+            lam = adamnlopt.step_multiplierUpdate([1; 2; 3], [1 0 0; 1 0 0]);
+            testCase.verifyEqual(lam, [-0.5; -0.5], 'AbsTol', 1e-12, ...
+                'a rank-deficient JE must give the minimum-norm multipliers');
+            lam = adamnlopt.step_multiplierUpdate([1; 1], [1e-8 1e-8], [], 1e-6);
+            testCase.verifyEqual(lam, 0, 'a row below the noise tolerance carries no multiplier');
+        end
+
+        function testD5DualCapIsEnforcedInTheCoupledSolve(testCase)
+            % Near-zero constraint row: with gamma = 1e-8 the solve wants
+            % dlamE ~ cE/gamma.  The cap must hold for the step the solve
+            % returns, with dx consistent with that dlamE.
+            state = struct('H', eye(2), 'JE', [1e-8 1e-8], 'x', zeros(2, 1), 'lamE', 0);
+            res = struct('rStat', [1; 1], 'rFeasE', -1);
+            opts = adamnlopt.defaultOptions();
+            [d, idx, info, reg] = adamnlopt.kkt_inertiaCorrection(state, res, 2, 1, [], opts);
+            testCase.verifyLessThanOrEqual(norm(d(idx.lamE), inf), opts.dualStepMax * (1 + 1e-9));
+            testCase.verifyGreaterThan(info.dualCapGrows, 0);
+            % Primal row of the regularized system holds for the returned step.
+            testCase.verifyEqual((state.H + reg.delta * eye(2)) * d(idx.x) + ...
+                state.JE.' * d(idx.lamE), -res.rStat, 'AbsTol', 1e-12);
+            testCase.verifyGreaterThan(reg.gamma, 1e-8);
+        end
+
+        function testD30NonFiniteKktIsRejectedImmediately(testCase)
+            state = struct('H', [Inf 0; 0 1], 'JE', [1 1], 'x', zeros(2, 1), 'lamE', 0);
+            res = struct('rStat', [1; 1], 'rFeasE', 0);
+            [d, ~, info] = adamnlopt.kkt_inertiaCorrection(state, res, 2, 1, [], adamnlopt.defaultOptions());
+            testCase.verifyEqual(info.tries, 0, 'no regularization ladder on a non-finite K');
+            testCase.verifyFalse(info.solved);
+            testCase.verifyTrue(all(isfinite(d)));
         end
     end
 

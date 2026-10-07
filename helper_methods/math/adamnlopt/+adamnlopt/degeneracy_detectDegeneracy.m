@@ -52,7 +52,11 @@ mE = size(JE, 1);
 flags = struct();
 
 % Equality Jacobian rank.
-flags.rankE = matrixRank(JE);
+% Absolute noise floor on the rank test (D5): with FD constraint derivatives a
+% row at the FD resolution is noise, which a purely RELATIVE tolerance can never
+% call dependent (one near-zero row always has rank 1).  solve.m sets it.
+tolAbs = getf(state, 'jacNoiseTol', 0);
+flags.rankE = matrixRank(JE, tolAbs);
 flags.linDepE = flags.rankE < mE;
 
 % Active inequality set (|cI| within feasibility tolerance of the boundary).
@@ -73,7 +77,7 @@ if isempty(Aact)
 elseif ~any(active)
     flags.rankActive = flags.rankE;
 else
-    flags.rankActive = matrixRank(Aact);
+    flags.rankActive = matrixRank(Aact, tolAbs);
 end
 flags.linDepActive = flags.rankActive < size(Aact, 1);
 
@@ -89,7 +93,7 @@ flags.degenerate = flags.linDepE || flags.linDepActive || any(weak);
 flags.n = n;
 end
 
-function r = matrixRank(A)
+function r = matrixRank(A, tolAbs)
 %MATRIXRANK  Numerical rank of A from a column-pivoted QR.
 %   r = matrixRank(A) counts the entries of |diag(R)| from a column-pivoted QR
 %   of A that exceed a tolerance scaled by the largest of them, giving a
@@ -110,6 +114,7 @@ function r = matrixRank(A)
 %
 %   Outputs:
 %     r - numerical rank of A.
+if nargin < 2 || isempty(tolAbs), tolAbs = 0; end
 if isempty(A)
     r = 0;
     return;
@@ -123,7 +128,7 @@ if isempty(dR)
 end
 dmax = max(dR);
 tol  = max(size(A)) * eps(dmax);
-r    = sum(dR > max(tol, 1e-12 * dmax));
+r    = sum(dR > max([tol, 1e-12 * dmax, tolAbs]));
 end
 
 function v = getf(s, f, dflt)

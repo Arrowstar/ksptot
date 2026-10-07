@@ -337,7 +337,7 @@ feasW = feasWeights(problem, ev);
 [f, g]   = ev.objective(x);
 [cE, ~]  = ev.constraints(x);
 [JE, JI] = ev.jacobian(x);
-lamE = step_multiplierUpdate(g, JE, optW);
+lamE = step_multiplierUpdate(g, JE, optW, multFitTol(ev, x, sc, optW));
 
 hmodel = makeHessianModel(opts, numel(x));
 useFilter = strcmpi(opts.globalization, 'filter');
@@ -372,6 +372,7 @@ for iter = 0:opts.maxIter
     trow = struct('iter', iter);
     primaryInfo = [];  nSolves = 0;
     state = makeState(x, lamE, f, g, cE, JE, JI, iter, ev.totalEvals(), alpha);
+    state.jacNoiseTol = jacNoiseTol(ev, x, sc);   % D5 rank floor for degeneracy detection
     % Budget/progress fields the termination test needs but cannot measure:
     % wall clock (opts.maxTime) and the size of the last accepted step
     % (opts.stepTol).  Both were settable options that nothing ever read.
@@ -596,7 +597,7 @@ for iter = 0:opts.maxIter
         % optimality metric measures them in physical ones, so the iterate
         % leaving restoration started from a dual estimate that was wrong by
         % the variable-scale spread.  Inert when scaling is off (optW all ones).
-        lamE = step_multiplierUpdate(g, JE, optW);
+        lamE = step_multiplierUpdate(g, JE, optW, multFitTol(ev, x, sc, optW));
         % AUGMENT the filter with the pre-restoration point, do not clear it
         % (D10; the IP core received this fix in 517d42b3).  Clearing it threw
         % away the only cycle-prevention mechanism, allowing a period-2
@@ -713,7 +714,7 @@ mu = st.mu;
 if mE > 0 && ~any(lamE)
     bSeed = g - zL + zU;
     if ev.mI > 0, bSeed = bSeed + JI.' * lamI; end
-    lamE = step_multiplierUpdate(bSeed, JE, optW);
+    lamE = step_multiplierUpdate(bSeed, JE, optW, multFitTol(ev, x, sc, optW));
 end
 
 hmodel = makeHessianModel(opts, n);
@@ -758,6 +759,7 @@ for iter = 0:opts.maxIter
     % value from the previous iteration is worse than no value at all: it would
     % read as a plausible row rather than an obviously missing one.
     primaryInfo = [];  nSolves = 0;  socAdopted = 0;  nFactorizations = 0;
+    stepNonFinite = false;
     dxl = x - lb;  dxu = ub - x;
 
     % --- Active-bound handling (Fix F row exclusion + Fix G bound-dual repair) ---
@@ -1416,11 +1418,18 @@ for iter = 0:opts.maxIter
         if any(finL),   aD = min(aD, step_fractionToBoundary(zL(finL), dzL(finL), tau)); end
         if any(finU),   aD = min(aD, step_fractionToBoundary(zU(finU), dzU(finU), tau)); end
     else
-        cstate = struct('H', W, 'JE', JE, 'x', x, 'lamE', lamE);
+        cstate = struct('H', W, 'JE', JE, 'x', x, 'lamE', lamE, ...
+                        'jacNoiseTol', jacNoiseTol(ev, x, sc));
         cres = struct('rStat', r1, 'rFeasE', rpE);
         [d, idx, ksolve] = detectStep(cstate, cres, n, mE, opts, ksolve);
         dx    = d(idx.x);
         dlamE = d(idx.lamE);
+        % Non-finite KKT step (D30, IP core): zero it, skip the line search,
+        % and let restoration act at once (see the equality core).
+        stepNonFinite = ~all(isfinite(dx)) || ~all(isfinite(dlamE));
+        if stepNonFinite
+            dx(:) = 0;  dlamE(:) = 0;
+        end
 
         % Snapshot the PRIMARY solve now.  detectStep runs again for every SOC
         % re-solve below (up to socMax = 4), each overwriting ksolve.last, so
@@ -1453,7 +1462,9 @@ for iter = 0:opts.maxIter
         if any(finL),   aD = min(aD, step_fractionToBoundary(zL(finL), dzL(finL), tau)); end
         if any(finU),   aD = min(aD, step_fractionToBoundary(zU(finU), dzU(finU), tau)); end
 
-        if useFilter
+        if stepNonFinite
+            aP = 0;  aD = 0;  lsFailed = true;
+        elseif useFilter
             theta0 = norm([cE; cI + s], 1);
             phi0 = barrierObj(f, s, x, lb, ub, finL, finU, mu);
             gd = g.' * dx ...
@@ -1593,7 +1604,7 @@ for iter = 0:opts.maxIter
     % orbit run the collapsed steps bottomed out at 6.1e-5 and this trigger stayed
     % silent throughout).  Keep the aP test for the other step paths, which report
     % only a length.
-    feasGenuinelyStalled = feasStallCount >= opts.restStallWindow;
+    feasGenuinelyStalled = feasStallCount >= opts.restStallWindow || stepNonFinite;
     % Measure the quantity restoration can actually REDUCE.  This test used to
     % read norm([cE; cI + s], 1) -- the primal residual of the SLACK-AUGMENTED
     % system -- while degeneracy_restorationPhase minimizes the true violation
@@ -1667,7 +1678,7 @@ for iter = 0:opts.maxIter
         if mE > 0
             bSeed = g - zL + zU;
             if ev.mI > 0, bSeed = bSeed + JI.' * lamI; end
-            lamE = step_multiplierUpdate(bSeed, JE, optW);
+            lamE = step_multiplierUpdate(bSeed, JE, optW, multFitTol(ev, x, sc, optW));
         end
         if ~isempty(hmodel) && ismethod(hmodel, 'reset'), hmodel.reset(); end
         % AUGMENT the filter with the point restoration was called from -- do not
@@ -1968,6 +1979,29 @@ v = zeros(0,1);
 if ~isempty(s),  v = [v; s .* lamI]; end
 if any(finL),    v = [v; dxl(finL) .* zL(finL)]; end
 if any(finU),    v = [v; dxu(finU) .* zU(finU)]; end
+end
+
+function t = jacNoiseTol(ev, x, sc)
+%JACNOISETOL  Size below which a finite-differenced Jacobian entry is noise (D5).
+%   A forward difference with relative step h = fdStep perturbs a scaled
+%   coordinate by h*max(1,|x_s|), i.e. the physical one by h*max(1,|x_s|)*Dx,
+%   so a scaled-space Jacobian entry carries truncation error ~ h*Dx^2*kappa for
+%   physical curvature kappa.  kappa is unknown; assume it is O(1) in the
+%   caller's units (the same assumption the unscaled equality core makes) and
+%   take 10x margin.  Returned for the UNWEIGHTED scaled Jacobian (rank test);
+%   the weighted multiplier fit uses multFitTol.  0 for analytic Jacobians.
+if ev.hasConGrad
+    t = 0;
+else
+    t = 10 * ev.fdStep * max(1, norm(x, inf)) * max(sc.Dx)^2;
+end
+end
+
+function t = multFitTol(ev, x, sc, optW)
+%MULTFITTOL  Singular-value truncation for the weighted costate fit (D5).
+%   The fit matrix is JE_s'.*optW with optW = 1./(wf*Dx); its noise level is the
+%   jacNoiseTol entry error times the largest weight.
+t = jacNoiseTol(ev, x, sc) * max(optW);
 end
 
 function w = feasWeights(problem, ev)
