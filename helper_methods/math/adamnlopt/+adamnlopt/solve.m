@@ -566,6 +566,7 @@ for iter = 0:opts.maxIter
         lamE = step_multiplierUpdate(g, JE, optW);
         if useFilter, filt.reset(); end
         Delta = opts.delta0;
+        rho = 1;   % D23: the penalty from before restoration no longer applies
         % The last accepted step belongs to the point restoration left, not to
         % the restored iterate.  Leaving it set let the StepTolerance exit fire
         % at the restored point before a single step had been tried from it.
@@ -586,7 +587,7 @@ for iter = 0:opts.maxIter
     [cE, ~] = ev.constraints(x);
     [JE, ~] = ev.jacobian(x);
     hinfo = updateHessianModel(hmodel, gOld, JEold, [], g, JE, [], ...
-                               lamE, zeros(0,1), alpha * dx);
+                               lamE, zeros(0,1), alpha * dx, ev, x, alpha <= 1e-10);
     ksolve = warnBfgsReset(ksolve, opts, hinfo, iter);
     history = pushHistory(history, norm(cE, 1), alpha, opts);
 
@@ -1215,6 +1216,12 @@ for iter = 0:opts.maxIter
     % off the central path.  The plateau is the near-singular-Schur conditioning
     % wall documented in the project notes, and it must be fixed there.
     if useFilter && mu < muPrev, filt.reset(); end
+    % D23: the l1 penalty only ever grew -- gd/theta + 1e-2 is unbounded as
+    % theta -> 0 -- and the value persisted across every later barrier
+    % subproblem, over-penalising feasibility for the rest of the solve.
+    % Start each barrier subproblem from rho = 1; the line search raises it
+    % again to whatever this subproblem needs.
+    if mu < muPrev, rho = 1; end
 
     % Condensed Newton system in (dx, dlamE).
     H = currentHessian(hmodel, ev, x, lamE, lamI, opts);
@@ -1625,6 +1632,7 @@ for iter = 0:opts.maxIter
         % the only reset the method actually calls for.
         if useFilter, filt.augment(thetaPreRest, phiPreRest); end
         Delta = opts.delta0;
+        rho = 1;   % D23: the penalty from before restoration no longer applies
         % The last accepted step belongs to the point restoration left, not to
         % the restored iterate.  Leaving it set let the StepTolerance exit fire
         % at the restored point before a single step had been tried from it.
@@ -1645,11 +1653,28 @@ for iter = 0:opts.maxIter
     % Fix B applies only a scale-relative CEILING on the increment (inert unless
     % dlamE blows up on a near-singular Schur complement), so normal dual
     % progress is untouched but a 1e4-1e5 multiplier jump cannot wreck lamE.
+    % D22: on a FAILED line search the primal step is the 1e-10 creep, so x has
+    % not moved; the dual Newton step was computed assuming it moves by dx.
+    % Taking it in full is pure multiplier drift.  Tie the duals to aP then.
+    if lsFailed, aD = aP; end
     aLamE = dualStepCoeff(aD, dlamE, lamE, opts);
     lamE = lamE + aLamE * dlamE;
     lamI = lamI + aD * dlamI;
     zL(finL) = zL(finL) + aD * dzL(finL);
     zU(finU) = zU(finU) + aD * dzU(finU);
+    % D14: kappa_Sigma safeguard (Waechter-Biegler eq. 16).  Keep each primal-dual
+    % barrier Hessian term z/gap within a factor kappaSigma of the primal one
+    % mu/gap^2, i.e. z*gap/mu in [1/kappaSigma, kappaSigma].  A lagging bound
+    % dual otherwise feeds a wrong Sigma into W for many iterations.
+    kS = opts.kappaSigma;
+    if isfinite(kS) && kS >= 1
+        gapL = x(finL) - lb(finL);  gapU = ub(finU) - x(finU);
+        zL(finL) = min(max(zL(finL), mu ./ (kS * gapL)), kS * mu ./ gapL);
+        zU(finU) = min(max(zU(finU), mu ./ (kS * gapU)), kS * mu ./ gapU);
+        if ~isempty(s)
+            lamI = min(max(lamI, mu ./ (kS * s)), kS * mu ./ s);
+        end
+    end
     alpha = aP;
 
     [f, g]   = ev.objective(x);
@@ -1666,7 +1691,7 @@ for iter = 0:opts.maxIter
         lamEsec = lamE;
     end
     hinfo = updateHessianModel(hmodel, gOld, JEold, JIold, g, JE, JI, ...
-                               lamEsec, lamI, aP * dx);
+                               lamEsec, lamI, aP * dx, ev, x, lsFailed || aP <= 1e-10);
     ksolve = warnBfgsReset(ksolve, opts, hinfo, iter);
     theta_k = norm([cE; cI + s], 1);
     history = pushHistory(history, theta_k, aP, opts);
@@ -2557,92 +2582,6 @@ else
 end
 end
 
-function hinfo = updateHessianModel(hmodel, gOld, JEold, JIold, gNew, JEnew, JInew, ...
-                                    lamE, lamI, sVec)
-%UPDATEHESSIANMODEL  Feed a constrained secant pair to the Hessian model.
-%   Forms y = gradL(x+, lam+) - gradL(x, lam+), evaluated with the *new*
-%   multipliers at both points (Nocedal & Wright, 18.13), and updates the model
-%   with the pair (sVec, y). No-op when hmodel is [].
-%
-%   HINFO reports what the update did. The ACCEPTED flag in particular was
-%   computed by BFGSHessian.update and then dropped at this call site, so a
-%   model that was silently rejecting most of its curvature pairs (Powell
-%   damping failing, s'y at the noise floor) looked identical from outside to
-%   one accumulating curvature normally. RESETFIRED is the same story for the
-%   conditioning recovery, which flattens B to a scaled identity: nResets was
-%   readable only at exit, as a total, with no way to tell which iterations it
-%   happened on.
-%
-%   Inputs:
-%     hmodel               - HessianModel handle, or [] (no-op).
-%     gOld, JEold, JIold   - objective gradient and Jacobians at the old point.
-%     gNew, JEnew, JInew   - objective gradient and Jacobians at the new point.
-%     lamE, lamI           - equality and inequality multipliers (new values).
-%     sVec                 - primal step x+ - x (i.e. alpha*dx).
-%
-%   Outputs:
-%     hinfo - scalar struct of diagnostics: bfgsAccepted, bfgsResetFired,
-%             bfgsNResets, bfgsNUpdates, bfgsGammaLast, bfgsGammaBase,
-%             bfgsRebaseFired, condB, secantNormS, secantNormY, secantSY.
-%             Fields the model does not expose (LBFGSHessian has no reset
-%             counter) stay NaN rather than erroring, so both models share one
-%             column set.
-%   The model is otherwise updated in place.
-%
-%   The field names are the TRACE COLUMN names, not the model's property names,
-%   because the caller folds this struct into the row wholesale -- a field that
-%   does not match a column is silently dropped, which reads as "the model never
-%   reported it" rather than as a wiring mistake.
-hinfo = struct('bfgsAccepted', NaN, 'bfgsResetFired', NaN, ...
-               'bfgsNResets', NaN, 'bfgsNUpdates', NaN, ...
-               'bfgsGammaLast', NaN, 'bfgsGammaBase', NaN, ...
-               'bfgsRebaseFired', NaN, 'condB', NaN, ...
-               'secantNormS', NaN, 'secantNormY', NaN, 'secantSY', NaN);
-if isempty(hmodel), return; end
-% Constrained secant update: y = gradL(x+, lam+) - gradL(x, lam+), evaluated
-% with the *new* multipliers at both points (Nocedal & Wright, 18.13).
-gLold = gOld;  gLnew = gNew;
-if ~isempty(JEold)
-    gLold = gLold + JEold.' * lamE;  gLnew = gLnew + JEnew.' * lamE;
-end
-if ~isempty(JIold)
-    gLold = gLold + JIold.' * lamI;  gLnew = gLnew + JInew.' * lamI;
-end
-yVec = gLnew - gLold;
-% Snapshot the reset counter before the update so resetFired reports THIS
-% update's recovery rather than the cumulative total.
-nResetsBefore  = readModelProp(hmodel, 'nResets');
-nRebasesBefore = readModelProp(hmodel, 'nRebases');
-accepted = hmodel.update(sVec, yVec);
-
-hinfo.secantNormS = norm(sVec);
-hinfo.secantNormY = norm(yVec);
-hinfo.secantSY    = sVec.' * yVec;
-if ~isempty(accepted) && isscalar(accepted)
-    hinfo.bfgsAccepted = double(accepted);
-end
-hinfo.bfgsNResets   = readModelProp(hmodel, 'nResets');
-hinfo.bfgsNUpdates  = readModelProp(hmodel, 'nUpdates');
-hinfo.bfgsGammaLast = readModelProp(hmodel, 'gammaLast');
-hinfo.bfgsGammaBase = readModelProp(hmodel, 'gammaBase');
-hinfo.condB         = readModelProp(hmodel, 'condLast');
-hinfo.bfgsNRejected = readModelProp(hmodel, 'nRejected');
-% True when bfgsB0Refresh is on but its refractory and learned-fraction gates
-% leave no admissible sinceRebase at this n, so the trigger is inert rather
-% than merely declining to fire.  Without this the two are indistinguishable.
-hinfo.bfgsB0RefreshUnreachable = readModelProp(hmodel, 'b0RefreshUnreachable');
-if ~isnan(hinfo.bfgsNResets) && ~isnan(nResetsBefore)
-    hinfo.bfgsResetFired = double(hinfo.bfgsNResets > nResetsBefore);
-end
-% Rebases are counted separately from resets: a reset is a conditioning fault,
-% a rebase is a deliberate response to a curvature-regime shift, and a run that
-% conflated them would read as unhealthy exactly when the trigger is working.
-nRebasesNow = readModelProp(hmodel, 'nRebases');
-if ~isnan(nRebasesNow) && ~isnan(nRebasesBefore)
-    hinfo.bfgsRebaseFired = double(nRebasesNow > nRebasesBefore);
-end
-end
-
 function ksolve = warnBfgsReset(ksolve, opts, hinfo, iter)
 %WARNBFGSRESET  Report the first BFGS conditioning recovery of the solve.
 %   Emitted from here rather than from inside BFGSHessian so the class's public
@@ -3285,7 +3224,7 @@ cols = { ...
     ... % gammaBase is the scale B actually sits on; gamma0 is the frozen
     ... % first-pair value.  Their ratio is the regime drift the B0-refresh
     ... % trigger acts on, and it is invisible from either one alone.
-    'bfgsGammaBase', 'bfgsRebaseFired', ...
+    'bfgsGammaBase', 'bfgsRebaseFired', 'bfgsSkippedShort', ...
     ... % --- H2: is the KKT linear algebra the problem?
     'delta', 'gamma', 'gammaFixA', 'tries', 'triesExhausted', ...
     'inertiaPos', 'inertiaNeg', 'inertiaZero', 'rankDeficient', 'solved', ...

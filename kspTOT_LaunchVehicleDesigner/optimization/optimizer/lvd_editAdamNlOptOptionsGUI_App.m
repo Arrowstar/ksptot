@@ -162,6 +162,7 @@ classdef lvd_editAdamNlOptOptionsGUI_App < matlab.apps.AppBase
         modeNearBdryAugJE
         useNTdecomp
         dualStepMax
+        kappaSigma
         dualCondMax
         dualCondProbeMaxDim
         lsMultiplierRefresh
@@ -251,6 +252,7 @@ classdef lvd_editAdamNlOptOptionsGUI_App < matlab.apps.AppBase
         modeSwitchStagnWindowLbl
         restStallWindowLbl
         dualStepMaxLbl
+        kappaSigmaLbl
         dualCondMaxLbl
         dualCondProbeMaxDimLbl
         lsRefreshDomRatioLbl
@@ -480,6 +482,7 @@ classdef lvd_editAdamNlOptOptionsGUI_App < matlab.apps.AppBase
             % Tab 5: Duals & Advanced
             dualRows = { ...
                 {'dualStepMax','Dual Step Max','num',[0 Inf 0]}, ...
+                {'kappaSigma','Bound-Mult. Safeguard','num',[1 Inf 0]}, ...
                 {'dualCondMax','Dual Cond. Max','num',[0 Inf 0]}, ...
                 {'dualCondProbeMaxDim','Dual Cond. Probe Max Dim.','num',[1 Inf 1]}, ...
                 {'lsMultiplierRefresh','LS Multiplier Refresh','check',[]}, ...
@@ -1106,6 +1109,9 @@ classdef lvd_editAdamNlOptOptionsGUI_App < matlab.apps.AppBase
                 'Experimental alternative step strategy. Try it only if the default KKT + line-search path struggles on your problem.');
 
             % ---- Dual (Lagrange multiplier) handling ----
+            d.kappaSigma = mk( ...
+                'After each dual step, every bound and inequality multiplier is clamped so that multiplier x distance-to-bound stays within a factor kappaSigma of the barrier parameter (Waechter-Biegler). Stops a lagging multiplier from distorting the Newton matrix for many iterations.', ...
+                'Keep 1e10 (the IPOPT value). Inf disables the safeguard.');
             d.dualStepMax = mk( ...
                 'Cap on the equality-multiplier step ||dlamE|| per step, relative to max(1, ||lamE||) -- a dual trust region (Inf disables it).', ...
                 'Load-bearing safeguard on stiff multiple-shooting / adjoint problems, where the reduced dual step can blow up along a near-singular direction. Keep it tight (10); loosening lets the multipliers random-walk upward and the optimality residual spike.');

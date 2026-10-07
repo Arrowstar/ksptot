@@ -8,6 +8,8 @@ classdef AdamNlOptReviewFixesTest < AdamNlOptTestCase
 %   Batch 2: D4, D7, D12.1, D12.2, D12.3, A2.
 %   Batch 3: D3 (the LVD dialog side is in tests/lvd_tests/AdamNlOptOptionsDialogTest),
 %            D33 (found while landing D3).
+%   Batch 4: D6, D14, D22, D23.
+%   Batch 4: D6, D14, D22, D23.
 %   (The D29 restoration resets are exercised end to end by the benchmark
 %   battery; they have no observable unit-level contract.  D13 was tried in
 %   Batch 1 and backed out: it stalled HS71 on the unpreconditioned MINRES arm,
@@ -390,7 +392,99 @@ classdef AdamNlOptReviewFixesTest < AdamNlOptTestCase
         end
     end
 
+    methods (Test)
+        %% ==== Batch 4: quasi-Newton and dual-update hygiene ================
+        function testD6AndD22FailedLineSearchesLearnNothing(testCase)
+            % FD gradients at sqrt(eps) on a 1e-4-noise objective: the gradient
+            % error (~1e-4/1.5e-8) swamps the curvature, so line searches fail
+            % (58 of 60 iterations).  At 1e-6 noise the steps collapse to 1e-10
+            % but the filter still accepts them, so lsFailed never fires.
+            % On a failed search the step is the 1e-10 creep: the Hessian model
+            % must not take the pair (D6) and the duals must not take a full
+            % Newton step (D22: aD = aP).
+            tr = testCase.noisyBoundedTrace();
+            failed = tr.lsFailed == 1 & tr.restorationFired ~= 1;
+            testCase.assumeTrue(any(failed), 'fixture produced no failed line search');
+            testCase.verifyFalse(any(tr.bfgsAccepted(failed) == 1), ...
+                'a failed line search must not feed the secant model (D6)');
+            testCase.verifyEqual(tr.aD(failed), tr.aP(failed), ...
+                'a failed line search must not take a full dual step (D22)');
+            testCase.verifyTrue(all(tr.bfgsSkippedShort(failed) == 1));
+        end
+
+        function testD14BoundMultipliersStayWithinKappaSigma(testCase)
+            p = testCase.catalogEntry('boundActive');
+            kS = 1.5;
+            ratios = [];
+            function stop = rec(info)
+                st = info.state;  stop = false;
+                if info.iteration < 1, return; end
+                fin = isfinite(info.lb);
+                ratios = [ratios; st.zL(fin) .* (st.x(fin) - info.lb(fin)) / st.mu]; %#ok<AGROW>
+            end
+            testCase.solveProblem(p, struct('kappaSigma', kS, 'autoScale', 'none', ...
+                'IterationFcn', @rec));
+            testCase.assertNotEmpty(ratios);
+            testCase.verifyLessThanOrEqual(max(ratios), kS * (1 + 1e-9));
+            testCase.verifyGreaterThanOrEqual(min(ratios), (1 / kS) * (1 - 1e-9));
+        end
+
+        function testD23PenaltyCanFallAfterABarrierDecrease(testCase)
+            p = testCase.catalogEntry('hs71');
+            out = testCase.solveProblem(p, struct('globalization', 'merit'));
+            rho = out.output.trace.rho;
+            rho = rho(isfinite(rho));
+            testCase.assumeGreaterThan(numel(rho), 3);
+            testCase.verifyTrue(any(diff(rho) < 0), ...
+                'rho must be able to fall once a barrier subproblem ends (D23)');
+            testCase.verifyGreaterThan(out.exitflag, 0);
+        end
+    end
+
+    methods (Test)
+        %% ==== Batch 4: quasi-Newton and dual-update hygiene ================
+        function testD6NoisyShortPairDoesNotReachTheModel(testCase)
+            % n = 50 BFGS model after one sane pair; then a pair whose step is
+            % far shorter than the FD step, with a pure-noise y.  BFGS alone
+            % accepts it (cond goes 1 -> ~7e6); the solver's gate must not
+            % pass it on.
+            n = 50;  rng(4);
+            B = adamnlopt.BFGSHessian(n);
+            s1 = randn(n, 1);  B.update(s1, 3 * s1);
+            Bbefore = B.getMatrix();
+            ev = testCase.evaluatorFrom(struct('objFun', @(x) sum(x.^2), ...
+                'hasObjGrad', false, 'n', n));
+            x = ones(n, 1);  s = 1e-10 * randn(n, 1);  y = 1e-6 * randn(n, 1);
+            info = AdamNlOptReviewFixesTest.callUpdate(B, s, y, ev, x, false);
+            testCase.verifyEqual(info.bfgsSkippedShort, 1);
+            testCase.verifyEqual(B.getMatrix(), Bbefore, ...
+                'a sub-resolution noise pair must leave the model untouched');
+        end
+
+        function testD6ForcedCreepIsNotLearned(testCase)
+            n = 3;
+            B = adamnlopt.BFGSHessian(n);
+            ev = testCase.evaluatorFrom(struct('objFun', @(x) sum(x.^2), ...
+                'hasObjGrad', true, 'n', n));
+            s = [0.3; -0.2; 0.1];
+            info = AdamNlOptReviewFixesTest.callUpdate(B, s, 2 * s, ev, ones(n, 1), true);
+            testCase.verifyEqual(info.bfgsSkippedShort, 1, ...
+                'a step from a failed line search is a creep, not a curvature sample');
+            info = AdamNlOptReviewFixesTest.callUpdate(B, s, 2 * s, ev, ones(n, 1), false);
+            testCase.verifyEqual(info.bfgsSkippedShort, 0, 'control: an ordinary step is learned');
+        end
+    end
+
     methods (Static)
+        function info = callUpdate(B, s, y, ev, x, forced)
+            % adamnlopt.updateHessianModel (moved out of solve.m in Batch 4 so
+            % it can be tested): a zero-constraint pair with gOld = 0 and
+            % gNew = y gives exactly (s, y).
+            n = numel(s);
+            info = adamnlopt.updateHessianModel(B, zeros(n, 1), [], [], y, [], [], ...
+                zeros(0, 1), zeros(0, 1), s, ev, x, forced);
+        end
+
         function v = stackedCon(x)
             v = [x(1) * x(2) - 1; x(1) - x(2)^2];
         end
@@ -403,6 +497,14 @@ classdef AdamNlOptReviewFixesTest < AdamNlOptTestCase
     end
 
     methods (Access = private)
+        function tr = noisyBoundedTrace(testCase)
+            fun = @(x) sum((x - 0.3).^2) + 1e-4 * sin(1e8 * sum(x));
+            o = testCase.quietOpts(struct('autoFDStep', false, 'maxIter', 60));
+            [~, ~, ~, out] = adamnlopt.solve(fun, ones(5, 1), [], [], [], [], ...
+                zeros(5, 1), 2 * ones(5, 1), [], o);
+            tr = out.trace;
+        end
+
         function ev = evaluatorFrom(~, problem, optOverrides)
             %EVALUATORFROM  Evaluator over a 2-variable sphere plus PROBLEM's fields.
             p = struct('objFun', @AdamNlOptTestCase.sphere, ...

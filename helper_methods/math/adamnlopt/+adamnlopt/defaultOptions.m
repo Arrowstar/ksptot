@@ -663,6 +663,10 @@ opts.feasAdmitFactor = 100;     % stall admission floor: feasErr <= max(gateBase
 % cond-based dual regularization (Fix A) CANNOT substitute for this: when
 % sigma_max(S) is itself tiny (~1e-2 on the orbit endgame), no bound on cond(S)
 % bounds ||S^{-1}*rpE||, so the magnitude cap is the load-bearing safeguard.
+% kappa_Sigma safeguard on the bound/slack multipliers after each dual step
+% (Waechter-Biegler 2006 eq. 16): z*gap/mu is clamped to [1/kappaSigma,
+% kappaSigma].  Inf disables it.
+opts.kappaSigma         = 1e10;
 opts.dualStepMax        = 10;    % Fix B: max ||aD*dlamE|| / max(1,||lamE||) per step
 opts.dualCondMax        = 1e8;   % Fix A: target ceiling on cond(S) after dual reg
 opts.dualCondProbeMaxDim = 400;  % skip Fix A's Schur probe when mE exceeds this
