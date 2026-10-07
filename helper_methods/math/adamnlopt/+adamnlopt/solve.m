@@ -346,7 +346,7 @@ filt = makeFilter(opts, norm(cE, 1));
 util_logger('header', opts.Display, [], opts.LogFile);
 
 exitflag = 0;  msg = 'Stopped: maximum iterations reached.';
-alpha = 0;  hessian = [];  res = [];  rho = 1;  restTheta = inf;
+alpha = 0;  hessian = [];  res = [];  rho = 1;  restFail = 0;
 % Iteration-hook visibility: the step quantities must exist (as zero/NaN
 % placeholders) at iteration 0, before any step has been computed, so the
 % per-iteration info struct can describe the last accepted step uniformly.
@@ -390,6 +390,7 @@ for iter = 0:opts.maxIter
     % restoration advances.
     if res.feas < bestFeas * (1 - 1e-3)
         bestFeas = res.feas;  feasStallCount = 0;
+        restFail = 0;   % D20: progress in the main iteration clears the count
     else
         bestFeas = min(bestFeas, res.feas);
         feasStallCount = feasStallCount + 1;
@@ -582,13 +583,25 @@ for iter = 0:opts.maxIter
         % filter on the way out (below).
         thetaPreRest = norm(cE, 1);  phiPreRest = f;
         [x, rinfo] = degeneracy_restorationPhase(ev, x, problem.lb, problem.ub, opts);
-        if rinfo.theta > opts.feasTol && ...
-                (~rinfo.reduced || rinfo.theta >= restTheta - opts.feasTol)
+        % D20: declare local infeasibility only on a certificate (restoration
+        % reached a stationary point of ||c||^2 with c ~= 0) or on two
+        % consecutive restorations that each failed to cut theta by 10%.  The
+        % old test compared against the exit theta of the PREVIOUS restoration,
+        % possibly hundreds of iterations and a long way back, so a second
+        % restoration that ended slightly higher killed a solvable run.
+        if rinfo.theta <= 0.9 * rinfo.theta0 || rinfo.theta <= opts.feasTol
+            restFail = 0;
+        else
+            restFail = restFail + 1;
+        end
+        if rinfo.theta > opts.feasTol && (rinfo.stationary || restFail >= 2)
             exitflag = -2;
             msg = 'No feasible point found (local infeasibility).';
+            if rinfo.stationary
+                msg = [msg '  Restoration reached a stationary point of the constraint violation.'];
+            end
             break;
         end
-        restTheta = rinfo.theta;
         [f, g]  = ev.objective(x);
         [cE, ~] = ev.constraints(x);
         [JE, ~] = ev.jacobian(x);
@@ -724,7 +737,7 @@ filt = makeFilter(opts, norm([cE; cI + s], 1));
 
 util_logger('header', opts.Display, [], opts.LogFile);
 
-rho = 1;  alpha = 0;  hessian = [];  res = [];  state = [];  restTheta = inf;
+rho = 1;  alpha = 0;  hessian = [];  res = [];  state = [];  restFail = 0;
 exitflag = 0;  msg = 'Stopped: maximum iterations reached.';
 ksolve = struct('Fprev', [], 'etaPrev', [], 'reg', []);
 history = struct('theta', zeros(0,1), 'alpha', zeros(0,1));
@@ -968,6 +981,7 @@ for iter = 0:opts.maxIter
     % the stall counter that gates the restoration-failure ef=-2 declaration.
     if res.feas < bestFeas * (1 - 1e-3)
         bestFeas = res.feas;  feasStallCount = 0;
+        restFail = 0;   % D20: progress in the main iteration clears the count
     else
         bestFeas = min(bestFeas, res.feas);
         feasStallCount = feasStallCount + 1;
@@ -1663,13 +1677,25 @@ for iter = 0:opts.maxIter
         thetaPreRest = norm([cE; cI + s], 1);
         phiPreRest   = barrierObj(f, s, x, lb, ub, finL, finU, mu);
         [x, rinfo] = degeneracy_restorationPhase(ev, x, lb, ub, opts);
-        if rinfo.theta > opts.feasTol && ...
-                (~rinfo.reduced || rinfo.theta >= restTheta - opts.feasTol)
+        % D20: declare local infeasibility only on a certificate (restoration
+        % reached a stationary point of ||c||^2 with c ~= 0) or on two
+        % consecutive restorations that each failed to cut theta by 10%.  The
+        % old test compared against the exit theta of the PREVIOUS restoration,
+        % possibly hundreds of iterations and a long way back, so a second
+        % restoration that ended slightly higher killed a solvable run.
+        if rinfo.theta <= 0.9 * rinfo.theta0 || rinfo.theta <= opts.feasTol
+            restFail = 0;
+        else
+            restFail = restFail + 1;
+        end
+        if rinfo.theta > opts.feasTol && (rinfo.stationary || restFail >= 2)
             exitflag = -2;
             msg = 'No feasible point found (local infeasibility).';
+            if rinfo.stationary
+                msg = [msg '  Restoration reached a stationary point of the constraint violation.'];
+            end
             break;
         end
-        restTheta = rinfo.theta;
         % Restoration projects trial points onto [lb,ub] and may land x exactly
         % on a bound.  The interior-point barrier then forms zL/(x-lb) with a
         % zero denominator, producing an Inf Hessian and a NaN Newton step.

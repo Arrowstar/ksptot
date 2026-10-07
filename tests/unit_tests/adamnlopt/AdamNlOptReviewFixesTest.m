@@ -728,6 +728,40 @@ classdef AdamNlOptReviewFixesTest < AdamNlOptTestCase
         end
     end
 
+    methods (Test)
+        %% ==== Batch 7.3: restoration (D20, A6) =============================
+        function testD20RankDeficientConsistentSystemIsRestored(testCase)
+            % cE = [x1-1; 2(x1-1); x2+3]: rank-2 J, consistent.  The l1 Armijo
+            % test on a Gauss-Newton direction had no descent guarantee here.
+            nl = @(x) deal([], [x(1) - 1; 2 * (x(1) - 1); x(2) + 3]);
+            ev = testCase.evaluatorFrom(struct('nlcon', nl, 'mEnl', 3));
+            [x, info] = adamnlopt.degeneracy_restorationPhase(ev, [5; 5], [], [], ...
+                adamnlopt.defaultOptions());
+            testCase.verifyTrue(info.reduced);
+            testCase.verifyLessThan(info.theta, 1e-6);
+            testCase.verifyEqual(x, [1; -3], 'AbsTol', 1e-6);
+            testCase.verifyFalse(info.stationary);
+        end
+
+        function testD20InconsistentSystemCarriesACertificate(testCase)
+            nl = @(x) deal([], [x(1) - 1; x(1) - 2]);
+            ev = testCase.evaluatorFrom(struct('nlcon', nl, 'mEnl', 2));
+            [~, info] = adamnlopt.degeneracy_restorationPhase(ev, [5; 5], [], [], ...
+                adamnlopt.defaultOptions());
+            testCase.verifyTrue(info.stationary, ...
+                'x1 = 1 and x1 = 2 is locally infeasible; restoration must say so');
+            testCase.verifyGreaterThan(info.theta, 0.9);
+        end
+
+        function testD20InfeasibleExitIsGroundedInTheCertificate(testCase)
+            nl = @(x) deal([], [x(1) + x(2) - 1; x(1) + x(2) - 3]);
+            [~, ~, ef, out] = adamnlopt.solve(@(x) sum(x.^2), [0.5; 0.5], [], [], ...
+                [], [], [], [], nl, testCase.quietOpts(struct()));
+            testCase.verifyEqual(ef, -2);
+            testCase.verifyNotEmpty(regexp(out.message, 'stationary point', 'once'));
+        end
+    end
+
     methods (Static)
         function info = callUpdate(B, s, y, ev, x, forced)
             % adamnlopt.updateHessianModel (moved out of solve.m in Batch 4 so
