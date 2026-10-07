@@ -18,6 +18,10 @@ classdef lvd_ConstraintTableGUI_App < matlab.apps.AppBase
     %   (Y == X between two events) the status depends only on the difference,
     %   never on how large Y and X are.
     %
+    %   "Show active only" hides every constraint the optimizer does not
+    %   evaluate: inactive constraints and constraints whose event has
+    %   optimization disabled.
+    %
     %   lvd_ConstraintTableGUI_App(lvdData, false) builds the window hidden,
     %   which the unit tests use.
 
@@ -28,6 +32,7 @@ classdef lvd_ConstraintTableGUI_App < matlab.apps.AppBase
         TitleLabel
         ConstrTable
         ButtonGrid
+        ActiveOnlyCheckBox
         RefreshButton
         EvaluateButton
         CopyButton
@@ -81,7 +86,9 @@ classdef lvd_ConstraintTableGUI_App < matlab.apps.AppBase
                 return;
             end
 
-            [data, meta] = LvdOptimTableModel.getConstraintRows(app.LvdData);
+            activeOnly = app.ActiveOnlyCheckBox.Value;
+
+            [data, meta] = LvdOptimTableModel.getConstraintRows(app.LvdData, activeOnly);
             app.RowMeta = meta;
 
             app.ConstrTable.Data = data;
@@ -106,13 +113,18 @@ classdef lvd_ConstraintTableGUI_App < matlab.apps.AppBase
             numViolated = nnz(strcmp(statuses, 'violated'));
             numMarginal = nnz(strcmp(statuses, 'marginal'));
             numUnknown = nnz(strcmp(statuses, 'unknown'));
-            if(isempty(meta))
+            if(isempty(meta) && activeOnly && not(isempty(app.LvdData.optimizer.constraints.consts)))
+                app.StatusLabel.Text = 'No active constraints.  Inactive constraints hidden.';
+            elseif(isempty(meta))
                 app.StatusLabel.Text = 'The mission has no constraints.';
             elseif(numUnknown == numel(meta))
                 app.StatusLabel.Text = 'Constraints have not been evaluated yet.  Run the script or press "Evaluate Now".';
             else
                 app.StatusLabel.Text = sprintf('%u constraint(s): %u violated, %u marginal, %u not evaluated.', ...
                                                numel(meta), numViolated, numMarginal, numUnknown);
+                if(activeOnly)
+                    app.StatusLabel.Text = [app.StatusLabel.Text, '  Inactive constraints hidden.'];
+                end
             end
         end
 
@@ -226,7 +238,7 @@ classdef lvd_ConstraintTableGUI_App < matlab.apps.AppBase
             app.ConstrTable.ColumnSortable = true;
             app.ConstrTable.RowName = {};
             app.ConstrTable.CellEditCallback = @(src, evt) onCellEdit(app, evt);
-            app.ConstrTable.Tooltip = {'Values come from the most recent constraint evaluation.  For a state comparison the bound columns show the other event''s value.  Violation cells are green when satisfied within the optimizer tolerance (scaled violation <= 1e-6), amber when the scaled violation is below 1e-3, red otherwise.  The Active column may be edited in place.'};
+            app.ConstrTable.Tooltip = {'Values come from the most recent constraint evaluation.  For a state comparison the bound columns show the other event''s value.  Violation cells are green when satisfied within the optimizer tolerance (scaled violation <= 1e-6), amber when the scaled violation is below 1e-3, red otherwise.  The Active column may be edited in place.  "Show active only" hides every constraint the optimizer does not evaluate.'};
             app.ConstrTable.Layout.Row = 2;
             app.ConstrTable.Layout.Column = 1;
 
@@ -237,37 +249,45 @@ classdef lvd_ConstraintTableGUI_App < matlab.apps.AppBase
             app.StatusLabel.Layout.Row = 3;
             app.StatusLabel.Layout.Column = 1;
 
-            app.ButtonGrid = uigridlayout(app.MainGrid, [1 4]);
-            app.ButtonGrid.ColumnWidth = {'1x', '1x', '1x', '1x'};
+            app.ButtonGrid = uigridlayout(app.MainGrid, [1 5]);
+            app.ButtonGrid.ColumnWidth = {'fit', '1x', '1x', '1x', '1x'};
             app.ButtonGrid.RowHeight = {'1x'};
             app.ButtonGrid.Padding = [0 0 0 0];
             app.ButtonGrid.Layout.Row = 4;
             app.ButtonGrid.Layout.Column = 1;
 
+            app.ActiveOnlyCheckBox = uicheckbox(app.ButtonGrid);
+            app.ActiveOnlyCheckBox.Text = 'Show active only';
+            app.ActiveOnlyCheckBox.Value = false;
+            app.ActiveOnlyCheckBox.Tooltip = {'Lists only the constraints the optimizer evaluates.  A constraint whose event has optimization disabled is hidden even when its Active box is ticked, and un-ticking Active removes a row from the view.'};
+            app.ActiveOnlyCheckBox.ValueChangedFcn = @(~,~) refresh(app);
+            app.ActiveOnlyCheckBox.Layout.Row = 1;
+            app.ActiveOnlyCheckBox.Layout.Column = 1;
+
             app.RefreshButton = uibutton(app.ButtonGrid, 'push');
             app.RefreshButton.Text = 'Refresh';
             app.RefreshButton.ButtonPushedFcn = @(~,~) refresh(app);
             app.RefreshButton.Layout.Row = 1;
-            app.RefreshButton.Layout.Column = 1;
+            app.RefreshButton.Layout.Column = 2;
 
             app.EvaluateButton = uibutton(app.ButtonGrid, 'push');
             app.EvaluateButton.Text = 'Evaluate Now';
             app.EvaluateButton.Tooltip = {'Re-evaluates every constraint against the current state log (no propagation).'};
             app.EvaluateButton.ButtonPushedFcn = @(~,~) evaluateNow(app);
             app.EvaluateButton.Layout.Row = 1;
-            app.EvaluateButton.Layout.Column = 2;
+            app.EvaluateButton.Layout.Column = 3;
 
             app.CopyButton = uibutton(app.ButtonGrid, 'push');
             app.CopyButton.Text = 'Copy to Clipboard';
             app.CopyButton.ButtonPushedFcn = @(~,~) copyToClipboard(app);
             app.CopyButton.Layout.Row = 1;
-            app.CopyButton.Layout.Column = 3;
+            app.CopyButton.Layout.Column = 4;
 
             app.CloseButton = uibutton(app.ButtonGrid, 'push');
             app.CloseButton.Text = 'Close';
             app.CloseButton.ButtonPushedFcn = @(~,~) delete(app);
             app.CloseButton.Layout.Row = 1;
-            app.CloseButton.Layout.Column = 4;
+            app.CloseButton.Layout.Column = 5;
         end
 
         function onCellEdit(app, evt)

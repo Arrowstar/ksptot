@@ -238,7 +238,7 @@ classdef LvdOptimTableModel
             LvdOptimTableModel.clearOptimCaches(lvdData);
         end
 
-        function [data, meta] = getConstraintRows(lvdData)
+        function [data, meta] = getConstraintRows(lvdData, activeOnly)
             %getConstraintRows One row per constraint in the ConstraintSet.
             %
             %   data - cell array, columns per LvdOptimTableModel.ConstrColumns
@@ -248,8 +248,13 @@ classdef LvdOptimTableModel
             %            relViol    violation relative to max(|value|, 1), for information
             %            status     'ok' | 'marginal' | 'violated' | 'unknown', judged on
             %                       the scaled violation (see classifyViolation)
+            %
+            %   activeOnly (default false) keeps only the constraints the
+            %   optimizer evaluates, i.e. the constraint's own Active flag is
+            %   set AND its event does not have optimization disabled.
             arguments
                 lvdData(1,1) LvdData
+                activeOnly(1,1) logical = false
             end
 
             constSet = lvdData.optimizer.constraints;
@@ -261,6 +266,10 @@ classdef LvdOptimTableModel
 
             for(i=1:length(consts))
                 const = consts(i);
+
+                if(activeOnly && (not(const.active) || LvdOptimTableModel.isConstraintEventOptimDisabled(const, lvdData)))
+                    continue;
+                end
 
                 event = const.getConstraintEvent();
                 if(isempty(event))

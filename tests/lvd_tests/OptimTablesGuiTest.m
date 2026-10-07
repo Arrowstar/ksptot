@@ -616,6 +616,48 @@ classdef OptimTablesGuiTest < KsptotTestCase
             testCase.verifyFalse(isvalid(app));
             notify(fx.lvdData.script, 'ScriptPropagationFinished');
         end
+
+        function constraintActiveOnlyHidesWhatTheOptimizerSkips(testCase)
+            fx = testCase.buildFixture();
+            fx = testCase.addConstraintsAndEvaluate(fx);
+            fx.constOk.active = false;
+
+            [data0, meta0] = LvdOptimTableModel.getConstraintRows(fx.lvdData);
+            testCase.assertEqual(size(data0, 1), 3);
+            [data, meta] = LvdOptimTableModel.getConstraintRows(fx.lvdData, true);
+            keep = [meta0.const] ~= fx.constOk;
+            testCase.verifyEqual(data, data0(keep, :), 'The filtered rows are exactly the unfiltered active rows.');
+            testCase.verifyEqual(meta, meta0(keep), 'meta must be filtered in lockstep with data.');
+
+            app = lvd_ConstraintTableGUI_App(fx.lvdData, false);
+            cleanup = onCleanup(@() delete(app)); %#ok<NASGU>
+
+            testCase.verifyFalse(app.ActiveOnlyCheckBox.Value, 'The filter is off by default.');
+            testCase.verifyEqual(size(app.getTableData(), 1), 3);
+
+            app.ActiveOnlyCheckBox.Value = true;
+            app.ActiveOnlyCheckBox.ValueChangedFcn([], []);
+            testCase.verifyEqual(app.getTableData(), data);
+            testCase.verifyTrue(contains(app.StatusLabel.Text, 'Inactive constraints hidden'));
+
+            %An edit through the filtered table lands on the row's own constraint.
+            r = testCase.constRow(app.getRowMeta(), fx.constComp);
+            [ok, msg] = app.applyCellEdit(r, testCase.ccol('Active'), false, true);
+            testCase.verifyTrue(ok, msg);
+            testCase.verifyFalse(fx.constComp.active);
+            testCase.verifyTrue(fx.constFixed.active);
+            testCase.verifyEqual(size(app.getTableData(), 1), 1, 'Un-ticking Active removes the row from the view.');
+
+            %The optimizer also skips constraints in optimization-disabled events.
+            fx.evt1.toggleOptimDisable(fx.lvdData);
+            app.refresh();
+            testCase.verifyEmpty(app.getTableData());
+            testCase.verifyTrue(contains(app.StatusLabel.Text, 'No active constraints'));
+
+            app.ActiveOnlyCheckBox.Value = false;
+            app.ActiveOnlyCheckBox.ValueChangedFcn([], []);
+            testCase.verifyEqual(size(app.getTableData(), 1), 3, 'Un-ticking restores every row.');
+        end
     end
 
     methods(Access=private)
