@@ -93,7 +93,11 @@ while alpha > amin
                 augment = false;  return;   % f-type step: do not augment
             end
         else
-            if thetaT <= (1 - filter.gammaTheta) * theta0 || ...
+            % theta0 > 0 on the theta-reduction branch: at a feasible point
+            % thetaT <= (1-gammaTheta)*0 reads 0 <= 0 and accepted ANY objective
+            % increase (every bounds-only problem sits at theta = 0).  There
+            % the step must at least not raise phi (D27).
+            if (theta0 > 0 && thetaT <= (1 - filter.gammaTheta) * theta0) || ...
                phiT   <= phi0 - filter.gammaPhi * theta0
                 augment = true;  return;    % theta-type step: augment
             end
@@ -109,6 +113,12 @@ end
 rho = control_penaltyUpdate(rho, multInfNorm, gd, theta0);
 phiM0 = phi0 + rho * theta0;
 dphiM = gd - rho * theta0;
+% control_penaltyUpdate can force dphiM < 0 only when theta0 > 0.  At a feasible
+% point with an ascent direction (gd >= 0: inexact or indefinite step) the Armijo
+% test phiT <= phi0 + c*alpha*dphiM would ACCEPT a merit increase.  Clamp the
+% predicted slope at zero so such a direction can only be taken where the trial
+% does not raise the merit (D27).
+dphiM = min(dphiM, 0);
 for iT = 1:nCache
     alpha  = cache(iT, 1);
     phiT   = cache(iT, 2);

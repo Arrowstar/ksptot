@@ -524,6 +524,10 @@ for iter = 0:opts.maxIter
         lamE = step_multiplierUpdate(g, JE, optW);
         if useFilter, filt.reset(); end
         Delta = opts.delta0;
+        % The last accepted step belongs to the point restoration left, not to
+        % the restored iterate.  Leaving it set let the StepTolerance exit fire
+        % at the restored point before a single step had been tried from it.
+        stepNorm = inf;
         alpha = 0;
         continue;
     end
@@ -552,6 +556,11 @@ for iter = 0:opts.maxIter
 end
 
 fval = f;  grad = g;
+% Return the secant model as it stands NOW.  `hessian` was captured at the top
+% of the last full iteration, before that iteration's secant update, so it lagged
+% the model by one pair.  (An exact/FD Hessian is left as is: recomputing it at
+% the terminal iterate would cost n extra Jacobians.)
+if ~isempty(hmodel), hessian = hmodel.getMatrix(); end
 output = makeOutput(state, res, ev, exitflag, msg);
 if ~isempty(hmodel), output.hessianModel = hmodel; end   % secant model diagnostics
 if ~isempty(trace), output.trace = trace.toStruct(); end % per-iteration trajectory
@@ -1037,7 +1046,7 @@ for iter = 0:opts.maxIter
                 restoreSnapshot(bestSnap, state);
             msg = sprintf(['%s  Returning the best iterate seen (iteration %d, ' ...
                 'feas = %.3e).'], msg, bestSnap.iter, bestSnap.res.feas);
-        elseif keepBestKKT && ef == 0 && ~isempty(bestKKT) && ...
+        elseif keepBestKKT && (ef == 0 || ef == -1) && ~isempty(bestKKT) && ...
                 bestKKT.iter ~= iter && bestKKTopt < res.opt / kktScaleFactor(state)
             % A limit exit stops mid-iteration, not at a converged point, so there
             % is no reason to prefer the last iterate over the best one -- and on an
@@ -1550,6 +1559,14 @@ for iter = 0:opts.maxIter
         end
         zL = seedBoundMult(lb, x, mu, +1, finL);
         zU = seedBoundMult(ub, x, mu, -1, finU);
+        % Re-seed the equality costates too, by the same least-squares fit as at
+        % start-up (and as the equality core does after restoration).  The old
+        % lamE belongs to the point restoration jumped away from.
+        if mE > 0
+            bSeed = g - zL + zU;
+            if ev.mI > 0, bSeed = bSeed + JI.' * lamI; end
+            lamE = step_multiplierUpdate(bSeed, JE, optW);
+        end
         if ~isempty(hmodel) && ismethod(hmodel, 'reset'), hmodel.reset(); end
         % AUGMENT the filter with the point restoration was called from -- do not
         % CLEAR it.  Waechter-Biegler add (theta_k, phi_k) to the filter before
@@ -1564,6 +1581,10 @@ for iter = 0:opts.maxIter
         % the only reset the method actually calls for.
         if useFilter, filt.augment(thetaPreRest, phiPreRest); end
         Delta = opts.delta0;
+        % The last accepted step belongs to the point restoration left, not to
+        % the restored iterate.  Leaving it set let the StepTolerance exit fire
+        % at the restored point before a single step had been tried from it.
+        stepNorm = inf;
         alpha = 0;
         continue;
     end
@@ -1614,6 +1635,11 @@ for iter = 0:opts.maxIter
 end
 
 fval = f;  grad = g;
+% Return the secant model as it stands NOW.  `hessian` was captured at the top
+% of the last full iteration, before that iteration's secant update, so it lagged
+% the model by one pair.  (An exact/FD Hessian is left as is: recomputing it at
+% the terminal iterate would cost n extra Jacobians.)
+if ~isempty(hmodel), hessian = hmodel.getMatrix(); end
 output = makeOutput(state, res, ev, exitflag, msg);
 if ~isempty(hmodel), output.hessianModel = hmodel; end   % secant model diagnostics
 if ~isempty(trace), output.trace = trace.toStruct(); end % per-iteration trajectory
@@ -1924,6 +1950,10 @@ if theta > 0
 end
 phi0 = barrierMerit(f, s, x, lb, ub, finL, finU, mu, rho, theta);
 dphi = gd - rho * theta;
+% The rho update forces dphi < 0 only when theta > 0; with theta = 0 and an
+% ascent direction (gd >= 0) the Armijo test below would accept a merit
+% increase.  Clamp at zero: such a step is taken only if it does not raise phi.
+dphi = min(dphi, 0);
 
 alpha = aMax;  amin = 1e-10;  c = 1e-4;
 while alpha > amin
@@ -2638,7 +2668,9 @@ if theta > 0
 end
 
 phi0 = f + rho * theta;
-dphi = gd - rho * theta;   % guaranteed <= 0 by the rho update
+% <= 0 by the rho update when theta > 0.  With theta = 0 and gd >= 0 (ascent
+% direction) the clamp keeps the Armijo test from accepting a merit increase.
+dphi = min(gd - rho * theta, 0);
 
 alpha = 1;  amin = 1e-10;  c = 1e-4;
 while alpha > amin

@@ -503,7 +503,9 @@ opts.divergeWindow = Inf;      % consecutive regressed iters before declaring di
 % 'bestKKT' - return the feasible iterate with the smallest scaled stationarity
 %             seen during the run, when that is strictly better than the last one.
 %
-% Only limit exits (exitflag 0: maxIter, maxFunEvals, maxTime) are affected.  A
+% Only limit exits (exitflag 0: maxIter, maxFunEvals, maxTime) and user stops
+% (exitflag -1: an IterationFcn returned true, e.g. the LVD Cancel button) are
+% affected -- a user stop is the same "halted mid-run" case.  A
 % convergence exit (1 or 2) always returns its final iterate -- that point is the
 % answer by definition, and rolling back would contradict the test that just
 % fired.  The divergence/non-finite exit (-3) always rolls back to the most
@@ -765,7 +767,10 @@ opts.modeNearBdryAugJE = false;  % promote high-confidence active inequalities t
 opts.enableBroyden    = false;  % use Broyden rank-1 updates between exact Jacobian refreshes
 opts.broydenMaxStale  = 20;     % steps before mandatory exact Jacobian refresh
 opts.broydenTol       = 0.1;    % Broyden model-error tolerance (triggers early refresh)
-opts.costThreshold    = 0.1;    % seconds: avg FD Jacobian time before auto-enabling Broyden
+opts.costThreshold    = Inf;    % seconds: avg FD Jacobian time before auto-enabling Broyden.
+%   Inf (default) keeps Broyden opt-in via enableBroyden.  The old 0.1 s turned it on
+%   for every simulation-based solve after the first Jacobian, and termination was
+%   then certified against the secant approximation (AdamNlOpt_Review_Report D1).
 
 % --- Per-iteration diagnostic trace ---
 % output.trace is a struct-of-arrays with one row per iteration, recording the

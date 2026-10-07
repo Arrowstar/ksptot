@@ -100,8 +100,11 @@ boundLb = xFull(finL) - problem.lb(finL);
 boundUb = problem.ub(finU) - xFull(finU);
 
 % --- Physical constraint violation (unscaled max over every constraint class) ---
+% boundLb/boundUb are DISTANCES to the bounds (positive inside the box); only
+% their negative part is a violation.  Adding them raw reported a variable
+% sitting mid-box in [-1,1] as a violation of 1.0.
 viol = [abs(linEq); max(linIneq, 0); abs(ceqNl); max(cNl, 0); ...
-        boundLb; boundUb];
+        max(-boundLb, 0); max(-boundUb, 0)];
 if isempty(viol)
     constrviolationPhys = 0;
 else

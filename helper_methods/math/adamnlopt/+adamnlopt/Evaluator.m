@@ -91,7 +91,7 @@ classdef Evaluator < handle
         enableBroyden   = false    % use rank-1 secant updates between refreshes
         broydenMaxStale = 20       % steps before mandatory exact refresh
         broydenTol      = 0.1     % Broyden model-error threshold for early refresh
-        costThreshold   = 0.1     % seconds: avg FD Jacobian time before auto-enable
+        costThreshold   = Inf     % seconds: avg FD Jacobian time before auto-enable (Inf = never)
         % Automatic finite-difference step calibration (autoFDStep)
         optTolForCalib = 1e-6      % optTol target for the V-curve step selection
     end
@@ -145,7 +145,11 @@ classdef Evaluator < handle
             % the way out to the LVD options dialog -- were inert for anyone who
             % did not also know to turn autoFDStep off.  An explicitly set value
             % now wins; see calibrateStep.
-            obj.fdStepUserSet = opts.FiniteDifferenceStepSize ~= sqrt(eps);
+            % Tolerant comparison, not ~=: a value that round-trips through text
+            % (the LVD options dialog writes fullAccNum2Str -> str2double) comes
+            % back 4e-23 away from sqrt(eps), and an exact test then read an
+            % untouched default as "user set", silently disabling autoFDStep.
+            obj.fdStepUserSet = abs(opts.FiniteDifferenceStepSize - sqrt(eps)) > 1e-6 * sqrt(eps);
             obj.fdTypeUserSet = ~strcmpi(opts.FiniteDifferenceType, 'forward');
             if adamnlopt.Evaluator.getOpt(opts, 'HonorBounds', true)
                 obj.fdLb = getfielddef(problem, 'lb', []);
@@ -158,7 +162,7 @@ classdef Evaluator < handle
             obj.enableBroyden   = adamnlopt.Evaluator.getOpt(opts, 'enableBroyden',   false);
             obj.broydenMaxStale = adamnlopt.Evaluator.getOpt(opts, 'broydenMaxStale',  20);
             obj.broydenTol      = adamnlopt.Evaluator.getOpt(opts, 'broydenTol',       0.1);
-            obj.costThreshold   = adamnlopt.Evaluator.getOpt(opts, 'costThreshold',    0.1);
+            obj.costThreshold   = adamnlopt.Evaluator.getOpt(opts, 'costThreshold',    Inf);
             obj.optTolForCalib  = adamnlopt.Evaluator.getOpt(opts, 'optTol', 1e-6);
         end
 
@@ -592,7 +596,15 @@ classdef Evaluator < handle
             % --- Exact Jacobian path ---
             t0 = tic;
             baseNl = [];           % stacked [c_nl; ceq_nl] at x, when computed
-            if obj.hasConGrad
+            if obj.mInl + obj.mEnl == 0
+                % No nonlinear rows: the Jacobian is just the linear blocks.  The
+                % FD branch below used to difference the EMPTY vector anyway --
+                % n user-free calls per Jacobian, n^2 per FD Hessian (2.2 million
+                % on a 600-variable bounds-only solve).
+                Jc   = zeros(0, obj.n);
+                Jceq = zeros(0, obj.n);
+                baseNl = zeros(0, 1);
+            elseif obj.hasConGrad
                 [~, ~, gc, gceq] = obj.nlcon(x);
                 obj.nCon = obj.nCon + 1;
                 Jc   = transposeOrEmpty(gc,   obj.mInl, obj.n);

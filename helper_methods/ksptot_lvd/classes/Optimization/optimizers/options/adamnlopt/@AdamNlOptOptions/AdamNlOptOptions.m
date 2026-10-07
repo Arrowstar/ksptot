@@ -30,7 +30,7 @@ classdef AdamNlOptOptions < matlab.mixin.SetGet
         objPlateauOptWindow(1,1) double = 10;
 
         %Derivatives / finite differences
-        finDiffStepSize(1,1) double = sqrt(eps);
+        finDiffStepSize(1,1) double = NaN;  %NaN -> solver default (sqrt(eps)); keeps autoFDStep armed
         finDiffType(1,1) FminconFiniteDiffTypeEnum = FminconFiniteDiffTypeEnum.TwoPtForwardDiff;
         autoFDStep(1,1) logical = true;
         honorBounds(1,1) logical = true;
@@ -53,8 +53,8 @@ classdef AdamNlOptOptions < matlab.mixin.SetGet
         krylovMethod(1,1) AdamNlOptKrylovMethodEnum = AdamNlOptKrylovMethodEnum.MinRes;
         krylovAutoDim(1,1) double = 500;
         krylovMaxIter(1,1) double = NaN;  %NaN -> sized from the problem by the solver
-        forcingEtaMax(1,1) double = 0.9;
-        forcingEtaMin(1,1) double = 1E-8;
+        forcingEtaMax(1,1) double = 1E-6;  %matches adamnlopt.defaultOptions; 0.9 stalls HS71 (see there)
+        forcingEtaMin(1,1) double = 1E-10;
         forcingGamma(1,1) double = 1;
         forcingAlpha(1,1) double = 1.618;
         precondition(1,1) AdamNlOptPrecondEnum = AdamNlOptPrecondEnum.Jacobi;
@@ -123,7 +123,7 @@ classdef AdamNlOptOptions < matlab.mixin.SetGet
         enableBroyden(1,1) logical = false;
         broydenMaxStale(1,1) double = 20;
         broydenTol(1,1) double = 0.1;
-        costThreshold(1,1) double = 0.1;
+        costThreshold(1,1) double = Inf;  %Inf: Broyden only when enableBroyden is set
 
         %Diagnostics and display
         traceLevel(1,1) double = 1;
@@ -296,6 +296,27 @@ classdef AdamNlOptOptions < matlab.mixin.SetGet
             %cases to the mode they were already getting.
             if(obj.parallel == AdamNlOptParallelEnum.Async)
                 obj.parallel = AdamNlOptParallelEnum.FiniteDiffs;
+            end
+
+            %Saved cases carry the old defaults.  Each is migrated only when it
+            %still holds the old default value, so a value the user chose is kept.
+            %  - finDiffStepSize: sqrt(eps) (exactly, or after a GUI text round
+            %    trip) becomes NaN = "solver default", which keeps autoFDStep armed.
+            %  - forcingEtaMax/Min 0.9/1e-8: the Krylov forcing clamps the solver
+            %    abandoned (0.9 stalls HS71); now 1e-6/1e-10, as in defaultOptions.
+            %  - costThreshold 0.1 s silently enabled the Broyden secant Jacobian
+            %    on every simulation-based solve; Inf keeps it opt-in.
+            if(abs(obj.finDiffStepSize - sqrt(eps)) <= 1E-6*sqrt(eps))
+                obj.finDiffStepSize = NaN;
+            end
+            if(obj.forcingEtaMax == 0.9)
+                obj.forcingEtaMax = 1E-6;
+            end
+            if(obj.forcingEtaMin == 1E-8)
+                obj.forcingEtaMin = 1E-10;
+            end
+            if(obj.costThreshold == 0.1)
+                obj.costThreshold = Inf;
             end
         end
     end

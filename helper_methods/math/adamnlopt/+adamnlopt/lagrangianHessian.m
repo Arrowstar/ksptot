@@ -25,8 +25,15 @@ function H = lagrangianHessian(ev, x, lamE, lamI, opts)
 %   See also LBFGSHESSIAN, HESSIANVECPRODUCT, SPARSITYCOLORING.
 
 if ~isempty(opts.HessianFcn)
-    lambda.eqnonlin   = lamE;
-    lambda.ineqnonlin = lamI;
+    % lamE/lamI are STACKED [linear; nonlinear] (see Evaluator.jacobian and
+    % solve>makeLambda).  fmincon's HessianFcn contract gives eqnonlin and
+    % ineqnonlin the NONLINEAR multipliers only, so strip the linear rows; a
+    % linear constraint has a zero Hessian, so dropping them is exact.  ev may
+    % be empty (unit callers with no linear constraints): strip nothing then.
+    nLinE = 0;  nLinI = 0;
+    if ~isempty(ev) && isprop(ev, 'mElin'), nLinE = ev.mElin;  nLinI = ev.mIlin; end
+    lambda.eqnonlin   = lamE(nLinE+1:end);
+    lambda.ineqnonlin = lamI(nLinI+1:end);
     H = opts.HessianFcn(x, lambda);
     H = (H + H.') / 2;
     return;

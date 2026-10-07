@@ -498,8 +498,13 @@ classdef AdamNlOptSolveTest < AdamNlOptTestCase
             % mapOptions accepts either.  The SUITE never needs the Optimization
             % Toolbox, but this one compatibility test cannot construct an
             % optimoptions object without it, so it skips rather than fails.
-            testCase.assumeTrue(license('test', 'Optimization_Toolbox') == 1, ...
-                'Optimization Toolbox not available; optimoptions input untested.');
+            % license('test') can report the toolbox present while optimoptions
+            % still cannot check out a seat, so probe the call itself.
+            try
+                optimoptions('fmincon');
+            catch
+                testCase.assumeFail('optimoptions unavailable (Optimization Toolbox not installed or no license seat); optimoptions input untested.');
+            end
             p = testCase.catalogEntry('sphere2');
             viaStruct = testCase.solveProblem(p, struct('maxIter', 7));
 
