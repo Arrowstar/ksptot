@@ -11,6 +11,7 @@ classdef AdamNlOptReviewFixesTest < AdamNlOptTestCase
 %   Batch 4: D6, D14, D22, D23.
 %   Batch 5: D10 (equality-core restoration parity), plus the equality-core
 %            part of D30 (non-finite KKT step).
+%   Batch 6: A9, D16 (sub-commit 1); D15, D17.1 (2); D5, D30 (3).
 %   (The D29 restoration resets are exercised end to end by the benchmark
 %   battery; they have no observable unit-level contract.  D13 was tried in
 %   Batch 1 and backed out: it stalled HS71 on the unpreconditioned MINRES arm,
@@ -510,6 +511,49 @@ classdef AdamNlOptReviewFixesTest < AdamNlOptTestCase
             % KKT step; it must not reach x.
             testCase.verifyTrue(all(isfinite(x)), 'a NaN step must never be taken');
             testCase.verifyEqual(ef, -2, 'x1 + x2 = 1 and = 3 are inconsistent');
+        end
+    end
+
+    methods (Test)
+        %% ==== Batch 6.1: factor plumbing (A9) and solve accuracy (D16) =====
+        function testD16ReportsTheRelativeResidual(testCase)
+            % Refinement was measured and rejected (see linalg_solveKKTdirect);
+            % the residual is kept as a diagnostic.
+            rng(11);  n = 8;  mE = 2;
+            A = randn(n);  H = A * A.' + eye(n);  JE = randn(mE, n);
+            K = [H, JE.'; JE, zeros(mE)];  rhs = randn(n + mE, 1);
+            [d, info] = adamnlopt.linalg_solveKKTdirect(K, rhs);
+            testCase.verifyEqual(info.resRel, norm(K * d - rhs, inf) / max(1, norm(rhs, inf)), ...
+                'RelTol', 1e-12);
+            testCase.verifyLessThan(info.resRel, 1e-12);
+        end
+
+        function testD16HealthySmallPivotIsNotCalledZero(testCase)
+            % Primal pivots 1e9, one constraint whose Schur pivot is -1e-4, N = 600.
+            % N*eps*1e9 = 1.3e-4 called that pivot zero; 10*eps*1e9 does not.
+            n = 599;
+            JE = sqrt(1e5 / n) * ones(1, n);
+            K = [1e9 * eye(n), JE.'; JE, 0];
+            [~, info] = adamnlopt.linalg_solveKKTdirect(K, [ones(n, 1); 1]);
+            testCase.verifyFalse(info.rankDeficient);
+            testCase.verifyEqual(info.inertia, [n 1 0]);
+        end
+
+        function testA9ResolveMatchesAFreshSolve(testCase)
+            rng(12);  n = 8;  mE = 3;
+            A = randn(n);  H = A * A.' + eye(n);  JE = randn(mE, n);
+            K = [H, JE.'; JE, -1e-8 * eye(mE)];
+            [~, info] = adamnlopt.linalg_solveKKTdirect(K, randn(n + mE, 1));
+            rhs2 = randn(n + mE, 1);
+            d2 = adamnlopt.linalg_resolveKKT(info.factors, rhs2);
+            testCase.verifyEqual(d2, K \ rhs2, 'RelTol', 1e-10);
+        end
+
+        function testD16DenseHessianGivesADenseKkt(testCase)
+            state = struct('H', eye(3), 'JE', sparse([1 1 0]), 'x', zeros(3, 1), 'lamE', 0);
+            res = struct('rStat', zeros(3, 1), 'rFeasE', 0);
+            K = adamnlopt.kkt_assemble(state, res, []);
+            testCase.verifyFalse(issparse(K), 'dense H with sparse JE must assemble a dense K');
         end
     end
 

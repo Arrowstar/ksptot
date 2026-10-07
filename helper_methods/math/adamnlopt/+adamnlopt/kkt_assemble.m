@@ -60,6 +60,14 @@ end
 % Same reasoning for the dual block: keep it sparse whenever either block it
 % joins is sparse, so a zero gamma costs O(mE) rather than an mE-by-mE dense
 % allocation per assembly.
+% A dense H with a sparse JE used to concatenate into a SPARSE K with a dense
+% (1,1) block (D16): ldl then runs MA57 on an essentially dense pattern, slower
+% than LAPACK and with threshold pivoting that can report a different inertia
+% for the same matrix.  The BFGS/L-BFGS models always return a dense H, so make
+% the whole system dense in that case.
+if ~issparse(H) && issparse(JE)
+    JE = full(JE);
+end
 if issparse(H) || issparse(JE)
     G = -gamma * speye(mE);
 else
