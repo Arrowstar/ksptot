@@ -68,6 +68,9 @@ if isempty(opts.muMin), opts.muMin = 0.1 * opts.optTol; end
 % the default to optTol makes "tighten optTol" mean what a caller expects; an
 % explicit compTol is still honoured verbatim.
 if isempty(opts.compTol), opts.compTol = opts.optTol; end
+if ~isfield(opts, 'acceptableTol') || isempty(opts.acceptableTol)
+    opts.acceptableTol = 100 * opts.optTol;    % A5
+end
 
 problem = validateProblem(fun, x0, A, b, Aeq, beq, lb, ub, nonlcon, opts);
 
@@ -353,6 +356,7 @@ alpha = 0;  hessian = [];  res = [];  rho = 1;  restFail = 0;
 dlamE = zeros(numel(lamE), 1);  aLamE = 0;
 stepNorm = inf;   % ||last accepted primal step||_inf; inf until one is taken
 bestFeas = inf;  feasStallCount = 0;  % feasibility-stall tracker (D10, as in the IP core)
+acceptCount = 0;                      % consecutive acceptable iterates (A5)
 ksolve = struct('Fprev', [], 'etaPrev', [], 'reg', []);
 history = struct('theta', zeros(0,1), 'alpha', zeros(0,1));
 Delta = opts.delta0;
@@ -396,6 +400,14 @@ for iter = 0:opts.maxIter
         feasStallCount = feasStallCount + 1;
     end
     trow.feasStallCount = feasStallCount;
+    % A5: consecutive iterations at an acceptable level.
+    if acceptableIterate(res, state, opts)
+        acceptCount = acceptCount + 1;
+    else
+        acceptCount = 0;
+    end
+    state.acceptCount = acceptCount;
+    trow.acceptCount = acceptCount;
 
     advice = modeAdvice(state, res, history, opts);
     state.mode = modeLabel(advice.mode, 'eq');
@@ -556,10 +568,12 @@ for iter = 0:opts.maxIter
         elseif useFilter
             theta0 = norm(cE, 1);  phi0 = f;  gd = g.' * dx;
             pt = @(a) phiThetaEq(ev, x, dx, a);
-            [alpha, augment, rho, lsFailed] = globalize_filterLineSearch( ...
+            [alpha, augment, rho, lsFailed, firstBlocked] = globalize_filterLineSearch( ...
                 pt, phi0, theta0, gd, filt, rho, 1, ...
                 thetaGrowCap(theta0, opts), norm(lamE + dlamE, inf));
             if augment, filt.augment(theta0, phi0); end
+            trow.filterReset = double(filt.noteFirstTrial(firstBlocked, ...
+                opts.filterResetTrigger, opts.maxFilterResets));
         else
             [alpha, rho] = lineSearch(ev, x, dx, f, g, cE, lamE + dlamE, rho);
         end
@@ -756,6 +770,7 @@ bestKKTopt = inf;  bestKKT = [];       % best-KKT snapshot (see the limit exit)
 keepBestKKT = strcmpi(opts.returnIterate, 'bestKKT');  % opt-in; default is 'last'
 fPrevObj = f;    objStallCount = 0;    % objective-plateau tracker (see terminationCheck)
 optGateCount = 0;                     % consecutive iters inside objPlateauOptTol
+acceptCount = 0;                      % consecutive acceptable iterates (A5)
 trace = makeTrace(opts, opts.maxIter);
 if ~isempty(trace)
     trace.setMeta('core', 'ip');
@@ -1066,6 +1081,14 @@ for iter = 0:opts.maxIter
         optGateCount = 0;
     end
     state.optGateCount = optGateCount;
+    % A5: consecutive iterations at an acceptable level.
+    if acceptableIterate(res, state, opts)
+        acceptCount = acceptCount + 1;
+    else
+        acceptCount = 0;
+    end
+    state.acceptCount = acceptCount;
+    trow.acceptCount = acceptCount;
     state.feasRegressCount = feasRegressCount;
     state.bestFeas = bestFeas;
 
@@ -1518,7 +1541,7 @@ for iter = 0:opts.maxIter
             % kappaThetaGrow).
             thCap = thetaGrowCap(theta0, opts);
             multN = norm([lamE + dlamE; lamI + dlamI], inf);
-            [aP, augment, rho, lsFailed] = globalize_filterLineSearch( ...
+            [aP, augment, rho, lsFailed, firstBlocked] = globalize_filterLineSearch( ...
                 pt, phi0, theta0, gd, filt, rho, aMax0, thCap, multN);
 
             % --- Second-order correction (Waechter-Biegler) ---
@@ -1613,6 +1636,8 @@ for iter = 0:opts.maxIter
             end
 
             if augment, filt.augment(theta0, phi0); end
+            trow.filterReset = double(filt.noteFirstTrial(firstBlocked, ...
+                opts.filterResetTrigger, opts.maxFilterResets));
         else
             [aP, rho] = ipLineSearch(ev, x, s, dx, ds, lb, ub, finL, finU, ...
                                      f, g, cE, cI, mu, rho, ...
@@ -2029,6 +2054,20 @@ v = zeros(0,1);
 if ~isempty(s),  v = [v; s .* lamI]; end
 if any(finL),    v = [v; dxl(finL) .* zL(finL)]; end
 if any(finU),    v = [v; dxu(finU) .* zU(finU)]; end
+end
+
+function tf = acceptableIterate(res, state, opts)
+%ACCEPTABLEITERATE  True when the iterate meets IPOPT-style acceptable levels (A5).
+%   Same scaled metrics terminationCheck uses: stationarity <= acceptableTol,
+%   feasibility <= 100*feasTol, physical violation <= constrViolTol and
+%   complementarity <= 100*compTol.
+sd = kktScaleFactor(state);
+cvTol = Inf;
+if isfield(opts, 'constrViolTol') && ~isempty(opts.constrViolTol), cvTol = opts.constrViolTol; end
+physOK = ~isfield(res, 'feasPhys') || res.feasPhys <= cvTol;
+tf = isfinite(res.opt) && res.opt / sd <= opts.acceptableTol && ...
+     res.feas <= 100 * opts.feasTol && physOK && ...
+     res.comp / sd <= 100 * opts.compTol;
 end
 
 function t = jacNoiseTol(ev, x, sc)
@@ -3383,7 +3422,7 @@ cols = { ...
     'lsFired', 'lsAdopted', 'lsOptCur', 'lsOptNew', ...
     ... % --- globalization and the barrier gate
     'lsFailed', 'filterSize', 'structStall', 'statErr', 'gateBase', ...
-    'gateRatio', 'Emu', 'nMuSteps', 'feasStallCount', 'objStallCount', 'optGateCount', ...
+    'gateRatio', 'Emu', 'nMuSteps', 'acceptCount', 'filterReset', 'feasStallCount', 'objStallCount', 'optGateCount', ...
     'feasRegressCount', 'restorationFired', ...
     ... % --- level 2 only
     'condK'};

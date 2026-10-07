@@ -1,5 +1,8 @@
-function [alpha, augment, rho, lsFailed] = globalize_filterLineSearch( ...
+function [alpha, augment, rho, lsFailed, firstBlocked] = globalize_filterLineSearch( ...
         phiTheta, phi0, theta0, gd, filter, rho, aMax, thetaCap, multInfNorm)
+%   FIRSTBLOCKED (A4) is true when the first, full-length trial was rejected by
+%   a STORED filter entry (or thetaMax) -- the signal IPOPT's filter-reset
+%   heuristic counts.
 %   theta_min comes from filter.thetaMin when set (D18), else 1e-4*max(1,theta0).
 %GLOBALIZE_FILTERLINESEARCH  Backtracking filter line search with merit backup.
 %   [alpha, augment, rho, lsFailed] = adamnlopt.globalize_filterLineSearch(
@@ -103,10 +106,14 @@ cache  = zeros(ceil(log2(max(aMax, amin) / amin)) + 2, 3);
 nCache = 0;
 
 alpha = aMax;
+firstBlocked = false;
 while alpha > amin
     [phiT, thetaT] = phiTheta(alpha);
     nCache = nCache + 1;
     cache(nCache, :) = [alpha, phiT, thetaT];
+    if nCache == 1
+        firstBlocked = ~filter.isAcceptable(thetaT, phiT);
+    end
     % D18: the theta-growth veto applies to THETA-TYPE trials only.  An f-type
     % trial (switching condition) is judged by Armijo on phi with theta free to
     % grow up to thetaMax -- that is what lets a full Newton step along a curved

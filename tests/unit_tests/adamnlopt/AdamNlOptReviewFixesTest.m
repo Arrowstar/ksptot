@@ -762,6 +762,47 @@ classdef AdamNlOptReviewFixesTest < AdamNlOptTestCase
         end
     end
 
+    methods (Test)
+        %% ==== Batch 7.4: acceptable termination (A5), filter reset (A4) ====
+        function testA5AcceptableExitOnAnFdLimitedProblem(testCase)
+            % Rosenbrock n = 10 with forward-difference gradients: optTol 1e-6
+            % is below the FD noise floor, so the solve used to stop on its
+            % step tolerance with exitflag 0 at f = 2e-10.
+            nr = 10;
+            fros = @(x) sum(100 * (x(2:end) - x(1:end-1).^2).^2 + (1 - x(1:end-1)).^2);
+            [x, f, ef, out] = adamnlopt.solve(fros, -2 * ones(nr, 1), [], [], [], [], ...
+                [], [], [], testCase.quietOpts(struct()));
+            testCase.verifyGreaterThan(ef, 0, out.message);
+            testCase.verifyLessThan(f, 1e-8);
+            testCase.verifyEqual(x, ones(nr, 1), 'AbsTol', 1e-3);
+        end
+
+        function testA5FullConvergenceStillReportsExitflagOne(testCase)
+            p = testCase.catalogEntry('hs71');
+            out = testCase.solveProblem(p, struct());
+            testCase.verifyEqual(out.exitflag, 1, 'a well-posed problem must not stop at "acceptable"');
+        end
+
+        function testA4FilterResetsAfterRepeatedFirstTrialBlocks(testCase)
+            f = adamnlopt.Filter();
+            f.augment(1, 1);
+            for k = 1:4
+                testCase.verifyFalse(f.noteFirstTrial(true, 5, 2));
+            end
+            testCase.verifyTrue(f.noteFirstTrial(true, 5, 2), 'the fifth block resets');
+            testCase.verifyEmpty(f.entries);
+            f.augment(1, 1);
+            f.noteFirstTrial(true, 5, 2);
+            f.noteFirstTrial(false, 5, 2);   % an unblocked iteration restarts the count
+            testCase.verifyEqual(f.nBlocked, 0);
+            for k = 1:5, f.noteFirstTrial(true, 5, 2); end
+            testCase.verifyEqual(f.nResets, 2);
+            f.augment(1, 1);
+            for k = 1:10, f.noteFirstTrial(true, 5, 2); end
+            testCase.verifyNotEmpty(f.entries, 'no more than maxResets resets');
+        end
+    end
+
     methods (Static)
         function info = callUpdate(B, s, y, ev, x, forced)
             % adamnlopt.updateHessianModel (moved out of solve.m in Batch 4 so

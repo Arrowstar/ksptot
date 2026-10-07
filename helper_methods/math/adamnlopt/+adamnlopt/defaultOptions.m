@@ -201,6 +201,24 @@ opts.objPlateauFtol   = 1e-5;   % "flat" = |df| <= this * max(1,|f|)
 opts.objPlateauOptTol = 3e-6;   % stationarity gate for the plateau exit (3x optTol)
 opts.objPlateauOptWindow = 10;  % consecutive iters the gate must hold (1 = touch once)
 
+% --- Acceptable-point termination (IPOPT acceptable_tol / acceptable_iter, A5) ---
+% Stop with exitflag 2 once the iterate has held an "acceptable" level for
+% acceptableIter consecutive iterations: scaled stationarity <= acceptableTol,
+% scaled feasibility <= 100*feasTol, physical violation <= constrViolTol, and
+% scaled complementarity <= 100*compTol.  A noisy or stiff problem that can
+% never meet optTol otherwise grinds to maxIter and reports exitflag 0 (or
+% stops on its step tolerance short of the gate).  [] ties acceptableTol to
+% 100*optTol in solve; acceptableIter = 0 disables the exit.
+opts.acceptableTol  = [];
+opts.acceptableIter = 15;
+
+% --- Filter reset heuristic (IPOPT filter_reset_trigger / max_filter_resets, A4) ---
+% Clear the filter's stored entries after this many consecutive iterations in
+% which a stored entry rejected the full-length trial, at most maxFilterResets
+% times per solve.  filterResetTrigger = Inf disables it.
+opts.filterResetTrigger = 5;
+opts.maxFilterResets    = 5;
+
 % --- Hessian model ---
 % 'exact' (finite-difference Hessian of the Lagrangian, or opts.HessianFcn)
 % is the default: it converges quadratically and certifies the tight KKT

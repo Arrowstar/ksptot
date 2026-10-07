@@ -36,6 +36,10 @@ classdef Filter < handle
         % Biegler 2006, section 2.4), fixed for the solve.  Inf means "derive it
         % from the current theta" for callers that never set it (legacy).
         thetaMin   = inf
+        % IPOPT-style filter reset (A4): consecutive iterations whose first
+        % trial a stored entry blocked, and how many resets have been spent.
+        nBlocked   = 0
+        nResets    = 0
         entries    = zeros(0, 2)   % rows [theta, phi]
     end
 
@@ -70,6 +74,28 @@ classdef Filter < handle
         %   Outputs:
         %     (none) obj is modified in place.
             obj.entries = zeros(0, 2);
+            obj.nBlocked = 0;
+        end
+
+        function didReset = noteFirstTrial(obj, blocked, trigger, maxResets)
+        %NOTEFIRSTTRIAL  Count first-trial blocks; clear stale entries when stuck (A4).
+        %   After TRIGGER consecutive iterations whose full step a stored entry
+        %   rejected, the entries are cleared (thetaMax and thetaMin are kept),
+        %   at most MAXRESETS times per solve.  Entries recorded at earlier
+        %   barrier parameters or before a restoration can otherwise block every
+        %   full step and force short steps for many iterations.
+            didReset = false;
+            if blocked
+                obj.nBlocked = obj.nBlocked + 1;
+            else
+                obj.nBlocked = 0;
+            end
+            if obj.nBlocked >= trigger && obj.nResets < maxResets && ~isempty(obj.entries)
+                obj.entries = zeros(0, 2);
+                obj.nBlocked = 0;
+                obj.nResets = obj.nResets + 1;
+                didReset = true;
+            end
         end
 
         function tf = isAcceptable(obj, theta, phi)

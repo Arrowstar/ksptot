@@ -105,6 +105,20 @@ if optScaled <= opts.optTol && res.feas <= opts.feasTol && physFeasOK && compSca
     msg = 'Converged: first-order optimality, feasibility, and complementarity within tolerances.';
     return;
 end
+% Acceptable-point convergence (exitflag 2, A5): the iterate has held the
+% acceptable levels (see defaultOptions) for acceptableIter consecutive
+% iterations.  The cores maintain state.acceptCount; a caller that does not
+% supply it skips the test.
+if isfield(state, 'acceptCount') && isfield(opts, 'acceptableIter') && ...
+        ~isempty(opts.acceptableIter) && opts.acceptableIter > 0 && ...
+        state.acceptCount >= opts.acceptableIter
+    stop = true;  exitflag = 2;
+    msg = sprintf(['Converged to an acceptable level: scaled optimality %.2e ' ...
+        '(acceptableTol %.1e) at a feasible point for %d consecutive iterations; ' ...
+        'optTol %.1e was not reached.'], optScaled, opts.acceptableTol, ...
+        state.acceptCount, opts.optTol);
+    return;
+end
 % Objective-plateau convergence (exitflag 2): the objective has been flat for
 % objPlateauWindow consecutive iterations at a point that is fully feasible,
 % complementary, and within the stationarity gate objPlateauOptTol.  The
@@ -196,6 +210,15 @@ if isfield(state, 'stepNorm') && ~isempty(state.stepNorm) && ...
         exitflag = 2;
         msg = sprintf(['Converged: step size %.3e is below StepTolerance %.1e at a ' ...
             'feasible point (opt = %.2e).'], state.stepNorm, opts.stepTol, optScaled);
+    elseif isfield(state, 'acceptCount') && state.acceptCount >= 1
+        % A5: the step collapsed at a point that meets the acceptable levels
+        % (see defaultOptions).  No further progress is available, and the
+        % point is as good as an acceptable-point exit would have returned.
+        exitflag = 2;
+        msg = sprintf(['Converged to an acceptable level: step size %.3e is below ' ...
+            'StepTolerance %.1e at an acceptable point (scaled optimality %.2e, ' ...
+            'acceptableTol %.1e; optTol %.1e was not reached).'], state.stepNorm, ...
+            opts.stepTol, optScaled, opts.acceptableTol, opts.optTol);
     else
         exitflag = 0;
         msg = sprintf(['Stopped: step size %.3e is below StepTolerance %.1e at a ' ...
