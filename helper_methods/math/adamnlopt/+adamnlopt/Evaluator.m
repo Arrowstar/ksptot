@@ -50,7 +50,10 @@ classdef Evaluator < handle
 %     evalNonlinearStacked - (private) stacked [c; ceq] for differencing.
 %     linIneq              - (private) linear inequality residual A*x - b.
 %     linEq                - (private) linear equality residual Aeq*x - beq.
-%     numFDevals           - (private) FD evaluation count for a gradient.
+%     nlStackedAt          - (private) [c_nl; ceq_nl] at x via the constraints cache.
+%     combinedSweep        - (private) one FD sweep for gradient + Jacobian (A2).
+%     seedCache            - fill the constraint/Jacobian caches at x (start-up).
+%     nonlinearCacheAt     - cached nonlinear values/Jacobian at x, if any.
 %     getOpt               - (static, private) option lookup with default.
 %
 %   See also EVAL_BROYDENJACOBIAN, EVAL_COSTMODEL, FINITEDIFFGRADIENT,
@@ -212,21 +215,31 @@ classdef Evaluator < handle
                     end
                     g = obj.gVal;
                 else
-                    if obj.parallelFD
-                        % Exact count from the FD routine rather than the n/2n
-                        % estimate: bounds fix, shrink and one-side individual
-                        % coordinates, so the estimate is wrong on a bounded
-                        % problem in both directions.
-                        [g, ~, fdInfo] = parallel_parallelFiniteDiff( ...
-                            @(z) obj.objFun(z), [], x, obj.fVal, [], ...
-                            obj.fdStep, obj.fdType, [], obj.fdLb, obj.fdUb);
-                        obj.nFun = obj.nFun + fdInfo.nObjEvals;
-                    else
-                        g = finiteDiffGradient(@(z) obj.objFun(z), x, obj.fVal, ...
-                                               obj.fdStep, obj.fdType, ...
-                                               obj.fdLb, obj.fdUb);
-                        obj.nFun = obj.nFun + numFDevals(obj, x);
+                    % A finite-difference gradient is cached like an analytic
+                    % one (D12.3): a second [f,g] request at the same x used to
+                    % re-spend n (or 2n) evaluations.  hasCachedG is cleared
+                    % whenever x, fdStep or fdType changes.
+                    if ~obj.hasCachedG
+                        if obj.combinedSweepApplies(x)
+                            obj.combinedSweep(x);
+                        elseif obj.parallelFD
+                            % Exact count from the FD routine rather than the
+                            % n/2n estimate: bounds fix, shrink and one-side
+                            % individual coordinates.
+                            [gFD, ~, fdInfo] = parallel_parallelFiniteDiff( ...
+                                @(z) obj.objFun(z), [], x, obj.fVal, [], ...
+                                obj.fdStep, obj.fdType, [], obj.fdLb, obj.fdUb);
+                            obj.nFun = obj.nFun + fdInfo.nObjEvals;
+                            obj.gVal = gFD;
+                        else
+                            [gFD, nEv] = finiteDiffGradient(@(z) obj.objFun(z), x, ...
+                                obj.fVal, obj.fdStep, obj.fdType, obj.fdLb, obj.fdUb);
+                            obj.nFun = obj.nFun + nEv;
+                            obj.gVal = gFD;
+                        end
+                        obj.hasCachedG = true;
                     end
+                    g = obj.gVal;
                 end
             end
         end
@@ -265,8 +278,8 @@ classdef Evaluator < handle
         %   problems (e.g. ODE integrations), whose noise floor is far above
         %   machine precision so the default step sqrt(eps) is far too small.
         %
-        %   The error is measured as a RELATIVE directional-derivative error
-        %   against a Richardson-extrapolated (O(h^4)) reference, so the choice is
+        %   The error is measured as the RELATIVE change between directional
+        %   derivatives at adjacent sweep steps (no separate reference), so the choice is
         %   invariant to how the problem is scaled -- it works whether the caller
         %   pre-normalised the problem or left it in raw units (the two regimes
         %   that defeat an absolute-noise-magnitude heuristic).  Forward
@@ -353,10 +366,16 @@ classdef Evaluator < handle
             % (without normalisation, summing nx~O(100+) coordinates makes even a
             % tiny h a huge perturbation and inverts the V-curve).
             sRng = rng;  rng(97531, 'twister');  p = randn(nx, 1);  rng(sRng);
-            svec = p .* max(1, abs(x0));
-            nsv = norm(svec);
-            if ~(nsv > 0), return; end
-            svec = svec / nsv;
+            % Normalise the random mix FIRST, then weight by max(1,|x0|), so the
+            % probe's RELATIVE length ||svec ./ max(1,|x0|)|| is exactly 1 and a
+            % sweep step h displaces each coordinate by ~h*max(1,|x0_i|) -- the
+            % same displacement finiteDiffGradient later applies for fdStep = h.
+            % Normalising AFTER weighting made the sweep displacement m_rms times
+            % smaller than the one the chosen step is used with, so in physical
+            % units (|x| >> 1) the calibrated step came out far too large (D7).
+            np = norm(p);
+            if ~(np > 0), return; end
+            svec = (p / np) .* max(1, abs(x0));
 
             hSweep = 10 .^ (-1:-1:-9);       % candidate base steps (relative)
 
@@ -564,8 +583,7 @@ classdef Evaluator < handle
             % to maintain a Broyden object that was never consulted.
             if obj.broydenActive() && ~obj.hasConGrad && ...
                     ~isempty(obj.broyden_) && ~obj.broyden_.needsRefresh()
-                [cnl, ceqnl] = obj.evalNonlinear(x);
-                cNlNew = [cnl(:); ceqnl(:)];
+                cNlNew = obj.nlStackedAt(x);   % served from the constraints cache when it holds x
                 s = x - obj.xAtJac_;
                 y = cNlNew - obj.cNlAtJac_;
                 accepted = obj.broyden_.update(s, y, cNlNew, obj.xAtJac_);
@@ -610,9 +628,11 @@ classdef Evaluator < handle
                 Jc   = transposeOrEmpty(gc,   obj.mInl, obj.n);
                 Jceq = transposeOrEmpty(gceq, obj.mEnl, obj.n);
             else
-                [cnl, ceqnl] = obj.evalNonlinear(x);
+                % Base values from the constraints cache (D12.2): every solve.m
+                % call site evaluates constraints(x) just before jacobian(x), and
+                % re-evaluating here cost one extra propagation per iteration.
+                base = obj.nlStackedAt(x);
                 h = @(z) obj.evalNonlinearStacked(z);
-                base = [cnl(:); ceqnl(:)];
                 baseNl = base;
                 if obj.parallelFD
                     [~, J, fdInfo] = parallel_parallelFiniteDiff( ...
@@ -662,9 +682,62 @@ classdef Evaluator < handle
 
             JE = obj.JEVal;  JI = obj.JIVal;
         end
+
+        function seedCache(obj, x, cnl, ceqnl, Jc, Jceq)
+        %SEEDCACHE  Install nonlinear constraint values (and Jacobian) at x.
+        %   seedCache(obj, x, cnl, ceqnl) fills the constraints cache at x;
+        %   seedCache(obj, x, cnl, ceqnl, Jc, Jceq) also fills the Jacobian cache.
+        %   The linear rows are computed here from this Evaluator's own data.
+        %   solve.m uses it to hand the scaled Evaluator the x0 values that the
+        %   physical scaling probe already paid for (D12.1); the inputs must be
+        %   in THIS Evaluator's space.
+            obj.cIVal = [obj.linIneq(x); cnl(:)];
+            obj.cEVal = [obj.linEq(x);   ceqnl(:)];
+            obj.xc = x;
+            if nargin > 4
+                obj.JIVal = [obj.Aineq;  Jc];
+                obj.JEVal = [obj.Aeqlin; Jceq];
+                obj.xj = x;
+            end
+        end
+
+        function s = nonlinearCacheAt(obj, x)
+        %NONLINEARCACHEAT  Nonlinear constraint values/Jacobian cached at exactly x.
+        %   s.hasC / s.hasJ say which are present; cnl, ceqnl, Jc, Jceq hold the
+        %   NONLINEAR rows only (linear rows stripped).
+            s = struct('hasC', false, 'cnl', [], 'ceqnl', [], ...
+                       'hasJ', false, 'Jc', [], 'Jceq', []);
+            if isequal(x, obj.xc)
+                s.hasC  = true;
+                s.cnl   = obj.cIVal(obj.mIlin+1:end);
+                s.ceqnl = obj.cEVal(obj.mElin+1:end);
+            end
+            if isequal(x, obj.xj)
+                s.hasJ = true;
+                s.Jc   = obj.JIVal(obj.mIlin+1:end, :);
+                s.Jceq = obj.JEVal(obj.mElin+1:end, :);
+            end
+        end
+
+        function set.fdStep(obj, v)
+            % A new step invalidates every finite-differenced cache entry.
+            obj.fdStep = v;
+            obj.invalidateFdCaches();
+        end
+
+        function set.fdType(obj, v)
+            obj.fdType = v;
+            obj.invalidateFdCaches();
+        end
     end
 
     methods (Access = private)
+        function invalidateFdCaches(obj)
+        %INVALIDATEFDCACHES  Drop cached derivatives that depend on fdStep/fdType.
+            if ~obj.hasObjGrad, obj.hasCachedG = false; end %#ok<MCSUP>
+            if ~obj.hasConGrad, obj.xj = []; end             %#ok<MCSUP>
+        end
+
         function v = broydenActive(obj)
         %BROYDENACTIVE  Whether secant Jacobian updates are in effect.
         %   v = broydenActive(obj) is true when Broyden mode was requested
@@ -756,18 +829,69 @@ classdef Evaluator < handle
         %     v - mElin-by-1 linear equality residual.
             if isempty(obj.Aeqlin), v = zeros(0,1); else, v = obj.Aeqlin*x - obj.beqlin; end
         end
-        function k = numFDevals(obj, ~)
-        %NUMFDEVALS  Number of function evaluations for a finite-diff gradient.
-        %   k = numFDevals(obj, x) returns 2*n for central differences and n for
-        %   forward differences. The second argument is ignored.
-        %
-        %   Inputs:
-        %     obj - the Evaluator handle object.
-        %     x   - (ignored) evaluation point placeholder.
-        %
-        %   Outputs:
-        %     k - number of extra objective evaluations used by the gradient.
-            if strcmp(obj.fdType, 'central'), k = 2*obj.n; else, k = obj.n; end
+        function base = nlStackedAt(obj, x)
+        %NLSTACKEDAT  Stacked [c_nl; ceq_nl] at x, from the constraints cache if it holds x.
+        %   On a miss the values are evaluated once and the constraints cache is
+        %   filled, so the constraints(x) call that usually follows is free.
+            if isequal(x, obj.xc)
+                base = [obj.cIVal(obj.mIlin+1:end); obj.cEVal(obj.mElin+1:end)];
+            else
+                [c, ceq] = obj.evalNonlinear(x);
+                base = [c(:); ceq(:)];
+                obj.cIVal = [obj.linIneq(x); c(:)];
+                obj.cEVal = [obj.linEq(x);   ceq(:)];
+                obj.xc = x;
+            end
+        end
+
+        function tf = combinedSweepApplies(obj, x)
+        %COMBINEDSWEEPAPPLIES  True when the gradient and Jacobian can share one FD sweep (A2).
+        %   Both derivatives must be finite-differenced, there must be nonlinear
+        %   rows, no user JacobPattern (colouring would change the probe set),
+        %   no Broyden model (it owns the Jacobian refresh schedule), and no
+        %   Jacobian already cached at x (then only the gradient is missing).
+            tf = ~obj.hasObjGrad && ~obj.hasConGrad && (obj.mInl + obj.mEnl) > 0 && ...
+                 isempty(obj.jacPattern) && ~obj.broydenActive() && ~isequal(x, obj.xj);
+        end
+
+        function combinedSweep(obj, x)
+        %COMBINEDSWEEP  One FD sweep for the objective gradient AND the constraint Jacobian (A2).
+        %   Differencing [f; c_nl; ceq_nl] once visits each probe point once.
+        %   Separately, the gradient sweep and the Jacobian sweep visited the
+        %   same n (or 2n) points twice, which defeats a caller-side same-x cache
+        %   such as LVD's propagateForX and doubles the propagations per
+        %   iteration.  Step rules are those of finiteDiffGradient and
+        %   finiteDiffJacobian (no pattern), so the derivatives are bit-identical
+        %   to the separate sweeps.  Fills gVal and the Jacobian cache at x.
+            import adamnlopt.*
+            t0 = tic;
+            base = obj.nlStackedAt(x);
+            if obj.parallelFD
+                [g, J, fdInfo] = parallel_parallelFiniteDiff( ...
+                    @(z) obj.objFun(z), @(z) obj.evalNonlinearStacked(z), x, ...
+                    obj.fVal, base, obj.fdStep, obj.fdType, [], obj.fdLb, obj.fdUb);
+                obj.nFun = obj.nFun + fdInfo.nObjEvals;
+                if fdInfo.remote
+                    obj.nCon = obj.nCon + fdInfo.nConEvals;  % local calls self-count
+                end
+            else
+                Js = finiteDiffJacobian(@(z) obj.objConStacked(z), x, [obj.fVal; base], ...
+                                        obj.fdStep, obj.fdType, [], obj.fdLb, obj.fdUb);
+                g = Js(1, :).';
+                J = Js(2:end, :);
+            end
+            obj.costModel.tick(toc(t0));
+            obj.gVal  = g(:);
+            obj.JIVal = [obj.Aineq;  J(1:obj.mInl, :)];
+            obj.JEVal = [obj.Aeqlin; J(obj.mInl+1:end, :)];
+            obj.xj = x;
+        end
+
+        function v = objConStacked(obj, z)
+        %OBJCONSTACKED  [f(z); c_nl(z); ceq_nl(z)], counting both evaluations.
+            f = obj.objFun(z);
+            obj.nFun = obj.nFun + 1;
+            v = [f; obj.evalNonlinearStacked(z)];   % evalNonlinearStacked counts nCon
         end
     end
 

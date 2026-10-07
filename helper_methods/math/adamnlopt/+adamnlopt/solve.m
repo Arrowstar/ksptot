@@ -119,15 +119,6 @@ if ~isempty(nonlcon)
     % paths.  The objective's analogous setup call is charged in allFixedResult.
     evProbe.nCon = evProbe.nCon + 1;
 end
-sc = computeScaling(solveProblem0, evProbe, opts);
-if sc.applied
-    solveProblem = scaleProblem(solveProblem0, sc);
-    ev = Evaluator(solveProblem, opts);
-else
-    solveProblem = solveProblem0;
-    ev = evProbe;
-end
-
 % --- Automatic finite-difference step calibration (transparent; see
 % estimateNoise/Evaluator.calibrateStep) ---
 % Estimate the objective/constraint noise level at x0 and set the FD step (and
@@ -166,27 +157,68 @@ end
 % where forward differencing is cancellation-dominated, and the resulting
 % gradient error moved the equality multiplier on the NT-decomposition fixture
 % from 4.0000 to 4.00013.
+% THE CALIBRATION RUNS BEFORE computeScaling (D4).  The scaling probe
+% differences the constraint Jacobian at x0 to size the row scales Dc/Di; with
+% the uncalibrated sqrt(eps) step on a simulation-based constraint (noise
+% 1e-8..1e-6) that Jacobian is mostly noise, and so were the row scales -- and
+% feasTol is applied to the row-SCALED constraints.  calibrateStep works in
+% physical space and does not read sc, so it can run first; only the transfer
+% of the step into the scaled space needs sc, and it happens below.
+output_calib = [];
 if isfield(opts,'autoFDStep') && opts.autoFDStep
     try
         output_calib = evProbe.calibrateStep(solveProblem0.x0);
-        if isstruct(output_calib) && isfield(output_calib, 'flag') && ...
-                strcmp(output_calib.flag, 'set')
+    catch
+        output_calib = [];   % advisory: never let calibration failure stop the solve
+    end
+end
+
+sc = computeScaling(solveProblem0, evProbe, opts);
+if sc.applied
+    solveProblem = scaleProblem(solveProblem0, sc);
+    ev = Evaluator(solveProblem, opts);
+else
+    solveProblem = solveProblem0;
+    ev = evProbe;
+end
+
+% --- Transfer the calibrated step into the scaled space (see above) ---
+if isstruct(output_calib)
+    try
+        if isfield(output_calib, 'flag') && strcmp(output_calib.flag, 'set')
             [fdFactor, fdSpread] = fdStepTransfer(solveProblem0.x0, sc);
         else
             fdFactor = 1;  fdSpread = 1;
         end
         ev.fdStep = evProbe.fdStep * fdFactor;
         ev.fdType = evProbe.fdType;
-        if isstruct(output_calib)
-            output_calib.scaleFactor = fdFactor;
-            output_calib.scaleSpread = fdSpread;
-            output_calib.fdStepScaled = ev.fdStep;
-        end
+        output_calib.scaleFactor = fdFactor;
+        output_calib.scaleSpread = fdSpread;
+        output_calib.fdStepScaled = ev.fdStep;
     catch
-        output_calib = [];   % advisory: never let calibration failure stop the solve
+        output_calib = [];
     end
-else
-    output_calib = [];
+end
+
+% --- Hand the scaled Evaluator what the probe already paid for at x0 (D12.1) ---
+% computeScaling differenced the constraint Jacobian at x0 (n or 2n user calls)
+% and the scaled Evaluator then started with an empty cache and differenced the
+% same point again.  Transform the probe's nonlinear values and Jacobian exactly
+% as scaleProblem transforms the functions (c_s = D.*c, J_s = (D.*J).*Dx') and
+% seed them at xs0.  Done AFTER the fdStep transfer: assigning fdStep clears the
+% derivative caches.  If the core starts elsewhere (initializeIterate pushes x0
+% off a bound) the seed simply misses; nothing extra was evaluated for it.
+if sc.applied
+    pc = evProbe.nonlinearCacheAt(solveProblem0.x0);
+    if pc.hasC
+        DcNl = sc.Dc(sc.mElin+1:end);  DiNl = sc.Di(sc.mIlin+1:end);
+        if pc.hasJ
+            ev.seedCache(solveProblem.x0, DiNl .* pc.cnl, DcNl .* pc.ceqnl, ...
+                (DiNl .* pc.Jc) .* sc.Dx.', (DcNl .* pc.Jceq) .* sc.Dx.');
+        else
+            ev.seedCache(solveProblem.x0, DiNl .* pc.cnl, DcNl .* pc.ceqnl);
+        end
+    end
 end
 
 % Scale-consistent optimality weight.  The solver runs in variable-scaled space

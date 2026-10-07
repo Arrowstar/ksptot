@@ -5,6 +5,7 @@ classdef AdamNlOptReviewFixesTest < AdamNlOptTestCase
 %   on the code before its fix.
 %
 %   Batch 1: D1.1, D2, D8.1, D9, D11.2, D11.3, D24, D26, D27, D29.
+%   Batch 2: D4, D7, D12.1, D12.2, D12.3, A2.
 %   (The D29 restoration resets are exercised end to end by the benchmark
 %   battery; they have no observable unit-level contract.  D13 was tried in
 %   Batch 1 and backed out: it stalled HS71 on the unpreconditioned MINRES arm,
@@ -187,7 +188,125 @@ classdef AdamNlOptReviewFixesTest < AdamNlOptTestCase
         end
     end
 
+    methods (Test)
+        %% ==== Batch 2: start-up pipeline ===================================
+
+        %% ---- D4: row scales measured with the calibrated step --------------
+        function testD4RowScaleIsNotSizedByFdNoise(testCase)
+            % A 1e3-gradient inequality row carrying 1e-3 high-frequency noise.
+            % Differenced with sqrt(eps) the noise dominates the row norm, so the
+            % old pipeline (scale first, calibrate after) set Di 10.6x too small
+            % (measured: Di/want = 0.094).  The calibrated step sees the true 1e3.
+            fun = @(x) sum(x.^2);
+            nl  = @(x) deal(1e3 * x(1) + 1e-3 * sin(1e7 * x(1)) - 500, []);
+            o = testCase.quietOpts(struct('maxIter', 0));
+            [~, ~, ~, out] = adamnlopt.solve(fun, [0.1; 0.2], [], [], [], [], ...
+                [-1; -1], [1; 1], nl, o);
+            testCase.assertEqual(out.fdCalibration.flag, 'set');
+            want = min(1, 1 / (1e3 * out.scaling.Dx(1)));
+            ratio = out.scaling.Di(1) / want;
+            testCase.verifyGreaterThan(ratio, 0.5, sprintf('Di off by %.3g', ratio));
+            testCase.verifyLessThan(ratio, 2, sprintf('Di off by %.3g', ratio));
+        end
+
+        %% ---- D7: calibration is invariant to variable magnitude ------------
+        function testD7CalibrationWorksInPhysicalUnits(testCase)
+            % Unit relative curvature, 1e-9 noise, variables of size 1e3..2e4.
+            % The old probe direction was m_rms times too short, so the sweep
+            % measured the wrong displacement: measured rel-err 2.0e-1 (forward,
+            % h = 1e-9) before the fix, 1.7e-7 (central, h = 1e-2) after.
+            xref = [1e4; 2e4; 1e3];
+            fobj = @(x) 0.5 * sum((x ./ xref).^2) + 1e-9 * sin(1e9 * sum((1:3).' .* x) / 2e4);
+            ev = testCase.evaluatorFrom(struct('objFun', fobj, 'hasObjGrad', false, 'n', 3));
+            x0 = 0.7 * xref;
+            ev.calibrateStep(x0);
+            [~, g] = ev.objective(x0);
+            gTrue = x0 ./ xref.^2;
+            relErr = norm(g - gTrue, inf) / norm(gTrue, inf);
+            testCase.verifyLessThan(relErr, 1e-4, ...
+                sprintf('calibrated gradient rel-err %.2e (fdStep %.1e, %s)', relErr, ev.fdStep, ev.fdType));
+        end
+
+        %% ---- D12.1: the scaled Evaluator reuses the probe's x0 Jacobian ----
+        function testD12ScaledSolveDoesNotRedifferenceX0(testCase)
+            % maxIter = 0: one probe Jacobian at x0 (base + n calls) plus the
+            % validateProblem sizing call.  The scaled core used to difference
+            % x0 again (another base + n).
+            n = 6;  calls = 0;
+            function [c, ceq] = con(x), calls = calls + 1; c = sum(x.^2) - 4; ceq = []; end
+            o = testCase.quietOpts(struct('maxIter', 0, 'autoFDStep', false));
+            [~, ~, ~, out] = adamnlopt.solve(@(x) sum((x - 0.3).^2), (1:n).' / n, ...
+                [], [], [], [], [], [], @con, o);
+            testCase.assertTrue(out.scaling.applied);
+            testCase.verifyEqual(calls, n + 2, ...
+                'x0 constraint values and Jacobian must be computed once, not twice');
+            testCase.verifyEqual(out.conCount, calls, 'conCount must match the real calls');
+        end
+
+        %% ---- D12.2: jacobian() reuses the constraints cache ----------------
+        function testD12JacobianReusesTheConstraintsCache(testCase)
+            nl = @(x) deal([], x(1)^2 + x(2)^2 - 1);
+            ev = testCase.evaluatorFrom(struct('nlcon', nl, 'mEnl', 1));
+            x = [0.3; 0.4];
+            ev.constraints(x);
+            ev.jacobian(x);
+            testCase.verifyEqual(ev.nCon, 1 + 2, 'base values must come from the cache');
+        end
+
+        %% ---- D12.3: an FD gradient is cached --------------------------------
+        function testD12FdGradientIsCachedAndInvalidatedByTheStep(testCase)
+            ev = testCase.evaluatorFrom(struct('objFun', @(x) sum(x.^3), ...
+                'hasObjGrad', false, 'n', 3));
+            x = [0.1; 0.2; 0.3];
+            [~, g1] = ev.objective(x);  n1 = ev.nFun;
+            [~, g2] = ev.objective(x);
+            testCase.verifyEqual(ev.nFun, n1, 'a second [f,g] at the same x must be free');
+            testCase.verifyEqual(g2, g1);
+            ev.fdStep = 1e-6;
+            [~, ~] = ev.objective(x);
+            testCase.verifyEqual(ev.nFun, n1 + 3, 'a new fdStep must invalidate the cached gradient');
+        end
+
+        function testD12FdGradientCountIsExactAtABound(testCase)
+            calls = 0;
+            function v = f(x), calls = calls + 1; v = sum(x.^2); end
+            x = [1; 0.5; 0.5];
+            [~, nEv] = adamnlopt.finiteDiffGradient(@f, x, f(x), 1e-6, 'central', ...
+                zeros(3, 1), ones(3, 1));
+            testCase.verifyEqual(nEv, calls - 1, 'nEvals must count the calls actually made');
+            testCase.verifyEqual(nEv, 2 * 3 - 1, 'x(1) on its upper bound is one-sided');
+        end
+
+        %% ---- A2: one sweep for gradient and Jacobian -----------------------
+        function testA2GradientAndJacobianShareOneSweep(testCase)
+            seen = zeros(2, 0);
+            function v = fobj(x), seen(:, end+1) = x; v = x(1)^2 + 3 * x(2); end
+            function [c, ceq] = con(x), seen(:, end+1) = x; c = x(1) * x(2) - 1; ceq = x(1) - x(2)^2; end
+            ev = testCase.evaluatorFrom(struct('objFun', @fobj, 'hasObjGrad', false, ...
+                'nlcon', @con, 'mInl', 1, 'mEnl', 1));
+            x = [0.7; 0.4];
+            [f0, g] = ev.objective(x);
+            [cE, cI] = ev.constraints(x);
+            nBefore = size(seen, 2);
+            [JE, JI] = ev.jacobian(x);
+            testCase.verifyEqual(size(seen, 2), nBefore, 'the Jacobian must already be cached');
+            testCase.verifyEqual(size(unique(seen.', 'rows'), 1), 1 + 2, ...
+                'each probe point must be visited by one sweep only');
+            % Bit-identical to the separate sweeps.
+            h = ev.fdStep;
+            gSep = adamnlopt.finiteDiffGradient(@(z) z(1)^2 + 3 * z(2), x, f0, h, 'forward');
+            Jsep = adamnlopt.finiteDiffJacobian(@(z) AdamNlOptReviewFixesTest.stackedCon(z), ...
+                x, [cI; cE], h, 'forward');
+            testCase.verifyEqual(g, gSep);
+            testCase.verifyEqual([JI; JE], Jsep);
+        end
+    end
+
     methods (Static)
+        function v = stackedCon(x)
+            v = [x(1) * x(2) - 1; x(1) - x(2)^2];
+        end
+
         function [c, ceq] = slowCircle(x)
             pause(0.06);
             c = [];
