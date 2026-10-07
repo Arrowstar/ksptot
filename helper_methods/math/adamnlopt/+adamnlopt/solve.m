@@ -1168,6 +1168,14 @@ for iter = 0:opts.maxIter
     % nor by a lagging bound dual at an active bound (Fix F: use the projected
     % rdMetric, matching res.opt exactly).
     statW = norm(optW .* rdMetric, inf);
+    % D13: measure the barrier error in the SAME s_d-scaled metric the
+    % termination test uses (IPOPT eqs. 5/7).  With large multipliers
+    % (s_d = 10) termination accepted statW <= 10*optTol while this gate still
+    % demanded statW <= kappaMu*mu, so near the end mu froze above compTol and
+    % comp -- which sits at mu -- could never pass.
+    sdK = kktScaleFactor(state);
+    statW = statW / sdK;
+    compErr = compErr / sdK;
     Emu = max([statW, norm(rpE, inf), norm(rpI, inf), compErr]);
     muPrev = mu;
     muOpts = opts;
@@ -1241,7 +1249,21 @@ for iter = 0:opts.maxIter
 
     muOpts.kappaMu = opts.kappaMu * kFac;
     [mu, tau] = control_barrierUpdate(mu, Emu, muOpts);
+    % D13: several barrier levels in one iteration when the current point
+    % already solves the next subproblem to its tolerance (IPOPT's loop).
+    % Only the complementarity block depends on mu, so re-testing is cheap.
+    % Each level used to cost a full KKT solve and line search.
+    nMuSteps = double(mu < muPrev);
+    while nMuSteps > 0 && nMuSteps < 5 && mu > opts.muMin
+        compNext = compInfNorm(s, lamI, dxl, zL, finL, dxu, zU, finU, mu) / sdK;
+        EmuNext = max([statW, norm(rpE, inf), norm(rpI, inf), compNext]);
+        muBefore = mu;
+        [mu, tau] = control_barrierUpdate(mu, EmuNext, muOpts);
+        if ~(mu < muBefore), break; end
+        nMuSteps = nMuSteps + 1;
+    end
     trow.tau = tau;
+    trow.nMuSteps = nMuSteps;
 
     % NOTE: there is deliberately no "barrier escape" here that forces mu down
     % when the gate holds it still for many iterations.  A frozen mu looks like
@@ -3335,7 +3357,7 @@ cols = { ...
     'lsFired', 'lsAdopted', 'lsOptCur', 'lsOptNew', ...
     ... % --- globalization and the barrier gate
     'lsFailed', 'filterSize', 'structStall', 'statErr', 'gateBase', ...
-    'gateRatio', 'Emu', 'feasStallCount', 'objStallCount', 'optGateCount', ...
+    'gateRatio', 'Emu', 'nMuSteps', 'feasStallCount', 'objStallCount', 'optGateCount', ...
     'feasRegressCount', 'restorationFired', ...
     ... % --- level 2 only
     'condK'};

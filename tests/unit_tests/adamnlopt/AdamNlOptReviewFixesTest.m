@@ -701,6 +701,33 @@ classdef AdamNlOptReviewFixesTest < AdamNlOptTestCase
         end
     end
 
+    methods (Test)
+        %% ==== Batch 7.2: barrier gate (D13) =================================
+        function testD13BarrierCanFallSeveralLevelsInOneIteration(testCase)
+            % An interior minimum: once the iterate is centred, the next barrier
+            % subproblems are already solved, and mu should fall more than one
+            % level per iteration instead of paying a KKT solve per level.
+            p = testCase.catalogEntry('boundInterior');
+            out = testCase.solveProblem(p, struct());
+            tr = out.output.trace;
+            testCase.verifyGreaterThan(out.exitflag, 0);
+            testCase.verifyGreaterThan(max(tr.nMuSteps), 1, ...
+                'mu never fell more than one level in an iteration');
+        end
+
+        function testD13NoisyBoundedProblemConverges(testCase)
+            % 1e-7-noise objective in a box (the review's noisy5 case): the
+            % unscaled barrier gate froze mu above compTol and the solve stopped
+            % on its step tolerance with exitflag 0 at opt 3.0e-6.
+            fun = @(x) sum((x - 0.3).^2) + 1e-7 * sin(1e7 * sum(x));
+            o = testCase.quietOpts(struct());
+            [x, ~, ef] = adamnlopt.solve(fun, ones(5, 1), [], [], [], [], ...
+                zeros(5, 1), 2 * ones(5, 1), [], o);
+            testCase.verifyGreaterThan(ef, 0);
+            testCase.verifyEqual(x, 0.3 * ones(5, 1), 'AbsTol', 1e-5);
+        end
+    end
+
     methods (Static)
         function info = callUpdate(B, s, y, ev, x, forced)
             % adamnlopt.updateHessianModel (moved out of solve.m in Batch 4 so
