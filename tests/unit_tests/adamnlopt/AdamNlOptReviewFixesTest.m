@@ -9,7 +9,8 @@ classdef AdamNlOptReviewFixesTest < AdamNlOptTestCase
 %   Batch 3: D3 (the LVD dialog side is in tests/lvd_tests/AdamNlOptOptionsDialogTest),
 %            D33 (found while landing D3).
 %   Batch 4: D6, D14, D22, D23.
-%   Batch 4: D6, D14, D22, D23.
+%   Batch 5: D10 (equality-core restoration parity), plus the equality-core
+%            part of D30 (non-finite KKT step).
 %   (The D29 restoration resets are exercised end to end by the benchmark
 %   battery; they have no observable unit-level contract.  D13 was tried in
 %   Batch 1 and backed out: it stalled HS71 on the unpreconditioned MINRES arm,
@@ -472,6 +473,43 @@ classdef AdamNlOptReviewFixesTest < AdamNlOptTestCase
                 'a step from a failed line search is a creep, not a curvature sample');
             info = AdamNlOptReviewFixesTest.callUpdate(B, s, 2 * s, ev, ones(n, 1), false);
             testCase.verifyEqual(info.bfgsSkippedShort, 0, 'control: an ordinary step is learned');
+        end
+    end
+
+    methods (Test)
+        %% ==== Batch 5: equality-core parity (D10) ==========================
+        function testD10EqualityRestorationKeepsTheFilter(testCase)
+            % Equality-only, so the equality core runs.  From (0.01, 0) on the
+            % unit circle the first steps stall and restoration fires.  The
+            % filter must be AUGMENTED on the way out (as the IP core has done
+            % since 517d42b3), never cleared to zero entries.
+            p = AdamNlOptTestCase.problem('linCircle', @(x) x(1) + x(2), [0.01; 0]);
+            p.hasObjGrad = false;
+            p.nonlcon = @(x) deal([], x(1)^2 + x(2)^2 - 1);
+            out = testCase.solveProblem(p, struct('maxIter', 200));
+            tr = out.output.trace;
+            testCase.assertEqual(tr.meta.core, 'eq');
+            k = find(tr.restorationFired > 0);
+            testCase.assumeNotEmpty(k, 'restoration did not fire; fixture no longer exercises D10');
+            k = k(k < numel(tr.iter));
+            testCase.verifyTrue(all(tr.filterSize(k + 1) >= 1), ...
+                'the filter must not be empty after a restoration');
+            testCase.verifyGreaterThan(out.exitflag, 0);
+            testCase.verifyEqual(out.fval, -sqrt(2), 'AbsTol', 1e-6);
+        end
+
+        function testD10EqualityCoreReportsLineSearchFailures(testCase)
+            % lsFailed used to be hard-coded false in the equality core's trace.
+            % The NaN-step case below fails its first line search.
+            nl = @(x) deal([], [x(1) + x(2) - 1; x(1) + x(2) - 3]);
+            o = testCase.quietOpts(struct('maxIter', 5));
+            [x, ~, ef, out] = adamnlopt.solve(@(x) sum(x.^2), [0.5; 0.5], [], [], ...
+                [], [], [], [], nl, o);
+            testCase.verifyEqual(out.trace.lsFailed(1), 1);
+            % D30 (equality core): an inconsistent rank-deficient JE gave a NaN
+            % KKT step; it must not reach x.
+            testCase.verifyTrue(all(isfinite(x)), 'a NaN step must never be taken');
+            testCase.verifyEqual(ef, -2, 'x1 + x2 = 1 and = 3 are inconsistent');
         end
     end
 

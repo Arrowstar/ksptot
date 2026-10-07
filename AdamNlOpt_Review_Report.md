@@ -780,6 +780,16 @@ On the battery, every changed catalog and reproduction row kept its exitflag, it
 - *New tests:* the equality-only analogue of the finding-57 fixture (exitflag > 0, fewer than 10 restorations, `filterSize` never drops to 0 on a restoration row); an equality-only problem that previously exited -2 on a transient stall.
 - *Risk:* low. The change mirrors code already proven in the IP core. Watch for any equality-only fixture that relied on the eager restoration trigger to escape.
 - *Depends on:* D29 from Batch 1 (`stepNorm` reset) already in place.
+- *As implemented:* all of D10, plus the equality-core half of D30, pulled forward from Batch 6 because gating the trigger exposed it. Equality-only probes, Batch 4 code against Batch 5:
+
+| Problem | Batch 4 | Batch 5 |
+|---|---|---|
+| `x1+x2 = 1` and `x1+x2 = 3` (inconsistent, parallel gradients) | −2 at it 0, 134 evals | −2 at it 0, 65 evals |
+| same, with the D10 gate but *without* the D30 guard | — | −3 at it 1, f = NaN |
+| `min x1+x2` on the unit circle from (0.01, 0) | 1, 11 it, 1 restoration, 159 evals | 1, 15 it, 2 restorations, 201 evals |
+| six other equality-only problems | — | bit-identical |
+
+  The inconsistent system gives a NaN KKT step. The old eager trigger restored before the step was used, which hid it. With the stall gate the NaN step was taken, so the guard was needed for Batch 5 to avoid a regression. The guard replaces a non-finite step with a zero step marked `lsFailed` and lets restoration fire immediately. The unit-circle case got slower because the gate delays the first restoration by `restStallWindow` iterations. That is the intended trade, but it is visible on easy near-degenerate starts. The IP-core half of D30 is still in Batch 6.
 
 **Batch 6: linear algebra.** Larger; split into the sub-commits below, in this order.
 1. *A9 factor plumbing.* `linalg_solveKKTdirect` returns `info.L, info.D, info.p`; new `linalg_resolveKKT(info, rhs)`. No behaviour change. Test: re-solve with a new RHS equals a fresh solve to 1e-14.

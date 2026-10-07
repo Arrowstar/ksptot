@@ -352,6 +352,7 @@ alpha = 0;  hessian = [];  res = [];  rho = 1;  restTheta = inf;
 % per-iteration info struct can describe the last accepted step uniformly.
 dlamE = zeros(numel(lamE), 1);  aLamE = 0;
 stepNorm = inf;   % ||last accepted primal step||_inf; inf until one is taken
+bestFeas = inf;  feasStallCount = 0;  % feasibility-stall tracker (D10, as in the IP core)
 ksolve = struct('Fprev', [], 'etaPrev', [], 'reg', []);
 history = struct('theta', zeros(0,1), 'alpha', zeros(0,1));
 Delta = opts.delta0;
@@ -381,6 +382,18 @@ for iter = 0:opts.maxIter
     % for the Newton-step RHS).  Inert when scaling is off (optW all ones).
     res.opt = util_norms(optW .* res.rStat);
     res.feasPhys = physViolation(cE, zeros(0,1), feasW);   % D3
+    lsFailed = false;   % set only by the filter line search below
+    stepNonFinite = false;
+    % Feasibility-progress tracker, as in the IP core (D10): >0.1% relative
+    % improvement is progress; otherwise the stall counter that gates
+    % restoration advances.
+    if res.feas < bestFeas * (1 - 1e-3)
+        bestFeas = res.feas;  feasStallCount = 0;
+    else
+        bestFeas = min(bestFeas, res.feas);
+        feasStallCount = feasStallCount + 1;
+    end
+    trow.feasStallCount = feasStallCount;
 
     advice = modeAdvice(state, res, history, opts);
     state.mode = modeLabel(advice.mode, 'eq');
@@ -526,10 +539,21 @@ for iter = 0:opts.maxIter
         trow.condK = traceCondK(trace, state, ksolve.reg);
         dx    = d(idx.x);
         dlamE = d(idx.lamE);
-        if useFilter
+        % Non-finite KKT step (D30 guard, pulled forward into Batch 5).  An
+        % inconsistent, rank-deficient JE can give a NaN step; taking any
+        % fraction of it makes x NaN and the solve exits -3 with fval NaN.  Treat
+        % it as a failed line search with a zero step, and let restoration act
+        % at once (it is not a transient stall).
+        stepNonFinite = ~all(isfinite(dx)) || ~all(isfinite(dlamE));
+        if stepNonFinite
+            dx(:) = 0;  dlamE(:) = 0;
+        end
+        if stepNonFinite
+            alpha = 0;  lsFailed = true;
+        elseif useFilter
             theta0 = norm(cE, 1);  phi0 = f;  gd = g.' * dx;
             pt = @(a) phiThetaEq(ev, x, dx, a);
-            [alpha, augment, rho] = globalize_filterLineSearch( ...
+            [alpha, augment, rho, lsFailed] = globalize_filterLineSearch( ...
                 pt, phi0, theta0, gd, filt, rho, 1, ...
                 thetaGrowCap(theta0, opts), norm(lamE + dlamE, inf));
             if augment, filt.augment(theta0, phi0); end
@@ -538,14 +562,23 @@ for iter = 0:opts.maxIter
         end
     end
 
+    % Restoration trigger, gated exactly as in the IP core (D10).  The eager
+    % trigger (any 1e-10 step or a stagnWindow theta plateau) fired on
+    % transient stalls; the IP core's comment at its own trigger documents the
+    % premature exitflag -2 that caused.  Restoration now fires only once
+    % feasibility has made no new best for restStallWindow iterations.
+    feasGenuinelyStalled = feasStallCount >= opts.restStallWindow || stepNonFinite;
     needRestoration = opts.enableRestoration && norm(cE, 1) > opts.feasTol && ...
-        (alpha <= 1e-10 || advice.suggestRestore);
+        feasGenuinelyStalled && (lsFailed || alpha <= 1e-10 || advice.suggestRestore);
     if needRestoration
         % Same reasoning as the IP core: this path CONTINUEs or BREAKs past the
         % foot-of-loop record, so record here or lose the row entirely.
         trow = finishTraceRow(trow, primaryInfo, [], alpha, NaN, NaN, rho, ...
-                              Delta, false, nSolves, 0, 1);
+                              Delta, lsFailed, nSolves, 0, 1);
         recordTrace(trace, trow);
+        % The (theta, phi) pair restoration is called FROM; it is added to the
+        % filter on the way out (below).
+        thetaPreRest = norm(cE, 1);  phiPreRest = f;
         [x, rinfo] = degeneracy_restorationPhase(ev, x, problem.lb, problem.ub, opts);
         if rinfo.theta > opts.feasTol && ...
                 (~rinfo.reduced || rinfo.theta >= restTheta - opts.feasTol)
@@ -564,7 +597,13 @@ for iter = 0:opts.maxIter
         % leaving restoration started from a dual estimate that was wrong by
         % the variable-scale spread.  Inert when scaling is off (optW all ones).
         lamE = step_multiplierUpdate(g, JE, optW);
-        if useFilter, filt.reset(); end
+        % AUGMENT the filter with the pre-restoration point, do not clear it
+        % (D10; the IP core received this fix in 517d42b3).  Clearing it threw
+        % away the only cycle-prevention mechanism, allowing a period-2
+        % restore -> jump back out -> restore loop.
+        if useFilter, filt.augment(thetaPreRest, phiPreRest); end
+        % The jump invalidates the secant history, as in the IP core.
+        if ~isempty(hmodel) && ismethod(hmodel, 'reset'), hmodel.reset(); end
         Delta = opts.delta0;
         rho = 1;   % D23: the penalty from before restoration no longer applies
         % The last accepted step belongs to the point restoration left, not to
@@ -587,14 +626,14 @@ for iter = 0:opts.maxIter
     [cE, ~] = ev.constraints(x);
     [JE, ~] = ev.jacobian(x);
     hinfo = updateHessianModel(hmodel, gOld, JEold, [], g, JE, [], ...
-                               lamE, zeros(0,1), alpha * dx, ev, x, alpha <= 1e-10);
+                               lamE, zeros(0,1), alpha * dx, ev, x, lsFailed || alpha <= 1e-10);
     ksolve = warnBfgsReset(ksolve, opts, hinfo, iter);
     history = pushHistory(history, norm(cE, 1), alpha, opts);
 
     % The equality core has no dual fraction-to-boundary rule, so aD is not a
     % quantity here; aLamE is measured against the primal alpha instead.
     trow = finishTraceRow(trow, primaryInfo, hinfo, alpha, alpha, aLamE, rho, ...
-                          Delta, false, nSolves, 0, 0);
+                          Delta, lsFailed, nSolves, 0, 0);
     recordTrace(trace, trow);
 end
 
