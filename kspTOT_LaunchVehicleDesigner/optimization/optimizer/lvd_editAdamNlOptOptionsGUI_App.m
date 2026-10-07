@@ -141,7 +141,6 @@ classdef lvd_editAdamNlOptOptionsGUI_App < matlab.apps.AppBase
         kappaThetaGrow
         useSOC
         socMax
-        socThreshold
         mu0
         muMin
         muGamma
@@ -237,7 +236,6 @@ classdef lvd_editAdamNlOptOptionsGUI_App < matlab.apps.AppBase
         globalizationLbl
         kappaThetaGrowLbl
         socMaxLbl
-        socThresholdLbl
         mu0Lbl
         muMinLbl
         muGammaLbl
@@ -444,8 +442,7 @@ classdef lvd_editAdamNlOptOptionsGUI_App < matlab.apps.AppBase
                 {'globalization','Globalization','enum','AdamNlOptGlobalizationEnum'}, ...
                 {'kappaThetaGrow','Kappa Theta Grow','num',[0 Inf 0]}, ...
                 {'useSOC','Use Second-Order Correction','check',[]}, ...
-                {'socMax','SOC Max Re-solves','num',[0 Inf 1]}, ...
-                {'socThreshold','SOC Threshold','num',[0 1 0]}};
+                {'socMax','SOC Max Re-solves','num',[0 Inf 1]}};
 
             app.ScalingTab = uitab(app.TabGroup, 'Title', 'Scaling & Globalization');
             app.ScalingTabGrid = makeTabGrid(app, app.ScalingTab, 2);
@@ -1047,9 +1044,6 @@ classdef lvd_editAdamNlOptOptionsGUI_App < matlab.apps.AppBase
             d.socMax = mk( ...
                 'Maximum successive second-order-correction re-solves per iteration.', ...
                 'More re-solves allow harder corrections at added cost per iteration. Default 4.');
-            d.socThreshold = mk( ...
-                'Trigger a second-order correction when the accepted line-search step falls below this fraction of the maximum step.', ...
-                'Advanced tuning of when SOC kicks in. Default 0.1.');
 
             % ---- Barrier ----
             d.mu0 = mk( ...

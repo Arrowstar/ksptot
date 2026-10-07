@@ -1,5 +1,8 @@
-function [alpha, augment, rho, lsFailed, firstBlocked] = globalize_filterLineSearch( ...
-        phiTheta, phi0, theta0, gd, filter, rho, aMax, thetaCap, multInfNorm)
+function [alpha, augment, rho, lsFailed, firstBlocked, thetaFirst] = globalize_filterLineSearch( ...
+        phiTheta, phi0, theta0, gd, filter, rho, aMax, thetaCap, multInfNorm, maxTrials)
+%   MAXTRIALS (optional, default Inf) caps the backtracking trials; 1 tests the
+%   step at aMax only, with the same acceptance rules (used by the second-order
+%   correction, D17.2).  THETAFIRST is the violation at the first trial.
 %   FIRSTBLOCKED (A4) is true when the first, full-length trial was rejected by
 %   a STORED filter entry (or thetaMax) -- the signal IPOPT's filter-reset
 %   heuristic counts.
@@ -67,6 +70,8 @@ import adamnlopt.*
 if nargin < 7 || isempty(aMax),        aMax = 1;        end
 if nargin < 8 || isempty(thetaCap),    thetaCap = inf;  end
 if nargin < 9 || isempty(multInfNorm), multInfNorm = 0; end
+if nargin < 10 || isempty(maxTrials),  maxTrials = inf;  end
+thetaFirst = NaN;
 
 sTheta = 1.1;  sPhi = 2.3;  delta = 1;  etaPhi = 1e-4;
 % D18: theta_min is fixed per solve (WB: 1e-4*max(1, theta(x0))).  Computing it
@@ -113,6 +118,7 @@ while alpha > amin
     cache(nCache, :) = [alpha, phiT, thetaT];
     if nCache == 1
         firstBlocked = ~filter.isAcceptable(thetaT, phiT);
+        thetaFirst = thetaT;
     end
     % D18: the theta-growth veto applies to THETA-TYPE trials only.  An f-type
     % trial (switching condition) is judged by Armijo on phi with theta free to
@@ -138,6 +144,7 @@ while alpha > amin
             end
         end
     end
+    if nCache >= maxTrials, break; end
     alpha = 0.5 * alpha;
 end
 

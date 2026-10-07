@@ -700,12 +700,14 @@ opts.trMaxInner   = 20;     % max trust-region inner iterations before fallback 
 % --- Second-order correction (Waechter-Biegler) for the filter line search ---
 % On strongly nonlinear constraints the full KKT step is rejected because
 % constraint curvature raises theta (Maratos effect), collapsing the step to
-% amin.  When the accepted step falls below socThreshold*aMax, retry with a
-% corrected direction that also cancels the constraint value at the full trial
-% point (re-solving the condensed KKT system with RHS c_soc = alpha*c + c(x+ad)).
+% amin.  When the FULL step is rejected with theta increased, try up to socMax
+% corrected directions (one trial each) that also cancel the constraint values
+% at the trial point (RHS c_soc = alpha*c + c(trial), slack rows included),
+% before ordinary backtracking -- the Waechter-Biegler order (review D17.2).
+% (socThreshold, which triggered SOC after a full backtracking collapse, was
+% removed with that change.)
 opts.useSOC       = true;   % enable second-order correction in the IP filter line search
 opts.socMax       = 4;      % max successive SOC re-solves per iteration
-opts.socThreshold = 0.1;    % trigger SOC when linesearch alpha < socThreshold * aMax
 
 % --- Least-squares equality-multiplier refresh ---
 % Near the central-path floor the Newton-accumulated equality multipliers

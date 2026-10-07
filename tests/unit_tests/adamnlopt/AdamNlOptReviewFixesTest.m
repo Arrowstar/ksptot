@@ -803,6 +803,33 @@ classdef AdamNlOptReviewFixesTest < AdamNlOptTestCase
         end
     end
 
+    methods (Test)
+        %% ==== Batch 7.5: second-order correction order (D17.2, D17.3) =====
+        function testD17SocCorrectsTheRejectedFullStep(testCase)
+            % Maratos-type problem in the IP core: the full Newton step along
+            % the circle raises theta.  SOC must be tried right after that first
+            % rejection, one trial per correction, and adopted.  Before 7.5 SOC
+            % ran only after a full backtracking collapse, never adopted on this
+            % problem, and the solve took 13 iterations / 300 evaluations.
+            fun = @(x) 2 * (x(1)^2 + x(2)^2 - 1) - x(1);
+            p = AdamNlOptTestCase.problem('maratos', fun, [cos(0.8); sin(0.8)]);
+            p.hasObjGrad = false;
+            p.nonlcon = @(x) deal([], x(1)^2 + x(2)^2 - 1);
+            p.lb = [-5; -5];  p.ub = [5; 5];
+            out = testCase.solveProblem(p, struct('maxIter', 100));
+            testCase.verifyEqual(out.exitflag, 1);
+            testCase.verifyEqual(out.fval, -1, 'AbsTol', 1e-6);
+            testCase.verifyGreaterThan(nansum(out.output.trace.socAdopted), 0, ...
+                'a second-order correction must be adopted on the Maratos problem');
+            testCase.verifyLessThanOrEqual(out.output.funcCount, 150);
+        end
+
+        function testD17SocThresholdOptionIsGone(testCase)
+            testCase.verifyFalse(isfield(adamnlopt.defaultOptions(), 'socThreshold'), ...
+                'socThreshold no longer does anything and must not be offered');
+        end
+    end
+
     methods (Static)
         function info = callUpdate(B, s, y, ev, x, forced)
             % adamnlopt.updateHessianModel (moved out of solve.m in Batch 4 so

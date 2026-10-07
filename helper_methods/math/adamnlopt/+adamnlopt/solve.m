@@ -1541,36 +1541,35 @@ for iter = 0:opts.maxIter
             % kappaThetaGrow).
             thCap = thetaGrowCap(theta0, opts);
             multN = norm([lamE + dlamE; lamI + dlamI], inf);
-            [aP, augment, rho, lsFailed, firstBlocked] = globalize_filterLineSearch( ...
-                pt, phi0, theta0, gd, filt, rho, aMax0, thCap, multN);
-
-            % --- Second-order correction (Waechter-Biegler) ---
-            % A collapsed step (aP << aMax0) on strongly nonlinear constraints
-            % is the Maratos effect: the full step is rejected because the
-            % constraint curvature raises theta.  Retry with a corrected
-            % direction that also cancels the constraint value at the full
-            % trial point, re-solving the condensed KKT system with the
-            % modified RHS c_soc = alpha*c + c(x + alpha*dx).
-            if opts.useSOC && aMax0 > 1e-6 && aP < opts.socThreshold * aMax0
-                aFTB  = aMax0;
-                cSocE = rpE;                       % accumulates alpha*c + c(trial)
+            % Waechter-Biegler order (D17.2/D17.3): try the FULL step alone;
+            % if it is rejected with theta increased, try up to socMax second-
+            % order corrections, ONE evaluation each, along the corrected
+            % direction and with the slack rows corrected too; only then
+            % backtrack from aMax0/2.  The old code ran the whole backtracking
+            % search first and then a full line search per correction --
+            % ~140 extra evaluations on a bad iteration -- and corrected only
+            % the equality rows, along the uncorrected direction.
+            [aP, augment, rho, lsFailed, firstBlocked, thFirst] = globalize_filterLineSearch( ...
+                pt, phi0, theta0, gd, filt, rho, aMax0, thCap, multN, 1);
+            if lsFailed && opts.useSOC && aMax0 > 1e-6 && thFirst >= theta0
+                aFTB = aMax0;  dirX = dx;  dirS = ds;
+                cSocE = rpE;  cSocI = rpI;       % WB accumulation: alpha*c + c(trial)
+                thPrevTrial = thFirst;
                 for socIt = 1:opts.socMax                                       %#ok<FORPERM>
-                    xt = x + aFTB * dx;
-                    [cEt, ~] = ev.constraints(xt);
-                    cSocE = aFTB * cSocE + cEt;    % WB constraint accumulation
-                    % Re-solve the condensed KKT with the corrected constraint
-                    % RHS.  Only the RHS changes, so re-use the primary step's
-                    % factorization (D17.1): this used to re-assemble, re-run
-                    % the O(n^3) Fix-A probe and re-factor up to socMax times
-                    % per iteration -- with a regularization that had decayed
-                    % since, so the SOC direction was not even the correction
-                    % of the same Newton matrix.
+                    xt = x + aFTB * dirX;  st = s + aFTB * dirS;
+                    [cEt, cIt] = ev.constraints(xt);
+                    cSocE = aFTB * cSocE + cEt;
+                    r1C = r1;
+                    if ev.mI > 0
+                        cSocI = aFTB * cSocI + (cIt + st);
+                        r1C = rd + corrL - corrU + JI.' * (sigS .* cSocI - rc_s ./ s);
+                    end
                     if isfield(ksolve, 'factors') && ~isempty(ksolve.factors)
-                        dS   = linalg_resolveKKT(ksolve.factors, -[r1; cSocE]);
+                        dS   = linalg_resolveKKT(ksolve.factors, -[r1C; cSocE]);
                         idxS = ksolve.factorIdx;
                     else
                         cstateS = struct('H', W, 'JE', JE, 'x', x, 'lamE', lamE);
-                        cresS   = struct('rStat', r1, 'rFeasE', cSocE);
+                        cresS   = struct('rStat', r1C, 'rFeasE', cSocE);
                         [dS, idxS, ksolve] = detectStep(cstateS, cresS, n, mE, opts, ksolve);
                         nFactorizations = nFactorizations + 1;
                     end
@@ -1579,42 +1578,28 @@ for iter = 0:opts.maxIter
                     dlamEC = dS(idxS.lamE);
                     if ev.mI > 0
                         JIdxC  = JI * dxC;
-                        dsC    = -rpI - JIdxC;
-                        dlamIC = sigS .* (JIdxC + rpI) - rc_s ./ s;
+                        dsC    = -cSocI - JIdxC;
+                        dlamIC = sigS .* (JIdxC + cSocI) - rc_s ./ s;
                     else
                         dsC    = zeros(0,1);
                         dlamIC = zeros(0,1);
                     end
                     dzLC = zeros(n,1);  dzLC(finL) = -corrL(finL) - sigL(finL) .* dxC(finL);
                     dzUC = zeros(n,1);  dzUC(finU) = -corrU(finU) + sigU(finU) .* dxC(finU);
-                    % Fraction-to-boundary cap for the corrected primal direction.
                     aC = 1;
                     if ev.mI > 0,   aC = min(aC, step_fractionToBoundary(s, dsC, tau)); end
                     if any(finL),   aC = min(aC, step_fractionToBoundary(dxl(finL), dxC(finL), tau)); end
                     if any(finU),   aC = min(aC, step_fractionToBoundary(dxu(finU), -dxC(finU), tau)); end
                     ptC = @(a) phiThetaIP(ev, x, s, dxC, dsC, lb, ub, finL, finU, mu, a);
-                    % Directional derivative of phi along the CORRECTED direction.
-                    % Passing the uncorrected gd made every Armijo and switching
-                    % test inside the line search use the wrong slope -- and
-                    % believe gd < 0 even when dxC is an ascent direction.
+                    % Directional derivative along the CORRECTED direction.
                     gdC = g.' * dxC ...
                           - mu * ( sumBarrierDir(dsC, s) ...
                                    + sumBarrierDir(dxC(finL), x(finL) - lb(finL)) ...
                                    - sumBarrierDir(dxC(finU), ub(finU) - x(finU)) );
-                    [aTrial, augmentC, rhoC, lsFailedC] = globalize_filterLineSearch( ...
-                        ptC, phi0, theta0, gdC, filt, rho, aC, thCap, multN);
-                    % Adopt only when the correction is genuinely better.  A
-                    % LONGER step is not by itself an improvement: the line search
-                    % always returns something, so "aTrial > aP" is a bar the
-                    % corrected direction clears almost automatically -- which is
-                    % how SOC could manufacture a large step precisely when the
-                    % ordinary one had collapsed.  Require the corrected trial to
-                    % have actually succeeded and to not worsen feasibility.
-                    [~, thAdopt] = ptC(aTrial);
-                    if aTrial > aP && ~lsFailedC && thAdopt <= theta0
-                        % SOC succeeded: adopt the corrected direction.  The
-                        % adopted step now comes from the CORRECTED solve, so
-                        % that solve's conditioning is the one describing it.
+                    % One trial at aC, same acceptance rules as the main search.
+                    [aTrial, augmentC, rhoC, lsFailedC, ~, thC] = globalize_filterLineSearch( ...
+                        ptC, phi0, theta0, gdC, filt, rho, aC, thCap, multN, 1);
+                    if ~lsFailedC
                         primaryInfo = ksolve.last;
                         socAdopted = 1;
                         aP = aTrial;  augment = augmentC;  rho = rhoC;
@@ -1627,12 +1612,17 @@ for iter = 0:opts.maxIter
                         if any(finU),   aD = min(aD, step_fractionToBoundary(zU(finU), dzU(finU), tau)); end
                         break;
                     end
-                    % No improvement: continue correcting only if the corrected
-                    % full step at least reduces theta; otherwise abandon SOC.
-                    [~, thC] = ptC(aC);
-                    if thC >= theta0, break; end
-                    aFTB = aC;
+                    % WB abort rule: stop correcting unless the correction cut
+                    % theta by kappa_soc = 0.99 relative to the previous trial.
+                    if ~(thC < 0.99 * thPrevTrial), break; end
+                    thPrevTrial = thC;
+                    aFTB = aC;  dirX = dxC;  dirS = dsC;
                 end
+            end
+            if lsFailed && ~socAdopted
+                % Ordinary backtracking from half the full step.
+                [aP, augment, rho, lsFailed] = globalize_filterLineSearch( ...
+                    pt, phi0, theta0, gd, filt, rho, 0.5 * aMax0, thCap, multN);
             end
 
             if augment, filt.augment(theta0, phi0); end
