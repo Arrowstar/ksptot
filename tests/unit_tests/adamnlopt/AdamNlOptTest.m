@@ -1667,12 +1667,16 @@ classdef AdamNlOptTest < matlab.unittest.TestCase
             filt = adamnlopt.Filter();
             % theta above thetaCap: every trial is vetoed in both loops, so the
             % search runs the full backtracking sequence twice if it recomputes.
+            % theta0 = 1 (above theta_min) keeps every trial THETA-type: since
+            % review D18 the cap no longer vetoes f-type trials.
             [alpha, ~, ~, lsFailed] = adamnlopt.globalize_filterLineSearch( ...
-                @(a) countingPhiTheta(a, counter, 1), 0, 0, -1, filt, 1, 1, 0.5, 0);
+                @(a) countingPhiTheta(a, counter, 1), 0, 1, -1, filt, 1, 1, 0.5, 0);
 
             testCase.verifyTrue(lsFailed);
-            % 1, 1/2, ... down to the amin = 1e-10 floor: 34 trials, once each.
-            testCase.verifyEqual(counter('n'), 34);
+            % 1, 1/2, ... down to the WB alpha_min (D18): gamma_alpha *
+            % min(gamma_theta, gamma_phi*theta0/(-gd)) = 5e-7, so 21 trials,
+            % once each (34 under the old 1e-10 floor).
+            testCase.verifyEqual(counter('n'), 21);
             testCase.verifyEqual(alpha, 1e-10);
         end
 

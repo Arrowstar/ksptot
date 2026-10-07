@@ -12,6 +12,7 @@ classdef AdamNlOptReviewFixesTest < AdamNlOptTestCase
 %   Batch 5: D10 (equality-core restoration parity), plus the equality-core
 %            part of D30 (non-finite KKT step).
 %   Batch 6: A9, D16 (sub-commit 1); D15, D17.1 (2); D5, D30 (3).
+%   Batch 7: D18 (7.1); D13 (7.2); D20, A6 (7.3); A4, A5 (7.4); D17.2/3 (7.5).
 %   (The D29 restoration resets are exercised end to end by the benchmark
 %   battery; they have no observable unit-level contract.  D13 was tried in
 %   Batch 1 and backed out: it stalled HS71 on the unpreconditioned MINRES arm,
@@ -659,6 +660,44 @@ classdef AdamNlOptReviewFixesTest < AdamNlOptTestCase
             testCase.verifyEqual(info.tries, 0, 'no regularization ladder on a non-finite K');
             testCase.verifyFalse(info.solved);
             testCase.verifyTrue(all(isfinite(d)));
+        end
+    end
+
+    methods (Test)
+        %% ==== Batch 7.1: filter line search (D18) ==========================
+        function testD18CurvedFullStepIsAnFTypeAccept(testCase)
+            % Feasible start, descent direction, theta grows quadratically along
+            % a curved constraint.  The theta-growth cap (1e-4 here) used to veto
+            % the f-type trial too and backtrack to ~0.1.
+            phiTheta = @(a) deal(10 - a, 1e-2 * a^2);
+            [alpha, augment, ~, lsFailed] = adamnlopt.globalize_filterLineSearch( ...
+                phiTheta, 10, 0, -1, adamnlopt.Filter(), 1, 1, 1e-4);
+            testCase.verifyFalse(lsFailed);
+            testCase.verifyEqual(alpha, 1, 'the full step satisfies Armijo and the switching rule');
+            testCase.verifyFalse(augment, 'an f-type accept does not augment the filter');
+        end
+
+        function testD18AlphaMinCutsAStalledSearchShort(testCase)
+            calls = 0;
+            function [phi, theta] = worse(a), calls = calls + 1; phi = 10 + a; theta = 1 + a; end
+            [alpha, ~, ~, lsFailed] = adamnlopt.globalize_filterLineSearch( ...
+                @worse, 10, 1, -1, adamnlopt.Filter(), 1);
+            testCase.verifyTrue(lsFailed);
+            testCase.verifyLessThanOrEqual(alpha, 1e-10, 'the forced creep is unchanged');
+            testCase.verifyLessThanOrEqual(calls, 22, sprintf( ...
+                'a stalled search must stop at the WB alpha_min (%d trials)', calls));
+        end
+
+        function testD18ThetaMinComesFromTheFilter(testCase)
+            % theta0 = 0.3 is below a solve-level thetaMin of 0.5, so the step
+            % is f-type (no augment).  With thetaMin computed from the current
+            % theta (1e-4) the same step was theta-type and augmented.
+            f = adamnlopt.Filter();  f.thetaMin = 0.5;
+            phiTheta = @(a) deal(10 - a, 0.3);
+            [alpha, augment] = adamnlopt.globalize_filterLineSearch( ...
+                phiTheta, 10, 0.3, -1, f, 1);
+            testCase.verifyEqual(alpha, 1);
+            testCase.verifyFalse(augment);
         end
     end
 

@@ -764,6 +764,18 @@ On the battery, every changed catalog and reproduction row kept its exitflag, it
 
 *As implemented:* `constrViolTol = 1e-4` (the proposed default; no other value was specified) and `autoScaleMaxGradient = 100`, both exposed in `AdamNlOptOptions` and the LVD options dialog. `output.constrViolation`, `info.constrviolation` (and so the LVD progress display, `optimValues.constrviolation` and the recorder's `maxCVal`) are now physical; the scaled values are `output.constrViolationScaled` and `info.constrviolationScaled`. A new LVD UI test, `tests/lvd_tests/AdamNlOptOptionsDialogTest.m`, opens the dialog headlessly, checks the new controls, and pins that a no-edit Save changes no option (D2 end to end). Landing the row-scaling cap exposed **D33** (below): the step-size exit declared convergence before the barrier was finished. It is fixed in this batch.
 
+*Batch 3 result* (commit `e7fb9e8c`, `batch3\compare_vs_batch2.txt`). Catalog: HS71 takes one more iteration (9 → 10) and `circleEq` 4 more evaluations; every exitflag and answer is unchanged. LVD examples (`maxIter = 30`, `maxTime = 900 s`):
+
+| Case | Batch 2 | Batch 3 |
+|---|---|---|
+| SimpleHohmannTransfer | exitflag 2 (step-size exit) | exitflag 1 (true convergence; the D33 gate) |
+| SpinLaunchOptimization | −2, violation 8.0e-3 | −2, violation 3.0e-4 |
+| MunarFlybyContinuityConstraint | 0, violation 2.2e-2, f = −0.009 | 0, violation 3.3e-4, f = −0.145 |
+| MunarLanding | −2, violation 1.0 | −2, violation 1.0 |
+| TwoStageToOrbit | 0, violation 1.8 | 0, violation 12.9 |
+
+  TwoStageToOrbit is worse at the 30-iteration, time-limited cut-off. It is the one LVD case where Batch 3 hurt, and the likeliest cause is the row-scaling cap (`autoScaleMaxGradient = 100` leaves rows with gradients in [1, 100] unscaled, which changes the conditioning of this 14-variable problem). **Open item:** re-run TwoStageToOrbit to convergence with `autoScaleMaxGradient = 1` against the default before Batch 10 settles LVD defaults. This capture's wall times are not comparable with earlier ones: unit-suite runs shared the machine.
+
 **Batch 4: quasi-Newton and dual-update hygiene.**
 - *Items, in commit order:* D6 (short-pair gate in `updateHessianModel` and skip the update when `lsFailed` or `aP <= 1e-10`), D22 (`aD = aP` on a failed line search), D14 (κ_Σ = 1e10 clamp on `zL`, `zU`, `lamI` after the dual step), D23 (non-monotone ρ, or reset ρ on every mu decrease, and guard the `gd/theta` term with `theta > feasTol`).
 - *Files:* `solve.m` (`updateHessianModel` signature and both call sites, the dual update block at `:1583-1587`, `ipLineSearch`, `lineSearch`, the NT ρ updates), `control_penaltyUpdate.m`, `BFGSHessian.m`/`LBFGSHessian.m` only if a `minStep` property is preferred over the caller-side gate.

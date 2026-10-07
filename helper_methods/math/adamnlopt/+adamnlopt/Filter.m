@@ -32,6 +32,10 @@ classdef Filter < handle
         gammaTheta = 1e-5
         gammaPhi   = 1e-5
         thetaMax   = inf
+        % Switching threshold theta_min = 1e-4*max(1, theta(x0)) (Waechter-
+        % Biegler 2006, section 2.4), fixed for the solve.  Inf means "derive it
+        % from the current theta" for callers that never set it (legacy).
+        thetaMin   = inf
         entries    = zeros(0, 2)   % rows [theta, phi]
     end
 

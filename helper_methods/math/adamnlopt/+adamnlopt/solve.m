@@ -474,6 +474,7 @@ for iter = 0:opts.maxIter
         % near-feasible point are f-type steps — accept on TR ratio alone,
         % no filter augmentation (analogous to globalize_filterLineSearch line 35).
         thetaMinNT = 1e-4 * max(1, theta0);
+        if useFilter, thetaMinNT = filt.thetaMin; end   % D18
         [JE_eff, cE_eff] = augmentForNearBoundary( ...
             JE, cE, zeros(0, numel(x)), zeros(0,1), advice, state, opts);
         stepAccepted = false;  alpha = 1;
@@ -1324,6 +1325,7 @@ for iter = 0:opts.maxIter
         theta_IP0 = norm([cE; cI + s], 1);
         phi0_bar  = barrierObj(f, s, x, lb, ub, finL, finU, mu);
         thetaMinNT_IP = 1e-4 * max(1, theta_IP0);
+        if useFilter, thetaMinNT_IP = filt.thetaMin; end   % D18
         [JE_eff, cE_eff] = augmentForNearBoundary(JE, cE, JI, cI, advice, state, opts);
         stepAccepted = false;  aP = 1;
         dx = zeros(n,1);  dlamE = zeros(mE,1);
@@ -2262,6 +2264,8 @@ if strcmpi(opts.globalization, 'filter')
     % room to move.  It is a coarse backstop -- the per-step growth veto
     % (kappaThetaGrow) is the primary guard.
     filt = Filter([], [], max(1e4 * theta0, 1e6 * opts.feasTol));
+    % D18: WB's switching threshold, fixed for the solve from theta(x0).
+    filt.thetaMin = 1e-4 * max(1, theta0);
 else
     filt = [];
 end
