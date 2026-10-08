@@ -373,11 +373,29 @@ classdef Evaluator < handle
             % Normalising AFTER weighting made the sweep displacement m_rms times
             % smaller than the one the chosen step is used with, so in physical
             % units (|x| >> 1) the calibrated step came out far too large (D7).
+            % Leave out coordinates on (or within a 1e-6 relative step of) a
+            % bound.  Any of them capped the symmetric sweep below at h ~ 0 and
+            % abandoned calibration ('boundLimited') whenever the point touched
+            % the box -- LVD's x0 sits 10*eps inside its bounds, and restoration
+            % projects onto them (lvdExample_MunarLanding: 3 of 20 variables on
+            % a bound, sqrt(eps) step kept, restoration stalled on the FD
+            % Jacobian).  The FD routines take one-sided steps there anyway.
+            if ~isempty(obj.fdLb) || ~isempty(obj.fdUb)
+                lbc = obj.fdLb;  ubc = obj.fdUb;
+                if isempty(lbc), lbc = -inf(nx, 1); end
+                if isempty(ubc), ubc =  inf(nx, 1); end
+                room = min(x0 - lbc(:), ubc(:) - x0) ./ max(1, abs(x0));
+                p(room < 1e-6) = 0;
+            end
+            hSweep = 10 .^ (-1:-1:-9);       % candidate base steps (relative)
+            if ~any(p)                       % every coordinate is pinned by the box
+                info.flag = 'boundLimited';  info.hMax = 0;
+                info.nSweepDropped = numel(hSweep);
+                return;
+            end
             np = norm(p);
             if ~(np > 0), return; end
             svec = (p / np) .* max(1, abs(x0));
-
-            hSweep = 10 .^ (-1:-1:-9);       % candidate base steps (relative)
 
             % Keep the sweep inside the box.  Both probes x0 +- h*svec are taken,
             % so the largest usable h is the distance to the nearer bound along

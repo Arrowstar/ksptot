@@ -608,12 +608,18 @@ for iter = 0:opts.maxIter
         % old test compared against the exit theta of the PREVIOUS restoration,
         % possibly hundreds of iterations and a long way back, so a second
         % restoration that ended slightly higher killed a solvable run.
-        if rinfo.theta <= 0.9 * rinfo.theta0 || rinfo.theta <= opts.feasTol
+        % A stationarity certificate is a strike, not an immediate exit: it is
+        % local to where restoration stopped, and the main iteration may still
+        % move off it.  On lvdExample_MunarLanding (5 of 13 variables on a
+        % bound) an immediate exit stopped the run at violation 9.5e-2 where
+        % riding on reached 7.3e-3.
+        if (rinfo.theta <= 0.9 * rinfo.theta0 && ~rinfo.stationary) || ...
+                rinfo.theta <= opts.feasTol
             restFail = 0;
         else
             restFail = restFail + 1;
         end
-        if rinfo.theta > opts.feasTol && (rinfo.stationary || restFail >= 2)
+        if rinfo.theta > opts.feasTol && restFail >= 2
             exitflag = -2;
             msg = 'No feasible point found (local infeasibility).';
             if rinfo.stationary
@@ -1703,12 +1709,18 @@ for iter = 0:opts.maxIter
         % old test compared against the exit theta of the PREVIOUS restoration,
         % possibly hundreds of iterations and a long way back, so a second
         % restoration that ended slightly higher killed a solvable run.
-        if rinfo.theta <= 0.9 * rinfo.theta0 || rinfo.theta <= opts.feasTol
+        % A stationarity certificate is a strike, not an immediate exit: it is
+        % local to where restoration stopped, and the main iteration may still
+        % move off it.  On lvdExample_MunarLanding (5 of 13 variables on a
+        % bound) an immediate exit stopped the run at violation 9.5e-2 where
+        % riding on reached 7.3e-3.
+        if (rinfo.theta <= 0.9 * rinfo.theta0 && ~rinfo.stationary) || ...
+                rinfo.theta <= opts.feasTol
             restFail = 0;
         else
             restFail = restFail + 1;
         end
-        if rinfo.theta > opts.feasTol && (rinfo.stationary || restFail >= 2)
+        if rinfo.theta > opts.feasTol && restFail >= 2
             exitflag = -2;
             msg = 'No feasible point found (local infeasibility).';
             if rinfo.stationary

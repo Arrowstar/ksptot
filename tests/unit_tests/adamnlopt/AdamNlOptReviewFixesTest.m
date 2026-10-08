@@ -755,6 +755,59 @@ classdef AdamNlOptReviewFixesTest < AdamNlOptTestCase
             testCase.verifyGreaterThan(info.theta, 0.9);
         end
 
+        function testA7RestorationRecalibratesANoiseLimitedJacobian(testCase)
+            % 1e-5 high-frequency "simulation noise" on a consistent linear
+            % system: at sqrt(eps) the FD Jacobian is ~100x wrong, every
+            % restoration step failed Armijo and theta stalled at 10.6.  As on
+            % lvdExample_SpinLaunchOptimization, which then exited -2.
+            nz = @(x) 1e-5 * sin(1e7 * x(1) + 3e6 * x(2));
+            nl = @(x) deal([], [x(1) - 1 + nz(x); x(2) + 3 + nz(x)]);
+            ev = testCase.evaluatorFrom(struct('nlcon', nl, 'mEnl', 2));
+            [~, info] = adamnlopt.degeneracy_restorationPhase(ev, [5; 5], [], [], ...
+                adamnlopt.defaultOptions());
+            testCase.verifyTrue(info.fdRecalibrated);
+            testCase.verifyLessThan(info.theta, 1e-4);
+            testCase.verifyFalse(info.stationary);
+        end
+
+        function testA7CalibrationRunsAtAPointOnABound(testCase)
+            % One coordinate on its bound capped the symmetric sweep at h = 0 and
+            % returned 'boundLimited' with the sqrt(eps) step kept, so neither
+            % LVD's x0 (10*eps inside the box) nor a restoration iterate
+            % (projected onto it) was ever calibrated.
+            fn = @(x) (x(1) - 1)^2 + (x(2) - 2)^2 + 1e-6 * sin(1e8 * x(1) + 7e7 * x(2));
+            ev = testCase.evaluatorFrom(struct('objFun', fn, 'hasObjGrad', false, ...
+                'lb', [0; -10], 'ub', [10; 10]));
+            info = ev.calibrateStep([0; 1]);
+            testCase.verifyEqual(info.flag, 'set');
+            testCase.verifyGreaterThan(ev.fdStep, 1e-5, 'the 1e-6 noise needs a large step');
+        end
+
+        function testD20RestorationHoldsAVariableOnItsBound(testCase)
+            % 100*x1 + x2 + 1 = 0 with x1 >= 0, from x = 0 (on the bound).  The
+            % bound-blind step pointed mostly out of the box; projected, it made
+            % no progress (theta stayed 1).  Holding x1 restores via x2.
+            nl = @(x) deal([], 100 * x(1) + x(2) + 1);
+            ev = testCase.evaluatorFrom(struct('nlcon', nl, 'mEnl', 1));
+            [x, info] = adamnlopt.degeneracy_restorationPhase(ev, [0; 0], [0; -inf], ...
+                [inf; inf], adamnlopt.defaultOptions());
+            testCase.verifyLessThan(info.theta, 1e-6);
+            testCase.verifyEqual(x, [0; -1], 'AbsTol', 1e-6);
+            testCase.verifyFalse(info.stationary);
+        end
+
+        function testD20BoundInfeasibleSystemCarriesACertificate(testCase)
+            % Adding x1 = x2 makes it infeasible in the box (x1 = -1/101 < 0).
+            % The bound-blind step spun 50 iterations with no verdict; the
+            % free-variable certificate fires at the least-violation point.
+            nl = @(x) deal([], [100 * x(1) + x(2) + 1; x(1) - x(2)]);
+            ev = testCase.evaluatorFrom(struct('nlcon', nl, 'mEnl', 2));
+            [x, info] = adamnlopt.degeneracy_restorationPhase(ev, [0; 0], [0; -inf], ...
+                [inf; inf], adamnlopt.defaultOptions());
+            testCase.verifyTrue(info.stationary);
+            testCase.verifyEqual(x, [0; -0.5], 'AbsTol', 1e-3);
+        end
+
         function testD20InfeasibleExitIsGroundedInTheCertificate(testCase)
             nl = @(x) deal([], [x(1) + x(2) - 1; x(1) + x(2) - 3]);
             [~, ~, ef, out] = adamnlopt.solve(@(x) sum(x.^2), [0.5; 0.5], [], [], ...

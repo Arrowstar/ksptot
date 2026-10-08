@@ -69,8 +69,12 @@ end
 % fields unset, so a first-iteration exit returned an INFO struct with no .iters
 % at all and any caller that read it errored.
 info = struct('iters', 0, 'theta0', theta0, 'theta', theta0, ...
-              'reduced', false, 'evals', 0, 'budgetHit', false, 'stationary', false);
+              'reduced', false, 'evals', 0, 'budgetHit', false, 'stationary', false, ...
+              'fdRecalibrated', false);
 
+% A7 in restoration: re-calibrate the FD step at most once per call.
+canRecal = isfield(opts, 'autoFDStep') && opts.autoFDStep && ~ev.hasConGrad && ...
+    isprop(ev, 'fdStep');
 nStag = 0;
 for it = 1:maxIt
     if ev.totalEvals() >= evCap
@@ -92,8 +96,18 @@ for it = 1:maxIt
     % ground the caller's exitflag -2.
     gc = J.' * cvec;
     nc2 = norm(cvec);
+    % Bound-aware: a variable ON a bound whose descent component -gc points out
+    % of the box is held fixed, and both the step and the certificate use the
+    % free variables only.  The bound-blind step projected onto the box was not
+    % a descent direction: on lvdExample_MunarFlybyContinuityConstraint one
+    % variable at its bound carried 69% of dx, the projected step predicted a
+    % 1.7% INCREASE of ||c||^2, every Armijo trial failed, and the ratio test
+    % below certified local infeasibility on a feasible problem.
+    free = ~((x <= lb & gc > 0) | (x >= ub & gc < 0));
+    J(:, ~free) = 0;
+    gc(~free)   = 0;
     nJ  = norm(J, 'fro');
-    % Scale-free stationarity: the cosine between c and range(J).
+    % Scale-free stationarity: the cosine between c and range(J) (free part).
     statRatio = norm(gc) / max(realmin, nJ * nc2);
     if statRatio <= 1e-8
         info.stationary = true;
@@ -148,6 +162,19 @@ for it = 1:maxIt
     end
 
     info.iters = it;
+    % A7: no sufficient decrease along a direction the Jacobian says is a
+    % STRONG descent direction (c far from orthogonal to range(J)) means the
+    % Jacobian disagrees with the function -- on a simulation-based constraint,
+    % an FD step below the noise floor.  Measured on lvdExample_SpinLaunch-
+    % Optimization: constraint noise ~1e-5, calibrated forward step 5e-7 from x0,
+    % FD Jacobian 100% off; with a central step >= 1e-5 the same step cut ||c||
+    % 0.177 -> 0.111.  Re-calibrate here (the step persists for the main
+    % iteration, which differenced the same constraints) and retry.
+    if ~accepted && statRatio > 1e-2 && canRecal && ~info.fdRecalibrated
+        ev.calibrateStep(x);
+        info.fdRecalibrated = true;
+        continue;
+    end
     % No sufficient decrease along a descent direction for ||c||^2: if c is
     % also nearly orthogonal to range(J), this is the infeasible stationary
     % point (the Armijo test gives up there long before ||J'c|| reaches 0).
