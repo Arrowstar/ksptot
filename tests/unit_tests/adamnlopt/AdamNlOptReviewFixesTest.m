@@ -904,6 +904,34 @@ classdef AdamNlOptReviewFixesTest < AdamNlOptTestCase
         end
     end
 
+    methods (Test)
+        %% ==== Batch 9.1: failed evaluations (D21) ============================
+        function testD21FailedEvaluationIsRejectedNotAccepted(testCase)
+            % nlcon returns scalar NaNs for x1 > 0.9, as LVD's ConstraintSet
+            % does when a propagation fails.  The first step landed there, and
+            % the NaN point was ACCEPTED (max() skips NaN, so it read feas 0)
+            % and the solve sat on it to maxIter.
+            x1 = (0.1 + sqrt(1.99)) / 2;
+            [x, f, ef] = adamnlopt.solve(@(x) -x(1) - x(2), [0.3; 0.2], [], [], [], [], ...
+                [-2; -2], [2; 2], @failsBeyond09, testCase.quietOpts(struct()));
+            testCase.verifyGreaterThan(ef, 0);
+            testCase.verifyEqual(x, [x1; x1 - 0.1], 'AbsTol', 1e-6);
+            testCase.verifyEqual(f, -(2 * x1 - 0.1), 'AbsTol', 1e-6);
+        end
+
+        function testD21FdProbeIntoAFailureRegionRetriesTheOtherSide(testCase)
+            % At x1 = 0.9 - 1e-10 the forward probe fails.  The Jacobian
+            % column was Inf/NaN (and a wrong-sized return crashed it with
+            % "incompatible sizes"); it must come from the backward probe.
+            ev = testCase.evaluatorFrom(struct('nlcon', @failsBeyond09, ...
+                'mInl', 2, 'mEnl', 1));
+            x = [0.9 - 1e-10; 0.2];
+            [JE, JI] = ev.jacobian(x);
+            testCase.verifyEqual(JI, [2 * x.'; -1 0], 'AbsTol', 1e-6);
+            testCase.verifyEqual(JE, [1 -1], 'AbsTol', 1e-6);
+        end
+    end
+
     methods (Access = private)
         function tr = noisyBoundedTrace(testCase)
             fun = @(x) sum((x - 0.3).^2) + 1e-4 * sin(1e8 * sum(x));
@@ -930,4 +958,11 @@ classdef AdamNlOptReviewFixesTest < AdamNlOptTestCase
             ev = adamnlopt.Evaluator(p, opts);
         end
     end
+end
+
+function [c, ceq] = failsBeyond09(x)
+% Disk, sign and a linear equality; a "failed simulation" beyond x1 = 0.9.
+if x(1) > 0.9, c = NaN;  ceq = NaN;  return; end
+c = [x(1)^2 + x(2)^2 - 1; -x(1)];
+ceq = x(1) - x(2) - 0.1;
 end

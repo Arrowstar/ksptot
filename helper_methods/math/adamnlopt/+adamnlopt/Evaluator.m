@@ -128,7 +128,10 @@ classdef Evaluator < handle
         %
         %   Outputs:
         %     obj - the constructed Evaluator handle object.
-            obj.objFun     = problem.objFun;
+            % D21: a NaN objective (a failed simulation) becomes +Inf here, so
+            % every merit/filter test rejects the point instead of max() and
+            % the filter comparisons silently treating NaN as acceptable.
+            obj.objFun     = guardObjective(problem.objFun);
             obj.hasObjGrad = problem.hasObjGrad;
             obj.nlcon      = problem.nlcon;
             obj.hasConGrad = problem.hasConGrad;
@@ -230,12 +233,14 @@ classdef Evaluator < handle
                                 @(z) obj.objFun(z), [], x, obj.fVal, [], ...
                                 obj.fdStep, obj.fdType, [], obj.fdLb, obj.fdUb);
                             obj.nFun = obj.nFun + fdInfo.nObjEvals;
-                            obj.gVal = gFD;
+                            obj.gVal = obj.fdRetryNonFinite(@(z) obj.objFun(z), ...
+                                x, obj.fVal, gFD(:).', true).';
                         else
                             [gFD, nEv] = finiteDiffGradient(@(z) obj.objFun(z), x, ...
                                 obj.fVal, obj.fdStep, obj.fdType, obj.fdLb, obj.fdUb);
                             obj.nFun = obj.nFun + nEv;
-                            obj.gVal = gFD;
+                            obj.gVal = obj.fdRetryNonFinite(@(z) obj.objFun(z), ...
+                                x, obj.fVal, gFD(:).', true).';
                         end
                         obj.hasCachedG = true;
                     end
@@ -668,6 +673,7 @@ classdef Evaluator < handle
                     J = finiteDiffJacobian(h, x, base, obj.fdStep, obj.fdType, ...
                                            obj.jacPattern, obj.fdLb, obj.fdUb);
                 end
+                J = obj.fdRetryNonFinite(h, x, base, J, false);
                 Jc   = J(1:obj.mInl, :);
                 Jceq = J(obj.mInl+1:end, :);
             end
@@ -751,6 +757,36 @@ classdef Evaluator < handle
     end
 
     methods (Access = private)
+        function M = fdRetryNonFinite(obj, fun, x, base, M, countObj)
+        %FDRETRYNONFINITE  Re-difference non-finite FD columns from the other side (D21).
+        %   A probe that lands where the user function fails (an LVD propagation
+        %   that impacts or runs out of mass) returns +Inf (see guardObjective
+        %   and evalNonlinear), which turns its whole column into Inf or NaN.
+        %   Retry each such column one-sided, opposite side first; a column that
+        %   stays non-finite is left alone for the non-finite-step guard (D30).
+        %   COUNTOBJ adds the calls to nFun (constraint calls self-count).
+            bad = find(any(~isfinite(M), 1));
+            if isempty(bad) || ~all(isfinite(base(:))), return; end
+            lbB = [];  ubB = [];
+            if ~isempty(obj.fdLb), lbB = obj.fdLb(bad); end
+            if ~isempty(obj.fdUb), ubB = obj.fdUb(bad); end
+            [hs, sgn, two] = adamnlopt.fdBoundedStep(x(bad), ...
+                obj.fdStep * max(1, abs(x(bad))), lbB, ubB);
+            for k = 1:numel(bad)
+                if hs(k) == 0, continue; end
+                for side = [-sgn(k), sgn(k)]
+                    if side == -sgn(k) && ~two(k), continue; end
+                    xs = x;  xs(bad(k)) = xs(bad(k)) + side * hs(k);
+                    v = fun(xs);
+                    if countObj, obj.nFun = obj.nFun + 1; end
+                    if all(isfinite(v(:)))
+                        M(:, bad(k)) = (v(:) - base(:)) / (side * hs(k));
+                        break;
+                    end
+                end
+            end
+        end
+
         function invalidateFdCaches(obj)
         %INVALIDATEFDCACHES  Drop cached derivatives that depend on fdStep/fdType.
             if ~obj.hasObjGrad, obj.hasCachedG = false; end %#ok<MCSUP>
@@ -806,6 +842,14 @@ classdef Evaluator < handle
                 [c, ceq] = obj.nlcon(x);
                 c = c(:);  ceq = ceq(:);
                 obj.nCon = obj.nCon + 1;
+                % D21: a failed evaluation (LVD's ConstraintSet returns scalar
+                % NaNs) or a NaN row becomes +Inf: infinitely violated, so the
+                % trial point is rejected.  The wrong size used to crash the
+                % FD Jacobian ("incompatible sizes"); a NaN row was accepted,
+                % because max() skips NaN and the violation read as 0.
+                if numel(c) ~= obj.mInl,   c   = inf(obj.mInl, 1); end
+                if numel(ceq) ~= obj.mEnl, ceq = inf(obj.mEnl, 1); end
+                c(isnan(c)) = inf;  ceq(isnan(ceq)) = inf;
             end
         end
         function v = evalNonlinearStacked(obj, x)
@@ -901,6 +945,9 @@ classdef Evaluator < handle
                 g = Js(1, :).';
                 J = Js(2:end, :);
             end
+            Js = obj.fdRetryNonFinite(@(z) obj.objConStacked(z), x, ...
+                                      [obj.fVal; base], [g(:).'; J], false);
+            g = Js(1, :).';  J = Js(2:end, :);
             obj.costModel.tick(toc(t0));
             obj.gVal  = g(:);
             obj.JIVal = [obj.Aineq;  J(1:obj.mInl, :)];
@@ -1029,5 +1076,19 @@ if isstruct(s) && isfield(s, field)
     v = s.(field);
 else
     v = default;
+end
+end
+
+function h = guardObjective(fun)
+%GUARDOBJECTIVE  Wrap a user objective so a NaN or non-scalar value reads +Inf.
+%   Anonymous functions forward nargout, so [f, g] = h(x) still works.
+h = @(z) guardedObjective(fun, z);
+end
+
+function varargout = guardedObjective(fun, z)
+[varargout{1:max(nargout, 1)}] = fun(z);
+f = varargout{1};
+if ~isscalar(f) || isnan(f)
+    varargout{1} = inf;
 end
 end

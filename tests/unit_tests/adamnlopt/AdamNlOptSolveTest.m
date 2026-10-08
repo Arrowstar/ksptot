@@ -172,7 +172,7 @@ classdef AdamNlOptSolveTest < AdamNlOptTestCase
                 [], [], [], [], [], [], [], testCase.quietOpts());
 
             testCase.verifyEqual(exitflag, -3);
-            testCase.verifyTrue(isnan(fval));
+            testCase.verifyFalse(isfinite(fval));   % D21: a NaN objective reads +Inf
             testCase.verifyEmpty(regexp(output.message, 'Converged', 'once'));
         end
 
