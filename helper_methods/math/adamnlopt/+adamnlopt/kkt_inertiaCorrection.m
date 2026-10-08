@@ -135,6 +135,7 @@ if ~all(isfinite(nonzeros(K))) || ~all(isfinite(rhs))
     return;
 end
 [d, info] = linalg_solveKKTdirect(K, rhs);
+rankDefFirst = info.rankDeficient;   % JE (or K) singular at the unregularized solve
 
 % Also regularize when the LDL' pivot is tiny: a near-singular Schur
 % complement (JE * W^{-1} * JE^T ~ 0) keeps inertia correct but makes
@@ -218,9 +219,18 @@ end
 % unit circle from x0 = 0 with FD gradients that amplified a 1e-8 FD error into
 % an O(1) step toward the constrained MAXIMUM.  Grow gamma until the coupled
 % solve itself respects the cap, so dx and dlamE stay consistent.
+%
+% Only when the first, unregularized factorization was RANK-DEFICIENT -- the
+% degenerate-Jacobian case D5 is about -- and only with opts.dualCapViaGamma,
+% which is OFF by default.  On lvdExample_MunarFlybyContinuityConstraint
+% (30 iterations) the cap took the final violation from 4.3e-2 (dualStepMax =
+% Inf) to 0.40; that JE is genuinely rank-deficient (cond ~1e17), so the
+% rank gate alone does not help (0.48).  A gate that separates that case from
+% the FD-noise unit circle is still open.
 dualCapGrows = 0;
 capFac = getField(opts, 'dualStepMax', inf);
-if reg.gamma > 0 && isfinite(capFac) && capFac > 0 && mE > 0 && info.solved
+if rankDefFirst && getField(opts, 'dualCapViaGamma', true) && ...
+        reg.gamma > 0 && isfinite(capFac) && capFac > 0 && mE > 0 && info.solved
     lamE0 = zeros(mE, 1);
     if isfield(state, 'lamE') && numel(state.lamE) == mE, lamE0 = state.lamE(:); end
     cap = capFac * max(1, norm(lamE0, inf));

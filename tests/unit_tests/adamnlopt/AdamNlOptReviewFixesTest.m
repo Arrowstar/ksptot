@@ -616,9 +616,10 @@ classdef AdamNlOptReviewFixesTest < AdamNlOptTestCase
         function testD5DegenerateStartFindsTheMinimum(testCase)
             % min x1 + x2 on the unit circle from x0 = 0, FD constraint
             % gradient: JE(x0) is analytically 0 and the FD value is 1.5e-8.
-            % Both cores converged to the MAXIMUM (f = +sqrt(2)).
+            % Both cores converged to the MAXIMUM (f = +sqrt(2)).  The equality
+            % core (no box) still needs the opt-in D5.2 cap to find the minimum.
             nl = @(x) deal([], x(1)^2 + x(2)^2 - 1);
-            o = testCase.quietOpts(struct());
+            o = testCase.quietOpts(struct('dualCapViaGamma', true));
             for box = [false true]
                 if box, lb = [-5; -5]; ub = [5; 5]; else, lb = []; ub = []; end
                 [~, f, ef] = adamnlopt.solve(@(x) x(1) + x(2), [0; 0], [], [], [], [], ...
@@ -644,6 +645,7 @@ classdef AdamNlOptReviewFixesTest < AdamNlOptTestCase
             state = struct('H', eye(2), 'JE', [1e-8 1e-8], 'x', zeros(2, 1), 'lamE', 0);
             res = struct('rStat', [1; 1], 'rFeasE', -1);
             opts = adamnlopt.defaultOptions();
+            opts.dualCapViaGamma = true;   % opt-in since the MunarFlyby regression
             [d, idx, info, reg] = adamnlopt.kkt_inertiaCorrection(state, res, 2, 1, [], opts);
             testCase.verifyLessThanOrEqual(norm(d(idx.lamE), inf), opts.dualStepMax * (1 + 1e-9));
             testCase.verifyGreaterThan(info.dualCapGrows, 0);
