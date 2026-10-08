@@ -539,6 +539,28 @@ classdef Evaluator < handle
             info.fdStep = obj.fdStep;  info.fdType = obj.fdType;
         end
 
+        function e = gradErrEst(obj, x)
+        %GRADERREST  Estimated inf-norm error of the FD objective gradient at x (A1).
+        %   e = gradErrEst(obj, x) measures the objective's noise level epsf by
+        %   the More-Wild ECnoise table (estimateNoise, ~7-14 evaluations,
+        %   booked to nFun) and returns the noise term of the FD gradient
+        %   error, epsf/h for central and 2*epsf/h for forward differences,
+        %   h = fdStep*max(1, |x_i|) taken at its smallest.  0 when the
+        %   objective gradient is analytic or no noise level could be resolved.
+            e = 0;
+            if obj.hasObjGrad, return; end
+            % ECnoise's first test rejects a table whose spread exceeds 10% of
+            % max|f| -- which, near an optimum with f ~ 0, is every table.  A
+            % constant offset leaves the noise unchanged and makes that test
+            % absolute for |f| < 1.
+            c = max(1, abs(obj.objective(x)));
+            [epsf, info] = adamnlopt.estimateNoise(@(z) obj.objFun(z) + c, x, [], struct());
+            obj.nFun = obj.nFun + info.nEvals;
+            if ~info.detected || ~(epsf > 0), return; end
+            h = obj.fdStep * max(1, min(abs(x(:))));
+            e = (1 + strcmp(obj.fdType, 'forward')) * epsf / h;
+        end
+
         function tf = promoteToCentral(obj)
         %PROMOTETOCENTRAL  Switch forward FD derivatives to central (A1).
         %   tf = promoteToCentral(obj) switches fdType to 'central' (with the

@@ -960,6 +960,30 @@ classdef AdamNlOptReviewFixesTest < AdamNlOptTestCase
             testCase.verifyEqual(nnz(out.trace.fdPromoted == 1), 0);
         end
 
+        function testA7StepCollapseRecalibratesANoiseLimitedGradient(testCase)
+            % Clean at x0 (calibration keeps sqrt(eps)), 1e-5 noise where the
+            % optimum is.  The equality core stopped at iteration 4, exitflag 0
+            % ("stalled short of a stationary point"), on a gradient that was
+            % pure noise (opt 45).
+            [x, ~, ef, out] = adamnlopt.solve(@movingNoise, [0; 0], [], [], [], [], ...
+                [], [], [], testCase.quietOpts(struct('traceLevel', 1)));
+            testCase.verifyEqual(ef, 2, out.message);
+            testCase.verifyGreaterThan(nnz(out.trace.fdRecalibrated == 1), 0);
+            testCase.verifyEqual(x, [3; 3], 'AbsTol', 1e-3);
+        end
+
+        function testA1NoiseFloorPlateauStopsAtFdAccuracy(testCase)
+            % Same objective in a box (IP core): after the re-calibration the
+            % solve sat at its noise floor (opt ~1e-3) until maxIter, 300
+            % iterations and ~11000 evaluations.
+            [x, ~, ef, out] = adamnlopt.solve(@movingNoise, [0; 0], [], [], [], [], ...
+                -10 * ones(2, 1), 10 * ones(2, 1), [], testCase.quietOpts(struct()));
+            testCase.verifyEqual(ef, 2, out.message);
+            testCase.verifyLessThan(out.iterations, 100);
+            testCase.verifyEqual(x, [3; 3], 'AbsTol', 1e-2);
+            testCase.verifyNotEmpty(regexp(out.message, 'finite-difference accuracy', 'once'));
+        end
+
         function testD21FdProbeIntoAFailureRegionRetriesTheOtherSide(testCase)
             % At x1 = 0.9 - 1e-10 the forward probe fails.  The Jacobian
             % column was Inf/NaN (and a wrong-sized return crashed it with
@@ -1006,4 +1030,9 @@ function [c, ceq] = failsBeyond09(x)
 if x(1) > 0.9, c = NaN;  ceq = NaN;  return; end
 c = [x(1)^2 + x(2)^2 - 1; -x(1)];
 ceq = x(1) - x(2) - 0.1;
+end
+
+function f = movingNoise(x)
+% Quadratic, clean near x0 = 0, with 1e-5 "simulation noise" beyond x1 = 1.
+f = sum((x - 3).^2) + (1e-12 + 1e-5 * (x(1) > 1)) * sin(1e9 * sum(x));
 end

@@ -377,6 +377,7 @@ dlamE = zeros(numel(lamE), 1);  aLamE = 0;
 stepNorm = inf;   % ||last accepted primal step||_inf; inf until one is taken
 bestFeas = inf;  feasStallCount = 0;  % feasibility-stall tracker (D10, as in the IP core)
 acceptCount = 0;                      % consecutive acceptable iterates (A5)
+lsFailRun = 0;  nRecal = 0;           % consecutive line-search failures, FD re-calibrations (A7)
 ksolve = struct('reg', []);
 history = struct('theta', zeros(0,1), 'alpha', zeros(0,1));
 Delta = opts.delta0;
@@ -456,18 +457,51 @@ for iter = 0:opts.maxIter
 
     % A1: an exitflag-2 stop with forward-difference derivatives the user did
     % not pin is a stop at FORWARD-difference accuracy (O(h) truncation).
-    % Switch to central differences once, refresh the derivatives at x, and
-    % restart the iteration from x; a second exitflag-2 stop stands.  The step
-    % and acceptable-streak state were measured at forward accuracy, so they
-    % are reset (the stale step would trip the step-size exit at once).
+    % Switch to central differences once.  A7: a step collapse short of
+    % stationarity (exitflag 0) with FD derivatives is the signature of a
+    % noise-limited gradient; re-calibrate the step (at most 3 times per solve,
+    % shared with the line-search trigger below).  Either way refresh the
+    % derivatives at x and restart the iteration from x; the step and
+    % acceptable-streak state were measured with the old differences, and the
+    % stale step would trip the step-size exit at once.
+    fdRestart = false;
     if stop && ef == 2 && ev.promoteToCentral()
-        trow.fdPromoted = 1;
+        trow.fdPromoted = 1;  fdRestart = true;
+    elseif stop && ef == 0 && isfinite(stepNorm) && ...
+            stepNorm <= opts.stepTol * (1 + norm(x, inf)) && nRecal < 3 && ...
+            opts.autoFDStep && (~ev.hasObjGrad || (~ev.hasConGrad && ev.mInl + ev.mEnl > 0))
+        ev.calibrateStep(x);
+        nRecal = nRecal + 1;
+        trow.fdRecalibrated = 1;  fdRestart = true;
+    end
+    if fdRestart
         recordTrace(trace, trow);
         acceptCount = 0;
         stepNorm = inf;
         [f, g]   = ev.objective(x);
         [JE, JI] = ev.jacobian(x);
         continue;
+    end
+    % A1: stopping at FINITE-DIFFERENCE accuracy.  A step collapse after the
+    % re-calibrations are spent, at a feasible point whose scaled
+    % optimality is within 10x of the estimated FD gradient error, is as
+    % converged as the derivatives allow: exitflag 2, not 0 ("stalled short of
+    % a stationary point") or a grind to maxIter at the noise floor.
+    fdUsedNow = ~ev.hasObjGrad || (~ev.hasConGrad && ev.mInl + ev.mEnl > 0);
+    fdAccCheck = false;
+    if stop && ef == 0 && fdUsedNow && isfinite(stepNorm) && ...
+            stepNorm <= opts.stepTol * (1 + norm(x, inf)) && res.feas <= opts.feasTol
+        fdAccCheck = true;
+    end
+    if fdAccCheck
+        gErr = ev.gradErrEst(x);
+        if gErr > 0 && trow.optScaled <= 10 * gErr
+            stop = true;  ef = 2;
+            m = sprintf(['Converged to finite-difference accuracy: scaled optimality ' ...
+                '%.2e is within 10x of the estimated FD gradient error %.1e at a ' ...
+                'feasible point; optTol %.1e is below what the derivatives resolve.'], ...
+                trow.optScaled, gErr, opts.optTol);
+        end
     end
 
     % Per-iteration plot hooks (user PlotFcn and/or the built-in uifigure
@@ -620,6 +654,17 @@ for iter = 0:opts.maxIter
     % transient stalls; the IP core's comment at its own trigger documents the
     % premature exitflag -2 that caused.  Restoration now fires only once
     % feasibility has made no new best for restStallWindow iterations.
+    % A7: the FD step was calibrated once, at x0, but a trajectory's noise
+    % floor moves with the arc.  restStallWindow consecutive line-search
+    % failures with FD derivatives re-calibrate it here (at most 3 times per
+    % solve); the foot of the loop then differences the new point with it.
+    lsFailRun = double(lsFailed) * (lsFailRun + 1);
+    if lsFailRun >= opts.restStallWindow && nRecal < 3 && opts.autoFDStep && ...
+            (~ev.hasObjGrad || (~ev.hasConGrad && ev.mInl + ev.mEnl > 0))
+        ev.calibrateStep(x);
+        nRecal = nRecal + 1;  lsFailRun = 0;
+        trow.fdRecalibrated = 1;
+    end
     feasGenuinelyStalled = feasStallCount >= opts.restStallWindow || stepNonFinite;
     needRestoration = opts.enableRestoration && norm(cE, 1) > opts.feasTol && ...
         feasGenuinelyStalled && (lsFailed || alpha <= 1e-10 || advice.suggestRestore);
@@ -813,6 +858,7 @@ keepBestKKT = strcmpi(opts.returnIterate, 'bestKKT');  % opt-in; default is 'las
 fPrevObj = f;    objStallCount = 0;    % objective-plateau tracker (see terminationCheck)
 optGateCount = 0;                     % consecutive iters inside objPlateauOptTol
 acceptCount = 0;                      % consecutive acceptable iterates (A5)
+lsFailRun = 0;  nRecal = 0;           % consecutive line-search failures, FD re-calibrations (A7)
 trace = makeTrace(opts, opts.maxIter);
 if ~isempty(trace)
     trace.setMeta('core', 'ip');
@@ -1164,18 +1210,55 @@ for iter = 0:opts.maxIter
 
     % A1: an exitflag-2 stop with forward-difference derivatives the user did
     % not pin is a stop at FORWARD-difference accuracy (O(h) truncation).
-    % Switch to central differences once, refresh the derivatives at x, and
-    % restart the iteration from x; a second exitflag-2 stop stands.  The step
-    % and acceptable-streak state were measured at forward accuracy, so they
-    % are reset (the stale step would trip the step-size exit at once).
+    % Switch to central differences once.  A7: a step collapse short of
+    % stationarity (exitflag 0) with FD derivatives is the signature of a
+    % noise-limited gradient; re-calibrate the step (at most 3 times per solve,
+    % shared with the line-search trigger below).  Either way refresh the
+    % derivatives at x and restart the iteration from x; the step and
+    % acceptable-streak state were measured with the old differences, and the
+    % stale step would trip the step-size exit at once.
+    fdRestart = false;
     if stop && ef == 2 && ev.promoteToCentral()
-        trow.fdPromoted = 1;
+        trow.fdPromoted = 1;  fdRestart = true;
+    elseif stop && ef == 0 && isfinite(stepNorm) && ...
+            stepNorm <= opts.stepTol * (1 + norm(x, inf)) && nRecal < 3 && ...
+            opts.autoFDStep && (~ev.hasObjGrad || (~ev.hasConGrad && ev.mInl + ev.mEnl > 0))
+        ev.calibrateStep(x);
+        nRecal = nRecal + 1;
+        trow.fdRecalibrated = 1;  fdRestart = true;
+    end
+    if fdRestart
         recordTrace(trace, trow);
         acceptCount = 0;  objStallCount = 0;
         stepNorm = inf;
         [f, g]   = ev.objective(x);
         [JE, JI] = ev.jacobian(x);
         continue;
+    end
+    % A1: stopping at FINITE-DIFFERENCE accuracy.  A step collapse after the
+    % re-calibrations are spent (or, in this core, an objective plateau), at a feasible point whose scaled
+    % optimality is within 10x of the estimated FD gradient error, is as
+    % converged as the derivatives allow: exitflag 2, not 0 ("stalled short of
+    % a stationary point") or a grind to maxIter at the noise floor.
+    fdUsedNow = ~ev.hasObjGrad || (~ev.hasConGrad && ev.mInl + ev.mEnl > 0);
+    fdAccCheck = false;
+    if stop && ef == 0 && fdUsedNow && isfinite(stepNorm) && ...
+            stepNorm <= opts.stepTol * (1 + norm(x, inf)) && res.feas <= opts.feasTol
+        fdAccCheck = true;
+    elseif ~stop && fdUsedNow && isfield(state, 'objStallCount') && ...
+            state.objStallCount >= opts.objPlateauWindow && ...
+            mod(state.objStallCount, opts.objPlateauWindow) == 0 && res.feas <= opts.feasTol
+        fdAccCheck = true;   % objective plateau: check once per plateau window
+    end
+    if fdAccCheck
+        gErr = ev.gradErrEst(x);
+        if gErr > 0 && trow.optScaled <= 10 * gErr
+            stop = true;  ef = 2;
+            m = sprintf(['Converged to finite-difference accuracy: scaled optimality ' ...
+                '%.2e is within 10x of the estimated FD gradient error %.1e at a ' ...
+                'feasible point; optTol %.1e is below what the derivatives resolve.'], ...
+                trow.optScaled, gErr, opts.optTol);
+        end
     end
 
     % Per-iteration plot hooks (user PlotFcn and/or the built-in uifigure
@@ -1715,6 +1798,17 @@ for iter = 0:opts.maxIter
     % orbit run the collapsed steps bottomed out at 6.1e-5 and this trigger stayed
     % silent throughout).  Keep the aP test for the other step paths, which report
     % only a length.
+    % A7: the FD step was calibrated once, at x0, but a trajectory's noise
+    % floor moves with the arc.  restStallWindow consecutive line-search
+    % failures with FD derivatives re-calibrate it here (at most 3 times per
+    % solve); the foot of the loop then differences the new point with it.
+    lsFailRun = double(lsFailed) * (lsFailRun + 1);
+    if lsFailRun >= opts.restStallWindow && nRecal < 3 && opts.autoFDStep && ...
+            (~ev.hasObjGrad || (~ev.hasConGrad && ev.mInl + ev.mEnl > 0))
+        ev.calibrateStep(x);
+        nRecal = nRecal + 1;  lsFailRun = 0;
+        trow.fdRecalibrated = 1;
+    end
     feasGenuinelyStalled = feasStallCount >= opts.restStallWindow || stepNonFinite;
     % Measure the quantity restoration can actually REDUCE.  This test used to
     % read norm([cE; cI + s], 1) -- the primal residual of the SLACK-AUGMENTED
@@ -3388,7 +3482,7 @@ cols = { ...
     'lsFired', 'lsAdopted', 'lsOptCur', 'lsOptNew', ...
     ... % --- globalization and the barrier gate
     'lsFailed', 'filterSize', 'structStall', 'statErr', 'gateBase', ...
-    'gateRatio', 'Emu', 'nMuSteps', 'acceptCount', 'filterReset', 'fdPromoted', 'feasStallCount', 'objStallCount', 'optGateCount', ...
+    'gateRatio', 'Emu', 'nMuSteps', 'acceptCount', 'filterReset', 'fdPromoted', 'fdRecalibrated', 'feasStallCount', 'objStallCount', 'optGateCount', ...
     'feasRegressCount', 'restorationFired', ...
     ... % --- level 2 only
     'condK'};
