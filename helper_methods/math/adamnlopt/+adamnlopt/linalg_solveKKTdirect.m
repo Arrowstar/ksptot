@@ -34,7 +34,7 @@ function [d, info] = linalg_solveKKTdirect(A, rhs)
 %   nothing could read. A ratio is strictly more informative than the boolean
 %   warning was: it shows the approach to singularity, not just the arrival.
 %
-%   See also KKT_INERTIACORRECTION, LINALG_SOLVEKKTKRYLOV, KKT_ASSEMBLE.
+%   See also KKT_INERTIACORRECTION, KKT_ASSEMBLE.
 
 [L, D, p] = ldl(A, 'vector');
 

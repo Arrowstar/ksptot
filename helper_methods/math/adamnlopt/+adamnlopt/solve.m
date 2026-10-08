@@ -362,7 +362,7 @@ dlamE = zeros(numel(lamE), 1);  aLamE = 0;
 stepNorm = inf;   % ||last accepted primal step||_inf; inf until one is taken
 bestFeas = inf;  feasStallCount = 0;  % feasibility-stall tracker (D10, as in the IP core)
 acceptCount = 0;                      % consecutive acceptable iterates (A5)
-ksolve = struct('Fprev', [], 'etaPrev', [], 'reg', []);
+ksolve = struct('reg', []);
 history = struct('theta', zeros(0,1), 'alpha', zeros(0,1));
 Delta = opts.delta0;
 trace = makeTrace(opts, opts.maxIter);
@@ -764,7 +764,7 @@ util_logger('header', opts.Display, [], opts.LogFile);
 
 rho = 1;  alpha = 0;  hessian = [];  res = [];  state = [];  restFail = 0;
 exitflag = 0;  msg = 'Stopped: maximum iterations reached.';
-ksolve = struct('Fprev', [], 'etaPrev', [], 'reg', []);
+ksolve = struct('reg', []);
 history = struct('theta', zeros(0,1), 'alpha', zeros(0,1));
 Delta = opts.delta0;
 % Iteration-hook visibility: the step quantities must exist (as zero/NaN
@@ -2427,18 +2427,18 @@ end
 % ------------------------------------------------------------------------
 function [d, idx, ksolve] = solveStep(state, res, n, mE, opts, ksolve)
 %SOLVESTEP  Solve the (regularized) Newton-KKT system for the primal-dual step.
-%   Dispatches to a matrix-free Krylov solve (large systems or when requested)
-%   or a direct inertia-corrected factorization. The direct path warm-starts the
-%   regularization (delta, gamma) from the previous iteration, decaying it 10x
-%   per iteration to avoid over-regularizing.
+%   Direct inertia-corrected factorization, warm-starting the regularization
+%   (delta, gamma) from the previous iteration.  (The Krylov path was removed in
+%   review Batch 8: it ran this same factorization first, so it was never
+%   cheaper, and LVD problems never come near the size where it could be.)
 %
 %   Inputs:
 %     state  - iterate state struct (H, JE, x, lamE, ...).
 %     res    - residual struct (rStat, rFeasE, ...).
 %     n      - number of primal variables.
 %     mE     - number of equality constraints.
-%     opts   - resolved options struct (linearSolver, krylovAutoDim, ...).
-%     ksolve - persistent solver-state struct (Fprev, etaPrev, reg).
+%     opts   - resolved options struct.
+%     ksolve - persistent solver-state struct (reg, factors, last, warned).
 %
 %   Outputs:
 %     d      - stacked step [dx; dlamE].
@@ -2446,42 +2446,36 @@ function [d, idx, ksolve] = solveStep(state, res, n, mE, opts, ksolve)
 %     ksolve - updated solver-state struct.
 import adamnlopt.*
 if nargin < 6 || isempty(ksolve)
-    ksolve = struct('Fprev', [], 'etaPrev', [], 'reg', []);
+    ksolve = struct('reg', []);
 end
-useKrylov = strcmpi(opts.linearSolver, 'krylov') || ...
-    (strcmpi(opts.linearSolver, 'auto') && (n + mE) > opts.krylovAutoDim);
-if useKrylov
-    [d, idx, ksolve] = solveStepKrylov(state, res, n, mE, opts, ksolve);
-else
-    % Direct inertia-corrected KKT solve (see kkt_inertiaCorrection for the
-    % delta/gamma growth that certifies inertia (n, mE, 0)).
-    % Warm-start regularization from the previous iteration (IPOPT-style):
-    % decay by 10x each iteration so we don't over-regularize, but avoid
-    % restarting from zero when the problem consistently needs gamma > 0.
-    % reg0 seeds only the first inertia RETRY (D15); kkt_inertiaCorrection
-    % always tries delta = 0 first, so no decay is needed here.
-    reg0 = [];
-    if isfield(ksolve, 'reg'), reg0 = ksolve.reg; end
-    [d, idx, info, reg] = kkt_inertiaCorrection(state, res, n, mE, reg0, opts);
-    ksolve.reg  = reg;
-    % Keep the accepted factorization for right-hand-side-only re-solves
-    % (second-order correction, D17.1).
-    ksolve.factors   = info.factors;
-    ksolve.factorIdx = idx;
-    ksolve.last = packSolveInfo('direct', info, reg, d, idx, state, res);
-    if isfield(info, 'triesExhausted') && info.triesExhausted
-        ksolve = warnSilentFailure(ksolve, opts, 'inertiaCorrectionExhausted', ...
-            ['Inertia correction hit its 40-try cap without certifying the ' ...
-             'KKT inertia (delta = %.3e, gamma = %.3e); the returned step is ' ...
-             'not a certified descent direction.  Further occurrences are ' ...
-             'not reported -- see output.trace.triesExhausted.'], ...
-            reg.delta, reg.gamma);
-    end
+% Direct inertia-corrected KKT solve (see kkt_inertiaCorrection for the
+% delta/gamma growth that certifies inertia (n, mE, 0)).
+% Warm-start regularization from the previous iteration (IPOPT-style):
+% decay by 10x each iteration so we don't over-regularize, but avoid
+% restarting from zero when the problem consistently needs gamma > 0.
+% reg0 seeds only the first inertia RETRY (D15); kkt_inertiaCorrection
+% always tries delta = 0 first, so no decay is needed here.
+reg0 = [];
+if isfield(ksolve, 'reg'), reg0 = ksolve.reg; end
+[d, idx, info, reg] = kkt_inertiaCorrection(state, res, n, mE, reg0, opts);
+ksolve.reg  = reg;
+% Keep the accepted factorization for right-hand-side-only re-solves
+% (second-order correction, D17.1).
+ksolve.factors   = info.factors;
+ksolve.factorIdx = idx;
+ksolve.last = packSolveInfo(info, reg, d, idx, state, res);
+if isfield(info, 'triesExhausted') && info.triesExhausted
+    ksolve = warnSilentFailure(ksolve, opts, 'inertiaCorrectionExhausted', ...
+        ['Inertia correction hit its 40-try cap without certifying the ' ...
+         'KKT inertia (delta = %.3e, gamma = %.3e); the returned step is ' ...
+         'not a certified descent direction.  Further occurrences are ' ...
+         'not reported -- see output.trace.triesExhausted.'], ...
+        reg.delta, reg.gamma);
 end
 end
 
 % ------------------------------------------------------------------------
-function s = packSolveInfo(path, info, reg, d, idx, state, res)
+function s = packSolveInfo(info, reg, d, idx, state, res)
 %PACKSOLVEINFO  Flatten one KKT solve's diagnostics into a scalar struct.
 %   Every field here is a by-product of a solve that has already happened; this
 %   only copies them somewhere the main loop can see. Nothing is read back to
@@ -2504,8 +2498,7 @@ function s = packSolveInfo(path, info, reg, d, idx, state, res)
 %   conditioning under this iteration's row -- worse than recording nothing.
 %
 %   Inputs:
-%     path  - 'direct' or 'krylov', identifying which core produced the step.
-%     info  - info struct from kkt_inertiaCorrection (direct) or [] (krylov).
+%     info  - info struct from kkt_inertiaCorrection, or [].
 %     reg   - accepted regularization struct (delta, gamma).
 %     d     - stacked step [dx; dlamE].
 %     idx   - index struct with fields x and lamE.
@@ -2514,7 +2507,7 @@ function s = packSolveInfo(path, info, reg, d, idx, state, res)
 %
 %   Outputs:
 %     s - scalar struct of diagnostics, ready for IterTrace.record.
-s = struct('pathDirect', strcmp(path, 'direct'), 'stepSource', 0, ...
+s = struct('stepSource', 0, ...
            'delta', NaN, 'gamma', NaN, 'gammaFixA', NaN, ...
            'tries', NaN, 'triesExhausted', NaN, ...
            'inertiaPos', NaN, 'inertiaNeg', NaN, 'inertiaZero', NaN, ...
@@ -2523,8 +2516,7 @@ s = struct('pathDirect', strcmp(path, 'direct'), 'stepSource', 0, ...
            'pivotSpread', NaN, 'nearlySingular', NaN, ...
            'schurRan', NaN, 'schurCond', NaN, 'schurSMax', NaN, ...
            'schurSMin', NaN, 'schurCaught', NaN, 'schurSkipReason', NaN, ...
-           'normDx', NaN, 'normDlamE', NaN, 'feasRowRes', NaN, ...
-           'krylovFlag', NaN, 'krylovIters', NaN, 'krylovRelres', NaN);
+           'normDx', NaN, 'normDlamE', NaN, 'feasRowRes', NaN);
 
 if ~isempty(reg) && isstruct(reg)
     s.delta = reg.delta;
@@ -2614,85 +2606,6 @@ for i = 1:numel(names)
             s.(names{i}) = double(v);
         end
     end
-end
-end
-
-% ------------------------------------------------------------------------
-function [d, idx, ksolve] = solveStepKrylov(state, res, n, mE, opts, ksolve)
-%SOLVESTEPKRYLOV Inexact-Newton KKT solve (iterative, forcing-sequence tol).
-%   The regularization (delta, gamma) is chosen by the same inertia logic as
-%   the direct path (kkt_inertiaCorrection), so the Krylov path solves an
-%   identically regularized -- and therefore identically descent-certified --
-%   system. The step itself is then computed by preconditioned MINRES/GMRES to
-%   the Eisenstat-Walker forcing tolerance: only as accurately as the current
-%   nonlinear progress warrants, which is the point of an inexact Newton method
-%   on large systems. The KKT operator is applied matrix-free, so H may be an
-%   operator; only the inertia probe touches an assembled factorization.
-%
-%   Inputs:
-%     state  - iterate state struct (H, JE, x, lamE, ...).
-%     res    - residual struct (rStat, rFeasE, ...).
-%     n      - number of primal variables.
-%     mE     - number of equality constraints.
-%     opts   - resolved options struct (forcing-sequence and Krylov settings).
-%     ksolve - persistent solver-state struct (Fprev, etaPrev, reg).
-%
-%   Outputs:
-%     d      - stacked step [dx; dlamE].
-%     idx    - struct with index ranges idx.x and idx.lamE into d.
-%     ksolve - updated solver-state struct (refreshed Fprev, etaPrev).
-import adamnlopt.*
-
-idx.x    = 1:n;
-idx.lamE = n + (1:mE);
-rhs = -[res.rStat; res.rFeasE];
-
-% Inertia-consistent regularization from the direct machinery (reg reused).
-% This call already factors and solves the regularized KKT system, so its step
-% is available at no extra cost and serves as the fallback below.
-[dDirect, ~, kinfo, reg] = kkt_inertiaCorrection(state, res, n, mE, [], opts);
-
-Fk  = norm(rhs);
-eta = linalg_forcingSequence(Fk, ksolve.Fprev, ksolve.etaPrev, opts);
-
-% The Eisenstat-Walker term caps the early (loose) solves; a residual-
-% proportional floor drives the tolerance to zero near the solution so the
-% inexact Newton step becomes asymptotically exact and the tight KKT
-% tolerances are attainable.
-tol = min(eta, max(opts.forcingEtaMin, 0.1 * Fk));
-
-op = kkt_KKTOperator(state, reg);
-applyP = linalg_preconditioner(op, opts);
-[d, kryinfo] = linalg_solveKKTkrylov(op, rhs, tol, applyP, opts);
-
-ksolve.Fprev   = Fk;
-ksolve.etaPrev = eta;
-ksolve.factors = [];   % the step may be a Krylov solve: no factors to re-use
-
-% MINRES/GMRES non-convergence was previously invisible: the info output was
-% discarded at the call site, so an unconverged step entered the line search
-% indistinguishably from a converged one.
-if kryinfo.flag ~= 0
-    % Warning alone was not enough: an unconverged step was still handed to
-    % the line search, and a KKT "solution" with relres >= 1 is worse than no
-    % step at all.  The inertia-correction call above already produced a
-    % certified direct step for exactly this system, so fall back to it rather
-    % than search along a direction the linear solver disowns.  This runs
-    % before packSolveInfo so the recorded step is the one actually used.
-    d = dDirect;
-end
-
-ksolve.last = packSolveInfo('krylov', kinfo, reg, d, idx, state, res);
-ksolve.last.krylovFlag   = kryinfo.flag;
-ksolve.last.krylovIters  = kryinfo.iters;
-ksolve.last.krylovRelres = kryinfo.relres;
-if kryinfo.flag ~= 0
-    ksolve = warnSilentFailure(ksolve, opts, 'krylovNotConverged', ...
-        ['Krylov KKT solve did not converge (flag %d, %d iterations, ' ...
-         'relres %.3e against tol %.3e); falling back to the direct step.  ' ...
-         'Further occurrences are not reported -- see ' ...
-         'output.trace.krylovFlag.'], ...
-        kryinfo.flag, kryinfo.iters, kryinfo.relres, tol);
 end
 end
 
@@ -3014,7 +2927,7 @@ if opts.enableDegeneracyDetection
         % Note the output order: regularizedRecovery returns [d, idx, reg, info].
         [d, idx, rreg, rinfo] = degeneracy_regularizedRecovery(state, res, n, mE);
         ksolve.factors = [];
-        ksolve.last = packSolveInfo('direct', rinfo, rreg, d, idx, state, res);
+        ksolve.last = packSolveInfo(rinfo, rreg, d, idx, state, res);
         ksolve.last.stepSource = 1;
         return;
     end
@@ -3029,7 +2942,7 @@ if opts.enableDegeneracyDetection
             d = [dx_e; zeros(mE,1)];
             idx.x = 1:n;  idx.lamE = n + (1:mE);
             ksolve.factors = [];
-            ksolve.last = packSolveInfo('direct', [], [], d, idx, state, res);
+            ksolve.last = packSolveInfo([], [], d, idx, state, res);
             ksolve.last.stepSource = 2;
             return;
         end
@@ -3420,8 +3333,7 @@ cols = { ...
     'minAbsPivot', 'medAbsPivot', 'maxAbsPivot', 'pivotSpread', ...
     'nearlySingular', 'schurRan', 'schurCond', 'schurSMax', 'schurSMin', ...
     'schurCaught', 'schurSkipReason', 'feasRowRes', 'stepSource', ...
-    'pathDirect', 'nSolves', 'nFactorizations', 'socAdopted', ...
-    'krylovFlag', 'krylovIters', 'krylovRelres', ...
+    'nSolves', 'nFactorizations', 'socAdopted', ...
     ... % --- H3: is the multiplier/metric machinery the problem?  lsFired and
     ... % lsAdopted in particular had no signal whatsoever: the costate refresh
     ... % could be running and being discarded every single iteration and

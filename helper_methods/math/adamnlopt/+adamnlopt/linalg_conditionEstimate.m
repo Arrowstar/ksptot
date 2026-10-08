@@ -1,7 +1,7 @@
 function c = linalg_conditionEstimate(A, nMax)
 %LINALG_CONDITIONESTIMATE Cheap 2-norm condition estimate of the KKT system.
 %   c = adamnlopt.linalg_conditionEstimate(A) estimates cond_2(K). A may be a
-%   numeric matrix or a kkt_KKTOperator struct with an .apply handle. For a
+%   numeric matrix or an operator struct with an .apply handle. For a
 %   matrix, MATLAB's condest (sparse) or cond (dense) is used. For an operator
 %   small enough to materialize, K is rebuilt one column at a time and the
 %   numeric path is used; above that size the answer is NaN, meaning "not
@@ -19,7 +19,7 @@ function c = linalg_conditionEstimate(A, nMax)
 %   wrong in an unknown direction, so the branch no longer produces one.
 %
 %   Inputs:
-%     A    - either a numeric (dense or sparse) KKT matrix, or a kkt_KKTOperator
+%     A    - either a numeric (dense or sparse) KKT matrix, or an operator
 %            struct exposing A.apply plus dimensions A.n and A.mE.
 %     nMax - (optional) largest operator dimension that will be materialized;
 %            defaults to 500.  Materializing costs n mat-vecs.
@@ -28,7 +28,7 @@ function c = linalg_conditionEstimate(A, nMax)
 %     c - estimated 2-norm condition number cond_2(K); NaN when A is an
 %         operator too large to materialize.
 %
-%   See also LINALG_SOLVEKKTDIRECT, KKT_INERTIACORRECTION, KKT_KKTOPERATOR.
+%   See also LINALG_SOLVEKKTDIRECT, KKT_INERTIACORRECTION.
 
 if nargin < 2 || isempty(nMax), nMax = 500; end
 

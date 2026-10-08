@@ -71,12 +71,10 @@ classdef AdamNlOptReviewFixesTest < AdamNlOptTestCase
         end
 
         %% ---- D11.2 / D11.3: LVD defaults equal package defaults -----------
-        function testD11LoadobjMigratesTheOldForcingAndBroydenDefaults(testCase)
+        function testD11LoadobjMigratesTheOldBroydenDefault(testCase)
             o = AdamNlOptOptions();
-            o.forcingEtaMax = 0.9;  o.forcingEtaMin = 1e-8;  o.costThreshold = 0.1;
+            o.costThreshold = 0.1;
             o = AdamNlOptOptions.loadobj(o);
-            testCase.verifyEqual(o.forcingEtaMax, 1e-6);
-            testCase.verifyEqual(o.forcingEtaMin, 1e-10);
             testCase.verifyEqual(o.costThreshold, Inf);
         end
 

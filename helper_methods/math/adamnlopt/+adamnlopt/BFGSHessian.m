@@ -70,7 +70,6 @@ classdef BFGSHessian < adamnlopt.HessianModel
 %     update      - add a curvature pair (s, y) with Powell damping.
 %     getMatrix   - return the dense SPD matrix B.
 %     apply       - compute the Hessian-vector product B*v.
-%     diagonal    - diag(B), for the Jacobi preconditioner.
 %
 %   See also LBFGSHESSIAN, HESSIANMODEL, LAGRANGIANHESSIAN, HESSIANVECPRODUCT.
 
@@ -340,21 +339,6 @@ classdef BFGSHessian < adamnlopt.HessianModel
         %   Outputs:
         %     Bv - n-by-1 product B*v.
             Bv = obj.B * v(:);
-        end
-
-        function d = diagonal(obj)
-        %DIAGONAL  Exact diagonal of B, for the Jacobi preconditioner.
-        %   d = diagonal(obj) is cheap and exact because B is stored, so
-        %   kkt_KKTOperator can populate op.diag and the Krylov path gets real
-        %   Jacobi preconditioning instead of the identity fallback that a
-        %   limited-memory model is limited to.
-        %
-        %   Inputs:
-        %     obj - the BFGSHessian handle object.
-        %
-        %   Outputs:
-        %     d - n-by-1 diagonal of B.
-            d = diag(obj.B);
         end
     end
 

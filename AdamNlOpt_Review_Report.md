@@ -857,7 +857,20 @@ On the battery, every changed catalog and reproduction row kept its exitflag, it
 - *Open from 7.6:* (a) restoration can cut its own θ while worsening the main iteration's scaled feasibility measure (MunarLanding iterations 7 and 28); (b) calibration now runs at LVD's on-bound x0, and where it picks central differences the evaluation count rises (MunarLanding 9119 vs 5265, SpinLaunch 5824 vs 345 for a −2 run); (c) the SpinLaunch main iteration walks from a feasible x0 (1e-8) out to 0.39 in five iterations.
 - Tests: `testA7RestorationRecalibratesANoiseLimitedJacobian`, `testA7CalibrationRunsAtAPointOnABound`, `testD20RestorationHoldsAVariableOnItsBound`, `testD20BoundInfeasibleSystemCarriesACertificate`.
 
-**Batches 8–10** follow Section 4 steps 8–10 unchanged. Batch 8 needs the user's decision on the Krylov path; I recommend deletion unless n ≫ 500 is expected.
+**Batch 8: Krylov path deleted (D11.1, user decision 2026-10-08).** The case for deleting:
+- `solveStepKrylov` ran the full direct inertia-corrected factorization first, so `'krylov'`/`'auto'` was never cheaper than `'direct'` and was less accurate.
+- The largest LVD problem in the examples is n = 49 (OuterPlanetsMod_Tour; SLS Artemis II v2 is 48), so `'auto'` (n + mE > 500) never switched.
+- Dense LDL costs 0.1 ms at N = 100, 6 ms at 500 and 0.66 s at 4000, against a 0.4–3 s LVD propagation per FD probe.
+- A real repair would still need a factorization for inertia control and keeps a dense n×n BFGS model.
+
+Removed:
+- *Package:* `linalg_solveKKTkrylov`, `linalg_forcingSequence`, `linalg_preconditioner`, `kkt_KKTOperator`, `solveStepKrylov`, the `linearSolver`/`krylov*`/`forcing*`/`precondition` options, the `pathDirect`/`krylov*` trace columns, `packSolveInfo`'s path argument, and `HessianModel.diagonal()` (only the preconditioner used it).
+- *LVD:* the 9 `AdamNlOptOptions` properties and their loadobj migration, and the dialog's Linear Algebra panel; the tab is now "Hessian".
+- *Tests:* 34 Krylov-only tests.
+
+Kept: the three enum classes, so saved cases still deserialize (verified: MunarLanding loads with no new warning, and the options build without the fields), and `linalg_conditionEstimate`'s operator branch, which is general and tested with hand-built operators. Catalog bit-identical. Suite 657/662; the other 5 are Optimization Toolbox license failures.
+
+**Batches 9–10** follow Section 4 steps 9–10 unchanged.
 
 ---
 

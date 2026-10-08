@@ -6,7 +6,7 @@ classdef AdamNlOptOptions < matlab.mixin.SetGet
     %
     %   Numeric properties use the same NaN sentinel as FminconOptions: a NaN
     %   means "leave whatever adamnlopt.defaultOptions() put there".  That
-    %   matters for compTol, muMin and krylovMaxIter, whose default of [] is
+    %   matters for compTol and muMin, whose default of [] is
     %   meaningful -- the solver ties them to optTol/problem size internally --
     %   and must not be clobbered with a number.  Inf is a real value for
     %   maxTime, divergeWindow and bfgsResetMaxDrop; only NaN suppresses.
@@ -53,16 +53,9 @@ classdef AdamNlOptOptions < matlab.mixin.SetGet
         bfgsCondMax(1,1) double = 1E12;
         lbfgsMemory(1,1) double = 10;
 
-        %Linear algebra
-        linearSolver(1,1) AdamNlOptLinearSolverEnum = AdamNlOptLinearSolverEnum.Direct;
-        krylovMethod(1,1) AdamNlOptKrylovMethodEnum = AdamNlOptKrylovMethodEnum.MinRes;
-        krylovAutoDim(1,1) double = 500;
-        krylovMaxIter(1,1) double = NaN;  %NaN -> sized from the problem by the solver
-        forcingEtaMax(1,1) double = 1E-6;  %matches adamnlopt.defaultOptions; 0.9 stalls HS71 (see there)
-        forcingEtaMin(1,1) double = 1E-10;
-        forcingGamma(1,1) double = 1;
-        forcingAlpha(1,1) double = 1.618;
-        precondition(1,1) AdamNlOptPrecondEnum = AdamNlOptPrecondEnum.Jacobi;
+        %(The Krylov linear-algebra options were removed in review Batch 8;
+        %saved cases drop them on load.  The three enum classes they used are
+        %kept so those cases still deserialize without warnings.)
 
         %Scaling
         autoScale(1,1) AdamNlOptAutoScaleEnum = AdamNlOptAutoScaleEnum.Gradient;
@@ -180,12 +173,6 @@ classdef AdamNlOptOptions < matlab.mixin.SetGet
                 'bfgsResetMaxDrop',         'bfgsResetMaxDrop'; ...
                 'bfgsCondMax',              'bfgsCondMax'; ...
                 'lbfgsMemory',              'lbfgsMemory'; ...
-                'krylovAutoDim',            'krylovAutoDim'; ...
-                'krylovMaxIter',            'krylovMaxIter'; ...
-                'forcingEtaMax',            'forcingEtaMax'; ...
-                'forcingEtaMin',            'forcingEtaMin'; ...
-                'forcingGamma',             'forcingGamma'; ...
-                'forcingAlpha',             'forcingAlpha'; ...
                 'autoScaleMaxSpread',       'autoScaleMaxSpread'; ...
                 'autoScaleMaxGradient',     'autoScaleMaxGradient'; ...
                 'autoScaleCurvGate',        'autoScaleCurvGate'; ...
@@ -264,9 +251,6 @@ classdef AdamNlOptOptions < matlab.mixin.SetGet
             enumMap = { ...
                 'finDiffType',    'FiniteDifferenceType'; ...
                 'hessianApprox',  'hessianApprox'; ...
-                'linearSolver',   'linearSolver'; ...
-                'krylovMethod',   'krylovMethod'; ...
-                'precondition',   'precondition'; ...
                 'autoScale',      'autoScale'; ...
                 'globalization',  'globalization'; ...
                 'returnIterate',  'returnIterate'; ...
@@ -312,18 +296,10 @@ classdef AdamNlOptOptions < matlab.mixin.SetGet
             %still holds the old default value, so a value the user chose is kept.
             %  - finDiffStepSize: sqrt(eps) (exactly, or after a GUI text round
             %    trip) becomes NaN = "solver default", which keeps autoFDStep armed.
-            %  - forcingEtaMax/Min 0.9/1e-8: the Krylov forcing clamps the solver
-            %    abandoned (0.9 stalls HS71); now 1e-6/1e-10, as in defaultOptions.
             %  - costThreshold 0.1 s silently enabled the Broyden secant Jacobian
             %    on every simulation-based solve; Inf keeps it opt-in.
             if(abs(obj.finDiffStepSize - sqrt(eps)) <= 1E-6*sqrt(eps))
                 obj.finDiffStepSize = NaN;
-            end
-            if(obj.forcingEtaMax == 0.9)
-                obj.forcingEtaMax = 1E-6;
-            end
-            if(obj.forcingEtaMin == 1E-8)
-                obj.forcingEtaMin = 1E-10;
             end
             if(obj.costThreshold == 0.1)
                 obj.costThreshold = Inf;

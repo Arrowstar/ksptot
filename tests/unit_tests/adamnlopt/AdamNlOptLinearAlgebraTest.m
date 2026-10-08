@@ -14,85 +14,7 @@ classdef AdamNlOptLinearAlgebraTest < AdamNlOptTestCase
 %
 %   See also ADAMNLOPTTESTCASE, ADAMNLOPTSOLVETEST.
 
-    properties (TestParameter)
-        krylovMethod = {'minres', 'gmres'};
-        precondition = {'none', 'jacobi'};
-    end
-
     methods (Test)
-
-        %% ================================================================
-        %  kkt_KKTOperator -- the matrix-free mirror of kkt_assemble
-        %  ================================================================
-
-        function testOperatorMaterializesToTheAssembledMatrix(testCase)
-            %   The operator and the assembler are two implementations of one
-            %   matrix, and the direct and Krylov paths must be solving the
-            %   same system.  Materialize the operator column by column and
-            %   require exact agreement.
-            [state, res, reg] = testCase.kktFixture();
-            K = adamnlopt.kkt_assemble(state, res, reg);
-            op = adamnlopt.kkt_KKTOperator(state, reg);
-
-            N = op.n + op.mE;
-            Kop = zeros(N);
-            for j = 1:N
-                e = zeros(N, 1);  e(j) = 1;
-                Kop(:, j) = op.apply(e);
-            end
-
-            testCase.verifyEqual(Kop, full(K), 'AbsTol', 1e-12, ...
-                ['the matrix-free operator and the assembled KKT matrix ' ...
-                 'disagree -- the direct and Krylov paths are solving ' ...
-                 'different systems']);
-        end
-
-        function testOperatorIsSymmetric(testCase)
-            [state, ~, reg] = testCase.kktFixture();
-            op = adamnlopt.kkt_KKTOperator(state, reg);
-            rng(7);
-            u = randn(op.n + op.mE, 1);
-            v = randn(op.n + op.mE, 1);
-
-            % u'Kv == v'Ku for a symmetric K, with no matrix in sight.
-            testCase.verifyEqual(u.' * op.apply(v), v.' * op.apply(u), ...
-                'RelTol', 1e-12, 'the KKT operator is not symmetric');
-        end
-
-        function testOperatorDiagonalMatchesTheAssembledDiagonal(testCase)
-            [state, res, reg] = testCase.kktFixture();
-            K = adamnlopt.kkt_assemble(state, res, reg);
-            op = adamnlopt.kkt_KKTOperator(state, reg);
-
-            testCase.verifyEqual(op.diag, full(diag(K)), 'AbsTol', 1e-12);
-        end
-
-        function testPrecondDiagIsStrictlyPositive(testCase)
-            %   The Jacobi preconditioner has to be SPD for MINRES to be legal,
-            %   which abs(diag(K)) cannot deliver: the (2,2) block is -gamma*I
-            %   and gamma is zero unless the inertia correction fired, so the
-            %   dual entries would be exactly zero.  Hence the Schur-complement
-            %   estimate -- and hence this test.
-            [state, ~, reg] = testCase.kktFixture();
-            reg.gamma = 0;
-            op = adamnlopt.kkt_KKTOperator(state, reg);
-
-            testCase.verifyNumElements(op.precondDiag, op.n + op.mE);
-            testCase.verifyGreaterThan(min(op.precondDiag), 0, ...
-                ['a non-positive preconditioner diagonal makes the Jacobi ' ...
-                 'preconditioner indefinite and MINRES undefined']);
-        end
-
-        function testOperatorDiagonalsAreEmptyForAnLBFGSModel(testCase)
-            %   An L-BFGS operator has no cheaply available diagonal, and the
-            %   documented contract is [] rather than a fabricated one.
-            [state, ~, reg] = testCase.kktFixture();
-            state.H = adamnlopt.LBFGSHessian(numel(state.x), 5);
-            op = adamnlopt.kkt_KKTOperator(state, reg);
-
-            testCase.verifyEmpty(op.diag);
-            testCase.verifyEmpty(op.precondDiag);
-        end
 
         %% ================================================================
         %  kkt_residual
@@ -224,7 +146,7 @@ classdef AdamNlOptLinearAlgebraTest < AdamNlOptTestCase
         end
 
         %% ================================================================
-        %  linalg_solveKKTdirect / linalg_solveKKTkrylov
+        %  linalg_solveKKTdirect
         %  ================================================================
 
         function testDirectSolveMatchesBackslash(testCase)
@@ -237,99 +159,9 @@ classdef AdamNlOptLinearAlgebraTest < AdamNlOptTestCase
                 'AbsTol', 1e-9, 'RelTol', 1e-9);
         end
 
-        function testKrylovReproducesTheDirectSolve(testCase, krylovMethod, precondition)
-            %   Every method x preconditioner combination on one well-posed
-            %   indefinite KKT system.  This is the fixture that proved, during
-            %   the finding-60 hunt, that the linear solver itself was correct
-            %   and the fault lay in how the caller used its flag.
-            [state, res, reg] = testCase.kktFixture();
-            [K, rhs] = adamnlopt.kkt_assemble(state, res, reg);
-            dRef = full(K) \ full(rhs);
-
-            op = adamnlopt.kkt_KKTOperator(state, reg);
-            opts = adamnlopt.defaultOptions();
-            opts.krylovMethod = krylovMethod;
-            opts.precondition = precondition;
-            applyP = adamnlopt.linalg_preconditioner(op, opts);
-
-            [d, info] = adamnlopt.linalg_solveKKTkrylov( ...
-                op, full(rhs), 1e-12, applyP, opts);
-
-            testCase.verifyEqual(info.flag, 0, ...
-                sprintf('%s/%s did not converge on a well-posed system', ...
-                        krylovMethod, precondition));
-            testCase.verifyEqual(info.method, krylovMethod);
-            testCase.verifyEqual(d, dRef, 'AbsTol', 1e-8, 'RelTol', 1e-8);
-        end
-
-        function testKrylovFlagAgreesWithItsOwnReportedResidual(testCase, krylovMethod)
-            %   FINDING 60.  MATLAB's gmres/minres test convergence on the
-            %   PRECONDITIONED residual but report the TRUE one, so flag == 0
-            %   did not mean the step solved the system.  Starve the solver and
-            %   require the flag and the residual to tell the same story.
-            rng(0);
-            n = 14;
-            B = randn(n);
-            K = B + B.';
-            rhs = randn(n, 1);
-            op = struct('apply', @(v) K * v);
-
-            [~, info] = adamnlopt.linalg_solveKKTkrylov(op, rhs, 1e-12, [], ...
-                struct('krylovMethod', krylovMethod, 'krylovMaxIter', 1));
-
-            testCase.verifyGreaterThan(info.relres, 1e-12, ...
-                'the fixture is too easy -- one iteration should not solve it');
-            testCase.verifyNotEqual(info.flag, 0, ...
-                [krylovMethod ' reports convergence while its own relres ' ...
-                 'misses the requested tolerance']);
-        end
-
         %% ================================================================
-        %  linalg_preconditioner / conditionEstimate / forcingSequence
+        %  linalg_conditionEstimate
         %  ================================================================
-
-        function testNonePreconditionerIsExactlyTheIdentity(testCase)
-            [state, ~, reg] = testCase.kktFixture();
-            op = adamnlopt.kkt_KKTOperator(state, reg);
-            opts = adamnlopt.defaultOptions();
-            opts.precondition = 'none';
-            applyP = adamnlopt.linalg_preconditioner(op, opts);
-
-            rng(3);
-            r = randn(op.n + op.mE, 1);
-            testCase.verifyEqual(applyP(r), r);
-        end
-
-        function testJacobiPreconditionerNormalizesItsOwnDiagonal(testCase)
-            %   Applying the preconditioner to the diagonal it was built from
-            %   must return all ones -- the defining property, and the one that
-            %   breaks if a clamp is applied absolutely rather than relatively.
-            [state, ~, reg] = testCase.kktFixture();
-            op = adamnlopt.kkt_KKTOperator(state, reg);
-            opts = adamnlopt.defaultOptions();
-            opts.precondition = 'jacobi';
-            applyP = adamnlopt.linalg_preconditioner(op, opts);
-
-            testCase.verifyEqual(applyP(op.precondDiag), ...
-                ones(op.n + op.mE, 1), 'AbsTol', 1e-12);
-        end
-
-        function testUniformlyTinyDiagonalIsNotFlattenedByAnAbsoluteFloor(testCase)
-            %   A system scaled down by 1e-10 is perfectly well conditioned; an
-            %   absolute floor would clamp every entry to the same value and
-            %   silently turn the Jacobi preconditioner into the identity.
-            [state, ~, reg] = testCase.kktFixture();
-            state.H  = 1e-10 * state.H;
-            state.JE = 1e-10 * state.JE;
-            op = adamnlopt.kkt_KKTOperator(state, reg);
-            opts = adamnlopt.defaultOptions();
-            opts.precondition = 'jacobi';
-            applyP = adamnlopt.linalg_preconditioner(op, opts);
-
-            testCase.verifyEqual(applyP(op.precondDiag), ...
-                ones(op.n + op.mE, 1), 'AbsTol', 1e-8, ...
-                'the preconditioner collapsed under a uniform rescaling');
-        end
 
         function testConditionEstimateLeavesTheGlobalRngAlone(testCase)
             %   normest/condest draw random vectors.  A module that perturbs
@@ -360,79 +192,6 @@ classdef AdamNlOptLinearAlgebraTest < AdamNlOptTestCase
             % An estimate, not an evaluation: one order of magnitude either way.
             testCase.verifyGreaterThan(c1, cond(A) / 10);
             testCase.verifyLessThan(c1, cond(A) * 10);
-        end
-
-        function testConditionEstimateDeclinesToMaterializeALargeOperator(testCase)
-            %   nMax governs the MATRIX-FREE branch only: materializing an
-            %   operator costs n mat-vecs, so above the cap the honest answer
-            %   is NaN ("unknown"), which a caller must not read as a small
-            %   condition number.  A numeric matrix is never capped -- cond and
-            %   condest are cheap enough -- so the fixture has to be an
-            %   operator, not a sparse identity.
-            op = adamnlopt.kkt_KKTOperator( ...
-                struct('H', eye(40), 'JE', ones(2, 40), ...
-                       'x', zeros(40, 1), 'lamE', zeros(2, 1)), []);
-
-            testCase.verifyTrue(isnan(adamnlopt.linalg_conditionEstimate(op, 10)), ...
-                'an operator above nMax must return NaN, not an expensive answer');
-            testCase.verifyFalse(isnan(adamnlopt.linalg_conditionEstimate(op, 1000)), ...
-                'an operator below nMax must be materialized and estimated');
-        end
-
-        function testForcingSequenceStaysInsideItsClamps(testCase)
-            opts = adamnlopt.defaultOptions();
-            rng(11);
-            for k = 1:50
-                eta = adamnlopt.linalg_forcingSequence( ...
-                    10 ^ (4 * rand - 6), 10 ^ (4 * rand - 6), rand, opts);
-                testCase.verifyGreaterThanOrEqual(eta, opts.forcingEtaMin);
-                testCase.verifyLessThanOrEqual(eta, opts.forcingEtaMax);
-            end
-        end
-
-        function testForcingSequenceStartsAtTheCeiling(testCase)
-            %   With no history there is nothing to extrapolate from, so the
-            %   first solve is the loosest one the clamps allow.
-            opts = adamnlopt.defaultOptions();
-            eta = adamnlopt.linalg_forcingSequence(1, [], [], opts);
-            testCase.verifyEqual(eta, opts.forcingEtaMax);
-        end
-
-        function testForcingSequenceTightensAsTheResidualFalls(testCase)
-            %   Eisenstat-Walker choice 2: eta tracks (|F_new|/|F_old|)^alpha,
-            %   so a faster-shrinking residual must buy a tighter solve.
-            %   etaPrev is [] to disable the over-decrease safeguard, which
-            %   would otherwise floor both arms at the same value and hide the
-            %   ratio term entirely; the clamps are widened for the same
-            %   reason.
-            opts = adamnlopt.defaultOptions();
-            opts.forcingEtaMin = 1e-14;
-            opts.forcingEtaMax = 0.9;
-            etaFast = adamnlopt.linalg_forcingSequence(1e-6, 1, [], opts);
-            etaSlow = adamnlopt.linalg_forcingSequence(1e-1, 1, [], opts);
-
-            testCase.verifyLessThan(etaFast, etaSlow, ...
-                'the forcing term is not monotone in the residual ratio');
-        end
-
-        function testOverDecreaseSafeguardFloorsTheForcingTerm(testCase)
-            %   Eisenstat-Walker eq. 3.2: when gamma*etaPrev^alpha exceeds 0.1
-            %   the term is not allowed to collapse in one step, because an
-            %   over-eager tightening wastes Krylov iterations on a step the
-            %   nonlinear iteration is about to throw away.  Below 0.1 the
-            %   guard is inactive and the raw ratio stands.
-            opts = adamnlopt.defaultOptions();
-            opts.forcingEtaMin = 1e-14;
-            opts.forcingEtaMax = 0.9;
-
-            guarded   = adamnlopt.linalg_forcingSequence(1e-8, 1, 0.5, opts);
-            unguarded = adamnlopt.linalg_forcingSequence(1e-8, 1, 1e-4, opts);
-
-            testCase.verifyEqual(guarded, ...
-                opts.forcingGamma * 0.5 ^ opts.forcingAlpha, 'RelTol', 1e-12, ...
-                'the over-decrease safeguard did not hold the forcing term up');
-            testCase.verifyLessThan(unguarded, guarded, ...
-                'the safeguard fired below its own 0.1 activation threshold');
         end
 
         %% ================================================================

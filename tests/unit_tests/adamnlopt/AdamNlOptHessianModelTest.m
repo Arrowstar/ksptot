@@ -28,11 +28,11 @@ classdef AdamNlOptHessianModelTest < AdamNlOptTestCase
         end
 
         function testBothImplementationsSatisfyTheInterface(testCase)
-            %   isa() is the ONLY test the solver makes before calling apply,
-            %   getMatrix and diagonal, so a subclass that fails to implement
+            %   isa() is the ONLY test the solver makes before calling apply
+            %   and getMatrix, so a subclass that fails to implement
             %   one of them breaks the solver at run time rather than at load.
             models = {adamnlopt.BFGSHessian(3), adamnlopt.LBFGSHessian(3, 5)};
-            names  = {'reset', 'update', 'getMatrix', 'apply', 'diagonal'};
+            names  = {'reset', 'update', 'getMatrix', 'apply'};
             for k = 1:numel(models)
                 h = models{k};
                 testCase.verifyTrue(isa(h, 'adamnlopt.HessianModel'), ...
@@ -63,7 +63,6 @@ classdef AdamNlOptHessianModelTest < AdamNlOptTestCase
             testCase.verifyEqual(h.getMatrix(), eye(4), 'AbsTol', 0);
             testCase.verifyEqual(h.apply([1; 2; 3; 4]), [1; 2; 3; 4], ...
                 'AbsTol', 0);
-            testCase.verifyEqual(h.diagonal(), ones(4, 1), 'AbsTol', 0);
             testCase.verifyEqual(h.nUpdates, 0);
             testCase.verifyEqual(h.nRejected, 0);
         end
@@ -88,9 +87,9 @@ classdef AdamNlOptHessianModelTest < AdamNlOptTestCase
         end
 
         function testBfgsApplyAgreesWithGetMatrix(testCase)
-            %   kkt_KKTOperator uses apply while kkt_assemble uses getMatrix;
-            %   if they disagree the Krylov and direct solvers are solving
-            %   different problems.
+            %   The trust-region CG and tangential steps use apply while
+            %   kkt_assemble uses getMatrix; if they disagree, the step
+            %   subproblems and the KKT solve see different Hessians.
             h = testCase.trainedBfgs();
             B = h.getMatrix();
             V = [1 0 2; 0 1 -3; 0 0 1.5];
@@ -116,14 +115,6 @@ classdef AdamNlOptHessianModelTest < AdamNlOptTestCase
                 'getMatrix must return an exactly symmetric matrix');
             testCase.verifyGreaterThan(min(eig(B)), 0, ...
                 'the BFGS model lost positive definiteness');
-        end
-
-        function testBfgsDiagonalIsTheMatrixDiagonal(testCase)
-            %   linalg_preconditioner builds the Jacobi preconditioner from
-            %   diagonal(); it must not be a separate, stale copy.
-            h = testCase.trainedBfgs();
-            testCase.verifyEqual(h.diagonal(), diag(h.getMatrix()), ...
-                'AbsTol', 0);
         end
 
         function testBfgsRejectsAZeroStep(testCase)
@@ -294,9 +285,8 @@ classdef AdamNlOptHessianModelTest < AdamNlOptTestCase
 
         function testLbfgsApplyAgreesWithGetMatrix(testCase)
             %   apply uses the compact form directly; getMatrix materializes
-            %   it.  kkt_KKTOperator and kkt_assemble each pick one, so a
-            %   discrepancy here is a silent inconsistency between the Krylov
-            %   and direct solve paths.
+            %   it.  The CG steps and kkt_assemble each pick one, so a
+            %   discrepancy here is a silent inconsistency between them.
             h = testCase.trainedLbfgs(10);
             B = h.getMatrix();
             V = [1 0 2; 0 1 -3; 0 0 1.5];
@@ -319,18 +309,6 @@ classdef AdamNlOptHessianModelTest < AdamNlOptTestCase
                 'getMatrix must symmetrize the compact form');
             testCase.verifyGreaterThan(min(eig(B)), 0, ...
                 'the compact L-BFGS model lost positive definiteness');
-        end
-
-        function testLbfgsDiagonalIsEmptyByContract(testCase)
-            %   Documented: [] tells kkt_KKTOperator to leave op.diag empty and
-            %   linalg_preconditioner to fall back to the identity.  Forming
-            %   diag(getMatrix()) here would cost an n-by-n materialization per
-            %   iteration, which is the whole reason the limited-memory model
-            %   exists.
-            h = adamnlopt.LBFGSHessian(3, 5);
-            testCase.verifyEmpty(h.diagonal());
-            testCase.verifyEmpty(testCase.trainedLbfgs(10).diagonal(), ...
-                'diagonal() must stay empty after updates too');
         end
 
         function testLbfgsRejectsAZeroStep(testCase)
@@ -433,7 +411,6 @@ classdef AdamNlOptHessianModelTest < AdamNlOptTestCase
             h.reset();
             testCase.verifyEqual(h.getMatrix(), eye(3), 'AbsTol', 0);
             testCase.verifyEqual(h.gamma, 1);
-            testCase.verifyEmpty(h.diagonal());
         end
 
         function testLbfgsIsUsableAgainAfterAReset(testCase)
@@ -524,7 +501,7 @@ classdef AdamNlOptHessianModelTest < AdamNlOptTestCase
         end
 
         function testHessianVecProductIsLinearInV(testCase)
-            %   The Krylov solvers assume the operator is linear; a model whose
+            %   Conjugate gradients assume the operator is linear; a model whose
             %   apply allocated or cached per-direction state would break that
             %   without breaking any single-vector test.
             models = {[4 1 0; 1 3 1; 0 1 2], testCase.trainedBfgs(), ...

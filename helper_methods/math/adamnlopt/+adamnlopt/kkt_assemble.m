@@ -29,7 +29,7 @@ function [K, rhs, idx] = kkt_assemble(state, res, reg)
 %     idx - struct with index ranges idx.x (1:n) and idx.lamE (n+(1:mE)) for
 %           unpacking the solution vector.
 %
-%   See also KKT_RESIDUAL, KKT_KKTOPERATOR, KKT_INERTIACORRECTION.
+%   See also KKT_RESIDUAL, KKT_INERTIACORRECTION.
 
 if nargin < 3
     reg = [];

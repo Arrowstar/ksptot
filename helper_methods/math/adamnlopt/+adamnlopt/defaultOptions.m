@@ -18,8 +18,6 @@ function opts = defaultOptions()
 %     Hessian model    - hessianApprox ('exact'|'fd'|'lbfgs' limited-memory|
 %                         'bfgs' full-memory dense) and lbfgsMemory ('lbfgs'
 %                         only).
-%     Linear algebra   - direct vs Krylov KKT solves, forcing sequence, and
-%                         preconditioning (linearSolver, krylovMethod, etc.).
 %     Scaling          - automatic problem scaling (autoScale); ON by default.
 %     Globalization    - filter vs merit line search (globalization).
 %     Barrier schedule - central-path parameters (mu0, muMin, muGamma, muBeta,
@@ -363,42 +361,6 @@ opts.bfgsResetMaxDrop        = inf;
 % more of the pathology the option above exists to bound.
 opts.bfgsCondMax             = 1e12;
 opts.lbfgsMemory   = 10;       % 'lbfgs' only; ignored by 'bfgs'
-
-% --- Linear algebra ---
-opts.linearSolver = 'direct';  % 'direct' | 'krylov' | 'auto'
-opts.krylovMethod = 'minres';  % 'minres' | 'gmres'
-opts.krylovAutoDim = 500;      % 'auto' switches to krylov when n+mE exceeds this
-opts.krylovMaxIter = [];       % [] -> problem-size default inside the solver
-% Eisenstat-Walker's own ceiling is 0.9, and that is what this used to be -- but
-% 0.9 is calibrated for a Newton-Krylov solve of F(x)=0 globalized on ||F||, where
-% a sloppy linear solve is caught by the residual-based line search.  This solver
-% globalizes on a PRIMAL (theta, phi) filter, which cannot see dual error at all,
-% so a 90%-residual "solve" injects a completely unchecked dlam.  On HS71 that is
-% exactly what happened: MINRES returned flag 0 after ONE iteration at relres
-% 5e-2, the equality multiplier jumped from 6.4 to 289 in a single step, the
-% primal step collapsed to aP = 1e-10, and the solve stalled at f = 17.44 with
-% firstOrderOpt = 6.1e+06 while the direct solver reached f = 17.0140175 in nine
-% iterations.
-%
-% The first repair of this set it to 1e-4, which was still a decade too loose and
-% only LOOKED correct: MINRES on a Jacobi-preconditioned system routinely returns
-% a far tighter residual than it was asked for, so the default arm accidentally
-% got an accurate step.  Ask for 1e-4 and actually receive 1e-4 -- which is what
-% happens with precondition = 'none', or with GMRES -- and HS71 degrades the same
-% way: mu freezes at 2.8e-03 because the barrier subproblem never reaches
-% kappaMu*mu, and the solve mills around that subproblem's optimum to maxIter
-% (ef 0, f = 17.106 / 17.137 against 17.0140175).  A sweep over the full
-% benchmark battery x {direct, minres, gmres} x {jacobi, none} puts the honest
-% ceiling at 1e-6: below it every arm tracks the direct path to within 3% on
-% total iterations, above it the weaker arms break.  Tightening the ceiling costs
-% nothing measurable here and SAVES outer iterations (an accurate step is a
-% better step); etaMin drops to 1e-10 so the Eisenstat-Walker sequence keeps four
-% decades to adapt over instead of collapsing onto a constant.
-opts.forcingEtaMax = 1e-6;     % inexact-Newton forcing sequence upper clamp
-opts.forcingEtaMin = 1e-10;    % forcing sequence lower clamp
-opts.forcingGamma  = 1.0;      % Eisenstat-Walker choice-2 coefficient
-opts.forcingAlpha  = 1.618;    % Eisenstat-Walker choice-2 exponent
-opts.precondition  = 'jacobi'; % 'none' | 'jacobi' preconditioner for krylov
 
 % --- Automatic problem scaling (ON by default) ---
 % Poorly scaled problems are the single most common cause of a "stuck" solve:
