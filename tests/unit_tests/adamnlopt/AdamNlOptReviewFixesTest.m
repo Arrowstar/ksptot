@@ -919,6 +919,28 @@ classdef AdamNlOptReviewFixesTest < AdamNlOptTestCase
             testCase.verifyEqual(f, -(2 * x1 - 0.1), 'AbsTol', 1e-6);
         end
 
+        function testD8FdHessianOfAnFdGradientUsesALargerStep(testCase)
+            % 1e-9 noise, calibrated FD gradient: differencing it at sqrt(eps)
+            % amplified the gradient error to 7e-2 relative in H.
+            A = [4 1; 1 3];
+            fn = @(x) 0.5 * x.' * A * x + 1e-9 * sin(1e9 * sum(x));
+            ev = testCase.evaluatorFrom(struct('objFun', fn, 'hasObjGrad', false));
+            x = [0.3; -0.2];
+            ev.calibrateStep(x);
+            H = adamnlopt.lagrangianHessian(ev, x, zeros(0, 1), zeros(0, 1), ...
+                adamnlopt.defaultOptions());
+            testCase.verifyLessThan(norm(H - A) / norm(A), 1e-4);
+        end
+
+        function testD8FdHessianCostIsWarned(testCase)
+            fn = @(x) sum((x - 1).^2);
+            testCase.verifyWarning(@() adamnlopt.solve(fn, [0; 0], [], [], [], [], [], [], [], ...
+                testCase.quietOpts(struct('hessianApprox', 'exact'))), 'adamnlopt:fdHessianCost');
+            testCase.verifyWarningFree(@() adamnlopt.solve(@(x) deal(fn(x), 2 * (x - 1)), ...
+                [0; 0], [], [], [], [], [], [], [], testCase.quietOpts(struct( ...
+                'hessianApprox', 'exact', 'SpecifyObjectiveGradient', true))));
+        end
+
         function testD21FdProbeIntoAFailureRegionRetriesTheOtherSide(testCase)
             % At x1 = 0.9 - 1e-10 the forward probe fails.  The Jacobian
             % column was Inf/NaN (and a wrong-sized return crashed it with

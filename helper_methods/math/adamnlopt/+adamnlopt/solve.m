@@ -266,6 +266,18 @@ if ~strcmpi(opts.Display, 'off')
     util_echoOptions(opts);
 end
 
+% D8.4: an exact/FD Hessian without analytic derivatives differences an FD
+% gradient -- n gradients of n (or 2n) evaluations each, per iteration.  On LVD
+% (n = 50, ~1 s per propagation) that is ~40 minutes an iteration.
+if any(strcmpi(opts.hessianApprox, {'exact', 'fd'})) && isempty(opts.HessianFcn) && ...
+        (~ev.hasObjGrad || (~ev.hasConGrad && ev.mInl + ev.mEnl > 0))
+    nH = numel(solveProblem.x0);
+    warning('adamnlopt:fdHessianCost', ['hessianApprox = ''%s'' without analytic ' ...
+        'derivatives differences a finite-difference gradient: about n*(n+1) = %d ' ...
+        'user evaluations per iteration.  Consider ''bfgs'' (the default) or ''lbfgs''.'], ...
+        opts.hessianApprox, nH * (nH + 1));
+end
+
 % D5.2 dual cap: 'equality' resolves to on in the equality core only.
 if ~islogical(opts.dualCapViaGamma)
     opts.dualCapViaGamma = ~(hasIneq || hasBounds);
