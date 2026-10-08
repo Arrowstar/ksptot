@@ -691,12 +691,14 @@ opts.dualStepMax        = 10;    % Fix B: max ||aD*dlamE|| / max(1,||lamE||) per
 % feasibility row by gamma*dlamE indefinitely).  Inf restores the uncapped shift.
 opts.dualRegFeasFactor = 1;
 % D5.2: on a rank-deficient JE, grow the dual regularization until the coupled
-% KKT step respects dualStepMax (so dx is solved with the capped dlamE).  Off by
-% default: it regresses lvdExample_MunarFlybyContinuityConstraint (rank-deficient
-% JE, cond ~1e17).  Cost of off: the EQUALITY core on min x1+x2 over the unit
-% circle from x0 = 0 with FD gradients converges to the maximum again (the IP
-% core finds the minimum either way).
-opts.dualCapViaGamma = false;
+% KKT step respects dualStepMax (so dx is solved with the capped dlamE).
+% true | false | 'equality' (default: on in the equality core only).  The
+% equality core needs it on min x1+x2 over the unit circle from x0 = 0 with FD
+% gradients (it converges to the maximum without); the IP core finds the
+% minimum either way, and there the cap regresses
+% lvdExample_MunarFlybyContinuityConstraint (rank-deficient JE, cond ~1e17).
+% LVD always runs the IP core.
+opts.dualCapViaGamma = 'equality';
 opts.dualCondMax        = 1e8;   % Fix A: target ceiling on cond(S) after dual reg
 opts.dualCondProbeMaxDim = 400;  % skip Fix A's Schur probe when mE exceeds this
 

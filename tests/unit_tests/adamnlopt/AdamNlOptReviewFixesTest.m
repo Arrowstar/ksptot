@@ -617,9 +617,9 @@ classdef AdamNlOptReviewFixesTest < AdamNlOptTestCase
             % min x1 + x2 on the unit circle from x0 = 0, FD constraint
             % gradient: JE(x0) is analytically 0 and the FD value is 1.5e-8.
             % Both cores converged to the MAXIMUM (f = +sqrt(2)).  The equality
-            % core (no box) still needs the opt-in D5.2 cap to find the minimum.
+            % core (no box) relies on the D5.2 cap, on there by default.
             nl = @(x) deal([], x(1)^2 + x(2)^2 - 1);
-            o = testCase.quietOpts(struct('dualCapViaGamma', true));
+            o = testCase.quietOpts(struct());
             for box = [false true]
                 if box, lb = [-5; -5]; ub = [5; 5]; else, lb = []; ub = []; end
                 [~, f, ef] = adamnlopt.solve(@(x) x(1) + x(2), [0; 0], [], [], [], [], ...

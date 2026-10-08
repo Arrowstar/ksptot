@@ -221,15 +221,16 @@ end
 % solve itself respects the cap, so dx and dlamE stay consistent.
 %
 % Only when the first, unregularized factorization was RANK-DEFICIENT -- the
-% degenerate-Jacobian case D5 is about -- and only with opts.dualCapViaGamma,
-% which is OFF by default.  On lvdExample_MunarFlybyContinuityConstraint
+% degenerate-Jacobian case D5 is about -- and only when opts.dualCapViaGamma is
+% true (solve.m resolves the default 'equality' to true in the equality core
+% only).  In the IP core, on lvdExample_MunarFlybyContinuityConstraint
 % (30 iterations) the cap took the final violation from 4.3e-2 (dualStepMax =
 % Inf) to 0.40; that JE is genuinely rank-deficient (cond ~1e17), so the
 % rank gate alone does not help (0.48).  A gate that separates that case from
 % the FD-noise unit circle is still open.
 dualCapGrows = 0;
 capFac = getField(opts, 'dualStepMax', inf);
-if rankDefFirst && getField(opts, 'dualCapViaGamma', true) && ...
+if rankDefFirst && isequal(getField(opts, 'dualCapViaGamma', false), true) && ...
         reg.gamma > 0 && isfinite(capFac) && capFac > 0 && mE > 0 && info.solved
     lamE0 = zeros(mE, 1);
     if isfield(state, 'lamE') && numel(state.lamE) == mE, lamE0 = state.lamE(:); end

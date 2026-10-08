@@ -266,6 +266,11 @@ if ~strcmpi(opts.Display, 'off')
     util_echoOptions(opts);
 end
 
+% D5.2 dual cap: 'equality' resolves to on in the equality core only.
+if ~islogical(opts.dualCapViaGamma)
+    opts.dualCapViaGamma = ~(hasIneq || hasBounds);
+end
+
 if hasIneq || hasBounds
     [x, fval, exitflag, output, lambda, grad, hessian] = ...
         solveInteriorPoint(ev, solveProblem, opts, sc, fx, problem);

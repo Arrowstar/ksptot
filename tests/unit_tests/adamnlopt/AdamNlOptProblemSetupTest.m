@@ -1373,7 +1373,7 @@ classdef AdamNlOptProblemSetupTest < AdamNlOptTestCase
                 'autoScaleMaxGradient',       100; ...    % row-scale cap (review D3)
                 'kappaSigma',                 1e10; ...   % bound-multiplier safeguard (review D14)
                 'dualRegFeasFactor',          1; ...      % Fix-A cap (review D15)
-                'dualCapViaGamma',            false; ...  % D5.2 (rank-deficient JE only, opt-in)
+                'dualCapViaGamma',            'equality'; ...  % D5.2: equality core only
                 'acceptableTol',              []; ...     % acceptable exit (review A5): [] -> 100*optTol
                 'acceptableIter',             15; ...
                 'filterResetTrigger',         5; ...      % filter reset (review A4)
