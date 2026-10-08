@@ -195,6 +195,9 @@ if isstruct(output_calib)
         end
         ev.fdStep = evProbe.fdStep * fdFactor;
         ev.fdType = evProbe.fdType;
+        if ~isempty(evProbe.fdCentralStep)
+            ev.fdCentralStep = evProbe.fdCentralStep * fdFactor;
+        end
         output_calib.scaleFactor = fdFactor;
         output_calib.scaleSpread = fdSpread;
         output_calib.fdStepScaled = ev.fdStep;
@@ -450,6 +453,22 @@ for iter = 0:opts.maxIter
     trow.filterSize = filterCardinality(filt);
 
     [stop, ef, m] = terminationCheck(state, res, opts);
+
+    % A1: an exitflag-2 stop with forward-difference derivatives the user did
+    % not pin is a stop at FORWARD-difference accuracy (O(h) truncation).
+    % Switch to central differences once, refresh the derivatives at x, and
+    % restart the iteration from x; a second exitflag-2 stop stands.  The step
+    % and acceptable-streak state were measured at forward accuracy, so they
+    % are reset (the stale step would trip the step-size exit at once).
+    if stop && ef == 2 && ev.promoteToCentral()
+        trow.fdPromoted = 1;
+        recordTrace(trace, trow);
+        acceptCount = 0;
+        stepNorm = inf;
+        [f, g]   = ev.objective(x);
+        [JE, JI] = ev.jacobian(x);
+        continue;
+    end
 
     % Per-iteration plot hooks (user PlotFcn and/or the built-in uifigure
     % plot).  Fired after the termination test but before the stop branch so
@@ -1142,6 +1161,22 @@ for iter = 0:opts.maxIter
     trow.feasRegressCount = feasRegressCount;
 
     [stop, ef, m] = terminationCheck(state, res, opts);
+
+    % A1: an exitflag-2 stop with forward-difference derivatives the user did
+    % not pin is a stop at FORWARD-difference accuracy (O(h) truncation).
+    % Switch to central differences once, refresh the derivatives at x, and
+    % restart the iteration from x; a second exitflag-2 stop stands.  The step
+    % and acceptable-streak state were measured at forward accuracy, so they
+    % are reset (the stale step would trip the step-size exit at once).
+    if stop && ef == 2 && ev.promoteToCentral()
+        trow.fdPromoted = 1;
+        recordTrace(trace, trow);
+        acceptCount = 0;  objStallCount = 0;
+        stepNorm = inf;
+        [f, g]   = ev.objective(x);
+        [JE, JI] = ev.jacobian(x);
+        continue;
+    end
 
     % Per-iteration plot hooks (user PlotFcn and/or the built-in uifigure
     % plot).  Fired after the termination test so the terminal iterate carries
@@ -3353,7 +3388,7 @@ cols = { ...
     'lsFired', 'lsAdopted', 'lsOptCur', 'lsOptNew', ...
     ... % --- globalization and the barrier gate
     'lsFailed', 'filterSize', 'structStall', 'statErr', 'gateBase', ...
-    'gateRatio', 'Emu', 'nMuSteps', 'acceptCount', 'filterReset', 'feasStallCount', 'objStallCount', 'optGateCount', ...
+    'gateRatio', 'Emu', 'nMuSteps', 'acceptCount', 'filterReset', 'fdPromoted', 'feasStallCount', 'objStallCount', 'optGateCount', ...
     'feasRegressCount', 'restorationFired', ...
     ... % --- level 2 only
     'condK'};

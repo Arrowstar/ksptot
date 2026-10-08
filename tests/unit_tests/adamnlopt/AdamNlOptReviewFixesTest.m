@@ -941,6 +941,25 @@ classdef AdamNlOptReviewFixesTest < AdamNlOptTestCase
                 'hessianApprox', 'exact', 'SpecifyObjectiveGradient', true))));
         end
 
+        function testA1ForwardDifferencesArePromotedAtTheirAccuracyFloor(testCase)
+            % Rosenbrock n = 10, FD gradients: forward differences stopped at
+            % exitflag 2 (opt 4e-5, f 2e-10).  Promoted once to central, the
+            % solve converges to optTol.
+            nr = 10;
+            fros = @(x) sum(100 * (x(2:end) - x(1:end-1).^2).^2 + (1 - x(1:end-1)).^2);
+            [x, ~, ef, out] = adamnlopt.solve(fros, -2 * ones(nr, 1), [], [], [], [], ...
+                [], [], [], testCase.quietOpts(struct('traceLevel', 1)));
+            testCase.verifyEqual(ef, 1, out.message);
+            testCase.verifyEqual(x, ones(nr, 1), 'AbsTol', 1e-6);
+            testCase.verifyEqual(nnz(out.trace.fdPromoted == 1), 1);
+        end
+
+        function testA1PinnedCentralIsNotTouched(testCase)
+            [~, ~, ~, out] = adamnlopt.solve(@(x) sum((x - 1).^4), zeros(3, 1), [], [], [], [], ...
+                [], [], [], testCase.quietOpts(struct('FiniteDifferenceType', 'central', 'traceLevel', 1)));
+            testCase.verifyEqual(nnz(out.trace.fdPromoted == 1), 0);
+        end
+
         function testD21FdProbeIntoAFailureRegionRetriesTheOtherSide(testCase)
             % At x1 = 0.9 - 1e-10 the forward probe fails.  The Jacobian
             % column was Inf/NaN (and a wrong-sized return crashed it with

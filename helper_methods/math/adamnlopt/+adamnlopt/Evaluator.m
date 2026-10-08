@@ -71,6 +71,7 @@ classdef Evaluator < handle
         mEnl = 0; mInl = 0         % nonlinear-only counts
         mIlin = 0; mElin = 0       % linear-only counts
         fdStep = sqrt(eps)
+        fdCentralStep = []   % best central step the calibration measured ([] = none)
         fdType = 'forward'
         % True when the caller supplied a non-default FiniteDifferenceStepSize /
         % FiniteDifferenceType.  calibrateStep leaves those alone.
@@ -487,6 +488,7 @@ classdef Evaluator < handle
             adjCen = max(adjCenP, [], 2);
             [bestF, iF] = min(adjFwd);
             [bestC, iC] = min(adjCen);
+            if isfinite(bestC), obj.fdCentralStep = hSweep(iC); end
             info.errFwd = bestF;  info.errCen = bestC;
 
             if ~isfinite(bestF) && ~isfinite(bestC)
@@ -535,6 +537,21 @@ classdef Evaluator < handle
             end
             info.flag = 'set';
             info.fdStep = obj.fdStep;  info.fdType = obj.fdType;
+        end
+
+        function tf = promoteToCentral(obj)
+        %PROMOTETOCENTRAL  Switch forward FD derivatives to central (A1).
+        %   tf = promoteToCentral(obj) switches fdType to 'central' (with the
+        %   calibrated central step, else the smooth-function optimum
+        %   eps^(1/3)) and returns true, unless the scheme is already central,
+        %   the user pinned FiniteDifferenceType, or no derivative is
+        %   finite-differenced.  The setters invalidate every FD cache.
+            fdUsed = ~obj.hasObjGrad || (~obj.hasConGrad && obj.mInl + obj.mEnl > 0);
+            tf = fdUsed && strcmp(obj.fdType, 'forward') && ~obj.fdTypeUserSet;
+            if ~tf, return; end
+            h = obj.fdCentralStep;
+            if isempty(h), h = eps^(1/3); end
+            setFd(obj, 'central', h);
         end
 
         function [cE, cI] = constraints(obj, x)
