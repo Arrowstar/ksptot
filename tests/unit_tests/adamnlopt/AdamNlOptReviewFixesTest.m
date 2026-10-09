@@ -88,6 +88,8 @@ classdef AdamNlOptReviewFixesTest < AdamNlOptTestCase
             % Fields LVD sets on purpose, with the reason.
             intentional = { ...
                 'Display', ...   % LVD shows the iteration table by default
+                'returnIterate', ...   % LVD runs end on limits/Cancel: return the best point (A10)
+                'objPlateauWindow', ...   % 40 plateau iterations of FD propagations is minutes of wall time (A10)
                 };
             f = fieldnames(d);
             bad = {};

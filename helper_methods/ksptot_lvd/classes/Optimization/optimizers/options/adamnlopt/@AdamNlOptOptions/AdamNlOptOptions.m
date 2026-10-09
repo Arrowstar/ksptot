@@ -25,7 +25,7 @@ classdef AdamNlOptOptions < matlab.mixin.SetGet
         maxTime(1,1) double = Inf;  %seconds; enforced by the solver's terminationCheck (exitflag 0)
 
         %Objective plateau exit
-        objPlateauWindow(1,1) double = 40;
+        objPlateauWindow(1,1) double = 15;
         objPlateauFtol(1,1) double = 1E-5;
         objPlateauOptTol(1,1) double = 3E-6;
         objPlateauOptWindow(1,1) double = 10;
@@ -74,7 +74,7 @@ classdef AdamNlOptOptions < matlab.mixin.SetGet
         %Divergence detection / result selection
         divergeFactor(1,1) double = 1000;
         divergeWindow(1,1) double = Inf;
-        returnIterate(1,1) AdamNlOptReturnIterateEnum = AdamNlOptReturnIterateEnum.Last;
+        returnIterate(1,1) AdamNlOptReturnIterateEnum = AdamNlOptReturnIterateEnum.BestKKT;
 
         %Barrier and trust region
         mu0(1,1) double = 0.1;

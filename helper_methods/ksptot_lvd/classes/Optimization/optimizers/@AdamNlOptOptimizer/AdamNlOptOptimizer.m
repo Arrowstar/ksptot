@@ -309,6 +309,7 @@ classdef AdamNlOptOptimizer < AbstractGradientOptimizer
 
         function stop = getOutputFunction(x, optimValues, state, hOptimStatusLabel, hFinalStateOptimLabel, hDispAxes, hCancelButton, ...
                                           objFcn, lb, ub, celBodyData, recorder, propNames, writeOutput, varLabels, lbUsAll, ubUsAll, optimStartTic, lvdOpt, evtToStartScriptExecAt) %#ok<INUSD>
+            persistent lastStateLog
             switch state
                 case 'iter'
                     stop = get(hCancelButton,'Value');
@@ -323,10 +324,23 @@ classdef AdamNlOptOptimizer < AbstractGradientOptimizer
             end
 
             if(stop == true)
+                % Fresh readout for the cancelled point, then out: the only
+                % per-cancel propagation.
+                [~, stateLog] = objFcn(x);
                 return;
             end
 
-            [~, stateLog] = objFcn(x);
+            % The state readout below is display-only (the recorder above
+            % already took everything the scorecard needs), and each call
+            % costs a full mission propagation -- the same-x cache misses
+            % because the last propagation was an FD probe.  On an n = 5-10
+            % LVD case that is 10-50% of every iteration.  Refresh it on
+            % iteration 0 and every 5th iteration; in between, re-show the
+            % last one (A10).
+            if(isempty(lastStateLog) || mod(optimValues.iteration, 5) == 0)
+                [~, lastStateLog] = objFcn(x);
+            end
+            stateLog = lastStateLog;
 
             if(strcmpi(state,'init') || strcmpi(state,'iter'))
                 try
