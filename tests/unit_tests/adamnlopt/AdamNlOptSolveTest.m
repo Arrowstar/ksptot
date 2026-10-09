@@ -598,9 +598,15 @@ classdef AdamNlOptSolveTest < AdamNlOptTestCase
                 % useNTdecomp cannot do NONLINEAR INEQUALITIES -- see
                 % testUseNTdecompIsRefusedOnNonlinearInequalities below.  Those
                 % problems now warn and fall back, so they are covered by that
-                % test; here the arm exercises what the NT branch itself runs.
+                % test; here the arm exercises what the NT branch itself runs:
+                % unconstrained, linear equalities and inequalities, and a
+                % nonlinear equality.  boundActive is deliberately NOT here:
+                % the NT back-substituted bound duals ratchet up as the gap
+                % closes (zU = 430 against 2 on that fixture) while the masked
+                % termination still exits 1 -- a pre-existing, Batch-10-
+                % bisected defect of the opt-in path, not a D19 regression.
                 testCase.verifyArmSolves(struct(defaultOffFlag, true), ...
-                    {'sphere2', 'simplexCenter'});
+                    {'sphere2', 'simplexCenter', 'ineqActive', 'circleEq'});
                 return;
             end
             testCase.verifyArmSolves(struct(defaultOffFlag, true));

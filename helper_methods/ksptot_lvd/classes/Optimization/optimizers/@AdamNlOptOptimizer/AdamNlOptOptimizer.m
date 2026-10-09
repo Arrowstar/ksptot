@@ -243,6 +243,14 @@ classdef AdamNlOptOptimizer < AbstractGradientOptimizer
             end
             obj.options = other.options.copy();
         end
+
+        function due = stateReadoutDue(iteration, haveCache)
+        %STATEREADOUTDUE  Whether the state readout needs a fresh propagation.
+        %   The readout is display-only and each refresh costs a full mission
+        %   propagation, so it refreshes on iteration 0 and every 5th
+        %   iteration; in between the last readout is re-shown (A10).
+            due = ~haveCache || mod(iteration, 5) == 0;
+        end
     end
 
     methods(Access=private)
@@ -337,7 +345,7 @@ classdef AdamNlOptOptimizer < AbstractGradientOptimizer
             % LVD case that is 10-50% of every iteration.  Refresh it on
             % iteration 0 and every 5th iteration; in between, re-show the
             % last one (A10).
-            if(isempty(lastStateLog) || mod(optimValues.iteration, 5) == 0)
+            if(AdamNlOptOptimizer.stateReadoutDue(optimValues.iteration, ~isempty(lastStateLog)))
                 [~, lastStateLog] = objFcn(x);
             end
             stateLog = lastStateLog;

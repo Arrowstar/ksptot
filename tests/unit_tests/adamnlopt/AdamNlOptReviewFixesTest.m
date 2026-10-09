@@ -1347,6 +1347,36 @@ classdef AdamNlOptReviewFixesTest < AdamNlOptTestCase
             testCase.verifyEqual(o.getOptionsForOptimizer([]).objPlateauWindow, 15);
         end
 
+        %% ==== Batch 10.10 (T2): Broyden end to end ==========================
+        function testD1OptInBroydenServesJacobiansFromTheSecantModel(testCase)
+            % With enableBroyden the second Jacobian must come from the
+            % rank-1 secant model (one constraint evaluation), not from a
+            % fresh n-probe difference.  The count is what makes this a
+            % Broyden test rather than a vacuous exact-Jacobian one.
+            ev = testCase.evaluatorFrom(struct('nlcon', @unitCircleEq, 'mEnl', 1), ...
+                struct('enableBroyden', true));
+            x0 = [0.6; 0.7];  x1 = [0.605; 0.692];
+            ev.jacobian(x0);
+            n0 = ev.nCon;
+            JE1 = ev.jacobian(x1);
+            testCase.verifyEqual(ev.nCon - n0, 1, ...
+                'the second Jacobian must be secant-served, not re-differenced');
+            testCase.verifyGreaterThan(norm(JE1 - 2 * x1.'), 1e-9, ...
+                'a secant Jacobian must not equal the exact one');
+            testCase.verifyLessThan(norm(JE1 - 2 * x1.') / norm(2 * x1.'), 0.5, ...
+                '...but it must still approximate it');
+        end
+
+        function testD1BroydenSolveConvergesToTheRightAnswer(testCase)
+            % Opt-in Broyden on the unit circle: the minimizer, not a secant-
+            % error circle, and a converged exit.
+            [x, ~, ef, out] = adamnlopt.solve(@(x) x(1) + x(2), [0.9; 0.3], ...
+                [], [], [], [], [], [], @(x) deal([], x(1)^2 + x(2)^2 - 1), ...
+                testCase.quietOpts(struct('enableBroyden', true)));
+            testCase.verifyGreaterThan(ef, 0, out.message);
+            testCase.verifyEqual(x, -[1; 1] / sqrt(2), 'AbsTol', 1e-6);
+        end
+
         %% ==== Batch 10.3: Broyden refresh test (D25) ========================
         function testD25RefreshVerdictIsScaleInvariant(testCase)
             % Same (s, y, J) at 1e6 and 1e-6 scale: the old test divided by
@@ -1400,6 +1430,12 @@ function [c, ceq] = separableCon(x)
 % CheckJacobPattern tests.
 c = [x(1)^2 - 1; x(2)^2 - 1];
 ceq = [];
+end
+
+function [c, ceq] = unitCircleEq(x)
+% Unit circle equality for the Broyden tests.
+c = [];
+ceq = x(1)^2 + x(2)^2 - 1;
 end
 
 function [c, ceq] = failsBeyond09(x)% Disk, sign and a linear equality; a "failed simulation" beyond x1 = 0.9.
