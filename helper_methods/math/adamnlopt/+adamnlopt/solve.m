@@ -425,6 +425,47 @@ for iter = 0:opts.maxIter
     trow = struct('iter', iter);
     primaryInfo = [];  nSolves = 0;
     trow.jacExact = double(~ev.jacobianIsApprox());   % D1: secant-served rows are marked
+    % Least-squares equality-multiplier (costate) refresh, as in the IP core.
+    % The Newton-accumulated lamE can overshoot badly on an early step taken
+    % with a cold Hessian model; with the primal already converged every line
+    % search then fails, Fix B ties lamE to the failed alpha, and the frozen
+    % wrong costates stall the solve at opt >> tol with x* in hand
+    % (block-sum equalities stall this way: primal converged in 1 step, then
+    % opt 1.75 thereafter).  Re-fit lamE against the current gradient whenever
+    % the dual residual dominates, adopted only on strict improvement.  No
+    % slacks, bounds or inequalities exist in this core, so the fit is over
+    % all rows in the optW metric, exactly as the IP core does.
+    lamE_pair = lamE;
+    lsAdopted = false;
+    if opts.lsMultiplierRefresh && ~isempty(lamE)
+        optCur  = norm(optW .* (g + JE.' * lamE), inf);
+        feasCur = norm(cE, inf);
+        trow.lsOptCur = optCur;
+        trow.lsFired  = double(optCur > opts.lsRefreshDomRatio * feasCur);
+        trow.lsAdopted = 0;
+        if optCur > opts.lsRefreshDomRatio * feasCur
+            Aw = JE.' .* optW;
+            bw = -(optW .* g);
+            if isfinite(opts.dualFitCondMax) && opts.dualFitCondMax > 0 && ...
+                    numel(lamE) >= opts.dualFitCondMinEq
+                sMaxA = normest(Aw, 1e-2);
+                fitTol = sMaxA / opts.dualFitCondMax;
+                lamE_ls = lsqminnorm(Aw, bw, fitTol);
+            else
+                lamE_ls = lsqminnorm(Aw, bw);
+            end
+            optNew   = norm(optW .* (g + JE.' * lamE_ls), inf);
+            growthOK = ~isfinite(opts.dualFitGrowthMax) || ...
+                norm(lamE_ls, inf) <= opts.dualFitGrowthMax * max(1, norm(lamE, inf));
+            trow.lsOptNew = optNew;
+            % P3 deadband (as in the IP core): adopt only on strict improvement.
+            if optNew < opts.lsRefreshDeadband * optCur && growthOK
+                lamE = lamE_ls;
+                lsAdopted = true;
+                trow.lsAdopted = 1;
+            end
+        end
+    end
     state = makeState(x, lamE, f, g, cE, JE, JI, iter, ev.totalEvals(), alpha);
     state.jacNoiseTol = jacNoiseTol(ev, x, sc);   % D5 rank floor for degeneracy detection
     % Budget/progress fields the termination test needs but cannot measure:
@@ -462,13 +503,13 @@ for iter = 0:opts.maxIter
     advice = modeAdvice(state, res, history, opts);
     state.mode = modeLabel(advice.mode, 'eq');
     if strcmp(opts.Display, 'iter-debug')
-        % Debug columns for the equality core.  The barrier ratio, active-bound
-        % count, and costate-refresh flag do not exist here (no barrier, no
-        % bounds, no IP multiplier refresh), so they are NaN and print as a dash.
+        % Debug columns for the equality core.  The barrier ratio and
+        % active-bound count do not exist here (no barrier, no bounds); the
+        % costate-refresh flag does (LS multiplier refresh, as in the IP core).
         dbg = struct('optRaw', util_norms(res.rStat), ...
                      'optScaled', res.opt / kktScaleFactor(state), ...
                      'normLamE', norm(lamE, inf), ...
-                     'gateRatio', NaN, 'nActiveBnd', NaN, 'lsAdopted', NaN);
+                     'gateRatio', NaN, 'nActiveBnd', NaN, 'lsAdopted', double(lsAdopted));
     else
         dbg = [];
     end
@@ -820,8 +861,11 @@ for iter = 0:opts.maxIter
     [f, g]  = ev.objective(x);
     [cE, ~] = ev.constraints(x);
     [JE, ~] = ev.jacobian(x);
+    % P2 (as in the IP core): on an adopted-refresh iteration the secant pair
+    % must form at the pre-refresh multipliers, not the jumped ones.
+    if lsAdopted, lamEsec = lamE_pair; else, lamEsec = lamE; end
     hinfo = updateHessianModel(hmodel, gOld, JEold, [], g, JE, [], ...
-                               lamE, zeros(0,1), alpha * dx, ev, x, lsFailed || alpha <= 1e-10);
+                               lamEsec, zeros(0,1), alpha * dx, ev, x, lsFailed || alpha <= 1e-10);
     ksolve = warnBfgsReset(ksolve, opts, hinfo, iter);
     history = pushHistory(history, norm(cE, 1), alpha, opts);
 

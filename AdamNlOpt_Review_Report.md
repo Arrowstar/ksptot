@@ -56,6 +56,7 @@ All file paths below are relative to `helper_methods/math/adamnlopt/+adamnlopt/`
 | D32 | Medium | LVD cases saved before AdamNlOpt existed share one AdamNlOpt optimizer object | LVD `LvdOptimization.m:23` |
 | D33 | High | The step-size exit reports convergence before the barrier is finished | `terminationCheck.m` step-size exit |
 | D34 | High | The opt-in NT path reported wrong bound multipliers with a converged exit (fixed in Batch 11 via a centrality guard) | NT branch, `solve.m` |
+| D35 | Medium | The equality core never re-fits stale costates, stalling with the answer in hand (fixed in Batch 11 by porting the IP refresh) | `solve.m` equality core |
 
 **Algorithm improvements** (Section 3): FD-accuracy-aware termination and automatic forward→central promotion (A1, reproduced: Rosenbrock n=10 with FD gradients returns exitflag 0 at f = 2e-10 because `optTol` is below the FD noise floor); one combined FD sweep for gradient + Jacobian (A2, halves LVD propagations); warm start from a previous LVD run (A3); watchdog and IPOPT filter-reset heuristic (A4); acceptable-point termination (A5); WB-style proximal restoration (A6); FD re-calibration on repeated line-search failure (A7); derivative checker (A8); factor reuse and cheaper Schur probe (A9); LVD-specific defaults (A10).
 
@@ -647,6 +648,12 @@ Found while landing D3. `terminationCheck.m` step-size exit (exitflag 2, "Conver
 Found while extending the `useNTdecomp` test arms in Batch 10 (T3). `boundActive` (`min ||x-[2;2]||²` in `[0,1]²`, optimum `[1;1]` on both upper bounds) returns exitflag 1 at the right `x` with `zU = [430.8; 430.8]` against the analytic `[2;2]` (stationarity residual 428). Bisected bit-identical on the pre-Batch-10 tree, so no Batch 10 change causes it. Per-iteration instrumentation confirmed the mechanism: the NT tangential step minimizes a quadratic model that stays finite AT the bounds, so at iteration 4 the trial closed the gap to 2.2e-10 while mu was still 1.8e-6 (4000x below what mu/z allows); the explicit dual back-substitution then relaxed `zU` toward mu/gap (≈450), and the Fix-F masked termination exited 1.
 
 **Fix (applied in Batch 11).** A centrality guard in the IP NT inner loop: trials with min(gap·z/mu) below 1e-2 over positive-z finite bounds are rejected like any globalization rejection (shrink and retry; genuinely stuck iterations reach the KKT fallback). Healthy trajectories never dip below ~1.0 and the failure sat at 1.4e-4, so the threshold separates by orders of magnitude either way. `boundActive` now returns `zU = [2;2]` with exitflag 1 in 7 iterations and rejoined the NT test arms with full KKT verification. Guard: the `boundActive` arm itself.
+
+### D35. [Medium] The equality core never re-fits stale costates, stalling with the answer in hand
+
+Found in Batch 11 while benchmarking Broyden staleness policies: `min Σ(x-1)²` with three block-sum equalities converges primally in 1 Newton step (f = 1e-30) and then reports exitflag 0 at opt 1.75 for 7 more iterations. The first step, taken with a cold Hessian model, overshoots the duals; every line search then fails at the converged primal, Fix B ties `lamE` to the failed alpha so the multipliers freeze, and nothing ever corrects them. The IP core's least-squares costate refresh (Batch 4) was never ported to the equality core -- the same class of omission D10 fixed for restoration. The refresh fires on the identical dominance gate and adoption guards, simplified for a core with no slacks, bounds or inequalities, with the P2 pre-refresh snapshot for the secant pair.
+
+**Fix (applied in Batch 11).** Port the refresh (gate, truncated/plain fit, deadband, growth guard, P2 snapshot) to the equality-core loop top, before `makeState`. The fixture converges next iteration (ef 1, 1 iteration). Guard: `testD35EqualityCoreRefreshesStaleCostates` (ef 0 at 8 iterations pre-fix).
 
 ### T1. [Test hygiene] `testOptionsStructAndOptimoptionsObjectAgree` is Incomplete under a license-test/checkout mismatch
 

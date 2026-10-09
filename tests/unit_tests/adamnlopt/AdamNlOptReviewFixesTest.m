@@ -1424,6 +1424,21 @@ classdef AdamNlOptReviewFixesTest < AdamNlOptTestCase
             testCase.verifyEqual(x, -[1; 1] / sqrt(2), 'AbsTol', 1e-6);
         end
 
+        %% ==== Batch 11 (D35): equality-core costate refresh ================
+        function testD35EqualityCoreRefreshesStaleCostates(testCase)
+            % Block-sum equalities: Newton nails the primal in 1 step but
+            % overshoots the duals; with no refresh the frozen wrong costates
+            % (Fix B ties lamE to the failed alpha) stall at opt 1.75 with
+            % exitflag 0.  The equality-core refresh re-fits against the
+            % current gradient and the solve converges next iteration.
+            [x, ~, ef, out] = adamnlopt.solve(@(x) sum((x - 1).^2), ...
+                2 * ones(30, 1), [], [], [], [], [], [], @blockSumEq, ...
+                testCase.quietOpts(struct()));
+            testCase.verifyGreaterThan(ef, 0, out.message);
+            testCase.verifyEqual(x, ones(30, 1), 'AbsTol', 1e-6);
+            testCase.verifyLessThanOrEqual(out.iterations, 2);
+        end
+
         %% ==== Batch 10.3: Broyden refresh test (D25) ========================
         function testD25DisallowedBroydenServesExactly(testCase)
             % With the optimality-phase gate closed (broydenAllow = false)
@@ -1533,6 +1548,12 @@ function [c, ceq] = gatedBowlCon(x)
 b = 15;
 c = sum(x(1:b).^2) - b;
 ceq = [sum(x(1:b)) - b; sum(x(b+1:end)) - b];
+end
+
+function [c, ceq] = blockSumEq(x)
+% Three block-sum equalities (solution ones), for the D35 refresh test.
+c = [];
+ceq = [sum(x(1:10)) - 10; sum(x(11:20)) - 10; sum(x(21:30)) - 10];
 end
 
 function [c, ceq] = failsBeyond09(x)% Disk, sign and a linear equality; a "failed simulation" beyond x1 = 0.9.
