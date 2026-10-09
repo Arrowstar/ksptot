@@ -1030,6 +1030,60 @@ classdef AdamNlOptReviewFixesTest < AdamNlOptTestCase
             o.checkGradients = true;
             testCase.verifyTrue(o.getOptionsForOptimizer([]).CheckGradients);
         end
+
+        %% ==== Batch 10.1: safe hygiene (D31) ================================
+        function testD31DeadOptionIsGone(testCase)
+            % lsRefreshFeasTol was defined, exposed in LVD options/GUI, and
+            % never read (the dominance gate replaced it).  All four surfaces
+            % go together; mapOptions warns on unknown names, so a leftover
+            % writer would fail loudly rather than silently.
+            testCase.verifyFalse(isfield(adamnlopt.defaultOptions(), 'lsRefreshFeasTol'));
+            testCase.verifyFalse(isfield(AdamNlOptOptions().getOptionsForOptimizer([]), ...
+                'lsRefreshFeasTol'));
+        end
+
+        function testD31NaNBoundsAreRejected(testCase)
+            o = testCase.quietOpts(struct());
+            testCase.verifyError(@() adamnlopt.solve(@(x) sum(x.^2), [0; 0], ...
+                [], [], [], [], [NaN; -1], [1; 1], [], o), 'adamnlopt:bounds');
+            testCase.verifyError(@() adamnlopt.solve(@(x) sum(x.^2), [0; 0], ...
+                [], [], [], [], [-1; -1], [1; NaN], [], o), 'adamnlopt:bounds');
+        end
+
+        function testD31NonFiniteLinearDataIsRejected(testCase)
+            o = testCase.quietOpts(struct());
+            testCase.verifyError(@() adamnlopt.solve(@(x) sum(x.^2), [0; 0], ...
+                [1 1], NaN, [], [], [], [], [], o), 'adamnlopt:linear');
+            testCase.verifyError(@() adamnlopt.solve(@(x) sum(x.^2), [0; 0], ...
+                [1 NaN], 1, [], [], [], [], [], o), 'adamnlopt:linear');
+        end
+
+        function testD31SelectorTyposAreErrors(testCase)
+            testCase.verifyError(@() adamnlopt.mapOptions(struct('globalization', 'fliter')), ...
+                'adamnlopt:selector');
+            testCase.verifyError(@() adamnlopt.mapOptions(struct('autoScale', 'grads')), ...
+                'adamnlopt:selector');
+            testCase.verifyError(@() adamnlopt.mapOptions(struct('FiniteDifferenceType', 'backwards')), ...
+                'adamnlopt:selector');
+            testCase.verifyError(@() adamnlopt.mapOptions(struct('Display', 'verbose')), ...
+                'adamnlopt:selector');
+        end
+
+        function testD31FminconDisplayAliasesMap(testCase)
+            testCase.verifyEqual(adamnlopt.mapOptions(struct('Display', 'iter-detailed')).Display, 'iter');
+            testCase.verifyEqual(adamnlopt.mapOptions(struct('Display', 'final-detailed')).Display, 'final');
+            testCase.verifyEqual(adamnlopt.mapOptions(struct('Display', 'notify')).Display, 'final');
+            testCase.verifyEqual(adamnlopt.mapOptions(struct('Display', 'none')).Display, 'off');
+        end
+
+        function testD31TraceCarriesItsScaledFlag(testCase)
+            [~, ~, ~, out] = adamnlopt.solve(@(x) sum((x - 1).^2), [0; 0], ...
+                [], [], [], [], [], [], [], testCase.quietOpts(struct()));
+            testCase.verifyEqual(out.scaling.traceIsScaled, out.scaling.applied);
+            [~, ~, ~, outNone] = adamnlopt.solve(@(x) sum((x - 1).^2), [0; 0], ...
+                [], [], [], [], [], [], [], testCase.quietOpts(struct('autoScale', 'none')));
+            testCase.verifyFalse(outNone.scaling.traceIsScaled);
+        end
     end
 
     methods (Access = private)

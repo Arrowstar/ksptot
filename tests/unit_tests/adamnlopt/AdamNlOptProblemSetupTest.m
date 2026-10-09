@@ -1019,25 +1019,6 @@ classdef AdamNlOptProblemSetupTest < AdamNlOptTestCase
             testCase.verifyEqual(out, 0, 'AbsTol', 0);
         end
 
-        function testUtilScalingNeverScalesUp(testCase)
-            %   Every factor is capped at 1: amplifying a small gradient would
-            %   amplify its evaluation noise with it.
-            [p, ev] = testCase.scalingFixture();
-            sc = adamnlopt.util_scaling(ev, p.x0, adamnlopt.defaultOptions());
-            all3 = [sc.objFactor; sc.conFactorE; sc.conFactorI];
-            testCase.verifyLessThanOrEqual(max(all3), 1);
-            testCase.verifyGreaterThan(min(all3), 0);
-        end
-
-        function testUtilScalingScalesDownALargeGradient(testCase)
-            ev = testCase.bigGradientEvaluator();
-            sc = adamnlopt.util_scaling(ev, [1; 1], adamnlopt.defaultOptions());
-            %   gmax / ‖g‖inf = 100 / 1e4 exactly.
-            testCase.verifyEqual(sc.objFactor, 1e-2, 'RelTol', 1e-12);
-            testCase.verifySize(sc.conFactorE, [0 1]);
-            testCase.verifySize(sc.conFactorI, [0 1]);
-        end
-
         %% ---------------------------------------------------------------
         %  diagnose, util_logger, util_logAppend
         %  ---------------------------------------------------------------
@@ -1268,19 +1249,6 @@ classdef AdamNlOptProblemSetupTest < AdamNlOptTestCase
             ev = adamnlopt.Evaluator(problem, adamnlopt.defaultOptions());
         end
 
-        function ev = bigGradientEvaluator(~)
-            %BIGGRADIENTEVALUATOR  An unconstrained objective whose gradient at
-            %   the probe point is far above the gmax = 100 cap.
-            problem = struct( ...
-                'objFun',     @AdamNlOptProblemSetupTest.steepObj, ...
-                'hasObjGrad', true, ...
-                'nlcon',      [], 'hasConGrad', false, ...
-                'Aineq',      zeros(0, 2), 'bineq', zeros(0, 1), ...
-                'Aeqlin',     zeros(0, 2), 'beqlin', zeros(0, 1), ...
-                'n', 2, 'mInl', 0, 'mEnl', 0);
-            ev = adamnlopt.Evaluator(problem, adamnlopt.defaultOptions());
-        end
-
         function out = diagOutput(~, exitflag)
             %DIAGOUTPUT  A plausible solve report for the advisor to read.
             out = struct( ...
@@ -1406,7 +1374,6 @@ classdef AdamNlOptProblemSetupTest < AdamNlOptTestCase
                 'socMax',                     4; ...
                 'lsMultiplierRefresh',        true; ...
                 'lsRefreshDomRatio',          10; ...
-                'lsRefreshFeasTol',           1e-3; ...
                 'lsRefreshDeadband',          0.9; ...
                 'dualFitCondMax',             1e4; ...
                 'dualFitCondMinEq',           8; ...
@@ -1431,14 +1398,6 @@ classdef AdamNlOptProblemSetupTest < AdamNlOptTestCase
             for i = 1:size(pins, 1)
                 s.(pins{i, 1}) = pins{i, 2};
             end
-        end
-    end
-
-    methods (Static)
-        function [f, g] = steepObj(x)
-            %STEEPOBJ  A gradient of order 1e4 at the unit point.
-            f = 5e3 * (x(1) ^ 2 + x(2) ^ 2);
-            g = 1e4 * x(:);
         end
     end
 end

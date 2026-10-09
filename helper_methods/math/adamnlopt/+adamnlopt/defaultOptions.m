@@ -704,7 +704,6 @@ opts.socMax       = 4;      % max successive SOC re-solves per iteration
 % during a genuine feasibility drive (feas dominates), protecting the secant.
 opts.lsMultiplierRefresh = true;   % ON by default (dominance-gated; see below)
 opts.lsRefreshDomRatio   = 10;     % refresh when opt > this * feas (costate-lag stall)
-opts.lsRefreshFeasTol    = 1e-3;   % legacy; no longer the primary gate
 
 % Adoption DEADBAND (P3): the re-fit must beat the current weighted dual
 % infeasibility by at least lsRefreshDeadband (a factor < 1).  Without it, any

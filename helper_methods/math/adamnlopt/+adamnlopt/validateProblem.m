@@ -93,8 +93,10 @@ end
 
 function [M, v] = checkLinear(M, v, n, nameM, namev)
 %CHECKLINEAR  Validate and normalize a linear constraint (matrix, vector) pair.
-%   Errors unless the pair is both-empty or both-given, M has n columns, and
-%   its row count matches numel(v). Empty pairs become 0-by-n / 0-by-1.
+%   Errors unless the pair is both-empty or both-given, M has n columns,
+%   its row count matches numel(v), and both are finite (a NaN/Inf row is a
+%   modelling bug that would otherwise surface as a NaN step or a silently
+%   accepted +Inf violation). Empty pairs become 0-by-n / 0-by-1.
 %
 %   Inputs:
 %     M     - constraint matrix (mrows-by-n) or empty.
@@ -119,11 +121,16 @@ v = v(:);
 if size(M, 1) ~= numel(v)
     error('adamnlopt:linear', '%s rows must match numel(%s).', nameM, namev);
 end
+if ~all(isfinite(M(:))) || ~all(isfinite(v))
+    error('adamnlopt:linear', '%s and %s must be finite.', nameM, namev);
+end
 end
 
 function [lb, ub] = checkBounds(lb, ub, n)
 %CHECKBOUNDS  Expand and validate lower/upper bound vectors.
-%   Expands lb/ub to n-by-1 (with -Inf/+Inf fill) and errors if any lb > ub.
+%   Expands lb/ub to n-by-1 (with -Inf/+Inf fill) and errors if any lb > ub
+%   or any bound is NaN (a NaN bound used to pass silently: every comparison
+%   on it is false, so the variable was treated as unbounded AND unclipped).
 %
 %   Inputs:
 %     lb - lower bounds; empty, scalar, or n-by-1.
@@ -135,6 +142,9 @@ function [lb, ub] = checkBounds(lb, ub, n)
 %     ub - n-by-1 upper bounds (+Inf where unspecified).
 lb = expandBound(lb, n, -Inf, 'lb');
 ub = expandBound(ub, n,  Inf, 'ub');
+if any(isnan(lb)) || any(isnan(ub))
+    error('adamnlopt:bounds', 'Bounds must not be NaN (use -Inf/+Inf for one-sided variables).');
+end
 if any(lb > ub)
     error('adamnlopt:bounds', 'Each lb must be <= ub.');
 end

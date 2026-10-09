@@ -1430,7 +1430,7 @@ classdef AdamNlOptTest < matlab.unittest.TestCase
         function testParallelEnumListBoxOmitsAsync(testCase)
             % 'async' was never a distinct strategy -- the Evaluator routes it
             % through the same parallel finite-difference path as 'finitediff'
-            % and parallel_asyncEvaluator has no caller -- so offering it
+            % (the standalone parallel_asyncEvaluator is deleted) -- so offering it
             % promised one evaluation strategy and delivered the other.
             names = AdamNlOptParallelEnum.getListBoxStr();
 

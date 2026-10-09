@@ -300,6 +300,7 @@ end
 % --- Map scaled-space results back to physical units and record the scaling ---
 [x, fval, grad, hessian, lambda] = unscaleResult(x, fval, grad, hessian, lambda, sc);
 output.scaling = sc;
+output.scaling.traceIsScaled = sc.applied;   % the trace rows are in scaled coordinates whenever scaling applied
 output.fdCalibration = output_calib;
 if sc.applied && isfield(output,'funcCount')
     % Count the x0 probe. Both counters: the probe Evaluator calibrates the FD

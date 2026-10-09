@@ -272,7 +272,7 @@ classdef AdamNlOptSolveTest < AdamNlOptTestCase
         function testScalingRecordIsPopulated(testCase)
             out = testCase.solveProblem(testCase.catalogEntry('hs71'));
             sc = out.output.scaling;
-            for f = {'applied', 'mode', 'Dx', 'Dc', 'Di', 'wf', 'mElin', 'mIlin'}
+            for f = {'applied', 'mode', 'Dx', 'Dc', 'Di', 'wf', 'mElin', 'mIlin', 'traceIsScaled'}
                 testCase.verifyTrue(isfield(sc, f{1}), ...
                     sprintf('output.scaling.%s is missing', f{1}));
             end

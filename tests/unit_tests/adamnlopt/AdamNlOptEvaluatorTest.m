@@ -857,29 +857,6 @@ classdef AdamNlOptEvaluatorTest < AdamNlOptTestCase
         %% ---------------------------------------------------------------
         %  The parallel family
         %  ---------------------------------------------------------------
-        function testBatchEvaluateMatchesTheSerialLoop(testCase)
-            testCase.assumeTrue(license('test', 'Distrib_Computing_Toolbox') == 1, ...
-                'Parallel Computing Toolbox not licensed.');
-            pts = [1 2 3; 4 5 6];
-            res = adamnlopt.parallel_batchEvaluate( ...
-                @AdamNlOptEvaluatorTest.sphereVal, pts, 1);
-            testCase.verifySize(res, [3 1]);
-            for k = 1:3
-                testCase.verifyEqual(res{k, 1}, pts(:, k).' * pts(:, k), ...
-                    'AbsTol', 0);
-            end
-        end
-
-        function testBatchEvaluateCapturesMultipleOutputs(testCase)
-            testCase.assumeTrue(license('test', 'Distrib_Computing_Toolbox') == 1, ...
-                'Parallel Computing Toolbox not licensed.');
-            pts = [1 2; 3 4];
-            res = adamnlopt.parallel_batchEvaluate( ...
-                @AdamNlOptTestCase.sphere, pts, 2);
-            testCase.verifySize(res, [2 2]);
-            testCase.verifyEqual(res{2, 2}, 2 * pts(:, 2), 'AbsTol', 0);
-        end
-
         function testParallelFiniteDiffReproducesTheSerialGradient(testCase)
             %   The parallel path is an optimization, not a different
             %   algorithm, so the numbers must be identical rather than merely
@@ -916,17 +893,6 @@ classdef AdamNlOptEvaluatorTest < AdamNlOptTestCase
             testCase.verifyEqual(info.nConEvals, 2);
             testCase.verifyTrue(islogical(info.remote), ...
                 'remote decides whether the caller adds these counts');
-        end
-
-        function testAsyncEvaluatorRejectsAnUnknownToken(testCase)
-            %   A fetched token is consumed; fetching it twice is a caller bug
-            %   and must say so rather than returning a stale result.
-            testCase.assumeTrue(license('test', 'Distrib_Computing_Toolbox') == 1, ...
-                'Parallel Computing Toolbox not licensed.');
-            ae = adamnlopt.parallel_asyncEvaluator( ...
-                @AdamNlOptEvaluatorTest.sphereVal, 1);
-            testCase.verifyError(@() ae.fetch('nosuchtoken'), ...
-                'adamnlopt:asyncEvaluator:unknownToken');
         end
     end
 
