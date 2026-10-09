@@ -92,6 +92,12 @@ opts.FiniteDifferenceType      = 'forward'; % 'forward' | 'central'
 % is accepted by mapOptions.
 opts.HonorBounds = true;
 
+% --- Derivative checker (A8; fmincon's CheckGradients) ---
+% At x0, compare every SUPPLIED derivative (objective gradient, constraint
+% Jacobian) with central differences and warn 'adamnlopt:checkGradients'
+% above 1e-3 relative.  Costs 2n objective and 2n constraint evaluations, once.
+opts.CheckGradients = false;
+
 % --- Automatic finite-difference step calibration (ON by default) ---
 % The default step sqrt(eps) assumes the objective/constraints are evaluated to
 % machine precision.  Simulation-based problems (ODE integration, iterative

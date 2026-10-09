@@ -13,6 +13,7 @@ classdef AdamNlOptOptionsDialogTest < matlab.unittest.TestCase
     %           calibration for every later solve of the case.
     %     D3  - the physical feasibility gate (constrViolTol) and the row-scaling
     %           cap (autoScaleMaxGradient) are reachable from the dialog.
+    %     A8  - the derivative checker (checkGradients) is reachable from the dialog.
 
     properties(Access = private)
         fixture UiwaitInterceptorFixture
@@ -37,7 +38,7 @@ classdef AdamNlOptOptionsDialogTest < matlab.unittest.TestCase
         function theNewOptionsHaveControls(testCase)
             % Each option control is a public property named after the option.
             app = testCase.open(AdamNlOptOptimizer());
-            for name = {'constrViolTol', 'autoScaleMaxGradient'}
+            for name = {'constrViolTol', 'autoScaleMaxGradient', 'checkGradients'}
                 testCase.verifyTrue(isprop(app, name{1}) && ~isempty(app.(name{1})) && ...
                     isvalid(app.(name{1})), ...
                     sprintf('%s (D3) must be editable from the dialog', name{1}));

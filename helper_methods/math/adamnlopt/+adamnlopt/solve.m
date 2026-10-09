@@ -122,6 +122,9 @@ if ~isempty(nonlcon)
     % paths.  The objective's analogous setup call is charged in allFixedResult.
     evProbe.nCon = evProbe.nCon + 1;
 end
+if opts.CheckGradients
+    checkDerivatives(evProbe, solveProblem0);
+end
 % --- Automatic finite-difference step calibration (transparent; see
 % estimateNoise/Evaluator.calibrateStep) ---
 % Estimate the objective/constraint noise level at x0 and set the FD step (and
@@ -3777,4 +3780,51 @@ catch err
          'this solve (the solve itself is unaffected).\n  %s: %s'], ...
         label, info.iteration, noun, err.identifier, err.message);
 end
+end
+
+% ------------------------------------------------------------------------
+function checkDerivatives(ev, problem)
+%CHECKDERIVATIVES  Compare supplied derivatives with central differences at x0 (A8).
+%   Warns adamnlopt:checkGradients when the relative inf-norm error of the
+%   objective gradient or the constraint Jacobian exceeds 1e-3.  Runs in the
+%   caller's (physical) units on the probe Evaluator, so its evaluations are
+%   counted like any other.  LVD's FiniteDifferences/DerivEst modes hand in
+%   gradients labelled analytic, and the shape check in validateProblem cannot
+%   catch a wiring or orientation error in them.
+import adamnlopt.*
+x = problem.x0(:);
+h = eps^(1/3);
+tol = 1e-3;
+if ev.hasObjGrad
+    [f0, g] = ev.objective(x);
+    gFD = finiteDiffGradient(@(z) ev.objective(z), x, f0, h, 'central', problem.lb, problem.ub);
+    err = norm(gFD - g(:), inf) / max(1, norm(gFD, inf));
+    if err > tol
+        [~, i] = max(abs(gFD - g(:)));
+        warning('adamnlopt:checkGradients', ['CheckGradients: the supplied objective ' ...
+            'gradient differs from central differences by %.2e relative at x0 ' ...
+            '(worst entry %d: supplied %.6g, FD %.6g).'], err, i, g(i), gFD(i));
+    end
+end
+if ev.hasConGrad && ev.mInl + ev.mEnl > 0
+    [JE, JI] = ev.jacobian(x);
+    [cE0, cI0] = ev.constraints(x);
+    J = [JI; JE];
+    JFD = finiteDiffJacobian(@(z) stackedCon(ev, z), x, [cI0; cE0], h, 'central', ...
+                             [], problem.lb, problem.ub);
+    err = norm(JFD - J, inf) / max(1, norm(JFD, inf));
+    if err > tol
+        [~, k] = max(abs(JFD(:) - J(:)));
+        [r, c] = ind2sub(size(J), k);
+        warning('adamnlopt:checkGradients', ['CheckGradients: the supplied constraint ' ...
+            'Jacobian differs from central differences by %.2e relative at x0 ' ...
+            '(worst entry: row %d of [inequalities; equalities], column %d; ' ...
+            'supplied %.6g, FD %.6g).'], err, r, c, J(r, c), JFD(r, c));
+    end
+end
+end
+
+function v = stackedCon(ev, z)
+[cE, cI] = ev.constraints(z);
+v = [cI; cE];
 end

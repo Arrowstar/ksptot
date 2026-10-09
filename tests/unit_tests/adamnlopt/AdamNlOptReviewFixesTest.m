@@ -995,6 +995,41 @@ classdef AdamNlOptReviewFixesTest < AdamNlOptTestCase
             testCase.verifyEqual(JI, [2 * x.'; -1 0], 'AbsTol', 1e-6);
             testCase.verifyEqual(JE, [1 -1], 'AbsTol', 1e-6);
         end
+
+        %% ==== Batch 9.5: derivative checker (A8) ============================
+        function testA8CorrectGradientsAreSilent(testCase)
+            % Correct analytic derivatives must not warn, and the advisory
+            % check must not disturb the solve.
+            o = testCase.quietOpts(struct('CheckGradients', true, ...
+                'SpecifyObjectiveGradient', true, 'SpecifyConstraintGradient', true));
+            testCase.verifyWarningFree(@() adamnlopt.solve(@quadObj, [0.5; 0.5], ...
+                [], [], [], [], [], [], @circleCon, o));
+        end
+
+        function testA8WrongObjectiveGradientWarns(testCase)
+            % A sign-flipped objective gradient differs from central
+            % differences by 200% relative; the checker must say so.
+            o = testCase.quietOpts(struct('CheckGradients', true, 'maxIter', 5, ...
+                'SpecifyObjectiveGradient', true));
+            testCase.verifyWarning(@() adamnlopt.solve(@quadObjFlipped, [0.5; 0.5], ...
+                [], [], [], [], [], [], [], o), 'adamnlopt:checkGradients');
+        end
+
+        function testA8WrongConstraintJacobianWarns(testCase)
+            o = testCase.quietOpts(struct('CheckGradients', true, 'maxIter', 5, ...
+                'SpecifyConstraintGradient', true));
+            testCase.verifyWarning(@() adamnlopt.solve(@(x) sum((x - 1).^2), ...
+                [0.5; 0.5], [], [], [], [], [], [], @circleConFlipped, o), ...
+                'adamnlopt:checkGradients');
+        end
+
+        function testA8LvdCheckGradientsReachesTheSolver(testCase)
+            o = AdamNlOptOptions();
+            testCase.verifyFalse(o.checkGradients);
+            testCase.verifyFalse(o.getOptionsForOptimizer([]).CheckGradients);
+            o.checkGradients = true;
+            testCase.verifyTrue(o.getOptionsForOptimizer([]).CheckGradients);
+        end
     end
 
     methods (Access = private)
@@ -1035,4 +1070,31 @@ end
 function f = movingNoise(x)
 % Quadratic, clean near x0 = 0, with 1e-5 "simulation noise" beyond x1 = 1.
 f = sum((x - 3).^2) + (1e-12 + 1e-5 * (x(1) > 1)) * sin(1e9 * sum(x));
+end
+
+function [f, g] = quadObj(x)
+% Bowl with an analytic gradient, for the A8 checker tests.
+f = (x(1) - 1)^2 + (x(2) - 2)^2;
+g = [2 * (x(1) - 1); 2 * (x(2) - 2)];
+end
+
+function [f, g] = quadObjFlipped(x)
+% Same bowl with a sign-flipped (wrong) gradient.
+[f, g] = quadObj(x);
+g = -g;
+end
+
+function [c, ceq, gc, gceq] = circleCon(x)
+% Unit disk plus a linear equality, with analytic gradients (fmincon
+% convention: one COLUMN per constraint).
+c = x(1)^2 + x(2)^2 - 1;
+ceq = x(1) - x(2) - 0.1;
+gc = [2 * x(1); 2 * x(2)];
+gceq = [1; -1];
+end
+
+function [c, ceq, gc, gceq] = circleConFlipped(x)
+% Same constraints with a sign-flipped inequality gradient.
+[c, ceq, ~, gceq] = circleCon(x);
+gc = -[2 * x(1); 2 * x(2)];
 end
