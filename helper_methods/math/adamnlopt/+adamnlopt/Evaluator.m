@@ -503,6 +503,75 @@ classdef Evaluator < handle
                 return;                      % probe failed: keep defaults
             end
 
+            % One-sided bound-direction floor (D36).  Coordinates excluded from
+            % the probe direction above are still differenced (one-sided) at
+            % the picked step, but the V-curve never saw them: on multiscale
+            % curvature the scalar pick then serves the probed subspace and
+            % can be 100x off for a bound-adjacent coordinate (measured 222x,
+            % with error above optTol).  Sweep the excluded coordinates
+            % one-sided along a single seeded mix (each away from its nearer
+            % bound) and take its bottom h_bF as a FLOOR witness, not a curve
+            % to merge: per-probe normalization erases each curve's native
+            % scale, so merging cannot move the pick (measured: unchanged).
+            % Fully-automatic calibrations only -- a pinned step or scheme is
+            % explicit intent and keeps today's behavior bit-for-bit.
+            % Forward-only: a backward probe would leave the box.  Skipped
+            % silently when no coordinates were excluded or fewer than two
+            % sweep steps fit on the one-sided room.
+            hBoundFwd = [];
+            lbcB = obj.fdLb;  ubcB = obj.fdUb;
+            if isempty(lbcB), lbcB = -inf(nx, 1); end
+            if isempty(ubcB), ubcB =  inf(nx, 1); end
+            roomB = min(x0(:) - lbcB(:), ubcB(:) - x0(:)) ./ max(1, abs(x0(:)));
+            exclB = roomB < 1e-6;
+            if any(exclB) && ~obj.fdStepUserSet && ~obj.fdTypeUserSet
+                sB = rng;  rng(97532, 'twister');
+                qB = abs(randn(nnz(exclB), 1));  rng(sB);
+                sgnB = ones(nx, 1);
+                sgnB(ubcB(:) - x0(:) < x0(:) - lbcB(:)) = -1;
+                svecB = zeros(nx, 1);
+                svecB(exclB) = sgnB(exclB) .* (qB / norm(qB)) .* max(1, abs(x0(exclB)));
+                awayB = ubcB(:) - x0(:);  awayB(sgnB < 0) = x0(sgnB < 0) - lbcB(sgnB < 0);
+                hMaxB = min(awayB(exclB) ./ abs(svecB(exclB)));
+                keptB = hSweep <= hMaxB;
+                if nnz(keptB) >= 2
+                    nEvB = 0;  nEvObjB = 0;
+                    adjFwdB = nan(nh, numel(probes));
+                    bOk = true;
+                    try
+                        for ip = 1:numel(probes)
+                            g = probes{ip};
+                            g0 = g(x0);  nEvB = nEvB + 1;
+                            if probeIsObj(ip), nEvObjB = nEvObjB + 1; end
+                            dPrev = [];
+                            for k = 1:nh
+                                if ~keptB(k), continue; end   % find(keptB).' parses as find(keptB.') -- one trip with vector k
+                                h = hSweep(k);
+                                gp = g(x0 + h * svecB);
+                                nEvB = nEvB + 1;
+                                if probeIsObj(ip), nEvObjB = nEvObjB + 1; end
+                                dF = (gp - g0) / h;
+                                if ~isempty(dPrev)
+                                    sF = max(norm(dF, inf), realmin);
+                                    adjFwdB(k, ip) = norm(dF - dPrev, inf) / sF;
+                                end
+                                dPrev = dF;
+                            end
+                        end
+                    catch
+                        bOk = false;
+                    end
+                    if bOk
+                        obj.nFun = obj.nFun + nEvObjB;
+                        info.nEvals = info.nEvals + nEvB;
+                        info.nEvalsObj = info.nEvalsObj + nEvObjB;
+                        colB = max(adjFwdB, [], 2);   % NaN rows ignored, as k=1 above
+                        [bestB, iB] = min(colB);
+                        if isfinite(bestB), hBoundFwd = hSweep(iB); end
+                    end
+                end
+            end
+
             % Worst probe is binding at each step; k=1 stays NaN and is ignored.
             adjFwd = max(adjFwdP, [], 2);
             adjCen = max(adjCenP, [], 2);
@@ -554,6 +623,16 @@ classdef Evaluator < handle
             else
                 setFd(obj, 'central', hSweep(iC));
                 info.promoted = ~obj.fdTypeUserSet;
+            end
+            % D36 override: the bound floor disagrees with the directional
+            % pick by an order of magnitude.  Take the floor: it is measured
+            % at the bound, where the one-sided difference will actually run.
+            % Forward is forced -- central needs room on both sides the bound
+            % coordinate does not have.  Fully-automatic only (see above).
+            if ~isempty(hBoundFwd) && hBoundFwd < obj.fdStep / 10 ...
+                    && ~obj.fdStepUserSet && ~obj.fdTypeUserSet
+                setFd(obj, 'forward', hBoundFwd);
+                if isfield(info, 'promoted'), info.promoted = false; end
             end
             info.flag = 'set';
             info.fdStep = obj.fdStep;  info.fdType = obj.fdType;

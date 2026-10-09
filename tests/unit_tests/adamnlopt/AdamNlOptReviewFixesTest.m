@@ -1493,6 +1493,31 @@ classdef AdamNlOptReviewFixesTest < AdamNlOptTestCase
                     'scale %g: a 5%% residual must update', k));
             end
         end
+
+        %% ---- D36: calibration serves bound-adjacent coordinates -----------
+        function testD36CalibrationServesBoundAdjacentCoordinates(testCase)
+            % x0(3) within 1e-9 relative of its lower bound: excluded from
+            % the directional probe (7.6 rule) but still differenced
+            % one-sided, not fixed.  The directional pick (central 1e-2)
+            % was 222x off for that coordinate (measured rel-err 5.0e-6 vs
+            % brute-best forward 2.3e-8); the bound-direction floor
+            % overrides to forward 1e-5 (rel-err 1.2e-7, ratio 5.5).
+            xref = [1e4; 2e4; 1e3];
+            fobj = @(x) 0.5 * sum((x ./ xref).^2) + 1e-9 * sin(1e9 * sum((1:3) .* x(:)'));
+            ev = testCase.evaluatorFrom(struct('objFun', fobj, 'hasObjGrad', false, 'n', 3));
+            ev.fdLb = [-inf; -inf; 1e3 * (1 - 1e-9)];  ev.fdUb = inf(3, 1);
+            x0 = [1e4; 2e4; 1e3];
+            info = ev.calibrateStep(x0);
+            testCase.verifyEqual(info.flag, 'set');
+            testCase.verifyEqual(ev.fdType, 'forward');
+            testCase.verifyLessThanOrEqual(ev.fdStep, 1e-3, ...
+                'the floor must override: 10x+ below the 1e-2 directional pick');
+            [~, g] = ev.objective(x0);
+            gTrue = x0 ./ xref.^2;   % smooth truth: the O(1) noise slope is
+            relErr = norm(g - gTrue, inf) / max(1, norm(gTrue, inf));
+            testCase.verifyLessThan(relErr, 1e-4, ...
+                sprintf('calibrated gradient rel-err %.2e (fdStep %.1e, %s)', relErr, ev.fdStep, ev.fdType));
+        end
     end
 
     methods (Access = private)
