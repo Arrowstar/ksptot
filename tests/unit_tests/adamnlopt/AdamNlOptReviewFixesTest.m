@@ -1372,12 +1372,17 @@ classdef AdamNlOptReviewFixesTest < AdamNlOptTestCase
         end
 
         function testD1ConvergenceIsCertifiedAgainstTheExactJacobian(testCase)
-            % Unit disk with Broyden on: recompute firstOrderOpt from an
-            % exact Jacobian at the returned point; it must meet optTol.
-            % (Before D1.2 the exit was certified against the secant model.)
+            % Unit disk with Broyden on under a loose residual tolerance, so
+            % secant serves actually happen (10 served Jacobians here; at the
+            % default tolerance the residual test rejects them all on this
+            % fixture and the re-check below would be vacuous).  Any converged
+            % stop was reached on an approximate Jacobian, so the D1.2
+            % re-check runs; recompute firstOrderOpt from an exact Jacobian
+            % at the returned x and assert it meets optTol.  (Before D1.2 the
+            % exit was certified against the secant model.)
             [x, ~, ef, out] = adamnlopt.solve(@(x) x(1) + x(2), [0.9; 0.3], ...
                 [], [], [], [], [], [], @(x) deal([], x(1)^2 + x(2)^2 - 1), ...
-                testCase.quietOpts(struct('enableBroyden', true)));
+                testCase.quietOpts(struct('enableBroyden', true, 'broydenTol', 2.0)));
             testCase.verifyGreaterThan(ef, 0, out.message);
             testCase.verifyGreaterThan(out.broydenIterations, 0, ...
                 'the fixture must actually exercise Broyden');
