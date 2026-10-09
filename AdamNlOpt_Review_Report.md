@@ -53,6 +53,9 @@ All file paths below are relative to `helper_methods/math/adamnlopt/+adamnlopt/`
 | D29 | Low | `stepNorm` stale after restoration; IP restoration does not re-seed `lamE`; `plotInfo` counts distance *inside* bounds as violation | `solve.m:525-527,1566-1568,1548-1552`, `plotInfo.m:103` |
 | D30 | Low | Non-finite K spins 40 factorizations and returns a NaN step with no guard | `kkt_inertiaCorrection.m:135`, `solve.m` (no `isfinite(d)` check) |
 | D31 | Low | Option hygiene: `lsRefreshFeasTol` dead but exposed in GUI; selector strings unvalidated; NaN bounds accepted; `util_scaling.m`, `estimateNoise.m`, `parallel_async*/batch*` dead; `diagnose` gives inverted advice; filter margin applied twice; absolute multiplier scale in active-set confidence; degeneracy detection in the IP core sees a state without `cE/cI/JI` | various |
+| D32 | Medium | LVD cases saved before AdamNlOpt existed share one AdamNlOpt optimizer object | LVD `LvdOptimization.m:23` |
+| D33 | High | The step-size exit reports convergence before the barrier is finished | `terminationCheck.m` step-size exit |
+| D34 | High | The opt-in NT path reports wrong bound multipliers with a converged exit (pre-existing, found in Batch 10; primal answer correct) | NT branch dual back-substitution, `solve.m` |
 
 **Algorithm improvements** (Section 3): FD-accuracy-aware termination and automatic forward→central promotion (A1, reproduced: Rosenbrock n=10 with FD gradients returns exitflag 0 at f = 2e-10 because `optTol` is below the FD noise floor); one combined FD sweep for gradient + Jacobian (A2, halves LVD propagations); warm start from a previous LVD run (A3); watchdog and IPOPT filter-reset heuristic (A4); acceptable-point termination (A5); WB-style proximal restoration (A6); FD re-calibration on repeated line-search failure (A7); derivative checker (A8); factor reuse and cheaper Schur probe (A9); LVD-specific defaults (A10).
 
@@ -97,6 +100,8 @@ All file paths below are relative to `helper_methods/math/adamnlopt/+adamnlopt/`
 3. Trace/output: `trow.jacExact = double(~ev.jacobianIsApprox())` in `finishTraceRow`, and an `output.broydenIterations` count.
 
 **Tests.** `AdamNlOptEvaluatorTest`: with `costThreshold = 0`, `jacobian(x0); jacobian(x1)` → `jacobianIsApprox()` true; `jacobianExact(x1)` equals `finiteDiffJacobian` to 1e-12 and clears the flag. `AdamNlOptSolveTest`: solve the unit-disk fixture with `enableBroyden = true`; recompute `firstOrderOpt` from an exact Jacobian at the returned x and assert it is ≤ `optTol`.
+
+**Status.** Part 1 landed in Batch 1. Parts 2–3 were never scheduled in the §4 batch plan and landed in Batch 10 instead, with three small deviations from the sketch above: the seeded D12 cache also clears the flag (it holds exact values); the trace flag is set at the loop top rather than inside `finishTraceRow` (same value, no signature change); the IP residual is rebuilt with the full loop-top assembly including the Fix-F projected metric and the physical violation, and the trace row's opt fields are refreshed to the certified numbers. The `nBroyden` serve count lives on the Evaluator (public, next to `nFun`/`nCon`) and reaches `output.broydenIterations` through `makeOutput`. Guards (in `AdamNlOptReviewFixesTest`, per the Batch-1 one-test-per-finding convention, rather than the files named above): `testD1ApproximateJacobianIsFlaggedAndRechecked`, `testD1ConvergenceIsCertifiedAgainstTheExactJacobian` (both fail on the pre-fix code), plus the T2 end-to-end Broyden tests.
 
 ---
 
@@ -634,6 +639,12 @@ where `cloneFrom` builds a new `AdamNlOptOptimizer` and copies the option proper
 Found while landing D3. `terminationCheck.m` step-size exit (exitflag 2, "Converged: step size ... below StepTolerance") required feasibility and `optScaled <= objPlateauOptTol`, but not complementarity. In the interior-point core a zero step only means the current barrier subproblem is solved; while mu can still fall, the next barrier update moves the iterate. On `min (x-3)'(x-3) s.t. x1 + x2 = 2, 0 <= x <= 10` the Newton step is exact, so the step collapses after two iterations. The solve then returned exitflag 2 with complementarity 2e-2 (tolerance 1e-6) and λ = 4.018 against the analytic 4. With the old row scaling it happened to stop at complementarity 2.8e-3, which is why `testNTDecompInteriorPointCoreMatchesDefaultPath` (λ tolerance 1e-2) used to pass.
 
 **Fix (applied in Batch 3).** The step-size exit additionally requires `compScaled <= compTol`, or `mu <= muMin` (when mu can fall no further the exit is allowed again, so a genuine stall still stops). Guard: `testD33StepExitWaitsForTheBarrier` (exitflag > 0, complementarity ≤ 1e-5, λ = 4 ± 1e-4).
+
+### D34. [High] The opt-in NT path reports wrong bound multipliers with a converged exit
+
+Found while extending the `useNTdecomp` test arms in Batch 10 (T3). `min x'x s.t. x1+x2 = 10` is unbounded and fine, but `boundActive` (`min ||x-[2;2]||²` in `[0,1]²`, optimum `[1;1]` on both upper bounds) returns exitflag 1 at the right `x` with `zU = [430.8; 430.8]` against the analytic `[2;2]` (stationarity residual 428). Bisected bit-identical on the pre-Batch-10 tree, so no Batch 10 change causes it. Mechanism (not yet fixed): the NT branch back-substitutes the bound duals (`dzU = -corrU - sigU.*dx` with `corrU = (dxu.*zU-mu)./dxu`) instead of solving for them jointly as the Newton system does, so as the gap closes the correction divides by ~1e-9 and ratchets `zU` up; the fraction-to-boundary dual step caps only negativity, the κ_Σ clamp is vacuous when the gap vanishes faster than mu, and the Fix-F masked termination then exits 1. The primal answer is correct; only the bound duals are wrong, and only on bound-active problems through the off-by-default NT path (LVD never sets it).
+
+**Fix (open).** Not attempted in Batch 10: the minimal correct repair needs investigation (Newton-consistent duals in the NT branch, or a post-solve bound-dual refit), and a blind change here risks the D19 work. `boundActive` is deliberately excluded from the NT test arms with this cause recorded at the exclusion site.
 
 ### T1. [Test hygiene] `testOptionsStructAndOptimoptionsObjectAgree` is Incomplete under a license-test/checkout mismatch
 

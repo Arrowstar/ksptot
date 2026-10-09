@@ -90,6 +90,7 @@ classdef Evaluator < handle
         checkJacobPattern = true   % one-shot dense cross-check of jacPattern (n <= 400)
         nFun = 0                   % objective evaluations
         nCon = 0                   % constraint evaluations
+        nBroyden = 0               % Jacobians served from the secant model (D1)
         parallelFD = false         % use parallel_parallelFiniteDiff when true
         costModel  = []            % eval_costModel instance (optional)
         % Broyden options (Gap 5)
@@ -115,6 +116,7 @@ classdef Evaluator < handle
         xc = [];  cEVal = []; cIVal = [];
         xj = [];  JEVal = []; JIVal = [];
         jacPatternChecked = false   % the one-shot CheckJacobPattern ran
+        lastJacBroyden = false      % the last served Jacobian came from the secant model (D1)
         % Broyden state (Gap 5)
         broyden_   = []   % eval_BroydenJacobian instance ([] = inactive)
         cNlAtJac_  = []   % stacked [c_nl; ceq_nl] at the last exact Jacobian point
@@ -680,6 +682,8 @@ classdef Evaluator < handle
                     obj.JIVal = [obj.Aineq;  Jstacked(1:obj.mInl, :)];
                     obj.JEVal = [obj.Aeqlin; Jstacked(obj.mInl+1:end, :)];
                     obj.xj = x;
+                    obj.lastJacBroyden = true;
+                    obj.nBroyden = obj.nBroyden + 1;
                     JE = obj.JEVal;  JI = obj.JIVal;
                     return;
                 end
@@ -735,6 +739,7 @@ classdef Evaluator < handle
             obj.JIVal = [obj.Aineq;  Jc];
             obj.JEVal = [obj.Aeqlin; Jceq];
             obj.xj = x;
+            obj.lastJacBroyden = false;
 
             % --- Initialize or refresh Broyden approximation ---
             % Same ~hasConGrad gate as the use path: with analytic Jacobians
@@ -760,6 +765,46 @@ classdef Evaluator < handle
             JE = obj.JEVal;  JI = obj.JIVal;
         end
 
+        function tf = jacobianIsApprox(obj)
+        %JACOBIANISAPPROX  Whether the last served Jacobian was approximate (D1).
+        %   tf = obj.jacobianIsApprox() is true when the most recent jacobian()
+        %   call was served from the Broyden secant model rather than
+        %   differenced (or supplied) exactly.  solve.m consults it before
+        %   declaring convergence: optimality certified against a secant
+        %   Jacobian is re-tested against an exact one.
+        %
+        %   Inputs:
+        %     obj - the Evaluator handle object.
+        %
+        %   Outputs:
+        %     tf - logical; true if the last Jacobian was secant-served.
+            tf = obj.lastJacBroyden;
+        end
+
+        function [JE, JI] = jacobianExact(obj, x)
+        %JACOBIANEXACT  Exact Jacobian at x, bypassing any Broyden model (D1).
+        %   [JE, JI] = obj.jacobianExact(x) differences (or takes the
+        %   analytic) Jacobian at x even when Broyden mode is active, and
+        %   re-anchors the secant model on it.  Used to certify convergence
+        %   and after restoration jumps, where the secant anchor is stale.
+        %
+        %   Inputs:
+        %     obj - the Evaluator handle object.
+        %     x   - n-by-1 point at which the exact Jacobian is wanted.
+        %
+        %   Outputs:
+        %     JE - mE-by-n folded equality constraint Jacobian.
+        %     JI - mI-by-n folded inequality constraint Jacobian.
+            savedBroyden = obj.enableBroyden;
+            savedCost = obj.costThreshold;
+            obj.enableBroyden = false;
+            obj.costThreshold = Inf;
+            obj.xj = [];                             % force the exact path
+            [JE, JI] = obj.jacobian(x);
+            obj.enableBroyden = savedBroyden;
+            obj.costThreshold = savedCost;
+        end
+
         function seedCache(obj, x, cnl, ceqnl, Jc, Jceq)
         %SEEDCACHE  Install nonlinear constraint values (and Jacobian) at x.
         %   seedCache(obj, x, cnl, ceqnl) fills the constraints cache at x;
@@ -775,6 +820,7 @@ classdef Evaluator < handle
                 obj.JIVal = [obj.Aineq;  Jc];
                 obj.JEVal = [obj.Aeqlin; Jceq];
                 obj.xj = x;
+                obj.lastJacBroyden = false;   % seeded values are exact
             end
         end
 

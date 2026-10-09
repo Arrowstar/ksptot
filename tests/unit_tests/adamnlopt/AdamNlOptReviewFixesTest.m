@@ -1347,9 +1347,51 @@ classdef AdamNlOptReviewFixesTest < AdamNlOptTestCase
             testCase.verifyEqual(o.getOptionsForOptimizer([]).objPlateauWindow, 15);
         end
 
+        %% ==== Batch 10.11 (D1.2/D1.3): convergence is certified exact ====
+        function testD1ApproximateJacobianIsFlaggedAndRechecked(testCase)
+            % costThreshold = 0 auto-enables Broyden after the first exact
+            % Jacobian: the second Jacobian is secant-served and flagged, and
+            % jacobianExact re-differences it (1e-12 of a direct dense FD)
+            % and clears the flag.
+            ev = testCase.evaluatorFrom(struct('nlcon', @unitCircleEq, 'mEnl', 1), ...
+                struct('costThreshold', 0));
+            x0 = [0.6; 0.7];  x1 = [0.605; 0.692];
+            ev.jacobian(x0);
+            testCase.verifyFalse(ev.jacobianIsApprox(), ...
+                'the first Jacobian is exact');
+            ev.jacobian(x1);
+            testCase.verifyTrue(ev.jacobianIsApprox(), ...
+                'the secant-served Jacobian must be flagged');
+            [JEe, ~] = ev.jacobianExact(x1);
+            testCase.verifyFalse(ev.jacobianIsApprox(), ...
+                'jacobianExact must clear the flag');
+            base = stackedUnitCircle(x1);
+            Jref = adamnlopt.finiteDiffJacobian(@stackedUnitCircle, x1, base, ...
+                sqrt(eps), 'forward');
+            testCase.verifyEqual(JEe, Jref, 'AbsTol', 1e-12);
+        end
+
+        function testD1ConvergenceIsCertifiedAgainstTheExactJacobian(testCase)
+            % Unit disk with Broyden on: recompute firstOrderOpt from an
+            % exact Jacobian at the returned point; it must meet optTol.
+            % (Before D1.2 the exit was certified against the secant model.)
+            [x, ~, ef, out] = adamnlopt.solve(@(x) x(1) + x(2), [0.9; 0.3], ...
+                [], [], [], [], [], [], @(x) deal([], x(1)^2 + x(2)^2 - 1), ...
+                testCase.quietOpts(struct('enableBroyden', true)));
+            testCase.verifyGreaterThan(ef, 0, out.message);
+            testCase.verifyGreaterThan(out.broydenIterations, 0, ...
+                'the fixture must actually exercise Broyden');
+            testCase.verifyEqual(x, -[1; 1] / sqrt(2), 'AbsTol', 1e-6);
+            ev = testCase.evaluatorFrom(struct('nlcon', @unitCircleEq, 'mEnl', 1), ...
+                struct());
+            [JE, ~] = ev.jacobianExact(x);
+            g = [1; 1];
+            lam = -(JE * JE.') \ (JE * g);
+            testCase.verifyLessThanOrEqual(norm(g + JE.' * lam, inf), 1e-6);
+        end
+
         %% ==== Batch 10.10 (T2): Broyden end to end ==========================
-        function testD1OptInBroydenServesJacobiansFromTheSecantModel(testCase)
-            % With enableBroyden the second Jacobian must come from the
+        function testD1OptInBroydenServesJacobiansFromTheSecantModel(testCase)            % With enableBroyden the second Jacobian must come from the
             % rank-1 secant model (one constraint evaluation), not from a
             % fresh n-probe difference.  The count is what makes this a
             % Broyden test rather than a vacuous exact-Jacobian one.
@@ -1436,6 +1478,12 @@ function [c, ceq] = unitCircleEq(x)
 % Unit circle equality for the Broyden tests.
 c = [];
 ceq = x(1)^2 + x(2)^2 - 1;
+end
+
+function v = stackedUnitCircle(x)
+% Stacked [c; ceq] for direct finiteDiffJacobian reference values.
+[c, ceq] = unitCircleEq(x);
+v = [c(:); ceq(:)];
 end
 
 function [c, ceq] = failsBeyond09(x)% Disk, sign and a linear equality; a "failed simulation" beyond x1 = 0.9.

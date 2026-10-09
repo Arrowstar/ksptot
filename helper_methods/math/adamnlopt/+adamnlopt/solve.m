@@ -424,6 +424,7 @@ try
 for iter = 0:opts.maxIter
     trow = struct('iter', iter);
     primaryInfo = [];  nSolves = 0;
+    trow.jacExact = double(~ev.jacobianIsApprox());   % D1: secant-served rows are marked
     state = makeState(x, lamE, f, g, cE, JE, JI, iter, ev.totalEvals(), alpha);
     state.jacNoiseTol = jacNoiseTol(ev, x, sc);   % D5 rank floor for degeneracy detection
     % Budget/progress fields the termination test needs but cannot measure:
@@ -482,6 +483,23 @@ for iter = 0:opts.maxIter
     trow.filterSize = filterCardinality(filt);
 
     [stop, ef, m] = terminationCheck(state, res, opts);
+
+    % D1: convergence certified against a Broyden secant Jacobian is not
+    % convergence.  When the stop above was reached on an approximate
+    % Jacobian, recompute it exactly, rebuild the residual, and re-test; a
+    % stop that does not survive is cleared and the iteration continues with
+    % exact derivatives in state.  Inert unless Broyden served the Jacobian.
+    if stop && ef > 0 && ev.jacobianIsApprox()
+        [JE, JI] = ev.jacobianExact(x);
+        state.JE = JE;  state.JI = JI;
+        res = kkt_residual(state);
+        res.opt = util_norms(optW .* res.rStat);
+        res.feasPhys = physViolation(cE, zeros(0,1), feasW);
+        [stop, ef, m] = terminationCheck(state, res, opts);
+        trow.optPrinted = res.opt;
+        trow.optRaw = util_norms(res.rStat);
+        trow.optScaled = res.opt / kktScaleFactor(state);
+    end
 
     % A1: an exitflag-2 stop with forward-difference derivatives the user did
     % not pin is a stop at FORWARD-difference accuracy (O(h) truncation).
@@ -758,7 +776,9 @@ for iter = 0:opts.maxIter
         end
         [f, g]  = ev.objective(x);
         [cE, ~] = ev.constraints(x);
-        [JE, ~] = ev.jacobian(x);
+        % D1: the secant anchor is meaningless after a projected Gauss-Newton
+        % jump: refresh it with an exact Jacobian (a no-op when Broyden is off).
+        [JE, ~] = ev.jacobianExact(x);
         % Reseed with the SAME scale weight every other multiplier fit in this
         % solver uses (line 234, the IP seed, the costate refresh).  Dropping
         % optW here fit the costates in scaled-gradient units while the
@@ -946,6 +966,7 @@ ev.deadline = opts.maxTime;   % arm the wall-clock budget: startup is over,
 try
 for iter = 0:opts.maxIter
     trow = struct('iter', iter);
+    trow.jacExact = double(~ev.jacobianIsApprox());   % D1: secant-served rows are marked
     % Reset the per-iteration step provenance every pass, not only on the branch
     % that sets it.  The NT-decomp path never assigns primaryInfo, and a stale
     % value from the previous iteration is worse than no value at all: it would
@@ -1282,6 +1303,36 @@ for iter = 0:opts.maxIter
     trow.feasRegressCount = feasRegressCount;
 
     [stop, ef, m] = terminationCheck(state, res, opts);
+
+    % D1: convergence certified against a Broyden secant Jacobian is not
+    % convergence.  When the stop above was reached on an approximate
+    % Jacobian, recompute it exactly, rebuild the residual, and re-test; a
+    % stop that does not survive is cleared and the iteration continues with
+    % exact derivatives in state.  Inert unless Broyden served the Jacobian.
+    % The residual is rebuilt exactly as at the top of the loop (condensed
+    % stationarity with the Fix-F projected metric, true physical violation).
+    if stop && ef > 0 && ev.jacobianIsApprox()
+        [JE, JI] = ev.jacobianExact(x);
+        state.JE = JE;  state.JI = JI;
+        rd = g;
+        if mE > 0,    rd = rd + JE.' * lamE;  end
+        if ev.mI > 0, rd = rd + JI.' * lamI;  end
+        rd = rd - zL + zU;
+        rpE = cE;
+        rpI = cI + s;
+        if opts.excludeActiveBoundRows
+            rdMetric = util_projectedGradient(rd, zL, zU, activeL, activeU);
+        else
+            rdMetric = rd;
+        end
+        res = ipRes(rd, rpE, rpI, s, lamI, dxl, zL, finL, dxu, zU, finU, optW);
+        res.opt = util_norms(optW .* rdMetric);
+        res.feasPhys = physViolation(cE, cI, feasW);
+        [stop, ef, m] = terminationCheck(state, res, opts);
+        trow.optPrinted = res.opt;
+        trow.optRaw = util_norms(rd);
+        trow.optScaled = res.opt / kktScaleFactor(state);
+    end
 
     % A1: an exitflag-2 stop with forward-difference derivatives the user did
     % not pin is a stop at FORWARD-difference accuracy (O(h) truncation).
@@ -1990,7 +2041,9 @@ for iter = 0:opts.maxIter
         x = pushInterior(x, lb, ub, finL, finU);
         [f, g]   = ev.objective(x);
         [cE, cI] = ev.constraints(x);
-        [JE, JI] = ev.jacobian(x);
+        % D1: the secant anchor is meaningless after a projected Gauss-Newton
+        % jump: refresh it with an exact Jacobian (a no-op when Broyden is off).
+        [JE, JI] = ev.jacobianExact(x);
         if ev.mI > 0
             % The same RELATIVE strict-positivity floor the start-up seed uses,
             % not the absolute 1e-4 this copy carried.  "Exactly as at start-up"
@@ -3550,6 +3603,9 @@ output.constrViolationScaled = res.feas;
 output.complementarity  = res.comp;
 output.exitflag         = exitflag;
 output.message          = msg;
+% Iterations whose KKT system was built from a Broyden secant Jacobian (D1).
+% Zero unless Broyden mode served at least one Jacobian (opt-in only).
+output.broydenIterations = ev.nBroyden;
 end
 
 % ------------------------------------------------------------------------
@@ -3627,7 +3683,7 @@ cols = { ...
     'lsFired', 'lsAdopted', 'lsOptCur', 'lsOptNew', ...
     ... % --- globalization and the barrier gate
     'lsFailed', 'filterSize', 'structStall', 'statErr', 'gateBase', ...
-    'gateRatio', 'Emu', 'nMuSteps', 'acceptCount', 'filterReset', 'fdPromoted', 'fdRecalibrated', 'feasStallCount', 'objStallCount', 'optGateCount', ...
+    'gateRatio', 'Emu', 'nMuSteps', 'acceptCount', 'filterReset', 'fdPromoted', 'fdRecalibrated', 'jacExact', 'feasStallCount', 'objStallCount', 'optGateCount', ...
     'feasRegressCount', 'restorationFired', ...
     ... % --- level 2 only
     'condK'};
