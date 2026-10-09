@@ -54,6 +54,7 @@ if nargin < 9,  nonlcon = [];  end
 if nargin < 10, options = [];  end
 
 opts = mapOptions(options);
+tSolve = tic;   % solve-level wall clock: the maxTime deadline (D31) runs from here
 if isempty(opts.muMin), opts.muMin = 0.1 * opts.optTol; end
 % compTol defaults to optTol so a tightened optTol actually buys accuracy.  The
 % barrier biases the solution off the true optimum by O(mu) -- at a bound-free
@@ -289,6 +290,16 @@ if ~islogical(opts.dualCapViaGamma)
     opts.dualCapViaGamma = ~(hasIneq || hasBounds);
 end
 
+% D31 maxTime deadline: the working Evaluator carries the wall-clock budget
+% (origin tSolve, set here).  The budget itself is armed at the top of each
+% core's main loop: startup probes -- calibration, scaling, the initial
+% derivatives at x0 -- have no accepted iterate to stop at, so they run
+% unbudgeted.  Past tSolve + maxTime the next user evaluation throws
+% adamnlopt:timeLimit, which both cores turn into an exit-0 stop at the last
+% accepted iterate.  Inf (default) leaves the check inert.
+ev.deadline = Inf;
+ev.tStart = tSolve;
+
 if hasIneq || hasBounds
     [x, fval, exitflag, output, lambda, grad, hessian] = ...
         solveInteriorPoint(ev, solveProblem, opts, sc, fx, problem);
@@ -397,6 +408,10 @@ end
 tStart = tic;
 warnedPlot = false;   % plot-hook error already reported this solve (see firePlots)
 warnedIter = false;   % iteration-function error already reported this solve
+timeLimitHit = false; % set by the catch below: a probe past ev.deadline fired
+ev.deadline = opts.maxTime;   % arm the wall-clock budget: startup is over,
+                              % state exists from the first loop top on
+try
 for iter = 0:opts.maxIter
     trow = struct('iter', iter);
     primaryInfo = [];  nSolves = 0;
@@ -756,6 +771,24 @@ for iter = 0:opts.maxIter
                           Delta, lsFailed, nSolves, 0, 0);
     recordTrace(trace, trow);
 end
+catch ME
+    if ~strcmp(ME.identifier, 'adamnlopt:timeLimit'), rethrow(ME); end
+    timeLimitHit = true;
+end
+if timeLimitHit
+    % A probe past ev.deadline fired mid-iteration: the loop variables may
+    % hold a half-refreshed trial point (x advanced, derivatives not).  state
+    % was built at the top of the iteration from the last accepted iterate,
+    % so report that consistent point with an exit-0 time stop.
+    x = state.x; f = state.f; g = state.g;
+    cE = state.cE; JE = state.JE; lamE = state.lamE;
+    res = kkt_residual(state);
+    res.opt = util_norms(optW .* res.rStat);
+    res.feasPhys = physViolation(cE, zeros(0,1), feasW);
+    exitflag = 0;
+    msg = sprintf('Stopped: maximum time reached (%.1f s of %.1f s allowed).', ...
+        toc(ev.tStart), opts.maxTime);
+end
 
 fval = f;  grad = g;
 % Return the secant model as it stands NOW.  `hessian` was captured at the top
@@ -873,6 +906,10 @@ end
 tStart = tic;
 warnedPlot = false;   % plot-hook error already reported this solve (see firePlots)
 warnedIter = false;   % iteration-function error already reported this solve
+timeLimitHit = false; % set by the catch below: a probe past ev.deadline fired
+ev.deadline = opts.maxTime;   % arm the wall-clock budget: startup is over,
+                              % state exists from the first loop top on
+try
 for iter = 0:opts.maxIter
     trow = struct('iter', iter);
     % Reset the per-iteration step provenance every pass, not only on the branch
@@ -1594,7 +1631,8 @@ for iter = 0:opts.maxIter
             % NT step collapsed (dx≈0): back-substituting a zero step gives
             % dlamI ≈ sigS*rpI which blows up the multipliers. Fall back to the
             % standard condensed KKT step so that JI*dx ≈ -rpI, keeping dlamI safe.
-            cstate_fb = struct('H', W, 'JE', JE, 'x', x, 'lamE', lamE);
+            cstate_fb = struct('H', W, 'JE', JE, 'x', x, 'lamE', lamE, ...
+                'cE', cE, 'cI', cI, 'JI', JI, 'lamI', lamI, 'mu', mu);
             cres_fb   = struct('rStat', r1, 'rFeasE', rpE);
             [d_fb, idx_fb, ksolve] = detectStep(cstate_fb, cres_fb, n, mE, opts, ksolve);
             primaryInfo = ksolve.last;
@@ -1625,6 +1663,7 @@ for iter = 0:opts.maxIter
         if any(finU),   aD = min(aD, step_fractionToBoundary(zU(finU), dzU(finU), tau)); end
     else
         cstate = struct('H', W, 'JE', JE, 'x', x, 'lamE', lamE, ...
+                        'cE', cE, 'cI', cI, 'JI', JI, 'lamI', lamI, 'mu', mu, ...
                         'jacNoiseTol', jacNoiseTol(ev, x, sc));
         cres = struct('rStat', r1, 'rFeasE', rpE);
         [d, idx, ksolve] = detectStep(cstate, cres, n, mE, opts, ksolve);
@@ -1713,7 +1752,8 @@ for iter = 0:opts.maxIter
                         dS   = linalg_resolveKKT(ksolve.factors, -[r1C; cSocE]);
                         idxS = ksolve.factorIdx;
                     else
-                        cstateS = struct('H', W, 'JE', JE, 'x', x, 'lamE', lamE);
+                        cstateS = struct('H', W, 'JE', JE, 'x', x, 'lamE', lamE, ...
+                            'cE', cE, 'cI', cI, 'JI', JI, 'lamI', lamI, 'mu', mu);
                         cresS   = struct('rStat', r1C, 'rFeasE', cSocE);
                         [dS, idxS, ksolve] = detectStep(cstateS, cresS, n, mE, opts, ksolve);
                         nFactorizations = nFactorizations + 1;
@@ -1991,6 +2031,31 @@ for iter = 0:opts.maxIter
     trow = finishTraceRow(trow, primaryInfo, hinfo, aP, aD, aLamE, rho, Delta, ...
                           lsFailed, nSolves, socAdopted, 0);
     recordTrace(trace, trow);
+end
+catch ME
+    if ~strcmp(ME.identifier, 'adamnlopt:timeLimit'), rethrow(ME); end
+    timeLimitHit = true;
+end
+if timeLimitHit
+    % A probe past ev.deadline fired mid-iteration: the loop variables may
+    % hold a half-refreshed trial point.  state was built at the top of the
+    % iteration from the last accepted iterate, so report that point.  The
+    % stationarity metric here is unmasked (Fix F needs the active-set rows,
+    % which belong to the interrupted iteration, not to this point).
+    x = state.x; s = state.s; lamE = state.lamE; lamI = state.lamI;
+    zL = state.zL; zU = state.zU; f = state.f; g = state.g;
+    cE = state.cE; cI = state.cI; JE = state.JE; JI = state.JI;
+    dxl = x - lb;  dxu = ub - x;
+    rd = g;
+    if mE > 0,    rd = rd + JE.' * lamE;  end
+    if ev.mI > 0, rd = rd + JI.' * lamI;  end
+    rd = rd - zL + zU;
+    res = ipRes(rd, cE, cI + s, s, lamI, dxl, zL, finL, dxu, zU, finU, optW);
+    res.opt = util_norms(optW .* rd);
+    res.feasPhys = physViolation(cE, cI, feasW);
+    exitflag = 0;
+    msg = sprintf('Stopped: maximum time reached (%.1f s of %.1f s allowed).', ...
+        toc(ev.tStart), opts.maxTime);
 end
 
 fval = f;  grad = g;
@@ -3080,9 +3145,15 @@ if opts.enableDegeneracyDetection
     JE_loc = getStateField(state, 'JE', zeros(0,n));
     cI_loc = getStateField(state, 'cI', zeros(0,1));
     JI_loc = getStateField(state, 'JI', zeros(0,n));
-    if norm(cE_loc, 1) > 100 * opts.feasTol && mE > 0
-        [dx_e, einfo] = degeneracy_elasticVariables(cE_loc, JE_loc, cI_loc, JI_loc);
-        if ~einfo.feasible
+    if norm(cE_loc, 1) > 100 * opts.feasTol && mE > 0 && ...
+            size(JE_loc, 1) == numel(cE_loc)
+        [dx_e, ~] = degeneracy_elasticVariables(cE_loc, JE_loc, cI_loc, JI_loc);
+        % Inconsistency certificate from the min-norm residual, not the
+        % elastic penalty: the penalty test is absolute (<= 1e-8*n), so a
+        % CONSISTENT system with ||cE|| ~ 1e4 fails it.  cE in range(JE) --
+        % zero min-norm residual -- is consistent at any scale.
+        cEres = cE_loc + JE_loc * lsqminnorm(JE_loc, -cE_loc);
+        if norm(cEres, inf) > 1e-8 * max(1, norm(cE_loc, inf))
             % Linearized equality system is locally inconsistent; use elastic step.
             d = [dx_e; zeros(mE,1)];
             idx.x = 1:n;  idx.lamE = n + (1:mE);

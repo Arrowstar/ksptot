@@ -1084,6 +1084,137 @@ classdef AdamNlOptReviewFixesTest < AdamNlOptTestCase
                 [], [], [], [], [], [], [], testCase.quietOpts(struct('autoScale', 'none')));
             testCase.verifyFalse(outNone.scaling.traceIsScaled);
         end
+
+        %% ==== Batch 10.2: behavioral hygiene (D31) ==========================
+        function testD31SmallMultipliersCanBeConfident(testCase)
+            % An active constraint with lamI = 1e-3 at mu = 0.1 is centred
+            % (s*lamI ~ mu with s = 1e-7); the absolute max(1,||lam||) scale
+            % capped its confidence at 1e-2, so no small-multiplier problem
+            % could ever read as confident.
+            state = struct('cI', 0, 'lamI', 1e-3, 's', 1e-7, 'mu', 0.1);
+            [conf, info] = adamnlopt.control_activeSetConfidence(state, ...
+                struct('feasTol', 1e-6));
+            testCase.verifyEqual(info.nActive, 1);
+            testCase.verifyGreaterThan(conf, 0.05);
+        end
+
+        function testD31WeakActivityUsesTheBarrierScale(testCase)
+            % lamI = 5e-7 on an active row: vanishing against mu = 0.1 (a
+            % genuine strict-complementarity failure is 1e-6*mu), but above
+            % the old absolute 1e-6 threshold, which cried weak either way.
+            mkState = @(mu) struct('x', zeros(2,1), 'JE', zeros(0,2), ...
+                'JI', [1 0], 'cI', 0, 'lamI', 5e-7, 'mu', mu);
+            opts = struct('feasTol', 1e-6);
+            testCase.verifyFalse(adamnlopt.degeneracy_detectDegeneracy( ...
+                mkState(0.1), opts).weaklyActive, ...
+                '5e-7 is not vanishing against mu = 0.1');
+            noMu = rmfield(mkState(0.1), 'mu');
+            testCase.verifyTrue(adamnlopt.degeneracy_detectDegeneracy( ...
+                noMu, opts).weaklyActive, ...
+                'without mu the old absolute scale still applies');
+        end
+
+        function testD31DegeneracyDetectionSeesInequalityRows(testCase)
+            % Two parallel active inequalities: the IP core used to pass only
+            % (H, JE, x, lamE), so cI/JI/lamI defaulted empty and only linDepE
+            % could ever route.  With the full fields the active set is seen.
+            full_ = struct('x', zeros(2,1), 'JE', zeros(0,2), ...
+                'JI', [1 0; 2 0], 'cE', zeros(0,1), 'cI', [0; 0], ...
+                'lamE', zeros(0,1), 'lamI', [1; 1], 'mu', 0.1);
+            minimal = struct('x', zeros(2,1), 'JE', zeros(0,2), ...
+                'lamE', zeros(0,1));
+            opts = struct('feasTol', 1e-6);
+            testCase.verifyTrue(adamnlopt.degeneracy_detectDegeneracy( ...
+                full_, opts).linDepActive);
+            testCase.verifyFalse(adamnlopt.degeneracy_detectDegeneracy( ...
+                minimal, opts).linDepActive);
+        end
+
+        function testD31LargeConsistentSystemAvoidsElasticMode(testCase)            % 1e4-scaled, ill-conditioned but consistent equalities: the
+            % elastic penalty test is absolute (<= 1e-8*n), so the stalled
+            % elastic solve below reads INCONSISTENT and every step detours
+            % through elastic mode.  The min-norm residual is scale-relative
+            % and sees consistency.
+            [~, einfo] = adamnlopt.degeneracy_elasticVariables( ...
+                [1e4; 1e4 + 1], [1e4 0; 1e4 1], zeros(0,1), zeros(0,2));
+            testCase.verifyFalse(einfo.feasible, ...
+                'the absolute penalty test fails at this scale');
+            [x, ~, ef, out] = adamnlopt.solve(@bigConsistentObj, [0; 0], ...
+                [], [], [], [], [], [], @bigConsistentCon, testCase.quietOpts( ...
+                struct('enableDegeneracyDetection', true, ...
+                       'SpecifyObjectiveGradient', true, ...
+                       'SpecifyConstraintGradient', true)));
+            testCase.verifyGreaterThan(ef, 0, out.message);
+            testCase.verifyEqual(x, [1; 2], 'AbsTol', 1e-4);
+            testCase.verifyEqual(nnz(out.trace.stepSource == 2), 0, ...
+                'no step may route through elastic mode on a consistent system');
+        end
+
+        function testD31FixedVariableGradientIsFiniteDifferenceFilled(testCase)            % x2 fixed at 0, FD objective: grad(2) used to be NaN with both
+            % bound multipliers 0.  One off-fix probe fills it (2*(0-3) = -6)
+            % and the upper multiplier absorbs the row, matching fmincon.
+            [x, ~, ef, output, lambda, grad] = adamnlopt.solve( ...
+                @(x) (x(1) - 1)^2 + (x(2) - 3)^2 + (x(3) - 2)^2 + (x(4) + 1)^2, ...
+                zeros(4, 1), [], [], [], [], [-5; 0; -5; -5], [5; 0; 5; 5], ...
+                [], testCase.quietOpts(struct()));
+            testCase.verifyGreaterThan(ef, 0, output.message);
+            testCase.verifyEqual(x, [1; 0; 2; -1], 'AbsTol', 1e-6);
+            testCase.verifyEqual(grad(2), -6, 'AbsTol', 1e-4);
+            testCase.verifyEqual(lambda.upper(2), 6, 'AbsTol', 1e-4);
+            testCase.verifyEqual(lambda.lower(2), 0, 'AbsTol', 0);
+            testCase.verifyTrue(output.fixedVars.gradKnown);
+        end
+
+        function testD31MaxTimeStopsMidIteration(testCase)
+            % Wide bowl (n = 40) with 0.1 s evaluations: one FD gradient sweep
+            % alone costs ~4 s, so maxTime = 8 s fires MID-iteration (a probe
+            % past the deadline throws) rather than at the next iteration top.
+            % Top-of-iteration testing alone overran maxTime by a full long
+            % iteration (TwoStageToOrbit: 1308 s of 900 allowed).  The exit is
+            % 0 at the last accepted iterate, well before one more iteration
+            % could finish.
+            t0 = tic;
+            [x, fval, ef, out] = adamnlopt.solve(@slowWide, zeros(40, 1), ...
+                [], [], [], [], [], [], [], testCase.quietOpts( ...
+                struct('maxTime', 8)));
+            testCase.verifyEqual(ef, 0);
+            testCase.verifyNotEmpty(regexp(out.message, 'maximum time', 'once'));
+            testCase.verifyEqual(fval, slowWide(x), 'AbsTol', 1e-12);
+            testCase.verifyLessThan(toc(t0), 12, ...
+                'the stop must come from mid-iteration, not after another full one');
+        end
+
+        function testD31MaxTimeStopsTheInteriorPointCore(testCase)
+            % Same deadline through the IP core (bounds present): the other
+            % catch block restores s/lamI/z from the loop-top state.
+            [x, fval, ef, out] = adamnlopt.solve(@slowWide, zeros(40, 1), ...
+                [], [], [], [], -5 * ones(40, 1), 5 * ones(40, 1), [], ...
+                testCase.quietOpts(struct('maxTime', 8)));
+            testCase.verifyEqual(ef, 0);
+            testCase.verifyNotEmpty(regexp(out.message, 'maximum time', 'once'));
+            testCase.verifyEqual(fval, slowWide(x), 'AbsTol', 1e-12);
+        end
+
+        function testD31CorrectJacobPatternIsSilent(testCase)
+            ev = testCase.evaluatorFrom(struct('nlcon', @separableCon, 'mInl', 2), ...
+                struct('JacobPattern', eye(2)));
+            testCase.verifyWarningFree(@() ev.jacobian([0.5; -0.5]));
+        end
+
+        function testD31WrongJacobPatternWarns(testCase)
+            % Column 2 of c2 really depends on x2; a pattern claiming
+            % otherwise silently zeroes a -1 Jacobian entry.
+            ev = testCase.evaluatorFrom(struct('nlcon', @separableCon, 'mInl', 2), ...
+                struct('JacobPattern', [1 0; 0 0]));
+            testCase.verifyWarning(@() ev.jacobian([0.5; -0.5]), ...
+                'adamnlopt:jacobPattern');
+        end
+
+        function testD31JacobPatternCheckOptsOut(testCase)
+            ev = testCase.evaluatorFrom(struct('nlcon', @separableCon, 'mInl', 2), ...
+                struct('JacobPattern', [1 0; 0 0], 'CheckJacobPattern', false));
+            testCase.verifyWarningFree(@() ev.jacobian([0.5; -0.5]));
+        end
     end
 
     methods (Access = private)
@@ -1114,8 +1245,14 @@ classdef AdamNlOptReviewFixesTest < AdamNlOptTestCase
     end
 end
 
-function [c, ceq] = failsBeyond09(x)
-% Disk, sign and a linear equality; a "failed simulation" beyond x1 = 0.9.
+function [c, ceq] = separableCon(x)
+% Two decoupled inequalities (Jacobian diag([2x1, 2x2])), for the
+% CheckJacobPattern tests.
+c = [x(1)^2 - 1; x(2)^2 - 1];
+ceq = [];
+end
+
+function [c, ceq] = failsBeyond09(x)% Disk, sign and a linear equality; a "failed simulation" beyond x1 = 0.9.
 if x(1) > 0.9, c = NaN;  ceq = NaN;  return; end
 c = [x(1)^2 + x(2)^2 - 1; -x(1)];
 ceq = x(1) - x(2) - 0.1;
@@ -1124,6 +1261,19 @@ end
 function f = movingNoise(x)
 % Quadratic, clean near x0 = 0, with 1e-5 "simulation noise" beyond x1 = 1.
 f = sum((x - 3).^2) + (1e-12 + 1e-5 * (x(1) > 1)) * sin(1e9 * sum(x));
+end
+
+function f = slowBowl(x)
+% Bowl with a 50 ms evaluation cost, for the maxTime deadline test.
+pause(0.05);
+f = sum((x - 1).^2);
+end
+
+function f = slowWide(x)
+% Wide bowl with a 100 ms evaluation cost: one FD sweep outlasts the test's
+% maxTime, so only a mid-iteration deadline can stop it in time.
+pause(0.1);
+f = sum((x - 1).^2);
 end
 
 function [f, g] = quadObj(x)
@@ -1151,4 +1301,18 @@ function [c, ceq, gc, gceq] = circleConFlipped(x)
 % Same constraints with a sign-flipped inequality gradient.
 [c, ceq, ~, gceq] = circleCon(x);
 gc = -[2 * x(1); 2 * x(2)];
+end
+
+function [f, g] = bigConsistentObj(x)
+% Bowl centred on the consistent point of bigConsistentCon.
+f = (x(1) - 1)^2 + (x(2) - 2)^2;
+g = [2 * (x(1) - 1); 2 * (x(2) - 2)];
+end
+
+function [c, ceq, gc, gceq] = bigConsistentCon(x)
+% 1e4-scaled, ill-conditioned but consistent equalities (solution [1; 2]).
+c = [];
+ceq = [1e4 * (x(1) - 1); 1e4 * (x(1) - 1) + (x(2) - 2)];
+gc = zeros(2, 0);
+gceq = [1e4 1e4; 0 1];
 end

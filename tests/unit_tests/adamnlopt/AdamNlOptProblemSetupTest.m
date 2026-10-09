@@ -696,15 +696,30 @@ classdef AdamNlOptProblemSetupTest < AdamNlOptTestCase
             testCase.verifyEqual(out.fixedVars.nFree, 1);
         end
 
-        function testAnUnavailableFixedGradientRowIsNaNNotZero(testCase)
-            %   A zero-width coordinate has no probe, so fdBoundedStep
-            %   correctly returns hs = 0 there and an FD estimate would come
-            %   back as 0.  A zero in a gradient row reads as "this direction
-            %   is already stationary" -- the single most misleading value the
-            %   solver could return -- so NaN is used instead and gradKnown
-            %   records that it was never computed.
+        function testAFdProbeFillsTheFixedRowAndIsCharged(testCase)
+            %   Without an analytic gradient the fixed row used to come back
+            %   NaN.  One one-sided FD probe per fixed variable at the solution
+            %   now fills it (fmincon parity: a zero there would read as
+            %   "already stationary"), and the probes are counted.
             [p, fx] = testCase.reductionFixture();
             p.hasObjGrad = false;
+            out0 = testCase.emptyOutput();
+            [~, grad, ~, ~, out] = adamnlopt.expandResult(7, 14, [], [], ...
+                out0, fx, p);
+            testCase.verifyEqual(grad, [6; 14], 'AbsTol', 1e-6);
+            testCase.verifyTrue(out.fixedVars.gradKnown);
+            testCase.verifyEqual(out.objCount, out0.objCount + 2, ...
+                'one base plus one probe evaluation');
+            testCase.verifyEqual(out.funcCount, 2);
+        end
+
+        function testAFailingFixedProbeLeavesNaN(testCase)
+            %   The probe steps off the fix, where the function may be
+            %   undefined: a failure there leaves NaN rather than failing
+            %   the solve.
+            [p, fx] = testCase.reductionFixture();
+            p.hasObjGrad = false;
+            p.objFun = @(x) error('adamnlopt:testProbe', 'boom');
             [~, grad, ~, ~, out] = adamnlopt.expandResult(7, 14, [], [], ...
                 testCase.emptyOutput(), fx, p);
             testCase.verifyEqual(grad(2), 14, 'AbsTol', 0);
@@ -1301,6 +1316,7 @@ classdef AdamNlOptProblemSetupTest < AdamNlOptTestCase
                 'HessianFcn',                 []; ...
                 'HessPattern',                []; ...
                 'JacobPattern',               []; ...
+                'CheckJacobPattern',          true; ...
                 'FiniteDifferenceStepSize',   sqrt(eps); ...
                 'FiniteDifferenceType',       'forward'; ...
                 'HonorBounds',                true; ...

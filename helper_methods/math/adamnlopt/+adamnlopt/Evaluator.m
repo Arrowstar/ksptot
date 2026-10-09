@@ -87,6 +87,7 @@ classdef Evaluator < handle
         fdLb = []
         fdUb = []
         jacPattern = []            % sparsity of nonlinear inequality+equality Jacobian
+        checkJacobPattern = true   % one-shot dense cross-check of jacPattern (n <= 400)
         nFun = 0                   % objective evaluations
         nCon = 0                   % constraint evaluations
         parallelFD = false         % use parallel_parallelFiniteDiff when true
@@ -98,12 +99,22 @@ classdef Evaluator < handle
         costThreshold   = Inf     % seconds: avg FD Jacobian time before auto-enable (Inf = never)
         % Automatic finite-difference step calibration (autoFDStep)
         optTolForCalib = 1e-6      % optTol target for the V-curve step selection
+        % Wall-clock budget (D31 maxTime): seconds after tStart at which the
+        % next user evaluation throws adamnlopt:timeLimit instead of running.
+        % Inf (default) disables the check; solve sets it to opts.maxTime on
+        % the working Evaluator just before the cores start, so a single long
+        % iteration (FD sweeps + line search + SOC) cannot overrun maxTime the
+        % way top-of-iteration testing alone did (TwoStageToOrbit ran 1308 s
+        % of 900 allowed).  tStart is a tic value from the solve's clock.
+        deadline = Inf
+        tStart = []
     end
 
     properties (Access = private)
         xf = [];  fVal = [];  gVal = [];   hasCachedG = false
         xc = [];  cEVal = []; cIVal = [];
         xj = [];  JEVal = []; JIVal = [];
+        jacPatternChecked = false   % the one-shot CheckJacobPattern ran
         % Broyden state (Gap 5)
         broyden_   = []   % eval_BroydenJacobian instance ([] = inactive)
         cNlAtJac_  = []   % stacked [c_nl; ceq_nl] at the last exact Jacobian point
@@ -163,6 +174,7 @@ classdef Evaluator < handle
                 obj.fdUb = getfielddef(problem, 'ub', []);
             end
             obj.jacPattern = opts.JacobPattern;
+            obj.checkJacobPattern = adamnlopt.Evaluator.getOpt(opts, 'CheckJacobPattern', true);
             obj.parallelFD = isfield(opts,'parallel') && ...
                 (strcmpi(opts.parallel,'finitediff') || strcmpi(opts.parallel,'async'));
             obj.costModel = adamnlopt.eval_costModel();
@@ -191,6 +203,7 @@ classdef Evaluator < handle
         %     f - scalar objective value f(x).
         %     g - n-by-1 objective gradient (only if requested).
             import adamnlopt.*
+            obj.checkDeadline();
             if ~isequal(x, obj.xf)
                 if obj.hasObjGrad && nargout > 1
                     [obj.fVal, obj.gVal] = obj.objFun(x);
@@ -234,13 +247,13 @@ classdef Evaluator < handle
                                 @(z) obj.objFun(z), [], x, obj.fVal, [], ...
                                 obj.fdStep, obj.fdType, [], obj.fdLb, obj.fdUb);
                             obj.nFun = obj.nFun + fdInfo.nObjEvals;
-                            obj.gVal = obj.fdRetryNonFinite(@(z) obj.objFun(z), ...
+                            obj.gVal = obj.fdRetryNonFinite(@(z) obj.timedObjFun(z), ...
                                 x, obj.fVal, gFD(:).', true).';
                         else
-                            [gFD, nEv] = finiteDiffGradient(@(z) obj.objFun(z), x, ...
+                            [gFD, nEv] = finiteDiffGradient(@(z) obj.timedObjFun(z), x, ...
                                 obj.fVal, obj.fdStep, obj.fdType, obj.fdLb, obj.fdUb);
                             obj.nFun = obj.nFun + nEv;
-                            obj.gVal = obj.fdRetryNonFinite(@(z) obj.objFun(z), ...
+                            obj.gVal = obj.fdRetryNonFinite(@(z) obj.timedObjFun(z), ...
                                 x, obj.fVal, gFD(:).', true).';
                         end
                         obj.hasCachedG = true;
@@ -354,7 +367,7 @@ classdef Evaluator < handle
             % both double-count them and book them to the wrong counter.
             probes = {};  probeIsObj = false(1, 0);
             if ~obj.hasObjGrad
-                probes{end+1} = @(z) obj.objFun(z);
+                probes{end+1} = @(z) obj.timedObjFun(z);
                 probeIsObj(end+1) = true;
             end
             if ~obj.hasConGrad && (obj.mEnl + obj.mInl) > 0
@@ -554,7 +567,7 @@ classdef Evaluator < handle
             % constant offset leaves the noise unchanged and makes that test
             % absolute for |f| < 1.
             c = max(1, abs(obj.objective(x)));
-            [epsf, info] = adamnlopt.estimateNoise(@(z) obj.objFun(z) + c, x, [], struct());
+            [epsf, info] = adamnlopt.estimateNoise(@(z) obj.timedObjFun(z) + c, x, [], struct());
             obj.nFun = obj.nFun + info.nEvals;
             if ~info.detected || ~(epsf > 0), return; end
             h = obj.fdStep * max(1, min(abs(x(:))));
@@ -715,6 +728,7 @@ classdef Evaluator < handle
                 J = obj.fdRetryNonFinite(h, x, base, J, false);
                 Jc   = J(1:obj.mInl, :);
                 Jceq = J(obj.mInl+1:end, :);
+                obj.checkJacobPatternOnce(h, x, base, J);
             end
             obj.costModel.tick(toc(t0));
 
@@ -796,6 +810,63 @@ classdef Evaluator < handle
     end
 
     methods (Access = private)
+        function checkJacobPatternOnce(obj, h, x, base, J)
+        %CHECKJACOBPATTERNONCE  One-shot dense cross-check of a user sparsity pattern (D31).
+        %   Differences the same stacked constraints densely (no coloring) and
+        %   warns adamnlopt:jacobPattern when an asserted structural zero comes
+        %   back large: a wrong JacobPattern silently yields a wrong Jacobian,
+        %   and nothing else checks it.  Runs once per Evaluator (the first FD
+        %   Jacobian), only for n <= 400, and only when the pattern is actually
+        %   used (nonempty, FD constraints).  The tolerance is relative to each
+        %   column's scale with a floor from the FD step itself, so a large
+        %   calibrated step on a noisy function does not false-positive.
+            if obj.jacPatternChecked, return; end
+            obj.jacPatternChecked = true;
+            if isempty(obj.jacPattern) || ~obj.checkJacobPattern || obj.n > 400
+                return;
+            end
+            pat = logical(obj.jacPattern);
+            if ~isequal(size(pat), size(J)), return; end
+            Jd = adamnlopt.finiteDiffJacobian(h, x, base, obj.fdStep, ...
+                obj.fdType, [], obj.fdLb, obj.fdUb);
+            Jd = obj.fdRetryNonFinite(h, x, base, Jd, false);
+            colScale = max(1, max(abs(Jd), [], 1));
+            tol = max(1e-3, 10 * obj.fdStep) .* colScale;
+            badCols = find(any(~pat & abs(Jd) > tol, 1));
+            if ~isempty(badCols)
+                warning('adamnlopt:jacobPattern', ['CheckJacobPattern: ' ...
+                    'JacobPattern omits entries that finite differences find ' ...
+                    'nonzero (columns %s).  The colored Jacobian is wrong ' ...
+                    'there; fix the pattern or clear it for dense differencing.'], ...
+                    mat2str(badCols(1:min(10, numel(badCols)))));
+            end
+        end
+
+        function checkDeadline(obj)
+        %CHECKDEADLINE  Throw past the wall-clock budget instead of evaluating.
+        %   A no-op at the default deadline Inf (one isfinite test, so the
+        %   unbudgeted path pays nothing); past tStart + deadline user calls
+        %   raise adamnlopt:timeLimit, which both solver cores catch and turn
+        %   into an exit-0 stop at the last accepted iterate.
+            if isfinite(obj.deadline) && ~isempty(obj.tStart) && ...
+                    toc(obj.tStart) > obj.deadline
+                error('adamnlopt:timeLimit', ...
+                    'Wall-clock budget exhausted (%.1f s of %.1f s allowed).', ...
+                    toc(obj.tStart), obj.deadline);
+            end
+        end
+
+        function f = timedObjFun(obj, z)
+        %TIMEDOBJFUN  Deadline-checked objective call for FD probe sweeps.
+        %   Serial finite-difference probes call the user objective directly
+        %   (bypassing objective(), which would also cache and count), so the
+        %   chokepoint check there never sees them; routing the probe handles
+        %   through here checks the budget once per probe.  The parallel path
+        %   keeps the raw handle (a tic value is meaningless on a worker).
+            obj.checkDeadline();
+            f = obj.objFun(z);
+        end
+
         function M = fdRetryNonFinite(obj, fun, x, base, M, countObj)
         %FDRETRYNONFINITE  Re-difference non-finite FD columns from the other side (D21).
         %   A probe that lands where the user function fails (an LVD propagation
@@ -875,6 +946,7 @@ classdef Evaluator < handle
         %   Outputs:
         %     c   - mInl-by-1 nonlinear inequality values.
         %     ceq - mEnl-by-1 nonlinear equality values.
+            obj.checkDeadline();
             if isempty(obj.nlcon)
                 c = zeros(0,1);  ceq = zeros(0,1);   % no user call: no cost
             else
@@ -996,7 +1068,7 @@ classdef Evaluator < handle
 
         function v = objConStacked(obj, z)
         %OBJCONSTACKED  [f(z); c_nl(z); ceq_nl(z)], counting both evaluations.
-            f = obj.objFun(z);
+            f = obj.timedObjFun(z);
             obj.nFun = obj.nFun + 1;
             v = [f; obj.evalNonlinearStacked(z)];   % evalNonlinearStacked counts nCon
         end

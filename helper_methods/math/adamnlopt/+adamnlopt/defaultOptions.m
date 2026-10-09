@@ -47,6 +47,7 @@ opts.SpecifyConstraintGradient = false;  % nonlcon returns [c,ceq,gc,gceq]
 opts.HessianFcn                = [];      % @(x,lambda) Hessian of Lagrangian
 opts.HessPattern               = [];      % sparsity pattern of Hessian
 opts.JacobPattern              = [];      % sparsity pattern of nonlinear c Jacobian
+opts.CheckJacobPattern         = true;    % one-shot dense cross-check of JacobPattern (n <= 400)
 opts.FiniteDifferenceStepSize  = sqrt(eps);
 opts.FiniteDifferenceType      = 'forward'; % 'forward' | 'central'
 

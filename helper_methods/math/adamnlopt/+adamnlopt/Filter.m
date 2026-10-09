@@ -5,8 +5,11 @@ classdef Filter < handle
 %   Fletcher-Leyffer / Waechter-Biegler acceptance rule. A trial (theta, phi)
 %   is acceptable when, for every stored entry (theta_j, phi_j),
 %
-%       theta <= (1 - gammaTheta) * theta_j   OR   phi <= phi_j - gammaPhi * theta_j
+%       theta < theta_j   OR   phi < phi_j
 %
+%   The entries are the margin-shifted corners augment stores, so this plain
+%   comparison already carries the Waechter-Biegler margin -- it must not be
+%   applied again here (see globalize_filterAccept).
 %   i.e. it improves feasibility or objective relative to each entry by a small
 %   margin. Trials with theta >= thetaMax are always rejected. AUGMENT adds a
 %   (margin-shifted) pair and discards any entries it dominates, keeping the
@@ -116,8 +119,7 @@ classdef Filter < handle
             if theta >= obj.thetaMax
                 tf = false;  return;
             end
-            tf = globalize_filterAccept(obj.entries, theta, phi, ...
-                                        obj.gammaTheta, obj.gammaPhi);
+            tf = globalize_filterAccept(obj.entries, theta, phi);
         end
 
         function augment(obj, theta, phi)

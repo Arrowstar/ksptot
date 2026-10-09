@@ -82,9 +82,13 @@ end
 flags.linDepActive = flags.rankActive < size(Aact, 1);
 
 % Weakly active inequalities: active but with a vanishing multiplier.
+% Scaled against mu like control_activeSetConfidence (absolute max(1,||lam||)
+% blinded this test on problems with ~1e-3 multipliers); mu defaults to 1 when
+% the caller passes no barrier parameter, which recovers the old scale.
 weak = false(size(active));
 if ~isempty(lamI) && any(active)
-    lamScale = max(1, norm(lamI, inf));
+    mu = getf(state, 'mu', 1);
+    lamScale = max(norm(lamI, inf), max(mu, eps));
     weak = active & (abs(lamI) <= 1e-6 * lamScale);
 end
 flags.weaklyActive = weak;
