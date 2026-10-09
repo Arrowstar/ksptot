@@ -661,7 +661,7 @@ classdef Evaluator < handle
                 cNlNew = obj.nlStackedAt(x);   % served from the constraints cache when it holds x
                 s = x - obj.xAtJac_;
                 y = cNlNew - obj.cNlAtJac_;
-                accepted = obj.broyden_.update(s, y, cNlNew, obj.xAtJac_);
+                accepted = obj.broyden_.update(s, y, obj.xAtJac_);
                 % Advance the secant anchor to the point just evaluated, so the
                 % NEXT pair is the consecutive step (x_{k+1} - x_k).  The anchor
                 % used to stay pinned at the last exact refresh, which made

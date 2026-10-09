@@ -934,7 +934,7 @@ classdef AdamNlOptTest < matlab.unittest.TestCase
             % The secant condition must still be imposed for a real step.
             B = adamnlopt.eval_BroydenJacobian([1 0]);
             s = [1; 0];  y = 1.05;         % within the 0.1 refresh tolerance
-            accepted = B.update(s, y, 1, [1; 1]);
+            accepted = B.update(s, y, [1; 1]);
 
             testCase.verifyTrue(accepted);
             testCase.verifyEqual(B.full() * s, y, 'AbsTol', 1e-12);

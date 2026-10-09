@@ -1215,6 +1215,25 @@ classdef AdamNlOptReviewFixesTest < AdamNlOptTestCase
                 struct('JacobPattern', [1 0; 0 0], 'CheckJacobPattern', false));
             testCase.verifyWarningFree(@() ev.jacobian([0.5; -0.5]));
         end
+
+        %% ==== Batch 10.3: Broyden refresh test (D25) ========================
+        function testD25RefreshVerdictIsScaleInvariant(testCase)
+            % Same (s, y, J) at 1e6 and 1e-6 scale: the old test divided by
+            % max(1, ||cNew||), so near feasibility it went absolute on a
+            % vanishing residual (a 100%-wrong model passed), while on O(1e6)
+            % constraints it admitted 1e5 absolute errors.  Both scales must
+            % give the same accept/refresh verdict.
+            s = [1; 0];
+            for k = [1e6, 1e-6]
+                bad = adamnlopt.eval_BroydenJacobian(k * eye(2), 20, 0.1);
+                testCase.verifyFalse(bad.update(s, k * [1.5; 0]), sprintf( ...
+                    'scale %g: a 50%% residual must force a refresh', k));
+                testCase.verifyTrue(bad.needsRefresh());
+                good = adamnlopt.eval_BroydenJacobian(k * eye(2), 20, 0.1);
+                testCase.verifyTrue(good.update(s, k * [1.05; 0]), sprintf( ...
+                    'scale %g: a 5%% residual must update', k));
+            end
+        end
     end
 
     methods (Access = private)
