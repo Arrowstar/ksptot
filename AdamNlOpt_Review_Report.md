@@ -555,6 +555,8 @@ In `finiteDiffJacobian`/`fdBoundedStep`, when a forward probe returns non-finite
 
 **Test.** Same (s, y, J) with y and J scaled by 1e6 and 1e-6 gives the same accept/refresh verdict.
 
+**Status.** Scale fix landed in Batch 10.3. The second half was benchmark-gated in Batch 11 (`lvdfix/adamnlopt_baseline/adamnlopt_broydenbench.m`): maxStale 20 vs 5 are bit-identical on every fixture (the limit never binds in practice), so the default stays 20 -- retuning it would be a no-op. The phase restriction landed instead (`ev.broydenAllow`, set from `feas > lsRefreshDomRatio*opt` each iteration; exact refresh on entering the optimality phase): bowl30mix/bowl50mix upgrade ef 2 → 1 at 17-19% fewer constraint evals than all-exact, and hs71 recovers the exact trajectory bit-for-bit (10 iters, 61 evals, 0 secant serves) where ungated Broyden doubled the cost. Guards: `testD25DisallowedBroydenServesExactly`, `testD25OptimalityPhaseRefreshesExactly`.
+
 ---
 
 ### D26. [Low] Returned `hessian` is the model before the last secant update

@@ -98,6 +98,11 @@ classdef Evaluator < handle
         broydenMaxStale = 20       % steps before mandatory exact refresh
         broydenTol      = 0.1     % Broyden model-error threshold for early refresh
         costThreshold   = Inf     % seconds: avg FD Jacobian time before auto-enable (Inf = never)
+        % Phase gate (D25): solve.m allows secant serves only on
+        % feasibility-dominated iterations (feas > lsRefreshDomRatio*opt);
+        % in the optimality phase the Jacobian is refreshed exactly.  True by
+        % default (ungated) so direct Evaluator users keep the old behavior.
+        broydenAllow    = true
         % Automatic finite-difference step calibration (autoFDStep)
         optTolForCalib = 1e-6      % optTol target for the V-curve step selection
         % Wall-clock budget (D31 maxTime): seconds after tStart at which the
@@ -659,6 +664,7 @@ classdef Evaluator < handle
             % use site did not, so the auto path paid the extra evalNonlinear
             % to maintain a Broyden object that was never consulted.
             if obj.broydenActive() && ~obj.hasConGrad && ...
+                    obj.broydenAllow && ...
                     ~isempty(obj.broyden_) && ~obj.broyden_.needsRefresh()
                 cNlNew = obj.nlStackedAt(x);   % served from the constraints cache when it holds x
                 s = x - obj.xAtJac_;

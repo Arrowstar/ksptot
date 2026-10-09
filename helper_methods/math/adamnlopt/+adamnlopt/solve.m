@@ -501,6 +501,12 @@ for iter = 0:opts.maxIter
         trow.optScaled = res.opt / kktScaleFactor(state);
     end
 
+    % D25 phase gate: secant Jacobian serves only while feasibility dominates
+    % (feas > lsRefreshDomRatio*opt); entering the optimality phase takes an
+    % exact Jacobian, which re-anchors the secant model.  Inert when Broyden
+    % is off (the Evaluator never consults the flag then).
+    ev.broydenAllow = res.feas > opts.lsRefreshDomRatio * res.opt;
+
     % A1: an exitflag-2 stop with forward-difference derivatives the user did
     % not pin is a stop at FORWARD-difference accuracy (O(h) truncation).
     % Switch to central differences once.  A7: a step collapse short of
@@ -1333,6 +1339,12 @@ for iter = 0:opts.maxIter
         trow.optRaw = util_norms(rd);
         trow.optScaled = res.opt / kktScaleFactor(state);
     end
+
+    % D25 phase gate: secant Jacobian serves only while feasibility dominates
+    % (feas > lsRefreshDomRatio*opt); entering the optimality phase takes an
+    % exact Jacobian, which re-anchors the secant model.  Inert when Broyden
+    % is off (the Evaluator never consults the flag then).
+    ev.broydenAllow = res.feas > opts.lsRefreshDomRatio * res.opt;
 
     % A1: an exitflag-2 stop with forward-difference derivatives the user did
     % not pin is a stop at FORWARD-difference accuracy (O(h) truncation).

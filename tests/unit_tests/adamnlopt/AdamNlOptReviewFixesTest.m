@@ -1420,6 +1420,42 @@ classdef AdamNlOptReviewFixesTest < AdamNlOptTestCase
         end
 
         %% ==== Batch 10.3: Broyden refresh test (D25) ========================
+        function testD25DisallowedBroydenServesExactly(testCase)
+            % With the optimality-phase gate closed (broydenAllow = false)
+            % the Jacobian is re-differenced exactly and unflagged, at full
+            % FD cost -- the refresh the phase switch pays for.
+            ev = testCase.evaluatorFrom(struct('nlcon', @unitCircleEq, 'mEnl', 1), ...
+                struct('enableBroyden', true));
+            x0 = [0.6; 0.7];  x1 = [0.605; 0.692];
+            ev.jacobian(x0);
+            ev.broydenAllow = false;
+            n0 = ev.nCon;
+            [JE, ~] = ev.jacobian(x1);
+            testCase.verifyFalse(ev.jacobianIsApprox());
+            testCase.verifyEqual(ev.nCon - n0, 3, ...
+                'an exact n = 2 forward Jacobian costs 1 base + 2 probes');
+            testCase.verifyEqual(JE, 2 * x1.', 'AbsTol', 1e-6);
+        end
+
+        function testD25OptimalityPhaseRefreshesExactly(testCase)
+            % End to end: entering the optimality phase refreshes exactly, so
+            % the gated solve converges fully (ef 1) where the ungated one
+            % stopped at the acceptable level -- and cheaper than all-exact.
+            % Measured: gated 145 constraint evals vs 175 exact (17% fewer).
+            o = testCase.quietOpts(struct('enableBroyden', true));
+            [x, ~, ef, out] = adamnlopt.solve(@(x) sum((x - 1).^2), ...
+                2 * ones(30, 1), [], [], [], [], [], [], @gatedBowlCon, o);
+            testCase.verifyEqual(ef, 1, out.message);
+            testCase.verifyEqual(x, ones(30, 1), 'AbsTol', 1e-6);
+            testCase.verifyGreaterThan(out.broydenIterations, 0, ...
+                'secant serves must actually happen');
+            oE = testCase.quietOpts(struct());
+            [~, ~, efE, outE] = adamnlopt.solve(@(x) sum((x - 1).^2), ...
+                2 * ones(30, 1), [], [], [], [], [], [], @gatedBowlCon, oE);
+            testCase.verifyEqual(efE, 1);
+            testCase.verifyLessThan(out.conCount, outE.conCount);
+        end
+
         function testD25RefreshVerdictIsScaleInvariant(testCase)
             % Same (s, y, J) at 1e6 and 1e-6 scale: the old test divided by
             % max(1, ||cNew||), so near feasibility it went absolute on a
@@ -1484,6 +1520,14 @@ function v = stackedUnitCircle(x)
 % Stacked [c; ceq] for direct finiteDiffJacobian reference values.
 [c, ceq] = unitCircleEq(x);
 v = [c(:); ceq(:)];
+end
+
+function [c, ceq] = gatedBowlCon(x)
+% Block-sum equalities plus a block-disk inequality (active at x* = ones),
+% for the D25 phase-gating test.
+b = 15;
+c = sum(x(1:b).^2) - b;
+ceq = [sum(x(1:b)) - b; sum(x(b+1:end)) - b];
 end
 
 function [c, ceq] = failsBeyond09(x)% Disk, sign and a linear equality; a "failed simulation" beyond x1 = 0.9.
