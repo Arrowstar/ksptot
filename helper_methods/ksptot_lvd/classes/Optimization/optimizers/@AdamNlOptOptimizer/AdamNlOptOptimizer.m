@@ -251,6 +251,20 @@ classdef AdamNlOptOptimizer < AbstractGradientOptimizer
         %   iteration; in between the last readout is re-shown (A10).
             due = ~haveCache || mod(iteration, 5) == 0;
         end
+
+        function recordIteration(recorder, x, optimValues, lvdOpt, evtToStartScriptExecAt)
+        %RECORDITERATION  Append one iteration to the optimization recorder.
+        %   Scorecard-critical record path pulled out of getOutputFunction so
+        %   the wiring (iteration number, point, objective, max violation,
+        %   plus the per-constraint history row) is exercisable headless; the
+        %   display half of getOutputFunction (labels, plots, state readout)
+        %   stays figure-bound and manually tested.
+            recorder.iterNums(end+1) = optimValues.iteration;
+            recorder.xVals(end+1) = {x};
+            recorder.fVals(end+1) = optimValues.fval;
+            recorder.maxCVal(end+1) = optimValues.constrviolation;
+            lvd_recordConstraintHistory(recorder, lvdOpt, x, evtToStartScriptExecAt);
+        end
     end
 
     methods(Access=private)
@@ -322,11 +336,8 @@ classdef AdamNlOptOptimizer < AbstractGradientOptimizer
                 case 'iter'
                     stop = get(hCancelButton,'Value');
 
-                    recorder.iterNums(end+1) = optimValues.iteration;
-                    recorder.xVals(end+1) = {x};
-                    recorder.fVals(end+1) = optimValues.fval;
-                    recorder.maxCVal(end+1) = optimValues.constrviolation;
-                    lvd_recordConstraintHistory(recorder, lvdOpt, x, evtToStartScriptExecAt);
+                    AdamNlOptOptimizer.recordIteration(recorder, x, ...
+                        optimValues, lvdOpt, evtToStartScriptExecAt);
                 otherwise
                     stop = get(hCancelButton,'Value');
             end
