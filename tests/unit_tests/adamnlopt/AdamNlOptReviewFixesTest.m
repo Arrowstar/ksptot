@@ -1251,6 +1251,68 @@ classdef AdamNlOptReviewFixesTest < AdamNlOptTestCase
             testCase.verifyEqual(x, [2; 1] / sqrt(5), 'AbsTol', 1e-4);
         end
 
+        %% ==== Batch 10.5: warm start (A3) and shared handles (D32) =========
+        function testA3WarmStartResolvesInTwoIterations(testCase)
+            % Re-solving HS71 from its solution with its multipliers must not
+            % rebuild the costates and the barrier (~10 iterations normally).
+            p = testCase.catalogEntry('hs71');
+            out1 = testCase.solveProblem(p, struct());
+            testCase.assumeGreaterThan(out1.exitflag, 0, 'cold solve failed');
+            p2 = p;
+            p2.x0 = out1.x;
+            o2 = struct('SpecifyObjectiveGradient', true, ...
+                'SpecifyConstraintGradient', true, 'lambda0', out1.lambda);
+            out2 = testCase.solveProblem(p2, o2);
+            testCase.verifyGreaterThan(out2.exitflag, 0, out2.output.message);
+            testCase.verifyLessThanOrEqual(out2.output.iterations, 2);
+            testCase.verifyEqual(out2.x, p.xStar, 'AbsTol', p.xTol);
+        end
+
+        function testA3MismatchedWarmStartFallsBackSilently(testCase)
+            % A stale lambda (wrong sizes after an edit) is not an error: the
+            % solve falls back to the cold start and converges anyway.
+            p = testCase.catalogEntry('hs71');
+            bad = struct('eqlin', 0, 'eqnonlin', zeros(7, 1), ...
+                'ineqlin', zeros(0, 1), 'ineqnonlin', 0, ...
+                'lower', zeros(2, 1), 'upper', zeros(2, 1));
+            out = testCase.solveProblem(p, struct('lambda0', bad));
+            testCase.verifyGreaterThan(out.exitflag, 0, out.output.message);
+            testCase.verifyEqual(out.x, p.xStar, 'AbsTol', p.xTol);
+        end
+
+        function testD32ClonedOptimizerIsIndependent(testCase)
+            % cloneFrom gives an independent optimizer with equal settings.
+            a = AdamNlOptOptimizer();
+            b = AdamNlOptOptimizer.cloneFrom(a);
+            testCase.verifyTrue(b ~= a, ...
+                'clone must be a distinct handle');
+            testCase.verifyEqual(b.getOptions().maxIter, ...
+                a.getOptions().maxIter);
+            b.getOptions().maxIter = 11;
+            testCase.verifyEqual(a.getOptions().maxIter, 300);
+        end
+
+        function testD32LoadedCasesDoNotShareTheOptimizer(testCase)
+            % .mat files saved before AdamNlOpt existed store no adamNlOptOpt,
+            % so every such case loaded in one session shared the
+            % class-default handle: an option set for one case leaked into all
+            % the others.  loadobj must clone on load.
+            ex1 = dir(fullfile(ksptotTestRoot(), 'examples', ...
+                'LaunchVehicleDesigner', '**', 'lvdExample_MunarLanding.mat'));
+            ex2 = dir(fullfile(ksptotTestRoot(), 'examples', ...
+                'LaunchVehicleDesigner', '**', 'lvdExample_TwoStageToOrbit.mat'));
+            testCase.assumeNotEmpty(ex1, 'example mission not in checkout');
+            testCase.assumeNotEmpty(ex2, 'example mission not in checkout');
+            s1 = load(fullfile(ex1(1).folder, ex1(1).name), 'lvdData');
+            s2 = load(fullfile(ex2(1).folder, ex2(1).name), 'lvdData');
+            o1 = s1.lvdData.optimizer.adamNlOptOpt;
+            o2 = s2.lvdData.optimizer.adamNlOptOpt;
+            testCase.verifyTrue(o1 ~= o2, ...
+                'two loaded cases must not share one optimizer handle');
+            o1.getOptions().maxIter = 11;
+            testCase.verifyEqual(o2.getOptions().maxIter, 300);
+        end
+
         %% ==== Batch 10.3: Broyden refresh test (D25) ========================
         function testD25RefreshVerdictIsScaleInvariant(testCase)
             % Same (s, y, J) at 1e6 and 1e-6 scale: the old test divided by

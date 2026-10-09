@@ -535,6 +535,17 @@ opts.muBeta  = 1.5;    % superlinear exponent: mu^(1+beta)
 opts.kappaMu = 10;     % reduce mu when kkt_mu <= kappaMu*mu
 opts.tau     = 0.995;  % fraction-to-boundary base
 
+% --- Warm start from a previous solve (A3) ---
+% fmincon-style lambda0 (struct with eqlin/eqnonlin/ineqlin/ineqnonlin/lower/
+% upper over the FULL problem, exactly as adamnlopt.solve returns it) seeds
+% the multipliers instead of rebuilding them from zero; muWarm seeds the
+% barrier parameter ([] derives mu from the seeded complementarity
+% mean(s.*lamI)).  Re-running a mission after small edits then converges in
+% a couple of iterations.  Mismatched sizes fall back to the cold start
+% silently.  LVD replays the previous run's lambda automatically.
+opts.lambda0 = [];
+opts.muWarm  = [];
+
 % --- Trust region ---
 opts.delta0   = 1.0;
 opts.deltaMax = 1e6;

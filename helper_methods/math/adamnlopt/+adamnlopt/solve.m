@@ -375,7 +375,16 @@ feasW = feasWeights(problem, ev);
 [f, g]   = ev.objective(x);
 [cE, ~]  = ev.constraints(x);
 [JE, JI] = ev.jacobian(x);
+% Warm start (A3): a previous solve's multipliers seed lamE instead of the
+% least-squares fit.  Anything unusable falls back to the fit silently.
 lamE = step_multiplierUpdate(g, JE, optW, multFitTol(ev, x, sc, optW));
+if isfield(opts, 'lambda0') && ~isempty(opts.lambda0)
+    [lamEw, ~, ~, ~, ~, warmOk] = adamnlopt.initWarmStart( ...
+        opts.lambda0, [], [], fx, sc, ev, []);
+    if warmOk && numel(lamEw) == numel(lamE)
+        lamE = lamEw;
+    end
+end
 
 hmodel = makeHessianModel(opts, numel(x));
 useFilter = strcmpi(opts.globalization, 'filter');
@@ -869,7 +878,7 @@ else
 end
 
 feasW = feasWeights(problem, ev);
-st = initializeIterate(ev, problem, opts);
+st = initializeIterate(ev, problem, opts, fx, sc);
 x = st.x;  s = st.s;
 lamE = st.lamE;  lamI = st.lamI;
 zL = st.zL;  zU = st.zU;

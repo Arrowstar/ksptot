@@ -9,11 +9,29 @@ classdef AdamNlOptOptimizer < AbstractGradientOptimizer
 
     properties(Access = private)
         options(1,1) AdamNlOptOptions = AdamNlOptOptions();
+        % Warm start for the next solve (A3): the multipliers returned by the
+        % last adamnlopt.solve, keyed on the problem sizes that produced them.
+        % LVD users re-run a mission after small edits; reseeding the costates
+        % and the barrier saves ~10 iterations of rebuilding them.  A size
+        % mismatch (edited variables/constraints) silently disables it.
+        warmLambda = []
+        warmN = 0
+        warmM = -1
     end
 
     methods
         function obj = AdamNlOptOptimizer()
             obj.options = AdamNlOptOptions();
+        end
+
+        function stashWarmStart(obj, lambda, nVars, nCons)
+        %STASHWARMSTART  Remember a solve's multipliers for the next run (A3).
+        %   Called with the lambda struct adamnlopt.solve returned; the next
+        %   optimize() with the same variable/constraint counts passes it back
+        %   as opts.lambda0.
+            obj.warmLambda = lambda;
+            obj.warmN = nVars;
+            obj.warmM = nCons;
         end
 
         function [exitflag, message] = optimize(obj, lvdOpt, writeOutput, callOutputFcn, hLvdMainGUI, progressFcn)
@@ -46,6 +64,15 @@ classdef AdamNlOptOptimizer < AbstractGradientOptimizer
             evtToStartScriptExecAt = lvdOpt.lvdData.script.getEventForInd(evtNumToStartScriptExecAt);
 
             opts = obj.options.getOptionsForOptimizer(typicalX);
+
+            % Warm start (A3): multipliers stashed from the previous run solve
+            % from the solution in a couple of iterations instead of rebuilding
+            % the costates and the barrier (~10 iterations).  Only when the
+            % problem sizes match; any edit to variables/constraints disables.
+            if ~isempty(obj.warmLambda) && obj.warmN == numel(x0All) && ...
+                    obj.warmM == lvdOpt.constraints.getNumConstraints()
+                opts.lambda0 = obj.warmLambda;
+            end
 
             objFuncWrapper = @(x) lvdOpt.objFcn.evalObjFcn(x, evtToStartScriptExecAt);
 
@@ -197,6 +224,24 @@ classdef AdamNlOptOptimizer < AbstractGradientOptimizer
 
         function numWorkers = getNumParaWorkers(obj)
             numWorkers = obj.options.getNumParaWorkers();
+        end
+    end
+
+    methods(Static)
+        function obj = cloneFrom(other)
+        %CLONEFROM  An independent optimizer with the same option values.
+        %   obj = AdamNlOptOptimizer.cloneFrom(other) is used by
+        %   LvdOptimization.loadobj: a .mat saved before AdamNlOpt existed
+        %   holds no adamNlOptOpt of its own, so every such case loaded in one
+        %   session shares the class-default handle -- and an option set for
+        %   one case leaks into all the others (D32).  Cloning on load gives
+        %   each case its own object going forward.  Warm-start state is NOT
+        %   copied: it belongs to the run that produced it.
+            obj = AdamNlOptOptimizer();
+            if isempty(other)
+                return;
+            end
+            obj.options = other.options.copy();
         end
     end
 

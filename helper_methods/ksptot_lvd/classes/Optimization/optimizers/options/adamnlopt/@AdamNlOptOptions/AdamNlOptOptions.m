@@ -276,6 +276,21 @@ classdef AdamNlOptOptions < matlab.mixin.SetGet
         function numWorkers = getNumParaWorkers(obj)
             numWorkers = obj.numWorkers;
         end
+
+        function c = copy(obj)
+        %COPY  An independent AdamNlOptOptions with the same property values.
+        %   c = obj.copy() is used where a fresh handle must inherit settings
+        %   (LvdOptimization.loadobj: instances loaded from a .mat saved
+        %   before AdamNlOpt existed share one class-default options object).
+            c = AdamNlOptOptions();
+            mc = metaclass(obj);
+            for p = mc.PropertyList.'
+                if p.Dependent || p.Constant || ~strcmp(p.SetAccess, 'public')
+                    continue;
+                end
+                c.(p.Name) = obj.(p.Name);
+            end
+        end
     end
 
     methods(Static)
