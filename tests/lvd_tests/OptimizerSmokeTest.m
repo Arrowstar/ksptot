@@ -100,6 +100,8 @@ classdef OptimizerSmokeTest < KsptotTestCase
             'NomadBowl', ...
             'IpoptBowl', ...
             'AdamNlOptBowl', ...
+            'AdamNlOptBowlOnIterationLimit', ...
+            'AdamNlOptReadoutCadence', ...
             'UnknownSolverDispatchError', ...
             'SqpBowl', ...
             'StaticDefaultObjFcnFactoriesBuildUsableObjects', ...
@@ -328,6 +330,38 @@ classdef OptimizerSmokeTest < KsptotTestCase
             testCase.runBowl(LvdOptimizerAlgoEnum.AdamNlOpt, 1e-3, ...
                 @() testCase.assumeNotEmpty(which('adamnlopt.solve'), ...
                     'The adamnlopt package is not on the path.'));
+        end
+
+        function checkAdamNlOptBowlOnIterationLimit(testCase)
+            % A capped run exercises the returnIterate = BestKKT LVD default
+            % (A10) through the real wrapper path: the limit exit must come
+            % back with a finite merged value, not a crash or an empty merge.
+            testCase.assumeNotEmpty(which('adamnlopt.solve'), ...
+                'The adamnlopt package is not on the path.');
+            [lvdData, ~, ~, ~] = testCase.makeBowlMission();
+            optimizer = lvdData.optimizer;
+            optimizer.optAlgo = LvdOptimizerAlgoEnum.AdamNlOpt;
+            optimizer.adamNlOptOpt.getOptions().maxIter = 2;
+            [exitflag, message] = optimizer.consoleOptimize();
+            testCase.verifyEqual(exitflag, 0);
+            testCase.verifyNotEmpty(message);
+            [xAll, ~] = lvdData.optimizer.vars.getTotalScaledXVector();
+            testCase.verifyTrue(all(isfinite(xAll)), ...
+                'a BestKKT limit exit must merge finite values into the script');
+        end
+
+        function checkAdamNlOptReadoutCadence(testCase)
+            % The state readout costs a full mission propagation per refresh;
+            % it must fire with an empty cache and on iteration 0 and every
+            % 5th, and reuse the last readout in between (A10).
+            for haveCache = [false, true]
+                for iter = 0:11
+                    want = ~haveCache || mod(iter, 5) == 0;
+                    testCase.verifyEqual( ...
+                        AdamNlOptOptimizer.stateReadoutDue(iter, haveCache), ...
+                        want, sprintf('iter %d haveCache %d', iter, haveCache));
+                end
+            end
         end
 
         %% ------------------------------------------------------------------

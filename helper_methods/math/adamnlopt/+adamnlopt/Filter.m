@@ -5,8 +5,11 @@ classdef Filter < handle
 %   Fletcher-Leyffer / Waechter-Biegler acceptance rule. A trial (theta, phi)
 %   is acceptable when, for every stored entry (theta_j, phi_j),
 %
-%       theta <= (1 - gammaTheta) * theta_j   OR   phi <= phi_j - gammaPhi * theta_j
+%       theta < theta_j   OR   phi < phi_j
 %
+%   The entries are the margin-shifted corners augment stores, so this plain
+%   comparison already carries the Waechter-Biegler margin -- it must not be
+%   applied again here (see globalize_filterAccept).
 %   i.e. it improves feasibility or objective relative to each entry by a small
 %   margin. Trials with theta >= thetaMax are always rejected. AUGMENT adds a
 %   (margin-shifted) pair and discards any entries it dominates, keeping the
@@ -32,6 +35,14 @@ classdef Filter < handle
         gammaTheta = 1e-5
         gammaPhi   = 1e-5
         thetaMax   = inf
+        % Switching threshold theta_min = 1e-4*max(1, theta(x0)) (Waechter-
+        % Biegler 2006, section 2.4), fixed for the solve.  Inf means "derive it
+        % from the current theta" for callers that never set it (legacy).
+        thetaMin   = inf
+        % IPOPT-style filter reset (A4): consecutive iterations whose first
+        % trial a stored entry blocked, and how many resets have been spent.
+        nBlocked   = 0
+        nResets    = 0
         entries    = zeros(0, 2)   % rows [theta, phi]
     end
 
@@ -66,6 +77,28 @@ classdef Filter < handle
         %   Outputs:
         %     (none) obj is modified in place.
             obj.entries = zeros(0, 2);
+            obj.nBlocked = 0;
+        end
+
+        function didReset = noteFirstTrial(obj, blocked, trigger, maxResets)
+        %NOTEFIRSTTRIAL  Count first-trial blocks; clear stale entries when stuck (A4).
+        %   After TRIGGER consecutive iterations whose full step a stored entry
+        %   rejected, the entries are cleared (thetaMax and thetaMin are kept),
+        %   at most MAXRESETS times per solve.  Entries recorded at earlier
+        %   barrier parameters or before a restoration can otherwise block every
+        %   full step and force short steps for many iterations.
+            didReset = false;
+            if blocked
+                obj.nBlocked = obj.nBlocked + 1;
+            else
+                obj.nBlocked = 0;
+            end
+            if obj.nBlocked >= trigger && obj.nResets < maxResets && ~isempty(obj.entries)
+                obj.entries = zeros(0, 2);
+                obj.nBlocked = 0;
+                obj.nResets = obj.nResets + 1;
+                didReset = true;
+            end
         end
 
         function tf = isAcceptable(obj, theta, phi)
@@ -86,8 +119,7 @@ classdef Filter < handle
             if theta >= obj.thetaMax
                 tf = false;  return;
             end
-            tf = globalize_filterAccept(obj.entries, theta, phi, ...
-                                        obj.gammaTheta, obj.gammaPhi);
+            tf = globalize_filterAccept(obj.entries, theta, phi);
         end
 
         function augment(obj, theta, phi)

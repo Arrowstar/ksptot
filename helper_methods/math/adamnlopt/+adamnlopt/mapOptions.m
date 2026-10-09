@@ -46,6 +46,7 @@ map = { ...
     'FiniteDifferenceStepSize', 'FiniteDifferenceStepSize'; ...
     'FiniteDifferenceType',     'FiniteDifferenceType'; ...
     'HonorBounds',              'HonorBounds'; ...
+    'CheckGradients',           'CheckGradients'; ...
     'Display',                  'Display' };
 
 if isstruct(userOpts)
@@ -139,5 +140,36 @@ catch
     error('adamnlopt:returnIterate', ...
           'Unrecognized returnIterate ''%s''; expected ''last'' or ''bestKKT''.', ...
           char(ri));
+end
+
+% Validate the remaining algorithm selectors on the same principle.  A typo
+% used to silently change the algorithm: 'fliter' fell through the strcmpi
+% to the merit path, and an fmincon-style 'iter-detailed' Display matched
+% nothing and printed nothing.  Values are lowercased first so 'Filter' and
+% 'filter' agree, and fmincon's Display aliases map onto the native four.
+selectors = { ...
+    'globalization',        {'filter','merit'}; ...
+    'autoScale',            {'gradient','curvature','bounds','none'}; ...
+    'FiniteDifferenceType', {'forward','central'}; ...
+    'Display',              {'off','iter','iter-debug','final'} };
+displayAliases = {'iter-detailed','iter'; 'final-detailed','final'; ...
+                  'notify','final'; 'none','off'};
+for s = 1:size(selectors, 1)
+    name = selectors{s, 1};
+    val = opts.(name);
+    if ~(ischar(val) || isstring(val)) || ~isscalar(string(val))
+        error('adamnlopt:selector', '%s must be a string.', name);
+    end
+    val = lower(strtrim(char(val)));
+    if strcmp(name, 'Display')
+        k = find(strcmp(val, displayAliases(:, 1)), 1);
+        if ~isempty(k), val = displayAliases{k, 2}; end
+    end
+    try
+        opts.(name) = validatestring(val, selectors{s, 2});
+    catch
+        error('adamnlopt:selector', ['Unrecognized %s ''%s''; expected one of: %s.'], ...
+              name, val, strjoin(selectors{s, 2}, ', '));
+    end
 end
 end

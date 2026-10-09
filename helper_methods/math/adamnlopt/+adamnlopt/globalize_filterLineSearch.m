@@ -1,5 +1,12 @@
-function [alpha, augment, rho, lsFailed] = globalize_filterLineSearch( ...
-        phiTheta, phi0, theta0, gd, filter, rho, aMax, thetaCap, multInfNorm)
+function [alpha, augment, rho, lsFailed, firstBlocked, thetaFirst] = globalize_filterLineSearch( ...
+        phiTheta, phi0, theta0, gd, filter, rho, aMax, thetaCap, multInfNorm, maxTrials)
+%   MAXTRIALS (optional, default Inf) caps the backtracking trials; 1 tests the
+%   step at aMax only, with the same acceptance rules (used by the second-order
+%   correction, D17.2).  THETAFIRST is the violation at the first trial.
+%   FIRSTBLOCKED (A4) is true when the first, full-length trial was rejected by
+%   a STORED filter entry (or thetaMax) -- the signal IPOPT's filter-reset
+%   heuristic counts.
+%   theta_min comes from filter.thetaMin when set (D18), else 1e-4*max(1,theta0).
 %GLOBALIZE_FILTERLINESEARCH  Backtracking filter line search with merit backup.
 %   [alpha, augment, rho, lsFailed] = adamnlopt.globalize_filterLineSearch(
 %   phiTheta, phi0, theta0, gd, filter, rho, aMax, thetaCap, multInfNorm) runs
@@ -50,7 +57,7 @@ function [alpha, augment, rho, lsFailed] = globalize_filterLineSearch( ...
 %                   backup; defaults to 0.
 %
 %   Outputs:
-%     alpha    - accepted step length (min(amin, aMax) when lsFailed).
+%     alpha    - accepted step length (min(1e-10, aMax) when lsFailed).
 %     augment  - logical; true when the accepted step must be added to the filter.
 %     rho      - penalty weight, possibly increased by the merit backup.
 %     lsFailed - logical; true when no trial satisfied any acceptance test.
@@ -63,10 +70,33 @@ import adamnlopt.*
 if nargin < 7 || isempty(aMax),        aMax = 1;        end
 if nargin < 8 || isempty(thetaCap),    thetaCap = inf;  end
 if nargin < 9 || isempty(multInfNorm), multInfNorm = 0; end
+if nargin < 10 || isempty(maxTrials),  maxTrials = inf;  end
+thetaFirst = NaN;
 
 sTheta = 1.1;  sPhi = 2.3;  delta = 1;  etaPhi = 1e-4;
+% D18: theta_min is fixed per solve (WB: 1e-4*max(1, theta(x0))).  Computing it
+% from the CURRENT theta made "theta0 <= thetaMin" read "theta0 <= 1e-4", a
+% constant: Case I (the switching/f-type rule) was unreachable above 1e-4, so
+% on row-scaled problems every step before then was theta-type.
 thetaMin = 1e-4 * max(1, theta0);
-amin = 1e-10;  c = 1e-4;
+if isprop(filter, 'thetaMin') && isfinite(filter.thetaMin)
+    thetaMin = filter.thetaMin;
+end
+c = 1e-4;
+% D18: WB alpha_min (eq. 23).  Below it no trial can satisfy any acceptance
+% rule, so backtracking further only burns evaluations; ~33 trials per stalled
+% search fell to ~20 or fewer, which on a simulation-based problem is the
+% difference that matters.  gamma_alpha = 0.05 as in WB.
+gammaAlpha = 0.05;
+if gd < 0
+    aminWB = min(filter.gammaTheta, filter.gammaPhi * theta0 / (-gd));
+    if theta0 <= thetaMin
+        aminWB = min(aminWB, delta * theta0^sTheta / (-gd)^sPhi);
+    end
+else
+    aminWB = filter.gammaTheta;
+end
+amin = max(1e-10, gammaAlpha * aminWB);
 lsFailed = false;
 
 % Every trial is cached as [alpha, phi, theta] so the merit backup below can
@@ -81,24 +111,40 @@ cache  = zeros(ceil(log2(max(aMax, amin) / amin)) + 2, 3);
 nCache = 0;
 
 alpha = aMax;
+firstBlocked = false;
 while alpha > amin
     [phiT, thetaT] = phiTheta(alpha);
     nCache = nCache + 1;
     cache(nCache, :) = [alpha, phiT, thetaT];
-    if thetaT <= thetaCap && filter.isAcceptable(thetaT, phiT)
+    if nCache == 1
+        firstBlocked = ~filter.isAcceptable(thetaT, phiT);
+        thetaFirst = thetaT;
+    end
+    % D18: the theta-growth veto applies to THETA-TYPE trials only.  An f-type
+    % trial (switching condition) is judged by Armijo on phi with theta free to
+    % grow up to thetaMax -- that is what lets a full Newton step along a curved
+    % constraint be taken (the Maratos remedy).  Vetoing it too collapsed the
+    % cap to kappaThetaGrow*feasTol at a feasible iterate and cut such steps to
+    % ~0.1, then sent them through SOC.
+    if filter.isAcceptable(thetaT, phiT)
         switching = gd < 0 && theta0 <= thetaMin && ...
                     alpha * (-gd)^sPhi > delta * theta0^sTheta;
         if switching
             if phiT <= phi0 + etaPhi * alpha * gd
                 augment = false;  return;   % f-type step: do not augment
             end
-        else
-            if thetaT <= (1 - filter.gammaTheta) * theta0 || ...
+        elseif thetaT <= thetaCap
+            % theta0 > 0 on the theta-reduction branch: at a feasible point
+            % thetaT <= (1-gammaTheta)*0 reads 0 <= 0 and accepted ANY objective
+            % increase (every bounds-only problem sits at theta = 0).  There
+            % the step must at least not raise phi (D27).
+            if (theta0 > 0 && thetaT <= (1 - filter.gammaTheta) * theta0) || ...
                phiT   <= phi0 - filter.gammaPhi * theta0
                 augment = true;  return;    % theta-type step: augment
             end
         end
     end
+    if nCache >= maxTrials, break; end
     alpha = 0.5 * alpha;
 end
 
@@ -109,6 +155,12 @@ end
 rho = control_penaltyUpdate(rho, multInfNorm, gd, theta0);
 phiM0 = phi0 + rho * theta0;
 dphiM = gd - rho * theta0;
+% control_penaltyUpdate can force dphiM < 0 only when theta0 > 0.  At a feasible
+% point with an ascent direction (gd >= 0: inexact or indefinite step) the Armijo
+% test phiT <= phi0 + c*alpha*dphiM would ACCEPT a merit increase.  Clamp the
+% predicted slope at zero so such a direction can only be taken where the trial
+% does not raise the merit (D27).
+dphiM = min(dphiM, 0);
 for iT = 1:nCache
     alpha  = cache(iT, 1);
     phiT   = cache(iT, 2);
@@ -129,5 +181,8 @@ end
 % trial and the bare amin handed back a step LONGER than the barrier allows.
 % The caller takes it unconditionally, so a slack goes negative and the next
 % log-barrier evaluation is complex or NaN.
-alpha = min(amin, aMax);  augment = true;  lsFailed = true;
+%
+% The returned creep stays at 1e-10 (not the WB alpha_min, which can be 5e-7):
+% the caller takes it unconditionally, and it is a placeholder, not a step.
+alpha = min(1e-10, aMax);  augment = true;  lsFailed = true;
 end

@@ -78,10 +78,22 @@ function [d, idx, info, reg] = kkt_inertiaCorrection(state, res, n, mE, reg0, op
 
 import adamnlopt.*
 
-if nargin < 5 || isempty(reg0)
-    reg = struct('delta', 0, 'gamma', 0);
-else
-    reg = reg0;
+% D15: the FIRST factorization always tries delta = 0 (IPOPT Algorithm IC).
+% reg0 -- the previous iteration's accepted regularization -- only seeds the
+% first RETRY.  Applying it up front perturbed every later Newton step once any
+% iteration had needed regularization: the old /10-per-iteration decay kept
+% delta and gamma in the matrix for hundreds of iterations, degrading the local
+% rate and offsetting the feasibility row by gamma*dlamE.
+deltaLast = 0;
+if nargin >= 5 && ~isempty(reg0) && isfield(reg0, 'delta') && ~isempty(reg0.delta)
+    deltaLast = reg0.delta;
+end
+reg = struct('delta', 0, 'gamma', 0);
+% An explicit dual floor (reg0.gammaFloor) is a different thing from a stale
+% previous-iteration gamma: degeneracy_regularizedRecovery asks for it on
+% purpose, sized from the current residual, so honour it from the first try.
+if nargin >= 5 && ~isempty(reg0) && isfield(reg0, 'gammaFloor') && ~isempty(reg0.gammaFloor)
+    reg.gamma = reg0.gammaFloor;
 end
 if nargin < 6
     opts = [];
@@ -95,12 +107,35 @@ end
 % near-null S produces correct inertia and healthy-looking pivots yet a divergent
 % dlamE).  Only the DUAL block is touched, so primal descent is unchanged.
 [gammaScale, schurInfo] = dualRegFromSchur(state, mE, opts);
+% D15: tie the Fix-A shift to how far from feasible the iterate is.  The
+% feasibility row is JE*dx - gamma*dlamE = -cE; in the near-null direction of S,
+% gamma*dlamE -> that component of cE, so a gamma set from cond(S) alone (which
+% depends on geometry, not on convergence) left feasibility stuck at
+% ~gamma*||dlamE|| for the rest of the run.  Capping it at kappaG*||cE||_inf
+% lets it vanish as feasibility is reached, as IPOPT's delta_c ~ mu^0.25 does.
+kappaG = getField(opts, 'dualRegFeasFactor', 1);
+if gammaScale > 0 && isfinite(kappaG) && isfield(res, 'rFeasE') && ~isempty(res.rFeasE)
+    gammaScale = min(gammaScale, max(1e-8, kappaG * norm(res.rFeasE, inf)));
+end
 if gammaScale > reg.gamma
     reg.gamma = gammaScale;
 end
 
 [K, rhs, idx] = kkt_assemble(state, res, reg);
+% A non-finite K or RHS (an Inf barrier term after an iterate reached a bound)
+% used to spin all 40 regularization tries and return a NaN step (D30).
+if ~all(isfinite(nonzeros(K))) || ~all(isfinite(rhs))
+    d = zeros(size(rhs));
+    info = struct('inertia', [0 0 0], 'minAbsPivot', NaN, 'maxAbsPivot', NaN, ...
+        'medAbsPivot', NaN, 'rankDeficient', true, 'pivotSpread', NaN, ...
+        'nearlySingular', true, 'factors', [], 'resRel', NaN, 'solved', false);
+    info.tries = 0;  info.regCapped = false;  info.triesExhausted = true;
+    info.nonFinite = true;  info.gammaFixA = gammaScale;  info.schur = schurInfo;
+    info.reg = reg;  info.dualCapGrows = 0;
+    return;
+end
 [d, info] = linalg_solveKKTdirect(K, rhs);
+rankDefFirst = info.rankDeficient;   % JE (or K) singular at the unregularized solve
 
 % Also regularize when the LDL' pivot is tiny: a near-singular Schur
 % complement (JE * W^{-1} * JE^T ~ 0) keeps inertia correct but makes
@@ -148,11 +183,17 @@ while (~inertiaOK(info, n, mE) || pivotTooSmall(info, pivotRelTol)) && tries < m
         end
     end
     if ~inertiaOK(info, n, mE)
-        % Wrong inertia: grow primal regularization.
+        % Wrong inertia: grow primal regularization.  First retry from the
+        % previous iteration's value / 3 when there is one (D15, IPOPT
+        % kappa_w^- = 1/3), else 1e-8; then grow x8 (kappa_w^+).
         if reg.delta == 0
-            newDelta = 1e-8;
+            if deltaLast > 0
+                newDelta = max(1e-20, deltaLast / 3);
+            else
+                newDelta = 1e-8;
+            end
         else
-            newDelta = reg.delta * 10;
+            newDelta = reg.delta * 8;
         end
         if newDelta <= regMax
             reg.delta = newDelta;  grew = true;
@@ -170,8 +211,46 @@ while (~inertiaOK(info, n, mE) || pivotTooSmall(info, pivotRelTol)) && tries < m
     tries = tries + 1;
 end
 
+% D5.2: enforce the dual-step cap THROUGH the regularization.  When the dual
+% block is already regularized (gamma > 0: near-singular or rank-deficient JE)
+% the step can still carry dlamE ~ cE/gamma; solve.m's Fix B then caps the
+% multiplier increment, but the primal step was solved together with the
+% uncapped dlamE (W*dx = -r - JE'*dlamE) and keeps its amplification.  On the
+% unit circle from x0 = 0 with FD gradients that amplified a 1e-8 FD error into
+% an O(1) step toward the constrained MAXIMUM.  Grow gamma until the coupled
+% solve itself respects the cap, so dx and dlamE stay consistent.
+%
+% Only when the first, unregularized factorization was RANK-DEFICIENT -- the
+% degenerate-Jacobian case D5 is about -- and only when opts.dualCapViaGamma is
+% true (solve.m resolves the default 'equality' to true in the equality core
+% only).  In the IP core, on lvdExample_MunarFlybyContinuityConstraint
+% (30 iterations) the cap took the final violation from 4.3e-2 (dualStepMax =
+% Inf) to 0.40; that JE is genuinely rank-deficient (cond ~1e17), so the
+% rank gate alone does not help (0.48).  A gate that separates that case from
+% the FD-noise unit circle is still open.
+dualCapGrows = 0;
+capFac = getField(opts, 'dualStepMax', inf);
+if rankDefFirst && isequal(getField(opts, 'dualCapViaGamma', false), true) && ...
+        reg.gamma > 0 && isfinite(capFac) && capFac > 0 && mE > 0 && info.solved
+    lamE0 = zeros(mE, 1);
+    if isfield(state, 'lamE') && numel(state.lamE) == mE, lamE0 = state.lamE(:); end
+    cap = capFac * max(1, norm(lamE0, inf));
+    while dualCapGrows < 6
+        nd = norm(d(idx.lamE), inf);
+        if ~(nd > cap), break; end
+        newGamma = reg.gamma * max(10, nd / cap);
+        if newGamma > regMax, break; end
+        reg.gamma = newGamma;
+        [K, rhs, idx] = kkt_assemble(state, res, reg);
+        [d, info] = linalg_solveKKTdirect(K, rhs);
+        dualCapGrows = dualCapGrows + 1;
+        if ~info.solved, break; end
+    end
+end
+
 % Record what the correction did. Purely observational -- nothing below is read
 % back by this function or by its callers to make a decision.
+info.dualCapGrows   = dualCapGrows;
 info.tries          = tries;
 info.regCapped      = capped;
 info.triesExhausted = (capped || tries >= maxTries) && ...

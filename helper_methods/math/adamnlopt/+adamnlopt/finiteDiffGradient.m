@@ -1,4 +1,4 @@
-function g = finiteDiffGradient(f, x, f0, h, type, lb, ub)
+function [g, nEvals] = finiteDiffGradient(f, x, f0, h, type, lb, ub)
 %FINITEDIFFGRADIENT  Finite-difference gradient of a scalar function.
 %   g = adamnlopt.finiteDiffGradient(f, x, f0, h, type) approximates grad f(x).
 %   f0 is f(x) (used for forward differences), h the base step, type is
@@ -27,6 +27,8 @@ function g = finiteDiffGradient(f, x, f0, h, type, lb, ub)
 %     ub   - (optional) n-by-1 upper bounds; empty or omitted for none.
 %
 %   Outputs:
+%     nEvals - number of calls to f actually made (2 per two-sided central
+%              coordinate, 1 per one-sided, 0 per fixed variable).
 %     g - n-by-1 finite-difference approximation of grad f(x). An entry whose
 %         variable is fixed (lb == ub) is 0: there is no feasible direction to
 %         difference along.
@@ -38,6 +40,7 @@ if nargin < 7, ub = []; end
 
 n = numel(x);
 g = zeros(n, 1);
+nEvals = 0;   % exact count of f calls (bounds one-side or fix coordinates)
 central = strcmp(type, 'central');
 
 hWant = h * max(1, abs(x(:)));
@@ -54,8 +57,10 @@ for i = 1:n
     if central && twoSided(i)
         xm = x;  xm(i) = xm(i) - si*hi;
         g(i) = (f(xp) - f(xm)) / (2*si*hi);
+        nEvals = nEvals + 2;
     else
         g(i) = (f(xp) - f0) / (si*hi);
+        nEvals = nEvals + 1;
     end
 end
 end

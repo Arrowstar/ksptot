@@ -25,8 +25,15 @@ function H = lagrangianHessian(ev, x, lamE, lamI, opts)
 %   See also LBFGSHESSIAN, HESSIANVECPRODUCT, SPARSITYCOLORING.
 
 if ~isempty(opts.HessianFcn)
-    lambda.eqnonlin   = lamE;
-    lambda.ineqnonlin = lamI;
+    % lamE/lamI are STACKED [linear; nonlinear] (see Evaluator.jacobian and
+    % solve>makeLambda).  fmincon's HessianFcn contract gives eqnonlin and
+    % ineqnonlin the NONLINEAR multipliers only, so strip the linear rows; a
+    % linear constraint has a zero Hessian, so dropping them is exact.  ev may
+    % be empty (unit callers with no linear constraints): strip nothing then.
+    nLinE = 0;  nLinI = 0;
+    if ~isempty(ev) && isprop(ev, 'mElin'), nLinE = ev.mElin;  nLinI = ev.mIlin; end
+    lambda.eqnonlin   = lamE(nLinE+1:end);
+    lambda.ineqnonlin = lamI(nLinI+1:end);
     H = opts.HessianFcn(x, lambda);
     H = (H + H.') / 2;
     return;
@@ -42,7 +49,18 @@ g0 = gL(x);
 % eps^(1/3) ~ 6e-6 the O(h) truncation term dominates by three orders of
 % magnitude; the whole point of differencing an analytic gradient is to get a
 % Hessian better than that.
-h = sqrt(eps);
+%
+% D8.2: that holds only for an ANALYTIC gradient.  An FD gradient carries error
+% ~fdStep, which differencing at sqrt(eps) amplifies to fdStep/sqrt(eps) ~ 1 or
+% worse: pure noise.  The forward optimum for a gradient with error e is
+% h ~ sqrt(e), so use sqrt(fdStep) there.
+fdGrad = isa(ev, 'adamnlopt.Evaluator') && ...   % struct mocks carry analytic handles
+    (~ev.hasObjGrad || (~ev.hasConGrad && ev.mInl + ev.mEnl > 0));
+if fdGrad
+    h = max(sqrt(eps), sqrt(ev.fdStep));
+else
+    h = sqrt(eps);
+end
 H = zeros(n, n);
 
 % Honour HessPattern.  reduceProblem already sub-selects it onto the free

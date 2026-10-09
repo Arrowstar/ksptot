@@ -44,6 +44,18 @@ function [exitflag, message] = lvd_executeOptimProblem(celBodyData, writeOutput,
                                                                       problem.lb, problem.ub, problem.nonlcon, problem.options);
         message = output.message;
 
+        % Warm start for the next run (A3): remember this solve's multipliers
+        % on the case's own optimizer, keyed on the sizes that produced them.
+        % A3 in AdamNlOptOptimizer replays them as opts.lambda0 when a later
+        % run has the same variable/constraint counts.
+        try
+            nCon = numel(lambda.eqlin) + numel(lambda.eqnonlin) + ...
+                   numel(lambda.ineqlin) + numel(lambda.ineqnonlin);
+            problem.lvdData.optimizer.adamNlOptOpt.stashWarmStart(lambda, numel(x), nCon);
+        catch
+            % advisory only: a warm start must never fail the solve
+        end
+
     elseif(strcmpi(problem.solver,'sqp'))
         problem = rmfield(problem,'lvdData');
         problem.options.MaxLineSearchFun = 300;

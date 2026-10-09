@@ -54,6 +54,7 @@ if nargin < 9,  nonlcon = [];  end
 if nargin < 10, options = [];  end
 
 opts = mapOptions(options);
+tSolve = tic;   % solve-level wall clock: the maxTime deadline (D31) runs from here
 if isempty(opts.muMin), opts.muMin = 0.1 * opts.optTol; end
 % compTol defaults to optTol so a tightened optTol actually buys accuracy.  The
 % barrier biases the solution off the true optimum by O(mu) -- at a bound-free
@@ -68,6 +69,9 @@ if isempty(opts.muMin), opts.muMin = 0.1 * opts.optTol; end
 % the default to optTol makes "tighten optTol" mean what a caller expects; an
 % explicit compTol is still honoured verbatim.
 if isempty(opts.compTol), opts.compTol = opts.optTol; end
+if ~isfield(opts, 'acceptableTol') || isempty(opts.acceptableTol)
+    opts.acceptableTol = 100 * opts.optTol;    % A5
+end
 
 problem = validateProblem(fun, x0, A, b, Aeq, beq, lb, ub, nonlcon, opts);
 
@@ -119,15 +123,9 @@ if ~isempty(nonlcon)
     % paths.  The objective's analogous setup call is charged in allFixedResult.
     evProbe.nCon = evProbe.nCon + 1;
 end
-sc = computeScaling(solveProblem0, evProbe, opts);
-if sc.applied
-    solveProblem = scaleProblem(solveProblem0, sc);
-    ev = Evaluator(solveProblem, opts);
-else
-    solveProblem = solveProblem0;
-    ev = evProbe;
+if opts.CheckGradients
+    checkDerivatives(evProbe, solveProblem0);
 end
-
 % --- Automatic finite-difference step calibration (transparent; see
 % estimateNoise/Evaluator.calibrateStep) ---
 % Estimate the objective/constraint noise level at x0 and set the FD step (and
@@ -166,27 +164,75 @@ end
 % where forward differencing is cancellation-dominated, and the resulting
 % gradient error moved the equality multiplier on the NT-decomposition fixture
 % from 4.0000 to 4.00013.
+% THE CALIBRATION RUNS BEFORE computeScaling (D4).  The scaling probe
+% differences the constraint Jacobian at x0 to size the row scales Dc/Di; with
+% the uncalibrated sqrt(eps) step on a simulation-based constraint (noise
+% 1e-8..1e-6) that Jacobian is mostly noise, and so were the row scales -- and
+% feasTol is applied to the row-SCALED constraints.  calibrateStep works in
+% physical space and does not read sc, so it can run first; only the transfer
+% of the step into the scaled space needs sc, and it happens below.
+output_calib = [];
 if isfield(opts,'autoFDStep') && opts.autoFDStep
     try
         output_calib = evProbe.calibrateStep(solveProblem0.x0);
-        if isstruct(output_calib) && isfield(output_calib, 'flag') && ...
-                strcmp(output_calib.flag, 'set')
+    catch
+        output_calib = [];   % advisory: never let calibration failure stop the solve
+    end
+end
+
+sc = computeScaling(solveProblem0, evProbe, opts);
+if sc.applied
+    solveProblem = scaleProblem(solveProblem0, sc);
+    ev = Evaluator(solveProblem, opts);
+else
+    solveProblem = solveProblem0;
+    ev = evProbe;
+end
+
+% --- Transfer the calibrated step into the scaled space (see above) ---
+if isstruct(output_calib)
+    try
+        if isfield(output_calib, 'flag') && strcmp(output_calib.flag, 'set')
             [fdFactor, fdSpread] = fdStepTransfer(solveProblem0.x0, sc);
         else
             fdFactor = 1;  fdSpread = 1;
         end
         ev.fdStep = evProbe.fdStep * fdFactor;
         ev.fdType = evProbe.fdType;
-        if isstruct(output_calib)
-            output_calib.scaleFactor = fdFactor;
-            output_calib.scaleSpread = fdSpread;
-            output_calib.fdStepScaled = ev.fdStep;
+        if ~isempty(evProbe.fdCentralStep)
+            ev.fdCentralStep = evProbe.fdCentralStep * fdFactor;
         end
+        output_calib.scaleFactor = fdFactor;
+        output_calib.scaleSpread = fdSpread;
+        output_calib.fdStepScaled = ev.fdStep;
     catch
-        output_calib = [];   % advisory: never let calibration failure stop the solve
+        output_calib = [];
     end
-else
-    output_calib = [];
+end
+
+% --- Hand the scaled Evaluator what the probe already paid for at x0 (D12.1) ---
+% computeScaling differenced the constraint Jacobian at x0 (n or 2n user calls)
+% and the scaled Evaluator then started with an empty cache and differenced the
+% same point again.  Transform the probe's nonlinear values and Jacobian exactly
+% as scaleProblem transforms the functions (c_s = D.*c, J_s = (D.*J).*Dx') and
+% seed them at xs0.  Done AFTER the fdStep transfer: assigning fdStep clears the
+% derivative caches.  If the core starts elsewhere (initializeIterate pushes x0
+% off a bound) the seed simply misses; nothing extra was evaluated for it.
+if sc.applied
+    pc = evProbe.nonlinearCacheAt(solveProblem0.x0);
+    if pc.hasC
+        % reshape to columns: indexing a 1x1 Dc with an empty range (one linear
+        % row, no nonlinear rows) returns a 1x0 ROW whatever Dc's orientation,
+        % and 1x0 .* 0xn is a size error.
+        DcNl = reshape(sc.Dc(sc.mElin+1:end), [], 1);
+        DiNl = reshape(sc.Di(sc.mIlin+1:end), [], 1);
+        if pc.hasJ
+            ev.seedCache(solveProblem.x0, DiNl .* pc.cnl, DcNl .* pc.ceqnl, ...
+                (DiNl .* pc.Jc) .* sc.Dx.', (DcNl .* pc.Jceq) .* sc.Dx.');
+        else
+            ev.seedCache(solveProblem.x0, DiNl .* pc.cnl, DcNl .* pc.ceqnl);
+        end
+    end
 end
 
 % Scale-consistent optimality weight.  The solver runs in variable-scaled space
@@ -202,6 +248,10 @@ end
 % weight is 1./(wf*Dx).  Inert (all ones) when scaling is off, so well-scaled
 % problems are unchanged.
 solveProblem.optScaleW = 1 ./ (sc.wf * sc.Dx);
+% Physical-units feasibility weights (D3): c_phys = c_scaled ./ D for every
+% folded row (linear rows first, as in the Evaluator).  All ones when scaling
+% is off.
+solveProblem.feasScaleW = struct('E', 1 ./ sc.Dc(:), 'I', 1 ./ sc.Di(:));
 
 hasIneq   = ev.mI > 0;
 hasBounds = any(isfinite(solveProblem.lb)) || any(isfinite(solveProblem.ub));
@@ -223,6 +273,33 @@ if ~strcmpi(opts.Display, 'off')
     util_echoOptions(opts);
 end
 
+% D8.4: an exact/FD Hessian without analytic derivatives differences an FD
+% gradient -- n gradients of n (or 2n) evaluations each, per iteration.  On LVD
+% (n = 50, ~1 s per propagation) that is ~40 minutes an iteration.
+if any(strcmpi(opts.hessianApprox, {'exact', 'fd'})) && isempty(opts.HessianFcn) && ...
+        (~ev.hasObjGrad || (~ev.hasConGrad && ev.mInl + ev.mEnl > 0))
+    nH = numel(solveProblem.x0);
+    warning('adamnlopt:fdHessianCost', ['hessianApprox = ''%s'' without analytic ' ...
+        'derivatives differences a finite-difference gradient: about n*(n+1) = %d ' ...
+        'user evaluations per iteration.  Consider ''bfgs'' (the default) or ''lbfgs''.'], ...
+        opts.hessianApprox, nH * (nH + 1));
+end
+
+% D5.2 dual cap: 'equality' resolves to on in the equality core only.
+if ~islogical(opts.dualCapViaGamma)
+    opts.dualCapViaGamma = ~(hasIneq || hasBounds);
+end
+
+% D31 maxTime deadline: the working Evaluator carries the wall-clock budget
+% (origin tSolve, set here).  The budget itself is armed at the top of each
+% core's main loop: startup probes -- calibration, scaling, the initial
+% derivatives at x0 -- have no accepted iterate to stop at, so they run
+% unbudgeted.  Past tSolve + maxTime the next user evaluation throws
+% adamnlopt:timeLimit, which both cores turn into an exit-0 stop at the last
+% accepted iterate.  Inf (default) leaves the check inert.
+ev.deadline = Inf;
+ev.tStart = tSolve;
+
 if hasIneq || hasBounds
     [x, fval, exitflag, output, lambda, grad, hessian] = ...
         solveInteriorPoint(ev, solveProblem, opts, sc, fx, problem);
@@ -234,6 +311,7 @@ end
 % --- Map scaled-space results back to physical units and record the scaling ---
 [x, fval, grad, hessian, lambda] = unscaleResult(x, fval, grad, hessian, lambda, sc);
 output.scaling = sc;
+output.scaling.traceIsScaled = sc.applied;   % the trace rows are in scaled coordinates whenever scaling applied
 output.fdCalibration = output_calib;
 if sc.applied && isfield(output,'funcCount')
     % Count the x0 probe. Both counters: the probe Evaluator calibrates the FD
@@ -293,10 +371,20 @@ if isfield(problem, 'optScaleW') && ~isempty(problem.optScaleW)
 else
     optW = ones(numel(x), 1);
 end
+feasW = feasWeights(problem, ev);
 [f, g]   = ev.objective(x);
 [cE, ~]  = ev.constraints(x);
 [JE, JI] = ev.jacobian(x);
-lamE = step_multiplierUpdate(g, JE, optW);
+% Warm start (A3): a previous solve's multipliers seed lamE instead of the
+% least-squares fit.  Anything unusable falls back to the fit silently.
+lamE = step_multiplierUpdate(g, JE, optW, multFitTol(ev, x, sc, optW));
+if isfield(opts, 'lambda0') && ~isempty(opts.lambda0)
+    [lamEw, ~, ~, ~, ~, warmOk] = adamnlopt.initWarmStart( ...
+        opts.lambda0, [], [], fx, sc, ev, []);
+    if warmOk && numel(lamEw) == numel(lamE)
+        lamE = lamEw;
+    end
+end
 
 hmodel = makeHessianModel(opts, numel(x));
 useFilter = strcmpi(opts.globalization, 'filter');
@@ -305,13 +393,16 @@ filt = makeFilter(opts, norm(cE, 1));
 util_logger('header', opts.Display, [], opts.LogFile);
 
 exitflag = 0;  msg = 'Stopped: maximum iterations reached.';
-alpha = 0;  hessian = [];  res = [];  rho = 1;  restTheta = inf;
+alpha = 0;  hessian = [];  res = [];  rho = 1;  restFail = 0;
 % Iteration-hook visibility: the step quantities must exist (as zero/NaN
 % placeholders) at iteration 0, before any step has been computed, so the
 % per-iteration info struct can describe the last accepted step uniformly.
 dlamE = zeros(numel(lamE), 1);  aLamE = 0;
 stepNorm = inf;   % ||last accepted primal step||_inf; inf until one is taken
-ksolve = struct('Fprev', [], 'etaPrev', [], 'reg', []);
+bestFeas = inf;  feasStallCount = 0;  % feasibility-stall tracker (D10, as in the IP core)
+acceptCount = 0;                      % consecutive acceptable iterates (A5)
+lsFailRun = 0;  nRecal = 0;           % consecutive line-search failures, FD re-calibrations (A7)
+ksolve = struct('reg', []);
 history = struct('theta', zeros(0,1), 'alpha', zeros(0,1));
 Delta = opts.delta0;
 trace = makeTrace(opts, opts.maxIter);
@@ -326,10 +417,16 @@ end
 tStart = tic;
 warnedPlot = false;   % plot-hook error already reported this solve (see firePlots)
 warnedIter = false;   % iteration-function error already reported this solve
+timeLimitHit = false; % set by the catch below: a probe past ev.deadline fired
+ev.deadline = opts.maxTime;   % arm the wall-clock budget: startup is over,
+                              % state exists from the first loop top on
+try
 for iter = 0:opts.maxIter
     trow = struct('iter', iter);
     primaryInfo = [];  nSolves = 0;
+    trow.jacExact = double(~ev.jacobianIsApprox());   % D1: secant-served rows are marked
     state = makeState(x, lamE, f, g, cE, JE, JI, iter, ev.totalEvals(), alpha);
+    state.jacNoiseTol = jacNoiseTol(ev, x, sc);   % D5 rank floor for degeneracy detection
     % Budget/progress fields the termination test needs but cannot measure:
     % wall clock (opts.maxTime) and the size of the last accepted step
     % (opts.stepTol).  Both were settable options that nothing ever read.
@@ -339,6 +436,28 @@ for iter = 0:opts.maxIter
     % Report/terminate on the scale-consistent optimality norm (rStat stays raw
     % for the Newton-step RHS).  Inert when scaling is off (optW all ones).
     res.opt = util_norms(optW .* res.rStat);
+    res.feasPhys = physViolation(cE, zeros(0,1), feasW);   % D3
+    lsFailed = false;   % set only by the filter line search below
+    stepNonFinite = false;
+    % Feasibility-progress tracker, as in the IP core (D10): >0.1% relative
+    % improvement is progress; otherwise the stall counter that gates
+    % restoration advances.
+    if res.feas < bestFeas * (1 - 1e-3)
+        bestFeas = res.feas;  feasStallCount = 0;
+        restFail = 0;   % D20: progress in the main iteration clears the count
+    else
+        bestFeas = min(bestFeas, res.feas);
+        feasStallCount = feasStallCount + 1;
+    end
+    trow.feasStallCount = feasStallCount;
+    % A5: consecutive iterations at an acceptable level.
+    if acceptableIterate(res, state, opts)
+        acceptCount = acceptCount + 1;
+    else
+        acceptCount = 0;
+    end
+    state.acceptCount = acceptCount;
+    trow.acceptCount = acceptCount;
 
     advice = modeAdvice(state, res, history, opts);
     state.mode = modeLabel(advice.mode, 'eq');
@@ -364,6 +483,72 @@ for iter = 0:opts.maxIter
     trow.filterSize = filterCardinality(filt);
 
     [stop, ef, m] = terminationCheck(state, res, opts);
+
+    % D1: convergence certified against a Broyden secant Jacobian is not
+    % convergence.  When the stop above was reached on an approximate
+    % Jacobian, recompute it exactly, rebuild the residual, and re-test; a
+    % stop that does not survive is cleared and the iteration continues with
+    % exact derivatives in state.  Inert unless Broyden served the Jacobian.
+    if stop && ef > 0 && ev.jacobianIsApprox()
+        [JE, JI] = ev.jacobianExact(x);
+        state.JE = JE;  state.JI = JI;
+        res = kkt_residual(state);
+        res.opt = util_norms(optW .* res.rStat);
+        res.feasPhys = physViolation(cE, zeros(0,1), feasW);
+        [stop, ef, m] = terminationCheck(state, res, opts);
+        trow.optPrinted = res.opt;
+        trow.optRaw = util_norms(res.rStat);
+        trow.optScaled = res.opt / kktScaleFactor(state);
+    end
+
+    % A1: an exitflag-2 stop with forward-difference derivatives the user did
+    % not pin is a stop at FORWARD-difference accuracy (O(h) truncation).
+    % Switch to central differences once.  A7: a step collapse short of
+    % stationarity (exitflag 0) with FD derivatives is the signature of a
+    % noise-limited gradient; re-calibrate the step (at most 3 times per solve,
+    % shared with the line-search trigger below).  Either way refresh the
+    % derivatives at x and restart the iteration from x; the step and
+    % acceptable-streak state were measured with the old differences, and the
+    % stale step would trip the step-size exit at once.
+    fdRestart = false;
+    if stop && ef == 2 && ev.promoteToCentral()
+        trow.fdPromoted = 1;  fdRestart = true;
+    elseif stop && ef == 0 && isfinite(stepNorm) && ...
+            stepNorm <= opts.stepTol * (1 + norm(x, inf)) && nRecal < 3 && ...
+            opts.autoFDStep && (~ev.hasObjGrad || (~ev.hasConGrad && ev.mInl + ev.mEnl > 0))
+        ev.calibrateStep(x);
+        nRecal = nRecal + 1;
+        trow.fdRecalibrated = 1;  fdRestart = true;
+    end
+    if fdRestart
+        recordTrace(trace, trow);
+        acceptCount = 0;
+        stepNorm = inf;
+        [f, g]   = ev.objective(x);
+        [JE, JI] = ev.jacobian(x);
+        continue;
+    end
+    % A1: stopping at FINITE-DIFFERENCE accuracy.  A step collapse after the
+    % re-calibrations are spent, at a feasible point whose scaled
+    % optimality is within 10x of the estimated FD gradient error, is as
+    % converged as the derivatives allow: exitflag 2, not 0 ("stalled short of
+    % a stationary point") or a grind to maxIter at the noise floor.
+    fdUsedNow = ~ev.hasObjGrad || (~ev.hasConGrad && ev.mInl + ev.mEnl > 0);
+    fdAccCheck = false;
+    if stop && ef == 0 && fdUsedNow && isfinite(stepNorm) && ...
+            stepNorm <= opts.stepTol * (1 + norm(x, inf)) && res.feas <= opts.feasTol
+        fdAccCheck = true;
+    end
+    if fdAccCheck
+        gErr = ev.gradErrEst(x);
+        if gErr > 0 && trow.optScaled <= 10 * gErr
+            stop = true;  ef = 2;
+            m = sprintf(['Converged to finite-difference accuracy: scaled optimality ' ...
+                '%.2e is within 10x of the estimated FD gradient error %.1e at a ' ...
+                'feasible point; optTol %.1e is below what the derivatives resolve.'], ...
+                trow.optScaled, gErr, opts.optTol);
+        end
+    end
 
     % Per-iteration plot hooks (user PlotFcn and/or the built-in uifigure
     % plot).  Fired after the termination test but before the stop branch so
@@ -418,6 +603,7 @@ for iter = 0:opts.maxIter
         % near-feasible point are f-type steps — accept on TR ratio alone,
         % no filter augmentation (analogous to globalize_filterLineSearch line 35).
         thetaMinNT = 1e-4 * max(1, theta0);
+        if useFilter, thetaMinNT = filt.thetaMin; end   % D18
         [JE_eff, cE_eff] = augmentForNearBoundary( ...
             JE, cE, zeros(0, numel(x)), zeros(0,1), advice, state, opts);
         stepAccepted = false;  alpha = 1;
@@ -429,15 +615,18 @@ for iter = 0:opts.maxIter
             [cEt, ~] = ev.constraints(xt);
             theta_t = norm(cEt, 1);
             isSwitching = useFilter && (theta0 <= thetaMinNT);
-            if isSwitching
-                ok = true;          % near-feasible: TR ratio alone governs
-            elseif useFilter
+            if useFilter
+                % The switching (f-type) shortcut used to accept here without
+                % consulting the filter at all, bypassing thetaMax and the cap
+                % for every near-feasible step.  Acceptability still governs;
+                % switching only decides whether an accepted step augments.
                 ok = filt.isAcceptable(theta_t, ft);
             else
-                rho   = max(rho, norm(lamE + dlamE, inf) + 1e-2);
+                gdNT = g.' * dx;
+                rho = control_penaltyUpdate(rho, norm(lamE + dlamE, inf), gdNT, theta0);
                 phi0m = globalize_meritFunction(f, theta0, rho);
                 phi_tm = globalize_meritFunction(ft, theta_t, rho);
-                dphi  = (g.' * dx) - rho * theta0;
+                dphi  = gdNT - rho * theta0;
                 ok = globalize_meritAccept(phi0m, phi_tm, dphi, 1);
             end
             % Trust-region ratio on the l1 MERIT function, not on f alone.
@@ -452,6 +641,15 @@ for iter = 0:opts.maxIter
             rhoTR = max(rho, norm(lamE + dlamE, inf) + 1e-2);
             [predRedM, actRedM] = ntMeritRatio(ntMdl, 1, rhoTR, ...
                 JE_eff, cE_eff, dx, zeros(0,1), theta0, theta_t, phi0, ft);
+            if ~ok
+                % Globalization rejected the step: shrink the radius and try
+                % again.  Running the trust-region update regardless lets a
+                % good merit ratio EXPAND Delta, so the deterministic
+                % recompute returns the identical rejected step and burns the
+                % remaining inner iterations re-evaluating it (D19).
+                Delta = opts.trShrink * Delta;
+                continue;
+            end
             [Delta, tr_ok, ~] = control_trustRegionUpdate( ...
                 Delta, predRedM, actRedM, norm(dx), opts);
             if ok && tr_ok
@@ -475,7 +673,20 @@ for iter = 0:opts.maxIter
                 dx    = d(idx_fb.x);
                 dlamE = d(idx_fb.lamE);
             end
-            [alpha, rho] = lineSearch(ev, x, dx, f, g, cE, lamE + dlamE, rho);
+            if useFilter
+                % A step the filter just rejected must not come back through
+                % the merit rule, which would take it without augmenting (D19).
+                theta0fb = norm(cE, 1);  phi0fb = f;  gdFb = g.' * dx;
+                ptFb = @(a) phiThetaEq(ev, x, dx, a);
+                [alpha, augmentFb, rho, ~, firstBlockedFb] = globalize_filterLineSearch( ...
+                    ptFb, phi0fb, theta0fb, gdFb, filt, rho, 1, ...
+                    thetaGrowCap(theta0fb, opts), norm(lamE + dlamE, inf));
+                if augmentFb, filt.augment(theta0fb, phi0fb); end
+                trow.filterReset = double(filt.noteFirstTrial(firstBlockedFb, ...
+                    opts.filterResetTrigger, opts.maxFilterResets));
+            else
+                [alpha, rho] = lineSearch(ev, x, dx, f, g, cE, lamE + dlamE, rho);
+            end
         end
     else
         [d, idx, ksolve] = detectStep(state, res, numel(x), numel(lamE), opts, ksolve);
@@ -484,46 +695,110 @@ for iter = 0:opts.maxIter
         trow.condK = traceCondK(trace, state, ksolve.reg);
         dx    = d(idx.x);
         dlamE = d(idx.lamE);
-        if useFilter
+        % Non-finite KKT step (D30 guard, pulled forward into Batch 5).  An
+        % inconsistent, rank-deficient JE can give a NaN step; taking any
+        % fraction of it makes x NaN and the solve exits -3 with fval NaN.  Treat
+        % it as a failed line search with a zero step, and let restoration act
+        % at once (it is not a transient stall).
+        stepNonFinite = ~all(isfinite(dx)) || ~all(isfinite(dlamE));
+        if stepNonFinite
+            dx(:) = 0;  dlamE(:) = 0;
+        end
+        if stepNonFinite
+            alpha = 0;  lsFailed = true;
+        elseif useFilter
             theta0 = norm(cE, 1);  phi0 = f;  gd = g.' * dx;
             pt = @(a) phiThetaEq(ev, x, dx, a);
-            [alpha, augment, rho] = globalize_filterLineSearch( ...
+            [alpha, augment, rho, lsFailed, firstBlocked] = globalize_filterLineSearch( ...
                 pt, phi0, theta0, gd, filt, rho, 1, ...
                 thetaGrowCap(theta0, opts), norm(lamE + dlamE, inf));
             if augment, filt.augment(theta0, phi0); end
+            trow.filterReset = double(filt.noteFirstTrial(firstBlocked, ...
+                opts.filterResetTrigger, opts.maxFilterResets));
         else
             [alpha, rho] = lineSearch(ev, x, dx, f, g, cE, lamE + dlamE, rho);
         end
     end
 
+    % Restoration trigger, gated exactly as in the IP core (D10).  The eager
+    % trigger (any 1e-10 step or a stagnWindow theta plateau) fired on
+    % transient stalls; the IP core's comment at its own trigger documents the
+    % premature exitflag -2 that caused.  Restoration now fires only once
+    % feasibility has made no new best for restStallWindow iterations.
+    % A7: the FD step was calibrated once, at x0, but a trajectory's noise
+    % floor moves with the arc.  restStallWindow consecutive line-search
+    % failures with FD derivatives re-calibrate it here (at most 3 times per
+    % solve); the foot of the loop then differences the new point with it.
+    lsFailRun = double(lsFailed) * (lsFailRun + 1);
+    if lsFailRun >= opts.restStallWindow && nRecal < 3 && opts.autoFDStep && ...
+            (~ev.hasObjGrad || (~ev.hasConGrad && ev.mInl + ev.mEnl > 0))
+        ev.calibrateStep(x);
+        nRecal = nRecal + 1;  lsFailRun = 0;
+        trow.fdRecalibrated = 1;
+    end
+    feasGenuinelyStalled = feasStallCount >= opts.restStallWindow || stepNonFinite;
     needRestoration = opts.enableRestoration && norm(cE, 1) > opts.feasTol && ...
-        (alpha <= 1e-10 || advice.suggestRestore);
+        feasGenuinelyStalled && (lsFailed || alpha <= 1e-10 || advice.suggestRestore);
     if needRestoration
         % Same reasoning as the IP core: this path CONTINUEs or BREAKs past the
         % foot-of-loop record, so record here or lose the row entirely.
         trow = finishTraceRow(trow, primaryInfo, [], alpha, NaN, NaN, rho, ...
-                              Delta, false, nSolves, 0, 1);
+                              Delta, lsFailed, nSolves, 0, 1);
         recordTrace(trace, trow);
+        % The (theta, phi) pair restoration is called FROM; it is added to the
+        % filter on the way out (below).
+        thetaPreRest = norm(cE, 1);  phiPreRest = f;
         [x, rinfo] = degeneracy_restorationPhase(ev, x, problem.lb, problem.ub, opts);
-        if rinfo.theta > opts.feasTol && ...
-                (~rinfo.reduced || rinfo.theta >= restTheta - opts.feasTol)
+        % D20: declare local infeasibility only on a certificate (restoration
+        % reached a stationary point of ||c||^2 with c ~= 0) or on two
+        % consecutive restorations that each failed to cut theta by 10%.  The
+        % old test compared against the exit theta of the PREVIOUS restoration,
+        % possibly hundreds of iterations and a long way back, so a second
+        % restoration that ended slightly higher killed a solvable run.
+        % A stationarity certificate is a strike, not an immediate exit: it is
+        % local to where restoration stopped, and the main iteration may still
+        % move off it.  On lvdExample_MunarLanding (5 of 13 variables on a
+        % bound) an immediate exit stopped the run at violation 9.5e-2 where
+        % riding on reached 7.3e-3.
+        if (rinfo.theta <= 0.9 * rinfo.theta0 && ~rinfo.stationary) || ...
+                rinfo.theta <= opts.feasTol
+            restFail = 0;
+        else
+            restFail = restFail + 1;
+        end
+        if rinfo.theta > opts.feasTol && restFail >= 2
             exitflag = -2;
             msg = 'No feasible point found (local infeasibility).';
+            if rinfo.stationary
+                msg = [msg '  Restoration reached a stationary point of the constraint violation.'];
+            end
             break;
         end
-        restTheta = rinfo.theta;
         [f, g]  = ev.objective(x);
         [cE, ~] = ev.constraints(x);
-        [JE, ~] = ev.jacobian(x);
+        % D1: the secant anchor is meaningless after a projected Gauss-Newton
+        % jump: refresh it with an exact Jacobian (a no-op when Broyden is off).
+        [JE, ~] = ev.jacobianExact(x);
         % Reseed with the SAME scale weight every other multiplier fit in this
         % solver uses (line 234, the IP seed, the costate refresh).  Dropping
         % optW here fit the costates in scaled-gradient units while the
         % optimality metric measures them in physical ones, so the iterate
         % leaving restoration started from a dual estimate that was wrong by
         % the variable-scale spread.  Inert when scaling is off (optW all ones).
-        lamE = step_multiplierUpdate(g, JE, optW);
-        if useFilter, filt.reset(); end
+        lamE = step_multiplierUpdate(g, JE, optW, multFitTol(ev, x, sc, optW));
+        % AUGMENT the filter with the pre-restoration point, do not clear it
+        % (D10; the IP core received this fix in 517d42b3).  Clearing it threw
+        % away the only cycle-prevention mechanism, allowing a period-2
+        % restore -> jump back out -> restore loop.
+        if useFilter, filt.augment(thetaPreRest, phiPreRest); end
+        % The jump invalidates the secant history, as in the IP core.
+        if ~isempty(hmodel) && ismethod(hmodel, 'reset'), hmodel.reset(); end
         Delta = opts.delta0;
+        rho = 1;   % D23: the penalty from before restoration no longer applies
+        % The last accepted step belongs to the point restoration left, not to
+        % the restored iterate.  Leaving it set let the StepTolerance exit fire
+        % at the restored point before a single step had been tried from it.
+        stepNorm = inf;
         alpha = 0;
         continue;
     end
@@ -540,18 +815,41 @@ for iter = 0:opts.maxIter
     [cE, ~] = ev.constraints(x);
     [JE, ~] = ev.jacobian(x);
     hinfo = updateHessianModel(hmodel, gOld, JEold, [], g, JE, [], ...
-                               lamE, zeros(0,1), alpha * dx);
+                               lamE, zeros(0,1), alpha * dx, ev, x, lsFailed || alpha <= 1e-10);
     ksolve = warnBfgsReset(ksolve, opts, hinfo, iter);
     history = pushHistory(history, norm(cE, 1), alpha, opts);
 
     % The equality core has no dual fraction-to-boundary rule, so aD is not a
     % quantity here; aLamE is measured against the primal alpha instead.
     trow = finishTraceRow(trow, primaryInfo, hinfo, alpha, alpha, aLamE, rho, ...
-                          Delta, false, nSolves, 0, 0);
+                          Delta, lsFailed, nSolves, 0, 0);
     recordTrace(trace, trow);
+end
+catch ME
+    if ~strcmp(ME.identifier, 'adamnlopt:timeLimit'), rethrow(ME); end
+    timeLimitHit = true;
+end
+if timeLimitHit
+    % A probe past ev.deadline fired mid-iteration: the loop variables may
+    % hold a half-refreshed trial point (x advanced, derivatives not).  state
+    % was built at the top of the iteration from the last accepted iterate,
+    % so report that consistent point with an exit-0 time stop.
+    x = state.x; f = state.f; g = state.g;
+    cE = state.cE; JE = state.JE; lamE = state.lamE;
+    res = kkt_residual(state);
+    res.opt = util_norms(optW .* res.rStat);
+    res.feasPhys = physViolation(cE, zeros(0,1), feasW);
+    exitflag = 0;
+    msg = sprintf('Stopped: maximum time reached (%.1f s of %.1f s allowed).', ...
+        toc(ev.tStart), opts.maxTime);
 end
 
 fval = f;  grad = g;
+% Return the secant model as it stands NOW.  `hessian` was captured at the top
+% of the last full iteration, before that iteration's secant update, so it lagged
+% the model by one pair.  (An exact/FD Hessian is left as is: recomputing it at
+% the terminal iterate would cost n extra Jacobians.)
+if ~isempty(hmodel), hessian = hmodel.getMatrix(); end
 output = makeOutput(state, res, ev, exitflag, msg);
 if ~isempty(hmodel), output.hessianModel = hmodel; end   % secant model diagnostics
 if ~isempty(trace), output.trace = trace.toStruct(); end % per-iteration trajectory
@@ -599,7 +897,8 @@ else
     optW = ones(n, 1);
 end
 
-st = initializeIterate(ev, problem, opts);
+feasW = feasWeights(problem, ev);
+st = initializeIterate(ev, problem, opts, fx, sc);
 x = st.x;  s = st.s;
 lamE = st.lamE;  lamI = st.lamI;
 zL = st.zL;  zU = st.zU;
@@ -621,7 +920,7 @@ mu = st.mu;
 if mE > 0 && ~any(lamE)
     bSeed = g - zL + zU;
     if ev.mI > 0, bSeed = bSeed + JI.' * lamI; end
-    lamE = step_multiplierUpdate(bSeed, JE, optW);
+    lamE = step_multiplierUpdate(bSeed, JE, optW, multFitTol(ev, x, sc, optW));
 end
 
 hmodel = makeHessianModel(opts, n);
@@ -630,9 +929,9 @@ filt = makeFilter(opts, norm([cE; cI + s], 1));
 
 util_logger('header', opts.Display, [], opts.LogFile);
 
-rho = 1;  alpha = 0;  hessian = [];  res = [];  state = [];  restTheta = inf;
+rho = 1;  alpha = 0;  hessian = [];  res = [];  state = [];  restFail = 0;
 exitflag = 0;  msg = 'Stopped: maximum iterations reached.';
-ksolve = struct('Fprev', [], 'etaPrev', [], 'reg', []);
+ksolve = struct('reg', []);
 history = struct('theta', zeros(0,1), 'alpha', zeros(0,1));
 Delta = opts.delta0;
 % Iteration-hook visibility: the step quantities must exist (as zero/NaN
@@ -649,6 +948,8 @@ bestKKTopt = inf;  bestKKT = [];       % best-KKT snapshot (see the limit exit)
 keepBestKKT = strcmpi(opts.returnIterate, 'bestKKT');  % opt-in; default is 'last'
 fPrevObj = f;    objStallCount = 0;    % objective-plateau tracker (see terminationCheck)
 optGateCount = 0;                     % consecutive iters inside objPlateauOptTol
+acceptCount = 0;                      % consecutive acceptable iterates (A5)
+lsFailRun = 0;  nRecal = 0;           % consecutive line-search failures, FD re-calibrations (A7)
 trace = makeTrace(opts, opts.maxIter);
 if ~isempty(trace)
     trace.setMeta('core', 'ip');
@@ -659,13 +960,19 @@ end
 tStart = tic;
 warnedPlot = false;   % plot-hook error already reported this solve (see firePlots)
 warnedIter = false;   % iteration-function error already reported this solve
+timeLimitHit = false; % set by the catch below: a probe past ev.deadline fired
+ev.deadline = opts.maxTime;   % arm the wall-clock budget: startup is over,
+                              % state exists from the first loop top on
+try
 for iter = 0:opts.maxIter
     trow = struct('iter', iter);
+    trow.jacExact = double(~ev.jacobianIsApprox());   % D1: secant-served rows are marked
     % Reset the per-iteration step provenance every pass, not only on the branch
     % that sets it.  The NT-decomp path never assigns primaryInfo, and a stale
     % value from the previous iteration is worse than no value at all: it would
     % read as a plausible row rather than an obviously missing one.
-    primaryInfo = [];  nSolves = 0;  socAdopted = 0;
+    primaryInfo = [];  nSolves = 0;  socAdopted = 0;  nFactorizations = 0;
+    stepNonFinite = false;
     dxl = x - lb;  dxu = ub - x;
 
     % --- Active-bound handling (Fix F row exclusion + Fix G bound-dual repair) ---
@@ -855,6 +1162,7 @@ for iter = 0:opts.maxIter
     state.stepNorm = stepNorm;      % step-size exit (opts.stepTol)
     res = ipRes(rd, rpE, rpI, s, lamI, dxl, zL, finL, dxu, zU, finU, optW);
     res.opt = util_norms(optW .* rdMetric);   % Fix F scale-consistent opt
+    res.feasPhys = physViolation(cE, cI, feasW);   % D3: true violation, caller's units
 
     % The three optimality metrics, side by side.  optPrinted is what the log
     % shows (Fix-F masked, Dx-weighted); optRaw is the unmasked, unweighted
@@ -872,6 +1180,7 @@ for iter = 0:opts.maxIter
     % the stall counter that gates the restoration-failure ef=-2 declaration.
     if res.feas < bestFeas * (1 - 1e-3)
         bestFeas = res.feas;  feasStallCount = 0;
+        restFail = 0;   % D20: progress in the main iteration clears the count
     else
         bestFeas = min(bestFeas, res.feas);
         feasStallCount = feasStallCount + 1;
@@ -956,6 +1265,14 @@ for iter = 0:opts.maxIter
         optGateCount = 0;
     end
     state.optGateCount = optGateCount;
+    % A5: consecutive iterations at an acceptable level.
+    if acceptableIterate(res, state, opts)
+        acceptCount = acceptCount + 1;
+    else
+        acceptCount = 0;
+    end
+    state.acceptCount = acceptCount;
+    trow.acceptCount = acceptCount;
     state.feasRegressCount = feasRegressCount;
     state.bestFeas = bestFeas;
 
@@ -986,6 +1303,89 @@ for iter = 0:opts.maxIter
     trow.feasRegressCount = feasRegressCount;
 
     [stop, ef, m] = terminationCheck(state, res, opts);
+
+    % D1: convergence certified against a Broyden secant Jacobian is not
+    % convergence.  When the stop above was reached on an approximate
+    % Jacobian, recompute it exactly, rebuild the residual, and re-test; a
+    % stop that does not survive is cleared and the iteration continues with
+    % exact derivatives in state.  Inert unless Broyden served the Jacobian.
+    % The residual is rebuilt exactly as at the top of the loop (condensed
+    % stationarity with the Fix-F projected metric, true physical violation).
+    if stop && ef > 0 && ev.jacobianIsApprox()
+        [JE, JI] = ev.jacobianExact(x);
+        state.JE = JE;  state.JI = JI;
+        rd = g;
+        if mE > 0,    rd = rd + JE.' * lamE;  end
+        if ev.mI > 0, rd = rd + JI.' * lamI;  end
+        rd = rd - zL + zU;
+        rpE = cE;
+        rpI = cI + s;
+        if opts.excludeActiveBoundRows
+            rdMetric = util_projectedGradient(rd, zL, zU, activeL, activeU);
+        else
+            rdMetric = rd;
+        end
+        res = ipRes(rd, rpE, rpI, s, lamI, dxl, zL, finL, dxu, zU, finU, optW);
+        res.opt = util_norms(optW .* rdMetric);
+        res.feasPhys = physViolation(cE, cI, feasW);
+        [stop, ef, m] = terminationCheck(state, res, opts);
+        trow.optPrinted = res.opt;
+        trow.optRaw = util_norms(rd);
+        trow.optScaled = res.opt / kktScaleFactor(state);
+    end
+
+    % A1: an exitflag-2 stop with forward-difference derivatives the user did
+    % not pin is a stop at FORWARD-difference accuracy (O(h) truncation).
+    % Switch to central differences once.  A7: a step collapse short of
+    % stationarity (exitflag 0) with FD derivatives is the signature of a
+    % noise-limited gradient; re-calibrate the step (at most 3 times per solve,
+    % shared with the line-search trigger below).  Either way refresh the
+    % derivatives at x and restart the iteration from x; the step and
+    % acceptable-streak state were measured with the old differences, and the
+    % stale step would trip the step-size exit at once.
+    fdRestart = false;
+    if stop && ef == 2 && ev.promoteToCentral()
+        trow.fdPromoted = 1;  fdRestart = true;
+    elseif stop && ef == 0 && isfinite(stepNorm) && ...
+            stepNorm <= opts.stepTol * (1 + norm(x, inf)) && nRecal < 3 && ...
+            opts.autoFDStep && (~ev.hasObjGrad || (~ev.hasConGrad && ev.mInl + ev.mEnl > 0))
+        ev.calibrateStep(x);
+        nRecal = nRecal + 1;
+        trow.fdRecalibrated = 1;  fdRestart = true;
+    end
+    if fdRestart
+        recordTrace(trace, trow);
+        acceptCount = 0;  objStallCount = 0;
+        stepNorm = inf;
+        [f, g]   = ev.objective(x);
+        [JE, JI] = ev.jacobian(x);
+        continue;
+    end
+    % A1: stopping at FINITE-DIFFERENCE accuracy.  A step collapse after the
+    % re-calibrations are spent (or, in this core, an objective plateau), at a feasible point whose scaled
+    % optimality is within 10x of the estimated FD gradient error, is as
+    % converged as the derivatives allow: exitflag 2, not 0 ("stalled short of
+    % a stationary point") or a grind to maxIter at the noise floor.
+    fdUsedNow = ~ev.hasObjGrad || (~ev.hasConGrad && ev.mInl + ev.mEnl > 0);
+    fdAccCheck = false;
+    if stop && ef == 0 && fdUsedNow && isfinite(stepNorm) && ...
+            stepNorm <= opts.stepTol * (1 + norm(x, inf)) && res.feas <= opts.feasTol
+        fdAccCheck = true;
+    elseif ~stop && fdUsedNow && isfield(state, 'objStallCount') && ...
+            state.objStallCount >= opts.objPlateauWindow && ...
+            mod(state.objStallCount, opts.objPlateauWindow) == 0 && res.feas <= opts.feasTol
+        fdAccCheck = true;   % objective plateau: check once per plateau window
+    end
+    if fdAccCheck
+        gErr = ev.gradErrEst(x);
+        if gErr > 0 && trow.optScaled <= 10 * gErr
+            stop = true;  ef = 2;
+            m = sprintf(['Converged to finite-difference accuracy: scaled optimality ' ...
+                '%.2e is within 10x of the estimated FD gradient error %.1e at a ' ...
+                'feasible point; optTol %.1e is below what the derivatives resolve.'], ...
+                trow.optScaled, gErr, opts.optTol);
+        end
+    end
 
     % Per-iteration plot hooks (user PlotFcn and/or the built-in uifigure
     % plot).  Fired after the termination test so the terminal iterate carries
@@ -1037,7 +1437,7 @@ for iter = 0:opts.maxIter
                 restoreSnapshot(bestSnap, state);
             msg = sprintf(['%s  Returning the best iterate seen (iteration %d, ' ...
                 'feas = %.3e).'], msg, bestSnap.iter, bestSnap.res.feas);
-        elseif keepBestKKT && ef == 0 && ~isempty(bestKKT) && ...
+        elseif keepBestKKT && (ef == 0 || ef == -1) && ~isempty(bestKKT) && ...
                 bestKKT.iter ~= iter && bestKKTopt < res.opt / kktScaleFactor(state)
             % A limit exit stops mid-iteration, not at a converged point, so there
             % is no reason to prefer the last iterate over the best one -- and on an
@@ -1072,6 +1472,14 @@ for iter = 0:opts.maxIter
     % nor by a lagging bound dual at an active bound (Fix F: use the projected
     % rdMetric, matching res.opt exactly).
     statW = norm(optW .* rdMetric, inf);
+    % D13: measure the barrier error in the SAME s_d-scaled metric the
+    % termination test uses (IPOPT eqs. 5/7).  With large multipliers
+    % (s_d = 10) termination accepted statW <= 10*optTol while this gate still
+    % demanded statW <= kappaMu*mu, so near the end mu froze above compTol and
+    % comp -- which sits at mu -- could never pass.
+    sdK = kktScaleFactor(state);
+    statW = statW / sdK;
+    compErr = compErr / sdK;
     Emu = max([statW, norm(rpE, inf), norm(rpI, inf), compErr]);
     muPrev = mu;
     muOpts = opts;
@@ -1145,7 +1553,21 @@ for iter = 0:opts.maxIter
 
     muOpts.kappaMu = opts.kappaMu * kFac;
     [mu, tau] = control_barrierUpdate(mu, Emu, muOpts);
+    % D13: several barrier levels in one iteration when the current point
+    % already solves the next subproblem to its tolerance (IPOPT's loop).
+    % Only the complementarity block depends on mu, so re-testing is cheap.
+    % Each level used to cost a full KKT solve and line search.
+    nMuSteps = double(mu < muPrev);
+    while nMuSteps > 0 && nMuSteps < 5 && mu > opts.muMin
+        compNext = compInfNorm(s, lamI, dxl, zL, finL, dxu, zU, finU, mu) / sdK;
+        EmuNext = max([statW, norm(rpE, inf), norm(rpI, inf), compNext]);
+        muBefore = mu;
+        [mu, tau] = control_barrierUpdate(mu, EmuNext, muOpts);
+        if ~(mu < muBefore), break; end
+        nMuSteps = nMuSteps + 1;
+    end
     trow.tau = tau;
+    trow.nMuSteps = nMuSteps;
 
     % NOTE: there is deliberately no "barrier escape" here that forces mu down
     % when the gate holds it still for many iterations.  A frozen mu looks like
@@ -1162,6 +1584,12 @@ for iter = 0:opts.maxIter
     % off the central path.  The plateau is the near-singular-Schur conditioning
     % wall documented in the project notes, and it must be fixed there.
     if useFilter && mu < muPrev, filt.reset(); end
+    % D23: the l1 penalty only ever grew -- gd/theta + 1e-2 is unbounded as
+    % theta -> 0 -- and the value persisted across every later barrier
+    % subproblem, over-penalising feasibility for the rest of the solve.
+    % Start each barrier subproblem from rho = 1; the line search raises it
+    % again to whatever this subproblem needs.
+    if mu < muPrev, rho = 1; end
 
     % Condensed Newton system in (dx, dlamE).
     H = currentHessian(hmodel, ev, x, lamE, lamI, opts);
@@ -1223,6 +1651,7 @@ for iter = 0:opts.maxIter
         theta_IP0 = norm([cE; cI + s], 1);
         phi0_bar  = barrierObj(f, s, x, lb, ub, finL, finU, mu);
         thetaMinNT_IP = 1e-4 * max(1, theta_IP0);
+        if useFilter, thetaMinNT_IP = filt.thetaMin; end   % D18
         [JE_eff, cE_eff] = augmentForNearBoundary(JE, cE, JI, cI, advice, state, opts);
         stepAccepted = false;  aP = 1;
         dx = zeros(n,1);  dlamE = zeros(mE,1);
@@ -1251,18 +1680,20 @@ for iter = 0:opts.maxIter
             theta_t   = norm([cEt; cIt + st], 1);
             phi_t_bar = barrierObj(ft, st, xt, lb, ub, finL, finU, mu);
             isSwitchingIP = useFilter && (theta_IP0 <= thetaMinNT_IP);
-            if isSwitchingIP
-                ok = true;
-            elseif useFilter
+            if useFilter
+                % As in the equality core (D19): switching exempts an accepted
+                % step from augmenting, never from the acceptance test itself.
                 ok = filt.isAcceptable(theta_t, phi_t_bar);
             else
-                rho    = max(rho, norm([lamE + dlamE; lamI + dlamI], inf) + 1e-2);
+                gdNT = gQ.' * dx;
+                rho = control_penaltyUpdate(rho, ...
+                    norm([lamE + dlamE; lamI + dlamI], inf), gdNT, theta_IP0);
                 phi0m  = globalize_meritFunction(phi0_bar, theta_IP0, rho);
                 phi_tm = globalize_meritFunction(phi_t_bar, theta_t, rho);
                 % Directional derivative of the BARRIER OBJECTIVE, matching
                 % phi0_bar/phi_t_bar; r1 would add JE'*lamE, which belongs to
                 % the Lagrangian and not to the merit function being tested.
-                dphi   = (gQ.' * dx) - rho * theta_IP0;
+                dphi   = gdNT - rho * theta_IP0;
                 ok = globalize_meritAccept(phi0m, phi_tm, dphi, aP);
             end
             % Merit-consistent trust-region ratio, evaluated at the fraction
@@ -1273,8 +1704,20 @@ for iter = 0:opts.maxIter
             rhoTR = max(rho, norm([lamE + dlamE; lamI + dlamI], inf) + 1e-2);
             [predRedM, actRedM] = ntMeritRatio(ntMdl, aP, rhoTR, ...
                 JE_eff, cE_eff, dx, rpI, theta_IP0, theta_t, phi0_bar, phi_t_bar);
+            if ~ok
+                % As in the equality core (D19): a rejected step shrinks the
+                % radius instead of reaching the trust-region update, which
+                % could otherwise expand Delta and recompute the identical
+                % rejected step for the rest of the inner loop.
+                Delta = opts.trShrink * Delta;
+                continue;
+            end
+            % The expansion test asks whether the trust region bound the step:
+            % that is decided by the full Newton-Tangential step, not by the
+            % fraction-to-boundary shortening, so aP-scaled norms made
+            % expansion impossible whenever aP < 1 (D19).
             [Delta, tr_ok, ~] = control_trustRegionUpdate( ...
-                Delta, predRedM, actRedM, aP * norm(dx), opts);
+                Delta, predRedM, actRedM, norm(dx), opts);
             if ok && tr_ok
                 if useFilter && ~isSwitchingIP
                     filt.augment(theta_IP0, phi0_bar);
@@ -1287,7 +1730,8 @@ for iter = 0:opts.maxIter
             % NT step collapsed (dx≈0): back-substituting a zero step gives
             % dlamI ≈ sigS*rpI which blows up the multipliers. Fall back to the
             % standard condensed KKT step so that JI*dx ≈ -rpI, keeping dlamI safe.
-            cstate_fb = struct('H', W, 'JE', JE, 'x', x, 'lamE', lamE);
+            cstate_fb = struct('H', W, 'JE', JE, 'x', x, 'lamE', lamE, ...
+                'cE', cE, 'cI', cI, 'JI', JI, 'lamI', lamI, 'mu', mu);
             cres_fb   = struct('rStat', r1, 'rFeasE', rpE);
             [d_fb, idx_fb, ksolve] = detectStep(cstate_fb, cres_fb, n, mE, opts, ksolve);
             primaryInfo = ksolve.last;
@@ -1307,9 +1751,28 @@ for iter = 0:opts.maxIter
             if ev.mI > 0,   aP = min(aP, step_fractionToBoundary(s, ds, tau)); end
             if any(finL),   aP = min(aP, step_fractionToBoundary(dxl(finL), dx(finL), tau)); end
             if any(finU),   aP = min(aP, step_fractionToBoundary(dxu(finU), -dx(finU), tau)); end
-            [aP, rho] = ipLineSearch(ev, x, s, dx, ds, lb, ub, finL, finU, ...
-                                     f, g, cE, cI, mu, rho, ...
-                                     [lamE + dlamE; lamI + dlamI], aP);
+            if useFilter
+                % A step the filter just rejected must not come back through
+                % the merit rule, which would take it without augmenting (D19).
+                theta0fb = norm([cE; cI + s], 1);
+                phi0fb = barrierObj(f, s, x, lb, ub, finL, finU, mu);
+                gdFb = g.' * dx ...
+                     - mu * ( sumBarrierDir(ds, s) ...
+                              + sumBarrierDir(dx(finL), x(finL) - lb(finL)) ...
+                              - sumBarrierDir(dx(finU), ub(finU) - x(finU)) );
+                ptFb = @(a) phiThetaIP(ev, x, s, dx, ds, lb, ub, finL, finU, mu, a);
+                thCapFb = thetaGrowCap(theta0fb, opts);
+                multNFb = norm([lamE + dlamE; lamI + dlamI], inf);
+                [aP, augmentFb, rho, ~, firstBlockedFb] = globalize_filterLineSearch( ...
+                    ptFb, phi0fb, theta0fb, gdFb, filt, rho, aP, thCapFb, multNFb);
+                if augmentFb, filt.augment(theta0fb, phi0fb); end
+                trow.filterReset = double(filt.noteFirstTrial(firstBlockedFb, ...
+                    opts.filterResetTrigger, opts.maxFilterResets));
+            else
+                [aP, rho] = ipLineSearch(ev, x, s, dx, ds, lb, ub, finL, finU, ...
+                                         f, g, cE, cI, mu, rho, ...
+                                         [lamE + dlamE; lamI + dlamI], aP);
+            end
         end
         % Compute dual step fractions.
         aD = 1;
@@ -1317,11 +1780,19 @@ for iter = 0:opts.maxIter
         if any(finL),   aD = min(aD, step_fractionToBoundary(zL(finL), dzL(finL), tau)); end
         if any(finU),   aD = min(aD, step_fractionToBoundary(zU(finU), dzU(finU), tau)); end
     else
-        cstate = struct('H', W, 'JE', JE, 'x', x, 'lamE', lamE);
+        cstate = struct('H', W, 'JE', JE, 'x', x, 'lamE', lamE, ...
+                        'cE', cE, 'cI', cI, 'JI', JI, 'lamI', lamI, 'mu', mu, ...
+                        'jacNoiseTol', jacNoiseTol(ev, x, sc));
         cres = struct('rStat', r1, 'rFeasE', rpE);
         [d, idx, ksolve] = detectStep(cstate, cres, n, mE, opts, ksolve);
         dx    = d(idx.x);
         dlamE = d(idx.lamE);
+        % Non-finite KKT step (D30, IP core): zero it, skip the line search,
+        % and let restoration act at once (see the equality core).
+        stepNonFinite = ~all(isfinite(dx)) || ~all(isfinite(dlamE));
+        if stepNonFinite
+            dx(:) = 0;  dlamE(:) = 0;
+        end
 
         % Snapshot the PRIMARY solve now.  detectStep runs again for every SOC
         % re-solve below (up to socMax = 4), each overwriting ksolve.last, so
@@ -1329,7 +1800,7 @@ for iter = 0:opts.maxIter
         % conditioning to the step -- silently, and precisely on the iterations
         % where SOC fired, which are the interesting ones.
         primaryInfo = ksolve.last;
-        nSolves = 1;
+        nSolves = 1;  nFactorizations = 1;
         trow.condK = traceCondK(trace, cstate, ksolve.reg);
 
         % Recover the eliminated directions.
@@ -1354,7 +1825,9 @@ for iter = 0:opts.maxIter
         if any(finL),   aD = min(aD, step_fractionToBoundary(zL(finL), dzL(finL), tau)); end
         if any(finU),   aD = min(aD, step_fractionToBoundary(zU(finU), dzU(finU), tau)); end
 
-        if useFilter
+        if stepNonFinite
+            aP = 0;  aD = 0;  lsFailed = true;
+        elseif useFilter
             theta0 = norm([cE; cI + s], 1);
             phi0 = barrierObj(f, s, x, lb, ub, finL, finU, mu);
             gd = g.' * dx ...
@@ -1370,68 +1843,66 @@ for iter = 0:opts.maxIter
             % kappaThetaGrow).
             thCap = thetaGrowCap(theta0, opts);
             multN = norm([lamE + dlamE; lamI + dlamI], inf);
-            [aP, augment, rho, lsFailed] = globalize_filterLineSearch( ...
-                pt, phi0, theta0, gd, filt, rho, aMax0, thCap, multN);
-
-            % --- Second-order correction (Waechter-Biegler) ---
-            % A collapsed step (aP << aMax0) on strongly nonlinear constraints
-            % is the Maratos effect: the full step is rejected because the
-            % constraint curvature raises theta.  Retry with a corrected
-            % direction that also cancels the constraint value at the full
-            % trial point, re-solving the condensed KKT system with the
-            % modified RHS c_soc = alpha*c + c(x + alpha*dx).
-            if opts.useSOC && aMax0 > 1e-6 && aP < opts.socThreshold * aMax0
-                aFTB  = aMax0;
-                cSocE = rpE;                       % accumulates alpha*c + c(trial)
+            % Waechter-Biegler order (D17.2/D17.3): try the FULL step alone;
+            % if it is rejected with theta increased, try up to socMax second-
+            % order corrections, ONE evaluation each, along the corrected
+            % direction and with the slack rows corrected too; only then
+            % backtrack from aMax0/2.  The old code ran the whole backtracking
+            % search first and then a full line search per correction --
+            % ~140 extra evaluations on a bad iteration -- and corrected only
+            % the equality rows, along the uncorrected direction.
+            [aP, augment, rho, lsFailed, firstBlocked, thFirst] = globalize_filterLineSearch( ...
+                pt, phi0, theta0, gd, filt, rho, aMax0, thCap, multN, 1);
+            if lsFailed && opts.useSOC && aMax0 > 1e-6 && thFirst >= theta0
+                aFTB = aMax0;  dirX = dx;  dirS = ds;
+                cSocE = rpE;  cSocI = rpI;       % WB accumulation: alpha*c + c(trial)
+                thPrevTrial = thFirst;
                 for socIt = 1:opts.socMax                                       %#ok<FORPERM>
-                    xt = x + aFTB * dx;
-                    [cEt, ~] = ev.constraints(xt);
-                    cSocE = aFTB * cSocE + cEt;    % WB constraint accumulation
-                    % Re-solve condensed KKT with the corrected constraint RHS.
-                    cstateS = struct('H', W, 'JE', JE, 'x', x, 'lamE', lamE);
-                    cresS   = struct('rStat', r1, 'rFeasE', cSocE);
-                    [dS, idxS, ksolve] = detectStep(cstateS, cresS, n, mE, opts, ksolve);
+                    xt = x + aFTB * dirX;  st = s + aFTB * dirS;
+                    [cEt, cIt] = ev.constraints(xt);
+                    cSocE = aFTB * cSocE + cEt;
+                    r1C = r1;
+                    if ev.mI > 0
+                        cSocI = aFTB * cSocI + (cIt + st);
+                        r1C = rd + corrL - corrU + JI.' * (sigS .* cSocI - rc_s ./ s);
+                    end
+                    if isfield(ksolve, 'factors') && ~isempty(ksolve.factors)
+                        dS   = linalg_resolveKKT(ksolve.factors, -[r1C; cSocE]);
+                        idxS = ksolve.factorIdx;
+                    else
+                        cstateS = struct('H', W, 'JE', JE, 'x', x, 'lamE', lamE, ...
+                            'cE', cE, 'cI', cI, 'JI', JI, 'lamI', lamI, 'mu', mu);
+                        cresS   = struct('rStat', r1C, 'rFeasE', cSocE);
+                        [dS, idxS, ksolve] = detectStep(cstateS, cresS, n, mE, opts, ksolve);
+                        nFactorizations = nFactorizations + 1;
+                    end
                     nSolves = nSolves + 1;
                     dxC    = dS(idxS.x);
                     dlamEC = dS(idxS.lamE);
                     if ev.mI > 0
                         JIdxC  = JI * dxC;
-                        dsC    = -rpI - JIdxC;
-                        dlamIC = sigS .* (JIdxC + rpI) - rc_s ./ s;
+                        dsC    = -cSocI - JIdxC;
+                        dlamIC = sigS .* (JIdxC + cSocI) - rc_s ./ s;
                     else
                         dsC    = zeros(0,1);
                         dlamIC = zeros(0,1);
                     end
                     dzLC = zeros(n,1);  dzLC(finL) = -corrL(finL) - sigL(finL) .* dxC(finL);
                     dzUC = zeros(n,1);  dzUC(finU) = -corrU(finU) + sigU(finU) .* dxC(finU);
-                    % Fraction-to-boundary cap for the corrected primal direction.
                     aC = 1;
                     if ev.mI > 0,   aC = min(aC, step_fractionToBoundary(s, dsC, tau)); end
                     if any(finL),   aC = min(aC, step_fractionToBoundary(dxl(finL), dxC(finL), tau)); end
                     if any(finU),   aC = min(aC, step_fractionToBoundary(dxu(finU), -dxC(finU), tau)); end
                     ptC = @(a) phiThetaIP(ev, x, s, dxC, dsC, lb, ub, finL, finU, mu, a);
-                    % Directional derivative of phi along the CORRECTED direction.
-                    % Passing the uncorrected gd made every Armijo and switching
-                    % test inside the line search use the wrong slope -- and
-                    % believe gd < 0 even when dxC is an ascent direction.
+                    % Directional derivative along the CORRECTED direction.
                     gdC = g.' * dxC ...
                           - mu * ( sumBarrierDir(dsC, s) ...
                                    + sumBarrierDir(dxC(finL), x(finL) - lb(finL)) ...
                                    - sumBarrierDir(dxC(finU), ub(finU) - x(finU)) );
-                    [aTrial, augmentC, rhoC, lsFailedC] = globalize_filterLineSearch( ...
-                        ptC, phi0, theta0, gdC, filt, rho, aC, thCap, multN);
-                    % Adopt only when the correction is genuinely better.  A
-                    % LONGER step is not by itself an improvement: the line search
-                    % always returns something, so "aTrial > aP" is a bar the
-                    % corrected direction clears almost automatically -- which is
-                    % how SOC could manufacture a large step precisely when the
-                    % ordinary one had collapsed.  Require the corrected trial to
-                    % have actually succeeded and to not worsen feasibility.
-                    [~, thAdopt] = ptC(aTrial);
-                    if aTrial > aP && ~lsFailedC && thAdopt <= theta0
-                        % SOC succeeded: adopt the corrected direction.  The
-                        % adopted step now comes from the CORRECTED solve, so
-                        % that solve's conditioning is the one describing it.
+                    % One trial at aC, same acceptance rules as the main search.
+                    [aTrial, augmentC, rhoC, lsFailedC, ~, thC] = globalize_filterLineSearch( ...
+                        ptC, phi0, theta0, gdC, filt, rho, aC, thCap, multN, 1);
+                    if ~lsFailedC
                         primaryInfo = ksolve.last;
                         socAdopted = 1;
                         aP = aTrial;  augment = augmentC;  rho = rhoC;
@@ -1444,15 +1915,22 @@ for iter = 0:opts.maxIter
                         if any(finU),   aD = min(aD, step_fractionToBoundary(zU(finU), dzU(finU), tau)); end
                         break;
                     end
-                    % No improvement: continue correcting only if the corrected
-                    % full step at least reduces theta; otherwise abandon SOC.
-                    [~, thC] = ptC(aC);
-                    if thC >= theta0, break; end
-                    aFTB = aC;
+                    % WB abort rule: stop correcting unless the correction cut
+                    % theta by kappa_soc = 0.99 relative to the previous trial.
+                    if ~(thC < 0.99 * thPrevTrial), break; end
+                    thPrevTrial = thC;
+                    aFTB = aC;  dirX = dxC;  dirS = dsC;
                 end
+            end
+            if lsFailed && ~socAdopted
+                % Ordinary backtracking from half the full step.
+                [aP, augment, rho, lsFailed] = globalize_filterLineSearch( ...
+                    pt, phi0, theta0, gd, filt, rho, 0.5 * aMax0, thCap, multN);
             end
 
             if augment, filt.augment(theta0, phi0); end
+            trow.filterReset = double(filt.noteFirstTrial(firstBlocked, ...
+                opts.filterResetTrigger, opts.maxFilterResets));
         else
             [aP, rho] = ipLineSearch(ev, x, s, dx, ds, lb, ub, finL, finU, ...
                                      f, g, cE, cI, mu, rho, ...
@@ -1482,7 +1960,18 @@ for iter = 0:opts.maxIter
     % orbit run the collapsed steps bottomed out at 6.1e-5 and this trigger stayed
     % silent throughout).  Keep the aP test for the other step paths, which report
     % only a length.
-    feasGenuinelyStalled = feasStallCount >= opts.restStallWindow;
+    % A7: the FD step was calibrated once, at x0, but a trajectory's noise
+    % floor moves with the arc.  restStallWindow consecutive line-search
+    % failures with FD derivatives re-calibrate it here (at most 3 times per
+    % solve); the foot of the loop then differences the new point with it.
+    lsFailRun = double(lsFailed) * (lsFailRun + 1);
+    if lsFailRun >= opts.restStallWindow && nRecal < 3 && opts.autoFDStep && ...
+            (~ev.hasObjGrad || (~ev.hasConGrad && ev.mInl + ev.mEnl > 0))
+        ev.calibrateStep(x);
+        nRecal = nRecal + 1;  lsFailRun = 0;
+        trow.fdRecalibrated = 1;
+    end
+    feasGenuinelyStalled = feasStallCount >= opts.restStallWindow || stepNonFinite;
     % Measure the quantity restoration can actually REDUCE.  This test used to
     % read norm([cE; cI + s], 1) -- the primal residual of the SLACK-AUGMENTED
     % system -- while degeneracy_restorationPhase minimizes the true violation
@@ -1517,13 +2006,31 @@ for iter = 0:opts.maxIter
         thetaPreRest = norm([cE; cI + s], 1);
         phiPreRest   = barrierObj(f, s, x, lb, ub, finL, finU, mu);
         [x, rinfo] = degeneracy_restorationPhase(ev, x, lb, ub, opts);
-        if rinfo.theta > opts.feasTol && ...
-                (~rinfo.reduced || rinfo.theta >= restTheta - opts.feasTol)
+        % D20: declare local infeasibility only on a certificate (restoration
+        % reached a stationary point of ||c||^2 with c ~= 0) or on two
+        % consecutive restorations that each failed to cut theta by 10%.  The
+        % old test compared against the exit theta of the PREVIOUS restoration,
+        % possibly hundreds of iterations and a long way back, so a second
+        % restoration that ended slightly higher killed a solvable run.
+        % A stationarity certificate is a strike, not an immediate exit: it is
+        % local to where restoration stopped, and the main iteration may still
+        % move off it.  On lvdExample_MunarLanding (5 of 13 variables on a
+        % bound) an immediate exit stopped the run at violation 9.5e-2 where
+        % riding on reached 7.3e-3.
+        if (rinfo.theta <= 0.9 * rinfo.theta0 && ~rinfo.stationary) || ...
+                rinfo.theta <= opts.feasTol
+            restFail = 0;
+        else
+            restFail = restFail + 1;
+        end
+        if rinfo.theta > opts.feasTol && restFail >= 2
             exitflag = -2;
             msg = 'No feasible point found (local infeasibility).';
+            if rinfo.stationary
+                msg = [msg '  Restoration reached a stationary point of the constraint violation.'];
+            end
             break;
         end
-        restTheta = rinfo.theta;
         % Restoration projects trial points onto [lb,ub] and may land x exactly
         % on a bound.  The interior-point barrier then forms zL/(x-lb) with a
         % zero denominator, producing an Inf Hessian and a NaN Newton step.
@@ -1534,7 +2041,9 @@ for iter = 0:opts.maxIter
         x = pushInterior(x, lb, ub, finL, finU);
         [f, g]   = ev.objective(x);
         [cE, cI] = ev.constraints(x);
-        [JE, JI] = ev.jacobian(x);
+        % D1: the secant anchor is meaningless after a projected Gauss-Newton
+        % jump: refresh it with an exact Jacobian (a no-op when Broyden is off).
+        [JE, JI] = ev.jacobianExact(x);
         if ev.mI > 0
             % The same RELATIVE strict-positivity floor the start-up seed uses,
             % not the absolute 1e-4 this copy carried.  "Exactly as at start-up"
@@ -1550,6 +2059,14 @@ for iter = 0:opts.maxIter
         end
         zL = seedBoundMult(lb, x, mu, +1, finL);
         zU = seedBoundMult(ub, x, mu, -1, finU);
+        % Re-seed the equality costates too, by the same least-squares fit as at
+        % start-up (and as the equality core does after restoration).  The old
+        % lamE belongs to the point restoration jumped away from.
+        if mE > 0
+            bSeed = g - zL + zU;
+            if ev.mI > 0, bSeed = bSeed + JI.' * lamI; end
+            lamE = step_multiplierUpdate(bSeed, JE, optW, multFitTol(ev, x, sc, optW));
+        end
         if ~isempty(hmodel) && ismethod(hmodel, 'reset'), hmodel.reset(); end
         % AUGMENT the filter with the point restoration was called from -- do not
         % CLEAR it.  Waechter-Biegler add (theta_k, phi_k) to the filter before
@@ -1564,6 +2081,11 @@ for iter = 0:opts.maxIter
         % the only reset the method actually calls for.
         if useFilter, filt.augment(thetaPreRest, phiPreRest); end
         Delta = opts.delta0;
+        rho = 1;   % D23: the penalty from before restoration no longer applies
+        % The last accepted step belongs to the point restoration left, not to
+        % the restored iterate.  Leaving it set let the StepTolerance exit fire
+        % at the restored point before a single step had been tried from it.
+        stepNorm = inf;
         alpha = 0;
         continue;
     end
@@ -1580,11 +2102,28 @@ for iter = 0:opts.maxIter
     % Fix B applies only a scale-relative CEILING on the increment (inert unless
     % dlamE blows up on a near-singular Schur complement), so normal dual
     % progress is untouched but a 1e4-1e5 multiplier jump cannot wreck lamE.
+    % D22: on a FAILED line search the primal step is the 1e-10 creep, so x has
+    % not moved; the dual Newton step was computed assuming it moves by dx.
+    % Taking it in full is pure multiplier drift.  Tie the duals to aP then.
+    if lsFailed, aD = aP; end
     aLamE = dualStepCoeff(aD, dlamE, lamE, opts);
     lamE = lamE + aLamE * dlamE;
     lamI = lamI + aD * dlamI;
     zL(finL) = zL(finL) + aD * dzL(finL);
     zU(finU) = zU(finU) + aD * dzU(finU);
+    % D14: kappa_Sigma safeguard (Waechter-Biegler eq. 16).  Keep each primal-dual
+    % barrier Hessian term z/gap within a factor kappaSigma of the primal one
+    % mu/gap^2, i.e. z*gap/mu in [1/kappaSigma, kappaSigma].  A lagging bound
+    % dual otherwise feeds a wrong Sigma into W for many iterations.
+    kS = opts.kappaSigma;
+    if isfinite(kS) && kS >= 1
+        gapL = x(finL) - lb(finL);  gapU = ub(finU) - x(finU);
+        zL(finL) = min(max(zL(finL), mu ./ (kS * gapL)), kS * mu ./ gapL);
+        zU(finU) = min(max(zU(finU), mu ./ (kS * gapU)), kS * mu ./ gapU);
+        if ~isempty(s)
+            lamI = min(max(lamI, mu ./ (kS * s)), kS * mu ./ s);
+        end
+    end
     alpha = aP;
 
     [f, g]   = ev.objective(x);
@@ -1601,19 +2140,50 @@ for iter = 0:opts.maxIter
         lamEsec = lamE;
     end
     hinfo = updateHessianModel(hmodel, gOld, JEold, JIold, g, JE, JI, ...
-                               lamEsec, lamI, aP * dx);
+                               lamEsec, lamI, aP * dx, ev, x, lsFailed || aP <= 1e-10);
     ksolve = warnBfgsReset(ksolve, opts, hinfo, iter);
     theta_k = norm([cE; cI + s], 1);
     history = pushHistory(history, theta_k, aP, opts);
 
     % Foot of the loop: the secant update for THIS step has just happened, so
     % this is the first point at which the row is complete.
+    trow.nFactorizations = nFactorizations;   % KKT factorizations this iteration (D17.1)
     trow = finishTraceRow(trow, primaryInfo, hinfo, aP, aD, aLamE, rho, Delta, ...
                           lsFailed, nSolves, socAdopted, 0);
     recordTrace(trace, trow);
 end
+catch ME
+    if ~strcmp(ME.identifier, 'adamnlopt:timeLimit'), rethrow(ME); end
+    timeLimitHit = true;
+end
+if timeLimitHit
+    % A probe past ev.deadline fired mid-iteration: the loop variables may
+    % hold a half-refreshed trial point.  state was built at the top of the
+    % iteration from the last accepted iterate, so report that point.  The
+    % stationarity metric here is unmasked (Fix F needs the active-set rows,
+    % which belong to the interrupted iteration, not to this point).
+    x = state.x; s = state.s; lamE = state.lamE; lamI = state.lamI;
+    zL = state.zL; zU = state.zU; f = state.f; g = state.g;
+    cE = state.cE; cI = state.cI; JE = state.JE; JI = state.JI;
+    dxl = x - lb;  dxu = ub - x;
+    rd = g;
+    if mE > 0,    rd = rd + JE.' * lamE;  end
+    if ev.mI > 0, rd = rd + JI.' * lamI;  end
+    rd = rd - zL + zU;
+    res = ipRes(rd, cE, cI + s, s, lamI, dxl, zL, finL, dxu, zU, finU, optW);
+    res.opt = util_norms(optW .* rd);
+    res.feasPhys = physViolation(cE, cI, feasW);
+    exitflag = 0;
+    msg = sprintf('Stopped: maximum time reached (%.1f s of %.1f s allowed).', ...
+        toc(ev.tStart), opts.maxTime);
+end
 
 fval = f;  grad = g;
+% Return the secant model as it stands NOW.  `hessian` was captured at the top
+% of the last full iteration, before that iteration's secant update, so it lagged
+% the model by one pair.  (An exact/FD Hessian is left as is: recomputing it at
+% the terminal iterate would cost n extra Jacobians.)
+if ~isempty(hmodel), hessian = hmodel.getMatrix(); end
 output = makeOutput(state, res, ev, exitflag, msg);
 if ~isempty(hmodel), output.hessianModel = hmodel; end   % secant model diagnostics
 if ~isempty(trace), output.trace = trace.toStruct(); end % per-iteration trajectory
@@ -1823,6 +2393,62 @@ if any(finL),    v = [v; dxl(finL) .* zL(finL)]; end
 if any(finU),    v = [v; dxu(finU) .* zU(finU)]; end
 end
 
+function tf = acceptableIterate(res, state, opts)
+%ACCEPTABLEITERATE  True when the iterate meets IPOPT-style acceptable levels (A5).
+%   Same scaled metrics terminationCheck uses: stationarity <= acceptableTol,
+%   feasibility <= 100*feasTol, physical violation <= constrViolTol and
+%   complementarity <= 100*compTol.
+sd = kktScaleFactor(state);
+cvTol = Inf;
+if isfield(opts, 'constrViolTol') && ~isempty(opts.constrViolTol), cvTol = opts.constrViolTol; end
+physOK = ~isfield(res, 'feasPhys') || res.feasPhys <= cvTol;
+tf = isfinite(res.opt) && res.opt / sd <= opts.acceptableTol && ...
+     res.feas <= 100 * opts.feasTol && physOK && ...
+     res.comp / sd <= 100 * opts.compTol;
+end
+
+function t = jacNoiseTol(ev, x, sc)
+%JACNOISETOL  Size below which a finite-differenced Jacobian entry is noise (D5).
+%   A forward difference with relative step h = fdStep perturbs a scaled
+%   coordinate by h*max(1,|x_s|), i.e. the physical one by h*max(1,|x_s|)*Dx,
+%   so a scaled-space Jacobian entry carries truncation error ~ h*Dx^2*kappa for
+%   physical curvature kappa.  kappa is unknown; assume it is O(1) in the
+%   caller's units (the same assumption the unscaled equality core makes) and
+%   take 10x margin.  Returned for the UNWEIGHTED scaled Jacobian (rank test);
+%   the weighted multiplier fit uses multFitTol.  0 for analytic Jacobians.
+if ev.hasConGrad
+    t = 0;
+else
+    t = 10 * ev.fdStep * max(1, norm(x, inf)) * max(sc.Dx)^2;
+end
+end
+
+function t = multFitTol(ev, x, sc, optW)
+%MULTFITTOL  Singular-value truncation for the weighted costate fit (D5).
+%   The fit matrix is JE_s'.*optW with optW = 1./(wf*Dx); its noise level is the
+%   jacNoiseTol entry error times the largest weight.
+t = jacNoiseTol(ev, x, sc) * max(optW);
+end
+
+function w = feasWeights(problem, ev)
+%FEASWEIGHTS  Physical-units row weights (1./Dc, 1./Di) for this core's problem.
+if isfield(problem, 'feasScaleW') && ~isempty(problem.feasScaleW)
+    w = problem.feasScaleW;
+else
+    w = struct('E', ones(ev.mE, 1), 'I', ones(ev.mI, 1));
+end
+end
+
+function v = physViolation(cE, cI, w)
+%PHYSVIOLATION  Max constraint violation in the caller's units (D3).
+%   max(|cE./Dc|, max(cI./Di, 0)) over the folded rows; the inequality part is
+%   the TRUE violation of c(x) <= 0, not the slack residual cI + s.  Bounds are
+%   held strictly by the interior-point iteration and contribute nothing.
+v = 0;
+if ~isempty(cE), v = max(v, max(abs(cE .* w.E))); end
+if ~isempty(cI), v = max(v, max(max(cI .* w.I, 0))); end
+end
+
 function [x, s, lamE, lamI, zL, zU, f, g, cE, cI, JE, JI, res, state] = ...
         restoreSnapshot(snap, state)
 %RESTORESNAPSHOT  Roll the iterate back to a stored best-iterate snapshot.
@@ -1924,6 +2550,10 @@ if theta > 0
 end
 phi0 = barrierMerit(f, s, x, lb, ub, finL, finU, mu, rho, theta);
 dphi = gd - rho * theta;
+% The rho update forces dphi < 0 only when theta > 0; with theta = 0 and an
+% ascent direction (gd >= 0) the Armijo test below would accept a merit
+% increase.  Clamp at zero: such a step is taken only if it does not raise phi.
+dphi = min(dphi, 0);
 
 alpha = aMax;  amin = 1e-10;  c = 1e-4;
 while alpha > amin
@@ -2058,6 +2688,8 @@ if strcmpi(opts.globalization, 'filter')
     % room to move.  It is a coarse backstop -- the per-step growth veto
     % (kappaThetaGrow) is the primary guard.
     filt = Filter([], [], max(1e4 * theta0, 1e6 * opts.feasTol));
+    % D18: WB's switching threshold, fixed for the solve from theta(x0).
+    filt.thetaMin = 1e-4 * max(1, theta0);
 else
     filt = [];
 end
@@ -2125,18 +2757,18 @@ end
 % ------------------------------------------------------------------------
 function [d, idx, ksolve] = solveStep(state, res, n, mE, opts, ksolve)
 %SOLVESTEP  Solve the (regularized) Newton-KKT system for the primal-dual step.
-%   Dispatches to a matrix-free Krylov solve (large systems or when requested)
-%   or a direct inertia-corrected factorization. The direct path warm-starts the
-%   regularization (delta, gamma) from the previous iteration, decaying it 10x
-%   per iteration to avoid over-regularizing.
+%   Direct inertia-corrected factorization, warm-starting the regularization
+%   (delta, gamma) from the previous iteration.  (The Krylov path was removed in
+%   review Batch 8: it ran this same factorization first, so it was never
+%   cheaper, and LVD problems never come near the size where it could be.)
 %
 %   Inputs:
 %     state  - iterate state struct (H, JE, x, lamE, ...).
 %     res    - residual struct (rStat, rFeasE, ...).
 %     n      - number of primal variables.
 %     mE     - number of equality constraints.
-%     opts   - resolved options struct (linearSolver, krylovAutoDim, ...).
-%     ksolve - persistent solver-state struct (Fprev, etaPrev, reg).
+%     opts   - resolved options struct.
+%     ksolve - persistent solver-state struct (reg, factors, last, warned).
 %
 %   Outputs:
 %     d      - stacked step [dx; dlamE].
@@ -2144,40 +2776,36 @@ function [d, idx, ksolve] = solveStep(state, res, n, mE, opts, ksolve)
 %     ksolve - updated solver-state struct.
 import adamnlopt.*
 if nargin < 6 || isempty(ksolve)
-    ksolve = struct('Fprev', [], 'etaPrev', [], 'reg', []);
+    ksolve = struct('reg', []);
 end
-useKrylov = strcmpi(opts.linearSolver, 'krylov') || ...
-    (strcmpi(opts.linearSolver, 'auto') && (n + mE) > opts.krylovAutoDim);
-if useKrylov
-    [d, idx, ksolve] = solveStepKrylov(state, res, n, mE, opts, ksolve);
-else
-    % Direct inertia-corrected KKT solve (see kkt_inertiaCorrection for the
-    % delta/gamma growth that certifies inertia (n, mE, 0)).
-    % Warm-start regularization from the previous iteration (IPOPT-style):
-    % decay by 10x each iteration so we don't over-regularize, but avoid
-    % restarting from zero when the problem consistently needs gamma > 0.
-    reg0 = [];
-    if isfield(ksolve, 'reg'), reg0 = ksolve.reg; end
-    if ~isempty(reg0)
-        if reg0.delta > 0, reg0.delta = reg0.delta / 10; end
-        if reg0.gamma > 0, reg0.gamma = reg0.gamma / 10; end
-    end
-    [d, idx, info, reg] = kkt_inertiaCorrection(state, res, n, mE, reg0, opts);
-    ksolve.reg  = reg;
-    ksolve.last = packSolveInfo('direct', info, reg, d, idx, state, res);
-    if isfield(info, 'triesExhausted') && info.triesExhausted
-        ksolve = warnSilentFailure(ksolve, opts, 'inertiaCorrectionExhausted', ...
-            ['Inertia correction hit its 40-try cap without certifying the ' ...
-             'KKT inertia (delta = %.3e, gamma = %.3e); the returned step is ' ...
-             'not a certified descent direction.  Further occurrences are ' ...
-             'not reported -- see output.trace.triesExhausted.'], ...
-            reg.delta, reg.gamma);
-    end
+% Direct inertia-corrected KKT solve (see kkt_inertiaCorrection for the
+% delta/gamma growth that certifies inertia (n, mE, 0)).
+% Warm-start regularization from the previous iteration (IPOPT-style):
+% decay by 10x each iteration so we don't over-regularize, but avoid
+% restarting from zero when the problem consistently needs gamma > 0.
+% reg0 seeds only the first inertia RETRY (D15); kkt_inertiaCorrection
+% always tries delta = 0 first, so no decay is needed here.
+reg0 = [];
+if isfield(ksolve, 'reg'), reg0 = ksolve.reg; end
+[d, idx, info, reg] = kkt_inertiaCorrection(state, res, n, mE, reg0, opts);
+ksolve.reg  = reg;
+% Keep the accepted factorization for right-hand-side-only re-solves
+% (second-order correction, D17.1).
+ksolve.factors   = info.factors;
+ksolve.factorIdx = idx;
+ksolve.last = packSolveInfo(info, reg, d, idx, state, res);
+if isfield(info, 'triesExhausted') && info.triesExhausted
+    ksolve = warnSilentFailure(ksolve, opts, 'inertiaCorrectionExhausted', ...
+        ['Inertia correction hit its 40-try cap without certifying the ' ...
+         'KKT inertia (delta = %.3e, gamma = %.3e); the returned step is ' ...
+         'not a certified descent direction.  Further occurrences are ' ...
+         'not reported -- see output.trace.triesExhausted.'], ...
+        reg.delta, reg.gamma);
 end
 end
 
 % ------------------------------------------------------------------------
-function s = packSolveInfo(path, info, reg, d, idx, state, res)
+function s = packSolveInfo(info, reg, d, idx, state, res)
 %PACKSOLVEINFO  Flatten one KKT solve's diagnostics into a scalar struct.
 %   Every field here is a by-product of a solve that has already happened; this
 %   only copies them somewhere the main loop can see. Nothing is read back to
@@ -2200,8 +2828,7 @@ function s = packSolveInfo(path, info, reg, d, idx, state, res)
 %   conditioning under this iteration's row -- worse than recording nothing.
 %
 %   Inputs:
-%     path  - 'direct' or 'krylov', identifying which core produced the step.
-%     info  - info struct from kkt_inertiaCorrection (direct) or [] (krylov).
+%     info  - info struct from kkt_inertiaCorrection, or [].
 %     reg   - accepted regularization struct (delta, gamma).
 %     d     - stacked step [dx; dlamE].
 %     idx   - index struct with fields x and lamE.
@@ -2210,7 +2837,7 @@ function s = packSolveInfo(path, info, reg, d, idx, state, res)
 %
 %   Outputs:
 %     s - scalar struct of diagnostics, ready for IterTrace.record.
-s = struct('pathDirect', strcmp(path, 'direct'), 'stepSource', 0, ...
+s = struct('stepSource', 0, ...
            'delta', NaN, 'gamma', NaN, 'gammaFixA', NaN, ...
            'tries', NaN, 'triesExhausted', NaN, ...
            'inertiaPos', NaN, 'inertiaNeg', NaN, 'inertiaZero', NaN, ...
@@ -2219,8 +2846,7 @@ s = struct('pathDirect', strcmp(path, 'direct'), 'stepSource', 0, ...
            'pivotSpread', NaN, 'nearlySingular', NaN, ...
            'schurRan', NaN, 'schurCond', NaN, 'schurSMax', NaN, ...
            'schurSMin', NaN, 'schurCaught', NaN, 'schurSkipReason', NaN, ...
-           'normDx', NaN, 'normDlamE', NaN, 'feasRowRes', NaN, ...
-           'krylovFlag', NaN, 'krylovIters', NaN, 'krylovRelres', NaN);
+           'normDx', NaN, 'normDlamE', NaN, 'feasRowRes', NaN);
 
 if ~isempty(reg) && isstruct(reg)
     s.delta = reg.delta;
@@ -2314,84 +2940,6 @@ end
 end
 
 % ------------------------------------------------------------------------
-function [d, idx, ksolve] = solveStepKrylov(state, res, n, mE, opts, ksolve)
-%SOLVESTEPKRYLOV Inexact-Newton KKT solve (iterative, forcing-sequence tol).
-%   The regularization (delta, gamma) is chosen by the same inertia logic as
-%   the direct path (kkt_inertiaCorrection), so the Krylov path solves an
-%   identically regularized -- and therefore identically descent-certified --
-%   system. The step itself is then computed by preconditioned MINRES/GMRES to
-%   the Eisenstat-Walker forcing tolerance: only as accurately as the current
-%   nonlinear progress warrants, which is the point of an inexact Newton method
-%   on large systems. The KKT operator is applied matrix-free, so H may be an
-%   operator; only the inertia probe touches an assembled factorization.
-%
-%   Inputs:
-%     state  - iterate state struct (H, JE, x, lamE, ...).
-%     res    - residual struct (rStat, rFeasE, ...).
-%     n      - number of primal variables.
-%     mE     - number of equality constraints.
-%     opts   - resolved options struct (forcing-sequence and Krylov settings).
-%     ksolve - persistent solver-state struct (Fprev, etaPrev, reg).
-%
-%   Outputs:
-%     d      - stacked step [dx; dlamE].
-%     idx    - struct with index ranges idx.x and idx.lamE into d.
-%     ksolve - updated solver-state struct (refreshed Fprev, etaPrev).
-import adamnlopt.*
-
-idx.x    = 1:n;
-idx.lamE = n + (1:mE);
-rhs = -[res.rStat; res.rFeasE];
-
-% Inertia-consistent regularization from the direct machinery (reg reused).
-% This call already factors and solves the regularized KKT system, so its step
-% is available at no extra cost and serves as the fallback below.
-[dDirect, ~, kinfo, reg] = kkt_inertiaCorrection(state, res, n, mE, [], opts);
-
-Fk  = norm(rhs);
-eta = linalg_forcingSequence(Fk, ksolve.Fprev, ksolve.etaPrev, opts);
-
-% The Eisenstat-Walker term caps the early (loose) solves; a residual-
-% proportional floor drives the tolerance to zero near the solution so the
-% inexact Newton step becomes asymptotically exact and the tight KKT
-% tolerances are attainable.
-tol = min(eta, max(opts.forcingEtaMin, 0.1 * Fk));
-
-op = kkt_KKTOperator(state, reg);
-applyP = linalg_preconditioner(op, opts);
-[d, kryinfo] = linalg_solveKKTkrylov(op, rhs, tol, applyP, opts);
-
-ksolve.Fprev   = Fk;
-ksolve.etaPrev = eta;
-
-% MINRES/GMRES non-convergence was previously invisible: the info output was
-% discarded at the call site, so an unconverged step entered the line search
-% indistinguishably from a converged one.
-if kryinfo.flag ~= 0
-    % Warning alone was not enough: an unconverged step was still handed to
-    % the line search, and a KKT "solution" with relres >= 1 is worse than no
-    % step at all.  The inertia-correction call above already produced a
-    % certified direct step for exactly this system, so fall back to it rather
-    % than search along a direction the linear solver disowns.  This runs
-    % before packSolveInfo so the recorded step is the one actually used.
-    d = dDirect;
-end
-
-ksolve.last = packSolveInfo('krylov', kinfo, reg, d, idx, state, res);
-ksolve.last.krylovFlag   = kryinfo.flag;
-ksolve.last.krylovIters  = kryinfo.iters;
-ksolve.last.krylovRelres = kryinfo.relres;
-if kryinfo.flag ~= 0
-    ksolve = warnSilentFailure(ksolve, opts, 'krylovNotConverged', ...
-        ['Krylov KKT solve did not converge (flag %d, %d iterations, ' ...
-         'relres %.3e against tol %.3e); falling back to the direct step.  ' ...
-         'Further occurrences are not reported -- see ' ...
-         'output.trace.krylovFlag.'], ...
-        kryinfo.flag, kryinfo.iters, kryinfo.relres, tol);
-end
-end
-
-% ------------------------------------------------------------------------
 function hmodel = makeHessianModel(opts, n)
 %MAKEHESSIANMODEL  Construct the secant Hessian model, or defer to exact/FD.
 %   Dispatches on opts.hessianApprox:
@@ -2461,92 +3009,6 @@ if isempty(hmodel)
     H = lagrangianHessian(ev, x, lamE, lamI, opts);
 else
     H = hmodel.getMatrix();
-end
-end
-
-function hinfo = updateHessianModel(hmodel, gOld, JEold, JIold, gNew, JEnew, JInew, ...
-                                    lamE, lamI, sVec)
-%UPDATEHESSIANMODEL  Feed a constrained secant pair to the Hessian model.
-%   Forms y = gradL(x+, lam+) - gradL(x, lam+), evaluated with the *new*
-%   multipliers at both points (Nocedal & Wright, 18.13), and updates the model
-%   with the pair (sVec, y). No-op when hmodel is [].
-%
-%   HINFO reports what the update did. The ACCEPTED flag in particular was
-%   computed by BFGSHessian.update and then dropped at this call site, so a
-%   model that was silently rejecting most of its curvature pairs (Powell
-%   damping failing, s'y at the noise floor) looked identical from outside to
-%   one accumulating curvature normally. RESETFIRED is the same story for the
-%   conditioning recovery, which flattens B to a scaled identity: nResets was
-%   readable only at exit, as a total, with no way to tell which iterations it
-%   happened on.
-%
-%   Inputs:
-%     hmodel               - HessianModel handle, or [] (no-op).
-%     gOld, JEold, JIold   - objective gradient and Jacobians at the old point.
-%     gNew, JEnew, JInew   - objective gradient and Jacobians at the new point.
-%     lamE, lamI           - equality and inequality multipliers (new values).
-%     sVec                 - primal step x+ - x (i.e. alpha*dx).
-%
-%   Outputs:
-%     hinfo - scalar struct of diagnostics: bfgsAccepted, bfgsResetFired,
-%             bfgsNResets, bfgsNUpdates, bfgsGammaLast, bfgsGammaBase,
-%             bfgsRebaseFired, condB, secantNormS, secantNormY, secantSY.
-%             Fields the model does not expose (LBFGSHessian has no reset
-%             counter) stay NaN rather than erroring, so both models share one
-%             column set.
-%   The model is otherwise updated in place.
-%
-%   The field names are the TRACE COLUMN names, not the model's property names,
-%   because the caller folds this struct into the row wholesale -- a field that
-%   does not match a column is silently dropped, which reads as "the model never
-%   reported it" rather than as a wiring mistake.
-hinfo = struct('bfgsAccepted', NaN, 'bfgsResetFired', NaN, ...
-               'bfgsNResets', NaN, 'bfgsNUpdates', NaN, ...
-               'bfgsGammaLast', NaN, 'bfgsGammaBase', NaN, ...
-               'bfgsRebaseFired', NaN, 'condB', NaN, ...
-               'secantNormS', NaN, 'secantNormY', NaN, 'secantSY', NaN);
-if isempty(hmodel), return; end
-% Constrained secant update: y = gradL(x+, lam+) - gradL(x, lam+), evaluated
-% with the *new* multipliers at both points (Nocedal & Wright, 18.13).
-gLold = gOld;  gLnew = gNew;
-if ~isempty(JEold)
-    gLold = gLold + JEold.' * lamE;  gLnew = gLnew + JEnew.' * lamE;
-end
-if ~isempty(JIold)
-    gLold = gLold + JIold.' * lamI;  gLnew = gLnew + JInew.' * lamI;
-end
-yVec = gLnew - gLold;
-% Snapshot the reset counter before the update so resetFired reports THIS
-% update's recovery rather than the cumulative total.
-nResetsBefore  = readModelProp(hmodel, 'nResets');
-nRebasesBefore = readModelProp(hmodel, 'nRebases');
-accepted = hmodel.update(sVec, yVec);
-
-hinfo.secantNormS = norm(sVec);
-hinfo.secantNormY = norm(yVec);
-hinfo.secantSY    = sVec.' * yVec;
-if ~isempty(accepted) && isscalar(accepted)
-    hinfo.bfgsAccepted = double(accepted);
-end
-hinfo.bfgsNResets   = readModelProp(hmodel, 'nResets');
-hinfo.bfgsNUpdates  = readModelProp(hmodel, 'nUpdates');
-hinfo.bfgsGammaLast = readModelProp(hmodel, 'gammaLast');
-hinfo.bfgsGammaBase = readModelProp(hmodel, 'gammaBase');
-hinfo.condB         = readModelProp(hmodel, 'condLast');
-hinfo.bfgsNRejected = readModelProp(hmodel, 'nRejected');
-% True when bfgsB0Refresh is on but its refractory and learned-fraction gates
-% leave no admissible sinceRebase at this n, so the trigger is inert rather
-% than merely declining to fire.  Without this the two are indistinguishable.
-hinfo.bfgsB0RefreshUnreachable = readModelProp(hmodel, 'b0RefreshUnreachable');
-if ~isnan(hinfo.bfgsNResets) && ~isnan(nResetsBefore)
-    hinfo.bfgsResetFired = double(hinfo.bfgsNResets > nResetsBefore);
-end
-% Rebases are counted separately from resets: a reset is a conditioning fault,
-% a rebase is a deliberate response to a curvature-regime shift, and a run that
-% conflated them would read as unhealthy exactly when the trigger is working.
-nRebasesNow = readModelProp(hmodel, 'nRebases');
-if ~isnan(nRebasesNow) && ~isnan(nRebasesBefore)
-    hinfo.bfgsRebaseFired = double(nRebasesNow > nRebasesBefore);
 end
 end
 
@@ -2638,7 +3100,9 @@ if theta > 0
 end
 
 phi0 = f + rho * theta;
-dphi = gd - rho * theta;   % guaranteed <= 0 by the rho update
+% <= 0 by the rho update when theta > 0.  With theta = 0 and gd >= 0 (ascent
+% direction) the clamp keeps the Armijo test from accepting a merit increase.
+dphi = min(gd - rho * theta, 0);
 
 alpha = 1;  amin = 1e-10;  c = 1e-4;
 while alpha > amin
@@ -2689,7 +3153,10 @@ function [dx, dlamE, predRed, mdl] = computeNTStep(H, g, JE, cE, Delta, lamE)
 %               fraction via ntPredRed instead of comparing a full-step
 %               prediction against a partial-step outcome.
 import adamnlopt.*
-v      = step_normalStep(JE, cE, Delta);
+% Byrd-Omojokun zeta: the normal step takes only 0.8*Delta, leaving room for
+% the tangential step.  Handing the normal step the full radius starved the
+% tangential component whenever ||v_GN|| >= Delta (D28).
+v      = step_normalStep(JE, cE, 0.8 * Delta);
 u      = step_tangentialStep(H, g, JE, v, Delta);
 dx     = v + u;
 % Least-squares multiplier estimate at the trial point.
@@ -2792,7 +3259,8 @@ if opts.enableDegeneracyDetection
         % Rank-deficient active Jacobian: use floor-gamma regularized recovery.
         % Note the output order: regularizedRecovery returns [d, idx, reg, info].
         [d, idx, rreg, rinfo] = degeneracy_regularizedRecovery(state, res, n, mE);
-        ksolve.last = packSolveInfo('direct', rinfo, rreg, d, idx, state, res);
+        ksolve.factors = [];
+        ksolve.last = packSolveInfo(rinfo, rreg, d, idx, state, res);
         ksolve.last.stepSource = 1;
         return;
     end
@@ -2800,13 +3268,20 @@ if opts.enableDegeneracyDetection
     JE_loc = getStateField(state, 'JE', zeros(0,n));
     cI_loc = getStateField(state, 'cI', zeros(0,1));
     JI_loc = getStateField(state, 'JI', zeros(0,n));
-    if norm(cE_loc, 1) > 100 * opts.feasTol && mE > 0
-        [dx_e, einfo] = degeneracy_elasticVariables(cE_loc, JE_loc, cI_loc, JI_loc);
-        if ~einfo.feasible
+    if norm(cE_loc, 1) > 100 * opts.feasTol && mE > 0 && ...
+            size(JE_loc, 1) == numel(cE_loc)
+        [dx_e, ~] = degeneracy_elasticVariables(cE_loc, JE_loc, cI_loc, JI_loc);
+        % Inconsistency certificate from the min-norm residual, not the
+        % elastic penalty: the penalty test is absolute (<= 1e-8*n), so a
+        % CONSISTENT system with ||cE|| ~ 1e4 fails it.  cE in range(JE) --
+        % zero min-norm residual -- is consistent at any scale.
+        cEres = cE_loc + JE_loc * lsqminnorm(JE_loc, -cE_loc);
+        if norm(cEres, inf) > 1e-8 * max(1, norm(cE_loc, inf))
             % Linearized equality system is locally inconsistent; use elastic step.
             d = [dx_e; zeros(mE,1)];
             idx.x = 1:n;  idx.lamE = n + (1:mE);
-            ksolve.last = packSolveInfo('direct', [], [], d, idx, state, res);
+            ksolve.factors = [];
+            ksolve.last = packSolveInfo([], [], d, idx, state, res);
             ksolve.last.stepSource = 2;
             return;
         end
@@ -3120,10 +3595,17 @@ output.funcCount        = ev.totalEvals();
 output.objCount         = ev.nFun;
 output.conCount         = ev.nCon;
 output.firstOrderOpt    = res.opt;
-output.constrViolation  = res.feas;
+% constrViolation is PHYSICAL (fmincon's meaning, D3); the row-scaled value
+% terminationCheck compares with feasTol is kept alongside.
+if isfield(res, 'feasPhys'), output.constrViolation = res.feasPhys;
+else,                        output.constrViolation = res.feas; end
+output.constrViolationScaled = res.feas;
 output.complementarity  = res.comp;
 output.exitflag         = exitflag;
 output.message          = msg;
+% Iterations whose KKT system was built from a Broyden secant Jacobian (D1).
+% Zero unless Broyden mode served at least one Jacobian (opt-in only).
+output.broydenIterations = ev.nBroyden;
 end
 
 % ------------------------------------------------------------------------
@@ -3186,15 +3668,14 @@ cols = { ...
     ... % gammaBase is the scale B actually sits on; gamma0 is the frozen
     ... % first-pair value.  Their ratio is the regime drift the B0-refresh
     ... % trigger acts on, and it is invisible from either one alone.
-    'bfgsGammaBase', 'bfgsRebaseFired', ...
+    'bfgsGammaBase', 'bfgsRebaseFired', 'bfgsSkippedShort', ...
     ... % --- H2: is the KKT linear algebra the problem?
     'delta', 'gamma', 'gammaFixA', 'tries', 'triesExhausted', ...
     'inertiaPos', 'inertiaNeg', 'inertiaZero', 'rankDeficient', 'solved', ...
     'minAbsPivot', 'medAbsPivot', 'maxAbsPivot', 'pivotSpread', ...
     'nearlySingular', 'schurRan', 'schurCond', 'schurSMax', 'schurSMin', ...
     'schurCaught', 'schurSkipReason', 'feasRowRes', 'stepSource', ...
-    'pathDirect', 'nSolves', 'socAdopted', ...
-    'krylovFlag', 'krylovIters', 'krylovRelres', ...
+    'nSolves', 'nFactorizations', 'socAdopted', ...
     ... % --- H3: is the multiplier/metric machinery the problem?  lsFired and
     ... % lsAdopted in particular had no signal whatsoever: the costate refresh
     ... % could be running and being discarded every single iteration and
@@ -3202,7 +3683,7 @@ cols = { ...
     'lsFired', 'lsAdopted', 'lsOptCur', 'lsOptNew', ...
     ... % --- globalization and the barrier gate
     'lsFailed', 'filterSize', 'structStall', 'statErr', 'gateBase', ...
-    'gateRatio', 'Emu', 'feasStallCount', 'objStallCount', 'optGateCount', ...
+    'gateRatio', 'Emu', 'nMuSteps', 'acceptCount', 'filterReset', 'fdPromoted', 'fdRecalibrated', 'jacExact', 'feasStallCount', 'objStallCount', 'optGateCount', ...
     'feasRegressCount', 'restorationFired', ...
     ... % --- level 2 only
     'condK'};
@@ -3497,4 +3978,51 @@ catch err
          'this solve (the solve itself is unaffected).\n  %s: %s'], ...
         label, info.iteration, noun, err.identifier, err.message);
 end
+end
+
+% ------------------------------------------------------------------------
+function checkDerivatives(ev, problem)
+%CHECKDERIVATIVES  Compare supplied derivatives with central differences at x0 (A8).
+%   Warns adamnlopt:checkGradients when the relative inf-norm error of the
+%   objective gradient or the constraint Jacobian exceeds 1e-3.  Runs in the
+%   caller's (physical) units on the probe Evaluator, so its evaluations are
+%   counted like any other.  LVD's FiniteDifferences/DerivEst modes hand in
+%   gradients labelled analytic, and the shape check in validateProblem cannot
+%   catch a wiring or orientation error in them.
+import adamnlopt.*
+x = problem.x0(:);
+h = eps^(1/3);
+tol = 1e-3;
+if ev.hasObjGrad
+    [f0, g] = ev.objective(x);
+    gFD = finiteDiffGradient(@(z) ev.objective(z), x, f0, h, 'central', problem.lb, problem.ub);
+    err = norm(gFD - g(:), inf) / max(1, norm(gFD, inf));
+    if err > tol
+        [~, i] = max(abs(gFD - g(:)));
+        warning('adamnlopt:checkGradients', ['CheckGradients: the supplied objective ' ...
+            'gradient differs from central differences by %.2e relative at x0 ' ...
+            '(worst entry %d: supplied %.6g, FD %.6g).'], err, i, g(i), gFD(i));
+    end
+end
+if ev.hasConGrad && ev.mInl + ev.mEnl > 0
+    [JE, JI] = ev.jacobian(x);
+    [cE0, cI0] = ev.constraints(x);
+    J = [JI; JE];
+    JFD = finiteDiffJacobian(@(z) stackedCon(ev, z), x, [cI0; cE0], h, 'central', ...
+                             [], problem.lb, problem.ub);
+    err = norm(JFD - J, inf) / max(1, norm(JFD, inf));
+    if err > tol
+        [~, k] = max(abs(JFD(:) - J(:)));
+        [r, c] = ind2sub(size(J), k);
+        warning('adamnlopt:checkGradients', ['CheckGradients: the supplied constraint ' ...
+            'Jacobian differs from central differences by %.2e relative at x0 ' ...
+            '(worst entry: row %d of [inequalities; equalities], column %d; ' ...
+            'supplied %.6g, FD %.6g).'], err, r, c, J(r, c), JFD(r, c));
+    end
+end
+end
+
+function v = stackedCon(ev, z)
+[cE, cI] = ev.constraints(z);
+v = [cI; cE];
 end

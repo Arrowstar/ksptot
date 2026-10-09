@@ -49,6 +49,7 @@ n = numel(x);
 m = numel(base);
 central = strcmp(type, 'central');
 J = zeros(m, n);
+if m == 0, return; end   % nothing to difference: every probe would be wasted
 
 if isempty(pattern)
     hWant = hstep * max(1, abs(x(:)));

@@ -18,15 +18,18 @@ function [x, grad, hessian, lambda, output] = ...
 %      objective to RELAXING THE FIX in that direction; the pair is not two
 %      independent sensitivities.
 %
-%   2. THE FIXED ROWS OF grad AND hessian CANNOT BE FINITE-DIFFERENCED.  A
-%      zero-width coordinate has no probe: adamnlopt.fdBoundedStep correctly
-%      returns hs = 0 there, so an FD estimate would come back as 0 -- and a
-%      zero in a gradient row reads as "this direction is already stationary",
-%      which is the single most misleading value we could return.  So those rows
-%      are filled from the user's ANALYTIC derivative when one exists (one extra
-%      evaluation at the solution, whose cost is recorded in
-%      output.funcCount) and are NaN otherwise.  NaN is deliberate: it makes an
-%      unavailable derivative impossible to mistake for a computed one.
+%   2. THE FIXED ROWS OF grad AND hessian CANNOT BE FINITE-DIFFERENCED BY THE
+%      SOLVER.  A zero-width coordinate has no probe: adamnlopt.fdBoundedStep
+%      correctly returns hs = 0 there, so an FD estimate from inside the solve
+%      would come back as 0 -- and a zero in a gradient row reads as "this
+%      direction is already stationary", which is the single most misleading
+%      value we could return.  So those rows are filled from the user's
+%      ANALYTIC derivative when one exists, else by one one-sided FD probe per
+%      fixed variable at the solution (matching fmincon, and letting the bound
+%      multiplier absorb the row via the stationarity split below).  The probe
+%      steps OFF the fix, so a failure there leaves NaN rather than failing
+%      the solve.  NaN is deliberate: it makes an unavailable derivative
+%      impossible to mistake for a computed one.
 %      output.fixedVars.gradKnown says which it was.
 %
 %   3. output.diag IS EXPANDED; output.trace IS NOT.  diag carries the vectors a
@@ -82,6 +85,31 @@ if ~isempty(grad)
             gAll = gAll(:);
             if numel(gAll) == n
                 gFull(fixd) = gAll(fixd);
+                gradKnown = true;
+            end
+        catch
+            % Leave NaN: a probe failure at the solution must not fail the solve.
+        end
+    elseif any(fixd)
+        % No analytic gradient: one one-sided FD probe per fixed variable at
+        % the solution (fmincon does the same).  The probe steps off the fix
+        % with the generic relative step; anything non-finite leaves NaN.
+        try
+            f0 = problem.objFun(x);
+            output = bumpCount(output, 'objCount', 1);
+            idxFix = fx.idxFixed;
+            h = sqrt(eps) * max(1, abs(x(idxFix)));
+            gFix = NaN(numel(idxFix), 1);
+            for k = 1:numel(idxFix)
+                xp = x;  xp(idxFix(k)) = xp(idxFix(k)) + h(k);
+                fp = problem.objFun(xp);
+                output = bumpCount(output, 'objCount', 1);
+                if isfinite(fp) && isfinite(f0)
+                    gFix(k) = (fp - f0) / h(k);
+                end
+            end
+            if all(isfinite(gFix))
+                gFull(idxFix) = gFix;
                 gradKnown = true;
             end
         catch

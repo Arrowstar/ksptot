@@ -25,7 +25,6 @@ classdef LBFGSHessian < adamnlopt.HessianModel
 %     update       - add a curvature pair (s, y), skipping low-curvature pairs.
 %     getMatrix    - form the dense SPD matrix B.
 %     apply        - compute the Hessian-vector product B*v without forming B.
-%     diagonal     - [] (the compact form has no cheap diagonal).
 %
 %   For a full-memory alternative that accumulates curvature in every sampled
 %   direction at a fixed O(n^2) cost, see BFGSHessian.
@@ -218,20 +217,6 @@ classdef LBFGSHessian < adamnlopt.HessianModel
                 Bv = g * v;  return;
             end
             Bv  = g * v - Phi * (M \ (Phi.' * v));
-        end
-
-        function d = diagonal(~)
-        %DIAGONAL  No cheap diagonal is available from the compact form.
-        %   d = diagonal(obj) returns []. The diagonal of
-        %   B = gamma*I - Phi*(M\Phi') would cost O(n*k^2) to extract, which is
-        %   the same order as the Krylov iteration the Jacobi preconditioner is
-        %   meant to accelerate, so the empty return tells kkt_KKTOperator to
-        %   leave op.diag empty and linalg_preconditioner to use the identity.
-        %   (BFGSHessian, which stores B explicitly, does supply one.)
-        %
-        %   Outputs:
-        %     d - [] (empty).
-            d = [];
         end
     end
 

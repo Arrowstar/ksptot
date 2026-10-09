@@ -153,8 +153,8 @@ classdef AdamNlOptGlobalizationTest < AdamNlOptTestCase
         end
 
         function testFilterAcceptMatchesTheFilterObject(testCase)
-            %   The free function and the class must not drift apart: solve.m
-            %   uses the class, globalize_filterLineSearch the function.
+            %   The free function and the class must not drift apart: the
+            %   class delegates to the function.
             entries = [1, 10; 0.5, 20];
             f = adamnlopt.Filter(1e-5, 1e-5);
             f.entries = entries;
@@ -162,13 +162,26 @@ classdef AdamNlOptGlobalizationTest < AdamNlOptTestCase
             for theta = [0.1, 0.6, 2]
                 for phi = [5, 15, 25]
                     testCase.verifyEqual( ...
-                        adamnlopt.globalize_filterAccept(entries, theta, ...
-                            phi, 1e-5, 1e-5), ...
+                        adamnlopt.globalize_filterAccept(entries, theta, phi), ...
                         f.isAcceptable(theta, phi), sprintf( ...
                         'globalize_filterAccept and Filter disagree at (%g, %g)', ...
                         theta, phi));
                 end
             end
+        end
+
+        function testFilterAppliesTheMarginOnce(testCase)
+            %   augment stores the margin-shifted corner; the acceptance test
+            %   must compare against it plainly.  Applying the margin again
+            %   rejected trials in the band between the single- and
+            %   double-shifted corners (here (0.999985, 9.99985): outside the
+            %   stored corner (0.99999, 9.9999), inside the twice-shifted one).
+            f = adamnlopt.Filter(1e-5, 1e-5);
+            f.augment(1, 10);
+            testCase.verifyTrue(f.isAcceptable(0.999985, 9.99985), ...
+                'a trial beating the stored corner must be acceptable');
+            testCase.verifyFalse(f.isAcceptable(2, 20), ...
+                'a trial worse in both coordinates must stay rejected');
         end
 
         %% ================================================================
@@ -458,9 +471,11 @@ classdef AdamNlOptGlobalizationTest < AdamNlOptTestCase
         function testWeaklyActiveConstraintsLowerConfidence(testCase)
             %   A constraint sitting on its boundary with a vanishing
             %   multiplier is the degenerate case this score exists to flag.
+            %   Judged against the barrier scale mu (D31): with mu = 0.1 a
+            %   1e-3 multiplier is centred, while 1e-9 is vanishing.
             opts = adamnlopt.defaultOptions();
-            strong = struct('cI', 0, 'lamI', 1, 's', 0, 'mu', 0);
-            weak   = struct('cI', 0, 'lamI', 1e-9, 's', 0, 'mu', 0);
+            strong = struct('cI', 0, 'lamI', 1, 's', 0.1, 'mu', 0.1);
+            weak   = struct('cI', 0, 'lamI', 1e-9, 's', 0.1, 'mu', 0.1);
 
             [confStrong, infoStrong] = ...
                 adamnlopt.control_activeSetConfidence(strong, opts);

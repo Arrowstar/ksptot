@@ -3,8 +3,8 @@ classdef (Abstract) HessianModel < handle
 %   A Hessian model accumulates curvature from constrained secant pairs
 %       s = x_{k+1} - x_k,   y = gradL(x_{k+1}, lam) - gradL(x_k, lam)
 %   and exposes the resulting approximation B both as a dense matrix (for the
-%   direct KKT factorization) and as a matrix-vector product (for the Krylov
-%   and trust-region-CG paths).
+%   direct KKT factorization) and as a matrix-vector product (for the
+%   trust-region-CG and tangential-step paths).
 %
 %   Implementations:
 %     LBFGSHessian - limited memory; stores m recent pairs and rebuilds B from
@@ -13,8 +13,8 @@ classdef (Abstract) HessianModel < handle
 %
 %   Declaring the interface abstractly, rather than duck-typing with ismethod,
 %   gives the solver a single positive test -- isa(H, 'adamnlopt.HessianModel')
-%   -- at the two places that must distinguish a model from a plain matrix
-%   (hessianVecProduct and kkt_KKTOperator). Those sites previously keyed on the
+%   -- where a model must be told apart from a plain matrix (hessianVecProduct).
+%   That site previously keyed on the
 %   concrete class name or on isnumeric, so a newly added model silently took
 %   the wrong branch; the base class closes that hole for future models too.
 %
@@ -23,9 +23,8 @@ classdef (Abstract) HessianModel < handle
 %     update    - add a secant pair (s, y); returns whether it was stored.
 %     getMatrix - dense n-by-n symmetric positive-definite approximation.
 %     apply     - product B*v.
-%     diagonal  - diag(B), or [] when no cheap diagonal is available.
 %
-%   See also LBFGSHESSIAN, BFGSHESSIAN, HESSIANVECPRODUCT, KKT_KKTOPERATOR.
+%   See also LBFGSHESSIAN, BFGSHESSIAN, HESSIANVECPRODUCT.
 
     methods (Abstract)
         %RESET  Discard accumulated curvature and return to the initial model.
@@ -42,10 +41,5 @@ classdef (Abstract) HessianModel < handle
 
         %APPLY  Hessian-vector product B*v.
         Bv = apply(obj, v)
-
-        %DIAGONAL  diag(B) when cheaply available, otherwise [].
-        %   An empty return tells kkt_KKTOperator that no Jacobi diagonal can be
-        %   supplied, and linalg_preconditioner then falls back to the identity.
-        d = diagonal(obj)
     end
 end

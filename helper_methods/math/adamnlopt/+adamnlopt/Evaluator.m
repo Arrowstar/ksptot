@@ -50,7 +50,10 @@ classdef Evaluator < handle
 %     evalNonlinearStacked - (private) stacked [c; ceq] for differencing.
 %     linIneq              - (private) linear inequality residual A*x - b.
 %     linEq                - (private) linear equality residual Aeq*x - beq.
-%     numFDevals           - (private) FD evaluation count for a gradient.
+%     nlStackedAt          - (private) [c_nl; ceq_nl] at x via the constraints cache.
+%     combinedSweep        - (private) one FD sweep for gradient + Jacobian (A2).
+%     seedCache            - fill the constraint/Jacobian caches at x (start-up).
+%     nonlinearCacheAt     - cached nonlinear values/Jacobian at x, if any.
 %     getOpt               - (static, private) option lookup with default.
 %
 %   See also EVAL_BROYDENJACOBIAN, EVAL_COSTMODEL, FINITEDIFFGRADIENT,
@@ -68,6 +71,7 @@ classdef Evaluator < handle
         mEnl = 0; mInl = 0         % nonlinear-only counts
         mIlin = 0; mElin = 0       % linear-only counts
         fdStep = sqrt(eps)
+        fdCentralStep = []   % best central step the calibration measured ([] = none)
         fdType = 'forward'
         % True when the caller supplied a non-default FiniteDifferenceStepSize /
         % FiniteDifferenceType.  calibrateStep leaves those alone.
@@ -83,23 +87,36 @@ classdef Evaluator < handle
         fdLb = []
         fdUb = []
         jacPattern = []            % sparsity of nonlinear inequality+equality Jacobian
+        checkJacobPattern = true   % one-shot dense cross-check of jacPattern (n <= 400)
         nFun = 0                   % objective evaluations
         nCon = 0                   % constraint evaluations
+        nBroyden = 0               % Jacobians served from the secant model (D1)
         parallelFD = false         % use parallel_parallelFiniteDiff when true
         costModel  = []            % eval_costModel instance (optional)
         % Broyden options (Gap 5)
         enableBroyden   = false    % use rank-1 secant updates between refreshes
         broydenMaxStale = 20       % steps before mandatory exact refresh
         broydenTol      = 0.1     % Broyden model-error threshold for early refresh
-        costThreshold   = 0.1     % seconds: avg FD Jacobian time before auto-enable
+        costThreshold   = Inf     % seconds: avg FD Jacobian time before auto-enable (Inf = never)
         % Automatic finite-difference step calibration (autoFDStep)
         optTolForCalib = 1e-6      % optTol target for the V-curve step selection
+        % Wall-clock budget (D31 maxTime): seconds after tStart at which the
+        % next user evaluation throws adamnlopt:timeLimit instead of running.
+        % Inf (default) disables the check; solve sets it to opts.maxTime on
+        % the working Evaluator just before the cores start, so a single long
+        % iteration (FD sweeps + line search + SOC) cannot overrun maxTime the
+        % way top-of-iteration testing alone did (TwoStageToOrbit ran 1308 s
+        % of 900 allowed).  tStart is a tic value from the solve's clock.
+        deadline = Inf
+        tStart = []
     end
 
     properties (Access = private)
         xf = [];  fVal = [];  gVal = [];   hasCachedG = false
         xc = [];  cEVal = []; cIVal = [];
         xj = [];  JEVal = []; JIVal = [];
+        jacPatternChecked = false   % the one-shot CheckJacobPattern ran
+        lastJacBroyden = false      % the last served Jacobian came from the secant model (D1)
         % Broyden state (Gap 5)
         broyden_   = []   % eval_BroydenJacobian instance ([] = inactive)
         cNlAtJac_  = []   % stacked [c_nl; ceq_nl] at the last exact Jacobian point
@@ -125,7 +142,10 @@ classdef Evaluator < handle
         %
         %   Outputs:
         %     obj - the constructed Evaluator handle object.
-            obj.objFun     = problem.objFun;
+            % D21: a NaN objective (a failed simulation) becomes +Inf here, so
+            % every merit/filter test rejects the point instead of max() and
+            % the filter comparisons silently treating NaN as acceptable.
+            obj.objFun     = guardObjective(problem.objFun);
             obj.hasObjGrad = problem.hasObjGrad;
             obj.nlcon      = problem.nlcon;
             obj.hasConGrad = problem.hasConGrad;
@@ -145,20 +165,25 @@ classdef Evaluator < handle
             % the way out to the LVD options dialog -- were inert for anyone who
             % did not also know to turn autoFDStep off.  An explicitly set value
             % now wins; see calibrateStep.
-            obj.fdStepUserSet = opts.FiniteDifferenceStepSize ~= sqrt(eps);
+            % Tolerant comparison, not ~=: a value that round-trips through text
+            % (the LVD options dialog writes fullAccNum2Str -> str2double) comes
+            % back 4e-23 away from sqrt(eps), and an exact test then read an
+            % untouched default as "user set", silently disabling autoFDStep.
+            obj.fdStepUserSet = abs(opts.FiniteDifferenceStepSize - sqrt(eps)) > 1e-6 * sqrt(eps);
             obj.fdTypeUserSet = ~strcmpi(opts.FiniteDifferenceType, 'forward');
             if adamnlopt.Evaluator.getOpt(opts, 'HonorBounds', true)
                 obj.fdLb = getfielddef(problem, 'lb', []);
                 obj.fdUb = getfielddef(problem, 'ub', []);
             end
             obj.jacPattern = opts.JacobPattern;
+            obj.checkJacobPattern = adamnlopt.Evaluator.getOpt(opts, 'CheckJacobPattern', true);
             obj.parallelFD = isfield(opts,'parallel') && ...
                 (strcmpi(opts.parallel,'finitediff') || strcmpi(opts.parallel,'async'));
             obj.costModel = adamnlopt.eval_costModel();
             obj.enableBroyden   = adamnlopt.Evaluator.getOpt(opts, 'enableBroyden',   false);
             obj.broydenMaxStale = adamnlopt.Evaluator.getOpt(opts, 'broydenMaxStale',  20);
             obj.broydenTol      = adamnlopt.Evaluator.getOpt(opts, 'broydenTol',       0.1);
-            obj.costThreshold   = adamnlopt.Evaluator.getOpt(opts, 'costThreshold',    0.1);
+            obj.costThreshold   = adamnlopt.Evaluator.getOpt(opts, 'costThreshold',    Inf);
             obj.optTolForCalib  = adamnlopt.Evaluator.getOpt(opts, 'optTol', 1e-6);
         end
 
@@ -180,6 +205,7 @@ classdef Evaluator < handle
         %     f - scalar objective value f(x).
         %     g - n-by-1 objective gradient (only if requested).
             import adamnlopt.*
+            obj.checkDeadline();
             if ~isequal(x, obj.xf)
                 if obj.hasObjGrad && nargout > 1
                     [obj.fVal, obj.gVal] = obj.objFun(x);
@@ -208,21 +234,33 @@ classdef Evaluator < handle
                     end
                     g = obj.gVal;
                 else
-                    if obj.parallelFD
-                        % Exact count from the FD routine rather than the n/2n
-                        % estimate: bounds fix, shrink and one-side individual
-                        % coordinates, so the estimate is wrong on a bounded
-                        % problem in both directions.
-                        [g, ~, fdInfo] = parallel_parallelFiniteDiff( ...
-                            @(z) obj.objFun(z), [], x, obj.fVal, [], ...
-                            obj.fdStep, obj.fdType, [], obj.fdLb, obj.fdUb);
-                        obj.nFun = obj.nFun + fdInfo.nObjEvals;
-                    else
-                        g = finiteDiffGradient(@(z) obj.objFun(z), x, obj.fVal, ...
-                                               obj.fdStep, obj.fdType, ...
-                                               obj.fdLb, obj.fdUb);
-                        obj.nFun = obj.nFun + numFDevals(obj, x);
+                    % A finite-difference gradient is cached like an analytic
+                    % one (D12.3): a second [f,g] request at the same x used to
+                    % re-spend n (or 2n) evaluations.  hasCachedG is cleared
+                    % whenever x, fdStep or fdType changes.
+                    if ~obj.hasCachedG
+                        if obj.combinedSweepApplies(x)
+                            obj.combinedSweep(x);
+                        elseif obj.parallelFD
+                            % Exact count from the FD routine rather than the
+                            % n/2n estimate: bounds fix, shrink and one-side
+                            % individual coordinates.
+                            [gFD, ~, fdInfo] = parallel_parallelFiniteDiff( ...
+                                @(z) obj.objFun(z), [], x, obj.fVal, [], ...
+                                obj.fdStep, obj.fdType, [], obj.fdLb, obj.fdUb);
+                            obj.nFun = obj.nFun + fdInfo.nObjEvals;
+                            obj.gVal = obj.fdRetryNonFinite(@(z) obj.timedObjFun(z), ...
+                                x, obj.fVal, gFD(:).', true).';
+                        else
+                            [gFD, nEv] = finiteDiffGradient(@(z) obj.timedObjFun(z), x, ...
+                                obj.fVal, obj.fdStep, obj.fdType, obj.fdLb, obj.fdUb);
+                            obj.nFun = obj.nFun + nEv;
+                            obj.gVal = obj.fdRetryNonFinite(@(z) obj.timedObjFun(z), ...
+                                x, obj.fVal, gFD(:).', true).';
+                        end
+                        obj.hasCachedG = true;
                     end
+                    g = obj.gVal;
                 end
             end
         end
@@ -261,8 +299,8 @@ classdef Evaluator < handle
         %   problems (e.g. ODE integrations), whose noise floor is far above
         %   machine precision so the default step sqrt(eps) is far too small.
         %
-        %   The error is measured as a RELATIVE directional-derivative error
-        %   against a Richardson-extrapolated (O(h^4)) reference, so the choice is
+        %   The error is measured as the RELATIVE change between directional
+        %   derivatives at adjacent sweep steps (no separate reference), so the choice is
         %   invariant to how the problem is scaled -- it works whether the caller
         %   pre-normalised the problem or left it in raw units (the two regimes
         %   that defeat an absolute-noise-magnitude heuristic).  Forward
@@ -331,7 +369,7 @@ classdef Evaluator < handle
             % both double-count them and book them to the wrong counter.
             probes = {};  probeIsObj = false(1, 0);
             if ~obj.hasObjGrad
-                probes{end+1} = @(z) obj.objFun(z);
+                probes{end+1} = @(z) obj.timedObjFun(z);
                 probeIsObj(end+1) = true;
             end
             if ~obj.hasConGrad && (obj.mEnl + obj.mInl) > 0
@@ -349,12 +387,36 @@ classdef Evaluator < handle
             % (without normalisation, summing nx~O(100+) coordinates makes even a
             % tiny h a huge perturbation and inverts the V-curve).
             sRng = rng;  rng(97531, 'twister');  p = randn(nx, 1);  rng(sRng);
-            svec = p .* max(1, abs(x0));
-            nsv = norm(svec);
-            if ~(nsv > 0), return; end
-            svec = svec / nsv;
-
+            % Normalise the random mix FIRST, then weight by max(1,|x0|), so the
+            % probe's RELATIVE length ||svec ./ max(1,|x0|)|| is exactly 1 and a
+            % sweep step h displaces each coordinate by ~h*max(1,|x0_i|) -- the
+            % same displacement finiteDiffGradient later applies for fdStep = h.
+            % Normalising AFTER weighting made the sweep displacement m_rms times
+            % smaller than the one the chosen step is used with, so in physical
+            % units (|x| >> 1) the calibrated step came out far too large (D7).
+            % Leave out coordinates on (or within a 1e-6 relative step of) a
+            % bound.  Any of them capped the symmetric sweep below at h ~ 0 and
+            % abandoned calibration ('boundLimited') whenever the point touched
+            % the box -- LVD's x0 sits 10*eps inside its bounds, and restoration
+            % projects onto them (lvdExample_MunarLanding: 3 of 20 variables on
+            % a bound, sqrt(eps) step kept, restoration stalled on the FD
+            % Jacobian).  The FD routines take one-sided steps there anyway.
+            if ~isempty(obj.fdLb) || ~isempty(obj.fdUb)
+                lbc = obj.fdLb;  ubc = obj.fdUb;
+                if isempty(lbc), lbc = -inf(nx, 1); end
+                if isempty(ubc), ubc =  inf(nx, 1); end
+                room = min(x0 - lbc(:), ubc(:) - x0) ./ max(1, abs(x0));
+                p(room < 1e-6) = 0;
+            end
             hSweep = 10 .^ (-1:-1:-9);       % candidate base steps (relative)
+            if ~any(p)                       % every coordinate is pinned by the box
+                info.flag = 'boundLimited';  info.hMax = 0;
+                info.nSweepDropped = numel(hSweep);
+                return;
+            end
+            np = norm(p);
+            if ~(np > 0), return; end
+            svec = (p / np) .* max(1, abs(x0));
 
             % Keep the sweep inside the box.  Both probes x0 +- h*svec are taken,
             % so the largest usable h is the distance to the nearer bound along
@@ -441,6 +503,7 @@ classdef Evaluator < handle
             adjCen = max(adjCenP, [], 2);
             [bestF, iF] = min(adjFwd);
             [bestC, iC] = min(adjCen);
+            if isfinite(bestC), obj.fdCentralStep = hSweep(iC); end
             info.errFwd = bestF;  info.errCen = bestC;
 
             if ~isfinite(bestF) && ~isfinite(bestC)
@@ -489,6 +552,43 @@ classdef Evaluator < handle
             end
             info.flag = 'set';
             info.fdStep = obj.fdStep;  info.fdType = obj.fdType;
+        end
+
+        function e = gradErrEst(obj, x)
+        %GRADERREST  Estimated inf-norm error of the FD objective gradient at x (A1).
+        %   e = gradErrEst(obj, x) measures the objective's noise level epsf by
+        %   the More-Wild ECnoise table (estimateNoise, ~7-14 evaluations,
+        %   booked to nFun) and returns the noise term of the FD gradient
+        %   error, epsf/h for central and 2*epsf/h for forward differences,
+        %   h = fdStep*max(1, |x_i|) taken at its smallest.  0 when the
+        %   objective gradient is analytic or no noise level could be resolved.
+            e = 0;
+            if obj.hasObjGrad, return; end
+            % ECnoise's first test rejects a table whose spread exceeds 10% of
+            % max|f| -- which, near an optimum with f ~ 0, is every table.  A
+            % constant offset leaves the noise unchanged and makes that test
+            % absolute for |f| < 1.
+            c = max(1, abs(obj.objective(x)));
+            [epsf, info] = adamnlopt.estimateNoise(@(z) obj.timedObjFun(z) + c, x, [], struct());
+            obj.nFun = obj.nFun + info.nEvals;
+            if ~info.detected || ~(epsf > 0), return; end
+            h = obj.fdStep * max(1, min(abs(x(:))));
+            e = (1 + strcmp(obj.fdType, 'forward')) * epsf / h;
+        end
+
+        function tf = promoteToCentral(obj)
+        %PROMOTETOCENTRAL  Switch forward FD derivatives to central (A1).
+        %   tf = promoteToCentral(obj) switches fdType to 'central' (with the
+        %   calibrated central step, else the smooth-function optimum
+        %   eps^(1/3)) and returns true, unless the scheme is already central,
+        %   the user pinned FiniteDifferenceType, or no derivative is
+        %   finite-differenced.  The setters invalidate every FD cache.
+            fdUsed = ~obj.hasObjGrad || (~obj.hasConGrad && obj.mInl + obj.mEnl > 0);
+            tf = fdUsed && strcmp(obj.fdType, 'forward') && ~obj.fdTypeUserSet;
+            if ~tf, return; end
+            h = obj.fdCentralStep;
+            if isempty(h), h = eps^(1/3); end
+            setFd(obj, 'central', h);
         end
 
         function [cE, cI] = constraints(obj, x)
@@ -560,11 +660,10 @@ classdef Evaluator < handle
             % to maintain a Broyden object that was never consulted.
             if obj.broydenActive() && ~obj.hasConGrad && ...
                     ~isempty(obj.broyden_) && ~obj.broyden_.needsRefresh()
-                [cnl, ceqnl] = obj.evalNonlinear(x);
-                cNlNew = [cnl(:); ceqnl(:)];
+                cNlNew = obj.nlStackedAt(x);   % served from the constraints cache when it holds x
                 s = x - obj.xAtJac_;
                 y = cNlNew - obj.cNlAtJac_;
-                accepted = obj.broyden_.update(s, y, cNlNew, obj.xAtJac_);
+                accepted = obj.broyden_.update(s, y, obj.xAtJac_);
                 % Advance the secant anchor to the point just evaluated, so the
                 % NEXT pair is the consecutive step (x_{k+1} - x_k).  The anchor
                 % used to stay pinned at the last exact refresh, which made
@@ -583,6 +682,8 @@ classdef Evaluator < handle
                     obj.JIVal = [obj.Aineq;  Jstacked(1:obj.mInl, :)];
                     obj.JEVal = [obj.Aeqlin; Jstacked(obj.mInl+1:end, :)];
                     obj.xj = x;
+                    obj.lastJacBroyden = true;
+                    obj.nBroyden = obj.nBroyden + 1;
                     JE = obj.JEVal;  JI = obj.JIVal;
                     return;
                 end
@@ -592,15 +693,25 @@ classdef Evaluator < handle
             % --- Exact Jacobian path ---
             t0 = tic;
             baseNl = [];           % stacked [c_nl; ceq_nl] at x, when computed
-            if obj.hasConGrad
+            if obj.mInl + obj.mEnl == 0
+                % No nonlinear rows: the Jacobian is just the linear blocks.  The
+                % FD branch below used to difference the EMPTY vector anyway --
+                % n user-free calls per Jacobian, n^2 per FD Hessian (2.2 million
+                % on a 600-variable bounds-only solve).
+                Jc   = zeros(0, obj.n);
+                Jceq = zeros(0, obj.n);
+                baseNl = zeros(0, 1);
+            elseif obj.hasConGrad
                 [~, ~, gc, gceq] = obj.nlcon(x);
                 obj.nCon = obj.nCon + 1;
                 Jc   = transposeOrEmpty(gc,   obj.mInl, obj.n);
                 Jceq = transposeOrEmpty(gceq, obj.mEnl, obj.n);
             else
-                [cnl, ceqnl] = obj.evalNonlinear(x);
+                % Base values from the constraints cache (D12.2): every solve.m
+                % call site evaluates constraints(x) just before jacobian(x), and
+                % re-evaluating here cost one extra propagation per iteration.
+                base = obj.nlStackedAt(x);
                 h = @(z) obj.evalNonlinearStacked(z);
-                base = [cnl(:); ceqnl(:)];
                 baseNl = base;
                 if obj.parallelFD
                     [~, J, fdInfo] = parallel_parallelFiniteDiff( ...
@@ -618,14 +729,17 @@ classdef Evaluator < handle
                     J = finiteDiffJacobian(h, x, base, obj.fdStep, obj.fdType, ...
                                            obj.jacPattern, obj.fdLb, obj.fdUb);
                 end
+                J = obj.fdRetryNonFinite(h, x, base, J, false);
                 Jc   = J(1:obj.mInl, :);
                 Jceq = J(obj.mInl+1:end, :);
+                obj.checkJacobPatternOnce(h, x, base, J);
             end
             obj.costModel.tick(toc(t0));
 
             obj.JIVal = [obj.Aineq;  Jc];
             obj.JEVal = [obj.Aeqlin; Jceq];
             obj.xj = x;
+            obj.lastJacBroyden = false;
 
             % --- Initialize or refresh Broyden approximation ---
             % Same ~hasConGrad gate as the use path: with analytic Jacobians
@@ -650,9 +764,191 @@ classdef Evaluator < handle
 
             JE = obj.JEVal;  JI = obj.JIVal;
         end
+
+        function tf = jacobianIsApprox(obj)
+        %JACOBIANISAPPROX  Whether the last served Jacobian was approximate (D1).
+        %   tf = obj.jacobianIsApprox() is true when the most recent jacobian()
+        %   call was served from the Broyden secant model rather than
+        %   differenced (or supplied) exactly.  solve.m consults it before
+        %   declaring convergence: optimality certified against a secant
+        %   Jacobian is re-tested against an exact one.
+        %
+        %   Inputs:
+        %     obj - the Evaluator handle object.
+        %
+        %   Outputs:
+        %     tf - logical; true if the last Jacobian was secant-served.
+            tf = obj.lastJacBroyden;
+        end
+
+        function [JE, JI] = jacobianExact(obj, x)
+        %JACOBIANEXACT  Exact Jacobian at x, bypassing any Broyden model (D1).
+        %   [JE, JI] = obj.jacobianExact(x) differences (or takes the
+        %   analytic) Jacobian at x even when Broyden mode is active, and
+        %   re-anchors the secant model on it.  Used to certify convergence
+        %   and after restoration jumps, where the secant anchor is stale.
+        %
+        %   Inputs:
+        %     obj - the Evaluator handle object.
+        %     x   - n-by-1 point at which the exact Jacobian is wanted.
+        %
+        %   Outputs:
+        %     JE - mE-by-n folded equality constraint Jacobian.
+        %     JI - mI-by-n folded inequality constraint Jacobian.
+            savedBroyden = obj.enableBroyden;
+            savedCost = obj.costThreshold;
+            obj.enableBroyden = false;
+            obj.costThreshold = Inf;
+            obj.xj = [];                             % force the exact path
+            [JE, JI] = obj.jacobian(x);
+            obj.enableBroyden = savedBroyden;
+            obj.costThreshold = savedCost;
+        end
+
+        function seedCache(obj, x, cnl, ceqnl, Jc, Jceq)
+        %SEEDCACHE  Install nonlinear constraint values (and Jacobian) at x.
+        %   seedCache(obj, x, cnl, ceqnl) fills the constraints cache at x;
+        %   seedCache(obj, x, cnl, ceqnl, Jc, Jceq) also fills the Jacobian cache.
+        %   The linear rows are computed here from this Evaluator's own data.
+        %   solve.m uses it to hand the scaled Evaluator the x0 values that the
+        %   physical scaling probe already paid for (D12.1); the inputs must be
+        %   in THIS Evaluator's space.
+            obj.cIVal = [obj.linIneq(x); cnl(:)];
+            obj.cEVal = [obj.linEq(x);   ceqnl(:)];
+            obj.xc = x;
+            if nargin > 4
+                obj.JIVal = [obj.Aineq;  Jc];
+                obj.JEVal = [obj.Aeqlin; Jceq];
+                obj.xj = x;
+                obj.lastJacBroyden = false;   % seeded values are exact
+            end
+        end
+
+        function s = nonlinearCacheAt(obj, x)
+        %NONLINEARCACHEAT  Nonlinear constraint values/Jacobian cached at exactly x.
+        %   s.hasC / s.hasJ say which are present; cnl, ceqnl, Jc, Jceq hold the
+        %   NONLINEAR rows only (linear rows stripped).
+            s = struct('hasC', false, 'cnl', [], 'ceqnl', [], ...
+                       'hasJ', false, 'Jc', [], 'Jceq', []);
+            if isequal(x, obj.xc)
+                s.hasC  = true;
+                % reshape: an empty-range index of a 1x1 is a 1x0 ROW.
+                s.cnl   = reshape(obj.cIVal(obj.mIlin+1:end), [], 1);
+                s.ceqnl = reshape(obj.cEVal(obj.mElin+1:end), [], 1);
+            end
+            if isequal(x, obj.xj)
+                s.hasJ = true;
+                s.Jc   = obj.JIVal(obj.mIlin+1:end, :);
+                s.Jceq = obj.JEVal(obj.mElin+1:end, :);
+            end
+        end
+
+        function set.fdStep(obj, v)
+            % A new step invalidates every finite-differenced cache entry.
+            obj.fdStep = v;
+            obj.invalidateFdCaches();
+        end
+
+        function set.fdType(obj, v)
+            obj.fdType = v;
+            obj.invalidateFdCaches();
+        end
     end
 
     methods (Access = private)
+        function checkJacobPatternOnce(obj, h, x, base, J)
+        %CHECKJACOBPATTERNONCE  One-shot dense cross-check of a user sparsity pattern (D31).
+        %   Differences the same stacked constraints densely (no coloring) and
+        %   warns adamnlopt:jacobPattern when an asserted structural zero comes
+        %   back large: a wrong JacobPattern silently yields a wrong Jacobian,
+        %   and nothing else checks it.  Runs once per Evaluator (the first FD
+        %   Jacobian), only for n <= 400, and only when the pattern is actually
+        %   used (nonempty, FD constraints).  The tolerance is relative to each
+        %   column's scale with a floor from the FD step itself, so a large
+        %   calibrated step on a noisy function does not false-positive.
+            if obj.jacPatternChecked, return; end
+            obj.jacPatternChecked = true;
+            if isempty(obj.jacPattern) || ~obj.checkJacobPattern || obj.n > 400
+                return;
+            end
+            pat = logical(obj.jacPattern);
+            if ~isequal(size(pat), size(J)), return; end
+            Jd = adamnlopt.finiteDiffJacobian(h, x, base, obj.fdStep, ...
+                obj.fdType, [], obj.fdLb, obj.fdUb);
+            Jd = obj.fdRetryNonFinite(h, x, base, Jd, false);
+            colScale = max(1, max(abs(Jd), [], 1));
+            tol = max(1e-3, 10 * obj.fdStep) .* colScale;
+            badCols = find(any(~pat & abs(Jd) > tol, 1));
+            if ~isempty(badCols)
+                warning('adamnlopt:jacobPattern', ['CheckJacobPattern: ' ...
+                    'JacobPattern omits entries that finite differences find ' ...
+                    'nonzero (columns %s).  The colored Jacobian is wrong ' ...
+                    'there; fix the pattern or clear it for dense differencing.'], ...
+                    mat2str(badCols(1:min(10, numel(badCols)))));
+            end
+        end
+
+        function checkDeadline(obj)
+        %CHECKDEADLINE  Throw past the wall-clock budget instead of evaluating.
+        %   A no-op at the default deadline Inf (one isfinite test, so the
+        %   unbudgeted path pays nothing); past tStart + deadline user calls
+        %   raise adamnlopt:timeLimit, which both solver cores catch and turn
+        %   into an exit-0 stop at the last accepted iterate.
+            if isfinite(obj.deadline) && ~isempty(obj.tStart) && ...
+                    toc(obj.tStart) > obj.deadline
+                error('adamnlopt:timeLimit', ...
+                    'Wall-clock budget exhausted (%.1f s of %.1f s allowed).', ...
+                    toc(obj.tStart), obj.deadline);
+            end
+        end
+
+        function f = timedObjFun(obj, z)
+        %TIMEDOBJFUN  Deadline-checked objective call for FD probe sweeps.
+        %   Serial finite-difference probes call the user objective directly
+        %   (bypassing objective(), which would also cache and count), so the
+        %   chokepoint check there never sees them; routing the probe handles
+        %   through here checks the budget once per probe.  The parallel path
+        %   keeps the raw handle (a tic value is meaningless on a worker).
+            obj.checkDeadline();
+            f = obj.objFun(z);
+        end
+
+        function M = fdRetryNonFinite(obj, fun, x, base, M, countObj)
+        %FDRETRYNONFINITE  Re-difference non-finite FD columns from the other side (D21).
+        %   A probe that lands where the user function fails (an LVD propagation
+        %   that impacts or runs out of mass) returns +Inf (see guardObjective
+        %   and evalNonlinear), which turns its whole column into Inf or NaN.
+        %   Retry each such column one-sided, opposite side first; a column that
+        %   stays non-finite is left alone for the non-finite-step guard (D30).
+        %   COUNTOBJ adds the calls to nFun (constraint calls self-count).
+            bad = find(any(~isfinite(M), 1));
+            if isempty(bad) || ~all(isfinite(base(:))), return; end
+            lbB = [];  ubB = [];
+            if ~isempty(obj.fdLb), lbB = obj.fdLb(bad); end
+            if ~isempty(obj.fdUb), ubB = obj.fdUb(bad); end
+            [hs, sgn, two] = adamnlopt.fdBoundedStep(x(bad), ...
+                obj.fdStep * max(1, abs(x(bad))), lbB, ubB);
+            for k = 1:numel(bad)
+                if hs(k) == 0, continue; end
+                for side = [-sgn(k), sgn(k)]
+                    if side == -sgn(k) && ~two(k), continue; end
+                    xs = x;  xs(bad(k)) = xs(bad(k)) + side * hs(k);
+                    v = fun(xs);
+                    if countObj, obj.nFun = obj.nFun + 1; end
+                    if all(isfinite(v(:)))
+                        M(:, bad(k)) = (v(:) - base(:)) / (side * hs(k));
+                        break;
+                    end
+                end
+            end
+        end
+
+        function invalidateFdCaches(obj)
+        %INVALIDATEFDCACHES  Drop cached derivatives that depend on fdStep/fdType.
+            if ~obj.hasObjGrad, obj.hasCachedG = false; end %#ok<MCSUP>
+            if ~obj.hasConGrad, obj.xj = []; end             %#ok<MCSUP>
+        end
+
         function v = broydenActive(obj)
         %BROYDENACTIVE  Whether secant Jacobian updates are in effect.
         %   v = broydenActive(obj) is true when Broyden mode was requested
@@ -696,12 +992,21 @@ classdef Evaluator < handle
         %   Outputs:
         %     c   - mInl-by-1 nonlinear inequality values.
         %     ceq - mEnl-by-1 nonlinear equality values.
+            obj.checkDeadline();
             if isempty(obj.nlcon)
                 c = zeros(0,1);  ceq = zeros(0,1);   % no user call: no cost
             else
                 [c, ceq] = obj.nlcon(x);
                 c = c(:);  ceq = ceq(:);
                 obj.nCon = obj.nCon + 1;
+                % D21: a failed evaluation (LVD's ConstraintSet returns scalar
+                % NaNs) or a NaN row becomes +Inf: infinitely violated, so the
+                % trial point is rejected.  The wrong size used to crash the
+                % FD Jacobian ("incompatible sizes"); a NaN row was accepted,
+                % because max() skips NaN and the violation read as 0.
+                if numel(c) ~= obj.mInl,   c   = inf(obj.mInl, 1); end
+                if numel(ceq) ~= obj.mEnl, ceq = inf(obj.mEnl, 1); end
+                c(isnan(c)) = inf;  ceq(isnan(ceq)) = inf;
             end
         end
         function v = evalNonlinearStacked(obj, x)
@@ -744,18 +1049,74 @@ classdef Evaluator < handle
         %     v - mElin-by-1 linear equality residual.
             if isempty(obj.Aeqlin), v = zeros(0,1); else, v = obj.Aeqlin*x - obj.beqlin; end
         end
-        function k = numFDevals(obj, ~)
-        %NUMFDEVALS  Number of function evaluations for a finite-diff gradient.
-        %   k = numFDevals(obj, x) returns 2*n for central differences and n for
-        %   forward differences. The second argument is ignored.
-        %
-        %   Inputs:
-        %     obj - the Evaluator handle object.
-        %     x   - (ignored) evaluation point placeholder.
-        %
-        %   Outputs:
-        %     k - number of extra objective evaluations used by the gradient.
-            if strcmp(obj.fdType, 'central'), k = 2*obj.n; else, k = obj.n; end
+        function base = nlStackedAt(obj, x)
+        %NLSTACKEDAT  Stacked [c_nl; ceq_nl] at x, from the constraints cache if it holds x.
+        %   On a miss the values are evaluated once and the constraints cache is
+        %   filled, so the constraints(x) call that usually follows is free.
+            if isequal(x, obj.xc)
+                % reshape: an empty-range index of a 1x1 is a 1x0 ROW.
+                base = [reshape(obj.cIVal(obj.mIlin+1:end), [], 1); ...
+                        reshape(obj.cEVal(obj.mElin+1:end), [], 1)];
+            else
+                [c, ceq] = obj.evalNonlinear(x);
+                base = [c(:); ceq(:)];
+                obj.cIVal = [obj.linIneq(x); c(:)];
+                obj.cEVal = [obj.linEq(x);   ceq(:)];
+                obj.xc = x;
+            end
+        end
+
+        function tf = combinedSweepApplies(obj, x)
+        %COMBINEDSWEEPAPPLIES  True when the gradient and Jacobian can share one FD sweep (A2).
+        %   Both derivatives must be finite-differenced, there must be nonlinear
+        %   rows, no user JacobPattern (colouring would change the probe set),
+        %   no Broyden model (it owns the Jacobian refresh schedule), and no
+        %   Jacobian already cached at x (then only the gradient is missing).
+            tf = ~obj.hasObjGrad && ~obj.hasConGrad && (obj.mInl + obj.mEnl) > 0 && ...
+                 isempty(obj.jacPattern) && ~obj.broydenActive() && ~isequal(x, obj.xj);
+        end
+
+        function combinedSweep(obj, x)
+        %COMBINEDSWEEP  One FD sweep for the objective gradient AND the constraint Jacobian (A2).
+        %   Differencing [f; c_nl; ceq_nl] once visits each probe point once.
+        %   Separately, the gradient sweep and the Jacobian sweep visited the
+        %   same n (or 2n) points twice, which defeats a caller-side same-x cache
+        %   such as LVD's propagateForX and doubles the propagations per
+        %   iteration.  Step rules are those of finiteDiffGradient and
+        %   finiteDiffJacobian (no pattern), so the derivatives are bit-identical
+        %   to the separate sweeps.  Fills gVal and the Jacobian cache at x.
+            import adamnlopt.*
+            t0 = tic;
+            base = obj.nlStackedAt(x);
+            if obj.parallelFD
+                [g, J, fdInfo] = parallel_parallelFiniteDiff( ...
+                    @(z) obj.objFun(z), @(z) obj.evalNonlinearStacked(z), x, ...
+                    obj.fVal, base, obj.fdStep, obj.fdType, [], obj.fdLb, obj.fdUb);
+                obj.nFun = obj.nFun + fdInfo.nObjEvals;
+                if fdInfo.remote
+                    obj.nCon = obj.nCon + fdInfo.nConEvals;  % local calls self-count
+                end
+            else
+                Js = finiteDiffJacobian(@(z) obj.objConStacked(z), x, [obj.fVal; base], ...
+                                        obj.fdStep, obj.fdType, [], obj.fdLb, obj.fdUb);
+                g = Js(1, :).';
+                J = Js(2:end, :);
+            end
+            Js = obj.fdRetryNonFinite(@(z) obj.objConStacked(z), x, ...
+                                      [obj.fVal; base], [g(:).'; J], false);
+            g = Js(1, :).';  J = Js(2:end, :);
+            obj.costModel.tick(toc(t0));
+            obj.gVal  = g(:);
+            obj.JIVal = [obj.Aineq;  J(1:obj.mInl, :)];
+            obj.JEVal = [obj.Aeqlin; J(obj.mInl+1:end, :)];
+            obj.xj = x;
+        end
+
+        function v = objConStacked(obj, z)
+        %OBJCONSTACKED  [f(z); c_nl(z); ceq_nl(z)], counting both evaluations.
+            f = obj.timedObjFun(z);
+            obj.nFun = obj.nFun + 1;
+            v = [f; obj.evalNonlinearStacked(z)];   % evalNonlinearStacked counts nCon
         end
     end
 
@@ -872,5 +1233,19 @@ if isstruct(s) && isfield(s, field)
     v = s.(field);
 else
     v = default;
+end
+end
+
+function h = guardObjective(fun)
+%GUARDOBJECTIVE  Wrap a user objective so a NaN or non-scalar value reads +Inf.
+%   Anonymous functions forward nargout, so [f, g] = h(x) still works.
+h = @(z) guardedObjective(fun, z);
+end
+
+function varargout = guardedObjective(fun, z)
+[varargout{1:max(nargout, 1)}] = fun(z);
+f = varargout{1};
+if ~isscalar(f) || isnan(f)
+    varargout{1} = inf;
 end
 end

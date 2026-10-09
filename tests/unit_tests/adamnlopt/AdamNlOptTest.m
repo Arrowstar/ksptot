@@ -22,7 +22,7 @@ classdef AdamNlOptTest < matlab.unittest.TestCase
     %
     %  13  every nlcon call is counted (FD Jacobian probes were free)
     %  14  restoration is bounded by maxFunEvals and always reports .iters
-    %  15  Jacobi preconditioner on the zero dual block (Schur estimate)
+    %  15  (removed with the Krylov path, review Batch 8)
     %  16  BFGS/L-BFGS curvature floor (the old test was algebraically inert)
     %  17  L-BFGS drops pairs that make the compact matrix singular
     %  18  elastic mode without quadprog (dual coordinate ascent)
@@ -336,7 +336,7 @@ classdef AdamNlOptTest < matlab.unittest.TestCase
                 [], [], [], [], [], [], [], testCase.quietOpts(struct()));
 
             testCase.verifyEqual(exitflag, -3);
-            testCase.verifyTrue(isnan(fval));
+            testCase.verifyFalse(isfinite(fval));   % D21: a NaN objective reads +Inf
             testCase.verifyEmpty(regexp(output.message, 'Converged', 'once'));
         end
 
@@ -727,39 +727,6 @@ classdef AdamNlOptTest < matlab.unittest.TestCase
             testCase.verifyEqual(info.evals, counter('n'));
         end
 
-        % --- 15: Jacobi preconditioner on a zero dual block -----------------
-
-        function testPreconditionerDoesNotAmplifyTheDualBlock(testCase)
-            % reg defaults to gamma = 0, so abs(diag(K)) is exactly zero across
-            % the whole dual block; the old absolute 1e-12 pivot guard turned
-            % that into a x1e12 amplification of every dual residual.
-            H  = diag([2; 3; 4]);
-            JE = [1 0 0; 0 1 1];
-            state = struct('H', H, 'JE', JE, 'x', zeros(3,1), 'lamE', zeros(2,1));
-            op = adamnlopt.kkt_KKTOperator(state, []);
-
-            testCase.verifyTrue(all(op.precondDiag > 0));
-            testCase.verifyTrue(all(isfinite(op.precondDiag)));
-
-            applyP = adamnlopt.linalg_preconditioner(op, struct('precondition','jacobi'));
-            z = applyP(ones(5, 1));
-            testCase.verifyLessThan(max(abs(z)), 1e3);
-
-            % The dual entries must track the Schur magnitude JE*H^-1*JE', not a
-            % pivot floor: row 1 is 1/2, row 2 is 1/3 + 1/4.
-            testCase.verifyEqual(op.precondDiag(4:5), [1/2; 1/3 + 1/4], 'RelTol', 1e-12);
-        end
-
-        function testPreconditionerPivotFloorIsRelative(testCase)
-            % A well-scaled problem in small units has every pivot below 1e-12;
-            % the absolute floor flattened the preconditioner to a constant.
-            op = struct('diag', [1e-14; 1e-16], 'precondDiag', []);
-            applyP = adamnlopt.linalg_preconditioner(op, struct('precondition','jacobi'));
-            z = applyP([1; 1]);
-
-            testCase.verifyEqual(z(1) / z(2), 1e-2, 'RelTol', 1e-9);
-        end
-
         % --- 16: BFGS curvature floor ---------------------------------------
 
         function testBfgsRejectsNoiseCurvaturePair(testCase)
@@ -957,7 +924,7 @@ classdef AdamNlOptTest < matlab.unittest.TestCase
             % below the variable scale and divided by that squared.
             B = adamnlopt.eval_BroydenJacobian([1 0]);
             xRef = [1e6; 1e6];
-            accepted = B.update([1e-3; 0], 1e-3, 0, xRef);
+            accepted = B.update([1e-3; 0], 1e-3, xRef);
 
             testCase.verifyFalse(accepted);
             testCase.verifyEqual(B.full(), [1 0], 'AbsTol', 1e-12);
@@ -967,7 +934,7 @@ classdef AdamNlOptTest < matlab.unittest.TestCase
             % The secant condition must still be imposed for a real step.
             B = adamnlopt.eval_BroydenJacobian([1 0]);
             s = [1; 0];  y = 1.05;         % within the 0.1 refresh tolerance
-            accepted = B.update(s, y, 1, [1; 1]);
+            accepted = B.update(s, y, [1; 1]);
 
             testCase.verifyTrue(accepted);
             testCase.verifyEqual(B.full() * s, y, 'AbsTol', 1e-12);
@@ -1151,45 +1118,6 @@ classdef AdamNlOptTest < matlab.unittest.TestCase
             testCase.verifyEqual(sgn, ones(3, 1));
             testCase.verifyEqual(twoSided, true(3, 1));
             testCase.verifyEqual(squeezed, false(3, 1));
-        end
-
-        % --- 31: the Krylov iteration cap had no headroom ---------------------
-
-        function testKrylovCapAllowsMoreThanNIterations(testCase)
-            % min(nAll, 10*nAll) is just nAll, so MINRES was capped at n + mE.
-            % An indefinite saddle-point system in finite precision routinely
-            % needs more than that, and the capped solve returned a step with
-            % relative residual 4e-01 while reporting it as a step.
-            st  = RandStream('twister', 'Seed', 7);
-            n   = 20;  mE = 4;  nAll = n + mE;
-            [U, ~] = qr(randn(st, n));
-            H   = U * diag(logspace(0, 4, n)') * U';
-            H   = (H + H') / 2;
-            JE  = randn(st, mE, n);
-            K   = [H, JE.'; JE, zeros(mE)];
-            rhs = randn(st, nAll, 1);
-            op  = struct('apply', @(v) K * v, 'n', n, 'mE', mE);
-
-            capped = adamnlopt.linalg_solveKKTkrylov(op, rhs, 1e-8, [], ...
-                        struct('krylovMaxIter', max(20, nAll)));
-            [d, info] = adamnlopt.linalg_solveKKTkrylov(op, rhs, 1e-8);
-
-            testCase.verifyGreaterThan(norm(K * capped - rhs) / norm(rhs), 1e-2);
-            testCase.verifyEqual(info.flag, 0);
-            testCase.verifyGreaterThan(info.iters, nAll);
-            testCase.verifyLessThan(norm(K * d - rhs) / norm(rhs), 1e-7);
-        end
-
-        function testKrylovCapStaysBoundedOnAHugeSystem(testCase)
-            % The headroom is bounded so one linear solve on a large problem
-            % cannot become unbounded: nAll + 1000, not 10*nAll.
-            nAll = 5000;
-            e    = ones(nAll, 1);
-            K    = spdiags([-e, 2*e, -e], -1:1, nAll, nAll);
-            op   = struct('apply', @(v) K * v, 'n', nAll, 'mE', 0);
-            [~, info] = adamnlopt.linalg_solveKKTkrylov(op, ones(nAll,1), 1e-14);
-
-            testCase.verifyLessThanOrEqual(info.iters, nAll + 1000);
         end
 
         % --- 44: maxTime is the solver's own budget exit ----------------------
@@ -1502,7 +1430,7 @@ classdef AdamNlOptTest < matlab.unittest.TestCase
         function testParallelEnumListBoxOmitsAsync(testCase)
             % 'async' was never a distinct strategy -- the Evaluator routes it
             % through the same parallel finite-difference path as 'finitediff'
-            % and parallel_asyncEvaluator has no caller -- so offering it
+            % (the standalone parallel_asyncEvaluator is deleted) -- so offering it
             % promised one evaluation strategy and delivered the other.
             names = AdamNlOptParallelEnum.getListBoxStr();
 
@@ -1667,12 +1595,16 @@ classdef AdamNlOptTest < matlab.unittest.TestCase
             filt = adamnlopt.Filter();
             % theta above thetaCap: every trial is vetoed in both loops, so the
             % search runs the full backtracking sequence twice if it recomputes.
+            % theta0 = 1 (above theta_min) keeps every trial THETA-type: since
+            % review D18 the cap no longer vetoes f-type trials.
             [alpha, ~, ~, lsFailed] = adamnlopt.globalize_filterLineSearch( ...
-                @(a) countingPhiTheta(a, counter, 1), 0, 0, -1, filt, 1, 1, 0.5, 0);
+                @(a) countingPhiTheta(a, counter, 1), 0, 1, -1, filt, 1, 1, 0.5, 0);
 
             testCase.verifyTrue(lsFailed);
-            % 1, 1/2, ... down to the amin = 1e-10 floor: 34 trials, once each.
-            testCase.verifyEqual(counter('n'), 34);
+            % 1, 1/2, ... down to the WB alpha_min (D18): gamma_alpha *
+            % min(gamma_theta, gamma_phi*theta0/(-gd)) = 5e-7, so 21 trials,
+            % once each (34 under the old 1e-10 floor).
+            testCase.verifyEqual(counter('n'), 21);
             testCase.verifyEqual(alpha, 1e-10);
         end
 

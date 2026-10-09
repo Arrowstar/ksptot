@@ -92,9 +92,31 @@ if ~isfinite(res.opt) || ~isfinite(res.feas) || ...
     msg = 'Stopped: objective or KKT residual is not finite (diverged).';
     return;
 end
-if optScaled <= opts.optTol && res.feas <= opts.feasTol && compScaled <= compTol
+% Physical-units feasibility (D3).  res.feas is measured on the row-scaled
+% constraints, where a steep row reads small; every exit that certifies a
+% FEASIBLE point also requires the violation in the caller's own units to be
+% within constrViolTol.  Callers that do not supply res.feasPhys (unit tests
+% driving this directly) or constrViolTol keep the scaled-only behaviour.
+cvTol = Inf;
+if isfield(opts, 'constrViolTol') && ~isempty(opts.constrViolTol), cvTol = opts.constrViolTol; end
+physFeasOK = ~isfield(res, 'feasPhys') || res.feasPhys <= cvTol;
+if optScaled <= opts.optTol && res.feas <= opts.feasTol && physFeasOK && compScaled <= compTol
     stop = true;  exitflag = 1;
     msg = 'Converged: first-order optimality, feasibility, and complementarity within tolerances.';
+    return;
+end
+% Acceptable-point convergence (exitflag 2, A5): the iterate has held the
+% acceptable levels (see defaultOptions) for acceptableIter consecutive
+% iterations.  The cores maintain state.acceptCount; a caller that does not
+% supply it skips the test.
+if isfield(state, 'acceptCount') && isfield(opts, 'acceptableIter') && ...
+        ~isempty(opts.acceptableIter) && opts.acceptableIter > 0 && ...
+        state.acceptCount >= opts.acceptableIter
+    stop = true;  exitflag = 2;
+    msg = sprintf(['Converged to an acceptable level: scaled optimality %.2e ' ...
+        '(acceptableTol %.1e) at a feasible point for %d consecutive iterations; ' ...
+        'optTol %.1e was not reached.'], optScaled, opts.acceptableTol, ...
+        state.acceptCount, opts.optTol);
     return;
 end
 % Objective-plateau convergence (exitflag 2): the objective has been flat for
@@ -130,7 +152,7 @@ gateHeld = ~isfield(state, 'optGateCount') || ...
 if isfield(state, 'objStallCount') && isfinite(opts.objPlateauWindow) && ...
         state.objStallCount >= opts.objPlateauWindow && ...
         optScaled <= opts.objPlateauOptTol && gateHeld && ...
-        res.feas <= opts.feasTol && compScaled <= compTol
+        res.feas <= opts.feasTol && physFeasOK && compScaled <= compTol
     stop = true;  exitflag = 2;
     msg = sprintf(['Converged: objective stalled for %d iterations at a feasible, ' ...
         'complementary point (opt = %.2e <= %.1e, held for %d iterations).'], ...
@@ -167,15 +189,36 @@ end
 % than a convergence (2), so exitflag > 0 keeps meaning what it says. The gate is
 % objPlateauOptTol, shared with the plateau exit above so the two agree on what
 % counts as close enough to stationary to call converged.
+%
+% And the BARRIER must be finished (D33).  In the interior-point core a zero
+% step only says the current barrier subproblem is solved; while complementarity
+% is above compTol and mu can still fall, the next barrier update moves the
+% iterate.  Without this gate a quadratic whose Newton step is exact stopped
+% after two iterations with exitflag 2 at comp = 2e-2 (tolerance 1e-6), and the
+% returned multipliers carried that barrier bias (lamE 4.018 vs 4).  Once mu has
+% reached muMin nothing can lower comp further, so the exit is allowed again.
+muFloor = 0;
+if isfield(opts, 'muMin') && ~isempty(opts.muMin), muFloor = opts.muMin; end
+barrierDone = compScaled <= compTol || ~isfield(state, 'mu') || ...
+    isempty(state.mu) || state.mu <= muFloor;
 if isfield(state, 'stepNorm') && ~isempty(state.stepNorm) && ...
         isfinite(state.stepNorm) && state.iter > 0 && opts.stepTol > 0 && ...
         state.stepNorm <= opts.stepTol * (1 + norm(state.x, inf)) && ...
-        res.feas <= opts.feasTol
+        res.feas <= opts.feasTol && physFeasOK && barrierDone
     stop = true;
     if optScaled <= opts.objPlateauOptTol
         exitflag = 2;
         msg = sprintf(['Converged: step size %.3e is below StepTolerance %.1e at a ' ...
             'feasible point (opt = %.2e).'], state.stepNorm, opts.stepTol, optScaled);
+    elseif isfield(state, 'acceptCount') && state.acceptCount >= 1
+        % A5: the step collapsed at a point that meets the acceptable levels
+        % (see defaultOptions).  No further progress is available, and the
+        % point is as good as an acceptable-point exit would have returned.
+        exitflag = 2;
+        msg = sprintf(['Converged to an acceptable level: step size %.3e is below ' ...
+            'StepTolerance %.1e at an acceptable point (scaled optimality %.2e, ' ...
+            'acceptableTol %.1e; optTol %.1e was not reached).'], state.stepNorm, ...
+            opts.stepTol, optScaled, opts.acceptableTol, opts.optTol);
     else
         exitflag = 0;
         msg = sprintf(['Stopped: step size %.3e is below StepTolerance %.1e at a ' ...

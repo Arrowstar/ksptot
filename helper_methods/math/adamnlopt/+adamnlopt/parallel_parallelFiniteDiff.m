@@ -61,7 +61,7 @@ function [g, J, info] = parallel_parallelFiniteDiff(objFun, conFun, x, f0, c0, h
 %            caller must add nConEvals/nObjEvals itself exactly when remote is
 %            true, and must NOT when it is false or it will double-count.
 %
-%   See also FDBOUNDEDSTEP, PARALLEL_BATCHEVALUATE, PARALLEL_ASYNCEVALUATOR.
+%   See also FDBOUNDEDSTEP.
 
 if nargin < 8, pattern = []; end
 if nargin < 9,  lb = []; end

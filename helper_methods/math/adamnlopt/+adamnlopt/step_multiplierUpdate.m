@@ -1,4 +1,4 @@
-function lamE = step_multiplierUpdate(g, JE, w)
+function lamE = step_multiplierUpdate(g, JE, w, tol)
 %STEP_MULTIPLIERUPDATE  Least-squares estimate of equality multipliers.
 %   lamE = adamnlopt.step_multiplierUpdate(g, JE) returns the multipliers that
 %   minimize ||g + JE'*lamE||, i.e. the first-order (Lagrange) estimate used to
@@ -40,10 +40,22 @@ ws1 = warning('off', 'MATLAB:rankDeficientMatrix');
 ws2 = warning('off', 'MATLAB:singularMatrix');
 ws3 = warning('off', 'MATLAB:illConditionedMatrix');
 cleanup = onCleanup(@() warning([ws1, ws2, ws3]));
+% Minimum-norm least squares (D5).  Backslash returns a BASIC solution on a
+% rank-deficient JE -- as many nonzeros as the rank, possibly huge -- with the
+% warning silenced.  TOL (optional) truncates singular values below it: with
+% finite-difference constraint Jacobians a row whose entries sit at the FD
+% resolution is noise, and fitting a multiplier to it gave lamE ~ 1/fdStep
+% (6.7e7 on the unit circle from x0 = 0), which then steered the first step
+% to the constrained MAXIMUM.
 if nargin < 3 || isempty(w)
-    lamE = JE.' \ (-g);
+    A = JE.';  b = -g;
 else
     w = w(:);
-    lamE = (JE.' .* w) \ (-(w .* g));
+    A = JE.' .* w;  b = -(w .* g);
+end
+if nargin >= 4 && ~isempty(tol) && tol > 0
+    lamE = lsqminnorm(full(A), b, tol);
+else
+    lamE = lsqminnorm(full(A), b);
 end
 end

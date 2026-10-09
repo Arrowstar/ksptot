@@ -169,7 +169,7 @@ if isfinite(feas) && isfinite(opt) && feas > 0 && opt > 0
     if ratio > 1e3
         flags.imbalanced = true;
         msgs{end+1} = 'Feasibility lags optimality by orders of magnitude.';
-        recs{end+1} = 'Prioritise feasibility: tighten feasTol or (with modeSwitch=true) let the feasibility-priority rule drive mu down.';
+        recs{end+1} = 'Prioritise feasibility: enable restoration, lower kappaThetaGrow, start closer to feasibility.';
     elseif ratio < 1e-3
         flags.imbalanced = true;
         msgs{end+1} = 'Optimality lags feasibility by orders of magnitude.';

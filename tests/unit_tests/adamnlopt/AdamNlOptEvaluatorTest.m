@@ -724,8 +724,8 @@ classdef AdamNlOptEvaluatorTest < AdamNlOptTestCase
             %   the whole content of the rank-1 secant update.
             b = adamnlopt.eval_BroydenJacobian(eye(2));
             s = [0.1; -0.05];
-            y = [0.12; -0.04];
-            testCase.verifyTrue(b.update(s, y, [0.1; 0.1]));
+            y = [0.105; -0.045];
+            testCase.verifyTrue(b.update(s, y));
             testCase.verifyEqual(b.apply(s), y, 'AbsTol', 1e-14);
         end
 
@@ -741,10 +741,10 @@ classdef AdamNlOptEvaluatorTest < AdamNlOptTestCase
 
         function testBroydenSkipsANegligibleStepButStillAges(testCase)
             b = adamnlopt.eval_BroydenJacobian(eye(2), 3);
-            testCase.verifyFalse(b.update([0; 0], [1; 1], [0; 0]));
+            testCase.verifyFalse(b.update([0; 0], [1; 1]));
             testCase.verifyEqual(b.full(), eye(2), 'AbsTol', 0);
-            b.update([0; 0], [1; 1], [0; 0]);
-            b.update([0; 0], [1; 1], [0; 0]);
+            b.update([0; 0], [1; 1]);
+            b.update([0; 0], [1; 1]);
             testCase.verifyTrue(b.needsRefresh(), ...
                 'a run of skipped steps must still force a refresh eventually');
         end
@@ -760,11 +760,11 @@ classdef AdamNlOptEvaluatorTest < AdamNlOptTestCase
             y = 1e-3 * [1; 0];
 
             small = adamnlopt.eval_BroydenJacobian(eye(2));
-            testCase.verifyTrue(small.update(s, y, [0; 0], [1; 1]), ...
+            testCase.verifyTrue(small.update(s, y, [1; 1]), ...
                 'a 1e-3 step on O(1) variables is not negligible');
 
             huge = adamnlopt.eval_BroydenJacobian(eye(2));
-            testCase.verifyFalse(huge.update(s, y, [0; 0], [1e6; 1e6]), ...
+            testCase.verifyFalse(huge.update(s, y, [1e6; 1e6]), ...
                 'a 1e-3 step on O(1e6) variables IS negligible');
         end
 
@@ -774,8 +774,8 @@ classdef AdamNlOptEvaluatorTest < AdamNlOptTestCase
             %   the approximation rather than correct it.
             b = adamnlopt.eval_BroydenJacobian(eye(2), 20, 0.1);
             s = [1; 0];
-            y = [100; 0];                  % residual 99 against a cNew of 1
-            testCase.verifyFalse(b.update(s, y, [1; 0]));
+            y = [100; 0];                  % residual 99 against a model prediction of 1
+            testCase.verifyFalse(b.update(s, y));
             testCase.verifyEqual(b.full(), eye(2), 'AbsTol', 0);
             testCase.verifyTrue(b.needsRefresh(), ...
                 'the refresh must be due immediately, not in maxStale steps');
@@ -784,16 +784,16 @@ classdef AdamNlOptEvaluatorTest < AdamNlOptTestCase
         function testBroydenRefreshIsDueAfterMaxStaleUpdates(testCase)
             b = adamnlopt.eval_BroydenJacobian(eye(2), 3, 1e3);
             for k = 1:2
-                b.update([0.1 * k; 0], [0.1 * k; 0], [0; 0]);
+                b.update([0.1 * k; 0], [0.1 * k; 0]);
                 testCase.verifyFalse(b.needsRefresh());
             end
-            b.update([0.5; 0], [0.5; 0], [0; 0]);
+            b.update([0.5; 0], [0.5; 0]);
             testCase.verifyTrue(b.needsRefresh());
         end
 
         function testSetExactReplacesTheModelAndClearsTheStaleness(testCase)
             b = adamnlopt.eval_BroydenJacobian(eye(2), 1, 1e3);
-            b.update([0.1; 0], [0.1; 0], [0; 0]);
+            b.update([0.1; 0], [0.1; 0]);
             testCase.verifyTrue(b.needsRefresh());
             Jnew = [2 0; 0 3];
             b.setExact(Jnew);
@@ -857,29 +857,6 @@ classdef AdamNlOptEvaluatorTest < AdamNlOptTestCase
         %% ---------------------------------------------------------------
         %  The parallel family
         %  ---------------------------------------------------------------
-        function testBatchEvaluateMatchesTheSerialLoop(testCase)
-            testCase.assumeTrue(license('test', 'Distrib_Computing_Toolbox') == 1, ...
-                'Parallel Computing Toolbox not licensed.');
-            pts = [1 2 3; 4 5 6];
-            res = adamnlopt.parallel_batchEvaluate( ...
-                @AdamNlOptEvaluatorTest.sphereVal, pts, 1);
-            testCase.verifySize(res, [3 1]);
-            for k = 1:3
-                testCase.verifyEqual(res{k, 1}, pts(:, k).' * pts(:, k), ...
-                    'AbsTol', 0);
-            end
-        end
-
-        function testBatchEvaluateCapturesMultipleOutputs(testCase)
-            testCase.assumeTrue(license('test', 'Distrib_Computing_Toolbox') == 1, ...
-                'Parallel Computing Toolbox not licensed.');
-            pts = [1 2; 3 4];
-            res = adamnlopt.parallel_batchEvaluate( ...
-                @AdamNlOptTestCase.sphere, pts, 2);
-            testCase.verifySize(res, [2 2]);
-            testCase.verifyEqual(res{2, 2}, 2 * pts(:, 2), 'AbsTol', 0);
-        end
-
         function testParallelFiniteDiffReproducesTheSerialGradient(testCase)
             %   The parallel path is an optimization, not a different
             %   algorithm, so the numbers must be identical rather than merely
@@ -916,17 +893,6 @@ classdef AdamNlOptEvaluatorTest < AdamNlOptTestCase
             testCase.verifyEqual(info.nConEvals, 2);
             testCase.verifyTrue(islogical(info.remote), ...
                 'remote decides whether the caller adds these counts');
-        end
-
-        function testAsyncEvaluatorRejectsAnUnknownToken(testCase)
-            %   A fetched token is consumed; fetching it twice is a caller bug
-            %   and must say so rather than returning a stale result.
-            testCase.assumeTrue(license('test', 'Distrib_Computing_Toolbox') == 1, ...
-                'Parallel Computing Toolbox not licensed.');
-            ae = adamnlopt.parallel_asyncEvaluator( ...
-                @AdamNlOptEvaluatorTest.sphereVal, 1);
-            testCase.verifyError(@() ae.fetch('nosuchtoken'), ...
-                'adamnlopt:asyncEvaluator:unknownToken');
         end
     end
 

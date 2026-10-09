@@ -34,7 +34,7 @@ function [d, info] = linalg_solveKKTdirect(A, rhs)
 %   nothing could read. A ratio is strictly more informative than the boolean
 %   warning was: it shows the approach to singularity, not just the arrival.
 %
-%   See also KKT_INERTIACORRECTION, LINALG_SOLVEKKTKRYLOV, KKT_ASSEMBLE.
+%   See also KKT_INERTIACORRECTION, KKT_ASSEMBLE.
 
 [L, D, p] = ldl(A, 'vector');
 
@@ -57,6 +57,8 @@ end
 info.nearlySingular = info.pivotSpread > 1 / eps;
 
 d = zeros(size(rhs));
+info.factors = [];
+info.resRel  = NaN;
 if info.rankDeficient
     % Signal caller to regularize; return a minimum-norm least-squares step
     % in the meantime (lsqminnorm avoids the singular-matrix warning).
@@ -80,7 +82,18 @@ yv = L \ rhs(p);
 zv = D \ yv;
 wv = L.' \ zv;
 d(p) = wv;
-info.solved = true;
+% Relative residual, as a diagnostic.  Iterative refinement was evaluated here
+% (review D16) and rejected by measurement: on dense and on sparse
+% (MA57, threshold-pivoted) KKT systems with pivot spreads to 1e12 the LDL'
+% solve is already backward stable (backward error 1e-17..1e-18), and two
+% refinement steps changed neither the residual nor the forward error.  The
+% 1e-5 relative residuals seen on such systems are rounding in forming A*d.
+info.resRel = norm(rhs - A * d, inf) / max(1, norm(rhs, inf));
+% Keep the factorization so a caller can re-solve with a new right-hand side
+% (second-order correction) without re-factoring (A9): linalg_resolveKKT.
+info.factors = struct('L', L, 'D', D, 'p', p);
+% A non-finite step is not a solution, whatever the inertia says (D30).
+info.solved = all(isfinite(d));
 end
 
 function [npos, nneg, nzero, minAbsPivot, maxAbsPivot, medAbsPivot] = blockInertia(D)
@@ -88,7 +101,7 @@ function [npos, nneg, nzero, minAbsPivot, maxAbsPivot, medAbsPivot] = blockInert
 %   [npos, nneg, nzero, minAbsPivot, maxAbsPivot] = blockInertia(D) walks the
 %   1x1 and 2x2 diagonal blocks of D, taking each 2x2 block's eigenvalues, and
 %   counts the eigenvalues that are positive, negative and (numerically) zero
-%   against a tolerance RELATIVE to the largest pivot, k*eps*maxAbsPivot, so
+%   against a tolerance RELATIVE to the largest pivot, 10*eps*maxAbsPivot, so
 %   the reported inertia is invariant to a rescaling of the KKT system.
 %
 %   Inputs:
@@ -131,9 +144,14 @@ maxAbsPivot = max(absEv);
 % never regularized at all.  maxAbsPivot was already computed and already
 % documented below as the scale "used by callers to form a RELATIVE
 % near-singularity test" -- the test inside this very function was the one that
-% did not use it.  k*eps*maxAbsPivot is the standard rank tolerance and comes
-% out at ~1e-14 on a well-scaled system, so a healthy problem is unaffected.
-tol = k * eps * maxAbsPivot;
+% did not use it.
+%
+% 10*eps*max rather than k*eps*max (D16).  k*eps*sigma_max is the SVD RANK
+% tolerance; the question here is whether the factorization is usable, and on
+% an anisotropic N = 600 KKT system (primal pivots ~1e9) the k-scaled version
+% counted a healthy 1e-4 constraint pivot as zero, sending the solve to a dense
+% lsqminnorm and growing both regularizations on a step that was fine.
+tol = 10 * eps * maxAbsPivot;
 npos  = sum(ev >  tol);
 nneg  = sum(ev < -tol);
 nzero = sum(absEv <= tol);

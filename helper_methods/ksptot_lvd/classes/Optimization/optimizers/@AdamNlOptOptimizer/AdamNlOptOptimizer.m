@@ -9,11 +9,29 @@ classdef AdamNlOptOptimizer < AbstractGradientOptimizer
 
     properties(Access = private)
         options(1,1) AdamNlOptOptions = AdamNlOptOptions();
+        % Warm start for the next solve (A3): the multipliers returned by the
+        % last adamnlopt.solve, keyed on the problem sizes that produced them.
+        % LVD users re-run a mission after small edits; reseeding the costates
+        % and the barrier saves ~10 iterations of rebuilding them.  A size
+        % mismatch (edited variables/constraints) silently disables it.
+        warmLambda = []
+        warmN = 0
+        warmM = -1
     end
 
     methods
         function obj = AdamNlOptOptimizer()
             obj.options = AdamNlOptOptions();
+        end
+
+        function stashWarmStart(obj, lambda, nVars, nCons)
+        %STASHWARMSTART  Remember a solve's multipliers for the next run (A3).
+        %   Called with the lambda struct adamnlopt.solve returned; the next
+        %   optimize() with the same variable/constraint counts passes it back
+        %   as opts.lambda0.
+            obj.warmLambda = lambda;
+            obj.warmN = nVars;
+            obj.warmM = nCons;
         end
 
         function [exitflag, message] = optimize(obj, lvdOpt, writeOutput, callOutputFcn, hLvdMainGUI, progressFcn)
@@ -46,6 +64,15 @@ classdef AdamNlOptOptimizer < AbstractGradientOptimizer
             evtToStartScriptExecAt = lvdOpt.lvdData.script.getEventForInd(evtNumToStartScriptExecAt);
 
             opts = obj.options.getOptionsForOptimizer(typicalX);
+
+            % Warm start (A3): multipliers stashed from the previous run solve
+            % from the solution in a couple of iterations instead of rebuilding
+            % the costates and the barrier (~10 iterations).  Only when the
+            % problem sizes match; any edit to variables/constraints disables.
+            if ~isempty(obj.warmLambda) && obj.warmN == numel(x0All) && ...
+                    obj.warmM == lvdOpt.constraints.getNumConstraints()
+                opts.lambda0 = obj.warmLambda;
+            end
 
             objFuncWrapper = @(x) lvdOpt.objFcn.evalObjFcn(x, evtToStartScriptExecAt);
 
@@ -200,6 +227,32 @@ classdef AdamNlOptOptimizer < AbstractGradientOptimizer
         end
     end
 
+    methods(Static)
+        function obj = cloneFrom(other)
+        %CLONEFROM  An independent optimizer with the same option values.
+        %   obj = AdamNlOptOptimizer.cloneFrom(other) is used by
+        %   LvdOptimization.loadobj: a .mat saved before AdamNlOpt existed
+        %   holds no adamNlOptOpt of its own, so every such case loaded in one
+        %   session shares the class-default handle -- and an option set for
+        %   one case leaks into all the others (D32).  Cloning on load gives
+        %   each case its own object going forward.  Warm-start state is NOT
+        %   copied: it belongs to the run that produced it.
+            obj = AdamNlOptOptimizer();
+            if isempty(other)
+                return;
+            end
+            obj.options = other.options.copy();
+        end
+
+        function due = stateReadoutDue(iteration, haveCache)
+        %STATEREADOUTDUE  Whether the state readout needs a fresh propagation.
+        %   The readout is display-only and each refresh costs a full mission
+        %   propagation, so it refreshes on iteration 0 and every 5th
+        %   iteration; in between the last readout is re-shown (A10).
+            due = ~haveCache || mod(iteration, 5) == 0;
+        end
+    end
+
     methods(Access=private)
         function [f, g, stateLog] = objFuncWithGradient(~, objFun, x, gradCalcMethod, useParallel)
             [f, stateLog] = objFun(x);
@@ -264,6 +317,7 @@ classdef AdamNlOptOptimizer < AbstractGradientOptimizer
 
         function stop = getOutputFunction(x, optimValues, state, hOptimStatusLabel, hFinalStateOptimLabel, hDispAxes, hCancelButton, ...
                                           objFcn, lb, ub, celBodyData, recorder, propNames, writeOutput, varLabels, lbUsAll, ubUsAll, optimStartTic, lvdOpt, evtToStartScriptExecAt) %#ok<INUSD>
+            persistent lastStateLog
             switch state
                 case 'iter'
                     stop = get(hCancelButton,'Value');
@@ -278,10 +332,23 @@ classdef AdamNlOptOptimizer < AbstractGradientOptimizer
             end
 
             if(stop == true)
+                % Fresh readout for the cancelled point, then out: the only
+                % per-cancel propagation.
+                [~, stateLog] = objFcn(x);
                 return;
             end
 
-            [~, stateLog] = objFcn(x);
+            % The state readout below is display-only (the recorder above
+            % already took everything the scorecard needs), and each call
+            % costs a full mission propagation -- the same-x cache misses
+            % because the last propagation was an FD probe.  On an n = 5-10
+            % LVD case that is 10-50% of every iteration.  Refresh it on
+            % iteration 0 and every 5th iteration; in between, re-show the
+            % last one (A10).
+            if(AdamNlOptOptimizer.stateReadoutDue(optimValues.iteration, ~isempty(lastStateLog)))
+                [~, lastStateLog] = objFcn(x);
+            end
+            stateLog = lastStateLog;
 
             if(strcmpi(state,'init') || strcmpi(state,'iter'))
                 try

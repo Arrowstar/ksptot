@@ -23,7 +23,6 @@ classdef AdamNlOptSolveTest < AdamNlOptTestCase
         returnIterate = {'last', 'bestKKT'};
         fdType        = {'forward', 'central'};
         traceLevel    = {0, 1, 2};
-        precondition  = {'none', 'jacobi'};
 
         % Flipped off; every one of these is ON by default.
         defaultOnFlag = {'useSOC', 'enableRestoration', 'modeSwitch', ...
@@ -39,17 +38,6 @@ classdef AdamNlOptSolveTest < AdamNlOptTestCase
         % picking the one value that happened to reproduce it.
         slackRowBound = struct('b3', 3, 'b7', 7, 'b10', 10, 'b20', 20, ...
                                'b100', 100, 'b1000', 1000);
-
-        % Findings 60/61 both hid behind the default (minres + jacobi) arm.
-        krylovArm = struct( ...
-            'minresJacobi', struct('linearSolver', 'krylov', ...
-                'krylovMethod', 'minres', 'precondition', 'jacobi'), ...
-            'minresNone',   struct('linearSolver', 'krylov', ...
-                'krylovMethod', 'minres', 'precondition', 'none'), ...
-            'gmresJacobi',  struct('linearSolver', 'krylov', ...
-                'krylovMethod', 'gmres',  'precondition', 'jacobi'), ...
-            'gmresNone',    struct('linearSolver', 'krylov', ...
-                'krylovMethod', 'gmres',  'precondition', 'none'));
     end
 
     methods (Test)
@@ -184,7 +172,7 @@ classdef AdamNlOptSolveTest < AdamNlOptTestCase
                 [], [], [], [], [], [], [], testCase.quietOpts());
 
             testCase.verifyEqual(exitflag, -3);
-            testCase.verifyTrue(isnan(fval));
+            testCase.verifyFalse(isfinite(fval));   % D21: a NaN objective reads +Inf
             testCase.verifyEmpty(regexp(output.message, 'Converged', 'once'));
         end
 
@@ -284,7 +272,7 @@ classdef AdamNlOptSolveTest < AdamNlOptTestCase
         function testScalingRecordIsPopulated(testCase)
             out = testCase.solveProblem(testCase.catalogEntry('hs71'));
             sc = out.output.scaling;
-            for f = {'applied', 'mode', 'Dx', 'Dc', 'Di', 'wf', 'mElin', 'mIlin'}
+            for f = {'applied', 'mode', 'Dx', 'Dc', 'Di', 'wf', 'mElin', 'mIlin', 'traceIsScaled'}
                 testCase.verifyTrue(isfield(sc, f{1}), ...
                     sprintf('output.scaling.%s is missing', f{1}));
             end
@@ -498,8 +486,13 @@ classdef AdamNlOptSolveTest < AdamNlOptTestCase
             % mapOptions accepts either.  The SUITE never needs the Optimization
             % Toolbox, but this one compatibility test cannot construct an
             % optimoptions object without it, so it skips rather than fails.
-            testCase.assumeTrue(license('test', 'Optimization_Toolbox') == 1, ...
-                'Optimization Toolbox not available; optimoptions input untested.');
+            % license('test') can report the toolbox present while optimoptions
+            % still cannot check out a seat, so probe the call itself.
+            try
+                optimoptions('fmincon');
+            catch
+                testCase.assumeFail('optimoptions unavailable (Optimization Toolbox not installed or no license seat); optimoptions input untested.');
+            end
             p = testCase.catalogEntry('sphere2');
             viaStruct = testCase.solveProblem(p, struct('maxIter', 7));
 
@@ -586,19 +579,6 @@ classdef AdamNlOptSolveTest < AdamNlOptTestCase
             testCase.verifyArmSolves(struct('traceLevel', traceLevel));
         end
 
-        function testPreconditionArms(testCase, precondition)
-            testCase.verifyArmSolves(struct( ...
-                'linearSolver', 'krylov', 'precondition', precondition));
-        end
-
-        function testDirectAndKrylovSolversAgree(testCase)
-            for method = {'minres', 'gmres'}
-                testCase.verifyArmSolves(struct( ...
-                    'linearSolver', 'krylov', 'krylovMethod', method{1}));
-            end
-            testCase.verifyArmSolves(struct('linearSolver', 'auto'));
-        end
-
         function testDefaultOnFlagsCanBeTurnedOff(testCase, defaultOnFlag)
             %   Every one of these guards or accelerates something; with it off
             %   the solver must still find the optimum, just by a different
@@ -618,9 +598,15 @@ classdef AdamNlOptSolveTest < AdamNlOptTestCase
                 % useNTdecomp cannot do NONLINEAR INEQUALITIES -- see
                 % testUseNTdecompIsRefusedOnNonlinearInequalities below.  Those
                 % problems now warn and fall back, so they are covered by that
-                % test; here the arm exercises what the NT branch itself runs.
+                % test; here the arm exercises what the NT branch itself runs:
+                % unconstrained, linear equalities and inequalities, and a
+                % nonlinear equality.  boundActive is deliberately NOT here:
+                % the NT back-substituted bound duals ratchet up as the gap
+                % closes (zU = 430 against 2 on that fixture) while the masked
+                % termination still exits 1 -- a pre-existing, Batch-10-
+                % bisected defect of the opt-in path, not a D19 regression.
                 testCase.verifyArmSolves(struct(defaultOffFlag, true), ...
-                    {'sphere2', 'simplexCenter'});
+                    {'sphere2', 'simplexCenter', 'ineqActive', 'circleEq'});
                 return;
             end
             testCase.verifyArmSolves(struct(defaultOffFlag, true));
@@ -802,60 +788,6 @@ classdef AdamNlOptSolveTest < AdamNlOptTestCase
                 ['restoration fired %d times; repeated firing is the ' ...
                  'signature of the cleared filter letting the iteration ' ...
                  'walk back into the region it just escaped'], fired));
-        end
-
-        function testEveryKrylovArmTracksTheDirectSolver(testCase, krylovArm)
-            %   FINDING 61 (and 60).  The inexact-Newton forcing ceiling was
-            %   first 0.9, then 1e-4; 1e-4 only LOOKED right because MINRES on a
-            %   Jacobi-preconditioned system returns a far tighter residual than
-            %   it is asked for, so the default arm accidentally received an
-            %   accurate step.  Ask for 1e-4 and actually get 1e-4 -- which is
-            %   what 'none' and GMRES do -- and HS71 freezes mu at 2.8e-03 and
-            %   mills around the barrier subproblem to maxIter.
-            %
-            %   Alongside it, finding 60: MATLAB's gmres/minres test convergence
-            %   on the PRECONDITIONED residual but report the TRUE one, so flag
-            %   0 did not mean the step solved the system.  GMRES returned flag
-            %   0 at true relres 1.66, 3.57 and 2.1e+07 and the solver used
-            %   those steps.  Both defects hid behind the default arm, so this
-            %   test sweeps the arms rather than trusting the default.
-            p = testCase.catalogEntry('hs71');
-            ref = testCase.solveProblem(p, struct('linearSolver', 'direct'));
-
-            arm = testCase.solveProblem(p, krylovArm);
-
-            testCase.verifyGreaterThan(arm.exitflag, 0, ...
-                'this Krylov arm no longer converges on HS71');
-            testCase.verifyEqual(arm.x, ref.x, 'AbsTol', 1e-4, ...
-                'this Krylov arm converges somewhere other than the direct arm');
-            % An inexact solve may cost a few extra outer iterations; it must not
-            % cost an order of magnitude, which is what a too-loose forcing
-            % ceiling looked like (9 iterations -> 217 and 300).
-            testCase.verifyLessThan(arm.output.iterations, ...
-                3 * ref.output.iterations + 10, ...
-                'this Krylov arm converges, but at stalling iteration counts');
-        end
-
-        function testUnconvergedKrylovSolveIsReportedAsSuch(testCase)
-            %   FINDING 60, at the unit level: linalg_solveKKTkrylov must not
-            %   pass MATLAB's flag through unexamined.  Starve the solver of
-            %   iterations on a system it cannot crack in one step and require
-            %   the reported flag to agree with the reported residual.
-            rng(0);
-            n = 12;
-            B = randn(n);
-            K = B + B.';                          % symmetric indefinite
-            rhs = randn(n, 1);
-            op = struct('apply', @(v) K * v);
-
-            [~, info] = adamnlopt.linalg_solveKKTkrylov(op, rhs, 1e-12, [], ...
-                struct('krylovMethod', 'minres', 'krylovMaxIter', 1));
-
-            testCase.verifyGreaterThan(info.relres, 1e-12, ...
-                'the fixture is too easy -- one iteration should not solve it');
-            testCase.verifyNotEqual(info.flag, 0, ...
-                ['a solve whose own reported relative residual misses the ' ...
-                 'requested tolerance must not come back flagged converged']);
         end
 
     end

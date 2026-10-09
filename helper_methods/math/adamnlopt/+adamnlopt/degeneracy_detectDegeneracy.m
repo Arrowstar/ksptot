@@ -52,7 +52,11 @@ mE = size(JE, 1);
 flags = struct();
 
 % Equality Jacobian rank.
-flags.rankE = matrixRank(JE);
+% Absolute noise floor on the rank test (D5): with FD constraint derivatives a
+% row at the FD resolution is noise, which a purely RELATIVE tolerance can never
+% call dependent (one near-zero row always has rank 1).  solve.m sets it.
+tolAbs = getf(state, 'jacNoiseTol', 0);
+flags.rankE = matrixRank(JE, tolAbs);
 flags.linDepE = flags.rankE < mE;
 
 % Active inequality set (|cI| within feasibility tolerance of the boundary).
@@ -73,14 +77,18 @@ if isempty(Aact)
 elseif ~any(active)
     flags.rankActive = flags.rankE;
 else
-    flags.rankActive = matrixRank(Aact);
+    flags.rankActive = matrixRank(Aact, tolAbs);
 end
 flags.linDepActive = flags.rankActive < size(Aact, 1);
 
 % Weakly active inequalities: active but with a vanishing multiplier.
+% Scaled against mu like control_activeSetConfidence (absolute max(1,||lam||)
+% blinded this test on problems with ~1e-3 multipliers); mu defaults to 1 when
+% the caller passes no barrier parameter, which recovers the old scale.
 weak = false(size(active));
 if ~isempty(lamI) && any(active)
-    lamScale = max(1, norm(lamI, inf));
+    mu = getf(state, 'mu', 1);
+    lamScale = max(norm(lamI, inf), max(mu, eps));
     weak = active & (abs(lamI) <= 1e-6 * lamScale);
 end
 flags.weaklyActive = weak;
@@ -89,7 +97,7 @@ flags.degenerate = flags.linDepE || flags.linDepActive || any(weak);
 flags.n = n;
 end
 
-function r = matrixRank(A)
+function r = matrixRank(A, tolAbs)
 %MATRIXRANK  Numerical rank of A from a column-pivoted QR.
 %   r = matrixRank(A) counts the entries of |diag(R)| from a column-pivoted QR
 %   of A that exceed a tolerance scaled by the largest of them, giving a
@@ -110,6 +118,7 @@ function r = matrixRank(A)
 %
 %   Outputs:
 %     r - numerical rank of A.
+if nargin < 2 || isempty(tolAbs), tolAbs = 0; end
 if isempty(A)
     r = 0;
     return;
@@ -123,7 +132,7 @@ if isempty(dR)
 end
 dmax = max(dR);
 tol  = max(size(A)) * eps(dmax);
-r    = sum(dR > max(tol, 1e-12 * dmax));
+r    = sum(dR > max([tol, 1e-12 * dmax, tolAbs]));
 end
 
 function v = getf(s, f, dflt)

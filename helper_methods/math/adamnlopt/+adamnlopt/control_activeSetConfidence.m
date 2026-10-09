@@ -49,7 +49,11 @@ if isempty(sEff), sEff = zeros(nI, 1); end
 active = abs(cI) <= max(feasTol, 1e-8) | sEff <= max(feasTol, 1e-8);
 
 % Per-constraint confidence: ratio of multiplier magnitude to its scale.
-lamScale  = max(1, norm(lamI, inf));
+% Scaled by the barrier parameter (or the multipliers themselves), not by an
+% absolute max(1, ||lam||): on a problem whose multipliers are ~1e-3 the old
+% scale capped every confidence at 1e-2, so a converged active set could never
+% read as confident.  Judged against mu, s_i*lam_i ~ mu is full confidence.
+lamScale  = max(norm(lamI, inf), max(mu, eps));
 lamNorm   = abs(lamI) / lamScale;          % in [0,1] after scaling
 
 % For active constraints: confidence proportional to multiplier magnitude.

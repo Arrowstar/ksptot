@@ -9,10 +9,11 @@ classdef AdamNlOptParallelEnum < matlab.mixin.SetGet
 
         %Async is NOT offered in the UI (see selectable).  The solver's
         %Evaluator routes 'async' through exactly the same parallel
-        %finite-difference path as 'finitediff' -- parallel_asyncEvaluator has
-        %no caller -- so picking it promised a different evaluation strategy
-        %and delivered the other one.  The member stays so saved cases that
-        %already hold it still load; AdamNlOptOptions.loadobj rewrites them.
+        %finite-difference path as 'finitediff' (the standalone
+        %parallel_asyncEvaluator is deleted) -- so picking it promised a
+        %different evaluation strategy and delivered the other one.  The member
+        %stays so saved cases that already hold it still load;
+        %AdamNlOptOptions.loadobj rewrites them.
         Async('async', 'Asynchronous Evaluation', true)
     end
 

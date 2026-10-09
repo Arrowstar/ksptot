@@ -6,8 +6,13 @@ function res = kkt_residual(state)
 %       rStat   stationarity: g + JE'*lamE + JI'*lamI - zL + zU
 %       rFeasE  equality feasibility: cE
 %       rFeasI  inequality feasibility (with slacks): cI + s
-%       rComp   complementarity residual (barrier-free): [s.*lamI; ...]
+%       rComp   complementarity residual (barrier-free): s.*lamI only
 %       feas, opt, comp   scalar infinity norms
+%   Bound complementarity (dxl.*zL, dxu.*zU) is deliberately NOT in rComp:
+%   rStat already carries zL/zU, and the bound products are driven to zero by
+%   the barrier schedule itself (compInfNorm, the mu-perturbed residual the
+%   mu update gates on), which sees them every iteration.  Adding them here
+%   would double-count the barrier's own endgame in the termination test.
 %   Empty blocks (no inequalities/bounds) drop out cleanly, so the same
 %   routine serves the equality-only core and the full interior-point method.
 %

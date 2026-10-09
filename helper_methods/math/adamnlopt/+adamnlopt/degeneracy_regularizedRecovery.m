@@ -33,7 +33,7 @@ import adamnlopt.*
 
 resNorm = norm([res.rStat; res.rFeasE]);
 gammaMin = min(1e-2, max(1e-8, 1e-2 * resNorm));
-reg0 = struct('delta', 0, 'gamma', gammaMin);
+reg0 = struct('delta', 0, 'gamma', gammaMin, 'gammaFloor', gammaMin);
 
 [d, idx, info, reg] = kkt_inertiaCorrection(state, res, n, mE, reg0);
 info.gammaMin = gammaMin;

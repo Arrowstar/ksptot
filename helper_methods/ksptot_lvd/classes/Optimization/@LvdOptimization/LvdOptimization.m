@@ -314,6 +314,16 @@ classdef LvdOptimization < matlab.mixin.SetGet
             if(isempty(obj.vars.lvdData))
                 obj.vars.lvdData = obj.lvdData;
             end
+
+            % A handle-valued property default is evaluated once per class load
+            % and shared by every instance that does not set its own (D32).
+            % The constructor assigns a fresh AdamNlOptOptimizer, but load
+            % never runs the constructor, and a .mat saved before AdamNlOpt
+            % existed stores no adamNlOptOpt at all -- so every such case
+            % loaded in one session shares one optimizer (and one options
+            % object): an option set for one case leaks into all the others.
+            % Cloning on load gives each case its own going forward.
+            obj.adamNlOptOpt = AdamNlOptOptimizer.cloneFrom(obj.adamNlOptOpt);
         end        
     end
     

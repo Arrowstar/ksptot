@@ -18,8 +18,6 @@ function opts = defaultOptions()
 %     Hessian model    - hessianApprox ('exact'|'fd'|'lbfgs' limited-memory|
 %                         'bfgs' full-memory dense) and lbfgsMemory ('lbfgs'
 %                         only).
-%     Linear algebra   - direct vs Krylov KKT solves, forcing sequence, and
-%                         preconditioning (linearSolver, krylovMethod, etc.).
 %     Scaling          - automatic problem scaling (autoScale); ON by default.
 %     Globalization    - filter vs merit line search (globalization).
 %     Barrier schedule - central-path parameters (mu0, muMin, muGamma, muBeta,
@@ -49,6 +47,7 @@ opts.SpecifyConstraintGradient = false;  % nonlcon returns [c,ceq,gc,gceq]
 opts.HessianFcn                = [];      % @(x,lambda) Hessian of Lagrangian
 opts.HessPattern               = [];      % sparsity pattern of Hessian
 opts.JacobPattern              = [];      % sparsity pattern of nonlinear c Jacobian
+opts.CheckJacobPattern         = true;    % one-shot dense cross-check of JacobPattern (n <= 400)
 opts.FiniteDifferenceStepSize  = sqrt(eps);
 opts.FiniteDifferenceType      = 'forward'; % 'forward' | 'central'
 
@@ -94,6 +93,12 @@ opts.FiniteDifferenceType      = 'forward'; % 'forward' | 'central'
 % is accepted by mapOptions.
 opts.HonorBounds = true;
 
+% --- Derivative checker (A8; fmincon's CheckGradients) ---
+% At x0, compare every SUPPLIED derivative (objective gradient, constraint
+% Jacobian) with central differences and warn 'adamnlopt:checkGradients'
+% above 1e-3 relative.  Costs 2n objective and 2n constraint evaluations, once.
+opts.CheckGradients = false;
+
 % --- Automatic finite-difference step calibration (ON by default) ---
 % The default step sqrt(eps) assumes the objective/constraints are evaluated to
 % machine precision.  Simulation-based problems (ODE integration, iterative
@@ -112,6 +117,14 @@ opts.autoFDStep = true;   % calibrate the FD step/type from a V-curve at x0
 % --- Termination tolerances ---
 opts.optTol   = 1e-6;   % stationarity (first-order optimality)
 opts.feasTol  = 1e-6;   % primal feasibility (equality + inequality + bounds)
+% Physical-units feasibility gate (IPOPT's constr_viol_tol).  feasTol is tested
+% on the ROW-SCALED constraints the solver works with (Dc.*c, Dc <= 1), so on a
+% row with gradient 1e4 a physical violation of 1e-2 reads as 1e-6 and passed
+% the convergence test.  Every convergence exit now also requires the max
+% violation in the caller's own units to be <= constrViolTol, and
+% output.constrViolation reports that physical value (the scaled one is
+% output.constrViolationScaled).  Inf restores the scaled-only behaviour.
+opts.constrViolTol = 1e-4;
 opts.compTol  = [];     % complementarity; [] ties it to optTol in solve (see there)
 opts.stepTol  = 1e-12;  % minimum step norm before restoration/stall
 opts.maxIter  = 300;
@@ -192,6 +205,24 @@ opts.objPlateauWindow = 40;     % consecutive flat-objective iters required
 opts.objPlateauFtol   = 1e-5;   % "flat" = |df| <= this * max(1,|f|)
 opts.objPlateauOptTol = 3e-6;   % stationarity gate for the plateau exit (3x optTol)
 opts.objPlateauOptWindow = 10;  % consecutive iters the gate must hold (1 = touch once)
+
+% --- Acceptable-point termination (IPOPT acceptable_tol / acceptable_iter, A5) ---
+% Stop with exitflag 2 once the iterate has held an "acceptable" level for
+% acceptableIter consecutive iterations: scaled stationarity <= acceptableTol,
+% scaled feasibility <= 100*feasTol, physical violation <= constrViolTol, and
+% scaled complementarity <= 100*compTol.  A noisy or stiff problem that can
+% never meet optTol otherwise grinds to maxIter and reports exitflag 0 (or
+% stops on its step tolerance short of the gate).  [] ties acceptableTol to
+% 100*optTol in solve; acceptableIter = 0 disables the exit.
+opts.acceptableTol  = [];
+opts.acceptableIter = 15;
+
+% --- Filter reset heuristic (IPOPT filter_reset_trigger / max_filter_resets, A4) ---
+% Clear the filter's stored entries after this many consecutive iterations in
+% which a stored entry rejected the full-length trial, at most maxFilterResets
+% times per solve.  filterResetTrigger = Inf disables it.
+opts.filterResetTrigger = 5;
+opts.maxFilterResets    = 5;
 
 % --- Hessian model ---
 % 'exact' (finite-difference Hessian of the Lagrangian, or opts.HessianFcn)
@@ -338,42 +369,6 @@ opts.bfgsResetMaxDrop        = inf;
 opts.bfgsCondMax             = 1e12;
 opts.lbfgsMemory   = 10;       % 'lbfgs' only; ignored by 'bfgs'
 
-% --- Linear algebra ---
-opts.linearSolver = 'direct';  % 'direct' | 'krylov' | 'auto'
-opts.krylovMethod = 'minres';  % 'minres' | 'gmres'
-opts.krylovAutoDim = 500;      % 'auto' switches to krylov when n+mE exceeds this
-opts.krylovMaxIter = [];       % [] -> problem-size default inside the solver
-% Eisenstat-Walker's own ceiling is 0.9, and that is what this used to be -- but
-% 0.9 is calibrated for a Newton-Krylov solve of F(x)=0 globalized on ||F||, where
-% a sloppy linear solve is caught by the residual-based line search.  This solver
-% globalizes on a PRIMAL (theta, phi) filter, which cannot see dual error at all,
-% so a 90%-residual "solve" injects a completely unchecked dlam.  On HS71 that is
-% exactly what happened: MINRES returned flag 0 after ONE iteration at relres
-% 5e-2, the equality multiplier jumped from 6.4 to 289 in a single step, the
-% primal step collapsed to aP = 1e-10, and the solve stalled at f = 17.44 with
-% firstOrderOpt = 6.1e+06 while the direct solver reached f = 17.0140175 in nine
-% iterations.
-%
-% The first repair of this set it to 1e-4, which was still a decade too loose and
-% only LOOKED correct: MINRES on a Jacobi-preconditioned system routinely returns
-% a far tighter residual than it was asked for, so the default arm accidentally
-% got an accurate step.  Ask for 1e-4 and actually receive 1e-4 -- which is what
-% happens with precondition = 'none', or with GMRES -- and HS71 degrades the same
-% way: mu freezes at 2.8e-03 because the barrier subproblem never reaches
-% kappaMu*mu, and the solve mills around that subproblem's optimum to maxIter
-% (ef 0, f = 17.106 / 17.137 against 17.0140175).  A sweep over the full
-% benchmark battery x {direct, minres, gmres} x {jacobi, none} puts the honest
-% ceiling at 1e-6: below it every arm tracks the direct path to within 3% on
-% total iterations, above it the weaker arms break.  Tightening the ceiling costs
-% nothing measurable here and SAVES outer iterations (an accurate step is a
-% better step); etaMin drops to 1e-10 so the Eisenstat-Walker sequence keeps four
-% decades to adapt over instead of collapsing onto a constant.
-opts.forcingEtaMax = 1e-6;     % inexact-Newton forcing sequence upper clamp
-opts.forcingEtaMin = 1e-10;    % forcing sequence lower clamp
-opts.forcingGamma  = 1.0;      % Eisenstat-Walker choice-2 coefficient
-opts.forcingAlpha  = 1.618;    % Eisenstat-Walker choice-2 exponent
-opts.precondition  = 'jacobi'; % 'none' | 'jacobi' preconditioner for krylov
-
 % --- Automatic problem scaling (ON by default) ---
 % Poorly scaled problems are the single most common cause of a "stuck" solve:
 % when variables/constraints span many orders of magnitude the KKT residual is
@@ -424,6 +419,15 @@ opts.autoScale = 'gradient';  % 'gradient' | 'curvature' | 'bounds' | 'none'
 % unchanged, since their raw spreads are already below it.  Set Inf to restore
 % the uncapped bound-range rule.
 opts.autoScaleMaxSpread = 1e4;
+
+% Constraint rows are scaled only when their gradient (in the variable-scaled
+% space) exceeds this, and then down to exactly this size: Dc_i =
+% min(1, autoScaleMaxGradient/||row_i||).  IPOPT's nlp_scaling_max_gradient.
+% The former rule min(1, 1/||row_i||) shrank EVERY row steeper than 1, so
+% already-normalised constraints with O(1..100) gradients were scaled down and
+% feasTol was then applied to a smaller number than the user's own violation.
+% Set 1 for the former behaviour.
+opts.autoScaleMaxGradient = 100;
 
 % Per-constraint cap on the scaled objective curvature in 'curvature' mode.
 %
@@ -503,7 +507,9 @@ opts.divergeWindow = Inf;      % consecutive regressed iters before declaring di
 % 'bestKKT' - return the feasible iterate with the smallest scaled stationarity
 %             seen during the run, when that is strictly better than the last one.
 %
-% Only limit exits (exitflag 0: maxIter, maxFunEvals, maxTime) are affected.  A
+% Only limit exits (exitflag 0: maxIter, maxFunEvals, maxTime) and user stops
+% (exitflag -1: an IterationFcn returned true, e.g. the LVD Cancel button) are
+% affected -- a user stop is the same "halted mid-run" case.  A
 % convergence exit (1 or 2) always returns its final iterate -- that point is the
 % answer by definition, and rolling back would contradict the test that just
 % fired.  The divergence/non-finite exit (-3) always rolls back to the most
@@ -528,6 +534,17 @@ opts.muGamma = 0.2;    % linear reduction factor
 opts.muBeta  = 1.5;    % superlinear exponent: mu^(1+beta)
 opts.kappaMu = 10;     % reduce mu when kkt_mu <= kappaMu*mu
 opts.tau     = 0.995;  % fraction-to-boundary base
+
+% --- Warm start from a previous solve (A3) ---
+% fmincon-style lambda0 (struct with eqlin/eqnonlin/ineqlin/ineqnonlin/lower/
+% upper over the FULL problem, exactly as adamnlopt.solve returns it) seeds
+% the multipliers instead of rebuilding them from zero; muWarm seeds the
+% barrier parameter ([] derives mu from the seeded complementarity
+% mean(s.*lamI)).  Re-running a mission after small edits then converges in
+% a couple of iterations.  Mismatched sizes fall back to the cold start
+% silently.  LVD replays the previous run's lambda automatically.
+opts.lambda0 = [];
+opts.muWarm  = [];
 
 % --- Trust region ---
 opts.delta0   = 1.0;
@@ -644,7 +661,24 @@ opts.feasAdmitFactor = 100;     % stall admission floor: feasErr <= max(gateBase
 % cond-based dual regularization (Fix A) CANNOT substitute for this: when
 % sigma_max(S) is itself tiny (~1e-2 on the orbit endgame), no bound on cond(S)
 % bounds ||S^{-1}*rpE||, so the magnitude cap is the load-bearing safeguard.
+% kappa_Sigma safeguard on the bound/slack multipliers after each dual step
+% (Waechter-Biegler 2006 eq. 16): z*gap/mu is clamped to [1/kappaSigma,
+% kappaSigma].  Inf disables it.
+opts.kappaSigma         = 1e10;
 opts.dualStepMax        = 10;    % Fix B: max ||aD*dlamE|| / max(1,||lamE||) per step
+% D15: the Fix-A dual shift is capped at dualRegFeasFactor*||cE||_inf so it
+% vanishes as the iterate becomes feasible (it otherwise offsets the
+% feasibility row by gamma*dlamE indefinitely).  Inf restores the uncapped shift.
+opts.dualRegFeasFactor = 1;
+% D5.2: on a rank-deficient JE, grow the dual regularization until the coupled
+% KKT step respects dualStepMax (so dx is solved with the capped dlamE).
+% true | false | 'equality' (default: on in the equality core only).  The
+% equality core needs it on min x1+x2 over the unit circle from x0 = 0 with FD
+% gradients (it converges to the maximum without); the IP core finds the
+% minimum either way, and there the cap regresses
+% lvdExample_MunarFlybyContinuityConstraint (rank-deficient JE, cond ~1e17).
+% LVD always runs the IP core.
+opts.dualCapViaGamma = 'equality';
 opts.dualCondMax        = 1e8;   % Fix A: target ceiling on cond(S) after dual reg
 opts.dualCondProbeMaxDim = 400;  % skip Fix A's Schur probe when mE exceeds this
 
@@ -655,12 +689,14 @@ opts.trMaxInner   = 20;     % max trust-region inner iterations before fallback 
 % --- Second-order correction (Waechter-Biegler) for the filter line search ---
 % On strongly nonlinear constraints the full KKT step is rejected because
 % constraint curvature raises theta (Maratos effect), collapsing the step to
-% amin.  When the accepted step falls below socThreshold*aMax, retry with a
-% corrected direction that also cancels the constraint value at the full trial
-% point (re-solving the condensed KKT system with RHS c_soc = alpha*c + c(x+ad)).
+% amin.  When the FULL step is rejected with theta increased, try up to socMax
+% corrected directions (one trial each) that also cancel the constraint values
+% at the trial point (RHS c_soc = alpha*c + c(trial), slack rows included),
+% before ordinary backtracking -- the Waechter-Biegler order (review D17.2).
+% (socThreshold, which triggered SOC after a full backtracking collapse, was
+% removed with that change.)
 opts.useSOC       = true;   % enable second-order correction in the IP filter line search
 opts.socMax       = 4;      % max successive SOC re-solves per iteration
-opts.socThreshold = 0.1;    % trigger SOC when linesearch alpha < socThreshold * aMax
 
 % --- Least-squares equality-multiplier refresh ---
 % Near the central-path floor the Newton-accumulated equality multipliers
@@ -680,7 +716,6 @@ opts.socThreshold = 0.1;    % trigger SOC when linesearch alpha < socThreshold *
 % during a genuine feasibility drive (feas dominates), protecting the secant.
 opts.lsMultiplierRefresh = true;   % ON by default (dominance-gated; see below)
 opts.lsRefreshDomRatio   = 10;     % refresh when opt > this * feas (costate-lag stall)
-opts.lsRefreshFeasTol    = 1e-3;   % legacy; no longer the primary gate
 
 % Adoption DEADBAND (P3): the re-fit must beat the current weighted dual
 % infeasibility by at least lsRefreshDeadband (a factor < 1).  Without it, any
@@ -765,7 +800,10 @@ opts.modeNearBdryAugJE = false;  % promote high-confidence active inequalities t
 opts.enableBroyden    = false;  % use Broyden rank-1 updates between exact Jacobian refreshes
 opts.broydenMaxStale  = 20;     % steps before mandatory exact Jacobian refresh
 opts.broydenTol       = 0.1;    % Broyden model-error tolerance (triggers early refresh)
-opts.costThreshold    = 0.1;    % seconds: avg FD Jacobian time before auto-enabling Broyden
+opts.costThreshold    = Inf;    % seconds: avg FD Jacobian time before auto-enabling Broyden.
+%   Inf (default) keeps Broyden opt-in via enableBroyden.  The old 0.1 s turned it on
+%   for every simulation-based solve after the first Jacobian, and termination was
+%   then certified against the secant approximation (AdamNlOpt_Review_Report D1).
 
 % --- Per-iteration diagnostic trace ---
 % output.trace is a struct-of-arrays with one row per iteration, recording the
@@ -845,10 +883,12 @@ opts.Plot = false;
 %     alpha            - last accepted primal step length.
 %     mu               - barrier parameter (0 in the equality core).
 %     stepsize         - physical-unit norm of the last accepted step.
-%     constrviolation  - max constraint violation in the SOLVER's scaled space
+%     constrviolation  - max constraint violation in PHYSICAL units: |ceq|,
+%                        max(0,c), |linEq|, max(0,linIneq) and bound
+%                        violations (the fmincon meaning of the field).
+%     constrviolationPhys - same value (kept for existing callers).
+%     constrviolationScaled - max violation in the SOLVER's row-scaled space
 %                        (the metric terminationCheck compares to feasTol).
-%     constrviolationPhys - max |ceq|, max(0,c), |linEq|, max(0,linIneq) and
-%                        bound distances in physical units.
 %     firstorderopt    - scaled first-order optimality (termination metric).
 %     optPrinted       - the optimality value printed in the iteration table.
 %     complementarity  - scaled complementarity residual (termination metric).

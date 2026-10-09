@@ -1,16 +1,15 @@
 classdef eval_BroydenJacobian < handle
 %EVAL_BROYDENJACOBIAN  Rank-1 secant (Broyden) update for constraint Jacobians.
 %   B = adamnlopt.eval_BroydenJacobian(J0) initialises from the exact Jacobian
-%   J0 (mxn). Call B.update(s, y, cNew, xRef) after each step where s=dx, y=dc,
-%   cNew=c(x+) and xRef is the point s was taken from, to advance the secant
-%   approximation:
+%   J0 (mxn). Call B.update(s, y, xRef) after each step where s=dx, y=dc and
+%   xRef is the point s was taken from, to advance the secant approximation:
 %
 %       J_new = J_old + (y - J_old*s) * s' / (s'*s)
 %
 %   The approximation is refreshed (staleness=0) when the Broyden residual
-%   relative to ||cNew|| exceeds opts.broydenTol, or when staleness exceeds
-%   opts.broydenMaxStale. Call B.needsRefresh() to query, then reset with
-%   B.setExact(J) after recomputing the exact Jacobian.
+%   relative to the secant pair's own scale exceeds opts.broydenTol, or when
+%   staleness exceeds opts.broydenMaxStale. Call B.needsRefresh() to query,
+%   then reset with B.setExact(J) after recomputing the exact Jacobian.
 %
 %   B.apply(v) returns J*v (forward product). B.applyT(v) returns J'*v.
 %
@@ -66,19 +65,23 @@ classdef eval_BroydenJacobian < handle
             if nargin >= 3 && ~isempty(tol),      obj.tol_      = tol;      end
         end
 
-        function accepted = update(obj, s, y, cNew, xRef)
+        function accepted = update(obj, s, y, xRef)
         %UPDATE  Apply a rank-1 secant (Broyden) update to the Jacobian.
-        %   accepted = update(obj, s, y, cNew) advances the approximation by
+        %   accepted = update(obj, s, y) advances the approximation by
         %   J = J + (y - J*s)*s'/(s'*s) and increments the staleness counter.
         %   A negligible step s is skipped (staleness still increments). If the
-        %   relative residual ||y - J*s|| / max(1,||cNew||) exceeds tol_, no
-        %   update is applied and staleness is forced to maxStale_ to trigger a
-        %   refresh on the next needsRefresh query.
+        %   relative residual ||y - J*s|| against the pair's own scale
+        %   max(||y||, ||J*s||) exceeds tol_, no update is applied and
+        %   staleness is forced to maxStale_ to trigger a refresh on the next
+        %   needsRefresh query.  Scaling by the constraint VALUE (as before)
+        %   pinned the denominator at 1 near feasibility, so the test went
+        %   absolute on a vanishing ||y - Js|| and a 100%-wrong model passed;
+        %   on O(1e6) constraints it admitted 1e5 absolute errors.
         %
         %   accepted reports whether the Jacobian actually changed, so the
         %   caller knows whether its secant anchor advanced.
         %
-        %   update(obj, s, y, cNew, xRef) supplies the point the step was taken
+        %   update(obj, s, y, xRef) supplies the point the step was taken
         %   from, which sets the scale the "negligible step" test is relative
         %   to.  That test used to read
         %
@@ -96,15 +99,14 @@ classdef eval_BroydenJacobian < handle
         %     obj  - the eval_BroydenJacobian handle object.
         %     s    - n-by-1 step dx = x+ - x.
         %     y    - m-by-1 constraint change dc = c(x+) - c(x).
-        %     cNew - m-by-1 constraint value c(x+), used to scale the residual.
         %     xRef - (optional) n-by-1 point s was taken from; sets the scale of
         %            the negligible-step test. Defaults to 0 (absolute test).
         %
         %   Outputs:
         %     accepted - logical; true when the Jacobian was updated, false when
         %                the step was negligible or the residual forced a refresh.
-            % s: n-vector (dx), y: m-vector (dc = c(x+)-c(x)), cNew: m-vector.
-            if nargin < 5, xRef = 0; end
+            % s: n-vector (dx), y: m-vector (dc = c(x+)-c(x)).
+            if nargin < 4, xRef = 0; end
             ss = s(:);  yy = y(:);
             ss2 = ss.' * ss;
             sMin = sqrt(eps) * max(1, norm(xRef(:), inf));
@@ -114,7 +116,7 @@ classdef eval_BroydenJacobian < handle
                 return;
             end
             res = yy - obj.J_ * ss;
-            resRel = norm(res) / max(1, norm(cNew(:)));
+            resRel = norm(res) / max([norm(yy), norm(obj.J_ * ss), realmin]);
             if resRel > obj.tol_
                 % Residual too large: flag for refresh instead of updating.
                 obj.stale_ = obj.maxStale_;   % forces needsRefresh=true

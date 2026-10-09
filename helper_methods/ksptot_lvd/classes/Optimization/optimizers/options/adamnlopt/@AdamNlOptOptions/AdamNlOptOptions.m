@@ -6,7 +6,7 @@ classdef AdamNlOptOptions < matlab.mixin.SetGet
     %
     %   Numeric properties use the same NaN sentinel as FminconOptions: a NaN
     %   means "leave whatever adamnlopt.defaultOptions() put there".  That
-    %   matters for compTol, muMin and krylovMaxIter, whose default of [] is
+    %   matters for compTol and muMin, whose default of [] is
     %   meaningful -- the solver ties them to optTol/problem size internally --
     %   and must not be clobbered with a number.  Inf is a real value for
     %   maxTime, divergeWindow and bfgsResetMaxDrop; only NaN suppresses.
@@ -15,6 +15,7 @@ classdef AdamNlOptOptions < matlab.mixin.SetGet
         %Tolerances
         optTol(1,1) double = 1E-6;
         feasTol(1,1) double = 1E-6;
+        constrViolTol(1,1) double = 1E-4;  %physical-units feasibility gate (IPOPT constr_viol_tol)
         compTol(1,1) double = NaN;  %NaN -> tied to optTol by the solver
         stepTol(1,1) double = 1E-12;
 
@@ -24,16 +25,21 @@ classdef AdamNlOptOptions < matlab.mixin.SetGet
         maxTime(1,1) double = Inf;  %seconds; enforced by the solver's terminationCheck (exitflag 0)
 
         %Objective plateau exit
-        objPlateauWindow(1,1) double = 40;
+        objPlateauWindow(1,1) double = 15;
         objPlateauFtol(1,1) double = 1E-5;
         objPlateauOptTol(1,1) double = 3E-6;
         objPlateauOptWindow(1,1) double = 10;
 
+        %Acceptable-point exit (exitflag 2)
+        acceptableTol(1,1) double = NaN;   %NaN -> 100*optTol (solver default)
+        acceptableIter(1,1) double = 15;   %0 disables
+
         %Derivatives / finite differences
-        finDiffStepSize(1,1) double = sqrt(eps);
+        finDiffStepSize(1,1) double = NaN;  %NaN -> solver default (sqrt(eps)); keeps autoFDStep armed
         finDiffType(1,1) FminconFiniteDiffTypeEnum = FminconFiniteDiffTypeEnum.TwoPtForwardDiff;
         autoFDStep(1,1) logical = true;
         honorBounds(1,1) logical = true;
+        checkGradients(1,1) logical = false;
 
         %Hessian model
         hessianApprox(1,1) AdamNlOptHessianApproxEnum = AdamNlOptHessianApproxEnum.BFGS;
@@ -48,20 +54,14 @@ classdef AdamNlOptOptions < matlab.mixin.SetGet
         bfgsCondMax(1,1) double = 1E12;
         lbfgsMemory(1,1) double = 10;
 
-        %Linear algebra
-        linearSolver(1,1) AdamNlOptLinearSolverEnum = AdamNlOptLinearSolverEnum.Direct;
-        krylovMethod(1,1) AdamNlOptKrylovMethodEnum = AdamNlOptKrylovMethodEnum.MinRes;
-        krylovAutoDim(1,1) double = 500;
-        krylovMaxIter(1,1) double = NaN;  %NaN -> sized from the problem by the solver
-        forcingEtaMax(1,1) double = 0.9;
-        forcingEtaMin(1,1) double = 1E-8;
-        forcingGamma(1,1) double = 1;
-        forcingAlpha(1,1) double = 1.618;
-        precondition(1,1) AdamNlOptPrecondEnum = AdamNlOptPrecondEnum.Jacobi;
+        %(The Krylov linear-algebra options were removed in review Batch 8;
+        %saved cases drop them on load.  The three enum classes they used are
+        %kept so those cases still deserialize without warnings.)
 
         %Scaling
         autoScale(1,1) AdamNlOptAutoScaleEnum = AdamNlOptAutoScaleEnum.Gradient;
         autoScaleMaxSpread(1,1) double = 1E4;
+        autoScaleMaxGradient(1,1) double = 100;  %rows steeper than this are scaled down to it
         autoScaleCurvGate(1,1) double = 1E4;
         autoScaleCurvProbeMaxDim(1,1) double = 400;
 
@@ -70,12 +70,11 @@ classdef AdamNlOptOptions < matlab.mixin.SetGet
         kappaThetaGrow(1,1) double = 100;
         useSOC(1,1) logical = true;
         socMax(1,1) double = 4;
-        socThreshold(1,1) double = 0.1;
 
         %Divergence detection / result selection
         divergeFactor(1,1) double = 1000;
         divergeWindow(1,1) double = Inf;
-        returnIterate(1,1) AdamNlOptReturnIterateEnum = AdamNlOptReturnIterateEnum.Last;
+        returnIterate(1,1) AdamNlOptReturnIterateEnum = AdamNlOptReturnIterateEnum.BestKKT;
 
         %Barrier and trust region
         mu0(1,1) double = 0.1;
@@ -104,11 +103,11 @@ classdef AdamNlOptOptions < matlab.mixin.SetGet
 
         %Dual (Lagrange multiplier) handling
         dualStepMax(1,1) double = 10;
+        kappaSigma(1,1) double = 1E10;  %bound-multiplier safeguard, z*gap/mu in [1/k, k]
         dualCondMax(1,1) double = 1E8;
         dualCondProbeMaxDim(1,1) double = 400;
         lsMultiplierRefresh(1,1) logical = true;
         lsRefreshDomRatio(1,1) double = 10;
-        lsRefreshFeasTol(1,1) double = 1E-3;
         lsRefreshDeadband(1,1) double = 0.9;
         dualFitCondMax(1,1) double = 1E4;
         dualFitCondMinEq(1,1) double = 8;
@@ -123,7 +122,7 @@ classdef AdamNlOptOptions < matlab.mixin.SetGet
         enableBroyden(1,1) logical = false;
         broydenMaxStale(1,1) double = 20;
         broydenTol(1,1) double = 0.1;
-        costThreshold(1,1) double = 0.1;
+        costThreshold(1,1) double = Inf;  %Inf: Broyden only when enableBroyden is set
 
         %Diagnostics and display
         traceLevel(1,1) double = 1;
@@ -152,6 +151,7 @@ classdef AdamNlOptOptions < matlab.mixin.SetGet
             numericMap = { ...
                 'optTol',                   'optTol'; ...
                 'feasTol',                  'feasTol'; ...
+                'constrViolTol',            'constrViolTol'; ...
                 'compTol',                  'compTol'; ...
                 'stepTol',                  'stepTol'; ...
                 'maxIter',                  'maxIter'; ...
@@ -161,6 +161,8 @@ classdef AdamNlOptOptions < matlab.mixin.SetGet
                 'objPlateauFtol',           'objPlateauFtol'; ...
                 'objPlateauOptTol',         'objPlateauOptTol'; ...
                 'objPlateauOptWindow',      'objPlateauOptWindow'; ...
+                'acceptableTol',            'acceptableTol'; ...
+                'acceptableIter',           'acceptableIter'; ...
                 'finDiffStepSize',          'FiniteDifferenceStepSize'; ...
                 'bfgsGammaCurvCap',         'bfgsGammaCurvCap'; ...
                 'bfgsB0RefreshWindow',      'bfgsB0RefreshWindow'; ...
@@ -171,18 +173,12 @@ classdef AdamNlOptOptions < matlab.mixin.SetGet
                 'bfgsResetMaxDrop',         'bfgsResetMaxDrop'; ...
                 'bfgsCondMax',              'bfgsCondMax'; ...
                 'lbfgsMemory',              'lbfgsMemory'; ...
-                'krylovAutoDim',            'krylovAutoDim'; ...
-                'krylovMaxIter',            'krylovMaxIter'; ...
-                'forcingEtaMax',            'forcingEtaMax'; ...
-                'forcingEtaMin',            'forcingEtaMin'; ...
-                'forcingGamma',             'forcingGamma'; ...
-                'forcingAlpha',             'forcingAlpha'; ...
                 'autoScaleMaxSpread',       'autoScaleMaxSpread'; ...
+                'autoScaleMaxGradient',     'autoScaleMaxGradient'; ...
                 'autoScaleCurvGate',        'autoScaleCurvGate'; ...
                 'autoScaleCurvProbeMaxDim', 'autoScaleCurvProbeMaxDim'; ...
                 'kappaThetaGrow',           'kappaThetaGrow'; ...
                 'socMax',                   'socMax'; ...
-                'socThreshold',             'socThreshold'; ...
                 'divergeFactor',            'divergeFactor'; ...
                 'divergeWindow',            'divergeWindow'; ...
                 'mu0',                      'mu0'; ...
@@ -203,10 +199,10 @@ classdef AdamNlOptOptions < matlab.mixin.SetGet
                 'modeSwitchStagnWindow',    'modeSwitchStagnWindow'; ...
                 'restStallWindow',          'restStallWindow'; ...
                 'dualStepMax',              'dualStepMax'; ...
+                'kappaSigma',               'kappaSigma'; ...
                 'dualCondMax',              'dualCondMax'; ...
                 'dualCondProbeMaxDim',      'dualCondProbeMaxDim'; ...
                 'lsRefreshDomRatio',        'lsRefreshDomRatio'; ...
-                'lsRefreshFeasTol',         'lsRefreshFeasTol'; ...
                 'lsRefreshDeadband',        'lsRefreshDeadband'; ...
                 'dualFitCondMax',           'dualFitCondMax'; ...
                 'dualFitCondMinEq',         'dualFitCondMinEq'; ...
@@ -231,6 +227,7 @@ classdef AdamNlOptOptions < matlab.mixin.SetGet
             logicalMap = { ...
                 'autoFDStep',                'autoFDStep'; ...
                 'honorBounds',               'HonorBounds'; ...
+                'checkGradients',            'CheckGradients'; ...
                 'bfgsB0Refresh',             'bfgsB0Refresh'; ...
                 'useSOC',                    'useSOC'; ...
                 'modeSwitch',                'modeSwitch'; ...
@@ -254,9 +251,6 @@ classdef AdamNlOptOptions < matlab.mixin.SetGet
             enumMap = { ...
                 'finDiffType',    'FiniteDifferenceType'; ...
                 'hessianApprox',  'hessianApprox'; ...
-                'linearSolver',   'linearSolver'; ...
-                'krylovMethod',   'krylovMethod'; ...
-                'precondition',   'precondition'; ...
                 'autoScale',      'autoScale'; ...
                 'globalization',  'globalization'; ...
                 'returnIterate',  'returnIterate'; ...
@@ -282,6 +276,21 @@ classdef AdamNlOptOptions < matlab.mixin.SetGet
         function numWorkers = getNumParaWorkers(obj)
             numWorkers = obj.numWorkers;
         end
+
+        function c = copy(obj)
+        %COPY  An independent AdamNlOptOptions with the same property values.
+        %   c = obj.copy() is used where a fresh handle must inherit settings
+        %   (LvdOptimization.loadobj: instances loaded from a .mat saved
+        %   before AdamNlOpt existed share one class-default options object).
+            c = AdamNlOptOptions();
+            mc = metaclass(obj);
+            for p = mc.PropertyList.'
+                if p.Dependent || p.Constant || ~strcmp(p.SetAccess, 'public')
+                    continue;
+                end
+                c.(p.Name) = obj.(p.Name);
+            end
+        end
     end
 
     methods(Static)
@@ -296,6 +305,19 @@ classdef AdamNlOptOptions < matlab.mixin.SetGet
             %cases to the mode they were already getting.
             if(obj.parallel == AdamNlOptParallelEnum.Async)
                 obj.parallel = AdamNlOptParallelEnum.FiniteDiffs;
+            end
+
+            %Saved cases carry the old defaults.  Each is migrated only when it
+            %still holds the old default value, so a value the user chose is kept.
+            %  - finDiffStepSize: sqrt(eps) (exactly, or after a GUI text round
+            %    trip) becomes NaN = "solver default", which keeps autoFDStep armed.
+            %  - costThreshold 0.1 s silently enabled the Broyden secant Jacobian
+            %    on every simulation-based solve; Inf keeps it opt-in.
+            if(abs(obj.finDiffStepSize - sqrt(eps)) <= 1E-6*sqrt(eps))
+                obj.finDiffStepSize = NaN;
+            end
+            if(obj.costThreshold == 0.1)
+                obj.costThreshold = Inf;
             end
         end
     end
