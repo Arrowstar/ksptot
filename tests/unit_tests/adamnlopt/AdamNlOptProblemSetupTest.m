@@ -1177,6 +1177,18 @@ classdef AdamNlOptProblemSetupTest < AdamNlOptTestCase
             txt = evalc('adamnlopt.util_echoOptions(opts);');
             testCase.verifyNotEmpty(strtrim(txt));
         end
+
+        function testEchoRendersAStructOptionWithoutError(testCase)
+            %   A warm start passes lambda0 (a struct); mat2str cannot render
+            %   structs, which crashed the pre-solve echo on the second LVD
+            %   run of a case.
+            opts = adamnlopt.defaultOptions();
+            opts.lambda0 = struct('eqlin', zeros(0, 1), 'eqnonlin', 1, ...
+                'ineqlin', zeros(0, 1), 'ineqnonlin', 2, ...
+                'lower', zeros(2, 1), 'upper', zeros(2, 1));
+            txt = evalc('adamnlopt.util_echoOptions(opts);');
+            testCase.verifyNotEmpty(regexp(txt, 'lambda0', 'once'));
+        end
     end
 
     %% ------------------------------------------------------------------

@@ -78,6 +78,8 @@ elseif isa(v, 'function_handle')
     s = func2str(v);
 elseif iscell(v)
     s = cellString(v);
+elseif isstruct(v)
+    s = structString(v);
 else
     s = mat2str(v);
 end
@@ -105,4 +107,16 @@ for i = 1:numel(v)
     end
 end
 s = ['{' strjoin(parts, ', ') '}'];
+end
+
+function s = structString(v)
+%STRUCTSTRING  Single-line rendering of a struct option value.
+%   mat2str does not render structs (lambda0 is one), so list each field with
+%   its size: enough to identify what was passed without dumping multipliers.
+f = fieldnames(v);
+parts = cell(size(f));
+for i = 1:numel(f)
+    parts{i} = sprintf('%s %s', f{i}, mat2str(size(v.(f{i}))));
+end
+s = ['struct(' strjoin(parts, ', ') ')'];
 end
