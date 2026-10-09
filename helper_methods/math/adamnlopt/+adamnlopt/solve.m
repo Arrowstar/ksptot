@@ -1708,6 +1708,35 @@ for iter = 0:opts.maxIter
                 dphi   = gdNT - rho * theta_IP0;
                 ok = globalize_meritAccept(phi0m, phi_tm, dphi, aP);
             end
+            % D34 guard: reject NT trials that collapse a bound gap far below
+            % what the barrier center allows.  The tangential step minimizes a
+            % quadratic model that stays finite AT the bounds, so a trial can
+            % close a gap orders of magnitude below mu/z; the explicit dual
+            % back-substitution then relaxes z toward mu/gap (huge) and the
+            % masked termination exits 1 on garbage bound duals (boundActive:
+            % zU = 430 against 2).  Trials below 1e-2 centrality shrink like
+            % any other rejection; genuinely stuck iterations fall through to
+            % the KKT fallback below.
+            if ok && mu > 0
+                trialCen = inf;
+                if any(finL)
+                    cenG = dxl(finL); cenZ = zL(finL); cenD = dx(finL);
+                    cenPos = cenZ > 0;
+                    if any(cenPos)
+                        trialCen = min(trialCen, min((cenG(cenPos) + aP*cenD(cenPos)) .* cenZ(cenPos) / mu));
+                    end
+                end
+                if any(finU)
+                    cenG = dxu(finU); cenZ = zU(finU); cenD = dx(finU);
+                    cenPos = cenZ > 0;
+                    if any(cenPos)
+                        trialCen = min(trialCen, min((cenG(cenPos) - aP*cenD(cenPos)) .* cenZ(cenPos) / mu));
+                    end
+                end
+                if trialCen < 1e-2
+                    ok = false;
+                end
+            end
             % Merit-consistent trust-region ratio, evaluated at the fraction
             % aP actually taken.  Previously this compared a Lagrangian-model
             % predRed at the FULL step against a barrier-objective actRed at

@@ -599,14 +599,13 @@ classdef AdamNlOptSolveTest < AdamNlOptTestCase
                 % testUseNTdecompIsRefusedOnNonlinearInequalities below.  Those
                 % problems now warn and fall back, so they are covered by that
                 % test; here the arm exercises what the NT branch itself runs:
-                % unconstrained, linear equalities and inequalities, and a
-                % nonlinear equality.  boundActive is deliberately NOT here:
-                % the NT back-substituted bound duals ratchet up as the gap
-                % closes (zU = 430 against 2 on that fixture) while the masked
-                % termination still exits 1 -- a pre-existing, Batch-10-
-                % bisected defect of the opt-in path, not a D19 regression.
+                % unconstrained, linear equalities and inequalities, an
+                % on-bound optimum, and a nonlinear equality.  boundActive
+                % needs the D34 centrality guard (NT trials collapsing the
+                % bound gap previously exited 1 with zU = 430 against 2).
                 testCase.verifyArmSolves(struct(defaultOffFlag, true), ...
-                    {'sphere2', 'simplexCenter', 'ineqActive', 'circleEq'});
+                    {'sphere2', 'simplexCenter', 'ineqActive', ...
+                     'boundActive', 'circleEq'});
                 return;
             end
             testCase.verifyArmSolves(struct(defaultOffFlag, true));
