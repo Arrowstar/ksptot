@@ -588,15 +588,18 @@ for iter = 0:opts.maxIter
             [cEt, ~] = ev.constraints(xt);
             theta_t = norm(cEt, 1);
             isSwitching = useFilter && (theta0 <= thetaMinNT);
-            if isSwitching
-                ok = true;          % near-feasible: TR ratio alone governs
-            elseif useFilter
+            if useFilter
+                % The switching (f-type) shortcut used to accept here without
+                % consulting the filter at all, bypassing thetaMax and the cap
+                % for every near-feasible step.  Acceptability still governs;
+                % switching only decides whether an accepted step augments.
                 ok = filt.isAcceptable(theta_t, ft);
             else
-                rho   = max(rho, norm(lamE + dlamE, inf) + 1e-2);
+                gdNT = g.' * dx;
+                rho = control_penaltyUpdate(rho, norm(lamE + dlamE, inf), gdNT, theta0);
                 phi0m = globalize_meritFunction(f, theta0, rho);
                 phi_tm = globalize_meritFunction(ft, theta_t, rho);
-                dphi  = (g.' * dx) - rho * theta0;
+                dphi  = gdNT - rho * theta0;
                 ok = globalize_meritAccept(phi0m, phi_tm, dphi, 1);
             end
             % Trust-region ratio on the l1 MERIT function, not on f alone.
@@ -611,6 +614,15 @@ for iter = 0:opts.maxIter
             rhoTR = max(rho, norm(lamE + dlamE, inf) + 1e-2);
             [predRedM, actRedM] = ntMeritRatio(ntMdl, 1, rhoTR, ...
                 JE_eff, cE_eff, dx, zeros(0,1), theta0, theta_t, phi0, ft);
+            if ~ok
+                % Globalization rejected the step: shrink the radius and try
+                % again.  Running the trust-region update regardless lets a
+                % good merit ratio EXPAND Delta, so the deterministic
+                % recompute returns the identical rejected step and burns the
+                % remaining inner iterations re-evaluating it (D19).
+                Delta = opts.trShrink * Delta;
+                continue;
+            end
             [Delta, tr_ok, ~] = control_trustRegionUpdate( ...
                 Delta, predRedM, actRedM, norm(dx), opts);
             if ok && tr_ok
@@ -634,7 +646,20 @@ for iter = 0:opts.maxIter
                 dx    = d(idx_fb.x);
                 dlamE = d(idx_fb.lamE);
             end
-            [alpha, rho] = lineSearch(ev, x, dx, f, g, cE, lamE + dlamE, rho);
+            if useFilter
+                % A step the filter just rejected must not come back through
+                % the merit rule, which would take it without augmenting (D19).
+                theta0fb = norm(cE, 1);  phi0fb = f;  gdFb = g.' * dx;
+                ptFb = @(a) phiThetaEq(ev, x, dx, a);
+                [alpha, augmentFb, rho, ~, firstBlockedFb] = globalize_filterLineSearch( ...
+                    ptFb, phi0fb, theta0fb, gdFb, filt, rho, 1, ...
+                    thetaGrowCap(theta0fb, opts), norm(lamE + dlamE, inf));
+                if augmentFb, filt.augment(theta0fb, phi0fb); end
+                trow.filterReset = double(filt.noteFirstTrial(firstBlockedFb, ...
+                    opts.filterResetTrigger, opts.maxFilterResets));
+            else
+                [alpha, rho] = lineSearch(ev, x, dx, f, g, cE, lamE + dlamE, rho);
+            end
         end
     else
         [d, idx, ksolve] = detectStep(state, res, numel(x), numel(lamE), opts, ksolve);
@@ -1595,18 +1620,20 @@ for iter = 0:opts.maxIter
             theta_t   = norm([cEt; cIt + st], 1);
             phi_t_bar = barrierObj(ft, st, xt, lb, ub, finL, finU, mu);
             isSwitchingIP = useFilter && (theta_IP0 <= thetaMinNT_IP);
-            if isSwitchingIP
-                ok = true;
-            elseif useFilter
+            if useFilter
+                % As in the equality core (D19): switching exempts an accepted
+                % step from augmenting, never from the acceptance test itself.
                 ok = filt.isAcceptable(theta_t, phi_t_bar);
             else
-                rho    = max(rho, norm([lamE + dlamE; lamI + dlamI], inf) + 1e-2);
+                gdNT = gQ.' * dx;
+                rho = control_penaltyUpdate(rho, ...
+                    norm([lamE + dlamE; lamI + dlamI], inf), gdNT, theta_IP0);
                 phi0m  = globalize_meritFunction(phi0_bar, theta_IP0, rho);
                 phi_tm = globalize_meritFunction(phi_t_bar, theta_t, rho);
                 % Directional derivative of the BARRIER OBJECTIVE, matching
                 % phi0_bar/phi_t_bar; r1 would add JE'*lamE, which belongs to
                 % the Lagrangian and not to the merit function being tested.
-                dphi   = (gQ.' * dx) - rho * theta_IP0;
+                dphi   = gdNT - rho * theta_IP0;
                 ok = globalize_meritAccept(phi0m, phi_tm, dphi, aP);
             end
             % Merit-consistent trust-region ratio, evaluated at the fraction
@@ -1617,8 +1644,20 @@ for iter = 0:opts.maxIter
             rhoTR = max(rho, norm([lamE + dlamE; lamI + dlamI], inf) + 1e-2);
             [predRedM, actRedM] = ntMeritRatio(ntMdl, aP, rhoTR, ...
                 JE_eff, cE_eff, dx, rpI, theta_IP0, theta_t, phi0_bar, phi_t_bar);
+            if ~ok
+                % As in the equality core (D19): a rejected step shrinks the
+                % radius instead of reaching the trust-region update, which
+                % could otherwise expand Delta and recompute the identical
+                % rejected step for the rest of the inner loop.
+                Delta = opts.trShrink * Delta;
+                continue;
+            end
+            % The expansion test asks whether the trust region bound the step:
+            % that is decided by the full Newton-Tangential step, not by the
+            % fraction-to-boundary shortening, so aP-scaled norms made
+            % expansion impossible whenever aP < 1 (D19).
             [Delta, tr_ok, ~] = control_trustRegionUpdate( ...
-                Delta, predRedM, actRedM, aP * norm(dx), opts);
+                Delta, predRedM, actRedM, norm(dx), opts);
             if ok && tr_ok
                 if useFilter && ~isSwitchingIP
                     filt.augment(theta_IP0, phi0_bar);
@@ -1652,9 +1691,28 @@ for iter = 0:opts.maxIter
             if ev.mI > 0,   aP = min(aP, step_fractionToBoundary(s, ds, tau)); end
             if any(finL),   aP = min(aP, step_fractionToBoundary(dxl(finL), dx(finL), tau)); end
             if any(finU),   aP = min(aP, step_fractionToBoundary(dxu(finU), -dx(finU), tau)); end
-            [aP, rho] = ipLineSearch(ev, x, s, dx, ds, lb, ub, finL, finU, ...
-                                     f, g, cE, cI, mu, rho, ...
-                                     [lamE + dlamE; lamI + dlamI], aP);
+            if useFilter
+                % A step the filter just rejected must not come back through
+                % the merit rule, which would take it without augmenting (D19).
+                theta0fb = norm([cE; cI + s], 1);
+                phi0fb = barrierObj(f, s, x, lb, ub, finL, finU, mu);
+                gdFb = g.' * dx ...
+                     - mu * ( sumBarrierDir(ds, s) ...
+                              + sumBarrierDir(dx(finL), x(finL) - lb(finL)) ...
+                              - sumBarrierDir(dx(finU), ub(finU) - x(finU)) );
+                ptFb = @(a) phiThetaIP(ev, x, s, dx, ds, lb, ub, finL, finU, mu, a);
+                thCapFb = thetaGrowCap(theta0fb, opts);
+                multNFb = norm([lamE + dlamE; lamI + dlamI], inf);
+                [aP, augmentFb, rho, ~, firstBlockedFb] = globalize_filterLineSearch( ...
+                    ptFb, phi0fb, theta0fb, gdFb, filt, rho, aP, thCapFb, multNFb);
+                if augmentFb, filt.augment(theta0fb, phi0fb); end
+                trow.filterReset = double(filt.noteFirstTrial(firstBlockedFb, ...
+                    opts.filterResetTrigger, opts.maxFilterResets));
+            else
+                [aP, rho] = ipLineSearch(ev, x, s, dx, ds, lb, ub, finL, finU, ...
+                                         f, g, cE, cI, mu, rho, ...
+                                         [lamE + dlamE; lamI + dlamI], aP);
+            end
         end
         % Compute dual step fractions.
         aD = 1;
@@ -3033,7 +3091,10 @@ function [dx, dlamE, predRed, mdl] = computeNTStep(H, g, JE, cE, Delta, lamE)
 %               fraction via ntPredRed instead of comparing a full-step
 %               prediction against a partial-step outcome.
 import adamnlopt.*
-v      = step_normalStep(JE, cE, Delta);
+% Byrd-Omojokun zeta: the normal step takes only 0.8*Delta, leaving room for
+% the tangential step.  Handing the normal step the full radius starved the
+% tangential component whenever ||v_GN|| >= Delta (D28).
+v      = step_normalStep(JE, cE, 0.8 * Delta);
 u      = step_tangentialStep(H, g, JE, v, Delta);
 dx     = v + u;
 % Least-squares multiplier estimate at the trial point.

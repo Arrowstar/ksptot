@@ -1216,6 +1216,41 @@ classdef AdamNlOptReviewFixesTest < AdamNlOptTestCase
             testCase.verifyWarningFree(@() ev.jacobian([0.5; -0.5]));
         end
 
+        %% ==== Batch 10.4: NT trust-region path (D19/D28) ====================
+        function testD19NTDecompSolvesAnEqualityProblem(testCase)
+            % min x'x s.t. x1+x2 = 10 through the opt-in NT path, exercising
+            % the shrink-on-reject, penalty-update and 0.8-radius changes.
+            [x, ~, ef, out] = adamnlopt.solve(@(x) sum(x.^2), [0; 0], ...
+                [], [], [1 1], 10, [], [], [], testCase.quietOpts( ...
+                struct('useNTdecomp', true)));
+            testCase.verifyGreaterThan(ef, 0, out.message);
+            testCase.verifyEqual(x, [5; 5], 'AbsTol', 1e-6);
+        end
+
+        function testD19NTDecompSolvesWithMeritAndBounds(testCase)
+            % Same through the IP core (bounds present) under merit
+            % globalization, where rho comes from control_penaltyUpdate.
+            [x, ~, ef, out] = adamnlopt.solve(@(x) sum(x.^2), [0; 0], ...
+                [], [], [1 1], 10, -20 * ones(2, 1), 20 * ones(2, 1), [], ...
+                testCase.quietOpts(struct('useNTdecomp', true, ...
+                'globalization', 'merit')));
+            testCase.verifyGreaterThan(ef, 0, out.message);
+            testCase.verifyEqual(x, [5; 5], 'AbsTol', 1e-6);
+        end
+
+        function testD19NTFallbackSolvesThroughTheFilter(testCase)
+            % trMaxInner = 1 forces nearly every iteration into the
+            % ~stepAccepted fallback, which must come from the filter line
+            % search (D19), not the merit rule that used to take
+            % filter-rejected steps without augmenting.
+            [x, ~, ef, out] = adamnlopt.solve(@(x) (x(1) - 2)^2 + (x(2) - 1)^2, ...
+                [0.3; 0.2], [], [], [], [], [], [], ...
+                @(x) deal([], x(1)^2 + x(2)^2 - 1), testCase.quietOpts( ...
+                struct('useNTdecomp', true, 'trMaxInner', 1)));
+            testCase.verifyGreaterThan(ef, 0, out.message);
+            testCase.verifyEqual(x, [2; 1] / sqrt(5), 'AbsTol', 1e-4);
+        end
+
         %% ==== Batch 10.3: Broyden refresh test (D25) ========================
         function testD25RefreshVerdictIsScaleInvariant(testCase)
             % Same (s, y, J) at 1e6 and 1e-6 scale: the old test divided by
