@@ -1282,6 +1282,27 @@ classdef AdamNlOptReviewFixesTest < AdamNlOptTestCase
             testCase.verifyEqual(out.x, p.xStar, 'AbsTol', p.xTol);
         end
 
+        function testA3WarmStartWithFixedVariablesAndLinearRows(testCase)
+            % Warm mapping through reduction: x2 fixed at 0, one live linear
+            % equality plus one vacuous (dropped) row. The re-solve must map
+            % the bound multipliers onto the free set, drop the vacuous row's
+            % multiplier, and converge in a handful of iterations to the same
+            % point (here the unconstrained bowl minimizer satisfies both).
+            fun = @(x) (x(1) - 1)^2 + (x(2) - 3)^2 + (x(3) - 2)^2 + (x(4) + 1)^2;
+            lb = [-5; 0; -5; -5];  ub = [5; 0; 5; 5];
+            Aeq = [1 1 1 1; 0 0 0 0];  beq = [2; 0];
+            o = testCase.quietOpts(struct());
+            [x1, ~, ef1, out1, lam1] = adamnlopt.solve(fun, zeros(4, 1), ...
+                [], [], Aeq, beq, lb, ub, [], o);
+            testCase.assumeGreaterThan(ef1, 0, 'cold solve failed');
+            o2 = testCase.quietOpts(struct('lambda0', lam1));
+            [x2, ~, ef2, out2] = adamnlopt.solve(fun, x1, ...
+                [], [], Aeq, beq, lb, ub, [], o2);
+            testCase.verifyGreaterThan(ef2, 0, out2.message);
+            testCase.verifyEqual(x2, [1; 0; 2; -1], 'AbsTol', 1e-6);
+            testCase.verifyLessThanOrEqual(out2.iterations, 3);
+        end
+
         function testD32ClonedOptimizerIsIndependent(testCase)
             % cloneFrom gives an independent optimizer with equal settings.
             a = AdamNlOptOptimizer();
@@ -1294,8 +1315,7 @@ classdef AdamNlOptReviewFixesTest < AdamNlOptTestCase
             testCase.verifyEqual(a.getOptions().maxIter, 300);
         end
 
-        function testD32LoadedCasesDoNotShareTheOptimizer(testCase)
-            % .mat files saved before AdamNlOpt existed store no adamNlOptOpt,
+        function testD32LoadedCasesDoNotShareTheOptimizer(testCase)            % .mat files saved before AdamNlOpt existed store no adamNlOptOpt,
             % so every such case loaded in one session shared the
             % class-default handle: an option set for one case leaked into all
             % the others.  loadobj must clone on load.
@@ -1313,6 +1333,18 @@ classdef AdamNlOptReviewFixesTest < AdamNlOptTestCase
                 'two loaded cases must not share one optimizer handle');
             o1.getOptions().maxIter = 11;
             testCase.verifyEqual(o2.getOptions().maxIter, 300);
+        end
+
+        %% ==== Batch 10.6: LVD-specific defaults (A10) ======================
+        function testA10LvdDefaultsAreDeliberate(testCase)
+            % The D11 pin test excuses returnIterate and objPlateauWindow
+            % (LVD intentionally differs from the package); pin the intended
+            % values here so a re-default does not slip through unnoticed.
+            o = AdamNlOptOptions();
+            testCase.verifyEqual(char(o.returnIterate.optionStr), 'bestKKT');
+            testCase.verifyEqual(o.objPlateauWindow, 15);
+            testCase.verifyEqual(o.getOptionsForOptimizer([]).returnIterate, 'bestKKT');
+            testCase.verifyEqual(o.getOptionsForOptimizer([]).objPlateauWindow, 15);
         end
 
         %% ==== Batch 10.3: Broyden refresh test (D25) ========================
