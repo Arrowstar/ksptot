@@ -924,7 +924,7 @@ classdef AdamNlOptTest < matlab.unittest.TestCase
             % below the variable scale and divided by that squared.
             B = adamnlopt.eval_BroydenJacobian([1 0]);
             xRef = [1e6; 1e6];
-            accepted = B.update([1e-3; 0], 1e-3, 0, xRef);
+            accepted = B.update([1e-3; 0], 1e-3, xRef);
 
             testCase.verifyFalse(accepted);
             testCase.verifyEqual(B.full(), [1 0], 'AbsTol', 1e-12);

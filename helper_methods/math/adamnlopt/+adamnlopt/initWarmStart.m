@@ -37,6 +37,18 @@ if ~isstruct(lambda0) || isempty(fx) || ~isfield(fx, 'free') || ...
         isempty(sc) || ~isfield(sc, 'Dx')
     return;
 end
+% Direct callers (including unit-test fixtures) may hand an Evaluator-like
+% struct with only the fields initializeIterate itself reads (mE and
+% constraints): without the full counts there is nothing safe to map onto.
+counts = {'n', 'mE', 'mI', 'mEnl', 'mInl'};
+if isstruct(ev)
+    hasCounts = all(isfield(ev, counts));
+else
+    hasCounts = isobject(ev) && all(cellfun(@(f) isprop(ev, f), counts));
+end
+if ~hasCounts
+    return;
+end
 lamEfull = getCol(lambda0, 'eqlin');
 lamEfull = [lamEfull; getCol(lambda0, 'eqnonlin')];
 lamIfull = getCol(lambda0, 'ineqlin');

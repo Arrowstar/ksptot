@@ -55,7 +55,7 @@ if nargin < 5, sc = []; end
 % standard treatment bit-for-bit.  The s0 vector is a dummy: only the ok flag
 % and the multipliers are used here, mu is derived after the real slacks.
 [~, ~, ~, ~, ~, warmShapeOk] = adamnlopt.initWarmStart( ...
-    getWarmOpt(opts, 'lambda0'), [], [], fx, sc, ev, zeros(ev.mI, 1));
+    getWarmOpt(opts, 'lambda0'), [], [], fx, sc, ev, zeros(0, 1));
 
 % Strict interior projection with a relative margin.
 kappa = 1e-2;
