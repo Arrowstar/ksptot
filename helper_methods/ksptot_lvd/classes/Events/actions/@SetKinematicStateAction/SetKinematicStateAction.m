@@ -51,7 +51,7 @@ classdef SetKinematicStateAction < AbstractEventAction
                 obj.orbitModel = orbitModel;
             end
             
-            obj.id = rand();
+            obj.id = lvdGetNextUniqueId();
         end
         
         function time = get.time(obj)

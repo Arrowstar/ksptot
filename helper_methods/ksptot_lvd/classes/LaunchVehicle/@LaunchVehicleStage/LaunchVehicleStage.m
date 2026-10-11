@@ -31,7 +31,7 @@ classdef LaunchVehicleStage < matlab.mixin.SetGet
     methods
         function obj = LaunchVehicleStage(launchVehicle)
             obj.launchVehicle = launchVehicle;
-            obj.id = rand();
+            obj.id = lvdGetNextUniqueId();
         end
         
         function lvdData = get.lvdData(obj)
@@ -208,7 +208,12 @@ classdef LaunchVehicleStage < matlab.mixin.SetGet
         end
         
         function tf = eq(A,B)
-            tf = [A.id] == [B.id];
+            %eq Identity by (class, id).  See lvdIdsEqual.
+            tf = lvdIdsEqual(A,B);
+        end
+
+        function tf = ne(A,B)
+            tf = ~lvdIdsEqual(A,B);
         end
         
         function tf = isVarFromStage(obj, var)

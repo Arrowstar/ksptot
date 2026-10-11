@@ -21,7 +21,7 @@ classdef UniversalElementSetVariable < AbstractOrbitModelVariable
             obj.varObj = varObj;
             obj.varObj.optVar = obj;
             
-            obj.id = rand();
+            obj.id = lvdGetNextUniqueId();
         end
         
         function x = getXsForVariable(obj)

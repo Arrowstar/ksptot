@@ -25,7 +25,7 @@ classdef SetThrottleModelAction < AbstractEventAction
                 obj.throttleModels.selectedModel = ThrottlePolyModel.getDefaultThrottleModel();
             end
             
-            obj.id = rand();
+            obj.id = lvdGetNextUniqueId();
         end
 
 %         function tm = get.throttleModel(obj)

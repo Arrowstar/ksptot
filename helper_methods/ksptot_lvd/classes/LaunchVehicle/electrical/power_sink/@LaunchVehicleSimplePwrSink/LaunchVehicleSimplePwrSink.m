@@ -8,14 +8,14 @@ classdef LaunchVehicleSimplePwrSink < AbstractLaunchVehicleElectricalPowerSrcSnk
         name(1,:) char  = 'Untitled Power Sink';
         pwrRate(1,1) double = 0;
         
-        id = rand();
+        id = 0;
     end
     
     methods
         function obj = LaunchVehicleSimplePwrSink(stage)
             obj.stage = stage;
             
-            obj.id = rand();
+            obj.id = lvdGetNextUniqueId();
         end
         
         function name = getName(obj)

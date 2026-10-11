@@ -27,7 +27,7 @@ classdef GenericMAConstraint < AbstractConstraint
             obj.refOtherSC = refOtherSC;
             obj.refBodyInfo = refBodyInfo; 
             
-            obj.id = rand();
+            obj.id = lvdGetNextUniqueId();
         end
         
         function [lb, ub] = getBounds(obj)

@@ -38,6 +38,13 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
         %state log for a given input (LvdOptimization.propagateForX) use it
         %to detect any propagation they did not perform themselves.
         propagationCounter(1,1) double = 0
+
+        %Counter value at the last incremental commit (see executeScript).
+        %Used to detect interleaved non-committing executions (e.g. GUI /
+        %validation full runs with allowIncrementalReuse=false): those bump
+        %propagationCounter without committing, leaving committedX stale.
+        %NaN until the first commit in this session.
+        lastIncrementalCommitCounter(1,1) double = NaN
     end
         
     properties(Constant)
@@ -578,6 +585,7 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
                 %evaluation and the cached log has the right granularity:
                 %serve it as-is without re-integrating anything.
                 vars.commitPendingX();
+                obj.lastIncrementalCommitCounter = obj.propagationCounter;
                 
                 obj.lastRunUsedIncremental = true;
                 obj.lastNumEvtsIntegrated = 0;
@@ -726,6 +734,7 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
 
             if(incrementalAllowed)
                 vars.commitPendingX();
+                obj.lastIncrementalCommitCounter = obj.propagationCounter;
             end
             
             if(evalConstraints)
@@ -907,8 +916,19 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
             floorEvtNum = evtStartNum;
 
             %Guard: script looping / flow modification invalidates all
-            %static reuse assumptions.  Force a full run.
-            if(scriptContainsSetNextEventAction(obj.lvdData))
+            %static reuse assumptions.  Force a full run.  The check is
+            %recursive into ConditionalAction branches (a SetNextEvent
+            %hidden in a branch still makes execution order dynamic); the
+            %legacy top-level-only validator is kept as a fast path.
+            if(scriptContainsSetNextEventAction(obj.lvdData) || obj.scriptContainsSetNextEventRecursive())
+                useIncremental = false;
+                evtStartNum = 1;
+                return;
+            end
+
+            %Guard: non-sequential events make execution order dynamic
+            %(mirrors ConstraintSet.eventOrderIsDynamic).  Force a full run.
+            if(not(isempty(obj.nonSeqEvts)) && obj.nonSeqEvts.getTotalNumOfEvents() > 0)
                 useIncremental = false;
                 evtStartNum = 1;
                 return;
@@ -939,6 +959,20 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
             vars = obj.lvdData.optimizer.vars;
             pendingX = vars.getPendingX();
             committedX = vars.getCommittedX();
+
+            %Guard: an execution that did not commit happened since the
+            %baseline was recorded (GUI/validation full runs,
+            %allowIncrementalReuse=false).  Those bump propagationCounter
+            %without committing, so the committed baseline no longer
+            %describes the cached log.  Consecutive committing runs satisfy
+            %propagationCounter == lastCommit + 1 exactly.
+            if(not(isnan(obj.lastIncrementalCommitCounter)))
+                if(obj.propagationCounter ~= obj.lastIncrementalCommitCounter + 1)
+                    useIncremental = false;
+                    evtStartNum = 1;
+                    return;
+                end
+            end
 
             %No committed baseline yet (first evaluation, or the variable
             %set changed): fall back to a STATIC resume floor derived from
@@ -1007,6 +1041,53 @@ classdef LaunchVehicleScript < matlab.mixin.SetGet
                 if(isempty(evt) || isempty(obj.lvdData.stateLog.getAllStateLogEntriesForEvent(evt)))
                     tf = false;
                     return;
+                end
+            end
+        end
+
+        function tf = scriptContainsSetNextEventRecursive(obj)
+            %SCRIPTCONTAINSSETNEXTEVENTRECURSIVE SetNextEventAction search
+            %that also descends into ConditionalAction branches.
+            %Mirrors ConstraintSet.actionsContainSetNextEvent (kept local to
+            %avoid an Events->Optimization dependency).
+            tf = false;
+
+            for(i = 1:length(obj.evts)) %#ok<NO4LP>
+                if(LaunchVehicleScript.actionsContainSetNextEvent(obj.evts(i).actions))
+                    tf = true;
+                    return;
+                end
+            end
+
+            if(not(isempty(obj.nonSeqEvts)))
+                nonSeqList = obj.nonSeqEvts.evts;
+                for(i = 1:length(nonSeqList)) %#ok<NO4LP>
+                    if(LaunchVehicleScript.actionsContainSetNextEvent(nonSeqList(i).actions))
+                        tf = true;
+                        return;
+                    end
+                end
+            end
+        end
+    end
+
+    methods(Static, Access=private)
+        function tf = actionsContainSetNextEvent(actions)
+            tf = false;
+
+            for(i = 1:length(actions)) %#ok<NO4LP>
+                action = actions(i);
+
+                if(isa(action, 'SetNextEventAction'))
+                    tf = true;
+                    return;
+                end
+
+                if(isa(action, 'ConditionalAction') && ismethod(action, 'getAllBranchActions'))
+                    if(LaunchVehicleScript.actionsContainSetNextEvent(action.getAllBranchActions()))
+                        tf = true;
+                        return;
+                    end
                 end
             end
         end

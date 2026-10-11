@@ -10,7 +10,7 @@ classdef LaunchVehicleDerivativeCalc < AbstractLaunchVehicleCalculusCalc
         function obj = LaunchVehicleDerivativeCalc(lvdData)
             obj.lvdData = lvdData;
             
-            obj.id = rand();
+            obj.id = lvdGetNextUniqueId();
         end
         
         function nameStr = getNameStr(obj)

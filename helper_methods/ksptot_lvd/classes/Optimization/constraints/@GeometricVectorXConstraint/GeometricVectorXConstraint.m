@@ -15,7 +15,7 @@ classdef GeometricVectorXConstraint < AbstractGeometricVectorConstraint
 
             obj.type = 'VectorX';
             
-            obj.id = rand();
+            obj.id = lvdGetNextUniqueId();
         end
 
         function type = getConstraintType(obj)

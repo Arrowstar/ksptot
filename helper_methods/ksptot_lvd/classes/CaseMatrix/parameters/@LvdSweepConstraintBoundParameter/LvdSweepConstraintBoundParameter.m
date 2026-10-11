@@ -48,7 +48,7 @@ classdef LvdSweepConstraintBoundParameter < AbstractLvdSweepParameter
 
             obj.whichBound = whichBound;
 
-            obj.id = rand();
+            obj.id = lvdGetNextUniqueId();
         end
 
         function name = getName(obj)

@@ -18,7 +18,7 @@ classdef SetSensorSteeringModelAction < AbstractEventAction
                 obj.steeringModel = steeringModel;
             end
             
-            obj.id = rand();
+            obj.id = lvdGetNextUniqueId();
         end
         
         function newStateLogEntry = executeAction(obj, stateLogEntry)

@@ -15,7 +15,7 @@ classdef LvdUniformDistribution < AbstractLvdDistribution
 
             obj.lb = lb;
             obj.ub = ub;
-            obj.id = rand();
+            obj.id = lvdGetNextUniqueId();
         end
 
         function x = invCdf(obj, u)

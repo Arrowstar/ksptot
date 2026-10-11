@@ -87,8 +87,15 @@ classdef(Abstract) AbstractEventAction < matlab.mixin.SetGet & matlab.mixin.Hete
     
     methods(Sealed)
         function tf = eq(A,B)
-            tf = [A.id] == [B.id];
-        end  
+            %eq Identity by (class, id).  See lvdIdsEqual.
+            tf = lvdIdsEqual(A,B);
+        end
+
+        function tf = ne(A,B)
+            %ne Negation of eq.  Previously undefined, so ~= fell back to
+            %handle identity while == used ids (inconsistent pair).
+            tf = ~lvdIdsEqual(A,B);
+        end
     end
     
     methods(Static)

@@ -24,7 +24,7 @@ classdef TankMassConstraint < AbstractConstraint
             obj.lb = lb;
             obj.ub = ub;   
             
-             obj.id = rand();
+             obj.id = lvdGetNextUniqueId();
         end
         
         function [lb, ub] = getBounds(obj)

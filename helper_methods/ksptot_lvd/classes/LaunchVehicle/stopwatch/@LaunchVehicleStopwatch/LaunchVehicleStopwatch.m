@@ -18,7 +18,7 @@ classdef LaunchVehicleStopwatch < matlab.mixin.SetGet
             
             obj.startOn = StopwatchRunningEnum.NotRunning;
             
-            obj.id = rand();
+            obj.id = lvdGetNextUniqueId();
         end
         
         function initState = createInitialState(obj)
@@ -32,7 +32,12 @@ classdef LaunchVehicleStopwatch < matlab.mixin.SetGet
         end
         
         function tf = eq(A,B)
-            tf = [A.id] == [B.id];
+            %eq Identity by (class, id).  See lvdIdsEqual.
+            tf = lvdIdsEqual(A,B);
+        end
+
+        function tf = ne(A,B)
+            tf = ~lvdIdsEqual(A,B);
         end
     end
 end

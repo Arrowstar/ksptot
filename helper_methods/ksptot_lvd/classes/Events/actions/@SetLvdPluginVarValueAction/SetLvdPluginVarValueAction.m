@@ -14,7 +14,7 @@ classdef SetLvdPluginVarValueAction < AbstractEventAction
                 obj.pluginValueToSet = pluginValueToSet;
             end
             
-            obj.id = rand();
+            obj.id = lvdGetNextUniqueId();
         end
         
         function newStateLogEntry = executeAction(obj, stateLogEntry)

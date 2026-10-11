@@ -482,10 +482,20 @@ classdef KSPTOT_BodyInfo < matlab.mixin.SetGet
         end
         
         function tf = eq(A,B)
-            tf = [A.id] == [B.id];
+            %eq Identity by (class, id).  See lvdIdsEqual.  (Kept the
+            %legacy empty->false coercion: body comparisons expect a scalar.)
+            tf = lvdIdsEqual(A,B);
             
             if(isempty(tf))
                 tf = false;
+            end
+        end
+        
+        function tf = ne(A,B)
+            tf = ~lvdIdsEqual(A,B);
+
+            if(isempty(tf))
+                tf = true;
             end
         end
         

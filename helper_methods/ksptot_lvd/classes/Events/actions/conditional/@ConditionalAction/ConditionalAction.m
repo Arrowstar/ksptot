@@ -25,7 +25,7 @@ classdef ConditionalAction < AbstractEventAction
 
             obj.elseifActions = dictionary(AbstractActionConditional.empty(1,0), {AbstractEventAction.empty(1,0)});
 
-            obj.id = rand();
+            obj.id = lvdGetNextUniqueId();
         end
 
         function addIfAction(obj, action)

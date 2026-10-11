@@ -186,6 +186,95 @@ classdef IncrementalRepropagationTest < KsptotTestCase
             testCase.verifyFalse(isempty(vars.getCommittedX()));
         end
 
+        %% A SetNextEvent hidden in a conditional branch disables all reuse
+
+        function conditionalHiddenSetNextEventDisablesReuse(testCase)
+            lvdData = testCase.makeThreeEventScript();
+
+            %Top-level scan sees no SetNextEventAction; the recursive guard
+            %must still catch the one nested in the conditional branch.
+            loopAction = SetNextEventAction(lvdData.script.getEventForInd(2));
+            condAction = ConditionalAction();
+            condAction.addIfAction(loopAction);
+            evt1 = lvdData.script.getEventForInd(1);
+            evt1.addAction(condAction);
+
+            vars = lvdData.optimizer.vars;
+            x0 = vars.getTotalScaledXVector();
+
+            vars.updateObjsWithScaledVarValues(x0);
+            testCase.runScript(lvdData, 1, false);
+
+            x1 = x0;
+            x1(end) = testCase.scaledDuration(700);
+
+            vars.updateObjsWithScaledVarValues(x1);
+            testCase.runScript(lvdData, 2, true);
+
+            testCase.verifyEqual(lvdData.script.lastNumEvtsSkipped, 0);
+            testCase.verifyEqual(lvdData.script.lastNumEvtsIntegrated, 3);
+        end
+
+        %% A non-sequential event disables all reuse
+
+        function nonSequentialEventDisablesReuse(testCase)
+            lvdData = testCase.makeThreeEventScript();
+
+            innerEvt = LaunchVehicleEvent(lvdData.script);
+            innerEvt.name = 'Non-seq';
+            innerEvt.termCond = EventDurationTermCondition(300);
+            testCase.configureCoastEvent(innerEvt, 300);
+            nonSeqEvt = LaunchVehicleNonSeqEvent(innerEvt);
+            lvdData.script.nonSeqEvts.addEvent(nonSeqEvt);
+
+            vars = lvdData.optimizer.vars;
+            x0 = vars.getTotalScaledXVector();
+
+            vars.updateObjsWithScaledVarValues(x0);
+            testCase.runScript(lvdData, 1, false);
+
+            x1 = x0;
+            x1(end) = testCase.scaledDuration(700);
+
+            vars.updateObjsWithScaledVarValues(x1);
+            testCase.runScript(lvdData, 2, true);
+
+            testCase.verifyEqual(lvdData.script.lastNumEvtsSkipped, 0);
+            testCase.verifyEqual(lvdData.script.lastNumEvtsIntegrated, 3);
+        end
+
+        %% An interleaved non-committing run invalidates the baseline
+
+        function interleavedFullRunInvalidatesBaseline(testCase)
+            lvdData = testCase.makeThreeEventScript();
+            vars = lvdData.optimizer.vars;
+
+            x0 = vars.getTotalScaledXVector();
+
+            %Committed baseline at x0 (incremental-allowed run commits even
+            %when it propagates everything).
+            vars.updateObjsWithScaledVarValues(x0);
+            testCase.runScript(lvdData, 1, true);
+            testCase.verifyFalse(isempty(vars.getCommittedX()));
+
+            %External full run (e.g. GUI/validation) at a new x: bumps the
+            %propagation counter without committing.
+            x1 = x0;
+            x1(end) = testCase.scaledDuration(700);
+            vars.updateObjsWithScaledVarValues(x1);
+            testCase.runScript(lvdData, 1, false);
+
+            %Next incremental evaluation must not reuse the stale baseline,
+            %even though only a late-event variable changed.
+            x2 = x1;
+            x2(end) = testCase.scaledDuration(800);
+            vars.updateObjsWithScaledVarValues(x2);
+            testCase.runScript(lvdData, 2, true);
+
+            testCase.verifyEqual(lvdData.script.lastNumEvtsSkipped, 0);
+            testCase.verifyEqual(lvdData.script.lastNumEvtsIntegrated, 3);
+        end
+
         %% Disabling the setting restores classic full-propagation behavior
 
         function settingDisabledForcesFullRun(testCase)
@@ -225,6 +314,9 @@ classdef IncrementalRepropagationTest < KsptotTestCase
             ksptotAddProjectPaths();
 
             lvdData = LvdData.getDefaultLvdData(testCase.celBodyData);
+            %These tests exercise incremental reuse specifically; opt in
+            %explicitly since the production default is off (Bug 3).
+            lvdData.settings.enableIncrementalRepropagation = true;
 
             %Circular-ish low Kerbin orbit starting at epoch 0.
             elems = KeplerianElementSet(0, testCase.Smi, 0.01, 0.1, 0, 0, 0, testCase.kerbinFrame);

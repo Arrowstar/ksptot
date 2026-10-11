@@ -24,14 +24,14 @@
     methods
         function obj = SetInterpolatedThrottleActionOptimVar(varObj)
             if(nargin == 0)
-                obj.id = rand();
+                obj.id = lvdGetNextUniqueId();
                 return;
             end
 
             obj.varObj = varObj;
             obj.varObj.optVar = obj;
 
-            obj.id = rand();
+            obj.id = lvdGetNextUniqueId();
 
             % Size the tabular vectors to the model's current table. A fresh
             % variable created for a multi-row model must already have one

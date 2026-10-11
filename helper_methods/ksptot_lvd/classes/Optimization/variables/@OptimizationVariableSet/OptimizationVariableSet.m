@@ -42,7 +42,13 @@ classdef OptimizationVariableSet < matlab.mixin.SetGet
             if(not(isempty(var)))
                 obj.clearEventActiveOptVarsCaches();
 
-                obj.vars([obj.vars] == var) = [];
+                %Delete a single match: with globally unique ids there is
+                %at most one, and deleting only the first guards against a
+                %legacy colliding id wiping out an unrelated variable.
+                matchInds = find([obj.vars] == var, 1, 'first');
+                if(not(isempty(matchInds)))
+                    obj.vars(matchInds) = [];
+                end
                 obj.sortVarsByEvtNum();
 
                 obj.clearCachedVarEvtDisabledStatus();
@@ -366,7 +372,15 @@ classdef OptimizationVariableSet < matlab.mixin.SetGet
             tf = obj.isVarEventOptimDisabled(var);
         end
 
-        function removeUselessVars(obj)
+        function removedVars = removeUselessVars(obj)
+            %removeUselessVars Drops variables that resolve to no location.
+            %
+            %   Must only be called when the event graph is fully live
+            %   (e.g. LvdOptimization.optimize).  It is deliberately NOT
+            %   called from loadobj: during load the object graph is only
+            %   partially wired, so healthy variables can temporarily
+            %   report an empty location and would be silently deleted,
+            %   shrinking the case on every file open (Bug 2).
             indsToRemove = [];
             for(i=1:length(obj.vars))
                 var = obj.vars(i);
@@ -377,6 +391,7 @@ classdef OptimizationVariableSet < matlab.mixin.SetGet
                 end
             end
             
+            removedVars = obj.vars(indsToRemove);
             obj.vars(indsToRemove) = [];
         end
     end
@@ -401,12 +416,6 @@ classdef OptimizationVariableSet < matlab.mixin.SetGet
                 obj.cachedVars(end+1) = var;
                 obj.cachedVarEventDis(end+1) = tf;
             end
-        end
-    end
-    
-    methods(Static, Access=private)
-        function obj = loadobj(obj)
-            obj.removeUselessVars();
         end
     end
 end

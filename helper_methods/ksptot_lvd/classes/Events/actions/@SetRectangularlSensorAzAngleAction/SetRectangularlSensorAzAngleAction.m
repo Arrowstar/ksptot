@@ -18,7 +18,7 @@ classdef SetRectangularlSensorAzAngleAction < AbstractEventAction
                 obj.sensorAzAngle = sensorAzAngle;
             end
             
-            obj.id = rand();
+            obj.id = lvdGetNextUniqueId();
         end
         
         function newStateLogEntry = executeAction(obj, stateLogEntry)

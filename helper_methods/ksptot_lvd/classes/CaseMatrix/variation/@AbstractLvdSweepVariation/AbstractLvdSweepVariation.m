@@ -43,18 +43,19 @@ classdef(Abstract) AbstractLvdSweepVariation < matlab.mixin.SetGet & matlab.mixi
     methods(Static)
         function obj = loadobj(obj)
             if(obj.id == 0)
-                obj.id = rand();
+                obj.id = lvdGetNextUniqueId();
             end
         end
     end
 
     methods(Sealed)
         function tf = eq(A, B)
-            tf = [A.id] == [B.id];
+            %eq Identity by (class, id).  See lvdIdsEqual.
+            tf = lvdIdsEqual(A,B);
         end
 
         function tf = ne(A, B)
-            tf = [A.id] ~= [B.id];
+            tf = ~lvdIdsEqual(A,B);
         end
     end
 end

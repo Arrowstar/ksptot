@@ -149,11 +149,12 @@ classdef(Abstract) AbstractOptimizationVariable < matlab.mixin.SetGet & matlab.m
         end
         
         function tf = eq(A,B)
-            tf = [A.id] == [B.id];
+            %eq Identity by (class, id).  See lvdIdsEqual.
+            tf = lvdIdsEqual(A,B);
         end 
         
         function tf = ne(A,B)
-            tf = [A.id] ~= [B.id];
+            tf = ~lvdIdsEqual(A,B);
         end 
     end
 end

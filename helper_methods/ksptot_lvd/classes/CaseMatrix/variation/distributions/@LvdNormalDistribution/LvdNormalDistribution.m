@@ -31,7 +31,7 @@ classdef LvdNormalDistribution < AbstractLvdDistribution
             obj.truncUb = truncUb;
             obj.truncate = isfinite(truncLb) || isfinite(truncUb);
 
-            obj.id = rand();
+            obj.id = lvdGetNextUniqueId();
         end
 
         function x = invCdf(obj, u)

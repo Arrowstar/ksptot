@@ -130,7 +130,7 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
                 end
             end
 
-            obj.actions([obj.actions] == action) = [];
+            obj.actions(find([obj.actions] == action, 1, 'first')) = [];
             obj.clearActiveOptVarsCache();
         end
         

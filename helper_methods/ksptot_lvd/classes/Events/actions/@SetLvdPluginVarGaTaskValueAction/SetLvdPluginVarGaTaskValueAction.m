@@ -20,7 +20,7 @@ classdef SetLvdPluginVarGaTaskValueAction < AbstractEventAction
                 obj.task = GraphicalAnalysisTask(taskStr, frame); %replaced in init area
             end
             
-            obj.id = rand();
+            obj.id = lvdGetNextUniqueId();
         end
         
         function newStateLogEntry = executeAction(obj, stateLogEntry)

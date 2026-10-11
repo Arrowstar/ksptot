@@ -16,7 +16,7 @@ classdef StageTankInitMassOptimVar < AbstractOptimizationVariable
             obj.tank = tank;
             obj.tank.optVar = obj;
             
-            obj.id = rand();
+            obj.id = lvdGetNextUniqueId();
         end
         
         function x = getXsForVariable(obj)

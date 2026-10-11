@@ -11,14 +11,14 @@ classdef LaunchVehicleRotatingSolarPanel < AbstractLaunchVehicleSolarPanel
         refChargeRate(1,1) double = 0;
         refChargeRateDist(1,1) = 13599840.256;
         
-        id = rand();
+        id = 0;
     end
     
     methods            
         function obj = LaunchVehicleRotatingSolarPanel(stage)
             obj.stage = stage;
             
-            obj.id = rand();
+            obj.id = lvdGetNextUniqueId();
         end
         
         function name = getName(obj)

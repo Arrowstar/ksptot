@@ -13,7 +13,7 @@ classdef LvdPluginOptimVarWrapper < matlab.mixin.SetGet
 
     methods
         function obj = LvdPluginOptimVarWrapper()
-            obj.id = rand();
+            obj.id = lvdGetNextUniqueId();
         end
 
         function optVar = getNewOptVar(obj)
@@ -46,7 +46,7 @@ classdef LvdPluginOptimVarWrapper < matlab.mixin.SetGet
     methods(Static)
         function obj = loadobj(obj)
             if(isempty(obj.id) || obj.id == 0)
-                obj.id = rand();
+                obj.id = lvdGetNextUniqueId();
             end
         end
     end

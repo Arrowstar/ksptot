@@ -1,6 +1,8 @@
-classdef MarkerStyleEnum < matlab.mixin.SetGet
-    %MarkerStyleEnum Summary of this class goes here
-    %   Detailed explanation goes here
+classdef MarkerStyleEnum
+    %MarkerStyleEnum Marker style enumeration (value class).
+    %
+    %   Value semantics (not a handle): see LineSpecEnum.  Previously
+    %   derived from matlab.mixin.SetGet, a mutable global singleton.
     
     enumeration
         Plus('Plus Sign', '+')
@@ -18,7 +20,7 @@ classdef MarkerStyleEnum < matlab.mixin.SetGet
         None('No Marker', 'none');
     end
     
-    properties
+    properties(SetAccess = immutable)
         name char = '';
         shape char = '';
     end

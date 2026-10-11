@@ -75,7 +75,7 @@ classdef LaunchVehicleEngine < matlab.mixin.SetGet
                 obj.ispPressCurve = IspPressureCurve.getDefaultIspPressureCurve();
             end
             
-            obj.id = rand();
+            obj.id = lvdGetNextUniqueId();
         end
         
         function lvdData = get.lvdData(obj)

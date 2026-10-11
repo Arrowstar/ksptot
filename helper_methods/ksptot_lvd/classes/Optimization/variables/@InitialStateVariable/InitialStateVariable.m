@@ -36,7 +36,7 @@ classdef InitialStateVariable < AbstractOptimizationVariable
                     error('Unknown orbit type while creating initial state variable: %s', class(obj.varObj.orbitModel.typeEnum))
             end
             
-            obj.id = rand();
+            obj.id = lvdGetNextUniqueId();
         end
         
         function x = getXsForVariable(obj)

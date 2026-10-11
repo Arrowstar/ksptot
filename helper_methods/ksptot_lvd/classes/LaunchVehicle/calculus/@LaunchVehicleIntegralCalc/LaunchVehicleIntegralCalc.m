@@ -10,7 +10,7 @@ classdef LaunchVehicleIntegralCalc < AbstractLaunchVehicleCalculusCalc
         function obj = LaunchVehicleIntegralCalc(lvdData)
             obj.lvdData = lvdData;
             
-            obj.id = rand();
+            obj.id = lvdGetNextUniqueId();
         end
         
         function nameStr = getNameStr(obj)
