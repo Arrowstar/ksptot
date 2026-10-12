@@ -25,9 +25,9 @@ classdef SurrogateOptOptionsDialogTest < KsptotTestCase
     %
     % NOTES
     %   The dialog has no Cancel button (Save & Close only), so the
-    %   close-without-save path is driven with close(fig).  The figure is
-    %   titled 'Edit FMINCON Options' in production (a copy-paste of the
-    %   fmincon dialog title); teardown matches that literal name.
+    %   close-without-save path is driven with close(fig).  The figure was
+    %   titled 'Edit FMINCON Options' in production (bug 1.17, fixed to
+    %   'Edit SURROGATEOPT Options'); teardown matches the fixed name.
 
     methods(TestMethodSetup)
         function shadowUiwait(testCase)
@@ -210,7 +210,7 @@ classdef SurrogateOptOptionsDialogTest < KsptotTestCase
         function closeAlerts(~)
             figs = findall(groot, 'Type', 'figure');
             for i = 1:numel(figs)
-                if isvalid(figs(i)) && ~strcmp(figs(i).Name, 'Edit FMINCON Options')
+                if isvalid(figs(i)) && ~strcmp(figs(i).Name, 'Edit SURROGATEOPT Options')
                     try %#ok<TRYNC>
                         close(figs(i));
                     end
@@ -227,7 +227,7 @@ classdef SurrogateOptOptionsDialogTest < KsptotTestCase
             end
             figs = findall(groot, 'Type', 'figure');
             for i = 1:numel(figs)
-                if isvalid(figs(i)) && strcmp(figs(i).Name, 'Edit FMINCON Options')
+                if isvalid(figs(i)) && strcmp(figs(i).Name, 'Edit SURROGATEOPT Options')
                     try %#ok<TRYNC>
                         close(figs(i));
                     end

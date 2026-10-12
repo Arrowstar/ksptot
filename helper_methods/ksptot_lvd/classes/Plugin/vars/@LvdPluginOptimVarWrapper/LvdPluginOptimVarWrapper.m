@@ -25,20 +25,35 @@ classdef LvdPluginOptimVarWrapper < matlab.mixin.SetGet
         end
 
         function [lb, ub] = getBounds(obj)
+            if(isempty(obj.optVar))
+                lb = [];
+                ub = [];
+                return;
+            end
             lb = obj.optVar.lb;
             ub = obj.optVar.ub;
         end
 
         function setBounds(obj, lb, ub)
+            if(isempty(obj.optVar))
+                return;
+            end
             obj.optVar.lb = lb;
             obj.optVar.ub = ub;
         end
 
         function useTf = isVariableActive(obj)
+            if(isempty(obj.optVar))
+                useTf = false;
+                return;
+            end
             useTf = obj.optVar.useTf;
         end
 
         function setIfVariableIsActive(obj, useTf)
+            if(isempty(obj.optVar))
+                return;
+            end
             obj.optVar.useTf = useTf;
         end
     end

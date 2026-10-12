@@ -12,7 +12,9 @@ classdef TankFluidTypeSet < matlab.mixin.SetGet & matlab.mixin.Copyable
         end
         
         function addType(obj, type)
-            obj.types(end+1) = type;
+            if(isempty(obj.types) || ~any(obj.types == type))
+                obj.types(end+1) = type;
+            end
         end
         
         function removeType(obj, type)

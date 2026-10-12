@@ -126,23 +126,7 @@ classdef SqpOptionsDialogTest < KsptotTestCase
             testCase.verifyEqual(opt.finDiffStepSize, 1e-3);
             testCase.verifyEqual(opt.maxIter, 111);
             testCase.verifyEqual(opt.maxFuncEvals, 222);
-        end
-
-        function maxLineSearchIterationsEditIsDroppedOnSave(testCase)
-            %REGRESSION (bug log 1.28): saveAndClose never writes
-            %maxLineSearchFun, so the field is display-only.  This test pins
-            %the current behavior; delete it (and restore the assertion in
-            %editAndSaveWritesTolerancesAndMaximums) once the dialog is fixed.
-            [opt] = testCase.fixture();
-            out = AppDesignerGUIOutput({false});
-            app = testCase.openDialog(opt, out);
-
-            app.MaxLineSearchIterationsEditField.Value = 17;
-            testCase.pushButton(app.saveAndCloseButton);
-
-            testCase.verifyTrue(out.output{1});
-            testCase.verifyEqual(opt.maxLineSearchFun, 30, ...
-                'Save currently drops the line-search edit (bug 1.28).');
+            testCase.verifyEqual(opt.maxLineSearchFun, 17);
         end
 
         function editAndSaveWritesDropdownsAndWorkers(testCase)

@@ -9,9 +9,10 @@ classdef SensorTargetsDialogTest < KsptotTestCase
     %   ('Edit Sensor Targets'; single-arg ctor (lvdData), no output arg --
     %   Add / Remove write straight into lvdData.sensorTgts and Close just
     %   closes). Add opens the listdlgARH_App picker (figure 'Select New
-    %   Sensor Type', sic: copy-pasted from the sensors dialog) and then the
+    %   Sensor Target') and then the
     %   single-target child editor (figure 'Edit Sensor Target');
     %   production caller is the LVD main window sensor-target menu.
+    %   (Fixed bug 4B.1: picker was titled 'Select New Sensor Type'.)
     %
     % PATTERN
     %   The dialog blocks in uiwait; UiwaitInterceptorFixture stands in for
@@ -77,7 +78,7 @@ classdef SensorTargetsDialogTest < KsptotTestCase
             lvdData = LvdData.getDefaultLvdData(testCase.celBodyData);
             app = testCase.openDialog(lvdData);
 
-            testCase.fixture.whenShown('Select New Sensor Type', @(fig) SensorTargetsDialogTest.pickRectGridAndOk(fig));
+            testCase.fixture.whenShown('Select New Sensor Target', @(fig) SensorTargetsDialogTest.pickRectGridAndOk(fig));
             testCase.fixture.whenShown('Edit Sensor Target', @(fig) UiwaitInterceptorFixture.pushButton(fig, 'Save & Close'));
             testCase.pushButton(app.AddTargetButton);
 
@@ -95,7 +96,7 @@ classdef SensorTargetsDialogTest < KsptotTestCase
             lvdData = LvdData.getDefaultLvdData(testCase.celBodyData);
             app = testCase.openDialog(lvdData);
 
-            testCase.fixture.whenShown('Select New Sensor Type', @(fig) SensorTargetsDialogTest.pickRectGridAndOk(fig));
+            testCase.fixture.whenShown('Select New Sensor Target', @(fig) SensorTargetsDialogTest.pickRectGridAndOk(fig));
             testCase.fixture.whenShown('Edit Sensor Target', @(fig) UiwaitInterceptorFixture.pushButton(fig, 'Cancel'));
             testCase.pushButton(app.AddTargetButton);
 
@@ -184,7 +185,7 @@ classdef SensorTargetsDialogTest < KsptotTestCase
             figs = findall(groot, 'Type', 'figure');
             for i = 1:numel(figs)
                 if isvalid(figs(i)) && (strcmp(figs(i).Name, 'Edit Sensor Targets') || ...
-                        strcmp(figs(i).Name, 'Select New Sensor Type') || ...
+                        strcmp(figs(i).Name, 'Select New Sensor Target') || ...
                         strcmp(figs(i).Name, 'Edit Sensor Target'))
                     try %#ok<TRYNC>
                         close(figs(i));

@@ -88,7 +88,7 @@ SQP/DERIVEst handles (production fix 1.29).
   each dialog in a future cleanup. Not changed here (renaming App Designer
   tags by hand risks breaking `convertToGUIDECallbackArguments` handles).
 
-### 1.3 GUIDE-migrated save callbacks silently ignore validation failures — OPEN
+### 1.3 GUIDE-migrated save callbacks silently ignore validation failures — FIXED (2026-10-12 rollout)
 - `saveAndCloseButton_Callback` in the constraint dialogs calls
   `validateInputs`; on failure the `msgbox(errMsg,...)` call is commented
   out, so the dialog just stays open with no message. Tests assert
@@ -118,7 +118,7 @@ SQP/DERIVEst handles (production fix 1.29).
   dialog's surrogate-search button. Test constructs the surrogate options
   object from `NomadOptions` and drives the checkboxes/spinners directly.
 
-### 1.7 Empty picker combos crash with Value=1 (4 constraint dialogs) — OPEN, easy
+### 1.7 Empty picker combos crash with Value=1 (4 constraint dialogs) — FIXED (2026-10-12 rollout), easy
 - `lvd_EditGroundObjConstraintGUI_App`, `lvd_EditPluginConstraintGUI_App`,
   `lvd_EditGeometricAngleConstraintGUI_App`,
   `lvd_EditGeometricVectorConstraintGUI_App` `populateGUI` sets
@@ -129,12 +129,12 @@ SQP/DERIVEst handles (production fix 1.29).
   `GeometricAngleMagConstraint.m:162`), so this only bites direct dialog
   opens. Tests always seed one entry. Easy fix: guard `Value = 1` with
   `if ~isempty(str)`.
-### 1.8 GenericMAConstraint.getDefaultConstraint arity mismatch — OPEN, easy
+### 1.8 GenericMAConstraint.getDefaultConstraint arity mismatch — FIXED (2026-10-12 rollout), easy
 - `GenericMAConstraint.m:258` declares
   `getDefaultConstraint(constraintType, lvdData)` but
   `GenericObjectiveFcn.m:142` calls it with one argument. Works only because
   the body ignores `lvdData`. Easy fix: give `lvdData` a default (`nargin`).
-### 1.9 Composite-objective Add uses fragile eval on local names — OPEN
+### 1.9 Composite-objective Add uses fragile eval on local names — FIXED (2026-10-12 rollout)
 - `lvd_EditCompositeObjectiveFunctionGUI_App` `addObjFuncButton_Callback`
   builds `eval(sprintf('%s.getDefaultConstraint(%s, %s)', constClass,
   'input1', 'lvdData'))`, depending on locals literally named `input1` /
@@ -157,7 +157,7 @@ SQP/DERIVEst handles (production fix 1.29).
 - Opening `lvd_EditCompositeObjectiveFunctionGUI_App` prints the warning
   2–5 times (observed live in every test). Trace the populate path for a
   short call and fix the arity.
-### 1.27 Composite dialog Set-Frame tooltip bug (same class as 5A.5) — OPEN
+### 1.27 Composite dialog Set-Frame tooltip bug (same class as 5A.5) — FIXED (2026-10-12 rollout)
 ### 1.30 Remove-then-refresh-Items crashes the migration layer (family) — OPEN (.mlapp, verified live)
 - Same root cause as 1.25, confirmed in three more dialogs (listener
   warnings during passing tests, not failures):
@@ -198,45 +198,45 @@ SQP/DERIVEst handles (production fix 1.29).
   `setOptsDoubleValueInObject.m:4-8` stores NaN, so "blank is rejected" does
   NOT hold for options dialogs; tests pin blank→NaN and use
   negative/zero/non-numeric for rejection cases.
-### 1.15 Ipopt dialog swaps nu labels — OPEN, easy
+### 1.15 Ipopt dialog swaps nu labels — FIXED (2026-10-12 rollout), easy
 - `lvd_editIpoptOptionsGUI_App` `validateInputs` labels `nuIncrText` as
   `'Initial Nu'` and `nuInitText` as `'Nu Increment'`. Mapping to
   `nu_inc`/`nu_init` is correct; only the messages are swapped.
 ### 1.16 Nomad dialog duplicates vns_trigger populate line — DOCUMENTED
 - `setOptsDoubleValueStrInGUI(...,'vns_trigger','vnsTriggerText')` called
   twice; harmless.
-### 1.17 Surrogate dialog mis-titled 'Edit FMINCON Options' — OPEN, easy
+### 1.17 Surrogate dialog mis-titled 'Edit FMINCON Options' — FIXED (2026-10-12 rollout), easy
 - `lvd_editSurrogateOptOptionsGUI_App.mlapp` sets figure `Name = 'Edit
   FMINCON Options'` and alerts `'Invalid FMINCON Options Inputs'`
   (copy-paste from fmincon dialog). Tests clean up by that literal name.
-### 1.18 DERIVEst grad method incompatible with shared finite-diff dialog — OPEN
+### 1.18 DERIVEst grad method incompatible with shared finite-diff dialog — FIXED (2026-10-12 rollout)
 - `DERIVEstFiniteDiffsCalculationMethod.openOptionsDialog`
   (`DERIVEstFiniteDiffsCalculationMethod.m:35-38`) passes `obj` (no
   `h`/`numPts`/`diffType`/`computeSparsity` properties) to
   `lvd_finiteDiffOptionsGUI_App`, whose `populateGUI` reads
   `finDiffObj.h`/`numPts`/`diffType.name` — errors for DERIVEst objects.
   Test covers the `CustomFiniteDiffsCalculationMethod` path only.
-### 1.19 Finite-diff blank-step stores NaN bypassing range check — OPEN, easy
+### 1.19 Finite-diff blank-step stores NaN bypassing range check — FIXED (2026-10-12 rollout), easy
 - `validateDoubleValue` lets blanks pass but finite-diff `saveAndClose`
   parses with raw `str2double`, storing NaN into `h` (`[1E-10,1E-1]` range)
   and into uint64 `numPts`. Validate the parsed value, not the string.
-### 1.20 SQP save validation is dead code — OPEN, easy
+### 1.20 SQP save validation is dead code — FIXED (2026-10-12 rollout), easy
 - `lvd_editSqpOptOptionsGUI_App` `saveAndCloseButtonPushed` has
   `% errMsg = validateInputs(app);` + `errMsg = {};` — the `uialert` branch
   is unreachable. Re-enable or remove.
 ### 1.21 PatternSearch populate writes penaltyFact twice — DOCUMENTED
 - Harmless duplicate; noted for cleanup.
-### 1.22 Fmincon stepTol validates [0,1] while siblings allow [0,Inf] — OPEN
+### 1.22 Fmincon stepTol validates [0,1] while siblings allow [0,Inf] — FIXED (2026-10-12 rollout)
 - `lvd_editFminconOptionsGUI_App` `stepTolText` range is inconsistent with
   neighboring tolerances; confirm intended or widen.
-### 1.23 usesParallel() contract differs per optimizer — OPEN
+### 1.23 usesParallel() contract differs per optimizer — FIXED (2026-10-12 rollout)
 - `IpoptOptions.m:86-89` returns the enum (callers use `.optionVal`) while
   `NomadOptions.m:126-128` returns logical. Each works with its own caller;
   unify to one contract.
 ### 1.24 Nomad useParallel typed as PatternSearch enum — DOCUMENTED
 - `NomadOptions.m:7` types `useParallel` as `PatternSearchUseParallelEnum`;
   works, but rename/type for clarity in cleanup.
-### 1.28 SQP dialog never saves maxLineSearchFun — OPEN (.mlapp, verified live)
+### 1.28 SQP dialog never saves maxLineSearchFun — FIXED (2026-10-12 rollout) (.mlapp, verified live)
 - `lvd_editSqpOptOptionsGUI_App` `saveAndClose` writes stepTol/optTol/
   tolCon/finDiffStepSize/useParallel/numWorkers/terminationType/
   maxFuncEvals/maxIter but has no `maxLineSearchFun` assignment — the
@@ -288,25 +288,25 @@ Files: `AddMassToTankActionDialogTest`, `AddValueToPluginVarActionDialogTest`,
 `SteeringModelsSetDialogTest`, `SumOfPolySteeringDialogTest`,
 `SumOfSinesSteeringDialogTest` (all in `tests/lvd_tests/`).
 
-### 2.1 Kinematic dialog Geographic branch shows lb as ub — OPEN, easy (.mlapp)
+### 2.1 Kinematic dialog Geographic branch shows lb as ub — FIXED (2026-10-12 rollout), easy (.mlapp)
 - `lvd_EditActionSetKinematicStateGUI_App.mlapp` `populateGUI`: Geographic
   branch builds `ub = [lb(1) rad2deg(ub(2)) ...]` — first element should be
   `ub(1)`. Keplerian/Universal branches and the save path use `ub(1)`.
   Pinned by `KinematicStateActionDialogTest`. Fix needs App Designer edit;
   deferred until MATLAB is back (see 0.1).
-### 2.2 ResetExtremum opens with zero extrema, Save reports success writing nothing — OPEN
+### 2.2 ResetExtremum opens with zero extrema, Save reports success writing nothing — FIXED (2026-10-12 rollout)
 - `ResetExtremumValueAction.m:76-82` `openEditActionUI` has no empty-extrema
   guard (sibling `SetExtremumRecordingStateAction.m:81-89` shows `warndlg`);
   dialog opens showing `' '`, Save reports success while `saveAndClose`
   writes only inside `if(not(isempty(extrema)))`. Add the guard to match.
-### 2.3 Stopwatch dialog shows stopwatch.startOn instead of runningStateToSet — OPEN, easy (.mlapp)
+### 2.3 Stopwatch dialog shows stopwatch.startOn instead of runningStateToSet — FIXED (2026-10-12 rollout), easy (.mlapp)
 - `lvd_EditActionSetStopwatchRunningStateGUI_App.mlapp` `populateGUI`
   computes the combo index from `action.stopwatch.startOn` instead of
   `action.runningStateToSet` (the value Save writes;
   `SetStopwatchRunningStateAction.m:7`). Pinned by
   `StopwatchRunningStateActionDialogTest.mismatchedStartOnShowsStartOnNotStoredState`.
   Save path is correct; fix the populate index.
-### 2.4 Sensor-steering dialog alerts to nonexistent figure + dead callback — OPEN (.mlapp)
+### 2.4 Sensor-steering dialog alerts to nonexistent figure + dead callback — FIXED (2026-10-12 rollout) (.mlapp)
 - `lvd_EditActionSetSensorSteeringModelGUI_App.mlapp`
   `PointingModelComboValueChanged` calls
   `uialert(app.EditConicalSensorGUI, ...)` — no such figure (should be the
@@ -314,7 +314,7 @@ Files: `AddMassToTankActionDialogTest`, `AddValueToPluginVarActionDialogTest`,
   instead of warning. Same dialog has dead `SensorHalfAngleTextValueChanged`
   referencing absent `app.SensorHalfAngleText`. Neither path is exercised by
   tests (documented in `SensorSteeringModelActionDialogTest` header).
-### 2.5 ThrottlePolyModel / T2WThrottleModel cancel-path index error — OPEN, easy (.m)
+### 2.5 ThrottlePolyModel / T2WThrottleModel cancel-path index error — FIXED (2026-10-12 rollout), easy (.m)
 - `ThrottlePolyModel.m:68` inits `AppDesignerGUIOutput({false})` but `:71`
   reads `output.output{2}`; `T2WThrottleModel.m:70/73` identical. Cancel
   indexes past the end; sibling `GenericQuatInterpSteeringModel.m:190`
@@ -322,7 +322,7 @@ Files: `AddMassToTankActionDialogTest`, `AddValueToPluginVarActionDialogTest`,
   verification (see 0.1).
 ### 2.6 PluginVarGaTask dialog validateInputs always passes — DOCUMENTED
 - `validateInputs` unconditionally returns `{}`; no rejection tests by design.
-### 2.9 Third-body dialog crashes opening with stored bodies — OPEN (.mlapp, verified live)
+### 2.9 Third-body dialog crashes opening with stored bodies — FIXED (2026-10-12 rollout) (.mlapp, verified live)
 - `lvd_EditActionSetThirdBodyGravitySourcesGUI_App.mlapp` `populateGUI`
   runs `[~,inds,~] = intersect(sortedBodyInfoArr, curSelBodies)` on
   `KSPTOT_BodyInfo` handle arrays. That class overloads `eq` by (class, id)
@@ -345,7 +345,7 @@ Files: `AddMassToTankActionDialogTest`, `AddValueToPluginVarActionDialogTest`,
   resyncs stale vars preserving overlap, plus a shared-contract
   `resizeVectorToNumRows` static. Full `TabularQuatInterpSteeringDialogTest`
   (8 tests) passes, including multi-row open.
-### 2.13 Tabular-quat-interp validate crashes on empty table — OPEN (.mlapp)
+### 2.13 Tabular-quat-interp validate crashes on empty table — FIXED (2026-10-12 rollout) (.mlapp)
 - `validateInputs` column-indexes `tableData` without an emptiness guard, so
   clearing the table errors (`line ~313, index in position 2`) instead of
   hitting the 'at least one row' rejection. Guard `isempty` before indexing.
@@ -371,13 +371,13 @@ Files: `AddMassToTankActionDialogTest`, `AddValueToPluginVarActionDialogTest`,
   component + a Value-bearing event struct. The `editControl` helper in the
   FitNet/LinearTangent/SumOf* tests encodes this; reuse it for future
   GUIDE-migrated EditField tests.
-### 2.14 Tabular-quat-interp cancel/X recurse on close — OPEN (.mlapp)
+### 2.14 Tabular-quat-interp cancel/X recurse on close — FIXED (2026-10-12 rollout) (.mlapp)
 - `cancelButtonPushed` and `EditSteeringModelUIFigureCloseRequest` both call
   `close(fig)`, producing 'A callback recursively calls CLOSE' warnings on
   every cancel/close (observed live). Use `delete(fig)` in one of them.
   (Also note the App Designer singleton can hand a half-closed instance to
   the next open; tests reap figures aggressively for this reason.)
-### 2.11 Linear-tangent editor needs the selectable wrapper — OPEN (.mlapp, verified live)
+### 2.11 Linear-tangent editor needs the selectable wrapper — FIXED (2026-10-12 rollout) (.mlapp, verified live)
 - `lvd_EditLinearTangentModelGUI_App.mlapp` `populateGUI` reads
   `varA/varADot/varB/varBDot` + bounds that exist only on
   `LinearTangentSelectableModel`; opening it with a bare
@@ -385,7 +385,7 @@ Files: `AddMassToTankActionDialogTest`, `AddValueToPluginVarActionDialogTest`,
   selectable wrapper (the only production path, via the selectable
   editor's angle buttons). Consider guarding or documenting the dialog's
   real input type.
-### 2.10 Poly steering editor crashes with frameless model — OPEN (.mlapp, verified live)
+### 2.10 Poly steering editor crashes with frameless model — FIXED (2026-10-12 rollout) (.mlapp, verified live)
 - `lvd_EditActionSetSteeringModelGUI_App.mlapp` `populateGUI` line ~124
   dereferences `baseFrame.typeEnum.name` whenever `usesRefFrame()` is true,
   but `GenericPolySteeringModel.getDefaultSteeringModel()` leaves `refFrame`
@@ -413,7 +413,7 @@ Files: `AddMassToTankActionDialogTest`, `AddValueToPluginVarActionDialogTest`,
   distinct strings; real events differ), but fixtures MUST give selected
   objects distinguishing content (e.g. unique event names), or drive the
   control with `choose` gestures.
-### 2.7 Bare plugin wrappers crash getListboxStr — OPEN, easy (.m, verified live)
+### 2.7 Bare plugin wrappers crash getListboxStr — FIXED (2026-10-12 rollout), easy (.m, verified live)
 - `LvdPluginOptimVarWrapper.isVariableActive` (`LvdPluginOptimVarWrapper.m:37-38`)
   dereferences `obj.optVar.useTf`; a wrapper whose `optVar` is empty (never
   passed through `getNewOptVar`, e.g. built bare in a fixture or loaded from
@@ -452,13 +452,13 @@ PatchedMlappDialogs capacity coverage), `TanksDialogTest`,
 - `TankConstraintDialogTest.m` header claimed window-X coverage with no X
   test. Added `windowXPreservesModel` (close(fig), out false, model
   untouched). Unverified execution (see 0.1).
-### 3.2 Tanks Add misfiles TankState under stale stage — OPEN
+### 3.2 Tanks Add misfiles TankState under stale stage — FIXED (2026-10-12 rollout)
 - `lvd_EditTanksGUI_App.mlapp` `addTankButton_Callback`: new `TankState`
   created under pre-save `initStage` while the tank goes to its post-save
   stage. Sibling `lvd_EditEnginesGUI_App.mlapp` `addEngineButton_Callback`
   correctly uses the post-save stage. Changing stage in the nested editor
   during Add misfiles state under stage 1.
-### 3.3 TankFluidTypeSet.addType allows duplicates — OPEN, easy (.m)
+### 3.3 TankFluidTypeSet.addType allows duplicates — FIXED (2026-10-12 rollout), easy (.m)
 - `TankFluidTypeSet.m:17-19` appends without the de-dup guard used by
   stage/engine/tank add methods. Add the guard.
 ### 3.4 Doubled/lowercase control names — DOCUMENTED
@@ -473,7 +473,7 @@ PatchedMlappDialogs capacity coverage), `TanksDialogTest`,
 ### 3.7 Extrema/Calculus singles never validate — DOCUMENTED
 - `saveAndCloseButton_Callback` calls `saveAndClose` directly; no rejection
   tests by design.
-### 3.8 Electrical copy callbacks use the ORIGINAL's initial state — OPEN (.mlapp)
+### 3.8 Electrical copy callbacks use the ORIGINAL's initial state — FIXED (2026-10-12 rollout) (.mlapp)
 - `lvd_EditElectricalPowerSinksGUI_App` `copySinkMenu_Callback`,
   `lvd_EditElectricalPowerSrcsGUI_App` `copySrcMenu_Callback` (also misnamed
   local `newSinkState`), `lvd_EditElectricalPowerStoragesGUI_App`
@@ -481,10 +481,10 @@ PatchedMlappDialogs capacity coverage), `TanksDialogTest`,
   `<original>.createDefaultInitialState(stageState)` instead of
   `<new>.createDefaultInitialState(stageState)` — the copy inherits the
   source's state object. One-token fixes each.
-### 3.9 Power-sinks delete alerts to the storages figure — OPEN, easy (.mlapp)
+### 3.9 Power-sinks delete alerts to the storages figure — FIXED (2026-10-12 rollout), easy (.mlapp)
 - `removeSinkButton_Callback` parents its `uialert` to
   `app.lvd_EditElectricalPowerStoragesGUI` (should be `...PowerSinksGUI`).
-### 3.10 Throttle-modifier-element range message garbles args — OPEN, easy (.mlapp)
+### 3.10 Throttle-modifier-element range message garbles args — FIXED (2026-10-12 rollout), easy (.mlapp)
 - `validateInputs` passes `(min, max, indepUnit, depUnit)` for format
   `'...%.1f %s or %.1f %s...'` with the second value pair swapped and the
   second unit should be the indep unit.
@@ -507,7 +507,7 @@ Files: `OneDDragDialogTest`, `TwoDKwtDragDialogTest`, `ThreeDKwtDragDialogTest`,
 `FixedInVehicleSensorSteeringDialogTest`, `SensorsDialogTest`,
 `SensorTargetsDialogTest`, `SensorReportsDialogTest`, `AdjustCameraDialogTest`.
 
-### 4A.1 KSP-cylinder radius check reads the height field — OPEN, easy (.mlapp)
+### 4A.1 KSP-cylinder radius check reads the height field — FIXED (2026-10-12 rollout), easy (.mlapp)
 - `lvd_EditKSPCylinderLiftPropertiesGUI_App.mlapp` `validateInputs`: the
   `'Cylinder Radius'` block reads `app.CylinderHeightText.Value`. An invalid
   radius passes whenever the height is valid. Pinned by
@@ -522,24 +522,24 @@ Files: `OneDDragDialogTest`, `TwoDKwtDragDialogTest`, `ThreeDKwtDragDialogTest`,
   written then DELETED — it could never pass (dialog errors on open, test
   touches private props). Same treatment as 1.1: recommend deleting the
   `.mlapp` in a cleanup change, not this rollout.
-### 4A.3 Spherical-SRP dialog allows cR > 2, model throws on save — OPEN
+### 4A.3 Spherical-SRP dialog allows cR > 2, model throws on save — FIXED (2026-10-12 rollout)
 - Dialog validates scale/`cR` with `ub = Inf`, but
   `SphericalSolarRadiationPressureModel.m:9` caps `cR` at 2 — e.g. 5 passes
   validation then throws on assignment in `saveAndClose`. Align the bounds.
-### 4A.4 Solar-sail dialog allows area = 0, model requires > 0 — OPEN
+### 4A.4 Solar-sail dialog allows area = 0, model requires > 0 — FIXED (2026-10-12 rollout)
 - Dialog validates `area` with `lb = 0`, but
   `SolarSailSolarRadiationPressureModel.m:13` requires `> 0`. Same fix shape
   as 4A.3.
-### 4A.5 2-D KWT validation mutates the model before save — OPEN
+### 4A.5 2-D KWT validation mutates the model before save — FIXED (2026-10-12 rollout)
 - `lvd_Edit2DKerbalWindTunnelDragPropertiesGUI_App.mlapp` `validateInputs`
   calls `clearData()` + `createGriddedInterpFromFile()` inside the try: a
   corrupt-but-existing file leaves the model cleared/retargeted even though
   the save is rejected. Validate on a scratch copy, commit on save.
-### 4A.6 SRP openEditDialog discards the dialog result — OPEN
+### 4A.6 SRP openEditDialog discards the dialog result — FIXED (2026-10-12 rollout)
 - `SphericalSolarRadiationPressureModel.m:77-85` and
   `SolarSailSolarRadiationPressureModel.m:99-107` never return the dialog
   `out`, unlike `ConstantDragCoeffModel.m:46-50` which returns `useTf`.
-### 4B.1 Sensor-targets picker says "Sensor" — OPEN, easy (cosmetic)
+### 4B.1 Sensor-targets picker says "Sensor" — FIXED (2026-10-12 rollout), easy (cosmetic)
 - `lvd_EditSensorTargetsGUI_App.mlapp` `AddTargetButtonPushed` opens the
   picker with `'Name','Select New Sensor Type'` / `'...type of the sensor
   to be created:'`. Tests stub that exact (wrong) name.
@@ -552,7 +552,7 @@ Files: `OneDDragDialogTest`, `TwoDKwtDragDialogTest`, `ThreeDKwtDragDialogTest`,
 ### 4B.3 AdjustCamera rotate sliders need roty/rotz — DOCUMENTED
 - Same missing-toolbox class as 4B.2; `AdjustCameraDialogTest` drives only
   pan/zoom (documented in its header), never the rotate sliders.
-### 4B.6 AdjustCamera destroy-listener dereferences dead app — OPEN (.mlapp, verified live)
+### 4B.6 AdjustCamera destroy-listener dereferences dead app — FIXED (2026-10-12 rollout) (.mlapp, verified live)
 - `lvd_AdjustCameraGUI_App.mlapp` `axesBeingDestroyed` (line 55) calls
   `isvalid(app.CameraControlsUIFigure)` without checking `isvalid(app)`
   first; once the dialog is closed, deleting the driven axes warns
@@ -560,14 +560,14 @@ Files: `OneDDragDialogTest`, `TwoDKwtDragDialogTest`, `ThreeDKwtDragDialogTest`,
   only that warning ID in teardown. Production fix: guard with
   `isvalid(app) && ...`. (Also: the dialog requires a `uiaxes` handle —
   plain `axes` is rejected by the typed `hAx` property; tests use `uiaxes`.)
-### 4B.5 Sensor-reports populate crashes on empty lists — OPEN (.mlapp, verified live)
+### 4B.5 Sensor-reports populate crashes on empty lists — FIXED (2026-10-12 rollout) (.mlapp, verified live)
 - Opening `lvd_SensorReports` with no sensors/targets errors
   (`'Value' must be the empty cell because the 'Items' property is empty`):
   populate assigns a non-empty `Value` to the empty listboxes. Production
   never hits this (the main-window menu alerts instead of opening), but the
   dialog should degrade to empty lists + disabled Generate. Tests cover the
   model-level emptiness and the empty-SELECTION alert path instead.
-### 4B.4 Sensor-reports Generate swallows errors — OPEN
+### 4B.4 Sensor-reports Generate swallows errors — FIXED (2026-10-12 rollout)
 - `lvd_SensorReports.mlapp` `GenerateReportButtonPushed` catches `ME`
   without rethrow, leaving partial cells while reporting `Done.`. Tests
   never press Generate with a selection (list/content only, no XLS I/O).
@@ -616,7 +616,7 @@ Files: `AlignedConstrainedCoordSysDialogTest`,
 - `validateInputs` checks numeric + `ub >= lb` with `lb = -Inf` from
   callers, so negative durations save. Tests pin the actual refusals
   (blank/non-numeric, inverted bounds), not negatives.
-### 5A.5 Term-cond Set-Frame tooltip assignment will error — OPEN (.mlapp)
+### 5A.5 Term-cond Set-Frame tooltip assignment will error — FIXED (2026-10-12 rollout) (.mlapp)
 - `setFrameOptionsButton_Callback` assigns `.Tooltip` (App Designer prop)
   while `populateGUI`/`updateFrameChange` use `.TooltipString` (GUIDE
   uicontrol prop). Pressing Set Frame Options after a frame update errors.
@@ -644,3 +644,13 @@ Files: `AlignedConstrainedCoordSysDialogTest`,
   char-typed `notes` (`LvdData.m:13`); correct iff the migration CodeAdapter
   returns char. `MissionNotesDialogTest.saveAndCloseWritesNotes` exercises
   exactly this path — watch it when the bridge is back.
+
+---
+
+## 6. Fix rollout 2026-10-12 (Waves 1–4, direct document.xml edits + pure-.m)
+
+Method: `.mlapp` files patched via `matlab/document.xml` in-zip edits (Dropbox reparse points require delete-then-move; backups `*.bak_wave*`). Verified live in MATLAB with `runtests` per batch, zero leaked figures (except SensorTargets 1 unnamed leak under investigation).
+
+Fixed and verified green: 1.3 (uialert already present), 1.7, 1.8, 1.9 (feval), 1.15, 1.17 (+test teardown rename), 1.18 (DERIVEst no-op), 1.19 (+uialert msg fix), 1.20 (dead branch removed), 1.22 (stepTol [0,Inf]), 1.23 (logical contract + IpOptOptimizer), 1.27/5A.5 (TooltipString), 1.28 (+retired pin test), 2.1, 2.2, 2.3 (+retired pin test), 2.4, 2.5, 2.7, 2.9 (id ismember), 2.10 (frameless fallback), 2.11 (selectable guard), 2.13 (guard verified present), 2.14 (cancel+CloseRequest to delete; residual save-path warnings remain), 3.2, 3.3, 3.8, 3.9, 3.10, 4A.1, 4A.3 (ub=2), 4A.4 (lb=eps), 4A.5 (no-mutate validate), 4A.6 (return useTf), 4B.1 (+test stub rename), 4B.4 (surface error), 4B.5 (empty degrade), 4B.6 (isvalid(app)).
+
+Deliberately NOT fixed here (need App Designer UI work / high risk via direct XML): 1.4/1.13/5A.2 (add Cancel buttons), 1.2 (rename donor figure properties/tags), 1.24 (Nomad enum type rename), 1.25/1.30 listbox-refresh migration-layer warnings (attempted Value={} clearing breaks uilistbox validation; reverted; tests pass with documented warnings), 1.26 (open warning persists), 1.10 (stale Value subsumed by 1.25 family).

@@ -75,10 +75,16 @@ classdef ResetExtremumValueAction < AbstractEventAction
     methods(Static)
         function addActionTf = openEditActionUI(action, lv)
 %             addActionTf = lvd_EditActionResetExtremumValueGUI(action, lv);
-            
-            output = AppDesignerGUIOutput({false});
-            lvd_EditActionResetExtremumValueGUI_App(action, lv, output);
-            addActionTf = output.output{1};
+
+            [~, extrema] = lv.getExtremaListBoxStr();
+            if(not(isempty(extrema)))
+                output = AppDesignerGUIOutput({false});
+                lvd_EditActionResetExtremumValueGUI_App(action, lv, output);
+                addActionTf = output.output{1};
+            else
+                addActionTf = false;
+                warndlg('There are no extrema in the scenario.  Create one first.','Cannot Create Action','modal');
+            end
         end
     end
 end

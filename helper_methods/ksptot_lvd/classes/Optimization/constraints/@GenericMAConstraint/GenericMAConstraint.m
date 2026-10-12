@@ -255,7 +255,10 @@ classdef GenericMAConstraint < AbstractConstraint
             end
         end
 
-        function constraint = getDefaultConstraint(constraintType, lvdData)            
+        function constraint = getDefaultConstraint(constraintType, lvdData)
+            if(nargin < 2)
+                lvdData = [];
+            end
             constraint = GenericMAConstraint(constraintType, LaunchVehicleEvent.empty(1,0), 0, 0, [], [], KSPTOT_BodyInfo.empty(1,0));
         end
     end

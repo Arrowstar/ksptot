@@ -32,9 +32,9 @@ classdef DERIVEstFiniteDiffsCalculationMethod < AbstractGradientCalculationMetho
             [jac,err] = jacobianest(cFun,x0,useParallel);
         end
         
-        function openOptionsDialog(obj)           
-            output = AppDesignerGUIOutput({false});
-            lvd_finiteDiffOptionsGUI_App(obj, output);
+        function openOptionsDialog(obj)
+            % DERIVEst uses gradest/jacobianest defaults; no editable options.
+            % Do not open the shared finite-diff dialog (it requires h/numPts/diffType).
         end
     end
 end

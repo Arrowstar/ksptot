@@ -24,14 +24,10 @@ classdef StopwatchRunningStateActionDialogTest < KsptotTestCase
     %   The default LvdData carries no stopwatches, so two are seeded,
     %   mirroring EventActionTest.buildEntryWithStopwatch.
     %
-    % KNOWN PRODUCTION BUG (pinned, not fixed here)
-    %   populateGUI seeds the state dropdown from
-    %   action.stopwatch.startOn (the stopwatch's initial setting) instead
-    %   of action.runningStateToSet (the value being edited), so the shown
-    %   state is wrong whenever the two differ.  The mismatched-start-on
-    %   test below documents the behaviour; retire it if the dialog is
-    %   fixed.  The save path reads the dropdown correctly, so the
-    %   saveAndClose test is unaffected.
+    % FIXED (bug log 2.3): populateGUI used to seed the state dropdown
+    %   from action.stopwatch.startOn instead of action.runningStateToSet.
+    %   It now shows the stored runningStateToSet; the test below pins the
+    %   fixed behaviour.
 
     methods(TestMethodSetup)
         function shadowUiwait(testCase)
@@ -52,8 +48,7 @@ classdef StopwatchRunningStateActionDialogTest < KsptotTestCase
 
         function mismatchedStartOnShowsStartOnNotStoredState(testCase)
             %The fixture stopwatch starts NotRunning but the action stores
-            %Running.  The dialog shows the stopwatch's startOn value
-            %instead of the action's stored runningStateToSet.
+            %Running.  The dialog must show the stored runningStateToSet.
             [action, lvdData] = testCase.fixture();
             testCase.assertEqual(action.runningStateToSet, StopwatchRunningEnum.Running);
             testCase.assertEqual(action.stopwatch.startOn, StopwatchRunningEnum.NotRunning);
@@ -63,8 +58,8 @@ classdef StopwatchRunningStateActionDialogTest < KsptotTestCase
 
             [strs, ~] = StopwatchRunningEnum.getNameStrs();
             shownInd = get(handles.stateCombo, 'Value');
-            testCase.verifyEqual(shownInd, StopwatchRunningEnum.getIndOfListboxStrs(action.stopwatch.startOn), ...
-                'BUG PIN: the dialog shows startOn, not the stored runningStateToSet.');
+            testCase.verifyEqual(shownInd, StopwatchRunningEnum.getIndOfListboxStrs(action.runningStateToSet), ...
+                'The dialog must show the stored runningStateToSet.');
             shownStrs = cellstr(get(handles.stateCombo, 'String'));
             testCase.verifyEqual(shownStrs(:), strs(:), ...
                 'Both running states must still be offered.');
