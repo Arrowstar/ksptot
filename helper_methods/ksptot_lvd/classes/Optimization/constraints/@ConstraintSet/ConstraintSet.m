@@ -167,8 +167,12 @@ classdef ConstraintSet < matlab.mixin.SetGet
                     try
                         stateLog = obj.lvdOptim.propagateForX(x, useSparse, evtToStartScriptExecAt, allowInterrupt);
                     catch ME
-                        c = NaN;
-                        ceq = NaN;
+                        %Propagation failed: report the largest infeasibility
+                        %instead of NaN so the solver steers back towards the
+                        %feasible region instead of erroring on NaN input or
+                        %silently accepting a skipped evaluation.
+                        c = lvd_sanitizeOptimValue(NaN);
+                        ceq = lvd_sanitizeOptimValue(NaN);
 
                         return;
                     end
@@ -260,6 +264,14 @@ classdef ConstraintSet < matlab.mixin.SetGet
                     constCnt = constCnt+1;
                 end
             end
+
+            %Force optimizer-facing constraint values real and finite:
+            %complex values keep their real part (acos/sqrt roundoff), and
+            %NaN/Inf become a large positive infeasibility.  Shapes are
+            %preserved, so lastRunValues stays aligned with "constraints".
+            c = lvd_sanitizeOptimValue(c);
+            ceq = lvd_sanitizeOptimValue(ceq);
+            value = lvd_sanitizeOptimValue(value);
 
             obj.lastRunValues.updateValues(c, ceq, value, lb, ub, type, eventNum, cEventInds, ceqEventInds, constraints, cCInds, cCeqInds, valueStateComps);
         end

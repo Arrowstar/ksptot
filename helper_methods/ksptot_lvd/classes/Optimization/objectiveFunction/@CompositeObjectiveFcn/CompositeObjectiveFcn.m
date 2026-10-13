@@ -41,7 +41,9 @@ classdef CompositeObjectiveFcn < AbstractObjectiveFcn
             try
                 stateLog = obj.lvdOptim.propagateForX(x, useSparse, evtToStartScriptExecAt, true);
             catch ME
-                f = NaN;
+                %Propagation failed: report Inf (worse than everything for a
+                %minimizer) rather than NaN, which crashes some solvers.
+                f = lvd_sanitizeOptimValue(NaN, Inf);
                 stateLog = obj.lvdData.stateLog;
 
                 return;
@@ -53,7 +55,7 @@ classdef CompositeObjectiveFcn < AbstractObjectiveFcn
             else
                 fArr = NaN(1, numObjFcns);
                 for(i=1:numObjFcns)
-                    fArr(i) = obj.objFcns(i).evalObjFcn(stateLog);
+                    fArr(i) = lvd_sanitizeOptimValue(obj.objFcns(i).evalObjFcn(stateLog));
                 end
                 
                 switch obj.compositeMethod
@@ -77,6 +79,10 @@ classdef CompositeObjectiveFcn < AbstractObjectiveFcn
                 if(obj.dirType == ObjFcnDirectionTypeEnum.Maximize)
                     f = -1*f;
                 end
+
+                %Failed or degenerate propagation reads as Inf (minimization:
+                %worse than everything) rather than NaN/complex.
+                f = lvd_sanitizeOptimValue(f, Inf);
             end
         end
         
