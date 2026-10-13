@@ -23,7 +23,7 @@ classdef LvdSweepGridVariation < AbstractLvdSweepVariation
             obj.upperBnd = upperBnd;
             obj.step = step;
 
-            obj.id = rand();
+            obj.id = lvdGetNextUniqueId();
         end
 
         function values = getGridValues(obj)

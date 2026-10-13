@@ -27,7 +27,12 @@ classdef(Abstract) AbstractLaunchVehicleCalculusCalc < matlab.mixin.SetGet & mat
     
     methods(Sealed)
         function tf = eq(a,b)
-            tf = [a.id] == [b.id];
+            %eq Identity by (class, id).  See lvdIdsEqual.
+            tf = lvdIdsEqual(a,b);
+        end
+
+        function tf = ne(a,b)
+            tf = ~lvdIdsEqual(a,b);
         end
     end
     

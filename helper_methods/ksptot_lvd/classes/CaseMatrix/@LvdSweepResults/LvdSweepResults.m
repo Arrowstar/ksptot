@@ -49,7 +49,7 @@ classdef LvdSweepResults < matlab.mixin.SetGet
 
     methods
         function obj = LvdSweepResults()
-            obj.id = rand();
+            obj.id = lvdGetNextUniqueId();
         end
 
         function n = getNumCases(obj)
@@ -353,7 +353,7 @@ classdef LvdSweepResults < matlab.mixin.SetGet
 
         function obj = loadobj(obj)
             if(obj.id == 0)
-                obj.id = rand();
+                obj.id = lvdGetNextUniqueId();
             end
         end
 

@@ -16,6 +16,26 @@ classdef EventColorLineSpec < matlab.mixin.SetGet
         function obj = EventColorLineSpec()
             %Default event color is Red, matching the legacy palette row 1.
         end
+
+        function newObj = copy(obj)
+            %copy Independent duplicate of this style container.
+            %
+            %   EventColorLineSpec is a handle: assigning
+            %   newEvt.colorLineSpec = oldEvt.colorLineSpec would alias one
+            %   container to two events, so editing one event's color would
+            %   silently restyle the other.  Any future event-duplication
+            %   path must call copy() instead of assigning the handle.
+            arguments
+                obj(1,1) EventColorLineSpec
+            end
+
+            newObj = EventColorLineSpec();
+            newObj.color = obj.color;
+            newObj.lineSpec = obj.lineSpec;
+            newObj.lineWidth = obj.lineWidth;
+            newObj.markerSpec = obj.markerSpec;
+            newObj.markerSize = obj.markerSize;
+        end
     end
 
     methods(Static)

@@ -16,7 +16,10 @@ classdef LvdSettings < matlab.mixin.SetGet
         disEvtPropTimes(1,1) logical = false;
         
         %incremental re-propagation during optimization
-        enableIncrementalRepropagation(1,1) logical = true;
+        %Default false: prefix reuse keyed on bare x-vectors has served
+        %stale per-event entries in long optimizations (Bug 3).  Re-enable
+        %per-mission only after the baseline is hash-keyed and audited.
+        enableIncrementalRepropagation(1,1) logical = false;
 
         %serve the objective's propagation to the constraints (and vice
         %versa) when both are evaluated at the same x vector

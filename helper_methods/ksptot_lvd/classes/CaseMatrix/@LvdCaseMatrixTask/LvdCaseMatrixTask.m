@@ -114,7 +114,7 @@ classdef LvdCaseMatrixTask < matlab.mixin.SetGet
             obj.prereqTasks = prereqTasks;
             obj.pluginVarIsUsed = pluginVarIsUsed(:)';
 
-            obj.id = rand();
+            obj.id = lvdGetNextUniqueId();
         end
 
         function lvdData = loadLvdData(obj)
@@ -757,7 +757,7 @@ classdef LvdCaseMatrixTask < matlab.mixin.SetGet
 
         function obj = loadobj(obj)
             if(obj.id == 0)
-                obj.id = rand();
+                obj.id = lvdGetNextUniqueId();
             end
 
             %Migrate a task written before parameters were generalized.  An

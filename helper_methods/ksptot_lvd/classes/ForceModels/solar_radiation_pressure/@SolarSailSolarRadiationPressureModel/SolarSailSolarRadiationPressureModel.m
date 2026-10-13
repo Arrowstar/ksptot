@@ -96,7 +96,7 @@ classdef SolarSailSolarRadiationPressureModel < AbstractSolarRadiationPressureMo
             end
         end
 
-        function openEditDialog(obj, lvdData)
+        function useTf = openEditDialog(obj, lvdData)
             arguments   
                 obj(1,1) SolarSailSolarRadiationPressureModel
                 lvdData(1,1) LvdData
@@ -104,6 +104,7 @@ classdef SolarSailSolarRadiationPressureModel < AbstractSolarRadiationPressureMo
             
             out = AppDesignerGUIOutput({false});
             lvd_EditSolarSailSolarRadPressModel_App(obj, out);
+            useTf = out.output{1};
         end
     end
 end

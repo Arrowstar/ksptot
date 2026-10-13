@@ -18,7 +18,7 @@ classdef SetSensorMaxRangeAction < AbstractEventAction
                 obj.sensorMaxRange = maxRange;
             end
             
-            obj.id = rand();
+            obj.id = lvdGetNextUniqueId();
         end
         
         function newStateLogEntry = executeAction(obj, stateLogEntry)

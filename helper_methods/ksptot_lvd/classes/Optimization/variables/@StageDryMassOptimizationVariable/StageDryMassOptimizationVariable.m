@@ -16,7 +16,7 @@ classdef StageDryMassOptimizationVariable < AbstractOptimizationVariable
             obj.stage = stage;
             obj.stage.optVar = obj;
             
-            obj.id = rand();
+            obj.id = lvdGetNextUniqueId();
         end
         
         function x = getXsForVariable(obj)

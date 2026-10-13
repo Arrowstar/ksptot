@@ -15,7 +15,7 @@ classdef GeometricVectorMagConstraint < AbstractGeometricVectorConstraint
             
             obj.type = 'VectMag';
 
-            obj.id = rand();
+            obj.id = lvdGetNextUniqueId();
         end
 
         function type = getConstraintType(obj)

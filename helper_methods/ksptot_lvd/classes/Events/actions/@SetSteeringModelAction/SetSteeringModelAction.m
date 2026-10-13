@@ -25,7 +25,7 @@ classdef SetSteeringModelAction < AbstractEventAction
                 obj.steeringModels.selectedModel = RollPitchYawPolySteeringModel.getDefaultSteeringModel();
             end
             
-            obj.id = rand();
+            obj.id = lvdGetNextUniqueId();
         end
 
 %         function sm = get.steeringModel(obj)

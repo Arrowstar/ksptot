@@ -1,6 +1,12 @@
-classdef LineSpecEnum < matlab.mixin.SetGet
-    %LineSpecEnum Summary of this class goes here
-    %   Detailed explanation goes here
+classdef LineSpecEnum
+    %LineSpecEnum Line style enumeration (value class).
+    %
+    %   Value semantics (not a handle): copying an enum member copies its
+    %   payload, so a statement like ev.colorLineSpec.lineSpec.linespec
+    %   = '--' can never restyle every event sharing that member.  All
+    %   writers reassign wholesale (ev.colorLineSpec.lineSpec = ...).
+    %   Previously derived from matlab.mixin.SetGet, which made each
+    %   member a mutable global singleton (Bug 4).
     
     enumeration
         SolidLine('Solid Line', '-')
@@ -9,7 +15,7 @@ classdef LineSpecEnum < matlab.mixin.SetGet
         DashedDotLine('Dashed-dot Line', '-.')
     end
     
-    properties
+    properties(SetAccess = immutable)
         name char = '';
         linespec char = '';
     end

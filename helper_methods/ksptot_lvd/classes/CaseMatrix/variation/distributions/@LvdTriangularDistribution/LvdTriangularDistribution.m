@@ -23,7 +23,7 @@ classdef LvdTriangularDistribution < AbstractLvdDistribution
             obj.c = c;
             obj.b = b;
 
-            obj.id = rand();
+            obj.id = lvdGetNextUniqueId();
         end
 
         function x = invCdf(obj, u)

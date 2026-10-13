@@ -30,7 +30,7 @@ classdef LvdPlugin < matlab.mixin.SetGet
     
     methods
         function obj = LvdPlugin()
-            obj.id = rand();
+            obj.id = lvdGetNextUniqueId();
         end
         
         function userData = executePlugin(obj, lvdData, stateLog, event, execLoc, t,y,flag, userData, stateLogEntry, frame)

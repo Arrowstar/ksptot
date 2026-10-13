@@ -21,7 +21,7 @@ classdef LvdSweepDistVariation < AbstractLvdSweepVariation
             obj.dist = dist;
             obj.numGridLevels = numGridLevels;
 
-            obj.id = rand();
+            obj.id = lvdGetNextUniqueId();
         end
 
         function values = getGridValues(obj)

@@ -8,7 +8,7 @@ classdef SetThirdBodyGravitySourcesAction < AbstractEventAction
     
     methods
         function obj = SetThirdBodyGravitySourcesAction()
-            obj.id = rand();
+            obj.id = lvdGetNextUniqueId();
         end
         
         function newStateLogEntry = executeAction(obj, stateLogEntry)

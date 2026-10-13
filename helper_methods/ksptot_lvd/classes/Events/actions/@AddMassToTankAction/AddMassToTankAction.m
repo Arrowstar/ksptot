@@ -16,7 +16,7 @@ classdef AddMassToTankAction < AbstractEventAction
                 obj.massToAdd = massToAdd;
             end
             
-            obj.id = rand();
+            obj.id = lvdGetNextUniqueId();
         end
         
         function newStateLogEntry = executeAction(obj, stateLogEntry)

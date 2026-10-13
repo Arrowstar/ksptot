@@ -190,7 +190,7 @@ classdef(Abstract) AbstractConstraint < matlab.mixin.SetGet & matlab.mixin.Heter
         
         function obj = loadobj(obj)
             if(obj.id == 0)
-                obj.id = rand();
+                obj.id = lvdGetNextUniqueId();
             end
 
             if(isempty(obj.frame))
@@ -203,11 +203,12 @@ classdef(Abstract) AbstractConstraint < matlab.mixin.SetGet & matlab.mixin.Heter
     
     methods(Sealed)        
         function tf = eq(A,B)
-            tf = [A.id] == [B.id];
+            %eq Identity by (class, id).  See lvdIdsEqual.
+            tf = lvdIdsEqual(A,B);
         end 
         
         function tf = ne(A,B)
-            tf = [A.id] ~= [B.id];
+            tf = ~lvdIdsEqual(A,B);
         end 
     end
 end

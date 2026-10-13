@@ -18,7 +18,7 @@ classdef SetRectangularlSensorDecAngleAction < AbstractEventAction
                 obj.sensorDecAngle = sensorDecAngle;
             end
             
-            obj.id = rand();
+            obj.id = lvdGetNextUniqueId();
         end
         
         function newStateLogEntry = executeAction(obj, stateLogEntry)

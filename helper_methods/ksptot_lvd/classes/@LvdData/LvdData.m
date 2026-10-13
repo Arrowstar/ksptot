@@ -62,7 +62,7 @@ classdef LvdData < matlab.mixin.SetGet
             obj.caseMatrixSetup = LvdSweepSetup();
             obj.monteCarloSetup = LvdSweepSetup.getDefaultMonteCarloSetup();
 
-            obj.id = rand();
+            obj.id = lvdGetNextUniqueId();
         end
     end
     
@@ -841,7 +841,7 @@ classdef LvdData < matlab.mixin.SetGet
             end
 
             if(isempty(obj.id) || obj.id == 0)
-                obj.id = rand();
+                obj.id = lvdGetNextUniqueId();
             end
         end
     end
@@ -859,7 +859,7 @@ classdef LvdData < matlab.mixin.SetGet
 
             stored = getArrayFromByteStream(getByteStreamFromArray(results));
             stored.runName = obj.makeUniqueStoredRunName(results.runName);
-            stored.id = rand();
+            stored.id = lvdGetNextUniqueId();
 
             obj.monteCarloResults(end+1) = stored;
         end

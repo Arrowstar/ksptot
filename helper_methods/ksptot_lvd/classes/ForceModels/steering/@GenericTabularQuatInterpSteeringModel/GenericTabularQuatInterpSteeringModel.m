@@ -148,6 +148,43 @@ classdef GenericTabularQuatInterpSteeringModel < AbstractSteeringModel
         
         function optVar = getExistingOptVar(obj)
             optVar = obj.optVar;
+            if(isempty(optVar))
+                return;
+            end
+
+            % The table editor indexes the variable vectors by table row.
+            % Models whose durations were assigned directly (or loaded from
+            % older files) can have more rows than their variable, which
+            % used to crash makeTableDataFromModel with "Index exceeds the
+            % number of array elements". Grow (or shrink) the vectors to the
+            % table size, preserving existing entries (same contract as
+            % ThrottleInterpolatedModel.getExistingOptVar).
+            numRows = numel(obj.tDurs);
+            if(numel(optVar.varTDur) ~= numRows || ...
+               numel(optVar.varGammaAngles) ~= numRows || ...
+               numel(optVar.varBetaAngles) ~= numRows || ...
+               numel(optVar.varAlphaAngles) ~= numRows || ...
+               numel(optVar.lbTDur) ~= numRows || ...
+               numel(optVar.lbGammaAngles) ~= numRows || ...
+               numel(optVar.lbBetaAngles) ~= numRows || ...
+               numel(optVar.lbAlphaAngles) ~= numRows || ...
+               numel(optVar.ubTDur) ~= numRows || ...
+               numel(optVar.ubGammaAngles) ~= numRows || ...
+               numel(optVar.ubBetaAngles) ~= numRows || ...
+               numel(optVar.ubAlphaAngles) ~= numRows)
+                optVar.varTDur = GenericTabularQuatInterpSteeringModel.resizeVectorToNumRows(optVar.varTDur, numRows, false);
+                optVar.varGammaAngles = GenericTabularQuatInterpSteeringModel.resizeVectorToNumRows(optVar.varGammaAngles, numRows, false);
+                optVar.varBetaAngles = GenericTabularQuatInterpSteeringModel.resizeVectorToNumRows(optVar.varBetaAngles, numRows, false);
+                optVar.varAlphaAngles = GenericTabularQuatInterpSteeringModel.resizeVectorToNumRows(optVar.varAlphaAngles, numRows, false);
+                optVar.lbTDur = GenericTabularQuatInterpSteeringModel.resizeVectorToNumRows(optVar.lbTDur, numRows, 0);
+                optVar.lbGammaAngles = GenericTabularQuatInterpSteeringModel.resizeVectorToNumRows(optVar.lbGammaAngles, numRows, -360);
+                optVar.lbBetaAngles = GenericTabularQuatInterpSteeringModel.resizeVectorToNumRows(optVar.lbBetaAngles, numRows, -90);
+                optVar.lbAlphaAngles = GenericTabularQuatInterpSteeringModel.resizeVectorToNumRows(optVar.lbAlphaAngles, numRows, -360);
+                optVar.ubTDur = GenericTabularQuatInterpSteeringModel.resizeVectorToNumRows(optVar.ubTDur, numRows, 1);
+                optVar.ubGammaAngles = GenericTabularQuatInterpSteeringModel.resizeVectorToNumRows(optVar.ubGammaAngles, numRows, 360);
+                optVar.ubBetaAngles = GenericTabularQuatInterpSteeringModel.resizeVectorToNumRows(optVar.ubBetaAngles, numRows, 90);
+                optVar.ubAlphaAngles = GenericTabularQuatInterpSteeringModel.resizeVectorToNumRows(optVar.ubAlphaAngles, numRows, 360);
+            end
         end
         
         function tf = usesRefFrame(~)
@@ -231,6 +268,34 @@ classdef GenericTabularQuatInterpSteeringModel < AbstractSteeringModel
         
         function typeStr = getTypeNameStr()
             typeStr = SteeringModelEnum.GenericTabularQuatInterp.nameStr;
+        end
+
+        function resized = resizeVectorToNumRows(vec, numRows, padValue)
+            %resizeVectorToNumRows Grow or shrink a per-row variable vector,
+            % preserving overlapping entries and padding with padValue.
+            % (Same contract as ThrottleInterpolatedModel.resizeVectorToNumRows.)
+            vec = vec(:);
+            numExisting = numel(vec);
+            if(numExisting == numRows)
+                resized = vec;
+            elseif(numExisting > numRows)
+                resized = vec(1:numRows, :);
+            else
+                if(islogical(padValue) || islogical(vec))
+                    resized = false(numRows, 1);
+                elseif(isa(vec, 'double'))
+                    resized = zeros(numRows, 1);
+                else
+                    resized = repmat(vec(1), numRows, 1);
+                end
+                resized(1:numExisting, :) = vec;
+                if(numRows > numExisting)
+                    resized(numExisting+1:end, :) = padValue;
+                end
+            end
+            if(islogical(vec) || islogical(padValue))
+                resized = logical(resized);
+            end
         end
     end
 end

@@ -133,7 +133,7 @@ classdef IpOptOptimizer < AbstractGradientOptimizer
         end
         
         function tf = usesParallel(obj)
-            tf = obj.options.usesParallel().optionVal;
+            tf = logical(obj.options.usesParallel());
         end
         
         function numWorkers = getNumParaWorkers(obj)

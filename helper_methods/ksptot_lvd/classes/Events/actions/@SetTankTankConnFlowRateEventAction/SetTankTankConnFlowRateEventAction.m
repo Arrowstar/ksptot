@@ -14,7 +14,7 @@ classdef SetTankTankConnFlowRateEventAction < AbstractEventAction
                 obj.flowRateToSet = flowRateToSet;
             end
             
-            obj.id = rand();
+            obj.id = lvdGetNextUniqueId();
         end
         
         function newStateLogEntry = executeAction(obj, stateLogEntry)

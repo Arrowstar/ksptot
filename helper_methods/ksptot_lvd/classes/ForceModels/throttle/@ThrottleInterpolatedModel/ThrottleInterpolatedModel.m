@@ -74,6 +74,30 @@ classdef ThrottleInterpolatedModel < AbstractThrottleModel
         
         function optVar = getExistingOptVar(obj)
             optVar = obj.optVar;
+            if(isempty(optVar))
+                return;
+            end
+
+            % The table editor indexes the variable vectors by table row.
+            % Models whose durations were assigned directly (or loaded from
+            % older files) can have more rows than their variable, which
+            % used to crash makeTableDataFromModel with "Index exceeds the
+            % number of array elements". Grow (or shrink) the vectors to the
+            % table size, preserving existing entries.
+            numRows = numel(obj.durations);
+            if(numel(optVar.varTDur) ~= numRows || ...
+               numel(optVar.varThrottles) ~= numRows || ...
+               numel(optVar.lbTDur) ~= numRows || ...
+               numel(optVar.lbThrottles) ~= numRows || ...
+               numel(optVar.ubTDur) ~= numRows || ...
+               numel(optVar.ubThrottles) ~= numRows)
+                optVar.varTDur = ThrottleInterpolatedModel.resizeVectorToNumRows(optVar.varTDur, numRows, false);
+                optVar.varThrottles = ThrottleInterpolatedModel.resizeVectorToNumRows(optVar.varThrottles, numRows, false);
+                optVar.lbTDur = ThrottleInterpolatedModel.resizeVectorToNumRows(optVar.lbTDur, numRows, 0);
+                optVar.lbThrottles = ThrottleInterpolatedModel.resizeVectorToNumRows(optVar.lbThrottles, numRows, 0);
+                optVar.ubTDur = ThrottleInterpolatedModel.resizeVectorToNumRows(optVar.ubTDur, numRows, 1);
+                optVar.ubThrottles = ThrottleInterpolatedModel.resizeVectorToNumRows(optVar.ubThrottles, numRows, 1);
+            end
         end
 
         function [addActionTf, throttleModel] = openEditThrottleModelUI(obj, lv, useContinuity)
@@ -93,6 +117,33 @@ classdef ThrottleInterpolatedModel < AbstractThrottleModel
     methods(Static)
         function model = getDefaultThrottleModel()
             model = ThrottleInterpolatedModel();
+        end
+
+        function resized = resizeVectorToNumRows(vec, numRows, padValue)
+            %resizeVectorToNumRows Grow or shrink a per-row variable vector,
+            % preserving overlapping entries and padding with padValue.
+            vec = vec(:);
+            numExisting = numel(vec);
+            if(numExisting == numRows)
+                resized = vec;
+            elseif(numExisting > numRows)
+                resized = vec(1:numRows, :);
+            else
+                if(islogical(padValue) || islogical(vec))
+                    resized = false(numRows, 1);
+                elseif(isa(vec, 'double'))
+                    resized = zeros(numRows, 1);
+                else
+                    resized = repmat(vec(1), numRows, 1);
+                end
+                resized(1:numExisting, :) = vec;
+                if(numRows > numExisting)
+                    resized(numExisting+1:end, :) = padValue;
+                end
+            end
+            if(islogical(vec) || islogical(padValue))
+                resized = logical(resized);
+            end
         end
     end
 end

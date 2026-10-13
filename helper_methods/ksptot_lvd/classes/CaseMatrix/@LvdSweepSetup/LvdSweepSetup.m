@@ -58,7 +58,7 @@ classdef LvdSweepSetup < matlab.mixin.SetGet
 
     methods
         function obj = LvdSweepSetup()
-            obj.id = rand();
+            obj.id = lvdGetNextUniqueId();
         end
 
         function addParameter(obj, param, variation)
@@ -307,7 +307,7 @@ classdef LvdSweepSetup < matlab.mixin.SetGet
     methods(Static)
         function obj = loadobj(obj)
             if(obj.id == 0)
-                obj.id = rand();
+                obj.id = lvdGetNextUniqueId();
             end
 
             if(isempty(obj.runName))

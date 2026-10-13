@@ -57,7 +57,7 @@ classdef LvdSweepVehicleKnobParameter < AbstractLvdSweepParameter
                 end
             end
 
-            obj.id = rand();
+            obj.id = lvdGetNextUniqueId();
         end
 
         function name = getName(obj)

@@ -74,7 +74,7 @@ classdef SphericalSolarRadiationPressureModel < AbstractSolarRadiationPressureMo
             end
         end
 
-        function openEditDialog(obj, lvdData)
+        function useTf = openEditDialog(obj, lvdData)
             arguments   
                 obj(1,1) SphericalSolarRadiationPressureModel
                 lvdData(1,1) LvdData
@@ -82,6 +82,7 @@ classdef SphericalSolarRadiationPressureModel < AbstractSolarRadiationPressureMo
             
             out = AppDesignerGUIOutput({false});
             lvd_EditSphericalSolarRadPressModel_App(obj, out);
+            useTf = out.output{1};
         end
     end
 end

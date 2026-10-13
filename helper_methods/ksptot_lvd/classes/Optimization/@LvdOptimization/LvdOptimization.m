@@ -58,10 +58,12 @@ classdef LvdOptimization < matlab.mixin.SetGet
             obj.nomadOpt = NomadOptimizer();
             obj.ipoptOpt = IpOptOptimizer();
             obj.surragateOpt = SurrogateOptimizer();
+            obj.sqpOpt = SQPOptimizer();
             obj.adamNlOptOpt = AdamNlOptOptimizer();
 
             obj.builtInGradMethod = BuiltInGradientCalculationMethod();
             obj.customFiniteDiffsCalcMethod = CustomFiniteDiffsCalculationMethod();
+            obj.derivEstFiniteDiffCalcMethod = DERIVEstFiniteDiffsCalculationMethod();
         end
         
         function [exitflag, message] = optimize(obj, writeOutput, callOutputFcn, hLvdMainGUI, progressFcn)

@@ -52,7 +52,7 @@ classdef LvdSweepOptimVarParameter < AbstractLvdSweepParameter
             obj.varName = varName;
             obj.unitType = unitType;
 
-            obj.id = rand();
+            obj.id = lvdGetNextUniqueId();
         end
 
         function name = getName(obj)

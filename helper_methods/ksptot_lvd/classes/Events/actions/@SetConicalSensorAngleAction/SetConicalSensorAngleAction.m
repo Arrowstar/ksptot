@@ -18,7 +18,7 @@ classdef SetConicalSensorAngleAction < AbstractEventAction
                 obj.sensorAngle = sensorAngle;
             end
             
-            obj.id = rand();
+            obj.id = lvdGetNextUniqueId();
         end
         
         function newStateLogEntry = executeAction(obj, stateLogEntry)

@@ -11,14 +11,14 @@ classdef LaunchVehicleEpsRtg < AbstractLaunchVehicleElectricalPowerSrcSnk
         halfLife(1,1) double = 0; %s
         initTime(1,1) double = 0; %sec UT
         
-        id = rand();
+        id = 0;
     end
     
     methods
         function obj = LaunchVehicleEpsRtg(stage)
             obj.stage = stage;
             
-            obj.id = rand();
+            obj.id = lvdGetNextUniqueId();
         end
         
         function name = getName(obj)

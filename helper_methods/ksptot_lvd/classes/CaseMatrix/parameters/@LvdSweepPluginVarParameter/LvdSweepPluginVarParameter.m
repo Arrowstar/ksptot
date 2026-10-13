@@ -33,7 +33,7 @@ classdef LvdSweepPluginVarParameter < AbstractLvdSweepParameter
                 obj.isResolved = true;
             end
 
-            obj.id = rand();
+            obj.id = lvdGetNextUniqueId();
         end
 
         function name = getName(obj)

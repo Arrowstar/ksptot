@@ -84,8 +84,7 @@ classdef IpoptOptions < matlab.mixin.SetGet
         end
         
         function tf = usesParallel(obj)
-            tf = obj.useParallel;
-%             tf = IpoptUseParallelEnum.UseParallel;
+            tf = obj.useParallel.optionVal;
         end
         
         function numWorkers = getNumParaWorkers(obj)

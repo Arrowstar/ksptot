@@ -22,7 +22,7 @@ classdef PositionContinuityConstraintZ < AbstractConstraint
             obj.event = event; 
             obj.constraintEvent = constraintEvent;
             
-            obj.id = rand();
+            obj.id = lvdGetNextUniqueId();
         end
         
         function [lb, ub] = getBounds(obj)

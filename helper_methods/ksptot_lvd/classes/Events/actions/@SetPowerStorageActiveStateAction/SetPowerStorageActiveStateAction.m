@@ -18,7 +18,7 @@ classdef SetPowerStorageActiveStateAction < AbstractEventAction
                 obj.activeStateToSet = activeStateToSet;
             end
             
-            obj.id = rand();
+            obj.id = lvdGetNextUniqueId();
         end
         
         function newStateLogEntry = executeAction(obj, stateLogEntry)

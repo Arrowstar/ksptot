@@ -46,7 +46,7 @@ classdef SetDragAeroPropertiesAction < AbstractEventAction
 %                 obj.CdInterpToSet = pointSet.getGriddedInterpFromPoints(obj.CdInterpMethodToSet, GriddedInterpolantMethodEnum.Nearest);
 %             end
             
-            obj.id = rand();
+            obj.id = lvdGetNextUniqueId();
         end
         
         function newStateLogEntry = executeAction(obj, stateLogEntry)

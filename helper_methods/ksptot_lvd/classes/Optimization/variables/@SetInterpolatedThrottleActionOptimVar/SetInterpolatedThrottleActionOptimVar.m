@@ -23,10 +23,29 @@
     
     methods
         function obj = SetInterpolatedThrottleActionOptimVar(varObj)
+            if(nargin == 0)
+                obj.id = lvdGetNextUniqueId();
+                return;
+            end
+
             obj.varObj = varObj;
             obj.varObj.optVar = obj;
-            
-            obj.id = rand();
+
+            obj.id = lvdGetNextUniqueId();
+
+            % Size the tabular vectors to the model's current table. A fresh
+            % variable created for a multi-row model must already have one
+            % entry per row, otherwise the tabular throttle editor indexes
+            % past the end of the length-1 defaults.
+            numRows = numel(varObj.durations);
+            if(numel(obj.varTDur) ~= numRows)
+                obj.varTDur = false(numRows, 1);
+                obj.varThrottles = false(numRows, 1);
+                obj.lbTDur = zeros(numRows, 1);
+                obj.lbThrottles = zeros(numRows, 1);
+                obj.ubTDur = ones(numRows, 1);
+                obj.ubThrottles = ones(numRows, 1);
+            end
         end
         
         function x = getXsForVariable(obj)            

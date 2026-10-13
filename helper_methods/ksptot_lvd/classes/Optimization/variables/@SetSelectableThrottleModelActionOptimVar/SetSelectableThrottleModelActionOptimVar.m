@@ -26,7 +26,7 @@ classdef SetSelectableThrottleModelActionOptimVar < AbstractOptimizationVariable
             obj.varObj = varObj;
             obj.varObj.optVar = obj;
 
-            obj.id = rand();
+            obj.id = lvdGetNextUniqueId();
         end
 
         function numVars = getMaxNumVars(obj)

@@ -40,8 +40,31 @@ classdef SetGenericTabularQuatInterpSteeringModelActionOptimVar < AbstractOptimi
         function obj = SetGenericTabularQuatInterpSteeringModelActionOptimVar(varObj)
             obj.varObj = varObj;
             obj.varObj.optVar = obj;
-            
-            obj.id = rand();
+
+            obj.id = lvdGetNextUniqueId();
+
+            % Size the tabular vectors to the model's current table. A fresh
+            % variable created for a multi-row model must already have one
+            % entry per row, otherwise the tabular quat-interp editor indexes
+            % past the end of the length-1 defaults (same contract as
+            % SetInterpolatedThrottleActionOptimVar).  Bounds defaults mirror
+            % the editor's own new-row defaults (durations [0, 1], gamma and
+            % alpha angles [-360, 360], beta angles [-90, 90], in table units).
+            numRows = numel(varObj.tDurs);
+            if(numel(obj.varTDur) ~= numRows)
+                obj.varTDur = false(numRows, 1);
+                obj.varGammaAngles = false(numRows, 1);
+                obj.varBetaAngles = false(numRows, 1);
+                obj.varAlphaAngles = false(numRows, 1);
+                obj.lbTDur = zeros(numRows, 1);
+                obj.lbGammaAngles = -360*ones(numRows, 1);
+                obj.lbBetaAngles = -90*ones(numRows, 1);
+                obj.lbAlphaAngles = -360*ones(numRows, 1);
+                obj.ubTDur = ones(numRows, 1);
+                obj.ubGammaAngles = 360*ones(numRows, 1);
+                obj.ubBetaAngles = 90*ones(numRows, 1);
+                obj.ubAlphaAngles = 360*ones(numRows, 1);
+            end
         end
         
         function x = getXsForVariable(obj)            

@@ -15,7 +15,7 @@ classdef GeometricVectorYConstraint < AbstractGeometricVectorConstraint
 
             obj.type = 'VectorY';
             
-            obj.id = rand();
+            obj.id = lvdGetNextUniqueId();
         end
 
         function type = getConstraintType(obj)

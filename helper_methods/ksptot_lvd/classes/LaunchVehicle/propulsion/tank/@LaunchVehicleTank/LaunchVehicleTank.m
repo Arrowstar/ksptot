@@ -22,7 +22,7 @@ classdef LaunchVehicleTank < matlab.mixin.SetGet
             if(nargin>0)
                 obj.stage = stage;
             end
-            obj.id = rand();
+            obj.id = lvdGetNextUniqueId();
         end
         
         function lvdData = get.lvdData(obj)
