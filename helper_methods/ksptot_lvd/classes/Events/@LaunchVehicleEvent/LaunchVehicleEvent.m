@@ -312,6 +312,13 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
 
             obj.termCondDir = dirs(1);
             obj.extraTermCondDirs = dirs(2:end);
+
+            %A direction change alters the watched event function without
+            %touching any variable, so the opt-vars memo above is unaffected
+            %but any cached same-x propagation result is stale.  (The other
+            %term-condition mutators funnel through clearActiveOptVarsCache
+            %and are covered there.)
+            obj.invalidatePropagationCache();
         end
 
         function removeTermCondByInd(obj, ind)
@@ -644,6 +651,15 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
         function clearActiveOptVarsCache(obj)
             obj.hasActiveOptVarsTF = false(0);
             obj.hasActiveOptVarsVars = AbstractOptimizationVariable.empty(0,1);
+
+            %Every caller of this method changes what this event contributes
+            %to a propagation (actions, termination conditions, or the
+            %variables they own), so a cached same-x result is no longer
+            %addressed by its key: the next evaluation must re-propagate.
+            %Over-invalidation here is always safe (a miss just costs one
+            %propagation); serving a pre-edit log for a post-edit mission
+            %is silent corruption.
+            obj.invalidatePropagationCache();
         end
         
         function createUpdatedSetKinematicStateObjs(obj)
@@ -654,6 +670,25 @@ classdef LaunchVehicleEvent < matlab.mixin.SetGet
                     action.generateLvComponentElements();
                 end
             end            
+        end
+    end
+
+    methods(Access=private)
+        function invalidatePropagationCache(obj)
+            %invalidatePropagationCache Drops the optimizer's cached
+            %same-x propagation result, if reachable.  Fresh events may
+            %not be attached to a script yet, and the optimizer may not
+            %exist mid-load: both are skipped quietly.
+            scripts = {obj.script};
+            for(k=1:numel(scripts))
+                sc = scripts{k};
+                if(not(isempty(sc)))
+                    scData = sc.lvdData;
+                    if(not(isempty(scData)) && not(isempty(scData.optimizer)))
+                        scData.optimizer.clearPropagationCache();
+                    end
+                end
+            end
         end
     end
          

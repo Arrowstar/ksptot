@@ -146,9 +146,11 @@ classdef LvdOptimization < matlab.mixin.SetGet
             %   sparse-output flag, the start event handle, and the script's
             %   propagationCounter must all equal the values recorded when
             %   the cached propagation finished.  Any executeScript call not
-            %   made through this method bumps the counter and forces a miss,
-            %   so edits made through the GUI between evaluations can never
-            %   be served stale results.  Errors from executeScript propagate
+            %   made through this method bumps the counter and forces a miss.
+            %   Structural edits (variable add/remove/reorder, action or
+            %   termination-condition add/remove/replace) clear the entry
+            %   outright, so edits made between evaluations can never be
+            %   served stale results.  Errors from executeScript propagate
             %   to the caller and leave the cache empty.
             arguments
                 obj(1,1) LvdOptimization

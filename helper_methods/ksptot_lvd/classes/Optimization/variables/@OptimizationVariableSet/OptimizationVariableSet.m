@@ -314,6 +314,15 @@ classdef OptimizationVariableSet < matlab.mixin.SetGet
             obj.vars = obj.vars(I);
             
             obj.clearCachedVarEvtDisabledStatus();
+
+            %Reordering (or membership changes via removeUselessVars, which
+            %is always followed by this method) re-addresses every element
+            %of the x vector, so a cached same-x result belongs to a
+            %different variable layout.  Drop it; the next evaluation
+            %re-propagates.
+            if(not(isempty(obj.lvdData)) && not(isempty(obj.lvdData.optimizer)))
+                obj.lvdData.optimizer.clearPropagationCache();
+            end
         end
 
         function varsStoredInRad = getVarsStoredInRad(obj)

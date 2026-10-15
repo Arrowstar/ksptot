@@ -135,6 +135,98 @@ classdef OptimizationEvalCacheAndJacobianTest < KsptotTestCase
                 'The cache must never change the propagated state log.');
         end
 
+        function structuralEditInvalidatesSameXCache(testCase)
+            %A structural edit between two identical propagateForX calls
+            %must force a re-propagation: the cached log belongs to the
+            %pre-edit mission, and serving it would silently evaluate the
+            %wrong mission with no error at the mutation site (the
+            %fresh-event poison family).
+            fx = testCase.makeFixture();
+            fx.lvdData.settings.enableIncrementalRepropagation = false;
+            lvdOpt = fx.lvdData.optimizer;
+            script = fx.lvdData.script;
+
+            lvdOpt.propagateForX(fx.x0, false, fx.evt1, false);
+            c0 = script.propagationCounter;
+
+            %No-op action: the hold-down clamp is already released on a
+            %coast, so this changes nothing about the trajectory -- but it
+            %changes the mission, so the cache must miss anyway.
+            holdDown = SetHoldDownClampActiveStateAction(false);
+            holdDown.event = fx.evt3;
+            fx.evt3.addAction(holdDown);
+            lvdOpt.propagateForX(fx.x0, false, fx.evt1, false);
+            testCase.verifyEqual(script.propagationCounter, c0 + 1, ...
+                'Adding an action must invalidate the same-x propagation cache.');
+            testCase.verifyGreaterThan(script.lastNumEvtsIntegrated, 0);
+
+            %Add/remove round-trip: x is back to its exact value, but the
+            %member list changed in between, so the old entry must not serve.
+            lvdOpt.propagateForX(fx.x0, false, fx.evt1, false);
+            c1 = script.propagationCounter;
+            evt4 = LaunchVehicleEvent(fx.lvdData.script);
+            testCase.configureCoastEvent(evt4, testCase.EvtDur);
+            fx.lvdData.script.addEvent(evt4);
+            roundTrip = EventDurationOptimizationVariable(evt4.termCond);
+            roundTrip.useTf = true;
+            roundTrip.lb = testCase.VarLb;
+            roundTrip.ub = testCase.VarUb;
+            lvdOpt.vars.addVariable(roundTrip);
+            lvdOpt.vars.removeVariable(roundTrip);
+            xBack = lvdOpt.vars.getTotalScaledXVector();
+            testCase.verifyEqual(xBack, fx.x0, 'Round-trip must restore x exactly.');
+            lvdOpt.propagateForX(xBack, false, fx.evt1, false);
+            testCase.verifyEqual(script.propagationCounter, c1 + 1, ...
+                'An add/remove round-trip must invalidate the same-x cache.');
+        end
+
+        function noOpFreshEventEditsLeaveTrajectoryBitIdentical(testCase)
+            %The fresh-event poison invariant: no-op edits to a newly
+            %created event must propagate bit-identically.  Mirrors the
+            %poison-bug report's mutations on a fast two-body fixture
+            %(engines are off on a two-body coast, so the hold-down action
+            %plays the role of the report's no-op engine/throttle actions:
+            %it flows through the same action-execution machinery while
+            %provably changing no state).
+            fx = testCase.makeFixture();
+            fx.lvdData.settings.enableIncrementalRepropagation = false;
+            lvdOpt = fx.lvdData.optimizer;
+
+            evt4 = LaunchVehicleEvent(fx.lvdData.script);
+            testCase.configureCoastEvent(evt4, testCase.EvtDur);
+            fx.lvdData.script.addEvent(evt4);
+
+            base = lvdOpt.propagateForX(fx.x0, false, fx.evt1, false);
+            fpBase = stateLogToFingerprint(base);
+
+            %Mutation 1: bare duration variable, value unchanged.
+            durVar = EventDurationOptimizationVariable(evt4.termCond);
+            durVar.useTf = true;
+            durVar.lb = testCase.VarLb;
+            durVar.ub = testCase.VarUb;
+            lvdOpt.vars.addVariable(durVar);
+            x1 = lvdOpt.vars.getTotalScaledXVector();
+            got1 = lvdOpt.propagateForX(x1, false, fx.evt1, false);
+            testCase.verifyTrue(isequaln(stateLogToFingerprint(got1).matrix, fpBase.matrix), ...
+                'A bare duration variable with unchanged value must not move the trajectory.');
+
+            %Mutation 2: no-op action on the fresh event.  The action
+            %appends same-state log entries, so compare the pre-existing
+            %events and the final arrival state rather than row counts.
+            holdDown = SetHoldDownClampActiveStateAction(false);
+            holdDown.event = evt4;
+            evt4.addAction(holdDown);
+            x2 = lvdOpt.vars.getTotalScaledXVector();
+            got2 = lvdOpt.propagateForX(x2, false, fx.evt1, false);
+            fp2 = stateLogToFingerprint(got2);
+            priorRows = fpBase.matrix(fpBase.matrix(:,8) <= 3, :);
+            newRows = fp2.matrix(fp2.matrix(:,8) <= 3, :);
+            testCase.verifyTrue(isequaln(newRows, priorRows), ...
+                'A no-op action must not move any pre-existing entry.');
+            testCase.verifyTrue(isequaln(fp2.matrix(end,1:7), fpBase.matrix(end,1:7)), ...
+                'A no-op action must not move the final arrival state.');
+        end
+
         function incrementalRepropagationStillWorksThroughTheCache(testCase)
             %With incremental re-propagation on, the objective/constraint pair
             %must still evaluate to finite values and the repeated-x path must
