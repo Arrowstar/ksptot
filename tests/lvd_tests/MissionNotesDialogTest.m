@@ -9,19 +9,24 @@ classdef MissionNotesDialogTest < KsptotTestCase
     %   main-GUI caller: editMissionNotesMenu_Callback (Edit menu) wraps it
     %   in an undo state; the dialog writes lvdData.notes on Save & Close.
     %
+    % NOTES EDITOR
+    %   The dialog edits markdown through a uihtml pane managed by
+    %   LvdMarkdownNotesEditor (vendored marked.min.js, no CDN). Storage
+    %   stays plain char markdown on lvdData.notes. Tests drive the
+    %   MATLAB-side cache (setText/getText), which is what Save reads;
+    %   the JS preview needs no deterministic assertions.
+    %
     % PATTERN
     %   The dialog does not block in uiwait, so no fixture is strictly
     %   needed; UiwaitInterceptorFixture is applied for uniformity.  The
     %   GUIDE-migrated callbacks read event.Source, so buttons are fired
-    %   through ButtonPushedFcn with a minimal event struct and text is
-    %   driven through the handles adapters from
-    %   convertToGUIDECallbackArguments (the TankConstraintDialogTest
-    %   pattern).  There is no Cancel button: window-X is the cancel path.
+    %   through ButtonPushedFcn with a minimal event struct.
     %
     % COVERED
     %   Open shows the stored notes; Save & Close writes edited (and empty)
-    %   notes back to the mission; a save round-trips through a reopen;
-    %   window-X preserves the notes; the expected controls exist.
+    %   notes back to the mission; markdown saves verbatim; a save
+    %   round-trips through a reopen; window-X preserves the notes; the
+    %   expected controls exist.
 
     methods(TestMethodSetup)
         function shadowUiwait(testCase)
@@ -34,21 +39,24 @@ classdef MissionNotesDialogTest < KsptotTestCase
             lvdData = LvdData.getDefaultLvdData(testCase.celBodyData);
             lvdData.notes = sprintf('First line.\nSecond line.');
             app = testCase.openDialog(lvdData);
-            [~, ~, handles] = convertToGUIDECallbackArguments(app);
+            fig = app.lvd_MissionNotesGUI;
 
-            shown = strjoin(cellstr(get(handles.missionNotesText, 'String')), newline);
+            shown = LvdMarkdownNotesEditor.getText(fig);
             testCase.verifyTrue(contains(shown, 'First line.'), 'Stored notes must be shown.');
             testCase.verifyTrue(contains(shown, 'Second line.'));
+            testCase.verifyFalse(isempty(LvdMarkdownNotesEditor.getHtml(fig)), ...
+                'The markdown editor pane must exist.');
+            testCase.verifyEqual(app.missionNotesText.Visible, matlab.lang.OnOffSwitchState.off, ...
+                'The legacy plain-text box must be hidden.');
         end
 
         function saveAndCloseWritesNotes(testCase)
             lvdData = LvdData.getDefaultLvdData(testCase.celBodyData);
             lvdData.notes = 'Original notes.';
             app = testCase.openDialog(lvdData);
-            [~, ~, handles] = convertToGUIDECallbackArguments(app);
             fig = app.lvd_MissionNotesGUI;
 
-            set(handles.missionNotesText, 'String', 'Edited mission note.');
+            LvdMarkdownNotesEditor.setText(fig, 'Edited mission note.');
             testCase.pushButton(app.saveCloseButton);
 
             testCase.verifyFalse(isvalid(fig), 'Save & Close must close the dialog.');
@@ -57,13 +65,26 @@ classdef MissionNotesDialogTest < KsptotTestCase
                 'Save & Close must write the notes to the mission.');
         end
 
+        function markdownSavesVerbatim(testCase)
+            lvdData = LvdData.getDefaultLvdData(testCase.celBodyData);
+            app = testCase.openDialog(lvdData);
+            fig = app.lvd_MissionNotesGUI;
+
+            md = sprintf('# Stage sep\n\n- [ ] arm **pyros**\n\n| a | b |\n|---|---|\n| 1 | 2 |');
+            LvdMarkdownNotesEditor.setText(fig, md);
+            testCase.pushButton(app.saveCloseButton);
+
+            testCase.verifyEqual(lvdData.notes, md, ...
+                'Markdown source must be stored verbatim, not rendered HTML.');
+        end
+
         function saveEmptyNotesClearsMission(testCase)
             lvdData = LvdData.getDefaultLvdData(testCase.celBodyData);
             lvdData.notes = 'Something to clear.';
             app = testCase.openDialog(lvdData);
-            [~, ~, handles] = convertToGUIDECallbackArguments(app);
+            fig = app.lvd_MissionNotesGUI;
 
-            set(handles.missionNotesText, 'String', '');
+            LvdMarkdownNotesEditor.setText(fig, '');
             testCase.pushButton(app.saveCloseButton);
 
             testCase.verifyTrue(isempty(strjoin(cellstr(lvdData.notes), newline)), ...
@@ -73,13 +94,12 @@ classdef MissionNotesDialogTest < KsptotTestCase
         function savedNotesRoundTripThroughReopen(testCase)
             lvdData = LvdData.getDefaultLvdData(testCase.celBodyData);
             app = testCase.openDialog(lvdData);
-            [~, ~, handles] = convertToGUIDECallbackArguments(app);
-            set(handles.missionNotesText, 'String', 'Round trip note.');
+            fig = app.lvd_MissionNotesGUI;
+            LvdMarkdownNotesEditor.setText(fig, 'Round trip note.');
             testCase.pushButton(app.saveCloseButton);
 
             app2 = testCase.openDialog(lvdData);
-            [~, ~, handles2] = convertToGUIDECallbackArguments(app2);
-            shown = strjoin(cellstr(get(handles2.missionNotesText, 'String')), newline);
+            shown = LvdMarkdownNotesEditor.getText(app2.lvd_MissionNotesGUI);
 
             testCase.verifyTrue(contains(shown, 'Round trip note.'), ...
                 'A reopen must show the saved notes.');
@@ -91,7 +111,7 @@ classdef MissionNotesDialogTest < KsptotTestCase
             app = testCase.openDialog(lvdData);
             fig = app.lvd_MissionNotesGUI;
 
-            app.missionNotesText.Value = {'Changed without saving.'};
+            LvdMarkdownNotesEditor.setText(fig, 'Changed without saving.');
             close(fig);
             drawnow;
 

@@ -89,7 +89,7 @@ classdef EditEventDialogTest < matlab.uitest.TestCase
             testCase.choose(app.AdvancedTab);
 
             testCase.verifyEqual(app.groupNameCombo.Value, 'Ascent');
-            testCase.verifyEqual(app.notesTextArea.Value, {'first line'; 'second line'});
+            testCase.verifyEqual(LvdMarkdownNotesEditor.getText(app.lvd_editEventGUI), sprintf('first line\nsecond line'));
             testCase.verifyTrue(app.useMinAltCheckbox.Value);
             testCase.verifyEqual(app.minAltField.Value, 12.5);
             testCase.verifyTrue(app.terrainRelCheckbox.Value);
@@ -256,7 +256,7 @@ classdef EditEventDialogTest < matlab.uitest.TestCase
             testCase.choose(app.termCondLogicCombo, EventTermCondLogicEnum.All.name);
             testCase.choose(app.AdvancedTab);
             app.groupNameCombo.Value = 'Boostback';
-            app.notesTextArea.Value = {'check the grid fins'; 'then relight'};
+            LvdMarkdownNotesEditor.setText(app.lvd_editEventGUI, sprintf('check the grid fins\nthen relight'));
             testCase.press(app.useMinAltCheckbox);
             app.minAltField.Value = 7.5;
             testCase.press(app.terrainRelCheckbox);
@@ -284,11 +284,21 @@ classdef EditEventDialogTest < matlab.uitest.TestCase
 
             testCase.choose(app.AdvancedTab);
             testCase.choose(app.groupNameCombo, '<No Group>');
-            app.notesTextArea.Value = {''};
+            LvdMarkdownNotesEditor.setText(app.lvd_editEventGUI, '');
             testCase.press(app.saveAndCloseButton);
 
             testCase.verifyEqual(evt.groupName, '', 'The placeholder stands for no group.');
             testCase.verifyEqual(evt.notes, '', 'Empty notes save as an empty char row.');
+        end
+
+        function markdownEventNotesSaveVerbatim(testCase)
+            [app, evt] = testCase.openFor(testCase.buildThreeCondEvent());
+            testCase.choose(app.AdvancedTab);
+            md = sprintf('# Burn\n\n- verify **attitude**\n- confirm `staging`');
+            LvdMarkdownNotesEditor.setText(app.lvd_editEventGUI, md);
+            testCase.press(app.saveAndCloseButton);
+
+            testCase.verifyEqual(evt.notes, md, 'Event markdown must be stored verbatim.');
         end
 
         function aTypedGroupNameIsTrimmedAndKept(testCase)

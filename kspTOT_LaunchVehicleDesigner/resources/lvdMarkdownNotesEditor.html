@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>LVD Markdown Notes</title>
+<script src="marked.min.js"></script>
+<style>
+  html, body { height: 100%; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "Segoe UI", Arial, sans-serif; font-size: 13px;
+         display: flex; flex-direction: column; background: #fff; color: #111; }
+  #toolbar { display: flex; align-items: center; gap: 4px; padding: 4px 6px;
+             border-bottom: 1px solid #ccc; background: #f5f5f5; flex: 0 0 auto; }
+  #toolbar button { font-size: 12px; padding: 3px 12px; cursor: pointer;
+                    border: 1px solid #aaa; background: #fff; border-radius: 3px; }
+  #toolbar button.active { background: #0076cb; color: #fff; border-color: #0076cb; }
+  #fmtbar { display: flex; align-items: center; gap: 2px; padding: 3px 6px;
+            border-bottom: 1px solid #ccc; background: #fafafa; flex: 0 0 auto; flex-wrap: wrap; }
+  #fmtbar button { font-size: 12px; min-width: 26px; padding: 2px 6px; cursor: pointer;
+                   border: 1px solid transparent; background: transparent; border-radius: 3px; color: #333; }
+  #fmtbar button:hover { border-color: #aaa; background: #fff; }
+  #fmtbar button b, #fmtbar button i { font-style: normal; }
+  #fmtbar .sep { width: 1px; height: 18px; background: #ccc; margin: 0 3px; flex: 0 0 auto; }
+  #hint { margin-left: auto; color: #666; font-size: 11px; }
+  #mdEdit { flex: 1 1 auto; width: 100%; box-sizing: border-box; resize: none;
+            border: none; outline: none; padding: 8px; font-size: 13px;
+            font-family: Consolas, "Courier New", monospace; }
+  #mdPreview { flex: 1 1 auto; overflow-y: auto; padding: 4px 12px; }
+  #mdPreview h1 { font-size: 1.4em; border-bottom: 1px solid #ddd; padding-bottom: 4px; }
+  #mdPreview h2 { font-size: 1.25em; border-bottom: 1px solid #eee; padding-bottom: 3px; }
+  #mdPreview h3 { font-size: 1.1em; }
+  #mdPreview code { background: #f0f0f0; padding: 1px 4px; border-radius: 3px;
+                    font-family: Consolas, "Courier New", monospace; }
+  #mdPreview pre { background: #f4f4f4; padding: 8px; border-radius: 4px; overflow-x: auto; }
+  #mdPreview pre code { background: none; padding: 0; }
+  #mdPreview table { border-collapse: collapse; margin: 8px 0; }
+  #mdPreview th, #mdPreview td { border: 1px solid #ccc; padding: 4px 8px; }
+  #mdPreview th { background: #f0f0f0; }
+  #mdPreview blockquote { border-left: 3px solid #ccc; margin: 8px 0; padding: 2px 10px; color: #444; }
+  #mdPreview img { max-width: 100%; }
+</style>
+</head>
+<body>
+<div id="toolbar" role="tablist">
+  <button id="editBtn" class="active" type="button">Edit</button>
+  <button id="previewBtn" type="button">Preview</button>
+  <span id="hint">Markdown supported</span>
+</div>
+<div id="fmtbar" role="toolbar" aria-label="Markdown formatting">
+  <button type="button" data-fmt="bold" title="Bold (**text**)"><b>B</b></button>
+  <button type="button" data-fmt="italic" title="Italic (*text*)"><i>I</i></button>
+  <button type="button" data-fmt="strike" title="Strikethrough (~~text~~)"><s>S</s></button>
+  <button type="button" data-fmt="code" title="Inline code (`code`)"><code>&lt;&gt;</code></button>
+  <span class="sep"></span>
+  <button type="button" data-fmt="h1" title="Heading 1 (# )">H1</button>
+  <button type="button" data-fmt="h2" title="Heading 2 (## )">H2</button>
+  <button type="button" data-fmt="h3" title="Heading 3 (### )">H3</button>
+  <button type="button" data-fmt="quote" title="Quote (&gt; )">&#10077;</button>
+  <span class="sep"></span>
+  <button type="button" data-fmt="ul" title="Bulleted list (- )">&bull;</button>
+  <button type="button" data-fmt="ol" title="Numbered list (1. )">1.</button>
+  <button type="button" data-fmt="task" title="Task list (- [ ] )">&#9744;</button>
+  <span class="sep"></span>
+  <button type="button" data-fmt="link" title="Link ([text](url))">&#128279;</button>
+  <button type="button" data-fmt="image" title="Image (![alt](url))">&#128444;</button>
+  <button type="button" data-fmt="table" title="Table">|=|</button>
+  <button type="button" data-fmt="codeblock" title="Code block (``` )">{ }</button>
+  <button type="button" data-fmt="hr" title="Horizontal rule (---)">&#8213;</button>
+</div>
+<textarea id="mdEdit" spellcheck="false" placeholder="Write notes in Markdown, e.g. # Heading, **bold**, - list item"></textarea>
+<div id="mdPreview" hidden></div>
+<script type="text/javascript">
+(function () {
+  'use strict';
+  var htmlComponent = null;
+  var rev = 0;            // last revision seen/applied; guards MATLAB<->JS echoes
+  var pushTimer = null;
+  var edit = document.getElementById('mdEdit');
+  var preview = document.getElementById('mdPreview');
+  var editBtn = document.getElementById('editBtn');
+  var previewBtn = document.getElementById('previewBtn');
+
+  function escapeHtml(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function render(md) {
+    var html;
+    if (typeof marked !== 'undefined' && marked && typeof marked.parse === 'function') {
+      try {
+        html = marked.parse(String(md), { breaks: true, gfm: true });
+      } catch (e) {
+        html = '<pre>' + escapeHtml(String(e && e.message || e)) + '</pre>';
+      }
+    } else {
+      // marked.min.js missing (bad deploy): degrade to escaped plain text.
+      html = '<pre>' + escapeHtml(String(md)) + '</pre>';
+    }
+    // ponytail: naive script-strip, full sanitizer (DOMPurify) if pasted HTML abuse matters.
+    html = String(html).replace(/<script[\s\S]*?(?:<\/script\s*>|$)/gi, '');
+    preview.innerHTML = html;
+  }
+
+  function showEdit() {
+    edit.hidden = false; preview.hidden = true;
+    editBtn.classList.add('active'); previewBtn.classList.remove('active');
+    edit.focus();
+  }
+
+  function showPreview() {
+    render(edit.value);
+    edit.hidden = true; preview.hidden = false;
+    previewBtn.classList.add('active'); editBtn.classList.remove('active');
+  }
+
+  function onEdit() {
+    if (!preview.hidden) { render(edit.value); }
+    if (!htmlComponent) { return; }
+    if (pushTimer) { clearTimeout(pushTimer); }
+    pushTimer = setTimeout(function () {
+      pushTimer = null;
+      rev += 1;
+      try {
+        htmlComponent.Data = { markdown: edit.value, rev: rev };
+      } catch (e) { /* MATLAB side gone; ignore */ }
+    }, 250);
+  }
+
+  function onDataFromMatlab() {
+    var d;
+    try { d = htmlComponent.Data || {}; } catch (e) { return; }
+    if (d && typeof d.markdown === 'string' && (d.rev || 0) > rev) {
+      rev = d.rev || 0;
+      if (edit.value !== d.markdown) { edit.value = d.markdown; }
+      if (!preview.hidden) { render(edit.value); }
+    }
+  }
+
+  editBtn.addEventListener('click', showEdit);
+  previewBtn.addEventListener('click', showPreview);
+  edit.addEventListener('input', onEdit);
+
+  // ---- formatting toolbar (pure textarea ops; execCommand keeps native undo) ----
+  function replaceRange(repStart, repEnd, text, selStart, selEnd) {
+    if (preview.hidden === false) { showEdit(); } else { edit.focus(); }
+    edit.setSelectionRange(repStart, repEnd);
+    if (!document.execCommand('insertText', false, text)) {
+      var v = edit.value;
+      edit.value = v.slice(0, repStart) + text + v.slice(repEnd);
+    }
+    edit.setSelectionRange(selStart, selEnd);
+    onEdit();
+  }
+
+  function wrapInline(mark, placeholder) {
+    var s = edit.selectionStart, e = edit.selectionEnd, v = edit.value;
+    var sel = v.slice(s, e);
+    if (sel.length >= 2 * mark.length && sel.indexOf(mark) === 0 &&
+        sel.lastIndexOf(mark) === sel.length - mark.length) {
+      var inner = sel.slice(mark.length, sel.length - mark.length);  // toggle off
+      replaceRange(s, e, inner, s, s + inner.length);
+    } else if (s === e) {
+      replaceRange(s, e, mark + placeholder + mark, s + mark.length, s + mark.length + placeholder.length);
+    } else {
+      replaceRange(s, e, mark + sel + mark, s + mark.length, e + mark.length);
+    }
+  }
+
+  function lineBounds(s, e, v) {
+    var ls = v.lastIndexOf('\n', s - 1) + 1;
+    var le = v.indexOf('\n', e);
+    if (le === -1) { le = v.length; }
+    return [ls, le];
+  }
+
+  function prefixLines(prefix, stripRe, placeholder) {
+    var v = edit.value, s = edit.selectionStart, e = edit.selectionEnd;
+    var b = lineBounds(s, e, v), ls = b[0], le = b[1];
+    var block = v.slice(ls, le).split('\n');
+    if (s === e && block.length === 1 && block[0] === '' && placeholder) {
+      replaceRange(ls, le, prefix + placeholder, ls + prefix.length, ls + prefix.length + placeholder.length);
+      return;
+    }
+    var allSet = block.length > 0 && block.every(function (ln) { return stripRe.test(ln); });
+    var out = block.map(function (ln, i) {
+      if (allSet) { return ln.replace(stripRe, ''); }  // toggle off
+      if (typeof prefix === 'function') { return prefix(ln, i); }
+      if (stripRe.test(ln)) { return ln; }
+      return prefix + ln;
+    });
+    replaceRange(ls, le, out.join('\n'), ls, ls + out.join('\n').length);
+  }
+
+  var OL_RE = /^(\s*)\d+\.\s/;
+  function applyFmt(kind) {
+    switch (kind) {
+      case 'bold':   wrapInline('**', 'bold text'); break;
+      case 'italic': wrapInline('*', 'italic text'); break;
+      case 'strike': wrapInline('~~', 'struck text'); break;
+      case 'code':   wrapInline('`', 'code'); break;
+      case 'h1': prefixLines('# ', /^(#{1,6}\s+)/, 'Heading'); break;
+      case 'h2': prefixLines('## ', /^(#{1,6}\s+)/, 'Heading'); break;
+      case 'h3': prefixLines('### ', /^(#{1,6}\s+)/, 'Heading'); break;
+      case 'quote': prefixLines('> ', /^>\s?/, 'quote'); break;
+      case 'ul': prefixLines('- ', /^(\s*)[-*+]\s/, 'list item'); break;
+      case 'task': prefixLines('- [ ] ', /^(\s*)- \[.\]\s/, 'task'); break;
+      case 'link':
+      case 'image': {
+        var pre = kind === 'image' ? '!' : '';
+        var s = edit.selectionStart, e2 = edit.selectionEnd, sel = edit.value.slice(s, e2);
+        if (s === e2) { sel = kind === 'image' ? 'alt text' : 'link text'; }
+        var md = pre + '[' + sel + '](url)';
+        var urlAt = s + pre.length + sel.length + 3;
+        replaceRange(s, e2, md, urlAt, urlAt + 3);
+        break;
+      }
+      case 'table': {
+        var t = '\n| Header 1 | Header 2 |\n|----------|----------|\n| cell     | cell     |\n';
+        var p = edit.selectionStart;
+        replaceRange(p, p, t, p + 3, p + 11);
+        break;
+      }
+      case 'codeblock': {
+        var cs = edit.selectionStart, ce = edit.selectionEnd, cv = edit.value.slice(cs, ce);
+        var blk = '```\n' + (cv || 'code') + '\n```';
+        replaceRange(cs, ce, blk, cs + 4, cs + 4 + (cv || 'code').length);
+        break;
+      }
+      case 'hr': {
+        var h = edit.selectionStart;
+        replaceRange(h, h, '\n---\n', h + 5, h + 5);
+        break;
+      }
+    }
+  }
+
+  // numbered-list toggle needs renumbering: handle separately for clarity
+  function applyOrderedList() {
+    var v = edit.value, s = edit.selectionStart, e = edit.selectionEnd;
+    var b = lineBounds(s, e, v), ls = b[0], le = b[1];
+    var block = v.slice(ls, le).split('\n');
+    if (s === e && block.length === 1 && block[0] === '') {
+      replaceRange(ls, le, '1. list item', ls + 3, ls + 12);
+      return;
+    }
+    var allSet = block.length > 0 && block.every(function (ln) { return OL_RE.test(ln); });
+    var out = block.map(function (ln, i) {
+      if (allSet) { return ln.replace(OL_RE, '$1'); }
+      var stripped = ln.replace(/^(\s*)(?:[-*+]\s|\d+\.\s|> ?|#{1,6}\s|- \[.\]\s)?/, '$1');
+      return stripped.replace(/^(\s*)/, '$1' + (i + 1) + '. ');
+    });
+    replaceRange(ls, le, out.join('\n'), ls, ls + out.join('\n').length);
+  }
+
+  document.getElementById('fmtbar').addEventListener('click', function (ev) {
+    var btn = ev.target.closest ? ev.target.closest('button[data-fmt]') : null;
+    if (!btn) { return; }
+    ev.preventDefault();
+    if (btn.getAttribute('data-fmt') === 'ol') { applyOrderedList(); }
+    else { applyFmt(btn.getAttribute('data-fmt')); }
+  });
+
+  // Called by MATLAB uihtml once the component proxy is ready.
+  window.setup = function (comp) {
+    htmlComponent = comp;
+    try {
+      var d = comp.Data || {};
+      if (d && typeof d.markdown === 'string') {
+        rev = d.rev || 0;
+        edit.value = d.markdown;
+      }
+    } catch (e) { /* keep empty editor */ }
+    try {
+      comp.addEventListener('DataChanged', onDataFromMatlab);
+    } catch (e) { /* older client; MATLAB->JS push still lands in comp.Data */ }
+  };
+})();
+</script>
+</body>
+</html>
